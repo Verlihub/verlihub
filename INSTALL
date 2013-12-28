@@ -1,0 +1,20 @@
+Prerequisites:
+    CMake 2.6
+    OpenSSL
+    MySQL 5.1
+    zlib
+    libpcre
+    gettext
+Optional dependencies:
+    GeoIP
+    Lua 5.1
+    Python 2.5
+
+To install Verlihub, run the following commands:
+
+cd verlihub
+mkdir build
+cd build
+cmake ..
+make
+make install (as super user)

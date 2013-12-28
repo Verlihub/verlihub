@@ -1,0 +1,90 @@
+.TH VERLIHUB 1 "January 2014" verlihub-1.0 "January 2014"
+.SH NAME
+verlihub \- Verlihub is a Direct Connect protocol server (Hub)
+.SH DESCRIPTION
+Verlihub has some utility scripts that can be used to install a new hub or manage existing ones:
+.TP
+.BR 
+.I vh
+a script that includes features to manage hubs from command line interface (CLI)
+.TP
+.BR 
+.I vh_gui
+a script that includes features to manage hubs through a graphical interface (GUI)
+.TP
+.BR 
+.I vh_multihub
+a script that allow you to run multi instances of Verlihub from command line interface (CLI)
+.TP
+.BR
+.I  vh_regimporter
+a script that allow you to import registration from PtokaX, Aquila and YnHub
+.P
+For more information please check <http://verlihub-project.org/>
+.SH "SPECIFIC FILE DESCRIPTIONS"
+.TP
+.BR {CONFIG_DIR}/dbconfig
+The global file for hub settings. Here there are variables you can use:
+.RS
+.TP
+.BR 
+.I db_host
+Hostname for MySQL server. Can be a local server (localhost) or external server
+.TP
+.BR
+.I  db_data
+Database name for Verlihub hub settings
+.TP
+.BR
+.I  db_user
+MySQL username to access DB. User should has all privilegies
+.TP
+.BR
+.I  db_pass
+Password for username
+.TP
+.BR
+.I  locale
+The locale code that should use Verlihub
+.RE
+.TP
+.BR {CONFIG_DIR}/log
+General log file. Written information depends on log_level variable
+.TP
+.BR {CONFIG_DIR}/err
+Log file to check application error
+.TP
+.BR {CONFIG_DIR}/help_*
+Help files will be called when user/admin use !help command in the hub
+.TP
+.BR {CONFIG_DIR}/plugins/
+This directory contains enabled plugins for the hub. They will be automatically loaded when hub start
+.TP
+.BR {CONFIG_DIR}/scripts/
+This folder contains all scripts wirtten in Lau and Python languages. hey will be automatically loaded when hub start 
+.SH AUTHOR
+2003-2005 Daniel Muller, dan at verliba dot cz
+2006-2014 Verlihub Project, devs at verlihub-project dot org
+.SH REPORTING BUGS
+Official website: <http://verlihub-project.org/>
+.br
+Wiki pages: <http://verlihub-project.org/doc/>
+.br
+Support hub: <dchub://hub.verlihub.net:7777/>
+.br
+Translate Verlihub using Transifex.net: <https://www.transifex.net/projects/p/verlihub/>
+.SH COPYRIGHT
+Verlihub is free software; You can redistribute it
+and modify it under the terms of the GNU General
+Public License as published by the Free Software
+Foundation, either version 3 of the license, or at
+your option any later version.
+.br
+Verlihub is distributed in the hope that it will be
+useful, but without any warranty, without even the
+implied warranty of merchantability or fitness for
+a particular purpose. See the GNU General Public
+License for more details.
+.br
+Please see http://www.gnu.org/licenses/ for a copy
+of the GNU General Public License.

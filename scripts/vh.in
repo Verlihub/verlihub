@@ -1,0 +1,805 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+SCRIPT=$0
+# Include library
+source $(dirname $SCRIPT)/vh_lib
+
+# Get mysql admin access
+function _ask_admin_access()
+{
+	ARE_ADMIN_DB_INFO_OK=false
+	until $ARE_ADMIN_DB_INFO_OK;
+	do
+		echo_s "-- Please insert MySQL administrator information to create DB or account or grant permissions.\n"
+		MYSQL_ADMIN_USER=$(ask "Username" "root")
+		MYSQL_ADMIN_PASSWORD=$(ask "Password" "")
+
+		echo_s "This is information about MySQL administrator:\n"
+		echo_s "\tUsername" $BOLD
+		echo_s ": $MYSQL_ADMIN_USER \n"
+		echo_s "\tPassword" $BOLD
+		echo_s ": $MYSQL_ADMIN_PASSWORD \n"
+		yes_or_no "Do you want to continue with this information?" && ARE_ADMIN_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
+	done
+}
+
+help_me()
+{
+	echo_s "$SCRIPT\n" $BOLD
+	echo "This is a utility script for VerliHub, usage:"
+	echo
+	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
+	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
+	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
+	echo_s "  -s, --stop" $RED && echo -e "\t[path_to_dbconfig] \tStop the hub from the given dbconfig path"
+	echo_s "  -t, --status" $RED && echo -e "\t[path_to_dbconfig] \tCheck if hub is running or not"
+	echo_s "  -g, --geoip" $RED && echo -e "\t\t\t\tUpdate GeoIP"
+	echo_s "  -a, --autoload" $RED && echo -e "\t\t\tLoad plugin automatically when start the hub"
+		echo_s "\t-l, --list" $BLUE && echo -e "\t\t\t\tShow list of available plugins"
+		echo_s "\t-n, --on" $BLUE && echo -e "\t\t\t\tRun plugin automatically with hub"
+		echo_s "\t-f, --off" $BLUE && echo -e "\t\t\t\tDisable auto load of plugin"
+		echo_s "\t-d, --configdir" $BLUE && echo -e "  [path_to_dbconfig] \tSpecify the hub with location of dbconfig file. Optional"	
+	echo_s "  -u, --adduser" $RED && echo -e "\t<nick> <password> <class> [path_to_dbconfig]\tRegister a new user in the database"
+	echo_s "  -c, --clean" $RED && echo -e "\t[path_to_dbconfig] \t\t\tClean kicklist, banlist, unbanlist, iplog, stats and messages tables"	
+	echo_s "  -w, --backup" $RED && echo -e "\t<destination_path> [path_to_dbconfig] \tMake backup of database from the given dbconfig path"
+	echo_s "  -t, --restore" $RED && echo -e "\t<path_to_sql>      [path_to_dbconfig] \tImport the given SQL file in the database for given dbconfig path"
+	echo_s "  -v, --version" $RED && echo -e "\t\t\t\tPrint version information"
+	echo_s "  -h, --help" $RED && echo -e "\t\t\t\tShow this help"
+	echo ""
+}
+
+function version()
+{ 
+	echo_s "Script version: " $BOLD && echo "$VER"; 
+	echo_s "Verlihub version: " $BOLD && echo @VERLIHUB_VERSION@;
+}
+
+function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
+{
+	# Check config directory
+	if [ "_$2" = "_" ]; then
+		if ! set_path $1 ; then
+			exit 1;
+		fi
+	else
+		if ! set_path $1 > /dev/null 2>&1 ; then
+			exit 1;
+		fi
+	fi
+
+	# Check if hub is already running
+	if _is_hub_running $CONFIG_DIR ; then
+		echo "-- Hub is already running with PID $PID_RESULT. To stop it use --stop option"
+		exit 1;
+	fi
+	echo "-- Starting hub with config folder '$CONFIG_DIR'. This could take some times";
+
+	LOG_FILE="$CONFIG_DIR/log"
+	ERROR_FILE="$CONFIG_DIR/err"
+	PID_FILE="$CONFIG_DIR/pid"
+
+	# Check permission on folder
+	if  [ ! -w $CONFIG_DIR ]; then
+		echo_s "-- You haven't permissions to write on '$CONFIG_DIR'\n" $RED
+		exit 1;
+	fi
+	# Check permission on files
+	if [ -e $LOG_FILE ]; then
+		if  [ ! -w $LOG_FILE ]; then
+			echo_s "-- You haven't permissions to write log file '$LOG_FILE'\n" $RED
+			exit 1;
+		fi
+	fi
+	if [ -e $ERROR_FILE ]; then
+		if [ ! -w $ERROR_FILE ]; then
+			echo_s "-- You haven't permissions to write error file '$ERROR_FILE'\n" $RED
+			exit 1;
+		fi
+	fi
+	if [ -e $PID_FILE ]; then
+		if [ ! -w $PID_FILE ]; then
+			echo_s "-- You haven't permissions to write PID file '$PID_FILE'\n" $RED
+			exit 1;
+		fi
+	fi
+
+	# Backup logs
+	[ -e $ERROR_FILE ] && mv -f $ERROR_FILE $ERROR_FILE.old
+	[ -e $LOG_FILE ] && mv -f $LOG_FILE $LOG_FILE.old
+
+	# Create log files
+	touch $LOG_FILE && touch $ERROR_FILE
+
+	# Check if MySQL socket exists
+	_mysql_export_socket
+	
+	# Run it
+	$BINDIR/$DAEMON_NAME $BINDIR/verlihub >"$LOG_FILE" 2>"$ERROR_FILE" &
+	PID=$!
+	disown $PID
+	# Check if pid is returned
+	if [ "_$PID" = "_" ]; then
+		echo_s "-- A error occured while tring to get PID of VerliHub\n" $RED
+		return 1;
+	fi;
+	sleep 2
+
+	# Save pid
+	echo $PID > $PID_FILE
+	if ! _is_hub_running $CONFIG_DIR ; then
+		echo_s "-- Hub is not running. Please check '$LOG_FILE' and '$ERROR_FILE' for more information\n" $RED
+		rm -f $PID_FILE
+		return 1;
+	fi
+	
+	echo -n "-- Starting verlihub (PID: $PID)..."
+	sleep 1
+	echo " Done"
+}
+
+function kill_hub() # path_to_dbconfig
+{
+	# Check config directory
+	if ! set_path $1 ; then
+		exit 1;
+	fi
+
+	# Check if hub is already running
+	if ! _is_hub_running $CONFIG_DIR ; then
+		echo_s "-- Hub with config path '$CONFIG_DIR' is not running\n" $RED
+		if [ -f $PID_FILE ]; then
+			if [ -w $PID_FILE ]; then
+				rm -f $PID_FILE
+			else
+				echo_s "-- PID file $PID_FILE already exists. Can't remove it, please do it manually\n" $RED
+			fi
+		fi
+		return 1;
+	fi
+	_get_pid $CONFIG_DIR
+	echo -n "-- Killing verlihub (PID: $PID_RESULT)..."
+	if ! kill $PID_RESULT > /dev/null 2>&1 ; then
+		echo_s " USER HAS NO RIGHT TO STOP THE PROCESS\n" $RED
+		echo_s "-- Please use 'kill -9 $PID_RESULT' as root\n" $RED
+		exit 1;
+	fi
+	rm -f "$CONFIG_DIR/pid"
+	sleep 2
+	echo " Done"
+}
+
+# Check if hub is running or not
+function hub_status() # path_to_dbconfig
+{
+	# Check config directory
+	if ! set_path $1 ; then
+		exit 1;
+	fi
+	
+	echo -n "-- Hub with config path '$CONFIG_DIR' is "
+	if ! _is_hub_running $CONFIG_DIR ; then
+		echo_s "not running\n" $RED
+	else
+		echo_s "running\n" $GREEN
+	fi
+}
+
+# Import sql file in database
+function restore() # sql_file, path_to_dbconfig
+{
+	# Check SQL file
+	FILE_EXTENSION=${1##*.}
+	if [ "_$1" = "_" ] || [ ! -f "$1" ] || [ $FILE_EXTENSION != "sql" ]; then
+		echo_s "-- Please provide a valid SQL file\n" $RED
+		exit;
+	fi
+
+	if ! set_path $2 ; then
+		exit;
+	fi
+	# Import SQL
+	if ! $(_mysql_import $1) > /dev/null 2>&1  ; then
+		echo_s "-- A error occured with file importing\n" $RED
+		exit;	fi
+	echo "-- File imported successfully";
+}
+
+function backup() # destination folder, path_to_dbconfig
+{
+	# Check if mysqldump is installed
+	DUMP=`whereis mysqldump | awk '{ print $2 }'`
+	if [ -z "$DUMP" ]; then
+		echo_s "-- This command requires mysqldump to work, please consider installing it\n"
+		exit;
+	fi
+	# Check destination folder
+	if [ ! -d $1 ] || [ "_$1" = "_" ]; then
+		echo_s "-- Please provide a valid destination folder\n"
+		exit;
+	fi
+	# Check permission
+	if $(touch $1/_test_file > /dev/null 2>&1); then
+		$(rm $1/_test_file) ;
+	else
+		echo_s "-- You don't have the write permission in '$1'\n" $RED
+		exit;
+	fi
+	# Check config directory
+	if ! set_path $2 ; then
+		exit 1;
+	fi
+
+	FILE="$1/${TIMESTAMP}.sql"
+	if ! $(@BASH_PATH@ -c "$DUMP -h $(get_db_host) -u $(get_db_user) -p$(get_db_pass) $(get_db_name)" >"$FILE" 2>/dev/null) ; then
+
+		echo_s "-- A error occured with backup\n" $RED
+		rm -rf $FILE
+		exit;
+	else
+		echo "-- Backup file '$FILE' successfully saved for '$CONFIG_DIR'";
+	fi
+}
+
+function add_user() # nicknam, # password, # class, # path_to_dbconfig
+{
+	# Check and set path
+	if ! set_path $4 ; then
+		exit 1;
+	fi
+
+	# Check if reglist exists
+	if ! _is_table_exists "reglist" ; then
+		echo_s "-- Reglist table does not exist. Fix the error and try again\n" $RED
+		exit 1;
+	fi
+
+	# Check if nickname is empty
+	if [ "_$1" = "_" ]; then
+		echo_s "-- Specify a valid nickname\n" $RED
+		exit 1;
+	fi;
+
+	# Check if password is empty
+	if [ "_$2" = "_" ]; then
+		echo_s "-- Specify a valid password\n" $RED
+		exit 1;
+	fi;
+
+	# Check if class is valid
+	if [ "_$3" = "_" ] || check_class $3 ; then
+		echo_s "-- Specify a valid class (-1, 0, 1, 2, 3, 4, 5, 10)\n" $RED
+		exit 1;
+	fi
+	
+	# Print summary
+	echo_s "User information\n"
+	echo_s "\tNickname" $BOLD
+	echo_s ": $1\n"
+	echo_s "\tPassword" $BOLD
+	echo_s ": $2\n"
+	echo_s "\tClass" $BOLD
+	echo_s ": $3\n"
+	echo_s "\tConfig directory" $BOLD
+	echo_s ": $CONFIG_DIR\n"
+	
+	yes_or_no "Do you want to continue?" && REGISTER=true || REGISTER=false
+	
+	if ( $REGISTER ); then
+		if ! _register $1 $3 $2 "plain" ; then
+			echo_s "-- A error occured while trying to execute MySQL query. Is user '$1' already exists?\n" $RED
+			exit;
+		fi
+		echo "-- Done"
+	else
+		echo "-- Skipped"
+	fi
+}
+
+function reg_importer() # options
+{
+	case "_$1" in
+	"_--ptokax")	shift; convert_ptokax $@;;
+	"_--ynhub")		shift; convert_ynhub $@;;
+	"_--aquila")	shift; convert_aquila $@;;
+	*) 				help_me; exit;;
+	esac;
+}
+
+# Update GeoIP
+function update_geoip()
+{
+	if [ $(uname) != "FreeBSD" ]; then
+		GEOIP_PATH="/usr/share/GeoIP/";
+	else
+		GEOIP_PATH="/usr/local/share/GeoIP"
+	fi
+
+	if [ $UID -ne 0 ]; then
+		echo_s "-- You can only run this option with root account\n" $RED
+		exit 0;
+	fi
+
+	# Check if mysqldump is installed
+	DUMP=`whereis gzip | awk '{ print $2 }'`
+	if [ -z "$DUMP" ]; then
+		echo_s "-- This command requires gzip to work, please consider installing it\n"
+		exit 1;
+	fi
+
+	# Check if directory exists
+	if [ ! -d $GEOIP_PATH ]; then
+		echo_s "-- Can't find '/usr/share/GeoIP/'. If you installed GeoIP in another prefix you should update it manually\n" $RED
+		exit 1;
+	fi;
+
+	# Maxmind link
+	local ADDRESS="http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz "
+	
+	# Download tarball
+	echo "-- Download GeoIP from Maxmind server"
+	wget $ADDRESS > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		echo_s "-- A error happens while trying to download GeoIP tarball using 'wget'\n" $RED
+		exit 1;
+	fi
+	# Decompress the file
+	gzip -d GeoIP.dat.gz
+	if [ $? -ne 0 ]; then
+		echo_s "-- A error happens while trying to decompress GeoIP tarball using 'gzip'\n" $RED
+		rm -f GeoIP.dat.gz
+		exit 1;
+	fi
+	# Move the file
+	mv -f GeoIP.dat "$GEOIP_PATH/GeoIP.dat"
+	if [ $? -ne 0 ]; then
+		echo_s "-- A error happens while trying to copy GeoIP DAT file\n" $RED
+		rm -f GeoIP.dat
+		exit 1;
+	fi
+	echo "-- Done"
+	exit 0;
+}
+
+# Clean up tables
+function clean() #path_to_dbconfig
+{
+	# Check config path
+	if ! set_path "$1" ; then
+		exit 1;
+	fi
+	TABLES=("banlist" "kicklist" "unbanlist")
+
+	if _is_table_exists "pi_iplog" ; then
+		TABLES+=("pi_iplog")
+	fi
+	if _is_table_exists "pi_messages" ; then
+		TABLES+=("pi_messages")
+	fi
+	if _is_table_exists "pi_stats" ; then
+		TABLES+=("pi_stats")
+	fi
+	for TABLE in ${TABLES[@]}; do
+		if $(yes_or_no "Do you want to truncate '$TABLE' table?") ; then
+			if ! _mysql_query "TRUNCATE TABLE $TABLE;" ; then
+				echo_s "-- Error truncating table '$TABLE'\n" $RED
+			else
+				echo "-- Truncated '$TABLE'"			
+			fi
+		else
+			echo "-- Skipped"
+		fi
+	done
+	exit 0;
+}
+
+# Manage of autoload plugins
+function autoload() # params
+{
+	if  [ "_$1" = "_" ]; then
+		ACTION="list";
+	fi
+	# Read options
+	while [ "_$1" != "_" ]; do
+		case "$1" in
+			"-l"|"--list")	ACTION="list";;
+			"-n"|"--on")	ACTION="on";;	
+			"-f"|"--off")	ACTION="off";;
+			"-d"|"--configdir")	shift; CONF_DIR=$1;;
+			*)	echo_s "Unknown parameter $1\n" $RED && exit;;
+		esac;
+		shift;
+	done;
+	# Check config path
+	if ! set_path "$CONF_DIR" ; then
+		exit 1;
+	fi
+
+	local PLUGIN_MAP
+	local PLUGINS_PATH="$PREFIX/lib"	
+
+	
+	if [ "_$ACTION" = "_list" ]; then
+		echo "-- This is a list of available  plugins"
+	fi;
+
+	echo ""
+	echo_s " ID  " $BOLD
+	echo_s " Plugin path" $BOLD
+	echo ""
+
+	local INDEX=1
+	for PLUGIN in $(ls $PLUGINS_PATH/lib*_pi.so)
+	do
+		# Check if symbolic link exists
+		local PLUGIN_NAME=$(_get_plugin_name $PLUGIN);
+		if [ -L "$VERLIHUB_CFG/plugins/$PLUGIN_NAME" > /dev/null 2>&1 ]; then
+			COLOR=$GREEN_BOLD
+		else
+			COLOR=$RED_BOLD
+		fi
+
+		echo_s " [$INDEX] " $COLOR
+		echo "$PLUGIN"
+		PLUGIN_MAP[$INDEX]=$PLUGIN
+		INDEX=$(($INDEX+1))
+	done
+
+	if [ "_$ACTION" = "_list" ]; then
+		echo ""
+		echo -n "Status: "
+		echo_s "Start automatically" $GREEN_BOLD
+		echo -n " | "
+		echo_s "Manually\n\n" $RED_BOLD
+		exit 0;
+	else
+		echo ""
+
+		# Ask ID
+		local VALIDATE=false
+		until $VALIDATE
+		do	
+			local CHOOSEN_PLUGIN=$(ask "Select number")
+			if $(echo "$CHOOSEN_PLUGIN" | grep -E "^[0-9]+$" > /dev/null 2>&1 ) ; then
+				VALIDATE=true
+			else
+				echo_s "-- Insert a ID from the list below\n" $RED
+			fi
+		done
+
+		# Check and execute on/off action		
+		local PLUGIN_NAME=$(_get_plugin_name ${PLUGIN_MAP[$CHOOSEN_PLUGIN]});
+		local PLUGIN_IN_CONFIG="$VERLIHUB_CFG/plugins/$PLUGIN_NAME"
+		if [ -L "$PLUGIN_IN_CONFIG" > /dev/null 2>&1 ]; then
+			if [ "_$ACTION" = "_on" ]; then
+				echo_s "-- Plugin already starts automatically\n" $RED
+			else
+				if rm -f "$PLUGIN_IN_CONFIG" > /dev/null 2>&1 ; then
+					echo "-- Done"
+				else
+					echo_s "-- Cannot remove symbolic link in '$VERLIHUB_CFG/plugins/'; please check permission\n" $RED
+				fi
+			fi
+		else
+			if [ "_$ACTION" = "_on" ]; then
+				if ln -s "$PREFIX/lib/$PLUGIN_NAME" "$VERLIHUB_CFG/plugins/" > /dev/null 2>&1 ; then 
+					echo "-- Done"
+				else
+					echo_s "-- Cannot create symbolic link in '$VERLIHUB_CFG/plugins/'; please check permission\n" $RED
+				fi
+			else
+				echo_s "-- Plugin is already disabled from autoload\n" $RED
+			fi
+		fi
+	fi;
+	exit 0;
+}
+
+# Install verlihub with CLI
+function install() 
+{
+	# Clear shell
+	clear
+
+	# Print introduction
+	REALUSER="$USER"
+	echo_s "Hello "
+	echo_s "$REALUSER,\n" $BOLD
+	echo_s "let's start with the configuration of database access. If you have some problems with configuration you can: \n"
+	echo_s "\t*" $BOLD
+	echo_s " Follow the official manual: http://www.verlihub-project.org/manual \n"
+	echo_s "\t*" $BOLD
+	echo_s " Ask support on forums: http://www.verlihub-project.org/forums \n"
+	echo_s "\t*" $BOLD
+	echo_s " Ask support on VAZ: dchub://vaz.verlihub-project.org\n"
+
+	# Get MySQL information
+	echo_s "\n[*] MySQL settings\n" $RED_BOLD
+	echo_s "-- Please insert MySQL server setting below for the hub. \n"
+	echo_s "   If the account/DB does not exist it will be created later in this setup. \n"
+
+	set_path $VERLIHUB_CFG > /dev/null 2>&1;
+
+	ARE_DB_INFO_OK=false
+	until $ARE_DB_INFO_OK;
+	do
+		MYSQL_DB_NAME=$(get_db_name)
+		MYSQL_DB_NAME=$(ask "Choose database name" $MYSQL_DB_NAME)
+		MYSQL_USER=$(get_db_user)
+		MYSQL_USER=$(ask "MySQL user to access to '$MYSQL_DB_NAME'" $MYSQL_USER)
+		MYSQL_PASSWORD=$(get_db_pass)
+		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" $MYSQL_PASSWORD)
+		MYSQL_HOST=$(get_db_host)
+		MYSQL_HOST=$(ask "MySQL hostname" $MYSQL_HOST)
+
+		echo_s "This is information about MySQL:\n"
+		echo_s "\tDatabase" $BOLD
+		echo_s ": $MYSQL_DB_NAME \n"
+		echo_s "\tUsername" $BOLD
+		echo_s ": $MYSQL_USER \n"
+		echo_s "\tPassword" $BOLD
+		echo_s ": $MYSQL_PASSWORD \n"
+		echo_s "\tHostname" $BOLD
+		echo_s ": $MYSQL_HOST \n"
+		yes_or_no "Do you want to continue with this information?" && ARE_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
+	done
+
+	# Ask user the IP addrress of current server to allow access for MySQL server
+	IS_MYSQL_HOST_LOCAL=false
+	[ $MYSQL_HOST = "localhost" ] && IS_MYSQL_HOST_LOCAL=true
+	[ $MYSQL_HOST = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
+	if ! $IS_MYSQL_HOST_LOCAL ; then
+		echo_s "-- You are going to use a database on an external server. Please provide the IP address of this current server \n"
+		IS_MYSQL_HOST_OK=false
+		until $IS_MYSQL_HOST_OK;
+		do
+			CURRENT_ADDRESS=$(ask "Address" )
+	
+			if [ "_$CURRENT_ADDRESS" = "_" ]; then
+				echo_s "You enter a empty value please retry with configuration\n"
+			else
+				IS_MYSQL_HOST_OK=true				
+			fi
+		done
+	else
+		CURRENT_ADDRESS="localhost"
+	fi;
+
+	# Test if account exists
+	echo_s "\n-- Checking MySQL account $MYSQL_USER@$MYSQL_HOST; this could take some times...\n" $RED_BOLD
+	_does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" && ACCOUNT_EXISTS=true || ACCOUNT_EXISTS=false
+
+	if ! $ACCOUNT_EXISTS ; then 
+		echo_s "-- The MySQL account '$MYSQL_USER' can not be accessed, it will be created now\n"
+		_ask_admin_access
+		$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'" &> /dev/null
+		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ;
+		then
+			echo_s "-- The MySQL account cannot be created. Fix the problem and run the setup again\n"
+			die;
+		fi
+	else
+		echo_s "-- The MySQL account '$MYSQL_USER' has been found\n"
+	fi
+
+	# Test if database exists
+	echo_s "\n-- Checking MySQL database $MYSQL_DB_NAME; this could take some times...\n" $RED_BOLD
+	_does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" && DB_EXISTS=true || DB_EXISTS=false
+	# Create database
+	if ! $DB_EXISTS ; then 
+		echo_s "-- The MySQL database '$MYSQL_DB_NAME' does not exist, it will be created now\n"
+		if [ "_$MYSQL_ADMIN_USER"  = "_" -o "_$MYSQL_ADMIN_PASSWORD"  = "_" ]; then
+			_ask_admin_access
+		fi
+	else
+		echo_s "-- The MySQL database '$MYSQL_DB_NAME' has been found\n"
+	fi
+
+	# Create/grant permissions (check if admin account has been specify)
+	if [ "_$MYSQL_ADMIN_USER"  = "_" -o "_$MYSQL_ADMIN_PASSWORD"  = "_" ]; then
+		_ask_admin_access
+	fi
+	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
+	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; 
+	then
+		echo_s "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again\n"
+		exit 1;
+	fi	
+
+	# Select path where to put verlihub config file
+	IS_CHOOSEN_FOLDER_OK=false
+
+	until $IS_CHOOSEN_FOLDER_OK;
+	do
+		echo_s "\n-- You need to choose a place for the configuration files\n" $RED_BOLD;
+		echo_s "\t[1] " $BOLD && echo "/etc/verlihub"
+		echo_s "\t[2] " $BOLD && echo "$HOME/.verlihub"
+		echo_s "\t[3] " $BOLD && echo "$PREFIX/etc/verlihub"
+		echo_s "\t[4] " $BOLD && echo "Other, choose path where put config file"
+
+		local VALIDATE=false
+		until $VALIDATE
+		do	
+			local CHOOSEN_FOLDER=$(ask "Select number")
+			if [ "$CHOOSEN_FOLDER" = 1 ] || [ "$CHOOSEN_FOLDER" = 2 ] || [ "$CHOOSEN_FOLDER" = 3 ] || [ "$CHOOSEN_FOLDER" = 4 ]; then
+				VALIDATE=true
+			else
+				echo_s "-- Insert a valid number from the list\n" $RED
+			fi
+		done
+
+		# Get selected folder
+		case $CHOOSEN_FOLDER in
+			"1") CHOOSEN_FOLDER="/etc/verlihub/";;
+			"2") CHOOSEN_FOLDER="$HOME/.verlihub/";;
+			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub/";;
+			"4") CHOOSEN_FOLDER=$(ask "Type complete path");
+		esac
+	
+		CHOOSEN_FOLDER_NOT_EXISTS=false
+		if [ -d $CHOOSEN_FOLDER ]; then
+			echo -n "-- The folder '$CHOOSEN_FOLDER' already exists (existing configuration will be backup). "
+			ANSWER=$(ask "Do you want to continue? Otherwise choose 'N' to select another folder [y/N]") 
+			if [ $ANSWER = 'y' ]; then
+				IS_CHOOSEN_FOLDER_OK=true
+			else	
+				echo -e "Ok, let's try again.\n\n"
+			fi
+		else
+			ANSWER=$(ask "-- The config folder '$CHOOSEN_FOLDER' does not exist and will be created. Do you want to continue? [y/N]");
+			if [ $ANSWER = 'y' ]; then
+				IS_CHOOSEN_FOLDER_OK=true
+				CHOOSEN_FOLDER_NOT_EXISTS=true
+			else	
+				echo -e "Ok, let's try again.\n\n"
+			fi
+		fi
+
+		# Check if user has permissions to create/edit directory
+		if $IS_CHOOSEN_FOLDER_OK ; 
+		then
+			if mkdir -p $CHOOSEN_FOLDER/_test_dir > /dev/null 2>&1 ; then
+				rm -rf $CHOOSEN_FOLDER/_test_dir > /dev/null 2>&1 ;
+			else
+				echo "-- You don't have the permission to write in '$CHOOSEN_FOLDER'. Please select another folder or fix the problem and restart this setup again."  && IS_CHOOSEN_FOLDER_OK=false 
+			fi
+		fi	
+	done
+
+	# Set file name
+	CONFIG="${CHOOSEN_FOLDER}/dbconfig"
+	# Creating directory if it does not exist
+	if $CHOOSEN_FOLDER_NOT_EXISTS ; then
+		mkdir -p $CHOOSEN_FOLDER
+	else
+		# Make backup of existing configuration
+		if [ -e $CONFIG ]; then
+			BACKUP_DIR=$HOME
+			BACKUP_NAME="vh_install_$TIMESTAMP.tar.gz"
+			tar czf $BACKUP_DIR/$BACKUP_NAME $CHOOSEN_FOLDER > /dev/null 2>&1
+			rm -rf $CHOOSEN_FOLDER/* > /dev/null 2>&1
+			echo "-- The original configuration has been moved to $BACKUP_DIR/$BACKUP_NAME"
+		fi
+	fi
+
+	# Print information for MySQL access
+	echo "db_host = $MYSQL_HOST" >  $CONFIG
+	echo "db_data = $MYSQL_DB_NAME" >> $CONFIG
+	echo "db_user = $MYSQL_USER" >> $CONFIG
+	echo "db_pass = $MYSQL_PASSWORD" >> $CONFIG
+	
+	echo_s "\n-- Config file has been successfully written in '$CONFIG'.\n" $RED_BOLD
+	echo "-- Now they will be created other directories and files."
+	echo "-- Copy files and accessing to MySQL server; this could take some times..."
+	# Import other files from verlihub directory
+	cp $DATADIR/config/* $CHOOSEN_FOLDER
+	mkdir -p $CHOOSEN_FOLDER/plugins
+	mkdir -p $CHOOSEN_FOLDER/scripts
+	ln -s $LIBDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+
+	# Check if file has been created correctly
+	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false
+	if ! $CONFIG_EXISTS ; then
+		echo_s "Your installation is NOT completed.\nInstallation was not unable to create config folder or file. Please check permission on '$CHOOSEN_FOLDER'\n" $RED
+		exit 1;
+	fi
+
+	# Create tables
+	set_path $CHOOSEN_FOLDER > /dev/null 2>&1;
+	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL; then
+		echo_s "-- ERROR: cannot create verlihub's tables in the database, cannot continue with the installation. Please check '$CHOOSEN_FOLDER/install_log' file for more info and run installation again\n" $RED
+		exit 1;
+	fi
+	# Create admin user and hub info
+	echo_s "\n-- Installation has been completed. Now you can add master account\n" $RED_BOLD
+
+	# Configure hub and account
+	echo_s "\n[*] Hub settings\n" $RED_BOLD
+	echo_s "-- Choose information about master account and hub (don't use any special characters, you'll be able to use them later) \n"
+	SETUP_INFO_OK=false
+	until $SETUP_INFO_OK; do
+
+		HOSTNAME=`hostname`
+		if [ $REALUSER = "root" ]; then
+			PORT=411
+		else
+			PORT=4111
+		fi
+		VH_MASTER_NAME=$(ask "Master name" "[SU]$REALUSER")
+		VH_MASTER_PASSWORD=$(ask "Master password" "$TIMESTAMP")
+		VH_HUB_PORT=$(ask "Hub port" "$PORT")
+		VH_HUB_HOST=$(ask "Hub host" $HOSTNAME)
+		VH_HUB_NAME=$(ask "Hub name" "hub of $REALUSER")
+
+		echo_s "Is this info correct?\n"
+		echo_s "\tMaster name" $BOLD
+		echo_s ": $VH_MASTER_NAME \n"
+		echo_s "\tMaster password" $BOLD
+		echo_s ": $VH_MASTER_PASSWORD \n"
+		echo_s "\tHub name" $BOLD
+		echo_s ": $VH_HUB_NAME \n"
+		echo_s "\tHub address" $BOLD
+		echo_s ": dchub://$VH_HUB_HOST:$VH_HUB_PORT \n"
+		echo_s "\tPassword" $BOLD
+		echo_s ": $MYSQL_PASSWORD \n"
+		echo_s "\tHostname" $BOLD
+		echo_s ": $MYSQL_HOST \n"
+		yes_or_no "Do you want to continue with this information?" && SETUP_INFO_OK=true || echo -e "Let's try again with configuration\n\n"
+	done
+
+	# Save info to DB
+	echo "-- Creating settings; this could take some times..."
+	_mysql_update "hub_name" $VH_HUB_NAME
+	_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
+	_mysql_update "listen_port" $VH_HUB_PORT
+	if ! _register $VH_MASTER_NAME "10" $VH_MASTER_PASSWORD "plain" ; then
+		echo_s "-- A error occured with registering user '$VH_MASTER_NAME'. Please do it manually\n" $RED_BOLD
+	fi
+	if ! _mysql_import $DATADIR/sql/default_reglist.sql > /dev/null 2>&1 ; then
+		echo_s "-- A error occured with file importing '$DATADIR/sql/default_reglist.sql'\n" $RED_BOLD
+		exit 1;
+	fi
+
+	echo "-- The hub is configured successfully. Now you can start the hub using vh --run command."
+
+	exit 0;
+}
+
+# Check selected option
+case "_$1" in
+	"_-i"|"_--install")	install;;
+	"_-r"|"_--run")		shift; run_hub $@;;
+	"_-s"|"_--stop")	shift; kill_hub $@;;
+	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;
+	"_-t"|"_--status")	shift; hub_status $1;;
+	"_-g"|"_--geoip")	shift; update_geoip $1;;
+	"_-a"|"_--autoload")shift; autoload $@;;
+	"_-u"|"_--adduser") shift; add_user $@;;
+	#"_-m"|"_--regimporter")	shift; reg_importer $@;;
+	"_-b"|"_--backup")	shift; backup $1 $2;;
+	"_-w"|"_--restore")	shift; restore $1 $2;;
+	"_-c"|"_--clean")	shift; clean $1;;
+	"_"|"_-h"|"_--help") help_me;;
+	"_-v"|"_--version")	version;;
+	*)
+		echo_s "Unknown option $1, try $SCRIPT --help\n" $RED
+		exit;;
+esac;

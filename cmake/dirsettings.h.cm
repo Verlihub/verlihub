@@ -1,0 +1,4 @@
+#define DATADIR "${CMAKE_INSTALL_PREFIX}/share/verlihub"
+#define LOCALEDIR "${CMAKE_INSTALL_PREFIX}/share/locale"
+#define SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc"
+#define PREFIXDIR "${CMAKE_INSTALL_PREFIX}"

@@ -1,0 +1,337 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+# Declare gloabl variables
+MYSQL=mysql
+PREFIX=@prefix@
+BINDIR=@bindir@
+DATADIR=@datadir@
+LIBDIR=@libdir@
+DAEMON_NAME="vh_daemon"
+TIMESTAMP=`date +%s`
+VER="1.9"
+
+# Check if user class is a valid number
+function check_class() #class
+{
+	if [ $1 == "-1" ] || [ $1 == "0" ] || [ $1 == "1" ] || [ $1 == "2" ] || [ $1 == "3" ] || [ $1 == "4" ] || [ $1 == "5" ] || [ $1 == "10" ]; then
+		return 1;
+	else
+		return 0;
+	fi
+}
+
+# Register a new user in the database
+# input_password_crypt => The ecryption of the given password. encrypt, plain or md5.
+# reg_date => unix timestamp
+# login_ip => string
+function _register() # nickname, class, password, input_password_crypt, reg_date, reg_op, login_last, login_ip
+{
+	SQL_FIELDS="nick,class"
+	SQL_VALUES="'$1',$2"
+
+	if [ "_$3" != "_" ]; then
+		SQL_FIELDS="$SQL_FIELDS,login_pwd,pwd_change,pwd_crypt"
+		if [ "$4" != "encrypt" ] || [ "$4" != "md5" ]; then
+			local ENCRYPTION=$(_mysql_value "default_password_encryption")
+			local PASSWORD=""
+			case "$ENCRYPTION" in
+				0) PASSWORD="'$3'" && ENCRYPTION=0;;
+				1) PASSWORD="ENCRYPT('$3')" && ENCRYPTION=1;;
+				2) PASSWORD="MD5('$3')" && ENCRYPTION=2;;
+				*) PASSWORD="ENCRYPT('$3')" && ENCRYPTION=1;;
+			esac;
+			SQL_VALUES="$SQL_VALUES,$PASSWORD,'0','$ENCRYPTION'"
+		else
+			case "$4" in
+				"encrypt") PWD_CRYPT="1";;
+				"md5") PWD_CRYPT="2";;
+				*) PWD_CRYPT="1";;
+			esac;
+			SQL_VALUES="$SQL_VALUES,'$3','0','$PWD_CRYPT'"
+		fi;
+	fi;
+
+	# Registration date
+	if [ "_$5" != "_" ]; then	
+		SQL_FIELDS="$SQL_FIELDS,reg_date"
+		SQL_VALUES="$SQL_VALUES,'$5'"
+	fi;
+	# OP creator
+	if [ "_$6" != "_" ]; then	
+		SQL_FIELDS="$SQL_FIELDS,reg_op"
+		SQL_VALUES="$SQL_VALUES,'$6'"
+	fi;
+	# Last login
+	SQL_FIELDS="$SQL_FIELDS,login_last"
+	if [ "_$7" != "_" ]; then	
+		SQL_VALUES="$SQL_VALUES,'$7'"
+	else
+		SQL_VALUES="$SQL_VALUES,unix_timestamp(now())"
+	fi;
+	# Last IP
+	if [ "_$8" != "_" ]; then	
+		SQL_FIELDS="$SQL_FIELDS,login_ip"
+		SQL_VALUES="$SQL_VALUES,'$8'"
+	fi;
+
+	MYSQL_QUERY="INSERT INTO reglist ($SQL_FIELDS) VALUES ($SQL_VALUES)";
+	if ! _mysql_query "$MYSQL_QUERY" &>/dev/null ; then
+		return 1;
+	else
+		return 0;
+	fi
+}
+
+# Return config directory from default paths
+function get_path_from_defaults()
+{
+	CONFIG_DIR="/etc/verlihub"
+	[ -d $PREFIX/etc/verlihub ] && CONFIG_DIR="$PREFIX/etc/verlihub"
+	[ -d ./.verlihub ] && CONFIG_DIR="./.verlihub"
+	[ -d ~/.verlihub ] && CONFIG_DIR="${HOME}/.verlihub"
+}
+
+# Check if path is correct or not and set it as config directory; 
+function set_path() #path_to_be_checked, #print_searching
+{
+	if [ "_$1" != "_" ]; then
+		CONFIG_DIR=$1
+	else
+		if ($2); then
+			echo "-- Searching config directory in default path"
+		fi
+		get_path_from_defaults
+	fi
+
+	if [ -d "$CONFIG_DIR" ] && [ -f "$CONFIG_DIR/dbconfig" ]; then
+		export VERLIHUB_CFG=$CONFIG_DIR
+		return 0;		
+	fi
+	echo_s "-- Directory '$CONFIG_DIR' is not a valid config folder\n" $RED
+	return 1;
+}
+
+# Get variable
+function get_var_from_conf() # var_name, default_value
+{
+	RETURN=$(grep -E "$1 ?=" ${VERLIHUB_CFG}/dbconfig 2> /dev/null | sed -e 's/.*= *//')
+	if [ "_$RETURN" == "_" ]; then
+		echo $2
+	else
+		echo $RETURN
+	fi
+	return 0;
+}
+
+# Return PID
+function _get_pid() # path_to_dbconfig
+{
+	PID_FILE="$1/pid"
+	
+	if [ -e $PID_FILE ]; then
+		PID_RESULT=$(cat $PID_FILE)
+		return 0;
+	fi
+	return 1;
+}
+
+# Check if hub is running
+function _is_hub_running() # path_to_dbconfig
+{
+	if _get_pid $1 ; then
+		ps $PID_RESULT | grep "$DAEMON_NAME" > /dev/null && return 0;
+	fi
+	return 1;
+}
+
+# Get plugin name
+function _get_plugin_name() #path_to_plugin
+{
+		local PLUGIN_PATH="$PREFIX/lib/"
+		echo ${1#$PLUGIN_PATH}
+}
+
+# Return db_host
+function get_db_host() { echo $(get_var_from_conf "db_host" "localhost"); }
+
+# Return db_data
+function get_db_name() { echo $(get_var_from_conf "db_data" "verlihub"); }
+
+# Return db_user
+function get_db_user() { echo $(get_var_from_conf "db_user" "verlihub"); }
+
+# Return db_pass
+function get_db_pass() { echo $(get_var_from_conf "db_pass" "$TIMESTAMP"); }
+
+# Connect to MySQL server
+function mysql_connect() { 
+	@BASH_PATH@ -c "mysql -h $(get_db_host) -D $(get_db_name) -u $(get_db_user) -p$(get_db_pass) $1" && return 0 || return 1;
+}
+
+# Run given query
+function _mysql_query() { mysql_connect "--execute=\"$1\""  && return 0 || return 1; }
+
+# Update var in setuplist
+function _mysql_update() # variable, value
+{
+	_mysql_query "UPDATE SetupList SET val='$2' WHERE var='$1'";
+}
+
+# Get val from SetupList
+function _mysql_value() #val
+{
+	VAL=$(_mysql_query "SELECT val FROM SetupList WHERE var = '$1'")
+	VAL=$(echo $VAL | cut -d' ' -f2) # Get second value of return string from MySQL
+	if [ "$VAL" == "NULL" ] || [ "_$VAL" == "_" ]; then
+		echo "not_set"
+	else
+		echo $VAL
+	fi
+}
+
+# Import SQL file
+function _mysql_import() #path_to_file
+{
+	mysql_connect " < \"$1\""
+}
+
+# Check if given table exists in the database
+function _is_table_exists() # table
+{ 
+	_mysql_query "desc $1" &> /dev/null || return 1; return 0;
+}
+
+function _does_mysql_account_exists() # host, user, pass
+{
+	if [ "_$1" == "_" -o "_$2" == "_" -o "_$3" == "_" ]; then
+		exit 1;
+	fi
+	$MYSQL -h "$1" -u "$2" -p"$3" -e "show databases" &>/dev/null  && return 0 || return 1
+}
+
+function _does_mysql_db_exists() # host, user, pass, db
+{
+	if [ "_$1" == "_" -o "_$2" == "_" -o "_$3" == "_" ]; then
+		exit 1;
+	fi
+	$MYSQL -h "$1" -u "$2" -p"$3" -e "use $4" &>/dev/null  && return 0 || return 1
+}
+
+function _mysql_get_socket()
+{
+	MYSQL_CONF="/etc/my.cnf /etc/mysql/my.cnf ~/.my.cnf /usr/local/etc/my.cnf"
+	for FILE in $MYSQL_CONF
+	do
+		if [ -r $FILE ]; then
+		SOCKET=$(cat $FILE | grep "^socket" | head -n 1 | cut -d"=" -f2| tr -d " ")
+		fi
+	done
+}
+
+function _mysql_export_socket()
+{
+	MYSQL_HOST=$(get_db_host)
+	IS_MYSQL_HOST_LOCAL=false
+	[ $MYSQL_HOST = "localhost" ] && IS_MYSQL_HOST_LOCAL=true
+	[ $MYSQL_HOST = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
+	if $IS_MYSQL_HOST_LOCAL ; then
+		_mysql_get_socket
+		if [ ! -z $SOCKET ]; then
+			export "MYSQL_UNIX_PORT=$SOCKET"
+		fi
+	fi
+}
+
+function _create_mysql_tables() # get_socket
+{
+	_is_table_exists "reglist" "SetupList" && return 0
+	if $1 ; then
+		_mysql_get_socket
+		if [ ! -z $SOCKET ]; then
+			export "MYSQL_UNIX_PORT=$SOCKET"
+		fi
+	fi
+	
+	$BINDIR/verlihub 2&>$VERLIHUB_CFG/install_log &
+	PID=$!
+	sleep 30
+	kill -9 $PID &>/dev/null
+	_is_table_exists "reglist" "SetupList" || return 1
+	return 0
+}
+
+# Colors
+BOLD='\E[1m'
+BLUE='\E[34m'
+RED='\E[31m'
+GREEN='\E[32m'
+GREEN_BOLD='\E[1;32m'
+RED_BOLD='\E[1;31m'
+BLUE_BOLD='\E[1;34m'
+function echo_s() # (message,color)
+{
+	local DEFAULT_MSG="No message passed."
+	MESSAGE=${1:-$DEFAULT_MSG}
+	COLOR=$2
+	echo -en "${COLOR}${MESSAGE}\033[0m"
+	# FreeBSD does not support tput sgr0
+	if [ $(uname) != "FreeBSD" ]; then
+		# Reset text attributes to normal
+		tput sgr0
+	fi
+	return 0
+} 
+
+# Make question to user
+function ask() # question, default value
+{
+	if [ "_$1" == "_" ]; then
+		exit;
+	fi
+	if [ "_$2" != "_" ]; then
+		read -p "$1 ($2): " VALUE
+		if [ "_$VALUE" == "_" ]; then
+			VALUE=$2
+		fi
+	else
+		IS_ANSWER_NOT_EMPTY=false
+		until $IS_ANSWER_NOT_EMPTY;
+		do
+			read -p "$1: " VALUE
+			if [ "_$VALUE" != "_" ]; then
+				IS_ANSWER_NOT_EMPTY=true
+			fi
+		done
+	fi
+	echo "$VALUE"
+}
+
+# Ask user to choose
+function yes_or_no # (question)
+{
+	read -p "$1"" (y/N) " ANS
+	if [ "$ANS" == "Y" ] || [ "$ANS" == "y" ]; then
+		return 0
+	else
+		return 1
+	fi
+}

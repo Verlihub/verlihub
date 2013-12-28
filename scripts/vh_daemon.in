@@ -1,0 +1,60 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+VERLIHUB=$1
+shift
+PID=
+
+trap "stop_hub" SIGQUIT SIGTERM SIGKILL SIGINT
+
+function start_hub()
+{
+	$VERLIHUB $* &
+	PID=$!
+	wait $PID
+	return $?
+}
+
+function stop_hub()
+{
+	if [ "_$PID" != "_" ]; then
+		echo Killing hub..
+		kill -3 $PID
+		echo
+	fi
+}
+
+CODE=1
+until [[ $CODE != 1 ]]; do
+	start_hub $*
+	CODE=$?
+	if [[ $CODE == 1 ]]; then
+		echo -n "-- Restarting in a while..."
+		sleep 5;
+		echo " Done."
+	else
+		echo -n "-- Stopping..."
+		sleep 1
+		echo " Done."
+	fi;
+done;
+
+exit $CODE

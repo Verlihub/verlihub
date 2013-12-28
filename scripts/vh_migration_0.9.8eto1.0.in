@@ -1,0 +1,165 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+# Include library
+source $(dirname $0)/vh_lib
+
+function _delete_config_var() #var
+{
+	if ! _mysql_query "DELETE FROM SetupList WHERE var='$1' and file='config'" ; then
+		echo_s "-- Error deleting '$1' variable\n" $RED
+	fi
+}
+
+function _delete_lang_var() #var
+{
+	if ! _mysql_query "DELETE FROM SetupList WHERE var='$1' and file!='config'" ; then
+		echo_s "-- Error deleting '$1' variable\n" $RED
+	fi
+}
+
+function help_me()
+{
+	echo_s "$SCRIPT\n" $BOLD
+	echo "This is a migration script for Verlihub 1.0, usage:"
+	echo_s "   --clean" $RED && echo -e "\t\t\t\tClean directory from old binary/script files"
+	echo_s "   --hub" $RED && echo -e "\t<path_to_dbconfig> \tUpdate hub database with the given dbconfig path"
+	echo_s "   --help" $RED && echo -e "\t\t\t\tShow this help"
+	echo ""
+}
+
+function migrate_hub() #path_to_dbconfig
+{
+
+      
+
+
+	# Check config directory
+	if [ "_$1" != "_" ]; then
+		if ! set_path $1 ; then
+			exit 1;
+		fi
+	else
+		echo_s "-- Please specify a config folder\n" $RED
+		exit 1;
+	fi
+
+	echo_s "-- Welcome to VerliHub migration script to version 1.0 for your hub\n" $RED_BOLD
+	echo "-- You verlihub config folder is '$CONFIG_DIR'"
+
+	if $(yes_or_no "Do you want to continue with hub migration?") ; then
+		echo "-- Deleting ban message variables"
+		BAN_MESSAGES=(ban_reason ban_remaining ban_expired ban_for ban_permanently ban_type ban_removed ban_by ban_types_nickip ban_types_ip ban_types_nick ban_types_iprange ban_types_host1 ban_types_host2 ban_types_host3 ban_types_share ban_types_email ban_types_prefix ban_types_rhost1)
+		for VAR in ${BAN_MESSAGES[@]}; do
+			_delete_lang_var $VAR
+		done
+		sleep 2
+
+		echo "-- Deleting timeout message variables"
+		TIMEOUT_MESSAGES=(timeout_key timeout_nick timeout_login timeout_myinfo timeout_flush timeout_setpass)
+		for VAR in ${TIMEOUT_MESSAGES[@]}; do
+			_delete_lang_var $VAR
+		done
+		sleep 2
+	
+		echo "-- Deleting tag_min_version and tag_max_version variables"
+		CLIENTS=(plusplus dcgui odc dc dcpro strongdc idc zdc apexdc zion)
+		for VAR in ${CLIENTS[@]}; do
+			_delete_config_var "tag_min_version_$VAR"
+			_delete_config_var "tag_max_version_$VAR"
+		done
+		sleep 2
+
+		echo "-- Deleting other variables"
+		OTHER_MESSAGES=(save_lang chat_msg_long chat_msg_lines pwd_cannot pwd_can pwd_min pwd_success pwd_set_error pwd_setup ip nick user host ip_range because op type not_in_userlist error success wrong_dc_tag tag_max_slots tag_min_slots tag_min_limit tag_min_ls_ratio tag_no_sock msg_downgrade msg_upgrade msg_topic_set msg_topic_reset autoreg_nick_prefix autoreg_already_reg autoreg_success autoreg_error timeout_any operation_timeout msg_chat_onoff msg_change_pwd msg_banned msg_hub_full msg_nick_prefix msg_replace_ban login_share_min login_share_max autoreg_min_share search_share_min ctm_share_min max_attempts_threshold)
+		for VAR in ${OTHER_MESSAGES[@]}; do
+			_delete_lang_var $VAR
+		done
+		sleep 2
+
+		echo "-- Copying new help file for commands"
+		if ! cp $DATADIR/config/help_* $CONFIG_DIR 	; then
+			echo_s "-- Error copying help_* files from $DATADIR\n" $RED
+		fi
+
+		QUERY='TRUNCATE TABLE pi_plug';
+		echo "-- Truncating pi_plug table; it will updated with verlihub"
+		if ! _mysql_query "$QUERY" ; then
+			echo_s "-- Error truncating 'pi_plugin' table; make it manually using '$QUERY'\n" $RED
+		fi
+	
+        QUERY="UPDATE SetupList SET var =  'always_ask_password' WHERE  file = 'config' AND var = 'allways_ask_password'";
+        echo "-- Renaming allways_ask_password var to always_ask_password"
+        if ! _mysql_query $QUERY; then
+            echo_s "-- Error renaming allways_ask_password variable; make it manually using '$QUERY'\n" $RED
+        fi
+
+		echo "-- Renaming variable 'lang_name' to 'locale' in dbconfig file"
+		sed -i "s/lang_name/locale/g" "$CONFIG_DIR/dbconfig" > /dev/null 2>&1
+
+		echo "-- Done. Restart VerliHub now."
+	else
+		echo "-- Skipped migration"
+	fi
+	exit 0;
+}
+
+function migrate_clean()
+{
+	if [ $UID -ne 0 ]; then
+		echo_s "-- You can run this migration with root account only\n" $RED
+		exit 0;
+	fi
+	echo_s "-- Welcome to VerliHub migration script to version 1.0 to clean up old files\n" $RED_BOLD
+	if $(yes_or_no "Do you want to continue with hub migration?") ; then
+		OLD_SCRIPTS=(vh_getcfg vh_getdb vh_manage vh_manage_cli vh_install vh_regnick vh_restart vh_runhub vh_setup vh_trigger verlihub_config)
+
+		for VAR in ${OLD_SCRIPTS[@]}; do
+			FILE="$BINDIR/$VAR"
+			echo -n "-- Searching $FILE"
+			sleep 1
+			if [ -f $FILE ]; then
+				if rm -f $FILE > /dev/null 2>&1 ; then
+					echo ". Deleted"
+				else
+					echo ". Error, remove '$FILE' manually"
+				fi
+			else
+				echo ". Not found"
+			fi
+		done
+		echo "-- Done."
+	else
+		echo "-- Skipped migration"
+	fi
+	exit 0;
+}
+
+case "_$1" in
+	"_") 		help_me ;;
+	"_--help") 	help_me;;
+	"_--clean") migrate_clean;;
+	"_--hub")	shift && migrate_hub $@;;
+	*)
+		echo_s "Unknown option $1, try $SCRIPT --help\n" $RED
+		exit;;
+esac;
+exit 0;

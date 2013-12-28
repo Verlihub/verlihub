@@ -1,0 +1,10 @@
+
+MASTER (class 10)
+
+!core_dump              Crash the hub so that stack trace can be examineted by debugger program like GDB
+
+!gdb_hash               Quit the hub and dump the content of the user list
+
+!restart                Restart the hub
+
+!quit                   Close the hub

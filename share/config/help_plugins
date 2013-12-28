@@ -1,0 +1,37 @@
+
+PLUGINS
+
+!addconntype <connection_type> <params>	Add the <connection_type> with their restrictions
+
+!addtag <name> <params>			Adds a rule for the client
+
+!addtrigger <trigger> <params>		Adds a new trigger
+
+!delconntype <connection_type>		Remove specified <connection_type>
+
+!deltag <name>				Remove a client
+
+!deltrigger <trigger>			Remove a trigger
+
+!htag					Shows help
+
+!htrigger				Show an help and available trigger flags
+
+!lstconntype				Shows the current connection type and their restrictions
+
+!lsttag					Lists available clients
+
+!lsttrigger				Lists available triggers
+
+!modconntype <conn_type> <params>	Update the <connection_type> with their restrictions
+
+!modtrigger <trigger> <params>		Change a trigger
+
+
+
+!lstplug	List the registered plugins
+!addplug <nick> -p <path> [-d desc] -a <autoload (0/1)>	Register new plugin. Nick is a short plugin nickname, path is a relative or absolute path to the plugin's binary, desc is an optional description and autoload set to 1 means that plugin will start with hubsoft
+!delplug <nick>	Unregisters the plugin
+!onplug <nick>	Turns the plugin on
+!offplug <nick>	Turns the plugin off
+!replug <nick>	Reloads the plugin, turning it off then on

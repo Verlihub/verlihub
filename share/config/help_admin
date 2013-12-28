@@ -1,0 +1,56 @@
+
+ADMIN (class 5)
+
+!addconntype <connection_type> <params>  Add the <connection_type> with their restrictions
+
+!addplug <params>               Register new plugin
+
+!addtag <name> <params>         Adds a rule for the client
+
+!addtrigger <trigger> <params>  Adds a new trigger
+
+!cleanbanlist                   Truncate ban table
+
+!cleankicklist                  Truncate kick table
+
+!cleantemprights                Truncate temp rights table
+
+!cleanunbanlist                 Truncate unban table
+
+!delconntype <connection_type>  Remove specified <connection_type>
+
+!delplug <nick>                 Unregisters the plugin
+
+!deltag <name>                  Remove a client
+
+!deltrigger <trigger>           Remove a trigger
+
+!htag                           Shows help
+
+!htrigger                       Show an help and available trigger flags
+
+!lstconntype                    Shows the current connection type and their restrictions
+
+!lstplug                        List the registered plugins
+
+!lsttag                         Lists available clients
+  
+!lsttrigger                     Lists available triggers
+
+!modconntype <conn_type> <params>   Update the <connection_type> with their restrictions
+
+!modtrigger <trigger> <params>      Change a trigger
+
+!offplug <nick>                 Turns the plugin off
+
+!onplug <nick>                  Turns the plugin on
+
+!regset <nickname> hide_keys <0/1>  Hide key operator for the given nickname. 1 to hide, 0 to show
+
+!regset <nickname> hide_share <0/1> Hide share of the given nickname. 1 to hide, 0 to show
+
+!regset <nickname> note_op <message>  Add a note for the registered user in the database
+
+!replug <nick>                  Reloads the plugin, turning it off then on
+
+!proto<action>_<target> <data>	Send protocol command to users

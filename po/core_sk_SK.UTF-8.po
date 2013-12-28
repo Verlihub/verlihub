@@ -1,0 +1,1674 @@
+# 
+# Translators:
+# uNix <unix.sk@azet.sk>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: Verlihub\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-07-10 08:46+0100\n"
+"PO-Revision-Date: 2011-10-19 03:29+0000\n"
+"Last-Translator: netcelli <netcelli@gmail.com>\n"
+"Language-Team: VerliHub team\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sk_SK\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Country: UNITED KINGDOM\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SearchPath-0: /home/stefano/Git/verlihub/src\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: /home/stefano/Git/verlihub/src/ccustomredirects.cpp:218
+msgid "Address"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ccustomredirects.cpp:219
+msgid "Type"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ccustomredirects.cpp:220
+#: /home/stefano/Git/verlihub/src/cdcclients.cpp:338
+msgid "Status"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcclients.cpp:334
+msgid "Name"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcclients.cpp:335
+msgid "Client ID"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcclients.cpp:336
+msgid "Version"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcclients.cpp:337
+msgid "Banned?"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:47
+msgid "All version"
+msgstr "Všetky verzie"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:49
+#, c-format
+msgid "Min version: %.2f"
+msgstr "Min verzia: %.2f"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:51
+#, c-format
+msgid "Max version: %.2f"
+msgstr "Max verzia: %.2f"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:54
+msgid "Yes"
+msgstr "Áno"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:54
+msgid "No"
+msgstr "Nie"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:55
+msgid "Enable"
+msgstr "Povoliť"
+
+#: /home/stefano/Git/verlihub/src/cdcclient.cpp:55
+msgid "Disable"
+msgstr "Zakázať"
+
+#: /home/stefano/Git/verlihub/src/cchatconsole.cpp:118
+#, c-format
+msgid "User '%s' is not in this room."
+msgstr "Užívateľ '%s' nie je v tejto miestnosti."
+
+#: /home/stefano/Git/verlihub/src/cchatconsole.cpp:122
+#, c-format
+msgid "You cannot send %s out of the room because he has higher privilegies."
+msgstr ""
+"Nemôžete poslať užívateľa %s von z miestnosti, pretože má vyššie privilégia."
+
+#: /home/stefano/Git/verlihub/src/cchatconsole.cpp:145
+#, c-format
+msgid ""
+"Members: \n"
+"%s"
+msgstr ""
+"Členovia:\n"
+"%s"
+
+#: /home/stefano/Git/verlihub/src/cchatconsole.cpp:158
+#, c-format
+msgid "User '%s' is not online, so you cannot invite him."
+msgstr "Užívateľ '%s' nie je online, takže nie je možné ho pozvať."
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "Key"
+msgstr "Kľúč"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "ValidateNick"
+msgstr "Overiť prezývku"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "Login"
+msgstr "Prihlásiť sa"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "MyINFO"
+msgstr "MyINFO"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "Flush"
+msgstr "Vyprázdniť"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:171
+msgid "Set Password"
+msgstr "Nastaviť heslo"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:183
+msgid "Operation timeout"
+msgstr "Prevádzka timeout"
+
+#: /home/stefano/Git/verlihub/src/cconndc.cpp:191
+msgid "General timeout"
+msgstr "Všeobecné timeout"
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:273
+msgid ""
+"The definition is empty or not specified. Please define it with -d option."
+msgstr ""
+"Táto definícia je prázdna alebo nie je špecifikovaná. Prosím, definvujte to "
+"s voľbou -d."
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:278
+msgid "It's not allowed to define dbconfig file as trigger."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:281
+#, c-format
+msgid "User '%s' tried to define dbconfig as trigger"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:292
+#, c-format
+msgid ""
+"The file %s for the trigger %s must be locate in VerliHub config folder (use"
+" %%[CFG] variable; for ex %%[CFG]/%s)"
+msgstr ""
+"Súbor %s pre trigger %s, musi byť umiestnení v VerliHub konfiguračnej zložke"
+" (použite %%[CFG] variabilné, napr %%[CFG]/%s)"
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:386
+msgid "Definition"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:387
+msgid "Flag"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:388
+msgid "Send as"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:389
+msgid "Min class"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctriggers.cpp:390
+msgid "Max class"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:373
+msgid "<< To turn your chat on use command +chat; turn it off with +nochat >>"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:539
+msgid "Recovery mode"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:541
+msgid "Near capacity"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:543
+msgid "Progressive mode"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:545
+msgid "Normal mode"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:547
+msgid "Not available"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:554
+msgid "RunTime"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:555
+msgid "User Count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:556
+msgid "System Status"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:560
+#, c-format
+msgid ""
+"This hub is running version %s%s %s of %s (RunTime: %s / User count: %d)"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:569
+msgid ""
+"The hub is currently unable to service your request. Please try again in a "
+"few minutes."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:618
+msgid "Another user is already logged in from this IP address. Disconnecting."
+msgstr "Iný používateľ je už prihlásený z tejto IP adresy. Odpojenie."
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:636
+msgid "You are already in the hub."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:655
+msgid ""
+"<< Please change your password NOW using command +passwd <new_passwd>! See "
+"+help >>"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:669
+msgid "Your info"
+msgstr "Vaše info"
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:918
+msgid "Do not reconnect too fast."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:922
+msgid "Bad nickname"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:930
+msgid "unallowed characters in your nick."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:932
+#, c-format
+msgid "use these: %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:935
+msgid "your nick is too short"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:938
+msgid "your nick is too long"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:941
+msgid "your nick is already in use"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:944
+#, c-format
+msgid "Invalid nick prefix. Use: %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:947
+msgid "operator not registered"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:950
+#, c-format
+msgid "Wait %s before reconnecting!!"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:953
+msgid "unknown error"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:978
+msgid "<<You are banned>>"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:992
+#, c-format
+msgid "Please add %s in front of your nick"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1127
+msgid ""
+"Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
+"Default is 'd'."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1136
+msgid "Please provide a positive number."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1157
+msgid "Hublist registration results:"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1159
+#, c-format
+msgid "Sending to %s:%d..."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1163
+msgid "connection failed"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1202
+msgid "error sending info"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1206
+msgid ".. OK"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1209
+msgid "Done"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1222
+msgid "Registering the hub in hublists. This may take a while, please wait..."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1289
+msgid "Nickname"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1292
+msgid "IP"
+msgstr "IP adresa"
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1294
+msgid "Host"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1358
+#, c-format
+msgid "You have been kicked because %s"
+msgstr "Bol ste vyhodený, pretože %s"
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1368
+#, c-format
+msgid "Kicked user %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1370
+#, c-format
+msgid "Dropped user %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1397
+msgid "dropped"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1401
+msgid "User cannot be kicked."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1412
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1416
+msgid "and banned"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cserverdc.cpp:1428
+#, c-format
+msgid ""
+"Error kicking user %s because he is protected against all classes below %d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:95
+msgid "Last login"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:96
+msgid "Registered since"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:98
+#, c-format
+msgid "by %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:100
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:106
+msgid "No information"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:102
+msgid "Last error"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:108
+msgid "Login (errors/total)"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:109
+msgid "Password set"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:110
+msgid "Protected"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:111
+msgid "Hidden kicks"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:112
+msgid "Hidden key"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:113
+msgid "Hidden share"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/creguserinfo.cpp:119
+msgid "Alternate IP"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cconntypes.cpp:192
+msgid "Min slot"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cconntypes.cpp:193
+msgid "Max slot"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cconntypes.cpp:194
+msgid "Min upload"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cconntypes.cpp:195
+msgid "Min upload/slot"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cconntypes.cpp:196
+msgid "Description"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:210
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:438
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:473
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:504
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:563
+msgid "This functionality is currently disabled."
+msgstr "Táto funkcia je momentálne vypnutá."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:259
+#, c-format
+msgid "IP of user %s: %s"
+msgstr "IP užívateľa %s: %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:261
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:293
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:319
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:843
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:868
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:894
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:929
+#, c-format
+msgid "User %s not found."
+msgstr "Užívateľ %s nebol nájdený."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:272
+msgid "Full list of commands:"
+msgstr "Plný zoznam príkazov:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:291
+#, c-format
+msgid "Host of user %s: %s"
+msgstr "Hostiteľ užívateľa %s: %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:315
+msgid "User"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:317
+msgid "Country Code"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:331
+msgid "Stopping Hub..."
+msgstr "Zastavenie Hubu ..."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:346
+msgid "No rights"
+msgstr "Žiadne práva"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:355
+msgid "Variable"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:356
+msgid "Value"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:392
+msgid "Usage example: !ccbc :US:GB: <message>."
+msgstr "Príklad použitia: !ccbc :US:GB: <message> ."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:392
+msgid "Please type !help for more info"
+msgstr "Prosím napíšte !help pre viac informácií"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:404
+#, c-format
+msgid "Message delivered to %d users in zone %s in %s"
+msgstr "Doručenie správy %d užívateľom v pásme %s v %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:424
+#, c-format
+msgid "Your IP is %s"
+msgstr "Vaša IP adresa je %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:483
+msgid "Authors"
+msgstr "Autori"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:485
+msgid "Translators"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:486
+msgid "Contributors"
+msgstr "Prispievatelia"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:487
+msgid "Website/Forums design"
+msgstr "Webové stránky / Fórum design"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:488
+msgid "Credits"
+msgstr "Credits"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:489
+msgid "Website"
+msgstr "Internetové stránky"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:515
+msgid "Unregistered"
+msgstr "Neregistrovaný [NOREG]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:518
+msgid "Registered"
+msgstr "Registrovaný [REG]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:521
+msgid "VIP"
+msgstr "VIP [VIP]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:524
+msgid "Operator"
+msgstr "Operátor [OP]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:527
+msgid "Super OP"
+msgstr "Super Operátor [SOP]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:530
+msgid "Admin"
+msgstr "Admin [A]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:533
+msgid "Master"
+msgstr "Master [M]"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:536
+msgid "Active"
+msgstr "Aktívni"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:538
+msgid "Passive"
+msgstr "Pasívni"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:543
+msgid "Hub owner"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:545
+msgid "Total users"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:546
+msgid "Total bots"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:547
+msgid "Total share"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:548
+msgid "Hub health"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:549
+msgid "Your status"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:550
+msgid "Your can search every"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:550
+#, c-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:551
+msgid "Connection type"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:552
+msgid "You are sharing"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:567
+msgid "Registration failed; please contact an operator for more help."
+msgstr "Registrácia zlyhala, prosím, kontaktujte operátora pre ďalšiu pomoc."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:583
+#, c-format
+msgid "Your nick must start with %s"
+msgstr "Vaša prezývka sa musí začínať s %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:596
+#, c-format
+msgid "You need to share at least %s"
+msgstr "Musíte zdieľať aspoň %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:606
+msgid "You are already registered"
+msgstr "Ste už zaregistrovaný"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:616
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:738
+#, c-format
+msgid "Minimum password length is %d characters, please retry."
+msgstr "Minimálna dĺžka hesla je %d znakov, skúste to prosím znova."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:625
+#, c-format
+msgid "A new user has been registered with class %d"
+msgstr "Nový používateľ je registrovaný s class %d"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:629
+#, c-format
+msgid ""
+"You are now registered with nick '%s'! Please reconnect and login with your "
+"password. Don't forget your password! It is '%s'."
+msgstr ""
+"Ste teraz registrovaný s prezývkov '%s'! Prosím, prihláste sa znova a "
+"použite vaše heslo. Nezabudnite svoje heslo! Ktoré je '%s'."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:631
+msgid "An error occured while registering."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:650
+msgid "Registration request"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:651
+msgid "Password"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:654
+msgid "Thank you, your request has been sent to operators."
+msgstr "Ďakujeme, Vaša požiadavka bol odoslana operátorom."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:666
+msgid "You do not have permissions to change the topic."
+msgstr "Nemáte oprávnenie k zmene topicu."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:672
+#, c-format
+msgid ""
+"Topic must be max 255 characters long. Your topic was %d characters long."
+msgstr ""
+"Topic môže mať max 255 znakov. Vaš topic obsahuje %d znakov, je príliš dlhy."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:688
+#, c-format
+msgid "%s has set the topic to : %s"
+msgstr "%s nastavil topic : %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:690
+#, c-format
+msgid "%s resetted the topic"
+msgstr "%s resetovaný topic"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:730
+msgid "You are not allowed to change your password now. Ask an OP."
+msgstr "Nie je vám dovolené zmeniť svoje heslo. Opýtajte sa OP."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:744
+msgid "Error updating password."
+msgstr "Chyba pri aktualizácii hesla."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:750
+msgid "Password updated successfully."
+msgstr "Heslo úspešne aktualizované."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:763
+msgid ""
+"Please use: !hideme <class> where <class> is the maximum class of users that"
+" may not see your actions."
+msgstr ""
+"Prosím, použite: !hideme <class> kde <class> je maximálna trieda užívateľov,"
+" ktoré nemusia vidieť vaše akcie."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:769
+#, c-format
+msgid "Your command actions are now hidden from users with class below %d."
+msgstr ""
+"Váš príkaz akcie je teraz skrytý od užívateľov s triedou nižšou než %d."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:783
+msgid ""
+"Type !help for more information (usage !userlimit <max_users> "
+"[<minutes>=60])"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:814
+msgid "Use !class <nick> [<class>=3]."
+msgstr "Použi !class <nick> [<class>=3]."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:814
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:912
+msgid "Please type !help for more info."
+msgstr "Prosím, napíšte! Pomoc pre viac informácií."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:815
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:913
+#, c-format
+msgid "Max class is %d"
+msgstr "Max trieda je %d"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:826
+#, c-format
+msgid "Temporarily changed class to %d for user %s"
+msgstr "Dočasne zmenená trieda %d pre užívateľa %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:840
+#, c-format
+msgid "You have no rights to change class of %s."
+msgstr "Nemáte žiadne právo na zmenu triedy %s."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:862
+#, c-format
+msgid "Kicks of user %s are now hidden."
+msgstr "Kick užívateľov %s sú teraz skryté."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:865
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:891
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:927
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1248
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1642
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1768
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1806
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:2017
+msgid "You have no rights to do this."
+msgstr "Nemáte žiadne právo to urobiť."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:888
+#, c-format
+msgid "Kicks of user %s are now visible."
+msgstr "Kick užívateľov %s sú teraz viditeľné."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:912
+msgid "Use !protect <nickname> <class>."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:924
+#, c-format
+msgid "User %s is temporarily protected from class %d"
+msgstr "Užívateľ %s je dočasne chránený pred triedou %d"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:939
+msgid ""
+"Reloading triggers, custom redirects, configuration and reglist cache..."
+msgstr ""
+"Preloženie spúšťa, vlastné presmerovanie, konfigurácia a reglist cache ..."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:952
+msgid "Report command is currently disabled."
+msgstr "Správa príkaz je v súčasnosti zakázané."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:965
+msgid "Reported user "
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:971
+msgid "Offline"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:972
+msgid "Reason"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:973
+msgid "from"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:976
+msgid "Thank you, your report has been accepted."
+msgstr "Ďakujem vám, Vaša správa bola prijatá."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1079
+msgid "All bans have been deleted."
+msgstr "Všetky zákazy boli odstránené."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1083
+msgid "All unbans have been deleted."
+msgstr "Všetky unbans boli odstránené."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1087
+msgid "All kicks have been deleted."
+msgstr "Všetky kopy boli odstránené."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1091
+msgid "All temporary rights have been deleted."
+msgstr "Všetky dočasné práva boli odstránené."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1094
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1297
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1323
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1386
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1628
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1922
+msgid "This command is not implemented."
+msgstr "Tento príkaz nie je implementovaná."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1094
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1297
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1323
+msgid "Available command are: "
+msgstr "K dispozícii sú príkaz:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1156
+msgid "Please provide a valid ban time."
+msgstr "Uveďte prosím platné zákaz čas."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1172
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1618
+msgid "Please provide a valid reason."
+msgstr "Uveďte, prosím, k tomu pádny dôvod."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1177
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1276
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1823
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1847
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1886
+msgid "Action has been discarded by plugin"
+msgstr "Akcia bola odstraňujú plugin"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1181
+#, c-format
+msgid "User %s unbanned"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1203
+#, c-format
+msgid "%d ban found."
+msgid_plural "%d bans found."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1209
+msgid "No reason specified"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1256
+#, c-format
+msgid "Unknown range format '%s'."
+msgstr "Neznámy rozsah formáte '%s'."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1286
+msgid "Added ban."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1417
+#, c-format
+msgid "Undefined variable %s"
+msgstr "Undefined variable %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1432
+#, c-format
+msgid "Updated %s.%s from '%s' to '%s'"
+msgstr "Aktualizované %s.%s z '%s' na '%s'"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1442
+#, c-format
+msgid ""
+"WARNING: VerliHub allows maximum %d users, but current resource limit is %d."
+" Consider to run ulimit -n <max_users>"
+msgstr ""
+"UPOZORNENIE: VerliHub umožňuje maximálne %d užívateľov, ale súčasný zdroj "
+"limit je %d. Zvážte spustiť ulimit-n <max_users>"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1513
+#, c-format
+msgid " %s saved"
+msgstr "%s uloží"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1515
+#, c-format
+msgid "Error saving %s"
+msgstr "Chyba pri ukladaní %s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1567
+#, c-format
+msgid "Found %d user with IP %s:"
+msgid_plural "Found %d users with IP %s:"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1573
+#, c-format
+msgid "Found %d user with range %s:"
+msgid_plural "Found %d users with range %s:"
+msgstr[0] "Nájdený %d užívateľ z rozsahom %s:"
+msgstr[1] "Nájdených %d užívateľov z rozsahom %s:"
+msgstr[2] "Nájdených %d užívateľov z rozsahom %s:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1577
+msgid "Country code must be 2 characters long (for ex. US)"
+msgstr "Kód krajiny musí byť 2 znakov (na ex. US)"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1584
+#, c-format
+msgid "Found %d user with country code %s:"
+msgid_plural "Found %d users with country code %s:"
+msgstr[0] "Nájdený %d užívateľ s kódom krajiny %s:"
+msgstr[1] "Nájdených %d užívateľov s kódom krajiny %s:"
+msgstr[2] "Nájdených %d užívatelia s kódom krajiny %s:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1592
+msgid "No user found."
+msgstr "Žiadny užívateľ nájdený."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1654
+msgid "Loaded plugins:"
+msgstr "Nabité pluginy:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1658
+msgid "Available callbacks:"
+msgstr "K dispozícii spätné volania:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1708
+msgid "Found nicks:"
+msgstr "Nájdené škrabance:"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1741
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1811
+msgid "Missing parameters."
+msgstr "Chýbajúce parametre."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1756
+msgid ""
+"Invalid classdif_reg value. Must be between 1 and 5. Please correct this "
+"first!"
+msgstr ""
+"Neplatná classdif_reg hodnotu. Musí byť medzi 1 a 5. Opravte prosím tento "
+"prvý!"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1802
+#, c-format
+msgid "No registered user found with nick '%s'"
+msgstr "Žiadny registrovaný užívateľ nenašli nick '%s'"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1804
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1818
+#, c-format
+msgid "User '%s' already exists"
+msgstr "Užívateľ '%s' už existuje"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1831
+msgid ""
+"You have been registered, please set up your password NOW \n"
+"using command +passwd <your_new_passwd>\n"
+"replace <your_new_passwd> with your new password."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1836
+msgid "User has been added; please tell him to change his password"
+msgstr "Užívateľ bol pridaný, prosím, povedzte ho, aby zmenil svoje heslo"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1840
+msgid "Error adding the new user"
+msgstr "Chyba pri pridaní nového užívateľa"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1854
+#, c-format
+msgid "Deleted user '%s' from database"
+msgstr "Vypúšťa užívateľa '%s' z databázy"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1855
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1860
+#, c-format
+msgid "User information: %s"
+msgstr "Informácie pre užívateľov:%s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1859
+#, c-format
+msgid "Error deleting user '%s'"
+msgstr "Chyba pri odstraňovaní používateľa '%s'"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1871
+msgid "Password updated"
+msgstr "Heslo aktualizované"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1874
+msgid "Error updating password"
+msgstr "Chyba pri aktualizácii heslo"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1880
+msgid ""
+"You can change your password now, use command +passwd followed by your new "
+"password"
+msgstr ""
+"Môžete si zmeniť heslo, použite príkaz + passwd nasledovať svoje nové heslo"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1891
+#, c-format
+msgid ""
+"Your class has been changed to %s. Changes will take effect on next login."
+msgstr ""
+"Vaša trieda bola zmenená na%s. Zmeny sa prejavia pri ďalšom prihlásení."
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1897
+msgid "Your registration has been enabled"
+msgstr "Vaša registrácia bola povolená"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1903
+msgid "Your registration has been disabled"
+msgstr "Vaša registrácia bola zakázaná"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1907
+#, c-format
+msgid "You are protected by classes greater than %s"
+msgstr "Ste chránení triedy vyššie ako%s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1913
+#, c-format
+msgid "You kicks are hidden by classes greater than %s"
+msgstr "Ste kopy sú skryté triedy vyššie ako%s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1930
+#, c-format
+msgid "Updated variable '%s' to value %s for user %s"
+msgstr "Aktualizované premenná '%s' na hodnotu%s pre užívateľa%s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:1934
+#, c-format
+msgid "Error setting variable '%s' to value %s for user %s"
+msgstr "Chyba pri nastavovaní premennej '%s' na hodnotu%s pre užívateľa%s"
+
+#: /home/stefano/Git/verlihub/src/cdcconsole.cpp:2028
+#, c-format
+msgid "Message delivered to %d users in %s"
+msgstr "Doručenie správy%d užívateľov v%s"
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:56
+msgid "<<Your client is banned>>"
+msgstr "<Your client is banned>"
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:63
+msgid "Connections through proxy server are not allowed in this hub."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:69
+msgid "Passive connections are restricted. Consider changing to active."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:75
+msgid "Error: your client tag is reporting less then 0 hubs or slots!"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:84
+msgid "Unknown clients are not allowed in this hub"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:90
+#, c-format
+msgid "Too many open hubs, max is %d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:96
+#, c-format
+msgid "Too little open slots for your connection type (%s), min is %d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:102
+#, c-format
+msgid "Too many open slots for your connection type (%s), max is %d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:108
+#, c-format
+msgid "Your hubs/slots ratio %.2f is too high (max is %.2f)."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:111
+#, c-format
+msgid "Open %d slots for %d hubs."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:120
+#, c-format
+msgid ""
+"Too low upload limit for your connection type (%s), minimum upload rate is "
+"%.2f"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:125
+#, c-format
+msgid ""
+"Too low upload limit per slot for your connection type (%s), minimum upload "
+"limit is %.2f per slot"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:139
+msgid "Your client version is too old, please upgrade it."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:141
+#, c-format
+msgid "Allowed minimum version number for %s client is: %.2f"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:143
+#, c-format
+msgid "Allowed minimum version number for your client is: %.2f"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:148
+msgid "Your client version is too recent."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:150
+#, c-format
+msgid "Allowed maximum version number for %s client is %.2f"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdctag.cpp:152
+#, c-format
+msgid "Allowed maximum version number for your client is %.2f"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cvhplugin.cpp:87
+#, c-format
+msgid "Plugin %s %s cannot load extra script."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cvhplugin.cpp:93
+#, c-format
+msgid "Plugin %s %s cannot load script '%s'."
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:50
+msgid "Cannot retrive system information"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:58
+msgid "System uptime"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:59
+msgid "Load averages"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:60
+msgid "Used RAM"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:61
+msgid "Free RAM"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:62
+msgid "Shared RAM"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:63
+msgid "Memory in buffers"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:64
+msgid "Frew swap"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:65
+msgid "Number of processes"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:72
+msgid "No info available"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:86
+msgid "Version date"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:89
+msgid "Uptime"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:99
+msgid "Server frequency"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:100
+msgid "Hub name"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:114
+msgid "Hub category"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:116
+msgid "Current online users"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:117
+msgid "Current share total"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:118
+msgid "User list count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:119
+msgid "Hello user count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:120
+msgid "In Progress users"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:121
+msgid "Active user count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:122
+msgid "Passive user count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:123
+msgid "OP user count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:124
+msgid "Bot user count"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:133
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:138
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:143
+#, c-format
+msgid "Users in zone #%d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:138
+msgid "not set"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cinfoserver.cpp:147
+msgid "All other users"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:81
+msgid "Unknown ban"
+msgstr "Neznámy ban"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:98
+msgid "Left"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:101
+msgid "Remaining"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:103
+msgid "Permanently"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:109
+msgid "IP range"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:112
+msgid "Share"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:118
+#: /home/stefano/Git/verlihub/src/cban.cpp:137
+#, c-format
+msgid "Removed: %s by %s because %s"
+msgstr "Odstránené: %s by %s pretože %s"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:124
+msgid "OP"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:125
+msgid "Ban type"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Nick+IP"
+msgstr "Prezývka+IP adresa"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Nick"
+msgstr "Prezývka"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "IP Range"
+msgstr "IP Rozsah"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Host Level 1"
+msgstr "Host úroveň 1"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Host Level 2"
+msgstr "Host úroveň 2"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Host Level 3"
+msgstr "Host úroveň 3"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Share Size"
+msgstr "Veľkosť zdieľania"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "E-mail"
+msgstr "E-mail"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Nick Prefix"
+msgstr "Prezývka Prefix"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:130
+msgid "Reverse Host"
+msgstr "Reverse Host"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:146
+#, c-format
+msgid "expired on: %s"
+msgstr "uplynie/uplynol dňa: %s"
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:148
+#, c-format
+msgid "for: %s"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cban.cpp:151
+msgid "permanently"
+msgstr "trvalo/trvaly"
+
+#: /home/stefano/Git/verlihub/src/cuser.cpp:209
+#, c-format
+msgid "Default class %d"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cuser.cpp:212
+msgid "In list"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cuser.cpp:214
+msgid "Special user"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:76
+#, c-format
+msgid "%ld weeks"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:80
+#, c-format
+msgid "%ld days"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:85
+#, c-format
+msgid "%ld hours"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:90
+#, c-format
+msgid "%ld mins"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:95
+#, c-format
+msgid "%ld secs"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/ctime.cpp:98
+#, c-format
+msgid "%d ms"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cbanlist.cpp:424
+msgid "Entry"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cbanlist.cpp:426
+msgid "Time"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cbanlist.cpp:427
+msgid "Ban on"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:166
+msgid "<<User limit exceeded, hub is full.>>"
+msgstr "&lt; <User limit exceeded, hub is full.>"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:166
+#, c-format
+msgid "Online users: %d"
+msgstr "Online užívatelia:%d"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:240
+msgid "Invalid login sequence. Key already sent"
+msgstr "Neplatné prihlasovacie sekvencie. Kľúčové už odoslané"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:250
+msgid "Your client provided an invalid key"
+msgstr "Váš klient podľa neplatného kľúča"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:269
+msgid "Bad login sequence; you must provide a valid nick first."
+msgstr "Bad prihlasovacie sekvencie, musíte zadať platný nick ako prvý."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:294
+msgid "Wrong password"
+msgstr "Zlé heslo"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:295
+msgid "You provided an incorrect password and have been temporarily banned."
+msgstr "Ste zadali nesprávne heslo a bolo dočasne zakázané."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:364
+msgid "Bad login sequence"
+msgstr "Bad prihlasovacie sekvencie"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:377
+msgid "Wrong MyINFO"
+msgstr "Zle MyINFO"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:393
+msgid "Turn on your tag"
+msgstr "Zapnite tag"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:469
+#, c-format
+msgid "You share %s, but the min share is %s. (active:%s / passive:%s)"
+msgstr "Zdieľate%s, ale min podiel%s. (Aktívne:%s / pasívny:%s)"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:471
+#, c-format
+msgid "You share %s, but the max share is %s."
+msgstr "Zdieľate%s, ale max podiel%s."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:526
+msgid "Banned."
+msgstr "Zakázané."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:695
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:709
+msgid "Flooding PM"
+msgstr "Záplavy PM"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:697
+#, c-format
+msgid "*** PM Flood: %s"
+msgstr "*** PM povodní: %s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:711
+#, c-format
+msgid "*** PM Same Message Flood detected: %s"
+msgstr "*** PM rovnakú správu povodní zistené:%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:728
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:729
+msgid "You cannot talk to this user."
+msgstr "Nemôžete hovoriť tohto užívateľa"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:763
+#, c-format
+msgid "Too long chat message (%d/%d) : %s"
+msgstr "Príliš dlhý chatu (%d /%d):%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:766
+#, c-format
+msgid "Too many chat lines (>%d): %s"
+msgstr "Príliš veľa chat linke (&gt;%d):%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:790
+msgid "Mainchat is currently disabled for non registered users."
+msgstr "Mainchat je v súčasnosti vypnutá pre neregistrovaných užívateľov."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:821
+#, c-format
+msgid "Not sent: %s"
+msgstr "Neposlal:%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:822
+#, c-format
+msgid "Minimum delay for chat is %lu ms but you made %s"
+msgstr "Minimálne oneskorenie pre chat je ms%lu, ale ste%s "
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:923
+#, c-format
+msgid "You cannot download on this hub unless you share %s."
+msgstr "Nemôžete stiahnuť na tomto hubu, ak zdieľate%s."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:926
+msgid "You are not allowed to download filelists"
+msgstr "Nie je vám dovolené sťahovať zoznamov súborov"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:954
+msgid "You cannot connect to an external IP because you are in a LAN"
+msgstr "Môžete sa pripojiť k externej IP, pretože ste v LAN"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:995
+#, c-format
+msgid "Your nick is not %s but %s."
+msgstr "Váš nick nie%s, ale%s."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1019
+msgid "Robots do not share."
+msgstr "Roboti nezdieľajú."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1049
+#, c-format
+msgid "You can't search on this hub unless you share %s."
+msgstr "Nie je možné vyhľadávať na tomto hubu, ak zdieľate%s."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1060
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1068
+#, c-format
+msgid "Minimum search characters is %d"
+msgstr "Minimálna vyhľadávanie postavy je%d"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1080
+msgid "Sorry hub is busy now, no search, try later.."
+msgstr "Prepáč húb je zaneprázdnený teraz, nie hľadať, skúste neskôr .."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1101
+#, c-format
+msgid "Active Search: your IP is not %s but %s. Disconnecting"
+msgstr ""
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1112
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1168
+#, c-format
+msgid "Your nick is not %s but %s. Disconnecting."
+msgstr "Váš nick nie%s, ale%s. Odpojenie."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1125
+#, c-format
+msgid "You can do %d searches in %d seconds."
+msgstr "Môžete to urobiť%d hľadanie za%d sekúnd."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1218
+msgid "You have not rights to use redirects."
+msgstr "Nemáte práva na užívanie presmerovanie."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1234
+#, c-format
+msgid "User %s is protected or you have no rights on him"
+msgstr "Užívateľ%s je chránený ani vy nemáte právo na neho"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1246
+#, c-format
+msgid "You are being redirected to %s because: %s"
+msgstr "Ste presmerovaní na%s, pretože:%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1257
+msgid "User is not online or you tried to redirect a robot."
+msgstr "Užívateľ nie je on-line alebo ste sa presmerovať robot."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1334
+msgid "You cannot ban a protected user or with higher privilegies."
+msgstr "Nemôžete zakázať chránené užívateľa alebo s vyššou privilégiá."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1340
+msgid "You cannot ban a robot."
+msgstr "Nemôžete zakázať robot."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1346
+#, c-format
+msgid "You are being temporarily banned for %s because %s"
+msgstr "Nachádzate sa dočasne zakázaný pre%s, pretože%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1348
+#, c-format
+msgid "You are banned because %s"
+msgstr "Ste zakázaný, pretože%s"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1418
+#, c-format
+msgid "Unknown command '%s'. Try !help"
+msgstr "Neznámy príkaz '%s'. Skúste! Pomoc"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1433
+#, c-format
+msgid "Unknown command '%s'. Try +help"
+msgstr "Neznámy príkaz '%s'. Skúste + pomoc"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1458
+#, c-format
+msgid "No banned user found with ip %s."
+msgstr "Žiadne zo zakázaných užívateľov nenašli ip%s."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1462
+#, c-format
+msgid "Removed %d bans."
+msgstr "Odstránené%d zákazov."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1486
+msgid ""
+"You cannot send $BotINFO because BotINFO extension is not set in $Supports"
+msgstr ""
+"Nemôžete odosielať $ BotINFO pretože BotINFO rozšírenie nie je nastavený na "
+"$ podporuje"
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1494
+#, c-format
+msgid "Bot %s has just entered the hub."
+msgstr "Topánok%s práve vstúpil húb."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1558
+msgid "You do not have permissions to change the hub topic."
+msgstr "Nemáte oprávnenie k zmene náboja tému."
+
+#: /home/stefano/Git/verlihub/src/cdcproto.cpp:1565
+#, c-format
+msgid "Topis is set to: %s"
+msgstr "Topis je nastavený na:%s"
+
+

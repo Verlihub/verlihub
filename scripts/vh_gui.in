@@ -1,0 +1,552 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+# Include library
+SCRIPT=$0
+source $(dirname $SCRIPT)/vh_lib
+
+if [ $(uname) = "FreeBSD" ]; then
+	echo_s "-- "
+	echo_s "ERROR" $BOLD
+	echo_s ": This script does not work with BSD, please do not use --gui or -g option.\n"
+    exit
+fi
+
+DIALOG=`whereis dialog | awk '{ print $2 }'`
+if [ -z "$DIALOG" ]; then
+	echo_s "-- "
+	echo_s "ERROR" $BOLD
+	echo_s ": This script requires dialog to function, please consider installing it or use cli scripts instead (vh).\n"
+    exit
+fi
+
+if [ -d "~/tmp" ]; then
+    _TEMP="~/tmp/answer.$$"
+else
+    _TEMP="/tmp/answer.$$"
+fi
+
+# Exit from dialog
+function _quit() {
+	rm -f $_TEMP
+	rm -f $LOG
+	exit 0
+}
+
+# Get mysql admin access
+function _ask_admin_access()
+{
+	MYSQL_ADMIN_USER="root"
+	MYSQL_ADMIN_PASSWORD=""
+	ARE_ADMIN_DB_INFO_OK=false
+	until $ARE_ADMIN_DB_INFO_OK;
+	do
+		$DIALOG --backtitle "MySQL settings" \
+			--form "Please insert MySQL administrator information to create DB or account." 12 45 0 \
+				"Username" 2 3 "$MYSQL_ADMIN_USER" 2 16 22 0 \
+				"Password" 4 3 "$MYSQL_ADMIN_PASSWORD" 4 16 22 0 2>$_TEMP
+		if [ ${?} -ne 0 ]; then
+			_quit;
+		fi
+
+		MYSQL_ADMIN_USER=$(sed -n '1p' $_TEMP)
+		MYSQL_ADMIN_PASSWORD=$(sed -n '2p' $_TEMP)
+
+		if [ "_$MYSQL_ADMIN_USER"  == "_" -o "_$MYSQL_ADMIN_PASSWORD"  == "_" ]; then
+			$DIALOG --title "MySQL settings" --msgbox "All fields are required to create the database" 7 40
+		else
+			$DIALOG --yesno "Is this info correct? \n \
+			    Username: $MYSQL_ADMIN_USER \n \
+			    Password: $MYSQL_ADMIN_PASSWORD" 8 37 && ARE_ADMIN_DB_INFO_OK=true || $DIALOG --title "MySQL settings" --msgbox "Let's try again with configuration." 6 30
+		fi
+	done
+}
+
+function _choose_folder() #title, #message
+{
+	IS_CHOOSEN_FOLDER_OK=false
+	until $IS_CHOOSEN_FOLDER_OK;
+	do
+		$DIALOG --title "$1"\
+			--cancel-label "Quit" \
+			--radiolist "You need to specify hub with configuration folder. Move using [UP] [DOWN], [Space] to select a item" 14 80 17\
+			"1" "/etc/verlihub" "on"\
+			"2" "$HOME/.verlihub" "off"\
+			"3" "$PREFIX/etc/verlihub" "off"\
+			"Other" "Choose path where put config file" "off" 2>$_TEMP
+
+		OPT=${?}
+		if [ $OPT != 0 ]; then
+			_quit;
+		fi
+	
+		CHOOSEN_FOLDER=`cat $_TEMP`
+		# Get selected folder
+		case $CHOOSEN_FOLDER in
+			"1") CHOOSEN_FOLDER="/etc/verlihub";;
+			"2") CHOOSEN_FOLDER="$HOME/.verlihub";;
+			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub";;
+			"Other") $DIALOG --title "$TITLE" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;;
+		esac
+		
+		if ! set_path $CHOOSEN_FOLDER > /dev/null 2>&1 ; then
+			$DIALOG --title "$TITLE" --msgbox "The path '$CHOOSEN_FOLDER' is not a valid config directory. Please specify another folder." 8 49
+		else
+			IS_CHOOSEN_FOLDER_OK=true
+		fi
+	done
+	return 0;
+}
+
+help_me()
+{
+	echo_s "$SCRIPT\n" $BOLD
+	echo "This is a utility script for Verlihub, usage:"
+	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
+	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
+	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
+	echo_s "  -s, --stop" $RED && echo -e "\t[path_to_dbconfig] \tStop the hub from the given dbconfig path"
+	echo_s "  -t, --status" $RED && echo -e "\t[path_to_dbconfig] \tCheck if hub is running or not"
+	echo_s "  -v, --version" $RED && echo -e "\t\t\t\tPrint version information"
+	echo_s "  -h, --help" $RED && echo -e "\t\t\t\tShow this help"
+	echo ""
+}
+
+version() 
+{
+	$DIALOG --title "Version information" --msgbox "Script version: $VER \nVerlihub version: @VERLIHUB_VERSION@" 8 30
+}
+
+function run_hub() # restart
+{	
+	# Set title
+	if [ "$1" != "restart" ]; then
+		TITLE="Start new hub"
+	else
+		TITLE="Restart hub"
+	fi
+
+	if [ "$1" != "restart" ]; then
+		_choose_folder $TITLE
+	fi
+
+	# Check if hub is already running
+	if _is_hub_running $CONFIG_DIR ; then
+		$DIALOG --title "$TITLE" --msgbox "Hub is already running with PID $PID_RESULT. To stop it use vh --stop --gui'" 8 53
+		_quit;
+	fi
+	$DIALOG --infobox "Starting hub with config folder '$CONFIG_DIR'. This could take some times" 5 45
+	
+	LOG_FILE="$CONFIG_DIR/log"
+	ERROR_FILE="$CONFIG_DIR/err"
+	PID_FILE="$CONFIG_DIR/pid"
+
+	# Check permission on folder
+	if  [ ! -w $CONFIG_DIR ]; then
+		$DIALOG --title "Error" --msgbox "You haven't permissions to write on '$CONFIG_DIR'" 7 55
+		_quit;
+	fi
+	# Check permission on files
+	if [ -e $LOG_FILE ]; then
+		if  [ ! -w $LOG_FILE ]; then
+			$DIALOG --title "Error" --msgbox "You haven't permissions to write log file '$LOG_FILE'" 7 55
+			_quit;
+		fi
+	fi
+	if [ -e $ERROR_FILE ]; then
+		if [ ! -w $ERROR_FILE ]; then
+			$DIALOG --title "Error" --msgbox "You haven't permissions to write error file '$ERROR_FILE'" 7 55
+			_quit;
+		fi
+	fi
+	if [ -e $PID_FILE ]; then
+		if [ ! -w $PID_FILE ]; then
+			$DIALOG --title "Error" --msgbox "You haven't permissions to write PID file '$PID_FILE'" 7 55
+			_quit;
+		fi
+	fi
+
+	# Backup logs
+	[ -e $ERROR_FILE ] && mv -f $ERROR_FILE $ERROR_FILE.old
+	[ -e $LOG_FILE ] && mv -f $LOG_FILE $LOG_FILE.old
+
+	# Create log files
+	touch $LOG_FILE && touch $ERROR_FILE
+
+	# Check if MySQL socket exists
+	_mysql_export_socket
+
+	# Run it
+	$BINDIR/$DAEMON_NAME $BINDIR/verlihub >"$LOG_FILE" 2>"$ERROR_FILE" &
+	PID=$!
+	disown $PID
+	# Check if pid is returned
+	if [ "_$PID" == "_" ]; then
+		$DIALOG --title "$TITLE" --msgbox "A error occured while tring to get PID of verlihub" 8 40
+		_quit;
+	fi;
+	sleep 2
+
+	# Save pid
+	echo $PID > $PID_FILE
+	if ! _is_hub_running $CONFIG_DIR ; then
+		$DIALOG --title "$TITLE" --msgbox "Hub is not running. Please check '$LOG_FILE' and '$ERROR_FILE' for more information" 9 49
+		rm -f $PID_FILE
+		_quit;
+	fi
+	
+	$DIALOG --infobox "Starting verlihub (PID: $PID)..." 4 45
+	sleep 1
+	$DIALOG --title "$TITLE" --msgbox "Done" 6 30
+}
+
+function kill_hub() # restart
+{
+	# Set title
+	if [ "$1" != "restart" ]; then
+		TITLE="Stop a hub"
+	else
+		TITLE="Restart hub"
+	fi	
+
+	_choose_folder $TITLE
+
+	# Check if hub is already running
+	if ! _is_hub_running $CONFIG_DIR ; then
+		$DIALOG --title "$TITLE" --msgbox "Hub with config path '$CONFIG_DIR' is not running." 8 49
+		if [ -f $PID_FILE ]; then
+			if [ -w $PID_FILE ]; then
+				rm -f $PID_FILE
+			else
+				$DIALOG --title "$TITLE" --msgbox "PID file $PID_FILE already exists. Can't remove it, please do it manually" 8 49
+			fi
+		fi
+		return 1;
+	fi
+	_get_pid $CONFIG_DIR
+	$DIALOG --infobox "Killing verlihub (PID: $PID_RESULT)..." 4 45
+	if ! kill $PID_RESULT > /dev/null 2>&1 ; then
+		$DIALOG --title "$TITLE" --msgbox "Error: USER HAS NO RIGHT TO STOP THE PROCESS. Please use 'kill -9 $PID_RESULT' as root" 7 50 
+		_quit;
+	fi
+
+	rm -f "$CONFIG_DIR/pid"
+	sleep 2
+
+	if [ "$1" != "restart" ]; then
+		$DIALOG --title "$TITLE" --msgbox "Done" 6 30
+	fi
+}
+
+hub_status()
+{
+	TITLE="Check status"
+	_choose_folder $TITLE
+
+	MESSAGE="Hub with config path '$CONFIG_DIR' is";
+
+	if ! _is_hub_running $CONFIG_DIR ; then
+		$DIALOG --title "$TITLE" --msgbox "$MESSAGE not running" 8 50
+	else
+		$DIALOG --title "$TITLE" --msgbox "$MESSAGE running" 8 50
+	fi
+}
+
+install() {
+	REALUSER="$USER"
+	$DIALOG --title "Getting started" --msgbox "Hello $REALUSER, let's start with the configuration of database access... \nIf you have some problems with configuration you can: \n\n \
+			- Follow the official manual: http://www.verlihub-project.org/manual \n \
+			- Ask support on forums: http://www.verlihub-project.org/forums \n \
+			- Ask support on VAZ: dchub://vaz.verlihub-project.org"  10 80 
+		
+	set_path $VERLIHUB_CFG > /dev/null 2>&1;
+
+	ARE_DB_INFO_OK=false
+	until $ARE_DB_INFO_OK;
+	do
+		MYSQL_DB_NAME=$(get_db_name)
+		MYSQL_USER=$(get_db_user)
+		MYSQL_PASSWORD=$(get_db_pass)
+		MYSQL_HOST=$(get_db_host)
+		# Ask information about MySQL account 
+		$DIALOG --backtitle "MySQL settings" \
+			--form "Please insert MySQL server setting below for the hub. If the account/DB does not exist it will be created later in this setup. You can use [UP] [DOWN] to select input field " 15 65 0 \
+			    "DB name" 1 6 "$MYSQL_DB_NAME" 1 19 25 0\
+			    "DB username" 3 6 "$MYSQL_USER" 3 19 25 0\
+			    "DB password" 5 6 "$MYSQL_PASSWORD" 5 19 25 0\
+			    "DB hostname" 7 6 "$MYSQL_HOST" 7 19 25 0 2>$_TEMP
+		if [ ${?} -ne 0 ]; then 
+			_quit;
+		fi
+
+		MYSQL_DB_NAME=$(sed -n '1p' $_TEMP)
+		MYSQL_USER=$(sed -n '2p' $_TEMP)
+		MYSQL_PASSWORD=$(sed -n '3p' $_TEMP)
+		MYSQL_HOST=$(sed -n '4p' $_TEMP)
+		
+		if [ "_$MYSQL_HOST"  == "_" -o "_$MYSQL_DB_NAME"  == "_" -o  "_$MYSQL_PASSWORD"  == "_" -o  "_$MYSQL_USER"  == "_" ]; then
+			$DIALOG --title "MySQL settings" --msgbox "All fields are required to configure Verlihub database" 7 40
+			continue;
+		fi
+
+		# Continue or not
+		$DIALOG --yesno "Do you want to continue with this information? \n \
+			Database: $MYSQL_DB_NAME \n \
+			Username: $MYSQL_USER \n \
+			Password: $MYSQL_PASSWORD \n \
+			Hostname: $MYSQL_HOST" 10 45 && ARE_DB_INFO_OK=true || $DIALOG --title "MySQL settings" --msgbox "Let's try again with configuration." 6 30
+	done
+
+	# Ask user the IP addrress of current server to allow access for MySQL server
+	IS_MYSQL_HOST_LOCAL=false
+	[ $MYSQL_HOST == "localhost" ] && IS_MYSQL_HOST_LOCAL=true
+	[ $MYSQL_HOST == "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
+	if ! $IS_MYSQL_HOST_LOCAL ; then
+		IS_MYSQL_HOST_OK=false
+		until $IS_MYSQL_HOST_OK;
+		do
+			$DIALOG --title "MySQL settings " \
+				--form "You are going to use a database on an external server. Please provide the IP address of this current server" 12 50 3 \
+				    "Address:" 2 4 "" 2 15 24 0 2>$_TEMP
+			if [ ${?} -ne 0 ]; then
+				_quit;
+			fi
+	
+			CURRENT_ADDRESS=`cat $_TEMP`
+		
+			if [ "_$CURRENT_ADDRESS" == "_" ]; then
+				$DIALOG --title "MySQL settings" --msgbox "You enter a empty value please retry with configuration." 7 35
+			else
+				IS_MYSQL_HOST_OK=true				
+			fi
+		done
+	else
+		CURRENT_ADDRESS="localhost"
+	fi;
+
+	# Test if account exists
+	$DIALOG --infobox "Checking MySQL account $MYSQL_USER@$MYSQL_HOST; this could take some times..." 5 49
+	_does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" && ACCOUNT_EXISTS=true || ACCOUNT_EXISTS=false
+	if ! $ACCOUNT_EXISTS ; then 
+		$DIALOG --title "MySQL settings" --msgbox "The MySQL account '$MYSQL_USER' can not be accessed, it will be created now" 7 50
+		_ask_admin_access
+		$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'"
+		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ;	then
+			$DIALOG --title "MySQL settings" --msgbox "The MySQL account cannot be created. Fix the problem and run the setup again." 8 50
+			_quit;
+		fi
+	else
+		$DIALOG --title "MySQL settings" --msgbox "The MySQL account '$MYSQL_USER' has been found." 6 50
+	fi
+
+	# Test if database exists
+	$DIALOG --infobox "Checking MySQL database $MYSQL_DB_NAME; this could take some times..." 5 45
+	_does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" && DB_EXISTS=true || DB_EXISTS=false
+	# Create database
+	if ! $DB_EXISTS ; then 
+		$DIALOG --title "MySQL settings" --msgbox "The MySQL database '$MYSQL_DB_NAME' does not exist, it will be created now." 7 50
+		if [ "_$MYSQL_ADMIN_USER"  == "_" -o "_$MYSQL_ADMIN_PASSWORD"  == "_" ]; then
+			_ask_admin_access
+		fi
+	else
+		$DIALOG --title "MySQL settings" --msgbox "The MySQL database '$MYSQL_DB_NAME' has been found." 6 50
+	fi
+	# Create/grant permissions (check if admin account has been specify)
+	if [ "_$MYSQL_ADMIN_USER"  == "_" -o "_$MYSQL_ADMIN_PASSWORD"  == "_" ]; then
+		_ask_admin_access
+	fi
+	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'"
+	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; 
+	then
+		$DIALOG --title "MySQL settings" --msgbox "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again." 8 50
+		_quit;
+	fi
+
+	# Select path where to put verlihub config file
+	IS_CHOOSEN_FOLDER_OK=false
+	until $IS_CHOOSEN_FOLDER_OK;
+	do
+		$DIALOG --title "Verlihub's config folder"\
+			--cancel-label "Quit" \
+			--radiolist "You need to choose a place for the configuration files. Move using [UP] [DOWN], [Space] to select a item" 14 80 17\
+			"1" "/etc/verlihub" "on"\
+			"2" "$HOME/.verlihub" "off"\
+			"3" "$PREFIX/etc/verlihub" "off"\
+			"Other" "Choose path where put config file" "off" 2>$_TEMP
+
+		OPT=${?}
+		if [ $OPT != 0 ]; then
+			_quit;
+		fi
+	
+		CHOOSEN_FOLDER=`cat $_TEMP`
+		# Get selected folder
+		case $CHOOSEN_FOLDER in
+			"1") CHOOSEN_FOLDER="/etc/verlihub";;
+			"2") CHOOSEN_FOLDER="$HOME/.verlihub";;
+			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub";;
+			"Other") $DIALOG --title "Verlihub's config folder" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;;
+		esac
+		
+		CHOOSEN_FOLDER_NOT_EXISTS=false
+		if [ -d $CHOOSEN_FOLDER ]; then
+			$DIALOG --yesno "The folder '$CHOOSEN_FOLDER' already exists (existing configuration will be backup). Do you want to continue? Otherwise choose 'No' to select another folder." 8 60 && IS_CHOOSEN_FOLDER_OK=true || $DIALOG --title "Verlihub's config folder" --msgbox "Ok, let's try again." 6 30
+		else
+			$DIALOG --yesno "The config folder '$CHOOSEN_FOLDER' does not exist and will be created. Do you want to continue?" 8 60  && IS_CHOOSEN_FOLDER_OK=true || $DIALOG --title "Verlihub's config folder" --msgbox "Ok, let's try again." 6 30
+			CHOOSEN_FOLDER_NOT_EXISTS=true
+		fi
+
+		# Check if user has permissions to create/edit directory
+		if $IS_CHOOSEN_FOLDER_OK ; 
+		then
+			if mkdir -p $CHOOSEN_FOLDER/_test_dir  > /dev/null 2>&1 ; then
+				rm -rf $CHOOSEN_FOLDER/_test_dir  > /dev/null 2>&1 ;
+			else
+				$DIALOG --title "Verlihub's config folder" --msgbox "You don't have the permission to write in '$CHOOSEN_FOLDER'. Please select another folder or fix the problem and restart this setup again." 8 60  && IS_CHOOSEN_FOLDER_OK=false 
+			fi
+		fi
+	done
+
+	# Set file name
+	CONFIG="${CHOOSEN_FOLDER}/dbconfig"
+	# Creating directory if it does not exist
+	if $CHOOSEN_FOLDER_NOT_EXISTS ; then
+		mkdir -p $CHOOSEN_FOLDER
+	else
+		# Make backup of existing configuration
+		if [ -e $CONFIG ]; then
+			BACKUP_DIR=$HOME
+			BACKUP_NAME="vh_install_$TIMESTAMP.tar.gz"
+			tar czf $BACKUP_DIR/$BACKUP_NAME $CHOOSEN_FOLDER
+			rm -rf $CHOOSEN_FOLDER/*
+			$DIALOG --title "Verlihub's config folder" --msgbox "The original configuration has been moved to $BACKUP_DIR/$BACKUP_NAME" 6 60
+		fi
+	fi
+
+	# Print information for MySQL access
+	echo "db_host = $MYSQL_HOST" >  $CONFIG
+	echo "db_data = $MYSQL_DB_NAME" >> $CONFIG
+	echo "db_user = $MYSQL_USER" >> $CONFIG
+	echo "db_pass = $MYSQL_PASSWORD" >> $CONFIG
+	
+	$DIALOG --title "Verlihub's config folder" --msgbox "Config file has been successfully written in '$CONFIG'. Now they will be created other directories and files." 7 60
+	
+	$DIALOG --infobox "Copy files and accessing to MySQL server; this could take some times..." 5 45
+	# Import other files from verlihub directory
+	cp $DATADIR/config/* $CHOOSEN_FOLDER
+	mkdir -p $CHOOSEN_FOLDER/plugins
+	mkdir -p $CHOOSEN_FOLDER/scripts
+	ln -s $LIBDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+
+	# Check if file has been created correctly
+	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false
+	if ! $CONFIG_EXISTS ; then
+		$DIALOG --title "ERROR" --msgbox "Your installation is NOT completed.\nInstallation was not unable to create config folder or file. Please check permission on '$CHOOSEN_FOLDER'" 8 70
+		_quit;
+	fi
+
+	# Create tables
+	set_path $CHOOSEN_FOLDER > /dev/null 2>&1;
+	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL; then
+		$DIALOG --title "ERROR" --msgbox "ERROR: cannot create verlihub's tables in the database, cannot continue with the installation. Please check '$CHOOSEN_FOLDER/install_log' file for more info and run installation again." 8 70
+		$DIALOG --title ="ERROR" --textbox "$CHOOSEN_FOLDER/install_log" 30 80
+		_quit;
+	fi
+	# Create admin user and hub info
+	$DIALOG --title "Verlihub installation" --msgbox "Installation has been completed. Now you can add master account." 8 50
+
+	# Configure hub and account
+	SETUP_INFO_OK=false
+	until $SETUP_INFO_OK; do
+
+		HOSTNAME=`hostname`
+		if [ $REALUSER == "root" ]; then
+			PORT=411
+		else
+			PORT=4111
+		fi
+		$DIALOG --title "Hub settings" \
+			--form "Choose information about master account and hub (don't use any special characters, you'll be able to use them later). You can use [UP] [DOWN] to select input field.\n " 20 70 0 \
+			    "Master name:" 2 4 "[SU]$REALUSER" 2 21 35 0\
+			    "Master password:" 4 4 "$TIMESTAMP" 4 21 35 0\
+			    "Hub port:" 6 4 "$PORT" 6 21 35 0\
+			    "Hub host:" 8 4 "$HOSTNAME" 8 21 35 0\
+			    "Hub name:" 10 4 "hub of $REALUSER" 10 21 35 0 2>$_TEMP
+		if [ ${?} -ne 0 ]; then 
+			_quit;
+		fi
+	
+		VH_MASTER_NAME=$(sed -n '1p' $_TEMP)
+		VH_MASTER_PASSWORD=$(sed -n '2p' $_TEMP)
+		VH_HUB_PORT=$(sed -n '3p' $_TEMP)
+		VH_HUB_HOST=$(sed -n '4p' $_TEMP)
+		VH_HUB_NAME=$(sed -n '5p' $_TEMP)
+
+		if [ "_$VH_MASTER_NAME"  == "_" -o "_$VH_MASTER_PASSWORD"  == "_" -o  "_$VH_HUB_PORT"  == "_" -o  "_$VH_HUB_HOST"  == "_" -o "_$VH_HUB_NAME"  ==  "_" ]; then
+			$DIALOG --title "Hub settings" --msgbox "All fields are required to configure the hub" 7 40
+		else
+			$DIALOG --yesno "Is this info correct? \n \
+				Master name: $VH_MASTER_NAME \n \
+				Master password: $VH_MASTER_PASSWORD \n \
+				Hub name: $VH_HUB_NAME \n \
+				Hub address: dchub://$VH_HUB_HOST:$VH_HUB_PORT \n \
+				Password: $MYSQL_PASSWORD \n \
+				Hostname: $MYSQL_HOST" 12 55 && SETUP_INFO_OK=true || $DIALOG --title "Hub settings" --msgbox "Let's try again with configuration." 6 30
+		fi
+	done
+	
+	# Save info to DB
+	$DIALOG --infobox "Creating settings; this could take some times..." 5 45
+	_mysql_update "hub_name" $VH_HUB_NAME
+	_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
+	_mysql_update "listen_port" $VH_HUB_PORT
+	if ! _register $VH_MASTER_NAME "10" $VH_MASTER_PASSWORD "plain" ; then
+		$DIALOG --title "Hub settings" --msgbox "A error occured with registering user '$VH_MASTER_NAME'. Please do it manually" 7 45
+	fi
+	if ! _mysql_import $DATADIR/sql/default_reglist.sql > /dev/null 2>&1  ; then
+		$DIALOG --title "Hub settings" --msgbox "A error occured with file importing '$DATADIR/sql/default_reglist.sql'" 7 45
+		_quit;
+	fi
+	
+	$DIALOG --title "Hub settings" --msgbox "The hub is configured successfully. Now you can start the hub using vh_gui --run command." 8 40
+
+	_quit;
+}
+
+# Check selected option
+case "_$1" in
+	"_-i"|"_--install")	install;;
+	"_-r"|"_--run")		run_hub;;
+	"_-s"|"_--stop")	kill_hub;;
+	"_-q"|"_--restart")	kill_hub "restart"; run_hub "restart";;
+	"_-t"|"_--status")	hub_status;;
+# 	"_-g"|"_--geoip")	shift; update_geoip $1;;
+# 	"_-a"|"_--autoload")shift; autoload $@;;
+# 	"_-u"|"_--adduser") shift; add_user $@;;
+# 	"_-b"|"_--backup")	shift; backup $1 $2;;
+# 	"_-w"|"_--restore")	shift; restore $1 $2;;
+# 	"_-c"|"_--clean")	shift; clean $1;;
+	"_"|"_-h"|"_--help") help_me;;
+	"_-v"|"_--version")	version;;
+	*)
+		echo_s "Unknown option $1, try $SCRIPT --help\n" $RED
+		exit;;
+esac;

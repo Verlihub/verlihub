@@ -1,0 +1,506 @@
+# 
+# Translators:
+# Stefano  <netcelli@gmail.com>, 2011.
+# Александр  <exside@mail.com>, 2011.
+# Александр  <plugmn@gmail.com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: Verlihub\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-07-09 17:22+0100\n"
+"PO-Revision-Date: 2011-10-15 13:12+0000\n"
+"Last-Translator: plugman <plugmn@gmail.com>\n"
+"Language-Team: Verlihub project Team <admin@verlihub-project.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"X-Poedit-Basepath: /home/stefano/Git/verlihub/plugins\n"
+"X-Poedit-Country: UNITED KINGDOM\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SearchPath-0: /home/stefano/Git/verlihub/plugins\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: /home/stefano/Git/verlihub/plugins/forbid/cforbidden.cpp:79
+#, c-format
+msgid "FORBID: User sent forbidden words in %s: %s"
+msgstr "ЗАПРЕТ: Пользователь отправил запрещенные слова в %s: %s"
+
+#: /home/stefano/Git/verlihub/plugins/forbid/cforbidden.cpp:79
+msgid "PUBLIC chat"
+msgstr "ПУБЛИЧНЫЙ чат"
+
+#: /home/stefano/Git/verlihub/plugins/forbid/cforbidden.cpp:79
+msgid "PRIVATE chat"
+msgstr "ПРИВАТНЫЙ чат"
+
+#: /home/stefano/Git/verlihub/plugins/forbid/cconsole.cpp:51
+msgid "Give a list of forbidden expressions"
+msgstr "Получить список запрещенных выражений"
+
+#: /home/stefano/Git/verlihub/plugins/forbid/cconsole.cpp:99
+msgid "Sorry the regular expression you provided is not valid."
+msgstr "К сожалению регулярное выражение указанное вами недопустимо."
+
+#: /home/stefano/Git/verlihub/plugins/isp/cconsole.cpp:55
+msgid "Give a list of ISPs"
+msgstr "Получить список провайдеров"
+
+#: /home/stefano/Git/verlihub/plugins/isp/cconsole.cpp:134
+msgid "Unknown range format."
+msgstr "Неизвестный формат диапазона."
+
+#: /home/stefano/Git/verlihub/plugins/isp/cconsole.cpp:141
+msgid "Sorry the regular expression for nickname you provided is not valid."
+msgstr "К сожалению регулярное выражение для ника указанное вами недопустимо."
+
+#: /home/stefano/Git/verlihub/plugins/isp/cconsole.cpp:149
+msgid "Sorry the regular expression for connection you provided is not valid."
+msgstr ""
+"К сожалению регулярное выражение для типа соединения указанное вами "
+"недопустимо."
+
+#: /home/stefano/Git/verlihub/plugins/isp/cisps.cpp:47
+msgid "Your nick should match %[pattern]"
+msgstr "Ваш ник должен соответствовать %[pattern]"
+
+#: /home/stefano/Git/verlihub/plugins/isp/cisps.cpp:48
+msgid "Your connection type should match %[pattern]"
+msgstr "Ваш тип соединения должен соответствовать %[pattern]"
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:68
+msgid "Replaced words:"
+msgstr "Заменённые слова:"
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:72
+msgid "Replace with"
+msgstr "Заменённые слова"
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:73
+msgid "Affected class"
+msgstr "Повреждённый класс"
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:100
+#, c-format
+msgid "Word '%s' does not exist."
+msgstr "Слово '%s' не существует."
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:108
+#, c-format
+msgid "Word '%s' deleted."
+msgstr "Слово '%s' удалено."
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:131
+msgid "Sorry the regular expression you provided cannot be parsed."
+msgstr "К сожалению ваше регулярное выражение не может быть разобрано."
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:137
+#, c-format
+msgid "Word '%s' already exists."
+msgstr "Слово '%s' уже существует."
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:147
+#, c-format
+msgid ""
+"Added word %s. This word will be filtered in public chat for users with "
+"class that is less than or equal to %d."
+msgstr ""
+"Добавлено слово %s. Это слово будет фильтроваться в публичный чат для "
+"пользователей с классом, который меньше или равен %d."
+
+#: /home/stefano/Git/verlihub/plugins/replacer/cconsole.cpp:149
+#, c-format
+msgid "Error adding word '%s'."
+msgstr "Ошибка при добавлении слова '%s'."
+
+#: /home/stefano/Git/verlihub/plugins/chatroom/cconsole.cpp:55
+msgid "Give a list of chatrooms"
+msgstr "Получить список чат-комнат"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cluainterpreter.cpp:181
+msgid "(unknown LUA error)"
+msgstr "(Неизвестная ошибка LUA)"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:82
+msgid "Lua version"
+msgstr "Версия Lua"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:83
+msgid "Lua library version"
+msgstr "Версия библиотеки Lua"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:84
+msgid "Copyright"
+msgstr "Авторские права"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:85
+msgid "Authors"
+msgstr "Авторы"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:95
+msgid "Version date"
+msgstr "Дата версии"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:96
+msgid "Running scripts"
+msgstr "Запущенные скрипты"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:97
+msgid "Memory used"
+msgstr "Использование памяти"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:103
+msgid "Running LUA scripts:"
+msgstr "Запущенные LUA скрипты:"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:106
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:75
+msgid "Script"
+msgstr "Скрипт"
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:135
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:232
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:108
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:198
+#, c-format
+msgid "Script %s stopped."
+msgstr "Скрипт %s остановлен."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:144
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:242
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:118
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:207
+#, c-format
+msgid "Script #%s not stopped because it is not running."
+msgstr "Скрипт #%s не остановлен, потому что он не работает."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:146
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:120
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:209
+#, c-format
+msgid "Script %s not stopped because it is not running."
+msgstr "Скрипт %s не остановлен, потому что он не работает."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:173
+#, c-format
+msgid "Failed loading directory %s."
+msgstr "Ошибка при загрузке каталога %s."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:196
+#, c-format
+msgid "Script %s is already running."
+msgstr "Скрипт %s уже запущен."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:201
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:250
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:143
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:220
+#, c-format
+msgid "Script %s is now running."
+msgstr "Скрипт %s работает."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:205
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:254
+#, c-format
+msgid "Script %s not found or could not be parsed."
+msgstr "Скрипт %s не найден или не может быть проанализирован."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:244
+#, c-format
+msgid "Script %s not stopped  because it is not running."
+msgstr "Скрипт %s не остановлен потому что он не работает."
+
+#: /home/stefano/Git/verlihub/plugins/lua/cconsole.cpp:273
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:167
+#, c-format
+msgid "Updated %s.%s from '%s' to '%s'"
+msgstr "Обновлено %s.%s от '%s' в '%s'"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:90
+#, c-format
+msgid "Last %d events of nick %s:"
+msgstr "Последние %d событий для ника %s:"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:92
+#, c-format
+msgid "Last %d events of IP %s:"
+msgstr "Последние %d событий для ип %s:"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:97
+msgid "connect"
+msgstr "соединение"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:97
+msgid "login"
+msgstr "войти"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:97
+msgid "logout"
+msgstr "выйти"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:97
+msgid "disconnect"
+msgstr "отключиться"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:100
+msgid "bad nick or nick temporarily banned"
+msgstr "плохой ник или ник временно забанен"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:101
+msgid "used different nick in chat"
+msgstr "использовали различные ник в чате"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:102
+msgid "kicked"
+msgstr "отключено"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:103
+msgid "redirected"
+msgstr "перенаправлен"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:104
+msgid "exit from the hub"
+msgstr "выйти из хаба"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:105
+msgid "critical hub load"
+msgstr "критическая нагрузка на хаб"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:106
+msgid "timeout"
+msgstr "Тайм-аут"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:107
+msgid "user did nothing for too long time"
+msgstr "Пользователь очень долго ничего не делал"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:108
+msgid "hub full"
+msgstr "хаб полон"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:109
+msgid "share limit"
+msgstr "лимит шары"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:110
+msgid "no tag or not valid"
+msgstr "нет тега или недействителен"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:111
+msgid "tag breaks hub rules"
+msgstr "тег противоречит правилам хаба"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:112
+msgid "wrong password"
+msgstr "неправильный пароль"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:113
+msgid "error in login sequence"
+msgstr "ошибка в последовательности соединения"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:114
+msgid "syntax error in some messages"
+msgstr "синтаксические ошибки в некоторых сообщениях"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:115
+msgid "invalid key"
+msgstr "недействительный ключ"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:119
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:158
+msgid "Date"
+msgstr "Дата"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:120
+msgid "Action"
+msgstr "Действие"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:121
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:159
+msgid "Nickname"
+msgstr "Ник"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:122
+msgid "Info"
+msgstr "Информация"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:150
+#, c-format
+msgid "Nick %s has lately been in the hub with the following IP"
+msgstr "В последнее время %s заходил со следующего ип"
+
+#: /home/stefano/Git/verlihub/plugins/iplog/ciplog.cpp:152
+#, c-format
+msgid "IP %s has lately been in the hub with following nicknames"
+msgstr "В последнее время %s использовал следующий ник"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:50
+msgid "Plugin not found."
+msgstr "Плагин не найден."
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:119
+msgid "Plugin does not support scripts"
+msgstr "Плагин не поддерживает скрипты"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:125
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:135
+msgid "Loaded"
+msgstr "Загружено"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:127
+msgid "Error loading script"
+msgstr "Ошибка при загрузке скрипта"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:157
+msgid ""
+"Warning: the plugin should be recompiled because VerliHub has been recently "
+"updated"
+msgstr ""
+"Предупреждение: плагин должен быть скомпилирован заново потому что VerliHub "
+"был обновлен"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:183
+msgid "Reloaded"
+msgstr "Перезагрузка"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:207
+msgid "Name"
+msgstr "Название"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:207
+msgid "On"
+msgstr "Вкл."
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:207
+msgid "Off"
+msgstr "Выкл."
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:208
+msgid "Auto"
+msgstr "Авто"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:208
+msgid "Manual"
+msgstr "Руководство"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:209
+msgid "Path"
+msgstr "Путь"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:211
+msgid "Description"
+msgstr "Описание"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cplugs.cpp:213
+msgid "Last Error"
+msgstr "Последняя ошибка"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:45
+msgid "Plugman version"
+msgstr "Версии менеджера плагинов"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:46
+msgid "Verlihub executable"
+msgstr "Исполняемый файл Verlihub"
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:149
+msgid ""
+"Plugin name must be max 10 characters long; please provide another one."
+msgstr ""
+"Название плагина должно быть не более 10 символов; просьба исправить это."
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:154
+msgid "Please provide a valid path for the plugin."
+msgstr "Укажите правильный путь до плагина."
+
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:185
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:197
+#: /home/stefano/Git/verlihub/plugins/plugman/cconsole.cpp:209
+#, c-format
+msgid "Plugin '%s' not found."
+msgstr "Плагин '%s' не найден."
+
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:68
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:90
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:131
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:156
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:178
+msgid "Python interpreter is not loaded."
+msgstr "Интерпретатор Python не загружен."
+
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:71
+msgid "Loaded Python scripts:"
+msgstr "Загружено Python скриптов:"
+
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:137
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:214
+msgid "Failed to allocate new Python interpreter."
+msgstr "Не удалось найти новый интерпретатор Python."
+
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:145
+#: /home/stefano/Git/verlihub/plugins/python/cconsole.cpp:222
+#, c-format
+msgid "Script %s not found or could not be parsed!."
+msgstr "Скрипт %s не найден или не может быть проанализирован!."
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cconsole.cpp:73
+#, c-format
+msgid "The message has been sent to %s because he is online."
+msgstr "Сообщение было отправлено в %s потому, что он в сети."
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cconsole.cpp:76
+msgid "Message saved."
+msgstr "Сообщение сохранено."
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cconsole.cpp:85
+#, c-format
+msgid "You have %d message in your box."
+msgid_plural "You have %d messages in your box."
+msgstr[0] "Вы получили %d сообщение"
+msgstr[1] "Вы получили %d сообщений"
+msgstr[2] "Вы получили %d сообщения"
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cconsole.cpp:89
+msgid "You have no new message in your box."
+msgstr "У вас нет новых сообщений."
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cmsglist.cpp:234
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+msgstr ""
+"От: %s Куда: %s\n"
+"Дата: %s\n"
+"Субъект: %s\n"
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cmsglist.cpp:237
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+"%s\n"
+"----\n"
+msgstr ""
+"От: %s Куда: %s\n"
+"Дата: %s\n"
+"Субъект: %s\n"
+"%s\n"
+"----\n"
+
+#: /home/stefano/Git/verlihub/plugins/messenger/cmsglist.cpp:240
+#, c-format
+msgid ""
+"#OFFLINE MESSAGE# [%s]\n"
+"Subject: %s -------------------------\n"
+"%s"
+msgstr ""
+"#ОФФЛАЙН СООБЩЕНИЕ# [%s]\n"
+"Субъект: %s -------------------------\n"
+"%s"
+
+

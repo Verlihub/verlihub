@@ -1,0 +1,73 @@
+.TH vh_regimporter "1" "January 2014" verlihub-1.0 "January 2014"
+.SH NAME
+vh_regimporter \- This is an utility script to convert registered users to Verlihub
+.SH DESCRIPTION
+This script will import registered users from PtokaX, YnHub and Aquila to Verlihub reglist table. These are all available options that you can use with this script:
+.br
+.I "To use converter you need libxml2 installed"
+.SH OPTIONS
+.TP
+.BR "-p, --ptokax <RegisteredUsers.xml> <Profiles.xml> <path_to_dbconfig>"
+To convert registered users you will need two XML files:
+.RS
+.TP
+.BR RegisteredUsers.xml
+contains registered users with nickname, password and profile ID
+.TP
+.BR Profiles.xml
+contains information about profiles
+.P
+First script will ask you to map PtokaX profiles with Verlihub classes. Then program will automatically add all users in reglist tables. If a MySQL query will failed you will see a error about no-added user.
+.RE
+.TP
+.BR "-y --ynhub <accounts.xml> <profiles.xml> <path_to_dbconfig>"
+To convert registered users you will need two XML files
+.RS
+.TP
+.BR accounts.xml
+contains registered users with nickname, password and other information
+.TP
+.BR profiles.xml
+contains information about profiles
+.P
+This option will also import: Registration date, OP creator, Last login
+.br
+First script will ask you to map YnHub profiles with Verlihub classes. Then program will automatically add all users in reglist tables. If a MySQL query will failed you will see a error about no-added user.
+.RE
+.TP
+.BR "-a, --aquila <Aquila.xml> <path_to_dbconfig>"
+To convert registered users you will need only Aquila.xml file that is generated in configuration directory of the hub. This option will also import: Registration date, OP creator, Last login, Last IP.
+.br
+First script will ask you to map Aquila profiles with Verlihub classes. Then program will automatically add all users in reglist tables. If a MySQL query will failed you will see a error about no-added user.
+.TP
+.BR "-v, --version"
+This option prints version information about this script and Verlihub.
+.TP
+.BR --help
+displays this help message
+.SH AUTHOR
+2003-2005 Daniel Muller, dan at verliba dot cz
+2006-2014 Verlihub Project, devs at verlihub-project dot org
+.SH REPORTING BUGS
+Official website: <http://verlihub-project.org/>
+.br
+Wiki pages: <http://verlihub-project.org/doc/>
+.br
+Support hub: <dchub://hub.verlihub.net:7777/>
+.br
+Translate Verlihub using Transifex.net: <https://www.transifex.net/projects/p/verlihub/>
+.SH COPYRIGHT
+Verlihub is free software; You can redistribute it
+and modify it under the terms of the GNU General
+Public License as published by the Free Software
+Foundation, either version 3 of the license, or at
+your option any later version.
+.br
+Verlihub is distributed in the hope that it will be
+useful, but without any warranty, without even the
+implied warranty of merchantability or fitness for
+a particular purpose. See the GNU General Public
+License for more details.
+.br
+Please see http://www.gnu.org/licenses/ for a copy
+of the GNU General Public License.

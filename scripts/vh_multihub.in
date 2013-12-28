@@ -1,0 +1,382 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+SCRIPT=$0
+# Include library
+source $(dirname $SCRIPT)/vh_lib
+
+if [ $UID -ne 0 ]; then
+	echo_s "-- You can only run μ-Verlihub with root account\n" $RED
+	exit 0;
+fi
+
+# Set config file
+if [ $(uname) != "FreeBSD" ]; then
+	DEFAULT_PATH="/etc"
+else
+	DEFAULT_PATH="$PREFIX/etc"
+fi
+DEFAULT_NAME="$DEFAULT_PATH/verlihub.conf"
+
+# Check if path is correct
+function _check_path() # path_to_dbconfig
+{
+	if [ -d "$1" ] && [ -f "$1/dbconfig" ]; then
+		return 0;
+	fi
+	return 1;
+}
+
+# Check if identifier is valid
+function _check_identifier() # id
+{
+	if $(echo "$1" | grep -E "^[0-9]+$" > /dev/null 2>&1 ) || [ "$1" == "A" ]; then
+		return 0;
+	fi
+	return 1;	
+}
+
+# Check if given value already exists in config file
+function _check_dups() # value_to_check
+{
+	while read LINE
+	do
+		local PATH_TO_CONFIG="$(echo $LINE | cut -d: -f1)"
+		if [ "$1" == $PATH_TO_CONFIG ]; then
+			return 0
+		fi
+	done < $DEFAULT_NAME
+	return 1
+}
+
+# Convert unix timestamps to readable date
+function _unix_to_date () #unix_timestamps
+{
+	if [ $(uname) != "FreeBSD" ]; then
+		echo $(date --utc --date "1970-01-01 $1 sec" "+%Y-%m-%d %T")
+	else
+		echo $(date -j -f %s $1 "+%Y-%m-%d %T")
+	fi
+}
+
+# Format row of table to print lists
+function _format_row() # string, width, style
+{
+	local WIDTH=10
+	local STYLE=""
+	local COUNT=${#1}
+
+	if [ "_$2" != "_" ]; then
+		WIDTH=$2
+	fi
+	if [ "_$3" != "_" ]; then
+		STYLE=$3
+	fi
+	
+	echo_s "$1" $STYLE
+	local DIFF=$(($WIDTH-$COUNT))
+	if [ $DIFF -gt 0 ]; then
+		for ((I=1;I<=$DIFF;I++)); do
+			echo -n " "
+		done
+
+	fi
+}
+
+# Ask to user to insert identifier
+function _ask_identifier()
+{
+	local VALIDATE=false
+
+	until $VALIDATE
+	do	
+		local CHOOSEN_HUB=$(ask "Select number")
+		if _check_identifier $CHOOSEN_HUB; then
+			VALIDATE=true
+			echo $CHOOSEN_HUB
+		else
+			echo_s "-- Insert number or A to choose all hubs\n" $RED
+		fi
+	done
+}
+
+# Get path to dbconfig from identifier
+function _get_path_from_identifier() # identifier
+{
+	local INDEX=1
+
+	while read LINE
+	do
+		if [ $INDEX == $1 ]; then
+			echo $LINE | cut -d: -f1
+			return 0
+		fi
+		INDEX=$(($INDEX+1))
+	done < $DEFAULT_NAME
+	return 1
+}
+
+# Get path to dbconfig from identifier
+function _get_process_owner_from_identifier() # identifier
+{
+	local INDEX=1
+
+	while read LINE
+	do
+		if [ $INDEX == $1 ]; then
+			echo $LINE | cut -d: -f3
+			return 0
+		fi
+		INDEX=$(($INDEX+1))
+	done < $DEFAULT_NAME
+	return 1
+}
+
+# Print list of hubs added in config file
+function _get_hubs_list() # print_legend
+{
+	local INDEX=1
+	local COLOR=""
+
+	# Check if config file exists or is empty
+	if [ ! -s $DEFAULT_NAME ] || [ ! -f $DEFAULT_NAME ] ; then
+		echo_s "-- Config file is empty. Add new hub using $SCRIPT --add\n" $RED
+		exit 0;
+	fi
+
+	echo_s " ID   " $BOLD
+	_format_row "Owner" 20 $BOLD
+	_format_row "Path to dbconfig" 35 $BOLD
+	_format_row "Process owner" 20 $BOLD
+	echo_s "Last update\n" $BOLD
+
+	while read LINE
+	do
+		local PATH_TO_CONFIG="$(echo $LINE | cut -d: -f1)"
+		local NICKNAME="$(echo $LINE | cut -d: -f2)"
+		local PROCESS_OWNER="$(echo $LINE | cut -d: -f3)"
+		local DATE="$(echo $LINE | cut -d: -f4)"
+
+		# Check if hub is running
+		if _is_hub_running $PATH_TO_CONFIG ; then
+			COLOR=$GREEN_BOLD
+		else
+			COLOR=$RED_BOLD
+		fi
+		
+		echo_s " [$INDEX]  " $COLOR
+		
+		_format_row "$NICKNAME" 20
+		_format_row "$PATH_TO_CONFIG" 35
+		_format_row $PROCESS_OWNER 20
+		echo $(_unix_to_date $DATE)
+		INDEX=$(($INDEX+1))
+	done < $DEFAULT_NAME
+
+	# Legend
+	if [ "_$1" != "_" ]; then
+		echo ""
+		echo -n "Hub status: "
+		echo_s "Running" $GREEN_BOLD
+		echo -n " | "
+		echo_s "Stopped\n\n" $RED_BOLD
+	fi
+}
+
+function help_me()
+{
+	echo_s "μ-Verlihub (multi-Verlihub)\n" $BOLD
+	echo "This is a utility to run, restart and stop hubs with Verlihub, usage:"
+	echo_s "  -l, --list" $RED && echo -e "\t\t\tShow a list"
+	echo_s "  -a, --add" $RED && echo -e "\t\t\tAdd a new hub"
+	echo_s "  -d, --del" $RED && echo -e "\t[ID]\t\tDelete an hub"
+	echo_s "  -r, --run" $RED && echo -e "\t[ID]\t\tRun a single hub or all hubs togheter"
+	echo_s "  -s, --stop" $RED && echo -e "\t[ID]\t\tStop a single hub or all hubs togheter"
+	echo_s "  -q, --restart" $RED && echo -e "\t[ID]\t\tRestart a single hub or all hubs togheter"
+	echo_s "  -v, --version" $RED && echo -e "\t\t\tPrint version information"
+	echo_s "  -h, --help" $RED && echo -e "\t\t\tShow this help"
+}
+
+function version()
+{
+	$BINDIR/vh --version
+}
+
+function list()
+{ 
+	echo "-- This is a list of available hubs"
+	echo
+	_get_hubs_list "legend"
+	exit 0
+}
+
+function action() # action type [1 = start, 2= stop, 3= restart], number [optional]
+{
+	# Select action
+	case "$1" in
+		1) ACTION=run;;
+		2) ACTION=stop;;
+		3) ACTION=restart;;
+		"A") exit 1;;
+	esac;
+
+	# Check if identifier is set and is valid
+	if [ "_$2" != "_" ] && _check_identifier $2 ; then
+		ENTRY_ID="$2"
+
+	# Print list
+	else
+		echo "-- Choose hub from list:"
+		echo
+		_get_hubs_list
+		echo_s "[A] " $BOLD
+		echo "All hubs"
+		echo
+		ENTRY_ID=$(_ask_identifier)
+	fi
+
+	# Perform action for all hubs
+	if [ $ENTRY_ID == "A" ]; then
+		while read LINE
+		do
+			local VERLIHUB_PATH="$(echo $LINE | cut -d: -f1)"
+			local PROCESS_OWNER="$(echo $LINE | cut -d: -f3)"
+			echo_s "-- Performing action for '$VERLIHUB_PATH'\n" $BOLD
+			su -c "$BINDIR/vh --$ACTION $VERLIHUB_PATH" $PROCESS_OWNER
+		done < $DEFAULT_NAME
+		exit 0
+	fi
+
+	# Run selected hub
+	local VERLIHUB_PATH=$(_get_path_from_identifier $ENTRY_ID)
+	if [ "$?" -eq 1 ] ; then
+		echo_s "-- Can't find selected entry\n" $RED
+		exit 1;
+	fi
+	local PROCESS_OWNER=$(_get_process_owner_from_identifier $ENTRY_ID)
+	if [ "$?" -eq 1 ] ; then
+		echo_s "-- Can't find process owner\n" $RED
+		exit 1;
+	fi
+
+	echo_s "-- Performing action for '$VERLIHUB_PATH'\n" $BOLD
+	if [ $(uname) != "FreeBSD" ]; then
+		su -c "$BINDIR/vh --$ACTION $VERLIHUB_PATH" $PROCESS_OWNER
+	else
+		su -c "$BINDIR/vh --$ACTION $VERLIHUB_PATH" -m $PROCESS_OWNER
+	fi
+	exit 0
+}
+
+function add() # nickname, path_to_dbconfig
+{
+	# Check if file exists otherwise create it
+	if [ ! -f $DEFAULT_NAME ]; then
+		if ! $(touch $DEFAULT_NAME > /dev/null 2>&1); then
+			echo_s "-- You don't have the write permission in '$DEFAULT_PATH' to create config file\n" $RED
+			exit 1;	
+		fi
+	elif ! $(touch $DEFAULT_NAME -a > /dev/null 2>&1); then
+		echo_s "-- You don't have the write permission in '$DEFAULT_PATH' to edit config file\n" $RED
+		exit 1;	
+	fi
+
+	# Ask information
+	echo "-- Please insert some information for new entry"
+	local IS_CONFIG_OK=false
+	until $IS_CONFIG_OK;
+	do
+		local NICKNAME=$(ask "Choose nickname of hub owner")
+
+		local IS_PROCESS_OWNER_OK=false
+		until $IS_PROCESS_OWNER_OK;
+		do
+			local PROCESS_OWNER=$(ask "Choose user that should run verlihub")
+			if ! egrep -i "^$PROCESS_OWNER" /etc/passwd > /dev/null 2>&1 ; then
+				echo_s "User does not exist in the system\n" $RED
+			else
+				IS_PROCESS_OWNER_OK=true
+			fi
+		done
+
+		local IS_CONFIG_PATH_OK=false
+		until $IS_CONFIG_PATH_OK;
+		do
+			local CONFIG_PATH=$(ask "Type path to dbconfig")
+			CONFIG_PATH=${CONFIG_PATH%/}
+			if [ "_$CONFIG_PATH" == "_" ] || ! _check_path $CONFIG_PATH ; then
+				echo_s "Please insert a valid config folder with dbconfig file\n" $RED
+			elif _check_dups $CONFIG_PATH ; then
+				echo_s "The path already exists in config file\n" $RED
+			else
+				IS_CONFIG_PATH_OK=true
+			fi
+		done
+		echo_s "This is information you choose:\n"
+		echo_s "\tNickname" $BOLD
+		echo_s ": $NICKNAME \n"
+		echo_s "\tProcess owner" $BOLD
+		echo_s ": $PROCESS_OWNER \n"
+		echo_s "\tConfig path" $BOLD
+		echo_s ": $CONFIG_PATH \n"
+		yes_or_no "Do you want to add this settings?" && IS_CONFIG_OK=true || echo -e "Let's do it again\n"
+	done
+	
+	# Add new entry		
+	echo "$CONFIG_PATH:$NICKNAME:$PROCESS_OWNER:$(date +%s)" >> $DEFAULT_NAME
+	echo "-- Successfully added entry '$CONFIG_PATH' to config file"
+	exit 0;
+}
+
+function del() # number [optional]
+{
+	# Check if identifier is set and is valid
+	if [ "_$1" != "_" ] && _check_identifier $1 ; then
+		ENTRY_ID="$1"
+	# Print list
+	else
+		echo "-- Choose hub from list:"
+		echo
+		_get_hubs_list
+		echo
+		ENTRY_ID=$(_ask_identifier)
+	fi
+
+	# Delete entry
+	if ! sed -i".bak" "${ENTRY_ID}d" $DEFAULT_NAME > /dev/null 2>&1 ; then
+		echo_s "-- A error happens while trying to delete entry\n" $RED
+		exit 1;
+	fi
+	echo "-- Done"
+	exit 0
+}
+
+case "_$1" in
+	"_"|"_--help") 		help_me;;
+	"_-v"|"_--version")	version;;
+	"_-l"|"_--list")	list;;
+	"_-r"|"_--run")		shift; action 1 $*;;
+	"_-s"|"_--stop")	shift; action 2 $*;;
+	"_-q"|"_--restart")	shift; action 3 $*;;
+	"_-a"|"_--add")		shift; add $*;;
+	"_-d"|"_--del")		shift; del $*;;
+	*)					echo_s "Unknown option $1, try $SCRIPT --help\n" $RED; exit;;
+esac;

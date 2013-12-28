@@ -1,0 +1,129 @@
+.TH vh "1" "January 2014" verlihub-1.0 "January 2014"
+.SH NAME
+vh \- This is a utility script for Verlihub
+.SH OPTIONS
+.TP
+.BR -i, --install
+The option allows you to install a new hub. For detailed explanation please read <http://www.verlihub-project.org/doc/>
+.TP
+.BR "-r, --run [path_to_dbconfig]"
+This option allows you to start the hub and run Verlihub as a daemon. Verlihub config folder can be omitted. If folder is omitted then the script will automatically try to guess them; the following folders will be searched in this order:
+.RS
+.TP
+.BR " o value of VERLIHUB_CFG enviroment variable:"
+.TP
+.BR " o /etc/verlihub"
+.TP
+.BR " o PREFIX/etc/verlihub where PREFIX is the path where you installed Verlihub"
+.TP
+.BR " o ./.verlihub"
+.TP
+.BR " o ~/.verlihub (~ means your home directory)"
+.P
+If no directory will be found, the script will return an error.
+.br
+.I Example:
+.nf
+vh --run /etc/verlihub
+.fi
+.RE
+.TP
+.BR "-q, --restart [path_to_dbconfig]"
+This option allows you to restart a running hub. You can also provide a Verlihub config folder; please refer to option --run for more information.
+.TP
+.BR "-s, --stop [path_to_dbconfig]"
+This option allows you to stop a running hub. You can also provide a Verlihub config folder; please refer to option --run for more information
+.TP
+.BR "-t, --status [path_to_dbconfig]"
+This option allows you to show if hub is running or not. You can also provide a Verlihub config folder; please refer to option --run for more information
+.TP
+.BR "-g, --geoip"
+This option allows you to update GeoIP DAT file in /usr/share/GeoIP folder. Script will download tarball from Maxmind server and it will unpack in that folder. You can also use this command in crontab.
+.TP
+.BR "-a, --autoload [path_to_dbconfig]"
+This option allow you to create symbolic link in the hub config folder to load plugins automatically with Verlihub. You have to specify one the following options:
+.RS
+.TP
+.BR "--list"
+show a list of installed plugins and their status
+.TP
+.BR "--on"
+load plugin automatically
+.TP
+.BR "--off"
+disabled autoload feature of plugin
+.P
+You can specify the config directory using --configdir option; this is optional, please refer to option --run for more information.
+.RE
+.TP
+.BR "-u, --adduser <nickname> <password> <class> [path_to_dbconfig]"
+This option allows you to add a new user to the hub. You have to specify the following extra options to create a new user:
+.RS
+.TP
+.BR "<nickname>"
+the nickname of the user
+.TP
+.BR "<password>"
+the password of the user. This is optional and it can be provided by the user.
+.TP
+.BR "<class>"
+the class of the user. Allowed values are -1, 0, 1, 2, 3, 4, 5, 10. Please refer to manager the hub manual for more information about those classes.
+.TP
+.BR "[path_to_dbconfig]"
+Verlihub config folder. This is optional; please refer to option --run for more information.
+.RE
+.TP
+.BR "--clean [path_to_dbconfig]"
+This option will ask you if you want to clean up kicklist, banlist, unbanlist, pi_iplog, pi_messages and pi_stats tables (plugins tables will be dropped only if they exists) using TRUNCATE method. This means that all data in these tables will be removed.
+.TP
+.BR "--backup <destination_path> [path_to_dbconfig]  "
+This option allows you to make a backup of database that Verlihub uses to store registered users, triggers, configuration, etc. You have to specify a folder where you want to store the backup.
+For 
+.I example
+if you want to save it to /home/foobar type:
+.nf
+vh --backup /home/foobar
+.fi
+You can also provide a Verlihub config folder; please refer to option --run for more information.
+.TP
+.BR "--restore <path_to_sql> [path_to_dbconfig] "
+This option allows you to restore a backup created with option --backup or with other MySQL utility. You have to specify the path to sql file that contains the backup. 
+For
+.I example
+if you want to restore verlihub_backup.sql that is located at /home/foobar type:
+.nf
+vh --restore /home/foobar/verlihub_backup.sql
+.fi
+You can also provide a Verlihub config folder; please refer to option --run for more information.
+.TP
+.BR "--version"
+This option prints version information about this script and Verlihub.
+.TP
+.BR --help
+displays help message with commands list
+.SH AUTHOR
+2003-2005 Daniel Muller, dan at verliba dot cz
+2006-2014 Verlihub Project, devs at verlihub-project dot org
+.SH REPORTING BUGS
+Official website: <http://verlihub-project.org/>
+.br
+Wiki pages: <http://verlihub-project.org/doc/>
+.br
+Support hub: <dchub://hub.verlihub.net:7777/>
+.br
+Translate Verlihub using Transifex.net: <https://www.transifex.net/projects/p/verlihub/>
+.SH COPYRIGHT
+Verlihub is free software; You can redistribute it
+and modify it under the terms of the GNU General
+Public License as published by the Free Software
+Foundation, either version 3 of the license, or at
+your option any later version.
+.br
+Verlihub is distributed in the hope that it will be
+useful, but without any warranty, without even the
+implied warranty of merchantability or fitness for
+a particular purpose. See the GNU General Public
+License for more details.
+.br
+Please see http://www.gnu.org/licenses/ for a copy
+of the GNU General Public License.

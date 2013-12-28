@@ -1,0 +1,500 @@
+# 
+# uhlik carbon <uhlikx@seznam.cz>, 2011.
+# Stefano  <netcelli@gmail.com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: Verlihub\n"
+"Report-Msgid-Bugs-To: http://bugs.verlihub-project.org/\n"
+"POT-Creation-Date: 2011-04-18 14:07-0000\n"
+"PO-Revision-Date: 2011-04-21 18:03+0000\n"
+"Last-Translator: uhlik <uhlikx@seznam.cz>\n"
+"Language-Team: Verlihub project Team <admin@verlihub-project.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs_CZ\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
+"X-Poedit-Basepath: /home/netcelli/Git/verlihub/plugins\n"
+"X-Poedit-Country: UNITED KINGDOM\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SearchPath-0: /home/netcelli/Git/verlihub/plugins\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: /home/netcelli/Git/verlihub/plugins/forbid/cforbidden.cpp:77
+#, c-format
+msgid "FORBID: User sent forbidden words in %s: %s"
+msgstr "FORBID: Uživatel odeslal zakázané slova v %s: %s"
+
+#: /home/netcelli/Git/verlihub/plugins/forbid/cforbidden.cpp:77
+msgid "PUBLIC chat"
+msgstr "VEŘEJNÝ chat"
+
+#: /home/netcelli/Git/verlihub/plugins/forbid/cforbidden.cpp:77
+msgid "PRIVATE chat"
+msgstr "SOUKROMÁ zpráva"
+
+#: /home/netcelli/Git/verlihub/plugins/forbid/cconsole.cpp:53
+msgid "Give a list of forbidden expressions"
+msgstr "Dodá seznam zakázaných výrazů"
+
+#: /home/netcelli/Git/verlihub/plugins/forbid/cconsole.cpp:101
+msgid "Sorry the regular expression you provided is not valid."
+msgstr "Regulární výraz není platný."
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cconsole.cpp:52
+msgid "Give a list of ISPs"
+msgstr "Dodá seznam ISP"
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cconsole.cpp:131
+msgid "Unknown range format."
+msgstr "Neznámý formát rozsahu."
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cconsole.cpp:138
+msgid "Sorry the regular expression for nickname you provided is not valid."
+msgstr "Regulární výraz pro nickname není platný."
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cconsole.cpp:146
+msgid "Sorry the regular expression for connection you provided is not valid."
+msgstr "Regulární výraz pro typ připojení není platný."
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cisps.cpp:49
+msgid "Your nick should match %[pattern]"
+msgstr "Tvoje přezdívka by měla odpovídat %[pattern]"
+
+#: /home/netcelli/Git/verlihub/plugins/isp/cisps.cpp:50
+msgid "Your connection type should match %[pattern]"
+msgstr "Tvůj typ připojení by měl odpovídat %[pattern]"
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:69
+msgid "Replaced words:"
+msgstr "Nahrazená slova:"
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:73
+msgid "Replace with"
+msgstr "Nahradit s"
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:74
+msgid "Affected class"
+msgstr "Ovlivněna class"
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:101
+#, c-format
+msgid "Word '%s' does not exist."
+msgstr "Slovo '%s' neexistuje."
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:109
+#, c-format
+msgid "Word '%s' deleted."
+msgstr "Slovo '%s' smazáno."
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:132
+msgid "Sorry the regular expression you provided cannot be parsed."
+msgstr "Regulérní výraz který jsi poskytl nelze analyzovat."
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:138
+#, c-format
+msgid "Word '%s' already exists."
+msgstr "Slovo '%s' už existuje."
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:148
+#, c-format
+msgid ""
+"Added word %s. This word will be filtered in public chat for users with "
+"class that is less than or equal to %d."
+msgstr ""
+"Vloženo slovo %s. Toto sovo bude filtrováno na veřejném chatu pro uživatele "
+"s class nižší nebo rovno %d."
+
+#: /home/netcelli/Git/verlihub/plugins/replacer/cconsole.cpp:150
+#, c-format
+msgid "Error adding word '%s'."
+msgstr "Chyba při vkládání slova '%s'."
+
+#: /home/netcelli/Git/verlihub/plugins/chatroom/cconsole.cpp:53
+msgid "Give a list of chatrooms"
+msgstr "Dodá seznam místností"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cluainterpreter.cpp:181
+msgid "(unknown LUA error)"
+msgstr "(neznámá LUA chyba)"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:85
+msgid "Lua version"
+msgstr "Lua verze"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:86
+msgid "Lua library version"
+msgstr "Lua knihovna verze"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:87
+msgid "Copyright"
+msgstr "Copyright"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:88
+msgid "Authors"
+msgstr "Autoři"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:98
+msgid "Version date"
+msgstr "Version date"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:99
+msgid "Running scripts"
+msgstr "Běžící skripty"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:100
+msgid "Memory used"
+msgstr "Využitá paměť"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:106
+msgid "Running LUA scripts:"
+msgstr "Běžící LUA skripty:"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:109
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:77
+msgid "Script"
+msgstr "Skript"
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:138
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:234
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:110
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:200
+#, c-format
+msgid "Script %s stopped."
+msgstr "Skript %s zastaven."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:147
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:244
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:120
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:209
+#, c-format
+msgid "Script #%s not stopped because it is not running."
+msgstr "Skript #%s nebyl zastaven protože nebyl spuštěn."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:149
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:122
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:211
+#, c-format
+msgid "Script %s not stopped because it is not running."
+msgstr "Skript %s nebyl zastaven protože nebyl spuštěn."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:176
+#, c-format
+msgid "Failed loading directory %s."
+msgstr "Selhalo nahrávání adresáře %s."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:198
+#, c-format
+msgid "Script %s is already running."
+msgstr "Skript %s už běží."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:203
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:252
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:145
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:222
+#, c-format
+msgid "Script %s is now running."
+msgstr "Skript %s je nyní spuštěn."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:207
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:256
+#, c-format
+msgid "Script %s not found or could not be parsed."
+msgstr "Skript %s nebyl nalezen nebo jej nelze analyzovat."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:246
+#, c-format
+msgid "Script %s not stopped  because it is not running."
+msgstr "Skript %s nezastaven  protože neběží."
+
+#: /home/netcelli/Git/verlihub/plugins/lua/cconsole.cpp:275
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:169
+#, c-format
+msgid "Updated %s.%s from '%s' to '%s'"
+msgstr "Aktualizováno %s.%s z '%s' na '%s'"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:93
+#, c-format
+msgid "Last %d events of nick %s:"
+msgstr "Posledních %d akcí uživatele %s:"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:95
+#, c-format
+msgid "Last %d events of IP %s:"
+msgstr "Posledních %d akcí z IP %s:"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:100
+msgid "connect"
+msgstr "spojit"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:100
+msgid "login"
+msgstr "přihlášení"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:100
+msgid "logout"
+msgstr "odhlášení"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:100
+msgid "disconnect"
+msgstr "odpojení"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:103
+msgid "bad nick or nick temporarily banned"
+msgstr "špatný nick nebo nick dočasně zabanován"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:104
+msgid "used different nick in chat"
+msgstr "použit jiný nick v chatu"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:105
+msgid "kicked"
+msgstr "vykopnut"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:106
+msgid "redirected"
+msgstr "přesměrován"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:107
+msgid "exit from the hub"
+msgstr "odchod z hubu"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:108
+msgid "critical hub load"
+msgstr "critical hub load"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:109
+msgid "timeout"
+msgstr "timeout"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:110
+msgid "user did nothing for too long time"
+msgstr "uživatel neprojevil žádnou aktivitu po příliš dlouhou dobu"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:111
+msgid "hub full"
+msgstr "hub je plný"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:112
+msgid "share limit"
+msgstr "limit sdílení"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:113
+msgid "no tag or not valid"
+msgstr "bez tagu nebo vadný tag"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:114
+msgid "tag breaks hub rules"
+msgstr "tag porušuje pravidla hubu"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:115
+msgid "wrong password"
+msgstr "špatné heslo"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:116
+msgid "error in login sequence"
+msgstr "chyba v přihlašovací sekvenci"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:117
+msgid "syntax error in some messages"
+msgstr "chyba v syntaxi zpráv"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:118
+msgid "invalid key"
+msgstr "nesprávný klíč"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:122
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:161
+msgid "Date"
+msgstr "Datum"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:123
+msgid "Action"
+msgstr "Akce"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:124
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:162
+msgid "Nickname"
+msgstr "Přezdívka"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:125
+msgid "Info"
+msgstr "Info"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:153
+#, c-format
+msgid "Nick %s has lately been in the hub with the following IP"
+msgstr "Nick %s byl naposled hubu s následující IP"
+
+#: /home/netcelli/Git/verlihub/plugins/iplog/ciplog.cpp:155
+#, c-format
+msgid "IP %s has lately been in the hub with following nicknames"
+msgstr "IP %s byla naposled na hubu s následujícími nicky"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:46
+msgid "Plugin not found."
+msgstr "Plugin nenalezen."
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:115
+msgid "Plugin does not support scripts"
+msgstr "Plugin nepodporuje skripty"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:121
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:131
+msgid "Loaded"
+msgstr "Nahráno"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:123
+msgid "Error loading script"
+msgstr "Chyba při nahrávání scriptu"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:153
+msgid ""
+"Warning: the plugin should be recompiled because VerliHub has been recently "
+"updated"
+msgstr ""
+"Varování: plugin by měl být rekompilován protože VerliHub byl aktualizován"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:179
+msgid "Reloaded"
+msgstr "Obnoveno"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:203
+msgid "Name"
+msgstr "Název"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:203
+msgid "On"
+msgstr "Zapnuto"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:203
+msgid "Off"
+msgstr "Vypnuto"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:204
+msgid "Auto"
+msgstr "Auto"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:204
+msgid "Manual"
+msgstr "Manual"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:205
+msgid "Path"
+msgstr "Cesta"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:207
+msgid "Description"
+msgstr "Popis"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cplugs.cpp:209
+msgid "Last Error"
+msgstr "Poslední chyba"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:45
+msgid "Plugman version"
+msgstr "Plugman verze"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:46
+msgid "Verlihub executable"
+msgstr "Verlihub spouštěč"
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:149
+msgid ""
+"Plugin name must be max 10 characters long; please provide another one."
+msgstr "Název pluginu může mít pouze 10 znaků; vyber jiné prosím."
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:154
+msgid "Please provide a valid path for the plugin."
+msgstr "Nastav funkční cestu pro plugin."
+
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:185
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:197
+#: /home/netcelli/Git/verlihub/plugins/plugman/cconsole.cpp:209
+#, c-format
+msgid "Plugin '%s' not found."
+msgstr "Plugin '%s' nebyl nalezen."
+
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:70
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:92
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:133
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:158
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:180
+msgid "Python interpreter is not loaded."
+msgstr "Python překladač nebyl nahrán."
+
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:73
+msgid "Loaded Python scripts:"
+msgstr "Nahrané Python skripty:"
+
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:139
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:216
+msgid "Failed to allocate new Python interpreter."
+msgstr "Selhalo hledání nového překladače pro Python."
+
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:147
+#: /home/netcelli/Git/verlihub/plugins/python/cconsole.cpp:224
+#, c-format
+msgid "Script %s not found or could not be parsed!."
+msgstr "Skript %s nebyl nalezen nebo nelze analyzovat!"
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cconsole.cpp:74
+#, c-format
+msgid "The message has been sent to %s because he is online."
+msgstr "Zpráva byla odeslána uživateli %s protože je online."
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cconsole.cpp:77
+msgid "Message saved."
+msgstr "Zpráva uložena."
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cconsole.cpp:86
+#, c-format
+msgid "You have %d message in your box."
+msgid_plural "You have %d messages in your box."
+msgstr[0] "Máš %d zprávu ve schránce."
+msgstr[1] "Máš %d zprávy ve schránce"
+msgstr[2] "Máš %d zpráv ve schránce."
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cconsole.cpp:90
+msgid "You have no new message in your box."
+msgstr "Nemáš žádné zprávy ve schránce."
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cmsglist.cpp:232
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+msgstr ""
+"Od: %s Pro: %s\n"
+"Datum: %s\n"
+"Předmět: %s\n"
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cmsglist.cpp:235
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+"%s\n"
+"----\n"
+msgstr ""
+"Od: %s Pro: %s\n"
+"Datum: %s\n"
+"Předmět: %s\n"
+"%s\n"
+"----\n"
+
+#: /home/netcelli/Git/verlihub/plugins/messenger/cmsglist.cpp:238
+#, c-format
+msgid ""
+"#OFFLINE MESSAGE# [%s]\n"
+"Subject: %s -------------------------\n"
+"%s"
+msgstr ""
+"#OFFLINE ZPRÁVA# [%s]\n"
+"Předmět: %s -------------------------\n"
+"%s"
+
+

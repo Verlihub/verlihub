@@ -1,0 +1,192 @@
+#!@BASH_PATH@
+
+#
+#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+#
+
+SCRIPT=$0
+# Include library
+#source $(dirname $0)/vh_lib
+source /usr/local/bin/vh_lib
+
+# Check whereis pisg
+function _check_pisg()
+{
+	PISG_BIN=`whereis pisg | awk '{ print $2 }'`
+	if [ -z "$PISG_BIN" ]; then
+		echo_s "-- Can't find pisg, please install it\n" $RED
+		exit;
+	fi
+}
+
+help_me()
+{
+	echo_s "$SCRIPT\n" $BOLD
+	echo "This is a utility script for configure pisg for DC++, usage:"
+	echo_s "   --generate" $RED && echo -e "\t\tGenerate pisg config file"
+	echo_s "   --cron" $RED && echo -e "\t\tInstall a new cron job to collect stats"
+	echo_s "   --help" $RED && echo -e "\t\tShow this help"
+	echo ""
+}
+
+function generate()
+{
+	_check_pisg
+
+	# Ask information
+	echo "-- In order to configure pisg you need to insert some information about"
+	echo "   hub you want to genereate statistics"
+
+	IS_CONFIG_OK=false
+	until $IS_CONFIG_OK;
+	do
+		IS_CONFIG_PATH_OK=false
+		until $IS_CONFIG_PATH_OK;
+		do
+			CONFIG_PATH=$(ask "Type path to dbconfig")
+			CONFIG_PATH=${CONFIG_PATH%/}
+			if [ "_$CONFIG_PATH" != "_" ] && set_path "$CONFIG_PATH" ; then
+				IS_CONFIG_PATH_OK=true
+			fi
+		done
+
+		IS_DESTINATION_FOLDER_OK=false
+		until $IS_DESTINATION_FOLDER_OK;
+		do
+			DESTINATION_FOLDER=$(ask "Type folder of your webserver where pisg will put html file")
+			if [ ! -d $DESTINATION_FOLDER ]; then
+				echo_s "-- Destination folder does not exists\n" $RED
+			elif $(touch $DESTINATION_FOLDER/_test_file > /dev/null 2>&1); then
+				$(rm $DESTINATION_FOLDER/_test_file) ;
+				IS_DESTINATION_FOLDER_OK=true
+			else
+				echo_s "-- You don't have the write permission in '$DESTINATION_FOLDER'\n" $RED
+				exit;
+			fi
+		done
+
+		IS_PISG_PATH_OK=false
+		until $IS_PISG_PATH_OK;
+		do
+			PISG_PATH=$(ask "Type folder where localted all pisg files")
+			if [ ! -d $PISG_PATH ]; then
+				echo_s "-- Pisg folder does not exists\n" $RED
+			elif [ ! -d "$PISG_PATH/gfx" ] || [ ! -d "$PISG_PATH/layout" ]; then
+				echo_s "-- This is not a valid pisg folder\n" $RED
+			elif $(touch $PISG_PATH/_test_file > /dev/null 2>&1); then
+				$(rm $PISG_PATH/_test_file) ;
+				IS_PISG_PATH_OK=true
+			else
+				echo_s "-- You don't have the write permission in '$PISG_PATH'\n" $RED
+				exit;
+			fi
+		done
+
+		echo_s "This is information you choose:\n"
+		echo_s "\tConfig path" $BOLD
+		echo_s ": $CONFIG_PATH \n"
+		echo_s "\tLocation of generated HTML file" $BOLD
+		echo_s ": $DESTINATION_FOLDER \n"
+		echo_s "\tPath to pisg" $BOLD
+		echo_s ": $PISG_PATH \n"
+		yes_or_no "Do you want to continue?" && IS_CONFIG_OK=true || echo -e "Let's do it again\n"
+	done
+	
+	echo "-- Generating config file"
+
+	# Get owner
+	OWNER=$(mysql_value "hub_owner")
+	if [ "$OWNER" == "not_set" ]; then
+		IS_OWNER_OK=false
+		until $IS_OWNER_OK;
+		do
+			OWNER=$(ask "There is no owner set in DB, please type one [do not use special characters]")
+			if [ "_$OWNER" != "_" ] ; then
+				IS_OWNER_OK=true
+			fi
+		done
+	fi
+	# Get language
+	LOCALE=$(get_var_from_conf "locale" "not_set")
+	# Get bot
+	HUB_SECURITY=$(mysql_value "hub_security")
+	if [ "$HUB_SECURITY" == "not_set" ]; then
+		echo_s "-- Can't get hub security name to exclude BOT in pisg file. Edit it manually!"
+	fi
+	# Get op chat
+	OPCHAT=$(mysql_value "opchat_name")
+	if [ "$OPCHAT" == "not_set" ]; then
+		echo_s "-- Can't get hub OP chat name to exclude BOT in pisg file. Edit it manually!"
+	fi
+
+	local FILE="$PISG_PATH/pisg.cfg"
+	echo "<channel=\"Main Chat\">" > $FILE
+	echo "Logfile = \"$CONFIG_PATH/chat.log\"" >> $FILE
+	echo "Format = \"DCpp\"" >> $FILE
+	echo "Maintainer = \"$OWNER\"" >> $FILE
+	echo "OutputFile = \"$DESTINATION_FOLDER/index.html\"" >> $FILE
+	if [ "$LOCALE" != "not_set" ]; then
+		echo "Lang = \"$LOCALE\"" >> $FILE
+	fi
+	echo "</channel>" >> $FILE
+	echo "--botovi:" >> $FILE
+	echo "<user nick=\"$HUB_SECURITY\" ignore=\"y\">" >> $FILE
+	echo "<user nick=\"$OPCHAT\" ignore=\"y\">" >> $FILE
+	
+	echo "-- File save as '$FILE'"
+	exit 0;
+}
+
+function cron()
+{
+	_check_pisg
+
+	IS_CONFIG_PATH_OK=false
+		until $IS_CONFIG_PATH_OK;
+		do
+			CONFIG_PATH=$(ask "Type path to dbconfig")
+			CONFIG_PATH=${CONFIG_PATH%/}
+			if [ "_$CONFIG_PATH" != "_" ] && set_path "$CONFIG_PATH" ; then
+				IS_CONFIG_PATH_OK=true
+			fi
+		done
+		
+		local FILE="$CONFIG_PATH/pisg_cron"
+		if $(touch $FILE > /dev/null 2>&1); then
+			echo "@hourly $PISG_BIN --silent" > $FILE > /dev/null 2>&1
+			crontab $FILE > /dev/null 2>&1
+			if [ $? -ne 0 ]; then
+				echo_s "-- A error happens while trying to install new cron job '$FILE'\n" $RED
+				exit 1;
+			fi
+		else
+			echo_s "-- You don't have the permission to write in '$CONFIG_PATH'\n" $RED
+			exit 1;
+		fi
+	echo "-- Done"
+}
+
+case "_$1" in
+	"_") 		help_me ;;
+	"_--help") 	help_me;;
+	"_--generate")	generate;;
+	"_--cron")	cron;;
+	*)
+		echo_s "Unknown option $1, try $SCRIPT --help\n" $RED
+		exit;;
+esac;
