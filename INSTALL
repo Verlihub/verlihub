@@ -18,3 +18,4 @@ cd build
 cmake ..
 make
 make install (as super user)
+ldconfig (as super user, this is required only when you get: cannot open shared object file, no such file or directory)
