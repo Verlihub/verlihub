@@ -84,7 +84,7 @@ namespace nVerliHub {
 
 	bool cDCCommand::sDCCmdFunc::GetParOnlineUser(int rank, cUser *&dest, string &nick)
 	{
-		if(!GetParUnEscapeStr(rank, nick))
+		if(!GetParStr(rank, nick))
 			return false;
 		dest = mS->mUserList.GetUserByNick(nick);
 		return true;

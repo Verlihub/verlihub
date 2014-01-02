@@ -1260,7 +1260,7 @@ bool cDCConsole::cfBan::operator()()
 	cBan Ban(mS);
 	cKick Kick;
 	string Who;
-	GetParUnEscapeStr(BAN_WHO, Who);
+	GetParStr(BAN_WHO, Who);
 	bool unban = (BanAction == BAN_UNBAN);
 	int BanCount = 100;
 	int Count = 0;

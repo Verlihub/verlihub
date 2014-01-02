@@ -583,14 +583,14 @@ bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)
 				if (chat[0]=='+')
 				{
 					if (!mConsole->DoCommand(chat, conn))
-						SendPMTo(conn, "Unknown Chatroom command.");
+						SendPMTo(conn, "Unknown chatroom command specified.");
 
 				}
 				else SendPMToAll(chat, conn);
 			}
 			else
 			{
-				os << "You can't use " << mNick << " rather use main chat ;o)..";
+				os << "You can't use this chatroom, use main chat instead.";
 				SendPMTo(conn, os.str());
 			}
 		}
@@ -626,7 +626,7 @@ bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 					mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG),other->mxConn,&conn->mpUser->mNick);
 				}
 				else
-					mxServer->DCPrivateHS("Hub-security doesn't accept pm's, but you can try a +command (or !)", conn);
+					mxServer->DCPrivateHS("Hub security doesn't accept private messages, use main chat instead.", conn);
 		}
 	}
    return true;
