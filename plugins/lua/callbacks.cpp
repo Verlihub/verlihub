@@ -2066,6 +2066,125 @@ cLuaInterpreter *FindLua(lua_State *L)
 	return NULL;
 }
 
+int _AddChatUser(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:AddChatUser, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+		luaerror(L, "User not found");
+		return 2;
+	}
+
+	if (!serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
+		serv->mChatUsers.Add(user->mxConn->mpUser);
+		lua_pushboolean(L, 1);
+		lua_pushnil(L);
+	} else {
+		luaerror(L, "User already in list");
+	}
+
+	return 2;
+}
+
+int _DelChatUser(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:DelChatUser, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+		luaerror(L, "User not found");
+		return 2;
+	}
+
+	if (serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
+		serv->mChatUsers.Remove(user->mxConn->mpUser);
+		lua_pushboolean(L, 1);
+		lua_pushnil(L);
+	} else {
+		luaerror(L, "User not in list");
+	}
+
+	return 2;
+}
+
+int _IsChatUser(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:IsChatUser, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+		luaerror(L, "User not found");
+		return 2;
+	}
+
+	if (serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
+		lua_pushboolean(L, 1);
+	} else {
+		lua_pushboolean(L, 0);
+	}
+
+	lua_pushnil(L);
+	return 2;
+}
+
 int _AddRegUser(lua_State *L)
 {
 	string nick, password, op;

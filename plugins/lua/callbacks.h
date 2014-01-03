@@ -79,6 +79,9 @@ namespace nVerliHub {
 	int _GetTotalShareSize(lua_State *L);
 	int _GetTempRights(lua_State *L);
 	int _SetTempRights(lua_State *L);
+	int _AddChatUser(lua_State *L);
+	int _DelChatUser(lua_State *L);
+	int _IsChatUser(lua_State *L);
 	int _AddRegUser(lua_State *L);
 	int _DelRegUser(lua_State *L);
 	int _GetTopic(lua_State *L);

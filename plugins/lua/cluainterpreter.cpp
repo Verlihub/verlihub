@@ -85,6 +85,9 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("IsBot",          &_IsBot);
 	RegisterFunction("GetHubIp",          &_GetHubIp);
 	RegisterFunction("GetHubSecAlias",          &_GetHubSecAlias);
+	RegisterFunction("AddChatUser", &_AddChatUser);
+	RegisterFunction("DelChatUser", &_DelChatUser);
+	RegisterFunction("IsChatUser", &_IsChatUser);
 	RegisterFunction("AddRegUser",          &_AddRegUser);
 	RegisterFunction("DelRegUser",          &_DelRegUser);
 	RegisterFunction("GetUserClass",      &_GetUserClass);
