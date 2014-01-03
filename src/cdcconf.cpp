@@ -65,6 +65,7 @@ void cDCConf::AddVars()
 	Add("hub_topic",hub_topic,string(""));
 	Add("hub_category",hub_category,string(""));
 	Add("hub_icon_url", hub_icon_url, string(""));
+	Add("hub_encoding", hub_encoding, string("Windows-1252"));
 	Add("hub_owner",hub_owner,string(""));
 	Add("hub_version",hub_version,VERSION);
 	Add("hub_version_special",hub_version_special,string(""));
