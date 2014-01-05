@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1269,6 +1270,11 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (!conn->mpUser->mInList)
 		return -2;
 
+	if (!conn->mpUser->IsPassive) {
+		mS->DCPublicHS(_("You can't send this request because you're not in passive mode."), conn);
+		return -2;
+	}
+
 	ostringstream os;
 
 	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) {
@@ -1321,25 +1327,24 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	// find and check the other nickname
 
-	string &str = msg->ChunkString(eCH_RC_OTHER);
-	cUser *other = mS->mUserList.GetUserByNick(str);
+	string &onick = msg->ChunkString(eCH_RC_OTHER);
+	cUser *other = mS->mUserList.GetUserByNick(onick);
 
 	if (!other) {
-		os << autosprintf(_("User not found: %s"), str.c_str());
+		os << autosprintf(_("User not found: %s"), onick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
 	if (!other->mxConn) {
-		mS->DCPublicHS(_("Robots don't share."), conn);
+		os << autosprintf(_("User is a bot: %s"), onick.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
-	// check if user can download and if other user hides share
-
-	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) {
+	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) { // check if user can download and if other user hides share
 		if (!conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from: %s"), str.c_str());
+			os << autosprintf(_("You can't download from: %s"), onick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
