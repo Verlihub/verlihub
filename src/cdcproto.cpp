@@ -155,16 +155,18 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	int limit_extra = 0;
 
 	// Calculate user limits
-	if(conn->GetTheoricalClass() == eUC_REGUSER)
-		limit_extra+=mS->mC.max_extra_regs;
-	if(conn->GetTheoricalClass() == eUC_VIPUSER)
-		limit_extra+=mS->mC.max_extra_vips;
-	if(conn->GetTheoricalClass() == eUC_OPERATOR)
-		limit_extra+=mS->mC.max_extra_ops;
-	if(conn->GetTheoricalClass() == eUC_CHEEF)
-		limit_extra+=mS->mC.max_extra_cheefs;
-	if(conn->GetTheoricalClass() == eUC_ADMIN)
-		limit_extra+=mS->mC.max_extra_admins;
+	if (conn->GetTheoricalClass() == eUC_PINGER)
+		limit_extra += mS->mC.max_extra_pings;
+	else if (conn->GetTheoricalClass() == eUC_REGUSER)
+		limit_extra += mS->mC.max_extra_regs;
+	else if (conn->GetTheoricalClass() == eUC_VIPUSER)
+		limit_extra += mS->mC.max_extra_vips;
+	else if (conn->GetTheoricalClass() == eUC_OPERATOR)
+		limit_extra += mS->mC.max_extra_ops;
+	else if (conn->GetTheoricalClass() == eUC_CHEEF)
+		limit_extra += mS->mC.max_extra_cheefs;
+	else if (conn->GetTheoricalClass() == eUC_ADMIN)
+		limit_extra += mS->mC.max_extra_admins;
 
 	limit += limit_extra;
 	limit_cc += limit_extra;

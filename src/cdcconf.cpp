@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -94,6 +95,7 @@ void cDCConf::AddVars()
 	Add("max_users",max_users_total,6000);
 	Add("max_users_passive", max_users_passive, -1);
 	Add("max_users_from_ip", max_users_from_ip, 0);
+	Add("max_extra_pings", max_extra_pings, 10);
 	Add("max_extra_regs",max_extra_regs,25);
 	Add("max_extra_vips",max_extra_vips,50);
 	Add("max_extra_ops",max_extra_ops,100);

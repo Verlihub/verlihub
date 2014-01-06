@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -67,6 +68,7 @@ public:
 	int max_users_passive;
 	unsigned int max_users_from_ip;
 	unsigned int max_users[7];
+	unsigned int max_extra_pings;
 	unsigned int max_extra_regs;
 	unsigned int max_extra_vips;
 	unsigned int max_extra_ops;
