@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2005 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -212,6 +213,31 @@ int _Disconnect(lua_State *L)
 		lua_pushnil(L);
 		return 2;
 	}
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
+int _DisconnectNice(lua_State *L)
+{
+	if (lua_gettop(L) == 2) {
+		if (!lua_isstring(L, 2)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		string nick = (char *)lua_tostring(L, 2);
+
+		if (!CloseConnectionNice((char*)nick.c_str())) {
+			luaerror(L, ERR_CALL);
+			return 2;
+		}
+	} else {
+		luaL_error(L, "Error calling VH:DisconnectNice, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
 	return 1;
 }

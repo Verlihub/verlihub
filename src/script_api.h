@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -31,6 +32,7 @@ namespace nVerliHub {
 	bool SendToAll(char *data);
 	bool SendPMToAll(char *data, char *from, int min_class,  int max_class);
 	bool CloseConnection(char *nick);
+	bool CloseConnectionNice(char *nick);
 	bool StopHub(int code);
 	char * GetUserCC(char * nick);
 	#if HAVE_LIBGEOIP

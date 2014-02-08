@@ -653,7 +653,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnFirstMyINFO.CallAll(conn, msg)) {
-			conn->CloseNow();
+			conn->CloseNice(1000, eCR_KICKED);
 			return -2;
 		}
 		#endif

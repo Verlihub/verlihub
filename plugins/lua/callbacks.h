@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2005 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -34,6 +35,7 @@ namespace nVerliHub {
 	int _SendToAll(lua_State *L);
 	int _SendPMToAll(lua_State *L);
 	int _Disconnect(lua_State *L);
+	int _DisconnectNice(lua_State *L);
 	int _StopHub(lua_State *L);
 	int _GetMyINFO(lua_State *L);
 	int _GetUserCC(lua_State *L);
