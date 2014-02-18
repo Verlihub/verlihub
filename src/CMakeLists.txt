@@ -9,7 +9,6 @@ SET(VERLIHUB_HDRS
 	cchatconsole.h
 	ccommandcollection.h
 	ccommand.h
-	ccommand.h
 	cconfigbase.h
 	cconfigfile.h
 	cconfigitembase.h
@@ -21,7 +20,6 @@ SET(VERLIHUB_HDRS
 	cconnselect.h
 	cconntypes.h
 	cdbconf.h
-	cdbconf.h
 	cdcclient.h
 	cdcclients.h
 	cdccommand.h
@@ -30,7 +28,6 @@ SET(VERLIHUB_HDRS
 	cdcproto.h
 	cdctag.h
 	cfreqlimiter.h
-	cgeoip.h
 	cgeoip.h
 	cinfoserver.h
 	cinterpolexp.h
@@ -84,6 +81,7 @@ SET(VERLIHUB_HDRS
 	czlib.h
 	i18n.h
 )
+
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
