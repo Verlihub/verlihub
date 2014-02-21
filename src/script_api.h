@@ -30,6 +30,8 @@ namespace nVerliHub {
 	bool SendDataToUser(char *data, char *nick);
 	bool SendToClass(char *data, int min_class,  int max_class);
 	bool SendToAll(char *data);
+	bool SendToActive(char *data);
+	bool SendToPassive(char *data);
 	bool SendPMToAll(char *data, char *from, int min_class,  int max_class);
 	bool CloseConnection(char *nick);
 	bool CloseConnectionNice(char *nick);

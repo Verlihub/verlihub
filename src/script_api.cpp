@@ -121,6 +121,41 @@ bool SendToAll(char *data)
 	return true;
 }
 
+bool SendToActive(char *data)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		return false;
+	}
+
+	string omsg(data);
+
+	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+		return false;
+
+	serv->mActiveUsers.SendToAll(omsg);
+	return true;
+}
+
+bool SendToPassive(char *data)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		return false;
+	}
+
+	string omsg(data);
+
+	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+		return false;
+
+	serv->mPassiveUsers.SendToAll(omsg);
+	return true;
+}
 
 bool SendPMToAll(char *data, char *from, int min_class,  int max_class)
 {

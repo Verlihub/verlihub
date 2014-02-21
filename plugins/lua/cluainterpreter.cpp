@@ -61,6 +61,8 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("SendDataToAll",     &_SendToClass); /* back compatibility */
 	RegisterFunction("SendToClass",     &_SendToClass);
 	RegisterFunction("SendToAll",     &_SendToAll);
+	RegisterFunction("SendToActive", &_SendToActive);
+	RegisterFunction("SendToPassive", &_SendToPassive);
 	RegisterFunction("SendPMToAll",       &_SendPMToAll);
 	RegisterFunction("CloseConnection",   &_Disconnect); /* back compatibility */
 	RegisterFunction("Disconnect",   &_Disconnect);
