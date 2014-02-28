@@ -33,7 +33,6 @@ SET(VERLIHUB_HDRS
 	cinterpolexp.h
 	ckick.h
 	ckicklist.h
-	ckicklist.h
 	cmeanfrequency.h
 	cmessagedc.h
 	cmutex.h
