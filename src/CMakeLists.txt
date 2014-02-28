@@ -161,7 +161,6 @@ ADD_CUSTOM_COMMAND(
 	${VERLIHUB_SRCS}
 
 )
-
 ADD_CUSTOM_TARGET(make_time.h ALL)
 LIST(APPEND ${VERLIHUB_HDRS} make_time.h)
 # ----------------------------------------------------------------------------------------------------
