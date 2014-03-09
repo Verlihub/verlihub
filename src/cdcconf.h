@@ -117,6 +117,7 @@ public:
 	string hub_security;
 	string hub_category;
 	string hub_icon_url;
+	string hub_logo_url;
 	string hub_encoding;
 	string hub_security_desc;
 	string opchat_name;

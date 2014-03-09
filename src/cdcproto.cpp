@@ -1904,6 +1904,9 @@ int cDCProto::DCB_BotINFO(cMessageDC * msg, cConnDC * conn)
 	if (!mS->mC.hub_icon_url.empty())
 		os << "$SetIcon " << mS->mC.hub_icon_url.c_str() << "|";
 
+	if (!mS->mC.hub_logo_url.empty())
+		os << "$SetLogo " << mS->mC.hub_logo_url.c_str() << "|";
+
 	os << "$HubINFO "
 	<< mS->mC.hub_name << S
 	<< mS->mC.hub_host << S

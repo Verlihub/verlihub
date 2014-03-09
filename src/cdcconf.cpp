@@ -66,6 +66,7 @@ void cDCConf::AddVars()
 	Add("hub_topic",hub_topic,string(""));
 	Add("hub_category",hub_category,string(""));
 	Add("hub_icon_url", hub_icon_url, string(""));
+	Add("hub_logo_url", hub_logo_url, string(""));
 	Add("hub_encoding", hub_encoding, string("Windows-1252"));
 	Add("hub_owner",hub_owner,string(""));
 	Add("hub_version",hub_version,VERSION);
@@ -192,8 +193,8 @@ void cDCConf::AddVars()
 	Add("bc_reply",mS.LastBCNick,mEmpty);
 	Add("plugin_mod_class",plugin_mod_class,5);
 	Add("topic_mod_class",topic_mod_class,4);
-	Add("cmd_start_op",cmd_start_op,string("!"));
-	Add("cmd_start_user",cmd_start_user,string("+"));
+	Add("cmd_start_op", cmd_start_op, string("!+/"));
+	Add("cmd_start_user", cmd_start_user, string("!+/"));
 	Add("dest_report_chat", dest_report_chat, false);
 	Add("dest_regme_chat", dest_regme_chat, false);
 	Add("dest_drop_chat", dest_drop_chat, false);
