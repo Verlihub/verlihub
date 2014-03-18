@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2005 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -751,11 +752,25 @@ bool cpiLua::OnUpdateClass(cUser *user, string mNick, int oldClass, int newClass
 bool cpiLua::OnNewBan(cUser *user, cBan *ban)
 {
 	if ((user != NULL) && (ban != NULL)) {
+		string ranmin, ranmax;
+
+		if (ban->mRangeMin > 0)
+			cBanList::Num2Ip(ban->mRangeMin, ranmin);
+
+		if (ban->mRangeMax > 0)
+			cBanList::Num2Ip(ban->mRangeMax, ranmax);
+
 		char * args[] = {
-			(char *)ban->mNickOp.c_str(),
 			(char *)ban->mIP.c_str(),
 			(char *)ban->mNick.c_str(),
+			(char *)ban->mHost.c_str(),
+			(char *)(ban->mShare > 0 ? longToString(ban->mShare) : ""),
+			(char *)ranmin.c_str(),
+			(char *)ranmax.c_str(),
+			(char *)toString(ban->mType),
+			(char *)longToString(ban->mDateEnd),
 			(char *)ban->mReason.c_str(),
+			(char *)ban->mNickOp.c_str(),
 			NULL
 		};
 
