@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -69,9 +70,9 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO),".w(ho)?(\\S+) ","(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK),".(kick|drop) ","(\\S+)( (.*)$)?", &mFunKick, eUR_KICK ),
-	mCmdInfo(int(eCM_INFO),".(\\S+)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO),".(hub|server)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG),".plug(in|out|list|reg|reload) ","(\\S+)( (.*)$)?", &mFunPlug),
-	mCmdReport(int(eCM_REPORT),"\\+report ","(\\S+)( (.*)$)?", &mFunReport),
+	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
 	mCmdGetConfig(int(eCM_GETCONFIG),".(gc|getconfig) ?","(\\S+)?", &mFunGetConfig),
 	mCmdClean(int(eCM_CLEAN),".clean(\\S+) ?", "(\\S+)?", &mFunClean),
@@ -146,32 +147,33 @@ int cDCConsole::OpCommand(const string &str, cConnDC * conn)
 	string cmd;
 	ostringstream os;
 	cmd_line >> cmd;
-	cmd = toLower(cmd); // @todo: use mS->mC.cmd_start_op instead of exclamation mark
+	cmd = toLower(cmd);
+	string cmdid = cmd.substr (1);
 
 	switch (conn->mpUser->mClass) {
 		case eUC_MASTER:
-			if (cmd == "!quit") return CmdQuit(cmd_line, conn, 0);
-			if (cmd == "!restart") return CmdQuit(cmd_line, conn, 1);
-			if (cmd == "!dbg_hash") { mOwner->mUserList.DumpProfile(cerr); return 1; }
-			if (cmd == "!core_dump") return CmdQuit(cmd_line, conn, -1);
-			if (cmd == "!hublist") { mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn); return 1; }
+			if (cmdid == "quit") return CmdQuit(cmd_line, conn, 0);
+			if (cmdid == "restart") return CmdQuit(cmd_line, conn, 1);
+			if (cmdid == "dbg_hash") { mOwner->mUserList.DumpProfile(cerr); return 1; }
+			if (cmdid == "core_dump") return CmdQuit(cmd_line, conn, -1);
+			if (cmdid == "hublist") { mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn); return 1; }
 		case eUC_ADMIN:
-			if (cmd == "!userlimit" || cmd == "!ul") return CmdUserLimit(cmd_line, conn);
-			if (cmd == "!reload" || cmd == "!re") return CmdReload(cmd_line, conn);
+			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
+			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);
 		case eUC_CHEEF:
-			if (cmd == "!ccbroadcast" || cmd == "!ccbc") return CmdCCBroadcast(cmd_line, conn, eUC_NORMUSER, eUC_MASTER);
-			if (cmd == "!class") return CmdClass(cmd_line, conn);
-			if (cmd == "!protect") return CmdProtect(cmd_line, conn);
+			if (cmdid == "ccbroadcast" || cmdid == "ccbc") return CmdCCBroadcast(cmd_line, conn, eUC_NORMUSER, eUC_MASTER);
+			if (cmdid == "class") return CmdClass(cmd_line, conn);
+			if (cmdid == "protect") return CmdProtect(cmd_line, conn);
 		case eUC_OPERATOR:
-			if (cmd == "!topic" || cmd == "!hubtopic" ) return CmdTopic(cmd_line, conn);
-			if (cmd == "!getip" || cmd == "!gi") return CmdGetip(cmd_line, conn);
-			if (cmd == "!gethost" || cmd == "!gh") return CmdGethost(cmd_line, conn);
-			if (cmd == "!getinfo" || cmd == "!gn") return CmdGetinfo(cmd_line, conn);
-			if (cmd == "!help" || cmd == "!?") return CmdHelp(cmd_line, conn);
-			if (cmd == "!hideme" || cmd == "!hm") return CmdHideMe(cmd_line, conn);
-			if (cmd == "!hidekick" || cmd == "!hk") return CmdHideKick(cmd_line, conn);
-			if (cmd == "!unhidekick" || cmd == "!uhk") return CmdUnHideKick(cmd_line, conn);
-			if (cmd == "!commands" || cmd == "!cmds") return CmdCmds(cmd_line, conn);
+			if (cmdid == "topic" || cmdid == "hubtopic" ) return CmdTopic(cmd_line, conn);
+			if (cmdid == "getip" || cmdid == "gi") return CmdGetip(cmd_line, conn);
+			if (cmdid == "gethost" || cmdid == "gh") return CmdGethost(cmd_line, conn);
+			if (cmdid == "getinfo" || cmdid == "gn") return CmdGetinfo(cmd_line, conn);
+			if (cmdid == "help" || cmdid == "?") return CmdHelp(cmd_line, conn);
+			if (cmdid == "hideme" || cmdid == "hm") return CmdHideMe(cmd_line, conn);
+			if (cmdid == "hidekick" || cmdid == "hk") return CmdHideKick(cmd_line, conn);
+			if (cmdid == "unhidekick" || cmdid == "uhk") return CmdUnHideKick(cmd_line, conn);
+			if (cmdid == "commands" || cmdid == "cmds") return CmdCmds(cmd_line, conn);
 
 			try {
 				if (mCmdr.ParseAll(str, os, conn) >= 0) {
@@ -183,13 +185,15 @@ int cDCConsole::OpCommand(const string &str, cConnDC * conn)
 			} catch (...) {
 				if(Log(0)) LogStream() << "Exception in commands." << endl;
 			}
-		break;
+			break;
 		default:
 			return 0;
-		break;
+			break;
 	}
 
-	if (mTriggers->DoCommand(conn, cmd, cmd_line, *mOwner)) return 1;
+	if (mTriggers->DoCommand(conn, cmd, cmd_line, *mOwner))
+		return 1;
+
 	return 0;
 }
 
@@ -206,7 +210,8 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 	}
 
 	cmd_line >> cmd;
-	cmd = toLower(cmd); // @todo: use mS->mC.cmd_start_user instead of plus character
+	cmd = toLower(cmd);
+	string cmdid = cmd.substr (1);
 
 	switch (conn->mpUser->mClass) {
 		case eUC_MASTER:
@@ -215,30 +220,32 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 		case eUC_OPERATOR:
 		case eUC_VIPUSER:
 		case eUC_REGUSER:
-			if (cmd == "+kick") return CmdKick(cmd_line, conn);
+			if (cmdid == "kick") return CmdKick(cmd_line, conn);
 		case eUC_NORMUSER:
-			if (cmd == "+passwd" || cmd == "+password") return CmdRegMyPasswd(cmd_line, conn);
-			if (cmd == "+help") return CmdHelp(cmd_line, conn);
-			if (cmd == "+myinfo") return CmdMyInfo(cmd_line, conn);
-			if (cmd == "+myip") return CmdMyIp(cmd_line, conn);
-			if (cmd == "+me") return CmdMe(cmd_line, conn);
-			if (cmd == "+regme") return CmdRegMe(cmd_line, conn);
-			if (cmd == "+chat") return CmdChat(cmd_line, conn, true);
-			if (cmd == "+nochat") return CmdChat(cmd_line, conn, false);
-			if (cmd == "+info") return CmdUInfo(cmd_line, conn);
-			if (cmd == "+release" || cmd == "+verlihub" || cmd == "+vh") return CmdRInfo(cmd_line, conn);
+			if (cmdid == "passwd" || cmdid == "password") return CmdRegMyPasswd(cmd_line, conn);
+			if (cmdid == "help") return CmdHelp(cmd_line, conn);
+			if (cmdid == "myinfo") return CmdMyInfo(cmd_line, conn);
+			if (cmdid == "myip") return CmdMyIp(cmd_line, conn);
+			if (cmdid == "me") return CmdMe(cmd_line, conn);
+			if (cmdid == "regme") return CmdRegMe(cmd_line, conn);
+			if (cmdid == "chat") return CmdChat(cmd_line, conn, true);
+			if (cmdid == "nochat") return CmdChat(cmd_line, conn, false);
+			if (cmdid == "info") return CmdUInfo(cmd_line, conn);
+			if (cmdid == "release" || cmdid == "verlihub" || cmdid == "vh") return CmdRInfo(cmd_line, conn);
 
 			if (mUserCmdr.ParseAll(str, os, conn) >= 0) {
 				mOwner->DCPublicHS(os.str().c_str(), conn);
 				return 1;
 			}
-		break;
+			break;
 		default:
 			return 0;
-		break;
+			break;
 	}
 
-	if (mTriggers->DoCommand(conn, cmd, cmd_line, *mOwner)) return 1;
+	if (mTriggers->DoCommand(conn, cmd, cmd_line, *mOwner))
+		return 1;
+
 	return 0;
 }
 
@@ -1036,7 +1043,7 @@ bool cDCConsole::cfReport::operator()()
 		os << autosprintf(_("Reported offline user %s"), nick.c_str());
 
 	if (reason.empty())
-		os << " " << _("without reason");
+		os << " ][ " << _("Without reason");
 	else
 		os << " ][ " << _("Reason") << ": " << reason.c_str();
 

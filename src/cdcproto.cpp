@@ -1795,33 +1795,48 @@ int cDCProto::NickList(cConnDC *conn)
 int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 {
 	ostringstream omsg;
+	bool unkop = false;
+
 	// operator commands
+
 	if (conn->mpUser->mClass >= eUC_OPERATOR && mS->mC.cmd_start_op.find_first_of(text[0]) != string::npos) {
 		#ifndef WITHOUT_PLUGINS
 		if ((mS->mCallBacks.mOnOperatorCommand.CallAll(conn, (string*)&text)) && (mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 1, pm)))
 		#endif
 		{
-			if (!mS->mCo->OpCommand(text, conn)) {
-				omsg << autosprintf(_("Unknown operator command: %s"), text.c_str());
-				mS->DCPublicHS(omsg.str(), conn);
-			}
+			if (mS->mCo->OpCommand(text, conn))
+				return 1;
+			else
+				unkop = true;
 		}
-
-		return 1;
+		#ifndef WITHOUT_PLUGINS
+		else
+			return 1;
+		#endif
 	}
 
 	// user commands
+
 	if (mS->mC.cmd_start_user.find_first_of(text[0]) != string::npos) {
 		#ifndef WITHOUT_PLUGINS
 		if ((mS->mCallBacks.mOnUserCommand.CallAll(conn, (string*)&text)) && (mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 0, pm)))
 		#endif
 		{
-			if (!mS->mCo->UsrCommand(text, conn)) {
-				omsg << autosprintf(_("Unknown user command: %s"), text.c_str());
+			if (mS->mCo->UsrCommand(text, conn))
+				return 1;
+			else {
+				omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
 				mS->DCPublicHS(omsg.str(), conn);
+				return 1;
 			}
 		}
-
+		#ifndef WITHOUT_PLUGINS
+		else
+			return 1;
+		#endif
+	} else if (unkop) {
+		omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
+		mS->DCPublicHS(omsg.str(), conn);
 		return 1;
 	}
 
