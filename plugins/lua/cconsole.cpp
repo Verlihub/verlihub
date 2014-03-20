@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2005 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -64,15 +65,26 @@ cConsole::~cConsole()
 {
 }
 
-int cConsole::DoCommand(const string &str, cConnDC * conn)
+int cConsole::DoCommand(const string &str, cConnDC *conn)
 {
+	nCmdr::cCommand *cmd = mCmdr.FindCommand(str);
+
+	if (cmd != NULL) {
+		int id = cmd->GetID();
+
+		if (id >= 0 && id <= 6 && conn && conn->mpUser && conn->mpUser->mClass < mLua->mServer->mC.plugin_mod_class) {
+			mLua->mServer->DCPublicHS(_("You have no rights to do this."), conn);
+			return 1;
+		}
+	}
+
 	ostringstream os;
 
-	if(mCmdr.ParseAll(str, os, conn) >= 0)
-	{
-		mLua->mServer->DCPublicHS(os.str().c_str(),conn);
+	if (mCmdr.ParseAll(str, os, conn) >= 0)	{
+		mLua->mServer->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
+
 	return 0;
 }
 

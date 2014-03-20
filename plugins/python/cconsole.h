@@ -1,6 +1,7 @@
 /*
-	Copyright (C) 2007-2014 Frog, frg at otaku-anime dot net
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2007-2012 Frog, frg at otaku-anime dot net
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -36,7 +37,7 @@ class cConsole
 public:
 	cConsole(cpiPython *);
 	virtual ~cConsole();
-	int DoCommand(const string &str, nSocket::cConnDC * conn);
+	int DoCommand(const string &str, nSocket::cConnDC *conn);
 	cpiPython *mPython;
 protected:
 	class cfBase : public nCmdr::cCommand::sCmdFunc {

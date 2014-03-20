@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2005 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -35,7 +36,7 @@ class cConsole
 public:
 	cConsole(cpiLua *);
 	virtual ~cConsole();
-	int DoCommand(const string &str, nSocket::cConnDC * conn);
+	int DoCommand(const string &str, nSocket::cConnDC *conn);
 	cpiLua *mLua;
 protected:
 	//enum {eMSG_SEND, eMSG_Read };
