@@ -1214,9 +1214,9 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	string ctm = msg->mStr;
+	string addr = msg->ChunkString(eCH_CM_IP);
 
-	if (!CheckIP(conn, msg->ChunkString(eCH_CM_IP))) {
+	if (!CheckIP(conn, addr)) {
 		string ip;
 
 		if (isLanIP(conn->mAddrIP)) { // check if sender ip is in lan
@@ -1234,19 +1234,23 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 			return -1;
 		}
 
-		os.clear();
-		os.str("");
-		os << "$ConnectToMe" << " " << nick << " " << ip << ":" << msg->ChunkString(eCH_CM_PORT);
-		ctm = os.str();
-
 		if (conn->Log(3))
-			LogStream() << "Fixed wrong IP in $ConnectToMe from " << msg->ChunkString(eCH_CM_IP) << " to " << ip << endl;
+			LogStream() << "Fixed wrong IP in $ConnectToMe from " << addr << " to " << ip << endl;
+
+		addr = ip;
 	}
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
 			return -2;
 	#endif
+
+	string ctm("$ConnectToMe ");
+	ctm += nick;
+	ctm += ' ';
+	ctm += addr;
+	ctm += ':';
+	ctm += StringFrom(StringAsLL(msg->ChunkString(eCH_CM_PORT)));
 
 	other->mxConn->Send(ctm);
 	return 0;
@@ -1423,7 +1427,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			case eDC_MSEARCH:
 			case eDC_SEARCH:
 				if (msg->ChunkString(eCH_AS_SEARCHPATTERN).size() < mS->mC.min_search_chars) {
-					os << autosprintf(_("Minimum search characters is: %d"), mS->mC.min_search_chars);
+					os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
 					mS->DCPublicHS(os.str(), conn);
 					return -1;
 				}
@@ -1432,7 +1436,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			case eDC_MSEARCH_PAS:
 			case eDC_SEARCH_PAS:
 				if (msg->ChunkString(eCH_PS_SEARCHPATTERN).size() < mS->mC.min_search_chars) {
-					os << autosprintf(_("Minimum search characters is: %d"), mS->mC.min_search_chars);
+					os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
 					mS->DCPublicHS(os.str(), conn);
 					return -1;
 				}
@@ -1464,15 +1468,22 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	// calculate delay and do some checks
 
 	int delay = 10;
+	string addr;
 
 	switch (msg->mType) {
 		case eDC_MSEARCH:
 		case eDC_SEARCH:
-			if (!CheckIP(conn, msg->ChunkString(eCH_AS_IP))) {
-				os << autosprintf(_("Your search IP is not %s but %s."), msg->ChunkString(eCH_AS_IP).c_str(), conn->mAddrIP.c_str());
-				mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SYNTAX);
-				return -1;
+			addr = msg->ChunkString(eCH_AS_IP);
+
+			if (!CheckIP(conn, addr)) {
+				if (conn->Log(3))
+					LogStream() << "Fixed wrong IP in $Search from " << addr << " to " << conn->mAddrIP << endl;
+
+				addr = conn->mAddrIP;
 			}
+
+			addr += ':';
+			addr += StringFrom(StringAsLL(msg->ChunkString(eCH_AS_PORT)));
 
 			if (conn->mpUser->mClass == eUC_REGUSER)
 				delay = mS->mC.int_search_reg;
@@ -1486,11 +1497,15 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 		case eDC_MSEARCH_PAS:
 		case eDC_SEARCH_PAS:
-			if (conn->mpUser->mNick != msg->ChunkString(eCH_PS_NICK)) {
-				os << autosprintf(_("Your nick is not %s but %s."), msg->ChunkString(eCH_PS_NICK).c_str(), conn->mpUser->mNick.c_str());
+			addr = msg->ChunkString(eCH_PS_NICK);
+
+			if (conn->mpUser->mNick != addr) {
+				os << autosprintf(_("Your nick is not %s but %s."), addr.c_str(), conn->mpUser->mNick.c_str());
 				mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SYNTAX);
 				return -1;
 			}
+
+			addr = "Hub:" + addr;
 
 			if (conn->mpUser->mClass == eUC_REGUSER)
 				delay = mS->mC.int_search_reg_pass;
@@ -1505,7 +1520,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (conn->mpUser->mClass >= eUC_VIPUSER) // todo: why is this done twice? thats why i dont like verlihub, there is so much shit around =)
+	if (conn->mpUser->mClass >= eUC_VIPUSER)
 		delay = mS->mC.int_search_vip;
 	else if (conn->mpUser->mClass >= eUC_OPERATOR)
 		delay = mS->mC.int_search_op;
@@ -1522,31 +1537,25 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		conn->mpUser->mSearchNumber = 0;
 	}
 
-	conn->mpUser->mSearchNumber++;
-
-	// translate MultiSearch to Search
-
-	string omsg(msg->mStr);
-
-	if (msg->mType == eDC_MSEARCH) {
-		omsg = "$Search ";
-		omsg += msg->ChunkString(eCH_AS_ADDR);
-		omsg += ' ';
-		omsg += msg->ChunkString(eCH_AS_QUERY);
-	}
-
  	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
 			return -2;
 	#endif
 
+	conn->mpUser->mSearchNumber++;
+
 	// send message
+
+	string search("$Search ");
+	search += addr;
+	search += ' ';
+	search += msg->ChunkString(eCH_AS_QUERY);
 
 	if (msg->mType == eDC_SEARCH_PAS) {
 		conn->mSRCounter = 0;
-		mS->mActiveUsers.SendToAll(omsg, mS->mC.delayed_search);
+		mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search);
 	} else
-		mS->mUserList.SendToAll(omsg, mS->mC.delayed_search);
+		mS->mUserList.SendToAll(search, mS->mC.delayed_search);
 
 	return 0;
 }
