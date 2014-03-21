@@ -1549,13 +1549,15 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	string search("$Search ");
 	search += addr;
 	search += ' ';
-	search += msg->ChunkString(eCH_AS_QUERY);
 
 	if (msg->mType == eDC_SEARCH_PAS) {
 		conn->mSRCounter = 0;
+		search += msg->ChunkString(eCH_AS_QUERY);
 		mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search);
-	} else
+	} else {
+		search += msg->ChunkString(eCH_PS_QUERY);
 		mS->mUserList.SendToAll(search, mS->mC.delayed_search);
+	}
 
 	return 0;
 }
