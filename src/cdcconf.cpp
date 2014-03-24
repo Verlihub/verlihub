@@ -184,6 +184,7 @@ void cDCConf::AddVars()
 	Add("min_class_use_hub",min_class_use_hub,0);
 	Add("min_class_use_hub_passive",min_class_use_hub_passive,0);
 	Add("min_x_use_hub_message", min_x_use_hub_message, true);
+	Add("hide_noctm_message", hide_noctm_message, false);
 	Add("min_class_register" , min_class_register , 4);
 	Add("min_class_redir",min_class_redir,4);
 	Add("min_class_bc", min_class_bc, 4);

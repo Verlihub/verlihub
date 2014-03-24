@@ -90,6 +90,7 @@ public:
 	int min_class_use_hub;
 	int min_class_use_hub_passive;
 	bool min_x_use_hub_message;
+	bool hide_noctm_message;
 	unsigned int max_passive_sr;
 	unsigned tban_kick;
 	unsigned tban_max;

@@ -1206,7 +1206,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	// check if user can download and if other user hides share
 
 	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) {
-		if (!conn->mpUser->mHideCtmMsg) {
+		if (!mS->mC.hide_noctm_message && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
@@ -1349,7 +1349,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) { // check if user can download and if other user hides share
-		if (!conn->mpUser->mHideCtmMsg) {
+		if (!mS->mC.hide_noctm_message && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from: %s"), onick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
