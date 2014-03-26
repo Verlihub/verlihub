@@ -199,7 +199,7 @@ bool cRegList::LoginError(cConnDC *conn, const string &nick)
 	if(!FindRegInfo(mModel, nick)) return false;
 	mModel.mErrorLast = cTime().Sec();
 	mModel.mErrorIP = conn->AddrIP();
-	ui.mErrorCount++;
+	mModel.mErrorCount++;
 	return UpdatePK();
 }
 
