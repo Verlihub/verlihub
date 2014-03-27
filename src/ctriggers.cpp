@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -220,7 +221,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 {
 	string help;
 
-	help = "http://verlihub-project.org/doc/page/manual.messages#File_Triggers\r\n\r\n";
+	help = "http://verlihub.net/doc/page/manual.messages#File_Triggers\r\n\r\n";
 
 	help += " Available trigger flags:\r\n\r\n";
 	help += " 0\t\t\t- Send to main chat, visible to user only\r\n";
@@ -239,6 +240,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " %[END1]\t\t- Last trigger parameter, separated by space\r\n";
 	help += " %[CC]\t\t\t- User country code\r\n";
 	help += " %[CN]\t\t\t- User country name\r\n";
+	help += " %[CITY]\t\t- User city\r\n";
 	help += " %[IP]\t\t\t- User IP\r\n";
 	help += " %[HOST]\t\t- User host\r\n";
 	help += " %[NICK]\t\t\t- User nick\r\n";
@@ -321,7 +323,7 @@ bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
 	ReplaceVarInString(triggerPath, "CFG", triggerPath, vPath);
 	ExpandPath(triggerPath);
 	if((triggerPath.substr(0,vPath.length()) != vPath)) {
-		*cmd->mOS << autosprintf(_("The file %s for the trigger %s must be locate in VerliHub config folder (use %%[CFG] variable; for ex %%[CFG]/%s)"), data.mDefinition.c_str(), data.mCommand.c_str(), triggerName.c_str());
+		*cmd->mOS << autosprintf(_("The file %s for the trigger %s must be locate in Verlihub config folder (use %%[CFG] variable; for ex %%[CFG]/%s)"), data.mDefinition.c_str(), data.mCommand.c_str(), triggerName.c_str());
 		return false;
 	}
 	return true;

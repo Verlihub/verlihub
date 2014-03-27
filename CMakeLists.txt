@@ -151,7 +151,7 @@ SET(CPACK_DEBIAN_PACKAGE_SECTION "net")
 SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.1, mysql-client-5.1, geoip-bin, gettext, libssl, openssl, libpcre3")
 
 SET(CPACK_RPM_PACKAGE_LICENSE ${CPACK_RESOURCE_FILE_LICENSE})
-SET(CPACK_RPM_PACKAGE_URL "http://verlihub-project.org/")
+SET(CPACK_RPM_PACKAGE_URL "http://verlihub.net/")
 SET(CPACK_RPM_PACKAGE_GROUP "Application/Internet")
 set(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.0, mysql >= 5.0, GeoIP, gettext, pcre")
 IF(WITH_PYTHON)

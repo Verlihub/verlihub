@@ -552,14 +552,14 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " == " << toUpper(_("Translators")) << " ==\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli), Russian (plugman)" << "\r\n";
 	os << " == " << toUpper(_("Contributors")) << " ==\r\n";
-	os << "\tStefano, Intruder, RoLex, Frog" << "\r\n";
+	os << "\tStefano, Intruder, Frog" << "\r\n";
 	os << " == " << toUpper(_("Web part")) << " ==\r\n";
 	os << "\tStefano Simoncelli (netcelli@verlihub-project.org)" << "\r\n";
 	os << " == " << toUpper(_("Credits")) << " ==\r\n";
 	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hubsoft." << "\r\n";
 	os << " == " << toUpper(_("More")) << " ==\r\n";
-	os << "\tWebsite: http://verlihub-project.org/" << "\r\n";
-	os << "\tManual: http://verlihub-project.org/doc/" << "\r\n";
+	os << "\tWebsite: http://verlihub.net/" << "\r\n";
+	os << "\tManual: http://verlihub.net/doc/" << "\r\n";
 	os << "\tSupport hub: dchub://hub.verlihub.net:7777/";
 
 	omsg = os.str();

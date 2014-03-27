@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -178,7 +179,7 @@ namespace nVerliHub {
 	{
 		string help;
 
-		help = "http://verlihub-project.org/doc/page/manual.redirects\r\n\r\n";
+		help = "http://verlihub.net/doc/page/manual.redirects\r\n\r\n";
 
 		help += " Available redirect flags:\r\n\r\n";
 		help += " 0\t\t\t- For any other reason\r\n";

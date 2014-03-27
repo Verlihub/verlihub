@@ -525,11 +525,9 @@ function install()
 	echo_s "$REALUSER,\n" $BOLD
 	echo_s "let's start with the configuration of database access. If you have some problems with configuration you can: \n"
 	echo_s "\t*" $BOLD
-	echo_s " Follow the official manual: http://www.verlihub-project.org/manual \n"
+	echo_s " Follow the official documentation: http://verlihub.net/doc/\n"
 	echo_s "\t*" $BOLD
-	echo_s " Ask support on forums: http://www.verlihub-project.org/forums \n"
-	echo_s "\t*" $BOLD
-	echo_s " Ask support on VAZ: dchub://vaz.verlihub-project.org\n"
+	echo_s " Seek support on VAZ: dchub://hub.verlihub.net:7777/\n"
 
 	# Get MySQL information
 	echo_s "\n[*] MySQL settings\n" $RED_BOLD

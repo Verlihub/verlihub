@@ -165,4 +165,4 @@ Earlier bugfixes:
  * Fixed a possible crash 
  * Fixed wrong query
  * Sorted few compiler warnings, fixed new gcc 4.3 errors
- * Completly rewrite manual (http://www.verlihub-project.org/doc/)
+ * Completly rewrite manual (http://verlihub.net/doc/)
