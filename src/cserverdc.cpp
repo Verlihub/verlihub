@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -507,6 +508,38 @@ int cServerDC::SendToAllWithNick(const string &start,const string &end, int cm,i
 	return counter;
 }
 
+int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int cm, int cM)
+{
+	static string str;
+	string tend;
+	cConnDC *conn;
+	tCLIt i;
+	int counter = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC *)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM) {
+			// replace variables
+			tend = end;
+			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick);
+			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
+			ReplaceVarInString(tend, "CC", tend, conn->mCC);
+			ReplaceVarInString(tend, "CN", tend, conn->mCN);
+			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
+			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
+			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
+
+			// finalize
+			str = start + conn->mpUser->mNick + tend + "|";
+			conn->Send(str, false);
+			counter++;
+		}
+	}
+
+	return counter;
+}
+
 int cServerDC::SendToAllWithNickCC(const string &start,const string &end, int cm,int cM, const string &cc_zone)
 {
 	static string str;
@@ -530,6 +563,38 @@ int cServerDC::SendToAllWithNickCC(const string &start,const string &end, int cm
 			counter++;
 		}
 	}
+	return counter;
+}
+
+int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone)
+{
+	static string str;
+	string tend;
+	cConnDC *conn;
+	tCLIt i;
+	int counter = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC *)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM && cc_zone.npos != cc_zone.find(conn->mCC)) {
+			// replace variables
+			tend = end;
+			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick);
+			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
+			ReplaceVarInString(tend, "CC", tend, conn->mCC);
+			ReplaceVarInString(tend, "CN", tend, conn->mCN);
+			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
+			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
+			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
+
+			// finalize
+			str = start + conn->mpUser->mNick + tend + "|";
+			conn->Send(str, false);
+			counter++;
+		}
+	}
+
 	return counter;
 }
 

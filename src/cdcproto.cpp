@@ -2036,7 +2036,7 @@ void cDCProto::Create_PM(string &dest,const string &from, const string &to, cons
 }
 
 
-void cDCProto::Create_PMForBroadcast(string &start,string &end, const string &from, const string &sign, const string &text)
+void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text)
 {
 	start.append("$To: ");
 	end.append(" From: ");

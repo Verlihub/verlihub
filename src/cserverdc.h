@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -435,6 +436,12 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int SendToAllWithNick(const string &start,const string &end, int cm,int cM);
 
+		/*
+			Replace user specific variables and send data to all users within specified class range.
+		*/
+
+		int SendToAllWithNickVars(const string &start, const string &end, int cm, int cM);
+
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range and country.
 		*
@@ -448,6 +455,12 @@ class cServerDC : public cAsyncSocketServer
 		* @return The number of users that receives the message.
 		*/
 		int SendToAllWithNickCC(const string &start,const string &end, int cm,int cM, const string &cc_zone);
+
+		/*
+			Replace user specific variables and send data to all users within specified class and country ranges.
+		*/
+
+		int SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone);
 
 		/**
 		* Notify all users of a new user.

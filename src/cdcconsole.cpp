@@ -412,7 +412,7 @@ int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
 	return 1;
 }
 
-int cDCConsole::CmdCCBroadcast(istringstream & cmd_line, cConnDC * conn, int cl_min, int cl_max)
+int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_min, int cl_max)
 {
 	string start, end, str, cc_zone;
 	ostringstream ostr;
@@ -420,28 +420,30 @@ int cDCConsole::CmdCCBroadcast(istringstream & cmd_line, cConnDC * conn, int cl_
 
 	// test for existence of parameter
 	cmd_line >> cc_zone;
+	getline(cmd_line, str);
 
-	getline(cmd_line,str);
-	while(cmd_line.good()) {
-		tmpline="";
-		getline(cmd_line,tmpline);
+	while (cmd_line.good()) {
+		tmpline = "";
+		getline(cmd_line, tmpline);
 		str += "\r\n" + tmpline;
 	}
 
-	if(! str.size()) {
+	if (!str.size()) {
 		ostr << _("Usage example: !ccbc :US:GB: <message>");
-                mOwner->DCPublicHS(ostr.str(), conn);
+		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
-	cc_zone = toUpper(cc_zone);
-	mOwner->mP.Create_PMForBroadcast(start,end,mOwner->mC.hub_security, conn->mpUser->mNick ,str);
 
+	cc_zone = toUpper(cc_zone);
+	mOwner->mP.Create_PMForBroadcast(start, end, mOwner->mC.hub_security, mOwner->mC.hub_security, str); // conn->mpUser->mNick
 	cTime TimeBefore, TimeAfter;
-	if ( mOwner->LastBCNick != "disable")
+
+	if (mOwner->LastBCNick != "disable")
 		mOwner->LastBCNick = conn->mpUser->mNick;
-	int count = mOwner->SendToAllWithNickCC(start,end, cl_min, cl_max, cc_zone);
+
+	int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
 	TimeAfter.Get();
-	ostr << autosprintf(_("Message delivered to %d users in zone %s in %s."), count,  cc_zone.c_str(), (TimeAfter-TimeBefore).AsPeriod().AsString().c_str());
+	ostr << autosprintf(_("Message delivered to %d users in zones %s in %s."), count, cc_zone.c_str(), (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	mOwner->DCPublicHS(ostr.str(), conn);
 	return 1;
 }
@@ -2159,80 +2161,84 @@ bool cDCConsole::cfBc::operator()()
 {
 	enum { eBC_BC, eBC_OC, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER, eBC_CC };
 	enum { eBC_ALL, eBC_MSG };
-	const char *cmds[] = { "bc","broadcast","oc","ops","guests","regs","vips","cheefs","admins",",masters","ccbc","ccbroadcast", NULL};
-	const int nums[] = {eBC_BC,eBC_BC, eBC_OC, eBC_OC, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER, eBC_CC, eBC_CC };
-	string message;
+	const char *cmds[] = { "bc", "broadcast", "oc", "ops", "guests", "regs", "vips", "cheefs", "admins", "masters", "ccbc", "ccbroadcast" };
+	const int nums[] = { eBC_BC, eBC_BC, eBC_OC, eBC_OC, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER, eBC_CC, eBC_CC };
 	int cmdid;
 
-	if (!GetIDEnum(1,cmdid, cmds, nums)) return false;
+	if (!GetIDEnum(1, cmdid, cmds, nums))
+		return false;
 
+	string message;
 	GetParStr(eBC_MSG, message);
-	//rights to broadcast
+
+	// rights to broadcast
 	int MinClass = mS->mC.min_class_bc;
 	int MaxClass = eUC_MASTER;
 	int MyClass = this->mConn->mpUser->mClass;
 	int AllowedClass = eUC_MASTER;
-	switch(cmdid)
-	{
+
+	switch (cmdid) {
 		case eBC_BC:
 			MinClass = eUC_NORMUSER;
 			MaxClass = eUC_MASTER;
 			AllowedClass = mS->mC.min_class_bc;
-		break;
+			break;
 		case eBC_GUEST:
 			MinClass = eUC_NORMUSER;
 			MaxClass = eUC_NORMUSER;
 			AllowedClass = mS->mC.min_class_bc_guests;
-		break;
+			break;
 		case eBC_REG:
 			MinClass = eUC_REGUSER;
 			MaxClass = eUC_REGUSER;
 			AllowedClass = mS->mC.min_class_bc_regs;
-		break;
+			break;
 		case eBC_VIP:
 			MinClass = eUC_VIPUSER;
 			MaxClass = eUC_VIPUSER;
 			AllowedClass = mS->mC.min_class_bc_vips;
-		break;
+			break;
 		case eBC_OC:
 			MinClass = eUC_OPERATOR;
 			MaxClass = eUC_MASTER;
 			AllowedClass = eUC_OPERATOR;
-		break;
+			break;
 		case eBC_CHEEF:
 			MinClass = eUC_CHEEF;
 			MaxClass = eUC_ADMIN;
 			AllowedClass = eUC_OPERATOR;
-		break;
+			break;
 		case eBC_ADMIN:
 			MinClass = eUC_ADMIN;
 			MaxClass = eUC_MASTER;
 			AllowedClass = eUC_ADMIN;
-		break;
+			break;
 		case eBC_MASTER:
 			MinClass = eUC_MASTER;
 			MaxClass = eUC_MASTER;
 			AllowedClass = eUC_ADMIN;
-		break;
+			break;
 		case eBC_CC:
-		break;
-		default: break;
+			break;
+		default:
+			break;
 	}
 
-	if (MyClass < AllowedClass)
-	{
+	if (MyClass < AllowedClass) {
 		*mOS << _("You have no rights to do this.");
 		return false;
 	}
 
 	string start, end;
-	mS->mP.Create_PMForBroadcast(start,end,mS->mC.hub_security, this->mConn->mpUser->mNick ,message);
+	mS->mP.Create_PMForBroadcast(start, end, mS->mC.hub_security, mS->mC.hub_security, message); // this->mConn->mpUser->mNick
 	cTime TimeBefore, TimeAfter;
-	if(mS->LastBCNick != "disable")
+
+	if (mS->LastBCNick != "disable")
 		mS->LastBCNick = mConn->mpUser->mNick;
-	int count = mS->SendToAllWithNick(start,end, MinClass, MaxClass);
+
+	int count = mS->SendToAllWithNickVars(start, end, MinClass, MaxClass);
 	TimeAfter.Get();
-	*mOS << autosprintf(_("Message delivered to %d users in %s") , count, (TimeAfter-TimeBefore).AsPeriod().AsString().c_str());
+	*mOS << autosprintf(_("Message delivered to %d users in %s."), count, (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	return true;
 }
 

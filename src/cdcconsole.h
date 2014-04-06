@@ -146,7 +146,7 @@ public:
 	* @param conn Pointer to user's connection which to send the result message.
 	* @return Always 1.
 	*/
-	int CmdCCBroadcast(istringstream & cmd_line, nSocket::cConnDC * conn,int cl_min, int cl_max);
+	int CmdCCBroadcast(istringstream &cmd_line, nSocket::cConnDC *conn, int cl_min, int cl_max);
 
 	/**
 	* Handle +password <password> hub command.
