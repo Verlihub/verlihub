@@ -148,7 +148,7 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	mPassiveUsers.SetNickListStart(nctmp);
 
 	// add the users
-	string speed(/*"Hub\x9"*/" "),mail(""),share("0");
+	string speed(/*"Hub\x9"*/"\x1"),mail(""),share("0");
 	cUser *VerliHub;
 	VerliHub=new cMainRobot(mC.hub_security, this);
 	VerliHub->mClass=tUserCl(10);
