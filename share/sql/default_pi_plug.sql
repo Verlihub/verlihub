@@ -7,5 +7,5 @@ INSERT IGNORE INTO pi_plug (nick,autoload,path,detail) VALUES
 	("log"    ,0,"/usr/local/lib/libiplog_pi.so","IP and nick logger with history."),
 	("forbid" ,0,"/usr/local/lib/libforbid_pi.so","Filter chat from forbidden words."),
 	("chat"   ,0,"/usr/local/lib/libchatroom_pi.so","Multiple chatrooms to separate chat topics."),
-	("replace",0,"/usr/local/lib/libreplace_pi.so","Replace some words by other."),
+	("replacer",0,"/usr/local/lib/libreplacer_pi.so","Replace some words by other."),
 	("stats"  ,0,"/usr/local/lib/libstats_pi.so","Hub statistics, trace diverse values in the database.")

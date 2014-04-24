@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -48,8 +49,8 @@ void cReplacer::CreateTable(void)
 	nMySQL::cQuery query(mMySQL);
 	query.OStream() <<
 		"CREATE TABLE IF NOT EXISTS " << mMySQLTable.mName << " ("
-		"word varchar(30) not null primary key,"
-		"rep_word varchar(30) not null,"
+		"word varchar(255) not null primary key,"
+		"rep_word varchar(255) not null,"
 		"afclass tinyint default 4"
 		")";
 	query.Query();
@@ -120,33 +121,37 @@ void cReplacer::DelReplacer(cReplacerWorker &fw)
 	DeletePK();
 }
 
-string cReplacer::ReplacerParser(const string & str, cConnDC * conn)
+string cReplacer::ReplacerParser(const string &str, cConnDC *conn)
 {
 	string lcstr(str);
 	string::size_type idx;
 	string t_word;
 	string r_word;
 	string temp(str);
-	bool find_loop;
-
+	unsigned int find_loop;
 	transform(lcstr.begin(), lcstr.end(), lcstr.begin(), ::tolower);
 
-	for(tDataType::iterator it = mData.begin(); it != mData.end(); ++it) {
-		if((*it)->CheckMsg(lcstr)) {
-			if((*it)->mAfClass >= conn->mpUser->mClass) {
+	for (tDataType::iterator it = mData.begin(); it != mData.end(); ++it) {
+		if ((*it)->CheckMsg(lcstr)) {
+			if ((*it)->mAfClass >= conn->mpUser->mClass) {
 				t_word = (*it)->mWord;
 				r_word = (*it)->mRepWord;
-				find_loop = true;
-				while(find_loop) {
+				find_loop = 0;
+
+				while (find_loop <= t_word.length()) {
 					idx = temp.find(t_word.data());
-					if(idx != string::npos)
-						temp.replace(idx,t_word.length(),r_word.data(),r_word.length());
+
+					if (idx != string::npos)
+						temp.replace(idx, t_word.length(), r_word.data(), r_word.length());
 					else
-						find_loop = false;
+						break;
+
+					find_loop++;
 				}
 			}
 		}
 	}
+
 	return temp;
 }
 
