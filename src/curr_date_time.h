@@ -19,4 +19,4 @@
 	of the GNU General Public License.
 */
 
-#define __CURR_DATE_TIME__ "Wed Apr 23 2014"
+#define __CURR_DATE_TIME__ "Thu May 29 2014"

@@ -1,7 +1,8 @@
 #!@BASH_PATH@
 
 #
-#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+#	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -54,7 +55,7 @@ function _check_config_path() #path_to_dbconfig
 # Get value from node
 function _xml_value() #file, #selector
 {
-	local RETURN=$(xmllint --nowarning --xpath "//$2/text()" $1)
+	local RETURN=$(xmllint --noent --nowarning --xpath "//$2/text()" $1)
 	if [ ${?} -ne 0 ]; then
 		exit 1;
 	fi
@@ -64,7 +65,7 @@ function _xml_value() #file, #selector
 # Get number of nodes
 function _xml_count() # file, selector
 {
-	local COUNT=$(xmllint --nowarning --xpath "count(//$2)" $1)
+	local COUNT=$(xmllint --noent --nowarning --xpath "count(//$2)" $1)
 	if [ ${?} -ne 0 ]; then
 		exit 1;
 	fi

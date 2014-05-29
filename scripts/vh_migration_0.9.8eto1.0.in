@@ -1,7 +1,8 @@
 #!@BASH_PATH@
 
 #
-#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+#	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -102,13 +103,13 @@ function migrate_hub() #path_to_dbconfig
 
 		QUERY='TRUNCATE TABLE pi_plug';
 		echo "-- Truncating pi_plug table; it will updated with verlihub"
-		if ! _mysql_query "$QUERY" ; then
+		if ! _mysql_query "$QUERY"; then
 			echo_s "-- Error truncating 'pi_plugin' table; make it manually using '$QUERY'\n" $RED
 		fi
 	
         QUERY="UPDATE SetupList SET var =  'always_ask_password' WHERE  file = 'config' AND var = 'allways_ask_password'";
         echo "-- Renaming allways_ask_password var to always_ask_password"
-        if ! _mysql_query $QUERY; then
+        if ! _mysql_query "$QUERY"; then
             echo_s "-- Error renaming allways_ask_password variable; make it manually using '$QUERY'\n" $RED
         fi
 
