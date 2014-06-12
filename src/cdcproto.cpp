@@ -522,7 +522,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((tag->mClientMode == eCM_PASSIVE) || (tag->mClientMode == eCM_SOCK5) || (tag->mClientMode == eCM_OTHER)) conn->mpUser->IsPassive = true;
-	delete tag;
+	//delete tag; // tag is still used below, could this cause crash?
 	// end tag verification
 
 	// passive user limit
@@ -539,10 +539,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	// check min and max share conditions
 	string &str_share = msg->ChunkString(eCH_MI_SIZE);
 
-	// share is too big
-	if (str_share.size() > 18) {
+	if (str_share.size() > 18) { // share is too big
 		conn->CloseNow();
 		return -1;
+	} else if (str_share.empty() || (str_share[0] == '-')) { // missing or negative share
+		str_share = "0";
 	}
 
 	__int64 share = 0, shareB = 0;
@@ -660,56 +661,65 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
  	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg)) return -2;
+		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg))
+			return -2;
 	#endif
 
-	string myinfo_full, myinfo_basic, desc, email, speed, sShare;
-	// $MyINFO $ALL <nick> <description+tag>$ $<speed+status>$<email>$<sharesize>$
-	// todo: tag.mPositionInDesc may be incorrect after the description has been modified by a plugin
-	mS->mCo->mDCClients->ParsePos(msg->ChunkString(eCH_MI_DESC));
-	desc.assign(msg->ChunkString(eCH_MI_DESC), 0, mS->mCo->mDCClients->mPositionInDesc);
+	// $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
+	string myinfo_full, myinfo_basic, desctag, desc, sTag, email, speed, sShare;
+	desctag = msg->ChunkString(eCH_MI_DESC);
+
+	if (!desctag.empty()) {
+		mS->mCo->mDCClients->ParsePos(desctag);
+		desc.assign(desctag, 0, mS->mCo->mDCClients->mPositionInDesc); // todo: tag.mPositionInDesc may be incorrect after the description has been modified by a plugin
+
+		if (mS->mCo->mDCClients->mPositionInDesc >= 0)
+			sTag.assign(desctag, mS->mCo->mDCClients->mPositionInDesc, -1);
+	}
+
+	if (mS->mC.show_desc_len >= 0)
+		desc.assign(desc, 0, mS->mC.show_desc_len);
 
 	if (mS->mC.desc_insert_mode) {
 		switch (tag->mClientMode) {
 			case eCM_ACTIVE:
-				desc = (desc.empty() ? "[A]" : ("[A] " + desc));
+				desc = "[A]" + desc;
 				break;
 			case eCM_PASSIVE:
-				desc = (desc.empty() ? "[P]" : ("[P] " + desc));
+				desc = "[P]" + desc;
 				break;
 			case eCM_SOCK5:
-				desc = (desc.empty() ? "[5]" : ("[5] " + desc));
+				desc = "[5]" + desc;
 				break;
 			default: // eCM_OTHER, eCM_NOTAG
-				desc = (desc.empty() ? "[?]" : ("[?] " + desc));
+				desc = "[?]" + desc;
 				break;
 		}
 	}
 
-	if (mS->mC.show_desc_len >= 0) desc.assign(desc, 0, mS->mC.show_desc_len);
+	delete tag; // now we can delete it
 
 	if (mS->mC.show_email == 0)
 		email= "";
 	else
 		email = msg->ChunkString(eCH_MI_MAIL);
 
-	if (mS->mC.show_speed == 0)
-		speed = "";
-	else
-		speed = msg->ChunkString(eCH_MI_SPEED);
+	speed = msg->ChunkString(eCH_MI_SPEED);
+
+	if ((mS->mC.show_speed == 0) && !speed.empty())
+		speed = speed[speed.size() - 1]; // hide speed but keep status byte
 
 	if (conn->mpUser->mHideShare)
 		sShare = "0";
 	else
-		sShare = msg->ChunkString(eCH_MI_SIZE);
+		sShare = str_share; // msg->ChunkString(eCH_MI_SIZE)
 
-	Create_MyINFO(myinfo_basic, msg->ChunkString(eCH_MI_NICK), desc, speed, email, sShare);
+	Create_MyINFO(myinfo_basic, nick, desc, speed, email, sShare); // msg->ChunkString(eCH_MI_NICK)
 
-	// ops have hidden myinfo
-	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.show_tags < 3))
+	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.show_tags < 3)) // ops have hidden myinfo
 		myinfo_full = myinfo_basic;
 	else
-		myinfo_full = msg->mStr;
+		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare); // msg->mStr
 
 	// login or send to all
 	if (conn->mpUser->mInList) {
