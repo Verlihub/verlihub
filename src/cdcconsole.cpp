@@ -545,7 +545,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 	string omsg;
 
-	os << "Verlihub " << VERSION << " build " << __CURR_DATE_TIME__ << "\r\n";
+	os << "Verlihub " << VERSION << " @ " << __CURR_DATE_TIME__ << "\r\n";
 	os << " == " << toUpper(_("Authors")) << " ==\r\n";
 	os << "\tDaniel Muller (dan@verliba.cz)" << "\r\n";
 	os << "\tDavide Simoncelli (netcelli@verlihub-project.org)" << "\r\n";

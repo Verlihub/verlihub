@@ -1481,13 +1481,14 @@ void cServerDC::SendHeaders(cConnDC * conn, int where)
 				else if (mSysLoad == eSL_NORMAL) mStatus = _("Normal mode");
 			}
 
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Running %s %s build %s"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS) << "|";
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Runtime: %s"), runtime.AsPeriod().AsString().c_str()) << "|";
-			os << "<" << mC.hub_security << "> " << autosprintf(_("User count: %d"), mUserCountTot) << "|";
-			os << "<" << mC.hub_security << "> " << autosprintf(_("System status: %s"), mStatus.c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s @ %s"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Uptime: %s"), runtime.AsPeriod().AsString().c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Users: %d"), mUserCountTot) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Share: %s"), convertByte(mTotalShare, false).c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Status: %s"), mStatus.c_str()) << "|";
 			if (!mC.hub_version_special.empty()) os << "<" << mC.hub_security << "> " << mC.hub_version_special << "|";
 		} else
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Running %s %s build %s%s ][ Runtime: %s ][ User count: %d"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot, convertByte(mTotalShare, false).c_str()) << "|";
 
 		string res = os.str();
 		conn->Send(res, false);
