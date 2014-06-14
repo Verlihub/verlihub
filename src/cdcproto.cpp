@@ -1224,20 +1224,16 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	string addr = msg->ChunkString(eCH_CM_IP);
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
+			return -2;
+	#endif
+
+	string ctm, addr, port, extra;
+	addr = msg->ChunkString(eCH_CM_IP);
 
 	if (!CheckIP(conn, addr)) {
-		string ip;
-
-		if (isLanIP(conn->mAddrIP)) { // check if sender ip is in lan
-			if (!isLanIP(other->mxConn->mAddrIP))
-				ip = ""; // lan => wan
-			else
-				ip = conn->mAddrIP;
-		} else
-			ip = conn->mAddrIP;
-
-		if (ip.empty()) {
+		if (isLanIP(conn->mAddrIP) && !isLanIP(other->mxConn->mAddrIP)) { // lan to wan
 			os << _("You can't connect to an external IP because you are in LAN.");
 			string toSend = os.str();
 			conn->Send(toSend);
@@ -1245,22 +1241,33 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		}
 
 		if (conn->Log(3))
-			LogStream() << "Fixed wrong IP in $ConnectToMe from " << addr << " to " << ip << endl;
+			LogStream() << "Fixed wrong IP in $ConnectToMe from " << addr << " to " << conn->mAddrIP << endl;
 
-		addr = ip;
+		addr = conn->mAddrIP;
 	}
 
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
-			return -2;
-	#endif
+	port = msg->ChunkString(eCH_CM_PORT);
 
-	string ctm("$ConnectToMe ");
+	if (port.empty() || (port.size() > 6))
+		return -1;
+
+	if (port[port.size() - 1] == 'S') { // secure connection, todo: add more stuff
+		extra = "S";
+		port.assign(port, 0, port.size() - 1);
+	}
+
+	__int64 iport = StringAsLL(port);
+
+	if ((iport < 1) || (iport > 65535))
+		return -1;
+
+	ctm = "$ConnectToMe ";
 	ctm += nick;
 	ctm += ' ';
 	ctm += addr;
 	ctm += ':';
-	ctm += StringFrom(StringAsLL(msg->ChunkString(eCH_CM_PORT)));
+	ctm += StringFrom(iport);
+	ctm += extra;
 
 	other->mxConn->Send(ctm);
 	return 0;
