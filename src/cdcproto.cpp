@@ -1486,6 +1486,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	int delay = 10;
 	string addr;
+	__int64 iport;
 
 	switch (msg->mType) {
 		case eDC_MSEARCH:
@@ -1499,8 +1500,13 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 				addr = conn->mAddrIP;
 			}
 
+			iport = StringAsLL(msg->ChunkString(eCH_AS_PORT));
+
+			if ((iport < 1) || (iport > 65535))
+				return -1;
+
 			addr += ':';
-			addr += StringFrom(StringAsLL(msg->ChunkString(eCH_AS_PORT)));
+			addr += StringFrom(iport);
 
 			if (conn->mpUser->mClass == eUC_REGUSER)
 				delay = mS->mC.int_search_reg;
