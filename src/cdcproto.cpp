@@ -1251,8 +1251,10 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (port.empty() || (port.size() > 6))
 		return -1;
 
-	if (port[port.size() - 1] == 'S') { // secure connection, todo: add more stuff
-		extra = "S";
+	if (port[port.size() - 1] == 'S') { // secure connection
+		if (conn->mFeatures & eSF_TLS) // only if sender supports it. the other client must support it too? i dont know
+			extra = "S";
+
 		port.assign(port, 0, port.size() - 1);
 	}
 
@@ -1485,7 +1487,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	// calculate delay and do some checks
 
 	int delay = 10;
-	string addr;
+	string addr, port;
 	__int64 iport;
 
 	switch (msg->mType) {
@@ -1500,7 +1502,12 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 				addr = conn->mAddrIP;
 			}
 
-			iport = StringAsLL(msg->ChunkString(eCH_AS_PORT));
+			port = msg->ChunkString(eCH_AS_PORT);
+
+			if (port.empty() || (port.size() > 5))
+				return -1;
+
+			iport = StringAsLL(port);
 
 			if ((iport < 1) || (iport > 65535))
 				return -1;
