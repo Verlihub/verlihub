@@ -111,6 +111,7 @@ public:
 	int delayed_ping;
 	double min_frequency;
 	string nick_prefix;
+	bool nick_prefix_nocase;
 	string nick_prefix_autoreg;
 	bool nick_prefix_cc;
 	bool extended_welcome_message;

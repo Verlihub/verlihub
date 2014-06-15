@@ -1153,7 +1153,12 @@ tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
 		if (mC.nick_prefix.size() > 0) { // check nick prefix
 			bool ok = false;
 			istringstream is(mC.nick_prefix);
-			string pref;
+			string pref, snick;
+
+			if (mC.nick_prefix_nocase)
+				snick = toLower(nick);
+			else
+				snick = nick;
 
 			while (1) {
 				pref = mEmpty;
@@ -1162,7 +1167,10 @@ tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
 				if (!pref.size())
 					break;
 
-				if (StrCompare(nick, 0, pref.length(), pref) == 0) {
+				if (mC.nick_prefix_nocase)
+					pref = toLower(pref);
+
+				if (StrCompare(snick, 0, pref.length(), pref) == 0) {
 					ok = true;
 					break;
 				}

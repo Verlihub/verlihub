@@ -143,7 +143,8 @@ void cDCConf::AddVars()
 	Add("max_nick",max_nick,64u);
 	Add("min_nick",min_nick,1u);
 	Add("nick_chars",nick_chars, string(""));
-	Add("nick_prefix",nick_prefix,string(""));
+	Add("nick_prefix", nick_prefix, string(""));
+	Add("nick_prefix_nocase", nick_prefix_nocase, false);
 	Add("nick_prefix_cc", nick_prefix_cc, false);
 	Add("nick_prefix_autoreg",nick_prefix_autoreg,string(""));
 	Add("autoreg_class", autoreg_class, -1);
