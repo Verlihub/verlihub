@@ -1069,7 +1069,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 			closeReason = eCR_BADNICK;
 		break;
 		case eVN_PREFIX:
-			errmsg << autosprintf(_("Invalid nick prefix. Use: %s"), mC.nick_prefix.c_str());
+			errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
 			closeReason = eCR_BADNICK;
 		break;
 		case eVN_NOT_REGED_OP:
@@ -1149,7 +1149,29 @@ tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
 		if(nick.size() < mC.min_nick ) return eVN_SHORT;
 		if(nick.npos != nick.find_first_of(ProhibitedChars)) return eVN_CHARS;
 		if((mC.nick_chars.size()>0) && (nick.npos != nick.find_first_not_of(mC.nick_chars.c_str()))) return eVN_CHARS;
-		if(StrCompare(nick,0,mC.nick_prefix.length(),mC.nick_prefix) != 0) return eVN_PREFIX;
+
+		if (mC.nick_prefix.size() > 0) { // check nick prefix
+			bool ok = false;
+			istringstream is(mC.nick_prefix);
+			string pref;
+
+			while (1) {
+				pref = mEmpty;
+				is >> pref;
+
+				if (!pref.size())
+					break;
+
+				if (StrCompare(nick, 0, pref.length(), pref) == 0) {
+					ok = true;
+					break;
+				}
+			}
+
+			if (!ok)
+				return eVN_PREFIX;
+		}
+
 		if(StrCompare(nick,0,4,"[OP]") == 0) return eVN_NOT_REGED_OP;
 	}
 	if(mBanList->IsNickTempBanned(nick) > now.Sec())
