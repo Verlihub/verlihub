@@ -1015,93 +1015,94 @@ int cServerDC::SaveFile(const string &file, const string &text)
 
 int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 {
-	// first validate the IP and host if any
-	stringstream errmsg,os;
-	// Default close reason
-	closeReason = eCR_INVALID_USER;
-	if (!conn) return 0;
-	//time_t n;
-	bool close=false;
+	if (!conn)
+		return 0;
 
+	stringstream errmsg;
+	closeReason = eCR_INVALID_USER; // default close reason
+	bool close = false; // time_t n;
+
+	// first validate ip and host
 	// phase 1: test nick validity
-	// phase 2: test ip/host ban (registered users pass)
+	// phase 2: test ip and host ban (registered users pass)
 	// phase 3: test nickban
 	// then we're done
 
 	static cRegUserInfo *sRegInfo = new cRegUserInfo;
-	if ((nick.size() < mC.max_nick * 2 ) && mR->FindRegInfo(*sRegInfo,nick) && !conn->mRegInfo ) {
+
+	if ((nick.size() < mC.max_nick * 2) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo) {
 		conn->mRegInfo = sRegInfo;
 		sRegInfo = new cRegUserInfo;
 	}
 
-	// Validate nick
-	tVAL_NICK vn = ValidateNick(nick, (conn->GetTheoricalClass() >= eUC_REGUSER ));
-	if(vn != eVN_OK) {
-		close=true;
-		if(vn == eVN_BANNED) {
-			errmsg << _("Do not reconnect too fast.") << " ";
-			closeReason = eCR_RECONNECT;
-		}
-		else
-			errmsg << _("Bad nickname") << ": ";
-		if (conn->Log(2))
-			conn->LogStream() << "Bad nick: '" << nick << "' (" << vn << ")" << endl;
-	}
-	switch(vn) {
-		case eVN_OK:
-		break;
-		case eVN_CHARS:
-			errmsg << _("Unallowed characters in your nick.");
-			if(mC.nick_chars.size())
-				 errmsg << autosprintf(_("use these: %s"), mC.nick_chars.c_str());
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_SHORT:
-			errmsg << _("Your nick is too short.");
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_LONG:
-			errmsg << _("Your nick is too long.");
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_USED: // never happens
-			errmsg << _("Your nick is already in use.");
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_PREFIX:
-			errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_NOT_REGED_OP:
-			errmsg << _("Operator not registered.");
-			closeReason = eCR_BADNICK;
-		break;
-		case eVN_BANNED:
-			errmsg << autosprintf(_("Wait %s before reconnecting."), cTime(mBanList->IsNickTempBanned(nick) - cTime().Sec()).AsPeriod().AsString().c_str());
-			//closeReason = eCR_RECONNECT;
-		break;
-		default:
-			errmsg << _("Unknown error.");
-			//closeReason = eCR_BADNICK;
-		break;
-	}
+	// validate nick
+	tVAL_NICK vn = ValidateNick(nick, (conn->GetTheoricalClass() >= eUC_REGUSER));
 
-	if (close) {
-		if (vn == eVN_USED) {
-			static string omsg;
-			omsg = "$ValidateDenide";
-			conn->Send(omsg);
+	if (vn != eVN_OK) {
+		string extra;
+
+		switch (vn) {
+			case eVN_CHARS:
+				errmsg << _("Your nick contains forbidden characters.");
+
+				if (mC.nick_chars.size())
+					errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
+
+				closeReason = eCR_BADNICK;
+				break;
+
+			case eVN_SHORT:
+				errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
+				closeReason = eCR_BADNICK;
+				break;
+
+			case eVN_LONG:
+				errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
+				closeReason = eCR_BADNICK;
+				break;
+
+			case eVN_USED: // never happens here
+				errmsg << _("Your nick is already in use, please use something else.");
+				closeReason = eCR_BADNICK;
+				extra = "$ValidateDenide";
+				break;
+
+			case eVN_PREFIX:
+				errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
+				closeReason = eCR_BADNICK;
+				break;
+
+			case eVN_NOT_REGED_OP:
+				errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
+				closeReason = eCR_BADNICK;
+				break;
+
+			case eVN_BANNED:
+				errmsg << autosprintf(_("You are reconnecting too fast, please wait %s."), cTime(mBanList->IsNickTempBanned(nick) - cTime().Sec()).AsPeriod().AsString().c_str());
+				closeReason = eCR_RECONNECT;
+				break;
+
+			default:
+				errmsg << _("Unknown bad nick error, sorry.");
+				//closeReason = eCR_BADNICK;
+				break;
 		}
+
+		if (extra.size())
+			conn->Send(extra);
 
 		DCPublicHS(errmsg.str(), conn);
-		if (conn->Log(3)) conn->LogStream() << "Bad nick: " << errmsg.str() << endl;
+
+		if (conn->Log(2))
+			conn->LogStream() << "Bad nick: " << nick << " (" << errmsg.str() << ")" << endl;
+
 		return 0;
 	}
 
 	cBan Ban(this);
 	bool banned = false;
 
-	if (conn->GetTheoricalClass() < eUC_MASTER) { // master class is immune
+	if (conn->GetTheoricalClass() < mC.ban_bypass_class) { // use ban_bypass_class here
 		// here we cant check share ban because user hasnt sent $MyINFO yet
 		if (conn->GetTheoricalClass() == eUC_NORMUSER)
 			banned = mBanList->TestBan(Ban, conn, nick, eBF_NICK | eBF_NICKIP | eBF_RANGE | eBF_HOST2 | eBF_HOST1 | eBF_HOST3 | eBF_HOSTR1 | eBF_PREFIX);
@@ -1110,23 +1111,24 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	}
 
 	if (banned) {
-		errmsg << _("You are banned from this hub.") << "\r\n";
+		errmsg << _("You are banned from this hub") << ":\r\n";
 		Ban.DisplayUser(errmsg);
 		DCPublicHS(errmsg.str(), conn);
-		if (conn->Log(1)) conn->LogStream() << "Unallowed user (" << Ban.mType << "), closing" << endl;
+
+		if (conn->Log(1))
+			conn->LogStream() << "Closing banned user: " << Ban.mType << endl;
+
 		return 0;
 	}
 
-	if (mC.nick_prefix_cc) {
-		if (conn->mCC.size() && conn->mCC != "--") {
-			string Prefix("[");
-			Prefix += conn->mCC;
-			Prefix += "]";
+	if (mC.nick_prefix_cc && conn->mCC.size() && (conn->mCC != "--")) {
+		string Prefix("[");
+		Prefix += conn->mCC;
+		Prefix += "]";
 
-			if (StrCompare(nick, 0, 4, Prefix) != 0) {
-				errmsg << autosprintf(_("Please add %s in front of your nick."), Prefix.c_str());
-				close = conn->GetTheoricalClass() < eUC_REGUSER;
-			}
+		if (StrCompare(nick, 0, 4, Prefix) != 0) {
+			errmsg << autosprintf(_("Please use following nick prefix: %s"), Prefix.c_str());
+			close = conn->GetTheoricalClass() < eUC_REGUSER;
 		}
 	}
 

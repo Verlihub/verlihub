@@ -214,6 +214,7 @@ public:
 	bool send_user_ip;
 	bool send_user_info;
 	bool send_pass_request;
+	int ban_bypass_class;
 	bool use_reglist_cache;
 	bool use_penlist_cache;
 	bool chat_default_on;

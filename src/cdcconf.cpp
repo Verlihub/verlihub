@@ -216,6 +216,7 @@ void cDCConf::AddVars()
 	Add("send_user_ip",send_user_ip,false);
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
+	Add("ban_bypass_class", ban_bypass_class, (int)eUC_MASTER);
 	// End user control configuration
 
 	// Advanced hub configuration and tweaks
