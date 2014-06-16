@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -170,12 +171,12 @@ bool cMessageDC::SplitChunks()
 			if(!ChunkRedLeft( eCH_FM_REASON, 4)) mError = 1;  // skip the "Msg:" part
 			break;
 		case eDC_MSEARCH: // not implemented, but should be same as search
-		case eDC_SEARCH: // active
-			// $Search <ip>:<port> <searchstring>
-			//enum {eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY}
-			if(!SplitOnTwo( mKWSize,' ', eCH_AS_ADDR, eCH_AS_QUERY)) mError =1;
-			if(!SplitOnTwo( ':', eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT)) mError =1;
-			if(!SplitOnTwo('?',eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN,0)) mError =1;
+		case eDC_SEARCH: // active search
+			// $Search <ip>:<port> <limits><pattern>
+			// enum {eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN}
+			if (!SplitOnTwo(mKWSize, ' ', eCH_AS_ADDR, eCH_AS_QUERY)) mError = 1;
+			if (!SplitOnTwo(':', eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT)) mError = 1; // todo: for some reason port is parsed as: <port> <limits><pattern>
+			if (!SplitOnTwo('?', eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN, 0)) mError = 1;
 			break;
 		case eDC_SR:
 			// $SR <senderNick> <filepath>^E<filesize> <freeslots>/<totalslots>^E<hubname> (<hubhost>[:<hubport>])^E<searchingNick>

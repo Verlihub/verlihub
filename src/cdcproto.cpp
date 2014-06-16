@@ -1503,6 +1503,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			}
 
 			port = msg->ChunkString(eCH_AS_PORT);
+			port.assign(port, 0, port.find_first_of(' ')); // solution for misparsed port
 
 			if (port.empty() || (port.size() > 5))
 				return -1;
