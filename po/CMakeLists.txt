@@ -1,4 +1,4 @@
-file(STRINGS LINGUAS LOCALES)
+file(STRINGS LANGS LOCALES)
 # Merge POT files
 add_custom_command(
 	OUTPUT "${CMAKE_BINARY_DIR}/po/verlihub.pot"

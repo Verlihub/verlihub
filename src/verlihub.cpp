@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -119,9 +120,12 @@ int main(int argc, char *argv[])
 		ConfigBase = "/etc/verlihub";
 	}
 	#endif
-	cout << "Config dir " << ConfigBase << endl;
+	cout << "Config directory: " << ConfigBase << endl;
 	cServerDC server(ConfigBase, argv[0]);
-	setlocale(LC_ALL, server.mDBConf.locale.c_str());
+	//setenv("LOCPATH", LOCALEDIR, 0); // set locale path
+	char *locres = NULL;
+	locres = setlocale(LC_ALL, server.mDBConf.locale.c_str());
+	cout << "Using locale: " << ((locres) ? locres : "Default") << endl;
 	bindtextdomain("verlihub", LOCALEDIR);
 	textdomain("verlihub");
 

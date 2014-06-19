@@ -4,10 +4,9 @@ msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-19 07:49+0100\n"
-"PO-Revision-Date: 2014-06-19 07:49+0100\n"
+"PO-Revision-Date: 2014-06-19 08:02+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Verlihub <webmaster@feardc.net>\n"
-"Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,6 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: windows-1252\n"
 "X-Generator: Poedit 1.6.5\n"
+"Language: sv_SE\n"
 "X-Poedit-SearchPath-0: ../src\n"
 
 #: ../src/cban.cpp:79
@@ -1509,7 +1509,7 @@ msgstr ""
 
 #: ../src/cinfoserver.cpp:91
 msgid "Uptime"
-msgstr ""
+msgstr "Körtid"
 
 #: ../src/cinfoserver.cpp:105
 msgid "Server frequency"
@@ -1830,12 +1830,12 @@ msgstr ""
 #: ../src/cserverdc.cpp:1516
 #, c-format
 msgid "Software: %s %s @ %s"
-msgstr ""
+msgstr "Programvara: %s %s @ %s"
 
 #: ../src/cserverdc.cpp:1517
 #, c-format
 msgid "Uptime: %s"
-msgstr ""
+msgstr "Körtid: %s"
 
 #: ../src/cserverdc.cpp:1518
 #, c-format

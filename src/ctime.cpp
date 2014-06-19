@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -67,36 +68,59 @@ std::ostream & operator<< (std::ostream &os, const cTime &t)
 
 			buf[strlen(buf)] = 0;
 			os << buf;
-		break;
+			break;
 		case 2:
 			rest = t.tv_sec;
 			i = 0;
 			n = rest / (24 * 3600 * 7);
 			rest %= (24 * 3600 * 7);
-			if ((n > 0) && (++i <= 2)) ostr << " " << autosprintf(((n == 1) ? _("%ld week") : _("%ld weeks")), n);
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld week", "%ld weeks", n), n);
+
 			n = rest / (24 * 3600);
 			rest %= (24 * 3600);
-			if ((n > 0) && (++i <= 2)) ostr << " " << autosprintf(((n == 1) ? _("%ld day") : _("%ld days")), n);
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld day", "%ld days", n), n);
+
 			n = rest / 3600;
 			rest %= 3600;
-			if ((n > 0) && (++i <= 2)) ostr << " " << autosprintf(((n == 1) ? _("%ld hour") : _("%ld hours")), n);
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld hour", "%ld hours", n), n);
+
 			n = rest / 60;
 			rest %= 60;
-			if ((n > 0) && (++i <= 2)) ostr << " " << autosprintf(((n == 1) ? _("%ld min") : _("%ld mins")), n);
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld min", "%ld mins", n), n);
+
 			n = rest;
 			rest = 0;
-			if ((n > 0) && (++i <= 2)) ostr << " " << autosprintf(((n == 1) ? _("%ld sec") : _("%ld secs")), n);
-			if ((((int)t.tv_usec / 1000) > 0) && (++i <= 2)) ostr << " " << autosprintf(_("%d ms"), (int)t.tv_usec / 1000);
-			//if ((((int)t.tv_usec % 1000) > 0) && (++i <= 2)) ostr << " " << autosprintf(_("%d µs"), (int)t.tv_usec % 1000);
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld sec", "%ld secs", n), n);
+
+			n = (int)t.tv_usec / 1000;
+
+			if ((n > 0) && (++i <= 2))
+				ostr << " " << autosprintf(ngettext("%ld msec", "%ld msecs", n), n);
+
+			//n = (int)t.tv_usec % 1000;
+
+			//if ((n > 0) && (++i <= 2))
+				//ostr << " " << autosprintf(ngettext("%ld usec", "%ld usecs", n), n);
 
 			if (ostr.str().empty())
-				os << autosprintf(_("%d ms"), 0); // _("%d µs")
+				os << autosprintf(_("%d msecs"), 0); // _("%d usecs")
 			else
 				os << ostr.str().substr(1); // strip space
-		break;
+
+			break;
 		default:
-			os << t.tv_sec << " " << ((t.tv_sec == 1) ? _("sec") : _("secs")) << t.tv_usec << " " << _("µs");
-		break;
+			os << " " << autosprintf(ngettext("%ld sec", "%ld secs", t.tv_sec), t.tv_sec) << " " << autosprintf(ngettext("%ld usec", "%ld usecs", t.tv_usec), t.tv_usec);
+			break;
 	}
 
 	return os;
