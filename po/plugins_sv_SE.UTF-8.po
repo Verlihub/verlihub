@@ -3,19 +3,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 07:55+0100\n"
-"PO-Revision-Date: 2014-06-19 08:05+0100\n"
+"POT-Creation-Date: 2014-06-20 10:49+0100\n"
+"PO-Revision-Date: 2014-06-20 10:50+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Verlihub <webmaster@feardc.net>\n"
+"Language: sv_SE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: windows-1252\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6.5\n"
-"Language: sv_SE\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
@@ -221,13 +221,13 @@ msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
-msgstr ""
+msgstr "Skript"
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
-msgstr ""
+msgstr "Skript %s stoppad."
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
@@ -255,7 +255,7 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
-msgstr ""
+msgstr "Skript %s är nu igång."
 
 #: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:263
 #, c-format

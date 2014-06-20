@@ -3,19 +3,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 07:49+0100\n"
-"PO-Revision-Date: 2014-06-19 08:02+0100\n"
+"POT-Creation-Date: 2014-06-20 10:43+0100\n"
+"PO-Revision-Date: 2014-06-20 10:46+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Verlihub <webmaster@feardc.net>\n"
+"Language: sv_SE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: windows-1252\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: Poedit 1.6.5\n"
-"Language: sv_SE\n"
 "X-Poedit-SearchPath-0: ../src\n"
 
 #: ../src/cban.cpp:79
@@ -24,7 +24,7 @@ msgstr ""
 
 #: ../src/cban.cpp:87 ../src/cserverdc.cpp:1477 ../src/cuser.cpp:217
 msgid "Nickname"
-msgstr ""
+msgstr "Nick"
 
 #: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:277
 #: ../src/cdcconsole.cpp:343 ../src/cdcconsole.cpp:469
@@ -34,7 +34,7 @@ msgstr ""
 
 #: ../src/cban.cpp:89 ../src/cdcconsole.cpp:1050
 msgid "Reason"
-msgstr ""
+msgstr "Orsak"
 
 #: ../src/cban.cpp:91
 msgid "Extra message"
@@ -42,7 +42,7 @@ msgstr ""
 
 #: ../src/cban.cpp:92 ../src/cbanlist.cpp:423
 msgid "Time"
-msgstr ""
+msgstr "Tid"
 
 #: ../src/cban.cpp:96
 msgid "remaining"
@@ -50,7 +50,7 @@ msgstr ""
 
 #: ../src/cban.cpp:98
 msgid "Permanently"
-msgstr ""
+msgstr "Permanent"
 
 #: ../src/cban.cpp:106 ../src/cban.cpp:127
 msgid "IP range"
@@ -79,7 +79,7 @@ msgstr ""
 
 #: ../src/cban.cpp:127
 msgid "Nick"
-msgstr ""
+msgstr "Nick"
 
 #: ../src/cban.cpp:127
 msgid "Host level 1"
@@ -342,11 +342,11 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:344 ../src/cdcconsole.cpp:470 ../src/cuser.cpp:226
 msgid "Country"
-msgstr ""
+msgstr "Land"
 
 #: ../src/cdcconsole.cpp:345 ../src/cdcconsole.cpp:471 ../src/cuser.cpp:227
 msgid "City"
-msgstr ""
+msgstr "Stad"
 
 #: ../src/cdcconsole.cpp:366
 msgid "Stopping hub."
@@ -377,7 +377,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:455 ../src/cserverdc.cpp:778
 msgid "Your information"
-msgstr ""
+msgstr "Ditt information"
 
 #: ../src/cdcconsole.cpp:468
 msgid "Your IP information"
@@ -507,7 +507,7 @@ msgstr ""
 #: ../src/cdcconsole.cpp:630 ../src/cinfoserver.cpp:101
 #: ../src/cserverdc.cpp:1513
 msgid "Normal mode"
-msgstr ""
+msgstr "Normalt läge"
 
 #: ../src/cdcconsole.cpp:633
 msgid "Hub health"
@@ -515,7 +515,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:634
 msgid "Your status"
-msgstr ""
+msgstr "Ditt status"
 
 #: ../src/cdcconsole.cpp:635
 msgid "Your can search every"
@@ -1644,7 +1644,7 @@ msgstr ""
 
 #: ../src/creguserinfo.cpp:106
 msgid "Last login"
-msgstr ""
+msgstr "Senaste inloggning"
 
 #: ../src/creguserinfo.cpp:106 ../src/creguserinfo.cpp:118
 msgid "from"
@@ -1665,11 +1665,11 @@ msgstr ""
 
 #: ../src/creguserinfo.cpp:115
 msgid "Last error"
-msgstr ""
+msgstr "Senaste fel"
 
 #: ../src/creguserinfo.cpp:123
 msgid "Login errors/total"
-msgstr ""
+msgstr "Inloggnings fel/totalt"
 
 #: ../src/creguserinfo.cpp:124
 msgid "Password set"

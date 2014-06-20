@@ -122,10 +122,10 @@ int main(int argc, char *argv[])
 	#endif
 	cout << "Config directory: " << ConfigBase << endl;
 	cServerDC server(ConfigBase, argv[0]);
-	//setenv("LOCPATH", LOCALEDIR, 0); // set locale path
+	//setenv("LOCPATH", LOCALEDIR, 0); // set locale search path
 	char *locres = NULL;
 	locres = setlocale(LC_ALL, server.mDBConf.locale.c_str());
-	cout << "Using locale: " << ((locres) ? locres : "Default") << endl;
+	cout << "Used locale: " << ((locres) ? locres : "Default") << endl;
 	bindtextdomain("verlihub", LOCALEDIR);
 	textdomain("verlihub");
 
