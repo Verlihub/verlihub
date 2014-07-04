@@ -68,6 +68,7 @@ public:
 	int max_users_passive;
 	unsigned int max_users_from_ip;
 	unsigned int max_users[7];
+	string hubfull_message;
 	unsigned int max_extra_pings;
 	unsigned int max_extra_regs;
 	unsigned int max_extra_vips;

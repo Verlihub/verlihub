@@ -1,21 +1,23 @@
 Prerequisites:
-    CMake 2.6
+    CMake 2.x
     OpenSSL
-    MySQL 5.1
+    MySQL 5.x
     zlib
     libpcre
     gettext
 Optional dependencies:
     GeoIP
-    Lua 5.1
-    Python 2.5
+    Lua 5.x
+    Python 2.x
+	dialog (for vh_gui script only)
 
 To install Verlihub, run the following commands:
 
-cd verlihub
+cd verlihub-1.0.0
 mkdir build
 cd build
 cmake ..
 make
 make install (as super user)
 ldconfig (as super user, this is required only when you get: cannot open shared object file, no such file or directory)
+updatedb (as super user, people say this command is needed to update slocate locations)

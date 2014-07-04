@@ -109,6 +109,7 @@ void cDCConf::AddVars()
 	Add("max_users4",max_users[4],1000);
 	Add("max_users5",max_users[5],1000);
 	Add("max_users6",max_users[6],1000);
+	Add("hubfull_message", hubfull_message, "");
 	// End max users configuration
 
 	// Share configuration

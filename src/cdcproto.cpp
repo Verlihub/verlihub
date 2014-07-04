@@ -204,7 +204,15 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		} else
 			os << autosprintf(_("User limit exceeded at %d online users."), mS->mUserCountTot);
 
-		if (mS->mC.max_users_total == 0) os << " " << _("This is a registered users only hub.");
+		if (mS->mC.max_users_total == 0) {
+			os << " ";
+
+			if (!mS->mC.hubfull_message.empty())
+				os << mS->mC.hubfull_message;
+			else
+				os << _("This is a registered users only hub.");
+		}
+
 		if (conn->Log(2)) conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << conn->mCC << endl;
 		omsg = "$HubIsFull";
 		conn->Send(omsg);
@@ -837,7 +845,6 @@ int cDCProto::DC_To(cMessageDC * msg, cConnDC * conn)
 {
 	if(msg->SplitChunks()) return -1;
 	string &str=msg->ChunkString(eCH_PM_TO);
-	ostringstream os;
 
 	if(!conn->mpUser) return -1;
 	if(!conn->mpUser->mInList) return -2;
