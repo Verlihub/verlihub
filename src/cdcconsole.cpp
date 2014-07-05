@@ -476,6 +476,12 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 {
+	if (!conn)
+		return 0;
+
+	if (!conn->mpUser)
+		return 0;
+
 	// check if command is disabled
 	if (mOwner->mC.disable_me_cmd) {
 		mOwner->DCPublicHS(_("This functionality is currently disabled."), conn);
@@ -483,7 +489,8 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	}
 
 	// check if user is allowed to use main chat
-	if (!conn->mpUser->Can(eUR_CHAT, mOwner->mTime.Sec(), 0)) return 1;
+	if (!conn->mpUser->Can(eUR_CHAT, mOwner->mTime.Sec(), 0))
+		return 1;
 
 	if (conn->mpUser->mClass < mOwner->mC.mainchat_class) {
 		mOwner->DCPublicHS(_("Main chat is currently disabled for users with your class."), conn);
@@ -501,10 +508,26 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		text += "\r\n" + tmpline;
 	}
 
-	if (text[0] == ' ') text = text.substr(1);
+	if (text[0] == ' ') // small fix
+		text = text.substr(1);
+
+	// check for flood as if it was regular mainchat message
+	string mestr;
+	mestr = '<';
+	mestr += conn->mpUser->mNick;
+	mestr += "> ";
+	mestr += text;
+	cUser::tFloodHashType Hash = 0;
+	Hash = tHashArray<void*>::HashString(mestr);
+
+	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_CHAT]))
+		return 1;
+
+	conn->mpUser->mFloodHashes[eFH_CHAT] = Hash;
 
 	// check message length
-	if (conn->mpUser->mClass < eUC_VIPUSER && !cDCProto::CheckChatMsg(text, conn)) return 1;
+	if (conn->mpUser->mClass < eUC_VIPUSER && !cDCProto::CheckChatMsg(text, conn))
+		return 1;
 
 	// send message
 	ostringstream os;
