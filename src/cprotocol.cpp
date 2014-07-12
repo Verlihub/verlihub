@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -41,6 +42,7 @@ cMessageParser::cMessageParser(int MaxChunks) :
 	Overfill(false),
 	Received(false),
 	mError(false),
+	mModified(false),
 	mType(eMSG_UNPARSED),
 	mLen(0),
 	mKWSize(0),
@@ -63,11 +65,12 @@ void cMessageParser::ReInit()
 {
 	mChunks.clear();
 	mChunks.resize(mMaxChunks);
-	mLen=0;
+	mLen = 0;
 	mChStrMap = 0l;
-	Overfill=false;
-	Received=false;
-	mError=false;
+	Overfill = false;
+	Received = false;
+	mError = false;
+	mModified = false;
 	mStr.resize(0);
 	mStr.reserve(512);
 	mType = eMSG_UNPARSED;
@@ -77,14 +80,18 @@ void cMessageParser::ReInit()
 /** apply the chunkstring ito the main string */
 void cMessageParser::ApplyChunk(unsigned int n)
 {
-	if(!n) return;
-	if(n > mChunks.size()) return;
+	if (!n)
+		return;
+
+	if (n > mChunks.size())
+		return;
 
 	unsigned long flag = 1 << n;
-	if(mChStrMap & flag)
-	{
-		tChunk &chu=mChunks[n];
+
+	if (mChStrMap & flag) {
+		tChunk &chu = mChunks[n];
 		mStr.replace(chu.first, chu.second, mChStrings[n]);
+		mModified = true;
 	}
 }
 

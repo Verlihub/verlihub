@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -83,6 +84,14 @@ class cMessageParser : public cObj
 		bool Received;
 		/** error in message indicator */
 		bool mError;
+
+		/*
+			specifies that message has been modified
+			and split chunks should be called again
+			to avoid broken protocol messages
+		*/
+		bool mModified;
+
 		/** parsed message type */
 		int mType;
 		/** length of the message */

@@ -673,13 +673,16 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			return -2;
 	#endif
 
+	if (msg->mModified && msg->SplitChunks() && conn->Log(2)) // plugin has modified message
+		conn->LogStream() << "MyINFO syntax error after plugin modification" << endl;
+
 	// $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
-	string myinfo_full, myinfo_basic, desctag, desc, sTag, email, speed, sShare;
+	string myinfo_full, myinfo_basic, desctag, desc, sTag, speed, email, sShare;
 	desctag = msg->ChunkString(eCH_MI_DESC);
 
 	if (!desctag.empty()) {
-		mS->mCo->mDCClients->ParsePos(desctag);
-		desc.assign(desctag, 0, mS->mCo->mDCClients->mPositionInDesc); // todo: tag.mPositionInDesc may be incorrect after the description has been modified by a plugin
+		mS->mCo->mDCClients->ParsePos(desctag); // get new tag position in case its changed
+		desc.assign(desctag, 0, mS->mCo->mDCClients->mPositionInDesc);
 
 		if (mS->mCo->mDCClients->mPositionInDesc >= 0)
 			sTag.assign(desctag, mS->mCo->mDCClients->mPositionInDesc, -1);
@@ -705,17 +708,16 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	delete tag; // now we can delete it
+	delete tag; // now we can delete tag
+	speed = msg->ChunkString(eCH_MI_SPEED);
+
+	if ((mS->mC.show_speed == 0) && !speed.empty())
+		speed.assign(speed, speed.length() - 1, -1); // hide speed but keep status byte
 
 	if (mS->mC.show_email == 0)
 		email= "";
 	else
 		email = msg->ChunkString(eCH_MI_MAIL);
-
-	speed = msg->ChunkString(eCH_MI_SPEED);
-
-	if ((mS->mC.show_speed == 0) && !speed.empty())
-		speed = speed[speed.size() - 1]; // hide speed but keep status byte
 
 	if (conn->mpUser->mHideShare)
 		sShare = "0";

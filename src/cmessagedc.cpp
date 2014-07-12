@@ -213,6 +213,8 @@ bool cMessageDC::SplitChunks()
 		default:
 			break;
 	}
+
+	mModified = false; // reset modified flag
 	return mError;
 }
 	}; //namespace nProtocol

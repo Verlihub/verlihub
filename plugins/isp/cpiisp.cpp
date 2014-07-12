@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -97,20 +98,23 @@ bool cpiISP::OnParsedMsgMyINFO(cConnDC * conn, cMessageDC *msg)
 			}
 		}
 
-		if (conn->GetTheoricalClass() <= mCfg->max_insert_desc_class)
-		{
+		if (conn->GetTheoricalClass() <= mCfg->max_insert_desc_class) {
 			string &desc = msg->ChunkString(eCH_MI_DESC);
 			string desc_prefix;
-			if (isp->mAddDescPrefix.length() > 0)
-			{
+
+			if (isp->mAddDescPrefix.length() > 0) {
 				ReplaceVarInString(isp->mAddDescPrefix, "CC", desc_prefix, conn->mCC);
 				ReplaceVarInString(desc_prefix, "CLASS", desc_prefix, conn->GetTheoricalClass());
-				if (conn->mpUser->mxServer->mC.show_desc_len >= 0) desc.assign(desc, 0, conn->mpUser->mxServer->mC.show_desc_len);
+
+				//if (conn->mpUser->mxServer->mC.show_desc_len >= 0) // this will remove tag aswell, dont use it here, use in core instead where tag is actually parsed
+					//desc.assign(desc, 0, conn->mpUser->mxServer->mC.show_desc_len);
+
 				desc = desc_prefix + desc;
 				msg->ApplyChunk(eCH_MI_DESC);
 			}
 		}
 	}
+
 	return true;
 }
 
