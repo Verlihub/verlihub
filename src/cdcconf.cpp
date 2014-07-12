@@ -267,6 +267,7 @@ void cDCConf::AddVars()
 	Add("tag_min_class_ignore",tag_min_class_ignore ,(int)eUC_OPERATOR);
 	Add("show_desc_len",show_desc_len,-1);
 	Add("desc_insert_mode", desc_insert_mode, false);
+	Add("desc_insert_vars", desc_insert_vars, string("")); // %[CLASS], %[CLASSNAME], %[MODE], %[CC], %[CN], %[CITY]
 	Add("show_email",show_email,1);
 	Add("show_speed",show_speed,1);
 	Add("tag_min_hs_ratio", tag_min_hs_ratio, 0.);

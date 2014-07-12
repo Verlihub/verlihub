@@ -692,19 +692,75 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		desc.assign(desc, 0, mS->mC.show_desc_len);
 
 	if (mS->mC.desc_insert_mode) {
-		switch (tag->mClientMode) {
-			case eCM_ACTIVE:
-				desc = "[A]" + desc;
-				break;
-			case eCM_PASSIVE:
-				desc = "[P]" + desc;
-				break;
-			case eCM_SOCK5:
-				desc = "[5]" + desc;
-				break;
-			default: // eCM_OTHER, eCM_NOTAG
-				desc = "[?]" + desc;
-				break;
+		if (mS->mC.desc_insert_vars.empty()) { // insert mode only
+			switch (tag->mClientMode) {
+				case eCM_ACTIVE:
+					desc = "[A]" + desc;
+					break;
+				case eCM_PASSIVE:
+					desc = "[P]" + desc;
+					break;
+				case eCM_SOCK5:
+					desc = "[5]" + desc;
+					break;
+				default: // eCM_OTHER, eCM_NOTAG
+					desc = "[?]" + desc;
+					break;
+			}
+		} else { // insert custom variables
+			string desc_prefix = mS->mC.desc_insert_vars;
+
+			ReplaceVarInString(desc_prefix, "CC", desc_prefix, conn->mCC);
+			ReplaceVarInString(desc_prefix, "CN", desc_prefix, conn->mCN);
+			ReplaceVarInString(desc_prefix, "CITY", desc_prefix, conn->mCity);
+			ReplaceVarInString(desc_prefix, "CLASS", desc_prefix, conn->mpUser->mClass);
+
+			switch (conn->mpUser->mClass) {
+				case eUC_PINGER:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Pinger"));
+					break;
+				case eUC_NORMUSER:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Guest"));
+					break;
+				case eUC_REGUSER:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Registered"));
+					break;
+				case eUC_VIPUSER:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("VIP"));
+					break;
+				case eUC_OPERATOR:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Operator"));
+					break;
+				case eUC_CHEEF:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Cheef"));
+					break;
+				case eUC_ADMIN:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Administator"));
+					break;
+				case eUC_MASTER:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Master"));
+					break;
+				default:
+					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Unknown"));
+					break;
+			}
+
+			switch (tag->mClientMode) {
+				case eCM_ACTIVE:
+					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "A");
+					break;
+				case eCM_PASSIVE:
+					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "P");
+					break;
+				case eCM_SOCK5:
+					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "5");
+					break;
+				default: // eCM_OTHER, eCM_NOTAG
+					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "?");
+					break;
+			}
+
+			desc = desc_prefix + desc;
 		}
 	}
 
