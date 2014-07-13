@@ -338,7 +338,7 @@ function update_geoip()
 		exit 0;
 	fi
 
-	# Check if mysqldump is installed
+	# Check if gzip is installed
 	DUMP=`whereis gzip | awk '{ print $2 }'`
 	if [ -z "$DUMP" ]; then
 		echo_s "-- This command requires gzip to work, please consider installing it\n"
@@ -352,29 +352,55 @@ function update_geoip()
 	fi;
 
 	# Maxmind link
-	local ADDRESS="http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz "
-	
+	local ADDRESS="http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz"
+	local ADDRESS2="http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz"
+
+	# Country database
 	# Download tarball
-	echo "-- Download GeoIP from Maxmind server"
+	echo "-- Downloading GeoIP Country from Maxmind server"
 	wget $ADDRESS > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
-		echo_s "-- A error happens while trying to download GeoIP tarball using 'wget'\n" $RED
+		echo_s "-- An error occurred while trying to download GeoIP Country tarball using 'wget'\n" $RED
 		exit 1;
 	fi
 	# Decompress the file
 	gzip -d GeoIP.dat.gz
 	if [ $? -ne 0 ]; then
-		echo_s "-- A error happens while trying to decompress GeoIP tarball using 'gzip'\n" $RED
+		echo_s "-- An error occurred while trying to decompress GeoIP Country tarball using 'gzip'\n" $RED
 		rm -f GeoIP.dat.gz
 		exit 1;
 	fi
 	# Move the file
 	mv -f GeoIP.dat "$GEOIP_PATH/GeoIP.dat"
 	if [ $? -ne 0 ]; then
-		echo_s "-- A error happens while trying to copy GeoIP DAT file\n" $RED
+		echo_s "-- An error occurred while trying to move GeoIP Country database file\n" $RED
 		rm -f GeoIP.dat
 		exit 1;
 	fi
+
+	# City database
+	# Download tarball
+	echo "-- Download GeoIP City from Maxmind server"
+	wget $ADDRESS2 > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		echo_s "-- An error occurred while trying to download GeoIP City tarball using 'wget'\n" $RED
+		exit 1;
+	fi
+	# Decompress the file
+	gzip -d GeoLiteCity.dat.gz
+	if [ $? -ne 0 ]; then
+		echo_s "-- An error occurred while trying to decompress GeoIP City tarball using 'gzip'\n" $RED
+		rm -f GeoLiteCity.dat.gz
+		exit 1;
+	fi
+	# Move the file
+	mv -f GeoLiteCity.dat "$GEOIP_PATH/GeoLiteCity.dat"
+	if [ $? -ne 0 ]; then
+		echo_s "-- An error occurred while trying to move GeoIP City database file\n" $RED
+		rm -f GeoLiteCity.dat
+		exit 1;
+	fi
+
 	echo "-- Done"
 	exit 0;
 }
