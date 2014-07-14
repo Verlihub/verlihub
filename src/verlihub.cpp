@@ -93,53 +93,68 @@ int main(int argc, char *argv[])
 	string ConfigBase;
 
 	#ifdef _WIN32
-	TCHAR Buffer[BUFSIZE];
-	if(!GetCurrentDirectory(BUFSIZE, Buffer)) {
-		cout << "Cannot get current directory because: " << GetLastError() << endl;
-		return 1;
-	}
-	ConfigBase = Buffer;
+		TCHAR Buffer[BUFSIZE];
+
+		if (!GetCurrentDirectory(BUFSIZE, Buffer)) {
+			cout << "Unable to get current directory because: " << GetLastError() << endl;
+			return 1;
+		}
+
+		ConfigBase = Buffer;
 	#else
-	const char *DirName = NULL;
-	char *HomeDir = getenv("HOME");
-	string tmp;
-	if (HomeDir) {
-		tmp = HomeDir;
-		tmp +=  "/.verlihub";
-		DirName = tmp.c_str();
+		const char *DirName = NULL;
+		char *HomeDir = getenv("HOME");
+		string tmp;
+
+		if (HomeDir) {
+			tmp = HomeDir;
+			tmp += "/.verlihub";
+			DirName = tmp.c_str();
+
+			if (DirExists(DirName))
+				ConfigBase = DirName;
+		}
+
+		DirName = "./.verlihub";
+
 		if (DirExists(DirName))
 			ConfigBase = DirName;
-	}
-	DirName = "./.verlihub";
-	if (DirExists(DirName))
-		ConfigBase = DirName;
-	DirName = getenv("VERLIHUB_CFG");
-	if ((DirName != NULL) && DirExists(DirName))
-		ConfigBase = DirName;
-	if (!ConfigBase.size()) {
-		ConfigBase = "/etc/verlihub";
-	}
+
+		DirName = getenv("VERLIHUB_CFG");
+
+		if ((DirName != NULL) && DirExists(DirName))
+			ConfigBase = DirName;
+
+		if (!ConfigBase.size())
+			ConfigBase = "/etc/verlihub";
 	#endif
-	cout << "Config directory: " << ConfigBase << endl;
-	cServerDC server(ConfigBase, argv[0]);
-	cout << "Setting LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl; // set environment variable LANG
-	cout << "Unsetting LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl; // unset environment variable LANGUAGE
-	char *locres = NULL;
-	locres = setlocale(LC_ALL, server.mDBConf.locale.c_str());
-	cout << "Used locale: " << ((locres) ? locres : "Default") << endl;
-	bindtextdomain("verlihub", LOCALEDIR);
-	textdomain("verlihub");
 
-	int port=0;
+	cout << "Configuration directory: " << ConfigBase << endl;
+	cServerDC server(ConfigBase, argv[0]); // create server
 
-	if(argc > 1) {
+	if (!server.mDBConf.locale.empty()) { // set locale when defined
+		cout << "Found locale configuration: " << server.mDBConf.locale << endl;
+		cout << "Setting environment variable LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
+		cout << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
+		char *res = setlocale(LC_ALL, server.mDBConf.locale.c_str());
+		cout << "Setting hub locale: " << ((res) ? res : "Error") << endl;
+		res = bindtextdomain("verlihub", LOCALEDIR);
+		cout << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
+		res = textdomain("verlihub");
+		cout << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
+	}
+
+	int port = 0;
+
+	if (argc > 1) {
 		stringstream arg(argv[1]);
 		arg >> port;
 	}
+
 	#ifndef _WIN32
-	signal(SIGPIPE,mySigPipeHandler);
-	signal(SIGIO  ,mySigIOHandler  );
-	signal(SIGQUIT,mySigQuitHandler);
+		signal(SIGPIPE, mySigPipeHandler);
+		signal(SIGIO, mySigIOHandler);
+		signal(SIGQUIT, mySigQuitHandler);
 	#endif
 
 	server.StartListening(port);
