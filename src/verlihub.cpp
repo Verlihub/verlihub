@@ -122,7 +122,8 @@ int main(int argc, char *argv[])
 	#endif
 	cout << "Config directory: " << ConfigBase << endl;
 	cServerDC server(ConfigBase, argv[0]);
-	//setenv("LOCPATH", LOCALEDIR, 0); // set locale search path
+	cout << "Setting LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl; // set environment variable LANG
+	cout << "Unsetting LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl; // unset environment variable LANGUAGE
 	char *locres = NULL;
 	locres = setlocale(LC_ALL, server.mDBConf.locale.c_str());
 	cout << "Used locale: " << ((locres) ? locres : "Default") << endl;

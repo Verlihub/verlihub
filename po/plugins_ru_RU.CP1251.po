@@ -1,19 +1,19 @@
 #
 # Translators:
 # Stefano  <netcelli@gmail.com>, 2011.
-# РђР»РµРєСЃР°РЅРґСЂ  <exside@mail.com>, 2011.
-# РђР»РµРєСЃР°РЅРґСЂ  <plugmn@gmail.com>, 2011.
+# Александр  <exside@mail.com>, 2011.
+# Александр  <plugmn@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-20 10:48+0100\n"
-"PO-Revision-Date: 2014-06-20 10:48+0100\n"
+"PO-Revision-Date: 2014-07-14 19:46+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Verlihub <webmaster@feardc.net>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=cp1251\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -25,170 +25,170 @@ msgstr ""
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє С‡Р°С‚-РєРѕРјРЅР°С‚"
+msgstr "Получить список чат-комнат"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє Р·Р°РїСЂРµС‰РµРЅРЅС‹С… РІС‹СЂР°Р¶РµРЅРёР№"
+msgstr "Получить список запрещенных выражений"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ СЂРµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ СѓРєР°Р·Р°РЅРЅРѕРµ РІР°РјРё РЅРµРґРѕРїСѓСЃС‚РёРјРѕ."
+msgstr "К сожалению регулярное выражение указанное вами недопустимо."
 
 #: ../plugins/forbid/cforbidden.cpp:78
 #, c-format
 msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "Р—РђРџР Р•Рў: РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‚РїСЂР°РІРёР» Р·Р°РїСЂРµС‰РµРЅРЅС‹Рµ СЃР»РѕРІР° РІ %s: %s"
+msgstr "ЗАПРЕТ: Пользователь отправил запрещенные слова в %s: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PUBLIC chat"
-msgstr "РџРЈР‘Р›РР§РќР«Р™ С‡Р°С‚"
+msgstr "ПУБЛИЧНЫЙ чат"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PRIVATE chat"
-msgstr "РџР РР’РђРўРќР«Р™ С‡Р°С‚"
+msgstr "ПРИВАТНЫЙ чат"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "РџРѕСЃР»РµРґРЅРёРµ %d СЃРѕР±С‹С‚РёР№ РґР»СЏ РЅРёРєР° %s:"
+msgstr "Последние %d событий для ника %s:"
 
 #: ../plugins/iplog/ciplog.cpp:90
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "РџРѕСЃР»РµРґРЅРёРµ %d СЃРѕР±С‹С‚РёР№ РґР»СЏ РёРї %s:"
+msgstr "Последние %d событий для ип %s:"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "connect"
-msgstr "СЃРѕРµРґРёРЅРµРЅРёРµ"
+msgstr "соединение"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "login"
-msgstr "РІРѕР№С‚Рё"
+msgstr "войти"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "logout"
-msgstr "РІС‹Р№С‚Рё"
+msgstr "выйти"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "disconnect"
-msgstr "РѕС‚РєР»СЋС‡РёС‚СЊСЃСЏ"
+msgstr "отключиться"
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr "РїР»РѕС…РѕР№ РЅРёРє РёР»Рё РЅРёРє РІСЂРµРјРµРЅРЅРѕ Р·Р°Р±Р°РЅРµРЅ"
+msgstr "плохой ник или ник временно забанен"
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
-msgstr "РёСЃРїРѕР»СЊР·РѕРІР°Р»Рё СЂР°Р·Р»РёС‡РЅС‹Рµ РЅРёРє РІ С‡Р°С‚Рµ"
+msgstr "использовали различные ник в чате"
 
 #: ../plugins/iplog/ciplog.cpp:100
 msgid "kicked"
-msgstr "РѕС‚РєР»СЋС‡РµРЅРѕ"
+msgstr "отключено"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "redirected"
-msgstr "РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅ"
+msgstr "перенаправлен"
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr "РІС‹Р№С‚Рё РёР· С…Р°Р±Р°"
+msgstr "выйти из хаба"
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr "РєСЂРёС‚РёС‡РµСЃРєР°СЏ РЅР°РіСЂСѓР·РєР° РЅР° С…Р°Р±"
+msgstr "критическая нагрузка на хаб"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
-msgstr "РўР°Р№Рј-Р°СѓС‚"
+msgstr "Тайм-аут"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "user did nothing for too long time"
-msgstr "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‡РµРЅСЊ РґРѕР»РіРѕ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°Р»"
+msgstr "Пользователь очень долго ничего не делал"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr "С…Р°Р± РїРѕР»РѕРЅ"
+msgstr "хаб полон"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
-msgstr "Р»РёРјРёС‚ С€Р°СЂС‹"
+msgstr "лимит шары"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "no tag or not valid"
-msgstr "РЅРµС‚ С‚РµРіР° РёР»Рё РЅРµРґРµР№СЃС‚РІРёС‚РµР»РµРЅ"
+msgstr "нет тега или недействителен"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "tag breaks hub rules"
-msgstr "С‚РµРі РїСЂРѕС‚РёРІРѕСЂРµС‡РёС‚ РїСЂР°РІРёР»Р°Рј С…Р°Р±Р°"
+msgstr "тег противоречит правилам хаба"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "wrong password"
-msgstr "РЅРµРїСЂР°РІРёР»СЊРЅС‹Р№ РїР°СЂРѕР»СЊ"
+msgstr "неправильный пароль"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "error in login sequence"
-msgstr "РѕС€РёР±РєР° РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё СЃРѕРµРґРёРЅРµРЅРёСЏ"
+msgstr "ошибка в последовательности соединения"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "syntax error in some messages"
-msgstr "СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРёРµ РѕС€РёР±РєРё РІ РЅРµРєРѕС‚РѕСЂС‹С… СЃРѕРѕР±С‰РµРЅРёСЏС…"
+msgstr "синтаксические ошибки в некоторых сообщениях"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "invalid key"
-msgstr "РЅРµРґРµР№СЃС‚РІРёС‚РµР»СЊРЅС‹Р№ РєР»СЋС‡"
+msgstr "недействительный ключ"
 
 #: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:156
 msgid "Date"
-msgstr "Р”Р°С‚Р°"
+msgstr "Дата"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "Action"
-msgstr "Р”РµР№СЃС‚РІРёРµ"
+msgstr "Действие"
 
 #: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:157
 msgid "Nickname"
-msgstr "РќРёРє"
+msgstr "Ник"
 
 #: ../plugins/iplog/ciplog.cpp:120
 msgid "Info"
-msgstr "РРЅС„РѕСЂРјР°С†РёСЏ"
+msgstr "Информация"
 
 #: ../plugins/iplog/ciplog.cpp:148
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Р’ РїРѕСЃР»РµРґРЅРµРµ РІСЂРµРјСЏ %s Р·Р°С…РѕРґРёР» СЃРѕ СЃР»РµРґСѓСЋС‰РµРіРѕ РёРї"
+msgstr "В последнее время %s заходил со следующего ип"
 
 #: ../plugins/iplog/ciplog.cpp:150
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "Р’ РїРѕСЃР»РµРґРЅРµРµ РІСЂРµРјСЏ %s РёСЃРїРѕР»СЊР·РѕРІР°Р» СЃР»РµРґСѓСЋС‰РёР№ РЅРёРє"
+msgstr "В последнее время %s использовал следующий ник"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РїСЂРѕРІР°Р№РґРµСЂРѕРІ"
+msgstr "Получить список провайдеров"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "РќРµРёР·РІРµСЃС‚РЅС‹Р№ С„РѕСЂРјР°С‚ РґРёР°РїР°Р·РѕРЅР°."
+msgstr "Неизвестный формат диапазона."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ СЂРµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ РґР»СЏ РЅРёРєР° СѓРєР°Р·Р°РЅРЅРѕРµ РІР°РјРё РЅРµРґРѕРїСѓСЃС‚РёРјРѕ."
+msgstr "К сожалению регулярное выражение для ника указанное вами недопустимо."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
 msgstr ""
-"Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ СЂРµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ РґР»СЏ С‚РёРїР° СЃРѕРµРґРёРЅРµРЅРёСЏ СѓРєР°Р·Р°РЅРЅРѕРµ РІР°РјРё "
-"РЅРµРґРѕРїСѓСЃС‚РёРјРѕ."
+"К сожалению регулярное выражение для типа соединения указанное вами "
+"недопустимо."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Р’Р°С€ РЅРёРє РґРѕР»Р¶РµРЅ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ %[pattern]"
+msgstr "Ваш ник должен соответствовать %[pattern]"
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "Р’Р°С€ С‚РёРї СЃРѕРµРґРёРЅРµРЅРёСЏ РґРѕР»Р¶РµРЅ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ %[pattern]"
+msgstr "Ваш тип соединения должен соответствовать %[pattern]"
 
 #: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:62
 msgid "You have no rights to do this."
@@ -196,89 +196,89 @@ msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
-msgstr "Р’РµСЂСЃРёСЏ Lua"
+msgstr "Версия Lua"
 
 #: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
-msgstr "Р’РµСЂСЃРёСЏ Р±РёР±Р»РёРѕС‚РµРєРё Lua"
+msgstr "Версия библиотеки Lua"
 
 #: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
-msgstr "РђРІС‚РѕСЂСЃРєРёРµ РїСЂР°РІР°"
+msgstr "Авторские права"
 
 #: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
-msgstr "РђРІС‚РѕСЂС‹"
+msgstr "Авторы"
 
 #: ../plugins/lua/cconsole.cpp:104
 msgid "Version date"
-msgstr "Р”Р°С‚Р° РІРµСЂСЃРёРё"
+msgstr "Дата версии"
 
 #: ../plugins/lua/cconsole.cpp:105
 msgid "Running scripts"
-msgstr "Р—Р°РїСѓС‰РµРЅРЅС‹Рµ СЃРєСЂРёРїС‚С‹"
+msgstr "Запущенные скрипты"
 
 #: ../plugins/lua/cconsole.cpp:106
 msgid "Memory used"
-msgstr "РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїР°РјСЏС‚Рё"
+msgstr "Использование памяти"
 
 #: ../plugins/lua/cconsole.cpp:112
 #, fuzzy
 msgid "Running Lua scripts:"
-msgstr "Р—Р°РїСѓС‰РµРЅРЅС‹Рµ LUA СЃРєСЂРёРїС‚С‹:"
+msgstr "Запущенные LUA скрипты:"
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
-msgstr "РЎРєСЂРёРїС‚"
+msgstr "Скрипт"
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
-msgstr "РЎРєСЂРёРїС‚ %s РѕСЃС‚Р°РЅРѕРІР»РµРЅ."
+msgstr "Скрипт %s остановлен."
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "РЎРєСЂРёРїС‚ #%s РЅРµ РѕСЃС‚Р°РЅРѕРІР»РµРЅ, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РѕРЅ РЅРµ СЂР°Р±РѕС‚Р°РµС‚."
+msgstr "Скрипт #%s не остановлен, потому что он не работает."
 
 #: ../plugins/lua/cconsole.cpp:155 ../plugins/python/cconsole.cpp:132
 #: ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "РЎРєСЂРёРїС‚ %s РЅРµ РѕСЃС‚Р°РЅРѕРІР»РµРЅ, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РѕРЅ РЅРµ СЂР°Р±РѕС‚Р°РµС‚."
+msgstr "Скрипт %s не остановлен, потому что он не работает."
 
 #: ../plugins/lua/cconsole.cpp:182
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РєР°С‚Р°Р»РѕРіР° %s."
+msgstr "Ошибка при загрузке каталога %s."
 
 #: ../plugins/lua/cconsole.cpp:205
 #, c-format
 msgid "Script %s is already running."
-msgstr "РЎРєСЂРёРїС‚ %s СѓР¶Рµ Р·Р°РїСѓС‰РµРЅ."
+msgstr "Скрипт %s уже запущен."
 
 #: ../plugins/lua/cconsole.cpp:210 ../plugins/lua/cconsole.cpp:259
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
-msgstr "РЎРєСЂРёРїС‚ %s СЂР°Р±РѕС‚Р°РµС‚."
+msgstr "Скрипт %s работает."
 
 #: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:263
 #, c-format
 msgid "Script %s not found or could not be parsed."
-msgstr "РЎРєСЂРёРїС‚ %s РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°РЅ."
+msgstr "Скрипт %s не найден или не может быть проанализирован."
 
 #: ../plugins/lua/cconsole.cpp:253
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "РЎРєСЂРёРїС‚ %s РЅРµ РѕСЃС‚Р°РЅРѕРІР»РµРЅ РїРѕС‚РѕРјСѓ С‡С‚Рѕ РѕРЅ РЅРµ СЂР°Р±РѕС‚Р°РµС‚."
+msgstr "Скрипт %s не остановлен потому что он не работает."
 
 #: ../plugins/lua/cconsole.cpp:282
 #, fuzzy, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr "РћР±РЅРѕРІР»РµРЅРѕ %s.%s РѕС‚ '%s' РІ '%s'"
+msgstr "Обновлено %s.%s от '%s' в '%s'"
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
@@ -288,28 +288,28 @@ msgstr ""
 #: ../plugins/lua/cluainterpreter.cpp:161
 #, fuzzy
 msgid "Lua error"
-msgstr "РџРѕСЃР»РµРґРЅСЏСЏ РѕС€РёР±РєР°"
+msgstr "Последняя ошибка"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "РЎРѕРѕР±С‰РµРЅРёРµ Р±С‹Р»Рѕ РѕС‚РїСЂР°РІР»РµРЅРѕ РІ %s РїРѕС‚РѕРјСѓ, С‡С‚Рѕ РѕРЅ РІ СЃРµС‚Рё."
+msgstr "Сообщение было отправлено в %s потому, что он в сети."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "РЎРѕРѕР±С‰РµРЅРёРµ СЃРѕС…СЂР°РЅРµРЅРѕ."
+msgstr "Сообщение сохранено."
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "Р’С‹ РїРѕР»СѓС‡РёР»Рё %d СЃРѕРѕР±С‰РµРЅРёРµ"
-msgstr[1] "Р’С‹ РїРѕР»СѓС‡РёР»Рё %d СЃРѕРѕР±С‰РµРЅРёР№"
-msgstr[2] "Р’С‹ РїРѕР»СѓС‡РёР»Рё %d СЃРѕРѕР±С‰РµРЅРёСЏ"
+msgstr[0] "Вы получили %d сообщение"
+msgstr[1] "Вы получили %d сообщений"
+msgstr[2] "Вы получили %d сообщения"
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "РЈ РІР°СЃ РЅРµС‚ РЅРѕРІС‹С… СЃРѕРѕР±С‰РµРЅРёР№."
+msgstr "У вас нет новых сообщений."
 
 #: ../plugins/messenger/cmsglist.cpp:232
 #, c-format
@@ -318,9 +318,9 @@ msgid ""
 "Date: %s\n"
 "Subject: %s\n"
 msgstr ""
-"РћС‚: %s РљСѓРґР°: %s\n"
-"Р”Р°С‚Р°: %s\n"
-"РЎСѓР±СЉРµРєС‚: %s\n"
+"От: %s Куда: %s\n"
+"Дата: %s\n"
+"Субъект: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -331,9 +331,9 @@ msgid ""
 "%s\n"
 "----\n"
 msgstr ""
-"РћС‚: %s РљСѓРґР°: %s\n"
-"Р”Р°С‚Р°: %s\n"
-"РЎСѓР±СЉРµРєС‚: %s\n"
+"От: %s Куда: %s\n"
+"Дата: %s\n"
+"Субъект: %s\n"
 "%s\n"
 "----\n"
 
@@ -344,43 +344,43 @@ msgid ""
 "Subject: %s -------------------------\n"
 "%s"
 msgstr ""
-"#РћР¤Р¤Р›РђР™Рќ РЎРћРћР‘Р©Р•РќРР•# [%s]\n"
-"РЎСѓР±СЉРµРєС‚: %s -------------------------\n"
+"#ОФФЛАЙН СООБЩЕНИЕ# [%s]\n"
+"Субъект: %s -------------------------\n"
 "%s"
 
 #: ../plugins/plugman/cconsole.cpp:43
 msgid "Plugman version"
-msgstr "Р’РµСЂСЃРёРё РјРµРЅРµРґР¶РµСЂР° РїР»Р°РіРёРЅРѕРІ"
+msgstr "Версии менеджера плагинов"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Verlihub executable"
-msgstr "РСЃРїРѕР»РЅСЏРµРјС‹Р№ С„Р°Р№Р» Verlihub"
+msgstr "Исполняемый файл Verlihub"
 
 #: ../plugins/plugman/cconsole.cpp:147
 #, fuzzy
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
-"РќР°Р·РІР°РЅРёРµ РїР»Р°РіРёРЅР° РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РЅРµ Р±РѕР»РµРµ 10 СЃРёРјРІРѕР»РѕРІ; РїСЂРѕСЃСЊР±Р° РёСЃРїСЂР°РІРёС‚СЊ СЌС‚Рѕ."
+"Название плагина должно быть не более 10 символов; просьба исправить это."
 
 #: ../plugins/plugman/cconsole.cpp:152
 msgid "Please provide a valid path for the plugin."
-msgstr "РЈРєР°Р¶РёС‚Рµ РїСЂР°РІРёР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР»Р°РіРёРЅР°."
+msgstr "Укажите правильный путь до плагина."
 
 #: ../plugins/plugman/cconsole.cpp:184 ../plugins/plugman/cplugs.cpp:133
 #, fuzzy
 msgid "Plugin loaded."
-msgstr "РџР»Р°РіРёРЅ РЅРµ РЅР°Р№РґРµРЅ."
+msgstr "Плагин не найден."
 
 #: ../plugins/plugman/cconsole.cpp:189 ../plugins/plugman/cconsole.cpp:212
 #: ../plugins/plugman/cconsole.cpp:235
 #, fuzzy, c-format
 msgid "Plugin not found: %s"
-msgstr "РџР»Р°РіРёРЅ РЅРµ РЅР°Р№РґРµРЅ."
+msgstr "Плагин не найден."
 
 #: ../plugins/plugman/cconsole.cpp:204
 #, fuzzy
 msgid "Plugin unloaded."
-msgstr "РџР»Р°РіРёРЅ РЅРµ РЅР°Р№РґРµРЅ."
+msgstr "Плагин не найден."
 
 #: ../plugins/plugman/cconsole.cpp:207
 msgid "Plugin not unloaded, probably because it's not loaded."
@@ -389,7 +389,7 @@ msgstr ""
 #: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
 #, fuzzy
 msgid "Plugin reloaded."
-msgstr "РџР»Р°РіРёРЅ РЅРµ РЅР°Р№РґРµРЅ."
+msgstr "Плагин не найден."
 
 #: ../plugins/plugman/cconsole.cpp:230
 msgid "Plugin not reloaded, probably because it's not loaded."
@@ -397,22 +397,22 @@ msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
-msgstr "РџР»Р°РіРёРЅ РЅРµ РЅР°Р№РґРµРЅ."
+msgstr "Плагин не найден."
 
 #: ../plugins/plugman/cplugs.cpp:117
 #, fuzzy
 msgid "Plugin does not support scripts."
-msgstr "РџР»Р°РіРёРЅ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚ СЃРєСЂРёРїС‚С‹"
+msgstr "Плагин не поддерживает скрипты"
 
 #: ../plugins/plugman/cplugs.cpp:123
 #, fuzzy
 msgid "Script loaded."
-msgstr "РЎРєСЂРёРїС‚ %s РѕСЃС‚Р°РЅРѕРІР»РµРЅ."
+msgstr "Скрипт %s остановлен."
 
 #: ../plugins/plugman/cplugs.cpp:125
 #, fuzzy
 msgid "Error loading script."
-msgstr "РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ СЃРєСЂРёРїС‚Р°"
+msgstr "Ошибка при загрузке скрипта"
 
 #: ../plugins/plugman/cplugs.cpp:155
 #, fuzzy
@@ -420,96 +420,96 @@ msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
 msgstr ""
-"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ: РїР»Р°РіРёРЅ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ СЃРєРѕРјРїРёР»РёСЂРѕРІР°РЅ Р·Р°РЅРѕРІРѕ РїРѕС‚РѕРјСѓ С‡С‚Рѕ VerliHub "
-"Р±С‹Р» РѕР±РЅРѕРІР»РµРЅ"
+"Предупреждение: плагин должен быть скомпилирован заново потому что VerliHub "
+"был обновлен"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
-msgstr "РќР°Р·РІР°РЅРёРµ"
+msgstr "Название"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "On"
-msgstr "Р’РєР»."
+msgstr "Вкл."
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Off"
-msgstr "Р’С‹РєР»."
+msgstr "Выкл."
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Auto"
-msgstr "РђРІС‚Рѕ"
+msgstr "Авто"
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Manual"
-msgstr "Р СѓРєРѕРІРѕРґСЃС‚РІРѕ"
+msgstr "Руководство"
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Path"
-msgstr "РџСѓС‚СЊ"
+msgstr "Путь"
 
 #: ../plugins/plugman/cplugs.cpp:210
 msgid "Description"
-msgstr "РћРїРёСЃР°РЅРёРµ"
+msgstr "Описание"
 
 #: ../plugins/plugman/cplugs.cpp:213
 #, fuzzy
 msgid "Last error"
-msgstr "РџРѕСЃР»РµРґРЅСЏСЏ РѕС€РёР±РєР°"
+msgstr "Последняя ошибка"
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
 #: ../plugins/python/cconsole.cpp:190
 msgid "Python interpreter is not loaded."
-msgstr "РРЅС‚РµСЂРїСЂРµС‚Р°С‚РѕСЂ Python РЅРµ Р·Р°РіСЂСѓР¶РµРЅ."
+msgstr "Интерпретатор Python не загружен."
 
 #: ../plugins/python/cconsole.cpp:83
 msgid "Loaded Python scripts:"
-msgstr "Р—Р°РіСЂСѓР¶РµРЅРѕ Python СЃРєСЂРёРїС‚РѕРІ:"
+msgstr "Загружено Python скриптов:"
 
 #: ../plugins/python/cconsole.cpp:149 ../plugins/python/cconsole.cpp:226
 msgid "Failed to allocate new Python interpreter."
-msgstr "РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РЅРѕРІС‹Р№ РёРЅС‚РµСЂРїСЂРµС‚Р°С‚РѕСЂ Python."
+msgstr "Не удалось найти новый интерпретатор Python."
 
 #: ../plugins/python/cconsole.cpp:157 ../plugins/python/cconsole.cpp:234
 #, c-format
 msgid "Script %s not found or could not be parsed!."
-msgstr "РЎРєСЂРёРїС‚ %s РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°РЅ!."
+msgstr "Скрипт %s не найден или не может быть проанализирован!."
 
 #: ../plugins/python/cconsole.cpp:179
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'"
-msgstr "РћР±РЅРѕРІР»РµРЅРѕ %s.%s РѕС‚ '%s' РІ '%s'"
+msgstr "Обновлено %s.%s от '%s' в '%s'"
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words:"
-msgstr "Р—Р°РјРµРЅС‘РЅРЅС‹Рµ СЃР»РѕРІР°:"
+msgstr "Заменённые слова:"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Replace with"
-msgstr "Р—Р°РјРµРЅС‘РЅРЅС‹Рµ СЃР»РѕРІР°"
+msgstr "Заменённые слова"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "РџРѕРІСЂРµР¶РґС‘РЅРЅС‹Р№ РєР»Р°СЃСЃ"
+msgstr "Повреждённый класс"
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "РЎР»РѕРІРѕ '%s' РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚."
+msgstr "Слово '%s' не существует."
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "РЎР»РѕРІРѕ '%s' СѓРґР°Р»РµРЅРѕ."
+msgstr "Слово '%s' удалено."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ РІР°С€Рµ СЂРµРіСѓР»СЏСЂРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ СЂР°Р·РѕР±СЂР°РЅРѕ."
+msgstr "К сожалению ваше регулярное выражение не может быть разобрано."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "РЎР»РѕРІРѕ '%s' СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚."
+msgstr "Слово '%s' уже существует."
 
 #: ../plugins/replacer/cconsole.cpp:145
 #, c-format
@@ -517,22 +517,22 @@ msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
 msgstr ""
-"Р”РѕР±Р°РІР»РµРЅРѕ СЃР»РѕРІРѕ %s. Р­С‚Рѕ СЃР»РѕРІРѕ Р±СѓРґРµС‚ С„РёР»СЊС‚СЂРѕРІР°С‚СЊСЃСЏ РІ РїСѓР±Р»РёС‡РЅС‹Р№ С‡Р°С‚ РґР»СЏ "
-"РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ СЃ РєР»Р°СЃСЃРѕРј, РєРѕС‚РѕСЂС‹Р№ РјРµРЅСЊС€Рµ РёР»Рё СЂР°РІРµРЅ %d."
+"Добавлено слово %s. Это слово будет фильтроваться в публичный чат для "
+"пользователей с классом, который меньше или равен %d."
 
 #: ../plugins/replacer/cconsole.cpp:147
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "РћС€РёР±РєР° РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё СЃР»РѕРІР° '%s'."
+msgstr "Ошибка при добавлении слова '%s'."
 
 #~ msgid "(unknown LUA error)"
-#~ msgstr "(РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР° LUA)"
+#~ msgstr "(Неизвестная ошибка LUA)"
 
 #~ msgid "Loaded"
-#~ msgstr "Р—Р°РіСЂСѓР¶РµРЅРѕ"
+#~ msgstr "Загружено"
 
 #~ msgid "Reloaded"
-#~ msgstr "РџРµСЂРµР·Р°РіСЂСѓР·РєР°"
+#~ msgstr "Перезагрузка"
 
 #~ msgid "Plugin '%s' not found."
-#~ msgstr "РџР»Р°РіРёРЅ '%s' РЅРµ РЅР°Р№РґРµРЅ."
+#~ msgstr "Плагин '%s' не найден."
