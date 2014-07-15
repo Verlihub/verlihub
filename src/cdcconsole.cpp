@@ -583,9 +583,9 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " == " << toUpper(_("Credits")) << " ==\r\n";
 	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hubsoft." << "\r\n";
 	os << " == " << toUpper(_("More")) << " ==\r\n";
-	os << "\tWebsite: http://verlihub.net/" << "\r\n";
-	os << "\tManual: http://verlihub.net/doc/" << "\r\n";
-	os << "\tSupport hub: dchub://hub.verlihub.net:7777/";
+	os << "\t" << _("Website") << ": http://verlihub.net/" << "\r\n";
+	os << "\t" << _("Manual") << ": http://verlihub.net/doc/" << "\r\n";
+	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/";
 
 	omsg = os.str();
 	mOwner->DCPublicHS(omsg, conn);
