@@ -1,4 +1,4 @@
-# 
+#
 # Translators:
 # hostpl-1 <zbyszekslyz@hostpl.eu>, 2014
 msgid ""
@@ -6,19 +6,21 @@ msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-19 07:55+0100\n"
-"PO-Revision-Date: 2014-07-12 17:01+0000\n"
-"Last-Translator: hostpl-1 <zbyszekslyz@hostpl.eu>\n"
-"Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/verlihub-100/language/pl_PL/)\n"
+"PO-Revision-Date: 2014-07-15 15:07+0100\n"
+"Last-Translator: RoLex <webmaster@feardc.net>\n"
+"Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/"
+"verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=cp1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.6.5\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 1.6.6\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SearchPath-0: ../plugins\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
@@ -73,7 +75,8 @@ msgstr "rozlaczono"
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr "zla nazwa uzytkownika lub nazwa uzytkownika zostala tymczasowo zbanowana"
+msgstr ""
+"zla nazwa uzytkownika lub nazwa uzytkownika zostala tymczasowo zbanowana"
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
@@ -171,7 +174,8 @@ msgstr "Nieznany format zakresu."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Przepraszam za wyrazenie regularne nazwa uzytkownika jest nieprawidlowa"
+msgstr ""
+"Przepraszam za wyrazenie regularne nazwa uzytkownika jest nieprawidlowa"
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
@@ -310,7 +314,10 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "Od: %s Do: %s\nData: %s\nTemat: %s\n"
+msgstr ""
+"Od: %s Do: %s\n"
+"Data: %s\n"
+"Temat: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -320,7 +327,12 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "Od: %s Do: %s\nData: %s\nTemat: %s\n%s\n----\n"
+msgstr ""
+"Od: %s Do: %s\n"
+"Data: %s\n"
+"Temat: %s\n"
+"%s\n"
+"----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:238
 #, c-format
@@ -328,7 +340,10 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#Wiadomosci Offline# [%s]\nTemat: %s -------------------------\n%s"
+msgstr ""
+"#Wiadomosci Offline# [%s]\n"
+"Temat: %s -------------------------\n"
+"%s"
 
 #: ../plugins/plugman/cconsole.cpp:43
 msgid "Plugman version"
@@ -339,9 +354,9 @@ msgid "Verlihub executable"
 msgstr "Verlihub wykonywalny"
 
 #: ../plugins/plugman/cconsole.cpp:147
-msgid ""
-"Plugin name must be max 10 characters long, please provide another one."
-msgstr "Nazwa plugina powinna posiadac maksymalnie 10 znakow, nalezy podac inna."
+msgid "Plugin name must be max 10 characters long, please provide another one."
+msgstr ""
+"Nazwa plugina powinna posiadac maksymalnie 10 znakow, nalezy podac inna."
 
 #: ../plugins/plugman/cconsole.cpp:152
 msgid "Please provide a valid path for the plugin."
@@ -359,11 +374,12 @@ msgstr "Nie znaleziono plugina: %s"
 
 #: ../plugins/plugman/cconsole.cpp:204
 msgid "Plugin unloaded."
-msgstr "Plugin wy≈Çaczony."
+msgstr "Plugin wy≥aczony."
 
 #: ../plugins/plugman/cconsole.cpp:207
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr "Plugin nie zostal wylaczony, gdyz prawdopodobnie nie zostal zaladowany."
+msgstr ""
+"Plugin nie zostal wylaczony, gdyz prawdopodobnie nie zostal zaladowany."
 
 #: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
@@ -371,7 +387,8 @@ msgstr "Plugin przeladowany."
 
 #: ../plugins/plugman/cconsole.cpp:230
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr "Plugin nie zostal przeladowany, gdyz prawdopodobnie nie zostal zaladowany."
+msgstr ""
+"Plugin nie zostal przeladowany, gdyz prawdopodobnie nie zostal zaladowany."
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
@@ -393,7 +410,9 @@ msgstr "Blad ladowania skryptow."
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
-msgstr "Uwaga: Plugin wymaga przekompilowania , poniewaz verlihub zostal niedawno zaktualizowany."
+msgstr ""
+"Uwaga: Plugin wymaga przekompilowania , poniewaz verlihub zostal niedawno "
+"zaktualizowany."
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
@@ -453,7 +472,7 @@ msgstr "Zaktualizowano %s.%s od '%s' do '%s'"
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words:"
-msgstr "Zastepuje s≈Çowa:"
+msgstr "Zastepuje s≥owa:"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Replace with"
@@ -480,14 +499,16 @@ msgstr "Niestety podane wyrazenie regularne nie moze byc analizowane."
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "S≈Çowo '%s' juz istnieje."
+msgstr "S≥owo '%s' juz istnieje."
 
 #: ../plugins/replacer/cconsole.cpp:145
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "Dodano slowo %s. To slowo bedzie filtrowane na chacie publicznnym dla uzytkownikow z grupy, ktora jest mniejsza lub rowna niz %d.."
+msgstr ""
+"Dodano slowo %s. To slowo bedzie filtrowane na chacie publicznnym dla "
+"uzytkownikow z grupy, ktora jest mniejsza lub rowna niz %d.."
 
 #: ../plugins/replacer/cconsole.cpp:147
 #, c-format

@@ -1,99 +1,98 @@
 #
-# uhlik carbon <uhlikx@seznam.cz>, 2011.
 # Stefano  <netcelli@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: http://bugs.verlihub-project.org/\n"
-"POT-Creation-Date: 2014-06-20 10:46+0100\n"
-"PO-Revision-Date: 2014-06-20 10:46+0100\n"
+"POT-Creation-Date: 2014-06-20 10:47+0100\n"
+"PO-Revision-Date: 2014-07-15 15:20+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Verlihub <webmaster@feardc.net>\n"
-"Language: cs_CZ\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=cp1252\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.6.6\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Dodá seznam místností"
+msgstr "Restituisci una lista di chatroom"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "Dodá seznam zakázaných výrazů"
+msgstr "Restituisci una lista di espressioni proibite"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "Regulární výraz není platný."
+msgstr "L'espressione regolare inserita non � valida."
 
 #: ../plugins/forbid/cforbidden.cpp:78
 #, c-format
 msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "FORBID: Uživatel odeslal zakázané slova v %s: %s"
+msgstr "FORBID: l'utente  ha inviato parole proibite in %s: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PUBLIC chat"
-msgstr "VEŘEJNÝ chat"
+msgstr "chat PUBBLICA"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PRIVATE chat"
-msgstr "SOUKROMÁ zpráva"
+msgstr "chat PRIVATA"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "Posledních %d akcí uživatele %s:"
+msgstr "Ultimi %d eventi del nick %s:"
 
 #: ../plugins/iplog/ciplog.cpp:90
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "Posledních %d akcí z IP %s:"
+msgstr "Ultimi %d eventi dell'IP %s:"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "connect"
-msgstr "spojit"
+msgstr "connesso"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "login"
-msgstr "přihlášení"
+msgstr "login"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "logout"
-msgstr "odhlášení"
+msgstr "logout"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "disconnect"
-msgstr "odpojení"
+msgstr "disconnesso"
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr "špatný nick nebo nick dočasně zabanován"
+msgstr "nick errato o temporaneamente bannato"
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
-msgstr "použit jiný nick v chatu"
+msgstr "ha usato un nick diverso in chat"
 
 #: ../plugins/iplog/ciplog.cpp:100
 msgid "kicked"
-msgstr "vykopnut"
+msgstr "espulso"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "redirected"
-msgstr "přesměrován"
+msgstr "redirettato"
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr "odchod z hubu"
+msgstr "uscito dall'hub"
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr "critical hub load"
+msgstr "carico dell'hub critico"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
@@ -101,51 +100,51 @@ msgstr "timeout"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "user did nothing for too long time"
-msgstr "uživatel neprojevil žádnou aktivitu po příliš dlouhou dobu"
+msgstr "l'utente non ha fatto nulla per un lungo tempo"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr "hub je plný"
+msgstr "hub pieno"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
-msgstr "limit sdílení"
+msgstr "limite share"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "no tag or not valid"
-msgstr "bez tagu nebo vadný tag"
+msgstr "nessuna tag o non valida"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "tag breaks hub rules"
-msgstr "tag porušuje pravidla hubu"
+msgstr "la tag non rispetta le regole dell'hub"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "wrong password"
-msgstr "špatné heslo"
+msgstr "password errata"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "error in login sequence"
-msgstr "chyba v přihlašovací sekvenci"
+msgstr "sequenza di login errata"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "syntax error in some messages"
-msgstr "chyba v syntaxi zpráv"
+msgstr "errore di sintassi in alcuni messaggi"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "invalid key"
-msgstr "nesprávný klíč"
+msgstr "chiave non valida"
 
 #: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:156
 msgid "Date"
-msgstr "Datum"
+msgstr "Data"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "Action"
-msgstr "Akce"
+msgstr "Azione"
 
 #: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:157
 msgid "Nickname"
-msgstr "Přezdívka"
+msgstr "Nickname"
 
 #: ../plugins/iplog/ciplog.cpp:120
 msgid "Info"
@@ -154,36 +153,36 @@ msgstr "Info"
 #: ../plugins/iplog/ciplog.cpp:148
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Nick %s byl naposled hubu s následující IP"
+msgstr "Il nick %s � stato recentemente nell'hub con i seguenti IP"
 
 #: ../plugins/iplog/ciplog.cpp:150
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "IP %s byla naposled na hubu s následujícími nicky"
+msgstr "L'IP %s � stato recentemente nell'hub con i seguenti nickname"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "Dodá seznam ISP"
+msgstr "Restituisci una lista di ISP"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "Neznámý formát rozsahu."
+msgstr "Formato range sconosciuto."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Regulární výraz pro nickname není platný."
+msgstr "L'espressione regolare inserita per il nickname non � valida."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "Regulární výraz pro typ připojení není platný."
+msgstr "L'espressione regolare inserita per la connessione non � valida."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Tvoje přezdívka by měla odpovídat %[pattern]"
+msgstr "Il tuo nick deve corrispondere a %[pattern]"
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "Tvůj typ připojení by měl odpovídat %[pattern]"
+msgstr "La tua connessione deve corrispondere a %[pattern]"
 
 #: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:62
 msgid "You have no rights to do this."
@@ -191,11 +190,11 @@ msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
-msgstr "Lua verze"
+msgstr "Versione Lua"
 
 #: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
-msgstr "Lua knihovna verze"
+msgstr "Version libreria lua"
 
 #: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
@@ -203,77 +202,77 @@ msgstr "Copyright"
 
 #: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
-msgstr "Autoři"
+msgstr "Autori"
 
 #: ../plugins/lua/cconsole.cpp:104
 msgid "Version date"
-msgstr "Version date"
+msgstr "Data versione"
 
 #: ../plugins/lua/cconsole.cpp:105
 msgid "Running scripts"
-msgstr "Běžící skripty"
+msgstr "Script in esecuzione"
 
 #: ../plugins/lua/cconsole.cpp:106
 msgid "Memory used"
-msgstr "Využitá paměť"
+msgstr "Memoria utilizzata"
 
 #: ../plugins/lua/cconsole.cpp:112
 #, fuzzy
 msgid "Running Lua scripts:"
-msgstr "Běžící LUA skripty:"
+msgstr "Script LUA in esecuzione:"
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
-msgstr "Skript"
+msgstr "Script"
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
-msgstr "Skript %s zastaven."
+msgstr "Lo script %s � stato terminato."
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Skript #%s nebyl zastaven protože nebyl spuštěn."
+msgstr "Lo script %s non � stato terminato poich� non � in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:155 ../plugins/python/cconsole.cpp:132
 #: ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Skript %s nebyl zastaven protože nebyl spuštěn."
+msgstr "Lo script %s non � stato terminato poich� non � in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:182
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "Selhalo nahrávání adresáře %s."
+msgstr "Errore nell'apertura della cartella %s."
 
 #: ../plugins/lua/cconsole.cpp:205
 #, c-format
 msgid "Script %s is already running."
-msgstr "Skript %s už běží."
+msgstr "Lo script %s � ora in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:210 ../plugins/lua/cconsole.cpp:259
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
-msgstr "Skript %s je nyní spuštěn."
+msgstr "Lo script %s � ora in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:263
 #, c-format
 msgid "Script %s not found or could not be parsed."
-msgstr "Skript %s nebyl nalezen nebo jej nelze analyzovat."
+msgstr "Lo script %s non � stato trovato o non pu� essere analizzato."
 
 #: ../plugins/lua/cconsole.cpp:253
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Skript %s nezastaven  protože neběží."
+msgstr "Lo script %s non � stato terminato poich� non � in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:282
 #, fuzzy, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr "Aktualizováno %s.%s z '%s' na '%s'"
+msgstr "Aggiornato %s.%s da '%s' a '%s'"
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
@@ -283,28 +282,27 @@ msgstr ""
 #: ../plugins/lua/cluainterpreter.cpp:161
 #, fuzzy
 msgid "Lua error"
-msgstr "Poslední chyba"
+msgstr "Ultimo errore"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Zpráva byla odeslána uživateli %s protože je online."
+msgstr "Il messaggio � stato inviato ha %s poich� � online."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "Zpráva uložena."
+msgstr "Messaggio salvato."
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "Máš %d zprávu ve schránce."
-msgstr[1] "Máš %d zprávy ve schránce"
-msgstr[2] "Máš %d zpráv ve schránce."
+msgstr[0] "Hai %d messaggio nella tua casella."
+msgstr[1] "Hai %d messaggi nella tua casella."
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "Nemáš žádné zprávy ve schránce."
+msgstr "Non hai nessun messaggio nella tua casella."
 
 #: ../plugins/messenger/cmsglist.cpp:232
 #, c-format
@@ -313,9 +311,9 @@ msgid ""
 "Date: %s\n"
 "Subject: %s\n"
 msgstr ""
-"Od: %s Pro: %s\n"
-"Datum: %s\n"
-"Předmět: %s\n"
+"Da: %s A: %s\n"
+"Data: %s\n"
+"Oggetto: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -326,9 +324,9 @@ msgid ""
 "%s\n"
 "----\n"
 msgstr ""
-"Od: %s Pro: %s\n"
-"Datum: %s\n"
-"Předmět: %s\n"
+"Da: %s A: %s\n"
+"Data: %s\n"
+"Oggetto: %s\n"
 "%s\n"
 "----\n"
 
@@ -339,42 +337,44 @@ msgid ""
 "Subject: %s -------------------------\n"
 "%s"
 msgstr ""
-"#OFFLINE ZPRÁVA# [%s]\n"
-"Předmět: %s -------------------------\n"
+"#MESSAGGIO OFFLINE# [%s]\n"
+"Oggetto: %s -------------------------\n"
 "%s"
 
 #: ../plugins/plugman/cconsole.cpp:43
 msgid "Plugman version"
-msgstr "Plugman verze"
+msgstr "Version plugman"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Verlihub executable"
-msgstr "Verlihub spouštěč"
+msgstr "Eseguibile di VerliHub"
 
 #: ../plugins/plugman/cconsole.cpp:147
 #, fuzzy
 msgid "Plugin name must be max 10 characters long, please provide another one."
-msgstr "Název pluginu může mít pouze 10 znaků; vyber jiné prosím."
+msgstr ""
+"Il nome del plugin deve essere lungo al massimo 10 caratteri. Inseriscine un "
+"altro."
 
 #: ../plugins/plugman/cconsole.cpp:152
 msgid "Please provide a valid path for the plugin."
-msgstr "Nastav funkční cestu pro plugin."
+msgstr "Inserisci un percorso valido per il plugin."
 
 #: ../plugins/plugman/cconsole.cpp:184 ../plugins/plugman/cplugs.cpp:133
 #, fuzzy
 msgid "Plugin loaded."
-msgstr "Plugin nenalezen."
+msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cconsole.cpp:189 ../plugins/plugman/cconsole.cpp:212
 #: ../plugins/plugman/cconsole.cpp:235
 #, fuzzy, c-format
 msgid "Plugin not found: %s"
-msgstr "Plugin nenalezen."
+msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cconsole.cpp:204
 #, fuzzy
 msgid "Plugin unloaded."
-msgstr "Plugin nenalezen."
+msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cconsole.cpp:207
 msgid "Plugin not unloaded, probably because it's not loaded."
@@ -383,7 +383,7 @@ msgstr ""
 #: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
 #, fuzzy
 msgid "Plugin reloaded."
-msgstr "Plugin nenalezen."
+msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cconsole.cpp:230
 msgid "Plugin not reloaded, probably because it's not loaded."
@@ -391,22 +391,22 @@ msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
-msgstr "Plugin nenalezen."
+msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cplugs.cpp:117
 #, fuzzy
 msgid "Plugin does not support scripts."
-msgstr "Plugin nepodporuje skripty"
+msgstr "Il plugin non supporta gli script."
 
 #: ../plugins/plugman/cplugs.cpp:123
 #, fuzzy
 msgid "Script loaded."
-msgstr "Skript %s zastaven."
+msgstr "Lo script %s � stato terminato."
 
 #: ../plugins/plugman/cplugs.cpp:125
 #, fuzzy
 msgid "Error loading script."
-msgstr "Chyba při nahrávání scriptu"
+msgstr "Errore nel caricare lo script"
 
 #: ../plugins/plugman/cplugs.cpp:155
 #, fuzzy
@@ -414,95 +414,96 @@ msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
 msgstr ""
-"Varování: plugin by měl být rekompilován protože VerliHub byl aktualizován"
+"Attenzione: il plugin deve essere ricompilato poich� VerliHub � stato "
+"aggiornato recentemente"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
-msgstr "Název"
+msgstr "Nome"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "On"
-msgstr "Zapnuto"
+msgstr "On"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Off"
-msgstr "Vypnuto"
+msgstr "Off"
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Auto"
-msgstr "Auto"
+msgstr "Automatico"
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Manual"
-msgstr "Manual"
+msgstr "Manuale"
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Path"
-msgstr "Cesta"
+msgstr "Percorso"
 
 #: ../plugins/plugman/cplugs.cpp:210
 msgid "Description"
-msgstr "Popis"
+msgstr "Descrizione"
 
 #: ../plugins/plugman/cplugs.cpp:213
 #, fuzzy
 msgid "Last error"
-msgstr "Poslední chyba"
+msgstr "Ultimo errore"
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
 #: ../plugins/python/cconsole.cpp:190
 msgid "Python interpreter is not loaded."
-msgstr "Python překladač nebyl nahrán."
+msgstr "L'interprete Python non � caricato."
 
 #: ../plugins/python/cconsole.cpp:83
 msgid "Loaded Python scripts:"
-msgstr "Nahrané Python skripty:"
+msgstr "Python script caricati:"
 
 #: ../plugins/python/cconsole.cpp:149 ../plugins/python/cconsole.cpp:226
 msgid "Failed to allocate new Python interpreter."
-msgstr "Selhalo hledání nového překladače pro Python."
+msgstr "Errore nell'allocare un nuovo interprete Python."
 
 #: ../plugins/python/cconsole.cpp:157 ../plugins/python/cconsole.cpp:234
 #, c-format
 msgid "Script %s not found or could not be parsed!."
-msgstr "Skript %s nebyl nalezen nebo nelze analyzovat!"
+msgstr "Lo script %s non � stato trovato o non pu� essere analizzato"
 
 #: ../plugins/python/cconsole.cpp:179
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'"
-msgstr "Aktualizováno %s.%s z '%s' na '%s'"
+msgstr "Aggiornato %s.%s da '%s' a '%s'"
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words:"
-msgstr "Nahrazená slova:"
+msgstr "Parole da sostituire:"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Replace with"
-msgstr "Nahradit s"
+msgstr "Parole da sostituire"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "Ovlivněna class"
+msgstr "Classe interessata"
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "Slovo '%s' neexistuje."
+msgstr "La parola '%s' non esiste."
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Slovo '%s' smazáno."
+msgstr "Parola '%s' cancellata."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "Regulérní výraz který jsi poskytl nelze analyzovat."
+msgstr "L'espressione regolare inserita non pu� essere compilata."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "Slovo '%s' už existuje."
+msgstr "La parola '%s' esiste gi�"
 
 #: ../plugins/replacer/cconsole.cpp:145
 #, c-format
@@ -510,22 +511,22 @@ msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
 msgstr ""
-"Vloženo slovo %s. Toto sovo bude filtrováno na veřejném chatu pro uživatele "
-"s class nižší nebo rovno %d."
+"Parola %s aggiunta. Questa parola sar� filtrata nella chat pubblica per gli "
+"utenti con classe minore o uguale a %d."
 
 #: ../plugins/replacer/cconsole.cpp:147
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Chyba při vkládání slova '%s'."
+msgstr "Errore nell'aggiungere la parola '%s'."
 
 #~ msgid "(unknown LUA error)"
-#~ msgstr "(neznámá LUA chyba)"
+#~ msgstr "(errore LUA sconosciuto)"
 
 #~ msgid "Loaded"
-#~ msgstr "Nahráno"
+#~ msgstr "Caricato"
 
 #~ msgid "Reloaded"
-#~ msgstr "Obnoveno"
+#~ msgstr "Ricaricato"
 
 #~ msgid "Plugin '%s' not found."
-#~ msgstr "Plugin '%s' nebyl nalezen."
+#~ msgstr "Plugin %s non trovato."
