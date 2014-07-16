@@ -1586,36 +1586,43 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 				}
 			}
 
-			if(flags & eKCK_Drop) {
-				// Send the message to the kicker
-				ostr.str(mEmpty);
-				if(flags & eKCK_TBAN)
+			if (flags & eKCK_Drop) {
+				ostr.str(mEmpty); // send the message to the kicker
+
+				if (flags & eKCK_TBAN)
 					ostr << autosprintf(_("Kicked user %s"), Nick.c_str());
 				else
 					ostr << autosprintf(_("Dropped user %s"), Nick.c_str());
-				ostr << " (IP: " << user->mxConn->AddrIP();
-				if(user->mxConn->AddrHost().length())
-					ostr << ", host: " << user->mxConn->AddrHost();
-				ostr << ")";
 
-				if(user->mxConn->Log(2))
-					user->mxConn->LogStream() << "Kicked by " << OP->mNick << ", ban " << mC.tban_kick << "s"<< endl;
-				if(OP->Log(3))
+				ostr << " " << autosprintf(_("with IP %s"), user->mxConn->AddrIP().c_str());
+
+				if (user->mxConn->AddrHost().length())
+					ostr << " " << autosprintf(_("and host %s"), user->mxConn->AddrHost().c_str());
+
+				ostr << ".";
+
+				if (user->mxConn->Log(2))
+					user->mxConn->LogStream() << "Kicked by " << OP->mNick << ", ban " << mC.tban_kick << "s" << endl;
+
+				if (OP->Log(3))
 					OP->LogStream() << "Kicking " << Nick << endl;
 
 				bool Disconnect = true;
 				mKickList->AddKick(user->mxConn, OP->mNick, NULL, OldKick);
+
 				if (OldKick.mReason.size()) {
 					#ifndef WITHOUT_PLUGINS
-					Disconnect = mCallBacks.mOnOperatorKicks.CallAll(OP, user, &OldKick.mReason);
+						Disconnect = mCallBacks.mOnOperatorKicks.CallAll(OP, user, &OldKick.mReason);
 					#endif
 				} else {
 					#ifndef WITHOUT_PLUGINS
-					Disconnect = mCallBacks.mOnOperatorDrops.CallAll(OP, user);
+						Disconnect = mCallBacks.mOnOperatorDrops.CallAll(OP, user);
 					#endif
 				}
+
 				if (Disconnect) {
 					user->mxConn->CloseNice(1000, eCR_KICKED);
+
 					if (!(flags & eKCK_TBAN)) {
 						string msg(OP->mNick);
 						msg += " ";
@@ -1623,28 +1630,26 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 						ReportUserToOpchat(user->mxConn,msg, mC.dest_drop_chat);
 					}
 				} else
-					ostr << "\n" << _("User cannot be kicked.");
+					ostr << " " << _("Disconnect prevented by a plugin.");
 
-				// temp ban kicked user
-				if (flags & eKCK_TBAN) {
+				if (flags & eKCK_TBAN) { // temporarily ban kicked user
 					cBan Ban(this);
 					cKick Kick;
-
 					mKickList->FindKick(Kick, user->mNick, OP->mNick, 30, true, true);
+					mBanList->NewBan(Ban, Kick, (user->mToBan ? user->mBanTime : mC.tban_kick), eBF_NICKIP);
+					ostr << " ";
 
-					if(user->mToBan) {
-						mBanList->NewBan(Ban, Kick, user->mBanTime, eBF_NICKIP);
-						ostr << " " << _("and banned") << " ";
-						Ban.DisplayKick(ostr);
-					} else {
-						mBanList->NewBan(Ban, Kick, mC.tban_kick, eBF_NICKIP);
-						ostr << " " << _("and banned") << " ";
-						Ban.DisplayKick(ostr);
-					}
+					if (Ban.mDateEnd) {
+						cTime HowLong(Ban.mDateEnd - cTime().Sec(), 0);
+						ostr << autosprintf(_("User banned for %s."), HowLong.AsPeriod().AsString().c_str());
+					} else
+						ostr << _("User banned permanently.");
+
 					mBanList->AddBan(Ban);
 				}
+
 				if (!use_os)
-					DCPublicHS(ostr.str(),OP->mxConn);
+					DCPublicHS(ostr.str(), OP->mxConn);
 				else
 					(*use_os) << ostr.str();
 			}
