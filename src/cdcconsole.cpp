@@ -611,10 +611,10 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 		uType = _("Operator");
 		sInt = mOwner->mC.int_search_op;
 	} else if (conn->GetTheoricalClass() == eUC_CHEEF) {
-		uType = _("Super OP");
+		uType = _("Super operator");
 		sInt = mOwner->mC.int_search_op;
 	} else if (conn->GetTheoricalClass() == eUC_ADMIN) {
-		uType = _("Admin");
+		uType = _("Administrator");
 		sInt = mOwner->mC.int_search_op;
 	} else if (conn->GetTheoricalClass() == eUC_MASTER) {
 		uType = _("Master");
@@ -637,11 +637,11 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 	else
 		hubOwner = "--";
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub owner") << hubOwner << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Address") << mOwner->mC.hub_host.c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total users") << mServer->mUserCountTot << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total bots") <<  mServer->mRobotList.Size() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total share") << convertByte(mServer->mTotalShare, false).c_str() << endl;
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub owner") << hubOwner << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Address") << mOwner->mC.hub_host.c_str() << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total users") << mServer->mUserCountTot << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total bots") <<  mServer->mRobotList.Size() << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total share") << convertByte(mServer->mTotalShare, false).c_str() << "\r\n";
 
 	// hub health
 	mServer->mStatus = _("Not available");
@@ -653,10 +653,10 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 		else if (mServer->mSysLoad == eSL_NORMAL) mServer->mStatus = _("Normal mode");
 	}
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub health") << mServer->mStatus.c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your status") << uType.c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your can search every") << autosprintf(ngettext("%d second", "%d seconds", sInt), sInt) << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << endl;
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub health") << mServer->mStatus.c_str() << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your status") << uType.c_str() << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your can search every") << autosprintf(ngettext("%d second", "%d seconds", sInt), sInt) << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("You are sharing") << convertByte(conn->mpUser->mShare, false).c_str();
 	omsg = os.str();
 	mOwner->DCPublicHS(omsg, conn);
@@ -915,7 +915,6 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 		mOwner->DCPublicHS(os.str().c_str(),conn);
 		return 1;
 	}
-
 
 	user = mOwner->mUserList.GetUserByNick(s);
 
@@ -2115,15 +2114,36 @@ bool cDCConsole::cfRegUsr::operator()()
 			break;
 		case eAC_CLASS: // class
 			#ifndef WITHOUT_PLUGINS
-			if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
-				(*mOS) << _("Action has been discarded by plugin.");
-				return false;
-			}
+				if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
+					(*mOS) << _("Action has been discarded by plugin.");
+					return false;
+				}
 			#endif
 
+			if (user && user->mxConn) { // no need to reconnect for class to take effect
+				int oclass = user->mClass;
+				user->mClass = (tUserCl)ParClass;
+
+				if ((oclass < eUC_OPERATOR) && (ParClass >= eUC_OPERATOR)) {
+					mS->mOpchatList.Add(user);
+
+					if (RegFound && !ui.mHideKeys) {
+						mS->mOpList.Add(user);
+						mS->mUserList.SendToAll(mS->mOpList.GetNickList(), false);
+					}
+				} else if ((oclass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
+					mS->mOpchatList.Remove(user);
+
+					if (RegFound && !ui.mHideKeys) {
+						mS->mOpList.Remove(user);
+						mS->mUserList.SendToAll(mS->mOpList.GetNickList(), false);
+					}
+				}
+			}
+
 			field = "class";
-			ostr << autosprintf(_("Your class has been changed to %s, changes will take effect on next login."), par.c_str());
-		break;
+			ostr << autosprintf(_("Your class has been changed to %s."), par.c_str());
+			break;
 		case eAC_ENABLE: //enable
 			field = "enabled";
 			par = "1";

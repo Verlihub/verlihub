@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -202,31 +203,35 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 
 ostream &operator << (ostream &os, cDCTag &tag)
 {
-	os << "Client " << (tag.client ? tag.client->mName : "Unknown") << " (v." << tag.mClientVersion << ")" << endl;
-	os << "[::] Mode: ";
+	os << _("Client") << " " << (tag.client ? tag.client->mName : _("Unknown")) << " (v." << tag.mClientVersion << ")" << "\r\n";
+	os << "[::] " << _("Mode") << ": ";
 
 	if (tag.mClientMode == eCM_ACTIVE)
-		os << "Active";
+		os << _("Active");
 	else if (tag.mClientMode == eCM_PASSIVE)
-		os << "Passive";
+		os << _("Passive");
 	else if (tag.mClientMode == eCM_SOCK5)
-		os << "SOCKS";
-	else if (tag.mClientMode == eCM_OTHER)
-		os << "Other";
+		os << _("SOCKS5");
+	else
+		os << _("Other");
 
-	os << endl;
-	os << "[::] Open hubs: ";
-	if(tag.mTotHubs >=0)
+	os << "\r\n";
+	os << "[::] " << _("Open hubs") << ": ";
+
+	if (tag.mTotHubs >= 0)
 		os << tag.mTotHubs;
 	else
-		os <<"Not available";
-	os << endl;
-	os << "[::] Open slots: ";
-	if(tag.mSlots >=0)
+		os << _("Not available");
+
+	os << "\r\n";
+	os << "[::] " << _("Open slots") << ": ";
+
+	if (tag.mSlots >= 0)
 		os << tag.mSlots;
 	else
-		os << "Not available";
-	os << endl;
+		os << _("Not available");
+
+	os << "\r\n";
 	return os;
 }
 

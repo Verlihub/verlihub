@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -63,20 +64,20 @@ bool cConsole::cfGetReplacer::operator ( )()
 	string word;
 	string rep_word;
 	cReplacerWorker *fw;
-	(*mOS) << _("Replaced words:") << "\r\n";
+	(*mOS) << _("Replaced words") << ":\r\n";
 
-	(*mOS) << "\n ";
-	(*mOS) << setw(20) << setiosflags(ios::left) << "Word";
+	(*mOS) << "\r\n ";
+	(*mOS) << setw(20) << setiosflags(ios::left) << toUpper(_("Word"));
 	(*mOS) << setw(20) << setiosflags(ios::left) << toUpper(_("Replace with"));
 	(*mOS) << toUpper(_("Affected class")) << "\n";
-	(*mOS) << " " << string(20+20+15,'=') << endl;
+	(*mOS) << " " << string(20+20+15,'=') << "\r\n";
 	for(int i = 0; i < GetPI()->mReplacer->Size(); i++) {
 		fw = (*GetPI()->mReplacer)[i];
 		cDCProto::EscapeChars(fw->mWord, word);
 		cDCProto::EscapeChars(fw->mRepWord, rep_word);
 		(*mOS) << " " << setw(20) << setiosflags(ios::left) << word.c_str();
 		(*mOS) << setw(20) << setiosflags(ios::left) << rep_word.c_str();
-		(*mOS) << fw->mAfClass << endl;
+		(*mOS) << fw->mAfClass << "\r\n";
 	}
 
 	return true;

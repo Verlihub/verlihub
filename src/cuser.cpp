@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -358,7 +359,7 @@ void cUser::DisplayRightsInfo(ostream &os, bool head)
 		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), _("Yes"));
 }
 
-bool cUser::Can(unsigned Right, long now, unsigned OtherClass)
+bool cUser::Can(unsigned Right, long now, int OtherClass)
 {
 	if( mClass >= nEnums::eUC_ADMIN ) return true;
 	switch(Right)

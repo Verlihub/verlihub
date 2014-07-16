@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -233,10 +234,10 @@ public:
 	void DisplayRightsInfo(ostream &os, bool head = false);
 
 	/*!
-		\fn Can(unsigned Right, long now = 0, unsigned OtherClass = 0)
+		\fn Can(unsigned Right, long now = 0, int OtherClass = 0)
 		return true if the user has given rights
 	*/
-	bool Can(unsigned Right, long now = 0, unsigned OtherClass = 0);
+	bool Can(unsigned Right, long now = 0, int OtherClass = 0);
 	void SetRight(unsigned Right, long until, bool allow = false, bool notify = false);
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };

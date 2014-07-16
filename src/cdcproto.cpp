@@ -961,8 +961,8 @@ int cDCProto::DC_To(cMessageDC * msg, cConnDC * conn)
 		return -2;
 	//NOTE: It seems to be there a crash on Windows when using Lua plugin and a Lua script calls DelRobot
 	if(conn->mpUser->mClass + mS->mC.classdif_pm < other->mClass) {
-		mS->DCPrivateHS(_("You cannot talk to this user."), conn);
-		mS->DCPublicHS(_("You cannot talk to this user."), conn);
+		mS->DCPrivateHS(_("You can't talk to this user."), conn);
+		mS->DCPublicHS(_("You can't talk to this user."), conn);
 		return -4;
 	}
 
@@ -1834,13 +1834,13 @@ int cDCProto::DCO_TempBan(cMessageDC * msg, cConnDC * conn)
 	}
 
 	if(other->mClass >= conn->mpUser->mClass || other->mProtectFrom >= conn->mpUser->mClass) {
-		os << _("You cannot ban a protected user or with higher privilegies.");
+		os << _("You can't ban a protected user or with higher privilegies.");
 		mS->DCPublicHS(os.str(),conn);
 		return -1;
 	}
 
 	if(!other->mxConn) {
-		os << _("You cannot ban a robot.");
+		os << _("You can't ban a robot.");
 		mS->DCPublicHS(os.str(),conn);
 		return -1;
 	}
