@@ -237,6 +237,14 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 				mOwner->DCPublicHS(os.str().c_str(), conn);
 				return 1;
 			}
+
+			break;
+		case eUC_PINGER:
+			if ((cmdid == "report") && (mUserCmdr.ParseAll(str, os, conn) >= 0)) {
+				mOwner->DCPublicHS(os.str().c_str(), conn);
+				return 1;
+			}
+
 			break;
 		default:
 			return 0;
