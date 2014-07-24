@@ -294,7 +294,10 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	if (conn->mRegInfo && (conn->mRegInfo->mClass == eUC_PINGER)) {
 		conn->mpUser->Register();
 		mS->mR->Login(conn, nick);
+	} else if ((conn->mFeatures & eSF_BOTINFO) && conn->mpUser) {
+		conn->mpUser->mClass = eUC_PINGER;
 	}
+
 	conn->SetLSFlag(eLS_VALNICK|eLS_NICKLST); // set NICKLST because user may want to skip getting userlist
 	conn->ClearTimeOut(eTO_VALNICK);
 	conn->SetTimeOut(eTO_MYINFO, mS->mC.timeout_length[eTO_MYINFO], mS->mTime);
@@ -1753,12 +1756,16 @@ int cDCProto::DC_OpForceMove(cMessageDC * msg, cConnDC * conn)
 }
 
 
-int cDCProto::DCE_Supports(cMessageDC * msg, cConnDC * conn)
+int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 {
-	if (msg->SplitChunks()) return -1;
+	if (!conn)
+		return -1;
+
+	if (msg->SplitChunks())
+		return -1;
+
 	string &supports = msg->ChunkString(eCH_1_PARAM);
 	conn->mSupportsText = supports; // save user supports in text format
-
 	istringstream is(msg->mStr);
 	string feature;
 	is >> feature;
@@ -1766,7 +1773,10 @@ int cDCProto::DCE_Supports(cMessageDC * msg, cConnDC * conn)
 	while (1) {
 		feature = this->mS->mEmpty;
 		is >> feature;
-		if (!feature.size()) break;
+
+		if (!feature.size())
+			break;
+
 		if (feature == "OpPlus") conn->mFeatures |= eSF_OPPLUS;
 		else if (feature == "NoHello") conn->mFeatures |= eSF_NOHELLO;
 		else if (feature == "NoGetINFO") conn->mFeatures |= eSF_NOGETINFO;
@@ -1791,10 +1801,10 @@ int cDCProto::DCE_Supports(cMessageDC * msg, cConnDC * conn)
 	}
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgSupport.CallAll(conn, msg)) {
-		conn->CloseNow();
-		return -1;
-	}
+		if (!mS->mCallBacks.mOnParsedMsgSupport.CallAll(conn, msg)) {
+			conn->CloseNow();
+			return -1;
+		}
 	#endif
 
 	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe MCTo BotList");
@@ -1979,7 +1989,7 @@ int cDCProto::DCB_BotINFO(cMessageDC * msg, cConnDC * conn)
 
 	ostringstream os;
 
-	if (!(conn->mFeatures & eSF_BOTINFO)) {
+	if ((!(conn->mFeatures & eSF_BOTINFO)) && (conn->mpUser->mClass != eUC_PINGER)) {
 		if (conn->Log(2))
 			conn->LogStream() << "User " << conn->mpUser->mNick << " sent $BotINFO but BotINFO extension is not set in $Supports" << endl;
 

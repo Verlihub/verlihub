@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -249,11 +250,12 @@ namespace nVerliHub {
 				 */
 				int GetTheoricalClass()
 				{
-					if (!mRegInfo)
+					if (mFeatures & eSF_BOTINFO)
+						return -1;
+
+					if (!mRegInfo || !mRegInfo->mEnabled)
 						return 0;
-					if(!mRegInfo->mEnabled)
-						return 0;
-					//if (mRegInfo->mClass < 0) return 1; /* wtf ?*/
+
 					return mRegInfo->mClass;
 				}
 
