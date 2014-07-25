@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -101,7 +102,7 @@ istream & operator >> (istream &is, cRegUserInfo &ui)
 
 ostream & operator << (ostream &os, cRegUserInfo &ui)
 {
-	static const char *ClassName[] = {"Guest", "Registered", "VIP", "Operator", "Cheef", "Administrator", "6-err", "7-err", "8-err", "9-err", "Master"};
+	static const char *ClassName[] = {_("Guest"), _("Registered"), _("VIP"), _("Operator"), _("Cheef"), _("Administrator"), _("6-err"), _("7-err"), _("8-err"), _("9-err"), _("Master")};
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Class") << ((ui.mClass == -1) ? _("Pinger") : (ClassName[ui.mClass] ? ClassName[ui.mClass] : _("Invalid"))) << " [" << ui.mClass << "]\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last login") << cTime(ui.mLoginLast,0).AsDate() << " " << _("from") << " " << ui.mLoginIP << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Registered since");
