@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 07:55+0100\n"
-"PO-Revision-Date: 2014-07-15 15:07+0100\n"
+"POT-Creation-Date: 2014-07-16 08:44+0100\n"
+"PO-Revision-Date: 2014-07-25 14:02+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/"
 "verlihub-100/language/pl_PL/)\n"
@@ -345,47 +345,51 @@ msgstr ""
 "Temat: %s -------------------------\n"
 "%s"
 
-#: ../plugins/plugman/cconsole.cpp:43
+#: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
 msgstr "Wersja plugmana"
 
-#: ../plugins/plugman/cconsole.cpp:44
+#: ../plugins/plugman/cconsole.cpp:45
 msgid "Verlihub executable"
 msgstr "Verlihub wykonywalny"
 
-#: ../plugins/plugman/cconsole.cpp:147
+#: ../plugins/plugman/cconsole.cpp:46
+msgid "Verlihub build time"
+msgstr "Verlihub zbudowany w czsie"
+
+#: ../plugins/plugman/cconsole.cpp:148
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 "Nazwa plugina powinna posiadac maksymalnie 10 znakow, nalezy podac inna."
 
-#: ../plugins/plugman/cconsole.cpp:152
+#: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
 msgstr "Prosze podac prawidlowa sciezke do plugina."
 
-#: ../plugins/plugman/cconsole.cpp:184 ../plugins/plugman/cplugs.cpp:133
+#: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
 msgstr "Plugin zaladowany."
 
-#: ../plugins/plugman/cconsole.cpp:189 ../plugins/plugman/cconsole.cpp:212
-#: ../plugins/plugman/cconsole.cpp:235
+#: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
+#: ../plugins/plugman/cconsole.cpp:236
 #, c-format
 msgid "Plugin not found: %s"
 msgstr "Nie znaleziono plugina: %s"
 
-#: ../plugins/plugman/cconsole.cpp:204
+#: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
 msgstr "Plugin wy³aczony."
 
-#: ../plugins/plugman/cconsole.cpp:207
+#: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 "Plugin nie zostal wylaczony, gdyz prawdopodobnie nie zostal zaladowany."
 
-#: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
+#: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
 msgstr "Plugin przeladowany."
 
-#: ../plugins/plugman/cconsole.cpp:230
+#: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 "Plugin nie zostal przeladowany, gdyz prawdopodobnie nie zostal zaladowany."
@@ -470,38 +474,42 @@ msgstr "Skrypt %s nie zostal znaleziony lub nie mozna przetworzyc!."
 msgid "Updated %s.%s from '%s' to '%s'"
 msgstr "Zaktualizowano %s.%s od '%s' do '%s'"
 
-#: ../plugins/replacer/cconsole.cpp:66
-msgid "Replaced words:"
-msgstr "Zastepuje s³owa:"
+#: ../plugins/replacer/cconsole.cpp:67
+msgid "Replaced words"
+msgstr "Zastapione slowa"
 
 #: ../plugins/replacer/cconsole.cpp:70
+msgid "Word"
+msgstr "Slowo"
+
+#: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"
 msgstr "Zamien na"
 
-#: ../plugins/replacer/cconsole.cpp:71
+#: ../plugins/replacer/cconsole.cpp:72
 msgid "Affected class"
 msgstr "Dotyczy klasy"
 
-#: ../plugins/replacer/cconsole.cpp:98
+#: ../plugins/replacer/cconsole.cpp:99
 #, c-format
 msgid "Word '%s' does not exist."
 msgstr "Slowo '%s' nie istnieje."
 
-#: ../plugins/replacer/cconsole.cpp:106
+#: ../plugins/replacer/cconsole.cpp:107
 #, c-format
 msgid "Word '%s' deleted."
 msgstr "Slowo '%s' usuniete."
 
-#: ../plugins/replacer/cconsole.cpp:129
+#: ../plugins/replacer/cconsole.cpp:130
 msgid "Sorry the regular expression you provided cannot be parsed."
 msgstr "Niestety podane wyrazenie regularne nie moze byc analizowane."
 
-#: ../plugins/replacer/cconsole.cpp:135
+#: ../plugins/replacer/cconsole.cpp:136
 #, c-format
 msgid "Word '%s' already exists."
 msgstr "S³owo '%s' juz istnieje."
 
-#: ../plugins/replacer/cconsole.cpp:145
+#: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
@@ -510,7 +518,7 @@ msgstr ""
 "Dodano slowo %s. To slowo bedzie filtrowane na chacie publicznnym dla "
 "uzytkownikow z grupy, ktora jest mniejsza lub rowna niz %d.."
 
-#: ../plugins/replacer/cconsole.cpp:147
+#: ../plugins/replacer/cconsole.cpp:148
 #, c-format
 msgid "Error adding word '%s'."
 msgstr "Blad dodania slowa '%s'."

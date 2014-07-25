@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-19 07:55+0100\n"
-"PO-Revision-Date: 2014-07-15 15:16+0100\n"
+"POT-Creation-Date: 2014-07-16 08:44+0100\n"
+"PO-Revision-Date: 2014-07-25 14:03+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Romanian (Romania) (http://www.transifex.com/projects/p/"
 "verlihub-100/language/ro_RO/)\n"
@@ -37,7 +37,7 @@ msgstr "Ne pare rau dar sintaxa folosita de tine nu este valida"
 #: ../plugins/forbid/cforbidden.cpp:78
 #, c-format
 msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "FORBID: Utilizatorul a folosit cuvinte necuvenite in %s: %s"
+msgstr "FORBID: Utilizatorul a folosit cuvinte interzise in %s: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PUBLIC chat"
@@ -343,47 +343,51 @@ msgstr ""
 "Subiect: %s -------------------------\n"
 "%s"
 
-#: ../plugins/plugman/cconsole.cpp:43
+#: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
 msgstr "Versiune Plugman"
 
-#: ../plugins/plugman/cconsole.cpp:44
+#: ../plugins/plugman/cconsole.cpp:45
 msgid "Verlihub executable"
 msgstr "Executabil verlihub"
 
-#: ../plugins/plugman/cconsole.cpp:147
+#: ../plugins/plugman/cconsole.cpp:46
+msgid "Verlihub build time"
+msgstr "Data compilarii Verlihub"
+
+#: ../plugins/plugman/cconsole.cpp:148
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 "Numele pluginului trebuie sa aiba maxim 10 caractere, te rugam sa mai "
 "incerci o data."
 
-#: ../plugins/plugman/cconsole.cpp:152
+#: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
 msgstr "Te rugam sa introduci o cale valida pentru acest plugin."
 
-#: ../plugins/plugman/cconsole.cpp:184 ../plugins/plugman/cplugs.cpp:133
+#: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
 msgstr "Pluginul a fost incarcat cu succes."
 
-#: ../plugins/plugman/cconsole.cpp:189 ../plugins/plugman/cconsole.cpp:212
-#: ../plugins/plugman/cconsole.cpp:235
+#: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
+#: ../plugins/plugman/cconsole.cpp:236
 #, c-format
 msgid "Plugin not found: %s"
 msgstr "Pluginul %s nu a fost gasit."
 
-#: ../plugins/plugman/cconsole.cpp:204
+#: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
 msgstr "Pluginul a fost dezactivat cu succes."
 
-#: ../plugins/plugman/cconsole.cpp:207
+#: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Nu s-a putut dezactiva pluginul, probabil nu a fost activat."
 
-#: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
+#: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
 msgstr "Pluginul a fost reincarcat."
 
-#: ../plugins/plugman/cconsole.cpp:230
+#: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr "Pluginul nu se poate reincarca, deoarece nu a fost incarcat initial."
 
@@ -467,47 +471,51 @@ msgstr "Scriptul %s nu poate fi gasit sau accesat!."
 msgid "Updated %s.%s from '%s' to '%s'"
 msgstr "S-a upgradat %s.%s de la '%s' la '%s'"
 
-#: ../plugins/replacer/cconsole.cpp:66
-msgid "Replaced words:"
-msgstr "Cuvinte inlocuite:"
+#: ../plugins/replacer/cconsole.cpp:67
+msgid "Replaced words"
+msgstr "Cuvinte inlocuite"
 
 #: ../plugins/replacer/cconsole.cpp:70
+msgid "Word"
+msgstr "Cuvant"
+
+#: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"
 msgstr "Inlocuieste cu"
 
-#: ../plugins/replacer/cconsole.cpp:71
+#: ../plugins/replacer/cconsole.cpp:72
 msgid "Affected class"
 msgstr "Clasa afectata"
 
-#: ../plugins/replacer/cconsole.cpp:98
+#: ../plugins/replacer/cconsole.cpp:99
 #, c-format
 msgid "Word '%s' does not exist."
 msgstr "Cuvantul '%s' nu exista in baza de date."
 
-#: ../plugins/replacer/cconsole.cpp:106
+#: ../plugins/replacer/cconsole.cpp:107
 #, c-format
 msgid "Word '%s' deleted."
 msgstr "Cuvantul '%s' a fost sters."
 
-#: ../plugins/replacer/cconsole.cpp:129
+#: ../plugins/replacer/cconsole.cpp:130
 msgid "Sorry the regular expression you provided cannot be parsed."
 msgstr "Imi pare rau, dar sintaxa oferita de tine, nu poate fi procesata."
 
-#: ../plugins/replacer/cconsole.cpp:135
+#: ../plugins/replacer/cconsole.cpp:136
 #, c-format
 msgid "Word '%s' already exists."
 msgstr "Cuvantul '%s' exista deja in baza de date."
 
-#: ../plugins/replacer/cconsole.cpp:145
+#: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
 msgstr ""
-"Cuvantul %s a fost adaugat cu succes. Filtrarea se va face in mian chat "
-"pentru utilizatorii cu o clasa mai mica sau egaca cu %d."
+"Cuvantul %s a fost adaugat cu succes. Filtrarea se va face in main chat "
+"pentru utilizatorii cu o clasa mai mica sau egala cu %d."
 
-#: ../plugins/replacer/cconsole.cpp:147
+#: ../plugins/replacer/cconsole.cpp:148
 #, c-format
 msgid "Error adding word '%s'."
 msgstr "Eroare adaugand cuvantul '%s'."
