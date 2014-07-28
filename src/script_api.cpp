@@ -139,6 +139,27 @@ bool SendToActive(char *data)
 	return true;
 }
 
+bool SendToActiveClass(char *data, int min_class, int max_class)
+{
+	cServerDC *server = GetCurrentVerlihub();
+
+	if (!server) {
+		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		return false;
+	}
+
+	if (min_class > max_class)
+		return false;
+
+	string omsg(data);
+
+	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+		return false;
+
+	server->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	return true;
+}
+
 bool SendToPassive(char *data)
 {
 	cServerDC *serv = GetCurrentVerlihub();
@@ -154,6 +175,27 @@ bool SendToPassive(char *data)
 		return false;
 
 	serv->mPassiveUsers.SendToAll(omsg);
+	return true;
+}
+
+bool SendToPassiveClass(char *data, int min_class, int max_class)
+{
+	cServerDC *server = GetCurrentVerlihub();
+
+	if (!server) {
+		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		return false;
+	}
+
+	if (min_class > max_class)
+		return false;
+
+	string omsg(data);
+
+	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+		return false;
+
+	server->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
 	return true;
 }
 

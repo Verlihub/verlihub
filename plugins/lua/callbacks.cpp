@@ -171,6 +171,45 @@ int _SendToActive(lua_State *L)
 	return 1;
 }
 
+int _SendToActiveClass(lua_State *L)
+{
+	if (lua_gettop(L) == 4) {
+		if (!lua_isstring(L, 2)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		string data = (char *)lua_tostring(L, 2);
+
+		if (!lua_isnumber(L, 3)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		int min_class = (int)lua_tonumber(L, 3);
+
+		if (!lua_isnumber(L, 4)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		int max_class = (int)lua_tonumber(L, 4);
+
+		if (!SendToActiveClass((char*)data.c_str(), min_class, max_class)) {
+			luaerror(L, ERR_CALL);
+			return 2;
+		}
+	} else {
+		luaL_error(L, "Error calling VH:SendToActiveClass, expected 3 arguments but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
 int _SendToPassive(lua_State *L)
 {
 	if (lua_gettop(L) == 2) {
@@ -187,6 +226,45 @@ int _SendToPassive(lua_State *L)
 		}
 	} else {
 		luaL_error(L, "Error calling VH:SendToPassive, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
+int _SendToPassiveClass(lua_State *L)
+{
+	if (lua_gettop(L) == 4) {
+		if (!lua_isstring(L, 2)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		string data = (char *)lua_tostring(L, 2);
+
+		if (!lua_isnumber(L, 3)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		int min_class = (int)lua_tonumber(L, 3);
+
+		if (!lua_isnumber(L, 4)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
+
+		int max_class = (int)lua_tonumber(L, 4);
+
+		if (!SendToPassiveClass((char*)data.c_str(), min_class, max_class)) {
+			luaerror(L, ERR_CALL);
+			return 2;
+		}
+	} else {
+		luaL_error(L, "Error calling VH:SendToPassiveClass, expected 3 arguments but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;

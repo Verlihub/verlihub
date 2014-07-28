@@ -34,7 +34,9 @@ namespace nVerliHub {
 	int _SendToClass(lua_State *L);
 	int _SendToAll(lua_State *L);
 	int _SendToActive(lua_State *L);
+	int _SendToActiveClass(lua_State *L);
 	int _SendToPassive(lua_State *L);
+	int _SendToPassiveClass(lua_State *L);
 	int _SendPMToAll(lua_State *L);
 	int _Disconnect(lua_State *L);
 	int _DisconnectNice(lua_State *L);
