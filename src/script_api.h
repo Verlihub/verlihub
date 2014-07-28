@@ -28,13 +28,13 @@
 using namespace std;
 namespace nVerliHub {
 	bool SendDataToUser(char *data, char *nick);
-	bool SendToClass(char *data, int min_class,  int max_class);
+	bool SendToClass(char *data, int min_class, int max_class);
 	bool SendToAll(char *data);
 	bool SendToActive(char *data);
-	bool SendToActiveClass(char *data, int min_class,  int max_class);
+	bool SendToActiveClass(char *data, int min_class, int max_class);
 	bool SendToPassive(char *data);
-	bool SendToPassiveClass(char *data, int min_class,  int max_class);
-	bool SendPMToAll(char *data, char *from, int min_class,  int max_class);
+	bool SendToPassiveClass(char *data, int min_class, int max_class);
+	bool SendPMToAll(char *data, char *from, int min_class, int max_class);
 	bool CloseConnection(char *nick);
 	bool CloseConnectionNice(char *nick);
 	bool StopHub(int code);
