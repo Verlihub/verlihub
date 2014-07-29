@@ -450,11 +450,12 @@ int GetConfig(char *config_name, char *var, char *buf, int size)
 int __GetUsersCount()
 {
 	cServerDC *server = GetCurrentVerlihub();
-	if (!server)
-	{
+
+	if (!server) {
 		cerr << "Server verlihub is unfortunately not running or not found." << endl;
 		return 0;
 	}
+
 	return server->mUserCountTot;
 }
 
@@ -462,12 +463,13 @@ int __GetUsersCount()
 __int64 GetTotalShareSize()
 {
 	cServerDC *server = GetCurrentVerlihub();
-	if (!server)
-	{
+
+	if (!server) {
 		cerr << "Server verlihub is unfortunately not running or not found." << endl;
 		return 0;
 	}
-	return server->GetTotalShareSize();
+
+	return server->mTotalShare;
 }
 
 char *__GetNickList()
