@@ -856,15 +856,6 @@ int cDCProto::DC_GetINFO(cMessageDC * msg, cConnDC * conn)
 
 int cDCProto::DC_UserIP(cMessageDC * msg, cConnDC * conn)
 {
-	/*
-	* @rolex
-	* not sure about this,
-	* but if UserIP2 is present in client supports,
-	* and hub supports it aswell,
-	* then client should never send this command,
-	* and we should ignore it
-	*/
-
 	if (!msg || !conn || !conn->mpUser || !conn->mpUser->mInList) return -1;
 	if (conn->mpUser->mClass < eUC_OPERATOR) return -1;
 	if (msg->SplitChunks()) return -1;
@@ -1899,7 +1890,9 @@ int cDCProto::NickList(cConnDC *conn)
 		}
 
 		conn->Send(mS->mOpList.GetNickList(), true); // send $OpList
-		conn->Send(mS->mRobotList.GetNickList(), true); // send $BotList
+
+		if (conn->mFeatures & eSF_BOTLIST)
+			conn->Send(mS->mRobotList.GetNickList(), true); // send $BotList
 	} catch(...) {
 		if (conn->ErrLog(2)) conn->LogStream() << "Exception in cDCProto::NickList" << endl;
 		conn->CloseNow();

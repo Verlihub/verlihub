@@ -112,7 +112,8 @@ public:
 	cUserBase();
 	cUserBase(const string &nick);
 	virtual ~cUserBase();
-		virtual bool CanSend();
+	virtual bool CanSend();
+	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush=true);
 public: // Public attributes
 	/** user's  nickname */
@@ -137,6 +138,7 @@ public:
 	cUser(const string &nick);
 	virtual ~cUser();
 	virtual bool CanSend();
+	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush=true);
 	/** check for the right to ... */
 	inline int HaveRightTo(unsigned int mask){ return mRights & mask; }

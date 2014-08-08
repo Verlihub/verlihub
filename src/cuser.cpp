@@ -57,6 +57,11 @@ bool cUserBase::CanSend()
 	return false;
 }
 
+bool cUserBase::HasFeature(unsigned feature)
+{
+	return false;
+}
+
 void cUserBase::Send(string &data, bool, bool)
 {}
 
@@ -131,6 +136,11 @@ cUser::~cUser() {}
 bool cUser::CanSend()
 {
 	return mInList && mxConn && mxConn->ok;
+}
+
+bool cUser::HasFeature(unsigned feature)
+{
+	return mxConn && (mxConn->mFeatures & feature);
 }
 
 void cUser::Send(string &data, bool pipe, bool flush)

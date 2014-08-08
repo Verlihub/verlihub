@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -107,6 +108,21 @@ public:
 		void operator() (cUserBase *User);
 	};
 
+	// unary function to send data to users with specific feature in supports
+
+	struct ufSendWithFeature: public unary_function<void, iterator>
+	{
+		string &mData;
+		unsigned feature;
+
+		ufSendWithFeature(string &Data, unsigned _feature):mData(Data)
+		{
+			feature = _feature;
+		};
+
+		void operator() (cUserBase *User);
+	};
+
 	/**
 		Unary function that sends DataS+Nick+DataE to every user
 	*/
@@ -208,6 +224,7 @@ public:
 	void   	SendToAllWithNick(string &Start, string &End);
 	void   	SendToAll(string &Data, bool UseCache = false, bool AddPipe=true);
 	void	SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache = false, bool AddPipe = true);
+	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache = false, bool AddPipe = true);
 	void   	FlushCache();
 	void   	FlushForUser(cUserBase *User);
 

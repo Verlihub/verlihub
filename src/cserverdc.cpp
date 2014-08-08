@@ -841,16 +841,19 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	// display user to others
 	ShowUserToAll(conn->mpUser);
 
-	if(mC.send_user_ip) {
-		if(conn->mpUser->mClass >= eUC_OPERATOR) {
- 			conn->Send(mUserList.GetIPList(),true);
+	if (mC.send_user_ip) {
+		if (conn->mpUser->mClass >= eUC_OPERATOR) {
+			if (conn->mFeatures & eSF_USERIP2)
+				conn->Send(mUserList.GetIPList(), true);
 		} else {
 			string UserIP;
 			cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
 			DoUserIP.Clear();
 			DoUserIP(conn->mpUser);
-			mOpchatList.SendToAll(UserIP, true, true);
-			conn->Send(UserIP);
+			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, true, true);
+
+			if (conn->mFeatures & eSF_USERIP2)
+				conn->Send(UserIP);
 		}
 	}
 

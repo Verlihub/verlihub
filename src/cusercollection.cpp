@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -48,6 +49,12 @@ void cUserCollection::ufSendWithClass::operator() (cUserBase *User)
 	}
 }
 
+void cUserCollection::ufSendWithFeature::operator() (cUserBase *User)
+{
+	if (User && User->CanSend() && User->HasFeature(feature)) {
+		User->Send(mData, false);
+	}
+}
 
 void cUserCollection::ufDoNickList::AppendList(string &List, cUserBase *User)
 {
@@ -186,6 +193,32 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 		mSendAllCache.erase(0,mSendAllCache.size());
 	}
 	if(AddPipe) Data.erase(Data.size()-1,1);
+}
+
+void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
+{
+	if (AddPipe)
+		Data.append("|");
+
+	mSendAllCache.append(Data.data(), Data.size());
+
+	if (!UseCache) {
+		//if (Log(4))
+			//CoutAllKeys();
+
+		if (Log(4))
+			LogStream() << "SendAll BEGIN" << endl;
+
+		for_each(this->begin(), this->end(), ufSendWithFeature(mSendAllCache, feature));
+
+		if (Log(4))
+			LogStream() << "SendAll END" << endl;
+
+		mSendAllCache.erase(0, mSendAllCache.size());
+	}
+
+	if (AddPipe)
+		Data.erase(Data.size() - 1, 1);
 }
 
 void cUserCollection::SendToAllWithNick(string &Start, string &End)
