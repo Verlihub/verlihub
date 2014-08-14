@@ -82,9 +82,7 @@ public:
 	virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, cTrigger &data);
 	virtual void GetHelpForCommand(int cmd, ostream &os);
 	virtual void GetHelp(ostream &os);
-
 	bool CheckData(cfBase *cmd, cTrigger &tmp);
-
 };
 
 	}; // namespace nTables

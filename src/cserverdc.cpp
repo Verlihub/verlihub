@@ -1244,7 +1244,7 @@ int cServerDC::OnTimer(cTime &now)
 		this->RegisterInHublist(mC.hublist_host, mC.hublist_port, NULL);
 	if (bool(mReloadcfgTimer.mMinDelay) && mReloadcfgTimer.Check(mTime , 1) == 0) {
 		mC.Load();
-		mCo->mTriggers->ReloadAll();
+		//mCo->mTriggers->ReloadAll();
 		if (mC.use_reglist_cache)
 			mR->UpdateCache();
 		if (Log(2))

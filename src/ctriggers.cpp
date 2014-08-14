@@ -80,13 +80,18 @@ void cTriggers::AddFields()
 
 void cTriggers::OnTimer(long now)
 {
-	 istringstream is;
-	 iterator it;
-	 cTrigger *trigger;
-	 for (it= begin(); it != end(); ++it)  {
+	istringstream is;
+	iterator it;
+	cTrigger *trigger;
+
+	for (it = begin(); it != end(); ++it) {
 		trigger = *it;
-		if(!trigger->mSeconds) continue;
+
+		if (!trigger->mSeconds)
+			continue;
+
 		long next = trigger->mLastTrigger + trigger->mSeconds;
+
 		if (next < now) {
 			trigger->mLastTrigger = now;
 			trigger->DoIt(is, NULL, *mOwner, true);
@@ -186,26 +191,30 @@ cTriggerConsole::~cTriggerConsole()
 void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 {
 	string help_str;
-	switch(cmd)
-	{
+
+	switch (cmd) {
 		case eLC_LST:
-		help_str = "!lsttrigger\r\nGive a list of triggers";
-		break;
+			help_str = "!lsttrigger\r\nGive a list of triggers";
+			break;
 		case eLC_ADD:
 		case eLC_MOD:
-		help_str = "!(add|mod)trigger <trigger>"
-			"[ -d <\"definition\">]"
-			"[ -h <help_desc>]"
-			"[ -f <flags>]"
-			"[ -n <sendas_nick>]"
-			"[ -c <min_class>]"
-			"[ -C <max_class>]";
-		break;
+			help_str = "!(add|mod)trigger <trigger>"
+				"[ -d <\"definition\">]"
+				"[ -h <help>]"
+				"[ -f <flags>]"
+				"[ -n <nick>]"
+				"[ -c <minclass>]"
+				"[ -C <maxclass>]"
+				"[ -t <timeout>]";
+			break;
 		case eLC_DEL:
-		help_str = "!deltrigger <trigger>"; break;
-		default: break;
+			help_str = "!deltrigger <trigger>";
+			break;
+		default:
+			break;
 	}
-	cDCProto::EscapeChars(help_str,help_str);
+
+	cDCProto::EscapeChars(help_str, help_str);
 	os << help_str;
 }
 
@@ -281,25 +290,24 @@ void cTriggerConsole::GetHelp(ostream &os)
 
 const char * cTriggerConsole::GetParamsRegex(int cmd)
 {
-	switch(cmd)
-	{
+	switch(cmd) {
 		case eLC_ADD:
 		case eLC_MOD:
 			return "^(\\S+)("
-			"( -d ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))?|" //[ -d<definition>|"<<definition>>]"
-			"( -h ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))?|" //[ -h(<help>|"<<help>>")]
-			"( -f ?(-?\\d+))?|" //[ -f<flags>]
-			"( -n ?(\\S+))?|" // [ -n<sendas_nick>]
-			"( -c ?(-?\\d+))?|" //[ -c<min_class>]
-			"( -C ?(-?\\d+))?|" //[ -c<max_class>]
-			"( -t ?(\\S+))?|" //[ -t<timeout>]
-			")*\\s*$"; // the end of message
+				"( -d ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))?|" // [ -d<definition>|"<<definition>>]"
+				"( -h ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))?|" // [ -h(<help>|"<<help>>")]
+				"( -f ?(-?\\d+))?|" // [ -f<flags>]
+				"( -n ?(\\S+))?|" // [ -n<sendas_nick>]
+				"( -c ?(-?\\d+))?|" // [ -c<min_class>]
+				"( -C ?(-?\\d+))?|" // [ -c<max_class>]
+				"( -t ?(\\S+))?|" // [ -t<timeout>]
+				")*\\s*$"; // the end of message
 		case eLC_DEL:
 			return "(\\S+)";
-		default: return "";break;
+		default:
+			return "";
 	};
 }
-
 
 bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
 {
