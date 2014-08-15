@@ -124,7 +124,8 @@ namespace nVerliHub {
 			eSF_BANMSG = 1 << 17,
 			eSF_TLS = 1 << 18,
 			eSF_IPV4 = 1 << 19,
-			eSF_IP64 = 1 << 20
+			eSF_IP64 = 1 << 20,
+			eSF_FAILOVER = 1 << 21
 		} tSupportFeature;
 	};
 

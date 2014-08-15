@@ -1333,7 +1333,8 @@ int _InUserSupports(lua_State *L)
 	((flag == "BanMsg") && (usr->mxConn->mFeatures & eSF_BANMSG)) ||
 	((flag == "TLS") && (usr->mxConn->mFeatures & eSF_TLS)) ||
 	((flag == "IPv4") && (usr->mxConn->mFeatures & eSF_IPV4)) ||
-	((flag == "IP64") && (usr->mxConn->mFeatures & eSF_IP64))
+	((flag == "IP64") && (usr->mxConn->mFeatures & eSF_IP64)) ||
+	((flag == "FailOver") && (usr->mxConn->mFeatures & eSF_FAILOVER))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

@@ -75,7 +75,8 @@ void cDCConf::AddVars()
 	Add("hub_security_desc", hub_security_desc, string("Hub security"));
 	Add("opchat_name", opchat_name, string("OpChat"));
 	Add("opchat_desc", opchat_desc, string("Operator chat"));
-	Add("hub_host",hub_host,string(""));
+	Add("hub_host", hub_host, string(""));
+	Add("hub_failover_hosts", hub_failover_hosts, string(""));
 	Add("listen_ip",mS.mAddr,string("0.0.0.0"));
 	#if !defined _WIN32
 	Add("listen_port", mS.mPort, 4111);

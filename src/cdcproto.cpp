@@ -809,7 +809,15 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
 		conn->mpUser->mMyINFO_basic = myinfo_basic;
 		conn->SetLSFlag(eLS_MYINFO);
-		if (!mS->BeginUserLogin(conn)) return -1; // if all right, add user to userlist, if not yet there
+
+		if (!mS->BeginUserLogin(conn)) // if all right, add user to userlist, if not yet there
+			return -1;
+
+		if ((conn->mFeatures & eSF_FAILOVER) && !mS->mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
+			string fo("$FailOver ");
+			fo += mS->mC.hub_failover_hosts;
+			conn->Send(fo, true);
+		}
 	}
 
 	conn->ClearTimeOut(eTO_MYINFO);
@@ -1789,6 +1797,7 @@ int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 		else if (feature == "TLS") conn->mFeatures |= eSF_TLS;
 		else if (feature == "IPv4") conn->mFeatures |= eSF_IPV4;
 		else if (feature == "IP64") conn->mFeatures |= eSF_IP64;
+		else if (feature == "FailOver") conn->mFeatures |= eSF_FAILOVER;
 	}
 
 	#ifndef WITHOUT_PLUGINS
@@ -1798,7 +1807,7 @@ int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe MCTo BotList");
+	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe MCTo BotList FailOver");
 	conn->Send(omsg);
 	return 0;
 }

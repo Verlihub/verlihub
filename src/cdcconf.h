@@ -138,6 +138,7 @@ public:
 	string hub_topic;
 	string hub_desc;
 	string hub_host;
+	string hub_failover_hosts;
 	string hub_owner;
 	string hublist_host;
 	int hublist_port;
