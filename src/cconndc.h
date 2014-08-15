@@ -125,7 +125,14 @@ namespace nVerliHub {
 			eSF_TLS = 1 << 18,
 			eSF_IPV4 = 1 << 19,
 			eSF_IP64 = 1 << 20,
-			eSF_FAILOVER = 1 << 21
+			eSF_FAILOVER = 1 << 21,
+			eSF_NICKCHANGE = 1 << 22,
+			eSF_CLIENTNICK = 1 << 23,
+			eSF_FEATNET = 1 << 24,
+			eSF_ZLINE = 1 << 25,
+			eSF_GETZBLOCK = 1 << 26,
+			eSF_ACTM = 1 << 27,
+			eSF_SALTPASS = 1 << 28
 		} tSupportFeature;
 	};
 

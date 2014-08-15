@@ -1798,6 +1798,13 @@ int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 		else if (feature == "IPv4") conn->mFeatures |= eSF_IPV4;
 		else if (feature == "IP64") conn->mFeatures |= eSF_IP64;
 		else if (feature == "FailOver") conn->mFeatures |= eSF_FAILOVER;
+		else if (feature == "NickChange") conn->mFeatures |= eSF_NICKCHANGE;
+		else if (feature == "ClientNick") conn->mFeatures |= eSF_CLIENTNICK;
+		else if (feature == "FeaturedNetworks") conn->mFeatures |= eSF_FEATNET;
+		else if (feature == "ZLine") conn->mFeatures |= eSF_ZLINE;
+		else if (feature == "GetZBlock") conn->mFeatures |= eSF_GETZBLOCK;
+		else if (feature == "ACTM") conn->mFeatures |= eSF_ACTM;
+		else if (feature == "SaltPass") conn->mFeatures |= eSF_SALTPASS;
 	}
 
 	#ifndef WITHOUT_PLUGINS
@@ -1807,7 +1814,7 @@ int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe MCTo BotList FailOver");
+	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver");
 	conn->Send(omsg);
 	return 0;
 }

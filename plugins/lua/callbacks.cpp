@@ -1334,7 +1334,14 @@ int _InUserSupports(lua_State *L)
 	((flag == "TLS") && (usr->mxConn->mFeatures & eSF_TLS)) ||
 	((flag == "IPv4") && (usr->mxConn->mFeatures & eSF_IPV4)) ||
 	((flag == "IP64") && (usr->mxConn->mFeatures & eSF_IP64)) ||
-	((flag == "FailOver") && (usr->mxConn->mFeatures & eSF_FAILOVER))
+	((flag == "FailOver") && (usr->mxConn->mFeatures & eSF_FAILOVER)) ||
+	((flag == "NickChange") && (usr->mxConn->mFeatures & eSF_NICKCHANGE)) ||
+	((flag == "ClientNick") && (usr->mxConn->mFeatures & eSF_CLIENTNICK)) ||
+	((flag == "FeaturedNetworks") && (usr->mxConn->mFeatures & eSF_FEATNET)) ||
+	((flag == "ZLine") && (usr->mxConn->mFeatures & eSF_ZLINE)) ||
+	((flag == "GetZBlock") && (usr->mxConn->mFeatures & eSF_GETZBLOCK)) ||
+	((flag == "ACTM") && (usr->mxConn->mFeatures & eSF_ACTM)) ||
+	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);
