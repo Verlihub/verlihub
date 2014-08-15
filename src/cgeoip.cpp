@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -19,6 +20,7 @@
 */
 
 #include "cgeoip.h"
+#include <sstream>
 #include <iostream>
 #include <libgen.h>
 #include <stdio.h>
@@ -44,6 +46,18 @@ cGeoIP::~cGeoIP()
 
 bool cGeoIP::GetCC(const string &host, string &cc)
 {
+	if (host.substr(0, 4) == "127.") {
+		cc = "L1";
+		return true;
+	}
+
+	unsigned long sip = IPToNum(host);
+
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
+		cc = "P1";
+		return true;
+	}
+
 	bool res = false;
 	string code = "--";
 
@@ -62,6 +76,18 @@ bool cGeoIP::GetCC(const string &host, string &cc)
 
 bool cGeoIP::GetCN(const string &host, string &cn)
 {
+	if (host.substr(0, 4) == "127.") {
+		cn = "Local Network";
+		return true;
+	}
+
+	unsigned long sip = IPToNum(host);
+
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
+		cn = "Private Network";
+		return true;
+	}
+
 	bool res = false;
 	string name = "--";
 
@@ -80,6 +106,18 @@ bool cGeoIP::GetCN(const string &host, string &cn)
 
 bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 {
+	if (host.substr(0, 4) == "127.") {
+		geo_city = "Local Network";
+		return true;
+	}
+
+	unsigned long sip = IPToNum(host);
+
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
+		geo_city = "Private Network";
+		return true;
+	}
+
 	bool res = false, own = false;
 	string city = "--";
 	GeoIP *gi;
@@ -113,6 +151,48 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 
 bool cGeoIP::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, float &geo_lat, float &geo_lon, int &geo_met, int &geo_area, const string &host, const string &db)
 {
+	if (host.substr(0, 4) == "127.") {
+		geo_ran_lo = "127.0.0.0";
+		geo_ran_hi = "127.255.255.255";
+		geo_cc = "L1";
+		geo_cn = "Local Network";
+		geo_city = "Local Network";
+		geo_host = host;
+		return true;
+	}
+
+	unsigned long sip = IPToNum(host);
+
+	if (sip >= 167772160UL && sip <= 184549375UL) {
+		geo_ran_lo = "10.0.0.0";
+		geo_ran_hi = "10.255.255.255";
+		geo_cc = "P1";
+		geo_cn = "Private Network";
+		geo_city = "Private Network";
+		geo_host = host;
+		return true;
+	}
+
+	if (sip >= 2886729728UL && sip <= 2887778303UL) {
+		geo_ran_lo = "172.16.0.0";
+		geo_ran_hi = "172.31.255.255";
+		geo_cc = "P1";
+		geo_cn = "Private Network";
+		geo_city = "Private Network";
+		geo_host = host;
+		return true;
+	}
+
+	if (sip >= 3232235520UL && sip <= 3232301055UL) {
+		geo_ran_lo = "192.168.0.0";
+		geo_ran_hi = "192.168.255.255";
+		geo_cc = "P1";
+		geo_cn = "Private Network";
+		geo_city = "Private Network";
+		geo_host = host;
+		return true;
+	}
+
 	bool res = false, own = false;
 	GeoIP *gi;
 
@@ -255,6 +335,31 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 bool cGeoIP::FileExists(const char *name)
 {
 	return access(name, 0) != -1;
+}
+
+unsigned long cGeoIP::IPToNum(const string &ip)
+{
+	int i;
+	char c;
+	istringstream is(ip);
+	unsigned long mask = 0;
+
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+
+	is >> i;
+	mask += i & 0xFF;
+
+	return mask;
 }
 
 	}; // namespace nUtils

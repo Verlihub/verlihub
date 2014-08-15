@@ -1201,10 +1201,14 @@ bool cDCProto::CheckIP(cConnDC * conn, string &ip)
 
 bool cDCProto::isLanIP(string ip)
 {
+	if (ip.substr(0, 4) == "127.")
+		return true;
 
-	unsigned long senderIP = cBanList::Ip2Num(ip);
-	// see RFC 1918
-	if( (senderIP > 167772160UL && senderIP < 184549375UL) || (senderIP > 2886729728UL && senderIP < 2887778303UL) || (senderIP > 3232235520UL && senderIP < 3232301055UL)) return true;
+	unsigned long sip = cBanList::Ip2Num(ip);
+
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL))
+		return true;
+
 	return false;
 }
 
