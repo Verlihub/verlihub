@@ -1,12 +1,14 @@
 #
 # Translators:
 # hostpl-1 <zbyszekslyz@hostpl.eu>, 2014
+# hostpl <admin@hostpl.eu>, 2014
+# Krzychu <krzychulex@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-16 08:44+0100\n"
-"PO-Revision-Date: 2014-07-25 14:02+0100\n"
+"POT-Creation-Date: 2014-08-16 08:03+0100\n"
+"PO-Revision-Date: 2014-08-16 08:25+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/"
 "verlihub-100/language/pl_PL/)\n"
@@ -16,10 +18,10 @@ msgstr ""
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.6.6\n"
+"X-Generator: Poedit 1.6.7\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SourceCharset: cp1250\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
@@ -283,9 +285,9 @@ msgstr "Zaktualizowany %s.%s od '%s' do '%s'."
 msgid "Current log level is %d."
 msgstr "Aktualny poziom logowania to %d."
 
-#: ../plugins/lua/cluainterpreter.cpp:161
+#: ../plugins/lua/cluainterpreter.cpp:163
 msgid "Lua error"
-msgstr "Biad lua"
+msgstr "Blad lua"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
@@ -355,7 +357,7 @@ msgstr "Verlihub wykonywalny"
 
 #: ../plugins/plugman/cconsole.cpp:46
 msgid "Verlihub build time"
-msgstr "Verlihub zbudowany w czsie"
+msgstr "Verlihub zbudowany w czasie"
 
 #: ../plugins/plugman/cconsole.cpp:148
 msgid "Plugin name must be max 10 characters long, please provide another one."
@@ -378,7 +380,7 @@ msgstr "Nie znaleziono plugina: %s"
 
 #: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
-msgstr "Plugin wy³aczony."
+msgstr "Plugin wylaczony."
 
 #: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."

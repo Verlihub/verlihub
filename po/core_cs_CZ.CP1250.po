@@ -1,41 +1,44 @@
 #
 # Translators:
-# Stefano  <netcelli@gmail.com>, 2011.
-# uhlik carbon <uhlikx@seznam.cz>, 2011.
+# Stefano <netcelli@gmail.com>, 2011
+# Stefano <netcelli@gmail.com>, 2011
+# uhlik carbon <uhlikx@seznam.cz>, 2011
+# uhlik <pjanos.uk@gmail.com>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub\n"
+"Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-20 10:38+0100\n"
-"PO-Revision-Date: 2014-07-15 14:37+0100\n"
+"POT-Creation-Date: 2014-08-16 08:03+0100\n"
+"PO-Revision-Date: 2014-08-16 08:17+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Verlihub <webmaster@feardc.net>\n"
-"Language: cs_CZ\n"
+"Language-Team: Czech (Czech Republic) (http://www.transifex.com/projects/p/"
+"verlihub-100/language/cs_CZ/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1250\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: cs_CZ\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Poedit 1.6.7\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Poedit-SourceCharset: cp1250\n"
 "X-Poedit-SearchPath-0: ../src\n"
 
 #: ../src/cban.cpp:79
 msgid "Unknown ban"
 msgstr "Neznámı ban"
 
-#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1477 ../src/cuser.cpp:217
+#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1487 ../src/cuser.cpp:228
 msgid "Nickname"
 msgstr "Pøezdívka"
 
-#: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:277
-#: ../src/cdcconsole.cpp:343 ../src/cdcconsole.cpp:469
-#: ../src/cdcconsole.cpp:1042 ../src/cserverdc.cpp:1478 ../src/cuser.cpp:224
+#: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:285
+#: ../src/cdcconsole.cpp:351 ../src/cdcconsole.cpp:477
+#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1488 ../src/cuser.cpp:235
 msgid "IP"
 msgstr "IP"
 
-#: ../src/cban.cpp:89 ../src/cdcconsole.cpp:1050
+#: ../src/cban.cpp:89 ../src/cdcconsole.cpp:1080
 msgid "Reason"
 msgstr "Dùvod"
 
@@ -48,9 +51,8 @@ msgid "Time"
 msgstr "Èas"
 
 #: ../src/cban.cpp:96
-#, fuzzy
 msgid "remaining"
-msgstr "Zbıvá"
+msgstr ""
 
 #: ../src/cban.cpp:98
 msgid "Permanently"
@@ -78,53 +80,45 @@ msgid "Ban type"
 msgstr "Typ banu"
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Nick + IP"
-msgstr "Nick+IP"
+msgstr ""
 
 #: ../src/cban.cpp:127
 msgid "Nick"
 msgstr "Nick"
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Host level 1"
-msgstr "Host Level 1"
+msgstr ""
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Host level 2"
-msgstr "Host Level 2"
+msgstr ""
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Host level 3"
-msgstr "Host Level 3"
+msgstr ""
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Share size"
-msgstr "Velikost sdílení"
+msgstr ""
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Nick prefix"
-msgstr "Nick Prefix"
+msgstr ""
 
 #: ../src/cban.cpp:127
-#, fuzzy
 msgid "Reverse host"
-msgstr "Reverse Host"
+msgstr ""
 
 #: ../src/cban.cpp:145
-#, fuzzy, c-format
+#, c-format
 msgid "Expired %s"
-msgstr "vypršelo: %s"
+msgstr ""
 
 #: ../src/cban.cpp:150
-#, fuzzy
 msgid "Permanent"
-msgstr "Permanentnì"
+msgstr ""
 
 #: ../src/cbanlist.cpp:423
 msgid "Entry"
@@ -135,19 +129,19 @@ msgid "Ban on"
 msgstr "Ban na"
 
 #: ../src/cchatconsole.cpp:141
-#, fuzzy, c-format
+#, c-format
 msgid "User not in chatroom: %s"
-msgstr "Informace uivatele %s"
+msgstr ""
 
 #: ../src/cchatconsole.cpp:146
-#, fuzzy, c-format
+#, c-format
 msgid "You have no rights to remove user from chatroom: %s"
-msgstr "Nemáš oprávnìní pouívat pøesmìrování."
+msgstr ""
 
 #: ../src/cchatconsole.cpp:156
-#, fuzzy, c-format
+#, c-format
 msgid "User removed from chatroom: %s"
-msgstr "Informace uivatele %s"
+msgstr ""
 
 #: ../src/cchatconsole.cpp:167
 msgid "You are removed from chatroom."
@@ -158,9 +152,9 @@ msgid "Chatroom members"
 msgstr ""
 
 #: ../src/cchatconsole.cpp:194
-#, fuzzy, c-format
+#, c-format
 msgid "User not online: %s"
-msgstr "Informace uivatele %s"
+msgstr ""
 
 #: ../src/cchatconsole.cpp:204
 #, c-format
@@ -205,16 +199,16 @@ msgid "Password"
 msgstr "Heslo"
 
 #: ../src/cconndc.cpp:181
-#, fuzzy, c-format
+#, c-format
 msgid "Operation timeout: %s"
-msgstr "Operation timeout"
+msgstr ""
 
 #: ../src/cconndc.cpp:189
 msgid "General timeout"
 msgstr "General timeout"
 
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:349
-#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:419
+#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:427
 msgid "Name"
 msgstr "Název"
 
@@ -239,21 +233,18 @@ msgid "Description"
 msgstr "Popis"
 
 #: ../src/ccustomredirect.cpp:66 ../src/cdcclient.cpp:54
-#, fuzzy
 msgid "Enabled"
-msgstr "Zapnout"
+msgstr ""
 
 #: ../src/ccustomredirect.cpp:68 ../src/cdcclient.cpp:54
-#, fuzzy
 msgid "Disabled"
-msgstr "Vypnout"
+msgstr ""
 
 #: ../src/ccustomredirects.cpp:241
-#, fuzzy
 msgid "Count"
-msgstr "User Count"
+msgstr ""
 
-#: ../src/ccustomredirects.cpp:242 ../src/cdcconsole.cpp:618
+#: ../src/ccustomredirects.cpp:242 ../src/cdcconsole.cpp:649
 msgid "Address"
 msgstr "Adresa"
 
@@ -270,36 +261,36 @@ msgid "Any"
 msgstr ""
 
 #: ../src/cdcclient.cpp:48
-#, fuzzy, c-format
+#, c-format
 msgid "Minimum: %.2f"
-msgstr "Min verze: %.2f"
+msgstr ""
 
 #: ../src/cdcclient.cpp:50
-#, fuzzy, c-format
+#, c-format
 msgid "Maximum: %.2f"
-msgstr "Max verze: %.2f"
+msgstr ""
 
-#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:124
-#: ../src/creguserinfo.cpp:125 ../src/creguserinfo.cpp:126
-#: ../src/creguserinfo.cpp:127 ../src/creguserinfo.cpp:128
-#: ../src/creguserinfo.cpp:129 ../src/creguserinfo.cpp:130
-#: ../src/cuser.cpp:222 ../src/cuser.cpp:244 ../src/cuser.cpp:252
-#: ../src/cuser.cpp:256 ../src/cuser.cpp:264 ../src/cuser.cpp:274
-#: ../src/cuser.cpp:278 ../src/cuser.cpp:286 ../src/cuser.cpp:290
-#: ../src/cuser.cpp:298 ../src/cuser.cpp:308 ../src/cuser.cpp:318
-#: ../src/cuser.cpp:328 ../src/cuser.cpp:338 ../src/cuser.cpp:348
-#: ../src/cuser.cpp:358
+#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:125
+#: ../src/creguserinfo.cpp:126 ../src/creguserinfo.cpp:127
+#: ../src/creguserinfo.cpp:128 ../src/creguserinfo.cpp:129
+#: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
+#: ../src/cuser.cpp:233 ../src/cuser.cpp:255 ../src/cuser.cpp:263
+#: ../src/cuser.cpp:267 ../src/cuser.cpp:275 ../src/cuser.cpp:285
+#: ../src/cuser.cpp:289 ../src/cuser.cpp:297 ../src/cuser.cpp:301
+#: ../src/cuser.cpp:309 ../src/cuser.cpp:319 ../src/cuser.cpp:329
+#: ../src/cuser.cpp:339 ../src/cuser.cpp:349 ../src/cuser.cpp:359
+#: ../src/cuser.cpp:369
 msgid "Yes"
 msgstr "Ano"
 
-#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:124
-#: ../src/creguserinfo.cpp:125 ../src/creguserinfo.cpp:126
-#: ../src/creguserinfo.cpp:127 ../src/creguserinfo.cpp:128
-#: ../src/creguserinfo.cpp:129 ../src/creguserinfo.cpp:130
-#: ../src/cuser.cpp:246 ../src/cuser.cpp:258 ../src/cuser.cpp:268
-#: ../src/cuser.cpp:280 ../src/cuser.cpp:292 ../src/cuser.cpp:302
-#: ../src/cuser.cpp:312 ../src/cuser.cpp:322 ../src/cuser.cpp:332
-#: ../src/cuser.cpp:342 ../src/cuser.cpp:352
+#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:125
+#: ../src/creguserinfo.cpp:126 ../src/creguserinfo.cpp:127
+#: ../src/creguserinfo.cpp:128 ../src/creguserinfo.cpp:129
+#: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
+#: ../src/cuser.cpp:257 ../src/cuser.cpp:269 ../src/cuser.cpp:279
+#: ../src/cuser.cpp:291 ../src/cuser.cpp:303 ../src/cuser.cpp:313
+#: ../src/cuser.cpp:323 ../src/cuser.cpp:333 ../src/cuser.cpp:343
+#: ../src/cuser.cpp:353 ../src/cuser.cpp:363
 msgid "No"
 msgstr "Ne"
 
@@ -307,7 +298,8 @@ msgstr "Ne"
 msgid "Client ID"
 msgstr "Klient ID"
 
-#: ../src/cdcclients.cpp:351 ../src/cpluginmanager.cpp:169
+#: ../src/cdcclients.cpp:351 ../src/cinfoserver.cpp:89
+#: ../src/cpluginmanager.cpp:169
 msgid "Version"
 msgstr "Verze"
 
@@ -316,236 +308,243 @@ msgid "Banned?"
 msgstr "Zabanován?"
 
 #: ../src/cdcconsole.cpp:208
-#, fuzzy
 msgid "User commands are currently disabled."
-msgstr "Pøíkaz pro odeslání reportu je vypnut."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:256
-#, fuzzy
+#: ../src/cdcconsole.cpp:264
 msgid "Full list of commands"
-msgstr "Úplnı seznam pøíkazù:"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:276 ../src/cdcconsole.cpp:309
-#: ../src/cdcconsole.cpp:342
+#: ../src/cdcconsole.cpp:284 ../src/cdcconsole.cpp:317
+#: ../src/cdcconsole.cpp:350
 msgid "User"
 msgstr "Uivatel"
 
-#: ../src/cdcconsole.cpp:279 ../src/cdcconsole.cpp:314
-#: ../src/cdcconsole.cpp:348 ../src/cdcproto.cpp:1206 ../src/cdcproto.cpp:1359
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:287 ../src/cdcconsole.cpp:322
+#: ../src/cdcconsole.cpp:356 ../src/cdcproto.cpp:1277 ../src/cdcproto.cpp:1430
+#, c-format
 msgid "User not found: %s"
-msgstr "Uivatel %s nenalezen."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:285 ../src/cdcconsole.cpp:320
-#: ../src/cdcconsole.cpp:354
+#: ../src/cdcconsole.cpp:293 ../src/cdcconsole.cpp:328
+#: ../src/cdcconsole.cpp:362
 msgid "Please specify one or more nicks separated by space."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:287 ../src/cdcconsole.cpp:322
-#: ../src/cdcconsole.cpp:356
+#: ../src/cdcconsole.cpp:295 ../src/cdcconsole.cpp:330
+#: ../src/cdcconsole.cpp:364
 #, c-format
 msgid "Showing %d results"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:310 ../src/cdcconsole.cpp:346
-#: ../src/cdcconsole.cpp:1043 ../src/cserverdc.cpp:1480 ../src/cuser.cpp:225
+#: ../src/cdcconsole.cpp:318 ../src/cdcconsole.cpp:354
+#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1490 ../src/cuser.cpp:236
 msgid "Host"
 msgstr "Host"
 
-#: ../src/cdcconsole.cpp:312
+#: ../src/cdcconsole.cpp:320
 #, c-format
 msgid "Unable to resolve users hostname: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:344 ../src/cdcconsole.cpp:470 ../src/cuser.cpp:226
-#, fuzzy
+#: ../src/cdcconsole.cpp:352 ../src/cdcconsole.cpp:478 ../src/cuser.cpp:237
 msgid "Country"
-msgstr "Kód zemì"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:345 ../src/cdcconsole.cpp:471 ../src/cuser.cpp:227
+#: ../src/cdcconsole.cpp:353 ../src/cdcconsole.cpp:479 ../src/cuser.cpp:238
 msgid "City"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:366
-#, fuzzy
+#: ../src/cdcconsole.cpp:374
 msgid "Stopping hub."
-msgstr "Zastavuji Hub..."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:380
-#, fuzzy
+#: ../src/cdcconsole.cpp:388
 msgid "No rights."
-msgstr "ádná práva"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:398
+#: ../src/cdcconsole.cpp:406
 #, c-format
 msgid "Configuration file %s is empty."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:400
+#: ../src/cdcconsole.cpp:408
 #, c-format
 msgid "Configuration file %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:432
-#, fuzzy
+#: ../src/cdcconsole.cpp:440
 msgid "Usage example: !ccbc :US:GB: <message>"
-msgstr "Pøíklad pouití: !ccbc :CZ:SK: <message>."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:446
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:454
+#, c-format
 msgid "Message delivered to %d users in zones %s in %s."
-msgstr "Zpráva doruèena %d uivatelùm v zónì %s za %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:455 ../src/cserverdc.cpp:778
-#, fuzzy
+#: ../src/cdcconsole.cpp:463 ../src/cserverdc.cpp:785
 msgid "Your information"
-msgstr "ádné info"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:468
-#, fuzzy
+#: ../src/cdcconsole.cpp:476
 msgid "Your IP information"
-msgstr "ádné info"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:481 ../src/cdcconsole.cpp:648
+#: ../src/cdcconsole.cpp:495 ../src/cdcconsole.cpp:679
 msgid "This functionality is currently disabled."
 msgstr "Tato funkce je momentalnì vypnuta."
 
-#: ../src/cdcconsole.cpp:489 ../src/cdcproto.cpp:1069
-#, fuzzy
+#: ../src/cdcconsole.cpp:504 ../src/cdcproto.cpp:1136
 msgid "Main chat is currently disabled for users with your class."
-msgstr "Mainchat je vypnut pro neregistrované uivatele."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:525
+#: ../src/cdcconsole.cpp:556
 msgid "Now you will see public chat messages, to disable use +nochat command."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:528
+#: ../src/cdcconsole.cpp:559
 msgid "You already see public chat messages, to disable use +nochat command."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:531
+#: ../src/cdcconsole.cpp:562
 msgid "Now you won't see public chat messages, to restore use +chat command."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:534
+#: ../src/cdcconsole.cpp:565
 msgid ""
 "You already don't see public chat messages, to restore use +chat command."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:549
+#: ../src/cdcconsole.cpp:580
 msgid "Authors"
 msgstr "Autoøi"
 
-#: ../src/cdcconsole.cpp:554
+#: ../src/cdcconsole.cpp:585
 msgid "Translators"
 msgstr "Pøekladatelé"
 
-#: ../src/cdcconsole.cpp:556
+#: ../src/cdcconsole.cpp:587
 msgid "Contributors"
 msgstr "Pomáhali"
 
-#: ../src/cdcconsole.cpp:558
+#: ../src/cdcconsole.cpp:589
 msgid "Web part"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:560
+#: ../src/cdcconsole.cpp:591
 msgid "Credits"
 msgstr "Credits"
 
-#: ../src/cdcconsole.cpp:562
+#: ../src/cdcconsole.cpp:593
 msgid "More"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:579
+#: ../src/cdcconsole.cpp:594
+msgid "Website"
+msgstr ""
+
+#: ../src/cdcconsole.cpp:595
+msgid "Manual"
+msgstr ""
+
+#: ../src/cdcconsole.cpp:596
+msgid "Support hub"
+msgstr ""
+
+#: ../src/cdcconsole.cpp:610
 msgid "Unregistered"
 msgstr "Neregistrovanı"
 
-#: ../src/cdcconsole.cpp:582 ../src/ctrigger.cpp:139
+#: ../src/cdcconsole.cpp:613 ../src/cdcproto.cpp:729
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:139
 msgid "Registered"
 msgstr "Registrovanı"
 
-#: ../src/cdcconsole.cpp:585 ../src/ctrigger.cpp:141
+#: ../src/cdcconsole.cpp:616 ../src/cdcproto.cpp:732
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:141
 msgid "VIP"
 msgstr "VIP"
 
-#: ../src/cdcconsole.cpp:588 ../src/ctrigger.cpp:143
+#: ../src/cdcconsole.cpp:619 ../src/cdcproto.cpp:735
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:143
 msgid "Operator"
 msgstr "Operátor"
 
-#: ../src/cdcconsole.cpp:591
-msgid "Super OP"
-msgstr "Super OP"
+#: ../src/cdcconsole.cpp:622
+msgid "Super operator"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:594
-msgid "Admin"
-msgstr "Admin"
+#: ../src/cdcconsole.cpp:625 ../src/creguserinfo.cpp:105
+msgid "Administrator"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:597 ../src/ctrigger.cpp:149
+#: ../src/cdcconsole.cpp:628 ../src/cdcproto.cpp:744
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:149
 msgid "Master"
 msgstr "Master"
 
-#: ../src/cdcconsole.cpp:602
+#: ../src/cdcconsole.cpp:633 ../src/cdctag.cpp:210
 msgid "Active"
 msgstr "Aktivní"
 
-#: ../src/cdcconsole.cpp:604
+#: ../src/cdcconsole.cpp:635 ../src/cdctag.cpp:212
 msgid "Passive"
 msgstr "Pasivní"
 
-#: ../src/cdcconsole.cpp:617 ../src/cinfoserver.cpp:114
+#: ../src/cdcconsole.cpp:648 ../src/cinfoserver.cpp:115
 msgid "Hub owner"
 msgstr "Majitel hubu"
 
-#: ../src/cdcconsole.cpp:619
+#: ../src/cdcconsole.cpp:650
 msgid "Total users"
 msgstr "Celkem uivatelù"
 
-#: ../src/cdcconsole.cpp:620
+#: ../src/cdcconsole.cpp:651
 msgid "Total bots"
 msgstr "Celkem botù"
 
-#: ../src/cdcconsole.cpp:621
+#: ../src/cdcconsole.cpp:652 ../src/cinfoserver.cpp:134
 msgid "Total share"
 msgstr "Celkem sdílení"
 
-#: ../src/cdcconsole.cpp:624 ../src/cinfoserver.cpp:103
-#: ../src/cserverdc.cpp:1507
+#: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
+#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1517
 msgid "Not available"
 msgstr "Není dostupné"
 
-#: ../src/cdcconsole.cpp:627 ../src/cinfoserver.cpp:95
-#: ../src/cserverdc.cpp:1510
+#: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
+#: ../src/cserverdc.cpp:1520
 msgid "Recovery mode"
 msgstr "Recovery mode"
 
-#: ../src/cdcconsole.cpp:628 ../src/cinfoserver.cpp:97
-#: ../src/cserverdc.cpp:1511
+#: ../src/cdcconsole.cpp:659 ../src/cinfoserver.cpp:98
+#: ../src/cserverdc.cpp:1521
 msgid "Near capacity"
 msgstr "Near capacity"
 
-#: ../src/cdcconsole.cpp:629 ../src/cinfoserver.cpp:99
-#: ../src/cserverdc.cpp:1512
+#: ../src/cdcconsole.cpp:660 ../src/cinfoserver.cpp:100
+#: ../src/cserverdc.cpp:1522
 msgid "Progressive mode"
 msgstr "Progressive mode"
 
-#: ../src/cdcconsole.cpp:630 ../src/cinfoserver.cpp:101
-#: ../src/cserverdc.cpp:1513
+#: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
+#: ../src/cserverdc.cpp:1523
 msgid "Normal mode"
 msgstr "Normal mode"
 
-#: ../src/cdcconsole.cpp:633
+#: ../src/cdcconsole.cpp:664
 msgid "Hub health"
 msgstr "Stav hubu"
 
-#: ../src/cdcconsole.cpp:634
+#: ../src/cdcconsole.cpp:665
 msgid "Your status"
 msgstr "Tvùj status"
 
-#: ../src/cdcconsole.cpp:635
+#: ../src/cdcconsole.cpp:666
 msgid "Your can search every"
 msgstr "Mùeš hledat"
 
-#: ../src/cdcconsole.cpp:635
+#: ../src/cdcconsole.cpp:666
 #, c-format
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -553,107 +552,101 @@ msgstr[0] "kadou %d sekundu"
 msgstr[1] "kadé %d sekundy"
 msgstr[2] "kadıch %d sekund"
 
-#: ../src/cdcconsole.cpp:636
+#: ../src/cdcconsole.cpp:667
 msgid "Connection type"
 msgstr "Typ pøipojení"
 
-#: ../src/cdcconsole.cpp:637
+#: ../src/cdcconsole.cpp:668
 msgid "You are sharing"
 msgstr "Sdílíš"
 
-#: ../src/cdcconsole.cpp:652
-#, fuzzy
+#: ../src/cdcconsole.cpp:683
 msgid "Registration failed, please contact an operator for more help."
-msgstr "Registrace selhala; kontaktuj operátora pro pomoc."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:668
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:699
+#, c-format
 msgid "Your nick must start with: %s"
-msgstr "Tvùj nick musí zaèínat s %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:681
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:712
+#, c-format
 msgid "You need to share at least %s."
-msgstr "Musíš sdílet aspoò %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:691
-#, fuzzy
+#: ../src/cdcconsole.cpp:722
 msgid "You are already registered."
-msgstr "U jsi zaregistrován"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:702 ../src/cdcconsole.cpp:815 ../src/cdcproto.cpp:356
+#: ../src/cdcconsole.cpp:733 ../src/cdcconsole.cpp:846 ../src/cdcproto.cpp:367
 #, c-format
 msgid "Minimum password length is %d characters, please retry."
 msgstr "Minimální délka hesla je %d znakù, zkus to znovu."
 
-#: ../src/cdcconsole.cpp:708
+#: ../src/cdcconsole.cpp:739
 #, c-format
 msgid "A new user has been registered with class %d"
 msgstr "Byl zaregistrován novı uivatel s class %d"
 
-#: ../src/cdcconsole.cpp:711
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:742
+#, c-format
 msgid ""
 "You are now registered with nick %s, please reconnect and login with your "
 "new password: %s"
 msgstr ""
-"Nyní jsi zaregistrován s nickem '%s'! Odpoj se prosím a pøihlaš se znovu s "
-"pouitím tvého hesla. Nezapomeò svoje heslo! Heslo je '%s'."
 
-#: ../src/cdcconsole.cpp:713
+#: ../src/cdcconsole.cpp:744
 msgid "An error occured while registering."
 msgstr "Vyskytla se chyba v prùbìhu registrace."
 
-#: ../src/cdcconsole.cpp:727
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:758
+#, c-format
 msgid "Registration request with password %s"
-msgstr "ádost o registraci"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:729
-#, fuzzy
+#: ../src/cdcconsole.cpp:760
 msgid "Registration request without password"
-msgstr "ádost o registraci"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:732
+#: ../src/cdcconsole.cpp:763
 msgid "Thank you, your request has been sent to operators."
 msgstr "Dìkuji, tvùj poadavek byl odeslán operátorùm."
 
-#: ../src/cdcconsole.cpp:743
+#: ../src/cdcconsole.cpp:774
 msgid "You do not have permissions to change the topic."
 msgstr "Nemáš oprávnìní ke zmenì topicu."
 
-#: ../src/cdcconsole.cpp:749
+#: ../src/cdcconsole.cpp:780
 #, c-format
 msgid ""
 "Topic must be max 255 characters long. Your topic was %d characters long."
 msgstr ""
 "Topic mùe mít maximální délku 255 znakù. Tvùj topic byl dlouhı %d znaku."
 
-#: ../src/cdcconsole.cpp:765
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:796
+#, c-format
 msgid "%s changed topic to: %s"
-msgstr "%s nastavil topic na : %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:767
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:798
+#, c-format
 msgid "%s removed topic."
-msgstr "%s zrušil topic"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:807
-#, fuzzy
+#: ../src/cdcconsole.cpp:838
 msgid "You are not allowed to change your password now, ask an operator."
-msgstr "Nyní nemáš povoleno zmìnit si heslo. Zeptej se OP."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:821 ../src/cdcconsole.cpp:2083
-#: ../src/cdcproto.cpp:364
+#: ../src/cdcconsole.cpp:852 ../src/cdcconsole.cpp:2113
+#: ../src/cdcproto.cpp:375
 msgid "Error updating password."
 msgstr "Aktualizace hesla se nezdaøila."
 
-#: ../src/cdcconsole.cpp:827 ../src/cdcproto.cpp:371
+#: ../src/cdcconsole.cpp:858 ../src/cdcproto.cpp:382
 msgid "Password updated successfully."
 msgstr "Heslo úspìšnì aktualizováno."
 
-#: ../src/cdcconsole.cpp:840
+#: ../src/cdcconsole.cpp:871
 msgid ""
 "Please use: !hideme <class> where <class> is the maximum class of users that "
 "may not see your actions."
@@ -661,168 +654,162 @@ msgstr ""
 "Pouij: !hideme <class> kde <class> je maximální class uivatelù, kteøí by "
 "nemìli vidìt tvoje akce."
 
-#: ../src/cdcconsole.cpp:846
+#: ../src/cdcconsole.cpp:877
 #, c-format
 msgid "Your command actions are now hidden from users with class below %d."
 msgstr ""
 "Tvoje akce s pøíkazy jsou nyní skryty všem uivatelùm s class niší ne %d."
 
-#: ../src/cdcconsole.cpp:860
+#: ../src/cdcconsole.cpp:891
 msgid ""
 "Type !help for more information (usage !userlimit <max_users> [<minutes>=60])"
 msgstr ""
 "Napiš !help pro více informací (pouití !userlimit <max_users> "
 "[<minutes>=60])"
 
-#: ../src/cdcconsole.cpp:891
-#, fuzzy
+#: ../src/cdcconsole.cpp:922
 msgid "Usage: !class <nick> [<class>=3]."
-msgstr "Pouij !class <nick> [<class>=3]."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:891
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:922
+#, c-format
 msgid "Maximum class is %d."
-msgstr "Max class je %d"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:902
+#: ../src/cdcconsole.cpp:932
 #, c-format
 msgid "Temporarily changed class to %d for user %s"
 msgstr "Class uivatele %d byla doèasnì zmìnìna na %s"
 
-#: ../src/cdcconsole.cpp:916
+#: ../src/cdcconsole.cpp:946
 #, c-format
 msgid "You have no rights to change class of %s."
 msgstr "Nemáš oprávnìní ke zmìnì class uivatele %s."
 
-#: ../src/cdcconsole.cpp:919 ../src/cdcconsole.cpp:944
-#: ../src/cdcconsole.cpp:970 ../src/cdcconsole.cpp:1005
-#: ../src/cdcproto.cpp:1655 ../src/cdcproto.cpp:1760
+#: ../src/cdcconsole.cpp:949 ../src/cdcconsole.cpp:974
+#: ../src/cdcconsole.cpp:1000 ../src/cdcconsole.cpp:1035
+#: ../src/cdcproto.cpp:1726 ../src/cdcproto.cpp:1846
 #, c-format
 msgid "User %s not found."
 msgstr "Uivatel %s nenalezen."
 
-#: ../src/cdcconsole.cpp:938
+#: ../src/cdcconsole.cpp:968
 #, c-format
 msgid "Kicks of user %s are now hidden."
 msgstr "Kopání uivatele %s jsou nyní skryta."
 
-#: ../src/cdcconsole.cpp:941 ../src/cdcconsole.cpp:967
-#: ../src/cdcconsole.cpp:1003 ../src/cdcconsole.cpp:1221
-#: ../src/cdcconsole.cpp:1360 ../src/cdcconsole.cpp:1593
-#: ../src/cdcconsole.cpp:1825 ../src/cdcconsole.cpp:1886
-#: ../src/cdcconsole.cpp:1905 ../src/cdcconsole.cpp:1957
-#: ../src/cdcconsole.cpp:2004 ../src/cdcconsole.cpp:2228
+#: ../src/cdcconsole.cpp:971 ../src/cdcconsole.cpp:997
+#: ../src/cdcconsole.cpp:1033 ../src/cdcconsole.cpp:1251
+#: ../src/cdcconsole.cpp:1390 ../src/cdcconsole.cpp:1623
+#: ../src/cdcconsole.cpp:1855 ../src/cdcconsole.cpp:1916
+#: ../src/cdcconsole.cpp:1935 ../src/cdcconsole.cpp:1987
+#: ../src/cdcconsole.cpp:2034 ../src/cdcconsole.cpp:2279
 msgid "You have no rights to do this."
 msgstr "K tomuto nemáš opravnìní."
 
-#: ../src/cdcconsole.cpp:964
+#: ../src/cdcconsole.cpp:994
 #, c-format
 msgid "Kicks of user %s are now visible."
 msgstr "Kopání uivatele %s jsou nyní viditelná."
 
-#: ../src/cdcconsole.cpp:988
+#: ../src/cdcconsole.cpp:1018
 msgid "Use !protect <nickname> <class>."
 msgstr "Pouij !protect <nickname> <class>"
 
-#: ../src/cdcconsole.cpp:988
+#: ../src/cdcconsole.cpp:1018
 msgid "Please type !help for more info."
 msgstr "Napiš !help pro více informací."
 
-#: ../src/cdcconsole.cpp:989
+#: ../src/cdcconsole.cpp:1019
 #, c-format
 msgid "Max class is %d"
 msgstr "Max class je %d"
 
-#: ../src/cdcconsole.cpp:1000
+#: ../src/cdcconsole.cpp:1030
 #, c-format
 msgid "User %s is temporarily protected from class %d"
 msgstr "Uivatel %s je doèasnì chránìn pøed class %d"
 
-#: ../src/cdcconsole.cpp:1015
-#, fuzzy
+#: ../src/cdcconsole.cpp:1045
 msgid ""
 "Reloading triggers, custom redirects, configuration and registration list "
 "cache."
 msgstr ""
-"Nahrávám triggery, nastavená pøesmìrování, konfiguraci a reglist cache..."
 
-#: ../src/cdcconsole.cpp:1028
+#: ../src/cdcconsole.cpp:1058
 msgid "Report command is currently disabled."
 msgstr "Pøíkaz pro odeslání reportu je vypnut."
 
-#: ../src/cdcconsole.cpp:1041
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1071
+#, c-format
 msgid "Reported user %s"
-msgstr "Nahlášenı uivatel "
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1045
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1075
+#, c-format
 msgid "Reported offline user %s"
-msgstr "Nahlášenı uivatel "
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1048
+#: ../src/cdcconsole.cpp:1078
 msgid "Without reason"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1054
+#: ../src/cdcconsole.cpp:1084
 msgid "Thank you, your report has been accepted."
 msgstr "Dìkuji, tvùj report byl pøijat."
 
-#: ../src/cdcconsole.cpp:1168
+#: ../src/cdcconsole.cpp:1198
 msgid "Protocol command successfully sent."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1193
+#: ../src/cdcconsole.cpp:1223
 msgid "All bans have been deleted."
 msgstr "Všechny bany byli smazány."
 
-#: ../src/cdcconsole.cpp:1197
+#: ../src/cdcconsole.cpp:1227
 msgid "All unbans have been deleted."
 msgstr "Všechny unbany byli smazány."
 
-#: ../src/cdcconsole.cpp:1201
+#: ../src/cdcconsole.cpp:1231
 msgid "All kicks have been deleted."
 msgstr "Všechny kicky byli smazány."
 
-#: ../src/cdcconsole.cpp:1205
+#: ../src/cdcconsole.cpp:1235
 msgid "All temporary rights have been deleted."
 msgstr "Všechna doèasná oprávnìní byla smazána."
 
-#: ../src/cdcconsole.cpp:1208 ../src/cdcconsole.cpp:1522
-#: ../src/cdcconsole.cpp:1811 ../src/cdcconsole.cpp:2132
+#: ../src/cdcconsole.cpp:1238 ../src/cdcconsole.cpp:1552
+#: ../src/cdcconsole.cpp:1841 ../src/cdcconsole.cpp:2183
 msgid "This command is not implemented."
 msgstr "Tento pøíkaz není implementován."
 
-#: ../src/cdcconsole.cpp:1208
+#: ../src/cdcconsole.cpp:1238
 msgid "Available command are: "
 msgstr "Dostupné pøíkazy jsou: "
 
-#: ../src/cdcconsole.cpp:1262
+#: ../src/cdcconsole.cpp:1292
 msgid "Please provide a valid ban time."
 msgstr "Uveï platnou délku banu prosím."
 
-#: ../src/cdcconsole.cpp:1281 ../src/cdcconsole.cpp:1324
+#: ../src/cdcconsole.cpp:1311 ../src/cdcconsole.cpp:1354
 msgid "No reason specified"
 msgstr "Nebyl udán dùvod"
 
-#: ../src/cdcconsole.cpp:1285 ../src/cdcconsole.cpp:1391
-#: ../src/cdcconsole.cpp:2023 ../src/cdcconsole.cpp:2056
-#: ../src/cdcconsole.cpp:2096
-#, fuzzy
+#: ../src/cdcconsole.cpp:1315 ../src/cdcconsole.cpp:1421
+#: ../src/cdcconsole.cpp:2053 ../src/cdcconsole.cpp:2086
+#: ../src/cdcconsole.cpp:2126
 msgid "Action has been discarded by plugin."
-msgstr "Akce byla zrušena pluginem"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1290
-#, fuzzy
+#: ../src/cdcconsole.cpp:1320
 msgid "Removed ban"
-msgstr "Odebráno %d banù."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1292
-#, fuzzy
+#: ../src/cdcconsole.cpp:1322
 msgid "Ban information"
-msgstr "ádné info"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1315
+#: ../src/cdcconsole.cpp:1345
 #, c-format
 msgid "%d ban found."
 msgid_plural "%d bans found."
@@ -830,101 +817,97 @@ msgstr[0] "Nalezen %d ban."
 msgstr[1] "Nalezeny %d bany."
 msgstr[2] "Nalezeno %d banù."
 
-#: ../src/cdcconsole.cpp:1369
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1399
+#, c-format
 msgid "Unknown range format: %s"
-msgstr "Neznámı formát rozsahu '%s'."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1420
-#, fuzzy
+#: ../src/cdcconsole.cpp:1450
 msgid "Added new ban"
-msgstr "Ban pøidán."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1432
-#, fuzzy
+#: ../src/cdcconsole.cpp:1462
 msgid "This command is not implemented, available commands are"
-msgstr "Tento pøíkaz není implementován."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1459
+#: ../src/cdcconsole.cpp:1489
 msgid ""
 "This command is not implemented, available commands are: !hubinfo !serverinfo"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1553
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1583
+#, c-format
 msgid "Undefined configuration variable: %s"
-msgstr "Nezadána promìnná %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1568
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1598
+#, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr "Aktualizováno %s.%s z '%s' na '%s'"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1578
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1608
+#, c-format
 msgid ""
 "Warning: Verlihub allows maximum %d users, but current resource limit is %d. "
 "Consider to run ulimit -n <max_users> and restart the hub."
 msgstr ""
-"VAROVÁNÍ: VerliHub umoòuje maximum %d uivatelù, ale souèasnı limit zdrojù "
-"je %d. Zva nastavení ulimit -n <max_users>"
 
-#: ../src/cdcconsole.cpp:1606
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1636
+#, c-format
 msgid "%s is not in list."
-msgstr "Uivatel '%s' není v této místnosti."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1683
+#: ../src/cdcconsole.cpp:1713
 #, c-format
 msgid "Resetting main chat right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1684
+#: ../src/cdcconsole.cpp:1714
 #, c-format
 msgid "Resetting private chat right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1685
+#: ../src/cdcconsole.cpp:1715
 #, c-format
 msgid "Resetting main and private chat rights for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1686
+#: ../src/cdcconsole.cpp:1716
 #, c-format
 msgid "Resetting download right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1687
+#: ../src/cdcconsole.cpp:1717
 #, c-format
 msgid "Resetting search right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1688
+#: ../src/cdcconsole.cpp:1718
 #, c-format
 msgid "Resetting hidden share right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1689
+#: ../src/cdcconsole.cpp:1719
 #, c-format
 msgid "Resetting registering right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1690
+#: ../src/cdcconsole.cpp:1720
 #, c-format
 msgid "Resetting kick right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1691
+#: ../src/cdcconsole.cpp:1721
 #, c-format
 msgid "Resetting operator chat right for %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1697
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1727
+#, c-format
 msgid "Error setting right for %s."
-msgstr "Chyba pøi mazání uivatele '%s'"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1750
+#: ../src/cdcconsole.cpp:1780
 #, c-format
 msgid "Found %d user with IP %s:"
 msgid_plural "Found %d users with IP %s:"
@@ -932,7 +915,7 @@ msgstr[0] "Nalezen %d uivatel s IP %s:"
 msgstr[1] "Nalezeni %d uivatelé s IP %s:"
 msgstr[2] "Nalezeno %d uivatelù s IP %s:"
 
-#: ../src/cdcconsole.cpp:1756
+#: ../src/cdcconsole.cpp:1786
 #, c-format
 msgid "Found %d user with range %s:"
 msgid_plural "Found %d users with range %s:"
@@ -940,12 +923,11 @@ msgstr[0] "Nalezen %d uivatel v rozsahu %s:"
 msgstr[1] "Nalezeni %d uivatelé v rozsahu %s:"
 msgstr[2] "Nalezeno %d uivatelù v rozsahu %s:"
 
-#: ../src/cdcconsole.cpp:1760
-#, fuzzy
+#: ../src/cdcconsole.cpp:1790
 msgid "Country code must be 2 characters long, for example US."
-msgstr "Kód zemì musí bıt 2 znaky (napøíklad: CZ)"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1767
+#: ../src/cdcconsole.cpp:1797
 #, c-format
 msgid "Found %d user with country code %s:"
 msgid_plural "Found %d users with country code %s:"
@@ -953,159 +935,140 @@ msgstr[0] "Nalezen %d uivatel s kódem zemì %s:"
 msgstr[1] "Nalezeni %d uivatelé s kódem zemì %s:"
 msgstr[2] "Nalezeno %d uivatelù s kódem zemì %s:"
 
-#: ../src/cdcconsole.cpp:1775
-#, fuzzy
+#: ../src/cdcconsole.cpp:1805
 msgid "No users found."
-msgstr "Uivatel nenalezen."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1801 ../src/cdcproto.cpp:1766
+#: ../src/cdcconsole.cpp:1831 ../src/cdcproto.cpp:1852
 msgid "Please provide a valid reason."
 msgstr "Uveï vhodnı reason prosím."
 
-#: ../src/cdcconsole.cpp:1837
-#, fuzzy
+#: ../src/cdcconsole.cpp:1867
 msgid "Loaded plugins"
-msgstr "Nahrané pluginy:"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1841
-#, fuzzy
+#: ../src/cdcconsole.cpp:1871
 msgid "Available callbacks"
-msgstr "Dostupná zpìtná volání:"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1891
-#, fuzzy
+#: ../src/cdcconsole.cpp:1921
 msgid ""
 "Valid classdif_reg value must be between 1 and 5, please correct this first."
 msgstr ""
-"Neplatná hodnota pro classdif_reg. Musí bıt mezi 1 a 5. Nejdøive to oprav "
-"prosím!"
 
-#: ../src/cdcconsole.cpp:1913
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1943
+#, c-format
 msgid "Found %d registered users with class %d"
-msgstr "Nenalezen ádnı registrovanı uivatel s nickem '%s'"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1915
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:1945
+#, c-format
 msgid "No registered users with class %d found."
-msgstr "Nenalezen ádnı registrovanı uivatel s nickem '%s'"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:1941 ../src/cdcconsole.cpp:2010
-#, fuzzy
+#: ../src/cdcconsole.cpp:1971 ../src/cdcconsole.cpp:2040
 msgid "Missing command parameters."
-msgstr "Chybí parametry."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2000
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2030
+#, c-format
 msgid "Registered user not found: %s"
-msgstr "Nenalezen ádnı registrovanı uivatel s nickem '%s'"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2002 ../src/cdcconsole.cpp:2017
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2032 ../src/cdcconsole.cpp:2047
+#, c-format
 msgid "%s is already registered."
-msgstr "U jsi zaregistrován"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2033
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2063
+#, c-format
 msgid ""
 "You have been registered with class %d, please set up your password with "
 "+passwd <password> command."
 msgstr ""
-"Byl jsi zaregistrován. Nyní si nastav heslo pomocí pøíkazu +passwd "
-"<tvoje_nove_heslo>\n"
-"<your_new_passwd> nahraï tvım heslem."
 
-#: ../src/cdcconsole.cpp:2035
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2065
+#, c-format
 msgid "You have been registered with class %d and following password: %s"
-msgstr "Byl zaregistrován novı uivatel s class %d"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2043
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2073
+#, c-format
 msgid ""
 "%s has been registered with class %d, please tell him to set his password."
-msgstr "Uivatel vloen; øekni mu prosím, aby si nastavil/zmìnil heslo"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2045
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2075
+#, c-format
 msgid "%s has been registered with class %d and password."
-msgstr "Byl zaregistrován novı uivatel s class %d"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2047
-#, fuzzy
+#: ../src/cdcconsole.cpp:2077
 msgid "Error adding new user."
-msgstr "Chyba pøi pøidávání nového uivatele"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2064
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2094
+#, c-format
 msgid "%s has been unregistered, user information"
-msgstr "Nemohu získat informace o systému"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2069
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2099
+#, c-format
 msgid "Error unregistering %s, user information"
-msgstr "Nemohu získat informace o systému"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2081
-#, fuzzy
+#: ../src/cdcconsole.cpp:2111
 msgid "Password updated."
-msgstr "Heslo aktualizováno"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2089
-#, fuzzy
+#: ../src/cdcconsole.cpp:2119
 msgid ""
 "You can change your password now, use +passwd command followed by your new "
 "password."
 msgstr ""
-"Nyní mùeš zmìnit svoje heslo, pouij pøíkaz +password nasledovanı tvım "
-"novım heslem (+password heslo)"
 
-#: ../src/cdcconsole.cpp:2102
-#, fuzzy, c-format
-msgid ""
-"Your class has been changed to %s, changes will take effect on next login."
+#: ../src/cdcconsole.cpp:2153
+#, c-format
+msgid "Your class has been changed to %s."
 msgstr ""
-"Tvoje class byla zmìnìna na %s. Zmìna se projeví pøi pøíštím pøihlášení."
 
-#: ../src/cdcconsole.cpp:2108
-#, fuzzy
+#: ../src/cdcconsole.cpp:2159
 msgid "Your registration has been enabled."
-msgstr "Tvoje registrace byla zapnuta"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2114
-#, fuzzy
+#: ../src/cdcconsole.cpp:2165
 msgid "Your registration has been disabled."
-msgstr "Tvoje registace byla vypnuta"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2118
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2169
+#, c-format
 msgid "You are protected by classes greater than %s."
-msgstr "Jsi chránìn pøed class vyšší ne %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2123
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2174
+#, c-format
 msgid "You kicks are hidden by classes greater than %s."
-msgstr "Tvoje kopání je skryto class vyšší ne %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2128
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2179
+#, c-format
 msgid "%s registration information"
-msgstr "Informace uivatele %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2139
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2190
+#, c-format
 msgid "Updated variable %s to value %s for user %s."
-msgstr "Aktualizována promìnná '%s' na hodnotu %s pro uivatele %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2143
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2194
+#, c-format
 msgid "Error setting variable %s to value %s for user %s."
-msgstr "Chyba pøi nastavování promìnné '%s' na hodnotu %s pro uivatele %s"
+msgstr ""
 
-#: ../src/cdcconsole.cpp:2241
-#, fuzzy, c-format
+#: ../src/cdcconsole.cpp:2292
+#, c-format
 msgid "Message delivered to %d users in %s."
-msgstr "Zpráva doruèena %d uivatelùm za %s"
+msgstr ""
 
 #: ../src/cdcproto.cpp:74
 msgid "Probably attempt of an attack with NULL characters"
@@ -1131,555 +1094,564 @@ msgid "User limit in main zone exceeded at %d/%d online users."
 msgstr ""
 
 #: ../src/cdcproto.cpp:205
-#, fuzzy, c-format
+#, c-format
 msgid "User limit exceeded at %d online users."
-msgstr "<<Limit uivatelù pøekroèen, hub je plnı.>>"
+msgstr ""
 
-#: ../src/cdcproto.cpp:207
+#: ../src/cdcproto.cpp:213
 msgid "This is a registered users only hub."
 msgstr ""
 
-#: ../src/cdcproto.cpp:224
+#: ../src/cdcproto.cpp:232
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
 msgstr ""
 
-#: ../src/cdcproto.cpp:246
+#: ../src/cdcproto.cpp:254
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:247
+#: ../src/cdcproto.cpp:255
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:301
+#: ../src/cdcproto.cpp:312
 msgid "Invalid login sequence. Key already sent"
 msgstr "Chybná pøihlašovací sekvence. Klíè byl ji odeslán"
 
-#: ../src/cdcproto.cpp:313
+#: ../src/cdcproto.cpp:324
 msgid "Your client provided an invalid key"
 msgstr "Tvùj klient poskytl neplatnı klíè"
 
-#: ../src/cdcproto.cpp:332
+#: ../src/cdcproto.cpp:343
 msgid "Bad login sequence; you must provide a valid nick first."
 msgstr "Chybná pøihlašovací sekvence; musíš nejdøív poskytnout platnı nick."
 
-#: ../src/cdcproto.cpp:397
+#: ../src/cdcproto.cpp:408
 msgid "Wrong password"
 msgstr "Špatné heslo"
 
-#: ../src/cdcproto.cpp:402
+#: ../src/cdcproto.cpp:413
 msgid "You provided an incorrect password and have been temporarily banned."
 msgstr "Odeslal jsi nesprávné heslo a byl jsi doèasnì zabanován."
 
-#: ../src/cdcproto.cpp:475
-#, fuzzy
+#: ../src/cdcproto.cpp:486
 msgid "Bad login sequence."
-msgstr "Chybná pøihlašovací sekvence"
+msgstr ""
 
-#: ../src/cdcproto.cpp:485
-#, fuzzy
+#: ../src/cdcproto.cpp:496
 msgid "Wrong nick in MyINFO."
-msgstr "Nesprávné MyINFO"
+msgstr ""
 
-#: ../src/cdcproto.cpp:499
-#, fuzzy
+#: ../src/cdcproto.cpp:510
 msgid "Turn on your tag."
-msgstr "Zapni svùj tag"
+msgstr ""
 
-#: ../src/cdcproto.cpp:530
+#: ../src/cdcproto.cpp:541
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d online passive users, please become active "
 "to enter the hub."
 msgstr ""
 
-#: ../src/cdcproto.cpp:585
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:596
+#, c-format
 msgid ""
 "You share %s but minimum allowed is %s, %s for active users, %s for passive "
 "users."
 msgstr ""
-"Tvé sdílení je %s, ale minimální sdílení je %s. (aktivní:%s / pasivní:%s)"
 
-#: ../src/cdcproto.cpp:587
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:598
+#, c-format
 msgid "You share %s but maximum allowed is %s."
-msgstr "Tvé sdílení je %s, ale maximální sdílení je %s."
+msgstr ""
 
-#: ../src/cdcproto.cpp:647
-#, fuzzy
+#: ../src/cdcproto.cpp:658
 msgid "You are banned from this hub."
-msgstr "U jsi na hubu pøihlášen."
+msgstr ""
 
-#: ../src/cdcproto.cpp:860 ../src/cdcproto.cpp:874
+#: ../src/cdcproto.cpp:723 ../src/creguserinfo.cpp:106 ../src/ctrigger.cpp:135
+msgid "Pinger"
+msgstr ""
+
+#: ../src/cdcproto.cpp:726 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:137
+msgid "Guest"
+msgstr ""
+
+#: ../src/cdcproto.cpp:738 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:145
+msgid "Cheef"
+msgstr ""
+
+#: ../src/cdcproto.cpp:741 ../src/ctrigger.cpp:147
+msgid "Administator"
+msgstr ""
+
+#: ../src/cdcproto.cpp:747 ../src/cdctag.cpp:206 ../src/ctrigger.cpp:151
+msgid "Unknown"
+msgstr ""
+
+#: ../src/cdcproto.cpp:927 ../src/cdcproto.cpp:941
 msgid "Flooding PM"
 msgstr "Flooding PM"
 
-#: ../src/cdcproto.cpp:862
+#: ../src/cdcproto.cpp:929
 #, c-format
 msgid "*** PM Flood: %s"
 msgstr "*** PM Flood: %s"
 
-#: ../src/cdcproto.cpp:876
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:943
+#, c-format
 msgid "*** PM same message flood detected: %s"
-msgstr "*** PM Same Message Flood detected: %s"
+msgstr ""
 
-#: ../src/cdcproto.cpp:888 ../src/cdcproto.cpp:889
-#, fuzzy
+#: ../src/cdcproto.cpp:955 ../src/cdcproto.cpp:956
 msgid "Private chat is currently disabled for users with your class."
-msgstr "Mainchat je vypnut pro neregistrované uivatele."
+msgstr ""
 
-#: ../src/cdcproto.cpp:899 ../src/cdcproto.cpp:900
-msgid "You cannot talk to this user."
-msgstr "Nemùeš hovoøit k tomuto uivateli."
+#: ../src/cdcproto.cpp:966 ../src/cdcproto.cpp:967 ../src/cdcproto.cpp:1045
+#: ../src/cdcproto.cpp:1046
+msgid "You can't talk to this user."
+msgstr ""
 
-#: ../src/cdcproto.cpp:944 ../src/cdcproto.cpp:960
+#: ../src/cdcproto.cpp:1011 ../src/cdcproto.cpp:1027
 msgid "MCTo flood."
 msgstr ""
 
-#: ../src/cdcproto.cpp:946
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1013
+#, c-format
 msgid "*** MCTo flood: %s"
-msgstr "*** PM Flood: %s"
+msgstr ""
 
-#: ../src/cdcproto.cpp:962
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1029
+#, c-format
 msgid "*** MCTo same message flood detected: %s"
-msgstr "*** PM Same Message Flood detected: %s"
+msgstr ""
 
-#: ../src/cdcproto.cpp:978 ../src/cdcproto.cpp:979
-#, fuzzy
-msgid "You can't talk to this user."
-msgstr "Nemùeš hovoøit k tomuto uivateli."
-
-#: ../src/cdcproto.cpp:1015
+#: ../src/cdcproto.cpp:1082
 #, c-format
 msgid ""
 "Your chat message contains %d characters but maximum allowed is %d "
 "characters."
 msgstr ""
 
-#: ../src/cdcproto.cpp:1023
+#: ../src/cdcproto.cpp:1090
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr ""
 
-#: ../src/cdcproto.cpp:1042
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1109
+#, c-format
 msgid "You nick is not %s but %s."
-msgstr "Tvùj nick není %s ale %s."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1055
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1122
+#, c-format
 msgid "Not sent because minimum chat delay is %lu ms but you made %s."
-msgstr "Minimální prodleva pro chat je %lu ms ale ty jsi vydrel jen %s"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1177 ../src/cdcproto.cpp:1322
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1248 ../src/cdcproto.cpp:1393
+#, c-format
 msgid "You can't download unless you share: %s"
-msgstr "Nemùeš stahovat na tomto hubu dokud nenasdílíš %s."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1191 ../src/cdcproto.cpp:1336
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1262 ../src/cdcproto.cpp:1407
+#, c-format
 msgid "You can't download unless you are registered with class: %d"
-msgstr "Byl zaregistrován novı uivatel s class %d"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1212
-#, fuzzy
+#: ../src/cdcproto.cpp:1283
 msgid "Robots don't share."
-msgstr "Roboti nesdílí."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1220 ../src/cdcproto.cpp:1372
+#: ../src/cdcproto.cpp:1291 ../src/cdcproto.cpp:1443
 #, c-format
 msgid "You can't download from: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:1237
-#, fuzzy
+#: ../src/cdcproto.cpp:1308
 msgid "You can't connect to an external IP because you are in LAN."
-msgstr "Nemùeš se pøipojit na externí IP protoe jsi na LAN"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1299
+#: ../src/cdcproto.cpp:1370
 msgid "You can't send this request because you're not in passive mode."
 msgstr ""
 
-#: ../src/cdcproto.cpp:1348 ../src/cdcproto.cpp:1534
+#: ../src/cdcproto.cpp:1419 ../src/cdcproto.cpp:1605
 #, c-format
 msgid "Your nick is not %s but %s."
 msgstr "Tvùj nick není %s ale %s."
 
-#: ../src/cdcproto.cpp:1365
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1436
+#, c-format
 msgid "User is a bot: %s"
-msgstr "Informace uivatele %s"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1421
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1492
+#, c-format
 msgid "You can't search unless you share: %s"
-msgstr "Nemùeš hledat na tomto hubu dokud nenasdílíš %s."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1435
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1506
+#, c-format
 msgid "You can't search unless you are registered with class: %d"
-msgstr "Byl zaregistrován novı uivatel s class %d"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1449 ../src/cdcproto.cpp:1458
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1520 ../src/cdcproto.cpp:1529
+#, c-format
 msgid "Minimum search length is: %d"
-msgstr "Minimální poèet znakù pro hledání je %d"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1473
-#, fuzzy
+#: ../src/cdcproto.cpp:1544
 msgid "Sorry, hub is too busy now, no search is available, please try later."
-msgstr "Hub je zaneprázdnìn, ádná hledání, zkus to pozdìji..."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1563
+#: ../src/cdcproto.cpp:1634
 #, c-format
 msgid "You can do %d searches in %d seconds."
 msgstr "Mùeš provést %d hledání za %d sekund."
 
-#: ../src/cdcproto.cpp:1607
+#: ../src/cdcproto.cpp:1678
 #, c-format
 msgid "Your nick is not %s but %s. Disconnecting."
 msgstr "Tvùj nick není %s ale %s. Odpojuji."
 
-#: ../src/cdcproto.cpp:1646
+#: ../src/cdcproto.cpp:1717
 msgid "You have not rights to use redirects."
 msgstr "Nemáš oprávnìní pouívat pøesmìrování."
 
-#: ../src/cdcproto.cpp:1662
+#: ../src/cdcproto.cpp:1733
 #, c-format
 msgid "User %s is protected or you have no rights on him"
 msgstr "Uivatel %s je chránìn nebo k nìmu nemáš práva."
 
-#: ../src/cdcproto.cpp:1674
+#: ../src/cdcproto.cpp:1745
 #, c-format
 msgid "You are being redirected to %s because: %s"
 msgstr "Byl jsi pøesmìrován na %s protoe: %s"
 
-#: ../src/cdcproto.cpp:1685
+#: ../src/cdcproto.cpp:1756
 msgid "User is not online or you tried to redirect a robot."
 msgstr "Uivatel není online nebo se pokoušíš pøesmìrovat robota."
 
-#: ../src/cdcproto.cpp:1772
-msgid "You cannot ban a protected user or with higher privilegies."
+#: ../src/cdcproto.cpp:1858
+msgid "You can't ban a protected user or with higher privilegies."
 msgstr ""
-"Nemùeš zabanovat chránìného uivatele nebo uivatele s vyššími privilegii."
 
-#: ../src/cdcproto.cpp:1778
-msgid "You cannot ban a robot."
-msgstr "Nemùeš zabanovat robota."
+#: ../src/cdcproto.cpp:1864
+msgid "You can't ban a robot."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1784
+#: ../src/cdcproto.cpp:1870
 #, c-format
 msgid "You are being temporarily banned for %s because %s"
 msgstr "Byl jsi doèasnì zabanován na %s protoe %s"
 
-#: ../src/cdcproto.cpp:1786
+#: ../src/cdcproto.cpp:1872
 #, c-format
 msgid "You are banned because %s"
 msgstr "Jsi zabanován protoe %s"
 
-#: ../src/cdcproto.cpp:1849 ../src/cdcproto.cpp:1865
-#, fuzzy, c-format
+#: ../src/cdcproto.cpp:1937 ../src/cdcproto.cpp:1953
+#, c-format
 msgid "Unknown hub command: %s"
-msgstr "Neznámı pøíkaz '%s'. Zkus !help"
+msgstr ""
 
-#: ../src/cdcproto.cpp:1891
+#: ../src/cdcproto.cpp:1979
 #, c-format
 msgid "No banned user found with ip %s."
 msgstr "ádnı zabanovanı uivatel s IP %s nebyl nalezen."
 
-#: ../src/cdcproto.cpp:1895
+#: ../src/cdcproto.cpp:1983
 #, c-format
 msgid "Removed %d bans."
 msgstr "Odebráno %d banù."
 
-#: ../src/cdcproto.cpp:1921
-#, fuzzy
+#: ../src/cdcproto.cpp:2009
 msgid ""
 "You can't send $BotINFO because BotINFO extension is not set in $Supports."
 msgstr ""
-"Nemùeš odeslat $BotINFO protoe BotINFO rozšíøení neni nastaveno v $Supports"
 
-#: ../src/cdcproto.cpp:1930
+#: ../src/cdcproto.cpp:2018
 #, c-format
 msgid "Pinger entered the hub: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:2010
+#: ../src/cdcproto.cpp:2098
 msgid "You do not have permissions to change the hub topic."
 msgstr "Nemáš oprávnìní mìnit topic hubu."
 
-#: ../src/cdcproto.cpp:2017
+#: ../src/cdcproto.cpp:2105
 #, c-format
 msgid "Topis is set to: %s"
 msgstr "Topic je nastaven na: %s"
 
-#: ../src/cdctag.cpp:61
-#, fuzzy
+#: ../src/cdctag.cpp:62
 msgid "Your client is banned."
-msgstr "<<Tvùj klient je zabanován>>"
+msgstr ""
 
-#: ../src/cdctag.cpp:69
+#: ../src/cdctag.cpp:70
 msgid "Connections through proxy server are not allowed in this hub."
 msgstr "Pøipojení pøes proxy servery není na tomto hubu povoleno."
 
-#: ../src/cdctag.cpp:75
-#, fuzzy
+#: ../src/cdctag.cpp:76
 msgid "Passive connections are restricted, consider changing to active."
-msgstr "Pasivní spojení není povoleno. Zva pøechod na aktivní."
+msgstr ""
 
-#: ../src/cdctag.cpp:81
-#, fuzzy
+#: ../src/cdctag.cpp:82
 msgid ""
 "Your client tag is reporting less than 0 hubs or less than 0 slots, looks "
 "like a bug in your client."
-msgstr "Chyba: tvùj tag ukazuje ménì ne 0 hubù nebo slotù!"
+msgstr ""
 
-#: ../src/cdctag.cpp:89
-#, fuzzy
+#: ../src/cdctag.cpp:90
 msgid "Unknown clients are not allowed in this hub."
-msgstr "Neznámí klienti nejsou povoleni na tomto hubu"
+msgstr ""
 
-#: ../src/cdctag.cpp:95
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:96
+#, c-format
 msgid "Too many open hubs, maximum is %d and you have %d."
-msgstr "Pøíliš mnoho otevøenıch hubù, maximum je %d"
+msgstr ""
 
-#: ../src/cdctag.cpp:101
+#: ../src/cdctag.cpp:102
 #, c-format
 msgid "Too few open hubs, minimum is %d and you have %d."
 msgstr ""
 
-#: ../src/cdctag.cpp:107
+#: ../src/cdctag.cpp:108
 #, c-format
 msgid "Too few open hubs as user, minimum is %d and you have %d."
 msgstr ""
 
-#: ../src/cdctag.cpp:113
+#: ../src/cdctag.cpp:114
 #, c-format
 msgid "Too few open hubs as registered user, minimum is %d and you have %d."
 msgstr ""
 
-#: ../src/cdctag.cpp:119
+#: ../src/cdctag.cpp:120
 #, c-format
 msgid "Too few open hubs as operator, minimum is %d and you have %d."
 msgstr ""
 
-#: ../src/cdctag.cpp:125
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:126
+#, c-format
 msgid ""
 "Too little open slots for your connection type %s, minimum is %d and you "
 "have %d."
 msgstr ""
-"Pøíliš málo otevøenıch slotù pro tvùj typ pøipojení (%s), minimum je  %d"
 
-#: ../src/cdctag.cpp:131
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:132
+#, c-format
 msgid ""
 "Too many open slots for your connection type %s, maximum is %d and you have "
 "%d."
 msgstr ""
-"Pøíliš mnoho otevøenıch slotù pro tvùj typ pøipojení (%s), maximum je  %d"
 
-#: ../src/cdctag.cpp:140
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:141
+#, c-format
 msgid "Your slots per hub ratio %.2f is too low, minimum is %.2f."
-msgstr "Tvùj pomìr hubu/slotu %.2f je pøíliš vysokı (maximum je %.2f)."
+msgstr ""
 
-#: ../src/cdctag.cpp:141 ../src/cdctag.cpp:148
+#: ../src/cdctag.cpp:142 ../src/cdctag.cpp:149
 #, c-format
 msgid "Open %d slots for %d hubs."
 msgstr "Otevøi %d slotù pro %d hubù."
 
-#: ../src/cdctag.cpp:147
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:148
+#, c-format
 msgid "Your slots per hub ratio %.2f is too high, maximum is %.2f."
-msgstr "Tvùj pomìr hubu/slotu %.2f je pøíliš vysokı (maximum je %.2f)."
+msgstr ""
 
-#: ../src/cdctag.cpp:156
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:157
+#, c-format
 msgid ""
 "Too low upload limit for your connection type %s, minimum upload rate is "
 "%.2f."
 msgstr ""
-"Pøíliš nízkı limit odesílání pro tvùj typ pøipojení (%s), minimální hodnota "
-"je %.2f"
 
-#: ../src/cdctag.cpp:162
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:163
+#, c-format
 msgid ""
 "Too low upload limit per slot for your connection type %s, minimum upload "
 "limit is %.2f per slot."
 msgstr ""
-"Pøíliš nízkı limit odesílání na slot pro tvùj typ pøipojení (%s), minimální "
-"hodnota je %.2f na slot."
 
-#: ../src/cdctag.cpp:177
+#: ../src/cdctag.cpp:178
 msgid "Your client version is too old, please upgrade it."
 msgstr "Tvùj klient ke pøíliš starı, aktualizuj jej prosím."
 
-#: ../src/cdctag.cpp:180
+#: ../src/cdctag.cpp:181
 #, c-format
 msgid "Allowed minimum version number for %s client is: %.2f"
 msgstr "Povolené nejniší èíslo verze klienta %s je: %.2f"
 
-#: ../src/cdctag.cpp:182
+#: ../src/cdctag.cpp:183
 #, c-format
 msgid "Allowed minimum version number for your client is: %.2f"
 msgstr "Povolené nejniší èíslo verze tvého klienta je: %.2f"
 
-#: ../src/cdctag.cpp:189
-#, fuzzy
+#: ../src/cdctag.cpp:190
 msgid "Your client version is too recent, please downgrade it."
-msgstr "Tvùj klient ke pøíliš starı, aktualizuj jej prosím."
+msgstr ""
 
-#: ../src/cdctag.cpp:192
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:193
+#, c-format
 msgid "Allowed maximum version number for %s client is: %.2f"
-msgstr "Povolené nejvyšší èíslo verze klienta %s je: %.2f"
+msgstr ""
 
-#: ../src/cdctag.cpp:194
-#, fuzzy, c-format
+#: ../src/cdctag.cpp:195
+#, c-format
 msgid "Allowed maximum version number for your client is: %.2f"
-msgstr "Povolené nejvyšší èíslo verze tvého klienta je: %.2f"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:50
-#, fuzzy
+#: ../src/cdctag.cpp:206
+msgid "Client"
+msgstr ""
+
+#: ../src/cdctag.cpp:207
+msgid "Mode"
+msgstr ""
+
+#: ../src/cdctag.cpp:214
+msgid "SOCKS5"
+msgstr ""
+
+#: ../src/cdctag.cpp:216
+msgid "Other"
+msgstr ""
+
+#: ../src/cdctag.cpp:219
+msgid "Open hubs"
+msgstr ""
+
+#: ../src/cdctag.cpp:227
+msgid "Open slots"
+msgstr ""
+
+#: ../src/cinfoserver.cpp:51
 msgid "Unable to retrive system information."
-msgstr "Nemohu získat informace o systému"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:56
-#, fuzzy
+#: ../src/cinfoserver.cpp:57
 msgid "System information"
-msgstr "ádné info"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:62
+#: ../src/cinfoserver.cpp:63
 msgid "System uptime"
 msgstr "Uptime systému"
 
-#: ../src/cinfoserver.cpp:63
+#: ../src/cinfoserver.cpp:64
 msgid "Load averages"
 msgstr "Prùmìry zatíení"
 
-#: ../src/cinfoserver.cpp:64
-#, fuzzy
-msgid "Total RAM"
-msgstr "Celkem botù"
-
 #: ../src/cinfoserver.cpp:65
-msgid "Free RAM"
-msgstr "Volná RAM"
+msgid "Total memory"
+msgstr ""
 
 #: ../src/cinfoserver.cpp:66
-msgid "Shared RAM"
-msgstr "Sdílená RAM"
+msgid "Free memory"
+msgstr ""
 
 #: ../src/cinfoserver.cpp:67
+msgid "Shared memory"
+msgstr ""
+
+#: ../src/cinfoserver.cpp:68
 msgid "Memory in buffers"
 msgstr "Pamì v bufferech"
 
-#: ../src/cinfoserver.cpp:68
-#, fuzzy
-msgid "Free swap"
-msgstr "Volnı swap"
-
 #: ../src/cinfoserver.cpp:69
+msgid "Free swap"
+msgstr ""
+
+#: ../src/cinfoserver.cpp:70
 msgid "Number of processes"
 msgstr "Poèet procesù"
 
-#: ../src/cinfoserver.cpp:73
-#, fuzzy
+#: ../src/cinfoserver.cpp:74
 msgid "Information is not available."
-msgstr "Informace jsou nedostupné"
-
-#: ../src/cinfoserver.cpp:87
-#, fuzzy
-msgid "Hub information"
-msgstr "ádné info"
+msgstr ""
 
 #: ../src/cinfoserver.cpp:88
-msgid "Version date"
-msgstr "Datum verze"
+msgid "Hub information"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:91
+#: ../src/cinfoserver.cpp:92
 msgid "Uptime"
 msgstr "Uptime"
 
-#: ../src/cinfoserver.cpp:105
+#: ../src/cinfoserver.cpp:106
 msgid "Server frequency"
 msgstr "Frekvence serveru"
 
-#: ../src/cinfoserver.cpp:106
+#: ../src/cinfoserver.cpp:107
 msgid "Hub name"
 msgstr "Název hubu"
 
-#: ../src/cinfoserver.cpp:122
+#: ../src/cinfoserver.cpp:123
 msgid "Hub category"
 msgstr "Kategorie hubu"
 
-#: ../src/cinfoserver.cpp:124
-msgid "Current online users"
-msgstr "Online uivatelù"
+#: ../src/cinfoserver.cpp:131
+msgid "Hub locale"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:125
-msgid "Current share total"
-msgstr "Celkem sdílení"
+#: ../src/cinfoserver.cpp:133
+msgid "Online users"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:126
+#: ../src/cinfoserver.cpp:133
+msgid "of"
+msgstr ""
+
+#: ../src/cinfoserver.cpp:135
 msgid "User list count"
 msgstr "Poèet uivatelù v seznamu"
 
-#: ../src/cinfoserver.cpp:127
+#: ../src/cinfoserver.cpp:136
 msgid "Hello user count"
 msgstr "Poèet uivatelù 'Hello'"
 
-#: ../src/cinfoserver.cpp:128
-#, fuzzy
+#: ../src/cinfoserver.cpp:137
 msgid "In progress users"
-msgstr "Poèet pøihlašujících se uivatelù uivatelù"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:129
+#: ../src/cinfoserver.cpp:138
 msgid "Active user count"
 msgstr "Poèet aktivních uivatelù"
 
-#: ../src/cinfoserver.cpp:130
+#: ../src/cinfoserver.cpp:139
 msgid "Passive user count"
 msgstr "Poèet pasivních uivatelù"
 
-#: ../src/cinfoserver.cpp:131
-msgid "OP user count"
-msgstr "Poèet OP"
+#: ../src/cinfoserver.cpp:140
+msgid "Operator user count"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:132
+#: ../src/cinfoserver.cpp:141
 msgid "Bot user count"
 msgstr "Poèet botù"
 
-#: ../src/cinfoserver.cpp:141 ../src/cinfoserver.cpp:146
-#: ../src/cinfoserver.cpp:153
+#: ../src/cinfoserver.cpp:150 ../src/cinfoserver.cpp:155
+#: ../src/cinfoserver.cpp:162
 #, c-format
 msgid "Users in zone #%d"
 msgstr "Uivatelù v zónì #%d"
 
-#: ../src/cinfoserver.cpp:146
-#, fuzzy
+#: ../src/cinfoserver.cpp:155
 msgid "Not set"
-msgstr "nenastaveno"
+msgstr ""
 
-#: ../src/cinfoserver.cpp:146
+#: ../src/cinfoserver.cpp:155
 msgid "[CC]"
 msgstr ""
 
-#: ../src/cinfoserver.cpp:154
+#: ../src/cinfoserver.cpp:163
 msgid "[IP]"
 msgstr ""
 
-#: ../src/cinfoserver.cpp:159
+#: ../src/cinfoserver.cpp:168
 msgid "All other users"
 msgstr "Ostatní uivatelé"
 
@@ -1733,89 +1705,99 @@ msgid "On"
 msgstr ""
 
 #: ../src/creguserinfo.cpp:105
-msgid "Class"
-msgstr ""
-
-#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:135
-msgid "Pinger"
+msgid "6-err"
 msgstr ""
 
 #: ../src/creguserinfo.cpp:105
-msgid "Invalid"
+msgid "7-err"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:105
+msgid "8-err"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:105
+msgid "9-err"
 msgstr ""
 
 #: ../src/creguserinfo.cpp:106
+msgid "Class"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:106
+msgid "Invalid"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:107
 msgid "Last login"
 msgstr "Poslední pøihlášení"
 
-#: ../src/creguserinfo.cpp:106 ../src/creguserinfo.cpp:118
+#: ../src/creguserinfo.cpp:107 ../src/creguserinfo.cpp:119
 msgid "from"
 msgstr "z"
 
-#: ../src/creguserinfo.cpp:107
+#: ../src/creguserinfo.cpp:108
 msgid "Registered since"
 msgstr "Registrován od"
 
-#: ../src/creguserinfo.cpp:110
+#: ../src/creguserinfo.cpp:111
 #, c-format
 msgid "by %s"
 msgstr "by %s"
 
-#: ../src/creguserinfo.cpp:112 ../src/creguserinfo.cpp:120
+#: ../src/creguserinfo.cpp:113 ../src/creguserinfo.cpp:121
 msgid "No information"
 msgstr "ádné info"
 
-#: ../src/creguserinfo.cpp:115
+#: ../src/creguserinfo.cpp:116
 msgid "Last error"
 msgstr "Poslední chyba"
 
-#: ../src/creguserinfo.cpp:123
-#, fuzzy
-msgid "Login errors/total"
-msgstr "Pøihlášení (chybné/celkem)"
-
 #: ../src/creguserinfo.cpp:124
+msgid "Login errors/total"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:125
 msgid "Password set"
 msgstr "Heslo nastaveno"
 
-#: ../src/creguserinfo.cpp:125
+#: ../src/creguserinfo.cpp:126
 msgid "Account enabled"
 msgstr ""
 
-#: ../src/creguserinfo.cpp:126
+#: ../src/creguserinfo.cpp:127
 msgid "Protected"
 msgstr "Chránìn"
 
-#: ../src/creguserinfo.cpp:127
+#: ../src/creguserinfo.cpp:128
 msgid "Hidden kicks"
 msgstr "Skryté kopání"
 
-#: ../src/creguserinfo.cpp:128
+#: ../src/creguserinfo.cpp:129
 msgid "Hidden key"
 msgstr "Skryté klíèe"
 
-#: ../src/creguserinfo.cpp:129
+#: ../src/creguserinfo.cpp:130
 msgid "Hidden share"
 msgstr "Skryté sdílení"
 
-#: ../src/creguserinfo.cpp:130
-#, fuzzy
-msgid "Hidden share messages"
-msgstr "Skryté sdílení"
-
 #: ../src/creguserinfo.cpp:131
-msgid "Authorization IP"
+msgid "Hidden share messages"
 msgstr ""
 
 #: ../src/creguserinfo.cpp:132
+msgid "Authorization IP"
+msgstr ""
+
+#: ../src/creguserinfo.cpp:133
 msgid "Alternate IP"
 msgstr "Alternativní IP"
 
-#: ../src/cserverdc.cpp:381
+#: ../src/cserverdc.cpp:380
 msgid "You won't see public chat messages, to restore use +chat command."
 msgstr ""
 
-#: ../src/cserverdc.cpp:617
+#: ../src/cserverdc.cpp:624
 msgid ""
 "The hub is currently unable to service your request. Please try again in a "
 "few minutes."
@@ -1823,84 +1805,77 @@ msgstr ""
 "Hub momentálnì není schopen obslouit tvùj poadavek. Zkus to za pár minut "
 "prosim."
 
-#: ../src/cserverdc.cpp:662
-#, fuzzy
+#: ../src/cserverdc.cpp:669
 msgid "Another user has logged in with same nick and IP address."
-msgstr "Jinı uivatel s touto IP je ji pøihlášen. Odpojuji"
+msgstr ""
 
-#: ../src/cserverdc.cpp:676
-#, fuzzy
+#: ../src/cserverdc.cpp:683
 msgid "Your nick is already taken by another user."
-msgstr "tvùj nick u nìkdo pouívá"
+msgstr ""
 
-#: ../src/cserverdc.cpp:747
-#, fuzzy
+#: ../src/cserverdc.cpp:754
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
 msgstr ""
-"Nyní mùeš zmìnit svoje heslo, pouij pøíkaz +password nasledovanı tvım "
-"novım heslem (+password heslo)"
 
-#: ../src/cserverdc.cpp:749
+#: ../src/cserverdc.cpp:756
 msgid "You must set your password now using +passwd command."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1046
+#: ../src/cserverdc.cpp:1056
 msgid "Your nick contains forbidden characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1049
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1059
+#, c-format
 msgid "Valid nick characters: %s"
-msgstr "Neplatnı prefix. Pouij: %s"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1055
+#: ../src/cserverdc.cpp:1065
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1060
+#: ../src/cserverdc.cpp:1070
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1065
-#, fuzzy
+#: ../src/cserverdc.cpp:1075
 msgid "Your nick is already in use, please use something else."
-msgstr "tvùj nick u nìkdo pouívá"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1071
+#: ../src/cserverdc.cpp:1081
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1076
+#: ../src/cserverdc.cpp:1086
 msgid ""
 "Your nick contains operator prefix but you are not registered, please remove "
 "it."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1081
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1091
+#, c-format
 msgid "You are reconnecting too fast, please wait %s."
-msgstr "Nepøipojuj se pøíliš rychle."
+msgstr ""
 
-#: ../src/cserverdc.cpp:1086
+#: ../src/cserverdc.cpp:1096
 msgid "Unknown bad nick error, sorry."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1114
-#, fuzzy
+#: ../src/cserverdc.cpp:1124
 msgid "You are banned from this hub"
-msgstr "U jsi na hubu pøihlášen."
+msgstr ""
 
-#: ../src/cserverdc.cpp:1130
+#: ../src/cserverdc.cpp:1140
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1295
+#: ../src/cserverdc.cpp:1305
 msgid ""
 "Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), "
 "M(onth), Y(ear).\n"
@@ -1910,97 +1885,112 @@ msgstr ""
 "w(tıdny), M(mesíce), Y(roky).\n"
 "Záklaní je 'd'."
 
-#: ../src/cserverdc.cpp:1304
+#: ../src/cserverdc.cpp:1314
 msgid "Please provide a positive number."
 msgstr "Vlo kladné èíslo prosím."
 
-#: ../src/cserverdc.cpp:1325
+#: ../src/cserverdc.cpp:1335
 msgid "Hublist registration results:"
 msgstr "Vısledky registrace do hublistu:"
 
-#: ../src/cserverdc.cpp:1327
+#: ../src/cserverdc.cpp:1337
 #, c-format
 msgid "Sending to %s:%d..."
 msgstr "Odesílám k %s:%d..."
 
-#: ../src/cserverdc.cpp:1331
+#: ../src/cserverdc.cpp:1341
 msgid "connection failed"
 msgstr "spojení selhalo"
 
-#: ../src/cserverdc.cpp:1370
+#: ../src/cserverdc.cpp:1380
 msgid "error sending info"
 msgstr "chyba pøi odesílání informací"
 
-#: ../src/cserverdc.cpp:1374
+#: ../src/cserverdc.cpp:1384
 msgid ".. OK"
 msgstr "OK"
 
-#: ../src/cserverdc.cpp:1377
+#: ../src/cserverdc.cpp:1387
 msgid "Done"
 msgstr "Hotovo"
 
-#: ../src/cserverdc.cpp:1390
+#: ../src/cserverdc.cpp:1400
 msgid "Registering the hub in hublists. This may take a while, please wait..."
 msgstr "Registruji hub do hublistù. To mùe chvíli trvat, èekej..."
 
-#: ../src/cserverdc.cpp:1516
+#: ../src/cserverdc.cpp:1526
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1517
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1527
+#, c-format
 msgid "Uptime: %s"
-msgstr "Uptime"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1518
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1528
+#, c-format
 msgid "Users: %d"
-msgstr "Online uivatelù: %d"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1519
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1529
+#, c-format
 msgid "Share: %s"
-msgstr "Sdílení"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1520
-#, fuzzy, c-format
+#: ../src/cserverdc.cpp:1530
+#, c-format
 msgid "Status: %s"
-msgstr "Stav"
+msgstr ""
 
-#: ../src/cserverdc.cpp:1523
+#: ../src/cserverdc.cpp:1533
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1593
 #, c-format
 msgid "You have been kicked because %s"
 msgstr "Byl jsi vykopnut za %s"
 
-#: ../src/cserverdc.cpp:1593
+#: ../src/cserverdc.cpp:1603
 #, c-format
 msgid "Kicked user %s"
 msgstr "Kopnut uivatel %s"
 
-#: ../src/cserverdc.cpp:1595
+#: ../src/cserverdc.cpp:1605
 #, c-format
 msgid "Dropped user %s"
 msgstr "Odpojen uivatel %s"
 
-#: ../src/cserverdc.cpp:1622
+#: ../src/cserverdc.cpp:1607
+#, c-format
+msgid "with IP %s"
+msgstr ""
+
+#: ../src/cserverdc.cpp:1610
+#, c-format
+msgid "and host %s"
+msgstr ""
+
+#: ../src/cserverdc.cpp:1639
 msgid "dropped"
 msgstr "odpojen"
 
-#: ../src/cserverdc.cpp:1626
-msgid "User cannot be kicked."
-msgstr "Uivatel nemùe bıt vykopnut."
+#: ../src/cserverdc.cpp:1643
+msgid "Disconnect prevented by a plugin."
+msgstr ""
 
-#: ../src/cserverdc.cpp:1637 ../src/cserverdc.cpp:1641
-msgid "and banned"
-msgstr "a zabanován"
+#: ../src/cserverdc.cpp:1654
+#, c-format
+msgid "User banned for %s."
+msgstr ""
 
-#: ../src/cserverdc.cpp:1653
+#: ../src/cserverdc.cpp:1656
+msgid "User banned permanently."
+msgstr ""
+
+#: ../src/cserverdc.cpp:1668
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
@@ -2008,335 +1998,322 @@ msgstr ""
 "Chyba pøi kopání uivatele %s protoe je chránìn pøed všemy class niší %d"
 
 #: ../src/ctime.cpp:79
-#, fuzzy, c-format
+#, c-format
 msgid "%ld week"
 msgid_plural "%ld weeks"
-msgstr[0] "%ld tıdnù"
-msgstr[1] "%ld tıdnù"
-msgstr[2] "%ld tıdnù"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:85
-#, fuzzy, c-format
+#, c-format
 msgid "%ld day"
 msgid_plural "%ld days"
-msgstr[0] "%ld dnù"
-msgstr[1] "%ld dnù"
-msgstr[2] "%ld dnù"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:91
-#, fuzzy, c-format
+#, c-format
 msgid "%ld hour"
 msgid_plural "%ld hours"
-msgstr[0] "%ld hodin"
-msgstr[1] "%ld hodin"
-msgstr[2] "%ld hodin"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:97
-#, fuzzy, c-format
+#, c-format
 msgid "%ld min"
 msgid_plural "%ld mins"
-msgstr[0] "%ld minut"
-msgstr[1] "%ld minut"
-msgstr[2] "%ld minut"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:103 ../src/ctime.cpp:122
-#, fuzzy, c-format
+#, c-format
 msgid "%ld sec"
 msgid_plural "%ld secs"
-msgstr[0] "%ld sekund"
-msgstr[1] "%ld sekund"
-msgstr[2] "%ld sekund"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:108
-#, fuzzy, c-format
+#, c-format
 msgid "%ld msec"
 msgid_plural "%ld msecs"
-msgstr[0] "%ld sekund"
-msgstr[1] "%ld sekund"
-msgstr[2] "%ld sekund"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #: ../src/ctime.cpp:116
-#, fuzzy, c-format
+#, c-format
 msgid "%d msecs"
-msgstr "%ld sekund"
+msgstr ""
 
 #: ../src/ctime.cpp:122
-#, fuzzy, c-format
+#, c-format
 msgid "%ld usec"
 msgid_plural "%ld usecs"
-msgstr[0] "%ld sekund"
-msgstr[1] "%ld sekund"
-msgstr[2] "%ld sekund"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
-#: ../src/ctrigger.cpp:137
-msgid "Guest"
-msgstr ""
-
-#: ../src/ctrigger.cpp:145
-msgid "Cheef"
-msgstr ""
-
-#: ../src/ctrigger.cpp:147
-msgid "Administator"
-msgstr ""
-
-#: ../src/ctrigger.cpp:151
-#, fuzzy
-msgid "Unknown"
-msgstr "Neznámı ban"
-
-#: ../src/ctriggers.cpp:307
+#: ../src/ctriggers.cpp:315
 msgid ""
 "The definition is empty or not specified. Please define it with -d option."
 msgstr "Definice je prázdná nebo neurèená. Definujte prosím volbou -d."
 
-#: ../src/ctriggers.cpp:312
+#: ../src/ctriggers.cpp:320
 msgid "It's not allowed to define dbconfig file as trigger."
 msgstr "Není povoleno definovat soubor dbconfig jako trigger."
 
-#: ../src/ctriggers.cpp:315
+#: ../src/ctriggers.cpp:323
 #, c-format
 msgid "User '%s' tried to define dbconfig as trigger"
 msgstr "Uivatel '%s' se pokusil definovat dbconfig jako trigger"
 
-#: ../src/ctriggers.cpp:326
-#, fuzzy, c-format
+#: ../src/ctriggers.cpp:334
+#, c-format
 msgid ""
 "The file %s for the trigger %s must be locate in Verlihub config folder (use "
 "%%[CFG] variable; for ex %%[CFG]/%s)"
 msgstr ""
-"Soubor %s pro trigger %s se musí nacházet v konfiguraèní sloce VerliHubu "
-"(pouij %%[CFG] promìnnou; napøíklad %%[CFG]/%s)"
 
-#: ../src/ctriggers.cpp:420
+#: ../src/ctriggers.cpp:428
 msgid "Definition"
 msgstr "Popis"
 
-#: ../src/ctriggers.cpp:421
+#: ../src/ctriggers.cpp:429
 msgid "Flag"
 msgstr "Flag"
 
-#: ../src/ctriggers.cpp:422
+#: ../src/ctriggers.cpp:430
 msgid "Send as"
 msgstr "Odeslat jako"
 
-#: ../src/ctriggers.cpp:423
+#: ../src/ctriggers.cpp:431
 msgid "Min class"
 msgstr "Min class"
 
-#: ../src/ctriggers.cpp:424
+#: ../src/ctriggers.cpp:432
 msgid "Max class"
 msgstr "Max class"
 
-#: ../src/cuser.cpp:218
-#, fuzzy
+#: ../src/cuser.cpp:229
 msgid "Default class"
-msgstr "Základní class %d"
+msgstr ""
 
-#: ../src/cuser.cpp:219
+#: ../src/cuser.cpp:230
 msgid "In list"
 msgstr "V seznamu"
 
-#: ../src/cuser.cpp:222
+#: ../src/cuser.cpp:233
 msgid "Special user"
 msgstr "Speciální uivatel"
 
-#: ../src/cuser.cpp:237
-#, fuzzy
+#: ../src/cuser.cpp:248
 msgid "User rights information"
-msgstr "Informace uivatele %s"
+msgstr ""
 
-#: ../src/cuser.cpp:238
-#, fuzzy, c-format
+#: ../src/cuser.cpp:249
+#, c-format
 msgid "Nick: %s"
-msgstr "Nick"
+msgstr ""
 
-#: ../src/cuser.cpp:239
+#: ../src/cuser.cpp:250
 #, c-format
 msgid "Class: %d"
 msgstr ""
 
-#: ../src/cuser.cpp:244 ../src/cuser.cpp:246 ../src/cuser.cpp:250
-#: ../src/cuser.cpp:252
+#: ../src/cuser.cpp:255 ../src/cuser.cpp:257 ../src/cuser.cpp:261
+#: ../src/cuser.cpp:263
 #, c-format
 msgid "Can use main chat: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:249 ../src/cuser.cpp:261 ../src/cuser.cpp:283
-#: ../src/cuser.cpp:295
+#: ../src/cuser.cpp:260 ../src/cuser.cpp:272 ../src/cuser.cpp:294
+#: ../src/cuser.cpp:306
 #, c-format
 msgid "No [%s]"
 msgstr ""
 
-#: ../src/cuser.cpp:256 ../src/cuser.cpp:258 ../src/cuser.cpp:262
-#: ../src/cuser.cpp:264
+#: ../src/cuser.cpp:267 ../src/cuser.cpp:269 ../src/cuser.cpp:273
+#: ../src/cuser.cpp:275
 #, c-format
 msgid "Can use private chat: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:268 ../src/cuser.cpp:272 ../src/cuser.cpp:274
+#: ../src/cuser.cpp:279 ../src/cuser.cpp:283 ../src/cuser.cpp:285
 #, c-format
 msgid "Can use operator chat: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:271 ../src/cuser.cpp:305 ../src/cuser.cpp:315
-#: ../src/cuser.cpp:325 ../src/cuser.cpp:335 ../src/cuser.cpp:345
-#: ../src/cuser.cpp:355
+#: ../src/cuser.cpp:282 ../src/cuser.cpp:316 ../src/cuser.cpp:326
+#: ../src/cuser.cpp:336 ../src/cuser.cpp:346 ../src/cuser.cpp:356
+#: ../src/cuser.cpp:366
 #, c-format
 msgid "Yes [%s]"
 msgstr ""
 
-#: ../src/cuser.cpp:278 ../src/cuser.cpp:280 ../src/cuser.cpp:284
-#: ../src/cuser.cpp:286
+#: ../src/cuser.cpp:289 ../src/cuser.cpp:291 ../src/cuser.cpp:295
+#: ../src/cuser.cpp:297
 #, c-format
 msgid "Can search files: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:290 ../src/cuser.cpp:292 ../src/cuser.cpp:296
-#: ../src/cuser.cpp:298
+#: ../src/cuser.cpp:301 ../src/cuser.cpp:303 ../src/cuser.cpp:307
+#: ../src/cuser.cpp:309
 #, c-format
 msgid "Can download files: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:302 ../src/cuser.cpp:306 ../src/cuser.cpp:308
-#, fuzzy, c-format
+#: ../src/cuser.cpp:313 ../src/cuser.cpp:317 ../src/cuser.cpp:319
+#, c-format
 msgid "Can hide share: %s"
-msgstr "Skryté sdílení"
+msgstr ""
 
-#: ../src/cuser.cpp:312 ../src/cuser.cpp:316 ../src/cuser.cpp:318
-#, fuzzy, c-format
+#: ../src/cuser.cpp:323 ../src/cuser.cpp:327 ../src/cuser.cpp:329
+#, c-format
 msgid "Can register users: %s"
-msgstr "Online uivatelù: %d"
+msgstr ""
 
-#: ../src/cuser.cpp:322 ../src/cuser.cpp:326 ../src/cuser.cpp:328
-#, fuzzy, c-format
+#: ../src/cuser.cpp:333 ../src/cuser.cpp:337 ../src/cuser.cpp:339
+#, c-format
 msgid "Can drop users: %s"
-msgstr "IP uivatele %s: %s"
+msgstr ""
 
-#: ../src/cuser.cpp:332 ../src/cuser.cpp:336 ../src/cuser.cpp:338
-#, fuzzy, c-format
+#: ../src/cuser.cpp:343 ../src/cuser.cpp:347 ../src/cuser.cpp:349
+#, c-format
 msgid "Can kick users: %s"
-msgstr "Kopnut uivatel %s"
+msgstr ""
 
-#: ../src/cuser.cpp:342 ../src/cuser.cpp:346 ../src/cuser.cpp:348
-#, fuzzy, c-format
+#: ../src/cuser.cpp:353 ../src/cuser.cpp:357 ../src/cuser.cpp:359
+#, c-format
 msgid "Can temporarily ban users: %s"
-msgstr "Byl jsi doèasnì zabanován na %s protoe %s"
+msgstr ""
 
-#: ../src/cuser.cpp:352 ../src/cuser.cpp:356 ../src/cuser.cpp:358
+#: ../src/cuser.cpp:363 ../src/cuser.cpp:367 ../src/cuser.cpp:369
 #, c-format
 msgid "Can permanently ban users: %s"
 msgstr ""
 
-#: ../src/cuser.cpp:389
+#: ../src/cuser.cpp:400
 #, c-format
 msgid "You're no longer allowed to use main chat for %s."
 msgstr ""
 
-#: ../src/cuser.cpp:392
+#: ../src/cuser.cpp:403
 msgid "You're now allowed to use main chat."
 msgstr ""
 
-#: ../src/cuser.cpp:399
+#: ../src/cuser.cpp:410
 #, c-format
 msgid "You're no longer allowed to use private chat for %s."
 msgstr ""
 
-#: ../src/cuser.cpp:402
-#, fuzzy
+#: ../src/cuser.cpp:413
 msgid "You're now allowed to use private chat."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:409
-#, fuzzy, c-format
+#: ../src/cuser.cpp:420
+#, c-format
 msgid "You're no longer allowed to search files for %s."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:412
-#, fuzzy
+#: ../src/cuser.cpp:423
 msgid "You're now allowed to search files."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:419
-#, fuzzy, c-format
+#: ../src/cuser.cpp:430
+#, c-format
 msgid "You're no longer allowed to download files for %s."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:422
-#, fuzzy
+#: ../src/cuser.cpp:433
 msgid "You're now allowed to download files."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:429
+#: ../src/cuser.cpp:440
 msgid "You're no longer allowed to kick users."
 msgstr ""
 
-#: ../src/cuser.cpp:432
-#, fuzzy, c-format
+#: ../src/cuser.cpp:443
+#, c-format
 msgid "You're now allowed to kick users for %s."
-msgstr "Nyní nemáš povoleno zmìnit si heslo. Zeptej se OP."
+msgstr ""
 
-#: ../src/cuser.cpp:439
+#: ../src/cuser.cpp:450
 msgid "You're no longer allowed to register users."
 msgstr ""
 
-#: ../src/cuser.cpp:442
-#, fuzzy, c-format
+#: ../src/cuser.cpp:453
+#, c-format
 msgid "You're now allowed to register users for %s."
-msgstr "Nyní nemáš povoleno zmìnit si heslo. Zeptej se OP."
+msgstr ""
 
-#: ../src/cuser.cpp:449
+#: ../src/cuser.cpp:460
 msgid "You're no longer allowed to use operator chat."
 msgstr ""
 
-#: ../src/cuser.cpp:452
-#, fuzzy, c-format
+#: ../src/cuser.cpp:463
+#, c-format
 msgid "You're now allowed to use operator chat for %s."
-msgstr "Nyní nemáš povoleno zmìnit si heslo. Zeptej se OP."
+msgstr ""
 
-#: ../src/cuser.cpp:459
+#: ../src/cuser.cpp:470
 msgid "You're no longer allowed to hide share."
 msgstr ""
 
-#: ../src/cuser.cpp:462
-#, fuzzy, c-format
+#: ../src/cuser.cpp:473
+#, c-format
 msgid "You're now allowed to hide share for %s."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:469
-#, fuzzy
+#: ../src/cuser.cpp:480
 msgid "You're no longer allowed to drop users."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:472
-#, fuzzy, c-format
+#: ../src/cuser.cpp:483
+#, c-format
 msgid "You're now allowed to drop users for %s."
-msgstr "Nejsi oprávnìn stahovat seznamy souborù"
+msgstr ""
 
-#: ../src/cuser.cpp:479
+#: ../src/cuser.cpp:490
 msgid "You're no longer allowed to temporarily ban users."
 msgstr ""
 
-#: ../src/cuser.cpp:482
-#, fuzzy, c-format
+#: ../src/cuser.cpp:493
+#, c-format
 msgid "You're now allowed to temporarily ban users for %s."
-msgstr "Byl jsi doèasnì zabanován na %s protoe %s"
+msgstr ""
 
-#: ../src/cuser.cpp:489
+#: ../src/cuser.cpp:500
 msgid "You're no longer allowed to permanently ban users."
 msgstr ""
 
-#: ../src/cuser.cpp:492
-#, fuzzy, c-format
+#: ../src/cuser.cpp:503
+#, c-format
 msgid "You're now allowed to permanently ban users for %s."
-msgstr "Nyní nemáš povoleno zmìnit si heslo. Zeptej se OP."
+msgstr ""
 
-#: ../src/cvhplugin.cpp:89
+#: ../src/cuser.cpp:597
+msgid "Unknown chatroom command specified."
+msgstr ""
+
+#: ../src/cuser.cpp:604
+msgid "You can't use this chatroom, use main chat instead."
+msgstr ""
+
+#: ../src/cuser.cpp:640
+msgid "Hub security doesn't accept private messages, use main chat instead."
+msgstr ""
+
+#: ../src/cvhplugin.cpp:90
 #, c-format
 msgid "Plugin %s %s cannot load extra script."
 msgstr "Plugin %s %s nemùe nahrát extra skript."
 
-#: ../src/cvhplugin.cpp:95
+#: ../src/cvhplugin.cpp:96
 #, c-format
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "Plugin %s %s nemùe nahrát '%s'."
@@ -2354,18 +2331,16 @@ msgid "Unable to add item."
 msgstr ""
 
 #: ../src/tlistconsole.h:180
-#, fuzzy
 msgid "Item already exists."
-msgstr "Uivatel '%s' ji existuje"
+msgstr ""
 
 #: ../src/tlistconsole.h:202
 msgid "Item successfully deleted."
 msgstr ""
 
 #: ../src/tlistconsole.h:206 ../src/tlistconsole.h:235
-#, fuzzy
 msgid "Item not found."
-msgstr "Uivatel %s nenalezen."
+msgstr ""
 
 #: ../src/tlistconsole.h:227
 msgid "Item successfully modified"
@@ -2374,169 +2349,3 @@ msgstr ""
 #: ../src/tlistconsole.h:230
 msgid "Error in item data."
 msgstr ""
-
-#~ msgid "All version"
-#~ msgstr "Všechny verze"
-
-#~ msgid ""
-#~ "You cannot send %s out of the room because he has higher privilegies."
-#~ msgstr ""
-#~ "Nemùeš poslat uivatele %s pryè z místnosti protoe má vyšší privilegia."
-
-#~ msgid ""
-#~ "Members: \n"
-#~ "%s"
-#~ msgstr ""
-#~ "Èlenové: \n"
-#~ "%s"
-
-#~ msgid "User '%s' is not online, so you cannot invite him."
-#~ msgstr "Uivatel '%s' není v pøihlášen, tudí jej nemùeš pozvat."
-
-#~ msgid "Flush"
-#~ msgstr "Flush"
-
-#~ msgid "Set Password"
-#~ msgstr "Nastavit heslo"
-
-#~ msgid ""
-#~ "<< To turn your chat on use command +chat; turn it off with +nochat >>"
-#~ msgstr "<< Pro zapnutí chatu pouij pøíkaz +chat; pro vypnutí  +nochat >>"
-
-#~ msgid "RunTime"
-#~ msgstr "RunTime"
-
-#~ msgid "System Status"
-#~ msgstr "System Status"
-
-#~ msgid ""
-#~ "This hub is running version %s%s %s of %s (RunTime: %s / User count: %d)"
-#~ msgstr ""
-#~ "Tento hub bìí na verzi %s%s %s %s (RunTime: %s / Poèet uivatelù: %d)"
-
-#~ msgid ""
-#~ "<< Please change your password NOW using command +passwd <new_passwd>! "
-#~ "See +help >>"
-#~ msgstr ""
-#~ "<<Nyní si zmìò heslo pomocí pøíkazu +passwd <nove_heslo>! Pro další info "
-#~ "èti +help>>"
-
-#~ msgid "Your info"
-#~ msgstr "Tvoje info"
-
-#~ msgid "Bad nickname"
-#~ msgstr "Špatnı nick"
-
-#~ msgid "unallowed characters in your nick."
-#~ msgstr "nepovolené znaky v tvém nicku"
-
-#~ msgid "use these: %s"
-#~ msgstr "pouij tyto: %s"
-
-#~ msgid "your nick is too short"
-#~ msgstr "tvùj nick je pøíliš krátkı"
-
-#~ msgid "your nick is too long"
-#~ msgstr "tvùj nick je pøíliš dlouhı"
-
-#~ msgid "operator not registered"
-#~ msgstr "operátor není registrován"
-
-#~ msgid "Wait %s before reconnecting!!"
-#~ msgstr "Èekej %s pøed dalším pøipojením!"
-
-#~ msgid "unknown error"
-#~ msgstr "neznámá chyba"
-
-#~ msgid "<<You are banned>>"
-#~ msgstr "<<Jsi zabanován>>"
-
-#~ msgid "Please add %s in front of your nick"
-#~ msgstr "Pøidej %s na zaèátek svého nicku prosím"
-
-#~ msgid "Host of user %s: %s"
-#~ msgstr "Host uivatele %s: %s"
-
-#~ msgid "Variable"
-#~ msgstr "Promìnná"
-
-#~ msgid "Value"
-#~ msgstr "Hodnota"
-
-#~ msgid "Please type !help for more info"
-#~ msgstr "Napiš !help pro více informací"
-
-#~ msgid "Your IP is %s"
-#~ msgstr "Tvoje IP je %s"
-
-#~ msgid "Website/Forums design"
-#~ msgstr "Website/Fórum design"
-
-#~ msgid "Website"
-#~ msgstr "Website"
-
-#~ msgid "Offline"
-#~ msgstr "Offline"
-
-#~ msgid "User %s unbanned"
-#~ msgstr "Uivatel %s odbanován"
-
-#~ msgid " %s saved"
-#~ msgstr " %s uloeno"
-
-#~ msgid "Error saving %s"
-#~ msgstr "Chyba pøi ukládání %s"
-
-#~ msgid "Found nicks:"
-#~ msgstr "Nalezené nicky:"
-
-#~ msgid "Deleted user '%s' from database"
-#~ msgstr "Uivatel '%s' vymazán z databáze"
-
-#~ msgid "Error updating password"
-#~ msgstr "Chyba pøi aktualizaci hesla"
-
-#~ msgid "Your client version is too recent."
-#~ msgstr "Tvá verze klienta je pøíliš nová."
-
-#~ msgid "Used RAM"
-#~ msgstr "Pouitá RAM"
-
-#~ msgid "Left"
-#~ msgstr "Zbıvá"
-
-#~ msgid "IP Range"
-#~ msgstr "Rozsah IP"
-
-#~ msgid "E-mail"
-#~ msgstr "E-mail"
-
-#~ msgid "for: %s"
-#~ msgstr "na: %s"
-
-#~ msgid "permanently"
-#~ msgstr "navdy"
-
-#~ msgid "%d ms"
-#~ msgstr "%d milisekund"
-
-#~ msgid "Banned."
-#~ msgstr "Zabanován."
-
-#~ msgid "Too long chat message (%d/%d) : %s"
-#~ msgstr "Pøíliš dlouhá zpráva (%d/%d) : %s"
-
-#~ msgid "Too many chat lines (>%d): %s"
-#~ msgstr "Pøíliš mnoho øádkù (>%d): %s"
-
-#~ msgid "Not sent: %s"
-#~ msgstr "Nebylo odesláno: %s"
-
-#~ msgid "Active Search: your IP is not %s but %s. Disconnecting"
-#~ msgstr "Aktivní hledání: tvoje IP není %s ale %s. Odpojuji"
-
-#~ msgid "Unknown command '%s'. Try +help"
-#~ msgstr "Neznámı pøíkaz '%s'. Zkus +help"
-
-#~ msgid "Bot %s has just entered the hub."
-#~ msgstr "Bot %s právì vstoupil na hub."

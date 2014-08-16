@@ -1,319 +1,307 @@
 #
 # Translators:
-# Alexander Zenkov <webmaster@feardc.net>, 2014
-# kosterinaleksey <kosterinaleksey@gmail.com>, 2012
-# MaxFox <maxfox@inbox.ru>, 2014
-# Stefano <netcelli@gmail.com>, 2011
-# Stefano <netcelli@gmail.com>, 2011
-# Александр  <exside@mail.com>, 2011
-# Александр <plugmn@gmail.com>, 2011
-# Александр <plugmn@gmail.com>, 2011
+# mauron, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-08-16 08:03+0100\n"
-"PO-Revision-Date: 2014-08-16 08:28+0100\n"
+"PO-Revision-Date: 2014-08-16 08:45+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Russian (Russia) (http://www.transifex.com/projects/p/"
-"verlihub-100/language/ru_RU/)\n"
+"Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/"
+"verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1251\n"
+"Content-Type: text/plain; charset=cp1254\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ru_RU\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language: tr_TR\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 1.6.7\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: cp1251\n"
+"X-Poedit-SourceCharset: cp1254\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Получить список чат-комнат"
+msgstr "Bir sohbet salonu listesi giriniz"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "Получить список запрещённых выражений"
+msgstr "Yasaklanmэю ifade listesi giriniz"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "К сожалению регулярное выражение указанное вами недопустимо."
+msgstr "Maalesef girdiрiniz dьzenli ifade geзerli deрildir."
 
 #: ../plugins/forbid/cforbidden.cpp:78
 #, c-format
 msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "ЗАПРЕТ: Пользователь отправил запрещённые слова в %s: %s"
+msgstr "YASAK: Kullanэcэ %s konumunda yasaklэ sцzcьk yolladэ: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PUBLIC chat"
-msgstr "ПУБЛИЧНЫЙ чат"
+msgstr "HERKESE AЗIK sohbet"
 
 #: ../plugins/forbid/cforbidden.cpp:78
 msgid "PRIVATE chat"
-msgstr "ПРИВАТНЫЙ чат"
+msgstr "ЦZEL sohbet"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "Последние %d событий для ника %s:"
+msgstr "Son %d etkinlik %s rumuzu iзin:"
 
 #: ../plugins/iplog/ciplog.cpp:90
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "Последние %d событий для IP %s:"
+msgstr "Son %d etkinlik %s ЭP adresi iзin:"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "connect"
-msgstr "соединение"
+msgstr "baрlan"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "login"
-msgstr "войти"
+msgstr "giriю"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "logout"
-msgstr "выйти"
+msgstr "зэkэю"
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "disconnect"
-msgstr "отключиться"
+msgstr "baрlantэyэ kes"
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr "плохой ник или ник временно забанен"
+msgstr "yanlэю rumuz ya da geзici olarak yasaklэ"
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
-msgstr "использовали различные ник в чате"
+msgstr "sohbette baюka bir rumuz kullandэ"
 
 #: ../plugins/iplog/ciplog.cpp:100
 msgid "kicked"
-msgstr "отключено"
+msgstr "kovuldu"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "redirected"
-msgstr "перенаправлен"
+msgstr "yeniden yцnlendirildi"
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr "выйти из хаба"
+msgstr "hubdan зэk"
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr "критическая нагрузка на хаб"
+msgstr "kritik hub yьkь"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
-msgstr "Тайм-аут"
+msgstr "Zaman aюэmэ"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "user did nothing for too long time"
-msgstr "Пользователь очень долго ничего не делал"
+msgstr "kullanэcэ зok uzun sьre hiзbir юey yapmadэ"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr "хаб полон"
+msgstr "hub dolu"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
-msgstr "лимит шары"
+msgstr "paylaюma sэnэrэ"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "no tag or not valid"
-msgstr "нет тега или недействителен"
+msgstr "etiketi yok ya da geзersiz"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "tag breaks hub rules"
-msgstr "тег противоречит правилам хаба"
+msgstr "etiket hub kurallarэnэ ihlвl ediyor"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "wrong password"
-msgstr "неправильный пароль"
+msgstr "yanlэю parola"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "error in login sequence"
-msgstr "ошибка в последовательности соединения"
+msgstr "Giriю sэrasэ hatasэ"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "syntax error in some messages"
-msgstr "синтаксические ошибки в некоторых сообщениях"
+msgstr "Bazэ mesajlarda sцz dizimi hatasэ"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "invalid key"
-msgstr "недействительный ключ"
+msgstr "yanlэю anahtar"
 
 #: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:156
 msgid "Date"
-msgstr "Дата"
+msgstr "Tarih"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "Action"
-msgstr "Действие"
+msgstr "Faaliyet"
 
 #: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:157
 msgid "Nickname"
-msgstr "Ник"
+msgstr "Rumuz"
 
 #: ../plugins/iplog/ciplog.cpp:120
 msgid "Info"
-msgstr "Информация"
+msgstr "Bilgi"
 
 #: ../plugins/iplog/ciplog.cpp:148
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "В последнее время %s заходил со следующего IP"
+msgstr "%s rumuzu son sэralarda hubda юu ЭP adresiyle bulunuyordu"
 
 #: ../plugins/iplog/ciplog.cpp:150
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "В последнее раз %s использовал следующий ник"
+msgstr "%s ЭP adresi son sэralarda hubda юu rumuzlarla bulunuyordu"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "Получить список провайдеров"
+msgstr "Bir ЭSS listesi giriniz"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "Неизвестный формат диапазона."
+msgstr "Bilinmeyen alan biзimi"
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "К сожалению регулярное выражение для ника указанное вами недопустимо."
+msgstr "Maalesef rumuz iзin girdiрiniz dьzenli ifade geзerli deрildir."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr ""
-"К сожалению регулярное выражение для типа соединения указанное вами "
-"недопустимо."
+msgstr "Maalesef baрlantэ iзin girdiрiniz dьzenli ifade geзerli deрildir."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Ваш ник должен соответствовать %[pattern]"
+msgstr "Rumuzunuz юuna denk gelmelidir %[pattern]"
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "Ваш тип соединения должен соответствовать %[pattern]"
+msgstr "Baрlantэ tьrьnьz юuna denk gelmelidir %[pattern]"
 
 #: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:62
 msgid "You have no rights to do this."
-msgstr "У вас нет прав для выполнения этого."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
-msgstr "Версия Lua"
+msgstr "Lua sьrьmь"
 
 #: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
-msgstr "Версия библиотеки Lua"
+msgstr "Lua kьtьphane sьrьmь"
 
 #: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
-msgstr "Авторские права"
+msgstr "Telif hakkэ"
 
 #: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
-msgstr "Авторы"
+msgstr "Yazarlar"
 
 #: ../plugins/lua/cconsole.cpp:104
 msgid "Version date"
-msgstr "Дата версии"
+msgstr "Sьrьm tarihi"
 
 #: ../plugins/lua/cconsole.cpp:105
 msgid "Running scripts"
-msgstr "Запущенные скрипты"
+msgstr "Faal betikler"
 
 #: ../plugins/lua/cconsole.cpp:106
 msgid "Memory used"
-msgstr "Использование памяти"
+msgstr "Kullanэlan bellek"
 
 #: ../plugins/lua/cconsole.cpp:112
 msgid "Running Lua scripts:"
-msgstr "Запущенные Lua скрипты:"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
-msgstr "Скрипт"
+msgstr "Betik"
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
-msgstr "Скрипт %s остановлен."
+msgstr "%s adlэ betik durduruldu."
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Скрипт #%s не остановлен, потому что он не работает."
+msgstr "#%s sayэlэ betik durdurulmadэ зьnkь faal deрildi."
 
 #: ../plugins/lua/cconsole.cpp:155 ../plugins/python/cconsole.cpp:132
 #: ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Скрипт %s не остановлен, потому что он не работает."
+msgstr "%s adlэ betik durdurulmadэ зьnkь faal deрildi."
 
 #: ../plugins/lua/cconsole.cpp:182
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "Ошибка при загрузке каталога %s."
+msgstr "%s adlэ klasцrьn yьklenmesi baюarэsэz oldu."
 
 #: ../plugins/lua/cconsole.cpp:205
 #, c-format
 msgid "Script %s is already running."
-msgstr "Скрипт %s уже запущен."
+msgstr "%s adlэ betik halihazэrda faaldir."
 
 #: ../plugins/lua/cconsole.cpp:210 ../plugins/lua/cconsole.cpp:259
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
-msgstr "Скрипт %s успешно запущен."
+msgstr "%s adlэ betik юimdi faaldir."
 
 #: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:263
 #, c-format
 msgid "Script %s not found or could not be parsed."
-msgstr "Скрипт %s не найден или не может быть проанализирован."
+msgstr "%s adlэ betik bulunamadэ ya da analizi baюarэsэz oldu."
 
 #: ../plugins/lua/cconsole.cpp:253
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Скрипт %s не остановлен потому что он не запущен."
+msgstr "%s adlэ betik durdurulmadэ зьnkь faal deрildi."
 
 #: ../plugins/lua/cconsole.cpp:282
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr "Переменная %s.%s обновлена с '%s' на '%s'."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
 msgid "Current log level is %d."
-msgstr "Текущий уровень логов - %d."
+msgstr ""
 
 #: ../plugins/lua/cluainterpreter.cpp:163
 msgid "Lua error"
-msgstr "Ошибка Lua"
+msgstr ""
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Сообщение было отправлено в %s потому, что он в сети."
+msgstr "Mesaj %s adlэ kullanэcэya gцnderildi зьnkь o зevrimiзinde."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "Сообщение сохранено."
+msgstr "Mesaj kaydedildi."
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "Вы получили %d сообщение"
-msgstr[1] "Вы получили %d сообщений"
-msgstr[2] "У вас %d новых сообщений в корзине."
+msgstr[0] ""
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "У вас нет новых сообщений."
+msgstr "Hiзbir yeni mesajэnэz yok."
 
 #: ../plugins/messenger/cmsglist.cpp:232
 #, c-format
@@ -322,9 +310,9 @@ msgid ""
 "Date: %s\n"
 "Subject: %s\n"
 msgstr ""
-"От: %s Кому: %s\n"
-"Дата: %s\n"
-"Тема: %s\n"
+"Yollayan: %s Alэcэ: %s\n"
+"Tarih: %s\n"
+"Mevzu: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -335,9 +323,9 @@ msgid ""
 "%s\n"
 "----\n"
 msgstr ""
-"От: %s Кому: %s\n"
-"Дата: %s\n"
-"Тема: %s\n"
+"Yollayan: %s Alэcэ: %s\n"
+"Tarih: %s\n"
+"Mevzu: %s\n"
 "%s\n"
 "----\n"
 
@@ -348,172 +336,168 @@ msgid ""
 "Subject: %s -------------------------\n"
 "%s"
 msgstr ""
-"#ОФФЛАЙН СООБЩЕНИЕ# [%s]\n"
-"Субъект: %s -------------------------\n"
+"#ЗEVRЭMDIЮI MESAJ# [%s]\n"
+"Mevzu: %s -------------------------\n"
 "%s"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
-msgstr "Версия менеджера плагинов"
+msgstr "Plugman sьrьmь"
 
 #: ../plugins/plugman/cconsole.cpp:45
 msgid "Verlihub executable"
-msgstr "Исполняемый файл Verlihub"
+msgstr "Verlihub зalэюtэrэlabiliri"
 
 #: ../plugins/plugman/cconsole.cpp:46
 msgid "Verlihub build time"
-msgstr "Время сборки Verlihub"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:148
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
-"Название плагина не должно содержать более 10 символов, пожалуйста "
-"попробуйте другое."
 
 #: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
-msgstr "Укажите правильный путь до плагина."
+msgstr "Eklenti iзin geзerli bir yol giriniz."
 
 #: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr "Плагин загружен."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
 #: ../plugins/plugman/cconsole.cpp:236
 #, c-format
 msgid "Plugin not found: %s"
-msgstr "Плагин не найден: %s"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
-msgstr "Плагин выгружен."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr "Плагин не выгружен, потому что, он не был загружен."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
-msgstr "Плагин перезагружен."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr "Плагин не перезагружен, потому что, он не был загружен."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
-msgstr "Плагин не найден."
+msgstr "Eklenti bulunamadэ"
 
 #: ../plugins/plugman/cplugs.cpp:117
 msgid "Plugin does not support scripts."
-msgstr "Плагин не поддерживает скрипты."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:123
 msgid "Script loaded."
-msgstr "Скрипт загружен."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:125
 msgid "Error loading script."
-msgstr "Ошибка загрузки скрипта."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:155
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
 msgstr ""
-"Внимание: Плагин следует перекомпилировать, потом что Verlihub был недавно "
-"обновлен."
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
-msgstr "Название"
+msgstr "Эsim"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "On"
-msgstr "Вкл."
+msgstr "Aзэk"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Off"
-msgstr "Выкл."
+msgstr "Kapalэ"
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Auto"
-msgstr "Авто"
+msgstr "Otomatik"
 
 #: ../plugins/plugman/cplugs.cpp:206
 msgid "Manual"
-msgstr "Вручную"
+msgstr "El ile"
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Path"
-msgstr "Путь"
+msgstr "Yol"
 
 #: ../plugins/plugman/cplugs.cpp:210
 msgid "Description"
-msgstr "Описание"
+msgstr "Aзэklama"
 
 #: ../plugins/plugman/cplugs.cpp:213
 msgid "Last error"
-msgstr "Последняя ошибка"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
 #: ../plugins/python/cconsole.cpp:190
 msgid "Python interpreter is not loaded."
-msgstr "Интерпретатор Python не загружен."
+msgstr "Python yorumlayэcэsэ yьklenmiю deрil."
 
 #: ../plugins/python/cconsole.cpp:83
 msgid "Loaded Python scripts:"
-msgstr "Загруженные Python скрипты:"
+msgstr "Yьklenmiю Python betikleri:"
 
 #: ../plugins/python/cconsole.cpp:149 ../plugins/python/cconsole.cpp:226
 msgid "Failed to allocate new Python interpreter."
-msgstr "Не удалось найти новый интерпретатор Python."
+msgstr "Yeni Python yorumlayэcэsэ ayrэlamadэ."
 
 #: ../plugins/python/cconsole.cpp:157 ../plugins/python/cconsole.cpp:234
 #, c-format
 msgid "Script %s not found or could not be parsed!."
-msgstr "Скрипт %s не найден или не может быть проанализирован!."
+msgstr "%s adlэ betik bulunamadэ ya da analizi baюarэsэz oldu!"
 
 #: ../plugins/python/cconsole.cpp:179
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'"
-msgstr "Переменная %s.%s обновлена с '%s' на '%s'"
+msgstr "%s.%s '%s' deрerinden '%s' deрerine gьncellenmiюtir"
 
 #: ../plugins/replacer/cconsole.cpp:67
 msgid "Replaced words"
-msgstr "Замененные слова"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Word"
-msgstr "Слово"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"
-msgstr "Заменённые слова"
+msgstr "Bununla deрiюtir:"
 
 #: ../plugins/replacer/cconsole.cpp:72
 msgid "Affected class"
-msgstr "Распространяется на класс"
+msgstr "Etkilenen sэnэf"
 
 #: ../plugins/replacer/cconsole.cpp:99
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "Слова '%s' не существует."
+msgstr "'%s' kelimesi mevcut deрildir."
 
 #: ../plugins/replacer/cconsole.cpp:107
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Слово '%s' удалено."
+msgstr "'%s' kelimesi silinmiюtir."
 
 #: ../plugins/replacer/cconsole.cpp:130
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "К сожалению ваше регулярное выражение не может быть разобрано."
+msgstr "Maalesef girdiрiniz dьzenli ifade analiz edilemedi."
 
 #: ../plugins/replacer/cconsole.cpp:136
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "Слово '%s' уже существует."
+msgstr "'%s' kelimesi zaten mevcuttur."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
@@ -521,10 +505,10 @@ msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
 msgstr ""
-"Добавлено слово %s. Это слово будет фильтроваться в публичный чат для "
-"пользователей с классом, который меньше или равен %d."
+"%s kelimesi eklenmiюtir. Bu kelime herkese aзэk sohbette %d sэnэfэna eюit ya "
+"da altэndaki kullanэcэlara gцsterilmeyecektir. "
 
 #: ../plugins/replacer/cconsole.cpp:148
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Ошибка при добавлении слова '%s'."
+msgstr "%s' kelimesinin ilвvesinde hata."

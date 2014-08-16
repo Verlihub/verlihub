@@ -46,7 +46,6 @@
 #include "i18n.h"
 
 #define HUB_VERSION_CLASS __CURR_DATE_TIME__
-#define LOCK_VERSION PACKAGE
 #define HUB_VERSION_NAME "Verlihub"
 #define PADDING 25
 
@@ -607,8 +606,16 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	if (!mCallBacks.mOnNewConn.CallAll(conn)) return -1;
 	#endif
 
-	string omsg;
-	omsg = "$Lock EXTENDEDPROTOCOL_" LOCK_VERSION " Pk=v" VERSION;
+	string omsg("$Lock EXTENDEDPROTOCOL_NMDC_");
+	omsg += StringFrom(rand() % 10);
+	omsg += StringFrom(rand() % 10);
+	omsg += StringFrom(rand() % 10);
+	omsg += StringFrom(rand() % 10);
+	omsg += " Pk=";
+	omsg += HUB_VERSION_NAME;
+	omsg += ' ';
+	omsg += VERSION;
+
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
 

@@ -1,22 +1,25 @@
 #
-# Stefano  <netcelli@gmail.com>, 2011.
+# Translators:
+# Stefano <netcelli@gmail.com>, 2011
+# Stefano <netcelli@gmail.com>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub\n"
-"Report-Msgid-Bugs-To: http://bugs.verlihub-project.org/\n"
-"POT-Creation-Date: 2014-06-20 10:47+0100\n"
-"PO-Revision-Date: 2014-07-15 15:20+0100\n"
+"Project-Id-Version: Verlihub 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-08-16 08:03+0100\n"
+"PO-Revision-Date: 2014-08-16 08:24+0100\n"
 "Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Verlihub <webmaster@feardc.net>\n"
-"Language: it_IT\n"
+"Language-Team: Italian (Italy) (http://www.transifex.com/projects/p/"
+"verlihub-100/language/it_IT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1252\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: it_IT\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.6.7\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.6\n"
+"X-Poedit-SourceCharset: cp1252\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
@@ -217,9 +220,8 @@ msgid "Memory used"
 msgstr "Memoria utilizzata"
 
 #: ../plugins/lua/cconsole.cpp:112
-#, fuzzy
 msgid "Running Lua scripts:"
-msgstr "Script LUA in esecuzione:"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
@@ -270,19 +272,18 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "Lo script %s non è stato terminato poichè non è in esecuzione."
 
 #: ../plugins/lua/cconsole.cpp:282
-#, fuzzy, c-format
+#, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr "Aggiornato %s.%s da '%s' a '%s'"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
 msgid "Current log level is %d."
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:161
-#, fuzzy
+#: ../plugins/lua/cluainterpreter.cpp:163
 msgid "Lua error"
-msgstr "Ultimo errore"
+msgstr ""
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
@@ -341,51 +342,49 @@ msgstr ""
 "Oggetto: %s -------------------------\n"
 "%s"
 
-#: ../plugins/plugman/cconsole.cpp:43
+#: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
 msgstr "Version plugman"
 
-#: ../plugins/plugman/cconsole.cpp:44
+#: ../plugins/plugman/cconsole.cpp:45
 msgid "Verlihub executable"
 msgstr "Eseguibile di VerliHub"
 
-#: ../plugins/plugman/cconsole.cpp:147
-#, fuzzy
+#: ../plugins/plugman/cconsole.cpp:46
+msgid "Verlihub build time"
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:148
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
-"Il nome del plugin deve essere lungo al massimo 10 caratteri. Inseriscine un "
-"altro."
 
-#: ../plugins/plugman/cconsole.cpp:152
+#: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
 msgstr "Inserisci un percorso valido per il plugin."
 
-#: ../plugins/plugman/cconsole.cpp:184 ../plugins/plugman/cplugs.cpp:133
-#, fuzzy
+#: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr "Plugin non trovato."
+msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:189 ../plugins/plugman/cconsole.cpp:212
-#: ../plugins/plugman/cconsole.cpp:235
-#, fuzzy, c-format
+#: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
+#: ../plugins/plugman/cconsole.cpp:236
+#, c-format
 msgid "Plugin not found: %s"
-msgstr "Plugin non trovato."
+msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:204
-#, fuzzy
+#: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
-msgstr "Plugin non trovato."
+msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:207
+#: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:227 ../plugins/plugman/cplugs.cpp:181
-#, fuzzy
+#: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
-msgstr "Plugin non trovato."
+msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:230
+#: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 
@@ -394,28 +393,22 @@ msgid "Plugin not found."
 msgstr "Plugin non trovato."
 
 #: ../plugins/plugman/cplugs.cpp:117
-#, fuzzy
 msgid "Plugin does not support scripts."
-msgstr "Il plugin non supporta gli script."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:123
-#, fuzzy
 msgid "Script loaded."
-msgstr "Lo script %s è stato terminato."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:125
-#, fuzzy
 msgid "Error loading script."
-msgstr "Errore nel caricare lo script"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:155
-#, fuzzy
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
 msgstr ""
-"Attenzione: il plugin deve essere ricompilato poichè VerliHub è stato "
-"aggiornato recentemente"
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
@@ -446,9 +439,8 @@ msgid "Description"
 msgstr "Descrizione"
 
 #: ../plugins/plugman/cplugs.cpp:213
-#, fuzzy
 msgid "Last error"
-msgstr "Ultimo errore"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
@@ -474,38 +466,42 @@ msgstr "Lo script %s non è stato trovato o non può essere analizzato"
 msgid "Updated %s.%s from '%s' to '%s'"
 msgstr "Aggiornato %s.%s da '%s' a '%s'"
 
-#: ../plugins/replacer/cconsole.cpp:66
-msgid "Replaced words:"
-msgstr "Parole da sostituire:"
+#: ../plugins/replacer/cconsole.cpp:67
+msgid "Replaced words"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:70
+msgid "Word"
+msgstr ""
+
+#: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"
 msgstr "Parole da sostituire"
 
-#: ../plugins/replacer/cconsole.cpp:71
+#: ../plugins/replacer/cconsole.cpp:72
 msgid "Affected class"
 msgstr "Classe interessata"
 
-#: ../plugins/replacer/cconsole.cpp:98
+#: ../plugins/replacer/cconsole.cpp:99
 #, c-format
 msgid "Word '%s' does not exist."
 msgstr "La parola '%s' non esiste."
 
-#: ../plugins/replacer/cconsole.cpp:106
+#: ../plugins/replacer/cconsole.cpp:107
 #, c-format
 msgid "Word '%s' deleted."
 msgstr "Parola '%s' cancellata."
 
-#: ../plugins/replacer/cconsole.cpp:129
+#: ../plugins/replacer/cconsole.cpp:130
 msgid "Sorry the regular expression you provided cannot be parsed."
 msgstr "L'espressione regolare inserita non può essere compilata."
 
-#: ../plugins/replacer/cconsole.cpp:135
+#: ../plugins/replacer/cconsole.cpp:136
 #, c-format
 msgid "Word '%s' already exists."
 msgstr "La parola '%s' esiste già"
 
-#: ../plugins/replacer/cconsole.cpp:145
+#: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
@@ -514,19 +510,7 @@ msgstr ""
 "Parola %s aggiunta. Questa parola sarà filtrata nella chat pubblica per gli "
 "utenti con classe minore o uguale a %d."
 
-#: ../plugins/replacer/cconsole.cpp:147
+#: ../plugins/replacer/cconsole.cpp:148
 #, c-format
 msgid "Error adding word '%s'."
 msgstr "Errore nell'aggiungere la parola '%s'."
-
-#~ msgid "(unknown LUA error)"
-#~ msgstr "(errore LUA sconosciuto)"
-
-#~ msgid "Loaded"
-#~ msgstr "Caricato"
-
-#~ msgid "Reloaded"
-#~ msgstr "Ricaricato"
-
-#~ msgid "Plugin '%s' not found."
-#~ msgstr "Plugin %s non trovato."
