@@ -600,17 +600,23 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 int cServerDC::OnNewConn(cAsyncConn *nc)
 {
 	cConnDC *conn = (cConnDC *)nc;
-	if (!conn) return -1;
+
+	if (!conn)
+		return -1;
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mCallBacks.mOnNewConn.CallAll(conn)) return -1;
+		if (!mCallBacks.mOnNewConn.CallAll(conn))
+			return -1;
 	#endif
 
-	string omsg("$Lock EXTENDEDPROTOCOL_NMDC_");
-	omsg += StringFrom(rand() % 10);
-	omsg += StringFrom(rand() % 10);
-	omsg += StringFrom(rand() % 10);
-	omsg += StringFrom(rand() % 10);
+	conn->mLock = "EXTENDEDPROTOCOL_NMDC_";
+	conn->mLock += StringFrom(rand() % 10);
+	conn->mLock += StringFrom(rand() % 10);
+	conn->mLock += StringFrom(rand() % 10);
+	conn->mLock += StringFrom(rand() % 10);
+
+	string omsg("$Lock ");
+	omsg += conn->mLock;
 	omsg += " Pk=";
 	omsg += HUB_VERSION_NAME;
 	omsg += ' ';

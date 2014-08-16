@@ -304,24 +304,30 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DC_Key(cMessageDC * msg, cConnDC * conn)
+int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 {
-	if (msg->SplitChunks()) return -1;
+	if (msg->SplitChunks())
+		return -1;
 
 	if (conn->GetLSFlag(eLS_KEYOK)) { // key already sent
-		string omsg = _("Invalid login sequence. Key already sent");
-		if (conn->Log(1)) conn->LogStream() << omsg << endl;
+		string omsg = _("Invalid login sequence, your client already sent key.");
+
+		if (conn->Log(1))
+			conn->LogStream() << omsg << endl;
+
 		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
 	if (mS->mC.drop_invalid_key) {
-		string key, lock("EXTENDEDPROTOCOL_" PACKAGE);
-		Lock2Key(lock, key);
+		string key;
+		Lock2Key(conn->mLock, key);
 
 		if (key != msg->ChunkString(1)) {
-			if (conn->Log(1)) conn->LogStream() << "Invalid key" << endl;
-			mS->ConnCloseMsg(conn, _("Your client provided an invalid key"), 1000, eCR_INVALID_KEY);
+			if (conn->Log(1))
+				conn->LogStream() << "Invalid key" << endl;
+
+			mS->ConnCloseMsg(conn, _("Your client provided invalid key in response to lock."), 1000, eCR_INVALID_KEY);
 			return -1;
 		}
 	}

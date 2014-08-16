@@ -355,6 +355,9 @@ namespace nVerliHub {
 				// user supports in text format
 				string mSupportsText;
 
+				// lock string
+				string mLock;
+
 				/// Pointer to cRegUserInfo instance
 				/// to manage user registration.
 				cRegUserInfo *mRegInfo;
