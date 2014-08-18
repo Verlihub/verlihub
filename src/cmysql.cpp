@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -30,13 +31,14 @@ cMySQL::cMySQL() : cObj("cMySQL")
 	Init();
 }
 
-cMySQL::cMySQL(string&host,string&user,string&pass,string&data) : cObj("cMySQL")
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL")
 {
-	 mDBName = data;
-	 Init();
-	 if(!Connect(host,user,pass,data)) {
-	         throw "Mysql connection error.";
-	 }
+	mDBName = data;
+	Init();
+
+	if (!Connect(host, user, pass, data, charset)) {
+		throw "Mysql connection error.";
+	}
 }
 
 cMySQL::~cMySQL()
@@ -52,23 +54,25 @@ void cMySQL::Init()
 		Error(0, string("Can't init mysql structure :(.: "));
 }
 
-bool cMySQL::Connect(string &host, string &user, string &pass, string &data)
+bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
 {
-	if(Log(1)) LogStream() << "Connecting to mysql server: "
-			<< user << "@" << host << "/" << data << " using UTF8 encoding" << endl;
+	if (Log(1))
+		LogStream() << "Connecting to MySQL server: " << user << " @ " << host << " / " << data << " using " << ((charset.empty()) ? "utf8" : charset) << " encoding" << endl;
 
-	mysql_options(mDBHandle,MYSQL_OPT_COMPRESS,0);
-	//mysql_options(mDBHandle,MYSQL_SET_CHARSET_NAME,"utf8");
-	#if MYSQL_VERSION_ID  >= 50000
-	mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, "true");
+	mysql_options(mDBHandle, MYSQL_OPT_COMPRESS, 0);
+
+	#if MYSQL_VERSION_ID >= 50000
+		mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, "true");
 	#endif
 
-	//mysql_options(mDBHandle,MYSQL_SET_CHARSET_NAME,charset.c_str());
+	if (!charset.empty())
+		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
 
-	if(!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(),0,0,0)){
+	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, 0, 0)) {
 		Error(1, string("Connection to mysql server failed: "));
 		return false;
 	}
+
 	return true;
 }
 

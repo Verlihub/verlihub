@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -45,10 +46,10 @@ class cMySQL : public cObj
 	friend class cQuery;
 	public:
 		cMySQL();
-		cMySQL(string&host,string&user,string&pass,string&data);
+		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
 		~cMySQL();
 		void Init();
-		bool Connect(string &host, string &user, string &passwd, string &db);
+		bool Connect(string &host, string &user, string &passwd, string &db, string &charset);
 		string GetDBName()
 		{
 			return mDBName;
