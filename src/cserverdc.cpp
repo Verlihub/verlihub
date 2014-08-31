@@ -1434,7 +1434,24 @@ int cServerDC::WhoCC(string CC, string &dest, const string&separator)
 	return cnt;
 }
 
-// todo: add whocity function, like one above
+int cServerDC::WhoCity(string city, string &dest, const string &separator)
+{
+	cUserCollection::iterator i;
+	int cnt = 0;
+	cConnDC *conn;
+
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && conn->mCity == city) {
+			dest += separator;
+			dest += (*i)->mNick;
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
 
 int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string&separator, bool exact)
 {

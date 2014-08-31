@@ -513,6 +513,9 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int WhoCC(string CC, string &dest, const string&separator);
 
+		// returns list of users that belongs to specific city
+		int WhoCity(string city, string &dest, const string &separator);
+
 		/**
 		* Return the list of the users that belongs to the specified IP range.
 		* @param ip_min Min IP range or the exact IP address.

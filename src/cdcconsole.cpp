@@ -1751,58 +1751,79 @@ bool cDCConsole::cfCmd::operator()()
 
 bool cDCConsole::cfWho::operator()()
 {
-	enum { eAC_IP, eAC_RANGE, eAC_CC};
-	static const char * actionnames [] = { "ip" , "range", "subnet", "cc" };
-	static const int actionids [] = { eAC_IP, eAC_RANGE, eAC_RANGE, eAC_CC};
-
-	if(this->mConn->mpUser->mClass < eUC_OPERATOR)
+	if (this->mConn->mpUser->mClass < eUC_OPERATOR)
 		return false;
 
+	enum {eAC_IP, eAC_RANGE, eAC_CC, eAC_CITY};
+	static const char * actionnames [] = {"ip", "range", "subnet", "cc", "city"};
+	static const int actionids [] = {eAC_IP, eAC_RANGE, eAC_RANGE, eAC_CC, eAC_CITY};
 	string tmp;
-	mIdRex->Extract(2,mIdStr,tmp);
-	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames)/sizeof(char*));
-	if(Action < 0)
+	mIdRex->Extract(2, mIdStr, tmp);
+	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+
+	if (Action < 0)
 		return false;
 
 	string separator("\r\n\t");
 	string userlist, actionName;
-
-	mParRex->Extract(0, mParStr,tmp);
+	mParRex->Extract(0, mParStr, tmp);
 	unsigned long ip_min, ip_max;
 	int cnt = 0;
 
-	switch(Action) {
+	switch (Action) {
 		case eAC_IP:
 			ip_min = cBanList::Ip2Num(tmp);
 			ip_max = ip_min;
 			cnt = mS->WhoIP(ip_min, ip_max, userlist, separator, true);
-			if(cnt)
-				(*mOS) << autosprintf(ngettext("Found %d user with IP %s:", "Found %d users with IP %s:", cnt), cnt, tmp.c_str());
-		break;
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with IP %s", "Found %d users with IP %s", cnt), cnt, tmp.c_str());
+
+			break;
 		case eAC_RANGE:
-			if(! cDCConsole::GetIPRange(tmp, ip_min, ip_max) ) return false;
+			if (!cDCConsole::GetIPRange(tmp, ip_min, ip_max))
+				return false;
+
 			cnt = mS->WhoIP(ip_min, ip_max, userlist, separator, false);
-			if(cnt)
-				(*mOS) << autosprintf(ngettext("Found %d user with range %s:", "Found %d users with range %s:", cnt), cnt, tmp.c_str());
-		break;
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with range %s", "Found %d users with range %s", cnt), cnt, tmp.c_str());
+
+			break;
 		case eAC_CC:
-			if(tmp.size() != 2) {
+			if (tmp.size() != 2) {
 				(*mOS) << _("Country code must be 2 characters long, for example US.");
 				return false;
 			}
 
 			tmp = toUpper(tmp);
 			cnt = mS->WhoCC(tmp, userlist, separator);
-			if(cnt)
-				(*mOS) << autosprintf(ngettext("Found %d user with country code %s:", "Found %d users with country code %s:", cnt), cnt, tmp.c_str());
-		break;
-		default: return false;
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with country code %s", "Found %d users with country code %s", cnt), cnt, tmp.c_str());
+
+			break;
+		case eAC_CITY:
+			if (!tmp.size()) {
+				(*mOS) << _("City name can't be empty.");
+				return false;
+			}
+
+			cnt = mS->WhoCity(tmp, userlist, separator);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with city %s", "Found %d users with city %s", cnt), cnt, tmp.c_str());
+
+			break;
+		default:
+			return false;
 	}
 
-	if(cnt)
-		(*mOS) << userlist;
+	if (cnt)
+		(*mOS) << ':' << userlist;
 	else
 		(*mOS) << _("No users found.");
+
 	return true;
 }
 
