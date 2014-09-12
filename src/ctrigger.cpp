@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -79,10 +80,16 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	int uclass = 0;
 
 	if (!timeTrigger) { // check if it has been triggered by timeout, if not, check the connection and the user rights
-		if (!conn) return 0;
-		if (!conn->mpUser) return 0;
+		if (!conn)
+			return 0;
+
+		if (!conn->mpUser)
+			return 0;
+
 		uclass = conn->mpUser->mClass;
-		if ((uclass < this->mMinClass) || (uclass > this->mMaxClass)) return 0;
+
+		if ((uclass < this->mMinClass) || (uclass > this->mMaxClass))
+			return 0;
 	}
 
 	string buf, filename, sender;
@@ -95,28 +102,39 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	cmd_line >> par1;
 	end1 = cmd_line.str();
 	sender = server.mC.hub_security; // replace sender
-	if (mSendAs.size()) sender = mSendAs;
+
+	if (mSendAs.size())
+		sender = mSendAs;
+
 	ReplaceVarInString(sender, "PAR1", sender, par1);
-	if (!timeTrigger) ReplaceVarInString(sender, "NICK", sender, conn->mpUser->mNick);
+
+	if (!timeTrigger)
+		ReplaceVarInString(sender, "NICK", sender, conn->mpUser->mNick);
 
 	if (mFlags & eTF_DB) {
 		buf = mDefinition;
 	} else {
 		ReplaceVarInString(mDefinition, "CFG", filename, server.mConfigBaseDir);
-		if (!timeTrigger) ReplaceVarInString(filename, "CC", filename, conn->mCC);
-		if (!LoadFileInString(filename, buf)) return 0;
+
+		if (!timeTrigger)
+			ReplaceVarInString(filename, "CC", filename, conn->mCC);
+
+		if (!LoadFileInString(filename, buf))
+			return 0;
 	}
 
 	if (mFlags & eTF_VARS) {
 		cTime theTime(server.mTime);
 		time_t curr_time;
 		time(&curr_time);
+
 		#ifdef _WIN32
-		struct tm *lt = localtime(&curr_time); // todo: do we really need reentrant version?
+			struct tm *lt = localtime(&curr_time); // todo: do we really need reentrant version?
 		#else
-		struct tm *lt = new tm();
-		localtime_r(&curr_time, lt);
+			struct tm *lt = new tm();
+			localtime_r(&curr_time, lt);
 		#endif
+
 		theTime -= server.mStartTime;
 		ReplaceVarInString(buf, "PARALL", buf, parall);
 		ReplaceVarInString(buf, "PAR1", buf, par1);
@@ -131,24 +149,34 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);
 			ReplaceVarInString(buf, "CLASS", buf, uclass);
 
-			if (uclass == eUC_PINGER) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Pinger"));
-			} else if (uclass == eUC_NORMUSER) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Guest"));
-			} else if (uclass == eUC_REGUSER) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Registered"));
-			} else if (uclass == eUC_VIPUSER) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("VIP"));
-			} else if (uclass == eUC_OPERATOR) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Operator"));
-			} else if (uclass == eUC_CHEEF) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Cheef"));
-			} else if (uclass == eUC_ADMIN) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Administator"));
-			} else if (uclass == eUC_MASTER) {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Master"));
-			} else {
-				ReplaceVarInString(buf, "CLASSNAME", buf, _("Unknown"));
+			switch (uclass) {
+				case eUC_PINGER:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Pinger"));
+					break;
+				case eUC_NORMUSER:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Guest"));
+					break;
+				case eUC_REGUSER:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Registered"));
+					break;
+				case eUC_VIPUSER:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("VIP"));
+					break;
+				case eUC_OPERATOR:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Operator"));
+					break;
+				case eUC_CHEEF:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Cheef"));
+					break;
+				case eUC_ADMIN:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Administator"));
+					break;
+				case eUC_MASTER:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Master"));
+					break;
+				default:
+					ReplaceVarInString(buf, "CLASSNAME", buf, _("Unknown"));
+					break;
 			}
 
 			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare, false));
@@ -167,6 +195,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "VERSION_DATE", buf, __CURR_DATE_TIME__);
 		ReplaceVarInString(buf, "TOTAL_SHARE", buf, convertByte(server.mTotalShare, false));
 		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak, false)); // peak total share
+
 		char tmf[3];
 		sprintf(tmf, "%02d", lt->tm_sec);
 		ReplaceVarInString(buf, "ss", buf, tmf);
@@ -185,23 +214,30 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		#endif
 	}
 
-	if (timeTrigger) {
-		server.DCPublicToAll(sender, buf);
-		return 1;
-	}
+	if (mFlags & eTF_SENDTOALL) { // to all
+		if (mFlags & eTF_SENDPM) { // pm
+			string start, end;
+			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf);
 
-	// @dreiska
-	if (mFlags & eTF_SENDTOALL) {
-		if (!(mFlags & eTF_SENDPM)) {
-			server.DCPublicToAll(sender, buf);
-		} else {
-			//server.DCPrivateToAll(sender, buf);
+			if (mFlags & eTF_VARS) { // use vars
+				server.SendToAllWithNickVars(start, end, this->mMinClass, this->mMaxClass);
+			} else { // no vars
+				server.SendToAllWithNick(start, end, this->mMinClass, this->mMaxClass);
+			}
+		} else { // mc
+			if (mFlags & eTF_VARS) { // use vars
+				string msg;
+				server.mP.Create_Chat(msg, sender, buf);
+				server.SendToAllNoNickVars(msg, this->mMinClass, this->mMaxClass);
+			} else { // no vars
+				server.DCPublicToAll(sender, buf, this->mMinClass, this->mMaxClass);
+			}
 		}
-	} else {
-		if (!(mFlags & eTF_SENDPM)) {
-			server.DCPublic(sender, buf, conn);
-		} else {
+	} else if (!timeTrigger) { // to single
+		if (mFlags & eTF_SENDPM) { // pm
 			server.DCPrivateHS(buf, conn, &sender);
+		} else { // mc
+			server.DCPublic(sender, buf, conn);
 		}
 	}
 

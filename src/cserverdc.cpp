@@ -279,7 +279,7 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 		if (!txt.empty()) {
 			static string msg;
 			msg.erase();
-			cDCProto::Create_Chat(msg, from, txt);
+			mP.Create_Chat(msg, from, txt);
 			conn->Send(msg, true);
 		}
 
@@ -293,32 +293,33 @@ int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_clas
 {
 	static string msg;
 	msg.erase();
-	cDCProto::Create_Chat(msg, from, txt);
-	//TODO: Use constant instead of num
-	if(min_class !=0 && max_class != 10)
-		mUserList.SendToAllWithClass(msg, min_class, max_class, true, true);
+	mP.Create_Chat(msg, from, txt);
+
+	if (min_class != eUC_NORMUSER || max_class != eUC_MASTER)
+		mUserList.SendToAllWithClass(msg, min_class, max_class, false, true);
 	else
 		mUserList.SendToAll(msg, true, true);
+
 	return 1;
 }
 
 int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 {
-	return DCPublic( mC.hub_security, text,  conn );
+	return DCPublic(mC.hub_security, text, conn);
 }
 
 void cServerDC::DCPublicHSToAll(const string &text)
 {
 	static string msg;
 	msg.erase();
-	cDCProto::Create_Chat(msg, mC.hub_security , text);
+	mP.Create_Chat(msg, mC.hub_security, text);
 	mUserList.SendToAll(msg, true, true);
 }
 
-int cServerDC::DCPrivateHS(const string & text, cConnDC * conn, string *from)
+int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from)
 {
 	string msg;
-	mP.Create_PM(msg, mC.hub_security, conn->mpUser->mNick, (from!=NULL)?(*from):(mC.hub_security), text);
+	mP.Create_PM(msg, (from != NULL) ? (*from) : (mC.hub_security), conn->mpUser->mNick, (from != NULL) ? (*from) : (mC.hub_security), text);
 	return conn->Send(msg, true);
 }
 
@@ -528,6 +529,36 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 			// finalize
 			str = start + conn->mpUser->mNick + tend + "|";
 			conn->Send(str, false);
+			counter++;
+		}
+	}
+
+	return counter;
+}
+
+int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
+{
+	string tmsg;
+	cConnDC *conn;
+	tCLIt i;
+	int counter = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC *)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM) {
+			// replace variables
+			tmsg = msg;
+			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick);
+			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
+			ReplaceVarInString(tmsg, "CC", tmsg, conn->mCC);
+			ReplaceVarInString(tmsg, "CN", tmsg, conn->mCN);
+			ReplaceVarInString(tmsg, "CITY", tmsg, conn->mCity);
+			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
+			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
+
+			// finalize
+			conn->Send(tmsg);
 			counter++;
 		}
 	}

@@ -147,15 +147,22 @@ bool cTriggers::CompareDataKey(const cTrigger &D1, const cTrigger &D2)
 
 bool cTriggers::DoCommand(cConnDC *conn, const string &cmd, istringstream &cmd_line, cServerDC &server)
 {
-	cTrigger * curTrigger;
-	for(int i = 0; i < Size(); ++i) {
+	cTrigger *curTrigger;
+
+	for (int i = 0; i < Size(); ++i) {
 		curTrigger = (*this)[i];
-		if(curTrigger->mMinClass <= conn->mpUser->mClass && cmd == curTrigger->mCommand) {
-			if(Log(3))
+
+		if (curTrigger->mMinClass <= conn->mpUser->mClass && cmd == curTrigger->mCommand) {
+			if (Log(3))
 				LogStream() << "trigger found " << cmd << endl;
-			return curTrigger->DoIt (cmd_line, conn, server);
+
+			if (conn->mpUser->mClass >= eUC_OPERATOR || curTrigger->mSeconds == 0) // dont allow regular users to execute timed triggers by hand
+				return curTrigger->DoIt (cmd_line, conn, server);
+			else
+				return false;
 		}
 	}
+
 	return false;
 }
 
@@ -240,7 +247,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " 8\t\t\t- Trigger on help command\r\n";
 	help += " 16\t\t\t- The definition is the text\r\n";
 	help += " 32\t\t\t- Allow replacing of variables\r\n";
-	help += " 64\t\t\t- Message is sent to everyone in main chat\r\n\r\n";
+	help += " 64\t\t\t- Message is sent to everyone in class range\r\n\r\n";
 	help += " Remember to make the sum of selected above flags.\r\n\r\n";
 
 	help += " Available variables:\r\n\r\n";
@@ -249,7 +256,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " %[END1]\t\t- Last trigger parameter, separated by space\r\n";
 	help += " %[CC]\t\t\t- User country code\r\n";
 	help += " %[CN]\t\t\t- User country name\r\n";
-	help += " %[CITY]\t\t- User city\r\n";
+	help += " %[CITY]\t\t\t- User city\r\n";
 	help += " %[IP]\t\t\t- User IP\r\n";
 	help += " %[HOST]\t\t- User host\r\n";
 	help += " %[NICK]\t\t\t- User nick\r\n";

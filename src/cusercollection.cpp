@@ -167,32 +167,54 @@ string &cCompositeUserCollection::GetIPList()
  */
 void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
 {
-	if(AddPipe) Data.append("|");
+	if (AddPipe)
+		Data.append("|");
 
-	mSendAllCache.append(Data.data(),Data.size());
+	mSendAllCache.append(Data.data(), Data.size());
+
 	if (!UseCache) {
-		//if(Log(4))CoutAllKeys();
-		if(Log(4))LogStream() << "SendAll BEGIN" << endl;
-		for_each(this->begin(),this->end(),ufSend(mSendAllCache));
-		if(Log(4))LogStream() << "SendAll END" << endl;
-		mSendAllCache.erase(0,mSendAllCache.size());
+		//if (Log(4))
+			//CoutAllKeys();
+
+		if (Log(4))
+			LogStream() << "SendAll BEGIN" << endl;
+
+		for_each(this->begin(), this->end(), ufSend(mSendAllCache));
+
+		if (Log(4))
+			LogStream() << "SendAll END" << endl;
+
+		mSendAllCache.erase(0, mSendAllCache.size());
 	}
-	if(AddPipe) Data.erase(Data.size()-1,1);
+
+	if (AddPipe)
+		Data.erase(Data.size() - 1, 1);
 }
 
 void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe)
 {
-	if(AddPipe) Data.append("|");
+	if (AddPipe)
+		Data.append("|");
 
-	mSendAllCache.append(Data.data(),Data.size());
+	mSendAllCache.append(Data.data(), Data.size()); // todo: using cache here breaks the min and max class option
+
 	if (!UseCache) {
-		//if(Log(4))CoutAllKeys();
-		if(Log(4))LogStream() << "SendAll BEGIN" << endl;
-		for_each(this->begin(),this->end(),ufSendWithClass(mSendAllCache, min_class, max_class));
-		if(Log(4))LogStream() << "SendAll END" << endl;
-		mSendAllCache.erase(0,mSendAllCache.size());
+		//if (Log(4))
+			//CoutAllKeys();
+
+		if (Log(4))
+			LogStream() << "SendAll BEGIN" << endl;
+
+		for_each(this->begin(), this->end(), ufSendWithClass(mSendAllCache, min_class, max_class));
+
+		if (Log(4))
+			LogStream() << "SendAll END" << endl;
+
+		mSendAllCache.erase(0, mSendAllCache.size());
 	}
-	if(AddPipe) Data.erase(Data.size()-1,1);
+
+	if (AddPipe)
+		Data.erase(Data.size() - 1, 1);
 }
 
 void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)

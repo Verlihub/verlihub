@@ -344,7 +344,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param max_class Maximum class (default to 10).
 		* @return Always one.
 		*/
-		int DCPublicToAll(const string &from, const string &txt, int min_class=1, int max_class=10);
+		int DCPublicToAll(const string &from, const string &txt, int min_class = 0, int max_class = 10);
 
 		/**
 		* Remove a robot from lists.
@@ -436,11 +436,11 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int SendToAllWithNick(const string &start,const string &end, int cm,int cM);
 
-		/*
-			Replace user specific variables and send data to all users within specified class range.
-		*/
-
+		// replace user specific variables and send data to all users within specified class range
 		int SendToAllWithNickVars(const string &start, const string &end, int cm, int cM);
+
+		// replace user specific variables and send data to all users within specified class range
+		int SendToAllNoNickVars(const string &msg, int cm, int cM);
 
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range and country.
