@@ -42,7 +42,7 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=
 	cProtoCommand(string("$Version ")),
 	cProtoCommand(string("$GetNickList")), //
 	cProtoCommand(string("$ConnectToMe ")), // check: ip, nick
-	cProtoCommand(string("$MultiConnectToMe ")),  // not implemented
+	cProtoCommand(string("$MultiConnectToMe ")), // same as above
 	cProtoCommand(string("$RevConnectToMe ")), // check: nick, other_nick
 	cProtoCommand(string("$To: ")), // check: nick, other_nick
 	cProtoCommand(string("$MCTo: ")), // check nick and othernick
@@ -125,6 +125,7 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo('?',eCH_PS_QUERY, eCH_PS_SEARCHLIMITS, eCH_PS_SEARCHPATTERN,0)) mError =1;
 			break;
 		case eDC_CONNECTTOME:
+		case eDC_MCONNECTTOME:
 			if(!SplitOnTwo(mKWSize,' ', eCH_CM_NICK, eCH_CM_ACTIVE)) mError =1;
 			if(!SplitOnTwo(':', eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT)) mError =1;
 			break;
@@ -159,8 +160,6 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo( '$', eCH_MI_SPEED, eCH_MI_SPEED, eCH_MI_MAIL)) mError =1;
 			if(!SplitOnTwo( '$', eCH_MI_MAIL, eCH_MI_MAIL, eCH_MI_SIZE)) mError =1;
 			if(!ChunkRedRight(eCH_MI_SIZE,1)) mError =1;
-			break;
-		case eDC_MCONNECTTOME: // not implemented
 			break;
 		case eDC_OPFORCEMOVE:
 			 //$OpForceMove $Who:<victimNick>$Where:<newIp>$Msg:<reasonMsg>

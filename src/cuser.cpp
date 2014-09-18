@@ -23,6 +23,8 @@
 #include "cdcproto.h"
 #include "cchatconsole.h"
 #include "cserverdc.h"
+#include "cban.h"
+#include "cbanlist.h"
 #include "i18n.h"
 #include "stringutils.h"
 #include <sys/time.h>
@@ -396,7 +398,7 @@ bool cUser::Can(unsigned Right, long now, int OtherClass)
 
 bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
 {
-	if (mxServer && mxConn && limit && period && (mClass <= mxServer->mC.max_class_int_flood)) {
+	if (mxServer && mxConn && limit && period && (mClass <= mxServer->mC.max_class_proto_flood)) {
 		cTime now;
 
 		if (!mProtoFloodCounts[type]) {
@@ -451,7 +453,19 @@ bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
 				if (mxServer->mC.proto_flood_report)
 					mxServer->ReportUserToOpchat(mxConn, omsg);
 
-				mxServer->ConnCloseMsg(mxConn, omsg, 500, eCR_SYNTAX); // todo: add some kind of temporary ban
+				if (mxServer->mC.proto_flood_tban_time) { // add temporary ban
+					cBan pfban(mxServer);
+					cKick pfkick;
+					pfkick.mOp = mxServer->mC.hub_security;
+					pfkick.mIP = mxConn->AddrIP();
+					pfkick.mNick = mNick;
+					pfkick.mTime = now.Sec();
+					pfkick.mReason = omsg;
+					mxServer->mBanList->NewBan(pfban, pfkick, mxServer->mC.proto_flood_tban_time, eBF_NICKIP);
+					mxServer->mBanList->AddBan(pfban);
+				}
+
+				mxServer->ConnCloseMsg(mxConn, omsg, 500, eCR_SYNTAX);
 				return true;
 			}
 		}

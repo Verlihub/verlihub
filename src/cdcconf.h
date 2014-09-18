@@ -173,8 +173,9 @@ public:
 	int int_flood_mcto_limit;
 
 	// protocol flood
-	int max_class_int_flood;
+	int max_class_proto_flood;
 	bool proto_flood_report;
+	unsigned proto_flood_tban_time;
 	unsigned int int_flood_myinfo_period;
 	unsigned int int_flood_myinfo_limit;
 	unsigned int int_flood_search_period;

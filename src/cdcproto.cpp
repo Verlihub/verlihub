@@ -68,29 +68,30 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 {
 	cMessageDC *msg = (cMessageDC *)Msg;
 	cConnDC *conn = (cConnDC *)Conn;
-	//@todo tMsgAct action = this->mS->Filter(tDCMsg(msg->mType),conn);
-	if(strlen(Msg->mStr.data()) < Msg->mStr.size())
-	{
-		if (mS->mC.nullchars_report) mS->ReportUserToOpchat(conn, _("Probably attempt of an attack with NULL characters")); // Msg->mStr
+	//@todo tMsgAct action = this->mS->Filter(tDCMsg(msg->mType), conn);
+
+	if (strlen(Msg->mStr.data()) < Msg->mStr.size()) {
+		if (mS->mC.nullchars_report)
+			mS->ReportUserToOpchat(conn, _("Probably attempt of an attack with NULL characters")); // Msg->mStr
+
 		conn->CloseNow();
 		return -1;
 	}
 
 	#ifndef WITHOUT_PLUGINS
-	if (msg->mType != eMSG_UNPARSED) {
-		if (conn->mpUser != NULL) {
-			if (!mS->mCallBacks.mOnParsedMsgAny.CallAll(conn, msg)) return 1;
-		} else {
-			if (!mS->mCallBacks.mOnParsedMsgAnyEx.CallAll(conn, msg)) {
-				conn->CloseNow();
-				return -1;
+		if (msg->mType != eMSG_UNPARSED) {
+			if (conn->mpUser != NULL) {
+				if (!mS->mCallBacks.mOnParsedMsgAny.CallAll(conn, msg)) return 1;
+			} else {
+				if (!mS->mCallBacks.mOnParsedMsgAnyEx.CallAll(conn, msg)) {
+					conn->CloseNow();
+					return -1;
+				}
 			}
 		}
-	}
 	#endif
 
-	switch (msg->mType)
-	{
+	switch (msg->mType) {
 		case eDC_UNKNOWN:
 			this->DCU_Unknown(msg, conn);
 			return 1;
@@ -124,10 +125,9 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 			this->DC_UserIP(msg, conn);
 			break;
 		case eDC_CONNECTTOME:
-			this->DC_ConnectToMe(msg, conn);
-			break;
 		case eDC_MCONNECTTOME:
-			this->DC_MultiConnectToMe(msg, conn);
+			//this->DC_MultiConnectToMe(msg, conn);
+			this->DC_ConnectToMe(msg, conn);
 			break;
 		case eDC_RCONNECTTOME:
 			this->DC_RevConnectToMe(msg, conn);
@@ -164,9 +164,9 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 			this->DCE_Supports(msg, conn);
 			break;
 		case eDCO_BAN:
-		//case eDCO_TBAN:
-			//mP.DCO_TempBan(msg, conn);
-			//break;
+		case eDCO_TBAN:
+			this->DCO_TempBan(msg, conn);
+			break;
 		case eDCO_UNBAN:
 			this->DCO_UnBan(msg, conn);
 			break;
@@ -1669,7 +1669,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MultiConnectToMe(cMessageDC *, cConnDC *)
 {
-	// todo
+	// todo: for now its same as connecttome
 	return 0;
 }
 
@@ -2251,9 +2251,12 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
+	// todo: i think ban is not supported here, user will get bad syntax
+
 	if (msg->SplitChunks()) { // bad syntax
 		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": TempBan";
+		omsg += ": ";
+		omsg += ((msg->mType == eDCO_TBAN) ? "TempBan" : "Ban");
 
 		if (conn->Log(2))
 			conn->LogStream() << omsg << endl;
@@ -2413,8 +2416,7 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 
 	if (msg->SplitChunks()) { // bad syntax
 		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": ";
-		omsg += ((msg->mType == eDCO_UNBAN) ? "Unban" : "Ban");
+		omsg += ": UnBan";
 
 		if (conn->Log(2))
 			conn->LogStream() << omsg << endl;
@@ -2436,8 +2438,9 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
 		return -1;
 
-	string ip, nick, host;
+	string ip, nick/*, host*/;
 	ostringstream os;
+
 	if(msg->mType == eDCO_UNBAN)
 		ip = msg->ChunkString(eCH_1_PARAM);
 

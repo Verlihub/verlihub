@@ -38,8 +38,8 @@ cDCConf::cDCConf( cServerDC &serv ): mS(serv)
 	max_length[eDC_MYINFO]=128;
 	max_length[eDC_GETINFO] = 10+max_nick;
 	max_length[eDC_USERIP] = 11 + max_nick;
-	max_length[eDC_CONNECTTOME]=32*2*max_nick;
-	max_length[eDC_MCONNECTTOME]=64;
+	max_length[eDC_CONNECTTOME] = 32 * 2 * max_nick;
+	max_length[eDC_MCONNECTTOME] = 32 * 2 * max_nick;
 	max_length[eDC_RCONNECTTOME]=64;
 	max_length[eDC_TO]=2048;
 	max_length[eDC_MCTO] = 2048;
@@ -178,8 +178,9 @@ void cDCConf::AddVars()
 	Add("int_flood_mcto_limit", int_flood_mcto_limit, 5);
 
 	// protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
+	Add("max_class_proto_flood", max_class_proto_flood, 2);
 	Add("proto_flood_report", proto_flood_report, true);
-	Add("max_class_int_flood", max_class_int_flood, 2);
+	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // 30 minutes
 	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
 	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 10);
 	Add("int_flood_search_period", int_flood_search_period, 60);
