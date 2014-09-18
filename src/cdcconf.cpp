@@ -167,20 +167,20 @@ void cDCConf::AddVars()
 	// End mainchat messages configuration
 
 	// Private message configuration
-	Add("max_flood_counter_pm",max_flood_counter_pm,5);
-	Add("int_flood_pm_period", int_flood_pm_period, 5);
-	Add("int_flood_pm_limit", int_flood_pm_limit, 5);
-	// End private message configuration
-
-	// private mainchat message configuration
+	Add("max_flood_counter_pm", max_flood_counter_pm, 5);
 	Add("max_flood_counter_mcto", max_flood_counter_mcto, 5);
-	Add("int_flood_mcto_period", int_flood_mcto_period, 5);
-	Add("int_flood_mcto_limit", int_flood_mcto_limit, 5);
+	// End private message configuration
 
 	// protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
 	Add("max_class_proto_flood", max_class_proto_flood, 2);
 	Add("proto_flood_report", proto_flood_report, true);
 	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // 30 minutes
+	Add("int_flood_chat_period", int_flood_chat_period, 20);
+	Add("int_flood_chat_limit", int_flood_chat_limit, 15);
+	Add("int_flood_mcto_period", int_flood_mcto_period, 20);
+	Add("int_flood_mcto_limit", int_flood_mcto_limit, 15);
+	Add("int_flood_to_period", int_flood_to_period, 20);
+	Add("int_flood_to_limit", int_flood_to_limit, 15);
 	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
 	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 10);
 	Add("int_flood_search_period", int_flood_search_period, 60);

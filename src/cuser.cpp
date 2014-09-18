@@ -69,9 +69,7 @@ void cUserBase::Send(string &data, bool, bool)
 
 cUser::cUser() :
 	mShare(0),
-	mSearchNumber(0),
-	mFloodPM(0.00,30.,10,user_global_time.Get()),
-	mFloodMCTo(0.00, 30., 10, user_global_time.Get())
+	mSearchNumber(0)
 {
 	mxConn = NULL;
 	mxServer = NULL;
@@ -105,9 +103,7 @@ cUser::cUser(const string &nick) :
 	mxServer(NULL),
 	mShare(0),
 	mSearchNumber(0),
-	mHideKicksForClass(eUC_NORMUSER),
-	mFloodPM(0.00,30.,30,user_global_time.Get()),
-	mFloodMCTo(0.00, 30., 30, user_global_time.Get())
+	mHideKicksForClass(eUC_NORMUSER)
 {
 	SetClassName("cUser");
 	IsPassive = false;
@@ -396,7 +392,7 @@ bool cUser::Can(unsigned Right, long now, int OtherClass)
 	return true;
 }
 
-bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
+bool cUser::CheckProtoFlood(int type, unsigned long period, unsigned int limit)
 {
 	if (mxServer && mxConn && limit && period && (mClass <= mxServer->mC.max_class_proto_flood)) {
 		cTime now;
@@ -405,16 +401,25 @@ bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
 			mProtoFloodCounts[type] = 1;
 			mProtoFloodTimes[type] = now;
 		} else {
-			cTime dif = now - mProtoFloodTimes[type];
+			long dif = now.Sec() - mProtoFloodTimes[type].Sec();
 
-			if (dif.Sec() > period) {
+			if (dif > period) {
 				mProtoFloodCounts[type] = 1;
 				mProtoFloodTimes[type] = now;
-			} else if ((mProtoFloodCounts[type]++ >= limit) && (dif.Sec() <= period)) {
+			} else if ((mProtoFloodCounts[type]++ >= limit) && (dif <= period)) {
 				string omsg = _("Protocol flood detected");
 				omsg += ": ";
 
 				switch (type) {
+					case ePF_CHAT:
+						omsg += _("Chat");
+						break;
+					case ePF_PRIV:
+						omsg += "To";
+						break;
+					case ePF_MCTO:
+						omsg += "MCTo";
+						break;
 					case ePF_MYINFO:
 						omsg += "MyINFO";
 						break;
@@ -447,11 +452,14 @@ bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
 						break;
 				}
 
+				ostringstream info;
+				info << ' ' << mProtoFloodCounts[type] << ':' << dif << ':' << period;
+
 				if (mxConn->Log(1))
-					mxConn->LogStream() << omsg << endl;
+					mxConn->LogStream() << omsg << info.str() << endl;
 
 				if (mxServer->mC.proto_flood_report)
-					mxServer->ReportUserToOpchat(mxConn, omsg);
+					mxServer->ReportUserToOpchat(mxConn, omsg + info.str());
 
 				if (mxServer->mC.proto_flood_tban_time) { // add temporary ban
 					cBan pfban(mxServer);

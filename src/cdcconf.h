@@ -167,32 +167,34 @@ public:
 	int int_search_vip;
 	int int_search_op;
 	int int_login;
-	int int_flood_pm_period;
-	int int_flood_pm_limit;
-	int int_flood_mcto_period;
-	int int_flood_mcto_limit;
 
 	// protocol flood
 	int max_class_proto_flood;
 	bool proto_flood_report;
-	unsigned proto_flood_tban_time;
-	unsigned int int_flood_myinfo_period;
+	unsigned long proto_flood_tban_time;
+	unsigned long int_flood_chat_period;
+	unsigned int int_flood_chat_limit;
+	unsigned long int_flood_mcto_period;
+	unsigned int int_flood_mcto_limit;
+	unsigned long int_flood_to_period;
+	unsigned int int_flood_to_limit;
+	unsigned long int_flood_myinfo_period;
 	unsigned int int_flood_myinfo_limit;
-	unsigned int int_flood_search_period;
+	unsigned long int_flood_search_period;
 	unsigned int int_flood_search_limit;
-	unsigned int int_flood_sr_period;
+	unsigned long int_flood_sr_period;
 	unsigned int int_flood_sr_limit;
-	unsigned int int_flood_ctm_period;
+	unsigned long int_flood_ctm_period;
 	unsigned int int_flood_ctm_limit;
-	unsigned int int_flood_rctm_period;
+	unsigned long int_flood_rctm_period;
 	unsigned int int_flood_rctm_limit;
-	unsigned int int_flood_nicklist_period;
+	unsigned long int_flood_nicklist_period;
 	unsigned int int_flood_nicklist_limit;
-	unsigned int int_flood_getinfo_period;
+	unsigned long int_flood_getinfo_period;
 	unsigned int int_flood_getinfo_limit;
-	unsigned int int_flood_gettopic_period;
+	unsigned long int_flood_gettopic_period;
 	unsigned int int_flood_gettopic_limit;
-	unsigned int int_flood_unknown_period;
+	unsigned long int_flood_unknown_period;
 	unsigned int int_flood_unknown_limit;
 
 	int int_chat_ms;

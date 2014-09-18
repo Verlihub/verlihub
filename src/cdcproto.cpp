@@ -353,8 +353,6 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 	try {
 		cUser *NewUser = new cUser(nick);
-		NewUser->mFloodPM.SetParams(0.0, 1. * mS->mC.int_flood_pm_period, mS->mC.int_flood_pm_limit);
-		NewUser->mFloodMCTo.SetParams(0.0, 1. * mS->mC.int_flood_mcto_period, mS->mC.int_flood_mcto_limit);
 
 		if(!conn->SetUser(NewUser)) {
 			conn->CloseNow();
@@ -1140,7 +1138,8 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	// todo: use new protocol flood detection instead
+	if (conn->mpUser->CheckProtoFlood(ePF_PRIV, mS->mC.int_flood_to_period, mS->mC.int_flood_to_limit)) // protocol flood
+		return -1;
 
 	if(!conn->mpUser->mInList) return -2;
 	if(!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) return -4;
@@ -1152,21 +1151,6 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		if(conn->Log(2))
 			conn->LogStream() << "Pretend to be someone else in PM (" << msg->ChunkString(eCH_PM_FROM) << ")." <<endl;
 		conn->CloseNow();
-		return -1;
-	}
-	cTime now;
-	now.Get();
-	int fl = 0;
-	fl = -conn->mpUser->mFloodPM.Check(now);
-	if((conn->mpUser->mClass < eUC_OPERATOR) && fl) {
-		if(conn->Log(1)) conn->LogStream() << "Floods PM (" << msg->ChunkString(eCH_PM_FROM) << ")." <<endl;
-		if(fl >= 3) {
-			mS->DCPrivateHS(_("Flooding PM"), conn);
-			ostringstream reportMessage;
-			reportMessage << autosprintf(_("*** PM Flood: %s"), msg->ChunkString(eCH_PM_MSG).c_str());
-			mS->ReportUserToOpchat(conn, reportMessage.str());
-			conn->CloseNow();
-		}
 		return -1;
 	}
 
@@ -1248,7 +1232,8 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	// todo: use new protocol flood detection instead
+	if (conn->mpUser->CheckProtoFlood(ePF_MCTO, mS->mC.int_flood_mcto_period, mS->mC.int_flood_mcto_limit)) // protocol flood
+		return -1;
 
 	if (!conn->mpUser->mInList) return -2;
 	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) return -4;
@@ -1257,25 +1242,6 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if ((msg->ChunkString(eCH_MCTO_FROM) != conn->mpUser->mNick) || (msg->ChunkString(eCH_MCTO_NICK) != conn->mpUser->mNick)) {
 		if (conn->Log(2)) conn->LogStream() << "User pretend to be someone else in MCTo: " << msg->ChunkString(eCH_MCTO_FROM) << endl;
 		conn->CloseNow();
-		return -1;
-	}
-
-	cTime now;
-	now.Get();
-	int fl = 0;
-	fl = -conn->mpUser->mFloodMCTo.Check(now);
-
-	if ((conn->mpUser->mClass < eUC_OPERATOR) && fl) {
-		if (conn->Log(1)) conn->LogStream() << "MCTo flood: " << msg->ChunkString(eCH_MCTO_FROM) << endl;
-
-		if (fl >= 3) {
-			mS->DCPrivateHS(_("MCTo flood."), conn);
-			ostringstream reportMessage;
-			reportMessage << autosprintf(_("*** MCTo flood: %s"), msg->ChunkString(eCH_MCTO_MSG).c_str());
-			mS->ReportUserToOpchat(conn, reportMessage.str());
-			conn->CloseNow();
-		}
-
 		return -1;
 	}
 
@@ -1382,7 +1348,8 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	// todo: use new protocol flood detection instead
+	if (conn->mpUser->CheckProtoFlood(ePF_CHAT, mS->mC.int_flood_chat_period, mS->mC.int_flood_chat_limit)) // protocol flood
+		return -1;
 
 	if (!conn->mpUser->mInList) return -3;
 	stringstream omsg;

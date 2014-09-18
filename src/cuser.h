@@ -93,6 +93,9 @@ namespace nVerliHub {
 
 		typedef enum
 		{
+			ePF_CHAT,
+			ePF_PRIV,
+			ePF_MCTO,
 			ePF_MYINFO,
 			ePF_SEARCH,
 			ePF_SR,
@@ -198,7 +201,7 @@ public:
  	int mFloodCounters[nEnums::eFC_LAST_FC];
 
 	// protocol flood
-	int mProtoFloodCounts[nEnums::ePF_LAST];
+	unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
 	cTime mProtoFloodTimes[nEnums::ePF_LAST];
 
 	/** 0 means perm ban, otherwiese in seconds */
@@ -242,10 +245,6 @@ public:
 	int mSearchNumber;
 	/* The class over which the users are able to see kick messages*/
 	int mHideKicksForClass;
-	/* PM flood detector */
-	cFreqLimiter mFloodPM;
-	// MCTo flood detector
-	cFreqLimiter mFloodMCTo;
 
 	protected: // Protected attributes
 
@@ -259,7 +258,7 @@ public:
 		return true if the user has given rights
 	*/
 	bool Can(unsigned Right, long now = 0, int OtherClass = 0);
-	bool CheckProtoFlood(int type, unsigned int period, unsigned int limit); // protocol flood
+	bool CheckProtoFlood(int type, unsigned long period, unsigned int limit); // protocol flood
 	void SetRight(unsigned Right, long until, bool allow = false, bool notify = false);
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };
