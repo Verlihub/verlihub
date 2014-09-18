@@ -177,6 +177,9 @@ protected:
 	/** operator set hub topic */
 	int DCO_SetTopic(cMessageDC * msg, nSocket::cConnDC * conn);
 
+	// unknown message
+	int DCU_Unknown(cMessageDC *msg, nSocket::cConnDC *conn);
+
  public:
 	/**
 	* Check if a message is valid (max length and max lines per message).

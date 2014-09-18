@@ -92,6 +92,8 @@ cUser::cUser() :
 	IsPassive = false;
 	memset(mFloodHashes, 0 ,sizeof(mFloodHashes));
 	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
+	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
+	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
 }
 
 /** Constructor */
@@ -129,6 +131,8 @@ cUser::cUser(const string &nick) :
 	mSetPass = false;
 	memset(mFloodHashes, 0 , sizeof(mFloodHashes));
 	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
+	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
+	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
 }
 
 cUser::~cUser() {}
@@ -388,6 +392,72 @@ bool cUser::Can(unsigned Right, long now, int OtherClass)
 		default: break;
 	};
 	return true;
+}
+
+bool cUser::CheckProtoFlood(int type, unsigned int period, unsigned int limit)
+{
+	if (mxServer && mxConn && limit && period && (mClass <= mxServer->mC.max_class_int_flood)) {
+		cTime now;
+
+		if (!mProtoFloodCounts[type]) {
+			mProtoFloodCounts[type] = 1;
+			mProtoFloodTimes[type] = now;
+		} else {
+			cTime dif = now - mProtoFloodTimes[type];
+
+			if (dif.Sec() > period) {
+				mProtoFloodCounts[type] = 1;
+				mProtoFloodTimes[type] = now;
+			} else if ((mProtoFloodCounts[type]++ >= limit) && (dif.Sec() <= period)) {
+				string omsg = _("Protocol flood detected");
+				omsg += ": ";
+
+				switch (type) {
+					case ePF_MYINFO:
+						omsg += "MyINFO";
+						break;
+					case ePF_SEARCH:
+						omsg += "Search";
+						break;
+					case ePF_SR:
+						omsg += "SR";
+						break;
+					case ePF_CTM:
+						omsg += "ConnectToMe";
+						break;
+					case ePF_RCTM:
+						omsg += "RevConnectToMe";
+						break;
+					case ePF_NICKLIST:
+						omsg += "GetNickList";
+						break;
+					case ePF_GETINFO:
+						omsg += "GetINFO";
+						break;
+					case ePF_GETTOPIC:
+						omsg += "GetTopic";
+						break;
+					case ePF_UNKNOWN:
+						omsg += _("Unknown");
+						break;
+					default:
+						omsg += _("Other");
+						break;
+				}
+
+				if (mxConn->Log(1))
+					mxConn->LogStream() << omsg << endl;
+
+				if (mxServer->mC.proto_flood_report)
+					mxServer->ReportUserToOpchat(mxConn, omsg);
+
+				mxServer->ConnCloseMsg(mxConn, omsg, 500, eCR_SYNTAX); // todo: add some kind of temporary ban
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)

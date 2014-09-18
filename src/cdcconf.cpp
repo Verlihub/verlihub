@@ -177,6 +177,28 @@ void cDCConf::AddVars()
 	Add("int_flood_mcto_period", int_flood_mcto_period, 5);
 	Add("int_flood_mcto_limit", int_flood_mcto_limit, 5);
 
+	// protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
+	Add("proto_flood_report", proto_flood_report, true);
+	Add("max_class_int_flood", max_class_int_flood, 2);
+	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
+	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 10);
+	Add("int_flood_search_period", int_flood_search_period, 60);
+	Add("int_flood_search_limit", int_flood_search_limit, 30);
+	Add("int_flood_sr_period", int_flood_sr_period, 30);
+	Add("int_flood_sr_limit", int_flood_sr_limit, 500);
+	Add("int_flood_ctm_period", int_flood_ctm_period, 10);
+	Add("int_flood_ctm_limit", int_flood_ctm_limit, 200);
+	Add("int_flood_rctm_period", int_flood_rctm_period, 10);
+	Add("int_flood_rctm_limit", int_flood_rctm_limit, 200);
+	Add("int_flood_nicklist_period", int_flood_nicklist_period, 60);
+	Add("int_flood_nicklist_limit", int_flood_nicklist_limit, 3);
+	Add("int_flood_getinfo_period", int_flood_getinfo_period, 10);
+	Add("int_flood_getinfo_limit", int_flood_getinfo_limit, 200);
+	Add("int_flood_gettopic_period", int_flood_gettopic_period, 60);
+	Add("int_flood_gettopic_limit", int_flood_gettopic_limit, 3);
+	Add("int_flood_unknown_period", int_flood_unknown_period, 30);
+	Add("int_flood_unknown_limit", int_flood_unknown_limit, 10);
+
 	// User control configuration
 	Add("classdif_reg", classdif_reg, 2);
 	Add("classdif_kick", classdif_kick, 0);

@@ -90,6 +90,20 @@ namespace nVerliHub {
 			eFC_MCTO,
 			eFC_LAST_FC
 		} tFloodCounters;
+
+		typedef enum
+		{
+			ePF_MYINFO,
+			ePF_SEARCH,
+			ePF_SR,
+			ePF_CTM,
+			ePF_RCTM,
+			ePF_NICKLIST,
+			ePF_GETINFO,
+			ePF_GETTOPIC,
+			ePF_UNKNOWN,
+			ePF_LAST
+		} tProtoFloodItems;
 	};
 
 using namespace nTables;
@@ -183,6 +197,10 @@ public:
 	tFloodHashType mFloodHashes[nEnums::eFH_LAST_FH];
  	int mFloodCounters[nEnums::eFC_LAST_FC];
 
+	// protocol flood
+	int mProtoFloodCounts[nEnums::ePF_LAST];
+	cTime mProtoFloodTimes[nEnums::ePF_LAST];
+
 	/** 0 means perm ban, otherwiese in seconds */
 	long mBanTime;
 	/** indicates whether user is to ban after the following kick */
@@ -231,7 +249,8 @@ public:
 
 	protected: // Protected attributes
 
-	public: long ShareEnthropy(const string &sharesize);
+	public:
+	long ShareEnthropy(const string &sharesize);
 	void DisplayInfo(ostream &os, int DisplClass);
 	void DisplayRightsInfo(ostream &os, bool head = false);
 
@@ -240,6 +259,7 @@ public:
 		return true if the user has given rights
 	*/
 	bool Can(unsigned Right, long now = 0, int OtherClass = 0);
+	bool CheckProtoFlood(int type, unsigned int period, unsigned int limit); // protocol flood
 	void SetRight(unsigned Right, long until, bool allow = false, bool notify = false);
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };

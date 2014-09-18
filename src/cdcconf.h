@@ -171,6 +171,29 @@ public:
 	int int_flood_pm_limit;
 	int int_flood_mcto_period;
 	int int_flood_mcto_limit;
+
+	// protocol flood
+	int max_class_int_flood;
+	bool proto_flood_report;
+	unsigned int int_flood_myinfo_period;
+	unsigned int int_flood_myinfo_limit;
+	unsigned int int_flood_search_period;
+	unsigned int int_flood_search_limit;
+	unsigned int int_flood_sr_period;
+	unsigned int int_flood_sr_limit;
+	unsigned int int_flood_ctm_period;
+	unsigned int int_flood_ctm_limit;
+	unsigned int int_flood_rctm_period;
+	unsigned int int_flood_rctm_limit;
+	unsigned int int_flood_nicklist_period;
+	unsigned int int_flood_nicklist_limit;
+	unsigned int int_flood_getinfo_period;
+	unsigned int int_flood_getinfo_limit;
+	unsigned int int_flood_gettopic_period;
+	unsigned int int_flood_gettopic_limit;
+	unsigned int int_flood_unknown_period;
+	unsigned int int_flood_unknown_limit;
+
 	int int_chat_ms;
 	int int_nicklist;
 	int int_myinfo;

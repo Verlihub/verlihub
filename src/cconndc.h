@@ -70,9 +70,13 @@ namespace nVerliHub {
 			/// The client received by the hub $NickList protocol message
 			/// with the list of all users in the hub.
 			eLS_NICKLST = 1 << 6,
+			// supports
+			eLS_SUPPORTS = 1 << 7,
+			// botinfo
+			eLS_BOTINFO = 1 << 8,
 			/// All the flags explained above. This means the login
 			/// procedure is complete.
-			eLS_LOGIN_DONE = eLS_KEYOK | eLS_VALNICK | eLS_PASSWD | eLS_VERSION | eLS_MYINFO | eLS_ALLOWED | eLS_NICKLST
+			eLS_LOGIN_DONE = eLS_KEYOK | eLS_VALNICK | eLS_PASSWD | eLS_VERSION | eLS_MYINFO | eLS_ALLOWED | eLS_NICKLST | eLS_SUPPORTS
 		} tLogStatus;
 
 		/**

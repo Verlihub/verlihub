@@ -59,7 +59,7 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=
 	cProtoCommand(string("$GetBanList")),
 	cProtoCommand(string("$WhoIP ")),
 	cProtoCommand(string("$SetTopic ")),
-	cProtoCommand(string("$GetTopic ")),
+	cProtoCommand(string("$GetTopic")),
 	cProtoCommand(string("$BotINFO "))
 };
 
