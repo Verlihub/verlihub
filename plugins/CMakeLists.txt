@@ -1,17 +1,31 @@
+# Plugman plugin
+
 SET(ENABLE_PLUGIN TRUE)
 ADD_PLUGIN(ENABLE_PLUGIN plugman)
 MACRO_LOG_FEATURE(ENABLE_PLUGIN "plugman" "Pluging Manager support")
 
 # Lua plugin
-Find_Package(Lua51)
+
+Find_Package(Lua52) # Lua 5.2
 #Find_Package(LuaSocket)
-ADD_PLUGIN(LUA51_FOUND lua)
-MACRO_LOG_FEATURE(LUA51_FOUND "lua" "Allows you to use simple scripts written in LUA language (http://www.lua.org)" "http://www.lua.org" "5.1" "Lua libray NOT found")
+
+IF(LUA52_FOUND)
+	ADD_PLUGIN(LUA52_FOUND lua)
+	MACRO_LOG_FEATURE(LUA52_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.1" "Lua libray NOT found")
+ELSE()
+	Find_Package(Lua51) # Lua 5.1
+	#Find_Package(LuaSocket)
+	ADD_PLUGIN(LUA51_FOUND lua)
+	MACRO_LOG_FEATURE(LUA51_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.1" "Lua libray NOT found")
+ENDIF()
 
 # Python plugin
+
 Find_Package(PythonLibs)
 ADD_PLUGIN(PYTHONLIBS_FOUND python)
 MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written with Python (http://www.python.org)" "http://www.python.org" "2.4" "Python libray NOT found")
+
+# Other plugins
 
 ADD_PLUGIN(ENABLE_PLUGIN forbid)
 MACRO_LOG_FEATURE(ENABLE_PLUGIN "forbid" "Allows you to filter main chat and private messages with forbidden words")
