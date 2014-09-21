@@ -182,7 +182,7 @@ void cDCConf::AddVars()
 	Add("int_flood_to_period", int_flood_to_period, 20);
 	Add("int_flood_to_limit", int_flood_to_limit, 15);
 	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
-	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 10);
+	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 20);
 	Add("int_flood_search_period", int_flood_search_period, 60);
 	Add("int_flood_search_limit", int_flood_search_limit, 30);
 	Add("int_flood_sr_period", int_flood_sr_period, 30);
