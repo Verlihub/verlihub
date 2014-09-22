@@ -1,24 +1,23 @@
-#
+# 
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-16 19:44+0100\n"
-"PO-Revision-Date: 2014-08-16 19:44+0100\n"
-"Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Hungarian (Hungary) (http://www.transifex.com/projects/p/"
-"verlihub-100/language/hu_HU/)\n"
-"Language: hu_HU\n"
+"POT-Creation-Date: 2014-09-18 16:16+0100\n"
+"PO-Revision-Date: 2014-07-16 06:45+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Hungarian (Hungary) (http://www.transifex.com/projects/p/verlihub-100/language/hu_HU/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1250\n"
+"Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: hu_HU\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: cp1250\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
+"X-Poedit-SourceCharset: CP1250\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
@@ -175,8 +174,7 @@ msgstr "Sajnálom, a reguláris kifejezés amit a nickre megadtál nem érvényes"
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr ""
-"Sajnálom, a reguláris kifejezés amit a kapcsolatra megadtál nem érvényes"
+msgstr "Sajnálom, a reguláris kifejezés amit a kapcsolatra megadtál nem érvényes"
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
@@ -310,10 +308,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr ""
-"Kitõl: %s Kinek: %s\n"
-"Dátum: %s\n"
-"Tárgy: %s\n"
+msgstr "Kitõl: %s Kinek: %s\nDátum: %s\nTárgy: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -323,12 +318,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr ""
-"Kitõl: %s Kinek: %s\n"
-"Dátum: %s\n"
-"Tárgy: %s\n"
-"%s\n"
-"----\n"
+msgstr "Kitõl: %s Kinek: %s\nDátum: %s\nTárgy: %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:238
 #, c-format
@@ -336,10 +326,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr ""
-"#OFFLINE ÜZENET# [%s]\n"
-"Tárgy: %s -------------------------\n"
-"%s"
+msgstr "#OFFLINE ÜZENET# [%s]\nTárgy: %s -------------------------\n%s"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
@@ -354,7 +341,8 @@ msgid "Verlihub build time"
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:148
-msgid "Plugin name must be max 10 characters long, please provide another one."
+msgid ""
+"Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:153
@@ -505,9 +493,7 @@ msgstr "A '%s' szó már létezik"
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr ""
-"Hozzáadott szó: %s. Ez a szó filterezve lesz a közös chatben azoknál a "
-"felhasználóknál akiknek az osztálya kisebb vagy egyenlõ %d."
+msgstr "Hozzáadott szó: %s. Ez a szó filterezve lesz a közös chatben azoknál a felhasználóknál akiknek az osztálya kisebb vagy egyenlõ %d."
 
 #: ../plugins/replacer/cconsole.cpp:148
 #, c-format

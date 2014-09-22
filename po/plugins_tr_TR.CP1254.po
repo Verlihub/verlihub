@@ -1,25 +1,24 @@
-#
+# 
 # Translators:
 # mauron, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-16 19:45+0100\n"
-"PO-Revision-Date: 2014-08-16 19:45+0100\n"
-"Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/"
-"verlihub-100/language/tr_TR/)\n"
-"Language: tr_TR\n"
+"POT-Creation-Date: 2014-09-18 16:16+0100\n"
+"PO-Revision-Date: 2014-07-16 06:45+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1254\n"
+"Content-Type: text/plain; charset=CP1254\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: tr_TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: cp1254\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
+"X-Poedit-SourceCharset: CP1254\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
@@ -309,10 +308,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr ""
-"Yollayan: %s Alýcý: %s\n"
-"Tarih: %s\n"
-"Mevzu: %s\n"
+msgstr "Yollayan: %s Alýcý: %s\nTarih: %s\nMevzu: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -322,12 +318,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr ""
-"Yollayan: %s Alýcý: %s\n"
-"Tarih: %s\n"
-"Mevzu: %s\n"
-"%s\n"
-"----\n"
+msgstr "Yollayan: %s Alýcý: %s\nTarih: %s\nMevzu: %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:238
 #, c-format
@@ -335,10 +326,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr ""
-"#ÇEVRÝMDIÞI MESAJ# [%s]\n"
-"Mevzu: %s -------------------------\n"
-"%s"
+msgstr "#ÇEVRÝMDIÞI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
@@ -353,7 +341,8 @@ msgid "Verlihub build time"
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:148
-msgid "Plugin name must be max 10 characters long, please provide another one."
+msgid ""
+"Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:153
@@ -504,9 +493,7 @@ msgstr "'%s' kelimesi zaten mevcuttur."
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr ""
-"%s kelimesi eklenmiþtir. Bu kelime herkese açýk sohbette %d sýnýfýna eþit ya "
-"da altýndaki kullanýcýlara gösterilmeyecektir. "
+msgstr "%s kelimesi eklenmiþtir. Bu kelime herkese açýk sohbette %d sýnýfýna eþit ya da altýndaki kullanýcýlara gösterilmeyecektir. "
 
 #: ../plugins/replacer/cconsole.cpp:148
 #, c-format

@@ -1,24 +1,23 @@
-#
+# 
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-16 19:45+0100\n"
-"PO-Revision-Date: 2014-08-16 19:45+0100\n"
-"Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Slovak (Slovakia) (http://www.transifex.com/projects/p/"
-"verlihub-100/language/sk_SK/)\n"
-"Language: sk_SK\n"
+"POT-Creation-Date: 2014-09-18 16:16+0100\n"
+"PO-Revision-Date: 2014-07-16 06:45+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Slovak (Slovakia) (http://www.transifex.com/projects/p/verlihub-100/language/sk_SK/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1250\n"
+"Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: sk_SK\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: cp1250\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
+"X-Poedit-SourceCharset: CP1250\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
@@ -343,7 +342,8 @@ msgid "Verlihub build time"
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:148
-msgid "Plugin name must be max 10 characters long, please provide another one."
+msgid ""
+"Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:153

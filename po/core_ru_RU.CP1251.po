@@ -1,4 +1,4 @@
-#
+# 
 # Translators:
 # Alexander Zenkov <webmaster@feardc.net>, 2014
 # kosterinaleksey <kosterinaleksey@gmail.com>, 2012
@@ -11,35 +11,33 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-16 19:44+0100\n"
-"PO-Revision-Date: 2014-08-16 19:44+0100\n"
-"Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Russian (Russia) (http://www.transifex.com/projects/p/"
-"verlihub-100/language/ru_RU/)\n"
-"Language: ru_RU\n"
+"Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2014-09-18 20:24+0100\n"
+"PO-Revision-Date: 2014-09-18 18:25+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Russian (Russia) (http://www.transifex.com/projects/p/verlihub-100/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=cp1251\n"
+"Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.6.7\n"
+"Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: cp1251\n"
 "X-Poedit-SearchPath-0: ../src\n"
+"X-Poedit-SourceCharset: CP1251\n"
 
 #: ../src/cban.cpp:79
 msgid "Unknown ban"
 msgstr "Неизвестный бан"
 
-#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1493 ../src/cuser.cpp:228
+#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1537 ../src/cuser.cpp:230
 msgid "Nickname"
 msgstr "Ник"
 
 #: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:285
 #: ../src/cdcconsole.cpp:351 ../src/cdcconsole.cpp:477
-#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1494 ../src/cuser.cpp:235
+#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1538 ../src/cuser.cpp:237
 msgid "IP"
 msgstr "IP"
 
@@ -213,7 +211,7 @@ msgid "General timeout"
 msgstr "Время ожидания вышло"
 
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:349
-#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:427
+#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:434
 msgid "Name"
 msgstr "Имя"
 
@@ -279,12 +277,12 @@ msgstr "Максимум: %.2f"
 #: ../src/creguserinfo.cpp:126 ../src/creguserinfo.cpp:127
 #: ../src/creguserinfo.cpp:128 ../src/creguserinfo.cpp:129
 #: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
-#: ../src/cuser.cpp:233 ../src/cuser.cpp:255 ../src/cuser.cpp:263
-#: ../src/cuser.cpp:267 ../src/cuser.cpp:275 ../src/cuser.cpp:285
-#: ../src/cuser.cpp:289 ../src/cuser.cpp:297 ../src/cuser.cpp:301
-#: ../src/cuser.cpp:309 ../src/cuser.cpp:319 ../src/cuser.cpp:329
-#: ../src/cuser.cpp:339 ../src/cuser.cpp:349 ../src/cuser.cpp:359
-#: ../src/cuser.cpp:369
+#: ../src/cuser.cpp:235 ../src/cuser.cpp:257 ../src/cuser.cpp:265
+#: ../src/cuser.cpp:269 ../src/cuser.cpp:277 ../src/cuser.cpp:287
+#: ../src/cuser.cpp:291 ../src/cuser.cpp:299 ../src/cuser.cpp:303
+#: ../src/cuser.cpp:311 ../src/cuser.cpp:321 ../src/cuser.cpp:331
+#: ../src/cuser.cpp:341 ../src/cuser.cpp:351 ../src/cuser.cpp:361
+#: ../src/cuser.cpp:371
 msgid "Yes"
 msgstr "Да"
 
@@ -292,10 +290,10 @@ msgstr "Да"
 #: ../src/creguserinfo.cpp:126 ../src/creguserinfo.cpp:127
 #: ../src/creguserinfo.cpp:128 ../src/creguserinfo.cpp:129
 #: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
-#: ../src/cuser.cpp:257 ../src/cuser.cpp:269 ../src/cuser.cpp:279
-#: ../src/cuser.cpp:291 ../src/cuser.cpp:303 ../src/cuser.cpp:313
-#: ../src/cuser.cpp:323 ../src/cuser.cpp:333 ../src/cuser.cpp:343
-#: ../src/cuser.cpp:353 ../src/cuser.cpp:363
+#: ../src/cuser.cpp:259 ../src/cuser.cpp:271 ../src/cuser.cpp:281
+#: ../src/cuser.cpp:293 ../src/cuser.cpp:305 ../src/cuser.cpp:315
+#: ../src/cuser.cpp:325 ../src/cuser.cpp:335 ../src/cuser.cpp:345
+#: ../src/cuser.cpp:355 ../src/cuser.cpp:365
 msgid "No"
 msgstr "Нет"
 
@@ -326,7 +324,7 @@ msgid "User"
 msgstr "Пользователь"
 
 #: ../src/cdcconsole.cpp:287 ../src/cdcconsole.cpp:322
-#: ../src/cdcconsole.cpp:356 ../src/cdcproto.cpp:1283 ../src/cdcproto.cpp:1436
+#: ../src/cdcconsole.cpp:356 ../src/cdcproto.cpp:1565 ../src/cdcproto.cpp:1736
 #, c-format
 msgid "User not found: %s"
 msgstr "Пользователь не найден: %s"
@@ -343,7 +341,7 @@ msgid "Showing %d results"
 msgstr "Показываю %d результатов"
 
 #: ../src/cdcconsole.cpp:318 ../src/cdcconsole.cpp:354
-#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1496 ../src/cuser.cpp:236
+#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1540 ../src/cuser.cpp:238
 msgid "Host"
 msgstr "Хост"
 
@@ -352,11 +350,11 @@ msgstr "Хост"
 msgid "Unable to resolve users hostname: %s"
 msgstr "Не удается разрешить хост пользователя: %s"
 
-#: ../src/cdcconsole.cpp:352 ../src/cdcconsole.cpp:478 ../src/cuser.cpp:237
+#: ../src/cdcconsole.cpp:352 ../src/cdcconsole.cpp:478 ../src/cuser.cpp:239
 msgid "Country"
 msgstr "Страна"
 
-#: ../src/cdcconsole.cpp:353 ../src/cdcconsole.cpp:479 ../src/cuser.cpp:238
+#: ../src/cdcconsole.cpp:353 ../src/cdcconsole.cpp:479 ../src/cuser.cpp:240
 msgid "City"
 msgstr "Город"
 
@@ -387,7 +385,7 @@ msgstr "Пример использования: !ccbc :RU:UA: <сообщение>"
 msgid "Message delivered to %d users in zones %s in %s."
 msgstr "Сообщение отправлено %d пользователям в зонах %s за %s."
 
-#: ../src/cdcconsole.cpp:463 ../src/cserverdc.cpp:791
+#: ../src/cdcconsole.cpp:463 ../src/cserverdc.cpp:818
 msgid "Your information"
 msgstr "Ваша информация"
 
@@ -399,34 +397,26 @@ msgstr "Информация вашего IP"
 msgid "This functionality is currently disabled."
 msgstr "Эта функция сейчас отключена."
 
-#: ../src/cdcconsole.cpp:504 ../src/cdcproto.cpp:1142
+#: ../src/cdcconsole.cpp:504 ../src/cdcproto.cpp:1386
 msgid "Main chat is currently disabled for users with your class."
 msgstr "На данный момент главный чат отключен для пользователей вашего класса."
 
 #: ../src/cdcconsole.cpp:556
 msgid "Now you will see public chat messages, to disable use +nochat command."
-msgstr ""
-"Теперь вы будете видеть сообщения главного чата, чтобы отключить, "
-"используйте команду +nochat."
+msgstr "Теперь вы будете видеть сообщения главного чата, чтобы отключить, используйте команду +nochat."
 
 #: ../src/cdcconsole.cpp:559
 msgid "You already see public chat messages, to disable use +nochat command."
-msgstr ""
-"Вы уже видите сообщения главного чата, чтобы отключить, используйте команду "
-"+nochat."
+msgstr "Вы уже видите сообщения главного чата, чтобы отключить, используйте команду +nochat."
 
 #: ../src/cdcconsole.cpp:562
 msgid "Now you won't see public chat messages, to restore use +chat command."
-msgstr ""
-"Теперь вы не будете видеть сообщения главного чата, чтобы включить, "
-"используйте команду +chat."
+msgstr "Теперь вы не будете видеть сообщения главного чата, чтобы включить, используйте команду +chat."
 
 #: ../src/cdcconsole.cpp:565
 msgid ""
 "You already don't see public chat messages, to restore use +chat command."
-msgstr ""
-"Вы уже не видите сообщения главного чата, чтобы включить, используйте "
-"команду +chat."
+msgstr "Вы уже не видите сообщения главного чата, чтобы включить, используйте команду +chat."
 
 #: ../src/cdcconsole.cpp:580
 msgid "Authors"
@@ -468,18 +458,18 @@ msgstr "Хаб поддержки"
 msgid "Unregistered"
 msgstr "Незарегистрированный"
 
-#: ../src/cdcconsole.cpp:613 ../src/cdcproto.cpp:735
-#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:139
+#: ../src/cdcconsole.cpp:613 ../src/cdcproto.cpp:891
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:160
 msgid "Registered"
 msgstr "Зарегистрированный"
 
-#: ../src/cdcconsole.cpp:616 ../src/cdcproto.cpp:738
-#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:141
+#: ../src/cdcconsole.cpp:616 ../src/cdcproto.cpp:894
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:163
 msgid "VIP"
 msgstr "Вип"
 
-#: ../src/cdcconsole.cpp:619 ../src/cdcproto.cpp:741
-#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:143
+#: ../src/cdcconsole.cpp:619 ../src/cdcproto.cpp:897
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:166
 msgid "Operator"
 msgstr "Оператор"
 
@@ -491,8 +481,8 @@ msgstr "Супер оператор"
 msgid "Administrator"
 msgstr "Администратор"
 
-#: ../src/cdcconsole.cpp:628 ../src/cdcproto.cpp:750
-#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:149
+#: ../src/cdcconsole.cpp:628 ../src/cdcproto.cpp:906
+#: ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:175
 msgid "Master"
 msgstr "Мастер"
 
@@ -521,27 +511,27 @@ msgid "Total share"
 msgstr "Общая шара"
 
 #: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
-#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1523
+#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1567
 msgid "Not available"
 msgstr "Не доступно"
 
 #: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
-#: ../src/cserverdc.cpp:1526
+#: ../src/cserverdc.cpp:1570
 msgid "Recovery mode"
 msgstr "Режим восстановления"
 
 #: ../src/cdcconsole.cpp:659 ../src/cinfoserver.cpp:98
-#: ../src/cserverdc.cpp:1527
+#: ../src/cserverdc.cpp:1571
 msgid "Near capacity"
 msgstr "Режим производительности"
 
 #: ../src/cdcconsole.cpp:660 ../src/cinfoserver.cpp:100
-#: ../src/cserverdc.cpp:1528
+#: ../src/cserverdc.cpp:1572
 msgid "Progressive mode"
 msgstr "Расширенный режим"
 
 #: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
-#: ../src/cserverdc.cpp:1529
+#: ../src/cserverdc.cpp:1573
 msgid "Normal mode"
 msgstr "Обычный режим"
 
@@ -575,9 +565,7 @@ msgstr "Вы расшарили"
 
 #: ../src/cdcconsole.cpp:683
 msgid "Registration failed, please contact an operator for more help."
-msgstr ""
-"Регистрация не удалась, пожалуйста, свяжитесь с оператором для получения "
-"дополнительной помощи."
+msgstr "Регистрация не удалась, пожалуйста, свяжитесь с оператором для получения дополнительной помощи."
 
 #: ../src/cdcconsole.cpp:699
 #, c-format
@@ -593,7 +581,7 @@ msgstr "Вам надо расшарить как минимум %s."
 msgid "You are already registered."
 msgstr "Вы уже зарегистрированы."
 
-#: ../src/cdcconsole.cpp:733 ../src/cdcconsole.cpp:846 ../src/cdcproto.cpp:373
+#: ../src/cdcconsole.cpp:733 ../src/cdcconsole.cpp:846 ../src/cdcproto.cpp:491
 #, c-format
 msgid "Minimum password length is %d characters, please retry."
 msgstr "Минимальная длинна пароля %d символов, попробуйте снова."
@@ -608,9 +596,7 @@ msgstr "Новый пользователь был зарегистрирован с классом %d"
 msgid ""
 "You are now registered with nick %s, please reconnect and login with your "
 "new password: %s"
-msgstr ""
-"Теперь вы зарегистрированы с ником %s, пожалуйста переподключитесь к хабу, "
-"используя ваш новый пароль: %s"
+msgstr "Теперь вы зарегистрированы с ником %s, пожалуйста переподключитесь к хабу, используя ваш новый пароль: %s"
 
 #: ../src/cdcconsole.cpp:744
 msgid "An error occured while registering."
@@ -637,9 +623,7 @@ msgstr "У вас нет разрешения для изменения темы."
 #, c-format
 msgid ""
 "Topic must be max 255 characters long. Your topic was %d characters long."
-msgstr ""
-"Длина темы должна быть не более 255 символов. Ваша тема состоит из %d "
-"символов."
+msgstr "Длина темы должна быть не более 255 символов. Ваша тема состоит из %d символов."
 
 #: ../src/cdcconsole.cpp:796
 #, c-format
@@ -655,22 +639,20 @@ msgstr "%s удалил тему хаба."
 msgid "You are not allowed to change your password now, ask an operator."
 msgstr "Вы не можете изменить свой пароль сейчас, обратитесь к оператору."
 
-#: ../src/cdcconsole.cpp:852 ../src/cdcconsole.cpp:2113
-#: ../src/cdcproto.cpp:381
+#: ../src/cdcconsole.cpp:852 ../src/cdcconsole.cpp:2134
+#: ../src/cdcproto.cpp:499
 msgid "Error updating password."
 msgstr "Ошибка обновления пароля."
 
-#: ../src/cdcconsole.cpp:858 ../src/cdcproto.cpp:388
+#: ../src/cdcconsole.cpp:858 ../src/cdcproto.cpp:506
 msgid "Password updated successfully."
 msgstr "Пароль успешно обновлён."
 
 #: ../src/cdcconsole.cpp:871
 msgid ""
-"Please use: !hideme <class> where <class> is the maximum class of users that "
-"may not see your actions."
-msgstr ""
-"Используйте: !hideme <класс> где <класс> максимальный класс пользователей "
-"которые не видят ваших действий."
+"Please use: !hideme <class> where <class> is the maximum class of users that"
+" may not see your actions."
+msgstr "Используйте: !hideme <класс> где <класс> максимальный класс пользователей которые не видят ваших действий."
 
 #: ../src/cdcconsole.cpp:877
 #, c-format
@@ -679,10 +661,9 @@ msgstr "Ваши действия команд скрыты от пользователей с классом ниже %d."
 
 #: ../src/cdcconsole.cpp:891
 msgid ""
-"Type !help for more information (usage !userlimit <max_users> [<minutes>=60])"
-msgstr ""
-"Используйте !help для получения дополнительной информации (использование !"
-"userlimit <лимит> [ <минут>=60])"
+"Type !help for more information (usage !userlimit <max_users> "
+"[<minutes>=60])"
+msgstr "Используйте !help для получения дополнительной информации (использование !userlimit <лимит> [ <минут>=60])"
 
 #: ../src/cdcconsole.cpp:922
 msgid "Usage: !class <nick> [<class>=3]."
@@ -705,7 +686,7 @@ msgstr "У вас нет доступа для изменения класса %s."
 
 #: ../src/cdcconsole.cpp:949 ../src/cdcconsole.cpp:974
 #: ../src/cdcconsole.cpp:1000 ../src/cdcconsole.cpp:1035
-#: ../src/cdcproto.cpp:1732 ../src/cdcproto.cpp:1852
+#: ../src/cdcproto.cpp:2097 ../src/cdcproto.cpp:2261
 #, c-format
 msgid "User %s not found."
 msgstr "Пользователь %s не найден."
@@ -718,9 +699,9 @@ msgstr "Отключения пользователя %s теперь скрыты."
 #: ../src/cdcconsole.cpp:971 ../src/cdcconsole.cpp:997
 #: ../src/cdcconsole.cpp:1033 ../src/cdcconsole.cpp:1251
 #: ../src/cdcconsole.cpp:1390 ../src/cdcconsole.cpp:1623
-#: ../src/cdcconsole.cpp:1855 ../src/cdcconsole.cpp:1916
-#: ../src/cdcconsole.cpp:1935 ../src/cdcconsole.cpp:1987
-#: ../src/cdcconsole.cpp:2034 ../src/cdcconsole.cpp:2279
+#: ../src/cdcconsole.cpp:1876 ../src/cdcconsole.cpp:1937
+#: ../src/cdcconsole.cpp:1956 ../src/cdcconsole.cpp:2008
+#: ../src/cdcconsole.cpp:2055 ../src/cdcconsole.cpp:2300
 msgid "You have no rights to do this."
 msgstr "У вас нет доступа."
 
@@ -751,9 +732,7 @@ msgstr "Пользователь %s временно защищён от класса %d"
 msgid ""
 "Reloading triggers, custom redirects, configuration and registration list "
 "cache."
-msgstr ""
-"Перезагрузка триггеров, перенаправлений пользователей, конфигурации и кэша "
-"списка регистраций."
+msgstr "Перезагрузка триггеров, перенаправлений пользователей, конфигурации и кэша списка регистраций."
 
 #: ../src/cdcconsole.cpp:1058
 msgid "Report command is currently disabled."
@@ -798,7 +777,7 @@ msgid "All temporary rights have been deleted."
 msgstr "Все временные права удалены."
 
 #: ../src/cdcconsole.cpp:1238 ../src/cdcconsole.cpp:1552
-#: ../src/cdcconsole.cpp:1841 ../src/cdcconsole.cpp:2183
+#: ../src/cdcconsole.cpp:1862 ../src/cdcconsole.cpp:2204
 msgid "This command is not implemented."
 msgstr "Эта команда не реализована."
 
@@ -815,8 +794,8 @@ msgid "No reason specified"
 msgstr "Причина не указана"
 
 #: ../src/cdcconsole.cpp:1315 ../src/cdcconsole.cpp:1421
-#: ../src/cdcconsole.cpp:2053 ../src/cdcconsole.cpp:2086
-#: ../src/cdcconsole.cpp:2126
+#: ../src/cdcconsole.cpp:2074 ../src/cdcconsole.cpp:2107
+#: ../src/cdcconsole.cpp:2147
 msgid "Action has been discarded by plugin."
 msgstr "Действие отвергнуто плагином."
 
@@ -851,7 +830,8 @@ msgstr "Эта команда не реализована, доступные команды"
 
 #: ../src/cdcconsole.cpp:1489
 msgid ""
-"This command is not implemented, available commands are: !hubinfo !serverinfo"
+"This command is not implemented, available commands are: !hubinfo "
+"!serverinfo"
 msgstr "Эта команда не реализована, доступные команды: !hubinfo !serverinfo"
 
 #: ../src/cdcconsole.cpp:1583
@@ -867,13 +847,9 @@ msgstr "Обновлена конфигурация %s.%s с '%s' на '%s'."
 #: ../src/cdcconsole.cpp:1608
 #, c-format
 msgid ""
-"Warning: Verlihub allows maximum %d users, but current resource limit is %d. "
-"Consider to run ulimit -n <max_users> and restart the hub."
-msgstr ""
-"Предупреждение: Verlihub позволяет максимально %d пользователей, ограничение "
-"ресурсами - %d. Используйте команду  ulimit -n <max_users> и перезапустите "
-"хаб. (Замечание: Команда ulimit -n <max_users> не относится к хабу, это "
-"команда Linux)"
+"Warning: Verlihub allows maximum %d users, but current resource limit is %d."
+" Consider to run ulimit -n <max_users> and restart the hub."
+msgstr "Предупреждение: Verlihub позволяет максимально %d пользователей, ограничение ресурсами - %d. Используйте команду  ulimit -n <max_users> и перезапустите хаб. (Замечание: Команда ulimit -n <max_users> не относится к хабу, это команда Linux)"
 
 #: ../src/cdcconsole.cpp:1636
 #, c-format
@@ -932,525 +908,516 @@ msgstr "Ошибка установки прав для %s."
 
 #: ../src/cdcconsole.cpp:1780
 #, c-format
-msgid "Found %d user with IP %s:"
-msgid_plural "Found %d users with IP %s:"
-msgstr[0] "Найден %d пользователь с IP: %s"
-msgstr[1] "Найдено %d пользователей с IP: %s"
-msgstr[2] "Найдено %d пользователей с IP %s:"
-
-#: ../src/cdcconsole.cpp:1786
-#, c-format
-msgid "Found %d user with range %s:"
-msgid_plural "Found %d users with range %s:"
-msgstr[0] "Найден %d пользователь с диапазоном: %s"
-msgstr[1] "Найдено %d пользователя с диапазоном: %s"
-msgstr[2] "Найдено %d пользователей с диапазоном %s:"
+msgid "Found %d user with IP %s"
+msgid_plural "Found %d users with IP %s"
+msgstr[0] "Найден %d пользователь с IP %s"
+msgstr[1] "Найдено %d пользователей с IP %s"
+msgstr[2] "Найдено %d пользователей с IP %s"
 
 #: ../src/cdcconsole.cpp:1790
+#, c-format
+msgid "Found %d user with range %s"
+msgid_plural "Found %d users with range %s"
+msgstr[0] "Найден %d пользователь с IP диапазоном %s"
+msgstr[1] "Найдено %d пользователей с IP диапазоном %s"
+msgstr[2] "Найдено %d пользователей с IP диапазоном %s"
+
+#: ../src/cdcconsole.cpp:1795
 msgid "Country code must be 2 characters long, for example US."
 msgstr "Код страны должен содержать 2 символа, например RU."
 
-#: ../src/cdcconsole.cpp:1797
+#: ../src/cdcconsole.cpp:1803
 #, c-format
-msgid "Found %d user with country code %s:"
-msgid_plural "Found %d users with country code %s:"
-msgstr[0] "Найден %d пользователь с кодом страны %s:"
-msgstr[1] "Найдено %d пользователя с кодом страны %s:"
-msgstr[2] "Найдено %d пользователей с кодом страны %s:"
+msgid "Found %d user with country code %s"
+msgid_plural "Found %d users with country code %s"
+msgstr[0] "Найден %d пользователь с кодом страны %s"
+msgstr[1] "Найдено %d пользователей с кодом страны %s"
+msgstr[2] "Найдено %d пользователей с кодом страны %s"
 
-#: ../src/cdcconsole.cpp:1805
+#: ../src/cdcconsole.cpp:1808
+msgid "City name can't be empty."
+msgstr "Название города не может быть пустым."
+
+#: ../src/cdcconsole.cpp:1815
+#, c-format
+msgid "Found %d user with city %s"
+msgid_plural "Found %d users with city %s"
+msgstr[0] "Найден %d пользователь с городом %s"
+msgstr[1] "Найдено %d пользователей с городом %s"
+msgstr[2] "Найдено %d пользователей с городом %s"
+
+#: ../src/cdcconsole.cpp:1825
 msgid "No users found."
 msgstr "Пользователей не найдено."
 
-#: ../src/cdcconsole.cpp:1831 ../src/cdcproto.cpp:1858
+#: ../src/cdcconsole.cpp:1852 ../src/cdcproto.cpp:2267
 msgid "Please provide a valid reason."
 msgstr "Пожалуйста введите правильную причину."
 
-#: ../src/cdcconsole.cpp:1867
+#: ../src/cdcconsole.cpp:1888
 msgid "Loaded plugins"
 msgstr "Загруженные плагины"
 
-#: ../src/cdcconsole.cpp:1871
+#: ../src/cdcconsole.cpp:1892
 msgid "Available callbacks"
 msgstr "Доступные функции обратного вызова"
 
-#: ../src/cdcconsole.cpp:1921
+#: ../src/cdcconsole.cpp:1942
 msgid ""
 "Valid classdif_reg value must be between 1 and 5, please correct this first."
-msgstr ""
-"Допустимое значение classdif_reg должно быть от 1 до 5, пожалуйста, "
-"исправьте это в первую очередь."
+msgstr "Допустимое значение classdif_reg должно быть от 1 до 5, пожалуйста, исправьте это в первую очередь."
 
-#: ../src/cdcconsole.cpp:1943
+#: ../src/cdcconsole.cpp:1964
 #, c-format
 msgid "Found %d registered users with class %d"
 msgstr "Найдено %d зарегистрированный пользователей с %d классом"
 
-#: ../src/cdcconsole.cpp:1945
+#: ../src/cdcconsole.cpp:1966
 #, c-format
 msgid "No registered users with class %d found."
 msgstr "Зарегистрированных пользователей с %d классом не найдено."
 
-#: ../src/cdcconsole.cpp:1971 ../src/cdcconsole.cpp:2040
+#: ../src/cdcconsole.cpp:1992 ../src/cdcconsole.cpp:2061
 msgid "Missing command parameters."
 msgstr "Отсутствуют параметры команды."
 
-#: ../src/cdcconsole.cpp:2030
+#: ../src/cdcconsole.cpp:2051
 #, c-format
 msgid "Registered user not found: %s"
 msgstr "Зарегистрированный пользователь не найден: %s"
 
-#: ../src/cdcconsole.cpp:2032 ../src/cdcconsole.cpp:2047
+#: ../src/cdcconsole.cpp:2053 ../src/cdcconsole.cpp:2068
 #, c-format
 msgid "%s is already registered."
 msgstr "%s уже зарегистрирован."
 
-#: ../src/cdcconsole.cpp:2063
+#: ../src/cdcconsole.cpp:2084
 #, c-format
 msgid ""
 "You have been registered with class %d, please set up your password with "
 "+passwd <password> command."
-msgstr ""
-"Вы были зарегистрированы с классом %d. Пожалуйста, установите пароль "
-"используя команду \"+passwd <пароль>\"."
+msgstr "Вы были зарегистрированы с классом %d. Пожалуйста, установите пароль используя команду \"+passwd <пароль>\"."
 
-#: ../src/cdcconsole.cpp:2065
+#: ../src/cdcconsole.cpp:2086
 #, c-format
 msgid "You have been registered with class %d and following password: %s"
 msgstr "Вы были зарегистрированы с классом %d и следующим паролем: %s"
 
-#: ../src/cdcconsole.cpp:2073
+#: ../src/cdcconsole.cpp:2094
 #, c-format
 msgid ""
 "%s has been registered with class %d, please tell him to set his password."
-msgstr ""
-"%s зарегистрирован с классом %d, пожалуйста сообщите ему об установлении "
-"пароля."
+msgstr "%s зарегистрирован с классом %d, пожалуйста сообщите ему об установлении пароля."
 
-#: ../src/cdcconsole.cpp:2075
+#: ../src/cdcconsole.cpp:2096
 #, c-format
 msgid "%s has been registered with class %d and password."
 msgstr "%s был зарегистрирован с классом %d и паролем."
 
-#: ../src/cdcconsole.cpp:2077
+#: ../src/cdcconsole.cpp:2098
 msgid "Error adding new user."
 msgstr "Ошибка при добавлении пользователя."
 
-#: ../src/cdcconsole.cpp:2094
+#: ../src/cdcconsole.cpp:2115
 #, c-format
 msgid "%s has been unregistered, user information"
 msgstr "Регистрация %s удалена, информация по пользователю"
 
-#: ../src/cdcconsole.cpp:2099
+#: ../src/cdcconsole.cpp:2120
 #, c-format
 msgid "Error unregistering %s, user information"
 msgstr "Ошибка удаления регистрации %s, информация по пользовтаелю"
 
-#: ../src/cdcconsole.cpp:2111
+#: ../src/cdcconsole.cpp:2132
 msgid "Password updated."
 msgstr "Пароль обновлен."
 
-#: ../src/cdcconsole.cpp:2119
+#: ../src/cdcconsole.cpp:2140
 msgid ""
 "You can change your password now, use +passwd command followed by your new "
 "password."
-msgstr ""
-"Теперь вы можете изменить ваш пароль, используйте команду +passwd и ваш "
-"новый пароль через пробел."
+msgstr "Теперь вы можете изменить ваш пароль, используйте команду +passwd и ваш новый пароль через пробел."
 
-#: ../src/cdcconsole.cpp:2153
+#: ../src/cdcconsole.cpp:2174
 #, c-format
 msgid "Your class has been changed to %s."
 msgstr "Ваш класс был изменен на %s."
 
-#: ../src/cdcconsole.cpp:2159
+#: ../src/cdcconsole.cpp:2180
 msgid "Your registration has been enabled."
 msgstr "Ваша регистрация была включена."
 
-#: ../src/cdcconsole.cpp:2165
+#: ../src/cdcconsole.cpp:2186
 msgid "Your registration has been disabled."
 msgstr "Ваша регистрация была отключена."
 
-#: ../src/cdcconsole.cpp:2169
+#: ../src/cdcconsole.cpp:2190
 #, c-format
 msgid "You are protected by classes greater than %s."
 msgstr "Вы защищены классом выше %s."
 
-#: ../src/cdcconsole.cpp:2174
+#: ../src/cdcconsole.cpp:2195
 #, c-format
 msgid "You kicks are hidden by classes greater than %s."
 msgstr "Вашы отключения пользователей скрыты классом выше %s."
 
-#: ../src/cdcconsole.cpp:2179
+#: ../src/cdcconsole.cpp:2200
 #, c-format
 msgid "%s registration information"
 msgstr "Информация о регистрации %s"
 
-#: ../src/cdcconsole.cpp:2190
+#: ../src/cdcconsole.cpp:2211
 #, c-format
 msgid "Updated variable %s to value %s for user %s."
 msgstr "Изменена переменная %s на значение %s  для пользователя %s."
 
-#: ../src/cdcconsole.cpp:2194
+#: ../src/cdcconsole.cpp:2215
 #, c-format
 msgid "Error setting variable %s to value %s for user %s."
 msgstr "Ошибка установки переменной %s на значение %s для пользователя %s."
 
-#: ../src/cdcconsole.cpp:2292
+#: ../src/cdcconsole.cpp:2313
 #, c-format
 msgid "Message delivered to %d users in %s."
 msgstr "Сообщение доставлено %d пользователям за %s."
 
-#: ../src/cdcproto.cpp:74
+#: ../src/cdcproto.cpp:75
 msgid "Probably attempt of an attack with NULL characters"
 msgstr "Вероятно попытка нападения с нулевыми символами (NULL characters)"
 
-#: ../src/cdcproto.cpp:117
+#: ../src/cdcproto.cpp:160
 msgid "Goodbye."
 msgstr "До свиданья."
 
-#: ../src/cdcproto.cpp:180
+#: ../src/cdcproto.cpp:204 ../src/cdcproto.cpp:398 ../src/cdcproto.cpp:444
+#: ../src/cdcproto.cpp:559 ../src/cdcproto.cpp:629 ../src/cdcproto.cpp:995
+#: ../src/cdcproto.cpp:1058 ../src/cdcproto.cpp:1121 ../src/cdcproto.cpp:1215
+#: ../src/cdcproto.cpp:1331 ../src/cdcproto.cpp:1427 ../src/cdcproto.cpp:1491
+#: ../src/cdcproto.cpp:1649 ../src/cdcproto.cpp:1771 ../src/cdcproto.cpp:1997
+#: ../src/cdcproto.cpp:2058 ../src/cdcproto.cpp:2139 ../src/cdcproto.cpp:2224
+#: ../src/cdcproto.cpp:2385 ../src/cdcproto.cpp:2456 ../src/cdcproto.cpp:2541
+#: ../src/cdcproto.cpp:2610
+msgid "Your client sent malformed protocol command"
+msgstr "Ваш клиент отправил некорректную команду протокола"
+
+#: ../src/cdcproto.cpp:215
+msgid "Invalid login sequence, your client already validated nick."
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил ник."
+
+#: ../src/cdcproto.cpp:266
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
-msgstr ""
-"Ограничение по количеству пользователей в зоне страны %s превышено при %d/%d "
-"пользователях в сети."
+msgstr "Ограничение по количеству пользователей в зоне страны %s превышено при %d/%d пользователях в сети."
 
-#: ../src/cdcproto.cpp:183
+#: ../src/cdcproto.cpp:269
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
-msgstr ""
-"Ограничение по количеству пользователей в зоне IP %s превышено при %d/%d "
-"пользователях в сети."
+msgstr "Ограничение по количеству пользователей в зоне IP %s превышено при %d/%d пользователях в сети."
 
-#: ../src/cdcproto.cpp:197
+#: ../src/cdcproto.cpp:283
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
-msgstr ""
-"Ограничение по количеству пользователей в главной зоне превышено при %d/%d "
-"пользователях в сети."
+msgstr "Ограничение по количеству пользователей в главной зоне превышено при %d/%d пользователях в сети."
 
-#: ../src/cdcproto.cpp:205
+#: ../src/cdcproto.cpp:291
 #, c-format
 msgid "User limit exceeded at %d online users."
-msgstr ""
-"Ограничение по количеству пользователей превышено при %d пользователях в "
-"сети."
+msgstr "Ограничение по количеству пользователей превышено при %d пользователях в сети."
 
-#: ../src/cdcproto.cpp:213
+#: ../src/cdcproto.cpp:299
 msgid "This is a registered users only hub."
 msgstr "Этот хаб только для зарегистрированных пользователей."
 
-#: ../src/cdcproto.cpp:232
+#: ../src/cdcproto.cpp:318
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
-msgstr ""
-"Ограничение по количеству пользователей с IP адреса %s превышено при %d "
-"пользователях в сети."
+msgstr "Ограничение по количеству пользователей с IP адреса %s превышено при %d пользователях в сети."
 
-#: ../src/cdcproto.cpp:254
+#: ../src/cdcproto.cpp:340
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr "Авторизация по IP не соответствует для %s"
 
-#: ../src/cdcproto.cpp:255
+#: ../src/cdcproto.cpp:341
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
-msgstr ""
-"Авторизация по IP для этой учетной записи не совпадает с вашим IP адресом: %s"
+msgstr "Авторизация по IP для этой учетной записи не совпадает с вашим IP адресом: %s"
 
-#: ../src/cdcproto.cpp:313
-#, fuzzy
+#: ../src/cdcproto.cpp:409
 msgid "Invalid login sequence, your client already sent key."
-msgstr "Ошибка порядка авторизации. Key уже отправлен"
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил Key."
 
-#: ../src/cdcproto.cpp:330
-#, fuzzy
+#: ../src/cdcproto.cpp:426
 msgid "Your client provided invalid key in response to lock."
-msgstr "Ваш клиент предоставил неверный ключ"
+msgstr "Ваш клиент предоставил неверный Key в ответ на Lock."
 
-#: ../src/cdcproto.cpp:349
-msgid "Bad login sequence; you must provide a valid nick first."
-msgstr "Ошибка порядка авторизации, сперва должен быть отправлен ник."
+#: ../src/cdcproto.cpp:455 ../src/cdcproto.cpp:640 ../src/cdcproto.cpp:1006
+#: ../src/cdcproto.cpp:1069 ../src/cdcproto.cpp:1132 ../src/cdcproto.cpp:1226
+#: ../src/cdcproto.cpp:1342 ../src/cdcproto.cpp:1438 ../src/cdcproto.cpp:1502
+#: ../src/cdcproto.cpp:1660 ../src/cdcproto.cpp:1782 ../src/cdcproto.cpp:2008
+#: ../src/cdcproto.cpp:2069 ../src/cdcproto.cpp:2236 ../src/cdcproto.cpp:2396
+#: ../src/cdcproto.cpp:2434 ../src/cdcproto.cpp:2552 ../src/cdcproto.cpp:2580
+#: ../src/cdcproto.cpp:2621
+msgid "Invalid login sequence, you client must validate nick first."
+msgstr "Ошибка порядка авторизации, ваш клиент должен сначала отправить ник."
 
-#: ../src/cdcproto.cpp:414
+#: ../src/cdcproto.cpp:463
+msgid "Invalid login sequence, you client already sent password."
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил пароль."
+
+#: ../src/cdcproto.cpp:532
 msgid "Wrong password"
 msgstr "Неверный пароль"
 
-#: ../src/cdcproto.cpp:419
+#: ../src/cdcproto.cpp:537
 msgid "You provided an incorrect password and have been temporarily banned."
 msgstr "Вы ввели неверный пароль и были временно отключены."
 
-#: ../src/cdcproto.cpp:492
-msgid "Bad login sequence."
-msgstr "Неверный порядок авторизации."
+#: ../src/cdcproto.cpp:570
+msgid "Invalid login sequence, you client already sent version."
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил версию."
 
-#: ../src/cdcproto.cpp:502
+#: ../src/cdcproto.cpp:658
 msgid "Wrong nick in MyINFO."
 msgstr "Неверный ник в MyINFO."
 
-#: ../src/cdcproto.cpp:516
+#: ../src/cdcproto.cpp:672
 msgid "Turn on your tag."
 msgstr "Включите тег клиента."
 
-#: ../src/cdcproto.cpp:547
+#: ../src/cdcproto.cpp:703
 #, c-format
 msgid ""
-"Passive user limit exceeded at %d online passive users, please become active "
-"to enter the hub."
-msgstr ""
-"Ограничение по количеству пользователей в пассивном режиме превышено при %d "
-"пользователях в сети, пожалуйста, переключитесь в активный режим для входа "
-"на хаб."
+"Passive user limit exceeded at %d online passive users, please become active"
+" to enter the hub."
+msgstr "Ограничение по количеству пользователей в пассивном режиме превышено при %d пользователях в сети, пожалуйста, переключитесь в активный режим для входа на хаб."
 
-#: ../src/cdcproto.cpp:602
+#: ../src/cdcproto.cpp:758
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s, %s for active users, %s for passive "
 "users."
-msgstr ""
-"Вы расшарили %s, но минимально разрешенная шара %s, %s для пользователей "
-"активного режима, %s для пользователей пассивного режима."
+msgstr "Вы расшарили %s, но минимально разрешенная шара %s, %s для пользователей активного режима, %s для пользователей пассивного режима."
 
-#: ../src/cdcproto.cpp:604
+#: ../src/cdcproto.cpp:760
 #, c-format
 msgid "You share %s but maximum allowed is %s."
 msgstr "Вы расшарили %s, но максимально разрешенная шара %s."
 
-#: ../src/cdcproto.cpp:664
+#: ../src/cdcproto.cpp:820
 msgid "You are banned from this hub."
 msgstr "Вы забанены на этом хабе."
 
-#: ../src/cdcproto.cpp:729 ../src/creguserinfo.cpp:106 ../src/ctrigger.cpp:135
+#: ../src/cdcproto.cpp:885 ../src/creguserinfo.cpp:106 ../src/ctrigger.cpp:154
 msgid "Pinger"
 msgstr "Пингер"
 
-#: ../src/cdcproto.cpp:732 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:137
+#: ../src/cdcproto.cpp:888 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:157
 msgid "Guest"
 msgstr "Гость"
 
-#: ../src/cdcproto.cpp:744 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:145
+#: ../src/cdcproto.cpp:900 ../src/creguserinfo.cpp:105 ../src/ctrigger.cpp:169
 msgid "Cheef"
 msgstr "Шеф"
 
-#: ../src/cdcproto.cpp:747 ../src/ctrigger.cpp:147
+#: ../src/cdcproto.cpp:903 ../src/ctrigger.cpp:172
 msgid "Administator"
 msgstr "Администратор"
 
-#: ../src/cdcproto.cpp:753 ../src/cdctag.cpp:206 ../src/ctrigger.cpp:151
+#: ../src/cdcproto.cpp:909 ../src/cdctag.cpp:206 ../src/ctrigger.cpp:178
+#: ../src/cuser.cpp:448
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: ../src/cdcproto.cpp:933 ../src/cdcproto.cpp:947
+#: ../src/cdcproto.cpp:1162
 msgid "Flooding PM"
 msgstr "Флуд в приват"
 
-#: ../src/cdcproto.cpp:935
-#, c-format
-msgid "*** PM Flood: %s"
-msgstr "*** Флуд в приват: %s"
-
-#: ../src/cdcproto.cpp:949
+#: ../src/cdcproto.cpp:1164
 #, c-format
 msgid "*** PM same message flood detected: %s"
 msgstr "*** Обнаружен флуд одинаковых сообщений в приват: %s"
 
-#: ../src/cdcproto.cpp:961 ../src/cdcproto.cpp:962
+#: ../src/cdcproto.cpp:1176 ../src/cdcproto.cpp:1177
 msgid "Private chat is currently disabled for users with your class."
 msgstr "Приватный чат отключен для пользователей с вашим классом."
 
-#: ../src/cdcproto.cpp:972 ../src/cdcproto.cpp:973 ../src/cdcproto.cpp:1051
-#: ../src/cdcproto.cpp:1052
+#: ../src/cdcproto.cpp:1187 ../src/cdcproto.cpp:1188 ../src/cdcproto.cpp:1272
+#: ../src/cdcproto.cpp:1273
 msgid "You can't talk to this user."
 msgstr "Вы не можете общаться с этим пользователем."
 
-#: ../src/cdcproto.cpp:1017 ../src/cdcproto.cpp:1033
+#: ../src/cdcproto.cpp:1254
 msgid "MCTo flood."
 msgstr "MCTo флуд."
 
-#: ../src/cdcproto.cpp:1019
-#, c-format
-msgid "*** MCTo flood: %s"
-msgstr "*** MCTo флуд: %s"
-
-#: ../src/cdcproto.cpp:1035
+#: ../src/cdcproto.cpp:1256
 #, c-format
 msgid "*** MCTo same message flood detected: %s"
 msgstr "*** Обнаружен флуд одинаковых сообщений через MCTo: %s"
 
-#: ../src/cdcproto.cpp:1088
+#: ../src/cdcproto.cpp:1309
 #, c-format
 msgid ""
 "Your chat message contains %d characters but maximum allowed is %d "
 "characters."
-msgstr ""
-"Ваше сообщение содержит %d символов, но максимально разрешенное количество "
-"символов является %d."
+msgstr "Ваше сообщение содержит %d символов, но максимально разрешенное количество символов является %d."
 
-#: ../src/cdcproto.cpp:1096
+#: ../src/cdcproto.cpp:1317
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
-msgstr ""
-"Ваше сообщение содержит %d строк, но максимально разрешенное количество "
-"строк является %d."
+msgstr "Ваше сообщение содержит %d строк, но максимально разрешенное количество строк является %d."
 
-#: ../src/cdcproto.cpp:1115
+#: ../src/cdcproto.cpp:1359
 #, c-format
 msgid "You nick is not %s but %s."
 msgstr "Ваш ник не %s, а %s."
 
-#: ../src/cdcproto.cpp:1128
+#: ../src/cdcproto.cpp:1372
 #, c-format
 msgid "Not sent because minimum chat delay is %lu ms but you made %s."
-msgstr ""
-"Не отправлено, так как минимальная задержка отправки сообщений в чат %lu "
-"миллисекунд, а ваша задержка %s."
+msgstr "Не отправлено, так как минимальная задержка отправки сообщений в чат %lu миллисекунд, а ваша задержка %s."
 
-#: ../src/cdcproto.cpp:1254 ../src/cdcproto.cpp:1399
+#: ../src/cdcproto.cpp:1536 ../src/cdcproto.cpp:1699
 #, c-format
 msgid "You can't download unless you share: %s"
 msgstr "Вы не можете скачивать пока не расшарите как минимум: %s"
 
-#: ../src/cdcproto.cpp:1268 ../src/cdcproto.cpp:1413
+#: ../src/cdcproto.cpp:1550 ../src/cdcproto.cpp:1713
 #, c-format
 msgid "You can't download unless you are registered with class: %d"
-msgstr ""
-"Вы не можете скачивать до тех пор пока не будете зарегистрированы с классом: "
-"%d"
+msgstr "Вы не можете скачивать до тех пор пока не будете зарегистрированы с классом: %d"
 
-#: ../src/cdcproto.cpp:1289
+#: ../src/cdcproto.cpp:1571
 msgid "Robots don't share."
 msgstr "У роботов нет шары."
 
-#: ../src/cdcproto.cpp:1297 ../src/cdcproto.cpp:1449
+#: ../src/cdcproto.cpp:1579 ../src/cdcproto.cpp:1749
 #, c-format
 msgid "You can't download from: %s"
 msgstr "Вы не можете скачивать с: %s"
 
-#: ../src/cdcproto.cpp:1314
+#: ../src/cdcproto.cpp:1596
 msgid "You can't connect to an external IP because you are in LAN."
-msgstr ""
-"Вы не можете подключаться к внешним IP, потому что вы находитесь в локальной "
-"сети (LAN)."
+msgstr "Вы не можете подключаться к внешним IP, потому что вы находитесь в локальной сети (LAN)."
 
-#: ../src/cdcproto.cpp:1376
+#: ../src/cdcproto.cpp:1676
 msgid "You can't send this request because you're not in passive mode."
 msgstr "Вы не можете отправить этот запрос, так как вы не в пассивном режиме."
 
-#: ../src/cdcproto.cpp:1425 ../src/cdcproto.cpp:1611
+#: ../src/cdcproto.cpp:1725 ../src/cdcproto.cpp:1929
 #, c-format
 msgid "Your nick is not %s but %s."
 msgstr "Ваш ник не %s, но %s."
 
-#: ../src/cdcproto.cpp:1442
+#: ../src/cdcproto.cpp:1742
 #, c-format
 msgid "User is a bot: %s"
 msgstr "Пользователь является ботом: %s"
 
-#: ../src/cdcproto.cpp:1498
+#: ../src/cdcproto.cpp:1816
 #, c-format
 msgid "You can't search unless you share: %s"
-msgstr ""
-"Вы не можете использовать поиск до тех пор пока не расшарите как минимум: %s"
+msgstr "Вы не можете использовать поиск до тех пор пока не расшарите как минимум: %s"
 
-#: ../src/cdcproto.cpp:1512
+#: ../src/cdcproto.cpp:1830
 #, c-format
 msgid "You can't search unless you are registered with class: %d"
-msgstr ""
-"Вы не можете использовать поиск до тех пор пока не будете зарегистрированы с "
-"классом: %d"
+msgstr "Вы не можете использовать поиск до тех пор пока не будете зарегистрированы с классом: %d"
 
-#: ../src/cdcproto.cpp:1526 ../src/cdcproto.cpp:1535
+#: ../src/cdcproto.cpp:1844 ../src/cdcproto.cpp:1853
 #, c-format
 msgid "Minimum search length is: %d"
 msgstr "Минимальная длина поиска: %d"
 
-#: ../src/cdcproto.cpp:1550
+#: ../src/cdcproto.cpp:1868
 msgid "Sorry, hub is too busy now, no search is available, please try later."
-msgstr ""
-"К сожалению, хаб сейчас занят, поиск не доступен, пожалуйста попробуйте "
-"позднее."
+msgstr "К сожалению, хаб сейчас занят, поиск не доступен, пожалуйста попробуйте позднее."
 
-#: ../src/cdcproto.cpp:1640
+#: ../src/cdcproto.cpp:1958
 #, c-format
 msgid "You can do %d searches in %d seconds."
 msgstr "Вам разрешено отправлять %d поисковых запросов за %d секунд."
 
-#: ../src/cdcproto.cpp:1684
+#: ../src/cdcproto.cpp:2029
 #, c-format
 msgid "Your nick is not %s but %s. Disconnecting."
 msgstr "Ваш ник не %s, а %s. Отключение."
 
-#: ../src/cdcproto.cpp:1723
+#: ../src/cdcproto.cpp:2088
 msgid "You have not rights to use redirects."
 msgstr "У вас нет прав на использование перенаправлений."
 
-#: ../src/cdcproto.cpp:1739
+#: ../src/cdcproto.cpp:2104
 #, c-format
 msgid "User %s is protected or you have no rights on him"
 msgstr "Пользователь %s защищён или у вас нет доступа"
 
-#: ../src/cdcproto.cpp:1751
+#: ../src/cdcproto.cpp:2116
 #, c-format
 msgid "You are being redirected to %s because: %s"
 msgstr "Перенаправление на %s по причине: %s"
 
-#: ../src/cdcproto.cpp:1762
+#: ../src/cdcproto.cpp:2127
 msgid "User is not online or you tried to redirect a robot."
 msgstr "Пользователь не в сети или вы пытались перенаправить бота."
 
-#: ../src/cdcproto.cpp:1864
-msgid "You can't ban a protected user or with higher privilegies."
-msgstr ""
-"Вы не можете банить защищенных пользователей или пользователей с большими, "
-"чем у вас, привилегиями. "
+#: ../src/cdcproto.cpp:2150
+msgid "Invalid login sequence, your client already sent supports."
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил поддерживаемые функции."
 
-#: ../src/cdcproto.cpp:1870
+#: ../src/cdcproto.cpp:2273
+msgid "You can't ban a protected user or with higher privilegies."
+msgstr "Вы не можете банить защищенных пользователей или пользователей с большими, чем у вас, привилегиями. "
+
+#: ../src/cdcproto.cpp:2279
 msgid "You can't ban a robot."
 msgstr "Вы не можете банить роботов."
 
-#: ../src/cdcproto.cpp:1876
+#: ../src/cdcproto.cpp:2285
 #, c-format
 msgid "You are being temporarily banned for %s because %s"
 msgstr "Вы временно отключены на %s по причине %s"
 
-#: ../src/cdcproto.cpp:1878
+#: ../src/cdcproto.cpp:2287
 #, c-format
 msgid "You are banned because %s"
 msgstr "Доступ закрыт по причине %s"
 
-#: ../src/cdcproto.cpp:1943 ../src/cdcproto.cpp:1959
+#: ../src/cdcproto.cpp:2352 ../src/cdcproto.cpp:2368
 #, c-format
 msgid "Unknown hub command: %s"
 msgstr "Неизвестная команда хаба: %s"
 
-#: ../src/cdcproto.cpp:1985
+#: ../src/cdcproto.cpp:2417
 #, c-format
 msgid "No banned user found with ip %s."
 msgstr "Не найдено банов пользователей с IP %s."
 
-#: ../src/cdcproto.cpp:1989
+#: ../src/cdcproto.cpp:2421
 #, c-format
 msgid "Removed %d bans."
 msgstr "Удалено %d банов."
 
-#: ../src/cdcproto.cpp:2015
+#: ../src/cdcproto.cpp:2467
+msgid "Invalid protocol sequence, you already sent pinger information."
+msgstr "Ошибка порядка авторизации, ваш клиент уже отправил информацию о пингере."
+
+#: ../src/cdcproto.cpp:2482
 msgid ""
 "You can't send $BotINFO because BotINFO extension is not set in $Supports."
-msgstr ""
-"Вы не можете отправлять $BotINFO, потому что расширение BotINFO отсутствует "
-"в $Supports."
+msgstr "Вы не можете отправлять $BotINFO, потому что расширение BotINFO отсутствует в $Supports."
 
-#: ../src/cdcproto.cpp:2024
+#: ../src/cdcproto.cpp:2491
 #, c-format
 msgid "Pinger entered the hub: %s"
 msgstr "Пингер поситил хаб: %s"
 
-#: ../src/cdcproto.cpp:2104
+#: ../src/cdcproto.cpp:2635
 msgid "You do not have permissions to change the hub topic."
 msgstr "У вас нет прав на изменение темы хаба."
 
-#: ../src/cdcproto.cpp:2111
+#: ../src/cdcproto.cpp:2642
 #, c-format
 msgid "Topis is set to: %s"
 msgstr "Тема хаба изменена: %s"
@@ -1465,17 +1432,13 @@ msgstr "Подключения через прокси-сервер запрещены."
 
 #: ../src/cdctag.cpp:76
 msgid "Passive connections are restricted, consider changing to active."
-msgstr ""
-"Подключения в пассивном режиме запрещены, рассмотрите переход на активный "
-"режим."
+msgstr "Подключения в пассивном режиме запрещены, рассмотрите переход на активный режим."
 
 #: ../src/cdctag.cpp:82
 msgid ""
 "Your client tag is reporting less than 0 hubs or less than 0 slots, looks "
 "like a bug in your client."
-msgstr ""
-"В представленном вашим клиентом тэге меньше чем 0 хабов или слотов, похоже "
-"на ошибку в вашем клиенте."
+msgstr "В представленном вашим клиентом тэге меньше чем 0 хабов или слотов, похоже на ошибку в вашем клиенте."
 
 #: ../src/cdctag.cpp:90
 msgid "Unknown clients are not allowed in this hub."
@@ -1494,48 +1457,36 @@ msgstr "Слишком мало открытых хабов,  минимально разрешено %d, а у вас %d."
 #: ../src/cdctag.cpp:108
 #, c-format
 msgid "Too few open hubs as user, minimum is %d and you have %d."
-msgstr ""
-"Слишком мало открытых хабов как пользователь, минимально разрешено %d, а у "
-"вас %d."
+msgstr "Слишком мало открытых хабов как пользователь, минимально разрешено %d, а у вас %d."
 
 #: ../src/cdctag.cpp:114
 #, c-format
 msgid "Too few open hubs as registered user, minimum is %d and you have %d."
-msgstr ""
-"Слишком мало открытых хабов как зарегистрированный пользователь, минимально "
-"разрешено %d, а у вас %d."
+msgstr "Слишком мало открытых хабов как зарегистрированный пользователь, минимально разрешено %d, а у вас %d."
 
 #: ../src/cdctag.cpp:120
 #, c-format
 msgid "Too few open hubs as operator, minimum is %d and you have %d."
-msgstr ""
-"Слишком мало открытых хабов как оператор, минимально разрешено %d, а у вас "
-"%d."
+msgstr "Слишком мало открытых хабов как оператор, минимально разрешено %d, а у вас %d."
 
 #: ../src/cdctag.cpp:126
 #, c-format
 msgid ""
 "Too little open slots for your connection type %s, minimum is %d and you "
 "have %d."
-msgstr ""
-"Слишком мало открытых слотов для вашего типа соединения %s, минимально "
-"разрешено %d, а у вас %d."
+msgstr "Слишком мало открытых слотов для вашего типа соединения %s, минимально разрешено %d, а у вас %d."
 
 #: ../src/cdctag.cpp:132
 #, c-format
 msgid ""
 "Too many open slots for your connection type %s, maximum is %d and you have "
 "%d."
-msgstr ""
-"Слишком много открытых слотов для вашего типа соединения %s, максимально "
-"разрешено %d, а у вас %d."
+msgstr "Слишком много открытых слотов для вашего типа соединения %s, максимально разрешено %d, а у вас %d."
 
 #: ../src/cdctag.cpp:141
 #, c-format
 msgid "Your slots per hub ratio %.2f is too low, minimum is %.2f."
-msgstr ""
-"Ваше соотношение слотов на хаб %.2f слишком маленькое, минимально разрешено "
-"%.2f."
+msgstr "Ваше соотношение слотов на хаб %.2f слишком маленькое, минимально разрешено %.2f."
 
 #: ../src/cdctag.cpp:142 ../src/cdctag.cpp:149
 #, c-format
@@ -1545,27 +1496,21 @@ msgstr "Откройте %d слотов для %d хабов."
 #: ../src/cdctag.cpp:148
 #, c-format
 msgid "Your slots per hub ratio %.2f is too high, maximum is %.2f."
-msgstr ""
-"Ваше соотношение слотов на хаб %.2f слишком большое, максимально разрешено "
-"%.2f."
+msgstr "Ваше соотношение слотов на хаб %.2f слишком большое, максимально разрешено %.2f."
 
 #: ../src/cdctag.cpp:157
 #, c-format
 msgid ""
 "Too low upload limit for your connection type %s, minimum upload rate is "
 "%.2f."
-msgstr ""
-"Слишком низкое ограничение на скорость отдачи для вашего типа соединения %s, "
-"минимально разрешенная скорость отдачи %.2f."
+msgstr "Слишком низкое ограничение на скорость отдачи для вашего типа соединения %s, минимально разрешенная скорость отдачи %.2f."
 
 #: ../src/cdctag.cpp:163
 #, c-format
 msgid ""
 "Too low upload limit per slot for your connection type %s, minimum upload "
 "limit is %.2f per slot."
-msgstr ""
-"Слишком низкое ограничение на скорость отдачи на слот для вашего типа "
-"соединения %s, минимально разрешенная скорость отдачи на слот %.2f."
+msgstr "Слишком низкое ограничение на скорость отдачи на слот для вашего типа соединения %s, минимально разрешенная скорость отдачи на слот %.2f."
 
 #: ../src/cdctag.cpp:178
 msgid "Your client version is too old, please upgrade it."
@@ -1583,9 +1528,7 @@ msgstr "Минимально допустимая версия вашего клиента: %.2f"
 
 #: ../src/cdctag.cpp:190
 msgid "Your client version is too recent, please downgrade it."
-msgstr ""
-"Версия вашего клиента на столько новая, что мы просим вас использовать более "
-"старую."
+msgstr "Версия вашего клиента на столько новая, что мы просим вас использовать более старую."
 
 #: ../src/cdctag.cpp:193
 #, c-format
@@ -1609,7 +1552,7 @@ msgstr "Режим"
 msgid "SOCKS5"
 msgstr "SOCKS5"
 
-#: ../src/cdctag.cpp:216
+#: ../src/cdctag.cpp:216 ../src/cuser.cpp:451
 msgid "Other"
 msgstr "Другой"
 
@@ -1885,218 +1828,202 @@ msgstr "IP для авторизации"
 msgid "Alternate IP"
 msgstr "Альтернативный IP"
 
-#: ../src/cserverdc.cpp:380
+#: ../src/cserverdc.cpp:377
 msgid "You won't see public chat messages, to restore use +chat command."
-msgstr ""
-"Вы не увидите сообщений общего чата, для восстановления используйте команду "
-"+chat."
+msgstr "Вы не увидите сообщений общего чата, для восстановления используйте команду +chat."
 
-#: ../src/cserverdc.cpp:630
+#: ../src/cserverdc.cpp:657
 msgid ""
 "The hub is currently unable to service your request. Please try again in a "
 "few minutes."
-msgstr ""
-"Хаб в настоящее время не смог обработать ваш запрос. Повторите попытку через "
-"несколько минут."
+msgstr "Хаб в настоящее время не смог обработать ваш запрос. Повторите попытку через несколько минут."
 
-#: ../src/cserverdc.cpp:675
+#: ../src/cserverdc.cpp:702
 msgid "Another user has logged in with same nick and IP address."
 msgstr "Другой пользователь зашел на хаб с таким же ником и IP адресом."
 
-#: ../src/cserverdc.cpp:689
+#: ../src/cserverdc.cpp:716
 msgid "Your nick is already taken by another user."
 msgstr "Ваш ник уже занят другим пользователем."
 
-#: ../src/cserverdc.cpp:760
+#: ../src/cserverdc.cpp:787
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
-msgstr ""
-"Вы должны немедленно ввести ваш пароль используя команду +passwd, либо "
-"введите его в окне для ввода пароля."
+msgstr "Вы должны немедленно ввести ваш пароль используя команду +passwd, либо введите его в окне для ввода пароля."
 
-#: ../src/cserverdc.cpp:762
+#: ../src/cserverdc.cpp:789
 msgid "You must set your password now using +passwd command."
 msgstr "Вы должны немедленно ввести ваш пароль используя команду +passwd."
 
-#: ../src/cserverdc.cpp:1062
+#: ../src/cserverdc.cpp:1089
 msgid "Your nick contains forbidden characters."
 msgstr "Ваш ник содержит запрещенные символы."
 
-#: ../src/cserverdc.cpp:1065
+#: ../src/cserverdc.cpp:1092
 #, c-format
 msgid "Valid nick characters: %s"
 msgstr "Доступные символы в нике: %s"
 
-#: ../src/cserverdc.cpp:1071
+#: ../src/cserverdc.cpp:1098
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr "Ваш ник слишком короткий, минимальная длина ника %d символов."
 
-#: ../src/cserverdc.cpp:1076
+#: ../src/cserverdc.cpp:1103
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr "Ваш ник слишком длинный, максимальная длина ника %d символов."
 
-#: ../src/cserverdc.cpp:1081
+#: ../src/cserverdc.cpp:1108
 msgid "Your nick is already in use, please use something else."
 msgstr "Ваш ник уже используется, пожалуйста используйте другой."
 
-#: ../src/cserverdc.cpp:1087
+#: ../src/cserverdc.cpp:1114
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
-msgstr ""
-"Пожалуйста, воспользуйтесь одним из представленных префиксов для ника: %s"
+msgstr "Пожалуйста, воспользуйтесь одним из представленных префиксов для ника: %s"
 
-#: ../src/cserverdc.cpp:1092
+#: ../src/cserverdc.cpp:1119
 msgid ""
-"Your nick contains operator prefix but you are not registered, please remove "
-"it."
-msgstr ""
-"Ваш ник содержит префикс оператора, но вы еще не зарегистрированы, "
-"пожалуйста, удалите префикс."
+"Your nick contains operator prefix but you are not registered, please remove"
+" it."
+msgstr "Ваш ник содержит префикс оператора, но вы еще не зарегистрированы, пожалуйста, удалите префикс."
 
-#: ../src/cserverdc.cpp:1097
+#: ../src/cserverdc.cpp:1124
 #, c-format
 msgid "You are reconnecting too fast, please wait %s."
 msgstr "Вы переподключились слишком быстро, подождите еще %s."
 
-#: ../src/cserverdc.cpp:1102
+#: ../src/cserverdc.cpp:1129
 msgid "Unknown bad nick error, sorry."
 msgstr "Неизвестная ошибка неверного ника, извините."
 
-#: ../src/cserverdc.cpp:1130
+#: ../src/cserverdc.cpp:1157
 msgid "You are banned from this hub"
 msgstr "Вы забанены на этом хабе."
 
-#: ../src/cserverdc.cpp:1146
+#: ../src/cserverdc.cpp:1173
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr "Пожалуйста, используйте следующий префикс ника: %s"
 
-#: ../src/cserverdc.cpp:1311
+#: ../src/cserverdc.cpp:1338
 msgid ""
-"Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), "
-"M(onth), Y(ear).\n"
+"Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 "Default is 'd'."
-msgstr ""
-"Ошибка. Доступные единицы: s(секунд),  m(минут), h(часов), d(дней), "
-"w(недель), M(месяцев), Y(лет). По умолчанию 'd'."
+msgstr "Ошибка. Доступные единицы: s(секунд),  m(минут), h(часов), d(дней), w(недель), M(месяцев), Y(лет). По умолчанию 'd'."
 
-#: ../src/cserverdc.cpp:1320
+#: ../src/cserverdc.cpp:1347
 msgid "Please provide a positive number."
 msgstr "Просьба представить положительное число."
 
-#: ../src/cserverdc.cpp:1341
+#: ../src/cserverdc.cpp:1368
 msgid "Hublist registration results:"
 msgstr "Результаты регистрации на хаб-листе:"
 
-#: ../src/cserverdc.cpp:1343
+#: ../src/cserverdc.cpp:1370
 #, c-format
 msgid "Sending to %s:%d..."
 msgstr "Отправка %s:%d..."
 
-#: ../src/cserverdc.cpp:1347
+#: ../src/cserverdc.cpp:1374
 msgid "connection failed"
 msgstr "Не удалось установить соединение"
 
-#: ../src/cserverdc.cpp:1386
+#: ../src/cserverdc.cpp:1413
 msgid "error sending info"
 msgstr "Ошибка при отправке информации"
 
-#: ../src/cserverdc.cpp:1390
+#: ../src/cserverdc.cpp:1417
 msgid ".. OK"
 msgstr ".. ОК"
 
-#: ../src/cserverdc.cpp:1393
+#: ../src/cserverdc.cpp:1420
 msgid "Done"
 msgstr "Готово"
 
-#: ../src/cserverdc.cpp:1406
+#: ../src/cserverdc.cpp:1433
 msgid "Registering the hub in hublists. This may take a while, please wait..."
-msgstr ""
-"Регистрация хаба на хаб-листах. Это может занять некоторое время, пожалуйста "
-"подождите..."
+msgstr "Регистрация хаба на хаб-листах. Это может занять некоторое время, пожалуйста подождите..."
 
-#: ../src/cserverdc.cpp:1532
+#: ../src/cserverdc.cpp:1576
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr "Софт: %s %s @ %s"
 
-#: ../src/cserverdc.cpp:1533
+#: ../src/cserverdc.cpp:1577
 #, c-format
 msgid "Uptime: %s"
 msgstr "Время работы: %s"
 
-#: ../src/cserverdc.cpp:1534
+#: ../src/cserverdc.cpp:1578
 #, c-format
 msgid "Users: %d"
 msgstr "Пользователей: %d"
 
-#: ../src/cserverdc.cpp:1535
+#: ../src/cserverdc.cpp:1579
 #, c-format
 msgid "Share: %s"
 msgstr "Общая шара: %s"
 
-#: ../src/cserverdc.cpp:1536
+#: ../src/cserverdc.cpp:1580
 #, c-format
 msgid "Status: %s"
 msgstr "Статус хаба: %s"
 
-#: ../src/cserverdc.cpp:1539
+#: ../src/cserverdc.cpp:1583
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
-msgstr ""
-"Софт: %s %s @ %s%s ][ Время работы: %s ][ Пользователей: %d ][ Общая шара: %s"
+msgstr "Софт: %s %s @ %s%s ][ Время работы: %s ][ Пользователей: %d ][ Общая шара: %s"
 
-#: ../src/cserverdc.cpp:1599
+#: ../src/cserverdc.cpp:1643
 #, c-format
 msgid "You have been kicked because %s"
 msgstr "Вы были отключены по причине %s"
 
-#: ../src/cserverdc.cpp:1609
+#: ../src/cserverdc.cpp:1653
 #, c-format
 msgid "Kicked user %s"
 msgstr "Пользователь %s кикнут"
 
-#: ../src/cserverdc.cpp:1611
+#: ../src/cserverdc.cpp:1655
 #, c-format
 msgid "Dropped user %s"
 msgstr "Пользователь %s отключён"
 
-#: ../src/cserverdc.cpp:1613
+#: ../src/cserverdc.cpp:1657
 #, c-format
 msgid "with IP %s"
 msgstr "с IP %s"
 
-#: ../src/cserverdc.cpp:1616
+#: ../src/cserverdc.cpp:1660
 #, c-format
 msgid "and host %s"
 msgstr "и хостом %s"
 
-#: ../src/cserverdc.cpp:1645
+#: ../src/cserverdc.cpp:1689
 msgid "dropped"
 msgstr "отключён"
 
-#: ../src/cserverdc.cpp:1649
+#: ../src/cserverdc.cpp:1693
 msgid "Disconnect prevented by a plugin."
 msgstr "Отключение предотвращено плагином."
 
-#: ../src/cserverdc.cpp:1660
+#: ../src/cserverdc.cpp:1704
 #, c-format
 msgid "User banned for %s."
 msgstr "Пользователь забанен на %s."
 
-#: ../src/cserverdc.cpp:1662
+#: ../src/cserverdc.cpp:1706
 msgid "User banned permanently."
 msgstr "Пользователь забанен на всегда."
 
-#: ../src/cserverdc.cpp:1674
+#: ../src/cserverdc.cpp:1718
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
-msgstr ""
-"Ошибка отключения пользователя %s потому, что он защищён от классов ниже %d"
+msgstr "Ошибка отключения пользователя %s потому, что он защищён от классов ниже %d"
 
 #: ../src/ctime.cpp:79
 #, c-format
@@ -2159,259 +2086,263 @@ msgstr[0] "%ld миксек"
 msgstr[1] "%ld миксек"
 msgstr[2] "%ld миксек"
 
-#: ../src/ctriggers.cpp:315
+#: ../src/ctriggers.cpp:322
 msgid ""
 "The definition is empty or not specified. Please define it with -d option."
-msgstr ""
-"Определение пустое или не указано. Пожалуйста, определите его опцией -d."
+msgstr "Определение пустое или не указано. Пожалуйста, определите его опцией -d."
 
-#: ../src/ctriggers.cpp:320
+#: ../src/ctriggers.cpp:327
 msgid "It's not allowed to define dbconfig file as trigger."
 msgstr "Запрещено использовать файл dbconfig в качестве триггера."
 
-#: ../src/ctriggers.cpp:323
+#: ../src/ctriggers.cpp:330
 #, c-format
 msgid "User '%s' tried to define dbconfig as trigger"
 msgstr "Пользователь '%s' пытался использовать файл dbconfig как триггер"
 
-#: ../src/ctriggers.cpp:334
+#: ../src/ctriggers.cpp:341
 #, c-format
 msgid ""
-"The file %s for the trigger %s must be locate in Verlihub config folder (use "
-"%%[CFG] variable; for ex %%[CFG]/%s)"
-msgstr ""
-"Файл %s для триггера %s должен быть размещён в папке конфигурации VerliHub "
-"(используйте %%[CFG] переменную; например %%[CFG] /%s)"
+"The file %s for the trigger %s must be locate in Verlihub config folder (use"
+" %%[CFG] variable; for ex %%[CFG]/%s)"
+msgstr "Файл %s для триггера %s должен быть размещён в папке конфигурации VerliHub (используйте %%[CFG] переменную; например %%[CFG] /%s)"
 
-#: ../src/ctriggers.cpp:428
+#: ../src/ctriggers.cpp:435
 msgid "Definition"
 msgstr "Определение"
 
-#: ../src/ctriggers.cpp:429
+#: ../src/ctriggers.cpp:436
 msgid "Flag"
 msgstr "Флаг"
 
-#: ../src/ctriggers.cpp:430
+#: ../src/ctriggers.cpp:437
 msgid "Send as"
 msgstr "Отправить как"
 
-#: ../src/ctriggers.cpp:431
+#: ../src/ctriggers.cpp:438
 msgid "Min class"
 msgstr "Минимальный класс"
 
-#: ../src/ctriggers.cpp:432
+#: ../src/ctriggers.cpp:439
 msgid "Max class"
 msgstr "Максимальный класс"
 
-#: ../src/cuser.cpp:229
+#: ../src/cuser.cpp:231
 msgid "Default class"
 msgstr "Класс по умолчанию"
 
-#: ../src/cuser.cpp:230
+#: ../src/cuser.cpp:232
 msgid "In list"
 msgstr "В списке"
 
-#: ../src/cuser.cpp:233
+#: ../src/cuser.cpp:235
 msgid "Special user"
 msgstr "Специальный пользователь"
 
-#: ../src/cuser.cpp:248
+#: ../src/cuser.cpp:250
 msgid "User rights information"
 msgstr "Информация по правам"
 
-#: ../src/cuser.cpp:249
+#: ../src/cuser.cpp:251
 #, c-format
 msgid "Nick: %s"
 msgstr "Ник: %s"
 
-#: ../src/cuser.cpp:250
+#: ../src/cuser.cpp:252
 #, c-format
 msgid "Class: %d"
 msgstr "Класс: %d"
 
-#: ../src/cuser.cpp:255 ../src/cuser.cpp:257 ../src/cuser.cpp:261
-#: ../src/cuser.cpp:263
+#: ../src/cuser.cpp:257 ../src/cuser.cpp:259 ../src/cuser.cpp:263
+#: ../src/cuser.cpp:265
 #, c-format
 msgid "Can use main chat: %s"
 msgstr "Может использовать главный чат: %s"
 
-#: ../src/cuser.cpp:260 ../src/cuser.cpp:272 ../src/cuser.cpp:294
-#: ../src/cuser.cpp:306
+#: ../src/cuser.cpp:262 ../src/cuser.cpp:274 ../src/cuser.cpp:296
+#: ../src/cuser.cpp:308
 #, c-format
 msgid "No [%s]"
 msgstr "Нет [%s]"
 
-#: ../src/cuser.cpp:267 ../src/cuser.cpp:269 ../src/cuser.cpp:273
-#: ../src/cuser.cpp:275
+#: ../src/cuser.cpp:269 ../src/cuser.cpp:271 ../src/cuser.cpp:275
+#: ../src/cuser.cpp:277
 #, c-format
 msgid "Can use private chat: %s"
 msgstr "Может использовать приватный чат: %s"
 
-#: ../src/cuser.cpp:279 ../src/cuser.cpp:283 ../src/cuser.cpp:285
+#: ../src/cuser.cpp:281 ../src/cuser.cpp:285 ../src/cuser.cpp:287
 #, c-format
 msgid "Can use operator chat: %s"
 msgstr "Может использовать чат операторов: %s"
 
-#: ../src/cuser.cpp:282 ../src/cuser.cpp:316 ../src/cuser.cpp:326
-#: ../src/cuser.cpp:336 ../src/cuser.cpp:346 ../src/cuser.cpp:356
-#: ../src/cuser.cpp:366
+#: ../src/cuser.cpp:284 ../src/cuser.cpp:318 ../src/cuser.cpp:328
+#: ../src/cuser.cpp:338 ../src/cuser.cpp:348 ../src/cuser.cpp:358
+#: ../src/cuser.cpp:368
 #, c-format
 msgid "Yes [%s]"
 msgstr "Да [%s]"
 
-#: ../src/cuser.cpp:289 ../src/cuser.cpp:291 ../src/cuser.cpp:295
-#: ../src/cuser.cpp:297
+#: ../src/cuser.cpp:291 ../src/cuser.cpp:293 ../src/cuser.cpp:297
+#: ../src/cuser.cpp:299
 #, c-format
 msgid "Can search files: %s"
 msgstr "Может искать файлы: %s"
 
-#: ../src/cuser.cpp:301 ../src/cuser.cpp:303 ../src/cuser.cpp:307
-#: ../src/cuser.cpp:309
+#: ../src/cuser.cpp:303 ../src/cuser.cpp:305 ../src/cuser.cpp:309
+#: ../src/cuser.cpp:311
 #, c-format
 msgid "Can download files: %s"
 msgstr "Может загружать файлы: %s"
 
-#: ../src/cuser.cpp:313 ../src/cuser.cpp:317 ../src/cuser.cpp:319
+#: ../src/cuser.cpp:315 ../src/cuser.cpp:319 ../src/cuser.cpp:321
 #, c-format
 msgid "Can hide share: %s"
 msgstr "Может скрыть шару: %s"
 
-#: ../src/cuser.cpp:323 ../src/cuser.cpp:327 ../src/cuser.cpp:329
+#: ../src/cuser.cpp:325 ../src/cuser.cpp:329 ../src/cuser.cpp:331
 #, c-format
 msgid "Can register users: %s"
 msgstr "Может регистрировать пользователей: %s"
 
-#: ../src/cuser.cpp:333 ../src/cuser.cpp:337 ../src/cuser.cpp:339
+#: ../src/cuser.cpp:335 ../src/cuser.cpp:339 ../src/cuser.cpp:341
 #, c-format
 msgid "Can drop users: %s"
 msgstr "Может отключать пользователей: %s"
 
-#: ../src/cuser.cpp:343 ../src/cuser.cpp:347 ../src/cuser.cpp:349
+#: ../src/cuser.cpp:345 ../src/cuser.cpp:349 ../src/cuser.cpp:351
 #, c-format
 msgid "Can kick users: %s"
 msgstr "Может выкидывать пользователей: %s"
 
-#: ../src/cuser.cpp:353 ../src/cuser.cpp:357 ../src/cuser.cpp:359
+#: ../src/cuser.cpp:355 ../src/cuser.cpp:359 ../src/cuser.cpp:361
 #, c-format
 msgid "Can temporarily ban users: %s"
 msgstr "Может давать временные баны: %s"
 
-#: ../src/cuser.cpp:363 ../src/cuser.cpp:367 ../src/cuser.cpp:369
+#: ../src/cuser.cpp:365 ../src/cuser.cpp:369 ../src/cuser.cpp:371
 #, c-format
 msgid "Can permanently ban users: %s"
 msgstr "Может давать постоянные баны: %s"
 
-#: ../src/cuser.cpp:400
+#: ../src/cuser.cpp:410
+msgid "Protocol flood detected"
+msgstr "Обнаружен флуд протокольной командой"
+
+#: ../src/cuser.cpp:415
+msgid "Chat"
+msgstr "Чат"
+
+#: ../src/cuser.cpp:492
 #, c-format
 msgid "You're no longer allowed to use main chat for %s."
 msgstr "Вы больше не можете использовать главный чат в течении %s."
 
-#: ../src/cuser.cpp:403
+#: ../src/cuser.cpp:495
 msgid "You're now allowed to use main chat."
 msgstr "Вам разрешено использовать главный чат."
 
-#: ../src/cuser.cpp:410
+#: ../src/cuser.cpp:502
 #, c-format
 msgid "You're no longer allowed to use private chat for %s."
 msgstr "Вы больше не можете использовать приватный чат в течении %s."
 
-#: ../src/cuser.cpp:413
+#: ../src/cuser.cpp:505
 msgid "You're now allowed to use private chat."
 msgstr "Вам разрешено использовать приватный чат."
 
-#: ../src/cuser.cpp:420
+#: ../src/cuser.cpp:512
 #, c-format
 msgid "You're no longer allowed to search files for %s."
 msgstr "Вы больше не можете использовать поиск файлов в течении %s."
 
-#: ../src/cuser.cpp:423
+#: ../src/cuser.cpp:515
 msgid "You're now allowed to search files."
 msgstr "Вам разрешено использовать поиск файлов."
 
-#: ../src/cuser.cpp:430
+#: ../src/cuser.cpp:522
 #, c-format
 msgid "You're no longer allowed to download files for %s."
 msgstr "Вы больше не можете скачивать файлы в течении %s."
 
-#: ../src/cuser.cpp:433
+#: ../src/cuser.cpp:525
 msgid "You're now allowed to download files."
 msgstr "Вам разрешено скачивать файлы."
 
-#: ../src/cuser.cpp:440
+#: ../src/cuser.cpp:532
 msgid "You're no longer allowed to kick users."
 msgstr "Вы больше не можете выкидывать пользователей."
 
-#: ../src/cuser.cpp:443
+#: ../src/cuser.cpp:535
 #, c-format
 msgid "You're now allowed to kick users for %s."
 msgstr "Вам разрешено выкидывать пользователей в течении %s."
 
-#: ../src/cuser.cpp:450
+#: ../src/cuser.cpp:542
 msgid "You're no longer allowed to register users."
 msgstr "Вы больше не можете регистрировать пользователей."
 
-#: ../src/cuser.cpp:453
+#: ../src/cuser.cpp:545
 #, c-format
 msgid "You're now allowed to register users for %s."
 msgstr "Вам разрешено регистрировать пользователей в течении %s."
 
-#: ../src/cuser.cpp:460
+#: ../src/cuser.cpp:552
 msgid "You're no longer allowed to use operator chat."
 msgstr "Вы больше не можете пользоваться чатом операторов."
 
-#: ../src/cuser.cpp:463
+#: ../src/cuser.cpp:555
 #, c-format
 msgid "You're now allowed to use operator chat for %s."
 msgstr "Вам разрешено пользоваться чатом операторов в течении %s."
 
-#: ../src/cuser.cpp:470
+#: ../src/cuser.cpp:562
 msgid "You're no longer allowed to hide share."
 msgstr "Вы больше не можете скрывать шару."
 
-#: ../src/cuser.cpp:473
+#: ../src/cuser.cpp:565
 #, c-format
 msgid "You're now allowed to hide share for %s."
 msgstr "Вам разрешено скрывать шару в течении %s."
 
-#: ../src/cuser.cpp:480
+#: ../src/cuser.cpp:572
 msgid "You're no longer allowed to drop users."
 msgstr "Вы больше не можете отключать пользователей."
 
-#: ../src/cuser.cpp:483
+#: ../src/cuser.cpp:575
 #, c-format
 msgid "You're now allowed to drop users for %s."
 msgstr "Вам разрешено отключать пользователей в течении %s."
 
-#: ../src/cuser.cpp:490
+#: ../src/cuser.cpp:582
 msgid "You're no longer allowed to temporarily ban users."
 msgstr "Вы больше не можете ставить временные баны пользователям."
 
-#: ../src/cuser.cpp:493
+#: ../src/cuser.cpp:585
 #, c-format
 msgid "You're now allowed to temporarily ban users for %s."
 msgstr "Вам разрешено ставить временные баны пользователям, в течении %s."
 
-#: ../src/cuser.cpp:500
+#: ../src/cuser.cpp:592
 msgid "You're no longer allowed to permanently ban users."
 msgstr "Вы больше не можете ставить постоянные баны пользователям."
 
-#: ../src/cuser.cpp:503
+#: ../src/cuser.cpp:595
 #, c-format
 msgid "You're now allowed to permanently ban users for %s."
 msgstr "Вам разрешено ставить постоянные баны пользователям, в течении %s."
 
-#: ../src/cuser.cpp:597
+#: ../src/cuser.cpp:689
 msgid "Unknown chatroom command specified."
 msgstr "Введена неизвестная команда чата."
 
-#: ../src/cuser.cpp:604
+#: ../src/cuser.cpp:696
 msgid "You can't use this chatroom, use main chat instead."
 msgstr "Вы не можете использовать этот чат, используйте главный чат."
 
-#: ../src/cuser.cpp:640
+#: ../src/cuser.cpp:732
 msgid "Hub security doesn't accept private messages, use main chat instead."
-msgstr ""
-"Главный бот хаба не принимает личных сообщений, используйте главный чат."
+msgstr "Главный бот хаба не принимает личных сообщений, используйте главный чат."
 
 #: ../src/cvhplugin.cpp:90
 #, c-format
@@ -2422,6 +2353,78 @@ msgstr "Плагин %s %s не может загрузить дополнительный скрипт."
 #, c-format
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "Плагин %s %s не может загрузить скрипт '%s'."
+
+#: ../src/stringutils.cpp:220
+msgid "B"
+msgstr "Б"
+
+#: ../src/stringutils.cpp:220
+msgid "KB"
+msgstr "Кб"
+
+#: ../src/stringutils.cpp:220
+msgid "MB"
+msgstr "Мб"
+
+#: ../src/stringutils.cpp:220
+msgid "GB"
+msgstr "Гб"
+
+#: ../src/stringutils.cpp:220
+msgid "TB"
+msgstr "Тб"
+
+#: ../src/stringutils.cpp:220
+msgid "PB"
+msgstr "Пб"
+
+#: ../src/stringutils.cpp:220
+msgid "EB"
+msgstr "Еб"
+
+#: ../src/stringutils.cpp:220
+msgid "ZB"
+msgstr "Зб"
+
+#: ../src/stringutils.cpp:220
+msgid "YB"
+msgstr "Йб"
+
+#: ../src/stringutils.cpp:221
+msgid "B/s"
+msgstr "Б/с"
+
+#: ../src/stringutils.cpp:221
+msgid "KB/s"
+msgstr "Кб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "MB/s"
+msgstr "Мб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "GB/s"
+msgstr "Гб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "TB/s"
+msgstr "Тб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "PB/s"
+msgstr "Пб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "EB/s"
+msgstr "Еб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "ZB/s"
+msgstr "Зб/с"
+
+#: ../src/stringutils.cpp:221
+msgid "YB/s"
+msgstr "Йб/с"
 
 #: ../src/tlistconsole.h:138
 msgid "No help available for this command."
