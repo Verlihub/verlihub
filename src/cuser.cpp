@@ -403,7 +403,7 @@ bool cUser::CheckProtoFlood(int type, unsigned long period, unsigned int limit)
 		} else {
 			long dif = now.Sec() - mProtoFloodTimes[type].Sec();
 
-			if (dif > period) {
+			if ((dif < 0) || (dif > period)) {
 				mProtoFloodCounts[type] = 1;
 				mProtoFloodTimes[type] = now;
 			} else if ((mProtoFloodCounts[type]++ >= limit) && (dif <= period)) {
