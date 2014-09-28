@@ -1443,6 +1443,56 @@ int _KickUser(lua_State *L)
 	return 1;
 }
 
+int _KickRedirUser(lua_State *L)
+{
+	if (lua_gettop(L) < 3) {
+		luaL_error(L, "Error calling VH:KickRedirUser, expected 4 arguments but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (serv == NULL) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || !lua_isstring(L, 5)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string niop = (char *)lua_tostring(L, 2);
+	string nius = (char *)lua_tostring(L, 3);
+	string reas = (char *)lua_tostring(L, 4);
+	string addr = (char *)lua_tostring(L, 5);
+
+	cUser *oper = serv->mUserList.GetUserByNick(niop);
+
+	if (oper == NULL) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cUser *user = serv->mUserList.GetUserByNick(nius);
+
+	if ((user == NULL) || (user->mxConn == NULL)) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	user->mxConn->mCloseRedirect = addr; // set redirect
+	serv->DCKickNick(NULL, oper, nius, reas, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN); // kick user
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
 int _SetConfig(lua_State *L)
 {
 	string config_name, var, val;

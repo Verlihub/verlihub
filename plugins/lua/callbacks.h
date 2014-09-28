@@ -75,6 +75,7 @@ namespace nVerliHub {
 	int _GetLuaBots(lua_State *L);
 	int _Ban(lua_State *L);
 	int _KickUser(lua_State *L);
+	int _KickRedirUser(lua_State *L);
 	int _ReportUser(lua_State *L);
 	int _SendToOpChat(lua_State *L);
 	int _ParseCommand(lua_State *L);

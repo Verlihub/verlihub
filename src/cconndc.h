@@ -393,6 +393,9 @@ namespace nVerliHub {
 
 				/// Reason of why connection was closed.
 				int mCloseReason;
+
+				// custom redirect address on close
+				string mCloseRedirect;
 			private:
 				/// The attempt of last login.
 				cTime mTimeLastAttempt;

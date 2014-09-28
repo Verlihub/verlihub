@@ -105,6 +105,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("InUserSupports", &_InUserSupports);
 	RegisterFunction("Ban",               &_Ban);
 	RegisterFunction("KickUser",          &_KickUser);
+	RegisterFunction("KickRedirUser", &_KickRedirUser);
 	RegisterFunction("ReportUser", &_ReportUser);
 	RegisterFunction("SendToOpChat", &_SendToOpChat);
 	RegisterFunction("ParseCommand", &_ParseCommand);
