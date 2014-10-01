@@ -1186,14 +1186,21 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
 {
 	cTime now;
-	string ProhibitedChars("$| ");
-	//ProhibitedChars.append("\0",1);
+	string ProhibitedChars("$|<> ");
+	//ProhibitedChars.append("\0", 1);
+
+	if (nick.npos != nick.find_first_of(ProhibitedChars)) // check even ops for special nick chars
+		return eVN_CHARS;
 
 	if (!registered) {
-		if(nick.size() > mC.max_nick ) return eVN_LONG;
-		if(nick.size() < mC.min_nick ) return eVN_SHORT;
-		if(nick.npos != nick.find_first_of(ProhibitedChars)) return eVN_CHARS;
-		if((mC.nick_chars.size()>0) && (nick.npos != nick.find_first_not_of(mC.nick_chars.c_str()))) return eVN_CHARS;
+		if (nick.size() > mC.max_nick)
+			return eVN_LONG;
+
+		if (nick.size() < mC.min_nick)
+			return eVN_SHORT;
+
+		if ((mC.nick_chars.size() > 0) && (nick.npos != nick.find_first_not_of(mC.nick_chars.c_str())))
+			return eVN_CHARS;
 
 		if (mC.nick_prefix.size() > 0) { // check nick prefix
 			bool ok = false;
@@ -1225,10 +1232,13 @@ tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
 				return eVN_PREFIX;
 		}
 
-		if(StrCompare(nick,0,4,"[OP]") == 0) return eVN_NOT_REGED_OP;
+		if (StrCompare(nick, 0, 4, "[OP]") == 0)
+			return eVN_NOT_REGED_OP;
 	}
-	if(mBanList->IsNickTempBanned(nick) > now.Sec())
+
+	if (mBanList->IsNickTempBanned(nick) > now.Sec())
 		return eVN_BANNED;
+
 	return eVN_OK;
 }
 

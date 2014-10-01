@@ -42,7 +42,12 @@ namespace nVerliHub {
 
 int StrCompare(const string &str1, int start, int count, const string &str2)
 {
-	return str1.compare(start,count,str2);
+	return str1.compare(start, count, str2);
+}
+
+int StrCompare(const string &str1, int start, int count, const char *str2)
+{
+	return str1.compare(start, count, str2);
 }
 
 string toLower(const string &str)

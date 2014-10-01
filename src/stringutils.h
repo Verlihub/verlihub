@@ -31,6 +31,7 @@ namespace nVerliHub {
 	namespace nUtils {
 
 int StrCompare(const string &str1, int Start, int Count, const string &str2);
+int StrCompare(const string &str1, int Start, int Count, const char *str2);
 string toLower(const string &str);
 string toUpper(const string &str);
 void ShrinkStringToFit(string &str);

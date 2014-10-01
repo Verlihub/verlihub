@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -30,11 +31,11 @@ namespace nVerliHub {
 cSetupList::cSetupList(cMySQL &mysql):cConfMySQL(mysql)
 {
 	mMySQLTable.mName = "SetupList";
-	AddCol("file", "varchar(15)", "" , false, mModel.mFile);
+	AddCol("file", "varchar(15)", "", false, mModel.mFile);
 	AddPrimaryKey("file");
-	AddCol("var", "varchar(32)", "" , false, mModel.mVarName);
+	AddCol("var", "varchar(32)", "", false, mModel.mVarName);
 	AddPrimaryKey("var");
-	AddCol("val", "text", "" , true, mModel.mVarValue);
+	AddCol("val", "text", "", true, mModel.mVarValue);
 	mMySQLTable.mExtra = "PRIMARY KEY (file, var)";
 	SetBaseTo(&mModel);
 }
@@ -43,17 +44,28 @@ cSetupList::~cSetupList()
 {
 }
 
-void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char*file)
+void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 {
 	db_iterator it;
 	cConfigItemBase *item = NULL;
 	SelectFields(mQuery.OStream());
 	mQuery.OStream() << " WHERE file='" << file << "'";
 
-	for(it = db_begin(); it != db_end(); ++it) {
+	for (it = db_begin(); it != db_end(); ++it) {
 		item = (*Config)[mModel.mVarName];
-		if (item) item->ConvertFrom(mModel.mVarValue);
+
+		if (item) {
+			if (mModel.mVarName == "hub_security" || mModel.mVarName == "opchat_name") { // replace special chars in nick
+				string newval;
+
+				if (ReplaceNickChars(mModel.mVarValue, newval) > 0)
+					mModel.mVarValue = newval;
+			}
+
+			item->ConvertFrom(mModel.mVarValue);
+		}
 	}
+
 	mQuery.Clear();
 }
 
@@ -74,20 +86,32 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 	for (it = db_begin(); it != db_end(); ++it) {
 		cDCProto::EscapeChars(mModel.mVarValue, val);
 		string varName = mModel.mVarName;
-		if (file == "plugins") varName = mModel.mFile + "." + varName;
+
+		if (file == "plugins")
+			varName = mModel.mFile + "." + varName;
+
 		os << " [*] " << varName << " = " << val << "\r\n";
 	}
 
 	mQuery.Clear();
 }
 
-void cSetupList::SaveFileTo(cConfigBaseBase *Config, const char*file)
+void cSetupList::SaveFileTo(cConfigBaseBase *Config, const char *file)
 {
 	cConfigBaseBase::iterator it;
 	mModel.mFile = file;
 	SetBaseTo(&mModel);
+
 	for(it = Config->begin(); it != Config->end(); ++it) {
 		mModel.mVarName = (*it)->mName;
+
+		if (mModel.mVarName == "hub_security" || mModel.mVarName == "opchat_name") { // replace special chars in nick
+			string newval;
+
+			if (ReplaceNickChars(mModel.mVarValue, newval) > 0)
+				mModel.mVarValue = newval;
+		}
+
 		(*it)->ConvertTo(mModel.mVarValue);
 		SavePK();
 	}
@@ -110,6 +134,55 @@ bool cSetupList::LoadItem(const char *FromFile, cConfigItemBase *ci)
 	LoadPK();
 	ci->ConvertFrom(mModel.mVarValue);
 	return true;
+}
+
+int cSetupList::ReplaceNickChars(string &src, string &dst)
+{
+	int count = 0;
+	size_t pos;
+	dst = src;
+
+	pos = dst.find("$"); // dollar
+
+	while (pos != dst.npos) {
+		dst.replace(pos, 1, "_");
+		pos = dst.find("$", pos);
+		count++;
+	}
+
+	pos = dst.find("|"); // pipe
+
+	while (pos != dst.npos) {
+		dst.replace(pos, 1, "_");
+		pos = dst.find("|", pos);
+		count++;
+	}
+
+	pos = dst.find(" "); // space
+
+	while (pos != dst.npos) {
+		dst.replace(pos, 1, "_");
+		pos = dst.find(" ", pos);
+		count++;
+	}
+
+	pos = dst.find("<"); // less
+
+	while (pos != dst.npos) {
+		dst.replace(pos, 1, "_");
+		pos = dst.find("<", pos);
+		count++;
+	}
+
+	pos = dst.find(">"); // greater
+
+	while (pos != dst.npos) {
+		dst.replace(pos, 1, "_");
+		pos = dst.find(">", pos);
+		count++;
+	}
+
+	return count;
 }
 
 	}; // namespace nTables
