@@ -43,8 +43,8 @@ public:
 	string db_charset;
 	string config_name;
 	string locale;
-	bool allow_exec;
-	bool allow_exec_mod;
+	//bool allow_exec;
+	//bool allow_exec_mod;
 
 };
 
