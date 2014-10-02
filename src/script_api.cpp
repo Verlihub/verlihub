@@ -498,7 +498,7 @@ bool GetTempRights(char *nick,  map<string,int> &rights)
 	cTime time = cTime().Sec();
 
 	static const int ids[] = { eUR_CHAT, eUR_PM, eUR_SEARCH, eUR_CTM, eUR_KICK, eUR_REG, eUR_OPCHAT, eUR_DROP, eUR_TBAN, eUR_PBAN, eUR_NOSHARE };
-	for(unsigned int i = 0; i < sizeof ids; i++) {
+	for(unsigned int i = 0; i < sizeof(ids); i++) {
 		string key;
 		switch(ids[i]) {
 			case eUR_CHAT:

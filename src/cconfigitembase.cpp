@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -44,10 +45,13 @@ void cConfigItemBaseChar	::ConvertFrom(const std::string &str){*this = *str.c_st
 void cConfigItemBaseString	::ConvertFrom(const std::string &str){*this = str;}
 void cConfigItemBasePChar	::ConvertFrom(const std::string &str)
 {
-	char *data = this->Data() ;
-	if( data ) delete data;
-	data = new char[str.size()+1];
-	memcpy(data,str.data(),str.size()+1);
+	char *data = this->Data();
+
+	if (data)
+		delete[] data;
+
+	data = new char[str.size() + 1];
+	memcpy(data, str.data(), str.size() + 1);
 	*this = data;
 }
 

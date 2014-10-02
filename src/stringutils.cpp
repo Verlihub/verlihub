@@ -103,47 +103,56 @@ bool LoadFileInString(const string &FileName, string &dest)
 
 void ExpandPath(string &Path)
 {
-
-if(Path.substr(0,2) == "./") {
+	if (Path.substr(0, 2) == "./") {
 		string tmp = Path;
-#ifdef _WIN32
-		char * cPath = new char[35];
-		int size = GetCurrentDirectory(35, cPath);
-		if(!size) {
-			delete cPath;
-			return;
-		}
-		else if(size > 35) {
-			delete cPath;
-			cPath = new char[size];
-			GetCurrentDirectory(35, cPath);
-		}
-		Path = string(cPath);
-		delete cPath;
-#elif defined HAVE_FREEBSD || HAVE_OPENBSD
-	Path = getcwd(NULL, PATH_MAX);
-#else
-		Path = get_current_dir_name();
-#endif
-		Path += "/" + tmp.substr(2,tmp.length());
+
+		#ifdef _WIN32
+			char * cPath = new char[35];
+			int size = GetCurrentDirectory(35, cPath);
+
+			if (!size) {
+				delete[] cPath;
+				return;
+			} else if (size > 35) {
+				delete[] cPath;
+				cPath = new char[size];
+				GetCurrentDirectory(35, cPath);
+			}
+
+			Path = string(cPath);
+			delete[] cPath;
+		#elif defined HAVE_FREEBSD || HAVE_OPENBSD
+			Path = getcwd(NULL, PATH_MAX);
+		#else
+			Path = get_current_dir_name();
+		#endif
+
+		Path += "/" + tmp.substr(2, tmp.length());
 	}
+
 	size_t pos;
-#if ! defined _WIN32
-	pos = Path.find("~");
-	if(pos != Path.npos) {
-		Path.replace(pos, 2, getenv("HOME"));
-	}
-#endif
-	// FIXME: It doesn't work on Windows
-	pos = Path.find("../");
+
+	#if ! defined _WIN32
+		pos = Path.find("~");
+
+		if (pos != Path.npos) {
+			Path.replace(pos, 2, getenv("HOME"));
+		}
+	#endif
+
+	pos = Path.find("../"); // todo: doesnt work on windows
+
 	while (pos != Path.npos) {
 		Path.replace(pos, 3, "");
 		pos = Path.find("../", pos);
 	}
+
 	int len = Path.length();
-	if(Path.substr(len-1,len) != "/")
+
+	if (Path.substr(len - 1, len) != "/")
 		Path.append("/");
 }
+
 void GetPath(const string FileName, string &Path, string &File)
 {
 	Path = FileName;
