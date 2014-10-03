@@ -251,8 +251,8 @@ void cDCConf::AddVars()
 	Add("int_nicklist",int_nicklist,60);
 	Add("int_login",int_login, 60);
 	Add("max_class_int_login",max_class_int_login,3);
-	Add("tban_kick",tban_kick,300);
-	Add("tban_max",tban_max,3600*24);
+	Add("tban_kick", tban_kick, 300);
+	Add("tban_max", tban_max, 3600 * 24 * 30);
 	Add("log_level",mS.msLogLevel, 0);
 	Add("dns_lookup",mS.mUseDNS, 0);
 	Add("report_dns_lookup",report_dns_lookup,0);
