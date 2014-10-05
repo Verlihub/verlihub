@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-18 16:16+0100\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
 "PO-Revision-Date: 2014-07-16 06:45+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Slovak (Slovakia) (http://www.transifex.com/projects/p/verlihub-100/language/sk_SK/)\n"
@@ -278,7 +278,7 @@ msgstr ""
 msgid "Current log level is %d."
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:163
+#: ../plugins/lua/cluainterpreter.cpp:164
 msgid "Lua error"
 msgstr ""
 

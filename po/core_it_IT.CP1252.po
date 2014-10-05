@@ -1,15 +1,16 @@
 # 
 # Translators:
 # Elli <netcelli.tux@gmail.com>, 2011
+# simone sandri <simone.povoscania@hotmail.it>, 2014
 # Stefano <netcelli@gmail.com>, 2011-2012
 # Stefano <netcelli@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2014-09-18 20:24+0100\n"
-"PO-Revision-Date: 2014-09-18 18:25+0000\n"
-"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
+"PO-Revision-Date: 2014-09-30 16:44+0000\n"
+"Last-Translator: simone sandri <simone.povoscania@hotmail.it>\n"
 "Language-Team: Italian (Italy) (http://www.transifex.com/projects/p/verlihub-100/language/it_IT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
@@ -26,13 +27,13 @@ msgstr ""
 msgid "Unknown ban"
 msgstr "Ban sconosciuto"
 
-#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1537 ../src/cuser.cpp:230
+#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1547 ../src/cuser.cpp:230
 msgid "Nickname"
 msgstr "Nome utente"
 
 #: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:285
 #: ../src/cdcconsole.cpp:351 ../src/cdcconsole.cpp:477
-#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1538 ../src/cuser.cpp:237
+#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1548 ../src/cuser.cpp:237
 msgid "IP"
 msgstr "IP"
 
@@ -50,7 +51,7 @@ msgstr "Tempo"
 
 #: ../src/cban.cpp:96
 msgid "remaining"
-msgstr ""
+msgstr "rimanente"
 
 #: ../src/cban.cpp:98
 msgid "Permanently"
@@ -87,15 +88,15 @@ msgstr "Rimanente"
 
 #: ../src/cban.cpp:127
 msgid "Host level 1"
-msgstr ""
+msgstr "Host di livello 1"
 
 #: ../src/cban.cpp:127
 msgid "Host level 2"
-msgstr ""
+msgstr "Host di livello 2"
 
 #: ../src/cban.cpp:127
 msgid "Host level 3"
-msgstr ""
+msgstr "Host di livello 3"
 
 #: ../src/cban.cpp:127
 msgid "Share size"
@@ -116,7 +117,7 @@ msgstr ""
 
 #: ../src/cban.cpp:150
 msgid "Permanent"
-msgstr ""
+msgstr "Permanente"
 
 #: ../src/cbanlist.cpp:423
 msgid "Entry"
@@ -176,32 +177,32 @@ msgstr ""
 msgid "Command parameters error"
 msgstr ""
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Key"
 msgstr "Chiave"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "ValidateNick"
 msgstr "ValidateNick"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Login"
 msgstr "Login"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "MyINFO"
 msgstr "MyINFO"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Password"
 msgstr "Password"
 
-#: ../src/cconndc.cpp:181
+#: ../src/cconndc.cpp:182
 #, c-format
 msgid "Operation timeout: %s"
 msgstr ""
 
-#: ../src/cconndc.cpp:189
+#: ../src/cconndc.cpp:190
 msgid "General timeout"
 msgstr "Timeout generale"
 
@@ -232,11 +233,11 @@ msgstr "Descrizione"
 
 #: ../src/ccustomredirect.cpp:66 ../src/cdcclient.cpp:54
 msgid "Enabled"
-msgstr ""
+msgstr "Abilitato"
 
 #: ../src/ccustomredirect.cpp:68 ../src/cdcclient.cpp:54
 msgid "Disabled"
-msgstr ""
+msgstr "Disabilitato"
 
 #: ../src/ccustomredirects.cpp:241
 msgid "Count"
@@ -336,7 +337,7 @@ msgid "Showing %d results"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:318 ../src/cdcconsole.cpp:354
-#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1540 ../src/cuser.cpp:238
+#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1550 ../src/cuser.cpp:238
 msgid "Host"
 msgstr "Host"
 
@@ -506,27 +507,27 @@ msgid "Total share"
 msgstr "Share totale"
 
 #: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
-#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1567
+#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1577
 msgid "Not available"
 msgstr "Non disponibile"
 
 #: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
-#: ../src/cserverdc.cpp:1570
+#: ../src/cserverdc.cpp:1580
 msgid "Recovery mode"
 msgstr "Modalità di ripristino"
 
 #: ../src/cdcconsole.cpp:659 ../src/cinfoserver.cpp:98
-#: ../src/cserverdc.cpp:1571
+#: ../src/cserverdc.cpp:1581
 msgid "Near capacity"
 msgstr "Vicino alla capacità"
 
 #: ../src/cdcconsole.cpp:660 ../src/cinfoserver.cpp:100
-#: ../src/cserverdc.cpp:1572
+#: ../src/cserverdc.cpp:1582
 msgid "Progressive mode"
 msgstr "Modalità progressiva"
 
 #: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
-#: ../src/cserverdc.cpp:1573
+#: ../src/cserverdc.cpp:1583
 msgid "Normal mode"
 msgstr "Modalità normale"
 
@@ -1897,118 +1898,118 @@ msgstr ""
 msgid "Please use following nick prefix: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1338
+#: ../src/cserverdc.cpp:1348
 msgid ""
 "Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 "Default is 'd'."
 msgstr "Errore. Le unità disponibili sono: s(econdi), m(inuti), h(ore), d(giorni), w(settimane), M(esi), Y(anni).\nIl valore predefinito è 'd'."
 
-#: ../src/cserverdc.cpp:1347
+#: ../src/cserverdc.cpp:1357
 msgid "Please provide a positive number."
 msgstr "Fornisci un numero positivo."
 
-#: ../src/cserverdc.cpp:1368
+#: ../src/cserverdc.cpp:1378
 msgid "Hublist registration results:"
 msgstr "Risultato registrazione hublist:"
 
-#: ../src/cserverdc.cpp:1370
+#: ../src/cserverdc.cpp:1380
 #, c-format
 msgid "Sending to %s:%d..."
 msgstr "Invio dati a %s:%d..."
 
-#: ../src/cserverdc.cpp:1374
+#: ../src/cserverdc.cpp:1384
 msgid "connection failed"
 msgstr "connession fallita"
 
-#: ../src/cserverdc.cpp:1413
+#: ../src/cserverdc.cpp:1423
 msgid "error sending info"
 msgstr "errore nell'inviare le informazioni"
 
-#: ../src/cserverdc.cpp:1417
+#: ../src/cserverdc.cpp:1427
 msgid ".. OK"
 msgstr ".. OK"
 
-#: ../src/cserverdc.cpp:1420
+#: ../src/cserverdc.cpp:1430
 msgid "Done"
 msgstr "Fatto"
 
-#: ../src/cserverdc.cpp:1433
+#: ../src/cserverdc.cpp:1443
 msgid "Registering the hub in hublists. This may take a while, please wait..."
 msgstr "Registrazione dell'hub nelle liste pubbliche. Questa operazione potrebbe richiedere un po di tempo..."
 
-#: ../src/cserverdc.cpp:1576
+#: ../src/cserverdc.cpp:1586
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1577
+#: ../src/cserverdc.cpp:1587
 #, c-format
 msgid "Uptime: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1578
+#: ../src/cserverdc.cpp:1588
 #, c-format
 msgid "Users: %d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1579
+#: ../src/cserverdc.cpp:1589
 #, c-format
 msgid "Share: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1580
+#: ../src/cserverdc.cpp:1590
 #, c-format
 msgid "Status: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1593
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1643
+#: ../src/cserverdc.cpp:1653
 #, c-format
 msgid "You have been kicked because %s"
 msgstr "Sei stato espulso perchè %s"
 
-#: ../src/cserverdc.cpp:1653
+#: ../src/cserverdc.cpp:1663
 #, c-format
 msgid "Kicked user %s"
 msgstr "L'utente %s è stato espulso"
 
-#: ../src/cserverdc.cpp:1655
+#: ../src/cserverdc.cpp:1665
 #, c-format
 msgid "Dropped user %s"
 msgstr "Droppato l'utente %s"
 
-#: ../src/cserverdc.cpp:1657
+#: ../src/cserverdc.cpp:1667
 #, c-format
 msgid "with IP %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1660
+#: ../src/cserverdc.cpp:1670
 #, c-format
 msgid "and host %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1689
+#: ../src/cserverdc.cpp:1699
 msgid "dropped"
 msgstr "droppato"
 
-#: ../src/cserverdc.cpp:1693
+#: ../src/cserverdc.cpp:1703
 msgid "Disconnect prevented by a plugin."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1704
+#: ../src/cserverdc.cpp:1714
 #, c-format
 msgid "User banned for %s."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1706
+#: ../src/cserverdc.cpp:1716
 msgid "User banned permanently."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1718
+#: ../src/cserverdc.cpp:1728
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
@@ -2336,75 +2337,75 @@ msgstr "Il plugin %s %s non può caricare altri script."
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "Il plugin %s %s non può caricare lo script '%s'."
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "B"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "KB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "MB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "GB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "TB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "PB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "EB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "ZB"
 msgstr ""
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "YB"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "B/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "KB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "MB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "GB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "TB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "PB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "EB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "ZB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "YB/s"
 msgstr ""
 

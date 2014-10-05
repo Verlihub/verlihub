@@ -1,12 +1,13 @@
 # 
 # Translators:
+# chatonhub <chatonhubfrance@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-18 16:16+0100\n"
-"PO-Revision-Date: 2014-07-16 06:45+0000\n"
-"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
+"PO-Revision-Date: 2014-09-25 06:52+0000\n"
+"Last-Translator: chatonhub <chatonhubfrance@gmail.com>\n"
 "Language-Team: French (France) (http://www.transifex.com/projects/p/verlihub-100/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
@@ -21,7 +22,7 @@ msgstr ""
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Donnez une liste des salons de discussion"
+msgstr "Donnez une liste de chatrooms"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
@@ -186,7 +187,7 @@ msgstr "Votre type de connexion doit correspondre à %[pattern]"
 
 #: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:62
 msgid "You have no rights to do this."
-msgstr ""
+msgstr "Tu n'as pas le droit de faire ça."
 
 #: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
@@ -218,7 +219,7 @@ msgstr "Mémoire utilisée"
 
 #: ../plugins/lua/cconsole.cpp:112
 msgid "Running Lua scripts:"
-msgstr ""
+msgstr "Exécution de Lua scripts"
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
@@ -271,16 +272,16 @@ msgstr "Le script %s n'a pas été arrêté car il n'était pas exécuté."
 #: ../plugins/lua/cconsole.cpp:282
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr ""
+msgstr "Mise à jour %s.%s à partir de '%s' à '%s'."
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
 msgid "Current log level is %d."
-msgstr ""
+msgstr "Niveau actuel du fichier log est %d."
 
-#: ../plugins/lua/cluainterpreter.cpp:163
+#: ../plugins/lua/cluainterpreter.cpp:164
 msgid "Lua error"
-msgstr ""
+msgstr "Lua erreur"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
@@ -338,12 +339,12 @@ msgstr "Exécutable Verlihub"
 
 #: ../plugins/plugman/cconsole.cpp:46
 msgid "Verlihub build time"
-msgstr ""
+msgstr "Verlihub construit depuis"
 
 #: ../plugins/plugman/cconsole.cpp:148
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
-msgstr ""
+msgstr "Le nom du plugin doit être au maximum de 10 caractères , s'il vous plaît donner en un autre."
 
 #: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
@@ -351,29 +352,29 @@ msgstr "Veuillez fournir un chemin valide pour l'extension."
 
 #: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr ""
+msgstr "Plugin chargé."
 
 #: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
 #: ../plugins/plugman/cconsole.cpp:236
 #, c-format
 msgid "Plugin not found: %s"
-msgstr ""
+msgstr "Plugin introuvable: %s"
 
 #: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
-msgstr ""
+msgstr "Plugin ré-décharger."
 
 #: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr ""
+msgstr "Plugin pas déchargé , sans doute parce qu'il n'est pas chargé ."
 
 #: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
-msgstr ""
+msgstr "Plugin rechargé ."
 
 #: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr ""
+msgstr "Plugin pas rechargé , sans doute parce qu'il n'est pas chargé ."
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
@@ -381,21 +382,21 @@ msgstr "Extension introuvable"
 
 #: ../plugins/plugman/cplugs.cpp:117
 msgid "Plugin does not support scripts."
-msgstr ""
+msgstr "Plugin ne supporte pas les scripts ."
 
 #: ../plugins/plugman/cplugs.cpp:123
 msgid "Script loaded."
-msgstr ""
+msgstr "Script chargé."
 
 #: ../plugins/plugman/cplugs.cpp:125
 msgid "Error loading script."
-msgstr ""
+msgstr "Script Erreur lors du chargement ."
 
 #: ../plugins/plugman/cplugs.cpp:155
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
-msgstr ""
+msgstr "Attention: Le plugin doit être recompilé parce Verlihub a été récemment mis à jour ."
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
@@ -427,7 +428,7 @@ msgstr "Description"
 
 #: ../plugins/plugman/cplugs.cpp:213
 msgid "Last error"
-msgstr ""
+msgstr "dernière erreur"
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
@@ -451,15 +452,15 @@ msgstr "Le script %s n'a pu être trouvé ou analysé !"
 #: ../plugins/python/cconsole.cpp:179
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'"
-msgstr "%s.%s a été mis à jour de « %s » en « %s »"
+msgstr "Mise à jour %s.%s à partir de '%s' à '%s'."
 
 #: ../plugins/replacer/cconsole.cpp:67
 msgid "Replaced words"
-msgstr ""
+msgstr "Certains mots sont remplacés"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Word"
-msgstr ""
+msgstr "Mot"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"

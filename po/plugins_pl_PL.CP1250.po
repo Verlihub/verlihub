@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-18 16:16+0100\n"
-"PO-Revision-Date: 2014-08-27 18:04+0000\n"
-"Last-Translator: hostpl-1 <zbyszekslyz@hostpl.eu>\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
+"PO-Revision-Date: 2014-10-04 12:48+0000\n"
+"Last-Translator: Krzychu <krzychulex@gmail.com>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
@@ -91,11 +91,11 @@ msgstr "przekierowano"
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr "wyjscie z huba"
+msgstr "wyjscie z Huba"
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr "krytyczne obciazenie huba"
+msgstr "krytyczne obciazenie Huba"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
@@ -107,7 +107,7 @@ msgstr "uzytkownik nic nie zrobil przez dluzszy czas"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr "hub jest pelny"
+msgstr "Hub jest pelny"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
@@ -119,7 +119,7 @@ msgstr "brak tagu lub nieobowiazuje"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "tag breaks hub rules"
-msgstr "tag niezgodny z zasadami huba"
+msgstr "tag niezgodny z zasadami Huba"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "wrong password"
@@ -156,12 +156,12 @@ msgstr "Informacja"
 #: ../plugins/iplog/ciplog.cpp:148
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Nazwa uzytkownika %s byla na hubie z ponizszym IP"
+msgstr "Nazwa uzytkownika %s byla na Hubie z ponizszym IP"
 
 #: ../plugins/iplog/ciplog.cpp:150
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "IP %s byl ostatnio na hubie z nastepujacymi nazwami"
+msgstr "IP %s byl ostatnio na Hubie z nastepujacymi nazwami"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
@@ -281,7 +281,7 @@ msgstr "Zaktualizowany %s.%s od '%s' do '%s'."
 msgid "Current log level is %d."
 msgstr "Aktualny poziom logowania to %d."
 
-#: ../plugins/lua/cluainterpreter.cpp:163
+#: ../plugins/lua/cluainterpreter.cpp:164
 msgid "Lua error"
 msgstr "Blad lua"
 

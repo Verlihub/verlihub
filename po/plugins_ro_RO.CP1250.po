@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-18 16:16+0100\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
 "PO-Revision-Date: 2014-09-19 07:04+0000\n"
 "Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>\n"
 "Language-Team: Romanian (Romania) (http://www.transifex.com/projects/p/verlihub-100/language/ro_RO/)\n"
@@ -280,7 +280,7 @@ msgstr "S-a upgradat %s.%s de la '%s' la '%s'."
 msgid "Current log level is %d."
 msgstr "Nivelul de log este %d."
 
-#: ../plugins/lua/cluainterpreter.cpp:163
+#: ../plugins/lua/cluainterpreter.cpp:164
 msgid "Lua error"
 msgstr "Eroare generatã de LUA"
 

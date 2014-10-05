@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2014-09-18 20:24+0100\n"
-"PO-Revision-Date: 2014-09-21 10:35+0000\n"
-"Last-Translator: hostpl-1 <zbyszekslyz@hostpl.eu>\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
+"PO-Revision-Date: 2014-10-04 12:44+0000\n"
+"Last-Translator: Krzychu <krzychulex@gmail.com>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
@@ -26,13 +26,13 @@ msgstr ""
 msgid "Unknown ban"
 msgstr "Inny powod bana"
 
-#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1537 ../src/cuser.cpp:230
+#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1547 ../src/cuser.cpp:230
 msgid "Nickname"
 msgstr "Nazwa uzytkownika"
 
 #: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:285
 #: ../src/cdcconsole.cpp:351 ../src/cdcconsole.cpp:477
-#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1538 ../src/cuser.cpp:237
+#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1548 ../src/cuser.cpp:237
 msgid "IP"
 msgstr "IP"
 
@@ -176,32 +176,32 @@ msgstr "Wyrazenie regularne w parametry"
 msgid "Command parameters error"
 msgstr "Bledne paramet komendy"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Key"
 msgstr "Klucz"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "ValidateNick"
 msgstr "Wadliwa nazwa uzytkownika"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Login"
 msgstr "Zaloguj sie"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "MyINFO"
 msgstr "MyINFO"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Password"
 msgstr "Haslo"
 
-#: ../src/cconndc.cpp:181
+#: ../src/cconndc.cpp:182
 #, c-format
 msgid "Operation timeout: %s"
 msgstr "Uplynal limit czasu: %s"
 
-#: ../src/cconndc.cpp:189
+#: ../src/cconndc.cpp:190
 msgid "General timeout"
 msgstr "Ogolny limit czasu"
 
@@ -220,7 +220,7 @@ msgstr "Maksimum slot"
 
 #: ../src/cconntypes.cpp:193
 msgid "Min upload"
-msgstr "Minimum przesy³u"
+msgstr "Minimum przesylu"
 
 #: ../src/cconntypes.cpp:194
 msgid "Min upload/slot"
@@ -336,7 +336,7 @@ msgid "Showing %d results"
 msgstr "Pokazuje %d wyniki"
 
 #: ../src/cdcconsole.cpp:318 ../src/cdcconsole.cpp:354
-#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1540 ../src/cuser.cpp:238
+#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1550 ../src/cuser.cpp:238
 msgid "Host"
 msgstr "Host"
 
@@ -355,7 +355,7 @@ msgstr "Miasto"
 
 #: ../src/cdcconsole.cpp:374
 msgid "Stopping hub."
-msgstr "Zatrzymac hub."
+msgstr "Zatrzymac Hub."
 
 #: ../src/cdcconsole.cpp:388
 msgid "No rights."
@@ -402,7 +402,7 @@ msgstr "Wiadomosci czatu glownego sa widoczne, aby wylaczyc czat wpisz komende +
 
 #: ../src/cdcconsole.cpp:559
 msgid "You already see public chat messages, to disable use +nochat command."
-msgstr "Wiadomosci czatu glownego sa widoczne, aby wylaczyæ czat wpisz komende +nochat."
+msgstr "Wiadomosci czatu glownego sa widoczne, aby wylaczyc czat wpisz komende +nochat."
 
 #: ../src/cdcconsole.cpp:562
 msgid "Now you won't see public chat messages, to restore use +chat command."
@@ -491,7 +491,7 @@ msgstr "Pasywny"
 
 #: ../src/cdcconsole.cpp:648 ../src/cinfoserver.cpp:115
 msgid "Hub owner"
-msgstr "Wlasciciel huba"
+msgstr "Wlasciciel Huba"
 
 #: ../src/cdcconsole.cpp:650
 msgid "Total users"
@@ -506,33 +506,33 @@ msgid "Total share"
 msgstr "Calkowite udostepnienie"
 
 #: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
-#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1567
+#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1577
 msgid "Not available"
 msgstr "Niedostepne"
 
 #: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
-#: ../src/cserverdc.cpp:1570
+#: ../src/cserverdc.cpp:1580
 msgid "Recovery mode"
 msgstr "Tryb odzyskiwania"
 
 #: ../src/cdcconsole.cpp:659 ../src/cinfoserver.cpp:98
-#: ../src/cserverdc.cpp:1571
+#: ../src/cserverdc.cpp:1581
 msgid "Near capacity"
 msgstr "W poblizu zdolnosci"
 
 #: ../src/cdcconsole.cpp:660 ../src/cinfoserver.cpp:100
-#: ../src/cserverdc.cpp:1572
+#: ../src/cserverdc.cpp:1582
 msgid "Progressive mode"
 msgstr "Tryb progresywny"
 
 #: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
-#: ../src/cserverdc.cpp:1573
+#: ../src/cserverdc.cpp:1583
 msgid "Normal mode"
 msgstr "Tryb normalny"
 
 #: ../src/cdcconsole.cpp:664
 msgid "Hub health"
-msgstr "Tryb huba"
+msgstr "Tryb Huba"
 
 #: ../src/cdcconsole.cpp:665
 msgid "Your status"
@@ -727,11 +727,11 @@ msgstr "Uzytkownik %s tymczasowo posiada protekta od klasy %d"
 msgid ""
 "Reloading triggers, custom redirects, configuration and registration list "
 "cache."
-msgstr "Przeladowano liste triggerow, redirow, konfiguracji huba oraz liste zarejestrowanych uzytkownikow."
+msgstr "Przeladowano liste triggerow, redirow, konfiguracji Huba oraz liste zarejestrowanych uzytkownikow."
 
 #: ../src/cdcconsole.cpp:1058
 msgid "Report command is currently disabled."
-msgstr "Komenda raport jest obecnie wy³aczona."
+msgstr "Komenda raport jest obecnie wylaczona"
 
 #: ../src/cdcconsole.cpp:1071
 #, c-format
@@ -1185,7 +1185,7 @@ msgstr "Wlacz tag."
 msgid ""
 "Passive user limit exceeded at %d online passive users, please become active"
 " to enter the hub."
-msgstr "Limit uzytkownikow pasywnych przekroczony na %d dostepnych pasywnych uzytkownikow, prosze zmienic na tryb aktywny jesli to mozliwe i ponownie wejsc na hub."
+msgstr "Limit uzytkownikow pasywnych przekroczony na %d dostepnych pasywnych uzytkownikow, prosze zmienic na tryb aktywny jesli to mozliwe i ponownie wejsc na Hub."
 
 #: ../src/cdcproto.cpp:758
 #, c-format
@@ -1201,7 +1201,7 @@ msgstr "Udostepniasz %s gdzie maksymalne dozwolone udostepnianie to %s."
 
 #: ../src/cdcproto.cpp:820
 msgid "You are banned from this hub."
-msgstr "Zostales zbanowany na tym hubie."
+msgstr "Zostales zbanowany na tym Hubie."
 
 #: ../src/cdcproto.cpp:885 ../src/creguserinfo.cpp:106 ../src/ctrigger.cpp:154
 msgid "Pinger"
@@ -1327,7 +1327,7 @@ msgstr "Minimalna dlugosc wyszukiwania to: %d"
 
 #: ../src/cdcproto.cpp:1868
 msgid "Sorry, hub is too busy now, no search is available, please try later."
-msgstr "Przepraszamy, hub obecnie jest niedostepny, wyszukiwanie nie jest dostepne, prosze sprobowac pozniej."
+msgstr "Przepraszamy, Hub obecnie jest niedostepny, wyszukiwanie nie jest dostepne, prosze sprobowac pozniej."
 
 #: ../src/cdcproto.cpp:1958
 #, c-format
@@ -1382,7 +1382,7 @@ msgstr "Zostales zbanowany poniewaz %s"
 #: ../src/cdcproto.cpp:2352 ../src/cdcproto.cpp:2368
 #, c-format
 msgid "Unknown hub command: %s"
-msgstr "Nieznana komenda huba: %s"
+msgstr "Nieznana komenda Huba: %s"
 
 #: ../src/cdcproto.cpp:2417
 #, c-format
@@ -1406,11 +1406,11 @@ msgstr "Nie mozna wyslac $BotINFO poniewaz rozszerzenie BotINFO nie jest ustawio
 #: ../src/cdcproto.cpp:2491
 #, c-format
 msgid "Pinger entered the hub: %s"
-msgstr "Pinger wszedl na hub: %s"
+msgstr "Pinger wszedl na Hub: %s"
 
 #: ../src/cdcproto.cpp:2635
 msgid "You do not have permissions to change the hub topic."
-msgstr "Nie masz uprawnien aby zmienic topik huba."
+msgstr "Nie masz uprawnien aby zmienic Topik Huba."
 
 #: ../src/cdcproto.cpp:2642
 #, c-format
@@ -1423,7 +1423,7 @@ msgstr "Twoj klient jest zabroniony."
 
 #: ../src/cdctag.cpp:70
 msgid "Connections through proxy server are not allowed in this hub."
-msgstr "Polaczenia przez serwer proxy jest zabronione na tym hubie."
+msgstr "Polaczenia przez serwer proxy jest zabronione na tym Hubie."
 
 #: ../src/cdctag.cpp:76
 msgid "Passive connections are restricted, consider changing to active."
@@ -1433,36 +1433,36 @@ msgstr "Polaczenia pasywne sa ograniczone, nalezy rozwazyc zmiane na aktywne."
 msgid ""
 "Your client tag is reporting less than 0 hubs or less than 0 slots, looks "
 "like a bug in your client."
-msgstr "Tag klient zglasza mniej ni¿ 0 hubow lub mniej ni¿ 0 slotow, wyglada na blad w kliencie."
+msgstr "Tag klient zglasza mniej ni¿ 0 Hubow lub mniej ni¿ 0 slotow, wyglada na blad w kliencie."
 
 #: ../src/cdctag.cpp:90
 msgid "Unknown clients are not allowed in this hub."
-msgstr "Nieznany klient, brak dostepu na hub."
+msgstr "Nieznany klient, brak dostepu na Hub."
 
 #: ../src/cdctag.cpp:96
 #, c-format
 msgid "Too many open hubs, maximum is %d and you have %d."
-msgstr "Zbyt wiele masz otwartych hubow, maksymalnie mozna %d a posiadasz %d."
+msgstr "Zbyt wiele masz otwartych Hubow, maksymalnie mozna %d a posiadasz %d."
 
 #: ../src/cdctag.cpp:102
 #, c-format
 msgid "Too few open hubs, minimum is %d and you have %d."
-msgstr "Zbyt malo masz otwartych hubow, minimalnie musisz miec %d a posiadasz %d."
+msgstr "Zbyt malo masz otwartych Hubow, minimalnie musisz miec %d a posiadasz %d."
 
 #: ../src/cdctag.cpp:108
 #, c-format
 msgid "Too few open hubs as user, minimum is %d and you have %d."
-msgstr "Zbyt malo masz otwartych hubow jako uzytkownik, minimalnie musisz miec %d a posiadasz %d."
+msgstr "Zbyt malo masz otwartych Hubow jako uzytkownik, minimalnie musisz miec %d a posiadasz %d."
 
 #: ../src/cdctag.cpp:114
 #, c-format
 msgid "Too few open hubs as registered user, minimum is %d and you have %d."
-msgstr "Zbyt malo masz otwartych hubow jako zarejestrowany uzytkownik, minimalnie musisz miec %d a posiadasz %d."
+msgstr "Zbyt malo masz otwartych Hubow jako zarejestrowany uzytkownik, minimalnie musisz miec %d a posiadasz %d."
 
 #: ../src/cdctag.cpp:120
 #, c-format
 msgid "Too few open hubs as operator, minimum is %d and you have %d."
-msgstr "Zbyt malo masz otwartych hubow jako operator, minimalnie musisz miec %d a posiadasz %d."
+msgstr "Zbyt malo masz otwartych Hubow jako operator, minimalnie musisz miec %d a posiadasz %d."
 
 #: ../src/cdctag.cpp:126
 #, c-format
@@ -1481,17 +1481,17 @@ msgstr "Zbyt wiele otwartych slotow dla typu polaczenia %s, maksymalnie to %d a 
 #: ../src/cdctag.cpp:141
 #, c-format
 msgid "Your slots per hub ratio %.2f is too low, minimum is %.2f."
-msgstr "Twoje sloty na hubie to stosunek %.2f i jest zbyt niski, minimalny to %.2f."
+msgstr "Twoje sloty na Hubie to stosunek %.2f i jest zbyt niski, minimalny to %.2f."
 
 #: ../src/cdctag.cpp:142 ../src/cdctag.cpp:149
 #, c-format
 msgid "Open %d slots for %d hubs."
-msgstr "Otwarte %d sloty na %d hubow."
+msgstr "Otwarte %d sloty na %d Hubow."
 
 #: ../src/cdctag.cpp:148
 #, c-format
 msgid "Your slots per hub ratio %.2f is too high, maximum is %.2f."
-msgstr "Twoje sloty na hubie to stosunek %.2f jest zbyt wysoki, maksymalnie wynosi %.2f."
+msgstr "Twoje sloty na Hubie to stosunek %.2f jest zbyt wysoki, maksymalnie wynosi %.2f."
 
 #: ../src/cdctag.cpp:157
 #, c-format
@@ -1505,7 +1505,7 @@ msgstr "Zbyt niski limit wysylania dla tego typu polaczenia %s, minimalna predko
 msgid ""
 "Too low upload limit per slot for your connection type %s, minimum upload "
 "limit is %.2f per slot."
-msgstr "Limit przesy³lia jest za niski dla tego typu polaczenia %s, minimalny limit wysylania jest %.2f na slot."
+msgstr "Limit przesylania jest za niski dla tego typu polaczenia %s, minimalny limit wysylania jest %.2f na slot."
 
 #: ../src/cdctag.cpp:178
 msgid "Your client version is too old, please upgrade it."
@@ -1605,7 +1605,7 @@ msgstr "Informacja nie jest dostepna."
 
 #: ../src/cinfoserver.cpp:88
 msgid "Hub information"
-msgstr "Informacje o hubie"
+msgstr "Informacje o Hubie"
 
 #: ../src/cinfoserver.cpp:92
 msgid "Uptime"
@@ -1617,15 +1617,15 @@ msgstr "Czestotliwosc pracy serwera "
 
 #: ../src/cinfoserver.cpp:107
 msgid "Hub name"
-msgstr "Nazwa huba"
+msgstr "Nazwa Huba"
 
 #: ../src/cinfoserver.cpp:123
 msgid "Hub category"
-msgstr "Kategoria huba"
+msgstr "Kategoria Huba"
 
 #: ../src/cinfoserver.cpp:131
 msgid "Hub locale"
-msgstr "Ustawienia lokalne huba"
+msgstr "Ustawienia lokalne Huba"
 
 #: ../src/cinfoserver.cpp:133
 msgid "Online users"
@@ -1657,11 +1657,11 @@ msgstr "Uzytkownicy pasywni"
 
 #: ../src/cinfoserver.cpp:140
 msgid "Operator user count"
-msgstr "Ilosc operatorow"
+msgstr "Ilosc Operatorow"
 
 #: ../src/cinfoserver.cpp:141
 msgid "Bot user count"
-msgstr "Ilosc botow"
+msgstr "Ilosc Botow"
 
 #: ../src/cinfoserver.cpp:150 ../src/cinfoserver.cpp:155
 #: ../src/cinfoserver.cpp:162
@@ -1896,125 +1896,125 @@ msgstr "Nieznana nazwa uzytkownika, przepraszamy."
 
 #: ../src/cserverdc.cpp:1157
 msgid "You are banned from this hub"
-msgstr "Zostales zbanowany na tym hubie."
+msgstr "Zostales zbanowany na tym Hubie."
 
 #: ../src/cserverdc.cpp:1173
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr "Prosze uzyc nastepujacych prefiksow przed nazwa uzytkownika: %s."
 
-#: ../src/cserverdc.cpp:1338
+#: ../src/cserverdc.cpp:1348
 msgid ""
 "Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 "Default is 'd'."
 msgstr "Blad. Dostepne jednostki to: s (sekundy), m (minuty), h (godniny), d (dni), w (tygodnie), M (miesiace), Y(lata).\nDomyslne ustawienie to 'd'."
 
-#: ../src/cserverdc.cpp:1347
+#: ../src/cserverdc.cpp:1357
 msgid "Please provide a positive number."
 msgstr "Prosze podac dodatnia liczbe."
 
-#: ../src/cserverdc.cpp:1368
+#: ../src/cserverdc.cpp:1378
 msgid "Hublist registration results:"
-msgstr "Wynik rejestracji w hublistach:"
+msgstr "Wynik rejestracji w Hublistach:"
 
-#: ../src/cserverdc.cpp:1370
+#: ../src/cserverdc.cpp:1380
 #, c-format
 msgid "Sending to %s:%d..."
 msgstr "Wysylajac do %s:%d..."
 
-#: ../src/cserverdc.cpp:1374
+#: ../src/cserverdc.cpp:1384
 msgid "connection failed"
 msgstr "polaczenie niepowiodlo sie"
 
-#: ../src/cserverdc.cpp:1413
+#: ../src/cserverdc.cpp:1423
 msgid "error sending info"
-msgstr "blad podczeas wysylania informacji"
+msgstr "blad podczas wysylania informacji"
 
-#: ../src/cserverdc.cpp:1417
+#: ../src/cserverdc.cpp:1427
 msgid ".. OK"
 msgstr "..OK"
 
-#: ../src/cserverdc.cpp:1420
+#: ../src/cserverdc.cpp:1430
 msgid "Done"
 msgstr "Gotowe"
 
-#: ../src/cserverdc.cpp:1433
+#: ../src/cserverdc.cpp:1443
 msgid "Registering the hub in hublists. This may take a while, please wait..."
-msgstr "Rejestacja huba w hublistach. Moze to troche potrwac, prosze czekac..."
+msgstr "Rejestacja Huba w Hublistach. Moze to troche potrwac, prosze czekac..."
 
-#: ../src/cserverdc.cpp:1576
+#: ../src/cserverdc.cpp:1586
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr "Oprogramowanie: %s %s @ %s"
 
-#: ../src/cserverdc.cpp:1577
+#: ../src/cserverdc.cpp:1587
 #, c-format
 msgid "Uptime: %s"
 msgstr "Czas pracy: %s"
 
-#: ../src/cserverdc.cpp:1578
+#: ../src/cserverdc.cpp:1588
 #, c-format
 msgid "Users: %d"
 msgstr "Uzytkownicy: %d"
 
-#: ../src/cserverdc.cpp:1579
+#: ../src/cserverdc.cpp:1589
 #, c-format
 msgid "Share: %s"
 msgstr "Udostepnienie: %s"
 
-#: ../src/cserverdc.cpp:1580
+#: ../src/cserverdc.cpp:1590
 #, c-format
 msgid "Status: %s"
 msgstr "Status: %s"
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1593
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr "Oprogramowanie: %s %s @ %s%s ][ Czas pracy: %s ][ Uzytkownicy: %d ][ Udostepnienie: %s"
 
-#: ../src/cserverdc.cpp:1643
+#: ../src/cserverdc.cpp:1653
 #, c-format
 msgid "You have been kicked because %s"
-msgstr "Zostales wykopany z huba z powodu %s"
+msgstr "Zostales wykopany z Huba z powodu %s"
 
-#: ../src/cserverdc.cpp:1653
+#: ../src/cserverdc.cpp:1663
 #, c-format
 msgid "Kicked user %s"
 msgstr "Kopniecie uzytkownika %s"
 
-#: ../src/cserverdc.cpp:1655
+#: ../src/cserverdc.cpp:1665
 #, c-format
 msgid "Dropped user %s"
 msgstr "Wyrzucenie uzytkownika %s"
 
-#: ../src/cserverdc.cpp:1657
+#: ../src/cserverdc.cpp:1667
 #, c-format
 msgid "with IP %s"
 msgstr "z IP %s"
 
-#: ../src/cserverdc.cpp:1660
+#: ../src/cserverdc.cpp:1670
 #, c-format
 msgid "and host %s"
 msgstr "i host %s"
 
-#: ../src/cserverdc.cpp:1689
+#: ../src/cserverdc.cpp:1699
 msgid "dropped"
 msgstr "wyrzucenie"
 
-#: ../src/cserverdc.cpp:1693
+#: ../src/cserverdc.cpp:1703
 msgid "Disconnect prevented by a plugin."
 msgstr "Zapobiega wylaczeniu plugina."
 
-#: ../src/cserverdc.cpp:1704
+#: ../src/cserverdc.cpp:1714
 #, c-format
 msgid "User banned for %s."
 msgstr "Uzytkownik zbanowany na %s."
 
-#: ../src/cserverdc.cpp:1706
+#: ../src/cserverdc.cpp:1716
 msgid "User banned permanently."
 msgstr "Uzytkownik zbanowany na stale."
 
-#: ../src/cserverdc.cpp:1718
+#: ../src/cserverdc.cpp:1728
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
@@ -2258,7 +2258,7 @@ msgstr "Mozesz juz wyszukiwac pliki."
 #: ../src/cuser.cpp:522
 #, c-format
 msgid "You're no longer allowed to download files for %s."
-msgstr "Masz ju¿ prawa do pobierania plikow w %s."
+msgstr "Masz juz prawa do pobierania plikow w %s."
 
 #: ../src/cuser.cpp:525
 msgid "You're now allowed to download files."
@@ -2337,7 +2337,7 @@ msgstr "Nie ma usunac tego pokoju, zamiast niego korzystaj z czata glownego."
 
 #: ../src/cuser.cpp:732
 msgid "Hub security doesn't accept private messages, use main chat instead."
-msgstr "Bot huba nie akceptuje prywatnych wiadomosci, korzystaj z czata glownego."
+msgstr "Bot Huba nie akceptuje prywatnych wiadomosci, korzystaj z czata glownego."
 
 #: ../src/cvhplugin.cpp:90
 #, c-format
@@ -2349,75 +2349,75 @@ msgstr "Plugin %s %s nie moze zaladowac dodatkowego skryptu."
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "Plugin %s %s nie moze zaladowac skryptu '%s'."
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "B"
 msgstr "B"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "KB"
 msgstr "KB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "MB"
 msgstr "MB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "GB"
 msgstr "GB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "TB"
 msgstr "TB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "PB"
 msgstr "PB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "EB"
 msgstr "EB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "ZB"
 msgstr "ZB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "YB"
 msgstr "YB"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "B/s"
 msgstr "B/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "KB/s"
 msgstr "KB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "MB/s"
 msgstr "MB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "GB/s"
 msgstr "GB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "TB/s"
 msgstr "TB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "PB/s"
 msgstr "PB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "EB/s"
 msgstr "EB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "ZB/s"
 msgstr "ZB/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "YB/s"
 msgstr "YB/s"
 
@@ -2435,7 +2435,7 @@ msgstr "Nie mozna dodac pozycji."
 
 #: ../src/tlistconsole.h:180
 msgid "Item already exists."
-msgstr "Pozycja ju¿ istnieje"
+msgstr "Pozycja juz istnieje"
 
 #: ../src/tlistconsole.h:202
 msgid "Item successfully deleted."

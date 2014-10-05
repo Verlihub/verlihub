@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2014-09-18 20:24+0100\n"
-"PO-Revision-Date: 2014-09-19 07:51+0000\n"
+"POT-Creation-Date: 2014-10-05 13:37+0100\n"
+"PO-Revision-Date: 2014-09-29 08:18+0000\n"
 "Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>\n"
 "Language-Team: Romanian (Romania) (http://www.transifex.com/projects/p/verlihub-100/language/ro_RO/)\n"
 "MIME-Version: 1.0\n"
@@ -25,13 +25,13 @@ msgstr ""
 msgid "Unknown ban"
 msgstr "Ban necunoscut"
 
-#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1537 ../src/cuser.cpp:230
+#: ../src/cban.cpp:87 ../src/cserverdc.cpp:1547 ../src/cuser.cpp:230
 msgid "Nickname"
 msgstr "Nume utilizator"
 
 #: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:285
 #: ../src/cdcconsole.cpp:351 ../src/cdcconsole.cpp:477
-#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1538 ../src/cuser.cpp:237
+#: ../src/cdcconsole.cpp:1072 ../src/cserverdc.cpp:1548 ../src/cuser.cpp:237
 msgid "IP"
 msgstr "IP"
 
@@ -175,32 +175,32 @@ msgstr "Parametrii regulari ai expresiei"
 msgid "Command parameters error"
 msgstr "Eroare în parametrii comenzii"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Key"
 msgstr "Cheie"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "ValidateNick"
 msgstr "ValidareNick"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Login"
 msgstr "Autentificare"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "MyINFO"
 msgstr "Informatiile mele"
 
-#: ../src/cconndc.cpp:169
+#: ../src/cconndc.cpp:170
 msgid "Password"
 msgstr "Parola"
 
-#: ../src/cconndc.cpp:181
+#: ../src/cconndc.cpp:182
 #, c-format
 msgid "Operation timeout: %s"
 msgstr "Operatiune în asteptare: %s"
 
-#: ../src/cconndc.cpp:189
+#: ../src/cconndc.cpp:190
 msgid "General timeout"
 msgstr "Asteptare în general"
 
@@ -335,7 +335,7 @@ msgid "Showing %d results"
 msgstr "Afisare %d rezultate"
 
 #: ../src/cdcconsole.cpp:318 ../src/cdcconsole.cpp:354
-#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1540 ../src/cuser.cpp:238
+#: ../src/cdcconsole.cpp:1073 ../src/cserverdc.cpp:1550 ../src/cuser.cpp:238
 msgid "Host"
 msgstr "Gazdã"
 
@@ -505,27 +505,27 @@ msgid "Total share"
 msgstr "Sharing total"
 
 #: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
-#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1567
+#: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1577
 msgid "Not available"
 msgstr "Indisponibil"
 
 #: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
-#: ../src/cserverdc.cpp:1570
+#: ../src/cserverdc.cpp:1580
 msgid "Recovery mode"
 msgstr "Mod recuperare"
 
 #: ../src/cdcconsole.cpp:659 ../src/cinfoserver.cpp:98
-#: ../src/cserverdc.cpp:1571
+#: ../src/cserverdc.cpp:1581
 msgid "Near capacity"
 msgstr "Aproape de limitã"
 
 #: ../src/cdcconsole.cpp:660 ../src/cinfoserver.cpp:100
-#: ../src/cserverdc.cpp:1572
+#: ../src/cserverdc.cpp:1582
 msgid "Progressive mode"
 msgstr "Mod progresiv"
 
 #: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
-#: ../src/cserverdc.cpp:1573
+#: ../src/cserverdc.cpp:1583
 msgid "Normal mode"
 msgstr "Functionare perfectã"
 
@@ -726,11 +726,11 @@ msgstr "Utilizatorul %s este protejat temporar la clasa %d"
 msgid ""
 "Reloading triggers, custom redirects, configuration and registration list "
 "cache."
-msgstr "*ACTIUNE* \nSe reincarca setarile de baza: \n- triggere - 100% incarcate \n- redirecte - 100% incarcate \n- file configurare - 100% incarcate"
+msgstr "*ACTIUNE* \nSe reîncarcã setãrile de bazã: \n- triggere - 100% încãrcate \n- redirecte - 100% încãrcate \n- file configurare - 100% încãrcate"
 
 #: ../src/cdcconsole.cpp:1058
 msgid "Report command is currently disabled."
-msgstr "Comanda *REPORT* este temporar dezactivata. Te rugam sa contactezi un operator pentru asistenta. Multumesc."
+msgstr "Comanda *REPORT* este temporar dezactivatã. Te rugãm sã contactezi un operator pentru asistentã. Multumesc."
 
 #: ../src/cdcconsole.cpp:1071
 #, c-format
@@ -744,15 +744,15 @@ msgstr "A fost raportat un utilizator neconectat %s"
 
 #: ../src/cdcconsole.cpp:1078
 msgid "Without reason"
-msgstr "Fara motiv"
+msgstr "Fãrã motiv"
 
 #: ../src/cdcconsole.cpp:1084
 msgid "Thank you, your report has been accepted."
-msgstr "Iti multumim pentru raport, cererea ta a fost trimisa cu succes catre operatori."
+msgstr "Îti multumim pentru raport, cererea ta a fost trimisã cu succes cãtre operatori."
 
 #: ../src/cdcconsole.cpp:1198
 msgid "Protocol command successfully sent."
-msgstr "Comanda trimisa cu succes."
+msgstr "Comandã trimisã cu succes."
 
 #: ../src/cdcconsole.cpp:1223
 msgid "All bans have been deleted."
@@ -773,7 +773,7 @@ msgstr "Toate permisiunile temporare au fost anulate si sterse din baza de date.
 #: ../src/cdcconsole.cpp:1238 ../src/cdcconsole.cpp:1552
 #: ../src/cdcconsole.cpp:1862 ../src/cdcconsole.cpp:2204
 msgid "This command is not implemented."
-msgstr "Ne pare rau, insa aceasta comanda nu a fost inca implementata."
+msgstr "Ne pare rãu, însã aceastã comandã nu a fost încã implementatã."
 
 #: ../src/cdcconsole.cpp:1238
 msgid "Available command are: "
@@ -781,7 +781,7 @@ msgstr "Comenzile disponibile sunt:"
 
 #: ../src/cdcconsole.cpp:1292
 msgid "Please provide a valid ban time."
-msgstr "Te rugam sa introduci corect, o perioada de ban."
+msgstr "Te rugãm sã introduci corect, o perioadã de ban."
 
 #: ../src/cdcconsole.cpp:1311 ../src/cdcconsole.cpp:1354
 msgid "No reason specified"
@@ -791,7 +791,7 @@ msgstr "Nu a fost specificat niciun motiv."
 #: ../src/cdcconsole.cpp:2074 ../src/cdcconsole.cpp:2107
 #: ../src/cdcconsole.cpp:2147
 msgid "Action has been discarded by plugin."
-msgstr "Actiunea a fost anulata de plugin."
+msgstr "Actiunea a fost anulatã de plugin."
 
 #: ../src/cdcconsole.cpp:1320
 msgid "Removed ban"
@@ -807,7 +807,7 @@ msgid "%d ban found."
 msgid_plural "%d bans found."
 msgstr[0] "%d ban gasit."
 msgstr[1] "%d ban-uri gasite"
-msgstr[2] "%d ban-uri gasite"
+msgstr[2] "%d ban-uri gãsite"
 
 #: ../src/cdcconsole.cpp:1399
 #, c-format
@@ -816,39 +816,39 @@ msgstr "Format necunoscut: %s"
 
 #: ../src/cdcconsole.cpp:1450
 msgid "Added new ban"
-msgstr "A fost adaugat un ban nou"
+msgstr "A fost adãugat un ban nou"
 
 #: ../src/cdcconsole.cpp:1462
 msgid "This command is not implemented, available commands are"
-msgstr "Aceasta comanda nu a fost inca implementata, comenzile disponibile sunt"
+msgstr "Aceastã comandã nu a fost încã implementatã, comenzile disponibile sunt"
 
 #: ../src/cdcconsole.cpp:1489
 msgid ""
 "This command is not implemented, available commands are: !hubinfo "
 "!serverinfo"
-msgstr "Aceasta comanda nu a fost inca implementata, comenzile disponibile sunt: !hubinfo si !serverinfo"
+msgstr "Aceasta comandã nu a fost încã implementatã, comenzile disponibile sunt: !hubinfo si !serverinfo"
 
 #: ../src/cdcconsole.cpp:1583
 #, c-format
 msgid "Undefined configuration variable: %s"
-msgstr "Variabila de configurare nedefinita: %s"
+msgstr "Variabilã de configurare nedefinitã: %s"
 
 #: ../src/cdcconsole.cpp:1598
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr "A fost modificata configuratia %s.%s de la '%s' la '%s'."
+msgstr "A fost modificatã configuratia %s.%s de la '%s' la '%s'."
 
 #: ../src/cdcconsole.cpp:1608
 #, c-format
 msgid ""
 "Warning: Verlihub allows maximum %d users, but current resource limit is %d."
 " Consider to run ulimit -n <max_users> and restart the hub."
-msgstr "-=[ *ATENTIE* ]=- \nHubul permite maxim %d utilizatori, discriptorii sunt insa setati la %d. Te rugam sa folosesti in consola SSH comanda ulimit -n <numar_dorit> apoi restarteaza hubul !"
+msgstr "ATENTIE: Hubul permite maxim %d utilizatori, discriptorii sunt însã setati la %d. Te rugãm sã folosesti în consola SSH comanda ulimit -n <max_users> apoi restarteazã hubul !"
 
 #: ../src/cdcconsole.cpp:1636
 #, c-format
 msgid "%s is not in list."
-msgstr "%s nu se afla in lista."
+msgstr "%s nu se aflã în listã."
 
 #: ../src/cdcconsole.cpp:1713
 #, c-format
@@ -883,7 +883,7 @@ msgstr "Au fost resetate permisiunile de a ascunde sharingul pentru %s."
 #: ../src/cdcconsole.cpp:1719
 #, c-format
 msgid "Resetting registering right for %s."
-msgstr "Au fost resetate permisiunile de inregistrare noi utilizatori pentru %s."
+msgstr "Au fost resetate permisiunile de înregistrare noi utilizatori pentru %s."
 
 #: ../src/cdcconsole.cpp:1720
 #, c-format
@@ -898,7 +898,7 @@ msgstr "Au fost resetate permisiunile de folosirea chatului operatorilor pentru 
 #: ../src/cdcconsole.cpp:1727
 #, c-format
 msgid "Error setting right for %s."
-msgstr "-=[ *ATENTIE* ]=- \nA aparut o eroarea la setarea permisiunilor pentru %s."
+msgstr "-ATENTIE! A apãrut o eroare la setarea permisiunilor pentru %s."
 
 #: ../src/cdcconsole.cpp:1780
 #, c-format
@@ -906,7 +906,7 @@ msgid "Found %d user with IP %s"
 msgid_plural "Found %d users with IP %s"
 msgstr[0] "Am gasit %d user cu IP-ul %s"
 msgstr[1] "Am gasit %d utilizatori cu IP-ul %s"
-msgstr[2] "Am gasit %d utilizatori cu IP-ul %s"
+msgstr[2] "Am gãsit %d utilizatori cu IP-ul %s"
 
 #: ../src/cdcconsole.cpp:1790
 #, c-format
@@ -914,11 +914,11 @@ msgid "Found %d user with range %s"
 msgid_plural "Found %d users with range %s"
 msgstr[0] "Am gasit %d utilizator ce se incadreaza in range-ul %s"
 msgstr[1] "Am gasit %d utilizatori ce se incadreaza in range-ul %s"
-msgstr[2] "Am gasit %d utilizatori ce se incadreaza in range-ul %s"
+msgstr[2] "Am gãsit %d utilizatori ce se încadreazã în range-ul %s"
 
 #: ../src/cdcconsole.cpp:1795
 msgid "Country code must be 2 characters long, for example US."
-msgstr "Codul tarii trebuie sa contina minim 2 caractere, de exemplu codul pentru Romania este: RO"
+msgstr "Codul tãrii trebuie sã continã minim 2 caractere, de exemplu codul pentru România este: RO"
 
 #: ../src/cdcconsole.cpp:1803
 #, c-format
@@ -926,7 +926,7 @@ msgid "Found %d user with country code %s"
 msgid_plural "Found %d users with country code %s"
 msgstr[0] "Am gasit %d utilizator, avand codul de tara %s"
 msgstr[1] "Am gasit %d utilizatori, avand codul de tara %s"
-msgstr[2] "Am gasit %d utilizatori, avand codul de tara %s"
+msgstr[2] "Am gãsit %d utilizatori, având codul de tarã %s"
 
 #: ../src/cdcconsole.cpp:1808
 msgid "City name can't be empty."
@@ -938,15 +938,15 @@ msgid "Found %d user with city %s"
 msgid_plural "Found %d users with city %s"
 msgstr[0] "Am gasit %d utilizator apartinand orasului %s"
 msgstr[1] "Am gasit %d utilizatori apartinand orasului %s"
-msgstr[2] "Am gasit %d utilizatori apartinand orasului %s"
+msgstr[2] "Am gãsit %d utilizatori apartinând orasului %s"
 
 #: ../src/cdcconsole.cpp:1825
 msgid "No users found."
-msgstr "Nu am gasit niciun utilizator"
+msgstr "Nu am gãsit niciun utilizator"
 
 #: ../src/cdcconsole.cpp:1852 ../src/cdcproto.cpp:2267
 msgid "Please provide a valid reason."
-msgstr "Te rugam sa introduci un motiv valid."
+msgstr "Te rugãm sã introduci un motiv valid."
 
 #: ../src/cdcconsole.cpp:1888
 msgid "Loaded plugins"
@@ -959,17 +959,17 @@ msgstr "Callback-uri active si disponibile"
 #: ../src/cdcconsole.cpp:1942
 msgid ""
 "Valid classdif_reg value must be between 1 and 5, please correct this first."
-msgstr "O valoare valida pentru classdif_reg trebuia sa aiba o valoare intre 1 si 5, te rugam sa corectezi setarile."
+msgstr "O valoare validã pentru classdif_reg trebuia sã aibã o valoare între 1 si 5, te rugãm sã corectezi setãrile."
 
 #: ../src/cdcconsole.cpp:1964
 #, c-format
 msgid "Found %d registered users with class %d"
-msgstr "Am gasit %d utilizatori inregistrati apartinand clasei %d"
+msgstr "Am gãsit %d utilizatori înregistrati apartinând clasei %d"
 
 #: ../src/cdcconsole.cpp:1966
 #, c-format
 msgid "No registered users with class %d found."
-msgstr "Nu am gasit utilizatori inregistrati apartinand clasei %d."
+msgstr "Nu am gãsit utilizatori înregistrati apartinând clasei %d."
 
 #: ../src/cdcconsole.cpp:1992 ../src/cdcconsole.cpp:2061
 msgid "Missing command parameters."
@@ -978,77 +978,77 @@ msgstr "Lipseste un parametru al comenzii."
 #: ../src/cdcconsole.cpp:2051
 #, c-format
 msgid "Registered user not found: %s"
-msgstr "Nu au fost gasiti utilizatori inregistrati pentru: %s"
+msgstr "Nu au fost gãsiti utilizatori înregistrati pentru: %s"
 
 #: ../src/cdcconsole.cpp:2053 ../src/cdcconsole.cpp:2068
 #, c-format
 msgid "%s is already registered."
-msgstr "%s este deja inregistrat."
+msgstr "%s este deja înregistrat."
 
 #: ../src/cdcconsole.cpp:2084
 #, c-format
 msgid ""
 "You have been registered with class %d, please set up your password with "
 "+passwd <password> command."
-msgstr "Ai fost inregistrat pe acest hub, cu clasa %d. Te rugam sa folosesti comanda +passwd <parola_ta_aici>"
+msgstr "Ai fost înregistrat pe acest hub, cu clasa %d. Te rugãm sã dai în main comanda +passwd <parola_ta_aici>"
 
 #: ../src/cdcconsole.cpp:2086
 #, c-format
 msgid "You have been registered with class %d and following password: %s"
-msgstr "Ai fost inregistrat(a) pe acest hub, cu clasa %d avand parola: %s"
+msgstr "Ai fost înregistrat pe acest hub, cu clasa %d având parola: %s"
 
 #: ../src/cdcconsole.cpp:2094
 #, c-format
 msgid ""
 "%s has been registered with class %d, please tell him to set his password."
-msgstr "Utilizatorul %s a fost inregistrat pe acest hub, avand clasa %d, te rog sa-l contactezi si sa-i spui sa-si schimbe parola :)"
+msgstr "Utilizatorul %s a fost înregistrat pe acest hub, având clasa %d, te rog sã-l contactezi si sã-i spui sã-si seteze o parolã în Favorite."
 
 #: ../src/cdcconsole.cpp:2096
 #, c-format
 msgid "%s has been registered with class %d and password."
-msgstr "Utilizatorul %s a fost inregistrat cu clasa %d si parola"
+msgstr "Utilizatorul %s a fost înregistrat cu clasa %d si parolã."
 
 #: ../src/cdcconsole.cpp:2098
 msgid "Error adding new user."
-msgstr "Eroare la inregistrarea utilizatorului !"
+msgstr "Eroare la înregistrarea utilizatorului."
 
 #: ../src/cdcconsole.cpp:2115
 #, c-format
 msgid "%s has been unregistered, user information"
-msgstr "Utilizatorul %s a fost sters din baza de date, informatiile sale"
+msgstr "Utilizatorul %s a fost sters din baza de date, informatiile sale fiind"
 
 #: ../src/cdcconsole.cpp:2120
 #, c-format
 msgid "Error unregistering %s, user information"
-msgstr "A aparut o eroare la stergerea din baza de date a utilizatorului %s, informatiile sale"
+msgstr "A apãrut o eroare la stergerea din baza de date a utilizatorului %s, informatiile sale sunt"
 
 #: ../src/cdcconsole.cpp:2132
 msgid "Password updated."
-msgstr "Parola modificata cu succes :)"
+msgstr "Parola modificatã cu succes."
 
 #: ../src/cdcconsole.cpp:2140
 msgid ""
 "You can change your password now, use +passwd command followed by your new "
 "password."
-msgstr "Acum iti poti schimba parola singur(a). Te rog sa folosesti comanda: \n+passwd <parola_ta_aici>"
+msgstr "Acum îti poti schimba parola singur. Te rog sã folosesti comanda: \n+passwd <noua_ta_parolã_aici>"
 
 #: ../src/cdcconsole.cpp:2174
 #, c-format
 msgid "Your class has been changed to %s."
-msgstr "Clasa ta a fost modificata la %s."
+msgstr "Clasa ta a fost modificatã la %s."
 
 #: ../src/cdcconsole.cpp:2180
 msgid "Your registration has been enabled."
-msgstr "Contul tau a fost activat."
+msgstr "Contul tãu a fost activat."
 
 #: ../src/cdcconsole.cpp:2186
 msgid "Your registration has been disabled."
-msgstr "Contul tau a fost dezactivat."
+msgstr "Contul tãu a fost dezactivat."
 
 #: ../src/cdcconsole.cpp:2190
 #, c-format
 msgid "You are protected by classes greater than %s."
-msgstr "Beneficiezi de protectie cu o clasa superioara fata de %s"
+msgstr "Beneficiezi de protectie cu o clasã superioarã faþã de %s"
 
 #: ../src/cdcconsole.cpp:2195
 #, c-format
@@ -1058,30 +1058,30 @@ msgstr "Kickurile tale sunt ascunse pentru clase mai mari de %s."
 #: ../src/cdcconsole.cpp:2200
 #, c-format
 msgid "%s registration information"
-msgstr "Informatiile de inregistrare ale utilizatorului %s"
+msgstr "Informatiile de înregistrare ale utilizatorului %s"
 
 #: ../src/cdcconsole.cpp:2211
 #, c-format
 msgid "Updated variable %s to value %s for user %s."
-msgstr "A fost modificata variabila %s la %s pentru utilizatorul %s."
+msgstr "A fost modificatã variabila %s la %s pentru utilizatorul %s."
 
 #: ../src/cdcconsole.cpp:2215
 #, c-format
 msgid "Error setting variable %s to value %s for user %s."
-msgstr "A aparut o eroare incercand sa modificam variabila %s in %s pentru utilizatorul %s."
+msgstr "A apãrut o eroare la încercarea de modificare a variabilei %s în %s pentru utilizatorul %s."
 
 #: ../src/cdcconsole.cpp:2313
 #, c-format
 msgid "Message delivered to %d users in %s."
-msgstr "Mesajul a fost trimis cu succes catre %d utilizatori in %s."
+msgstr "Mesajul a fost trimis cu succes cãtre %d utilizatori în %s."
 
 #: ../src/cdcproto.cpp:75
 msgid "Probably attempt of an attack with NULL characters"
-msgstr "Probabil o tentativa penala de atac, folosind caractere nule :)"
+msgstr "Probabil o tentativã penalã de atac, folosind caractere nule"
 
 #: ../src/cdcproto.cpp:160
 msgid "Goodbye."
-msgstr "La revedere :)"
+msgstr "Hai, pa."
 
 #: ../src/cdcproto.cpp:204 ../src/cdcproto.cpp:398 ../src/cdcproto.cpp:444
 #: ../src/cdcproto.cpp:559 ../src/cdcproto.cpp:629 ../src/cdcproto.cpp:995
@@ -1101,49 +1101,49 @@ msgstr "Secventã de conectare nevalidã, clientul tãu a validat deja nick."
 #: ../src/cdcproto.cpp:266
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
-msgstr "Limita impusa utilizatorilor din zona %s a fost depasita la %d/%d"
+msgstr "Limita impusã utilizatorilor din zona %s a fost depãsitã la %d/%d"
 
 #: ../src/cdcproto.cpp:269
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
-msgstr "Limita de utilizatori in range-ul IP %s a fost depasita la %d/%d"
+msgstr "Limita de utilizatori în range-ul IP %s a fost depãsitã la %d/%d"
 
 #: ../src/cdcproto.cpp:283
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
-msgstr "Limita de utilizatori in zona centrala a fost depasita la %d/%d"
+msgstr "Limita de utilizatori în zona centralã a fost depãsitã la %d/%d"
 
 #: ../src/cdcproto.cpp:291
 #, c-format
 msgid "User limit exceeded at %d online users."
-msgstr "Limita impusa de utilizatori a fost depasita la %d"
+msgstr "Limita impusã de utilizatori a fost depãsitã la %d"
 
 #: ../src/cdcproto.cpp:299
 msgid "This is a registered users only hub."
-msgstr "Acest hub este privat, numai pentru utilizatorii inregistrati."
+msgstr "Acest hub este privat, numai pentru utilizatorii înregistrati."
 
 #: ../src/cdcproto.cpp:318
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
-msgstr "Limita impusa de conectari per IP din partea %s a fost depasita, sunt %d utilizatori online."
+msgstr "Limita impusã de conectãri per IP din partea %s a fost depãsitã, sunt %d utilizatori online."
 
 #: ../src/cdcproto.cpp:340
 #, c-format
 msgid "Authorization IP mismatch from %s"
-msgstr "Nepotrivire la IP-ul de autorizare la %s"
+msgstr "Nepotrivire la IP-ul de autorizare din %s"
 
 #: ../src/cdcproto.cpp:341
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
-msgstr "IP-ul de autorizare pentru numele de utilizator pe care-l folosesti, nu se potriveste cu adresa ta IP curenta: %s"
+msgstr "IP-ul de autorizare pentru numele de utilizator pe care-l folosesti, nu se potriveste cu adresa ta IP curentã: %s"
 
 #: ../src/cdcproto.cpp:409
 msgid "Invalid login sequence, your client already sent key."
-msgstr "Secventa de logare invalida, clientul tau DC a trmis deja cheia de autentificare."
+msgstr "Secventã de logare invalidã, clientul tãu DC a trimis deja cheia de autentificare."
 
 #: ../src/cdcproto.cpp:426
 msgid "Your client provided invalid key in response to lock."
-msgstr "Clientul tau DC a furnizat o cheie invalida de autentificare."
+msgstr "Clientul tãu DC a furnizat o cheie invalidã de autentificare."
 
 #: ../src/cdcproto.cpp:455 ../src/cdcproto.cpp:640 ../src/cdcproto.cpp:1006
 #: ../src/cdcproto.cpp:1069 ../src/cdcproto.cpp:1132 ../src/cdcproto.cpp:1226
@@ -1161,11 +1161,11 @@ msgstr "Secventã de conectare nevalidã, clientul tãu a trimis deja parola."
 
 #: ../src/cdcproto.cpp:532
 msgid "Wrong password"
-msgstr "Parola gresita :)"
+msgstr "Parolã gresitã"
 
 #: ../src/cdcproto.cpp:537
 msgid "You provided an incorrect password and have been temporarily banned."
-msgstr "Ai folosit o parola eronata si ai fost banat temporar."
+msgstr "Ai folosit o parolã incorectã si ai fost banat temporar. Ia legãtura cu proprietarul acestui hub pentru lãmurirea situatiei."
 
 #: ../src/cdcproto.cpp:570
 msgid "Invalid login sequence, you client already sent version."
@@ -1173,34 +1173,34 @@ msgstr "Secventã de conectare nevalidã, clientul tãu a trimis deja versiunea."
 
 #: ../src/cdcproto.cpp:658
 msgid "Wrong nick in MyINFO."
-msgstr "Nume de utilizator gresit in MyINFO"
+msgstr "Nume de utilizator gresit în MyINFO"
 
 #: ../src/cdcproto.cpp:672
 msgid "Turn on your tag."
-msgstr "Activeaza-ti TAG-urile."
+msgstr "Activeazã-ti TAG-urile."
 
 #: ../src/cdcproto.cpp:703
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d online passive users, please become active"
 " to enter the hub."
-msgstr "Limita impusa a numarului de utilizatori pasivi a fost depasita la %d, te rugam sa-ti setezi contul activ, pentru a putea accesa hubul."
+msgstr "Limita impusã a numãrului de utilizatori pasivi a fost depãsitã la %d, te rugãm sã-ti setezi contul activ, pentru a putea accesa hubul. Pentru amãnunte, cautã pe net Port forward."
 
 #: ../src/cdcproto.cpp:758
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s, %s for active users, %s for passive "
 "users."
-msgstr "Sharingul tau este de %s insa minimul acceptat este de %s, %s pentru userii activi si %s pentru userii pasivi."
+msgstr "Sharingul tãu este de %s însã minimul acceptat este de %s, %s pentru userii activi si %s pentru userii pasivi."
 
 #: ../src/cdcproto.cpp:760
 #, c-format
 msgid "You share %s but maximum allowed is %s."
-msgstr "Sharingul tau este de %s insa minimul acceptat pe acest hub este de %s."
+msgstr "Sharingul tãu este de %s însã minimul acceptat pe acest hub este de %s."
 
 #: ../src/cdcproto.cpp:820
 msgid "You are banned from this hub."
-msgstr "Imi pare rau, insa esti banat pe acest hub."
+msgstr "Îmi pare rãu, însã esti banat pe acest hub."
 
 #: ../src/cdcproto.cpp:885 ../src/creguserinfo.cpp:106 ../src/ctrigger.cpp:154
 msgid "Pinger"
@@ -1234,7 +1234,7 @@ msgstr "*** PM acelasi mesaj, posibil flood: %s"
 
 #: ../src/cdcproto.cpp:1176 ../src/cdcproto.cpp:1177
 msgid "Private chat is currently disabled for users with your class."
-msgstr "Chatul privat a fost temporar dezactivat pentru utilizatorii din a carei clasa faci parte"
+msgstr "Chatul privat a fost temporar dezactivat pentru utilizatorii din a cãrei clasã faci parte."
 
 #: ../src/cdcproto.cpp:1187 ../src/cdcproto.cpp:1188 ../src/cdcproto.cpp:1272
 #: ../src/cdcproto.cpp:1273
@@ -1255,32 +1255,32 @@ msgstr "*** Acelasi mesaj repetat, posibil flood MCTo: %s"
 msgid ""
 "Your chat message contains %d characters but maximum allowed is %d "
 "characters."
-msgstr "Mesajul tau contine %d caractere, insa maximum acceptat per fraza este de %d caractere."
+msgstr "Mesajul tãu contine %d caractere, însã maximum acceptat per frazã este de %d caractere."
 
 #: ../src/cdcproto.cpp:1317
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
-msgstr "Mesajul tau contine %d linii, insa maximul acceptat pe acest hub este de %d linii."
+msgstr "Mesajul tãu contine %d linii, însã maximul acceptat pe acest hub este de %d linii."
 
 #: ../src/cdcproto.cpp:1359
 #, c-format
 msgid "You nick is not %s but %s."
-msgstr "Numele tau de utilizator nu este %s ci %s."
+msgstr "Numele tãu de utilizator nu este %s ci %s."
 
 #: ../src/cdcproto.cpp:1372
 #, c-format
 msgid "Not sent because minimum chat delay is %lu ms but you made %s."
-msgstr "Mesajul nu a fost transmis, deoarece delay-ul impus este de %lu milisecunde, iar tu ai tastat in %s milisecunde."
+msgstr "Mesajul nu a fost transmis, deoarece delay-ul impus este de %lu milisecunde, iar tu ai tastat în %s milisecunde."
 
 #: ../src/cdcproto.cpp:1536 ../src/cdcproto.cpp:1699
 #, c-format
 msgid "You can't download unless you share: %s"
-msgstr "Imi pare rau, insa nu poti downloda nimic pe acest hub, pana nu distribui cel putin %s"
+msgstr "Îmi pare rãu, însã nu poti downloda nimic pe acest hub, pânã nu distribui cel putin %s"
 
 #: ../src/cdcproto.cpp:1550 ../src/cdcproto.cpp:1713
 #, c-format
 msgid "You can't download unless you are registered with class: %d"
-msgstr "Imi pare rau, pe acest hub nu poti downloda nimic, daca nu esti inregistrat cu minim clasa: %d"
+msgstr "Îmi pare rãu, pe acest hub nu poti downloda nimic, dacã nu esti înregistrat cu minim clasa: %d"
 
 #: ../src/cdcproto.cpp:1571
 msgid "Robots don't share."
@@ -1289,20 +1289,20 @@ msgstr "Robotii nu distribuie :)"
 #: ../src/cdcproto.cpp:1579 ../src/cdcproto.cpp:1749
 #, c-format
 msgid "You can't download from: %s"
-msgstr "Imi pare rau, insa nu poti downloda nimic de la %s"
+msgstr "Îmi pare rãu, însã nu poti downloda nimic de la %s"
 
 #: ../src/cdcproto.cpp:1596
 msgid "You can't connect to an external IP because you are in LAN."
-msgstr "Nu te poti conecta cu un IP extern, deoarece esti in LAN."
+msgstr "Nu te poti conecta cu un IP extern, deoarece esti în LAN."
 
 #: ../src/cdcproto.cpp:1676
 msgid "You can't send this request because you're not in passive mode."
-msgstr "Nu poti trimite aceasta cerere, deoarece esti setat ca utilizator pasiv."
+msgstr "Nu poti trimite aceastã cerere, deoarece esti setat ca utilizator pasiv."
 
 #: ../src/cdcproto.cpp:1725 ../src/cdcproto.cpp:1929
 #, c-format
 msgid "Your nick is not %s but %s."
-msgstr "Numele tau de utilizator NU este %s ci %s."
+msgstr "Numele tãu de utilizator NU este %s ci %s."
 
 #: ../src/cdcproto.cpp:1742
 #, c-format
@@ -1312,31 +1312,31 @@ msgstr "Utilizatorul %s este un BOT."
 #: ../src/cdcproto.cpp:1816
 #, c-format
 msgid "You can't search unless you share: %s"
-msgstr "Imi pare rau, pe acest hub nu poti folosii functia de searching (cautare) decat daca distribui %s"
+msgstr "Îmi pare rãu, pe acest hub nu poti folosi functia de search decât dacã distribui: %s"
 
 #: ../src/cdcproto.cpp:1830
 #, c-format
 msgid "You can't search unless you are registered with class: %d"
-msgstr "Imi pare rau, nu poti folosi functia de cautare (search) decat daca est inregistrat cu minim clasa %d"
+msgstr "Îmi pare rãu, nu poti folosi functia de search decât dacã esti înregistrat cu minim clasa %d"
 
 #: ../src/cdcproto.cpp:1844 ../src/cdcproto.cpp:1853
 #, c-format
 msgid "Minimum search length is: %d"
-msgstr "Minimul recomandat de caractere pentru cautari este de: %d"
+msgstr "Minimul recomandat de caractere pentru cãutãri este de: %d"
 
 #: ../src/cdcproto.cpp:1868
 msgid "Sorry, hub is too busy now, no search is available, please try later."
-msgstr "Ne pare rau, hubul este mult prea aglomerat in acest moment, functia de cautare (search) a fost temporar dezactivata."
+msgstr "Ne pare rãu, hubul este mult prea aglomerat în acest moment, functia de search a fost temporar dezactivatã."
 
 #: ../src/cdcproto.cpp:1958
 #, c-format
 msgid "You can do %d searches in %d seconds."
-msgstr "Poti executa %d cautari in %d secunde."
+msgstr "Poti executa %d cãutãri în %d secunde."
 
 #: ../src/cdcproto.cpp:2029
 #, c-format
 msgid "Your nick is not %s but %s. Disconnecting."
-msgstr "Numele tau de utilizator NU este %s ci %s. Te-am DECONECTAT :)"
+msgstr "Numele tãu de utilizator NU este %s ci %s. Te-am DECONECTAT!"
 
 #: ../src/cdcproto.cpp:2088
 msgid "You have not rights to use redirects."
@@ -1350,19 +1350,19 @@ msgstr "Utilizatorul %s este protejat, sau nu ai suficiente permisiuni asupra sa
 #: ../src/cdcproto.cpp:2116
 #, c-format
 msgid "You are being redirected to %s because: %s"
-msgstr "Esti redirectionat catre %s deoarece: %s"
+msgstr "Esti redirectionat cãtre %s deoarece: %s"
 
 #: ../src/cdcproto.cpp:2127
 msgid "User is not online or you tried to redirect a robot."
-msgstr "Utilizatorul nu este online, sau tu incerci sa redirectionezi un robotel :)"
+msgstr "Utilizatorul nu este online, sau tu încerci sã redirectionezi un robotel."
 
 #: ../src/cdcproto.cpp:2150
 msgid "Invalid login sequence, your client already sent supports."
-msgstr "Secventã de conectare nevalidã, a trimis deja suporturile."
+msgstr "Secventã de conectare nevalidã, clientul tãu DC a trimis deja suporturile."
 
 #: ../src/cdcproto.cpp:2273
 msgid "You can't ban a protected user or with higher privilegies."
-msgstr "Nu pot bana un utilizator protejat sau cu privilegii mai mari ca ale tale."
+msgstr "Nu poti bana un utilizator protejat sau cu privilegii mai mari ca ale tale."
 
 #: ../src/cdcproto.cpp:2279
 msgid "You can't ban a robot."
@@ -1371,7 +1371,7 @@ msgstr "Nu poti bana un bot/robot."
 #: ../src/cdcproto.cpp:2285
 #, c-format
 msgid "You are being temporarily banned for %s because %s"
-msgstr "Esti BANAT temporar (timp: %s) motivul: %s"
+msgstr "Esti BANAT temporar pentru o perioadã de %s motivul: %s"
 
 #: ../src/cdcproto.cpp:2287
 #, c-format
@@ -1381,12 +1381,12 @@ msgstr "Ai fost banat deaorece: %s"
 #: ../src/cdcproto.cpp:2352 ../src/cdcproto.cpp:2368
 #, c-format
 msgid "Unknown hub command: %s"
-msgstr "Comanda sau sintaxa %s este necunoscuta, scrie !help te rog"
+msgstr "Comanda sau sintaxa %s este necunoscutã, scrie !help te rog"
 
 #: ../src/cdcproto.cpp:2417
 #, c-format
 msgid "No banned user found with ip %s."
-msgstr "Nu a fost gasit niciun utilizator banat, avand IP-ul: %s"
+msgstr "Nu a fost gãsit niciun utilizator banat, având IP-ul: %s"
 
 #: ../src/cdcproto.cpp:2421
 #, c-format
@@ -1400,7 +1400,7 @@ msgstr "Secventã de protocol nevalidã, ai trimis deja informatii de ping."
 #: ../src/cdcproto.cpp:2482
 msgid ""
 "You can't send $BotINFO because BotINFO extension is not set in $Supports."
-msgstr "Nu poti trimite $BotINFO deoarece extensia BotINFO nu a fost setata in $Supports."
+msgstr "Nu poti trimite $BotINFO deoarece extensia BotINFO nu a fost setatã în $Supports."
 
 #: ../src/cdcproto.cpp:2491
 #, c-format
@@ -1418,7 +1418,7 @@ msgstr "Topicul acestui hub este: %s"
 
 #: ../src/cdctag.cpp:62
 msgid "Your client is banned."
-msgstr "Clientul tau DC++ este banat/blocat pe acest hub."
+msgstr "Clientul tãu DC++ este banat/blocat pe acest hub."
 
 #: ../src/cdctag.cpp:70
 msgid "Connections through proxy server are not allowed in this hub."
@@ -1426,13 +1426,13 @@ msgstr "Conexiunile prin proxy nu sunt permise/acceptate pe acest hub."
 
 #: ../src/cdctag.cpp:76
 msgid "Passive connections are restricted, consider changing to active."
-msgstr "Conexiunile pasive au fost restrictionate pe acest hub, seteaza activ si reconecteaza-te !"
+msgstr "Conexiunile pasive au fost restrictionate pe acest hub, seteazã activ si reconecteazã-te !"
 
 #: ../src/cdctag.cpp:82
 msgid ""
 "Your client tag is reporting less than 0 hubs or less than 0 slots, looks "
 "like a bug in your client."
-msgstr "Clientul tau DC++ raporteaza mai putin de 0 huburi pe care esti prezent sau mai putin de 0 sloturi deschise, mai mult ca sigur este vorba de un BUG."
+msgstr "Clientul tãu DC++ raporteazã mai putin de 0 huburi pe care esti prezent sau mai putin de 0 sloturi deschise, mai mult ca sigur este vorba de un BUG."
 
 #: ../src/cdctag.cpp:90
 msgid "Unknown clients are not allowed in this hub."
@@ -1451,12 +1451,12 @@ msgstr "Ai deschise prea putine huburi, minimul recomandat este de %d si tu ai %
 #: ../src/cdctag.cpp:108
 #, c-format
 msgid "Too few open hubs as user, minimum is %d and you have %d."
-msgstr "i deschise prea putine huburi ca utilizator, minimul recomandat este de %d si tu ai %d."
+msgstr "Ai deschise prea putine huburi ca utilizator, minimul recomandat este de %d si tu ai %d."
 
 #: ../src/cdctag.cpp:114
 #, c-format
 msgid "Too few open hubs as registered user, minimum is %d and you have %d."
-msgstr "Ai setat prea putine huburi ca utilizator inregistrat, minimul recomandat este de %d si tu ai %d."
+msgstr "Ai setat prea putine huburi ca utilizator înregistrat, minimul recomandat este de %d si tu ai %d."
 
 #: ../src/cdctag.cpp:120
 #, c-format
@@ -1475,7 +1475,7 @@ msgstr "Ai prea putine sloturi deschise pentru tipul conexiunii tale ('%s'), min
 msgid ""
 "Too many open slots for your connection type %s, maximum is %d and you have "
 "%d."
-msgstr "Prea multe sloturi deschise oentru tipul conexiunii tale %s, maximul recomandat este de %d si tu ai %d."
+msgstr "Prea multe sloturi deschise pentru tipul conexiunii tale %s, maximul recomandat este de %d si tu ai %d."
 
 #: ../src/cdctag.cpp:141
 #, c-format
@@ -1490,25 +1490,25 @@ msgstr "%d sloturi deschise pentru %d huburi."
 #: ../src/cdctag.cpp:148
 #, c-format
 msgid "Your slots per hub ratio %.2f is too high, maximum is %.2f."
-msgstr "Rata prea mare de slot per hub (in prezent ai %.2f ), maximul recomandat este de %.2f."
+msgstr "Ratia prea mare de slot per hub, acum ai %.2f , maximul recomandat este de %.2f."
 
 #: ../src/cdctag.cpp:157
 #, c-format
 msgid ""
 "Too low upload limit for your connection type %s, minimum upload rate is "
 "%.2f."
-msgstr "Rata prea mica de upload pentru tipul conexiunii tale %s, minimul recomandat este de %.2f."
+msgstr "Ratia prea micã de upload pentru tipul conexiunii tale %s, minimul recomandat este de %.2f."
 
 #: ../src/cdctag.cpp:163
 #, c-format
 msgid ""
 "Too low upload limit per slot for your connection type %s, minimum upload "
 "limit is %.2f per slot."
-msgstr "Ratie prea mica de upload per slot pentru tipul conexiunii tale %s, minimul recomandat este de %.2f per slot."
+msgstr "Ratie prea micã de upload per slot pentru tipul conexiunii tale %s, minimul recomandat este de %.2f per slot."
 
 #: ../src/cdctag.cpp:178
 msgid "Your client version is too old, please upgrade it."
-msgstr "Versiunea clientului tau DC++ este mult prea veche. Te rugam sa instalezi o versiune mai recenta apoi sa te reconectezi. Multumim"
+msgstr "Versiunea clientului tãu DC++ este mult prea veche. Te rugãm sã instalezi o versiune mai recentã apoi sã te reconectezi. Multumim"
 
 #: ../src/cdctag.cpp:181
 #, c-format
@@ -1522,17 +1522,17 @@ msgstr "Minimul recomandat versiunii tale de client DC++ este de %.2f"
 
 #: ../src/cdctag.cpp:190
 msgid "Your client version is too recent, please downgrade it."
-msgstr "Versiunea clientului tau este mult prea recenta, downgrade la ceva mai omenesc :)"
+msgstr "Versiunea clientului tãu este mult prea recentã, downgrade la o versiune ceva mai veche."
 
 #: ../src/cdctag.cpp:193
 #, c-format
 msgid "Allowed maximum version number for %s client is: %.2f"
-msgstr "Versiunea maxima recomandata pentru clientul tau DC++ ('%s') este de %.2f"
+msgstr "Versiunea maximã recomandatã pentru clientul tãu DC++ %s este de: %.2f"
 
 #: ../src/cdctag.cpp:195
 #, c-format
 msgid "Allowed maximum version number for your client is: %.2f"
-msgstr "Versiunea maxima a clientului tau de DC++ este de %.2f"
+msgstr "Versiunea maximã a clientului tãu DC++ este de %.2f"
 
 #: ../src/cdctag.cpp:206
 msgid "Client"
@@ -1560,7 +1560,7 @@ msgstr "Sloturi deschise"
 
 #: ../src/cinfoserver.cpp:51
 msgid "Unable to retrive system information."
-msgstr "Imposibil de gasit/afisat informatiile despre sistem."
+msgstr "Imposibil de gãsit/afisat informatiile despre sistem."
 
 #: ../src/cinfoserver.cpp:57
 msgid "System information"
@@ -1572,15 +1572,15 @@ msgstr "Uptime-ul serverului"
 
 #: ../src/cinfoserver.cpp:64
 msgid "Load averages"
-msgstr "Nivel incarcare"
+msgstr "Nivel încãrcare"
 
 #: ../src/cinfoserver.cpp:65
 msgid "Total memory"
-msgstr "Memorie totala"
+msgstr "Memorie totalã"
 
 #: ../src/cinfoserver.cpp:66
 msgid "Free memory"
-msgstr "Memorie libera"
+msgstr "Memorie liberã"
 
 #: ../src/cinfoserver.cpp:67
 msgid "Shared memory"
@@ -1588,7 +1588,7 @@ msgstr "Memorie shared"
 
 #: ../src/cinfoserver.cpp:68
 msgid "Memory in buffers"
-msgstr "Memorie in bufferi"
+msgstr "Memorie în bufferi"
 
 #: ../src/cinfoserver.cpp:69
 msgid "Free swap"
@@ -1596,7 +1596,7 @@ msgstr "SWAP liber"
 
 #: ../src/cinfoserver.cpp:70
 msgid "Number of processes"
-msgstr "Numar de procese"
+msgstr "Numãr de procese"
 
 #: ../src/cinfoserver.cpp:74
 msgid "Information is not available."
@@ -1612,7 +1612,7 @@ msgstr "Uptime"
 
 #: ../src/cinfoserver.cpp:106
 msgid "Server frequency"
-msgstr "Fregventa serverului"
+msgstr "Frecventa serverului"
 
 #: ../src/cinfoserver.cpp:107
 msgid "Hub name"
@@ -1902,118 +1902,118 @@ msgstr "Imi pare rau, esti banat pe acest hub"
 msgid "Please use following nick prefix: %s"
 msgstr "Te rugam sa folosesti urmatoarele prefixe: %s"
 
-#: ../src/cserverdc.cpp:1338
+#: ../src/cserverdc.cpp:1348
 msgid ""
 "Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 "Default is 'd'."
 msgstr "Eroare. Unitatile disponibile sunt: \ns - secunda/secunde \nm - minut/minute \nh - ora/ore \nd - zi/zile \nSetarea default este '%d'"
 
-#: ../src/cserverdc.cpp:1347
+#: ../src/cserverdc.cpp:1357
 msgid "Please provide a positive number."
 msgstr "Te rugam sa ne furnizezi un numar pozitiv."
 
-#: ../src/cserverdc.cpp:1368
+#: ../src/cserverdc.cpp:1378
 msgid "Hublist registration results:"
 msgstr "Statutul inregistrarii in hublist:"
 
-#: ../src/cserverdc.cpp:1370
+#: ../src/cserverdc.cpp:1380
 #, c-format
 msgid "Sending to %s:%d..."
 msgstr "Se trimite catre %s:%d..."
 
-#: ../src/cserverdc.cpp:1374
+#: ../src/cserverdc.cpp:1384
 msgid "connection failed"
 msgstr "conectare esuata"
 
-#: ../src/cserverdc.cpp:1413
+#: ../src/cserverdc.cpp:1423
 msgid "error sending info"
 msgstr "eroare aparuta la trimiterea informatiilor"
 
-#: ../src/cserverdc.cpp:1417
+#: ../src/cserverdc.cpp:1427
 msgid ".. OK"
 msgstr ".. OK"
 
-#: ../src/cserverdc.cpp:1420
+#: ../src/cserverdc.cpp:1430
 msgid "Done"
 msgstr "Operatiune executata cu succes"
 
-#: ../src/cserverdc.cpp:1433
+#: ../src/cserverdc.cpp:1443
 msgid "Registering the hub in hublists. This may take a while, please wait..."
 msgstr "Se inregistreaza hubul in hublisting. Te rugam sa astepti, este posibil sa dureze cateva minute ..."
 
-#: ../src/cserverdc.cpp:1576
+#: ../src/cserverdc.cpp:1586
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr "Software: %s %s @ %s"
 
-#: ../src/cserverdc.cpp:1577
+#: ../src/cserverdc.cpp:1587
 #, c-format
 msgid "Uptime: %s"
 msgstr "Uptime: %s"
 
-#: ../src/cserverdc.cpp:1578
+#: ../src/cserverdc.cpp:1588
 #, c-format
 msgid "Users: %d"
 msgstr "Utilizatori: %d"
 
-#: ../src/cserverdc.cpp:1579
+#: ../src/cserverdc.cpp:1589
 #, c-format
 msgid "Share: %s"
 msgstr "Sharing: %s"
 
-#: ../src/cserverdc.cpp:1580
+#: ../src/cserverdc.cpp:1590
 #, c-format
 msgid "Status: %s"
 msgstr "Statut: %s"
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1593
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr "Software: %s %s @ %s%s ][ Uptime: %s ][ utilizatori: %d ][ Shareing: %s"
 
-#: ../src/cserverdc.cpp:1643
+#: ../src/cserverdc.cpp:1653
 #, c-format
 msgid "You have been kicked because %s"
 msgstr "Ai fost dat afara deoarece: %s"
 
-#: ../src/cserverdc.cpp:1653
+#: ../src/cserverdc.cpp:1663
 #, c-format
 msgid "Kicked user %s"
 msgstr "A fost kickuit utilizatorul %s"
 
-#: ../src/cserverdc.cpp:1655
+#: ../src/cserverdc.cpp:1665
 #, c-format
 msgid "Dropped user %s"
 msgstr "S-a executat dropping utilizatorului %s"
 
-#: ../src/cserverdc.cpp:1657
+#: ../src/cserverdc.cpp:1667
 #, c-format
 msgid "with IP %s"
 msgstr "avand IP-ul %s"
 
-#: ../src/cserverdc.cpp:1660
+#: ../src/cserverdc.cpp:1670
 #, c-format
 msgid "and host %s"
 msgstr "si hostname-ul %s"
 
-#: ../src/cserverdc.cpp:1689
+#: ../src/cserverdc.cpp:1699
 msgid "dropped"
 msgstr "dat afara"
 
-#: ../src/cserverdc.cpp:1693
+#: ../src/cserverdc.cpp:1703
 msgid "Disconnect prevented by a plugin."
 msgstr "Deconectare prevenita de un plugin."
 
-#: ../src/cserverdc.cpp:1704
+#: ../src/cserverdc.cpp:1714
 #, c-format
 msgid "User banned for %s."
 msgstr "Utilizator banat pentru %s."
 
-#: ../src/cserverdc.cpp:1706
+#: ../src/cserverdc.cpp:1716
 msgid "User banned permanently."
 msgstr "Utilizator banat permanent."
 
-#: ../src/cserverdc.cpp:1718
+#: ../src/cserverdc.cpp:1728
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
@@ -2348,75 +2348,75 @@ msgstr "Pluginul %s %s nu poate incarca scripturi aditionale."
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "Pluginul %s %s nu poate incarca scriptul '%s'."
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "B"
 msgstr "bit"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "KB"
 msgstr "KB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "MB"
 msgstr "MB"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "GB"
 msgstr "Gb"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "TB"
 msgstr "Tb"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "PB"
 msgstr "Pb"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "EB"
 msgstr "Eb"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "ZB"
 msgstr "Zb"
 
-#: ../src/stringutils.cpp:220
+#: ../src/stringutils.cpp:234
 msgid "YB"
 msgstr "Yb"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "B/s"
 msgstr "B/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "KB/s"
 msgstr "Kb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "MB/s"
 msgstr "Mb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "GB/s"
 msgstr "Gb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "TB/s"
 msgstr "Tb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "PB/s"
 msgstr "Pb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "EB/s"
 msgstr "Eb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "ZB/s"
 msgstr "Zb/s"
 
-#: ../src/stringutils.cpp:221
+#: ../src/stringutils.cpp:235
 msgid "YB/s"
 msgstr "Yb/s"
 
