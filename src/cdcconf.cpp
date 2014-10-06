@@ -256,6 +256,7 @@ void cDCConf::AddVars()
 	Add("log_level",mS.msLogLevel, 0);
 	Add("dns_lookup",mS.mUseDNS, 0);
 	Add("report_dns_lookup",report_dns_lookup,0);
+	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks",hide_all_kicks,1);
 	Add("timer_conn_period", mS.timer_conn_period, 4);
 	Add("timer_serv_period", mS.timer_serv_period, 1);

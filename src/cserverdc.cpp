@@ -1544,10 +1544,23 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 		ostringstream os;
 		os << Msg;
 
-		if (conn->mpUser) os << " ][ " << _("Nickname") << ": " << conn->mpUser->mNick;
-		os << " ][ " << _("IP") << ": " << conn->AddrIP().c_str();
-		if (!mUseDNS && mC.report_dns_lookup) conn->DNSLookup();
-		if (!conn->AddrHost().empty()) os << " ][ " << _("Host") << ": " << conn->AddrHost().c_str();
+		if (conn->mpUser) // nick
+			os << " ][ " << autosprintf(_("Nick: %s"), conn->mpUser->mNick.c_str());
+
+		os << " ][ " << autosprintf(_("IP: %s"), conn->AddrIP().c_str()); // ip
+
+		if (mC.report_user_country && !conn->mCC.empty() && (conn->mCC != "--")) { // country
+			os << " ][ " << autosprintf(_("Country: %s"), conn->mCC.c_str()); // code
+
+			if (!conn->mCN.empty() && (conn->mCN != "--")) // name
+				os << "=" << conn->mCN.c_str();
+		}
+
+		if (!mUseDNS && mC.report_dns_lookup)
+			conn->DNSLookup();
+
+		if (!conn->AddrHost().empty()) // host
+			os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
 
 		if (!ToMain && this->mOpChat)
 			this->mOpChat->SendPMToAll(os.str(), NULL);

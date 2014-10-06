@@ -131,6 +131,7 @@ public:
 	bool dest_regme_chat;
 	bool dest_drop_chat;
 	bool report_dns_lookup;
+	bool report_user_country;
 	string extra_listen_ports;
 	string hub_version_special;
 	string hub_name;
