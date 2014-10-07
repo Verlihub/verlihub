@@ -1078,8 +1078,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		sRegInfo = new cRegUserInfo;
 	}
 
-	// validate nick
-	tVAL_NICK vn = ValidateNick(nick, (conn->GetTheoricalClass() >= eUC_REGUSER));
+	tVAL_NICK vn = ValidateNick(conn, nick); // validate nick
 
 	if (vn != eVN_OK) {
 		string extra;
@@ -1183,16 +1182,16 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	return 1;
 }
 
-tVAL_NICK cServerDC::ValidateNick(const string &nick, bool registered)
+tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 {
 	cTime now;
 	string ProhibitedChars("$|<> ");
 	//ProhibitedChars.append("\0", 1);
 
-	if (nick.npos != nick.find_first_of(ProhibitedChars)) // check even ops for special nick chars
+	if (nick.npos != nick.find_first_of(ProhibitedChars)) // check all for special nick chars
 		return eVN_CHARS;
 
-	if (!registered) {
+	if (!conn->mRegInfo || !conn->mRegInfo->mEnabled) {
 		if (nick.size() > mC.max_nick)
 			return eVN_LONG;
 
