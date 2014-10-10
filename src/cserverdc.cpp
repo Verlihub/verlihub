@@ -890,7 +890,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 			cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
 			DoUserIP.Clear();
 			DoUserIP(conn->mpUser);
-			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, true, true);
+			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, false, true); // dont use cache here, it delays send and userip appears after quit if user is disconnected after login
 
 			if (conn->mFeatures & eSF_USERIP2)
 				conn->Send(UserIP);
