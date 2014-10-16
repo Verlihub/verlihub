@@ -890,7 +890,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 			cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
 			DoUserIP.Clear();
 			DoUserIP(conn->mpUser);
-			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, false, true); // dont use cache here, it delays send and userip appears after quit if user is disconnected after login
+			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, true, true); // wtf, one client see ghost users when cache in on, other client dont see user ips when cache is off?
 
 			if (conn->mFeatures & eSF_USERIP2)
 				conn->Send(UserIP);
