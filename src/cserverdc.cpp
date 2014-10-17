@@ -940,7 +940,7 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 	return true;
 }
 
-bool cServerDC::ShowUserToAll(cUserBase *user)
+bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string omsg;
 	omsg = "$Hello "; // only hello users get hello message
@@ -951,7 +951,7 @@ bool cServerDC::ShowUserToAll(cUserBase *user)
 	mUserList.SendToAll(omsg, mC.delayed_myinfo); // use cache, so this can be after user is added
 	mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo);
 
-	if (user->mClass >= eUC_OPERATOR) { // send short oplist
+	if ((user->mClass >= eUC_OPERATOR) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		omsg = "$OpList ";
 		omsg += user->mNick;
 		omsg += "$$";

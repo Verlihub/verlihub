@@ -912,46 +912,51 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream os;
 	string s;
-	cUser * user;
+	cUser *user;
 	int nclass = 3, oclass, mclass = conn->mpUser->mClass;
-
 	cmd_line >> s >> nclass;
 
-	if(!s.size() || nclass < 0 || nclass > 5 || nclass >= mclass)
-	{
-		os << _("Usage: !class <nick> [<class>=3].") << " " << autosprintf(_("Maximum class is %d."), mclass);
-		mOwner->DCPublicHS(os.str().c_str(),conn);
+	if (!s.size() || nclass < 0 || nclass > 5 || nclass >= mclass) {
+		os << _("Usage: !class <nick> [<class>=3]") << " (" << autosprintf(_("maximum class is %d"), mclass) << ")";
+		mOwner->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
 
 	user = mOwner->mUserList.GetUserByNick(s);
 
-	if(user && user->mxConn) {
+	if (user && user->mxConn) {
 		oclass = user->mClass;
-		if(oclass < mclass) {
-			os << autosprintf(_("Temporarily changed class to %d for user %s"), nclass, s.c_str()) << endl;
-			user->mClass = (tUserCl) nclass;
+
+		if (oclass < mclass) {
+			os << autosprintf(_("Temporarily changed class to %d for user: %s"), nclass, s.c_str());
+			user->mClass = (tUserCl)nclass;
+
 			if ((oclass < eUC_OPERATOR) && (nclass >= eUC_OPERATOR)) {
 				mOwner->mOpchatList.Add(user);
+
 				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
+					string omsg = "$OpList "; // send short oplist
+					omsg += user->mNick;
+					omsg += "$$";
 					mOwner->mOpList.Add(user);
-					mOwner->mUserList.SendToAll(mOwner->mOpList.GetNickList(), false);
+					mOwner->mUserList.SendToAll(omsg, false, true); // mOwner->mOpList.GetNickList()
 				}
 			} else if ((oclass >= eUC_OPERATOR) && (nclass < eUC_OPERATOR)) {
 				mOwner->mOpchatList.Remove(user);
-				mOwner->mOpList.Remove(user);
-				mOwner->mUserList.SendToAll(mOwner->mOpList.GetNickList(), false);
+
+				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys))
+					mOwner->mOpList.Remove(user); // no use of sending oplist here, solution would be quit + myinfo					
 			}
 		} else {
-			os << autosprintf(_("You have no rights to change class of %s."), s.c_str()) << endl;
+			os << autosprintf(_("You have no rights to change class for user: %s"), s.c_str());
 		}
 	} else {
-		os << autosprintf(_("User %s not found."), s.c_str()) << endl;
+		os << autosprintf(_("User not found: %s"), s.c_str());
 	}
-	mOwner->DCPublicHS(os.str().c_str(),conn);
+
+	mOwner->DCPublicHS(os.str().c_str(), conn);
 	return 1;
 }
-
 
 int cDCConsole::CmdHideKick(istringstream &cmd_line, cConnDC *conn)
 {
@@ -2062,6 +2067,8 @@ bool cDCConsole::cfRegUsr::operator()()
  		return false;
 	}
 
+	string omsg;
+
 	switch (Action) {
 		case eAC_NEW: // new
 			if (RegFound) {
@@ -2157,15 +2164,18 @@ bool cDCConsole::cfRegUsr::operator()()
 					mS->mOpchatList.Add(user);
 
 					if (RegFound && !ui.mHideKeys) {
+						omsg = "$OpList "; // send short oplist
+						omsg += user->mNick;
+						omsg += "$$";
 						mS->mOpList.Add(user);
-						mS->mUserList.SendToAll(mS->mOpList.GetNickList(), false);
+						mS->mUserList.SendToAll(omsg, false, true); // mS->mOpList.GetNickList()
 					}
 				} else if ((oclass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
 					mS->mOpchatList.Remove(user);
 
 					if (RegFound && !ui.mHideKeys) {
 						mS->mOpList.Remove(user);
-						mS->mUserList.SendToAll(mS->mOpList.GetNickList(), false);
+						// no use of sending oplist here, solution would be quit + myinfo
 					}
 				}
 			}

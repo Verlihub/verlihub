@@ -472,7 +472,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param user The new user.
 		* @return Always true.
 		*/
-		bool ShowUserToAll(cUserBase *user);
+		bool ShowUserToAll(cUser *user);
 
 		/**
 		* Convert a string of time in seconds.
