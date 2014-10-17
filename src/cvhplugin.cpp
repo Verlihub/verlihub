@@ -60,7 +60,6 @@ bool cVHPlugin::AddRobot(cUserRobot *robot)
 		return false;
 	}
 
-	mServer->mUserList.SendToAllWithFeature(mServer->mRobotList.GetNickList(), eSF_BOTLIST, true); // send $BotList
 	return true;
 }
 

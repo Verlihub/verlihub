@@ -2305,22 +2305,34 @@ int cDCProto::NickList(cConnDC *conn)
 {
 	try {
 		bool complete_infolist = false;
-		// 2 = show to all
-		if (mS->mC.show_tags >= 2) complete_infolist = true;
-		if (conn->mpUser && (conn->mpUser->mClass >= eUC_OPERATOR)) complete_infolist = true;
-		// 0 = hide to all
-		if (mS->mC.show_tags == 0) complete_infolist = false;
-		if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) conn->mNickListInProgress = true;
+
+		if (mS->mC.show_tags >= 2) // 2 = show to all
+			complete_infolist = true;
+
+		if (conn->mpUser && (conn->mpUser->mClass >= eUC_OPERATOR))
+			complete_infolist = true;
+
+		if (mS->mC.show_tags == 0) // 0 = hide to all
+			complete_infolist = false;
+
+		if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE)
+			conn->mNickListInProgress = true;
 
 		if (conn->mFeatures & eSF_NOHELLO) {
-			if (conn->Log(3)) conn->LogStream() << "Sending MyINFO list" << endl;
+			if (conn->Log(3))
+				conn->LogStream() << "Sending MyINFO list" << endl;
+
 			conn->Send(mS->mUserList.GetInfoList(complete_infolist), true);
 		} else if (conn->mFeatures & eSF_NOGETINFO) {
-			if (conn->Log(3)) conn->LogStream() << "Sending MyINFO list" << endl;
+			if (conn->Log(3))
+				conn->LogStream() << "Sending MyINFO list" << endl;
+
 			conn->Send(mS->mUserList.GetNickList(), true);
 			conn->Send(mS->mUserList.GetInfoList(complete_infolist), true);
 		} else {
-			if (conn->Log(3)) conn->LogStream() << "Sending Nicklist" << endl;
+			if (conn->Log(3))
+				conn->LogStream() << "Sending Nicklist" << endl;
+
 			conn->Send(mS->mUserList.GetNickList(), true);
 		}
 
@@ -2328,8 +2340,22 @@ int cDCProto::NickList(cConnDC *conn)
 
 		if (conn->mFeatures & eSF_BOTLIST)
 			conn->Send(mS->mRobotList.GetNickList(), true); // send $BotList
+
+		if (mS->mC.send_user_ip && (conn->mFeatures & eSF_USERIP2) && conn->mpUser) { // send $UserIP
+			if (conn->mpUser->mClass >= eUC_OPERATOR)
+				conn->Send(mS->mUserList.GetIPList(), true);
+			else {
+				string uip;
+				cCompositeUserCollection::ufDoIpList DoUserIP(uip);
+				DoUserIP.Clear();
+				DoUserIP(conn->mpUser);
+				conn->Send(uip, true);
+			}
+		}
 	} catch(...) {
-		if (conn->ErrLog(2)) conn->LogStream() << "Exception in cDCProto::NickList" << endl;
+		if (conn->ErrLog(2))
+			conn->LogStream() << "Exception in cDCProto::NickList" << endl;
+
 		conn->CloseNow();
 		return -1;
 	}

@@ -1355,16 +1355,26 @@ w_Targs* _AddRobot (int id, w_Targs* args) // (char *nick, long uclass, char *de
 	cPluginRobot *robot = cpiPython::me->NewRobot(nick, uclass);
 	if(robot != NULL)
 	{
-		cpiPython::me->server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
+		cpiPython::me->server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
 		robot->mMyINFO_basic = robot->mMyINFO;
 
-		string omsg = "$Hello ";
-		omsg+= robot->mNick;
-		cpiPython::me->server->mHelloUsers.SendToAll(omsg, true, true);
-		omsg = cpiPython::me->server->mP.GetMyInfo(robot, eUC_NORMUSER);
-		cpiPython::me->server->mUserList.SendToAll(omsg, true, true);
-		if(uclass >= 3)
-			cpiPython::me->server->mUserList.SendToAll( cpiPython::me->server->mOpList.GetNickList(), true );
+		string omsg = "$Hello "; // send hello
+		omsg += robot->mNick;
+		cpiPython::me->server->mHelloUsers.SendToAll(omsg, cpiPython::me->server->mC.delayed_myinfo, true);
+		cpiPython::me->server->mUserList.SendToAll(robot->mMyINFO, cpiPython::me->server->mC.delayed_myinfo, true); // send myinfo
+
+		if (robot->mClass >= eUC_OPERATOR) { // send short oplist
+			omsg = "$OpList ";
+			omsg += robot->mNick;
+			omsg += "$$";
+			cpiPython::me->server->mUserList.SendToAll(omsg, cpiPython::me->server->mC.delayed_myinfo, true); // cpiPython::me->server->mOpList.GetNickList()
+		}
+
+		omsg = "$BotList "; // send short botlist
+		omsg += robot->mNick;
+		omsg += "$$";
+		cpiPython::me->server->mUserList.SendToAllWithFeature(omsg, eSF_BOTLIST, cpiPython::me->server->mC.delayed_myinfo, true); // cpiPython::me->server->mRobotList.GetNickList()
+
 		return w_ret1;
 	}
 	return NULL;

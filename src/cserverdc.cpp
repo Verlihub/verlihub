@@ -371,10 +371,11 @@ bool cServerDC::AddToList(cUser *usr)
 	if(usr->mxConn && !(usr->mxConn->mFeatures & eSF_NOHELLO))
 		mHelloUsers.AddWithHash(usr, Hash);
 
-	if ((usr->mClass >= eUC_OPERATOR) || mC.chat_default_on)
+	if ((usr->mClass >= eUC_OPERATOR) || mC.chat_default_on) {
 		mChatUsers.AddWithHash(usr, Hash);
-	else
+	} else if (usr->mxConn) {
 		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), usr->mxConn);
+	}
 
 	if(usr->mxConn && usr->mxConn->Log(3))
 		usr->mxConn->LogStream() << "Adding at the end of Nicklist" << endl;
@@ -878,24 +879,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		return;
 	}
 
-	// display user to others
-	ShowUserToAll(conn->mpUser);
-
-	if (mC.send_user_ip) {
-		if (conn->mpUser->mClass >= eUC_OPERATOR) {
-			if (conn->mFeatures & eSF_USERIP2)
-				conn->Send(mUserList.GetIPList(), true);
-		} else {
-			string UserIP;
-			cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
-			DoUserIP.Clear();
-			DoUserIP(conn->mpUser);
-			mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, true, true); // wtf, one client see ghost users when cache in on, other client dont see user ips when cache is off?
-
-			if (conn->mFeatures & eSF_USERIP2)
-				conn->Send(UserIP);
-		}
-	}
+	ShowUserToAll(conn->mpUser); // display user to others
 
 	if (!mC.hub_topic.empty()) { // send hub name with topic
 		static string omsg;
@@ -956,47 +940,56 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 	return true;
 }
 
-#define UseChache true
-#define OpList mOpList.GetNickList()
 bool cServerDC::ShowUserToAll(cUserBase *user)
 {
 	string omsg;
-
-	// only Hello users get hello message
-	omsg = "$Hello ";
-	omsg+= user->mNick;
+	omsg = "$Hello "; // only hello users get hello message
+	omsg += user->mNick;
 	mHelloUsers.SendToAll(omsg, mC.delayed_myinfo);
 
-	// all users get myinfo, event hose in progress
-	// (hello users in progres are ignored, they are obsolete btw)
-	omsg = mP.GetMyInfo(user, eUC_NORMUSER);
-	mUserList.SendToAll(omsg, mC.delayed_myinfo); // use cache -> so this can be after user is added
+	omsg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
+	mUserList.SendToAll(omsg, mC.delayed_myinfo); // use cache, so this can be after user is added
 	mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo);
 
-	// distribute oplist
-	if(user->mClass >= eUC_OPERATOR) {
-		mUserList.SendToAll(OpList, UseChache);
-		mInProgresUsers.SendToAll(OpList, UseChache);
+	if (user->mClass >= eUC_OPERATOR) { // send short oplist
+		omsg = "$OpList ";
+		omsg += user->mNick;
+		omsg += "$$";
+		mUserList.SendToAll(omsg, mC.delayed_myinfo);
+		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo);
+	}
+
+	if (mC.send_user_ip) { // send userip to operators
+		string UserIP;
+		cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
+		DoUserIP.Clear();
+		DoUserIP(user);
+		mOpList.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
+		mInProgresUsers.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true);
 	}
 
 	// send it to all but to him
-	// but why ? maybe he would be doubled in some shi** clients ?
-	// anyway delayed_login will show why is it..
+	// but why? maybe he would be doubled in some shit clients?
+	// anyway delayed_login will show why is it
 	// the order of flush of this before the full myinfo for ops
-	if(!mC.delayed_login)	{
+
+	if (!mC.delayed_login) {
 		user->mInList = false;
 		mUserList.FlushCache();
+
+		if (mC.send_user_ip) // this fixed the userip delay
+			mOpList.FlushCache();
+
 		mInProgresUsers.FlushCache();
 		user->mInList = true;
 	}
 
-	/// patch eventually for ops
-	if(mC.show_tags == 1)	{
+	if (mC.show_tags == 1) { // patch eventually for ops
 		omsg = mP.GetMyInfo(user, eUC_OPERATOR);
 		mOpchatList.SendToAll(omsg, mC.delayed_myinfo); // must send after mUserList! Cached mUserList will be flushed after and will override this one!
-		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo); // send later, better more people see tags, then some ops not,
-		// ops are dangerous creatures, they may have idea to kick people for not seeing their tags
+		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo); // send later, better more people see tags, then some ops not, ops are dangerous creatures, they may have idea to kick people for not seeing their tags
 	}
+
 	return true;
 }
 

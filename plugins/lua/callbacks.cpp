@@ -1703,14 +1703,23 @@ int _RegBot(lua_State *L)
 
 	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
 	robot->mMyINFO_basic = robot->mMyINFO;
+
 	string omsg = "$Hello "; // send hello
 	omsg += robot->mNick;
 	serv->mHelloUsers.SendToAll(omsg, serv->mC.delayed_myinfo, true);
-	omsg = serv->mP.GetMyInfo(robot, eUC_NORMUSER); // send myinfo
-	serv->mUserList.SendToAll(omsg, true, true);
+	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send myinfo
 
-	if (iclass >= 3) // send oplist
-		serv->mUserList.SendToAll(serv->mOpList.GetNickList(), true);
+	if (robot->mClass >= eUC_OPERATOR) { // send short oplist
+		omsg = "$OpList ";
+		omsg += robot->mNick;
+		omsg += "$$";
+		serv->mUserList.SendToAll(omsg, serv->mC.delayed_myinfo, true); // serv->mOpList.GetNickList()
+	}
+
+	omsg = "$BotList "; // send short botlist
+	omsg += robot->mNick;
+	omsg += "$$";
+	serv->mUserList.SendToAllWithFeature(omsg, eSF_BOTLIST, serv->mC.delayed_myinfo, true); // serv->mRobotList.GetNickList()
 
 	li->addBot((char*)nick.c_str(), (char*)robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // add to lua bots
 	lua_pushboolean(L, 1);
@@ -1804,8 +1813,7 @@ int _EditBot(lua_State *L)
 	robot->mMyINFO = ""; // clear old and create new myinfo
 	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
 	robot->mMyINFO_basic = robot->mMyINFO;
-	string omsg = serv->mP.GetMyInfo(robot, eUC_NORMUSER); // send new myinfo
-	serv->mUserList.SendToAll(omsg, false, true);
+	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send new myinfo
 
 	if (robot->mClass != iclass) { // different class
 		if ((robot->mClass < eUC_OPERATOR) && (iclass >= eUC_OPERATOR)) { // changing to op
@@ -1815,7 +1823,10 @@ int _EditBot(lua_State *L)
 			if (!serv->mOpchatList.ContainsNick(nick)) // add to opchat list
 				serv->mOpchatList.Add(robot);
 
-			serv->mUserList.SendToAll(serv->mOpList.GetNickList(), true); // send oplist
+			string omsg = "$OpList "; // send short oplist
+			omsg += robot->mNick;
+			omsg += "$$";
+			serv->mUserList.SendToAll(omsg, serv->mC.delayed_myinfo, true); // serv->mOpList.GetNickList()
 		} else if ((robot->mClass >= eUC_OPERATOR) && (iclass < eUC_OPERATOR)) { // changing from op
 			if (serv->mOpList.ContainsNick(nick)) // remove from oplist
 				serv->mOpList.Remove(robot);
@@ -1823,7 +1834,7 @@ int _EditBot(lua_State *L)
 			if (serv->mOpchatList.ContainsNick(nick)) // remove from opchat list
 				serv->mOpchatList.Remove(robot);
 
-			// dont need to send oplist here
+			// robot will remain in users oplist, solution would be to send quit and myinfo with botlist again
 		}
 
 		robot->mClass = (tUserCl)iclass; // set new class
