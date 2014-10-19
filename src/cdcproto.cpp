@@ -2336,10 +2336,11 @@ int cDCProto::NickList(cConnDC *conn)
 			conn->Send(mS->mUserList.GetNickList(), true);
 		}
 
-		conn->Send(mS->mOpList.GetNickList(), true); // send $OpList
+		if (mS->mOpList.Size()) // send $OpList
+			conn->Send(mS->mOpList.GetNickList(), true);
 
-		if (conn->mFeatures & eSF_BOTLIST)
-			conn->Send(mS->mRobotList.GetNickList(), true); // send $BotList
+		if (mS->mRobotList.Size() && (conn->mFeatures & eSF_BOTLIST)) // send $BotList
+			conn->Send(mS->mRobotList.GetNickList(), true);
 
 		if (mS->mC.send_user_ip && (conn->mFeatures & eSF_USERIP2) && conn->mpUser) { // send $UserIP
 			if (conn->mpUser->mClass >= eUC_OPERATOR)

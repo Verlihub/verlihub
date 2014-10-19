@@ -964,7 +964,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
 		DoUserIP.Clear();
 		DoUserIP(user);
-		mOpList.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
+		mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 		mInProgresUsers.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true);
 	}
 
@@ -977,8 +977,8 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		user->mInList = false;
 		mUserList.FlushCache();
 
-		if (mC.send_user_ip) // this fixed the userip delay
-			mOpList.FlushCache();
+		if (mC.send_user_ip) // this fixes the userip delay
+			mOpchatList.FlushCache();
 
 		mInProgresUsers.FlushCache();
 		user->mInList = true;
