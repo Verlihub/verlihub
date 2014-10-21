@@ -491,6 +491,7 @@ char * GetVHCfgDir()
 	return (char *) server->mConfigBaseDir.c_str();
 }
 
+#define count_of(arg) (sizeof(arg) / sizeof(arg[0]))
 bool GetTempRights(char *nick,  map<string,int> &rights)
 {
 	cUser *user = GetUser(nick);
@@ -498,7 +499,7 @@ bool GetTempRights(char *nick,  map<string,int> &rights)
 	cTime time = cTime().Sec();
 
 	static const int ids[] = { eUR_CHAT, eUR_PM, eUR_SEARCH, eUR_CTM, eUR_KICK, eUR_REG, eUR_OPCHAT, eUR_DROP, eUR_TBAN, eUR_PBAN, eUR_NOSHARE };
-	for(unsigned int i = 0; i < sizeof(ids); i++) {
+	for(unsigned int i = 0; i < count_of(ids); i++) {
 		string key;
 		switch(ids[i]) {
 			case eUR_CHAT:

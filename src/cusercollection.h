@@ -201,7 +201,7 @@ public:
 	void SetNickListSeparator(const string &Separator){mNickListMaker.mSep = Separator;}
 	virtual string &GetNickList();
 	virtual string &GetInfoList(bool complete=false);
-	const char *GetNickListChar() {return GetNickList().c_str();}
+	//const char *GetNickListChar() {return GetNickList().c_str();}
 
 	void   Nick2Hash(const string &Nick, tHashType &Hash);
 	tHashType Nick2Hash(const string &Nick){string Key; Nick2Key(Nick,Key); return Key2Hash(Key); }

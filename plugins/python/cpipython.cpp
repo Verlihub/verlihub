@@ -342,7 +342,7 @@ const char *cpiPython::GetConf(const char *conf, const char *var)
 	// first let's check hub's internal config:
 	if(!strcmp(conf, "config"))
 	{
-		string res, file(server->mDBConf.config_name);
+		static string res, file(server->mDBConf.config_name);
 		cConfigItemBase *ci = NULL;
 		if(file == server->mDBConf.config_name)
 		{

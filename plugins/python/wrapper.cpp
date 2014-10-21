@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2007-2014 Frog, frg at otaku-anime dot net
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -193,7 +194,7 @@ int w_unpack (w_Targs* a, const char* format, ... )
 
 const char* w_packprint (w_Targs* a)
 {
-	string o;
+	static string o;
 	if (!a || !a->format) return "(null)";
 	o = string() + a->format + " ( ";
 	char *buf = (char*) calloc(410, sizeof(char));
@@ -209,6 +210,7 @@ const char* w_packprint (w_Targs* a)
 			default:  o += "invalid";
 		}
 	}
+	free(buf);
 	o += " )";
 	return o.c_str();
 }
