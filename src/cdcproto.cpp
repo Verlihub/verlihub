@@ -1026,7 +1026,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 	// check if user found
 	if(!other) {
 		if(str != mS->mC.hub_security && str != mS->mC.opchat_name) {
-			cDCProto::Create_Quit(buf, str);
+			Create_Quit(buf, str);
 			conn->Send(buf, true);
 		}
 		return -2;
@@ -2758,6 +2758,24 @@ void cDCProto::Create_HubName(string &dest, string &name, string &topic)
 void cDCProto::Create_Quit(string &dest, const string &nick)
 {
 	dest.append("$Quit ");
+	dest.append(nick);
+}
+
+void cDCProto::Create_Hello(string &dest, const string &nick)
+{
+	dest.append("$Hello ");
+	dest.append(nick);
+}
+
+void cDCProto::Create_OpList(string &dest, const string &nick)
+{
+	dest.append("$OpList ");
+	dest.append(nick);
+}
+
+void cDCProto::Create_BotList(string &dest, const string &nick)
+{
+	dest.append("$BotList ");
 	dest.append(nick);
 }
 

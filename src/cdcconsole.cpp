@@ -935,17 +935,19 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 				mOwner->mOpchatList.Add(user);
 
 				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
-					string omsg = "$OpList "; // send short oplist
-					omsg += user->mNick;
-					omsg += "$$";
+					static string msg;
+					msg.erase();
+					mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
+					mOwner->mUserList.SendToAll(msg, false, true); // no cache
 					mOwner->mOpList.Add(user);
-					mOwner->mUserList.SendToAll(omsg, false, true); // mOwner->mOpList.GetNickList()
 				}
 			} else if ((oclass >= eUC_OPERATOR) && (nclass < eUC_OPERATOR)) {
 				mOwner->mOpchatList.Remove(user);
 
 				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys))
-					mOwner->mOpList.Remove(user); // no use of sending oplist here, solution would be quit + myinfo					
+					mOwner->mOpList.Remove(user);
+					// user will remain in users oplist until they reconnect
+					// solution would be to send quit and hello + myinfo again, todo
 			}
 		} else {
 			os << autosprintf(_("You have no rights to change class for user: %s"), s.c_str());
@@ -2067,7 +2069,7 @@ bool cDCConsole::cfRegUsr::operator()()
  		return false;
 	}
 
-	string omsg;
+	static string msg;
 
 	switch (Action) {
 		case eAC_NEW: // new
@@ -2164,18 +2166,18 @@ bool cDCConsole::cfRegUsr::operator()()
 					mS->mOpchatList.Add(user);
 
 					if (RegFound && !ui.mHideKeys) {
-						omsg = "$OpList "; // send short oplist
-						omsg += user->mNick;
-						omsg += "$$";
+						msg.erase();
+						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
+						mS->mUserList.SendToAll(msg, false, true); // no cache
 						mS->mOpList.Add(user);
-						mS->mUserList.SendToAll(omsg, false, true); // mS->mOpList.GetNickList()
 					}
 				} else if ((oclass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
 					mS->mOpchatList.Remove(user);
 
 					if (RegFound && !ui.mHideKeys) {
 						mS->mOpList.Remove(user);
-						// no use of sending oplist here, solution would be quit + myinfo
+						// user will remain in users oplist until they reconnect
+						// solution would be to send quit and hello + myinfo again, todo
 					}
 				}
 			}

@@ -942,21 +942,21 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 bool cServerDC::ShowUserToAll(cUser *user)
 {
-	string omsg;
-	omsg = "$Hello "; // only hello users get hello message
-	omsg += user->mNick;
-	mHelloUsers.SendToAll(omsg, mC.delayed_myinfo);
+	static string msg;
+	msg.erase();
+	mP.Create_Hello(msg, user->mNick); // send hello
+	mHelloUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
-	omsg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
-	mUserList.SendToAll(omsg, mC.delayed_myinfo); // use cache, so this can be after user is added
-	mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo);
+	msg.erase();
+	msg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
+	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // use cache, so this can be after user is added
+	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
 	if ((user->mClass >= eUC_OPERATOR) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
-		omsg = "$OpList ";
-		omsg += user->mNick;
-		omsg += "$$";
-		mUserList.SendToAll(omsg, mC.delayed_myinfo);
-		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo);
+		msg.erase();
+		mP.Create_OpList(msg, user->mNick);
+		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
+		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 	}
 
 	if (mC.send_user_ip) { // send userip to operators
@@ -985,9 +985,10 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	}
 
 	if (mC.show_tags == 1) { // patch eventually for ops
-		omsg = mP.GetMyInfo(user, eUC_OPERATOR);
-		mOpchatList.SendToAll(omsg, mC.delayed_myinfo); // must send after mUserList! Cached mUserList will be flushed after and will override this one!
-		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo); // send later, better more people see tags, then some ops not, ops are dangerous creatures, they may have idea to kick people for not seeing their tags
+		msg.erase();
+		msg = mP.GetMyInfo(user, eUC_OPERATOR);
+		mOpchatList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList! Cached mUserList will be flushed after and will override this one!
+		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not, ops are dangerous creatures, they may have idea to kick people for not seeing their tags
 	}
 
 	return true;
@@ -999,13 +1000,16 @@ void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int rea
 	conn->CloseNice(msec, reason);
 }
 
-int cServerDC::DCHello(const string & nick, cConnDC * conn, string *info)
+int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 {
-	string str("$Hello ");
-	str+= nick + "|";
-	conn->Send(str, false);
-	if(info)
+	static string msg;
+	msg.erase();
+	mP.Create_Hello(msg, nick);
+	conn->Send(msg, true);
+
+	if (info)
 		conn->Send(*info, true);
+
 	return 0;
 }
 
