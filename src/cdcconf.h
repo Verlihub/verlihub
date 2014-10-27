@@ -158,6 +158,7 @@ public:
 	int min_class_bc_vips;
 	int min_class_redir;
 	int max_class_int_login;
+	int max_class_check_clone;
 	int hide_all_kicks;
 	int optimize_userlist;
 	int search_number;

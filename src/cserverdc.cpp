@@ -1534,6 +1534,23 @@ int cServerDC::CntConnIP(string ip)
 	return cnt;
 }
 
+bool cServerDC::CheckUserClone(cConnDC *conn)
+{
+	if ((mC.max_class_check_clone >= 0) && conn && conn->mpUser && conn->mpUser->mShare && (conn->mpUser->mClass <= mC.max_class_check_clone)) {
+		cUserCollection::iterator i;
+		cConnDC *other;
+
+		for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+			other = ((cUser*)(*i))->mxConn;
+
+			if (other && other->mpUser && other->mpUser->mShare && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP()))
+				return true;
+		}
+	}
+
+	return false;
+}
+
 void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain)
 {
 	if (conn) {

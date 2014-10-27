@@ -74,12 +74,6 @@ if(LUA_INCLUDE_DIR AND EXISTS "${LUA_INCLUDE_DIR}/lua.h")
   unset(lua_version_str)
 endif()
 
-#include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-# handle the QUIETLY and REQUIRED arguments and set LUA_FOUND to TRUE if
-# all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Lua52
-								  # FOUND_VAR LUA52_FOUND
-                                  REQUIRED_VARS LUA_LIBRARIES LUA_INCLUDE_DIR
-                                  VERSION_VAR LUA_VERSION_STRING)
-
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Lua52 REQUIRED_VARS LUA_LIBRARIES LUA_INCLUDE_DIR VERSION_VAR LUA_VERSION_STRING) # FOUND_VAR LUA52_FOUND
 mark_as_advanced(LUA_INCLUDE_DIR LUA_LIBRARIES LUA_LIBRARY LUA_MATH_LIBRARY)

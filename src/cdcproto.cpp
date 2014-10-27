@@ -625,24 +625,26 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
+	string cmsg;
+
 	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": MyINFO";
+		cmsg = _("Your client sent malformed protocol command");
+		cmsg += ": MyINFO";
 
 		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << cmsg << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_SYNTAX);
 		return -1;
 	}
 
 	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+		cmsg = _("Invalid login sequence, you client must validate nick first.");
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << cmsg << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
@@ -650,27 +652,29 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	string &nick = msg->ChunkString(eCH_MI_NICK);
-	string cmsg;
 
-	// check syntax
-	// check nick
-	if (nick != conn->mpUser->mNick) {
-		cmsg = _("Wrong nick in MyINFO.");
-		if (conn->Log(1)) conn->LogStream() << "Claims to be someone else in MyINFO." << endl;
+	if (nick != conn->mpUser->mNick) { // check nick
+		cmsg = _("Your client specified invalid nick in protocol command");
+		cmsg += ": MyINFO";
+
+		if (conn->Log(1))
+			conn->LogStream() << cmsg << endl;
+
 		mS->ConnCloseMsg(conn, cmsg, 1500, eCR_SYNTAX);
 		return -1;
 	}
 
-	// begin tag verification
-	// parse conention type
-	if (conn->mConnType == NULL) conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
+	if (conn->mConnType == NULL) // parse conention
+		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
 
-	// check users tag
-	cDCTag *tag = mS->mCo->mDCClients->ParseTag(msg->ChunkString(eCH_MI_DESC));
+	cDCTag *tag = mS->mCo->mDCClients->ParseTag(msg->ChunkString(eCH_MI_DESC)); // check tag
 
 	if (!mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc < 0) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
-		cmsg = _("Turn on your tag.");
-		if (conn->Log(2)) conn->LogStream() << "No tag." << endl;
+		cmsg = _("Your client didn't specify a tag.");
+
+		if (conn->Log(2))
+			conn->LogStream() << cmsg << endl;
+
 		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_TAG_NONE);
 		delete tag;
 		return -1;
@@ -680,40 +684,47 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	int tag_result = 0;
 	ostringstream os;
 
-	if (((!mS->mC.tag_allow_none) || ((mS->mC.tag_allow_none) && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
+	if ((!mS->mC.tag_allow_none || (mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
 		TagValid = tag->ValidateTag(os, conn->mConnType, tag_result);
 	}
 
 	#ifndef WITHOUT_PLUGINS
-	TagValid = TagValid && mS->mCallBacks.mOnValidateTag.CallAll(conn, tag);
+		TagValid = TagValid && mS->mCallBacks.mOnValidateTag.CallAll(conn, tag);
 	#endif
 
 	if (!TagValid) {
-		if(conn->Log(2)) conn->LogStream() << "Invalid tag: " << tag_result << " Tag info: " << tag << endl;
+		if(conn->Log(2))
+			conn->LogStream() << "Invalid tag: " << tag_result << ", information: " << tag << endl;
+
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_INVALID);
+		delete tag;
 		return -1;
 	}
 
-	if ((tag->mClientMode == eCM_PASSIVE) || (tag->mClientMode == eCM_SOCK5) || (tag->mClientMode == eCM_OTHER)) conn->mpUser->IsPassive = true;
-	//delete tag; // tag is still used below, could this cause crash?
-	// end tag verification
+	if ((tag->mClientMode == eCM_PASSIVE) || (tag->mClientMode == eCM_SOCK5) || (tag->mClientMode == eCM_OTHER)) // set mode
+		conn->mpUser->IsPassive = true;
 
-	// passive user limit
-	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive != -1) && (conn->GetTheoricalClass() < eUC_OPERATOR) && (mS->mPassiveUsers.Size() >= mS->mC.max_users_passive)) {
+	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive != -1) && (conn->GetTheoricalClass() < eUC_OPERATOR) && (mS->mPassiveUsers.Size() >= mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d online passive users, please become active to enter the hub."), mS->mPassiveUsers.Size());
-		if (conn->Log(2)) conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
+
+		if (conn->Log(2))
+			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
+
 		static string omsg;
-		omsg = "$HubIsFull";
-		conn->Send(omsg);
+		omsg.erase();
+		omsg.append("$HubIsFull");
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+		conn->Send(omsg);
+		delete tag;
 		return -1;
 	}
 
-	// check min and max share conditions
-	string &str_share = msg->ChunkString(eCH_MI_SIZE);
+	string &str_share = msg->ChunkString(eCH_MI_SIZE); // check share conditions
 
 	if (str_share.size() > 18) { // share is too big
+		// todo: some kind of message to user
 		conn->CloseNow();
+		delete tag;
 		return -1;
 	} else if (str_share.empty() || (str_share[0] == '-')) { // missing or negative share
 		str_share = "0";
@@ -723,8 +734,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	shareB = StringAsLL(str_share);
 	share = shareB / (1024 * 1024);
 
-	if (conn->GetTheoricalClass() <= eUC_OPERATOR) {
-		// calculate minimax
+	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
 		__int64 max_share = mS->mC.max_share;
 		__int64 min_share_p, min_share_a;
@@ -750,8 +760,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		min_share_a = min_share;
 		min_share_p = (__int64)(min_share * mS->mC.min_share_factor_passive);
-		if (conn->mpUser->IsPassive) min_share = min_share_p;
-		//if (conn->mpUser->Can(eUR_NOSHARE, mS->mTime.Sec())) min_share = 0;
+
+		if (conn->mpUser->IsPassive)
+			min_share = min_share_p;
+
+		//if (conn->mpUser->Can(eUR_NOSHARE, mS->mTime.Sec()))
+			//min_share = 0;
 
 		if ((share < min_share) || (max_share && (share > max_share))) {
 			if (share < min_share)
@@ -759,13 +773,15 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			else
 				os << autosprintf(_("You share %s but maximum allowed is %s."), convertByte(shareB, false).c_str(), convertByte(max_share * 1024 * 1024, false).c_str());
 
-			if (conn->Log(2)) conn->LogStream() << "Share limit."<< endl;
+			if (conn->Log(2))
+				conn->LogStream() << "Share limit" << endl;
+
 			mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SHARE_LIMIT);
+			delete tag;
 			return -1;
 		}
 
-		// this is second share limit, if non-zero disables search and download
-		if (conn->GetTheoricalClass() <= eUC_VIPUSER) {
+		if (conn->GetTheoricalClass() <= eUC_VIPUSER) { // second share limit that disables search and download
 			__int64 temp_min_share = 0; // todo: rename to min_share_use_hub_guest
 
 			if (mS->mC.min_share_use_hub && conn->GetTheoricalClass() == eUC_NORMUSER) {
@@ -776,9 +792,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				temp_min_share = mS->mC.min_share_use_hub_vip;
 			}
 
-			// found hub limit
 			if (temp_min_share) {
-				if (conn->mpUser->IsPassive) temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
+				if (conn->mpUser->IsPassive)
+					temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
 
 				if (share < temp_min_share) {
 					conn->mpUser->SetRight(eUR_SEARCH, 0);
@@ -792,50 +808,65 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
 
-		if ((conn->GetTheoricalClass() < mS->mC.min_class_use_hub_passive) && !(conn->mpUser->IsPassive == false)) {
+		if ((conn->GetTheoricalClass() < mS->mC.min_class_use_hub_passive) && conn->mpUser->IsPassive) {
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
 	}
 
-	// update totalshare
-	mS->mTotalShare -= conn->mpUser->mShare;
+	mS->mTotalShare -= conn->mpUser->mShare; // update total share
 	conn->mpUser->mShare = shareB;
 	mS->mTotalShare += conn->mpUser->mShare;
 
-	// peak total share
-	if (mS->mTotalShare > mS->mTotalSharePeak)
+	if (mS->CheckUserClone(conn)) { // detect clone using ip and share
+		cmsg = _("You are already in the hub with another nick.");
+
+		if (conn->Log(2))
+			conn->LogStream() << cmsg << endl;
+
+		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
+		delete tag;
+		return -1;
+	}
+
+	if (mS->mTotalShare > mS->mTotalSharePeak) // peak total share
 		mS->mTotalSharePeak = mS->mTotalShare;
 
 	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL);
 
-	// user sent myinfo for the first time
-	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) {
+	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
 		bool banned = false;
 		banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
-		if (banned && conn->GetTheoricalClass() <= eUC_REGUSER) {
-			stringstream msg;
-			msg << _("You are banned from this hub.") << "\r\n";
-			Ban.DisplayUser(msg);
-			mS->DCPublicHS(msg.str(), conn);
-			conn->LogStream() << "Kicked user due ban detection." << endl;
+		if (banned && (conn->GetTheoricalClass() <= eUC_REGUSER)) {
+			stringstream smsg;
+			smsg << _("You are banned from this hub.") << "\r\n";
+			Ban.DisplayUser(smsg);
+			mS->DCPublicHS(smsg.str(), conn);
+
+			if (conn->Log(1))
+				conn->LogStream() << "Kicked user due to ban detection" << endl;
+
 			conn->CloseNice(1000, eCR_KICKED);
+			delete tag;
 			return -1;
 		}
 
 		#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnFirstMyINFO.CallAll(conn, msg)) {
-			conn->CloseNice(1000, eCR_KICKED);
-			return -2;
-		}
+			if (!mS->mCallBacks.mOnFirstMyINFO.CallAll(conn, msg)) {
+				conn->CloseNice(1000, eCR_KICKED);
+				delete tag;
+				return -2;
+			}
 		#endif
 	}
 
  	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg))
+		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg)) {
+			delete tag;
 			return -2;
+		}
 	#endif
 
 	if (msg->mModified && msg->SplitChunks() && conn->Log(2)) // plugin has modified message, return here?
@@ -853,10 +884,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			sTag.assign(desctag, mS->mCo->mDCClients->mPositionInDesc, -1);
 	}
 
-	if (mS->mC.show_desc_len >= 0)
+	if (mS->mC.show_desc_len >= 0) // hide description
 		desc.assign(desc, 0, mS->mC.show_desc_len);
 
-	if (mS->mC.desc_insert_mode) {
+	if (mS->mC.desc_insert_mode) { // description insert mode
 		if (mS->mC.desc_insert_vars.empty()) { // insert mode only
 			switch (tag->mClientMode) {
 				case eCM_ACTIVE:
@@ -929,32 +960,35 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	delete tag; // now we can delete tag
+	delete tag; // tag is no longer used
 	speed = msg->ChunkString(eCH_MI_SPEED);
 
-	if ((mS->mC.show_speed == 0) && !speed.empty())
-		speed.assign(speed, speed.length() - 1, -1); // hide speed but keep status byte
+	if ((mS->mC.show_speed == 0) && !speed.empty()) // hide speed but keep status byte
+		speed.assign(speed, speed.length() - 1, -1);
 
-	if (mS->mC.show_email == 0)
+	if (mS->mC.show_email == 0) // hide email
 		email= "";
 	else
 		email = msg->ChunkString(eCH_MI_MAIL);
 
-	if (conn->mpUser->mHideShare)
+	if (conn->mpUser->mHideShare) // hide share
 		sShare = "0";
 	else
-		sShare = str_share; // msg->ChunkString(eCH_MI_SIZE)
+		sShare = str_share;
 
-	Create_MyINFO(myinfo_basic, nick, desc, speed, email, sShare); // msg->ChunkString(eCH_MI_NICK)
+	Create_MyINFO(myinfo_basic, nick, desc, speed, email, sShare);
 
 	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.show_tags < 3)) // ops have hidden myinfo
 		myinfo_full = myinfo_basic;
 	else
-		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare); // msg->mStr
+		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare);
 
-	// login or send to all
-	if (conn->mpUser->mInList) {
-		// send it to all only if: its not too often, it has changed since last time, send only the version that has changed only to those who want it
+	if (conn->mpUser->mInList) { // login or send to all
+		// send it to all only if:
+		// its not too often
+		// it has changed since last time
+		// send only the version that has changed only to those who want it
+
 		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (myinfo_full != conn->mpUser->mMyINFO)) {
 			conn->mpUser->mMyINFO = myinfo_full;
 
@@ -965,21 +999,24 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true);
 			}
 
-			if (mS->mC.show_tags >= 1) mS->mOpchatList.SendToAll(myinfo_full, mS->mC.delayed_myinfo, true);
+			if (mS->mC.show_tags >= 1)
+				mS->mOpchatList.SendToAll(myinfo_full, mS->mC.delayed_myinfo, true);
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
 		conn->mpUser->mMyINFO_basic = myinfo_basic;
 		conn->SetLSFlag(eLS_MYINFO);
 
+		if ((conn->mFeatures & eSF_FAILOVER) && !mS->mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
+			static string omsg;
+			omsg.erase();
+			omsg.append("$FailOver ");
+			omsg.append(mS->mC.hub_failover_hosts);
+			conn->Send(omsg, true);
+		}
+
 		if (!mS->BeginUserLogin(conn)) // if all right, add user to userlist, if not yet there
 			return -1;
-
-		if ((conn->mFeatures & eSF_FAILOVER) && !mS->mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
-			string fo("$FailOver ");
-			fo += mS->mC.hub_failover_hosts;
-			conn->Send(fo, true);
-		}
 	}
 
 	conn->ClearTimeOut(eTO_MYINFO);

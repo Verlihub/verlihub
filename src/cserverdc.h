@@ -534,6 +534,9 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int CntConnIP(string ip);
 
+		// clone detection
+		bool CheckUserClone(cConnDC *conn);
+
 		// The buffer that holds data to send to all
 		string mSendAllBuf;
 		// Static pointer to this class
