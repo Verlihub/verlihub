@@ -734,7 +734,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	shareB = StringAsLL(str_share);
 	share = shareB / (1024 * 1024);
 	old_share = conn->mpUser->mShare;
-	conn->mpUser->mShare = shareB;
+
+	if (conn->mpUser->mHideShare)
+		conn->mpUser->mShare = shareB;
+	else
+		conn->mpUser->mShare = 0;
 
 	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
@@ -816,7 +820,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email
+	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email, not sure where its used
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
@@ -865,7 +869,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	mS->mTotalShare -= old_share; // update total share
-	mS->mTotalShare += shareB;
+	mS->mTotalShare += conn->mpUser->mShare;
 
 	if (mS->mTotalShare > mS->mTotalSharePeak) // peak total share
 		mS->mTotalSharePeak = mS->mTotalShare;
@@ -968,9 +972,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		speed.assign(speed, speed.length() - 1, -1);
 
 	if (mS->mC.show_email == 0) // hide email
-		email= "";
+		email = "";
 	else
-		email = msg->ChunkString(eCH_MI_MAIL);
+		email = conn->mpUser->mEmail;
 
 	if (conn->mpUser->mHideShare) // hide share
 		sShare = "0";
