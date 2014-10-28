@@ -378,26 +378,34 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 void cDCConnFactory::DeleteConn(cAsyncConn * &connection)
 {
 	cConnDC *conn = (cConnDC*)connection;
+
 	if (conn) {
 		#ifndef WITHOUT_PLUGINS
-		mServer->mCallBacks.mOnCloseConn.CallAll(conn);
-		mServer->mCallBacks.mOnCloseConnEx.CallAll(conn);
+			mServer->mCallBacks.mOnCloseConn.CallAll(conn);
+			mServer->mCallBacks.mOnCloseConnEx.CallAll(conn);
 		#endif
-		if(conn->GetLSFlag(eLS_ALLOWED)) {
+
+		if (conn->GetLSFlag(eLS_ALLOWED)) {
 			mServer->mUserCountTot--;
 			mServer->mUserCount[conn->mGeoZone]--;
-			if(conn->mpUser)
+
+			if (conn->mpUser && !conn->mpUser->mHideShare) // only if not hidden
 				mServer->mTotalShare -= conn->mpUser->mShare;
 		}
-		if(conn->mpUser) {
+
+		if (conn->mpUser) {
 			mServer->RemoveNick(conn->mpUser);
-			if(conn->mpUser->mClass)
+
+			if (conn->mpUser->mClass)
 				mServer->mR->Logout(conn->mpUser->mNick);
+
 			delete conn->mpUser;
-			conn->mpUser  = NULL;
+			conn->mpUser = NULL;
 		}
 	}
+
 	cConnFactory::DeleteConn(connection);
 }
+
 	}; // namespace nSocket
 }; // namespace nVerliHub

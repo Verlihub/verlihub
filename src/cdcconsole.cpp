@@ -2224,8 +2224,29 @@ bool cDCConsole::cfRegUsr::operator()()
 
 	if ((WithPar && (Action >= eAC_ENABLE) && (Action <= eAC_SET)) || ((Action == eAC_PASS) && !WithPar)) {
 		if (mS->mR->SetVar(nick, field, par)) {
+			if ((field == "hide_share") && user && user->mxConn) { // change hidden share flag on the fly, also update total share
+				if (user->mHideShare && (par == "0")) {
+					user->mHideShare = false;
+					mS->mTotalShare += user->mShare;
+
+					if (!ostr.str().size())
+						ostr << _("Your share is now visible.");
+				} else if (!user->mHideShare && (par != "0")) { // it appears that only 0 means false, anything else means true
+					user->mHideShare = true;
+					mS->mTotalShare -= user->mShare;
+
+					if (!ostr.str().size())
+						ostr << _("Your share is now hidden.");
+				}
+			}
+
 			(*mOS) << autosprintf(_("Updated variable %s to value %s for user %s."), field.c_str(), par.c_str(), nick.c_str());
-			if (user && user->mxConn && ostr.str().size()) mS->DCPrivateHS(ostr.str(), user->mxConn);
+
+			if (user && user->mxConn && ostr.str().size()) { // send both in pm and mc, so user see the message for sure
+				mS->DCPrivateHS(ostr.str(), user->mxConn);
+				mS->DCPublicHS(ostr.str(), user->mxConn);
+			}
+
 			return true;
 		} else {
 			(*mOS) << autosprintf(_("Error setting variable %s to value %s for user %s."), field.c_str(), par.c_str(), nick.c_str());

@@ -229,12 +229,13 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	if(conn->Log(3))
 		conn->LogStream() << "User " << nick << " tries to login" << endl;
 
-	// Check if nick is valid or close the connection
-	int closeReason;
-	if(!mS->ValidateUser(conn, nick, closeReason)) {
-		conn->CloseNice(1000, closeReason);
+	int closeReason; // check if nick is valid or close the connection
+
+	if (!mS->ValidateUser(conn, nick, closeReason)) {
+		conn->CloseNice(2000, closeReason); // give it little more time, it seems that some clients with slow connection or ping dont receive ban messages sometimes
 		return -1;
 	}
+
 	// User limit
 	int limit = mS->mC.max_users_total;
 	int limit_cc = mS->mC.max_users[conn->mGeoZone];
@@ -814,9 +815,13 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	mS->mTotalShare -= conn->mpUser->mShare; // update total share
+	if (!conn->mpUser->mHideShare) // only if not hidden
+		mS->mTotalShare -= conn->mpUser->mShare;
+
 	conn->mpUser->mShare = shareB;
-	mS->mTotalShare += conn->mpUser->mShare;
+
+	if (!conn->mpUser->mHideShare) // update total share
+		mS->mTotalShare += conn->mpUser->mShare;
 
 	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
 		cmsg = _("You are already in the hub with another nick.");

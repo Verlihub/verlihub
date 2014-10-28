@@ -264,18 +264,19 @@ Redefine << operator to show and describe a trigger
 
 ostream &operator << (ostream &os, cTrigger &tr)
 {
-		os << " ";
-		os << setw(30) << setiosflags(ios::left) << tr.mCommand.c_str();
-		os << setw(25) << setiosflags(ios::left) << tr.mDefinition.substr(0,24).c_str();
-		os << setw(8) << setiosflags(ios::left) << tr.mFlags;
-		os << setw(15) << setiosflags(ios::left) << tr.mSendAs.c_str();
-		os << setw(10) << setiosflags(ios::left) << tr.mMinClass;
-		os << tr.mMaxClass;
+	os << " ";
+	os << setw(30) << setiosflags(ios::left) << tr.mCommand.c_str();
+	os << setw(25) << setiosflags(ios::left) << tr.mDefinition.substr(0,24).c_str();
+	os << setw(8) << setiosflags(ios::left) << tr.mFlags;
+	os << setw(15) << setiosflags(ios::left) << (tr.mSendAs.size() ? tr.mSendAs.c_str() : "NULL"); // todo: use hub security nick, server.mC.hub_security
+	os << setw(10) << setiosflags(ios::left) << tr.mMinClass;
+	os << tr.mMaxClass;
 
-	if(tr.mSeconds) {
+	if (tr.mSeconds) {
 		cTime timeout = cTime(tr.mSeconds);
 		os << " Timeout: " <<  timeout.AsPeriod();
 	}
+
 	return os;
 }
 

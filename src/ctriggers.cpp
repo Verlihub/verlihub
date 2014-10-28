@@ -58,9 +58,9 @@ cTriggers::cTriggers( cServerDC *server ) :
 
 void cTriggers::AddFields()
 {
-	AddCol("command", "varchar(15)", "", false, mModel.mCommand);
+	AddCol("command", "varchar(30)", "", false, mModel.mCommand);
 	AddPrimaryKey("command");
-	AddCol("send_as", "varchar(25)", "hub-security", true, mModel.mSendAs);
+	AddCol("send_as", "varchar(50)", "Verlihub", true, mModel.mSendAs);
 	AddCol("def", "text", "", true, mModel.mDefinition);
 	AddCol("descr", "text", "", true, mModel.mDescription);
 	AddCol("min_class", "int(2)", "", true, mModel.mMinClass);
@@ -209,7 +209,7 @@ void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 				"[ -d <\"definition\">]"
 				"[ -h <help>]"
 				"[ -f <flags>]"
-				"[ -n <nick>]"
+				"[ -n [nick]]"
 				"[ -c <minclass>]"
 				"[ -C <maxclass>]"
 				"[ -t <timeout>]";
@@ -288,23 +288,19 @@ void cTriggerConsole::GetHelp(ostream &os)
 }
 
   /**
-
   Return the regex for a given command
-
   @param[in] cmd The type of the command (list, add, mod or del)
-
   */
-
 const char * cTriggerConsole::GetParamsRegex(int cmd)
 {
-	switch(cmd) {
+	switch (cmd) {
 		case eLC_ADD:
 		case eLC_MOD:
 			return "^(\\S+)("
-				"( -d ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))?|" // [ -d<definition>|"<<definition>>]"
-				"( -h ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))?|" // [ -h(<help>|"<<help>>")]
+				"( -d ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))?|" // [ -d(<definition>|<"definition">)]
+				"( -h ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))?|" // [ -h(<help>|<"help">)]
 				"( -f ?(-?\\d+))?|" // [ -f<flags>]
-				"( -n ?(\\S+))?|" // [ -n<sendas_nick>]
+				"( -n ?(\\S*))?|" // [ -n[nick]], empty = hub security
 				"( -c ?(-?\\d+))?|" // [ -c<min_class>]
 				"( -C ?(-?\\d+))?|" // [ -c<max_class>]
 				"( -t ?(\\S+))?|" // [ -t<timeout>]
@@ -313,7 +309,7 @@ const char * cTriggerConsole::GetParamsRegex(int cmd)
 			return "(\\S+)";
 		default:
 			return "";
-	};
+	}
 }
 
 bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
@@ -345,18 +341,17 @@ bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
 }
 
   /**
-
   Read, extract data from a trigger command and save the trigger
-
   @param[in] cmd cfBase object
   @param[in] CmdID Not used here
   @param[in,out] data The trigger to add or modify
-
   */
 bool cTriggerConsole::ReadDataFromCmd(cfBase *cmd, int CmdID, cTrigger &data)
 {
 	cTrigger tmp = data;
-	enum {eADD_ALL, eADD_CMD, eADD_CHOICE,
+
+	enum {
+		eADD_ALL, eADD_CMD, eADD_CHOICE,
 		eADD_DEFp, eADD_QUOTE, eADD_DEF,
 		eADD_DESCp, eADD_QUOTE2, eADD_DESC,
 		eADD_FLAGSp, eADD_FLAGS,
@@ -364,24 +359,27 @@ bool cTriggerConsole::ReadDataFromCmd(cfBase *cmd, int CmdID, cTrigger &data)
 		eADD_CLASSp, eADD_CLASS,
 		eADD_CLASSXp, eADD_CLASSX,
 		eADD_TIMEOUTp, eADD_TIMEOUT
-		};
-	cmd->GetParStr(eADD_CMD,tmp.mCommand);
-	cmd->GetParUnEscapeStr(eADD_DEF,tmp.mDefinition);
-	cmd->GetParStr(eADD_DESC,tmp.mDescription);
-	cmd->GetParStr(eADD_NICK,tmp.mSendAs);
+	};
+
+	cmd->GetParStr(eADD_CMD, tmp.mCommand);
+	cmd->GetParUnEscapeStr(eADD_DEF, tmp.mDefinition);
+	cmd->GetParStr(eADD_DESC, tmp.mDescription);
+	cmd->GetParStr(eADD_NICK, tmp.mSendAs); // empty = hub security
 	cmd->GetParInt(eADD_FLAGS, tmp.mFlags);
 	cmd->GetParInt(eADD_CLASS, tmp.mMinClass);
 	cmd->GetParInt(eADD_CLASSX, tmp.mMaxClass);
 	string sTimeout("0");
-	cmd->GetParStr(eADD_TIMEOUT,sTimeout);
-	tmp.mSeconds = mOwner->mServer->Str2Period(sTimeout,*cmd->mOS);
+	cmd->GetParStr(eADD_TIMEOUT, sTimeout);
+	tmp.mSeconds = mOwner->mServer->Str2Period(sTimeout, *cmd->mOS);
 
 	bool checkDefinition = !(tmp.mFlags & eTF_DB);
-	if(CmdID == eLC_ADD && checkDefinition && !CheckData(cmd,tmp)) {
+
+	if (CmdID == eLC_ADD && checkDefinition && !CheckData(cmd, tmp)) {
 		return false;
-	} else if(CmdID == eLC_MOD && !data.mCommand.empty() && checkDefinition && !CheckData(cmd,tmp)) {
+	} else if (CmdID == eLC_MOD && !data.mCommand.empty() && checkDefinition && !CheckData(cmd, tmp)) {
 		return false;
 	}
+
 	data = tmp;
 	return true;
 }
