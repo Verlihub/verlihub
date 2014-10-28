@@ -730,15 +730,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		str_share = "0";
 	}
 
-	__int64 share = 0, shareB = 0, old_share = 0;
+	__int64 share = 0, shareB = 0;
 	shareB = StringAsLL(str_share);
 	share = shareB / (1024 * 1024);
-	old_share = conn->mpUser->mShare;
-
-	if (conn->mpUser->mHideShare)
-		conn->mpUser->mShare = 0;
-	else
-		conn->mpUser->mShare = shareB;
 
 	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
@@ -820,6 +814,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
+	mS->mTotalShare -= conn->mpUser->mShare; // update total share
+	conn->mpUser->mShare = shareB;
+	mS->mTotalShare += conn->mpUser->mShare;
+
+	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
+		cmsg = _("You are already in the hub with another nick.");
+
+		if (conn->Log(2))
+			conn->LogStream() << cmsg << endl;
+
+		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
+		delete tag;
+		return -1;
+	}
+
 	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email, not sure where its used
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
@@ -856,20 +865,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			return -2;
 		}
 	#endif
-
-	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
-		cmsg = _("You are already in the hub with another nick.");
-
-		if (conn->Log(2))
-			conn->LogStream() << cmsg << endl;
-
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
-		delete tag;
-		return -1;
-	}
-
-	mS->mTotalShare -= old_share; // update total share
-	mS->mTotalShare += conn->mpUser->mShare;
 
 	if (mS->mTotalShare > mS->mTotalSharePeak) // peak total share
 		mS->mTotalSharePeak = mS->mTotalShare;

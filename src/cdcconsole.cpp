@@ -666,6 +666,10 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your can search every") << autosprintf(ngettext("%d second", "%d seconds", sInt), sInt) << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("You are sharing") << convertByte(conn->mpUser->mShare, false).c_str();
+
+	if (conn->mpUser->mHideShare) // tell user that his share is hidden
+		os << " (" << _("hidden") << ")";
+
 	omsg = os.str();
 	mOwner->DCPublicHS(omsg, conn);
 	return 1;
