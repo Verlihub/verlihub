@@ -736,9 +736,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	old_share = conn->mpUser->mShare;
 
 	if (conn->mpUser->mHideShare)
-		conn->mpUser->mShare = shareB;
-	else
 		conn->mpUser->mShare = 0;
+	else
+		conn->mpUser->mShare = shareB;
 
 	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
