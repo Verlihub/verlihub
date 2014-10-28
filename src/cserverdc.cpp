@@ -883,6 +883,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 
 	if (!mC.hub_topic.empty()) { // send hub name with topic
 		static string omsg;
+		omsg.erase();
 		cDCProto::Create_HubName(omsg, mC.hub_name, mC.hub_topic);
 
 		#ifndef WITHOUT_PLUGINS
@@ -891,6 +892,14 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		{
 			conn->Send(omsg);
 		}
+	}
+
+	if ((conn->mFeatures & eSF_FAILOVER) && !mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
+		static string omsg;
+		omsg.erase();
+		omsg.append("$FailOver ");
+		omsg.append(mC.hub_failover_hosts);
+		conn->Send(omsg, true);
 	}
 
 	SendHeaders(conn, 1);
@@ -1540,10 +1549,10 @@ bool cServerDC::CheckUserClone(cConnDC *conn)
 		cUserCollection::iterator i;
 		cConnDC *other;
 
-		for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+		for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 			other = ((cUser*)(*i))->mxConn;
 
-			if (other && other->mpUser && other->mpUser->mShare && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP()))
+			if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP()))
 				return true;
 		}
 	}

@@ -714,7 +714,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		omsg.erase();
 		omsg.append("$HubIsFull");
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
-		conn->Send(omsg);
+		conn->Send(omsg, true);
 		delete tag;
 		return -1;
 	}
@@ -730,9 +730,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		str_share = "0";
 	}
 
-	__int64 share = 0, shareB = 0;
+	__int64 share = 0, shareB = 0, old_share = 0;
 	shareB = StringAsLL(str_share);
 	share = shareB / (1024 * 1024);
+	old_share = conn->mpUser->mShare;
+	conn->mpUser->mShare = shareB;
 
 	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
@@ -814,25 +816,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	mS->mTotalShare -= conn->mpUser->mShare; // update total share
-	conn->mpUser->mShare = shareB;
-	mS->mTotalShare += conn->mpUser->mShare;
-
-	if (mS->CheckUserClone(conn)) { // detect clone using ip and share
-		cmsg = _("You are already in the hub with another nick.");
-
-		if (conn->Log(2))
-			conn->LogStream() << cmsg << endl;
-
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
-		delete tag;
-		return -1;
-	}
-
-	if (mS->mTotalShare > mS->mTotalSharePeak) // peak total share
-		mS->mTotalSharePeak = mS->mTotalShare;
-
-	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL);
+	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
@@ -868,6 +852,23 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			return -2;
 		}
 	#endif
+
+	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
+		cmsg = _("You are already in the hub with another nick.");
+
+		if (conn->Log(2))
+			conn->LogStream() << cmsg << endl;
+
+		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
+		delete tag;
+		return -1;
+	}
+
+	mS->mTotalShare -= old_share; // update total share
+	mS->mTotalShare += shareB;
+
+	if (mS->mTotalShare > mS->mTotalSharePeak) // peak total share
+		mS->mTotalSharePeak = mS->mTotalShare;
 
 	if (msg->mModified && msg->SplitChunks() && conn->Log(2)) // plugin has modified message, return here?
 		conn->LogStream() << "MyINFO syntax error after plugin modification" << endl;
@@ -1006,14 +1007,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
 		conn->mpUser->mMyINFO_basic = myinfo_basic;
 		conn->SetLSFlag(eLS_MYINFO);
-
-		if ((conn->mFeatures & eSF_FAILOVER) && !mS->mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
-			static string omsg;
-			omsg.erase();
-			omsg.append("$FailOver ");
-			omsg.append(mS->mC.hub_failover_hosts);
-			conn->Send(omsg, true);
-		}
 
 		if (!mS->BeginUserLogin(conn)) // if all right, add user to userlist, if not yet there
 			return -1;
