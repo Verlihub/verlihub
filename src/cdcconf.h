@@ -255,6 +255,7 @@ public:
 	string wrongpass_message;
 	int wrongpassword_report;
 	int wrongauthip_report;
+	bool clone_detect_report;
 	bool nullchars_report;
 	int botinfo_report;
 	double timeout_length[6];

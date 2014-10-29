@@ -236,6 +236,7 @@ void cDCConf::AddVars()
 	Add("wrongpass_message", wrongpass_message, "");
 	Add("wrongpassword_report", wrongpassword_report, 1);
 	Add("wrongauthip_report", wrongauthip_report, 1);
+	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);
 	Add("botinfo_report", botinfo_report, 0);
 	Add("send_user_ip",send_user_ip,false);

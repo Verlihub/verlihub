@@ -1552,8 +1552,12 @@ bool cServerDC::CheckUserClone(cConnDC *conn)
 		for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 			other = ((cUser*)(*i))->mxConn;
 
-			if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP()))
+			if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
+				if (mC.clone_detect_report)
+					ReportUserToOpchat(conn, autosprintf(_("Dropping clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str()));
+
 				return true;
+			}
 		}
 	}
 
