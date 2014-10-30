@@ -1,7 +1,8 @@
 #!@BASH_PATH@
 
 #
-#	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+#	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+#	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -88,10 +89,10 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 
 	# Check if hub is already running
 	if _is_hub_running $CONFIG_DIR ; then
-		echo "-- Hub is already running with PID $PID_RESULT. To stop it use --stop option"
+		echo "-- Hub is already running with PID $PID_RESULT, to stop it use --stop option"
 		exit 1;
 	fi
-	echo "-- Starting hub with config folder '$CONFIG_DIR'. This could take some times";
+	echo "-- Starting hub from directory '$CONFIG_DIR', this could take some time";
 
 	LOG_FILE="$CONFIG_DIR/log"
 	ERROR_FILE="$CONFIG_DIR/err"
@@ -99,25 +100,25 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 
 	# Check permission on folder
 	if  [ ! -w $CONFIG_DIR ]; then
-		echo_s "-- You haven't permissions to write on '$CONFIG_DIR'\n" $RED
+		echo_s "-- You don't have permission to write to directory '$CONFIG_DIR'\n" $RED
 		exit 1;
 	fi
 	# Check permission on files
 	if [ -e $LOG_FILE ]; then
 		if  [ ! -w $LOG_FILE ]; then
-			echo_s "-- You haven't permissions to write log file '$LOG_FILE'\n" $RED
+			echo_s "-- You don't have permission to write to log file '$LOG_FILE'\n" $RED
 			exit 1;
 		fi
 	fi
 	if [ -e $ERROR_FILE ]; then
 		if [ ! -w $ERROR_FILE ]; then
-			echo_s "-- You haven't permissions to write error file '$ERROR_FILE'\n" $RED
+			echo_s "-- You don't have permission to write to error file '$ERROR_FILE'\n" $RED
 			exit 1;
 		fi
 	fi
 	if [ -e $PID_FILE ]; then
 		if [ ! -w $PID_FILE ]; then
-			echo_s "-- You haven't permissions to write PID file '$PID_FILE'\n" $RED
+			echo_s "-- You don't have permission to write to PID file '$PID_FILE'\n" $RED
 			exit 1;
 		fi
 	fi
@@ -131,14 +132,49 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 
 	# Check if MySQL socket exists
 	_mysql_export_socket
-	
+
+	# this block will perform different checks and set open files limit higher than hub user limit if required
+	echo "-- Checking open files limit before hub start"
+	local CUR_LIMIT=`ulimit -n` # get current open files limit
+	local RE="^[0-9]+$" # number regular expression
+	if [[ $CUR_LIMIT =~ $RE ]]; then # check if we got what we wanted
+		local HUB_LIMIT=$(_mysql_value "max_users") # get hub user limit
+		if [[ $HUB_LIMIT =~ $RE ]]; then # check if we got what we wanted
+			if [ $CUR_LIMIT -le $HUB_LIMIT ]; then # compare current open files limit with hub user limit
+				local NEW_LIMIT=$(($CUR_LIMIT+$HUB_LIMIT)) # create new open files limit
+				if [[ $NEW_LIMIT =~ $RE ]]; then # check if we got what we wanted
+					ulimit -n $NEW_LIMIT # set new open files limit in same console
+					local SET_LIMIT=`ulimit -n` # get new open files limit
+					if [[ $SET_LIMIT =~ $RE ]]; then # check if we got what we wanted
+						if [ $SET_LIMIT -eq $NEW_LIMIT ]; then # compare set open files limit with new open files limit
+							echo -n "-- Successfully changed open files limit to "
+							echo_s "$SET_LIMIT\n" $GREEN
+						else
+							echo "-- Failed to set new open files limit, it will remain unchanged"
+						fi
+					else
+						echo "-- Failed to get new open files limit, it will remain unchanged"
+					fi
+				else
+					echo "-- Failed to create new open files limit, it will remain unchanged"
+				fi
+			else
+				echo "-- Current open files limit is higher than hub user limit, change not required"
+			fi
+		else
+			echo "-- Failed to get hub user limit, open files limit will remain unchanged"
+		fi
+	else
+		echo "-- Failed to get current open files limit, it will remain unchanged"
+	fi
+
 	# Run it
 	$BINDIR/$DAEMON_NAME $BINDIR/verlihub >"$LOG_FILE" 2>"$ERROR_FILE" &
 	PID=$!
 	disown $PID
 	# Check if pid is returned
 	if [ "_$PID" = "_" ]; then
-		echo_s "-- A error occured while tring to get PID of VerliHub\n" $RED
+		echo_s "-- Error occured while trying to get hub PID\n" $RED
 		return 1;
 	fi;
 	sleep 2
@@ -146,14 +182,14 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 	# Save pid
 	echo $PID > $PID_FILE
 	if ! _is_hub_running $CONFIG_DIR ; then
-		echo_s "-- Hub is not running. Please check '$LOG_FILE' and '$ERROR_FILE' for more information\n" $RED
+		echo_s "-- Hub is not running, please see '$LOG_FILE' and '$ERROR_FILE' for more information\n" $RED
 		rm -f $PID_FILE
 		return 1;
 	fi
-	
-	echo -n "-- Starting verlihub (PID: $PID)..."
+
+	echo -n "-- Starting hub with PID $PID .. "
 	sleep 1
-	echo " Done"
+	echo_s "[OK]\n" $GREEN
 }
 
 function kill_hub() # path_to_dbconfig
