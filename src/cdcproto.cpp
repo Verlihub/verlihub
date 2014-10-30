@@ -599,7 +599,7 @@ int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (conn->mpUser && conn->mpUser->CheckProtoFlood(ePF_NICKLIST, mS->mC.int_flood_nicklist_period, mS->mC.int_flood_nicklist_limit)) // protocol flood
+	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, ePF_NICKLIST)) // protocol flood
 		return -1;
 
 	if(!conn->GetLSFlag(eLS_MYINFO) && mS->mC.nicklist_on_login)
@@ -649,7 +649,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_MYINFO, mS->mC.int_flood_myinfo_period, mS->mC.int_flood_myinfo_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_MYINFO)) // protocol flood
 		return -1;
 
 	string &nick = msg->ChunkString(eCH_MI_NICK);
@@ -1046,7 +1046,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_GETINFO, mS->mC.int_flood_getinfo_period, mS->mC.int_flood_getinfo_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_GETINFO)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -1172,7 +1172,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_PRIV, mS->mC.int_flood_to_period, mS->mC.int_flood_to_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_PRIV)) // protocol flood
 		return -1;
 
 	if(!conn->mpUser->mInList) return -2;
@@ -1266,7 +1266,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_MCTO, mS->mC.int_flood_mcto_period, mS->mC.int_flood_mcto_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_MCTO)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList) return -2;
@@ -1382,7 +1382,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_CHAT, mS->mC.int_flood_chat_period, mS->mC.int_flood_chat_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_CHAT)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList) return -3;
@@ -1542,7 +1542,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_CTM, mS->mC.int_flood_ctm_period, mS->mC.int_flood_ctm_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_CTM)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -1700,7 +1700,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_RCTM, mS->mC.int_flood_rctm_period, mS->mC.int_flood_rctm_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_RCTM)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -1822,7 +1822,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_SEARCH, mS->mC.int_flood_search_period, mS->mC.int_flood_search_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_SEARCH)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -2048,7 +2048,7 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_SR, mS->mC.int_flood_sr_period, mS->mC.int_flood_sr_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_SR)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -2647,7 +2647,7 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->CheckProtoFlood(ePF_GETTOPIC, mS->mC.int_flood_gettopic_period, mS->mC.int_flood_gettopic_limit)) // protocol flood
+	if (conn->mpUser->CheckProtoFlood(msg, ePF_GETTOPIC)) // protocol flood
 		return -1;
 
 	if (!conn->mpUser->mInList)
@@ -2710,7 +2710,7 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (conn->mpUser && conn->mpUser->CheckProtoFlood(ePF_UNKNOWN, mS->mC.int_flood_unknown_period, mS->mC.int_flood_unknown_limit)) // protocol flood
+	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, ePF_UNKNOWN)) // protocol flood
 		return -1;
 
 	#ifndef WITHOUT_PLUGINS

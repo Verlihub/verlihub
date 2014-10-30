@@ -144,6 +144,12 @@ public: // Public attributes
 	bool mInList;
 };
 
+namespace nProtocol {
+	class cMessageDC;
+};
+
+using nProtocol::cMessageDC;
+
 /**Any type of dc user, contains info abou the connected users
   *@author Daniel Muller
   */
@@ -258,13 +264,11 @@ public:
 		return true if the user has given rights
 	*/
 	bool Can(unsigned Right, long now = 0, int OtherClass = 0);
-	bool CheckProtoFlood(int type, unsigned long period, unsigned int limit); // protocol flood
+	bool CheckProtoFlood(cMessageDC *msg, int type); // protocol flood
 	void SetRight(unsigned Right, long until, bool allow = false, bool notify = false);
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };
 
-namespace nProtocol{ class cMessageDC; };
-using nProtocol::cMessageDC;
 class cUserCollection;
 class cChatConsole;
 

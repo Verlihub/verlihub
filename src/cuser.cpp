@@ -392,91 +392,165 @@ bool cUser::Can(unsigned Right, long now, int OtherClass)
 	return true;
 }
 
-bool cUser::CheckProtoFlood(int type, unsigned long period, unsigned int limit)
+bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 {
-	if (mxServer && mxConn && limit && period && (mClass <= mxServer->mC.max_class_proto_flood)) {
-		cTime now;
+	if (!mxServer || !mxConn || (mClass > mxServer->mC.max_class_proto_flood))
+		return false;
 
-		if (!mProtoFloodCounts[type]) {
-			mProtoFloodCounts[type] = 1;
-			mProtoFloodTimes[type] = now;
-		} else {
-			long dif = now.Sec() - mProtoFloodTimes[type].Sec();
+	unsigned long period;
+	unsigned int limit;
 
-			if ((dif < 0) || (dif > period)) {
-				mProtoFloodCounts[type] = 1;
-				mProtoFloodTimes[type] = now;
-			} else if ((mProtoFloodCounts[type]++ >= limit) && (dif <= period)) {
-				string omsg = _("Protocol flood detected");
-				omsg += ": ";
+	switch (type) {
+		case ePF_CHAT:
+			period = mxServer->mC.int_flood_chat_period;
+			limit = mxServer->mC.int_flood_chat_limit;
+			break;
+		case ePF_PRIV:
+			period = mxServer->mC.int_flood_to_period;
+			limit = mxServer->mC.int_flood_to_limit;
+			break;
+		case ePF_MCTO:
+			period = mxServer->mC.int_flood_mcto_period;
+			limit = mxServer->mC.int_flood_mcto_limit;
+			break;
+		case ePF_MYINFO:
+			period = mxServer->mC.int_flood_myinfo_period;
+			limit = mxServer->mC.int_flood_myinfo_limit;
+			break;
+		case ePF_SEARCH:
+			period = mxServer->mC.int_flood_search_period;
+			limit = mxServer->mC.int_flood_search_limit;
+			break;
+		case ePF_SR:
+			period = mxServer->mC.int_flood_sr_period;
+			limit = mxServer->mC.int_flood_sr_limit;
+			break;
+		case ePF_CTM:
+			period = mxServer->mC.int_flood_ctm_period;
+			limit = mxServer->mC.int_flood_ctm_limit;
+			break;
+		case ePF_RCTM:
+			period = mxServer->mC.int_flood_rctm_period;
+			limit = mxServer->mC.int_flood_rctm_limit;
+			break;
+		case ePF_NICKLIST:
+			period = mxServer->mC.int_flood_nicklist_period;
+			limit = mxServer->mC.int_flood_nicklist_limit;
+			break;
+		case ePF_GETINFO:
+			period = mxServer->mC.int_flood_getinfo_period;
+			limit = mxServer->mC.int_flood_getinfo_limit;
+			break;
+		case ePF_GETTOPIC:
+			period = mxServer->mC.int_flood_gettopic_period;
+			limit = mxServer->mC.int_flood_gettopic_limit;
+			break;
+		case ePF_UNKNOWN:
+			period = mxServer->mC.int_flood_unknown_period;
+			limit = mxServer->mC.int_flood_unknown_limit;
+			break;
+		default:
+			period = 0;
+			limit = 0;
+			break;
+	}
 
-				switch (type) {
-					case ePF_CHAT:
-						omsg += _("Chat");
-						break;
-					case ePF_PRIV:
-						omsg += "To";
-						break;
-					case ePF_MCTO:
-						omsg += "MCTo";
-						break;
-					case ePF_MYINFO:
-						omsg += "MyINFO";
-						break;
-					case ePF_SEARCH:
-						omsg += "Search";
-						break;
-					case ePF_SR:
-						omsg += "SR";
-						break;
-					case ePF_CTM:
-						omsg += "ConnectToMe";
-						break;
-					case ePF_RCTM:
-						omsg += "RevConnectToMe";
-						break;
-					case ePF_NICKLIST:
-						omsg += "GetNickList";
-						break;
-					case ePF_GETINFO:
-						omsg += "GetINFO";
-						break;
-					case ePF_GETTOPIC:
-						omsg += "GetTopic";
-						break;
-					case ePF_UNKNOWN:
-						omsg += _("Unknown");
-						break;
-					default:
-						omsg += _("Other");
-						break;
-				}
+	if (!limit || !period)
+		return false;
 
-				ostringstream info;
-				info << ' ' << mProtoFloodCounts[type] << ':' << dif << ':' << period;
+	cTime now;
 
-				if (mxConn->Log(1))
-					mxConn->LogStream() << omsg << info.str() << endl;
+	if (!mProtoFloodCounts[type]) {
+		mProtoFloodCounts[type] = 1;
+		mProtoFloodTimes[type] = now;
+		return false;
+	}
 
-				if (mxServer->mC.proto_flood_report)
-					mxServer->ReportUserToOpchat(mxConn, omsg + info.str());
+	long dif = now.Sec() - mProtoFloodTimes[type].Sec();
 
-				if (mxServer->mC.proto_flood_tban_time) { // add temporary ban
-					cBan pfban(mxServer);
-					cKick pfkick;
-					pfkick.mOp = mxServer->mC.hub_security;
-					pfkick.mIP = mxConn->AddrIP();
-					pfkick.mNick = mNick;
-					pfkick.mTime = now.Sec();
-					pfkick.mReason = omsg;
-					mxServer->mBanList->NewBan(pfban, pfkick, mxServer->mC.proto_flood_tban_time, eBF_NICKIP);
-					mxServer->mBanList->AddBan(pfban);
-				}
+	if ((dif < 0) || (dif > period)) {
+		mProtoFloodCounts[type] = 1;
+		mProtoFloodTimes[type] = now;
+		return false;
+	}
 
-				mxServer->ConnCloseMsg(mxConn, omsg, 500, eCR_SYNTAX);
-				return true;
-			}
+	if ((mProtoFloodCounts[type]++ >= limit) && (dif <= period)) {
+		string omsg = _("Protocol flood detected");
+		omsg += ": ";
+
+		switch (type) {
+			case ePF_CHAT:
+				omsg += _("Chat");
+				break;
+			case ePF_PRIV:
+				omsg += "To";
+				break;
+			case ePF_MCTO:
+				omsg += "MCTo";
+				break;
+			case ePF_MYINFO:
+				omsg += "MyINFO";
+				break;
+			case ePF_SEARCH:
+				omsg += "Search";
+				break;
+			case ePF_SR:
+				omsg += "SR";
+				break;
+			case ePF_CTM:
+				omsg += "ConnectToMe";
+				break;
+			case ePF_RCTM:
+				omsg += "RevConnectToMe";
+				break;
+			case ePF_NICKLIST:
+				omsg += "GetNickList";
+				break;
+			case ePF_GETINFO:
+				omsg += "GetINFO";
+				break;
+			case ePF_GETTOPIC:
+				omsg += "GetTopic";
+				break;
+			case ePF_UNKNOWN:
+				omsg += _("Unknown");
+				break;
+			default:
+				omsg += _("Other");
+				break;
 		}
+
+		string pref;
+
+		if ((type >= ePF_UNKNOWN) && msg && msg->mStr.size()) {
+			pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));
+			cDCProto::EscapeChars(pref, pref);
+			pref = ": " + pref;
+		}
+
+		ostringstream info;
+		info << omsg << pref << ' ' << mProtoFloodCounts[type] << ':' << dif << ':' << period;
+
+		if (mxConn->Log(1))
+			mxConn->LogStream() << info.str() << endl;
+
+		if (mxServer->mC.proto_flood_report)
+			mxServer->ReportUserToOpchat(mxConn, info.str());
+
+		if (mxServer->mC.proto_flood_tban_time) { // add temporary ban
+			cBan pfban(mxServer);
+			cKick pfkick;
+			pfkick.mOp = mxServer->mC.hub_security;
+			pfkick.mIP = mxConn->AddrIP();
+			pfkick.mNick = mNick;
+			pfkick.mTime = now.Sec();
+			pfkick.mReason = omsg;
+			mxServer->mBanList->NewBan(pfban, pfkick, mxServer->mC.proto_flood_tban_time, eBF_NICKIP);
+			mxServer->mBanList->AddBan(pfban);
+		}
+
+		mxServer->ConnCloseMsg(mxConn, omsg, 1000, eCR_SYNTAX);
+		return true;
 	}
 
 	return false;
