@@ -256,6 +256,7 @@ public:
 	int wrongpassword_report;
 	int wrongauthip_report;
 	bool clone_detect_report;
+	unsigned long clone_det_tban_time;
 	bool nullchars_report;
 	int botinfo_report;
 	double timeout_length[6];

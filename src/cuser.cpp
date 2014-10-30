@@ -529,7 +529,7 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 		}
 
 		ostringstream info;
-		info << omsg << pref << ' ' << mProtoFloodCounts[type] << ':' << dif << ':' << period;
+		info << omsg << pref << " [" << mProtoFloodCounts[type] << ':' << dif << ':' << period << ']';
 
 		if (mxConn->Log(1))
 			mxConn->LogStream() << info.str() << endl;

@@ -1064,11 +1064,12 @@ int cServerDC::SaveFile(const string &file, const string &text)
 
 int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 {
+	closeReason = eCR_INVALID_USER; // default close reason
+
 	if (!conn)
 		return 0;
 
 	stringstream errmsg;
-	closeReason = eCR_INVALID_USER; // default close reason
 	bool close = false; // time_t n;
 
 	// first validate ip and host
@@ -1545,19 +1546,41 @@ int cServerDC::CntConnIP(string ip)
 
 bool cServerDC::CheckUserClone(cConnDC *conn)
 {
-	if ((mC.max_class_check_clone >= 0) && conn && conn->mpUser && conn->mpUser->mShare && (conn->mpUser->mClass <= mC.max_class_check_clone)) {
-		cUserCollection::iterator i;
-		cConnDC *other;
+	if ((mC.max_class_check_clone < 0) || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > mC.max_class_check_clone))
+		return false;
 
-		for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
-			other = ((cUser*)(*i))->mxConn;
+	cUserCollection::iterator i;
+	cConnDC *other;
 
-			if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
-				if (mC.clone_detect_report)
-					ReportUserToOpchat(conn, autosprintf(_("Dropping clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str()));
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
+		other = ((cUser*)(*i))->mxConn;
 
-				return true;
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
+			ostringstream os;
+
+			if (mC.clone_detect_report || mC.clone_det_tban_time)
+				os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
+
+			if (mC.clone_detect_report)
+				ReportUserToOpchat(conn, os.str());
+
+			if (mC.clone_det_tban_time) { // add temporary nick ban
+				mBanList->AddNickTempBan(conn->mpUser->mNick, this->mTime.Sec() + mC.clone_det_tban_time, os.str());
+				/*
+				cBan ccban(this);
+				cKick cckick;
+				cckick.mOp = mC.hub_security;
+				//cckick.mIP = conn->AddrIP(); // dont set ip, we dont want to ban first user
+				//cckick.mShare = conn->mpUser->mShare; // dont set share
+				cckick.mNick = conn->mpUser->mNick;
+				cckick.mTime = this->mTime.Sec();
+				cckick.mReason = os.str();
+				mBanList->NewBan(ccban, cckick, mC.clone_det_tban_time, eBF_NICK);
+				mBanList->AddBan(ccban);
+				*/
 			}
+
+			return true;
 		}
 	}
 
