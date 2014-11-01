@@ -78,6 +78,7 @@ SET(VERLIHUB_HDRS
 	ccustomredirects.h
 	ccustomredirect.h
 	czlib.h
+	cstacktrace.h
 	i18n.h
 )
 

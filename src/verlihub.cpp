@@ -38,6 +38,7 @@
 #include "script_api.h"
 #include "i18n.h"
 #include "dirsettings.h"
+#include "cstacktrace.h"
 
 using namespace std;
 using namespace nVerliHub;
@@ -59,6 +60,13 @@ void mySigIOHandler(int i)
 void mySigQuitHandler(int i)
 {
 	cout << "Received a " << i << " signal, quiting";
+	exit(0);
+}
+
+void mySigServHandler(int i)
+{
+	cerr << "Received a " << i << " signal, printing stacktrace and quiting" << endl;
+	print_stacktrace();
 	exit(0);
 }
 
@@ -155,6 +163,7 @@ int main(int argc, char *argv[])
 		signal(SIGPIPE, mySigPipeHandler);
 		signal(SIGIO, mySigIOHandler);
 		signal(SIGQUIT, mySigQuitHandler);
+		signal(SIGSEGV, mySigServHandler);
 	#endif
 
 	server.StartListening(port);
