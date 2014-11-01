@@ -1,13 +1,22 @@
-# Find execinfo, which, if not provided with libc/libSystem, provides functions like backtrace
-# This module defines the following variables:
-# LIBEXECINFO_FOUND - whether or not we found execinfo
-# LIBEXECINFO_INCLUDE_DIR - include directory containing execinfo.h
-# LIBEXECINFO_INCLUDE_DIRS - include directories, including dependencies
-# https://github.com/CTSRD-TESLA/TESLA/blob/master/cmake/Modules/FindExecInfo.cmake
+# Module for finding ExecInfo library on BSD
 
-find_path(EXECINFO_INCLUDE_DIR execinfo.h)
-find_library(EXECINFO_LIBRARY NAMES execinfo)
-set(EXECINFO_INCLUDE_DIRS "${EXECINFO_INCLUDE_DIR}") # execinfo does not depend on anything
-include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args(EXECINFO DEFAULT_MSG EXECINFO_LIBRARY EXECINFO_INCLUDE_DIR)
-mark_as_advanced (EXECINFO_LIBRARY EXECINFO_INCLUDE_DIR)
+FIND_PATH(EXECINFO_INCLUDE_DIR execinfo.h
+	PATHS
+		/usr/include
+		/usr/local/include
+)
+
+FIND_LIBRARY(EXECINFO_LIBRARY NAMES execinfo
+	PATHS
+		/usr/include
+		/usr/local/include
+)
+
+IF(EXECINFO_LIBRARY)
+	SET(EXECINFO_FOUND TRUE)
+	INCLUDE(FindPackageHandleStandardArgs)
+	FIND_PACKAGE_HANDLE_STANDARD_ARGS(EXECINFO DEFAULT_MSG EXECINFO_LIBRARY EXECINFO_INCLUDE_DIR)
+	MARK_AS_ADVANCED(EXECINFO_LIBRARY EXECINFO_INCLUDE_DIR)
+ELSE(EXECINFO_LIBRARY)
+	SET(EXECINFO_FOUND FALSE)
+ENDIF(EXECINFO_LIBRARY)
