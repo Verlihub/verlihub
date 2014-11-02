@@ -397,8 +397,8 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 	if (!mxServer || !mxConn || (mClass > mxServer->mC.max_class_proto_flood))
 		return false;
 
-	unsigned long period;
-	unsigned int limit;
+	unsigned long period = 0;
+	unsigned int limit = 0;
 
 	switch (type) {
 		case ePF_CHAT:
@@ -438,20 +438,23 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 			limit = mxServer->mC.int_flood_nicklist_limit;
 			break;
 		case ePF_GETINFO:
-			period = mxServer->mC.int_flood_getinfo_period;
-			limit = mxServer->mC.int_flood_getinfo_limit;
+			if (mxConn->mFeatures & eSF_NOGETINFO) { // dont check old clients that dont have NoGetINFO support flag because they will send this command for every user on hub
+				period = mxServer->mC.int_flood_getinfo_period;
+				limit = mxServer->mC.int_flood_getinfo_limit;
+			}
+
 			break;
 		case ePF_GETTOPIC:
 			period = mxServer->mC.int_flood_gettopic_period;
 			limit = mxServer->mC.int_flood_gettopic_limit;
 			break;
+		case ePF_PING:
+			period = mxServer->mC.int_flood_ping_period;
+			limit = mxServer->mC.int_flood_ping_limit;
+			break;
 		case ePF_UNKNOWN:
 			period = mxServer->mC.int_flood_unknown_period;
 			limit = mxServer->mC.int_flood_unknown_limit;
-			break;
-		default:
-			period = 0;
-			limit = 0;
 			break;
 	}
 
@@ -512,6 +515,9 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 			case ePF_GETTOPIC:
 				omsg += "GetTopic";
 				break;
+			case ePF_PING:
+				omsg += "Ping";
+				break;
 			case ePF_UNKNOWN:
 				omsg += _("Unknown");
 				break;
@@ -524,8 +530,11 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 
 		if ((type >= ePF_UNKNOWN) && msg && msg->mStr.size()) {
 			pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));
-			cDCProto::EscapeChars(pref, pref);
-			pref = ": " + pref;
+
+			if (pref.size()) {
+				cDCProto::EscapeChars(pref, pref);
+				pref = ": " + pref;
+			}
 		}
 
 		ostringstream info;

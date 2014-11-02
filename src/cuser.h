@@ -104,6 +104,7 @@ namespace nVerliHub {
 			ePF_NICKLIST,
 			ePF_GETINFO,
 			ePF_GETTOPIC,
+			ePF_PING,
 			ePF_UNKNOWN,
 			ePF_LAST
 		} tProtoFloodItems;

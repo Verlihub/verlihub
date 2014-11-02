@@ -2710,7 +2710,7 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, ePF_UNKNOWN)) // protocol flood
+	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, (msg->mStr.size() ? ePF_UNKNOWN : ePF_PING))) // protocol flood
 		return -1;
 
 	#ifndef WITHOUT_PLUGINS
