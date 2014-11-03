@@ -9,9 +9,9 @@ FIND_PATH(EXECINFO_INCLUDE_DIR execinfo.h
 
 FIND_LIBRARY(EXECINFO_LIBRARY NAMES execinfo
 	PATHS
-		/usr/include
-		/usr/local/include
-		/usr/pkg/include
+		/usr/lib
+		/usr/local/lib
+		/usr/pkg/lib
 )
 
 IF(EXECINFO_INCLUDE_DIR AND EXECINFO_LIBRARY)
