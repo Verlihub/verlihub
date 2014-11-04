@@ -36,6 +36,9 @@
 #else
 #include <unistd.h>
 #endif
+#ifdef HAVE_NETBSD
+#include <sys/syslimits.h>
+#endif
 
 namespace nVerliHub {
 	namespace nUtils {
@@ -121,7 +124,7 @@ void ExpandPath(string &Path)
 
 			Path = string(cPath);
 			delete[] cPath;
-		#elif defined HAVE_FREEBSD || HAVE_OPENBSD
+		#elif defined HAVE_BSD
 			Path = getcwd(NULL, PATH_MAX);
 		#else
 			Path = get_current_dir_name();

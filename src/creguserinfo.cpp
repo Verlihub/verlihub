@@ -23,8 +23,11 @@ using namespace std;
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-//for the crypt
+// for the crypt
+// broken build on NetBSD
+#ifndef HAVE_NETBSD
 #define _XOPEN_SOURCE
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
