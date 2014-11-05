@@ -1175,6 +1175,9 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_PRIV)) // protocol flood
 		return -1;
 
+	if (mS->CheckProtoFloodAll(conn, msg, ePFA_PRIV)) // protocol flood from all
+		return -1;
+
 	if(!conn->mpUser->mInList) return -2;
 	if(!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) return -4;
 
@@ -1267,6 +1270,9 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_MCTO)) // protocol flood
+		return -1;
+
+	if (mS->CheckProtoFloodAll(conn, msg, ePFA_MCTO)) // protocol flood from all
 		return -1;
 
 	if (!conn->mpUser->mInList) return -2;
@@ -1383,6 +1389,9 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_CHAT)) // protocol flood
+		return -1;
+
+	if (mS->CheckProtoFloodAll(conn, msg, ePFA_CHAT)) // protocol flood from all
 		return -1;
 
 	if (!conn->mpUser->mInList) return -3;
@@ -2320,7 +2329,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	else
 		os << autosprintf(_("You are banned because %s"), msg->ChunkString(eCH_NB_REASON).c_str());
 
-	mS->DCPrivateHS(os.str(), other->mxConn, &conn->mpUser->mNick);
+	mS->DCPrivateHS(os.str(), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
 	os.str(mS->mEmpty);
 
 	cBan ban(mS);

@@ -175,12 +175,12 @@ void cDCConf::AddVars()
 	Add("max_class_proto_flood", max_class_proto_flood, 2);
 	Add("proto_flood_report", proto_flood_report, true);
 	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // 30 minutes
-	Add("int_flood_chat_period", int_flood_chat_period, 20);
-	Add("int_flood_chat_limit", int_flood_chat_limit, 15);
-	Add("int_flood_mcto_period", int_flood_mcto_period, 20);
-	Add("int_flood_mcto_limit", int_flood_mcto_limit, 15);
-	Add("int_flood_to_period", int_flood_to_period, 20);
-	Add("int_flood_to_limit", int_flood_to_limit, 15);
+	Add("int_flood_chat_period", int_flood_chat_period, 10);
+	Add("int_flood_chat_limit", int_flood_chat_limit, 5);
+	Add("int_flood_mcto_period", int_flood_mcto_period, 10);
+	Add("int_flood_mcto_limit", int_flood_mcto_limit, 5);
+	Add("int_flood_to_period", int_flood_to_period, 10);
+	Add("int_flood_to_limit", int_flood_to_limit, 5);
 	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
 	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 20);
 	Add("int_flood_search_period", int_flood_search_period, 60);
@@ -201,6 +201,13 @@ void cDCConf::AddVars()
 	Add("int_flood_ping_limit", int_flood_ping_limit, 5);
 	Add("int_flood_unknown_period", int_flood_unknown_period, 30);
 	Add("int_flood_unknown_limit", int_flood_unknown_limit, 10);
+	// from all
+	Add("int_flood_all_chat_period", int_flood_all_chat_period, 15);
+	Add("int_flood_all_chat_limit", int_flood_all_chat_limit, 10);
+	Add("int_flood_all_mcto_period", int_flood_all_mcto_period, 15);
+	Add("int_flood_all_mcto_limit", int_flood_all_mcto_limit, 10);
+	Add("int_flood_all_to_period", int_flood_all_to_period, 15);
+	Add("int_flood_all_to_limit", int_flood_all_to_limit, 10);
 
 	// User control configuration
 	Add("classdif_reg", classdif_reg, 2);

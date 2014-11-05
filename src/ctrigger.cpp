@@ -235,7 +235,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		}
 	} else if (!timeTrigger) { // to single
 		if (mFlags & eTF_SENDPM) { // pm
-			server.DCPrivateHS(buf, conn, &sender);
+			server.DCPrivateHS(buf, conn, &sender, &sender);
 		} else { // mc
 			server.DCPublic(sender, buf, conn);
 		}

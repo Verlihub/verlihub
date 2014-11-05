@@ -210,6 +210,7 @@ public:
 	// protocol flood
 	unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
 	cTime mProtoFloodTimes[nEnums::ePF_LAST];
+	bool CheckProtoFlood(cMessageDC *msg, int type);
 
 	/** 0 means perm ban, otherwiese in seconds */
 	long mBanTime;
@@ -265,7 +266,6 @@ public:
 		return true if the user has given rights
 	*/
 	bool Can(unsigned Right, long now = 0, int OtherClass = 0);
-	bool CheckProtoFlood(cMessageDC *msg, int type); // protocol flood
 	void SetRight(unsigned Right, long until, bool allow = false, bool notify = false);
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };

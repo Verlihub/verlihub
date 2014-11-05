@@ -461,23 +461,21 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 	if (!limit || !period)
 		return false;
 
-	cTime now;
-
 	if (!mProtoFloodCounts[type]) {
 		mProtoFloodCounts[type] = 1;
-		mProtoFloodTimes[type] = now;
+		mProtoFloodTimes[type] = mxServer->mTime;
 		return false;
 	}
 
-	long dif = now.Sec() - mProtoFloodTimes[type].Sec();
+	long dif = mxServer->mTime.Sec() - mProtoFloodTimes[type].Sec();
 
 	if ((dif < 0) || (dif > period)) {
 		mProtoFloodCounts[type] = 1;
-		mProtoFloodTimes[type] = now;
+		mProtoFloodTimes[type] = mxServer->mTime;
 		return false;
 	}
 
-	if ((mProtoFloodCounts[type]++ >= limit) && (dif <= period)) {
+	if (mProtoFloodCounts[type]++ >= limit) {
 		string omsg = _("Protocol flood detected");
 		omsg += ": ";
 
@@ -521,14 +519,11 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 			case ePF_UNKNOWN:
 				omsg += _("Unknown");
 				break;
-			default:
-				omsg += _("Other");
-				break;
 		}
 
 		string pref;
 
-		if ((type >= ePF_UNKNOWN) && msg && msg->mStr.size()) {
+		if ((type == ePF_UNKNOWN) && msg && msg->mStr.size()) {
 			pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));
 
 			if (pref.size()) {
@@ -552,7 +547,7 @@ bool cUser::CheckProtoFlood(cMessageDC *msg, int type)
 			pfkick.mOp = mxServer->mC.hub_security;
 			pfkick.mIP = mxConn->AddrIP();
 			pfkick.mNick = mNick;
-			pfkick.mTime = now.Sec();
+			pfkick.mTime = mxServer->mTime.Sec();
 			pfkick.mReason = omsg;
 			mxServer->mBanList->NewBan(pfban, pfkick, mxServer->mC.proto_flood_tban_time, eBF_NICKIP);
 			mxServer->mBanList->AddBan(pfban);
@@ -801,21 +796,21 @@ bool cOpChat::IsUserAllowed(cUser *user)
 bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 {
 	ostringstream os;
-	if (message->mType == eDC_TO)
-	{
+
+	if (message->mType == eDC_TO) {
 		string &msg = message->ChunkString(eCH_PM_MSG);
-		if (!mxServer->mP.ParseForCommands(msg, conn, 1))
-		{
-			cUser *other = mxServer->mUserList.GetUserByNick ( mxServer->LastBCNick );
-				if(other && other->mxConn)
-				{
-					mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG),other->mxConn,&conn->mpUser->mNick);
-				}
-				else
-					mxServer->DCPrivateHS(_("Hub security doesn't accept private messages, use main chat instead."), conn);
+
+		if (!mxServer->mP.ParseForCommands(msg, conn, 1)) {
+			cUser *other = mxServer->mUserList.GetUserByNick(mxServer->LastBCNick);
+
+			if (other && other->mxConn)
+				mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
+			else
+				mxServer->DCPrivateHS(_("Hub security doesn't accept private messages, use main chat instead."), conn);
 		}
 	}
-   return true;
+
+	return true;
 }
 
 cPluginRobot::cPluginRobot(const string &nick, cVHPlugin *pi, cServerDC *server) :

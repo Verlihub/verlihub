@@ -200,6 +200,13 @@ public:
 	unsigned int int_flood_ping_limit;
 	unsigned long int_flood_unknown_period;
 	unsigned int int_flood_unknown_limit;
+	// from all
+	unsigned long int_flood_all_chat_period;
+	unsigned int int_flood_all_chat_limit;
+	unsigned long int_flood_all_mcto_period;
+	unsigned int int_flood_all_mcto_limit;
+	unsigned long int_flood_all_to_period;
+	unsigned int int_flood_all_to_limit;
 
 	int int_chat_ms;
 	int int_nicklist;

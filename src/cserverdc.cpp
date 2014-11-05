@@ -173,6 +173,11 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 		if(ErrLog(1)) LogStream() << "Plugin loading error" << endl;
 	}
 	mUsersPeak = 0;
+
+	// protocol flood from all
+	memset(mProtoFloodAllCounts, 0, sizeof(mProtoFloodAllCounts));
+	memset(mProtoFloodAllTimes, 0, sizeof(mProtoFloodAllTimes));
+	memset(mProtoFloodAllLocks, 0, sizeof(mProtoFloodAllLocks));
 }
 
 cServerDC::~cServerDC()
@@ -316,10 +321,10 @@ void cServerDC::DCPublicHSToAll(const string &text)
 	mUserList.SendToAll(msg, true, true);
 }
 
-int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from)
+int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, string *nick)
 {
 	string msg;
-	mP.Create_PM(msg, (from != NULL) ? (*from) : (mC.hub_security), conn->mpUser->mNick, (from != NULL) ? (*from) : (mC.hub_security), text);
+	mP.Create_PM(msg, ((from != NULL) ? (*from) : (mC.hub_security)), conn->mpUser->mNick, ((nick != NULL) ? (*nick) : (mC.hub_security)), text);
 	return conn->Send(msg, true);
 }
 
@@ -1587,6 +1592,144 @@ bool cServerDC::CheckUserClone(cConnDC *conn)
 	return false;
 }
 
+bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
+{
+	if (!conn || !conn->mpUser || (conn->mpUser->mClass > mC.max_class_proto_flood))
+		return false;
+
+	unsigned long period = 0;
+	unsigned int limit = 0;
+
+	switch (type) {
+		case ePFA_CHAT:
+			period = mC.int_flood_all_chat_period;
+			limit = mC.int_flood_all_chat_limit;
+			break;
+		case ePFA_PRIV:
+			period = mC.int_flood_all_to_period;
+			limit = mC.int_flood_all_to_limit;
+			break;
+		case ePFA_MCTO:
+			period = mC.int_flood_all_mcto_period;
+			limit = mC.int_flood_all_mcto_limit;
+			break;
+	}
+
+	if (!limit || !period)
+		return false;
+
+	if (!mProtoFloodAllCounts[type]) {
+		mProtoFloodAllCounts[type] = 1;
+		mProtoFloodAllTimes[type] = mTime;
+		mProtoFloodAllLocks[type] = false;
+		return false;
+	}
+
+	long dif = mTime.Sec() - mProtoFloodAllTimes[type].Sec();
+
+	if ((dif < 0) || (dif > period)) {
+		mProtoFloodAllCounts[type] = 1;
+		mProtoFloodAllTimes[type] = mTime;
+
+		if (mProtoFloodAllLocks[type]) { // reset lock
+			string omsg = _("Protocol command has been unlocked after stopped flood from all");
+			omsg += ": ";
+
+			switch (type) {
+				case ePFA_CHAT:
+					omsg += _("Chat");
+					break;
+				case ePFA_PRIV:
+					omsg += "To";
+					break;
+				case ePFA_MCTO:
+					omsg += "MCTo";
+					break;
+			}
+
+			if (conn->Log(1))
+				conn->LogStream() << omsg << endl;
+
+			if (mC.proto_flood_report)
+				ReportUserToOpchat(conn, omsg);
+
+			mProtoFloodAllLocks[type] = false;
+		}
+
+		return false;
+	}
+
+	if (mProtoFloodAllCounts[type]++ >= limit) {
+		mProtoFloodAllTimes[type] = mTime; // update time, protocol command will be locked until flood is going on
+		string omsg;
+
+		if (!mProtoFloodAllLocks[type]) { // set lock if not already
+			omsg = _("Protocol command has been locked due to detection of flood from all");
+			omsg += ": ";
+
+			switch (type) {
+				case ePFA_CHAT:
+					omsg += _("Chat");
+					break;
+				case ePFA_PRIV:
+					omsg += "To";
+					break;
+				case ePFA_MCTO:
+					omsg += "MCTo";
+					break;
+			}
+
+			ostringstream info;
+			info << omsg << " [" << mProtoFloodAllCounts[type] << ':' << dif << ':' << period << ']';
+
+			if (conn->Log(1))
+				conn->LogStream() << info.str() << endl;
+
+			if (mC.proto_flood_report)
+				ReportUserToOpchat(conn, info.str());
+
+			mProtoFloodAllLocks[type] = true;
+		}
+
+		omsg = _("Sorry, following protocol command is temporarily locked due to flood detection"); // notify user every time
+		omsg += ": ";
+
+		switch (type) {
+			case ePFA_CHAT:
+				omsg += _("Chat");
+				break;
+			case ePFA_PRIV:
+				omsg += "To";
+				break;
+			case ePFA_MCTO:
+				omsg += "MCTo";
+				break;
+		}
+
+		if (type == ePFA_PRIV) { // pm
+			string to_nick;
+			cUser *to_user = NULL;
+
+			if (msg && msg->mStr.size()) {
+				to_nick = msg->ChunkString(eCH_PM_TO);
+
+				if (to_nick.size())
+					to_user = mUserList.GetUserByNick(to_nick);
+			}
+
+			if (to_user)
+				DCPrivateHS(omsg, conn, &to_nick);
+			else
+				DCPrivateHS(omsg, conn);
+		} else // mc
+			DCPublicHS(omsg, conn);
+
+		return true;
+	}
+
+	return false;
+}
+
 void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain)
 {
 	if (conn) {
@@ -1713,7 +1856,7 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 					if(flags & eKCK_PM) {
 						ostr.str(mEmpty);
 						ostr << autosprintf(_("You have been kicked because %s"), NewReason.c_str());
-						DCPrivateHS(ostr.str(), user->mxConn, &OP->mNick);
+						DCPrivateHS(ostr.str(), user->mxConn, &OP->mNick, &OP->mNick);
 					}
 				}
 			}

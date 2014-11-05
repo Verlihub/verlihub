@@ -143,6 +143,15 @@ namespace nVerliHub {
 			eKCK_PM = 4,
 			eKCK_TBAN = 8
 		};
+
+		
+		typedef enum
+		{
+			ePFA_CHAT,
+			ePFA_PRIV,
+			ePFA_MCTO,
+			ePFA_LAST
+		} tProtoFloodAllItems;
 	}; // namespace nEnums
 
 	namespace nTables{
@@ -299,14 +308,15 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		void DCKickNick(ostream *, cUser *OP, const string &Nick, const string &Reason, int flags);
 
-		/**
-		* Send a private message to an user as hub security.
-		* @param text The message to send.
-		* @param conn The user connection.
-		* @param from The sender nickname. If it is not specified hub security nickname is used.
-		* @return A number greater than zero if message is sent.
+		/*
+			Send a private message to user from other user or hub security.
+			text - The message to send.
+			conn - The user connection.
+			from - The sender nick, if it is not specified hub security nick is used.
+			nick - The message nick, if it is not specified hub security nick is used.
+			return - Number greater than zero if message is sent.
 		*/
-		int DCPrivateHS(const string & text, cConnDC * conn,string *from = NULL);
+		int DCPrivateHS(const string &text, cConnDC *conn, string *from = NULL, string *nick = NULL);
 
 		/**
 		* Send a message in mainchat for the given connection.
@@ -536,6 +546,12 @@ class cServerDC : public cAsyncSocketServer
 
 		// clone detection
 		bool CheckUserClone(cConnDC *conn);
+
+		// protocol flood from all
+		unsigned int mProtoFloodAllCounts[nEnums::ePFA_LAST];
+		cTime mProtoFloodAllTimes[nEnums::ePFA_LAST];
+		bool mProtoFloodAllLocks[nEnums::ePFA_LAST];
+		bool CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;
