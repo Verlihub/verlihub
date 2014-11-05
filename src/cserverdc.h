@@ -144,7 +144,6 @@ namespace nVerliHub {
 			eKCK_TBAN = 8
 		};
 
-		
 		typedef enum
 		{
 			ePFA_CHAT,
