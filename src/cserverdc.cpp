@@ -1994,7 +1994,7 @@ void cServerDC::DoStackTrace()
 	cerr << "Stack backtrace:" << endl << endl << bt.str() << endl;
 	cAsyncConn *http = new cAsyncConn("www.te-home.net", 80); // try to send via http
 
-	if (!http->ok) {
+	if (!http || !http->ok) {
 		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
 		http->Close();
 		delete http;
