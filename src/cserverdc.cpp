@@ -1996,7 +1996,10 @@ void cServerDC::DoStackTrace()
 
 	if (!http || !http->ok) {
 		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
-		http->Close();
+
+		if (http)
+			http->Close();
+
 		delete http;
 		http = NULL;
 		return;
