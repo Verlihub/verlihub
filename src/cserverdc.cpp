@@ -37,6 +37,8 @@
 #include <fstream>
 #include <cctype>
 #include <algorithm>
+#include <execinfo.h>
+#include <cxxabi.h>
 #include "curr_date_time.h"
 #include "cthreadwork.h"
 #include "stringutils.h"
@@ -1935,5 +1937,89 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 		}
 	}
 }
+
+/*
+	this functions collects stack backtrace of the caller functions and demangles it
+	then it tries to send backtrace to crash server via http
+	and writes backtrace to standard error output
+*/
+
+void cServerDC::DoStackTrace()
+{
+	void* addrlist[64];
+	int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
+
+	if (!addrlen) {
+		cerr << "Stack backtrace is empty, possibly corrupt" << endl;
+		return;
+	}
+
+	char** symbollist = backtrace_symbols(addrlist, addrlen);
+	size_t funcnamesize = 256;
+	char* funcname = (char*)malloc(funcnamesize);
+	ostringstream bt;
+
+	for (int i = 1; i < addrlen; i++) {
+		char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
+
+		for (char *p = symbollist[i]; *p; ++p) {
+			if (*p == '(')
+				begin_name = p;
+			else if (*p == '+')
+				begin_offset = p;
+			else if ((*p == ')') && begin_offset) {
+				end_offset = p;
+				break;
+			}
+		}
+
+		if (begin_name && begin_offset && end_offset && (begin_name < begin_offset)) {
+			*begin_name++ = '\0';
+			*begin_offset++ = '\0';
+			*end_offset = '\0';
+			int status;
+			char* ret = abi::__cxa_demangle(begin_name, funcname, &funcnamesize, &status);
+
+			if (!status) {
+				funcname = ret;
+				bt << symbollist[i] << ": " << funcname << " +" << begin_offset << endl;
+			} else
+				bt << symbollist[i] << ": " << begin_name << "() +" << begin_offset << endl;
+		} else
+			bt << symbollist[i] << endl;
+	}
+
+	free(funcname);
+	free(symbollist);
+	cerr << "Stack backtrace:" << endl << endl << bt.str() << endl;
+	cAsyncConn *http = new cAsyncConn("www.te-home.net", 80); // try to send via http
+
+	if (!http->ok) {
+		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
+		http->Close();
+		delete http;
+		http = NULL;
+		return;
+	}
+
+	ostringstream hh;
+	hh << "POST /vhcs.php HTTP/1.1\n";
+	hh << "Host: www.te-home.net\n";
+	hh << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
+	hh << "Content-Type: text/plain\n";
+	hh << "Content-Length: " << bt.str().size() << "\n\n";
+	hh << bt.str();
+	http->Write(hh.str(), true);
+
+	if (http->ok)
+		cerr << "Successfully sent stack backtrace to crash server" << endl;
+	else
+		cerr << "Failed sending to crash server, please send above stack backtrace to developers" << endl;
+
+	http->Close();
+	delete http;
+	http = NULL;
+}
+
 	}; // namespace nServer
 }; // namespace nVerliHub

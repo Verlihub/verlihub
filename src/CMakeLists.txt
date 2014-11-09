@@ -78,7 +78,6 @@ SET(VERLIHUB_HDRS
 	ccustomredirects.h
 	ccustomredirect.h
 	czlib.h
-	cstacktrace.h
 	i18n.h
 )
 
@@ -172,7 +171,7 @@ ADD_LIBRARY(libverlihub SHARED ${VERLIHUB_SRCS})
 SET_TARGET_PROPERTIES(libverlihub PROPERTIES OUTPUT_NAME "verlihub")
 SET_TARGET_PROPERTIES(libverlihub PROPERTIES VERSION ${VERLIHUB_VERSION} SOVERSION ${VERLIHUB_SOVERSION})
 
-target_link_libraries(libverlihub ${VERLIHUB_LIBS}) # pthread dl
+target_link_libraries(libverlihub ${VERLIHUB_LIBS}) # pthread dl execinfo
 
 ADD_LIBRARY(vhapi SHARED "script_api.cpp")
 SET_TARGET_PROPERTIES(libverlihub PROPERTIES VERSION ${VERLIHUB_VERSION} SOVERSION ${VERLIHUB_SOVERSION})

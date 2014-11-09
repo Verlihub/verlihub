@@ -38,7 +38,6 @@
 #include "script_api.h"
 #include "i18n.h"
 #include "dirsettings.h"
-#include "cstacktrace.h"
 
 using namespace std;
 using namespace nVerliHub;
@@ -65,8 +64,12 @@ void mySigQuitHandler(int i)
 
 void mySigServHandler(int i)
 {
-	cerr << "Received a " << i << " signal, printing stacktrace and quiting" << endl;
-	print_stacktrace();
+	cerr << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (serv)
+		serv->DoStackTrace();
+
 	exit(0);
 }
 

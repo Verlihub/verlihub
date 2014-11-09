@@ -606,6 +606,9 @@ class cServerDC : public cAsyncSocketServer
 		static cGeoIP sGeoIP;
 		#endif
 
+		// stack trace
+		void DoStackTrace();
+
 protected: // Protected methods
 	/**
 	* This method is called when user is logged in.
