@@ -739,6 +739,15 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 				return 1;
 			}
 
+			#ifndef WITHOUT_PLUGINS
+				/*
+					plugin should compare both nicks to see if user is registering himself which equals automatic registration
+					plugin should also send message back to user if action is discarded because hub will not send anything
+				*/
+				if (!mOwner->mCallBacks.mOnNewReg.CallAll(conn->mpUser, regnick, mOwner->mC.autoreg_class))
+					return 1;
+			#endif
+
 			if (mOwner->mR->AddRegUser(regnick, NULL, mOwner->mC.autoreg_class, text.c_str())) {
 				os << autosprintf(_("A new user has been registered with class %d"), mOwner->mC.autoreg_class);
 				mOwner->ReportUserToOpchat(conn, os.str(), false);
