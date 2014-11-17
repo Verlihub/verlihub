@@ -5,19 +5,19 @@ msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 12:54+0100\n"
-"PO-Revision-Date: 2014-07-16 06:45+0000\n"
+"PO-Revision-Date: 2014-10-26 16:19+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
-"Language-Team: Swedish (Sweden) (http://www.transifex.com/projects/p/verlihub-100/language/sv_SE/)\n"
+"Language-Team: Bulgarian (Bulgaria) (http://www.transifex.com/projects/p/verlihub-100/language/bg_BG/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CP1252\n"
+"Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sv_SE\n"
+"Language: bg_BG\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6.10\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
-"X-Poedit-SourceCharset: CP1252\n"
+"X-Poedit-SourceCharset: CP1251\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
@@ -222,13 +222,13 @@ msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
-msgstr "Skript"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
-msgstr "Skript %s stoppad."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
@@ -256,7 +256,7 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
-msgstr "Skript %s är nu igång."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:263
 #, c-format
@@ -351,7 +351,7 @@ msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr "Insticksprogram laddad."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
 #: ../plugins/plugman/cconsole.cpp:236

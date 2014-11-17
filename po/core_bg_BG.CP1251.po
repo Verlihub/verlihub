@@ -1,22 +1,24 @@
-#
+# 
+# Translators:
+# BORIS STEFANOV <borkata@gmail.com>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub\n"
+"Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
 "POT-Creation-Date: 2014-11-17 12:54+0100\n"
-"PO-Revision-Date: 2014-11-17 12:54+0100\n"
-"Last-Translator: RoLex <webmaster@feardc.net>\n"
-"Language-Team: Verlihub <webmaster@feardc.net>\n"
-"Language: en_GB\n"
+"PO-Revision-Date: 2014-11-09 17:28+0000\n"
+"Last-Translator: BORIS STEFANOV <borkata@gmail.com>\n"
+"Language-Team: Bulgarian (Bulgaria) (http://www.transifex.com/projects/p/verlihub-100/language/bg_BG/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: bg_BG\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.6.10\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.6.10\n"
 "X-Poedit-SearchPath-0: ../src\n"
+"X-Poedit-SourceCharset: CP1251\n"
 
 #: ../src/cban.cpp:79
 msgid "Unknown ban"
@@ -46,11 +48,11 @@ msgstr ""
 
 #: ../src/cban.cpp:96
 msgid "remaining"
-msgstr ""
+msgstr "остава"
 
 #: ../src/cban.cpp:98
 msgid "Permanently"
-msgstr ""
+msgstr "Перманентно"
 
 #: ../src/cban.cpp:106 ../src/cban.cpp:127
 msgid "IP range"
@@ -58,7 +60,7 @@ msgstr ""
 
 #: ../src/cban.cpp:109
 msgid "Share"
-msgstr ""
+msgstr "Сподели"
 
 #: ../src/cban.cpp:115 ../src/cban.cpp:134
 #, c-format
@@ -71,15 +73,15 @@ msgstr ""
 
 #: ../src/cban.cpp:122
 msgid "Ban type"
-msgstr ""
+msgstr "Вид забрана"
 
 #: ../src/cban.cpp:127
 msgid "Nick + IP"
-msgstr ""
+msgstr "Прякор + IP"
 
 #: ../src/cban.cpp:127
 msgid "Nick"
-msgstr ""
+msgstr "Прякор"
 
 #: ../src/cban.cpp:127
 msgid "Host level 1"
@@ -112,7 +114,7 @@ msgstr ""
 
 #: ../src/cban.cpp:150
 msgid "Permanent"
-msgstr ""
+msgstr "Перманентен"
 
 #: ../src/cbanlist.cpp:423
 msgid "Entry"
@@ -182,15 +184,15 @@ msgstr ""
 
 #: ../src/cconndc.cpp:170
 msgid "Login"
-msgstr ""
+msgstr "Потребител"
 
 #: ../src/cconndc.cpp:170
 msgid "MyINFO"
-msgstr ""
+msgstr "Профил"
 
 #: ../src/cconndc.cpp:170
 msgid "Password"
-msgstr ""
+msgstr "Парола"
 
 #: ../src/cconndc.cpp:182
 #, c-format
@@ -204,7 +206,7 @@ msgstr ""
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:349
 #: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:432
 msgid "Name"
-msgstr ""
+msgstr "Име"
 
 #: ../src/cconntypes.cpp:191
 msgid "Min slot"
@@ -224,7 +226,7 @@ msgstr ""
 
 #: ../src/cconntypes.cpp:195
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #: ../src/ccustomredirect.cpp:66 ../src/cdcclient.cpp:54
 msgid "Enabled"
@@ -236,33 +238,33 @@ msgstr ""
 
 #: ../src/ccustomredirects.cpp:241
 msgid "Count"
-msgstr ""
+msgstr "Брой"
 
 #: ../src/ccustomredirects.cpp:242 ../src/cdcconsole.cpp:649
 msgid "Address"
-msgstr ""
+msgstr "Адрес"
 
 #: ../src/ccustomredirects.cpp:243
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
 #: ../src/ccustomredirects.cpp:244 ../src/cdcclients.cpp:353
 msgid "Status"
-msgstr ""
+msgstr "Статус"
 
 #: ../src/cdcclient.cpp:46
 msgid "Any"
-msgstr ""
+msgstr "Всеки"
 
 #: ../src/cdcclient.cpp:48
 #, c-format
 msgid "Minimum: %.2f"
-msgstr ""
+msgstr "Най-малко: %.2f"
 
 #: ../src/cdcclient.cpp:50
 #, c-format
 msgid "Maximum: %.2f"
-msgstr ""
+msgstr "Най-много: %.2f"
 
 #: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:128
 #: ../src/creguserinfo.cpp:129 ../src/creguserinfo.cpp:130
@@ -275,7 +277,7 @@ msgstr ""
 #: ../src/cuser.cpp:341 ../src/cuser.cpp:351 ../src/cuser.cpp:361
 #: ../src/cuser.cpp:371
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:128
 #: ../src/creguserinfo.cpp:129 ../src/creguserinfo.cpp:130
@@ -286,7 +288,7 @@ msgstr ""
 #: ../src/cuser.cpp:325 ../src/cuser.cpp:335 ../src/cuser.cpp:345
 #: ../src/cuser.cpp:355 ../src/cuser.cpp:365
 msgid "No"
-msgstr ""
+msgstr "Не"
 
 #: ../src/cdcclients.cpp:350
 msgid "Client ID"
@@ -344,11 +346,11 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:352 ../src/cdcconsole.cpp:478 ../src/cuser.cpp:239
 msgid "Country"
-msgstr ""
+msgstr "Държава"
 
 #: ../src/cdcconsole.cpp:353 ../src/cdcconsole.cpp:479 ../src/cuser.cpp:240
 msgid "City"
-msgstr ""
+msgstr "Град"
 
 #: ../src/cdcconsole.cpp:374
 msgid "Stopping hub."
@@ -379,7 +381,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:463 ../src/cserverdc.cpp:826
 msgid "Your information"
-msgstr ""
+msgstr "Вашата информация"
 
 #: ../src/cdcconsole.cpp:476
 msgid "Your IP information"
@@ -412,15 +414,15 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:580
 msgid "Authors"
-msgstr ""
+msgstr "Автори"
 
 #: ../src/cdcconsole.cpp:585
 msgid "Translators"
-msgstr ""
+msgstr "Преводачи"
 
 #: ../src/cdcconsole.cpp:587
 msgid "Contributors"
-msgstr ""
+msgstr "Помощници"
 
 #: ../src/cdcconsole.cpp:589
 msgid "Web part"
@@ -432,7 +434,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:593
 msgid "More"
-msgstr ""
+msgstr "Повече"
 
 #: ../src/cdcconsole.cpp:594
 msgid "Website"
@@ -440,7 +442,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:595
 msgid "Manual"
-msgstr ""
+msgstr "Ръководство"
 
 #: ../src/cdcconsole.cpp:596
 msgid "Support hub"
@@ -448,43 +450,43 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:610
 msgid "Unregistered"
-msgstr ""
+msgstr "Нерегистриран"
 
 #: ../src/cdcconsole.cpp:613 ../src/cdcproto.cpp:927
 #: ../src/creguserinfo.cpp:108 ../src/ctrigger.cpp:160
 msgid "Registered"
-msgstr ""
+msgstr "Регистриран"
 
 #: ../src/cdcconsole.cpp:616 ../src/cdcproto.cpp:930
 #: ../src/creguserinfo.cpp:108 ../src/ctrigger.cpp:163
 msgid "VIP"
-msgstr ""
+msgstr "ВИП"
 
 #: ../src/cdcconsole.cpp:619 ../src/cdcproto.cpp:933
 #: ../src/creguserinfo.cpp:108 ../src/ctrigger.cpp:166
 msgid "Operator"
-msgstr ""
+msgstr "Оператор"
 
 #: ../src/cdcconsole.cpp:622
 msgid "Super operator"
-msgstr ""
+msgstr "Супер оператор"
 
 #: ../src/cdcconsole.cpp:625 ../src/creguserinfo.cpp:108
 msgid "Administrator"
-msgstr ""
+msgstr "Администратор"
 
 #: ../src/cdcconsole.cpp:628 ../src/cdcproto.cpp:942
 #: ../src/creguserinfo.cpp:108 ../src/ctrigger.cpp:175
 msgid "Master"
-msgstr ""
+msgstr "Майстор"
 
 #: ../src/cdcconsole.cpp:633 ../src/cdctag.cpp:210
 msgid "Active"
-msgstr ""
+msgstr "Активен"
 
 #: ../src/cdcconsole.cpp:635 ../src/cdctag.cpp:212
 msgid "Passive"
-msgstr ""
+msgstr "Пасивен"
 
 #: ../src/cdcconsole.cpp:648 ../src/cinfoserver.cpp:115
 msgid "Hub owner"
@@ -492,7 +494,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:650
 msgid "Total users"
-msgstr ""
+msgstr "Общо потребители"
 
 #: ../src/cdcconsole.cpp:651
 msgid "Total bots"
@@ -500,12 +502,12 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:652 ../src/cinfoserver.cpp:134
 msgid "Total share"
-msgstr ""
+msgstr "Общо споделяния"
 
 #: ../src/cdcconsole.cpp:655 ../src/cdctag.cpp:224 ../src/cdctag.cpp:232
 #: ../src/cinfoserver.cpp:104 ../src/cserverdc.cpp:1784
 msgid "Not available"
-msgstr ""
+msgstr "Недостъпен"
 
 #: ../src/cdcconsole.cpp:658 ../src/cinfoserver.cpp:96
 #: ../src/cserverdc.cpp:1787
@@ -525,7 +527,7 @@ msgstr ""
 #: ../src/cdcconsole.cpp:661 ../src/cinfoserver.cpp:102
 #: ../src/cserverdc.cpp:1790
 msgid "Normal mode"
-msgstr ""
+msgstr "Нормален режим"
 
 #: ../src/cdcconsole.cpp:664
 msgid "Hub health"
@@ -533,7 +535,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:665
 msgid "Your status"
-msgstr ""
+msgstr "Вашият статус"
 
 #: ../src/cdcconsole.cpp:666
 msgid "Your can search every"
@@ -548,15 +550,15 @@ msgstr[1] ""
 
 #: ../src/cdcconsole.cpp:667
 msgid "Connection type"
-msgstr ""
+msgstr "Вид връзка"
 
 #: ../src/cdcconsole.cpp:668
 msgid "You are sharing"
-msgstr ""
+msgstr "Вие споделяте"
 
 #: ../src/cdcconsole.cpp:671
 msgid "hidden"
-msgstr ""
+msgstr "скрит"
 
 #: ../src/cdcconsole.cpp:687
 msgid "Registration failed, please contact an operator for more help."
@@ -574,7 +576,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:726
 msgid "You are already registered."
-msgstr ""
+msgstr "Вие вече сте регистриран"
 
 #: ../src/cdcconsole.cpp:737 ../src/cdcconsole.cpp:859 ../src/cdcproto.cpp:492
 #, c-format
@@ -595,7 +597,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:757
 msgid "An error occured while registering."
-msgstr ""
+msgstr "Възникна грешка по време на регистрацията/"
 
 #: ../src/cdcconsole.cpp:771
 #, c-format
@@ -604,7 +606,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:773
 msgid "Registration request without password"
-msgstr ""
+msgstr "Заявка за регистрация без парола"
 
 #: ../src/cdcconsole.cpp:776
 msgid "Thank you, your request has been sent to operators."
@@ -645,8 +647,8 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:884
 msgid ""
-"Please use: !hideme <class> where <class> is the maximum class of users that "
-"may not see your actions."
+"Please use: !hideme <class> where <class> is the maximum class of users that"
+" may not see your actions."
 msgstr ""
 
 #: ../src/cdcconsole.cpp:890
@@ -656,7 +658,8 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:904
 msgid ""
-"Type !help for more information (usage !userlimit <max_users> [<minutes>=60])"
+"Type !help for more information (usage !userlimit <max_users> "
+"[<minutes>=60])"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:933
@@ -823,7 +826,8 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1509
 msgid ""
-"This command is not implemented, available commands are: !hubinfo !serverinfo"
+"This command is not implemented, available commands are: !hubinfo "
+"!serverinfo"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:1603
@@ -839,8 +843,8 @@ msgstr ""
 #: ../src/cdcconsole.cpp:1628
 #, c-format
 msgid ""
-"Warning: Verlihub allows maximum %d users, but current resource limit is %d. "
-"Consider to run ulimit -n <max_users> and restart the hub."
+"Warning: Verlihub allows maximum %d users, but current resource limit is %d."
+" Consider to run ulimit -n <max_users> and restart the hub."
 msgstr ""
 
 #: ../src/cdcconsole.cpp:1656
@@ -1184,8 +1188,8 @@ msgstr ""
 #: ../src/cdcproto.cpp:709
 #, c-format
 msgid ""
-"Passive user limit exceeded at %d online passive users, please become active "
-"to enter the hub."
+"Passive user limit exceeded at %d online passive users, please become active"
+" to enter the hub."
 msgstr ""
 
 #: ../src/cdcproto.cpp:773
@@ -1886,8 +1890,8 @@ msgstr ""
 
 #: ../src/cserverdc.cpp:1132
 msgid ""
-"Your nick contains operator prefix but you are not registered, please remove "
-"it."
+"Your nick contains operator prefix but you are not registered, please remove"
+" it."
 msgstr ""
 
 #: ../src/cserverdc.cpp:1137
@@ -1910,8 +1914,7 @@ msgstr ""
 
 #: ../src/cserverdc.cpp:1361
 msgid ""
-"Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), "
-"M(onth), Y(ear).\n"
+"Error. Available units are: s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 "Default is 'd'."
 msgstr ""
 
@@ -2141,8 +2144,8 @@ msgstr ""
 #: ../src/ctriggers.cpp:337
 #, c-format
 msgid ""
-"The file %s for the trigger %s must be locate in Verlihub config folder (use "
-"%%[CFG] variable; for ex %%[CFG]/%s)"
+"The file %s for the trigger %s must be locate in Verlihub config folder (use"
+" %%[CFG] variable; for ex %%[CFG]/%s)"
 msgstr ""
 
 #: ../src/ctriggers.cpp:433

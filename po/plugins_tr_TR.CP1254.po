@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-05 13:37+0100\n"
-"PO-Revision-Date: 2014-07-16 06:45+0000\n"
+"POT-Creation-Date: 2014-11-17 12:54+0100\n"
+"PO-Revision-Date: 2014-11-15 11:04+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.6.9\n"
+"X-Generator: Poedit 1.6.10\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -187,7 +187,7 @@ msgstr "Baðlantý türünüz þuna denk gelmelidir %[pattern]"
 
 #: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:62
 msgid "You have no rights to do this."
-msgstr ""
+msgstr "Bunu yapma yetkiniz yoktur."
 
 #: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
@@ -219,7 +219,7 @@ msgstr "Kullanýlan bellek"
 
 #: ../plugins/lua/cconsole.cpp:112
 msgid "Running Lua scripts:"
-msgstr ""
+msgstr "Su Lua betikleri çalýþmaktadýr:"
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
 msgid "Script"
@@ -272,16 +272,16 @@ msgstr "%s adlý betik durdurulmadý çünkü faal deðildi."
 #: ../plugins/lua/cconsole.cpp:282
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
-msgstr ""
+msgstr "%s.%s, '%s''den '%s''e güncellenmiþtir."
 
 #: ../plugins/lua/cconsole.cpp:285
 #, c-format
 msgid "Current log level is %d."
-msgstr ""
+msgstr "Güncel kütük seviyesi þudur: %d."
 
 #: ../plugins/lua/cluainterpreter.cpp:164
 msgid "Lua error"
-msgstr ""
+msgstr "Lua hatasý"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
@@ -296,7 +296,7 @@ msgstr "Mesaj kaydedildi."
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] ""
+msgstr[0] "Kutunuzda %d mesaj bulunmaktadýr."
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
@@ -326,7 +326,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#ÇEVRÝMDIÞI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
+msgstr "#ÇEVRÝMDISI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
 
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
@@ -338,12 +338,12 @@ msgstr "Verlihub çalýþtýrýlabiliri"
 
 #: ../plugins/plugman/cconsole.cpp:46
 msgid "Verlihub build time"
-msgstr ""
+msgstr "Verlihub derleme vakti"
 
 #: ../plugins/plugman/cconsole.cpp:148
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
-msgstr ""
+msgstr "Eklentinin ismi azami 10 karakter içerebilir, baþka bir isim giriniz."
 
 #: ../plugins/plugman/cconsole.cpp:153
 msgid "Please provide a valid path for the plugin."
@@ -351,29 +351,29 @@ msgstr "Eklenti için geçerli bir yol giriniz."
 
 #: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr ""
+msgstr "Eklenti yüklendi."
 
 #: ../plugins/plugman/cconsole.cpp:190 ../plugins/plugman/cconsole.cpp:213
 #: ../plugins/plugman/cconsole.cpp:236
 #, c-format
 msgid "Plugin not found: %s"
-msgstr ""
+msgstr "Eklenti bulunamadý: %s"
 
 #: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin unloaded."
-msgstr ""
+msgstr "Eklenti kaldýrýldý."
 
 #: ../plugins/plugman/cconsole.cpp:208
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr ""
+msgstr "Eklenti kaldýrýlmadý, muhtemelen yüklenmediðinden."
 
 #: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
-msgstr ""
+msgstr "Eklenti tekrar yüklendi."
 
 #: ../plugins/plugman/cconsole.cpp:231
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr ""
+msgstr "Eklenti tekrar yüklenmedi, muhtemelen yüklenmediðinden."
 
 #: ../plugins/plugman/cplugs.cpp:48
 msgid "Plugin not found."
@@ -381,21 +381,21 @@ msgstr "Eklenti bulunamadý"
 
 #: ../plugins/plugman/cplugs.cpp:117
 msgid "Plugin does not support scripts."
-msgstr ""
+msgstr "Eklenti betikleri desteklemiyor."
 
 #: ../plugins/plugman/cplugs.cpp:123
 msgid "Script loaded."
-msgstr ""
+msgstr "Betki yüklendi."
 
 #: ../plugins/plugman/cplugs.cpp:125
 msgid "Error loading script."
-msgstr ""
+msgstr "Betiðin yüklenmesinde hata oluþtu."
 
 #: ../plugins/plugman/cplugs.cpp:155
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
-msgstr ""
+msgstr "Ýkaz: Betik tekrar derlenmelidir çünkü Verlihub yakýn geçmiþte güncellenmiþtir."
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Name"
@@ -427,7 +427,7 @@ msgstr "Açýklama"
 
 #: ../plugins/plugman/cplugs.cpp:213
 msgid "Last error"
-msgstr ""
+msgstr "Son hata"
 
 #: ../plugins/python/cconsole.cpp:80 ../plugins/python/cconsole.cpp:102
 #: ../plugins/python/cconsole.cpp:143 ../plugins/python/cconsole.cpp:168
@@ -455,11 +455,11 @@ msgstr "%s.%s '%s' deðerinden '%s' deðerine güncellenmiþtir"
 
 #: ../plugins/replacer/cconsole.cpp:67
 msgid "Replaced words"
-msgstr ""
+msgstr "Deðiþtirilmiþ kelimeler"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Word"
-msgstr ""
+msgstr "Kelime"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Replace with"
