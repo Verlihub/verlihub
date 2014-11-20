@@ -1178,36 +1178,37 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	if (mS->CheckProtoFloodAll(conn, msg, ePFA_PRIV)) // protocol flood from all
 		return -1;
 
-	if(!conn->mpUser->mInList) return -2;
-	if(!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) return -4;
+	if (!conn->mpUser->mInList)
+		return -2;
 
-	string &str=msg->ChunkString(eCH_PM_TO);
+	string &from = msg->ChunkString(eCH_PM_FROM);
+	string &nick = msg->ChunkString(eCH_PM_NICK);
+	stringstream omsg;
 
-	// verify sender's nick
-	if(msg->ChunkString(eCH_PM_FROM) != conn->mpUser->mNick || msg->ChunkString(eCH_PM_NICK) != conn->mpUser->mNick) {
-		if(conn->Log(2))
-			conn->LogStream() << "Pretend to be someone else in PM (" << msg->ChunkString(eCH_PM_FROM) << ")." <<endl;
-		conn->CloseNow();
+	if ((from != conn->mpUser->mNick) || (nick != conn->mpUser->mNick)) { // verify sender nick
+		omsg << autosprintf(_("Nick spoofing attempt detected from your client: %s"), ((from != conn->mpUser->mNick) ? from.c_str() : nick.c_str()));
+
+		if (conn->Log(2))
+			conn->LogStream() << omsg.str() << endl;
+
+		mS->DCPublicHS(omsg.str(), conn);
+		conn->CloseNice(1000, eCR_CHAT_NICK);
 		return -1;
 	}
 
-	cUser::tFloodHashType Hash = 0;
-	Hash = tHashArray<void*>::HashString(msg->ChunkString(eCH_PM_MSG));
-	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) {
-		if(Hash == conn->mpUser->mFloodHashes[eFH_PM]) {
-			if( conn->mpUser->mFloodCounters[eFC_PM]++ > mS->mC.max_flood_counter_pm) {
-					mS->DCPrivateHS(_("Flooding PM"), conn);
-					ostringstream reportMessage;
-					reportMessage << autosprintf(_("*** PM same message flood detected: %s"), msg->ChunkString(eCH_PM_MSG).c_str());
-					mS->ReportUserToOpchat(conn, reportMessage.str());
-					conn->CloseNow();
-					return -5;
-			}
-		} else {
-			conn->mpUser->mFloodCounters[eFC_PM]=0;
-		}
+	string &to = msg->ChunkString(eCH_PM_TO);
+	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
+
+	if (!other)
+		return -2;
+
+	if (!other->mxConn && mS->mRobotList.ContainsNick(to)) { // parse for commands to bot
+		((cUserRobot*)mS->mRobotList.GetUserBaseByNick(to))->ReceiveMsg(conn, msg);
+		return 0;
 	}
-	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
+
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // no rights
+		return -4;
 
 	if (conn->mpUser->mClass < mS->mC.private_class) {
 		mS->DCPrivateHS(_("Private chat is currently disabled for users with your class."), conn);
@@ -1215,31 +1216,41 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	// Find other user
-	cUser *other = mS->mUserList.GetUserByNick(str);
-	if(!other)
-		return -2;
-	//NOTE: It seems to be there a crash on Windows when using Lua plugin and a Lua script calls DelRobot
-	if(conn->mpUser->mClass + mS->mC.classdif_pm < other->mClass) {
+	if ((conn->mpUser->mClass + mS->mC.classdif_pm) < other->mClass) {
 		mS->DCPrivateHS(_("You can't talk to this user."), conn);
 		mS->DCPublicHS(_("You can't talk to this user."), conn);
 		return -4;
 	}
 
-	// Log it
-	if(mS->Log(5))
-		mS->LogStream() << "PM from:" << conn->mpUser->mNick << " To: " << msg->ChunkString(eCH_PM_TO) << endl;
+	string &text = msg->ChunkString(eCH_PM_MSG);
+	cUser::tFloodHashType Hash = 0;
+	Hash = tHashArray<void*>::HashString(text);
+
+	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) { // check for same message flood
+		if (Hash == conn->mpUser->mFloodHashes[eFH_PM]) {
+			if (conn->mpUser->mFloodCounters[eFC_PM]++ > mS->mC.max_flood_counter_pm) {
+				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
+				omsg << autosprintf(_("Same message flood in PM: %s"), text.c_str());
+				mS->ReportUserToOpchat(conn, omsg.str());
+				conn->CloseNow();
+				return -5;
+			}
+		} else {
+			conn->mpUser->mFloodCounters[eFC_PM] = 0;
+		}
+	}
+
+	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg)) return 0;
+		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+			return 0;
 	#endif
 
-	// Send it
-	if(other->mxConn) {
+	if (other->mxConn) { // send it
 		other->mxConn->Send(msg->mStr);
-	} else if (mS->mRobotList.ContainsNick(str)) {
-		((cUserRobot*)mS->mRobotList.GetUserBaseByNick(str))->ReceiveMsg(conn, msg);
 	}
+
 	return 0;
 }
 
@@ -1275,91 +1286,84 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if (mS->CheckProtoFloodAll(conn, msg, ePFA_MCTO)) // protocol flood from all
 		return -1;
 
-	if (!conn->mpUser->mInList) return -2;
-	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) return -4;
+	if (!conn->mpUser->mInList)
+		return -2;
 
-	// verify senders nick
-	if ((msg->ChunkString(eCH_MCTO_FROM) != conn->mpUser->mNick) || (msg->ChunkString(eCH_MCTO_NICK) != conn->mpUser->mNick)) {
-		if (conn->Log(2)) conn->LogStream() << "User pretend to be someone else in MCTo: " << msg->ChunkString(eCH_MCTO_FROM) << endl;
-		conn->CloseNow();
+	string &from = msg->ChunkString(eCH_MCTO_FROM);
+	string &nick = msg->ChunkString(eCH_MCTO_NICK);
+	stringstream omsg;
+
+	if ((from != conn->mpUser->mNick) || (nick != conn->mpUser->mNick)) { // verify sender nick
+		omsg << autosprintf(_("Nick spoofing attempt detected from your client: %s"), ((from != conn->mpUser->mNick) ? from.c_str() : nick.c_str()));
+
+		if (conn->Log(2))
+			conn->LogStream() << omsg.str() << endl;
+
+		mS->DCPublicHS(omsg.str(), conn);
+		conn->CloseNice(1000, eCR_CHAT_NICK);
 		return -1;
 	}
 
-	cUser::tFloodHashType Hash = 0;
-	Hash = tHashArray<void*>::HashString(msg->ChunkString(eCH_MCTO_MSG));
+	string &to = msg->ChunkString(eCH_MCTO_TO);
+	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
 
-	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) {
-		if (Hash == conn->mpUser->mFloodHashes[eFH_MCTO]) {
-			if (conn->mpUser->mFloodCounters[eFC_MCTO]++ > mS->mC.max_flood_counter_mcto) {
-				mS->DCPrivateHS(_("MCTo flood."), conn);
-				ostringstream reportMessage;
-				reportMessage << autosprintf(_("*** MCTo same message flood detected: %s"), msg->ChunkString(eCH_MCTO_MSG).c_str());
-				mS->ReportUserToOpchat(conn, reportMessage.str());
-				conn->CloseNow();
-				return -5;
-			}
-		} else
-			conn->mpUser->mFloodCounters[eFC_MCTO] = 0;
+	if (!other)
+		return -2;
+
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // no rights
+		return -4;
+
+	if (conn->mpUser->mClass < mS->mC.private_class) { // pm rules also apply on mcto, messages are also private
+		mS->DCPrivateHS(_("Private chat is currently disabled for users with your class."), conn);
+		mS->DCPublicHS(_("Private chat is currently disabled for users with your class."), conn);
+		return 0;
 	}
 
-	conn->mpUser->mFloodHashes[eFH_MCTO] = Hash;
-	// find other user
-	string &str=msg->ChunkString(eCH_MCTO_TO);
-	cUser *other = mS->mUserList.GetUserByNick(str);
-	if (!other) return -2;
-
-	if (conn->mpUser->mClass + mS->mC.classdif_mcto < other->mClass) {
+	if ((conn->mpUser->mClass + mS->mC.classdif_mcto) < other->mClass) {
 		mS->DCPrivateHS(_("You can't talk to this user."), conn);
 		mS->DCPublicHS(_("You can't talk to this user."), conn);
 		return -4;
 	}
 
-	// log
-	if (mS->Log(5)) mS->LogStream() << "MCTo from: " << conn->mpUser->mNick << " to: " << msg->ChunkString(eCH_MCTO_TO) << endl;
+	string &text = msg->ChunkString(eCH_MCTO_MSG);
+	cUser::tFloodHashType Hash = 0;
+	Hash = tHashArray<void*>::HashString(text);
+
+	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) { // check for same message flood
+		if (Hash == conn->mpUser->mFloodHashes[eFH_MCTO]) {
+			if (conn->mpUser->mFloodCounters[eFC_MCTO]++ > mS->mC.max_flood_counter_mcto) {
+				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
+				omsg << autosprintf(_("Same message flood in MCTo: %s"), text.c_str());
+				mS->ReportUserToOpchat(conn, omsg.str());
+				conn->CloseNow();
+				return -5;
+			}
+		} else {
+			conn->mpUser->mFloodCounters[eFC_MCTO] = 0;
+		}
+	}
+
+	conn->mpUser->mFloodHashes[eFH_MCTO] = Hash;
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgMCTo.CallAll(conn, msg)) return 0;
+		if (!mS->mCallBacks.mOnParsedMsgMCTo.CallAll(conn, msg))
+			return 0;
 	#endif
 
-	// send
-	if (other->mxConn) {
+	if (other->mxConn) { // send it
 		string mcto;
 
 		if (other->mxConn->mFeatures & eSF_MCTO) { // send as is if supported by client
 			mcto = msg->mStr;
 		} else { // else convert to private main chat message
 			mcto.erase();
-			Create_Chat(mcto, conn->mpUser->mNick, msg->ChunkString(eCH_MCTO_MSG));
+			Create_Chat(mcto, conn->mpUser->mNick, text);
 		}
 
 		other->mxConn->Send(mcto);
 	}
 
 	return 0;
-}
-
-bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
-{
-	if (!conn || !conn->mxServer) return true;
-	cServerDC *Server = conn->Server();
-	ostringstream errmsg;
-	int count = text.size();
-
-	if ((Server->mC.max_chat_msg == 0) || (count > Server->mC.max_chat_msg)) {
-		errmsg << autosprintf(_("Your chat message contains %d characters but maximum allowed is %d characters."), count, Server->mC.max_chat_msg);
-		Server->DCPublicHS(errmsg.str(), conn);
-		return false;
-	}
-
-	count = CountLines(text);
-
-	if ((Server->mC.max_chat_lines == 0) || (count > Server->mC.max_chat_lines)) {
-		errmsg << autosprintf(_("Your chat message contains %d lines but maximum allowed is %d lines."), count, Server->mC.max_chat_lines);
-		Server->DCPublicHS(errmsg.str(), conn);
-		return false;
-	}
-
-	return true;
 }
 
 int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
@@ -2727,6 +2731,30 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	return 0;
+}
+
+bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
+{
+	if (!conn || !conn->mxServer) return true;
+	cServerDC *Server = conn->Server();
+	ostringstream errmsg;
+	int count = text.size();
+
+	if ((Server->mC.max_chat_msg == 0) || (count > Server->mC.max_chat_msg)) {
+		errmsg << autosprintf(_("Your chat message contains %d characters but maximum allowed is %d characters."), count, Server->mC.max_chat_msg);
+		Server->DCPublicHS(errmsg.str(), conn);
+		return false;
+	}
+
+	count = CountLines(text);
+
+	if ((Server->mC.max_chat_lines == 0) || (count > Server->mC.max_chat_lines)) {
+		errmsg << autosprintf(_("Your chat message contains %d lines but maximum allowed is %d lines."), count, Server->mC.max_chat_lines);
+		Server->DCPublicHS(errmsg.str(), conn);
+		return false;
+	}
+
+	return true;
 }
 
 void cDCProto::Create_MyINFO(string &dest, const string&nick, const string &desc, const string&speed, const string &mail, const string &share)
