@@ -89,7 +89,7 @@ cUser::cUser() :
 	mHideShare = false;
 	mHideCtmMsg = false;
 	mSetPass = false;
-	IsPassive = false;
+	IsPassive = true;
 	memset(mFloodHashes, 0 ,sizeof(mFloodHashes));
 	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
 	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
@@ -106,7 +106,7 @@ cUser::cUser(const string &nick) :
 	mHideKicksForClass(eUC_NORMUSER)
 {
 	SetClassName("cUser");
-	IsPassive = false;
+	IsPassive = true;
 	mRights = 0;
 	mToBan = false;
 	mVisibleClassMin = eUC_NORMUSER;

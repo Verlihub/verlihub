@@ -626,26 +626,25 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	string cmsg;
+	ostringstream os;
 
-	if (msg->SplitChunks()) { // bad syntax
-		cmsg = _("Your client sent malformed protocol command");
-		cmsg += ": MyINFO";
+	if (!conn->mpUser) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
-		if (conn->Log(2))
-			conn->LogStream() << cmsg << endl;
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		cmsg = _("Invalid login sequence, you client must validate nick first.");
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": MyINFO";
 
 		if (conn->Log(1))
-			conn->LogStream() << cmsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -654,36 +653,34 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	string &nick = msg->ChunkString(eCH_MI_NICK);
 
-	if (nick != conn->mpUser->mNick) { // check nick
-		cmsg = _("Your client specified invalid nick in protocol command");
-		cmsg += ": MyINFO";
+	if (nick != conn->mpUser->mNick) { // verify sender
+		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), nick.c_str());
 
 		if (conn->Log(1))
-			conn->LogStream() << cmsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, cmsg, 1500, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
-	if (conn->mConnType == NULL) // parse conention
+	if (conn->mConnType == NULL) // parse connection
 		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
 
 	cDCTag *tag = mS->mCo->mDCClients->ParseTag(msg->ChunkString(eCH_MI_DESC)); // check tag
 
 	if (!mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc < 0) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
-		cmsg = _("Your client didn't specify a tag.");
+		os << _("Your client didn't specify a tag.");
 
 		if (conn->Log(2))
-			conn->LogStream() << cmsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_TAG_NONE);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_NONE);
 		delete tag;
 		return -1;
 	}
 
 	bool TagValid = true;
 	int tag_result = 0;
-	ostringstream os;
 
 	if ((!mS->mC.tag_allow_none || (mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
 		TagValid = tag->ValidateTag(os, conn->mConnType, tag_result);
@@ -694,26 +691,53 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	if (!TagValid) {
-		if(conn->Log(2))
-			conn->LogStream() << "Invalid tag: " << tag_result << ", information: " << tag << endl;
+		if (conn->Log(2))
+			conn->LogStream() << "Invalid tag with result " << tag_result << ": " << tag << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_INVALID);
 		delete tag;
 		return -1;
 	}
 
-	if ((tag->mClientMode == eCM_PASSIVE) || (tag->mClientMode == eCM_SOCK5) || (tag->mClientMode == eCM_OTHER)) // set mode
-		conn->mpUser->IsPassive = true;
+	bool WasPassive = conn->mpUser->IsPassive; // user might have changed his mode
 
-	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive != -1) && (conn->GetTheoricalClass() < eUC_OPERATOR) && (mS->mPassiveUsers.Size() >= mS->mC.max_users_passive)) { // passive user limit
+	switch (tag->mClientMode) {
+		case eCM_NOTAG:
+		case eCM_PASSIVE:
+		case eCM_SOCK5:
+		case eCM_OTHER:
+			conn->mpUser->IsPassive = true;
+			break;
+		case eCM_ACTIVE:
+			conn->mpUser->IsPassive = false;
+			break;
+	}
+
+	if (conn->mpUser->mInList && (WasPassive != conn->mpUser->IsPassive)) { // change user mode if differs and not first time
+		if (WasPassive) {
+			if (mS->mPassiveUsers.ContainsNick(conn->mpUser->mNick))
+				mS->mPassiveUsers.RemoveByNick(conn->mpUser->mNick);
+
+			if (!mS->mActiveUsers.ContainsNick(conn->mpUser->mNick))
+				mS->mActiveUsers.AddWithNick(conn->mpUser, conn->mpUser->mNick);
+		} else {
+			if (mS->mActiveUsers.ContainsNick(conn->mpUser->mNick))
+				mS->mActiveUsers.RemoveByNick(conn->mpUser->mNick);
+
+			if (!mS->mPassiveUsers.ContainsNick(conn->mpUser->mNick))
+				mS->mPassiveUsers.AddWithNick(conn->mpUser, conn->mpUser->mNick);
+		}
+	}
+
+	int theoclass = conn->GetTheoricalClass();
+
+	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive != -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d online passive users, please become active to enter the hub."), mS->mPassiveUsers.Size());
 
 		if (conn->Log(2))
 			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
 
-		static string omsg;
-		omsg.erase();
-		omsg.append("$HubIsFull");
+		string omsg = "$HubIsFull";
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		conn->Send(omsg, true);
 		delete tag;
@@ -723,37 +747,35 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	string &str_share = msg->ChunkString(eCH_MI_SIZE); // check share conditions
 
 	if (str_share.size() > 18) { // share is too big
-		// todo: some kind of message to user
-		conn->CloseNow();
+		conn->CloseNow(); // todo: notify user
 		delete tag;
 		return -1;
-	} else if (str_share.empty() || (str_share[0] == '-')) { // missing or negative share
+	} else if (str_share.empty() || (str_share[0] == '-')) // missing or negative share
 		str_share = "0";
-	}
 
 	__int64 share = 0, shareB = 0;
 	shareB = StringAsLL(str_share);
 	share = shareB / (1024 * 1024);
 
-	if (conn->GetTheoricalClass() <= eUC_OPERATOR) { // calculate minimum and maximum
+	if (theoclass <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
 		__int64 max_share = mS->mC.max_share;
 		__int64 min_share_p, min_share_a;
 
-		if (conn->GetTheoricalClass() == eUC_PINGER) {
+		if (theoclass == eUC_PINGER)
 			min_share = 0;
-		} else {
-			if (conn->GetTheoricalClass() >= eUC_REGUSER) {
+		else {
+			if (theoclass >= eUC_REGUSER) {
 				min_share = mS->mC.min_share_reg;
 				max_share = mS->mC.max_share_reg;
 			}
 
-			if (conn->GetTheoricalClass() >= eUC_VIPUSER) {
+			if (theoclass >= eUC_VIPUSER) {
 				min_share = mS->mC.min_share_vip;
 				max_share = mS->mC.max_share_vip;
 			}
 
-			if (conn->GetTheoricalClass() >= eUC_OPERATOR) {
+			if (theoclass >= eUC_OPERATOR) {
 				min_share = mS->mC.min_share_ops;
 				max_share = mS->mC.max_share_ops;
 			}
@@ -782,15 +804,19 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			return -1;
 		}
 
-		if (conn->GetTheoricalClass() <= eUC_VIPUSER) { // second share limit that disables search and download
+		if (theoclass <= eUC_VIPUSER) { // second share limit that disables search and download
 			__int64 temp_min_share = 0; // todo: rename to min_share_use_hub_guest
 
-			if (mS->mC.min_share_use_hub && conn->GetTheoricalClass() == eUC_NORMUSER) {
-				temp_min_share = mS->mC.min_share_use_hub;
-			} else if (mS->mC.min_share_use_hub_reg && conn->GetTheoricalClass() == eUC_REGUSER) {
-				temp_min_share = mS->mC.min_share_use_hub_reg;
-			} else if (mS->mC.min_share_use_hub_vip && conn->GetTheoricalClass() == eUC_VIPUSER) {
-				temp_min_share = mS->mC.min_share_use_hub_vip;
+			switch (theoclass) {
+				case eUC_NORMUSER:
+					temp_min_share = mS->mC.min_share_use_hub;
+					break;
+				case eUC_REGUSER:
+					temp_min_share = mS->mC.min_share_use_hub_reg;
+					break;
+				case eUC_VIPUSER:
+					temp_min_share = mS->mC.min_share_use_hub_vip;
+					break;
 			}
 
 			if (temp_min_share) {
@@ -804,12 +830,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 		}
 
-		if (conn->GetTheoricalClass() < mS->mC.min_class_use_hub) {
-			conn->mpUser->SetRight(eUR_SEARCH, 0);
-			conn->mpUser->SetRight(eUR_CTM, 0);
-		}
+		int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
 
-		if ((conn->GetTheoricalClass() < mS->mC.min_class_use_hub_passive) && conn->mpUser->IsPassive) {
+		if (theoclass < use_hub_class) {
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
@@ -824,12 +847,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		mS->mTotalShare += conn->mpUser->mShare;
 
 	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
-		cmsg = _("You are already in the hub with another nick.");
+		os << _("You are already in the hub using another nick.");
 
 		if (conn->Log(2))
-			conn->LogStream() << cmsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, cmsg, 1000, eCR_USERLIMIT);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		delete tag;
 		return -1;
 	}
@@ -838,14 +861,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
-		bool banned = false;
-		banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
+		bool banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
-		if (banned && (conn->GetTheoricalClass() <= eUC_REGUSER)) {
-			stringstream smsg;
-			smsg << _("You are banned from this hub.") << "\r\n";
-			Ban.DisplayUser(smsg);
-			mS->DCPublicHS(smsg.str(), conn);
+		if (banned && (theoclass <= eUC_REGUSER)) {
+			os << _("You are banned from this hub.") << "\r\n";
+			Ban.DisplayUser(os);
+			mS->DCPublicHS(os.str(), conn);
 
 			if (conn->Log(1))
 				conn->LogStream() << "Kicked user due to ban detection" << endl;
@@ -864,7 +885,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		#endif
 	}
 
- 	#ifndef WITHOUT_PLUGINS
+	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg)) {
 			delete tag;
 			return -2;
@@ -877,8 +898,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (msg->mModified && msg->SplitChunks() && conn->Log(2)) // plugin has modified message, return here?
 		conn->LogStream() << "MyINFO syntax error after plugin modification" << endl;
 
-	// $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
-	string myinfo_full, myinfo_basic, desctag, desc, sTag, speed, email, sShare;
+	string myinfo_full, myinfo_basic, desctag, desc, sTag, speed, email, sShare; // $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
 	desctag = msg->ChunkString(eCH_MI_DESC);
 
 	if (!desctag.empty()) {
@@ -968,10 +988,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	delete tag; // tag is no longer used
 	speed = msg->ChunkString(eCH_MI_SPEED);
 
-	if ((mS->mC.show_speed == 0) && !speed.empty()) // hide speed but keep status byte
+	if ((!mS->mC.show_speed) && !speed.empty()) // hide speed but keep status byte
 		speed.assign(speed, speed.length() - 1, -1);
 
-	if (mS->mC.show_email == 0) // hide email
+	if (!mS->mC.show_email) // hide email
 		email = "";
 	else
 		email = conn->mpUser->mEmail;
@@ -989,10 +1009,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare);
 
 	if (conn->mpUser->mInList) { // login or send to all
-		// send it to all only if:
-		// its not too often
-		// it has changed since last time
-		// send only the version that has changed only to those who want it
+		/*
+			send it to all only if
+				its not too often
+				it has changed since last time
+				send only the version that has changed only to those who want it
+		*/
 
 		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (myinfo_full != conn->mpUser->mMyINFO)) {
 			conn->mpUser->mMyINFO = myinfo_full;
@@ -1504,161 +1526,114 @@ int cDCProto::DC_Kick(cMessageDC *msg, cConnDC *conn)
 	}
 }
 
-bool cDCProto::CheckIP(cConnDC * conn, string &ip)
-{
-	bool WrongIP = true;
-	if(WrongIP && conn->mAddrIP == ip) {
-		WrongIP = false;
-	}
-	if (WrongIP && (conn->mRegInfo && conn->mRegInfo->mAlternateIP == ip)) {
-		WrongIP = false;
-	}
-	return ! WrongIP;
-}
-
-bool cDCProto::isLanIP(string ip)
-{
-	if (ip.substr(0, 4) == "127.")
-		return true;
-
-	unsigned long sip = cBanList::Ip2Num(ip);
-
-	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL))
-		return true;
-
-	return false;
-}
-
 int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
 	if (!conn || !msg)
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": ConnectToMe";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": ConnectToMe";
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_CTM)) // protocol flood
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -1;
-
-	ostringstream os;
-
-	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) {
-		if (!mS->mC.min_x_use_hub_message || conn->mpUser->mHideCtmMsg)
-			return -4;
-
-		unsigned long use_hub_share = 0;
-
-		if (mS->mC.min_share_use_hub && conn->GetTheoricalClass() == eUC_NORMUSER) {
-			use_hub_share = mS->mC.min_share_use_hub;
-		} else if (mS->mC.min_share_use_hub_reg && conn->GetTheoricalClass() == eUC_REGUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_reg;
-		} else if (mS->mC.min_share_use_hub_vip && conn->GetTheoricalClass() == eUC_VIPUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_vip;
-		}
-
-		use_hub_share = use_hub_share * 1024 * 1024;
-
-		if (conn->mpUser->mShare < use_hub_share) {
-			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		int use_hub_class = 0;
-
-		if (mS->mC.min_class_use_hub && conn->mpUser->IsPassive == false) {
-			use_hub_class = mS->mC.min_class_use_hub;
-		} else if (mS->mC.min_class_use_hub_passive && conn->mpUser->IsPassive == true) {
-			use_hub_class = mS->mC.min_class_use_hub_passive;
-		}
-
-		if (conn->mpUser->mClass < use_hub_class) {
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		// any other reason that should be notified?
-		return -4;
-	}
-
-	string &nick = msg->ChunkString(eCH_CM_NICK);
+	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
-	// check nick and connection
-
-	if (!other) {
-		os << autosprintf(_("User not found: %s"), nick.c_str());
+	if (!other || !other->mInList) {
+		os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
 
 	if (!other->mxConn) {
-		mS->DCPublicHS(_("Robots don't share."), conn);
+		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
 
-	// check if user can download and if other user hides share
+	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
 
-	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) {
-		if (!mS->mC.hide_noctm_message && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from: %s"), nick.c_str());
+	if (conn->mpUser->mClass < use_hub_class) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
 		return -4;
 	}
 
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
-			return -2;
-	#endif
+	unsigned long use_hub_share = 0; // check use hub share
 
-	string ctm, addr, port, extra;
-	addr = msg->ChunkString(eCH_CM_IP);
-
-	if (!CheckIP(conn, addr)) {
-		if (isLanIP(conn->mAddrIP) && !isLanIP(other->mxConn->mAddrIP)) { // lan to wan
-			os << _("You can't connect to an external IP because you are in LAN.");
-			string toSend = os.str();
-			conn->Send(toSend);
-			return -1;
-		}
-
-		if (conn->Log(3))
-			LogStream() << "Fixed wrong IP in $ConnectToMe from " << addr << " to " << conn->mAddrIP << endl;
-
-		addr = conn->mAddrIP;
+	switch (conn->mpUser->mClass) {
+		case eUC_NORMUSER:
+			use_hub_share = mS->mC.min_share_use_hub;
+			break;
+		case eUC_REGUSER:
+			use_hub_share = mS->mC.min_share_use_hub_reg;
+			break;
+		case eUC_VIPUSER:
+			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
 	}
 
-	port = msg->ChunkString(eCH_CM_PORT);
+	use_hub_share = use_hub_share * 1024 * 1024;
+
+	if (conn->mpUser->mShare < use_hub_share) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) // check temporary right
+		return -4; // todo: notify user
+
+	if (((conn->mpUser->mClass + mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
+		os << autosprintf("You can't connect to user because one of you is in LAN: %s", nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -1;
+	}
+
+	string &port = msg->ChunkString(eCH_CM_PORT);
 
 	if (port.empty() || (port.size() > 6))
 		return -1;
 
+	string extra("");
+
 	if (port[port.size() - 1] == 'S') { // secure connection
-		if (conn->mFeatures & eSF_TLS) // only if sender supports it. the other client must support it too? i dont know
+		if (conn->mFeatures & eSF_TLS) // only if sender supports it
 			extra = "S";
 
 		port.assign(port, 0, port.size() - 1);
@@ -1669,7 +1644,21 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if ((iport < 1) || (iport > 65535))
 		return -1;
 
-	ctm = "$ConnectToMe ";
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
+			return -2;
+	#endif
+
+	string &addr = msg->ChunkString(eCH_CM_IP);
+
+	if (!CheckIP(conn, addr)) {
+		if (conn->Log(3))
+			LogStream() << "Fixed wrong IP in $ConnectToMe: " << addr << endl;
+
+		addr = conn->mAddrIP;
+	}
+
+	string ctm = "$ConnectToMe ";
 	ctm += nick;
 	ctm += ' ';
 	ctm += addr;
@@ -1677,13 +1666,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	ctm += StringFrom(iport);
 	ctm += extra;
 
-	other->mxConn->Send(ctm);
-	return 0;
-}
-
-int cDCProto::DC_MultiConnectToMe(cMessageDC *, cConnDC *)
-{
-	// todo: for now its same as connecttome
+	other->mxConn->Send(ctm, true); // send it
 	return 0;
 }
 
@@ -1692,108 +1675,112 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": RevConnectToMe";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": RevConnectToMe";
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_RCTM)) // protocol flood
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -2;
+	string &mynick = msg->ChunkString(eCH_RC_NICK);
 
-	if (!conn->mpUser->IsPassive) {
-		mS->DCPublicHS(_("You can't send this request because you're not in passive mode."), conn);
-		return -2;
-	}
+	if (mynick != conn->mpUser->mNick) { // verify sender
+		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), mynick.c_str());
 
-	ostringstream os;
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
 
-	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) {
-		if (!mS->mC.min_x_use_hub_message || conn->mpUser->mHideCtmMsg)
-			return -4;
-
-		unsigned long use_hub_share = 0;
-
-		if (mS->mC.min_share_use_hub && conn->GetTheoricalClass() == eUC_NORMUSER) {
-			use_hub_share = mS->mC.min_share_use_hub;
-		} else if (mS->mC.min_share_use_hub_reg && conn->GetTheoricalClass() == eUC_REGUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_reg;
-		} else if (mS->mC.min_share_use_hub_vip && conn->GetTheoricalClass() == eUC_VIPUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_vip;
-		}
-
-		use_hub_share = use_hub_share * 1024 * 1024;
-
-		if (conn->mpUser->mShare < use_hub_share) {
-			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		int use_hub_class = 0;
-
-		if (mS->mC.min_class_use_hub && conn->mpUser->IsPassive == false) {
-			use_hub_class = mS->mC.min_class_use_hub;
-		} else if (mS->mC.min_class_use_hub_passive && conn->mpUser->IsPassive == true) {
-			use_hub_class = mS->mC.min_class_use_hub_passive;
-		}
-
-		if (conn->mpUser->mClass < use_hub_class) {
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		// any other reason that should be notified?
-		return -4;
-	}
-
-	// check nick
-
-	if (msg->ChunkString(eCH_RC_NICK) != conn->mpUser->mNick) {
-		os << autosprintf(_("Your nick is not %s but %s."), msg->ChunkString(eCH_RC_NICK).c_str(), conn->mpUser->mNick.c_str());
-		mS->ConnCloseMsg(conn, os.str(), 1500, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
-	// find and check the other nickname
+	string &nick = msg->ChunkString(eCH_RC_OTHER); // find other user
+	cUser *other = mS->mUserList.GetUserByNick(nick);
 
-	string &onick = msg->ChunkString(eCH_RC_OTHER);
-	cUser *other = mS->mUserList.GetUserByNick(onick);
-
-	if (!other) {
-		os << autosprintf(_("User not found: %s"), onick.c_str());
+	if (!other || !other->mInList) {
+		os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
 	if (!other->mxConn) {
-		os << autosprintf(_("User is a bot: %s"), onick.c_str());
+		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
-	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || other->mHideShare) { // check if user can download and if other user hides share
-		if (!mS->mC.hide_noctm_message && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from: %s"), onick.c_str());
+	if (other->IsPassive) { // passive request to passive user
+		os << autosprintf(_("You can't download from user because he is in passive mode: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
+		os << autosprintf(_("You can't download from user because your share is hidden: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
+
+	if (conn->mpUser->mClass < use_hub_class) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	unsigned long use_hub_share = 0; // check use hub share
+
+	switch (conn->mpUser->mClass) {
+		case eUC_NORMUSER:
+			use_hub_share = mS->mC.min_share_use_hub;
+			break;
+		case eUC_REGUSER:
+			use_hub_share = mS->mC.min_share_use_hub_reg;
+			break;
+		case eUC_VIPUSER:
+			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+	}
+
+	use_hub_share = use_hub_share * 1024 * 1024;
+
+	if (conn->mpUser->mShare < use_hub_share) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) // check temporary right
+		return -4; // todo: notify user
+
+	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1805,7 +1792,13 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 			return -2;
 	#endif
 
-	other->mxConn->Send(msg->mStr);
+	other->mxConn->Send(msg->mStr, true); // send it
+	return 0;
+}
+
+int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
+{
+	// todo
 	return 0;
 }
 
@@ -1814,223 +1807,218 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Search";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": Search";
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_SEARCH)) // protocol flood
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -2;
-
-	ostringstream os;
-
-	if (!conn->mpUser->Can(eUR_SEARCH, mS->mTime.Sec(), 0)) {
-		if (!mS->mC.min_x_use_hub_message || conn->mpUser->mHideCtmMsg)
-			return -4;
-
-		unsigned long use_hub_share = 0;
-
-		if (mS->mC.min_share_use_hub && conn->GetTheoricalClass() == eUC_NORMUSER) {
-			use_hub_share = mS->mC.min_share_use_hub;
-		} else if (mS->mC.min_share_use_hub_reg && conn->GetTheoricalClass() == eUC_REGUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_reg;
-		} else if (mS->mC.min_share_use_hub_vip && conn->GetTheoricalClass() == eUC_VIPUSER) {
-			use_hub_share = mS->mC.min_share_use_hub_vip;
-		}
-
-		use_hub_share = use_hub_share * 1024 * 1024;
-
-		if (conn->mpUser->mShare < use_hub_share) {
-			os << autosprintf(_("You can't search unless you share: %s"), convertByte(use_hub_share, false).c_str());
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		int use_hub_class = 0;
-
-		if (mS->mC.min_class_use_hub && conn->mpUser->IsPassive == false) {
-			use_hub_class = mS->mC.min_class_use_hub;
-		} else if (mS->mC.min_class_use_hub_passive && conn->mpUser->IsPassive == true) {
-			use_hub_class = mS->mC.min_class_use_hub_passive;
-		}
-
-		if (conn->mpUser->mClass < use_hub_class) {
-			os << autosprintf(_("You can't search unless you are registered with class: %d"), use_hub_class);
-			mS->DCPublicHS(os.str(), conn);
-			return -4;
-		}
-
-		// any other reason that should be notified?
-		return -4;
-	}
-
-	if (conn->mpUser->mClass < eUC_OPERATOR)  {
-		switch (msg->mType) {
-			case eDC_MSEARCH:
-			case eDC_SEARCH:
-				if (msg->ChunkString(eCH_AS_SEARCHPATTERN).size() < mS->mC.min_search_chars) {
-					os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
-					mS->DCPublicHS(os.str(), conn);
-					return -1;
-				}
-
-				break;
-			case eDC_MSEARCH_PAS:
-			case eDC_SEARCH_PAS:
-				if (msg->ChunkString(eCH_PS_SEARCHPATTERN).size() < mS->mC.min_search_chars) {
-					os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
-					mS->DCPublicHS(os.str(), conn);
-					return -1;
-				}
-
-				break;
-			default:
-				break;
-		}
-	}
-
-	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) {
+	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
 		if (mS->Log(3))
-			mS->LogStream() << "Skipping search, system is: " << mS->mSysLoad << endl;
+			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
 
-		os << _("Sorry, hub is too busy now, no search is available, please try later.");
+		os << _("Sorry, hub load is too high to process your search request, please try again later.");
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
-	cUser::tFloodHashType Hash = 0;
-	Hash = tHashArray<void*>::HashString(msg->mStr);
+	bool passive;
 
-	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH])) {
-		return -4;
+	switch (msg->mType) { // detect search mode once
+		case eDC_SEARCH:
+		case eDC_MSEARCH:
+			passive = false;
+			break;
+		case eDC_SEARCH_PAS:
+		case eDC_MSEARCH_PAS:
+			passive = true;
+			break;
 	}
 
-	conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
+	string addr;
 
-	// calculate delay and do some checks
+	if (passive) { // verify sender
+		addr = msg->ChunkString(eCH_PS_NICK);
 
-	int delay = 10;
-	string addr, port;
-	__int64 iport;
+		if (addr != conn->mpUser->mNick) {
+			os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), addr.c_str());
 
-	switch (msg->mType) {
-		case eDC_MSEARCH:
-		case eDC_SEARCH:
-			addr = msg->ChunkString(eCH_AS_IP);
+			if (conn->Log(1))
+				conn->LogStream() << os.str() << endl;
 
-			if (!CheckIP(conn, addr)) {
-				if (conn->Log(3))
-					LogStream() << "Fixed wrong IP in $Search from " << addr << " to " << conn->mAddrIP << endl;
+			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+			return -1;
+		}
 
-				addr = conn->mAddrIP;
-			}
+		addr = "Hub:" + addr;
+	} else {
+		string &port = msg->ChunkString(eCH_AS_PORT);
+		port.assign(port, 0, port.find_first_of(' ')); // solution for misparsed port
 
-			port = msg->ChunkString(eCH_AS_PORT);
-			port.assign(port, 0, port.find_first_of(' ')); // solution for misparsed port
+		if (port.empty() || (port.size() > 5))
+			return -1;
 
-			if (port.empty() || (port.size() > 5))
-				return -1;
+		__int64 iport = StringAsLL(port);
 
-			iport = StringAsLL(port);
+		if ((iport < 1) || (iport > 65535))
+			return -1;
 
-			if ((iport < 1) || (iport > 65535))
-				return -1;
+		addr = msg->ChunkString(eCH_AS_IP);
 
-			addr += ':';
-			addr += StringFrom(iport);
+		if (!CheckIP(conn, addr)) {
+			if (conn->Log(3))
+				LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
-			if (conn->mpUser->mClass == eUC_REGUSER)
-				delay = mS->mC.int_search_reg;
-			else if (conn->mpUser->mClass == eUC_VIPUSER)
-				delay = mS->mC.int_search_vip;
-			else if (conn->mpUser->mClass == eUC_OPERATOR)
-				delay = mS->mC.int_search_op;
-			else
-				delay = mS->mC.int_search;
+			addr = conn->mAddrIP;
+		}
 
+		addr += ':';
+		addr += StringFrom(iport);
+	}
+
+	int delay;
+
+	switch (conn->mpUser->mClass) { // prepare delay
+		case eUC_REGUSER:
+			delay = ((passive) ? mS->mC.int_search_reg_pas : mS->mC.int_search_reg);
 			break;
-		case eDC_MSEARCH_PAS:
-		case eDC_SEARCH_PAS:
-			addr = msg->ChunkString(eCH_PS_NICK);
-
-			if (conn->mpUser->mNick != addr) {
-				os << autosprintf(_("Your nick is not %s but %s."), addr.c_str(), conn->mpUser->mNick.c_str());
-				mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SYNTAX);
-				return -1;
-			}
-
-			addr = "Hub:" + addr;
-
-			if (conn->mpUser->mClass == eUC_REGUSER)
-				delay = mS->mC.int_search_reg_pass;
-			else if (conn->mpUser->mClass > eUC_REGUSER)
-				delay = int(1.5 * mS->mC.int_search_reg);
-			else
-				delay = mS->mC.int_search_pas;
-
+		case eUC_VIPUSER:
+			delay = mS->mC.int_search_vip;
+			break;
+		case eUC_OPERATOR:
+		case eUC_CHEEF:
+		case eUC_ADMIN:
+			delay = mS->mC.int_search_op;
+			break;
+		case eUC_MASTER:
+			delay = 0;
 			break;
 		default:
-			return -5;
+			delay = ((passive) ? mS->mC.int_search_pas : mS->mC.int_search);
 			break;
 	}
 
-	if (conn->mpUser->mClass >= eUC_VIPUSER)
-		delay = mS->mC.int_search_vip;
-	else if (conn->mpUser->mClass >= eUC_OPERATOR)
-		delay = mS->mC.int_search_op;
-
-	// verify the delay and the number of search
-
-	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) {
+	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			os << autosprintf(_("You can do %d searches in %d seconds."), mS->mC.search_number, delay);
+			os << autosprintf(_("Don't search too often, you can do %d searches in %d seconds."), mS->mC.search_number, delay);
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
-	} else {
+	} else
 		conn->mpUser->mSearchNumber = 0;
+
+	if (conn->mpUser->mClass < eUC_OPERATOR) {
+		cUser::tFloodHashType Hash = 0; // check same message flood
+		Hash = tHashArray<void*>::HashString(msg->mStr);
+
+		if (Hash && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH]))
+			return -4;
+
+		conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
+		string patt;
+
+		if (passive)
+			patt = msg->ChunkString(eCH_PS_SEARCHPATTERN);
+		else
+			patt = msg->ChunkString(eCH_AS_SEARCHPATTERN);
+
+		if (patt.size() < mS->mC.min_search_chars) { // check length
+			os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
+			mS->DCPublicHS(os.str(), conn);
+			return -1;
+		}
 	}
+
+	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
+
+	if (conn->mpUser->mClass < use_hub_class) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't search unless you are registered with class: %d"), use_hub_class);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	unsigned long use_hub_share = 0; // check use hub share
+
+	switch (conn->mpUser->mClass) {
+		case eUC_NORMUSER:
+			use_hub_share = mS->mC.min_share_use_hub;
+			break;
+		case eUC_REGUSER:
+			use_hub_share = mS->mC.min_share_use_hub_reg;
+			break;
+		case eUC_VIPUSER:
+			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+	}
+
+	use_hub_share = use_hub_share * 1024 * 1024;
+
+	if (conn->mpUser->mShare < use_hub_share) {
+		if (!conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't search unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (!conn->mpUser->Can(eUR_SEARCH, mS->mTime.Sec(), 0)) // check temporary right
+		return -4; // todo: notify user
 
  	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
 			return -2;
 	#endif
 
-	conn->mpUser->mSearchNumber++;
+	conn->mpUser->mSearchNumber++; // set counter last of all
 
-	// send message
-
-	string search("$Search ");
+	string search = "$Search ";
 	search += addr;
 	search += ' ';
 
-	if (msg->mType == eDC_SEARCH_PAS) {
+	if (passive) {
 		conn->mSRCounter = 0;
 		search += msg->ChunkString(eCH_PS_QUERY);
-		mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search);
-	} else {
+	} else
 		search += msg->ChunkString(eCH_AS_QUERY);
-		mS->mUserList.SendToAll(search, mS->mC.delayed_search);
-	}
+
+	mS->SearchToAll(conn, search, passive); // send it
+
+	/*
+		send conditional and filtered search request because
+			some users hide their share
+			some users dont share anything
+			pingers dont need to get any searches
+			users dont need to get their own searches
+			some users are in lan and others are in wan
+
+		if (passive)
+			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search);
+		else
+			mS->mUserList.SendToAll(search, mS->mC.delayed_search);
+	*/
 
 	return 0;
 }
@@ -2731,6 +2719,37 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	return 0;
+}
+
+bool cDCProto::CheckIP(cConnDC *conn, string &ip)
+{
+	if (conn->mAddrIP == ip) {
+		return true;
+	}
+
+	if (conn->mRegInfo && (conn->mRegInfo->mAlternateIP == ip)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool cDCProto::isLanIP(string ip)
+{
+	if (ip.substr(0, 4) == "127.")
+		return true;
+
+	unsigned long lip = cBanList::Ip2Num(ip);
+
+	if ((lip >= 167772160UL && lip <= 184549375UL) || (lip >= 2886729728UL && lip <= 2887778303UL) || (lip >= 3232235520UL && lip <= 3232301055UL))
+		return true;
+
+	/*
+		todo
+			add list of lan ip ranges defined by hub administrator, external ips that know how to work with lan ips
+	*/
+
+	return false;
 }
 
 bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)

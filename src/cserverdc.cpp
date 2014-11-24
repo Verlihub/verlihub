@@ -632,6 +632,93 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
+int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
+{
+	cConnDC *other;
+	tCLIt i;
+	int count = 0;
+
+	if (passive) { // passive search
+		for (i = mConnList.begin(); i != mConnList.end(); i++) {
+			other = (cConnDC*)(*i);
+
+			if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
+				continue;
+
+			if (other->mpUser->IsPassive) // dont send to passive user
+				continue;
+
+			if (other->mpUser->mShare <= 0) // dont send to user without share
+				continue;
+
+			if (other->mpUser->mHideShare) // dont send to user with hidden share
+				continue;
+
+			if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
+				continue;
+
+			if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+				continue;
+
+			other->Send(data, true, !mC.delayed_search);
+			count++;
+		}
+	} else { // active search
+		if (mC.filter_lan_requests) { // filter lan requests
+			bool lan = cDCProto::isLanIP(conn->AddrIP());
+
+			for (i = mConnList.begin(); i != mConnList.end(); i++) {
+				other = (cConnDC*)(*i);
+
+				if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
+					continue;
+
+				if (other->mpUser->mShare <= 0) // dont send to user without share
+					continue;
+
+				if (other->mpUser->mHideShare) // dont send to user with hidden share
+					continue;
+
+				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
+					continue;
+
+				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+					continue;
+
+				if (lan != cDCProto::isLanIP(other->AddrIP())) // filter lan to wan and reverse
+					continue;
+
+				other->Send(data, true, !mC.delayed_search);
+				count++;
+			}
+		} else { // dont filter lan requests
+			for (i = mConnList.begin(); i != mConnList.end(); i++) {
+				other = (cConnDC*)(*i);
+
+				if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
+					continue;
+
+				if (other->mpUser->mShare <= 0) // dont send to user without share
+					continue;
+
+				if (other->mpUser->mHideShare) // dont send to user with hidden share
+					continue;
+
+				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
+					continue;
+
+				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+					continue;
+
+				other->Send(data, true, !mC.delayed_search);
+				count++;
+			}
+		}
+	}
+
+	return count;
+}
+
 int cServerDC::OnNewConn(cAsyncConn *nc)
 {
 	cConnDC *conn = (cConnDC *)nc;

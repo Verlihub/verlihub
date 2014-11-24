@@ -90,8 +90,6 @@ public:
 	unsigned long min_share_use_hub_vip;
 	int min_class_use_hub;
 	int min_class_use_hub_passive;
-	bool min_x_use_hub_message;
-	bool hide_noctm_message;
 	unsigned int max_passive_sr;
 	unsigned tban_kick;
 	unsigned tban_max;
@@ -106,7 +104,7 @@ public:
 	int nicklist_on_login;
 	bool delayed_login;
 	int delayed_search;
-	int delayed_myinfo; // implies also delayed quit.
+	int delayed_myinfo; // implies also delayed quit
 	bool drop_invalid_key;
 	bool delayed_chat;
 	int delayed_ping;
@@ -161,10 +159,11 @@ public:
 	int max_class_check_clone;
 	int hide_all_kicks;
 	int optimize_userlist;
+	bool filter_lan_requests;
 	int search_number;
 	int int_search;
 	int int_search_pas;
-	int int_search_reg_pass;
+	int int_search_reg_pas;
 	int int_search_reg;
 	int int_search_vip;
 	int int_search_op;

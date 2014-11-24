@@ -471,6 +471,15 @@ class cServerDC : public cAsyncSocketServer
 
 		int SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone);
 
+		/*
+			send conditional search request with filters to all users
+				conn: sender connection
+				data: search command
+				passive: search mode flag
+				return: send count
+		*/
+		int SearchToAll(cConnDC *conn, string &data, bool passive);
+
 		/**
 		* Notify all users of a new user.
 		*

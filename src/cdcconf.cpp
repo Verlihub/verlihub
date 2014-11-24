@@ -128,12 +128,13 @@ void cDCConf::AddVars()
 	Add("max_share_ops",max_share_ops,(unsigned long)30*1024*1024);
 	// End share configuration
 
-	// Search configuration
+	// search configuration
+	Add("filter_lan_requests", filter_lan_requests, false);
 	Add("search_number", search_number, 1);
 	Add("int_search",int_search,32);
 	Add("int_search_pas",int_search_pas,48);
 	Add("int_search_reg",int_search_reg,16);
-	Add("int_search_reg_pass",int_search_reg_pass,48);
+	Add("int_search_reg_pas", int_search_reg_pas, 48);
 	Add("int_search_vip",int_search_vip,8);
 	Add("int_search_op",int_search_op,1);
 	Add("min_search_chars", min_search_chars, 4);
@@ -218,9 +219,7 @@ void cDCConf::AddVars()
 	Add("classdif_download",classdif_download,10);
 	Add("min_class_use_hub",min_class_use_hub,0);
 	Add("min_class_use_hub_passive",min_class_use_hub_passive,0);
-	Add("min_x_use_hub_message", min_x_use_hub_message, true);
-	Add("hide_noctm_message", hide_noctm_message, false);
-	Add("min_class_register" , min_class_register , 4);
+	Add("min_class_register" , min_class_register, 4);
 	Add("min_class_redir",min_class_redir,4);
 	Add("min_class_bc", min_class_bc, 4);
 	Add("min_class_bc_guests", min_class_bc_guests, 4);

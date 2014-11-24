@@ -38,7 +38,7 @@ namespace nVerliHub {
 	{
 		AddCol("address", "varchar(125)", "", false, mModel.mAddress);
 		AddPrimaryKey("address");
-		AddCol("flag", "tinyint(2)", "", false, mModel.mFlag);
+		AddCol("flag", "smallint(5)", "", false, mModel.mFlag);
 		AddCol("enable", "tinyint(1)", "1", true, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
