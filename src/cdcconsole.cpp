@@ -583,7 +583,10 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tchaosuk (chaos@dchublist.com)" << "\r\n";
 	os << "\tRoLex (webmaster@feardc.net)" << "\r\n";
 	os << " == " << toUpper(_("Translators")) << " ==\r\n";
-	os << "\tCzech (Uhlik), Italian (netcelli, Stefano), Russian (plugman, MaxFox, RoLex), Slovak (uNix), Romanian (WiZaRd, S0RiN), Polish (Zorro, Krzychu), German (Atalanttore), Swedish (RoLex)\r\n";
+	os << "\tCzech (Uhlik), Italian (netcelli, Stefano), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
+	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN), Polish (Zorro, Krzychu), German (Ettore Atalan),\r\n";
+	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n";
 	os << " == " << toUpper(_("Contributors")) << " ==\r\n";
 	os << "\tStefano, Intruder, Frog" << "\r\n";
 	os << " == " << toUpper(_("Web part")) << " ==\r\n";
