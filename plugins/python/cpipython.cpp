@@ -304,7 +304,7 @@ w_Targs* cpiPython::SQL (int id, w_Targs* args) // (char *query)
 	char *query;
 	string q;
 	long limit;
-	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint) return NULL;
+	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint || !mQuery) return NULL;
 	if (!lib_unpack(args, "sl", &query, &limit)) return NULL;
 	if (!query) return NULL;
 	if (limit < 1) limit = 100;

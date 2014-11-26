@@ -2098,7 +2098,7 @@ void cServerDC::DoStackTrace()
 	hh << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
 	hh << "Content-Type: text/plain\n";
 	hh << "Content-Length: " << bt.str().size() << "\n\n";
-	hh << bt.str();
+	hh << "Stack backtrace from " << mAddr << " on port " << mPort << ':' << endl << bt.str();
 	http->Write(hh.str(), true);
 
 	if (http->ok)

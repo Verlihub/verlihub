@@ -1646,10 +1646,22 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	const string &nick = (char*)lua_tostring(L, 2);
 
 	if (nick.empty()) {
 		luaerror(L, "Bot nick can not be empty");
+		return 2;
+	}
+
+	string badchars("\0$|<> "); // check bad characters
+
+	if (nick.npos != nick.find_first_of(badchars)) {
+		luaerror(L, "Bot nick contains bad characters");
+		return 2;
+	}
+
+	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
+		luaerror(L, "Bot nick is reserved");
 		return 2;
 	}
 
@@ -1754,10 +1766,22 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	const string &nick = (char*)lua_tostring(L, 2);
 
 	if (nick.empty()) {
 		luaerror(L, "Bot nick can not be empty");
+		return 2;
+	}
+
+	string badchars("\0$|<> "); // check bad characters
+
+	if (nick.npos != nick.find_first_of(badchars)) {
+		luaerror(L, "Bot nick contains bad characters");
+		return 2;
+	}
+
+	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
+		luaerror(L, "Bot nick is reserved");
 		return 2;
 	}
 
@@ -1881,10 +1905,22 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	const string &nick = (char*)lua_tostring(L, 2);
 
 	if (nick.empty()) {
 		luaerror(L, "Bot nick can not be empty");
+		return 2;
+	}
+
+	string badchars("\0$|<> "); // check bad characters
+
+	if (nick.npos != nick.find_first_of(badchars)) {
+		luaerror(L, "Bot nick contains bad characters");
+		return 2;
+	}
+
+	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
+		luaerror(L, "Bot nick is reserved");
 		return 2;
 	}
 
@@ -1928,7 +1964,7 @@ int _IsBot(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	const string &nick = (char*)lua_tostring(L, 2);
 
 	if (nick.empty()) {
 		luaerror(L, "Bot nick can not be empty");
@@ -1967,6 +2003,12 @@ int _SQLQuery(lua_State *L)
 			luaerror(L, "Error getting LUA plugin");
 			return 2;
 		}
+
+		if (!pi->mQuery) {
+			luaerror(L, "mQuery is not ready");
+			return 2;
+		}
+
 		if(!lua_isstring(L, 2)) {
 		    luaerror(L, ERR_PARAM);
 		    return 2;
@@ -2002,6 +2044,11 @@ int _SQLFetch(lua_State *L)
 		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
 		if(pi == NULL) {
 			luaerror(L, "Error getting LUA plugin");
+			return 2;
+		}
+
+		if (!pi->mQuery) {
+			luaerror(L, "mQuery is not ready");
 			return 2;
 		}
 
@@ -2058,6 +2105,11 @@ int _SQLFree(lua_State *L)
 		if(pi == NULL)
 		{
 			luaerror(L, "Error getting LUA plugin");
+			return 2;
+		}
+
+		if (!pi->mQuery) {
+			luaerror(L, "mQuery is not ready");
 			return 2;
 		}
 

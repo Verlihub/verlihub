@@ -1487,45 +1487,6 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DC_Kick(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Kick";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList)
-		return -2;
-
-	if (conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())) { // check rights
-		string &nick = msg->ChunkString(eCH_1_PARAM);
-		mS->DCKickNick(NULL, conn->mpUser, nick, mS->mEmpty, eKCK_Drop | eKCK_TBAN);
-		return 0;
-	} else {
-		conn->CloseNice(2000, eCR_KICKED);
-		return -1;
-	}
-}
-
 int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
 	if (!conn || !msg)
@@ -1571,11 +1532,9 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
-
-	if (conn->mpUser->mClass < use_hub_class) {
+	if (conn->mpUser->mClass < mS->mC.min_class_use_hub) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
+			os << autosprintf(_("You can't download unless you are registered with class: %d"), mS->mC.min_class_use_hub);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1620,7 +1579,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
-		os << autosprintf("You can't connect to user because one of you is in LAN: %s", nick.c_str());
+		os << autosprintf("You can't download from user because one of you is in LAN: %s", nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
@@ -1634,7 +1593,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (port[port.size() - 1] == 'S') { // secure connection
 		if (conn->mFeatures & eSF_TLS) // only if sender supports it
-			extra = "S";
+			extra = 'S';
 
 		port.assign(port, 0, port.size() - 1);
 	}
@@ -1653,7 +1612,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!CheckIP(conn, addr)) {
 		if (conn->Log(3))
-			LogStream() << "Fixed wrong IP in $ConnectToMe: " << addr << endl;
+			conn->LogStream() << "Fixed wrong IP in $ConnectToMe: " << addr << endl;
 
 		addr = conn->mAddrIP;
 	}
@@ -1739,11 +1698,9 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
-
-	if (conn->mpUser->mClass < use_hub_class) {
+	if (conn->mpUser->mClass < mS->mC.min_class_use_hub_passive) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), use_hub_class);
+			os << autosprintf(_("You can't download unless you are registered with class: %d"), mS->mC.min_class_use_hub_passive);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1886,7 +1843,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 		if (!CheckIP(conn, addr)) {
 			if (conn->Log(3))
-				LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
+				conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
 			addr = conn->mAddrIP;
 		}
@@ -1926,29 +1883,30 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	} else
 		conn->mpUser->mSearchNumber = 0;
 
-	if (conn->mpUser->mClass < eUC_OPERATOR) {
-		cUser::tFloodHashType Hash = 0; // check same message flood
-		Hash = tHashArray<void*>::HashString(msg->mStr);
-
-		if (Hash && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH]))
-			return -4;
-
-		conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
-		string patt;
+	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
+		string patt; // check search length
 
 		if (passive)
 			patt = msg->ChunkString(eCH_PS_SEARCHPATTERN);
 		else
 			patt = msg->ChunkString(eCH_AS_SEARCHPATTERN);
 
-		if (patt.size() < mS->mC.min_search_chars) { // check length
+		if (patt.size() < mS->mC.min_search_chars) {
 			os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
+
+		cUser::tFloodHashType Hash = 0; // check same message flood
+		Hash = tHashArray<void*>::HashString(msg->mStr);
+
+		if (Hash && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH]))
+			return -4; // silent filter, user might be using automatic search
+
+		conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
 	}
 
-	int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
+	int use_hub_class = ((passive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub); // check use hub class
 
 	if (conn->mpUser->mClass < use_hub_class) {
 		if (!conn->mpUser->mHideCtmMsg) {
@@ -2028,59 +1986,99 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": SR";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": SR";
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
 	if (conn->mpUser->CheckProtoFlood(msg, ePF_SR)) // protocol flood
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -2;
+	string &from = msg->ChunkString(eCH_SR_FROM);
 
-	ostringstream os;
-	// Check nickname
-	if(conn->mpUser->mNick != msg->ChunkString(eCH_SR_FROM)) {
-		if(conn->Log(1))
-			conn->LogStream() << "Claims to be someone else in search response. Dropping connection." << endl;
-		if(conn->mpUser)
-			os << autosprintf(_("Your nick is not %s but %s. Disconnecting."), msg->ChunkString(eCH_SR_FROM).c_str(), conn->mpUser->mNick.c_str());
-		mS->ConnCloseMsg(conn, os.str(),4000, eCR_SYNTAX);
+	if (from != conn->mpUser->mNick) { // verify sender
+		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), from.c_str());
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
-	string &str = msg->ChunkString(eCH_SR_TO);
-	cUser *other = mS->mUserList.GetUserByNick(str);
-	// Check other nick
-	if(!other)
-		return -1;
-	// Cut the end
-	string ostr(msg->mStr,0 ,msg->mChunks[eCH_SR_TO].first - 1);
+
+	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_SR_TO)); // find other user
+
+	if (!other || !other->mxConn || !other->mInList)
+		return -1; // silent filter
+
+	string sr(msg->mStr, 0, msg->mChunks[eCH_SR_TO].first - 1); // cut the end
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgSR.CallAll(conn, msg)) return -2;
+		if (!mS->mCallBacks.mOnParsedMsgSR.CallAll(conn, msg))
+			return -2;
 	#endif
 
-	// Send it
-	if((other->mxConn) && (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr))) {
-		other->mxConn->Send(ostr, true);
+	if (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr)) // send it
+		other->mxConn->Send(sr, true, !mS->mC.delayed_search); // part of search, must be delayed too
+
+	return 0;
+}
+
+int cDCProto::DC_Kick(cMessageDC *msg, cConnDC *conn)
+{
+	if (!conn || !msg)
+		return -1;
+
+	ostringstream os;
+
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
 	}
+
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": Kick";
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+		return -1;
+	}
+
+	if (!conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())) { // check rights
+		os << _("You have no rights to kick users.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+		return -1;
+	}
+
+	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_1_PARAM), mS->mEmpty, eKCK_Drop | eKCK_TBAN); // try to kick user
 	return 0;
 }
 
@@ -2089,81 +2087,80 @@ int cDCProto::DC_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	if (!conn || !msg)
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": OpForceMove";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
+		os << _("Invalid login sequence, you client must validate nick first.");
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser->mInList)
-		return -2;
+	if (msg->SplitChunks()) { // bad syntax
+		os << _("Your client sent malformed protocol command") << ": OpForceMove";
 
-	ostringstream ostr;
-	string &str = msg->ChunkString(eCH_FM_NICK);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
 
-	// check rights
-	if(!conn->mpUser || conn->mpUser->mClass < mS->mC.min_class_redir) {
-		if(conn->Log(1))
-			conn->LogStream() << "Tried to redirect " << str  << endl;
-		ostr << _("You have not rights to use redirects.");
-		mS->ConnCloseMsg(conn,ostr.str(),2000, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
-	cUser *other = mS->mUserList.GetUserByNick ( str );
+	if (conn->mpUser->mClass < mS->mC.min_class_redir) { // check rights
+		os << _("You have no rights to redirect users.");
 
-	// Check other nick
-	if(!other) {
-		ostr << autosprintf(_("User %s not found."), str.c_str());
-		mS->DCPublicHS(ostr.str(),conn);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+		return -1;
+	}
+
+	string &nick = msg->ChunkString(eCH_FM_NICK); // find other user
+	cUser *other = mS->mUserList.GetUserByNick(nick);
+
+	if (!other || !other->mInList) {
+		os << autosprintf(_("You're trying to redirect user that is not online: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
-	// check privileges
-	if(other->mClass >= conn->mpUser->mClass || other->mProtectFrom >= conn->mpUser->mClass) {
-		ostr << autosprintf(_("User %s is protected or you have no rights on him"), str.c_str());
-		mS->DCPublicHS(ostr.str(),conn);
+	if (!other->mxConn) {
+		os << autosprintf(_("You're trying to redirect user that is bot: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	if ((other->mClass >= conn->mpUser->mClass) || (other->mProtectFrom >= conn->mpUser->mClass)) { // check protection
+		os << autosprintf(_("You're trying to redirect user that is protected: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -3;
 	}
 
-	// create the message
-	string omsg("$ForceMove ");
-	omsg += msg->ChunkString(eCH_FM_DEST);
-	omsg += "|";
+	string &dest = msg->ChunkString(eCH_FM_DEST);
 
-
-	ostringstream redirectReason;
-	redirectReason << autosprintf(_("You are being redirected to %s because: %s"), msg->ChunkString(eCH_FM_DEST).c_str(), msg->ChunkString(eCH_FM_REASON).c_str());
-	Create_PM(omsg,conn->mpUser->mNick, msg->ChunkString(eCH_FM_NICK), conn->mpUser->mNick, redirectReason.str());
-
-	if(other->mxConn) {
-		// Send $ForceMove and PM
-		other->mxConn->Send(omsg);
-		// Close user connection
-		other->mxConn->CloseNice(3000, eCR_FORCEMOVE);
-		if(conn->Log(2))
-			conn->LogStream() << "ForceMove " << str  << " to: " << msg->ChunkString(eCH_FM_DEST)<< " because : " << msg->ChunkString(eCH_FM_REASON) << endl;
-	} else {
-		mS->DCPrivateHS(_("User is not online or you tried to redirect a robot."),conn);
+	if (dest.empty()) { // check address
+		os << _("Please specify valid redirect address.");
+		mS->DCPublicHS(os.str(), conn);
+		return -3;
 	}
+
+	if (conn->Log(2)) // log it
+		conn->LogStream() << "Redirecting " << nick << " to: " << dest << endl;
+
+	string ofm;
+	os << autosprintf(_("You are being redirected to %s because: %s"), dest.c_str(), msg->ChunkString(eCH_FM_REASON).c_str());
+	Create_PM(ofm, conn->mpUser->mNick, nick, conn->mpUser->mNick, os.str());
+	ofm += "|$ForceMove "; // must be last, user might not get reason otherwise
+	ofm += dest;
+
+	other->mxConn->Send(ofm, true); // send it
+	other->mxConn->CloseNice(5000, eCR_FORCEMOVE); // close after a while, user might not get redirect otherwise
 	return 0;
 }
-
 
 int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
 {
