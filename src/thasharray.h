@@ -1,7 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -625,11 +624,6 @@ namespace nVerliHub {
 				tHashType Key2Hash(const string &key)
 				{
 					return HashString(key);
-				}
-
-				tHashType Key2HashLower(const string &key)
-				{
-					return HashLowerString(key);
 				}
 
 				/**
