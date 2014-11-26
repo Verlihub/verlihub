@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -103,15 +104,22 @@ int cPluginLoader::StrLog(ostream & ostr, int level)
 bool cPluginLoader::LoadSym()
 {
 	#ifdef HAVE_FREEBSD
-	/*
-	* Reset dlerror() since it can contain error from previous
-	* call to dlopen()/dlsym().
-	*/
-	dlerror();
+		/*
+			Reset dlerror() since it can contain error from previous call to dlopen() or dlsym()
+		*/
+
+		dlerror();
 	#endif
-	if(!mcbGetPluginFunc) mcbGetPluginFunc = tcbGetPluginFunc(LoadSym("get_plugin"));
-	if(!mcbDelPluginFunc) mcbDelPluginFunc = tcbDelPluginFunc(LoadSym("del_plugin"));
-	if(!mcbGetPluginFunc|| !mcbGetPluginFunc) return false;
+
+	if (!mcbGetPluginFunc)
+		mcbGetPluginFunc = tcbGetPluginFunc(LoadSym("get_plugin"));
+
+	if (!mcbDelPluginFunc)
+		mcbDelPluginFunc = tcbDelPluginFunc(LoadSym("del_plugin"));
+
+	if (!mcbGetPluginFunc || !mcbDelPluginFunc)
+		return false;
+
 	return (mPlugin = mcbGetPluginFunc()) != NULL;
 	return true;
 }
