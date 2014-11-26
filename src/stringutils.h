@@ -38,7 +38,7 @@ void ShrinkStringToFit(string &str);
 void StrCutLeft(string &, size_t);
 void StrCutLeft(const string &str1, string &str2, size_t cut);
 bool LoadFileInString(const string &FileName, string &dest);
-void GetPath(const string FileName, string &Path, string &File);
+void GetPath(const string& FileName, string &Path, string &File);
 void FilterPath(string &Path);
 void ExpandPath(string &Path);
 void ReplaceVarInString(const string &src,const string &var,string &dest, const string& by);
