@@ -1579,7 +1579,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
-		os << autosprintf("You can't download from user because one of you is in LAN: %s", nick.c_str());
+		os << autosprintf(_("You can't download from user because one of you is in LAN: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
