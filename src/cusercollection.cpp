@@ -97,17 +97,15 @@ cUserCollection::cUserCollection(bool KeepNickList, bool KeepInfoList) :
 cUserCollection::~cUserCollection() {}
 
 
-void cUserCollection::Nick2Key(const std::string &Nick, std::string &Key)
+void cUserCollection::Nick2Key(const string &Nick, string &Key)
 {
 	Key.assign(Nick);
 	std::transform(Key.begin(), Key.end(), Key.begin(), ::tolower);
 }
 
-void cUserCollection::Nick2Hash(const std::string &Nick, tHashType &Hash)
+void cUserCollection::Nick2Hash(const string &Nick, tHashType &Hash)
 {
-	string Key;
-	Nick2Key(Nick,Key);
-	Hash = Key2Hash(Key);
+	Hash = Key2HashLower(Nick);
 }
 
 bool cUserCollection::Add(cUserBase *User)
