@@ -57,6 +57,7 @@ namespace nVerliHub {
 	bool AddRegUser(char *nick, int uClass, char * passwd, char* op);
 	bool DelRegUser(char *nick);
 	bool ScriptCommand(string, string, string, string);
+	int CheckBotNick(const string &nick);
 
 	extern "C" {
 		int GetUsersCount();

@@ -61,14 +61,15 @@ cUser *GetUser(char *nick)
 bool SendDataToUser(char *data, char *nick)
 {
 	cUser *usr = GetUser(nick);
-	if(!usr)
-		return false;
-	if(!usr->mxConn)
+
+	if (!usr || !usr->mxConn)
 		return false;
 
 	string omsg(data);
-	if(omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
+
 	usr->mxConn->Send(omsg, true);
 	return true;
 }
@@ -93,31 +94,40 @@ bool KickUser(char *OP,char *nick, char *reason)
 
 bool SendToClass(char *data, int min_class,  int max_class)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
-	if(min_class > max_class)
+
+	if (min_class > max_class)
 		return false;
+
 	string omsg(data);
-	if(omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
-	server->mUserList.SendToAllWithClass(omsg, min_class, max_class,false, false);
+
+	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, false, false);
 	return true;
 }
 
 bool SendToAll(char *data)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
+
 	string omsg(data);
-	if(omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
-	server->mUserList.SendToAll(omsg);
+
+	serv->mUserList.SendToAll(omsg);
 	return true;
 }
 
@@ -126,13 +136,13 @@ bool SendToActive(char *data)
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
 	string omsg(data);
 
-	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
 	serv->mActiveUsers.SendToAll(omsg);
@@ -141,10 +151,10 @@ bool SendToActive(char *data)
 
 bool SendToActiveClass(char *data, int min_class, int max_class)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
@@ -153,10 +163,10 @@ bool SendToActiveClass(char *data, int min_class, int max_class)
 
 	string omsg(data);
 
-	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	server->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
 	return true;
 }
 
@@ -165,13 +175,13 @@ bool SendToPassive(char *data)
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
 	string omsg(data);
 
-	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
 	serv->mPassiveUsers.SendToAll(omsg);
@@ -180,10 +190,10 @@ bool SendToPassive(char *data)
 
 bool SendToPassiveClass(char *data, int min_class, int max_class)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
@@ -192,10 +202,10 @@ bool SendToPassiveClass(char *data, int min_class, int max_class)
 
 	string omsg(data);
 
-	if (omsg.find("$ConnectToMe") != string::npos || omsg.find("$RevConnectToMe") != string::npos)
+	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	server->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
 	return true;
 }
 
@@ -589,6 +599,37 @@ bool ScriptCommand(string cmd, string data, string plug, string script)
 	// plug = "py" for python, "lua" for lua
 	serv->OnScriptCommand(cmd, data, plug, script);
 	return true;
+}
+
+int CheckBotNick(const string &nick)
+{
+	/*
+		0 = error
+		1 = ok
+		2 = empty
+		3 = bad character
+		4 = reserved nick
+	*/
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "CheckBotNick failed because server is not found" << endl;
+		return 0;
+	}
+
+	if (nick.empty())
+		return 2;
+
+	string badchars("\0$|<> ");
+
+	if (nick.npos != nick.find_first_of(badchars))
+		return 3;
+
+	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name))
+		return 4;
+
+	return 1;
 }
 
 extern "C" {

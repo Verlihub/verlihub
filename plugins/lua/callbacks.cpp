@@ -1647,23 +1647,22 @@ int _RegBot(lua_State *L)
 	}
 
 	const string &nick = (char*)lua_tostring(L, 2);
+	int bad = CheckBotNick(nick); // check bot nick
 
-	if (nick.empty()) {
-		luaerror(L, "Bot nick can not be empty");
-		return 2;
+	switch (bad) {
+		case 2:
+			luaerror(L, "Bot nick can not be empty");
+			break;
+		case 3:
+			luaerror(L, "Bot nick contains bad characters");
+			break;
+		case 4:
+			luaerror(L, "Bot nick is reserved");
+			break;
 	}
 
-	string badchars("\0$|<> "); // check bad characters
-
-	if (nick.npos != nick.find_first_of(badchars)) {
-		luaerror(L, "Bot nick contains bad characters");
+	if (bad > 1)
 		return 2;
-	}
-
-	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
-		luaerror(L, "Bot nick is reserved");
-		return 2;
-	}
 
 	if (serv->mRobotList.ContainsNick(nick)) {
 		luaerror(L, "Bot already exists");
@@ -1767,23 +1766,22 @@ int _EditBot(lua_State *L)
 	}
 
 	const string &nick = (char*)lua_tostring(L, 2);
+	int bad = CheckBotNick(nick); // check bot nick
 
-	if (nick.empty()) {
-		luaerror(L, "Bot nick can not be empty");
-		return 2;
+	switch (bad) {
+		case 2:
+			luaerror(L, "Bot nick can not be empty");
+			break;
+		case 3:
+			luaerror(L, "Bot nick contains bad characters");
+			break;
+		case 4:
+			luaerror(L, "Bot nick is reserved");
+			break;
 	}
 
-	string badchars("\0$|<> "); // check bad characters
-
-	if (nick.npos != nick.find_first_of(badchars)) {
-		luaerror(L, "Bot nick contains bad characters");
+	if (bad > 1)
 		return 2;
-	}
-
-	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
-		luaerror(L, "Bot nick is reserved");
-		return 2;
-	}
 
 	if (!serv->mRobotList.ContainsNick(nick)) {
 		luaerror(L, "Bot not found");
@@ -1906,23 +1904,22 @@ int _UnRegBot(lua_State *L)
 	}
 
 	const string &nick = (char*)lua_tostring(L, 2);
+	int bad = CheckBotNick(nick); // check bot nick
 
-	if (nick.empty()) {
-		luaerror(L, "Bot nick can not be empty");
-		return 2;
+	switch (bad) {
+		case 2:
+			luaerror(L, "Bot nick can not be empty");
+			break;
+		case 3:
+			luaerror(L, "Bot nick contains bad characters");
+			break;
+		case 4:
+			luaerror(L, "Bot nick is reserved");
+			break;
 	}
 
-	string badchars("\0$|<> "); // check bad characters
-
-	if (nick.npos != nick.find_first_of(badchars)) {
-		luaerror(L, "Bot nick contains bad characters");
+	if (bad > 1)
 		return 2;
-	}
-
-	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
-		luaerror(L, "Bot nick is reserved");
-		return 2;
-	}
 
 	if (!serv->mRobotList.ContainsNick(nick)) {
 		luaerror(L, "Bot not found");
@@ -1965,23 +1962,22 @@ int _IsBot(lua_State *L)
 	}
 
 	const string &nick = (char*)lua_tostring(L, 2);
+	int bad = CheckBotNick(nick); // check bot nick
 
-	if (nick.empty()) {
-		luaerror(L, "Bot nick can not be empty");
-		return 2;
+	switch (bad) {
+		case 2:
+			luaerror(L, "Bot nick can not be empty");
+			break;
+		case 3:
+			luaerror(L, "Bot nick contains bad characters");
+			break;
+		case 4:
+			luaerror(L, "Bot nick is reserved");
+			break;
 	}
 
-	string badchars("\0$|<> "); // check bad characters
-
-	if (nick.npos != nick.find_first_of(badchars)) {
-		luaerror(L, "Bot nick contains bad characters");
+	if (bad > 1)
 		return 2;
-	}
-
-	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
-		luaerror(L, "Bot nick is reserved");
-		return 2;
-	}
 
 	if (!serv->mRobotList.ContainsNick(nick)) {
 		lua_pushboolean(L, 0);

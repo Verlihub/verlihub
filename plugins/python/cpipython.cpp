@@ -64,7 +64,6 @@ cpiPython::cpiPython() : mConsole(this), mQuery(NULL)
 	mVersion = PYTHON_PI_VERSION;
 	me = this;
 	online = false;
-	mQuery = NULL;
 }
 
 cpiPython::~cpiPython()
