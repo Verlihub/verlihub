@@ -25,9 +25,8 @@
 namespace nVerliHub {
 	namespace nTables {
 
-		cDCClient::cDCClient()
-		{
-			mName = "Unknown";
+		cDCClient::cDCClient(): mName("Unknown")
+		{			
 			mEnable = 1;
 			mMinVersion = -1;
 			mMaxVersion = -1;

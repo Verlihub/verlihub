@@ -69,7 +69,10 @@ void cUserBase::Send(string &data, bool, bool)
 
 cUser::cUser() :
 	mShare(0),
-	mSearchNumber(0)
+	mSearchNumber(0),
+	mRights(0),
+	mBanTime(0),
+	mToBan(0)	
 {
 	mxConn = NULL;
 	mxServer = NULL;

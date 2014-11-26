@@ -50,7 +50,8 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	mPort(port),
 	mFactory(NULL),
 	mNowTreating(NULL),
-	mRunResult(0)
+	mRunResult(0),
+	mbRun(false) 
 {
 	#ifdef _WIN32
 	if(!this->WSinitialized) {

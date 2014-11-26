@@ -99,7 +99,7 @@ class cConfigBaseBase : public cObj
 			iterator(){}
 			iterator (class cConfigBaseBase *C,const tIVIt &it):mC(C),mIT(it){}
 			cConfigItemBase * operator* () { return mC->mhItems.GetByHash(*mIT);}
-			iterator &operator ++(){ mIT++; return *this;}
+			iterator &operator ++(){ ++mIT; return *this;}
 			iterator(iterator &it){operator=(it);}
 			bool operator != (iterator &it){ return mIT != it.mIT;}
 			cConfigBaseBase *mC;
