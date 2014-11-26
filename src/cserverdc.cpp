@@ -785,7 +785,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
 
-		if (!sameuser && olduser->mxConn && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO_basic == olduser->mMyINFO_basic))
+		if (!sameuser && olduser && olduser->mxConn && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO_basic == olduser->mMyINFO_basic))
 			sameuser = true;
 
 		if (sameuser) {
@@ -1375,7 +1375,7 @@ int cServerDC::OnTimer(cTime &now)
 	}
 
 	// perform all temp functions
-	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); i++) {
+	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); ++i) {
 		if (*i) {
 			// delete finished functions
 			if((*i)->done()) {

@@ -47,7 +47,7 @@ class cTime : public timeval
 	int operator< (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec < t.tv_usec);};
 	int operator<= (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec <= t.tv_usec);};
 	int operator== (const cTime &t) const { return ((tv_usec == t.tv_usec) && (tv_sec == t.tv_sec));};
-	cTime & operator= (const cTime &t){ tv_usec = t.tv_usec; tv_sec = t.tv_sec; return *this;}
+	cTime & operator= (const cTime &t){ tv_usec = t.tv_usec; tv_sec = t.tv_sec; mPrintType = t.mPrintType; return *this;}
 	cTime & Get(){gettimeofday(this,NULL);return *this;}
 	cTime   operator- (const cTime &t) const {long sec = tv_sec-t.tv_sec; long usec=tv_usec-t.tv_usec; return cTime(sec,usec).Normalize();}
 	cTime   operator+ (const cTime &t) const {long sec = tv_sec+t.tv_sec; long usec=tv_usec+t.tv_usec; return cTime(sec,usec).Normalize();}

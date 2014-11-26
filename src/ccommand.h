@@ -86,7 +86,7 @@ namespace nVerliHub {
 						/**
 						* Class constructor.
 						*/
-						sCmdFunc():mIdRex(NULL), mParRex(NULL), mOS(NULL), mCommand(NULL)
+						sCmdFunc():mIdRex(NULL), mParRex(NULL), mOS(NULL), mCommand(NULL), mExtra(NULL)
 						{}
 
 						/**

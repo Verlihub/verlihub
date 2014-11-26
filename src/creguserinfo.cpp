@@ -58,7 +58,8 @@ cRegUserInfo::cRegUserInfo():
 	mLoginLast(0),
 	mLogoutLast(0),
 	mErrorLast(0),
-	mEnabled(1)
+	mEnabled(1),
+	mPwdChange(false)
 {}
 
 cRegUserInfo::~cRegUserInfo(){}

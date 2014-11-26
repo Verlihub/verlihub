@@ -31,7 +31,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nMySQL {
 
-cMySQLColumn::cMySQLColumn()
+cMySQLColumn::cMySQLColumn() :mNull(false)
 {}
 
 cMySQLColumn::~cMySQLColumn()
@@ -473,9 +473,8 @@ void cConfMySQL::ufEqual::operator()(cConfigItemBase* item)
 	if(!start) mOS << mJoint; else start=false;
 	if(mDoField) mOS << (item->mName);
 	if(mDoValue) {
-		bool IsNull = false;
 		tItemType TypeId =  item->GetTypeID();
-		IsNull = item->IsEmpty() && ((TypeId == eIT_TIMET) || (TypeId == eIT_LONG));
+		bool IsNull = item->IsEmpty() && ((TypeId == eIT_TIMET) || (TypeId == eIT_LONG));
 
 		if(mDoField)
 		{

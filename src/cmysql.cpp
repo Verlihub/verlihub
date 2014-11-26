@@ -31,9 +31,8 @@ cMySQL::cMySQL() : cObj("cMySQL")
 	Init();
 }
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL")
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"),mDBName(data)
 {
-	mDBName = data;
 	Init();
 
 	if (!Connect(host, user, pass, data, charset)) {

@@ -43,7 +43,7 @@ struct sMessage
 	string mSubject;
 	string mBody;
 
-	sMessage(){mDateSent =mDateExpires = 0;};
+	sMessage(){mDateSent = mDateExpires = 0; mPrintType = AS_SUBJECT };
 	// output stuff
 	mutable enum { AS_SUBJECT, AS_BODY, AS_DELIVERY, AS_ONLINE } mPrintType;
 	sMessage &AsSubj() { mPrintType = AS_SUBJECT; return *this; }

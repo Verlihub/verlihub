@@ -1288,8 +1288,7 @@ w_Targs* _GetIPCC (int id, w_Targs* args) // (char* ip)
 	if (!ip) return NULL;
 	string ccstr;
 	cpiPython::me->server->sGeoIP.GetCC(ip, ccstr);
-	const char *cc = "";
-	cc = ccstr.c_str();
+	const char *cc = ccstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cc));
 }
 
@@ -1300,8 +1299,7 @@ w_Targs* _GetIPCN (int id, w_Targs* args) // (char* ip)
 	if (!ip) return NULL;
 	string cnstr;
 	cpiPython::me->server->sGeoIP.GetCN(ip, cnstr);
-	const char *cn = "";
-	cn = cnstr.c_str();
+	const char *cn = cnstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cn));
 }
 
