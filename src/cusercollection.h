@@ -204,7 +204,7 @@ public:
 	//const char *GetNickListChar() {return GetNickList().c_str();}
 
 	void   Nick2Hash(const string &Nick, tHashType &Hash);
-	tHashType Nick2Hash(const string &Nick) {return Key2HashLower(Key); }
+	tHashType Nick2Hash(const string &Nick) {return Key2HashLower(Nick); }
 	void   Nick2Key (const string &Nick, string &Key);
 
 	cUserBase* GetUserBaseByKey (const string &Key ){ return GetByHash(Key2Hash(Key));}
