@@ -1971,6 +1971,18 @@ int _IsBot(lua_State *L)
 		return 2;
 	}
 
+	string badchars("\0$|<> "); // check bad characters
+
+	if (nick.npos != nick.find_first_of(badchars)) {
+		luaerror(L, "Bot nick contains bad characters");
+		return 2;
+	}
+
+	if ((nick == serv->mC.hub_security) || (nick == serv->mC.opchat_name)) { // reserved nicks
+		luaerror(L, "Bot nick is reserved");
+		return 2;
+	}
+
 	if (!serv->mRobotList.ContainsNick(nick)) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
