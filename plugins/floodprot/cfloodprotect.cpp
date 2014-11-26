@@ -1,7 +1,8 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2004-2004 Janos Horvath, bourne at freemail dot hu
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -98,18 +99,18 @@ bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 
 	unsigned long Hash = cBanList::Ip2Num(conn->AddrIP());
 
-	if(mUserInfo.ContainsHash(Hash))
+	if (mUserInfo.ContainsHash(Hash))
 	{
 		cTime now;
 		sUserInfo * usr = 0;
 		usr = mUserInfo.GetByHash(Hash);
 
-		if(!usr || (usr && usr->mDisabled)) return false;
+		if (!usr || usr->mDisabled)
+			return false;
 
 		usr->mElapsedTime += now.Get() - usr->mLastAction;
 		usr->mLastAction = now;
 		usr->mActionCounter++;
-
 		usr->addFloodType(ft); // registers the current action type for later analysis
 
 		if(usr->mActionCounter == 10)

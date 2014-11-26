@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -39,15 +40,15 @@ class cTime : public timeval
 	public:
 	~cTime();
 	cTime():mPrintType(0){Get();mPrintType = 0;}
-	cTime(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000); mPrintType = 0;};
-	cTime(long sec, long usec=0){tv_sec=sec; tv_usec=usec; mPrintType = 0;};
-	cTime(const cTime &t){tv_sec=t.tv_sec; tv_usec=t.tv_usec; mPrintType = 0;};
-	int operator> (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec > t.tv_usec);};
-	int operator>= (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec >= t.tv_usec);};
-	int operator< (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec < t.tv_usec);};
-	int operator<= (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec <= t.tv_usec);};
-	int operator== (const cTime &t) const { return ((tv_usec == t.tv_usec) && (tv_sec == t.tv_sec));};
-	cTime & operator= (const cTime &t){ tv_usec = t.tv_usec; tv_sec = t.tv_sec; mPrintType = t.mPrintType; return *this;}
+	cTime(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000); mPrintType = 0;}
+	cTime(long sec, long usec=0){tv_sec=sec; tv_usec=usec; mPrintType = 0;}
+	cTime(const cTime &t){tv_sec=t.tv_sec; tv_usec=t.tv_usec; mPrintType = 0;}
+	int operator> (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec > t.tv_usec);}
+	int operator>= (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec >= t.tv_usec);}
+	int operator< (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec < t.tv_usec);}
+	int operator<= (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec <= t.tv_usec);}
+	int operator== (const cTime &t) const { return ((tv_usec == t.tv_usec) && (tv_sec == t.tv_sec));}
+	cTime & operator= (const cTime &t) { tv_usec = t.tv_usec; tv_sec = t.tv_sec; mPrintType = t.mPrintType; return *this; }
 	cTime & Get(){gettimeofday(this,NULL);return *this;}
 	cTime   operator- (const cTime &t) const {long sec = tv_sec-t.tv_sec; long usec=tv_usec-t.tv_usec; return cTime(sec,usec).Normalize();}
 	cTime   operator+ (const cTime &t) const {long sec = tv_sec+t.tv_sec; long usec=tv_usec+t.tv_usec; return cTime(sec,usec).Normalize();}
@@ -61,10 +62,10 @@ class cTime : public timeval
 
 	cTime & operator/= (int i){long sec=tv_sec/i; tv_usec+=1000000*(tv_sec % i); tv_usec/=i; tv_sec=sec; Normalize(); return *this;}
 	cTime & operator*= (int i){tv_sec*=i;tv_usec*=i;Normalize(); return *this;}
-	cTime   operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTime(sec,usec).Normalize();};
-	cTime   operator* (int i) const {long sec=tv_sec*i; long usec=tv_usec*i; return cTime(sec,usec).Normalize();};
-	operator double(){ return double(tv_sec)+double(tv_usec)/1000000.;};
-	operator long() const { return long(tv_sec)*1000000+long(tv_usec);};
+	cTime   operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTime(sec,usec).Normalize();}
+	cTime   operator* (int i) const {long sec=tv_sec*i; long usec=tv_usec*i; return cTime(sec,usec).Normalize();}
+	operator double(){ return double(tv_sec)+double(tv_usec)/1000000.;}
+	operator long() const { return long(tv_sec)*1000000+long(tv_usec);}
 	operator bool() const { return !(!tv_sec && !tv_usec);}
 	int operator! () { return !tv_sec && !tv_usec;}
 	long Sec(){return tv_sec;}

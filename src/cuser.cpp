@@ -72,7 +72,7 @@ cUser::cUser() :
 	mSearchNumber(0),
 	mRights(0),
 	mBanTime(0),
-	mToBan(0)	
+	mToBan(false)
 {
 	mxConn = NULL;
 	mxServer = NULL;

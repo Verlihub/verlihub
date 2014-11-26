@@ -31,13 +31,12 @@ cMySQL::cMySQL() : cObj("cMySQL")
 	Init();
 }
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"),mDBName(data)
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"), mDBName(data)
 {
 	Init();
 
-	if (!Connect(host, user, pass, data, charset)) {
+	if (!Connect(host, user, pass, data, charset))
 		throw "Mysql connection error.";
-	}
 }
 
 cMySQL::~cMySQL()

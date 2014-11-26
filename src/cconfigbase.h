@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -99,7 +100,7 @@ class cConfigBaseBase : public cObj
 			iterator(){}
 			iterator (class cConfigBaseBase *C,const tIVIt &it):mC(C),mIT(it){}
 			cConfigItemBase * operator* () { return mC->mhItems.GetByHash(*mIT);}
-			iterator &operator ++(){ ++mIT; return *this;}
+			iterator &operator ++() { ++mIT; return *this; }
 			iterator(iterator &it){operator=(it);}
 			bool operator != (iterator &it){ return mIT != it.mIT;}
 			cConfigBaseBase *mC;

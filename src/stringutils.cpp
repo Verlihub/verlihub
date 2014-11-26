@@ -156,7 +156,7 @@ void ExpandPath(string &Path)
 		Path.append("/");
 }
 
-void GetPath(const string& FileName, string &Path, string &File)
+void GetPath(const string &FileName, string &Path, string &File)
 {
 	Path = FileName;
 	size_t i = FileName.rfind("/");
