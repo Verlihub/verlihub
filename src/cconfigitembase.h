@@ -82,12 +82,10 @@ class cConfigItemBase
 	friend class mConfigBase;
 public:
 	/** constructors */
-	cConfigItemBase(void *addr = 0, void *base = 0) :
-		mAddr(addr),
-		mBase(base)
+	cConfigItemBase(void *addr = 0, void *base = 0): mAddr(addr), mBase(base)
 	{
 		mBuf[0] = 0;
-	};
+	}
 
 	virtual ~cConfigItemBase(){};
 
