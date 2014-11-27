@@ -40,7 +40,7 @@ cMySQLColumn::~cMySQLColumn()
 
 void cMySQLColumn::AppendDesc(ostream &os) const
 {
-	string isNull, hasDefault;
+	string isNull;
 	mNull ? isNull = "" : isNull = " NOT NULL";
 	//Who added charset here? Query fails
 	os << mName << " " << mType /*<< " CHARACTER SET utf8 COLLATE utf8_unicode_ci "*/ << isNull;
@@ -160,7 +160,6 @@ void cMySQLTable::TruncateTable()
 
 bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 {
-	string isNull, hasDefault;
 	vector<cMySQLColumn>::iterator it;
 	const cMySQLColumn *col;
 	bool NeedAdd = false, NeedModif = false, result = false;

@@ -51,7 +51,7 @@ namespace nVerliHub {
 class cVHPluginMgr: public cPluginManager
 {
 	public:
-		cVHPluginMgr(nSocket::cServerDC *, const string pluginDir);
+		cVHPluginMgr(nSocket::cServerDC *, const string& pluginDir);
 		virtual ~cVHPluginMgr();
 		virtual void OnPluginLoad(cPluginBase *pi);
 	private:

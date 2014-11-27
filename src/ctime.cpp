@@ -48,7 +48,7 @@ string cTime::AsString() const
 
 std::ostream & operator<< (std::ostream &os, const cTime &t)
 {
-	#ifdef WIN32
+	#ifdef _WIN32
 		static char *buf;
 	#else
 		#define CTIME_BUFFSIZE 26
@@ -60,7 +60,7 @@ std::ostream & operator<< (std::ostream &os, const cTime &t)
 
 	switch (t.mPrintType) {
 		case 1:
-			#ifdef WIN32
+			#ifdef _WIN32
 				buf = ctime((const time_t*) & (t.tv_sec));
 			#else
 				strftime(buf, CTIME_BUFFSIZE + 1, "%Y/%m/%d %H:%M:%S", localtime((const time_t*) & (t.tv_sec)));

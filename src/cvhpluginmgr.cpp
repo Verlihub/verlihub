@@ -25,7 +25,7 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nPlugin {
 
-cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string pluginDir):
+cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string& pluginDir):
 	cPluginManager(pluginDir), mServer(server)
 {
 	SetClassName("cVHPluginMgr");

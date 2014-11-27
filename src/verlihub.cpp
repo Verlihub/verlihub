@@ -20,7 +20,7 @@
 */
 
 #include "stdafx.h"
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <tchar.h>
 #define BUFSIZE MAX_PATH

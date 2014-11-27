@@ -140,7 +140,6 @@ bool cConsole::cfAddReplacer::operator ( )()
 
 	FWord.mWord = word;
 	FWord.mRepWord = rep_word;
-	string ch, cl;
 
 	if(GetPI()->mReplacer->AddReplacer(FWord))
 		(*mOS) << autosprintf(_("Added word %s. This word will be filtered in public chat for users with class that is less than or equal to %d."), word_backup.c_str(), FWord.mAfClass) << " ";

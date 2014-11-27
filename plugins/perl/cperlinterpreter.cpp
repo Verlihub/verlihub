@@ -40,7 +40,6 @@ cPerlInterpreter::cPerlInterpreter()
 
 cPerlInterpreter::~cPerlInterpreter()
 {
-	PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	perl_destruct(mPerl);
 	perl_free(mPerl);
@@ -63,7 +62,6 @@ void cPerlInterpreter::SetMyContext()
 /** parse arguments like for a command line of perl */
 int cPerlInterpreter::Parse(int argc, char *argv[])
 {
-	PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	int result = perl_parse(mPerl,  xs_init, argc, argv, NULL);
 	PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
@@ -72,7 +70,6 @@ int cPerlInterpreter::Parse(int argc, char *argv[])
 
 int cPerlInterpreter::CallArgv(const char *Function, int Flags, char * Args [] )
 {
-	PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	int n = call_argv(Function, Flags , Args );
 	return n;

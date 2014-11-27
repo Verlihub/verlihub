@@ -1449,7 +1449,6 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 					 "s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
 					 "Default is 'd'.") << endl;
 				return 0;
-				m=1;
 			break;
 		}
 		u= n*m;

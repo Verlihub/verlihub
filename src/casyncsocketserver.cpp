@@ -139,7 +139,7 @@ void cAsyncSocketServer::close()
 {
 	mbRun = false;
 	tCLIt it;
-	for(it = mConnList.begin(); it != mConnList.end(); it++) {
+	for(it = mConnList.begin(); it != mConnList.end(); ++it) {
 		if (*it) {
 			mConnChooser.DelConn(*it);
 			if(mFactory!= NULL)
@@ -289,7 +289,7 @@ int cAsyncSocketServer::OnTimerBase(cTime &now)
 	OnTimer(now);
 	if((mT.conn + timer_conn_period) <= now) {
 		mT.conn = now;
-		for(it=mConnList.begin(); it != mConnList.end(); it++)
+		for(it=mConnList.begin(); it != mConnList.end(); ++it)
 			if((*it)->ok) (*it)->OnTimerBase(now);
 	}
 	return 0;

@@ -71,7 +71,6 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 
 void cSetupList::OutputFile(const string &file, ostream &os)
 {
-	const int width = 5;
 	db_iterator it;
 	SelectFields(mQuery.OStream());
 

@@ -397,7 +397,7 @@ bool cDCConsole::cfGetConfig::operator()()
 	if (file.empty()) {
 		file = mS->mDBConf.config_name;
 
-		for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); it++)
+		for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
 			lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << *(mS->mC.mhItems.GetByHash(*it)) << "\r\n";
 	} else
 		mS->mSetupList.OutputFile(file.c_str(), lst);
@@ -415,7 +415,6 @@ int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
 {
 	if(!conn || !conn->mpUser)
 		return 1;
-	string file;
 	mTriggers->TriggerAll(eTF_HELP, conn);
 	return 1;
 }
@@ -897,7 +896,6 @@ int cDCConsole::CmdHideMe(istringstream & cmd_line, cConnDC * conn)
 
 int cDCConsole::CmdUserLimit(istringstream & cmd_line, cConnDC * conn)
 {
-	string str;
 	ostringstream ostr;
 	int minutes = 60, maximum = -1;
 	cmd_line >> maximum >> minutes;
@@ -1083,7 +1081,7 @@ bool cDCConsole::cfReport::operator()()
 	}
 
 	ostringstream os;
-	string omsg, nick, reason;
+	string nick, reason;
 	cUser *user;
 	enum {eREP_ALL, eREP_NICK, eREP_RASONP, eREP_REASON};
 	GetParOnlineUser(eREP_NICK, user, nick);
@@ -1120,11 +1118,10 @@ bool cDCConsole::cfRaw::operator()()
 	static const char *cmdnames[] = {"hubname", "name", "hello", "quit", "redir", "move", "pm", "chat", "mc"};
 	static const int cmdids[] = {eRC_HUBNAME, eRC_HUBNAME, eRC_HELLO, eRC_QUIT, eRC_REDIR, eRC_REDIR, eRC_PM, eRC_CHAT, eRC_CHAT};
 
-	int Action = -1;
 	int CmdID = -1;
 	string tmp;
 	mIdRex->Extract(1, mIdStr, tmp);
-	Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+	const int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
 	if (Action < 0) return false;
 	mIdRex->Extract(2, mIdStr, tmp);
 	CmdID = this->StringToIntFromList(tmp, cmdnames, cmdids, sizeof(cmdnames) / sizeof(char*));
@@ -1664,8 +1661,7 @@ bool cDCConsole::cfGag::operator()()
 	string nick, howlong;
 	time_t period = 24 * 3600 * 7;
 	time_t Now = 1;
-	bool isUn = false;
-	isUn = mIdRex->PartFound(1);
+	const bool isUn = mIdRex->PartFound(1);
 	mParRex->Extract(1, mParStr, nick);
 
 	if (mParRex->PartFound(3)) {
@@ -1788,7 +1784,7 @@ bool cDCConsole::cfWho::operator()()
 		return false;
 
 	string separator("\r\n\t");
-	string userlist, actionName;
+	string userlist;
 	mParRex->Extract(0, mParStr, tmp);
 	unsigned long ip_min, ip_max;
 	int cnt = 0;
@@ -1865,9 +1861,6 @@ bool cDCConsole::cfKick::operator()()
 	string nick, text;
 
 	mParRex->Extract(1,mParStr,nick);
-
-	ostringstream os;
-	string CoolNick, ostr;
 
 	switch(Action) {
 		case eAC_KICK:
@@ -1994,8 +1987,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	string nick, par, field, pass;
 	int ParClass = 1;
 	mParRex->Extract(1, mParStr, nick);
-	bool WithPar = false;
-	WithPar = mParRex->PartFound(3);
+	bool WithPar = mParRex->PartFound(3);
 	if (Action != eAC_SET && WithPar) mParRex->Extract(3, mParStr, par);
 	bool WithPass = false;
 
@@ -2380,18 +2372,14 @@ bool cDCConsole::GetIPRange(const string &range, unsigned long &from, unsigned l
 			return true;
 		// the more complicated 1.2.3.4/16 style mask
 		} else {
-			unsigned long mask = 0;
-			unsigned long addr1 = 0;
-			unsigned long addr2 = 0xFFFFFFFF;
 			mIPRangeRex.Extract(0, range, tmp);
 			from = cBanList::Ip2Num(tmp);
-			int i;
-			i = tmp.find_first_of("/\\");
+			int i = tmp.find_first_of("/\\");
 			istringstream is(tmp.substr(i+1));
-			mask = from;
+			unsigned long mask = from;
 			is >> i;
-			addr1 = mask & (0xFFFFFFFF << (32-i));
-			addr2 = addr1 + (0xFFFFFFFF >> i);
+			unsigned long addr1 = mask & (0xFFFFFFFF << (32-i));
+			unsigned long addr2 = addr1 + (0xFFFFFFFF >> i);
 			from = addr1;
 			to   = addr2;
 			return true;
