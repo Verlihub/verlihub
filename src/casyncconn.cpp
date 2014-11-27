@@ -96,7 +96,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	socklen_t addr_size;
 
 	addr_size = sizeof(saddr);
-	unsigned int addr;
 
 	mIp=0;
 	ClearLine();
@@ -109,7 +108,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 		}
 		addr_in = (struct sockaddr_in *)&saddr;
 		// Copy IP
-		addr = mIp = addr_in->sin_addr.s_addr;
+		mIp = addr_in->sin_addr.s_addr;
 		// IP address
 		mAddrIP = inet_ntoa(addr_in->sin_addr);
 		// Host name
