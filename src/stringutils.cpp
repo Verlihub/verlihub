@@ -74,14 +74,12 @@ void ShrinkStringToFit(string &str)
 
 void StrCutLeft(string &str, size_t cut)
 {
-	string tmp;
 	if(cut > str.length()) cut = str.length();
 	std::string(str, cut, str.size() - cut).swap(str);
 }
 
 void StrCutLeft(const string &str1, string &str2, size_t cut)
 {
-	string tmp;
 	if(cut > str1.size()) cut = str1.size();
 	std::string(str1, cut, str1.size() - cut).swap(str2);
 }

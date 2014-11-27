@@ -86,7 +86,7 @@ int w_IdentStr (char *s1, char *s2, int n)
 int w_FindStr (char *s, char *key, int start)
 {
 	if (start < 0) start = 0;
-	int len, len1, len2, i, ii;
+	int len, len1, len2, i;
 	len1 = strlen(key);
 	len = strlen(s);
 	if (len1 > len || len1 == 0 || len == 0) return -1;
@@ -439,7 +439,7 @@ static PyObject * __GetRawOpList(PyObject *self, PyObject *args)
 
 static PyObject * __GetNickList(PyObject *self, PyObject *args)
 {
-	char *nick, *rawlist;
+	char *rawlist;
 	int len, pos = 10, i;
 	if (!Call( W_GetNickList, args, "", "s", &rawlist )) Py_RETURN_NONE;
 	
@@ -461,7 +461,7 @@ static PyObject * __GetNickList(PyObject *self, PyObject *args)
 
 static PyObject * __GetOpList(PyObject *self, PyObject *args)
 {
-	char *nick, *rawlist;
+	char *rawlist;
 	int len, pos = 8, i;
 	if (!Call( W_GetOpList, args, "", "s", &rawlist )) Py_RETURN_NONE;
 	
@@ -943,7 +943,7 @@ int w_Unload(int id)
 	{
 		PyEval_AcquireThread(state);
 		
-		PyObject *module, *pFunc, *pArgs, *pValue;
+		PyObject *module, *pFunc;
 		pFunc = NULL;
 		
 		module = PyDict_GetItemString(PyImport_GetModuleDict(), "__main__");

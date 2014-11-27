@@ -724,7 +724,6 @@ cChatRoom::~cChatRoom()
 
 void cChatRoom::SendPMToAll(const string & Msg, cConnDC *FromConn)
 {
-	string omsg;
 	string start, end, FromNick;
 
 	if (FromConn && FromConn->mpUser) {
@@ -798,8 +797,6 @@ bool cOpChat::IsUserAllowed(cUser *user)
 
 bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 {
-	ostringstream os;
-
 	if (message->mType == eDC_TO) {
 		string &msg = message->ChunkString(eCH_PM_MSG);
 
@@ -822,7 +819,6 @@ cPluginRobot::cPluginRobot(const string &nick, cVHPlugin *pi, cServerDC *server)
 
 bool cPluginRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 {
-	ostringstream os;
 	if (message->mType == eDC_TO)
 	{
 		mPlugin->RobotOnPM( this, message, conn);

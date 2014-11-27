@@ -33,7 +33,6 @@ cForbiddenWorker::cForbiddenWorker() : mpRegex(NULL)
 {
 	mCheckMask = 1+4;  // default mask is 1 for public chat only, notify ops by default
 	mAfClass = 4; // default maximum affected class is 4 (operator)
-	mReason = "";
 }
 
 cForbiddenWorker::~cForbiddenWorker()
@@ -61,8 +60,7 @@ void cForbiddenWorker::OnLoad()
 
 int cForbiddenWorker::DoIt(const string & cmd_line, cConnDC *conn, cServerDC *server, int mask)
 {
-	string start, end;
-	string sender, text;
+	string text;
 
 	if(mReason.size()) {
 		// User is kick user by hub security

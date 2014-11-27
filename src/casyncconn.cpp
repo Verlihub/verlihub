@@ -584,7 +584,6 @@ int cAsyncConn::ListenOnPort(int port, const char *address, bool udp)
 tSocket cAsyncConn::AcceptSock()
 {
 	socklen_t namelen;
-	tSocket socknum = INVALID_SOCKET;
 	sockoptval_t yes = 1;
 	int i=0;
 	#if ! defined _WIN32
@@ -599,9 +598,9 @@ tSocket cAsyncConn::AcceptSock()
 	memset(&client, 0, namelen);
 
 	#if ! defined _WIN32
-	socknum = ::accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+	tSocket socknum = ::accept(mSockDesc, (struct sockaddr *)&client, &namelen);
 	#else
-	socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+	tSocket socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
 	#endif
 	while(( socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < 10)) {
 		#if ! defined _WIN32
@@ -706,8 +705,6 @@ void cAsyncConn::OnFlushDone()
 
 int cAsyncConn::Write(const string &data, bool Flush)
 {
-	static string tmp;
-
 	// Append data to older data in buffer but only if there is free space
 	if(mBufSend.size()+ data.size() >= mMaxBuffer) {
 		if(Log(2))

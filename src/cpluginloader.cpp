@@ -121,7 +121,6 @@ bool cPluginLoader::LoadSym()
 		return false;
 
 	return (mPlugin = mcbGetPluginFunc()) != NULL;
-	return true;
 }
 
 void * cPluginLoader::LoadSym(const char *name)

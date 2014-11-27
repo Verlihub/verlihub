@@ -80,7 +80,7 @@ void cConfigBaseBase::SetBaseTo(void * new_base)
 {
 	if(mBasePtr)
 	{
-		for(tIVIt it = mvItems.begin(); it != mvItems.end(); it++ )
+		for(tIVIt it = mvItems.begin(); it != mvItems.end(); ++it )
 			mhItems.GetByHash(*it)->mAddr =
 				(void*)(long(mhItems.GetByHash(*it)->mAddr) +
 				(long(new_base)-long(mBasePtr)));
