@@ -471,7 +471,7 @@ int cAsyncConn::Connect(const string &host, int port)
 
 int cAsyncConn::SetSockOpt(int optname, const void *optval, int optlen)
 {
-#ifndef WIN32
+#ifndef _WIN32
 	return setsockopt(this->mSockDesc, SOL_SOCKET, optname, optval , optlen);
 #else
 	return 0;
@@ -481,7 +481,7 @@ int cAsyncConn::SetSockOpt(int optname, const void *optval, int optlen)
 int cAsyncConn::GetSockOpt(int optname, void *optval, int &optlen)
 {
 	int result = 0;
-#ifndef WIN32
+#ifndef _WIN32
 	socklen_t _optlen;
 	result = getsockopt(this->mSockDesc, SOL_SOCKET, optname, optval , &_optlen);
 #endif

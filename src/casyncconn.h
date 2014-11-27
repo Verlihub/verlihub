@@ -30,7 +30,7 @@
 #include "ctime.h"
 #include "cconnbase.h"
 #include "cprotocol.h"
-#ifndef WIN32
+#ifndef _WIN32
 #include <netinet/in.h>
 #endif
 #include <string>

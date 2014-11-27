@@ -18,7 +18,7 @@
 	of the GNU General Public License.
 */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #endif
