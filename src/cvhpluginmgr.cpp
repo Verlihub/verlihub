@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -25,7 +26,7 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nPlugin {
 
-cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string& pluginDir):
+cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string &pluginDir):
 	cPluginManager(pluginDir), mServer(server)
 {
 	SetClassName("cVHPluginMgr");

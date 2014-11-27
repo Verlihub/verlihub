@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -597,10 +598,11 @@ tSocket cAsyncConn::AcceptSock()
 	memset(&client, 0, namelen);
 
 	#if ! defined _WIN32
-	tSocket socknum = ::accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+		tSocket socknum = ::accept(mSockDesc, (struct sockaddr *)&client, &namelen);
 	#else
-	tSocket socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+		tSocket socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
 	#endif
+
 	while(( socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < 10)) {
 		#if ! defined _WIN32
 		socknum = ::accept(mSockDesc, (struct sockaddr *)&client, (socklen_t*)&namelen);

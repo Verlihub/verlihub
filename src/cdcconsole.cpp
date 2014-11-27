@@ -415,6 +415,7 @@ int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
 {
 	if(!conn || !conn->mpUser)
 		return 1;
+
 	mTriggers->TriggerAll(eTF_HELP, conn);
 	return 1;
 }

@@ -287,11 +287,16 @@ int cAsyncSocketServer::OnTimerBase(cTime &now)
 {
 	tCLIt it;
 	OnTimer(now);
-	if((mT.conn + timer_conn_period) <= now) {
+
+	if ((mT.conn + timer_conn_period) <= now) {
 		mT.conn = now;
-		for(it=mConnList.begin(); it != mConnList.end(); ++it)
-			if((*it)->ok) (*it)->OnTimerBase(now);
+
+		for (it=mConnList.begin(); it != mConnList.end(); ++it) {
+			if ((*it)->ok)
+				(*it)->OnTimerBase(now);
+		}
 	}
+
 	return 0;
 }
 

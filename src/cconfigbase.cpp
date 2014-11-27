@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -80,7 +81,7 @@ void cConfigBaseBase::SetBaseTo(void * new_base)
 {
 	if(mBasePtr)
 	{
-		for(tIVIt it = mvItems.begin(); it != mvItems.end(); ++it )
+		for (tIVIt it = mvItems.begin(); it != mvItems.end(); ++it)
 			mhItems.GetByHash(*it)->mAddr =
 				(void*)(long(mhItems.GetByHash(*it)->mAddr) +
 				(long(new_base)-long(mBasePtr)));
