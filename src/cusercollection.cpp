@@ -105,7 +105,10 @@ void cUserCollection::Nick2Key(const string &Nick, string &Key)
 
 void cUserCollection::Nick2Hash(const string &Nick, tHashType &Hash)
 {
-	Hash = Key2HashLower(Nick);
+	string Key;
+	Nick2Key(Nick, Key);
+	Hash = Key2Hash(Key);
+	//Hash = Key2HashLower(Nick);
 }
 
 bool cUserCollection::Add(cUserBase *User)
