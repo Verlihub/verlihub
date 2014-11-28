@@ -627,10 +627,12 @@ namespace nVerliHub {
 					return HashString(key);
 				}
 
+				/*
 				tHashType Key2HashLower(const string &key)
 				{
 					return HashLowerString(key);
 				}
+				*/
 
 				/**
 				* Remove an element with the given hash from the container.
