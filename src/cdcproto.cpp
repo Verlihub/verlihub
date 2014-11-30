@@ -185,6 +185,12 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 		case eDCB_BOTINFO:
 			this->DCB_BotINFO(msg, conn);
 			break;
+		case eDCC_MYNICK:
+			this->DCC_MyNick(msg, conn);
+			break;
+		case eDCC_LOCK:
+			this->DCC_Lock(msg, conn);
+			break;
 		default:
 			if (Log(1))
 				LogStream() << "Incoming untreated event" << endl;
@@ -2718,6 +2724,69 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
+int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
+{
+	if (!mS->mC.detect_ctmtohub)
+		return this->DCU_Unknown(msg, conn);
+
+	if (!msg || !conn)
+		return -1;
+
+	if (msg->SplitChunks()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (!conn->mMyNick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string &nick = msg->ChunkString(eCH_1_PARAM);
+
+	if (nick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	conn->mMyNick = nick;
+	return 0;
+}
+
+int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
+{
+	if (!mS->mC.detect_ctmtohub)
+		return this->DCU_Unknown(msg, conn);
+
+	if (!msg || !conn)
+		return -1;
+
+	if (msg->SplitChunks()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (conn->mMyNick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string &lock = msg->ChunkString(eCH_1_PARAM);
+
+	if (lock.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string ref;
+	ParseReferer(lock, ref); // parse referer
+	mS->CtmToHubAddItem(conn, ref);
+	string omsg("$Error CTM2HUB|"); // notify client
+	conn->Send(omsg, false, true);
+	conn->CloseNice(500, eCR_NOREDIR); // wait before closing
+	return 0;
+}
+
 bool cDCProto::CheckIP(cConnDC *conn, string &ip)
 {
 	if (conn->mAddrIP == ip) {
@@ -2878,6 +2947,58 @@ const string &cDCProto::GetMyInfo(cUserBase * User, int ForClass)
 		return User->mMyINFO;
 	else
 		return User->mMyINFO_basic;
+}
+
+void cDCProto::ParseReferer(const string &lock, string &ref)
+{
+	size_t pos = lock.find("Ref=");
+
+	if (pos != lock.npos) {
+		ref = toLower(lock.substr(pos + 4));
+
+		while (ref.size() > 7) {
+			pos = ref.find("dchub://");
+
+			if (pos != ref.npos)
+				ref.erase(pos, 8);
+			else
+				break;
+		}
+
+		while (ref.size() > 2) {
+			pos = ref.find("...");
+
+			if (pos != ref.npos)
+				ref.erase(pos, 3);
+			else
+				break;
+		}
+
+		while (ref.size() > 0) {
+			pos = ref.find('/');
+
+			if (pos != ref.npos)
+				ref.erase(pos, 1);
+			else
+				break;
+		}
+
+		while (ref.size() > 0) {
+			pos = ref.find(' ');
+
+			if (pos != ref.npos)
+				ref.erase(pos, 1);
+			else
+				break;
+		}
+
+		if (ref.size() > 3) {
+			pos = ref.find(":411", ref.size() - 4);
+
+			if (pos != ref.npos)
+				ref.erase(pos, 4);
+		}
+	}
 }
 
 void cDCProto::UnEscapeChars(const string &src, string &dst, bool WithDCN)

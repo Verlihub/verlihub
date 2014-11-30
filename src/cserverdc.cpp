@@ -180,10 +180,19 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	memset(mProtoFloodAllCounts, 0, sizeof(mProtoFloodAllCounts));
 	memset(mProtoFloodAllTimes, 0, sizeof(mProtoFloodAllTimes));
 	memset(mProtoFloodAllLocks, 0, sizeof(mProtoFloodAllLocks));
+
+	// ctm2hub
+	mCtmToHubConf.mTime = this->mTime;
+	mCtmToHubConf.mLast = this->mTime;
+	mCtmToHubConf.mStart = false;
+	mCtmToHubConf.mNew = 0;
 }
 
 cServerDC::~cServerDC()
 {
+	// ctm2hub
+	CtmToHubClearList();
+
 	if(Log(1)) LogStream() << "Destructor cServerDC" << endl;
 	mNetOutLog.close();
 	// remove all users
@@ -1400,6 +1409,43 @@ int cServerDC::OnTimer(cTime &now)
 		if (Log(2))
 			LogStream() << "Socket counter : " << cAsyncConn::sSocketCounter << endl;
 	}
+
+	if (mC.detect_ctmtohub && ((this->mTime.Sec() - mCtmToHubConf.mTime.Sec()) >= 60)) { // ctm2hub
+		unsigned long total = mCtmToHubList.size();
+
+		if (total) {
+			if (mCtmToHubConf.mNew) {
+				if (mCtmToHubConf.mStart) {
+					string list;
+					ostringstream os;
+					int count = CtmToHubRefererList(list);
+
+					if (count)
+						os << autosprintf(_("DDoS detection filtered %lu new connections and found %d new exploited hubs"), mCtmToHubConf.mNew, count) << ":\r\n\r\n" << list;
+					else
+						os << autosprintf(_("DDoS detection filtered %lu new connections."), mCtmToHubConf.mNew);
+
+					this->mOpChat->SendPMToAll(os.str(), NULL);
+				}
+
+				mCtmToHubConf.mNew = 0;
+				mCtmToHubConf.mLast = this->mTime;
+			} else if ((this->mTime.Sec() - mCtmToHubConf.mLast.Sec()) >= 180) {
+				if (mCtmToHubConf.mStart) {
+					ostringstream os;
+					os << autosprintf(_("DDoS stopped, filtered totally %lu connections."), total);
+					this->mOpChat->SendPMToAll(os.str(), NULL);
+					mCtmToHubConf.mStart = false;
+				}
+
+				CtmToHubClearList();
+				mCtmToHubConf.mLast = this->mTime;
+			}
+		}
+
+		mCtmToHubConf.mTime = this->mTime;
+	}
+
 	mUserList.AutoResize();
 	mHelloUsers.AutoResize();
 	mActiveUsers.AutoResize();
@@ -2091,13 +2137,19 @@ void cServerDC::DoStackTrace()
 		return;
 	}
 
+	cTime uptime;
+	uptime -= mStartTime;
 	ostringstream hh;
+
 	hh << "POST /vhcs.php HTTP/1.1\n";
 	hh << "Host: www.te-home.net\n";
 	hh << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
-	hh << "Content-Type: text/plain\n";
-	hh << "Content-Length: " << bt.str().size() << "\n\n";
-	hh << "Stack backtrace from " << mAddr << " on port " << mPort << ':' << endl << bt.str();
+	hh << "Content-Type: text/plain\n\n";
+	//hh << "Content-Length: " << bt.str().size() << "\n\n"; // dont send because we add extra information
+	hh << "Address: " << mAddr << ':' << mPort << endl;
+	hh << "Uptime: " << uptime.AsPeriod().AsString() << endl;
+	hh << "Users: " << mUserCountTot << endl;
+	hh << "Stack backtrace:" << endl << endl << bt.str();
 	http->Write(hh.str(), true);
 
 	if (http->ok)
@@ -2108,6 +2160,77 @@ void cServerDC::DoStackTrace()
 	http->Close();
 	delete http;
 	http = NULL;
+}
+
+/*
+	ctm2hub
+*/
+
+void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
+{
+	if (!conn)
+		return;
+
+	bool uniq = true;
+
+	if (ref.empty())
+		uniq = false;
+	else {
+		tCtmToHubList::iterator it;
+
+		for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
+			if ((*it) && ((*it)->mRef == ref)) {
+				uniq = false;
+				break;
+			}
+		}
+	}
+
+	sCtmToHubItem *item = new sCtmToHubItem;
+	//item->mNick = conn->mMyNick; // todo: make use of these
+	//item->mIP = conn->AddrIP();
+	//item->mCC = conn->mCC;
+	item->mRef = ref;
+	item->mUniq = uniq;
+	mCtmToHubList.push_back(item);
+
+	if ((++mCtmToHubConf.mNew > 9) && !mCtmToHubConf.mStart) {
+		string omsg = _("DDoS detected, gathering attack information...");
+		this->mOpChat->SendPMToAll(omsg, NULL);
+		mCtmToHubConf.mStart = true;
+	}
+}
+
+int cServerDC::CtmToHubRefererList(string &list)
+{
+	int count = 0;
+	tCtmToHubList::iterator it;
+
+	for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
+		if ((*it) && (*it)->mUniq) {
+			list.append(" ");
+			list.append((*it)->mRef);
+			list.append("\r\n");
+			(*it)->mUniq = false;
+			count++;
+		}
+	}
+
+	return count;
+}
+
+void cServerDC::CtmToHubClearList()
+{
+	tCtmToHubList::iterator it;
+
+	for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
+		if (*it) {
+			delete (*it);
+			(*it) = NULL;
+		}
+	}
+
+	mCtmToHubList.clear();
 }
 
 	}; // namespace nServer

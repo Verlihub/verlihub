@@ -46,35 +46,42 @@ namespace nVerliHub {
 
 	int cRedirects::MapTo(int Type)
 	{
-		switch(Type) {
+		switch (Type) {
 			case eCR_INVALID_USER:
 			case eCR_KICKED:
 				return eKick;
-			break;
+				break;
 			case eCR_USERLIMIT:
 				return eUserLimit;
-			break;
+				break;
 			case eCR_SHARE_LIMIT:
 				return eShareLimit;
-			break;
+				break;
 			case eCR_TAG_INVALID:
 			case eCR_TAG_NONE:
 				return eTag;
-			break;
+				break;
 			case eCR_PASSWORD:
 				return eWrongPasswd;
-			break;
+				break;
 			case eCR_INVALID_KEY:
 				return eInvalidKey;
-			break;
+				break;
 			case eCR_HUB_LOAD:
 				return eHubBusy;
-			break;
+				break;
 			case eCR_RECONNECT:
 				return eReconnect;
+				break;
 			case eCR_BADNICK:
 				return eBadNick;
-			default: return 0;
+				break;
+			case eCR_NOREDIR:
+				return -1;
+				break;
+			default:
+				return 0;
+				break;
 		}
 	}
 
@@ -94,24 +101,36 @@ namespace nVerliHub {
 		char *redirects[10];
 		char *DefaultRedirect[10];
 		int i = 0, j = 0, iType = MapTo(Type);
-		for (it= begin(); it != end(); ++it)
-		{
-			if(i >= 10) break;
+
+		if (iType == -1) // do not redirect, special reason
+			return (char*)"";
+
+		for (it = begin(); it != end(); ++it) {
+			if (i >= 10)
+				break;
+
 			redirect = *it;
+
 			if (redirect->mEnable && (redirect->mFlag & iType)) {
-				redirects[i] = (char *) redirect->mAddress.c_str();
+				redirects[i] = (char*)redirect->mAddress.c_str();
 				i++;
 			}
-			if(redirect->mEnable && !redirect->mFlag && j < 10) { DefaultRedirect[j] = (char *) redirect->mAddress.c_str(); j++;}
+
+			if (redirect->mEnable && !redirect->mFlag && (j < 10)) {
+				DefaultRedirect[j] = (char*)redirect->mAddress.c_str();
+				j++;
+			}
 		}
-		if(!i) {
-			// Use default redirect
-			if(!j)
-				return (char*) "";
+
+		if (!i) { // use default redirect
+			if (!j)
+				return (char*)"";
+
 			Random(j);
 			CountPlusPlus(DefaultRedirect[j]);
 			return DefaultRedirect[j];
 		}
+
 		Random(i);
 		CountPlusPlus(redirects[i]);
 		return redirects[i];

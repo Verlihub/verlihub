@@ -60,7 +60,9 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=
 	cProtoCommand(string("$WhoIP ")),
 	cProtoCommand(string("$SetTopic ")),
 	cProtoCommand(string("$GetTopic")),
-	cProtoCommand(string("$BotINFO "))
+	cProtoCommand(string("$BotINFO ")),
+	cProtoCommand(string("$MyNick ")), // ctm2hub
+	cProtoCommand(string("$Lock "))
 };
 
 cMessageDC::cMessageDC() : cMessageParser(10)
@@ -90,12 +92,10 @@ int cMessageDC::Parse()    // this function call too many comparisons, it's to o
 /** splits message to it's important parts and stores their info in the chunkset mChunks */
 bool cMessageDC::SplitChunks()
 {
- 	SetChunk(0,0,mStr.length()); // the zeroth chunk is everywhere the same
+ 	SetChunk(0, 0, mStr.length()); // the zeroth chunk is everywhere the same
 
-	// now try to find chunks one by one
-	switch(mType)
-	{
-		case eDCE_SUPPORTS: // use eCH_1_PARAM for the list here aswell, old stuff: break; // this has variable count of params
+	switch (mType) { // now try to find chunks one by one
+		case eDCE_SUPPORTS: // this has variable count of params
 		case eDC_KEY:
 		case eDC_VALIDATENICK:
 		case eDC_MYPASS:
@@ -107,8 +107,13 @@ bool cMessageDC::SplitChunks()
 		case eDCO_WHOIP:
 		case eDCO_SETTOPIC:
 		case eDCB_BOTINFO:
-			if (mLen < mKWSize) mError = 1;
-			else SetChunk(eCH_1_PARAM,mKWSize,mLen-mKWSize);
+		case eDCC_MYNICK:
+		case eDCC_LOCK:
+			if (mLen < mKWSize)
+				mError = 1;
+			else
+				SetChunk(eCH_1_PARAM, mKWSize, mLen - mKWSize);
+
 			break;
 		case eDC_GETINFO:
 			if(!SplitOnTwo(mKWSize,' ', eCH_GI_OTHER , eCH_GI_NICK)) mError =1;

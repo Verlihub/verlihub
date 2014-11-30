@@ -180,6 +180,11 @@ protected:
 	// unknown message
 	int DCU_Unknown(cMessageDC *msg, nSocket::cConnDC *conn);
 
+	// ctm2hub
+	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);
+	int DCC_Lock(cMessageDC *msg, nSocket::cConnDC *conn);
+	void ParseReferer(const string &lock, string &ref);
+
  public:
 	/**
 	* Check if a message is valid (max length and max lines per message).
@@ -243,12 +248,12 @@ protected:
 	* @param dest String to store quit message.
 	* @param nick The nick.
 	*/
-	static void Create_Quit(string &dest, const string&nick);
+	static void Create_Quit(string &dest, const string &nick);
 
 	// hello, operator and bot lists
-	static void Create_Hello(string &dest, const string&nick);
-	static void Create_OpList(string &dest, const string&nick);
-	static void Create_BotList(string &dest, const string&nick);
+	static void Create_Hello(string &dest, const string &nick);
+	static void Create_OpList(string &dest, const string &nick);
+	static void Create_BotList(string &dest, const string &nick);
 
 	/**
 	* Treat mainchat messages.

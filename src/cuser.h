@@ -217,9 +217,9 @@ public:
 	/** indicates whether user is to ban after the following kick */
 	bool mToBan;
 	/** minimal class users that can see this one */
-	nEnums::tUserCl mVisibleClassMin;
+	//nEnums::tUserCl mVisibleClassMin;
 	/** minimal class users that can see this one as operator */
-	nEnums::tUserCl mOpClassMin;
+	//nEnums::tUserCl mOpClassMin;
 	/** User share */
 	__int64 mShare;
 	/** the list of nicks queued to send either as to nicklist or myinfo. */

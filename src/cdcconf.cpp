@@ -29,9 +29,10 @@ namespace nVerliHub {
 
 cDCConf::cDCConf( cServerDC &serv ): mS(serv)
 {
-	// @rolex: is this even used? if no then make usable, if yes then lengths are completely wrong
+	/*
+	// lengths are completely wrong
 	max_length[eDC_KEY]=128;
-	max_length[eDC_VALIDATENICK]=64; // for example: cmd len + max_nick
+	max_length[eDC_VALIDATENICK]=64;
 	max_length[eDC_MYPASS]=64;
 	max_length[eDC_VERSION]=32;
 	max_length[eDC_GETNICKLIST]=16;
@@ -52,6 +53,7 @@ cDCConf::cDCConf( cServerDC &serv ): mS(serv)
 	max_length[eDC_SR]=256;
 	max_length[eDC_MSEARCH]=256;
 	max_length[eDC_UNKNOWN]=8;
+	*/
 }
 
 cDCConf::~cDCConf()
@@ -274,14 +276,15 @@ void cDCConf::AddVars()
 	Add("min_frequency", min_frequency, 0.3);
 	Add("step_delay", mS.mStepDelay, 50);
 	Add("max_upload_kbps",max_upload_kbps, 2000000.0);
-	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mHublistTimer.mMinDelay.tv_sec))300); // 5 minutes
+	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache",use_reglist_cache, true);
 	Add("use_penlist_cache",use_penlist_cache, true);
 	Add("delayed_login" ,delayed_login,  1);
 	Add("delayed_myinfo",delayed_myinfo, 1);
 	Add("drop_invalid_key",drop_invalid_key, 0);
 	Add("delayed_ping",delayed_ping,60);
-	Add("disable_zlib", disable_zlib, 1);
+	Add("disable_zlib", disable_zlib, true);
+	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 
 	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};
 	double to_default[] = { 60. , 30., 600., 40., 30., 300. };

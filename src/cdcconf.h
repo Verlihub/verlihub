@@ -93,7 +93,7 @@ public:
 	unsigned int max_passive_sr;
 	unsigned tban_kick;
 	unsigned tban_max;
-	unsigned int max_length[nEnums::eDC_UNKNOWN+1];
+	//unsigned int max_length[nEnums::eDC_UNKNOWN+1];
 	unsigned max_nick;
 	unsigned min_nick;
 	string nick_chars;
@@ -215,6 +215,7 @@ public:
 	int disable_usr_cmds;
 	int disable_report_cmd;
 	bool disable_zlib;
+	bool detect_ctmtohub; // ctm2hub
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;

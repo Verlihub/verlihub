@@ -396,6 +396,9 @@ namespace nVerliHub {
 
 				// custom redirect address on close
 				string mCloseRedirect;
+
+				// ctm2hub
+				string mMyNick;
 			private:
 				/// The attempt of last login.
 				cTime mTimeLastAttempt;

@@ -115,25 +115,26 @@ namespace nVerliHub {
 
 		enum
 		{
-			eCR_DEFAULT = 0,  //< default value, means not closed or for unknown reason
-			eCR_INVALID_USER, //< means bad nick, or banned nick or ip or whatever
-			eCR_CHAT_NICK, //< means user used different nick in chat
-			eCR_KICKED, //< operator kicked user
-			eCR_FORCEMOVE, //< $OpForceMove (the redir menu item)
-			eCR_QUIT, //< user quits himself
-			eCR_HUB_LOAD, //< critical hub load, no new users accepted
-			eCR_TIMEOUT, //< some kind of timeout
-			eCR_TO_ANYACTION, //< user did nothing for too long time
-			eCR_USERLIMIT, //< user limit exceeded for this user
-			eCR_SHARE_LIMIT, //< min or max share limit
-			eCR_TAG_NONE, //< no tags in description (or badly parsed)
-			eCR_TAG_INVALID, //< tags not validated (general), slots or hubs or limiter, or version etc..
-			eCR_PASSWORD, //< wrong password
-			eCR_LOGIN_ERR, //< error in login sequence
-			eCR_SYNTAX, // < syntax error in some message
-			eCR_INVALID_KEY, // < lock2key is invalid
-			eCR_RECONNECT, // < too fast reconnect
-			eCR_BADNICK // < bad nick, already used, too short etc.
+			eCR_DEFAULT = 0,  // default value, means not closed or unknown reason
+			eCR_INVALID_USER, // bad nick, banned nick, ip or whatever
+			eCR_CHAT_NICK, // user used different nick in chat
+			eCR_KICKED, // user was kicked
+			eCR_FORCEMOVE, // operator redirect command
+			eCR_QUIT, // user quits himself
+			eCR_HUB_LOAD, // critical hub load, no new users accepted
+			eCR_TIMEOUT, // some kind of timeout
+			eCR_TO_ANYACTION, // user did nothing for too long time
+			eCR_USERLIMIT, // user limit exceeded for this user
+			eCR_SHARE_LIMIT, // min or max share limit
+			eCR_TAG_NONE, // no tags in description, or badly parsed
+			eCR_TAG_INVALID, // tags not validated, slots, hubs, limiter, version, etc
+			eCR_PASSWORD, // wrong password
+			eCR_LOGIN_ERR, // error in login sequence
+			eCR_SYNTAX, // syntax error in some message
+			eCR_INVALID_KEY, // lock2key is invalid
+			eCR_RECONNECT, // too fast reconnect
+			eCR_BADNICK, // bad nick, already used, too short, etc
+			eCR_NOREDIR // do not redirect, special reason
 		};
 
 		enum
@@ -617,6 +618,33 @@ class cServerDC : public cAsyncSocketServer
 
 		// stack trace
 		void DoStackTrace();
+
+		// ctm2hub
+		struct sCtmToHubItem
+		{
+			//string mNick; // todo: make use of these
+			//string mIP;
+			//string mCC;
+			string mRef;
+			bool mUniq;
+		};
+
+		typedef vector<sCtmToHubItem*> tCtmToHubList;
+		tCtmToHubList mCtmToHubList;
+
+		struct sCtmToHubConf
+		{
+			cTime mTime;
+			cTime mLast;
+			bool mStart;
+			unsigned long mNew;
+		};
+
+		sCtmToHubConf mCtmToHubConf;
+
+		void CtmToHubAddItem(cConnDC *conn, const string &ref);
+		int CtmToHubRefererList(string &list);
+		void CtmToHubClearList();
 
 protected: // Protected methods
 	/**

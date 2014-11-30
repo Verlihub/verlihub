@@ -30,8 +30,7 @@
 #include "cprotocol.h"
 namespace nVerliHub {
 	namespace nEnums {
-		// these constants correspond to sDC_Commands in the .cpp file
-		typedef enum
+		typedef enum // these constants correspond to sDC_Commands in the .cpp file
 		{
 			eDC_GETINFO,
 			eDC_USERIP,
@@ -64,6 +63,8 @@ namespace nVerliHub {
 			eDCO_SETTOPIC,
 			eDCO_GETTOPIC,
 			eDCB_BOTINFO,
+			eDCC_MYNICK, // ctm2hub
+			eDCC_LOCK,
 			eDC_UNKNOWN
 		} tDCMsg;
 

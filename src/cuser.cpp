@@ -72,7 +72,10 @@ cUser::cUser() :
 	mSearchNumber(0),
 	mRights(0),
 	mBanTime(0),
-	mToBan(false)
+	mToBan(false),
+	mHideKicksForClass(eUC_NORMUSER)//,
+	//mVisibleClassMin(eUC_NORMUSER),
+	//mOpClassMin(eUC_NORMUSER)
 {
 	mxConn = NULL;
 	mxServer = NULL;
@@ -104,16 +107,17 @@ cUser::cUser(const string &nick) :
 	cUserBase( nick ),
 	mxConn(NULL),
 	mxServer(NULL),
+	mBanTime(0),
 	mShare(0),
 	mSearchNumber(0),
-	mHideKicksForClass(eUC_NORMUSER)
+	mHideKicksForClass(eUC_NORMUSER)//,
+	//mVisibleClassMin(eUC_NORMUSER),
+	//mOpClassMin(eUC_NORMUSER)
 {
 	SetClassName("cUser");
 	IsPassive = true;
 	mRights = 0;
 	mToBan = false;
-	mVisibleClassMin = eUC_NORMUSER;
-	mOpClassMin = eUC_NORMUSER;
 	SetRight( eUR_CHAT, 0, true );
 	SetRight( eUR_PM, 0, true );
 	SetRight( eUR_SEARCH, 0, true );
