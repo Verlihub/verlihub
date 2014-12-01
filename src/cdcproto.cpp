@@ -2780,6 +2780,14 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 
 	string ref;
 	ParseReferer(lock, ref); // parse referer
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnCtmToHub.CallAll(conn, (string*)&ref)) {
+			conn->CloseNice(500, eCR_NOREDIR);
+			return -1;
+		}
+	#endif
+
 	mS->CtmToHubAddItem(conn, ref);
 	string omsg("$Error CTM2HUB|"); // notify client
 	conn->Send(omsg, false, true);

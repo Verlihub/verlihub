@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -436,6 +437,9 @@ public:
 	* script = ID of script that makes the call.
 	*/
 	virtual bool OnScriptCommand(string cmd, string data, string plug, string script) {return true;}
+
+	// ctm2hub
+	virtual bool OnCtmToHub(nSocket::cConnDC *conn, string *ref) { return true; }
 
 	/// per-user data of the plugin
 	virtual cPluginUserData *GetPluginUserData( cUser * );

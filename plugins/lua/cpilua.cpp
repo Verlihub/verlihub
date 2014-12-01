@@ -122,6 +122,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnHubName");
 	RegisterCallBack("VH_OnScriptCommand");
+	RegisterCallBack("VH_OnCtmToHub");
 	return true;
 }
 
@@ -818,6 +819,24 @@ bool cpiLua::OnScriptCommand(string cmd, string data, string plug, string script
 	};
 
 	CallAll("VH_OnScriptCommand", args);
+	return true;
+}
+
+bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
+{
+	if (conn && ref) {
+		char* args[] = {
+			(char*)conn->mMyNick.c_str(),
+			(char*)conn->AddrIP().c_str(),
+			(char*)toString(conn->AddrPort()),
+			(char*)toString(conn->GetServPort()),
+			(char*)ref->c_str(),
+			NULL
+		};
+
+		return CallAll("VH_OnCtmToHub", args, conn);
+	}
+
 	return true;
 }
 

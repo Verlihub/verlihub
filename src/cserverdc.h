@@ -829,7 +829,8 @@ private:
 			mOnHubName(mgr, "VH_OnHubName", &cVHPlugin::OnHubName),
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
-			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand)
+			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
+			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub)
 		{};
 
 		cVHCBL_Connection mOnNewConn;
@@ -872,6 +873,7 @@ private:
 		cVHCBL_UsrBan mOnNewBan;
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_StrStrStrStr mOnScriptCommand;
+		cVHCBL_ConnText mOnCtmToHub;
 	};
 	// Structure that holds all callbacks.
 	sCallBacks mCallBacks;
