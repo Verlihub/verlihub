@@ -82,56 +82,62 @@ bool cConnDC::SetUser(cUser *usr)
 	return true;
 }
 
-int cConnDC::Send(string & data, bool IsComplete, bool flush)
+int cConnDC::Send(const string &data, bool AddPipe, bool Flush)
 {
-	if(!mWritable)
+	if (!mWritable)
 		return 0;
 
-	if(data.size() >= MAX_SEND_SIZE-1) {
-		if(Log(2))
-			LogStream() << "Truncating too long message from: "
-				<< data.size() << " to " << MAX_SEND_SIZE -1 << " Message starts with: " << data.substr(0,10) << endl;
-		data.resize(MAX_SEND_SIZE -1,' ');
+	string outData(data);
+	size_t outSize = outData.size();
+
+	if (outSize >= (MAX_SEND_SIZE - 1)) {
+		if (Log(2))
+			LogStream() << "Truncating too long message from " << outSize << " to " << (MAX_SEND_SIZE - 1) << ", message starts with: " << outData.substr(0, 10) << endl;
+
+		outData.resize(MAX_SEND_SIZE - 1, ' ');
+		outSize = MAX_SEND_SIZE - 1;
 	}
-	if(Log(5)) LogStream() << "OUT: " << data.substr(0,100) << endl;
 
-	if(msLogLevel >= 3)
-		Server()->mNetOutLog << data.size() << " "
-			<< data.size() << " "
-			<< 1 << " " << data.substr(0,10) << endl;
+	if (Log(5))
+		LogStream() << "OUT: " << outData.substr(0, 100) << endl;
 
-	if(IsComplete) data.append("|");
+	if (msLogLevel >= 3)
+		Server()->mNetOutLog << outSize << ": " << outData.substr(0, 10) << endl;
 
-	string dataToSend = data;
-	if((!Server()->mC.disable_zlib) && (mFeatures & eSF_ZLIB)) {
-		// If data should be buffered append content to zlib buffer
-		if(!flush) {
-			Server()->mZLib->AppendData(dataToSend.c_str(), dataToSend.size());
+	if (AddPipe) {
+		outData.append("|");
+		outSize = outSize + 1;
+	}
+
+	if (!Server()->mC.disable_zlib && (mFeatures & eSF_ZLIB)) {
+		/*
+		if (!Flush) { // if data should be buffered, append content to zlib buffer
+			Server()->mZLib->AppendData(outData.c_str(), outSize);
 			return 1;
 		}
-		// If the server is sending a message to more than one user, message is already compressed
-		size_t compressedDataLen = 0;
-		char *compressedData = Server()->mZLib->Compress(dataToSend.c_str(), dataToSend.size(), compressedDataLen);
-// 		if(Server()->isBroadcasting())
-// 			Server()->mZLib->alreadyInBuffer = true;
-		// Compression failed
-	//	cout << "Compressed " << compressedData << "  - size " << compressedDataLen << endl;
-		if(compressedData == NULL) {
-			if(Log(5))
-				LogStream() << "Error compressing data with ZLib. Fall back to uncompressed data" << endl;
+		*/
+
+		size_t zlibDataLen = 0;
+		char *zlibData = Server()->mZLib->Compress(outData.c_str(), outSize, zlibDataLen);
+
+		if (zlibData == NULL) {
+			if (Log(5))
+				LogStream() << "Error compressing data with ZLib, fall back to uncompressed data" << endl;
 		} else {
-			dataToSend.assign(compressedData, compressedDataLen);
+			outData.assign(zlibData, zlibDataLen);
+			outSize = zlibDataLen;
 		}
 	}
-	int ret = Write(dataToSend, flush);
+
+	int ret = Write(outData, Flush);
 	mTimeLastAttempt.Get();
+
 	if (mxServer) {
-		// Server()->mUploadZone[mGeoZone].Dump();
-		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, (int) dataToSend.size());
-		// Server()->mUploadZone[mGeoZone].Dump();
+		//Server()->mUploadZone[mGeoZone].Dump();
+		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, (int)outSize);
+		//Server()->mUploadZone[mGeoZone].Dump();
 	}
-	if(IsComplete)
-		data.erase(data.size()-1,1);
+
 	return ret;
 }
 

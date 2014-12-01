@@ -316,7 +316,7 @@ namespace nVerliHub {
 				* @param flush Set it to true if raw data should be send immediatly or stored in the internal buffer.
 				* @return The number of sent bytes.
 				*/
-				int Send(string & data, bool addPipe=true, bool flush = true);
+				int Send(const string &data, bool AddPipe = true, bool Flush = true);
 
 				/**
 				* Return a pointer to cServerDC instance.

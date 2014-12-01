@@ -479,7 +479,7 @@ class cServerDC : public cAsyncSocketServer
 				passive: search mode flag
 				return: send count
 		*/
-		int SearchToAll(cConnDC *conn, string &data, bool passive);
+		int SearchToAll(cConnDC *conn, const string &data, bool passive);
 
 		/**
 		* Notify all users of a new user.

@@ -641,7 +641,7 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
-int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
+int cServerDC::SearchToAll(cConnDC *conn, const string &data, bool passive)
 {
 	cConnDC *other;
 	tCLIt i;
