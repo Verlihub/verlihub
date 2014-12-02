@@ -49,13 +49,12 @@ cUser *GetUser(char *nick)
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+		cerr << "Server not found" << endl;
 		return NULL;
 	}
 
 	cUser *usr = serv->mUserList.GetUserByNick(string(nick));
-	// user without connection, a bot, must be accepted as well
-	return usr;
+	return usr; // user without connection, a bot, must be accepted as well
 }
 
 bool SendDataToUser(char *data, char *nick)
@@ -70,29 +69,29 @@ bool SendDataToUser(char *data, char *nick)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	usr->mxConn->Send(omsg, true);
+	usr->mxConn->Send(omsg, CheckDataPipe(omsg), true);
 	return true;
 }
 
-bool KickUser(char *OP,char *nick, char *reason)
+bool KickUser(char *op, char *nick, char *reason)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	cUser *OPusr = GetUser(OP);
-	if(OPusr)
-	{
-		if(server)
-		{
-			server->DCKickNick(NULL, OPusr, nick, reason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
-			return true;
-		}
-		else
-			return false;
-	}
-	else
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
+	}
+
+	cUser *usr = GetUser(op);
+
+	if (!usr || !usr->mxConn)
+		return false;
+
+	serv->DCKickNick(NULL, usr, nick, reason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
+	return true;
 }
 
-bool SendToClass(char *data, int min_class,  int max_class)
+bool SendToClass(char *data, int min_class, int max_class)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -109,7 +108,7 @@ bool SendToClass(char *data, int min_class,  int max_class)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -127,7 +126,7 @@ bool SendToAll(char *data)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mUserList.SendToAll(omsg);
+	serv->mUserList.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -145,7 +144,7 @@ bool SendToActive(char *data)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mActiveUsers.SendToAll(omsg);
+	serv->mActiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -166,7 +165,7 @@ bool SendToActiveClass(char *data, int min_class, int max_class)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -184,7 +183,7 @@ bool SendToPassive(char *data)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mPassiveUsers.SendToAll(omsg);
+	serv->mPassiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -205,21 +204,22 @@ bool SendToPassiveClass(char *data, int min_class, int max_class)
 	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
 		return false;
 
-	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, false);
+	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;
 }
 
-bool SendPMToAll(char *data, char *from, int min_class,  int max_class)
+bool SendPMToAll(char *data, char *from, int min_class, int max_class)
 {
-	string start, end;
-	cServerDC *server = GetCurrentVerlihub();
-	if (!server)
-	{
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
-	server->mP.Create_PMForBroadcast(start, end, from, from, data);
-	server->SendToAllWithNick(start,end, min_class, max_class);
+
+	string start, end;
+	serv->mP.Create_PMForBroadcast(start, end, from, from, data);
+	serv->SendToAllWithNick(start, end, min_class, max_class);
 	return true;
 }
 
@@ -630,6 +630,14 @@ int CheckBotNick(const string &nick)
 		return 4;
 
 	return 1;
+}
+
+bool CheckDataPipe(const string &data)
+{
+	if (data.size() && (data[data.size() - 1] == '|'))
+		return false;
+	else
+		return true;
 }
 
 extern "C" {

@@ -106,7 +106,7 @@ int cConnDC::Send(const string &data, bool AddPipe, bool Flush)
 
 	if (AddPipe) {
 		outData.append("|");
-		outSize = outSize + 1;
+		outSize++;
 	}
 
 	if (!Server()->mC.disable_zlib && (mFeatures & eSF_ZLIB)) {

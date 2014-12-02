@@ -2190,6 +2190,8 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 	//item->mNick = conn->mMyNick; // todo: make use of these
 	//item->mIP = conn->AddrIP();
 	//item->mCC = conn->mCC;
+	//item->mPort = conn->AddrPort();
+	//item->mServ = conn->GetServPort();
 	item->mRef = ref;
 	item->mUniq = uniq;
 	mCtmToHubList.push_back(item);

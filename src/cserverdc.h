@@ -625,6 +625,8 @@ class cServerDC : public cAsyncSocketServer
 			//string mNick; // todo: make use of these
 			//string mIP;
 			//string mCC;
+			//int mPort;
+			//int mServ;
 			string mRef;
 			bool mUniq;
 		};

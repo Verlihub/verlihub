@@ -38,31 +38,34 @@ namespace nVerliHub {
 	bool CloseConnection(char *nick);
 	bool CloseConnectionNice(char *nick);
 	bool StopHub(int code);
-	char * GetUserCC(char * nick);
+	char* GetUserCC(char *nick);
+
 	#if HAVE_LIBGEOIP
-	string GetIPCC(const string);
-	string GetIPCN(const string);
+		string GetIPCC(const string);
+		string GetIPCN(const string);
 	#endif
-	char * GetMyINFO(char *nick);
+
+	char* GetMyINFO(char *nick);
 	int GetUserClass(char *nick);
-	char * GetUserHost(char *nick);
-	char * GetUserIP(char *nick);
+	char* GetUserHost(char *nick);
+	char* GetUserIP(char *nick);
 	bool Ban(char *, const string, const string, unsigned, unsigned);
 	bool ParseCommand(char *nick, char *cmd, int pm);
-	bool KickUser(char *OPNick, char *nick, char *reason);
+	bool KickUser(char *op, char *nick, char *reason);
 	bool SetConfig(char *config_name, char *var, char *val);
 	int GetConfig(char *config_name, char *var, char *val, int size);
-	char * GetVHCfgDir();
-	bool GetTempRights(char *nick,  map<string,int> &rights);
-	bool AddRegUser(char *nick, int uClass, char * passwd, char* op);
+	char* GetVHCfgDir();
+	bool GetTempRights(char *nick, map<string,int> &rights);
+	bool AddRegUser(char *nick, int uClass, char *passwd, char* op);
 	bool DelRegUser(char *nick);
 	bool ScriptCommand(string, string, string, string);
 	int CheckBotNick(const string &nick);
+	bool CheckDataPipe(const string &data);
 
 	extern "C" {
 		int GetUsersCount();
-		char * GetNickList();
-
+		char* GetNickList();
 	}
+
 	__int64 GetTotalShareSize();
 };
