@@ -751,7 +751,7 @@ int cAsyncConn::Write(const string &data, bool Flush)
 		if (Log(6) && mxServer) {
 			nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
 
-			if (serv) {
+			if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open()) {
 				serv->mNetOutLog << "[" << AddrIP() << "]" << " Error sending data: " << send_buffer << " (size: " << send_size << ", sent: " << size_sent << ", bufsend: " << mBufSend.size() << ")" << endl;
 				serv->mNetOutLog << "Error: " << strerror(errno) << " (code: " << errno << ")" << endl;
 			}
@@ -781,23 +781,29 @@ int cAsyncConn::Write(const string &data, bool Flush)
 			if(bool(mCloseAfter)) CloseNow();
 		}
 
-		// Buffer overfill protection - only on registered connections
-		if(mxServer && ok) {
-			// Choose the connection to send the rest of data as soon as possible
-			mxServer->mConnChooser.OptIn(this, eCC_OUTPUT);
+		if (mxServer && ok) { // buffer overfill protection, only on registered connections
+			mxServer->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			// If buffer size is lower then UNBLOCK size, allow read operation on the connection
-			if(mBufSend.size() < MAX_SEND_UNBLOCK_SIZE) {
+			if (mBufSend.size() < MAX_SEND_UNBLOCK_SIZE) { // if buffer size is lower then UNBLOCK size, allow read operation on the connection
 				mxServer->mConnChooser.OptIn(this, eCC_INPUT);
-				if(Log(5)) {
-					((nVerliHub::cServerDC*) mxServer)->mNetOutLog << "Unblocking read operation on socket " << endl;
-					LogStream() << "UnBlock INPUT" << endl;
+
+				if (Log(5)) {
+					nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
+						serv->mNetOutLog << "Unblocking read operation on socket" << endl;
+
+					LogStream() << "Unblock INPUT" << endl;
 				}
-			} // If buffer is bigger than max send size, block read operation
-			else if(mBufSend.size() >= MAX_SEND_FILL_SIZE) {
+			} else if (mBufSend.size() >= MAX_SEND_FILL_SIZE) { // if buffer is bigger than max send size, block read operation
 				mxServer->mConnChooser.OptOut(this, eCC_INPUT);
-				if(Log(5)) {
-					((nVerliHub::cServerDC*) mxServer)->mNetOutLog << "Blocking read operation on socket " << endl;
+
+				if (Log(5)) {
+					nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
+						serv->mNetOutLog << "Blocking read operation on socket" << endl;
+
 					LogStream() << "Block INPUT" << endl;
 				}
 			}

@@ -162,7 +162,7 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	}
 	string net_log(mConfigBaseDir);
 	net_log.append( "/net_out.log");
-	mNetOutLog.open(net_log.c_str(),ios::out);
+	mNetOutLog.open(net_log.c_str(), ios::out);
 	mTotalShare = 0;
 	mTotalSharePeak = 0;
 
@@ -190,11 +190,14 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 
 cServerDC::~cServerDC()
 {
-	// ctm2hub
-	CtmToHubClearList();
+	if (Log(1))
+		LogStream() << "Destructor cServerDC" << endl;
 
-	if(Log(1)) LogStream() << "Destructor cServerDC" << endl;
-	mNetOutLog.close();
+	CtmToHubClearList(); // ctm2hub
+
+	if (mNetOutLog && mNetOutLog.is_open())
+		mNetOutLog.close();
+
 	// remove all users
 	cUserCollection::iterator it;
 	cUser *user;
@@ -488,12 +491,11 @@ void cServerDC::SendToAll(string &data, int cm,int cM)
 		}
 	}
 
-	if(Log(5))
-		LogStream() << "ALL << " << data.substr(0,100) << endl;
-	if(msLogLevel >= 3)
-		mNetOutLog << ((unsigned long)count) *data.size() << " "
-			<< data.size() << " "
-			<< count << " " << data.substr(0,10) << endl;
+	if (Log(5))
+		LogStream() << "ALL: " << data.substr(0, 100) << endl;
+
+	if ((msLogLevel >= 3) && mNetOutLog && mNetOutLog.is_open())
+		mNetOutLog << ((unsigned long)count) *data.size() << " " << data.size() << " " << count << " " << data.substr(0, 10) << endl;
 }
 
 int cServerDC::SendToAllWithNick(const string &start,const string &end, int cm,int cM)

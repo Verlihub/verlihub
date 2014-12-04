@@ -101,7 +101,7 @@ int cConnDC::Send(const string &data, bool AddPipe, bool Flush)
 	if (Log(5))
 		LogStream() << "OUT: " << outData.substr(0, 100) << endl;
 
-	if (msLogLevel >= 3)
+	if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
 		Server()->mNetOutLog << outSize << ": " << outData.substr(0, 10) << endl;
 
 	if (AddPipe) {
