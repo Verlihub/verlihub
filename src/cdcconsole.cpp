@@ -156,7 +156,13 @@ int cDCConsole::OpCommand(const string &str, cConnDC * conn)
 			if (cmdid == "restart") return CmdQuit(cmd_line, conn, 1);
 			if (cmdid == "dbg_hash") { mOwner->mUserList.DumpProfile(cerr); return 1; }
 			if (cmdid == "core_dump") return CmdQuit(cmd_line, conn, -1);
-			if (cmdid == "hublist") { mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn); return 1; }
+
+			if (cmdid == "hublist") {
+				mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn);
+				return 1;
+			}
+
+			break;
 		case eUC_ADMIN:
 			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
 			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);

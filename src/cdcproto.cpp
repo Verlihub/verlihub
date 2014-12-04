@@ -682,6 +682,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_NONE);
 		delete tag;
+		tag = NULL;
 		return -1;
 	}
 
@@ -702,6 +703,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_INVALID);
 		delete tag;
+		tag = NULL;
 		return -1;
 	}
 
@@ -747,6 +749,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		conn->Send(omsg, true);
 		delete tag;
+		tag = NULL;
 		return -1;
 	}
 
@@ -755,6 +758,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (str_share.size() > 18) { // share is too big
 		conn->CloseNow(); // todo: notify user
 		delete tag;
+		tag = NULL;
 		return -1;
 	} else if (str_share.empty() || (str_share[0] == '-')) // missing or negative share
 		str_share = "0";
@@ -807,6 +811,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 			mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SHARE_LIMIT);
 			delete tag;
+			tag = NULL;
 			return -1;
 		}
 
@@ -852,15 +857,20 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (!conn->mpUser->mHideShare) // update total share
 		mS->mTotalShare += conn->mpUser->mShare;
 
-	if (!conn->mpUser->mInList && mS->CheckUserClone(conn)) { // detect clone using ip and share, only when user logs in
-		os << _("You are already in the hub using another nick.");
+	if (!conn->mpUser->mInList) { // detect clone using ip and share, only when user logs in
+		string clone;
 
-		if (conn->Log(2))
-			conn->LogStream() << os.str() << endl;
+		if (mS->CheckUserClone(conn, clone)) {
+			os << autosprintf(_("You are already in the hub using another nick: %s"), clone.c_str());
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
-		delete tag;
-		return -1;
+			if (conn->Log(2))
+				conn->LogStream() << os.str() << endl;
+
+			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+			delete tag;
+			tag = NULL;
+			return -1;
+		}
 	}
 
 	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email, not sure where its used
@@ -879,6 +889,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 			conn->CloseNice(1000, eCR_KICKED);
 			delete tag;
+			tag = NULL;
 			return -1;
 		}
 
@@ -886,6 +897,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			if (!mS->mCallBacks.mOnFirstMyINFO.CallAll(conn, msg)) {
 				conn->CloseNice(1000, eCR_KICKED);
 				delete tag;
+				tag = NULL;
 				return -2;
 			}
 		#endif
@@ -894,6 +906,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg)) {
 			delete tag;
+			tag = NULL;
 			return -2;
 		}
 	#endif
@@ -992,6 +1005,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	delete tag; // tag is no longer used
+	tag = NULL;
 	speed = msg->ChunkString(eCH_MI_SPEED);
 
 	if ((!mS->mC.show_speed) && !speed.empty()) // hide speed but keep status byte

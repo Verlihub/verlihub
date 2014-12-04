@@ -1399,7 +1399,7 @@ w_Targs* _GetUsersCount (int id, w_Targs* args) // ()
 
 w_Targs* _GetTotalShareSize (int id, w_Targs* args) // ()
 {
-	__int64 share = cpiPython::me->server->GetTotalShareSize();
+	__int64 share = cpiPython::me->server->mTotalShare;
 	ostringstream o;
 	o << share;
 	return cpiPython::lib_pack("s", strdup(o.str().c_str()));

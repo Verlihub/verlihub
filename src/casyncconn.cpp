@@ -745,20 +745,23 @@ int cAsyncConn::Write(const string &data, bool Flush)
 	if (!Flush)
 		return 0;
 
-	// Make copy of send_size, because SendALl method will change it
-	size_t size_sent = send_size;
-	// Send the data as much as possible
-	if(SendAll(send_buffer,size_sent) == -1) {
-		if(Log(6)) {
-			nVerliHub::cServerDC *server = (nVerliHub::cServerDC *) mxServer;
-			server->mNetOutLog << "[" << AddrIP() << "]" << "Error sending data " << send_buffer << "(size:" << send_size << "; sent: " << size_sent << "; buffsent size:" << mBufSend.size() << ")" << endl;
-			server->mNetOutLog << "Error: " << strerror(errno) << " (code: " << errno << endl;
+	size_t size_sent = send_size; // make copy of send_size, because SendAll method will change it
+
+	if (SendAll(send_buffer, size_sent) == -1) { // send the data as much as possible
+		if (Log(6) && mxServer) {
+			nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+			if (serv) {
+				serv->mNetOutLog << "[" << AddrIP() << "]" << " Error sending data: " << send_buffer << " (size: " << send_size << ", sent: " << size_sent << ", bufsend: " << mBufSend.size() << ")" << endl;
+				serv->mNetOutLog << "Error: " << strerror(errno) << " (code: " << errno << ")" << endl;
+			}
 		}
-		// Analyze the error
-		if((errno != EAGAIN) && (errno != EINTR)) {
-			// Error during writing, remove the user
-			if(Log(2)) LogStream() << "Error during writing, closing" << endl;
-			CloseNow();
+
+		if ((errno != EAGAIN) && (errno != EINTR)) { // analyze the error
+			if (Log(2))
+				LogStream() << "Error during writing, closing" << endl;
+
+			CloseNow(); // error during writing, remove the user
 			return -1;
 		}
 

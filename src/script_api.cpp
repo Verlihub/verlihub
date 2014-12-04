@@ -469,7 +469,6 @@ int __GetUsersCount()
 	return server->mUserCountTot;
 }
 
-
 __int64 GetTotalShareSize()
 {
 	cServerDC *server = GetCurrentVerlihub();

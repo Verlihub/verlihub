@@ -371,13 +371,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param NickForReply The nickname of the user to send the result.
 		* @return Always one.
 		*/
-		int DoRegisterInHublist(string host, int port, string NickForReply);
-
-		/**
-		* Return the total share of the hub.
-		* @return The total share.
-		*/
-		__int64 GetTotalShareSize();
+		int DoRegisterInHublist(string host, int port, string reply);
 
 		/**
 		* Register the hub to the given hublist.
@@ -554,7 +548,7 @@ class cServerDC : public cAsyncSocketServer
 		int CntConnIP(string ip);
 
 		// clone detection
-		bool CheckUserClone(cConnDC *conn);
+		bool CheckUserClone(cConnDC *conn, string &clone);
 
 		// protocol flood from all
 		unsigned int mProtoFloodAllCounts[nEnums::ePFA_LAST];

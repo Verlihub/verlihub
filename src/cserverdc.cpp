@@ -1397,17 +1397,21 @@ int cServerDC::OnTimer(cTime &now)
 		}
 	}
 
-	if (bool(mSlowTimer.mMinDelay) && mSlowTimer.Check(mTime , 1) == 0)
+	if (bool(mSlowTimer.mMinDelay) && mSlowTimer.Check(mTime, 1) == 0)
 		mBanList->RemoveOldShortTempBans(mTime.Sec());
-	if (bool(mHublistTimer.mMinDelay) && mHublistTimer.Check(mTime , 1) == 0)
+
+	if (bool(mHublistTimer.mMinDelay) && mHublistTimer.Check(mTime, 1) == 0)
 		this->RegisterInHublist(mC.hublist_host, mC.hublist_port, NULL);
-	if (bool(mReloadcfgTimer.mMinDelay) && mReloadcfgTimer.Check(mTime , 1) == 0) {
+
+	if (bool(mReloadcfgTimer.mMinDelay) && mReloadcfgTimer.Check(mTime, 1) == 0) {
 		mC.Load();
 		//mCo->mTriggers->ReloadAll();
+
 		if (mC.use_reglist_cache)
 			mR->UpdateCache();
+
 		if (Log(2))
-			LogStream() << "Socket counter : " << cAsyncConn::sSocketCounter << endl;
+			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
 	}
 
 	if (mC.detect_ctmtohub && ((this->mTime.Sec() - mCtmToHubConf.mTime.Sec()) >= 60)) { // ctm2hub
@@ -1503,105 +1507,125 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 	return u;
 }
 
-int cServerDC::DoRegisterInHublist(string host, int port, string NickForReply)
+int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 {
-	ostringstream os, os2;
-	char pipe='|';
-#ifndef _WIN32
-	unsigned long long buf = GetTotalShareSize();
-#else
-	char buf[32];
-	sprintf(buf,"%ui64d",GetTotalShareSize());
-#endif
+	__int64 min_share = mC.min_share; // prepare
 
+	if (mC.min_share_use_hub > min_share)
+		min_share = mC.min_share_use_hub;
+
+	char pipe = '|';
+	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string CurHost;
-	string lock, key;
+	string curhost, lock, key;
 	size_t pos_space;
 	cAsyncConn *pHubList;
 
-	os2 << _("Hublist registration results:") << "\n";
-	while (CurHost = "", is >> CurHost, CurHost.size() > 0) {
-		os2 << autosprintf(_("Sending to %s:%d..."), CurHost.c_str(), port);
-		pHubList = new cAsyncConn(CurHost,port);
+	if (reply.size())
+		to_user << _("Hublist registration results") << ":\r\n\r\n";
 
-		if(!pHubList->ok) {
-			os2 << " " << _("connection failed") << "\n";
-			pHubList->Close();
-			delete pHubList;
-			pHubList = 0;
+	while (curhost = "", is >> curhost, curhost.size() > 0) {
+		if (reply.size())
+			to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
+
+		pHubList = new cAsyncConn(curhost, port); // connect
+
+		if (!pHubList || !pHubList->ok) {
+			if (reply.size())
+				to_user << _("Error connecting") << "\r\n";
+
+			if (pHubList) {
+				pHubList->Close();
+				delete pHubList;
+				pHubList = NULL;
+			}
+
 			continue;
 		}
 
+		to_serv.str("");
+		to_serv.clear();
 		key = "";
-		pHubList->SetLineToRead(&lock,pipe,1024);
+		pHubList->SetLineToRead(&lock, pipe, 1024);
 		pHubList->ReadAll();
 		pHubList->ReadLineLocal();
-		if(lock.size() > 6) {
-			pos_space = lock.find(' ',6);
-			if (pos_space != lock.npos) pos_space -= 6;
-			lock = lock.substr(6,pos_space);
+
+		if (lock.size() > 6) {
+			pos_space = lock.find(' ', 6);
+
+			if (pos_space != lock.npos)
+				pos_space -= 6;
+
+			lock = lock.substr(6, pos_space);
 			cDCProto::Lock2Key(lock, key);
 		}
 
-		// Create the registration string
-		os.str(mEmpty);
-		os << "$Key " << key << pipe <<  mC.hub_name // removed pipe before name
-			<< pipe << mC.hub_host
-			<< pipe;
-		__int64 hl_minshare = mC.min_share;
-		if (mC.min_share_use_hub > hl_minshare)
-			hl_minshare = mC.min_share_use_hub;
+		to_serv << "$Key " << key << pipe; // create registration data
+		to_serv << mC.hub_name << pipe;
+		to_serv << mC.hub_host << pipe;
+
 		if (mC.hublist_send_minshare)
-			os << "[MINSHARE:" << StringFrom(hl_minshare) << "MB] ";
-		os << mC.hub_desc
-			<< pipe << mUserList.Size()
-			<< pipe << buf
-			<< pipe;
+			to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
 
+		to_serv << mC.hub_desc << pipe;
+		to_serv << mUserList.Size() << pipe;
+		to_serv << mTotalShare << pipe;
 
-		// send it
-		if(Log(2))
-			LogStream() << os.str() << endl;
-		pHubList->Write(os.str(), true);
-		if(!pHubList->ok)
-			os2 << " " << _("error sending info") << endl;
+		pHubList->Write(to_serv.str(), true); // send it
+
+		if (reply.size()) {
+			if (pHubList->ok)
+				to_user << _("Done");
+			else
+				to_user << _("Error sending");
+
+			to_user << "\r\n";
+		}
+
 		pHubList->Close();
 		delete pHubList;
 		pHubList = NULL;
-		os2 << " " << _(".. OK") << "\n";
 	}
 
-	os2 << _("Done");
-	CurHost = os2.str();
-	if (NickForReply.size() > 0) {
-		cUser * user = mUserList.GetUserByNick(NickForReply);
-		if(user && user->mxConn)
-			DCPublicHS(CurHost, user->mxConn);
+	if (reply.size()) {
+		cUser *user = mUserList.GetUserByNick(reply);
+
+		if (user && user->mxConn) {
+			to_user << "\r\n" << _("Finished registering in hublists.");
+			DCPublicHS(to_user.str(), user->mxConn);
+		}
 	}
+
 	return 1;
 }
 
 int cServerDC::RegisterInHublist(string host, int port, cConnDC *conn)
 {
-	string NickForReply;
-	DCPublicHS(_("Registering the hub in hublists. This may take a while, please wait..."), conn);
-	if(conn && conn->mpUser) NickForReply = conn->mpUser->mNick;
-	cThreadWork *work = new tThreadWork3T<cServerDC, string, int, string>( host, port, NickForReply, this, &cServerDC::DoRegisterInHublist);
-	if(mHublistReg.AddWork(work)) {
-		return 1;
-	} else  {
-		delete work;
+	if (host.size() < 3) {
+		if (conn)
+			DCPublicHS(_("Hublist host is empty, nothing to do."), conn);
+
 		return 0;
 	}
-}
 
-__int64 cServerDC::GetTotalShareSize()
-{
-	__int64 total =0;
-	cUserCollection::iterator i;
-	for(i=mUserList.begin(); i!= mUserList.end(); ++i) total += ((cUser *)(*i))->mShare;
-	return total;
+	string reply;
+
+	if (conn) {
+		DCPublicHS(_("Registering in hublists, please wait..."), conn);
+
+		if (conn->mpUser)
+			reply = conn->mpUser->mNick;
+	}
+
+	cThreadWork *work = new tThreadWork3T<cServerDC, string, int, string>(host, port, reply, this, &cServerDC::DoRegisterInHublist);
+
+	if (mHublistReg.AddWork(work))
+		return 1;
+	else {
+		delete work;
+		work = NULL;
+		return 0;
+	}
 }
 
 int cServerDC::WhoCC(string CC, string &dest, const string&separator)
@@ -1683,7 +1707,7 @@ int cServerDC::CntConnIP(string ip)
 	return cnt;
 }
 
-bool cServerDC::CheckUserClone(cConnDC *conn)
+bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 {
 	if ((mC.max_class_check_clone < 0) || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > mC.max_class_check_clone))
 		return false;
@@ -1719,6 +1743,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn)
 				*/
 			}
 
+			clone = other->mpUser->mNick;
 			return true;
 		}
 	}
