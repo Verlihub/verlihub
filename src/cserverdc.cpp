@@ -1076,22 +1076,19 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
 		DoUserIP.Clear();
 		DoUserIP(user);
-		mOpchatList.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
-		mInProgresUsers.SendToAllWithFeature(UserIP, eSF_USERIP2, mC.delayed_myinfo, true);
+		mUserList.SendToAllWithClassFeature(UserIP, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
-	// send it to all but to him
-	// but why? maybe he would be doubled in some shit clients?
-	// anyway delayed_login will show why is it
-	// the order of flush of this before the full myinfo for ops
+	/*
+		send it to all but to him
+		but why? maybe he would be doubled in some shit clients?
+		anyway delayed_login will show why is it
+		the order of flush of this before the full myinfo for ops
+	*/
 
 	if (!mC.delayed_login) {
 		user->mInList = false;
 		mUserList.FlushCache();
-
-		if (mC.send_user_ip) // this fixes the userip delay
-			mOpchatList.FlushCache();
-
 		mInProgresUsers.FlushCache();
 		user->mInList = true;
 	}
@@ -1099,7 +1096,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	if (mC.show_tags == 1) { // patch eventually for ops
 		msg.erase();
 		msg = mP.GetMyInfo(user, eUC_OPERATOR);
-		mOpchatList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList! Cached mUserList will be flushed after and will override this one!
+		mOpchatList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
 		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not, ops are dangerous creatures, they may have idea to kick people for not seeing their tags
 	}
 

@@ -64,78 +64,84 @@ supports: quick iterating with (restrained) constant time increment (see std::sl
 class cUserCollection : public tHashArray<cUserBase*>
 {
 public:
-	/**
-		Unary function foe sending Data to a user's connection
-	*/
-	struct ufSend : public unary_function<void, iterator>
+	// unary function for sending data to all users
+	struct ufSend: public unary_function<void, iterator>
 	{
-		//Data to send
 		string &mData;
-		/** a constructor
-			\param Data Data to be sent for to each user
-		*/
-		ufSend(string &Data):mData(Data){};
-		/**
-			\fn operator() (cUser *User)
-			The sending  method
-			\param User destination for sent data
-		*/
-		void operator() (cUserBase *User);
+		bool flush;
+
+		ufSend(string &Data, bool _flush): mData(Data)
+		{
+			flush = _flush;
+		};
+
+		void operator()(cUserBase *User);
 	};
 
-	/**
-	Unary function to send data to a user by class
-	 */
-	struct ufSendWithClass : public unary_function<void, iterator>
+	// unary function for sending DataS + Nick + DataE to all users
+	struct ufSendWithNick: public unary_function<void, iterator>
 	{
-		//Data to send
+		string &mDataStart, &mDataEnd;
+
+		ufSendWithNick(string &DataS, string &DataE): mDataStart(DataS), mDataEnd(DataE)
+		{
+			// always flushes
+		};
+
+		void operator()(cUserBase *User);
+	};
+
+	// unary function for sending data to all users by class range
+	struct ufSendWithClass: public unary_function<void, iterator>
+	{
 		string &mData;
-		// Class range
 		int min_class, max_class;
-		/** a constructor
-		\param Data Data to be sent for to each user
-		 */
-		ufSendWithClass(string &Data, int _min_class, int _max_class):mData(Data)
+		bool flush;
+
+		ufSendWithClass(string &Data, int _min_class, int _max_class, bool _flush): mData(Data)
 		{
 			min_class = _min_class;
 			max_class = _max_class;
+			flush = _flush;
 		};
-		/**
-		\fn operator() (cUser *User)
-		The sending  method
-		\param User destination for sent data
-		 */
-		void operator() (cUserBase *User);
+
+		void operator()(cUserBase *User);
 	};
 
-	// unary function to send data to users with specific feature in supports
-
+	// unary function for sending data to all users by feature in supports
 	struct ufSendWithFeature: public unary_function<void, iterator>
 	{
 		string &mData;
 		unsigned feature;
+		bool flush;
 
-		ufSendWithFeature(string &Data, unsigned _feature):mData(Data)
+		ufSendWithFeature(string &Data, unsigned _feature, bool _flush): mData(Data)
 		{
 			feature = _feature;
+			flush = _flush;
 		};
 
-		void operator() (cUserBase *User);
+		void operator()(cUserBase *User);
 	};
 
-	/**
-		Unary function that sends DataS+Nick+DataE to every user
-	*/
-	struct ufSendWithNick : public unary_function<void, iterator>
+	// unary function for sending data to all users by class range and feature in supports
+	struct ufSendWithClassFeature: public unary_function<void, iterator>
 	{
-		//Data to send
-		string &mDataStart, &mDataEnd;
+		string &mData;
+		int min_class, max_class;
+		unsigned feature;
+		bool flush;
 
-		ufSendWithNick(string &DataS,string &DataE):mDataStart(DataS), mDataEnd(DataE){};
-		void operator() (cUserBase *User);
+		ufSendWithClassFeature(string &Data, int _min_class, int _max_class, unsigned _feature, bool _flush): mData(Data)
+		{
+			min_class = _min_class;
+			max_class = _max_class;
+			feature = _feature;
+			flush = _flush;
+		};
+
+		void operator()(cUserBase *User);
 	};
-
-
 
 	/** Unary function that constructs a nick list
 	*/
@@ -180,7 +186,7 @@ public:
 	};
 
 private:
-	string mSendAllCache;
+	//string mSendAllCache;
 	string mNickList;
 	string mINFOList;
 	string mINFOListComplete;
@@ -221,12 +227,13 @@ public:
 	bool   RemoveByNick(const string &Nick){ return RemoveByHash(Nick2Hash(Nick));}
 	bool   Remove      (cUserBase *User       );
 
-	void   	SendToAllWithNick(string &Start, string &End);
-	void   	SendToAll(string &Data, bool UseCache = false, bool AddPipe=true);
-	void	SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache = false, bool AddPipe = true);
+	void SendToAll(string &Data, bool UseCache = false, bool AddPipe = true);
+	void SendToAllWithNick(string &Start, string &End);
+	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache = false, bool AddPipe = true);
 	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache = false, bool AddPipe = true);
-	void   	FlushCache();
-	void   	FlushForUser(cUserBase *User);
+	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache = false, bool AddPipe = true);
+	void FlushCache();
+	void FlushForUser(cUserBase *User);
 
 	virtual void OnAdd(cUserBase *User)
 	{

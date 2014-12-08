@@ -2543,10 +2543,10 @@ int cDCProto::NickList(cConnDC *conn)
 		if (mS->mRobotList.Size() && (conn->mFeatures & eSF_BOTLIST)) // send $BotList
 			conn->Send(mS->mRobotList.GetNickList(), true);
 
-		if (mS->mC.send_user_ip && (conn->mFeatures & eSF_USERIP2) && conn->mpUser) { // send $UserIP
-			if (conn->mpUser->mClass >= eUC_OPERATOR)
+		if (mS->mC.send_user_ip && conn->mpUser && (conn->mFeatures & eSF_USERIP2)) { // send $UserIP
+			if (conn->mpUser->mClass >= mS->mC.user_ip_class) // full list
 				conn->Send(mS->mUserList.GetIPList(), true);
-			else {
+			else { // own ip only
 				string uip;
 				cCompositeUserCollection::ufDoIpList DoUserIP(uip);
 				DoUserIP.Clear();
