@@ -64,15 +64,28 @@ void cDCProto::DeleteParser(cMessageParser *OldParser)
 	if (OldParser != NULL) delete OldParser;
 }
 
-int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
+int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 {
-	cMessageDC *msg = (cMessageDC *)Msg;
-	cConnDC *conn = (cConnDC *)Conn;
-	//@todo tMsgAct action = this->mS->Filter(tDCMsg(msg->mType), conn);
+	if (!pMsg || !pConn)
+		return -1;
 
-	if (strlen(Msg->mStr.data()) < Msg->mStr.size()) {
+	cMessageDC *msg = (cMessageDC*)pMsg;
+	cConnDC *conn = (cConnDC*)pConn;
+
+	if (!msg || !conn)
+		return -1;
+
+	/*
+		todo
+			tMsgAct action = mS->Filter(tDCMsg(msg->mType), conn);
+	*/
+
+	if (strlen(msg->mStr.data()) < msg->mStr.size()) {
+		if (conn->Log(1))
+			conn->LogStream() << "NULL character message: " << msg->mStr << endl;
+
 		if (mS->mC.nullchars_report)
-			mS->ReportUserToOpchat(conn, _("Probably attempt of an attack with NULL characters")); // Msg->mStr
+			mS->ReportUserToOpchat(conn, _("Probably attempt of NULL character attack"));
 
 		conn->CloseNow();
 		return -1;
@@ -80,8 +93,9 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (msg->mType != eMSG_UNPARSED) {
-			if (conn->mpUser != NULL) {
-				if (!mS->mCallBacks.mOnParsedMsgAny.CallAll(conn, msg)) return 1;
+			if (conn->mpUser) {
+				if (!mS->mCallBacks.mOnParsedMsgAny.CallAll(conn, msg))
+					return 1;
 			} else {
 				if (!mS->mCallBacks.mOnParsedMsgAnyEx.CallAll(conn, msg)) {
 					conn->CloseNow();
@@ -121,12 +135,13 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 		case eDC_GETINFO:
 			this->DC_GetINFO(msg, conn);
 			break;
-		case eDC_USERIP:
-			this->DC_UserIP(msg, conn);
+		case eDCO_USERIP:
+			this->DCO_UserIP(msg, conn);
 			break;
-		case eDC_CONNECTTOME:
 		case eDC_MCONNECTTOME:
 			//this->DC_MultiConnectToMe(msg, conn);
+			//break;
+		case eDC_CONNECTTOME:
 			this->DC_ConnectToMe(msg, conn);
 			break;
 		case eDC_RCONNECTTOME:
@@ -141,11 +156,11 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 		case eDC_CHAT:
 			this->DC_Chat(msg, conn);
 			break;
-		case eDC_OPFORCEMOVE:
-			this->DC_OpForceMove(msg, conn);
+		case eDCO_OPFORCEMOVE:
+			this->DCO_OpForceMove(msg, conn);
 			break;
-		case eDC_KICK:
-			this->DC_Kick(msg, conn);
+		case eDCO_KICK:
+			this->DCO_Kick(msg, conn);
 			break;
 		case eDC_SEARCH:
 		case eDC_SEARCH_PAS:
@@ -157,11 +172,11 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 			this->DC_SR(msg, conn);
 			break;
 		case eDC_QUIT:
-			mS->DCPublicHS(_("Goodbye."), conn);
-			conn->CloseNice(2000, eCR_QUIT);
+			mS->DCPublicHS(_("See you."), conn);
+			conn->CloseNice(1000, eCR_QUIT);
 			break;
-		case eDCE_SUPPORTS:
-			this->DCE_Supports(msg, conn);
+		case eDC_SUPPORTS:
+			this->DC_Supports(msg, conn);
 			break;
 		case eDCO_BAN:
 		case eDCO_TBAN:
@@ -201,35 +216,169 @@ int cDCProto::TreatMsg(cMessageParser *Msg, cAsyncConn *Conn)
 	return 0;
 }
 
-int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
+/*
+	user commands
+*/
+
+int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
-		return -1;
+	ostringstream os;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": ValidateNick";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->GetLSFlag(eLS_VALNICK)) { // already sent
-		string omsg = _("Invalid login sequence, your client already validated nick.");
+	if (conn->GetLSFlag(eLS_KEYOK)) { // already sent
+		os << _("Invalid login sequence, your client already sent key.");
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	string &nick = msg->ChunkString(eCH_1_PARAM);
-	static string omsg;
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	if (mS->mC.drop_invalid_key) {
+		string key;
+		Lock2Key(conn->mLock, key);
+
+		if (key != msg->ChunkString(eCH_1_PARAM)) {
+			os << _("Your client provided invalid key in response to lock.");
+
+			if (conn->Log(1))
+				conn->LogStream() << os.str() << endl;
+
+			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_INVALID_KEY);
+			return -1;
+		}
+	}
+
+	conn->SetLSFlag(eLS_KEYOK);
+	conn->ClearTimeOut(eTO_KEY);
+	conn->SetTimeOut(eTO_VALNICK, mS->mC.timeout_length[eTO_VALNICK], mS->mTime);
+	conn->mT.key.Get();
+	return 0;
+}
+
+int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
+{
 	ostringstream os;
+
+	if (conn->GetLSFlag(eLS_SUPPORTS)) { // already sent
+		os << _("Invalid login sequence, your client already sent supports.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &supports = msg->ChunkString(eCH_1_PARAM);
+	conn->mSupportsText = supports; // save user supports in plain format
+	istringstream is(supports);
+	string feature;
+
+	while (1) {
+		feature = mS->mEmpty;
+		is >> feature;
+
+		if (!feature.size())
+			break;
+
+		if (feature == "OpPlus")
+			conn->mFeatures |= eSF_OPPLUS;
+		else if (feature == "NoHello")
+			conn->mFeatures |= eSF_NOHELLO;
+		else if (feature == "NoGetINFO")
+			conn->mFeatures |= eSF_NOGETINFO;
+		else if (feature == "DHT0")
+			conn->mFeatures |= eSF_DHT0;
+		else if (feature == "QuickList")
+			conn->mFeatures |= eSF_QUICKLIST;
+		else if (feature == "BotINFO")
+			conn->mFeatures |= eSF_BOTINFO;
+		else if ((feature == "ZPipe0") || (feature == "ZPipe"))
+			conn->mFeatures |= eSF_ZLIB;
+		else if (feature == "ChatOnly")
+			conn->mFeatures |= eSF_CHATONLY;
+		else if (feature == "MCTo")
+			conn->mFeatures |= eSF_MCTO;
+		else if (feature == "UserCommand")
+			conn->mFeatures |= eSF_USERCOMMAND;
+		else if (feature == "BotList")
+			conn->mFeatures |= eSF_BOTLIST;
+		else if (feature == "HubTopic")
+			conn->mFeatures |= eSF_HUBTOPIC;
+		else if (feature == "UserIP2")
+			conn->mFeatures |= eSF_USERIP2;
+		else if (feature == "TTHSearch")
+			conn->mFeatures |= eSF_TTHSEARCH;
+		else if (feature == "Feed")
+			conn->mFeatures |= eSF_FEED;
+		else if (feature == "ClientID")
+			conn->mFeatures |= eSF_CLIENTID;
+		else if (feature == "IN")
+			conn->mFeatures |= eSF_IN;
+		else if (feature == "BanMsg")
+			conn->mFeatures |= eSF_BANMSG;
+		else if (feature == "TLS")
+			conn->mFeatures |= eSF_TLS;
+		else if (feature == "IPv4")
+			conn->mFeatures |= eSF_IPV4;
+		else if (feature == "IP64")
+			conn->mFeatures |= eSF_IP64;
+		else if (feature == "FailOver")
+			conn->mFeatures |= eSF_FAILOVER;
+		else if (feature == "NickChange")
+			conn->mFeatures |= eSF_NICKCHANGE;
+		else if (feature == "ClientNick")
+			conn->mFeatures |= eSF_CLIENTNICK;
+		else if (feature == "FeaturedNetworks")
+			conn->mFeatures |= eSF_FEATNET;
+		else if (feature == "ZLine")
+			conn->mFeatures |= eSF_ZLINE;
+		else if (feature == "GetZBlock")
+			conn->mFeatures |= eSF_GETZBLOCK;
+		else if (feature == "ACTM")
+			conn->mFeatures |= eSF_ACTM;
+		else if (feature == "SaltPass")
+			conn->mFeatures |= eSF_SALTPASS;
+	}
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgSupport.CallAll(conn, msg)) {
+			conn->CloseNow();
+			return -1;
+		}
+	#endif
+
+	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver");
+	conn->Send(omsg);
+	conn->SetLSFlag(eLS_SUPPORTS);
+	return 0;
+}
+
+int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
+{
+	ostringstream os;
+
+	if (conn->GetLSFlag(eLS_VALNICK)) { // already sent
+		os << _("Invalid login sequence, your client already validated nick.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &nick = msg->ChunkString(eCH_1_PARAM);
 
 	// Log new user
 	if(conn->Log(3))
@@ -241,6 +390,8 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		conn->CloseNice(2000, closeReason); // give it little more time, it seems that some clients with slow connection or ping dont receive ban messages sometimes
 		return -1;
 	}
+
+	static string omsg;
 
 	// User limit
 	int limit = mS->mC.max_users_total;
@@ -331,15 +482,9 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	}
 
 	// send hub name without topic
-	string emp;
+	string emp("");
 	Create_HubName(omsg, mS->mC.hub_name, emp);
-
-	#ifndef WITHOUT_PLUGINS
-	if (mS->mCallBacks.mOnHubName.CallAll(nick, omsg))
-	#endif
-	{
-		conn->Send(omsg);
-	}
+	conn->Send(omsg);
 
 	// check authorization ip
 	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) {
@@ -383,11 +528,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mRegInfo && (conn->mRegInfo->mClass == eUC_PINGER)) {
-		conn->mpUser->Register();
-		mS->mR->Login(conn, nick);
-	} else if ((conn->mFeatures & eSF_BOTINFO) && conn->mpUser) {
-		conn->mpUser->mClass = eUC_PINGER;
+	if (conn->mpUser) {
+		if (conn->mRegInfo && (conn->mRegInfo->mClass == eUC_PINGER)) {
+			conn->mpUser->Register();
+			mS->mR->Login(conn, nick);
+		} else if (conn->mFeatures & eSF_BOTINFO)
+			conn->mpUser->mClass = eUC_PINGER;
 	}
 
 	conn->SetLSFlag(eLS_VALNICK|eLS_NICKLST); // set NICKLST because user may want to skip getting userlist
@@ -396,88 +542,25 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Key";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->GetLSFlag(eLS_KEYOK)) { // already sent
-		string omsg = _("Invalid login sequence, your client already sent key.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (mS->mC.drop_invalid_key) {
-		string key;
-		Lock2Key(conn->mLock, key);
-
-		if (key != msg->ChunkString(1)) {
-			if (conn->Log(1))
-				conn->LogStream() << "Invalid key" << endl;
-
-			mS->ConnCloseMsg(conn, _("Your client provided invalid key in response to lock."), 1000, eCR_INVALID_KEY);
-			return -1;
-		}
-	}
-
-	conn->SetLSFlag(eLS_KEYOK);
-	conn->ClearTimeOut(eTO_KEY);
-	conn->SetTimeOut(eTO_VALNICK, mS->mC.timeout_length[eTO_VALNICK], mS->mTime);
-	conn->mT.key.Get();
-	return 0;
-}
-
 int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn, false))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": MyPass";
+	ostringstream os;
 
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
+	if (conn->GetLSFlag(eLS_PASSWD) && !conn->mpUser->mSetPass) { // already sent
+		os << _("Invalid login sequence, you client already sent password.");
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
-	} else if (conn->GetLSFlag(eLS_PASSWD) && !conn->mpUser->mSetPass) { // already sent
-		string omsg = _("Invalid login sequence, you client already sent password.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	string &pwd = msg->ChunkString(eCH_1_PARAM);
-	string omsg;
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyPass.CallAll(conn, msg)) {
@@ -486,37 +569,39 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
+	string &pwd = msg->ChunkString(eCH_1_PARAM);
+
 	if (conn->mpUser->mSetPass) { // set password request
 		if (!conn->mRegInfo || !conn->mRegInfo->mPwdChange) {
 			conn->mpUser->mSetPass = false;
 			return 0;
 		}
 
-		ostringstream ostr;
-
 		if (pwd.size() < (unsigned int)mS->mC.password_min_len) {
-			ostr << autosprintf(_("Minimum password length is %d characters, please retry."), mS->mC.password_min_len);
-			mS->DCPrivateHS(ostr.str(), conn);
-			mS->DCPublicHS(ostr.str(), conn);
+			os << autosprintf(_("Minimum password length is %d characters, please retry."), mS->mC.password_min_len);
+			mS->DCPrivateHS(os.str(), conn);
+			mS->DCPublicHS(os.str(), conn);
 			conn->mpUser->mSetPass = false;
 			return 0;
 		}
 
 		if (!mS->mR->ChangePwd(conn->mpUser->mNick, pwd, 0)) {
-			ostr << _("Error updating password.");
-			mS->DCPrivateHS(ostr.str(), conn);
-			mS->DCPublicHS(ostr.str(), conn);
+			os << _("Error updating password.");
+			mS->DCPrivateHS(os.str(), conn);
+			mS->DCPublicHS(os.str(), conn);
 			conn->mpUser->mSetPass = false;
 			return 0;
 		}
 
-		ostr << _("Password updated successfully.");
-		mS->DCPrivateHS(ostr.str(), conn);
-		mS->DCPublicHS(ostr.str(), conn);
+		os << _("Password updated successfully.");
+		mS->DCPrivateHS(os.str(), conn);
+		mS->DCPublicHS(os.str(), conn);
 		conn->ClearTimeOut(eTO_SETPASS);
 		conn->mpUser->mSetPass = false;
 		return 0;
 	}
+
+	string omsg;
 
 	// Check user password
 	if(conn->mpUser->CheckPwd(pwd)) {
@@ -559,29 +644,23 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn, false))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Version";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
+	ostringstream os;
 
 	if (conn->GetLSFlag(eLS_VERSION)) { // already sent
-		string omsg = _("Invalid login sequence, you client already sent version.");
+		os << _("Invalid login sequence, you client already sent version.");
 
 		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
+			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgVersion.CallAll(conn, msg)) {
@@ -602,76 +681,52 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn, false))
 		return -1;
 
-	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, ePF_NICKLIST)) // protocol flood
+	if (conn->CheckProtoFlood(msg->mStr, ePF_NICKLIST)) // protocol flood
 		return -1;
 
-	if(!conn->GetLSFlag(eLS_MYINFO) && mS->mC.nicklist_on_login)
-	{
-		if (mS->mC.delayed_login)
-		{
+	if (!conn->GetLSFlag(eLS_MYINFO) && mS->mC.nicklist_on_login) {
+		if (mS->mC.delayed_login) {
 			int LSFlag = conn->GetLSFlag(eLS_LOGIN_DONE);
-			if (LSFlag & eLS_NICKLST) LSFlag -= eLS_NICKLST;
+
+			if (LSFlag & eLS_NICKLST)
+				LSFlag -= eLS_NICKLST;
+
 			conn->ReSetLSFlag(LSFlag);
 		}
+
 		conn->mSendNickList = true;
 		return 0;
 	}
-	if (conn->mpUser && (conn->mpUser->mClass < eUC_OPERATOR)) {
-		if(!mS->MinDelay(conn->mpUser->mT.nicklist,mS->mC.int_nicklist)) {
-			return -1;
-		}
-	}
+
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && !mS->MinDelay(conn->mpUser->mT.nicklist, mS->mC.int_nicklist))
+		return -1;
+
 	return NickList(conn);
 }
 
 int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn, false))
 		return -1;
 
-	ostringstream os;
-
-	if (!conn->mpUser) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": MyINFO";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_MYINFO)) // protocol flood
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
 	string &nick = msg->ChunkString(eCH_MI_NICK);
 
-	if (nick != conn->mpUser->mNick) { // verify sender
-		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), nick.c_str());
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	if (CheckUserNick(conn, nick))
 		return -1;
-	}
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_MYINFO)) // protocol flood
+		return -1;
 
 	if (conn->mConnType == NULL) // parse connection
 		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
 
+	ostringstream os;
 	cDCTag *tag = mS->mCo->mDCClients->ParseTag(msg->ChunkString(eCH_MI_DESC)); // check tag
 
 	if (!mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc < 0) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
@@ -1064,125 +1119,42 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": GetINFO";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_GETINFO)) // protocol flood
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	if (!conn->mpUser->mInList)
+	string &nick = msg->ChunkString(eCH_GI_NICK);
+
+	if (CheckUserNick(conn, nick))
 		return -1;
 
-	string buf;
-	string str=msg->ChunkString(eCH_GI_OTHER);
+	if (conn->CheckProtoFlood(msg->mStr, ePF_GETINFO)) // protocol flood
+		return -1;
 
-	cUser *other = mS->mUserList.GetUserByNick ( str );
+	string omsg;
+	string &other = msg->ChunkString(eCH_GI_OTHER); // find other user
+	cUser *user = mS->mUserList.GetUserByNick(other);
 
-	// check if user found
-	if(!other) {
-		if(str != mS->mC.hub_security && str != mS->mC.opchat_name) {
-			Create_Quit(buf, str);
-			conn->Send(buf, true);
+	if (!user) {
+		if ((other != mS->mC.hub_security) && (other != mS->mC.opchat_name)) {
+			Create_Quit(omsg, other);
+			conn->Send(omsg, true);
 		}
+
 		return -2;
 	}
 
-	// if user just logged in ignore it, conn is dcgui, and already one myinfo sent
-	if(conn->mpUser->mT.login < other->mT.login && cTime() < (other->mT.login + 60))
+	if ((conn->mpUser->mT.login < user->mT.login) && (mS->mTime < (user->mT.login + 60))) // if user logged in then ignore it, client is dcgui and one myinfo sent already
 		return 0;
 
-	if(mS->mC.optimize_userlist == eULO_GETINFO) {
-		conn->mpUser->mQueueUL.append(str);
+	if (mS->mC.optimize_userlist == eULO_GETINFO) {
+		conn->mpUser->mQueueUL.append(other);
 		conn->mpUser->mQueueUL.append("|");
-	} else {
-		// send it
-		if(!(conn->mFeatures & eSF_NOGETINFO)) {
-			buf = GetMyInfo(other, conn->mpUser->mClass );
-			conn->Send(buf, true, false);
-		}
-	}
-	return 0;
-}
-
-int cDCProto::DC_UserIP(cMessageDC *msg, cConnDC *conn)
-{
-	if (!msg || !conn)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": UserIP";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || (conn->mpUser->mClass < eUC_OPERATOR))
-		return -1;
-
-	string lst = msg->ChunkString(eCH_1_PARAM);
-	if (lst.empty()) return -1;
-	string sep("$$");
-	lst += sep;
-	int pos;
-	cUser *other;
-	string userip;
-
-	while (lst.find(sep) != string::npos) {
-		pos = lst.find(sep);
-		string nick = lst.substr(0, pos);
-
-		if (!nick.empty()) {
-			other = mS->mUserList.GetUserByNick(nick);
-
-			if (other && other->mxConn && other->mxConn->mpUser && other->mxConn->mpUser->mInList) {
-				userip.append(nick);
-				userip.append(" ");
-				userip.append(other->mxConn->AddrIP());
-				userip.append(sep);
-			}
-		}
-
-		lst = lst.substr(pos + sep.length());
-	}
-
-	if (!userip.empty()) {
-		userip = "$UserIP " + userip;
-		conn->Send(userip, true);
+	} else if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
+		omsg = GetMyInfo(user, conn->mpUser->mClass);
+		conn->Send(omsg, true, false);
 	}
 
 	return 0;
@@ -1190,58 +1162,28 @@ int cDCProto::DC_UserIP(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": To";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
-	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	string &from = msg->ChunkString(eCH_PM_FROM);
+	string &nick = msg->ChunkString(eCH_PM_NICK);
 
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+	if (CheckUserNick(conn, from) || CheckUserNick(conn, nick))
 		return -1;
-	}
 
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_PRIV)) // protocol flood
+	if (conn->CheckProtoFlood(msg->mStr, ePF_PRIV)) // protocol flood
 		return -1;
 
 	if (mS->CheckProtoFloodAll(conn, msg, ePFA_PRIV)) // protocol flood from all
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -2;
-
-	string &from = msg->ChunkString(eCH_PM_FROM);
-	string &nick = msg->ChunkString(eCH_PM_NICK);
-	stringstream omsg;
-
-	if ((from != conn->mpUser->mNick) || (nick != conn->mpUser->mNick)) { // verify sender nick
-		omsg << autosprintf(_("Nick spoofing attempt detected from your client: %s"), ((from != conn->mpUser->mNick) ? from.c_str() : nick.c_str()));
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg.str() << endl;
-
-		mS->DCPublicHS(omsg.str(), conn);
-		conn->CloseNice(1000, eCR_CHAT_NICK);
-		return -1;
-	}
-
 	string &to = msg->ChunkString(eCH_PM_TO);
 	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
 
-	if (!other)
+	if (!other) // todo: notify user
 		return -2;
 
 	if (!other->mxConn && mS->mRobotList.ContainsNick(to)) { // parse for commands to bot
@@ -1249,18 +1191,22 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // no rights
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // todo: notify user
 		return -4;
 
+	ostringstream os;
+
 	if (conn->mpUser->mClass < mS->mC.private_class) {
-		mS->DCPrivateHS(_("Private chat is currently disabled for users with your class."), conn);
-		mS->DCPublicHS(_("Private chat is currently disabled for users with your class."), conn);
+		os << _("Private chat is currently disabled for users with your class.");
+		mS->DCPrivateHS(os.str(), conn);
+		mS->DCPublicHS(os.str(), conn);
 		return 0;
 	}
 
 	if ((conn->mpUser->mClass + mS->mC.classdif_pm) < other->mClass) {
-		mS->DCPrivateHS(_("You can't talk to this user."), conn);
-		mS->DCPublicHS(_("You can't talk to this user."), conn);
+		os << _("You can't talk to this user.");
+		mS->DCPrivateHS(os.str(), conn);
+		mS->DCPublicHS(os.str(), conn);
 		return -4;
 	}
 
@@ -1272,14 +1218,13 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		if (Hash == conn->mpUser->mFloodHashes[eFH_PM]) {
 			if (conn->mpUser->mFloodCounters[eFC_PM]++ > mS->mC.max_flood_counter_pm) {
 				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
-				omsg << autosprintf(_("Same message flood in PM: %s"), text.c_str());
-				mS->ReportUserToOpchat(conn, omsg.str());
+				os << autosprintf(_("Same message flood in PM: %s"), text.c_str());
+				mS->ReportUserToOpchat(conn, os.str());
 				conn->CloseNow();
 				return -5;
 			}
-		} else {
+		} else
 			conn->mpUser->mFloodCounters[eFC_PM] = 0;
-		}
 	}
 
 	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
@@ -1289,81 +1234,54 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 			return 0;
 	#endif
 
-	if (other->mxConn) { // send it
+	if (other->mxConn) // send it
 		other->mxConn->Send(msg->mStr);
-	}
 
 	return 0;
 }
 
 int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": MCTo";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
-	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	string &from = msg->ChunkString(eCH_MCTO_FROM);
+	string &nick = msg->ChunkString(eCH_MCTO_NICK);
 
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+	if (CheckUserNick(conn, from) || CheckUserNick(conn, nick))
 		return -1;
-	}
 
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_MCTO)) // protocol flood
+	if (conn->CheckProtoFlood(msg->mStr, ePF_MCTO)) // protocol flood
 		return -1;
 
 	if (mS->CheckProtoFloodAll(conn, msg, ePFA_MCTO)) // protocol flood from all
 		return -1;
 
-	if (!conn->mpUser->mInList)
-		return -2;
-
-	string &from = msg->ChunkString(eCH_MCTO_FROM);
-	string &nick = msg->ChunkString(eCH_MCTO_NICK);
-	stringstream omsg;
-
-	if ((from != conn->mpUser->mNick) || (nick != conn->mpUser->mNick)) { // verify sender nick
-		omsg << autosprintf(_("Nick spoofing attempt detected from your client: %s"), ((from != conn->mpUser->mNick) ? from.c_str() : nick.c_str()));
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg.str() << endl;
-
-		mS->DCPublicHS(omsg.str(), conn);
-		conn->CloseNice(1000, eCR_CHAT_NICK);
-		return -1;
-	}
-
 	string &to = msg->ChunkString(eCH_MCTO_TO);
 	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
 
-	if (!other)
+	if (!other) // todo: notify user
 		return -2;
 
-	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // no rights
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // todo: notify user
 		return -4;
 
+	ostringstream os;
+
 	if (conn->mpUser->mClass < mS->mC.private_class) { // pm rules also apply on mcto, messages are also private
-		mS->DCPrivateHS(_("Private chat is currently disabled for users with your class."), conn);
-		mS->DCPublicHS(_("Private chat is currently disabled for users with your class."), conn);
+		os << _("Private chat is currently disabled for users with your class.");
+		mS->DCPrivateHS(os.str(), conn);
+		mS->DCPublicHS(os.str(), conn);
 		return 0;
 	}
 
 	if ((conn->mpUser->mClass + mS->mC.classdif_mcto) < other->mClass) {
-		mS->DCPrivateHS(_("You can't talk to this user."), conn);
-		mS->DCPublicHS(_("You can't talk to this user."), conn);
+		os << _("You can't talk to this user.");
+		mS->DCPrivateHS(os.str(), conn);
+		mS->DCPublicHS(os.str(), conn);
 		return -4;
 	}
 
@@ -1375,14 +1293,13 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		if (Hash == conn->mpUser->mFloodHashes[eFH_MCTO]) {
 			if (conn->mpUser->mFloodCounters[eFC_MCTO]++ > mS->mC.max_flood_counter_mcto) {
 				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
-				omsg << autosprintf(_("Same message flood in MCTo: %s"), text.c_str());
-				mS->ReportUserToOpchat(conn, omsg.str());
+				os << autosprintf(_("Same message flood in MCTo: %s"), text.c_str());
+				mS->ReportUserToOpchat(conn, os.str());
 				conn->CloseNow();
 				return -5;
 			}
-		} else {
+		} else
 			conn->mpUser->mFloodCounters[eFC_MCTO] = 0;
-		}
 	}
 
 	conn->mpUser->mFloodHashes[eFH_MCTO] = Hash;
@@ -1410,56 +1327,33 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 {
-	if (!msg || !conn)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Chat";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
-	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
+	string &nick = msg->ChunkString(eCH_CH_NICK);
 
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
+	if (CheckUserNick(conn, nick))
 		return -1;
-	}
 
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_CHAT)) // protocol flood
+	if (conn->CheckProtoFlood(msg->mStr, ePF_CHAT)) // protocol flood
 		return -1;
 
 	if (mS->CheckProtoFloodAll(conn, msg, ePFA_CHAT)) // protocol flood from all
 		return -1;
 
-	if (!conn->mpUser->mInList) return -3;
-	stringstream omsg;
-
-	// check if nick is ok
-	if ((msg->ChunkString(eCH_CH_NICK) != conn->mpUser->mNick)) {
-		omsg << autosprintf(_("You nick is not %s but %s."), msg->ChunkString(eCH_CH_NICK).c_str(), conn->mpUser->mNick.c_str());
-		mS->DCPublicHS(omsg.str(), conn);
-		conn->CloseNice(1000, eCR_CHAT_NICK);
-		return -2;
-	}
+	ostringstream os;
 
 	// check if delay is ok
 	if (conn->mpUser->mClass < eUC_VIPUSER) {
 		long delay = mS->mC.int_chat_ms;
 
 		if (!mS->MinDelayMS(conn->mpUser->mT.chat, delay)) {
-			cTime now;
-			cTime diff = now - conn->mpUser->mT.chat;
-			omsg << autosprintf(_("Not sent because minimum chat delay is %lu ms but you made %s."), delay, diff.AsPeriod().AsString().c_str());
-			mS->DCPublicHS(omsg.str(), conn);
+			cTime diff = mS->mTime - conn->mpUser->mT.chat;
+			os << autosprintf(_("Not sent because minimum chat delay is %lu ms but you made %s."), delay, diff.AsPeriod().AsString().c_str());
+			mS->DCPublicHS(os.str(), conn);
 			return 0;
 		}
 	}
@@ -1488,11 +1382,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	// if this is a kick message, process it separately
 	if ((mKickChatPattern.Exec(text) >= 4) && (!mKickChatPattern.PartFound(1) || (mKickChatPattern.Compare(2, text, conn->mpUser->mNick) == 0))) {
 		if (conn->mpUser->mClass >= eUC_OPERATOR) {
-			string kick_reason;
+			string kick_reason, other;
 			mKickChatPattern.Extract(4, text, kick_reason);
-			string nick;
-			mKickChatPattern.Extract(3, text, nick);
-			mS->DCKickNick(NULL, conn->mpUser, nick, kick_reason, eKCK_Reason);
+			mKickChatPattern.Extract(3, text, other);
+			mS->DCKickNick(NULL, conn->mpUser, other, kick_reason, eKCK_Reason);
 		}
 
 		return 0;
@@ -1509,34 +1402,16 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_CTM)) // protocol flood
 		return -1;
 
 	ostringstream os;
-
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": ConnectToMe";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_CTM)) // protocol flood
-		return -1;
-
 	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
@@ -1651,46 +1526,21 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	ostringstream os;
-
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": RevConnectToMe";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_RCTM)) // protocol flood
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
 	string &mynick = msg->ChunkString(eCH_RC_NICK);
 
-	if (mynick != conn->mpUser->mNick) { // verify sender
-		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), mynick.c_str());
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	if (CheckUserNick(conn, mynick))
 		return -1;
-	}
 
+	if (conn->CheckProtoFlood(msg->mStr, ePF_RCTM)) // protocol flood
+		return -1;
+
+	ostringstream os;
 	string &nick = msg->ChunkString(eCH_RC_OTHER); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
@@ -1775,39 +1625,25 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
+	if (CheckUserLogin(conn))
+		return -1;
+
 	// todo
 	return 0;
 }
 
 int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
 		return -1;
 
 	ostringstream os;
-
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": Search";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_SEARCH)) // protocol flood
-		return -1;
 
 	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
 		if (mS->Log(3))
@@ -1836,15 +1672,8 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (passive) { // verify sender
 		addr = msg->ChunkString(eCH_PS_NICK);
 
-		if (addr != conn->mpUser->mNick) {
-			os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), addr.c_str());
-
-			if (conn->Log(1))
-				conn->LogStream() << os.str() << endl;
-
-			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+		if (CheckUserNick(conn, addr))
 			return -1;
-		}
 
 		addr = "Hub:" + addr;
 	} else {
@@ -2003,45 +1832,19 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	ostringstream os;
-
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": SR";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_SR)) // protocol flood
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
 	string &from = msg->ChunkString(eCH_SR_FROM);
 
-	if (from != conn->mpUser->mNick) { // verify sender
-		os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), from.c_str());
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	if (CheckUserNick(conn, from))
 		return -1;
-	}
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SR)) // protocol flood
+		return -1;
 
 	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_SR_TO)); // find other user
 
@@ -2061,15 +1864,19 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DC_Kick(cMessageDC *msg, cConnDC *conn)
+/*
+	bot commands
+*/
+
+int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
 	ostringstream os;
 
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
+	if (!(conn->mFeatures & eSF_BOTINFO) && (conn->mpUser->mClass != eUC_PINGER)) { // not pinger
+		os << _("Invalid login sequence, you didn't identify yourself as pinger.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -2078,67 +1885,148 @@ int cDCProto::DC_Kick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": Kick";
+	if (conn->GetLSFlag(eLS_BOTINFO)) { // already sent
+		os << _("Invalid login sequence, you already sent pinger information.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
 
-	if (!conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())) { // check rights
-		os << _("You have no rights to kick users.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
+
+	os << autosprintf(_("Pinger entered the hub: %s"), msg->ChunkString(eCH_1_PARAM).c_str());
+
+	if (conn->Log(2))
+		conn->LogStream() << os.str() << endl;
+
+	if (mS->mC.botinfo_report)
+		mS->ReportUserToOpchat(conn, os.str());
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgBotINFO.CallAll(conn, msg)) {
+			conn->CloseNow();
+			return -1;
+		}
+	#endif
+
+	os.str("");
+	os.clear();
+	char sep = '$';
+	char pipe = '|';
+	cConnType *ConnType = mS->mConnTypes->FindConnType("default");
+	__int64 minshare = mS->mC.min_share;
+
+	if (mS->mC.min_share_use_hub > minshare)
+		minshare = mS->mC.min_share_use_hub;
+
+	if (mS->mC.hub_icon_url.size())
+		os << "$SetIcon " << mS->mC.hub_icon_url << pipe;
+
+	if (mS->mC.hub_logo_url.size())
+		os << "$SetLogo " << mS->mC.hub_logo_url << pipe;
+
+	os << "$HubINFO ";
+	os << mS->mC.hub_name << sep;
+	os << mS->mC.hub_host << sep;
+	os << mS->mC.hub_desc << sep;
+	os << mS->mC.max_users_total << sep;
+	os << StringFrom((__int64)(1024 * 1024) * minshare) << sep;
+	os << ((ConnType) ? ConnType->mTagMinSlots : 0) << sep;
+	os << mS->mC.tag_max_hubs << sep;
+	os << "Verlihub " << VERSION << sep;
+	os << mS->mC.hub_owner << sep;
+	os << mS->mC.hub_category << sep;
+	os << mS->mC.hub_encoding;
+
+	string info = os.str();
+	conn->Send(info, true);
+	conn->SetLSFlag(eLS_BOTINFO);
+	return 0;
+}
+
+/*
+	operator commands
+*/
+
+int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &lst = msg->ChunkString(eCH_1_PARAM);
+
+	if (lst.empty())
+		return -1;
+
+	string sep("$$");
+	lst += sep;
+	int pos;
+	cUser *other;
+	string userip;
+
+	while (lst.find(sep) != string::npos) {
+		pos = lst.find(sep);
+		string nick = lst.substr(0, pos);
+
+		if (!nick.empty()) {
+			other = mS->mUserList.GetUserByNick(nick);
+
+			if (other && other->mxConn && other->mxConn->mpUser && other->mxConn->mpUser->mInList) {
+				userip.append(nick);
+				userip.append(" ");
+				userip.append(other->mxConn->AddrIP());
+				userip.append(sep);
+			}
+		}
+
+		lst = lst.substr(pos + sep.length());
 	}
+
+	if (!userip.empty()) {
+		userip = "$UserIP " + userip;
+		conn->Send(userip, true);
+	}
+
+	return 0;
+}
+
+int cDCProto::DCO_Kick(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
 
 	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_1_PARAM), mS->mEmpty, eKCK_Drop | eKCK_TBAN); // try to kick user
 	return 0;
 }
 
-int cDCProto::DC_OpForceMove(cMessageDC *msg, cConnDC *conn)
+int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= mS->mC.min_class_redir)))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
 	ostringstream os;
-
-	if (!conn->mpUser || !conn->mpUser->mInList) { // missing nick
-		os << _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (msg->SplitChunks()) { // bad syntax
-		os << _("Your client sent malformed protocol command") << ": OpForceMove";
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->mpUser->mClass < mS->mC.min_class_redir) { // check rights
-		os << _("You have no rights to redirect users.");
-
-		if (conn->Log(1))
-			conn->LogStream() << os.str() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-		return -1;
-	}
-
 	string &nick = msg->ChunkString(eCH_FM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
@@ -2182,122 +2070,20 @@ int cDCProto::DC_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DCE_Supports(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": Supports";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->GetLSFlag(eLS_SUPPORTS)) { // already sent
-		string omsg = _("Invalid login sequence, your client already sent supports.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	string &supports = msg->ChunkString(eCH_1_PARAM);
-	conn->mSupportsText = supports; // save user supports in text format
-	istringstream is(msg->mStr);
-	string feature;
-	is >> feature;
-
-	while (1) {
-		feature = this->mS->mEmpty;
-		is >> feature;
-
-		if (!feature.size())
-			break;
-
-		if (feature == "OpPlus") conn->mFeatures |= eSF_OPPLUS;
-		else if (feature == "NoHello") conn->mFeatures |= eSF_NOHELLO;
-		else if (feature == "NoGetINFO") conn->mFeatures |= eSF_NOGETINFO;
-		else if (feature == "DHT0") conn->mFeatures |= eSF_DHT0;
-		else if (feature == "QuickList") conn->mFeatures |= eSF_QUICKLIST;
-		else if (feature == "BotINFO") conn->mFeatures |= eSF_BOTINFO;
-		else if (feature == "ZPipe0" || feature == "ZPipe") conn->mFeatures |= eSF_ZLIB;
-		else if (feature == "ChatOnly") conn->mFeatures |= eSF_CHATONLY;
-		else if (feature == "MCTo") conn->mFeatures |= eSF_MCTO;
-		else if (feature == "UserCommand") conn->mFeatures |= eSF_USERCOMMAND;
-		else if (feature == "BotList") conn->mFeatures |= eSF_BOTLIST;
-		else if (feature == "HubTopic") conn->mFeatures |= eSF_HUBTOPIC;
-		else if (feature == "UserIP2") conn->mFeatures |= eSF_USERIP2;
-		else if (feature == "TTHSearch") conn->mFeatures |= eSF_TTHSEARCH;
-		else if (feature == "Feed") conn->mFeatures |= eSF_FEED;
-		else if (feature == "ClientID") conn->mFeatures |= eSF_CLIENTID;
-		else if (feature == "IN") conn->mFeatures |= eSF_IN;
-		else if (feature == "BanMsg") conn->mFeatures |= eSF_BANMSG;
-		else if (feature == "TLS") conn->mFeatures |= eSF_TLS;
-		else if (feature == "IPv4") conn->mFeatures |= eSF_IPV4;
-		else if (feature == "IP64") conn->mFeatures |= eSF_IP64;
-		else if (feature == "FailOver") conn->mFeatures |= eSF_FAILOVER;
-		else if (feature == "NickChange") conn->mFeatures |= eSF_NICKCHANGE;
-		else if (feature == "ClientNick") conn->mFeatures |= eSF_CLIENTNICK;
-		else if (feature == "FeaturedNetworks") conn->mFeatures |= eSF_FEATNET;
-		else if (feature == "ZLine") conn->mFeatures |= eSF_ZLINE;
-		else if (feature == "GetZBlock") conn->mFeatures |= eSF_GETZBLOCK;
-		else if (feature == "ACTM") conn->mFeatures |= eSF_ACTM;
-		else if (feature == "SaltPass") conn->mFeatures |= eSF_SALTPASS;
-	}
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgSupport.CallAll(conn, msg)) {
-			conn->CloseNow();
-			return -1;
-		}
-	#endif
-
-	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver");
-	conn->Send(omsg);
-	conn->SetLSFlag(eLS_SUPPORTS);
-	return 0;
-}
-
 int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 {
-	if (!conn || !msg)
+	if (CheckUserLogin(conn))
 		return -1;
 
-	// todo: i think ban is not supported here, user will get bad syntax
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": ";
-		omsg += ((msg->mType == eDCO_TBAN) ? "TempBan" : "Ban");
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
-	}
 
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
+	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
 	ostringstream os;
+
+	// todo: i think ban is not supported here, user will get bad syntax
 	long period = 0;
 	// calculate time
 	if(msg->ChunkString(eCH_NB_TIME).size()) {
@@ -2351,6 +2137,330 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	mS->DCPublicHS(os.str(),conn);
 	other->mxConn->CloseNice(1000, eCR_KICKED);
 	return 0;
+}
+
+int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	ostringstream os;
+	string ip, nick/*, host*/;
+
+	if(msg->mType == eDCO_UNBAN)
+		ip = msg->ChunkString(eCH_1_PARAM);
+
+	int n = mS->mBanList->DeleteAllBansBy(ip, nick , eBF_NICKIP);
+
+	if(n <= 0) {
+		os << autosprintf(_("No banned user found with ip %s."), msg->ChunkString(eCH_1_PARAM).c_str());
+		mS->DCPublicHS(os.str().c_str(),conn);
+		return -1;
+	}
+	os << autosprintf(_("Removed %d bans."), n) << endl;
+	mS->DCPublicHS(os.str().c_str(),conn);
+	return 0;
+}
+
+int cDCProto::DCO_GetBanList(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+		return -1;
+
+	// todo: mS->mBanList->GetBanList(conn);
+	return 0;
+}
+
+int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &ip = msg->ChunkString(eCH_1_PARAM);
+	string nicklist("$UsersWithIP "), sep("$$");
+	nicklist += ip;
+	nicklist += "$";
+	unsigned long num = cBanList::Ip2Num(ip);
+	mS->WhoIP(num, num, nicklist, sep, true);
+	conn->Send(nicklist);
+	return 0;
+}
+
+int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+		return -1;
+
+	string topic("$HubTopic ");
+
+	if (mS->mC.hub_topic.size())
+		topic += mS->mC.hub_topic;
+
+	conn->Send(topic);
+	return 0;
+}
+
+int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn))
+		return -1;
+
+	if (CheckUserRights(conn, (conn->mpUser->mClass >= mS->mC.topic_mod_class)))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &topic = msg->ChunkString(eCH_1_PARAM);
+	mS->mC.hub_topic = topic;
+	ostringstream os;
+	os << autosprintf(_("Topis is set to: %s"), topic.c_str());
+	mS->DCPublicHS(os.str(), conn);
+	return 0;
+}
+
+/*
+	unknown commands
+*/
+
+int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
+{
+	if (conn->CheckProtoFlood(msg->mStr, ((msg->mStr.size()) ? ePF_UNKNOWN : ePF_PING))) // protocol flood
+		return -1;
+
+	#ifndef WITHOUT_PLUGINS
+		// todo: discardable callback
+		mS->mCallBacks.mOnUnknownMsg.CallAll(conn, msg);
+	#endif
+
+	return 0;
+}
+
+/*
+	client commands
+*/
+
+int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
+{
+	if (!mS->mC.detect_ctmtohub)
+		return this->DCU_Unknown(msg, conn);
+
+	if (!conn->mMyNick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (msg->SplitChunks()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string &nick = msg->ChunkString(eCH_1_PARAM);
+
+	if (nick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	conn->mMyNick = nick;
+	return 0;
+}
+
+int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
+{
+	if (!mS->mC.detect_ctmtohub)
+		return this->DCU_Unknown(msg, conn);
+
+	if (conn->mMyNick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (msg->SplitChunks()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string &lock = msg->ChunkString(eCH_1_PARAM);
+
+	if (lock.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	string ref;
+	ParseReferer(lock, ref); // parse referer
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnCtmToHub.CallAll(conn, (string*)&ref)) {
+			conn->CloseNice(500, eCR_NOREDIR);
+			return -1;
+		}
+	#endif
+
+	mS->CtmToHubAddItem(conn, ref);
+	string omsg("$Error CTM2HUB|"); // notify client
+	conn->Send(omsg, false, true);
+	conn->CloseNice(500, eCR_NOREDIR); // wait before closing
+	return 0;
+}
+
+/*
+	helper functions
+*/
+
+bool cDCProto::CheckUserLogin(cConnDC *conn, bool inlist)
+{
+	if (conn->mpUser && (conn->mpUser->mInList || !inlist))
+		return false;
+
+	string rsn = _("Invalid login sequence, you client must validate nick first.");
+
+	if (conn->Log(1))
+		conn->LogStream() << rsn << endl;
+
+	mS->ConnCloseMsg(conn, rsn, 1000, eCR_LOGIN_ERR);
+	return true;
+}
+
+bool cDCProto::CheckUserRights(cConnDC *conn, bool cond)
+{
+	if (cond)
+		return false;
+
+	string rsn = _("You have no rights to perform operator actions.");
+
+	if (conn->Log(1))
+		conn->LogStream() << rsn << endl;
+
+	mS->ConnCloseMsg(conn, rsn, 1000, eCR_SYNTAX);
+	return true;
+}
+
+bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
+{
+	if (!msg->SplitChunks())
+		return false;
+
+	string cmd;
+
+	switch (msg->mType) {
+		case eDC_KEY:
+			cmd = "Key";
+			break;
+		case eDC_VALIDATENICK:
+			cmd = "ValidateNick";
+			break;
+		case eDC_MYPASS:
+			cmd = "MyPass";
+			break;
+		case eDC_VERSION:
+			cmd = "Version";
+			break;
+		case eDC_MYINFO:
+			cmd = "MyINFO";
+			break;
+		case eDCO_USERIP:
+			cmd = "UserIP";
+			break;
+		case eDC_MCONNECTTOME:
+		case eDC_CONNECTTOME:
+			cmd = "ConnectToMe";
+			break;
+		case eDC_RCONNECTTOME:
+			cmd = "RevConnectToMe";
+			break;
+		case eDC_TO:
+			cmd = "To";
+			break;
+		case eDC_MCTO:
+			cmd = "MCTo";
+			break;
+		case eDC_CHAT:
+			cmd = _("Chat");
+			break;
+		case eDCO_OPFORCEMOVE:
+			cmd = "OpForceMove";
+			break;
+		case eDCO_KICK:
+			cmd = "Kick";
+			break;
+		case eDC_MSEARCH:
+		case eDC_MSEARCH_PAS:
+		case eDC_SEARCH:
+		case eDC_SEARCH_PAS:
+			cmd = "Search";
+			break;
+		case eDC_SR:
+			cmd = "SR";
+			break;
+		case eDC_SUPPORTS:
+			cmd = "Supports";
+			break;
+		case eDCO_BAN:
+			cmd = "Ban";
+			break;
+		case eDCO_TBAN:
+			cmd = "TempBan";
+			break;
+		case eDCO_UNBAN:
+			cmd = "UnBan";
+			break;
+		case eDCO_WHOIP:
+			cmd = "WhoIP";
+			break;
+		case eDCO_SETTOPIC:
+			cmd = "SetTopic";
+			break;
+		case eDCB_BOTINFO:
+			cmd = "BotINFO";
+			break;
+		default:
+			cmd = _("Unknown");
+			break;
+	}
+
+	ostringstream os;
+	os << autosprintf(_("Your client sent malformed protocol command: %s"), cmd.c_str());
+
+	if (conn->Log(1))
+		conn->LogStream() << os.str() << endl;
+
+	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	return true;
+}
+
+bool cDCProto::CheckUserNick(cConnDC *conn, const string &nick)
+{
+	if (conn->mpUser->mNick == nick)
+		return false;
+
+	ostringstream os;
+	os << autosprintf(_("Nick spoofing attempt detected from your client: %s"), nick.c_str());
+
+	if (conn->Log(1))
+		conn->LogStream() << os.str() << endl;
+
+	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	return true;
 }
 
 int cDCProto::NickList(cConnDC *conn)
@@ -2452,360 +2562,6 @@ int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 		return 1;
 	}
 
-	return 0;
-}
-
-int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": UnBan";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
-		return -1;
-
-	string ip, nick/*, host*/;
-	ostringstream os;
-
-	if(msg->mType == eDCO_UNBAN)
-		ip = msg->ChunkString(eCH_1_PARAM);
-
-	int n = mS->mBanList->DeleteAllBansBy(ip, nick , eBF_NICKIP);
-
-	if(n <= 0) {
-		os << autosprintf(_("No banned user found with ip %s."), msg->ChunkString(eCH_1_PARAM).c_str());
-		mS->DCPublicHS(os.str().c_str(),conn);
-		return -1;
-	}
-	os << autosprintf(_("Removed %d bans."), n) << endl;
-	mS->DCPublicHS(os.str().c_str(),conn);
-	return 1;
-
-	return 0;
-}
-
-int cDCProto::DCO_GetBanList(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
-		return -1;
-
-	// todo: mS->mBanList->GetBanList(conn);
-	return 0;
-}
-
-int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": BotINFO";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (conn->GetLSFlag(eLS_BOTINFO)) { // already sent
-		string omsg = _("Invalid protocol sequence, you already sent pinger information.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	ostringstream os;
-
-	if ((!(conn->mFeatures & eSF_BOTINFO)) && (conn->mpUser->mClass != eUC_PINGER)) {
-		if (conn->Log(2))
-			conn->LogStream() << "User " << conn->mpUser->mNick << " sent $BotINFO but BotINFO extension is not set in $Supports" << endl;
-
-		os << _("You can't send $BotINFO because BotINFO extension is not set in $Supports.");
-		mS->DCPublicHS(os.str(), conn);
-		return 0;
-	}
-
-	if (conn->Log(2))
-		conn->LogStream() << "Bot visit: " << msg->ChunkString(eCH_1_PARAM) << endl;
-
-	if (mS->mC.botinfo_report) {
-		os << autosprintf(_("Pinger entered the hub: %s"), msg->ChunkString(eCH_1_PARAM).c_str());
-		mS->ReportUserToOpchat(conn, os.str());
-		os.str("");
-	}
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgBotINFO.CallAll(conn, msg)) {
-			conn->CloseNow();
-			return -1;
-		}
-	#endif
-
-	char S = '$';
-	cConnType *ConnType = mS->mConnTypes->FindConnType("default");
-	__int64 hl_minshare = mS->mC.min_share;
-
-	if (mS->mC.min_share_use_hub > hl_minshare)
-		hl_minshare = mS->mC.min_share_use_hub;
-
-	if (!mS->mC.hub_icon_url.empty())
-		os << "$SetIcon " << mS->mC.hub_icon_url.c_str() << "|";
-
-	if (!mS->mC.hub_logo_url.empty())
-		os << "$SetLogo " << mS->mC.hub_logo_url.c_str() << "|";
-
-	os << "$HubINFO "
-	<< mS->mC.hub_name << S
-	<< mS->mC.hub_host << S
-	<< mS->mC.hub_desc << S
-	<< mS->mC.max_users_total << S
-	<< StringFrom((__int64)(1024 * 1024) * hl_minshare) << S
-	<< ConnType->mTagMinSlots << S
-	<< mS->mC.tag_max_hubs << S
-	<< "Verlihub" << S
-	<< mS->mC.hub_owner << S
-	<< mS->mC.hub_category << S
-	<< mS->mC.hub_encoding;
-
-	string str = os.str();
-	conn->Send(str);
-	conn->SetLSFlag(eLS_BOTINFO);
-	return 0;
-}
-
-int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": WhoIP";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
-		return -1;
-
-	string nicklist("$UsersWithIp ");
-	string sep("$$");
-	nicklist += msg->ChunkString(eCH_1_PARAM);
-	nicklist += "$";
-	unsigned long num = cBanList::Ip2Num(msg->ChunkString(eCH_1_PARAM));
-	mS->WhoIP(num ,num , nicklist, sep, true);
-	conn->Send(nicklist);
-	return 0;
-}
-
-int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (conn->mpUser->CheckProtoFlood(msg, ePF_GETTOPIC)) // protocol flood
-		return -1;
-
-	if (!conn->mpUser->mInList)
-		return -2;
-
-	string topic("$HubTopic ");
-
-	if (!mS->mC.hub_topic.empty())
-		topic += mS->mC.hub_topic;
-
-	conn->Send(topic);
-	return 0;
-}
-
-int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (msg->SplitChunks()) { // bad syntax
-		string omsg = _("Your client sent malformed protocol command");
-		omsg += ": SetTopic";
-
-		if (conn->Log(2))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_SYNTAX);
-		return -1;
-	}
-
-	if (!conn->mpUser) { // missing nick
-		string omsg = _("Invalid login sequence, you client must validate nick first.");
-
-		if (conn->Log(1))
-			conn->LogStream() << omsg << endl;
-
-		mS->ConnCloseMsg(conn, omsg, 1000, eCR_LOGIN_ERR);
-		return -1;
-	}
-
-	if (!conn->mpUser->mInList || conn->mpUser->mClass < eUC_OPERATOR)
-		return -2;
-
-	// check rights
-	if(conn->mpUser->mClass < mS->mC.topic_mod_class) {
-		mS->DCPublicHS(_("You do not have permissions to change the hub topic."),conn);
-		return 0;
-	}
-	string &str = msg->ChunkString(eCH_1_PARAM);
-	mS->mC.hub_topic = str;
-
-	ostringstream os;
-	os << autosprintf(_("Topis is set to: %s"), str.c_str());
-	mS->DCPublicHS(os.str(), conn);
-	return 0;
-}
-
-int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
-{
-	if (!conn || !msg)
-		return -1;
-
-	if (conn->mpUser && conn->mpUser->CheckProtoFlood(msg, (msg->mStr.size() ? ePF_UNKNOWN : ePF_PING))) // protocol flood
-		return -1;
-
-	#ifndef WITHOUT_PLUGINS
-		mS->mCallBacks.mOnUnknownMsg.CallAll(conn, msg);
-	#endif
-
-	return 0;
-}
-
-int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
-{
-	if (!mS->mC.detect_ctmtohub)
-		return this->DCU_Unknown(msg, conn);
-
-	if (!msg || !conn)
-		return -1;
-
-	if (msg->SplitChunks()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	if (!conn->mMyNick.empty()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	string &nick = msg->ChunkString(eCH_1_PARAM);
-
-	if (nick.empty()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	conn->mMyNick = nick;
-	return 0;
-}
-
-int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
-{
-	if (!mS->mC.detect_ctmtohub)
-		return this->DCU_Unknown(msg, conn);
-
-	if (!msg || !conn)
-		return -1;
-
-	if (msg->SplitChunks()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	if (conn->mMyNick.empty()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	string &lock = msg->ChunkString(eCH_1_PARAM);
-
-	if (lock.empty()) {
-		conn->CloseNow();
-		return -1;
-	}
-
-	string ref;
-	ParseReferer(lock, ref); // parse referer
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnCtmToHub.CallAll(conn, (string*)&ref)) {
-			conn->CloseNice(500, eCR_NOREDIR);
-			return -1;
-		}
-	#endif
-
-	mS->CtmToHubAddItem(conn, ref);
-	string omsg("$Error CTM2HUB|"); // notify client
-	conn->Send(omsg, false, true);
-	conn->CloseNice(500, eCR_NOREDIR); // wait before closing
 	return 0;
 }
 

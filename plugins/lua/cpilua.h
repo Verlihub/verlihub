@@ -79,7 +79,6 @@ public:
 	virtual bool OnUpdateClass(cUser *, std::string, int, int);
 	virtual bool OnNewBan(cUser *, cBan *);
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
-	virtual bool OnHubName(std::string, std::string);
 	virtual bool OnScriptCommand(std::string, std::string, std::string, std::string);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
 	char * toString(int);

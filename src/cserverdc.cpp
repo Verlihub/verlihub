@@ -757,12 +757,19 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
+	ostringstream os;
 
 	if (mSysLoad >= eSL_RECOVERY) {
-		stringstream os;
-		os << _("The hub is currently unable to service your request. Please try again in a few minutes.");
-		DCPublicHS(os.str(), conn);
-		conn->CloseNice(500, eCR_HUB_LOAD);
+		os << _("Hub is currently unable to service your request, please try again in a few minutes.");
+		ConnCloseMsg(conn, os.str(), 1000, eCR_HUB_LOAD);
+		return -1;
+	}
+
+	long until = mBanList->IsIPTempBanned(conn->GetSockAddress()); // check short ip ban
+
+	if (until > mTime.Sec()) {
+		os << autosprintf(_("You're still banned since previous kick, ban will expire in %s."), cTime(until - mTime.Sec()).AsPeriod().AsString().c_str());
+		ConnCloseMsg(conn, os.str(), 1000, eCR_KICKED);
 		return -1;
 	}
 
@@ -967,11 +974,8 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		mInProgresUsers.Remove(conn->mpUser);
 	}
 
-	// anti login flood temp bans
-	if (conn->GetTheoricalClass() <= mC.max_class_int_login) {
+	if (conn->GetTheoricalClass() <= mC.max_class_int_login) // login flood detection
 		mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.int_login, "login later");
-		mBanList->AddIPTempBan(conn->GetSockAddress(), mTime.Sec() + mC.int_login, "login later");
-	}
 
 	// users special rights and restrictions
 	cPenaltyList::sPenalty pen;
@@ -990,13 +994,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		static string omsg;
 		omsg.erase();
 		cDCProto::Create_HubName(omsg, mC.hub_name, mC.hub_topic);
-
-		#ifndef WITHOUT_PLUGINS
-		if (mCallBacks.mOnHubName.CallAll(conn->mpUser->mNick, omsg))
-		#endif
-		{
-			conn->Send(omsg);
-		}
+		conn->Send(omsg);
 	}
 
 	if ((conn->mFeatures & eSF_FAILOVER) && !mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
@@ -1730,7 +1728,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 				ReportUserToOpchat(conn, os.str());
 
 			if (mC.clone_det_tban_time) { // add temporary nick ban
-				mBanList->AddNickTempBan(conn->mpUser->mNick, this->mTime.Sec() + mC.clone_det_tban_time, os.str());
+				mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, os.str());
 				/*
 				cBan ccban(this);
 				cKick cckick;
@@ -1738,7 +1736,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 				//cckick.mIP = conn->AddrIP(); // dont set ip, we dont want to ban first user
 				//cckick.mShare = conn->mpUser->mShare; // dont set share
 				cckick.mNick = conn->mpUser->mNick;
-				cckick.mTime = this->mTime.Sec();
+				cckick.mTime = mTime.Sec();
 				cckick.mReason = os.str();
 				mBanList->NewBan(ccban, cckick, mC.clone_det_tban_time, eBF_NICK);
 				mBanList->AddBan(ccban);
@@ -2156,28 +2154,30 @@ void cServerDC::DoStackTrace()
 	if (!http || !http->ok) {
 		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
 
-		if (http)
+		if (http) {
 			http->Close();
+			delete http;
+			http = NULL;
+		}
 
-		delete http;
-		http = NULL;
 		return;
 	}
 
+	ostringstream hub_info, http_req;
 	cTime uptime;
 	uptime -= mStartTime;
-	ostringstream hh;
-
-	hh << "POST /vhcs.php HTTP/1.1\n";
-	hh << "Host: www.te-home.net\n";
-	hh << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
-	hh << "Content-Type: text/plain\n\n";
-	//hh << "Content-Length: " << bt.str().size() << "\n\n"; // dont send because we add extra information
-	hh << "Address: " << mAddr << ':' << mPort << endl;
-	hh << "Uptime: " << uptime.AsPeriod().AsString() << endl;
-	hh << "Users: " << mUserCountTot << endl;
-	hh << "Stack backtrace:" << endl << endl << bt.str();
-	http->Write(hh.str(), true);
+	hub_info << "Address: " << mAddr << ':' << mPort << endl;
+	hub_info << "Uptime: " << uptime.AsPeriod().AsString() << endl;
+	hub_info << "Users: " << mUserCountTot << endl;
+	hub_info << "Stack backtrace:" << endl << endl;
+	http_req << "POST /vhcs.php HTTP/1.1\n";
+	http_req << "Host: www.te-home.net\n";
+	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
+	http_req << "Content-Type: text/plain\n";
+	http_req << "Content-Length: " << (hub_info.str().size() + bt.str().size()) << "\n\n"; // end of headers
+	http_req << hub_info.str();
+	http_req << bt.str();
+	http->Write(http_req.str(), true);
 
 	if (http->ok)
 		cerr << "Successfully sent stack backtrace to crash server" << endl;

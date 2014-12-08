@@ -22,7 +22,6 @@
 #ifndef CCONNDC_H
 #define CCONNDC_H
 #include "casyncconn.h"
-#include "cmessagedc.h"
 #include "creguserinfo.h"
 #include "ctimeout.h"
 
@@ -138,6 +137,23 @@ namespace nVerliHub {
 			eSF_ACTM = 1 << 27,
 			eSF_SALTPASS = 1 << 28
 		} tSupportFeature;
+
+		typedef enum
+		{
+			ePF_CHAT,
+			ePF_PRIV,
+			ePF_MCTO,
+			ePF_MYINFO,
+			ePF_SEARCH,
+			ePF_SR,
+			ePF_CTM,
+			ePF_RCTM,
+			ePF_NICKLIST,
+			ePF_GETINFO,
+			ePF_PING,
+			ePF_UNKNOWN,
+			ePF_LAST
+		} tProtoFloodItems; // protocol flood
 	};
 
 	using namespace nEnums;
@@ -396,6 +412,11 @@ namespace nVerliHub {
 
 				// custom redirect address on close
 				string mCloseRedirect;
+
+				// protocol flood
+				unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
+				cTime mProtoFloodTimes[nEnums::ePF_LAST];
+				bool CheckProtoFlood(const string &data, int type);
 
 				// ctm2hub
 				string mMyNick;

@@ -34,8 +34,8 @@ namespace nVerliHub {
 	using namespace nTables;
 	using namespace nEnums;
 	namespace nSocket {
-cConnDC::cConnDC(int sd, cAsyncSocketServer *server)
-: cAsyncConn(sd,server)
+cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
+	cAsyncConn(sd, server)
 {
 	mpUser = NULL;
 	SetClassName("ConnDC");
@@ -52,6 +52,10 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server)
 	mGeoZone = 0;
 	mRegInfo = NULL;
 	mSRCounter = 0;
+
+	// protocol flood
+	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
+	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
 }
 
 cConnDC::~cConnDC()
@@ -327,11 +331,187 @@ bool cConnDC::NeedsPassword()
 	);
 }
 
-cDCConnFactory::cDCConnFactory(cServerDC *server) :
-cConnFactory(&(server->mP)),
-mServer(server)
-{}
+/*
+	protocol flood
+*/
 
+bool cConnDC::CheckProtoFlood(const string &data, int type)
+{
+	if (!mxServer)
+		return false;
+
+	nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+	if (!serv)
+		return false;
+
+	if (GetTheoricalClass() > serv->mC.max_class_proto_flood)
+		return false;
+
+	unsigned long period = 0;
+	unsigned int limit = 0;
+
+	switch (type) {
+		case ePF_CHAT:
+			period = serv->mC.int_flood_chat_period;
+			limit = serv->mC.int_flood_chat_limit;
+			break;
+		case ePF_PRIV:
+			period = serv->mC.int_flood_to_period;
+			limit = serv->mC.int_flood_to_limit;
+			break;
+		case ePF_MCTO:
+			period = serv->mC.int_flood_mcto_period;
+			limit = serv->mC.int_flood_mcto_limit;
+			break;
+		case ePF_MYINFO:
+			period = serv->mC.int_flood_myinfo_period;
+			limit = serv->mC.int_flood_myinfo_limit;
+			break;
+		case ePF_SEARCH:
+			period = serv->mC.int_flood_search_period;
+			limit = serv->mC.int_flood_search_limit;
+			break;
+		case ePF_SR:
+			period = serv->mC.int_flood_sr_period;
+			limit = serv->mC.int_flood_sr_limit;
+			break;
+		case ePF_CTM:
+			period = serv->mC.int_flood_ctm_period;
+			limit = serv->mC.int_flood_ctm_limit;
+			break;
+		case ePF_RCTM:
+			period = serv->mC.int_flood_rctm_period;
+			limit = serv->mC.int_flood_rctm_limit;
+			break;
+		case ePF_NICKLIST:
+			period = serv->mC.int_flood_nicklist_period;
+			limit = serv->mC.int_flood_nicklist_limit;
+			break;
+		case ePF_GETINFO:
+			if (!mFeatures || (mFeatures & eSF_NOGETINFO)) { // dont check old clients that dont have NoGetINFO support flag because they will send this command for every user on hub
+				period = serv->mC.int_flood_getinfo_period;
+				limit = serv->mC.int_flood_getinfo_limit;
+			}
+
+			break;
+		case ePF_PING:
+			period = serv->mC.int_flood_ping_period;
+			limit = serv->mC.int_flood_ping_limit;
+			break;
+		case ePF_UNKNOWN:
+			period = serv->mC.int_flood_unknown_period;
+			limit = serv->mC.int_flood_unknown_limit;
+			break;
+	}
+
+	if (!limit || !period)
+		return false;
+
+	if (!mProtoFloodCounts[type]) {
+		mProtoFloodCounts[type] = 1;
+		mProtoFloodTimes[type] = serv->mTime;
+		return false;
+	}
+
+	long dif = serv->mTime.Sec() - mProtoFloodTimes[type].Sec();
+
+	if ((dif < 0) || (dif > period)) {
+		mProtoFloodCounts[type] = 1;
+		mProtoFloodTimes[type] = serv->mTime;
+		return false;
+	}
+
+	if (mProtoFloodCounts[type]++ < limit)
+		return false;
+
+	ostringstream to_user, to_feed;
+	to_user << _("Protocol flood detected") << ": ";
+
+	switch (type) {
+		case ePF_CHAT:
+			to_user << _("Chat");
+			break;
+		case ePF_PRIV:
+			to_user << "To";
+			break;
+		case ePF_MCTO:
+			to_user << "MCTo";
+			break;
+		case ePF_MYINFO:
+			to_user << "MyINFO";
+			break;
+		case ePF_SEARCH:
+			to_user << "Search";
+			break;
+		case ePF_SR:
+			to_user << "SR";
+			break;
+		case ePF_CTM:
+			to_user << "ConnectToMe";
+			break;
+		case ePF_RCTM:
+			to_user << "RevConnectToMe";
+			break;
+		case ePF_NICKLIST:
+			to_user << "GetNickList";
+			break;
+		case ePF_GETINFO:
+			to_user << "GetINFO";
+			break;
+		case ePF_PING:
+			to_user << "Ping";
+			break;
+		case ePF_UNKNOWN:
+			to_user << _("Unknown");
+			break;
+	}
+
+	string pref("");
+
+	if ((type == ePF_UNKNOWN) && data.size()) {
+		pref = data.substr(0, data.find_first_of(' '));
+
+		if (pref.size())
+			cDCProto::EscapeChars(pref, pref);
+	}
+
+	to_feed << to_user.str();
+
+	if (pref.size())
+		to_feed << ": " << pref;
+
+	to_feed << " [" << mProtoFloodCounts[type] << ':' << dif << ':' << period << ']';
+
+	if (Log(1))
+		LogStream() << to_feed.str() << endl;
+
+	if (serv->mC.proto_flood_report) // report if enabled
+		serv->ReportUserToOpchat(this, to_feed.str());
+
+	if (serv->mC.proto_flood_tban_time) { // add temporary ban
+		if (mpUser) { // we have user, create full ban
+			cBan pfban(serv);
+			cKick pfkick;
+			pfkick.mOp = serv->mC.hub_security;
+			pfkick.mIP = AddrIP();
+			pfkick.mNick = mpUser->mNick;
+			pfkick.mTime = serv->mTime.Sec();
+			pfkick.mReason = to_user.str();
+			serv->mBanList->NewBan(pfban, pfkick, serv->mC.proto_flood_tban_time, eBF_NICKIP);
+			serv->mBanList->AddBan(pfban);
+		} else
+			serv->mBanList->AddIPTempBan(this->GetSockAddress(), (serv->mTime.Sec() + serv->mC.proto_flood_tban_time), "protocol flood");
+	}
+
+	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_SYNTAX);
+	return true;
+}
+
+cDCConnFactory::cDCConnFactory(cServerDC *server):
+	cConnFactory(&(server->mP)),
+	mServer(server)
+{}
 
 cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 {

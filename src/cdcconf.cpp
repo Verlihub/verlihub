@@ -198,8 +198,6 @@ void cDCConf::AddVars()
 	Add("int_flood_nicklist_limit", int_flood_nicklist_limit, 3);
 	Add("int_flood_getinfo_period", int_flood_getinfo_period, 10);
 	Add("int_flood_getinfo_limit", int_flood_getinfo_limit, 200);
-	Add("int_flood_gettopic_period", int_flood_gettopic_period, 60);
-	Add("int_flood_gettopic_limit", int_flood_gettopic_limit, 5);
 	Add("int_flood_ping_period", int_flood_ping_period, 60);
 	Add("int_flood_ping_limit", int_flood_ping_limit, 5);
 	Add("int_flood_unknown_period", int_flood_unknown_period, 30);

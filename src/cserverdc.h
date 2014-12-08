@@ -117,7 +117,6 @@ namespace nVerliHub {
 		{
 			eCR_DEFAULT = 0,  // default value, means not closed or unknown reason
 			eCR_INVALID_USER, // bad nick, banned nick, ip or whatever
-			eCR_CHAT_NICK, // user used different nick in chat
 			eCR_KICKED, // user was kicked
 			eCR_FORCEMOVE, // operator redirect command
 			eCR_QUIT, // user quits himself
@@ -822,7 +821,6 @@ private:
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
 			mOnDelReg(mgr, "VH_OnDelReg", &cVHPlugin::OnDelReg),
 			mOnUpdateClass(mgr, "VH_OnUpdateClass", &cVHPlugin::OnUpdateClass),
-			mOnHubName(mgr, "VH_OnHubName", &cVHPlugin::OnHubName),
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
@@ -865,7 +863,6 @@ private:
 		cVHCBL_UsrStrInt mOnNewReg;
 		cVHCBL_UsrStrInt mOnDelReg;
 		cVHCBL_UsrStrIntInt mOnUpdateClass;
-		cVHCBL_Strings mOnHubName;
 		cVHCBL_UsrBan mOnNewBan;
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_StrStrStrStr mOnScriptCommand;

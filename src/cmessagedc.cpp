@@ -95,14 +95,14 @@ bool cMessageDC::SplitChunks()
  	SetChunk(0, 0, mStr.length()); // the zeroth chunk is everywhere the same
 
 	switch (mType) { // now try to find chunks one by one
-		case eDCE_SUPPORTS: // this has variable count of params
+		case eDC_SUPPORTS: // this has variable count of params
 		case eDC_KEY:
 		case eDC_VALIDATENICK:
 		case eDC_MYPASS:
 		case eDC_VERSION:
-		case eDC_KICK:
+		case eDCO_KICK:
 		case eDC_QUIT:
-		case eDC_USERIP:
+		case eDCO_USERIP:
 		case eDCO_UNBAN:
 		case eDCO_WHOIP:
 		case eDCO_SETTOPIC:
@@ -166,7 +166,7 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo( '$', eCH_MI_MAIL, eCH_MI_MAIL, eCH_MI_SIZE)) mError =1;
 			if(!ChunkRedRight(eCH_MI_SIZE,1)) mError =1;
 			break;
-		case eDC_OPFORCEMOVE:
+		case eDCO_OPFORCEMOVE:
 			 //$OpForceMove $Who:<victimNick>$Where:<newIp>$Msg:<reasonMsg>
 			 //NICK DEST REASON
 			if(!SplitOnTwo( mKWSize,'$', eCH_FM_NICK, eCH_FM_DEST)) mError =1;

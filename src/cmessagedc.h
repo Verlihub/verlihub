@@ -33,7 +33,7 @@ namespace nVerliHub {
 		typedef enum // these constants correspond to sDC_Commands in the .cpp file
 		{
 			eDC_GETINFO,
-			eDC_USERIP,
+			eDCO_USERIP,
 			eDC_SEARCH_PAS,
 			eDC_SEARCH,
 			eDC_SR,
@@ -50,11 +50,11 @@ namespace nVerliHub {
 			eDC_MCTO,
 			eDC_CHAT,
 			eDC_QUIT,
-			eDC_OPFORCEMOVE,
-			eDC_KICK,
+			eDCO_OPFORCEMOVE,
+			eDCO_KICK,
 			eDC_MSEARCH_PAS,
 			eDC_MSEARCH,
-			eDCE_SUPPORTS,
+			eDC_SUPPORTS,
 			eDCO_BAN,
 			eDCO_TBAN,
 			eDCO_UNBAN,

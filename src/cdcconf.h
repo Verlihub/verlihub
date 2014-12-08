@@ -193,8 +193,6 @@ public:
 	unsigned int int_flood_nicklist_limit;
 	unsigned long int_flood_getinfo_period;
 	unsigned int int_flood_getinfo_limit;
-	unsigned long int_flood_gettopic_period;
-	unsigned int int_flood_gettopic_limit;
 	unsigned long int_flood_ping_period;
 	unsigned int int_flood_ping_limit;
 	unsigned long int_flood_unknown_period;

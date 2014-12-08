@@ -156,13 +156,13 @@ protected:
 	int DC_GetNickList(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
 	int DC_GetINFO(cMessageDC * msg, nSocket::cConnDC * conn);
-	int DC_UserIP(cMessageDC * msg, nSocket::cConnDC * conn);
+	int DCO_UserIP(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
 	int DC_MyINFO(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
-	int DC_Kick(cMessageDC * msg, nSocket::cConnDC * conn);
+	int DCO_Kick(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
-	int DC_OpForceMove(cMessageDC * msg, nSocket::cConnDC * conn);
+	int DCO_OpForceMove(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
 	int DC_RevConnectToMe(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
@@ -311,7 +311,7 @@ protected:
 	* @param conn User connection.
 	* @return Always 0.
 	*/
-	int DCE_Supports(cMessageDC * msg, nSocket::cConnDC * conn);
+	int DC_Supports(cMessageDC * msg, nSocket::cConnDC * conn);
 
 	/**
 	* Send hub topic to an user.
@@ -320,6 +320,12 @@ protected:
 	* @return Always 0.
 	*/
 	int DCO_GetTopic(cMessageDC * msg, nSocket::cConnDC * conn);
+
+	// helper functions
+	bool CheckUserLogin(nSocket::cConnDC *conn, bool inlist = true);
+	bool CheckUserRights(nSocket::cConnDC *conn, bool cond);
+	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
+	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
 
 	/**
 	* Escape DC string.

@@ -392,14 +392,6 @@ public:
 	virtual bool OnCreateUserInfoList (string *InfoList) {return true;};
 	virtual bool OnCreateOpList (string *OpList) {return true;};
 
-	//! Event handler function that is called when $HubName is sent to an user
-	/*!
-	*	This event can be discardable
-		\param nick the nickname of the user we are going to register
-		\param hubname the current hub name
-	 */
-	virtual bool OnHubName(string nick, string hubname) {return true;};
-
 	/*
 	* Event handler function that is called when an operator wants to delete a registered user.
 	* Use RegisterCallBack("VH_OnDelReg") to register it. This event can be discarded.

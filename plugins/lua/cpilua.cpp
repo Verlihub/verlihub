@@ -120,7 +120,6 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnNewBan");
 	RegisterCallBack("VH_OnUnBan");
 	RegisterCallBack("VH_OnUpdateClass");
-	RegisterCallBack("VH_OnHubName");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnCtmToHub");
 	return true;
@@ -795,17 +794,6 @@ bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 	}
 
 	return true;
-}
-
-bool cpiLua::OnHubName(string nick, string hubname)
-{
-	char * args[] = {
-		(char *)nick.c_str(),
-		(char *)hubname.c_str(),
-		NULL
-	};
-
-	return CallAll("VH_OnHubName", args);
 }
 
 bool cpiLua::OnScriptCommand(string cmd, string data, string plug, string script)

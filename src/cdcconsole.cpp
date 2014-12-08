@@ -70,7 +70,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO),".w(ho)?(\\S+) ","(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK),".(kick|drop) ","(\\S+)( (.*)$)?", &mFunKick, eUR_KICK ),
-	mCmdInfo(int(eCM_INFO),".(hub|server)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO),".(hub|server|port)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG),".plug(in|out|list|reg|reload) ","(\\S+)( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
@@ -1494,24 +1494,46 @@ bool cDCConsole::cfBan::operator()()
 
 bool cDCConsole::cfInfo::operator()()
 {
-	enum {eINFO_HUB, eINFO_SERVER };
-	static const char * infonames [] = { "hub","server" };
-	static const int infoids [] = { eINFO_HUB, eINFO_SERVER };
+	if (mConn->mpUser->mClass < eUC_OPERATOR)
+		return false;
+
+	enum {
+		eINFO_HUB,
+		eINFO_SERVER,
+		eINFO_PORT
+	};
+
+	static const char *infonames[] = {
+		"hub",
+		"server",
+		"port"
+	};
+
+	static const int infoids[] = {
+		eINFO_HUB,
+		eINFO_SERVER,
+		eINFO_PORT
+	};
 
 	string tmp;
-	mIdRex->Extract(1,mIdStr,tmp);
+	mIdRex->Extract(1, mIdStr, tmp);
+	int InfoType = this->StringToIntFromList(tmp, infonames, infoids, sizeof(infonames) / sizeof(char*));
 
-	int InfoType = this->StringToIntFromList(tmp, infonames, infoids, sizeof(infonames)/sizeof(char*));
-	if (InfoType < 0) return false;
+	if (InfoType < 0)
+		return false;
 
-	int MyClass = mConn->mpUser->mClass;
-	if( MyClass < eUC_VIPUSER ) return false;
-
-	switch(InfoType)
-	{
-		case eINFO_SERVER: mInfoServer.SystemInfo(*mOS); break;
-		case eINFO_HUB: mInfoServer.Output(*mOS, MyClass); break;
-		default : (*mOS) << _("This command is not implemented, available commands are: !hubinfo !serverinfo");
+	switch (InfoType) {
+		case eINFO_PORT:
+			mInfoServer.PortInfo(*mOS);
+			break;
+		case eINFO_SERVER:
+			mInfoServer.SystemInfo(*mOS);
+			break;
+		case eINFO_HUB:
+			mInfoServer.Output(*mOS, mConn->mpUser->mClass);
+			break;
+		default:
+			(*mOS) << _("This command is not implemented, available commands are: hubinfo serverinfo portinfo");
 			return false;
 	}
 

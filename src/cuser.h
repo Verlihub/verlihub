@@ -90,24 +90,6 @@ namespace nVerliHub {
 			eFC_MCTO,
 			eFC_LAST_FC
 		} tFloodCounters;
-
-		typedef enum
-		{
-			ePF_CHAT,
-			ePF_PRIV,
-			ePF_MCTO,
-			ePF_MYINFO,
-			ePF_SEARCH,
-			ePF_SR,
-			ePF_CTM,
-			ePF_RCTM,
-			ePF_NICKLIST,
-			ePF_GETINFO,
-			ePF_GETTOPIC,
-			ePF_PING,
-			ePF_UNKNOWN,
-			ePF_LAST
-		} tProtoFloodItems;
 	};
 
 using namespace nTables;
@@ -206,11 +188,6 @@ public:
 	typedef tHashArray<void*>::tHashType tFloodHashType;
 	tFloodHashType mFloodHashes[nEnums::eFH_LAST_FH];
  	int mFloodCounters[nEnums::eFC_LAST_FC];
-
-	// protocol flood
-	unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
-	cTime mProtoFloodTimes[nEnums::ePF_LAST];
-	bool CheckProtoFlood(cMessageDC *msg, int type);
 
 	/** 0 means perm ban, otherwiese in seconds */
 	long mBanTime;

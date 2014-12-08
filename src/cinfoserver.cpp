@@ -29,17 +29,65 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-
+//#include <algorithm>
 #include "i18n.h"
 
 #define PADDING 25
 
 namespace nVerliHub {
+	//using namespace std;
 	using namespace nUtils;
 	using namespace nSocket;
+
 cInfoServer::cInfoServer()
 {
 	mServer = NULL;
+}
+
+void cInfoServer::PortInfo(ostream &os)
+{
+	cUserCollection::iterator user_iter;
+	tPortInfoList::iterator port_iter;
+	cConnDC *conn;
+	int conn_port;
+	bool add_port;
+
+	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
+		conn = ((cUser*)(*user_iter))->mxConn;
+
+		if (conn) {
+			conn_port = conn->GetServPort();
+			add_port = true;
+
+			for (port_iter = mPortInfoList.begin(); port_iter != mPortInfoList.end(); ++port_iter) {
+				if ((*port_iter) && ((*port_iter)->mPort == conn_port)) {
+					(*port_iter)->mCount++;
+					add_port = false;
+					break;
+				}
+			}
+
+			if (add_port) {
+				sPortInfoItem *item = new sPortInfoItem;
+				item->mPort = conn_port;
+				item->mCount = 1;
+				mPortInfoList.push_back(item);
+			}
+		}
+	}
+
+	//std::sort(mPortInfoList.begin(), mPortInfoList.end(), this->PortInfoSort); // todo: not compiling
+	os << _("Port information") << ":\r\n\r\n";
+
+	for (port_iter = mPortInfoList.begin(); port_iter != mPortInfoList.end(); ++port_iter) {
+		if (*port_iter) {
+			os << " [*] " << autosprintf(_("Port %d: %d"), (*port_iter)->mPort, (*port_iter)->mCount) << "\r\n";
+			delete (*port_iter);
+			(*port_iter) = NULL;
+		}
+	}
+
+	mPortInfoList.clear();
 }
 
 void cInfoServer::SystemInfo(ostream &os)
@@ -78,7 +126,6 @@ void cInfoServer::SystemInfo(ostream &os)
 void cInfoServer::SetServer(cServerDC *Server)
 {
 	mServer = Server;
-
 }
 
 void cInfoServer::Output(ostream &os, int Class)
@@ -137,7 +184,7 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("In progress users") << mServer->mInProgresUsers.Size() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Active user count") << mServer->mActiveUsers.Size() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Passive user count") << mServer->mPassiveUsers.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Operator user count") << mServer->mOpchatList.Size() << "\r\n"; // todo: why is mOpchatList used here instead of mOpList?
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Operator user count") << mServer->mOpchatList.Size() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) <<_("Bot user count") << mServer->mRobotList.Size() << "\r\n";
 	os << "    " << string(30,'=') << "\r\n";
 	double total = 0, curr;
