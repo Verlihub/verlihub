@@ -249,6 +249,7 @@ public:
 	int show_email;
 	int show_speed;
 	bool send_user_ip;
+	int user_ip_class;
 	bool send_user_info;
 	bool send_pass_request;
 	int ban_bypass_class;

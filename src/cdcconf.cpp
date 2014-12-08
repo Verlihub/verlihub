@@ -248,6 +248,7 @@ void cDCConf::AddVars()
 	Add("nullchars_report", nullchars_report, true);
 	Add("botinfo_report", botinfo_report, 0);
 	Add("send_user_ip",send_user_ip,false);
+	Add("user_ip_class", user_ip_class, 3);
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
 	Add("ban_bypass_class", ban_bypass_class, (int)eUC_MASTER);

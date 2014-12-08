@@ -1870,7 +1870,7 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, false))
 		return -1;
 
 	ostringstream os;
@@ -1957,7 +1957,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.user_ip_class)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2005,7 +2005,7 @@ int cDCProto::DCO_Kick(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())))
+	if (CheckUserRights(conn, msg, conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2020,7 +2020,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= mS->mC.min_class_redir)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.min_class_redir)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2075,7 +2075,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2144,7 +2144,7 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2173,7 +2173,7 @@ int cDCProto::DCO_GetBanList(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
 	// todo: mS->mBanList->GetBanList(conn);
@@ -2185,7 +2185,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2206,7 +2206,7 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= eUC_OPERATOR)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
 	string topic("$HubTopic ");
@@ -2223,7 +2223,7 @@ int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserLogin(conn))
 		return -1;
 
-	if (CheckUserRights(conn, (conn->mpUser->mClass >= mS->mC.topic_mod_class)))
+	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.topic_mod_class)))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2332,7 +2332,7 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, bool inlist)
 	if (conn->mpUser && (conn->mpUser->mInList || !inlist))
 		return false;
 
-	string rsn = _("Invalid login sequence, you client must validate nick first.");
+	string rsn = _("Invalid login sequence, your client must validate nick first.");
 
 	if (conn->Log(1))
 		conn->LogStream() << rsn << endl;
@@ -2341,17 +2341,56 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, bool inlist)
 	return true;
 }
 
-bool cDCProto::CheckUserRights(cConnDC *conn, bool cond)
+bool cDCProto::CheckUserRights(cConnDC *conn, cMessageDC *msg, bool cond)
 {
 	if (cond)
 		return false;
 
-	string rsn = _("You have no rights to perform operator actions.");
+	string cmd;
+
+	switch (msg->mType) {
+		case eDCO_USERIP:
+			cmd = "UserIP";
+			break;
+		case eDCO_OPFORCEMOVE:
+			cmd = "OpForceMove";
+			break;
+		case eDCO_KICK:
+			cmd = "Kick";
+			break;
+		case eDCO_BAN:
+			cmd = "Ban";
+			break;
+		case eDCO_TBAN:
+			cmd = "TempBan";
+			break;
+		case eDCO_UNBAN:
+			cmd = "UnBan";
+			break;
+		case eDCO_GETBANLIST:
+			cmd = "GetBanList";
+			break;
+		case eDCO_WHOIP:
+			cmd = "WhoIP";
+			break;
+		case eDCO_GETTOPIC:
+			cmd = "GetTopic";
+			break;
+		case eDCO_SETTOPIC:
+			cmd = "SetTopic";
+			break;
+		default:
+			cmd = _("Unknown");
+			break;
+	}
+
+	ostringstream os;
+	os << autosprintf(_("You have no rights to perform following operator action: %s"), cmd.c_str());
 
 	if (conn->Log(1))
-		conn->LogStream() << rsn << endl;
+		conn->LogStream() << os.str() << endl;
 
-	mS->ConnCloseMsg(conn, rsn, 1000, eCR_SYNTAX);
+	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 	return true;
 }
 

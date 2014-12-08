@@ -323,7 +323,7 @@ protected:
 
 	// helper functions
 	bool CheckUserLogin(nSocket::cConnDC *conn, bool inlist = true);
-	bool CheckUserRights(nSocket::cConnDC *conn, bool cond);
+	bool CheckUserRights(nSocket::cConnDC *conn, cMessageDC *msg, bool cond);
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
 
