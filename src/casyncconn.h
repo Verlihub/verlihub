@@ -451,6 +451,9 @@ namespace nVerliHub {
 				 */
 				int Write(const string &data, bool Flush);
 
+				// zlib supports flag, used for compression
+				bool mZlibFlag;
+
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;
 

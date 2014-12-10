@@ -29,22 +29,24 @@ namespace nVerliHub {
 	namespace nUtils {
 
 cZLib::cZLib():
-	zBufferPos(0),
-	zBufferLen(ZLIB_BUFFER_SIZE),
-	outBufferLen(ZLIB_BUFFER_SIZE)
+	//inBufPos(0),
+	inBufLen(ZLIB_BUFFER_SIZE),
+	inLastLen(0),
+	outBufLen(ZLIB_BUFFER_SIZE),
+	outLastLen(0)
 {
-	outBuffer = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
-	zBuffer = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
-	memcpy(outBuffer, "$ZOn|", ZON_LEN);
+	outBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
+	inBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
+	memcpy(outBuf, "$ZOn|", ZON_LEN);
 }
 
 cZLib::~cZLib()
 {
-	if (outBuffer)
-		free(outBuffer);
+	if (outBuf)
+		free(outBuf);
 
-	if (zBuffer)
-		free(zBuffer);
+	if (inBuf)
+		free(inBuf);
 }
 
 char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen)
@@ -54,106 +56,87 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen)
 		then return last compressed buffer to save resources
 	*/
 
-	/*
-	if ((buffer != NULL) && (zBuffer != NULL) && (outBuffer != NULL)) {
-		string last_data, this_data(buffer);
-		last_data.assign(zBuffer, len);
-		// debug
-		cerr << "last_data(" << last_data.size() << "): " << last_data << endl;
-		cerr << "this_data(" << this_data.size() << "): " << this_data << endl;
+	if (inLastLen && outLastLen && (len == inLastLen) && buffer && inBuf && (memcmp(buffer, inBuf, len) == 0)) {
+		outLen = outLastLen;
 
-		if (last_data == this_data) {
-			string last_zlib(outBuffer);
-			size_t last_size = last_zlib.size();
-			// debug
-			cerr << "last_zlib(" << last_size << "): " << last_zlib << endl;
-
-			if (last_size > ZON_LEN) {
-				if (last_size < len) {
-					// debug
-					cerr << "return last buffer" << endl;
-					outLen = last_size;
-					return outBuffer;
-				} else {
-					// debug
-					cerr << "return same buffer" << endl;
-					return NULL;
-				}
-			}
-		}
+		if (len <= outLastLen) // fall back already here
+			return NULL;
+		else
+			return outBuf;
 	}
-
-	// debug
-	cerr << "keep compressing" << endl;
-	*/
 
 	z_stream strm;
 	memset((void*) &strm, '\0', sizeof(strm));
 
-	if ((zBufferLen - zBufferPos) < len)
-		for (; (zBufferLen - zBufferPos) < len; zBufferLen += ZLIB_BUFFER_SIZE);
+	if (inBufLen < len) // increase in buffer if not enough space
+		for (; inBufLen < len; inBufLen += ZLIB_BUFFER_SIZE);
 
-	char *new_buffer = (char*)realloc(zBuffer, zBufferLen);
+	char *new_buffer = (char*)realloc(inBuf, inBufLen);
 
-	if (new_buffer == NULL) { // todo: throw exception and log error
-		free(zBuffer);
+	if (!new_buffer) { // todo: throw exception and log error
+		free(inBuf);
+		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}
 
-	zBuffer = new_buffer;
+	inBuf = new_buffer;
 	strm.zalloc = Z_NULL; // allocate deflate state
 	strm.zfree = Z_NULL;
 	strm.data_type = Z_TEXT;
 
-	if (deflateInit(&strm, Z_BEST_COMPRESSION) != Z_OK)
+	if (deflateInit(&strm, Z_BEST_COMPRESSION) != Z_OK) { // initialize
+		outLen = inLastLen = outLastLen = 0;
 		return NULL;
+	}
 
-	memcpy(zBuffer + zBufferPos, buffer, len); // copy data in zlib buffer
-	zBufferPos += len;
+	memcpy(inBuf, buffer, len); // copy data to in buffer
 
-	if (outBufferLen < zBufferPos) // increase out buffer if not enough
-		for (; outBufferLen < zBufferPos; outBufferLen += ZLIB_BUFFER_SIZE);
+	if (outBufLen < len) // increase out buffer if not enough space
+		for (; outBufLen < len; outBufLen += ZLIB_BUFFER_SIZE);
 
-	strm.avail_in = (uInt)zBufferPos;
-	strm.next_in = (Bytef*)zBuffer;
-	strm.next_out = (Bytef*)outBuffer + ZON_LEN; // $ZOn|
-	strm.avail_out = (uInt)(outBufferLen - ZON_LEN);
+	strm.avail_in = (uInt)len;
+	strm.next_in = (Bytef*)inBuf;
+	strm.avail_out = (uInt)(outBufLen - ZON_LEN);
+	strm.next_out = (Bytef*)(outBuf + ZON_LEN);
 
 	if (deflate(&strm, Z_FINISH) != Z_STREAM_END) { // compress
 		deflateEnd(&strm);
+		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}
 
-	outLen = strm.total_out + ZON_LEN; // $ZOn|
-	deflateEnd(&strm);
+	outLen = outLastLen = (strm.total_out + ZON_LEN);
+	inLastLen = len;
 
-	if (zBufferPos < outLen) { // if compressed data is bigger than raw data, fallback to raw data
-		outLen = zBufferPos;
-		zBufferPos = 0;
-		return zBuffer;
+	if (deflateEnd(&strm) != Z_OK) { // finalize
+		outLen = inLastLen = outLastLen = 0;
+		return NULL;
 	}
 
-	//zBuffer[zBufferPos] = '\0'; // clear for debug
-	zBufferPos = 0;
-	return outBuffer;
+	if (len <= outLen) // out data size is bigger or equal in data size, fall back to raw data
+		return NULL;
+
+	return outBuf;
 }
 
+/*
 void cZLib::AppendData(const char *buffer, size_t len)
 {
-	if ((zBufferLen - zBufferPos) < len) // increase zlib buffer if not enough
-		for (; (zBufferLen - zBufferPos) < len; zBufferLen += ZLIB_BUFFER_SIZE);
+	if ((inBufLen - inBufPos) < len) // increase zlib buffer if not enough
+		for (; (inBufLen - inBufPos) < len; inBufLen += ZLIB_BUFFER_SIZE);
 
-	char *new_buffer = (char*)realloc(zBuffer, zBufferLen);
+	char *new_buffer = (char*)realloc(inBuf, inBufLen);
 
 	if (new_buffer == NULL) { // todo: throw exception and log error
-		free(zBuffer);
+		free(inBuf);
 		return;
 	}
 
-	zBuffer = new_buffer;
-	memcpy(zBuffer + zBufferPos, buffer, len);
-	zBufferPos += len;
+	inBuf = new_buffer;
+	memcpy(inBuf + inBufPos, buffer, len);
+	inBufPos += len;
 }
+*/
 
 	}; // namespace nUtils
 }; // namespace nVerliHub

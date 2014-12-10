@@ -462,40 +462,17 @@ void cServerDC::OnScriptCommand(string cmd, string data, string plug, string scr
 	mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
 }
 
-void cServerDC::SendToAll(string &data, int cm,int cM)
+void cServerDC::SendToAll(string &data, int cm, int cM) // class range is ignored here
 {
 	cConnDC *conn;
 	tCLIt i;
-	int size = data.size();
 
-	// prepare data
-	if(size >= MAX_SEND_SIZE-1) {
-		if(Log(2))
-			LogStream() << "Truncating too long message from: "
-				<< data.size() << " to " << MAX_SEND_SIZE -1 << " Message starts with: " << data.substr(0,10) << endl;
-		data.resize( MAX_SEND_SIZE -1,' ');
-		size = MAX_SEND_SIZE -1;
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC*)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList)
+			conn->Send(data, true);
 	}
-	if(data[data.size()-1] !='|') {
-		data.append("|");
-		size ++;
-	}
-
-	int count = 0;
-	for(i=mConnList.begin(); i!= mConnList.end(); i++) {
-		conn=(cConnDC *)(*i);
-		if(conn && conn->ok && conn->mWritable && conn->mpUser && conn->mpUser->mInList) {
-			conn->Write(data, true);
-			mUploadZone[conn->mGeoZone].Insert(mTime,data.size());
-			++count;
-		}
-	}
-
-	if (Log(5))
-		LogStream() << "ALL: " << data.substr(0, 100) << endl;
-
-	if ((msLogLevel >= 3) && mNetOutLog && mNetOutLog.is_open())
-		mNetOutLog << ((unsigned long)count) *data.size() << " " << data.size() << " " << count << " " << data.substr(0, 10) << endl;
 }
 
 int cServerDC::SendToAllWithNick(const string &start,const string &end, int cm,int cM)
@@ -643,7 +620,7 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
-int cServerDC::SearchToAll(cConnDC *conn, const string &data, bool passive)
+int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
 {
 	cConnDC *other;
 	tCLIt i;

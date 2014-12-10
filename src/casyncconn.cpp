@@ -89,7 +89,8 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	mpMsgParser(NULL),
 	mAddrPort(0),
 	mServPort(0),
-	mType(ct)
+	mType(ct),
+	mZlibFlag(false)
 {
 	mMaxBuffer = MAX_SEND_SIZE;
 	struct sockaddr saddr;
@@ -148,7 +149,8 @@ cAsyncConn::cAsyncConn(const string &host , int port, bool udp):
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
 	mAddrPort(port),
-	mType(eCT_SERVER)
+	mType(eCT_SERVER),
+	mZlibFlag(false)
 {
 	mMaxBuffer=MAX_SEND_SIZE;
 	ClearLine();
@@ -706,44 +708,57 @@ void cAsyncConn::OnFlushDone()
 
 int cAsyncConn::Write(const string &data, bool Flush)
 {
-	// Append data to older data in buffer but only if there is free space
-	if(mBufSend.size()+ data.size() >= mMaxBuffer) {
-		if(Log(2))
+	if ((mBufSend.size() + data.size()) >= mMaxBuffer) { // append data to older data in buffer only if there is free space
+		if (Log(2))
 			LogStream() << "Buffer is too big, closing" << endl;
+
 		CloseNow();
 		return -1;
 	}
 
-	Flush = Flush || (mBufSend.size() > (mMaxBuffer >> 1));
+	Flush = (Flush || (mBufSend.size() > (mMaxBuffer >> 1)));
+	const char *send_buffer, *zlib_buffer; // pointer to buffers for data to send
+	size_t send_size; // size of buffer
+	bool appended; // data is added to old buffer content
 
-	// Pointer to buffer for data to send
-	const char *send_buffer;
-
-	// Size of buffer
-	size_t send_size;
-
-	// Data are added to old buffer content
-	bool appended;
-
-	// Check if we have to append data to buffer or send them immediatly
-	if(mBufSend.size() || !Flush) {
+	if (mBufSend.size() || !Flush) { // check if we have to append data to buffer or send it immediatly
 		mBufSend.append(data.data(), data.size());
-		send_buffer= mBufSend.data();
-		send_size  = mBufSend.size();
-		appended   = true;
+		send_buffer = mBufSend.data();
+		send_size = mBufSend.size();
+		appended = true;
 	} else {
-		send_buffer= data.data();
-		send_size  = data.size();
-		appended   = false;
+		send_buffer = data.data();
+		send_size = data.size();
+		appended = false;
 	}
 
-	// Check if there is anything to send
-	if(!send_size)
+	if (!send_size) // check if there is anything to send
 		return 0;
 
-	// We have appended data, so do not send now
-	if (!Flush)
+	if (!Flush) // we have appended data, so do not send now
 		return 0;
+
+	bool compressed = false;
+
+	if ((send_size > 100) && mZlibFlag && mxServer) { // compress data with zlib, only when flushing, otherwise we will destroy everything
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv && !serv->mC.disable_zlib) {
+			size_t zlib_size = 0;
+			zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size);
+
+			if (zlib_size && zlib_buffer) {
+				send_buffer = zlib_buffer;
+				send_size = zlib_size;
+				compressed = true;
+			} else if (Log(5)) {
+				if (zlib_size)
+					LogStream() << "Compressed ZLib data is larger, fall back" << endl;
+				else
+					LogStream() << "Failed compressing data with ZLib, fall back" << endl;
+			}
+		}
+	}
 
 	size_t size_sent = send_size; // make copy of send_size, because SendAll method will change it
 
@@ -752,8 +767,8 @@ int cAsyncConn::Write(const string &data, bool Flush)
 			nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
 
 			if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open()) {
-				serv->mNetOutLog << "[" << AddrIP() << "]" << " Error sending data: " << send_buffer << " (size: " << send_size << ", sent: " << size_sent << ", bufsend: " << mBufSend.size() << ")" << endl;
-				serv->mNetOutLog << "Error: " << strerror(errno) << " (code: " << errno << ")" << endl;
+				serv->mNetOutLog << "[" << AddrIP() << "] Error sending " << ((compressed) ? "compressed" : "plain") << " data: " << ((appended) ? mBufSend : data) << " (size: " << send_size << ", sent: " << size_sent << ")" << endl;
+				serv->mNetOutLog << "Error " << errno << ": " << strerror(errno) << endl;
 			}
 		}
 
@@ -765,20 +780,21 @@ int cAsyncConn::Write(const string &data, bool Flush)
 			return -1;
 		}
 
-		// If something has been sent, but not all, update the buffer
-		if(size_sent > 0) {
+		if (size_sent > 0) { // if something has been sent, but not all, update the buffer
 			mTimeLastIOAction.Get();
-			// If we appended, assign the rest of string to the buffer
-			if(!appended)
-				// this is supposed to actually reduce the size of mBufSend
-				// it does a copy so it is slower but memory usage is important thing
-				StrCutLeft(data, mBufSend, size_sent);
-			else
-				// this makes mBuffSend not grow
-				StrCutLeft( mBufSend, size_sent);
+
+			if (compressed) { // todo: for now we get rid of compressed unsent data, change that later
+				if (appended)
+					mBufSend.clear();
+			} else { // this is supposed to actually reduce the size of mBufSend, it does a copy so it is slower but memory usage is important thing
+				if (appended) // if we appended, assign the rest of string to the buffer
+					StrCutLeft(mBufSend, size_sent);
+				else
+					StrCutLeft(data, mBufSend, size_sent);
+			}
 		} else {
-			// Close nice was called, we must close the connection even if the data cannot be transmitted.
-			if(bool(mCloseAfter)) CloseNow();
+			if (bool(mCloseAfter)) // close nice was called, we must close the connection even if the data cannot be transmitted
+				CloseNow();
 		}
 
 		if (mxServer && ok) { // buffer overfill protection, only on registered connections
@@ -808,26 +824,26 @@ int cAsyncConn::Write(const string &data, bool Flush)
 				}
 			}
 		}
-	} else { // All data has been sent
-		// Clear output buffer
-		if(appended)
+	} else { // all data has been sent
+		if (appended) // clear output buffer
 			mBufSend.erase(0, mBufSend.size());
+
 		ShrinkStringToFit(mBufSend);
 
-		// If close nice was called, close the connection
-		if(bool(mCloseAfter))
+		if (bool(mCloseAfter)) // close nice was called, close the connection
 			CloseNow();
 
-		// Unregister the connection for write operation
-		if(mxServer && ok) {
+		if (mxServer && ok) { // unregister the connection for write operation
 			mxServer->mConnChooser.OptOut(this, eCC_OUTPUT);
-			if(Log(5)) LogStream() << "Blocking OUTPUT " << endl;
+
+			if (Log(5))
+				LogStream() << "Block OUTPUT" << endl;
 		}
 
 		mTimeLastIOAction.Get();
-		// Report flush is done
-		OnFlushDone();
+		OnFlushDone(); // report flush is done
 	}
+
 	return size_sent;
 }
 

@@ -27,68 +27,64 @@
 #include <stdint.h>
 
 #define ZLIB_BUFFER_SIZE 256*1024 // deflateInit() will allocate on the order of 256K bytes for the internal state
-#define ZON_LEN 5 // $ZOn and pipe message length
+#define ZON_LEN 5 // $ZOn| message length
 
 using namespace std;
+
 namespace nVerliHub {
-	namespace nUtils {
-		/// @addtogroup Core
-		/// @{
-		/**
-		 * Wrapper class for zlib compression library.
-		 * @author Davide Simoncelli
-		 */
-		class cZLib
-		{
-			public:
-				/**
-				* Class constructor.
-				*/
-				cZLib();
+namespace nUtils {
+	/// @addtogroup Core
+	/// @{
+	/**
+	 * Wrapper class for zlib compression library.
+	 * @author Davide Simoncelli
+	 */
+	class cZLib
+	{
+		public:
+			/**
+			* Class constructor.
+			*/
+			cZLib();
 
-				/**
-				* Class destructor.
-				*/
-				~cZLib();
+			/**
+			* Class destructor.
+			*/
+			~cZLib();
 
-				/**
-				* Append data to the internal buffer but do not compresse them.
-				*
-				* @param buffer Pointer to buffer data.
-				* @param len Data length.
-				*/
-				void AppendData(const char *buffer, size_t len);
+			/**
+			* Append data to the internal buffer but do not compresse them.
+			*
+			* @param buffer Pointer to buffer data.
+			* @param len Data length.
+			*/
+			//void AppendData(const char *buffer, size_t len);
 
-				/**
-				* Compress the given data.
-				* If there are available data in the internal buffer,
-				* the given data is appended after the data and then
-				* compression is performed.
-				*
-				* @param buffer Pointer to buffer data.
-				* @param len Data length.
-				* @param outLen Length of compressed data.
-				* @return Pointer to compressed data.
-				*/
-				char* Compress(const char *buffer, size_t len, size_t &outLen);
+			/**
+			* Compress the given data.
+			* If there are available data in the internal buffer,
+			* the given data is appended after the data and then
+			* compression is performed.
+			*
+			* @param buffer Pointer to buffer data.
+			* @param len Data length.
+			* @param outLen Length of compressed data.
+			* @return Pointer to compressed data.
+			*/
+			char* Compress(const char *buffer, size_t len, size_t &outLen);
+		private:
+			// in buffer
+			char *inBuf;
+			//size_t inBufPos;
+			size_t inBufLen;
+			size_t inLastLen;
 
-			private:
-				/// Internal buffer to store uncompressed data
-				char *zBuffer;
-
-				/// Current position in the buffer
-				size_t zBufferPos;
-
-				/// Internal buffer length
-				size_t zBufferLen;
-
-				/// Compressed data buffer
-				char *outBuffer;
-
-				/// Compressed data buffer length
-				size_t outBufferLen;
-		};
-	}; // namespace nUtils
+			// out buffer
+			char *outBuf;
+			size_t outBufLen;
+			size_t outLastLen;
+	};
+}; // namespace nUtils
 }; // namespace nVerliHub
 
 #endif

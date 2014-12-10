@@ -300,9 +300,10 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 			conn->mFeatures |= eSF_QUICKLIST;
 		else if (feature == "BotINFO")
 			conn->mFeatures |= eSF_BOTINFO;
-		else if ((feature == "ZPipe0") || (feature == "ZPipe"))
+		else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
 			conn->mFeatures |= eSF_ZLIB;
-		else if (feature == "ChatOnly")
+			conn->mZlibFlag = true;
+		} else if (feature == "ChatOnly")
 			conn->mFeatures |= eSF_CHATONLY;
 		else if (feature == "MCTo")
 			conn->mFeatures |= eSF_MCTO;

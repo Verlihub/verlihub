@@ -86,61 +86,31 @@ bool cConnDC::SetUser(cUser *usr)
 	return true;
 }
 
-int cConnDC::Send(const string &data, bool AddPipe, bool Flush)
+int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 {
 	if (!mWritable)
 		return 0;
 
-	string outData(data);
-	size_t outSize = outData.size();
+	if (AddPipe)
+		data.append("|");
 
-	if (outSize >= (MAX_SEND_SIZE - 1)) {
-		if (Log(2))
-			LogStream() << "Truncating too long message from " << outSize << " to " << (MAX_SEND_SIZE - 1) << ", message starts with: " << outData.substr(0, 10) << endl;
-
-		outData.resize(MAX_SEND_SIZE - 1, ' ');
-		outSize = MAX_SEND_SIZE - 1;
-	}
-
-	if (Log(5))
-		LogStream() << "OUT: " << outData.substr(0, 100) << endl;
+	if ((data.size() > 1) && Log(5))
+		LogStream() << "OUT: " << data.substr(0, 100) << endl;
 
 	if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
-		Server()->mNetOutLog << outSize << ": " << outData.substr(0, 10) << endl;
+		Server()->mNetOutLog << data.size() << ": " << data.substr(0, 100) << endl;
 
-	if (AddPipe) {
-		outData.append("|");
-		outSize++;
-	}
-
-	if (!Server()->mC.disable_zlib && (mFeatures & eSF_ZLIB)) {
-		/*
-		if (!Flush) { // if data should be buffered, append content to zlib buffer
-			Server()->mZLib->AppendData(outData.c_str(), outSize);
-			return 1;
-		}
-		*/
-
-		size_t zlibDataLen = 0;
-		char *zlibData = Server()->mZLib->Compress(outData.c_str(), outSize, zlibDataLen);
-
-		if (zlibData == NULL) {
-			if (Log(5))
-				LogStream() << "Error compressing data with ZLib, fall back to uncompressed data" << endl;
-		} else {
-			outData.assign(zlibData, zlibDataLen);
-			outSize = zlibDataLen;
-		}
-	}
-
-	int ret = Write(outData, Flush);
+	int ret = Write(data, Flush);
 	mTimeLastAttempt.Get();
 
-	if (mxServer) {
+	if (ret > 0) { // calculate upload bandwidth in real time
 		//Server()->mUploadZone[mGeoZone].Dump();
-		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, (int)outSize);
+		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, ret);
 		//Server()->mUploadZone[mGeoZone].Dump();
 	}
+
+	if (AddPipe)
+		data.erase(data.size() - 1, 1);
 
 	return ret;
 }
