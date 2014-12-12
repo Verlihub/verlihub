@@ -260,7 +260,7 @@ void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int
 
 void cUserCollection::FlushForUser(cUserBase *User)
 {
-	string str("");
+	string str;
 
 	//if (mSendAllCache.size()) {
 		ufSend(str, false).operator()(User);
@@ -269,7 +269,7 @@ void cUserCollection::FlushForUser(cUserBase *User)
 
 void cUserCollection::FlushCache()
 {
-	string str("");
+	string str;
 
 	//if (mSendAllCache.size()) {
 		SendToAll(str, false, false);

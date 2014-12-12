@@ -191,7 +191,7 @@ void cAsyncConn::Close()
 
 void cAsyncConn::Flush()
 {
-	string empty("");
+	string empty;
 	// Write the content of the buffer
 	if(mBufSend.length())
 		Write(empty, true);
