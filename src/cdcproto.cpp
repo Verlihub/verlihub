@@ -483,7 +483,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	}
 
 	// send hub name without topic
-	string emp("");
+	string emp;
 	Create_HubName(omsg, mS->mC.hub_name, emp);
 	conn->Send(omsg);
 
@@ -1485,7 +1485,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (port.empty() || (port.size() > 6))
 		return -1;
 
-	string extra("");
+	string extra;
 
 	if (port[port.size() - 1] == 'S') { // secure connection
 		if (conn->mFeatures & eSF_TLS) // only if sender supports it

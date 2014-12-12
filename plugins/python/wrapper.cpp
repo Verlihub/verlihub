@@ -65,7 +65,8 @@ char * w_SubStr (char *s, int _start, int _end)  // similar to python [_start:_e
 	if (end > len) end = len;
 	
 	len2 = end - start;
-	s2 = (char*) calloc(len2+1, sizeof(char));
+	s2 = (char*) malloc(len2+1);
+	s2[len2] = 0;
 	s2 = strncpy (s2, &s[start], len2);
 	return s2;
 }

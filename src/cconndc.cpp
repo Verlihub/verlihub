@@ -437,7 +437,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			break;
 	}
 
-	string pref("");
+	string pref;
 
 	if ((type == ePF_UNKNOWN) && data.size()) {
 		pref = data.substr(0, data.find_first_of(' '));
