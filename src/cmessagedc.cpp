@@ -145,26 +145,37 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo(':', eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT)) mError =1;
 			break;
 		case eDC_TO:
-			// $To: <other nick> From: <my nick> $<<nick>> <message>
-			// eCH_PM_TO, eCH_PM_FROM, eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG } ;
-			//	if(!SplitOnTwo( mKWSize,' ', eCH_PM_TO, eCH_PM_FROM)) mError =1;
-			//	ChunkRedLeft( eCH_PM_FROM, 6);  // skip the "From: " part
-			//	if(!SplitOnTwo( ' ', eCH_PM_FROM, eCH_PM_FROM, eCH_PM_CHMSG)) mError =1;
-			//	ChunkRedLeft( eCH_PM_CHMSG, 2);  // skip the "$<" part
-			//	if(!SplitOnTwo( '>', eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG)) mError =1;
-			//	ChunkRedLeft( eCH_PM_MSG, 1);  // skip the " " part (after nick)
-			if(!SplitOnTwo( mKWSize," From: ", eCH_PM_TO, eCH_PM_FROM)) mError =1;
-			if(!SplitOnTwo( " $<", eCH_PM_FROM, eCH_PM_FROM, eCH_PM_CHMSG)) mError =1;
-			if(!SplitOnTwo( '>', eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG)) mError =1;
-			if(!ChunkRedLeft( eCH_PM_MSG, 1)) mError = 1;  // skip the " " part (after nick)
+			/*
+				$To: <othernick> From: <mynick> $<<mynick>> <message>
+				eCH_PM_ALL, eCH_PM_TO, eCH_PM_FROM, eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG
+			*/
+
+			if (!SplitOnTwo(mKWSize, " From: ", eCH_PM_TO, eCH_PM_FROM))
+				mError = 1;
+
+			if (!SplitOnTwo(" $<", eCH_PM_FROM, eCH_PM_FROM, eCH_PM_CHMSG))
+				mError = 1;
+
+			if (!SplitOnTwo("> ", eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG))
+				mError = 1;
+
+			break;
 		case eDC_MCTO:
-			// $MCTo: <othernick> From: <mynick> $<<mynick>> <message>
-			// eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
-			if (!SplitOnTwo(mKWSize, " From: ", eCH_MCTO_TO, eCH_MCTO_FROM)) mError = 1;
-			if (!SplitOnTwo(" $<", eCH_MCTO_FROM, eCH_MCTO_FROM, eCH_MCTO_CHMSG)) mError = 1;
-			if (!SplitOnTwo('>', eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG)) mError = 1;
-			if (!ChunkRedLeft(eCH_MCTO_MSG, 1)) mError = 1;
-		break;
+			/*
+				$MCTo: <othernick> From: <mynick> $<<mynick>> <message>
+				eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
+			*/
+
+			if (!SplitOnTwo(mKWSize, " From: ", eCH_MCTO_TO, eCH_MCTO_FROM))
+				mError = 1;
+
+			if (!SplitOnTwo(" $<", eCH_MCTO_FROM, eCH_MCTO_FROM, eCH_MCTO_CHMSG))
+				mError = 1;
+
+			if (!SplitOnTwo("> ", eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG))
+				mError = 1;
+
+			break;
 		case eDC_MYINFO:
 			// $MyINFO $ALL <nick> <interest>$ $<speed>$<e-mail>$<sharesize>$
 			// eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE
