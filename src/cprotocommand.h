@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -23,31 +24,34 @@
 #include <string>
 
 using namespace std;
-namespace nVerliHub {
-	namespace nProtocol {
 
-/** \brief DC protocol command
-  * provides a Method Telling wheter a given command is this one or not
-  * description of a command from a protocol, about command, ans syntax, all parameters etc...
-  * @author Daniel Muller
-  */
+namespace nVerliHub {
+namespace nProtocol {
+
+/*
+	brief DC protocol command
+	provides a Method Telling wheter a given command is this one or not
+	description of a command from a protocol, about command, ans syntax, all parameters etc...
+	@author Daniel Muller
+*/
 
 class cProtoCommand
 {
-public:
-	/** std constructor and destructor */
-	cProtoCommand();
-	cProtoCommand(string cmd);
-	virtual ~cProtoCommand();
-	/** test if str is of this command */
-	bool AreYou(const string &str);
-public: // Public attributes
-	/** the command keyword */
-	string mCmd;
-	/** the length of the basic command string */
-	int mBaseLength;
+	public:
+		// constructor and destructor
+		cProtoCommand();
+		cProtoCommand(string cmd);
+		virtual ~cProtoCommand();
+		// test if str is of this command
+		bool AreYou(const string &str);
+	public:
+		// the command keyword
+		string mCmd;
+		// the length of the base command string
+		size_t mBaseLength;
 };
 
-	}; // namespace nProtocol
+}; // namespace nProtocol
 }; // namespace nVerliHub
+
 #endif

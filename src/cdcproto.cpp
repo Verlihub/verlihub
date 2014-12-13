@@ -80,15 +80,39 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			tMsgAct action = mS->Filter(tDCMsg(msg->mType), conn);
 	*/
 
-	if (strlen(msg->mStr.data()) < msg->mStr.size()) {
+	size_t msg_strlen = strlen(msg->mStr.data());
+
+	if (msg_strlen < msg->mLen) { // look for null character, message is already parsed by this moment
+		int end_cnt = 0;
+
+		while (msg->mStr.size() && (msg->mStr[msg->mStr.size() - 1] == '\0')) { // fix message by removing null characters in the end, seen this bug in some clients
+			msg->mStr.resize(msg->mStr.size() - 1);
+			end_cnt++;
+		}
+
+		if (end_cnt)
+			msg_strlen = strlen(msg->mStr.data());
+
+		if (!end_cnt || (msg_strlen < msg->mStr.size())) { // look for null character again
+			msg->mStr.resize(msg_strlen); // resize message until null character so we can use mStr below
+
+			if (conn->Log(1))
+				conn->LogStream() << "NULL character found in message: " << msg->mStr << endl;
+
+			if (mS->mC.nullchars_report) {
+				ostringstream os;
+				os << autosprintf(_("Probably attempt of NULL character attack: %s"), msg->mStr.c_str());
+				mS->ReportUserToOpchat(conn, os.str());
+			}
+
+			conn->CloseNow();
+			return -1;
+		}
+
 		if (conn->Log(1))
-			conn->LogStream() << "NULL character message: " << msg->mStr << endl;
+			conn->LogStream() << "NULL character removed from the end of message " << end_cnt << " times: " << msg->mStr << endl;
 
-		if (mS->mC.nullchars_report)
-			mS->ReportUserToOpchat(conn, _("Probably attempt of NULL character attack"));
-
-		conn->CloseNow();
-		return -1;
+		msg->Parse(); // parse message again because parser sets state variables
 	}
 
 	#ifndef WITHOUT_PLUGINS
@@ -106,7 +130,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	#endif
 
 	switch (msg->mType) {
-		case eDC_UNKNOWN:
+		case eDC_UNKNOWN: // must be first
 			this->DCU_Unknown(msg, conn);
 			return 1;
 			break;

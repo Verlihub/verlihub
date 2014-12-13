@@ -110,17 +110,19 @@ namespace nVerliHub {
 * The Direct Connect Protocol Message parser and container
 * provides access to all important parts of the message as std::string
 */
-class cMessageDC : public cMessageParser
-{
-public:
-	cMessageDC();
-	virtual ~cMessageDC();
-	/** parses the string and sets the state variables */
-	virtual int Parse(); // override
-	/** splits message to it's important parts and stores their info in the chunkset mChunks */
-	virtual bool SplitChunks(); // override
 
+class cMessageDC: public cMessageParser
+{
+	public:
+		cMessageDC();
+		virtual ~cMessageDC();
+		// parses the string and sets the state variables
+		virtual int Parse(); // override
+		// splits message to its important parts and stores their info in the chunkset mChunks
+		virtual bool SplitChunks(); // override
 };
+
 	}; // namespace nProtocol
 }; // namespace nVerliHub
+
 #endif

@@ -65,29 +65,38 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=
 	cProtoCommand(string("$Lock "))
 };
 
-cMessageDC::cMessageDC() : cMessageParser(10)
+cMessageDC::cMessageDC():
+	cMessageParser(10)
 {
 	SetClassName("MessageDC");
 }
 
-cMessageDC::~cMessageDC(){}
+cMessageDC::~cMessageDC()
+{
+}
 
-/** parses the string and sets the state variables */
-int cMessageDC::Parse()    // this function call too many comparisons, it's to optimize by a tree
-{// attention, AreYou returns true if the first part matches, so, somemessages may be confused
-	for(int i=0; i < eDC_UNKNOWN; i++) {
-		if(sDC_Commands[i].AreYou(mStr)) {
-			mType=tDCMsg(i);
-			mKWSize=sDC_Commands[i].mBaseLength;
-			mLen=mStr.size();
+/*
+	parses the string and sets the state variables
+		this function call too many comparisons, its to optimize by a tree
+		attention: AreYou returns true if the first part matches, some messages may be confused
+*/
+
+int cMessageDC::Parse()
+{
+	for (int i = 0; i < eDC_UNKNOWN; i++) {
+		if (sDC_Commands[i].AreYou(mStr)) {
+			mType = tDCMsg(i);
+			mKWSize = sDC_Commands[i].mBaseLength;
+			mLen = mStr.size();
 			break;
 		}
 	}
-	if(mType == eMSG_UNPARSED)
-		mType=eDC_UNKNOWN;
+
+	if (mType == eMSG_UNPARSED)
+		mType = eDC_UNKNOWN;
+
 	return mType;
 }
-
 
 /** splits message to it's important parts and stores their info in the chunkset mChunks */
 bool cMessageDC::SplitChunks()
@@ -122,8 +131,9 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo(mKWSize,' ', eCH_RC_NICK, eCH_RC_OTHER)) mError =1;
 			break;
 		case eDC_CHAT:
-			if(!SplitOnTwo(mKWSize,'>', eCH_CH_NICK, eCH_CH_MSG)) mError =1;
-			if(!ChunkRedLeft( eCH_CH_MSG, 1)) mError =1;  // this is because of empty space after '>'
+			if (!SplitOnTwo(mKWSize, "> ", eCH_CH_NICK, eCH_CH_MSG))
+				mError = 1;
+
 			break;
 		case eDC_SEARCH_PAS:
 			if(!SplitOnTwo(mKWSize,' ', eCH_PS_NICK, eCH_PS_QUERY)) mError =1;

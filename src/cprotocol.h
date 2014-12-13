@@ -92,11 +92,11 @@ class cMessageParser : public cObj
 		*/
 		bool mModified;
 
-		/** parsed message type */
+		// parsed message type
 		int mType;
-		/** length of the message */
-		unsigned mLen;
-		unsigned mKWSize;
+		// length of the message and base
+		size_t mLen;
+		size_t mKWSize;
 
 	protected:
 		/** reduce the chunk from left by amount, cn is the chunk number */
