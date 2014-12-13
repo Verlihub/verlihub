@@ -83,34 +83,41 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	size_t msg_strlen = strlen(msg->mStr.data());
 
 	if (msg_strlen < msg->mLen) { // look for null character, message is already parsed by this moment
-		int end_cnt = 0;
-
-		while (msg->mStr.size() && (msg->mStr[msg->mStr.size() - 1] == '\0')) { // fix message by removing null characters in the end, seen this bug in some clients
-			msg->mStr.resize(msg->mStr.size() - 1);
-			end_cnt++;
-		}
-
-		if (end_cnt)
-			msg_strlen = strlen(msg->mStr.data());
-
-		if (!end_cnt || (msg_strlen < msg->mStr.size())) { // look for null character again
-			msg->mStr.resize(msg_strlen); // resize message until null character so we can use mStr below
+		if (msg->mType == eDCC_LOCK) { // bug is some clients that send null character in referer
+			msg->mStr.resize(msg_strlen); // resize message until null character and continue
 
 			if (conn->Log(1))
-				conn->LogStream() << "NULL character found in message: " << msg->mStr << endl;
+				conn->LogStream() << "NULL character removed from message: " << msg->mStr << endl;
+		} else { // other messages
+			int end_cnt = 0;
 
-			if (mS->mC.nullchars_report) {
-				ostringstream os;
-				os << autosprintf(_("Probably attempt of NULL character attack: %s"), msg->mStr.c_str());
-				mS->ReportUserToOpchat(conn, os.str());
+			while (msg->mStr.size() && (msg->mStr[msg->mStr.size() - 1] == '\0')) { // try to fix message by removing all null characters in the end
+				msg->mStr.resize(msg->mStr.size() - 1);
+				end_cnt++;
 			}
 
-			conn->CloseNow();
-			return -1;
-		}
+			if (end_cnt)
+				msg_strlen = strlen(msg->mStr.data());
 
-		if (conn->Log(1))
-			conn->LogStream() << "NULL character removed from the end of message " << end_cnt << " times: " << msg->mStr << endl;
+			if (!end_cnt || (msg_strlen < msg->mStr.size())) { // look for null character again
+				msg->mStr.resize(msg_strlen); // resize message until null character so we can use mStr below
+
+				if (conn->Log(1))
+					conn->LogStream() << "NULL character found in message: " << msg->mStr << endl;
+
+				if (mS->mC.nullchars_report) {
+					ostringstream os;
+					os << autosprintf(_("Probably attempt of NULL character attack: %s"), msg->mStr.c_str());
+					mS->ReportUserToOpchat(conn, os.str());
+				}
+
+				conn->CloseNow();
+				return -1;
+			}
+
+			if (conn->Log(1))
+				conn->LogStream() << "NULL character removed from the end of message " << end_cnt << " times: " << msg->mStr << endl;
+		}
 
 		msg->Parse(); // parse message again because parser sets state variables
 	}
