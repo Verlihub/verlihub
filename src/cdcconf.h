@@ -213,6 +213,7 @@ public:
 	int disable_usr_cmds;
 	int disable_report_cmd;
 	bool disable_zlib;
+	int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
 	int plugin_mod_class;
 	int topic_mod_class;

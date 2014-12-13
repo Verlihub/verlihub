@@ -283,6 +283,7 @@ void cDCConf::AddVars()
 	Add("drop_invalid_key",drop_invalid_key, 0);
 	Add("delayed_ping",delayed_ping,60);
 	Add("disable_zlib", disable_zlib, true);
+	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 
 	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};

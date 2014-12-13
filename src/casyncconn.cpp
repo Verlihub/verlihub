@@ -740,23 +740,26 @@ int cAsyncConn::Write(const string &data, bool Flush)
 
 	bool compressed = false;
 
-	if ((send_size > 100) && mZlibFlag && mxServer) { // compress data with zlib, only when flushing, otherwise we will destroy everything
+	if (mZlibFlag && mxServer) { // compress data with zlib, only when flushing, otherwise we will destroy everything
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
 
-		if (serv && !serv->mC.disable_zlib) {
-			size_t zlib_size = 0;
-			zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size);
+		if (serv && !serv->mC.disable_zlib && (send_size >= serv->mC.zlib_min_len)) { // only when enabled and minimum length is reached
+			if (send_buffer[send_size - 1] == '|') {
+				size_t zlib_size = 0;
+				zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size);
 
-			if (zlib_size && zlib_buffer) {
-				send_buffer = zlib_buffer;
-				send_size = zlib_size;
-				compressed = true;
-			} else if (Log(5)) {
-				if (zlib_size)
-					LogStream() << "Compressed ZLib data is larger, fall back" << endl;
-				else
-					LogStream() << "Failed compressing data with ZLib, fall back" << endl;
-			}
+				if (zlib_size && zlib_buffer) {
+					send_buffer = zlib_buffer;
+					send_size = zlib_size;
+					compressed = true;
+				} else if (Log(5)) {
+					if (zlib_size)
+						LogStream() << "Compressed ZLib data is larger, fall back" << endl;
+					else
+						LogStream() << "Failed compressing data with ZLib, fall back" << endl;
+				}
+			} else if (Log(1)) // client will fail to decompress when pipe is missing
+				LogStream() << "Missing ending pipe in compress data: " << send_buffer << endl;
 		}
 	}
 
