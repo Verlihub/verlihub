@@ -583,34 +583,29 @@ void cChatRoom::SendPMToAll(const string & Msg, cConnDC *FromConn)
 
 bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)
 {
-	ostringstream os;
-	if (msg->mType == eDC_TO)
-	{
-		if(conn && conn->mpUser && mCol)
-		{
-			bool InList = mCol->ContainsNick(conn->mpUser->mNick);
-			if ( InList || IsUserAllowed(conn->mpUser))
-			{
-				if (!InList) // Auto-join
-					mCol->Add(conn->mpUser);
+	if (conn && conn->mpUser && conn->mpUser->mInList && mCol && msg && (msg->mType == eDC_TO)) {
+		bool InList = mCol->ContainsNick(conn->mpUser->mNick);
 
-				string &chat = msg->ChunkString(eCH_PM_MSG);
-				if (chat[0]=='+')
-				{
+		if (InList || IsUserAllowed(conn->mpUser)) {
+			if (!InList) // auto join
+				mCol->Add(conn->mpUser);
+
+			string &chat = msg->ChunkString(eCH_PM_MSG);
+
+			if (chat.size()) {
+				if (chat[0] == '+') {
 					if (!mConsole->DoCommand(chat, conn))
 						SendPMTo(conn, _("Unknown chatroom command specified."));
+				} else
+					SendPMToAll(chat, conn);
+			}
 
-				}
-				else SendPMToAll(chat, conn);
-			}
-			else
-			{
-				os << _("You can't use this chatroom, use main chat instead.");
-				SendPMTo(conn, os.str());
-			}
-		}
+			return true;
+		} else
+			SendPMTo(conn, _("You can't use this chatroom, use main chat instead."));
 	}
-	return true;
+
+	return false;
 }
 
 bool cChatRoom::IsUserAllowed(cUser *)

@@ -27,16 +27,18 @@
 namespace nVerliHub {
 	using namespace nEnums;
 
-	cChatConsole::cChatConsole(cServerDC *server, cChatRoom *ChatRoom):
-		cDCConsoleBase(server),
-		mCmdr(this),
-		mChatRoom(ChatRoom)
-{}
+cChatConsole::cChatConsole(cServerDC *server, cChatRoom *ChatRoom):
+	cDCConsoleBase(server),
+	mCmdr(this),
+	mChatRoom(ChatRoom)
+{
+}
 
 cChatConsole::~cChatConsole()
-{}
+{
+}
 
-cUserCollection *cChatConsole::GetTheList()
+cUserCollection* cChatConsole::GetTheList()
 {
 	return mChatRoom->mCol;
 }
@@ -54,12 +56,12 @@ void cChatConsole::AddCommands()
 	mCmdr.InitAll(this);
 }
 
-int cChatConsole::DoCommand(const string &str, cConnDC * conn)
+int cChatConsole::DoCommand(const string &str, cConnDC *conn)
 {
-	ostringstream os;
-
 	if (!conn || !conn->mpUser)
 		return 0;
+
+	ostringstream os;
 
 	if (mCmdr.ParseAll(str, os, conn) >= 0) {
 		mChatRoom->SendPMTo(conn, os.str());
@@ -69,10 +71,9 @@ int cChatConsole::DoCommand(const string &str, cConnDC * conn)
 	return 0;
 }
 
-const char *cChatConsole::CmdId(int cmd)
+const char* cChatConsole::CmdId(int cmd)
 {
-	static string id;
-	id = CmdPrefix();
+	static string id = CmdPrefix();
 
 	switch (cmd) {
 		case eCHAT_INVITE:
@@ -89,6 +90,7 @@ const char *cChatConsole::CmdId(int cmd)
 			break;
 		default:
 			id += "???";
+			break;
 	}
 
 	id += CmdSuffix();
@@ -100,12 +102,13 @@ const char *cChatConsole::CmdId(int cmd)
 			break;
 		default:
 			id += " ";
+			break;
 	}
 
 	return id.c_str();
 }
 
-const char * cChatConsole::GetParamsRegex(int cmd)
+const char* cChatConsole::GetParamsRegex(int cmd)
 {
 	switch (cmd) { // invite|out <nick> [reason]
 		case eCHAT_INVITE:
@@ -116,92 +119,104 @@ const char * cChatConsole::GetParamsRegex(int cmd)
 			break;
 		default:
 			return "";
+			break;
 	}
 }
 
-cUserCollection *cChatConsole::cfBase::GetTheList()
+cUserCollection* cChatConsole::cfBase::GetTheList()
 {
 	if (mCommand && mCommand->mCmdr && mCommand->mCmdr->mOwner)
-		return ((cChatConsole*) mCommand->mCmdr->mOwner)->GetTheList();
+		return ((cChatConsole*)mCommand->mCmdr->mOwner)->GetTheList();
 
 	return NULL;
 }
 
 bool cChatConsole::cfOut::operator()()
 {
-	if (!mConn || !mConn->mpUser) {
+	if (!mConn || !mConn->mpUser)
 		return false;
-	}
 
-	string nick, msg;
+	string nick;
 	cUser *user;
 	GetParOnlineUser(1, user, nick);
 
-	if (!user || !user->mxConn || !GetTheList()->ContainsNick(nick)) {
-		*mOS << autosprintf(_("User not in chatroom: %s"), nick.c_str());
+	if (!user || !user->mxConn || !user->mInList) {
+		(*mOS) << autosprintf(_("User not online: %s"), nick.c_str());
+		return false;
+	}
+
+	if (!GetTheList()->ContainsNick(nick)) {
+		(*mOS) << autosprintf(_("User not in chatroom: %s"), nick.c_str());
 		return false;
 	}
 
 	if (user->mClass > mConn->mpUser->mClass) {
-		*mOS << autosprintf(_("You have no rights to remove user from chatroom: %s"), nick.c_str());
+		(*mOS) << autosprintf(_("You have no rights to remove user from chatroom: %s"), nick.c_str());
 		return false;
 	}
 
+	/*
+	string msg;
 	GetParStr(3, msg);
 
-	if (!msg.empty())
-		// todo: send msg to removed user
+	if (msg.size())
+		mChatRoom->SendPMTo(user->mxConn, msg); // todo
+	*/
 
 	GetTheList()->Remove(user);
-	*mOS << autosprintf(_("User removed from chatroom: %s"), nick.c_str());
+	(*mOS) << autosprintf(_("User removed from chatroom: %s"), nick.c_str());
 	return true;
 }
 
 bool cChatConsole::cfLeave::operator()()
 {
-	if (!mConn || !mConn->mpUser) {
+	if (!mConn || !mConn->mpUser)
 		return false;
-	}
 
 	GetTheList()->Remove(mConn->mpUser);
-	*mOS << _("You are removed from chatroom.");
+	(*mOS) << _("You are removed from chatroom.");
 	return true;
 }
 
 bool cChatConsole::cfMembers::operator()()
 {
-	if (!mConn || !mConn->mpUser) {
+	if (!mConn || !mConn->mpUser)
 		return false;
-	}
 
-	string NickList;
-	NickList = GetTheList()->GetNickList();
-	*mOS << _("Chatroom members") << ":\r\n\r\n" << NickList;
+	string NickList = GetTheList()->GetNickList();
+	(*mOS) << _("Chatroom members") << ":\r\n\r\n" << NickList;
 	return true;
 }
 
 bool cChatConsole::cfInvite::operator()()
 {
-	if (!mConn || !mConn->mpUser) {
+	if (!mConn || !mConn->mpUser)
 		return false;
-	}
 
-	string nick, msg;
+	string nick;
 	cUser *user;
 	GetParOnlineUser(1, user, nick);
 
-	if (!user || !user->mxConn) {
-		*mOS << autosprintf(_("User not online: %s"), nick.c_str());
+	if (!user || !user->mxConn || !user->mInList) {
+		(*mOS) << autosprintf(_("User not online: %s"), nick.c_str());
 		return false;
 	}
 
+	if (GetTheList()->ContainsNick(nick)) {
+		(*mOS) << autosprintf(_("User is already in chatroom: %s"), nick.c_str());
+		return false;
+	}
+
+	/*
+	string msg;
 	GetParStr(3, msg);
+
+	if (msg.size())
+		mChatRoom->SendPMTo(user->mxConn, msg); // todo
+	*/
+
 	GetTheList()->Add(user);
-
-	if (!msg.empty())
-		// todo: send msg to invited user
-
-	*mOS << autosprintf(_("User added to chatroom: %s"), nick.c_str());
+	(*mOS) << autosprintf(_("User added to chatroom: %s"), nick.c_str());
 	return true;
 }
 

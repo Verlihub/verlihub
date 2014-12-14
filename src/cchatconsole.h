@@ -26,27 +26,30 @@
 
 namespace nVerliHub {
 	using namespace nCmdr;
+
 	namespace nSocket {
 		//class cConnDC;
 		class cServerDC;
 	};
+
 	class cChatRoom;
 	class cUserCollection;
+
 	namespace nEnums {
-		// Chat console command id
-		enum {
+		enum { // chat console command id
 			eCHAT_INVITE,
 			eCHAT_LEAVE,
 			eCHAT_OUT,
 			eCHAT_MEMBERS
 		};
 	};
+
 /**
 contains the commands that are accepted thourh the pm of any chatroom, like for example the OpChat
-
 @author Daniel Muller
 */
-class cChatConsole : public cDCConsoleBase
+
+class cChatConsole: public cDCConsoleBase
 {
 public:
 	cChatConsole(nSocket::cServerDC *, cChatRoom *ChatRoom = NULL);
@@ -54,34 +57,46 @@ public:
 
 	virtual void AddCommands();
 	virtual int DoCommand(const string &str, nSocket::cConnDC *conn);
-	virtual int OpCommand(const string &str, nSocket::cConnDC *conn){ return this->DoCommand(str,conn);}
-	virtual int UsrCommand(const string &str , nSocket::cConnDC *conn){ return this->DoCommand(str,conn);}
+	virtual int OpCommand(const string &str, nSocket::cConnDC *conn) { return this->DoCommand(str, conn); }
+	virtual int UsrCommand(const string &str, nSocket::cConnDC *conn) { return this->DoCommand(str, conn); }
 
-	virtual cUserCollection *GetTheList();
-	virtual const char * GetParamsRegex(int);
-	virtual const char *CmdSuffix() {return "";}
-	virtual const char *CmdPrefix() {return "\\+";}
-	virtual const char *CmdId(int cmd);
-
+	virtual cUserCollection* GetTheList();
+	virtual const char* GetParamsRegex(int);
+	virtual const char* CmdSuffix() { return ""; }
+	virtual const char* CmdPrefix() { return "\\+"; }
+	virtual const char* CmdId(int cmd);
 
 protected:
-
-	class cfBase : public cDCCommand::sDCCmdFunc
+	class cfBase: public cDCCommand::sDCCmdFunc
 	{
 		public:
-		virtual cUserCollection *GetTheList();
+			virtual cUserCollection* GetTheList();
 	};
 
-	class cfInvite : public cfBase { virtual bool operator()(); } mcfInvite;
-	class cfLeave : public cfBase { virtual bool operator()(); } mcfLeave;
-	class cfOut : public cfBase { virtual bool operator()(); } mcfOut;
-	class cfMembers : public cfBase { virtual bool operator()(); } mcfMembers;
+	class cfInvite: public cfBase
+	{
+		virtual bool operator()();
+	} mcfInvite;
+
+	class cfLeave: public cfBase
+	{
+		virtual bool operator()();
+	} mcfLeave;
+
+	class cfOut: public cfBase
+	{
+		virtual bool operator()();
+	} mcfOut;
+
+	class cfMembers: public cfBase
+	{
+		virtual bool operator()();
+	} mcfMembers;
 
 	cDCCommand mCmdInvite;
 	cDCCommand mCmdLeave;
 	cDCCommand mCmdOut;
 	cDCCommand mCmdMembers;
-
 	cCommandCollection mCmdr;
 	cChatRoom *mChatRoom;
 };

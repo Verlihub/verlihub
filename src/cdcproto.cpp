@@ -1219,6 +1219,11 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return -2;
 
 	if (!other->mxConn && mS->mRobotList.ContainsNick(to)) { // parse for commands to bot
+		#ifndef WITHOUT_PLUGINS
+			if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+				return 0;
+		#endif
+
 		((cUserRobot*)mS->mRobotList.GetUserBaseByNick(to))->ReceiveMsg(conn, msg);
 		return 0;
 	}
