@@ -140,22 +140,33 @@ cDCConsole::~cDCConsole(){
 	mDCClientConsole = NULL;
 }
 
-int cDCConsole::OpCommand(const string &str, cConnDC * conn)
+int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 {
-	if (!conn || !conn->mpUser) return 0;
+	if (!conn || !conn->mpUser)
+		return 0;
+
 	istringstream cmd_line(str);
 	string cmd;
 	ostringstream os;
 	cmd_line >> cmd;
 	cmd = toLower(cmd);
-	string cmdid = cmd.substr (1);
+	string cmdid = cmd.substr(1);
 
 	switch (conn->mpUser->mClass) {
 		case eUC_MASTER:
-			if (cmdid == "quit") return CmdQuit(cmd_line, conn, 0);
-			if (cmdid == "restart") return CmdQuit(cmd_line, conn, 1);
-			if (cmdid == "dbg_hash") { mOwner->mUserList.DumpProfile(cerr); return 1; }
-			if (cmdid == "core_dump") return CmdQuit(cmd_line, conn, -1);
+			if (cmdid == "quit")
+				return CmdQuit(cmd_line, conn, 0);
+
+			if (cmdid == "restart")
+				return CmdQuit(cmd_line, conn, 1);
+
+			if (cmdid == "dbg_hash") {
+				mOwner->mUserList.DumpProfile(cerr);
+				return 1;
+			}
+
+			if (cmdid == "core_dump")
+				return CmdQuit(cmd_line, conn, -1);
 
 			if (cmdid == "hublist") {
 				mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn);
@@ -371,15 +382,51 @@ int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 	return 1;
 }
 
-int cDCConsole::CmdQuit(istringstream &, cConnDC * conn, int code)
+int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 {
+	unsigned delay = 0;
+
+	if (cmd_line.good()) {
+		string delay_str;
+		getline(cmd_line, delay_str);
+
+		if (delay_str.size()) {
+			if (delay_str[0] == ' ') // small fix
+				delay_str = delay_str.substr(1);
+
+			if (delay_str.size()) {
+				ostringstream conv_err;
+				delay = mOwner->Str2Period(delay_str, conv_err);
+
+				if (!delay)
+					mOwner->DCPublicHS(conv_err.str(), conn);
+			}
+		}
+	}
+
+	if (conn->Log(1))
+		conn->LogStream() << "Stopping hub with code " << code << " and delay " << delay << endl;
+
 	ostringstream os;
-	if (conn->Log(1)) conn->LogStream() << "Stopping hub with code: " << code << endl;
-	os << _("Stopping hub.");
-	mOwner->DCPublicHS(os.str(), conn);
+
+	if (code == 1) { // restart
+		if (delay)
+			os << autosprintf (_("Please note, hub has been scheduled to restart in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
+		else
+			os << _("Please note, hub will be restarted now.");
+	} else { // quit
+		if (delay)
+			os << autosprintf (_("Please note, hub has been scheduled to stop in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
+		else
+			os << _("Please note, hub will be stopped now.");
+	}
+
+	string msg;
+	mOwner->mP.Create_Chat(msg, mOwner->mC.hub_security, os.str());
+	mOwner->mUserList.SendToAll(msg, false, true);
 
 	if (code >= 0)
-		mOwner->stop(code);
+		mOwner->stop(code, delay);
 	else
 		*(int*)1 = 0;
 
@@ -488,20 +535,15 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 {
-	if (!conn)
+	if (!conn || !conn->mpUser)
 		return 0;
 
-	if (!conn->mpUser)
-		return 0;
-
-	// check if command is disabled
-	if (mOwner->mC.disable_me_cmd) {
-		mOwner->DCPublicHS(_("This functionality is currently disabled."), conn);
+	if (mOwner->mC.disable_me_cmd) { // check if command is disabled
+		mOwner->DCPublicHS(_("This command is currently disabled."), conn);
 		return 1;
 	}
 
-	// check if user is allowed to use main chat
-	if (!conn->mpUser->Can(eUR_CHAT, mOwner->mTime.Sec(), 0))
+	if (!conn->mpUser->Can(eUR_CHAT, mOwner->mTime.Sec(), 0)) // check if user is allowed to use main chat
 		return 1;
 
 	if (conn->mpUser->mClass < mOwner->mC.mainchat_class) {
@@ -509,10 +551,8 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	// prepare text
-	string text;
+	string text, tmpline; // prepare text
 	getline(cmd_line, text);
-	string tmpline;
 
 	while (cmd_line.good()) {
 		tmpline = "";
@@ -520,11 +560,10 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		text += "\r\n" + tmpline;
 	}
 
-	if (text[0] == ' ') // small fix
+	if (text.size() && (text[0] == ' ')) // small fix
 		text = text.substr(1);
 
-	// check for flood as if it was regular mainchat message
-	string mestr;
+	string mestr; // check for flood as if it was regular mainchat message
 	mestr = '<';
 	mestr += conn->mpUser->mNick;
 	mestr += "> ";
@@ -537,16 +576,14 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 
 	conn->mpUser->mFloodHashes[eFH_CHAT] = Hash;
 
-	// check message length
-	if (conn->mpUser->mClass < eUC_VIPUSER && !cDCProto::CheckChatMsg(text, conn))
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length
 		return 1;
 
-	// send message
-	ostringstream os;
-	os << "** " << conn->mpUser->mNick << " " << text;
-	string msg = os.str();
-	mOwner->mUserList.SendToAll(msg, true);
-	os.str(mOwner->mEmpty);
+	string msg = "** "; // send message
+	msg += conn->mpUser->mNick;
+	msg += " ";
+	msg += text;
+	mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_chat, true);
 	return 1;
 }
 

@@ -43,7 +43,7 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	cObj("cAsyncSocketServer"),
 	mAddr("0.0.0.0"),
 	timer_conn_period(4),
-	timer_serv_period(2),
+	timer_serv_period(1),
 	mStepDelay(0),
 	mMaxLineLength(10240),
 	mUseDNS(0),
@@ -103,35 +103,43 @@ cAsyncSocketServer::~cAsyncSocketServer()
 
 int cAsyncSocketServer::run()
 {
+	mT.stop = cTime(0, 0);
 	mbRun = true;
 	cTime now;
-	if(Log(1))
-		LogStream() << "Main loop start." << endl;
-	while(mbRun) {
+
+	if (Log(1))
+		LogStream() << "Main loop start" << endl;
+
+	while (mbRun) {
 		mTime.Get();
-		{
-			TimeStep();
+		TimeStep();
+
+		if (mTime >= (mT.main + timer_serv_period)) {
+			mT.main = mTime;
+			OnTimerBase(mTime);
 		}
 
-		if(now.Get() >= (mT.main + timer_serv_period)) {
-			mT.main = now;
-			OnTimerBase(now);
-		}
 		#if !defined _WIN32
-		::usleep(mStepDelay*1000);
+			::usleep(mStepDelay * 1000);
 		#else
-		::Sleep(mStepDelay);
+			::Sleep(mStepDelay);
 		#endif
+
 		mFrequency.Insert(mTime);
+
+		if (mT.stop.Sec() && (mTime >= mT.stop))
+			mbRun = false;
 	}
-	if(Log(1))
-		LogStream() << "Main loop stop(" << mRunResult << ")." << endl;
+
+	if (Log(1))
+		LogStream() << "Main loop stop with code " << mRunResult << endl;
+
 	return mRunResult;
 }
 
-void cAsyncSocketServer::stop(int code)
+void cAsyncSocketServer::stop(int code, unsigned delay)
 {
-	mbRun = false;
+	mT.stop = (mTime + (int)delay);
 	mRunResult = code;
 }
 
@@ -139,14 +147,16 @@ void cAsyncSocketServer::close()
 {
 	mbRun = false;
 	tCLIt it;
-	for(it = mConnList.begin(); it != mConnList.end(); ++it) {
+
+	for (it = mConnList.begin(); it != mConnList.end(); ++it) {
 		if (*it) {
 			mConnChooser.DelConn(*it);
-			if(mFactory!= NULL)
+
+			if (mFactory != NULL)
 				mFactory->DeleteConn(*it);
 			else
-				delete *it;
-			*it = NULL;
+				delete (*it);
+				(*it) = NULL;
 		}
 	}
 }

@@ -1432,8 +1432,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	if (!mS->mCallBacks.mOnParsedMsgChat.CallAll(conn, msg)) return 0;
 	#endif
 
-	// finally send the message
-	mS->mChatUsers.SendToAll(msg->mStr);
+	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true); // finally send the message
 	return 0;
 }
 

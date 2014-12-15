@@ -314,8 +314,8 @@ int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_clas
 	msg.erase();
 	mP.Create_Chat(msg, from, txt);
 
-	if (min_class != eUC_NORMUSER || max_class != eUC_MASTER)
-		mUserList.SendToAllWithClass(msg, min_class, max_class, false, true);
+	if ((min_class != eUC_NORMUSER) || (max_class != eUC_MASTER))
+		mUserList.SendToAllWithClass(msg, min_class, max_class, true, true);
 	else
 		mUserList.SendToAll(msg, true, true);
 
@@ -1446,38 +1446,53 @@ int cServerDC::OnTimer(cTime &now)
 unsigned cServerDC::Str2Period(const string &s, ostream &err)
 {
 	istringstream is(s);
-
-	unsigned u=0;
-	int m,n=0;
-	char c=' ';
+	unsigned u = 0;
+	int m, n = 0;
+	char c = ' ';
 	is >> n >> c;
+
 	if(n >= 0) {
 		m = 1; // multiplicator
-		if(c==' ')
+
+		if (c == ' ')
 			c = 'd';
-		switch(c) {
+
+		switch (c) {
 			case 'y':
-			case 'Y': m*= 12; // year = 12* month
-			case 'M': m*=  4; // month = 4 * week
+			case 'Y':
+				m *= 12; // year = 12 * month
+				break;
+			case 'M':
+				m *= 4; // month = 4 * week
+				break;
 			case 'w':
-			case 'W': m*=  7; // week = 7 days
+			case 'W':
+				m *= 7; // week = 7 days
+				break;
 			case 'd':
-			case 'D': m*= 24; // 24 hours
+			case 'D':
+				m *= 24; // 24 hours
+				break;
 			case 'h':
-			case 'H': m*= 60; // 60mniutes
-			case 'm': m*= 60; // 60 seconds
+			case 'H':
+				m *= 60; // 60 minutes
+				break;
+			case 'm':
+				m *= 60; // 60 seconds
+				break;
 			case 's':
-			case 'S': break;
+			case 'S':
+				break;
 			default:
-				err << _("Error. Available units are: "
-					 "s(econd), m(inute), h(our), d(ay), w(eek), M(onth), Y(ear).\n"
-					 "Default is 'd'.") << endl;
+				err << _("Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, w(eeks), M(onths) and y(ears)");
 				return 0;
-			break;
+				break;
 		}
-		u= n*m;
+
+		u = (n * m);
 	} else
-		err << _("Please provide a positive number.") << endl;
+		err << _("Please provide positive number for time unit.");
+
 	return u;
 }
 

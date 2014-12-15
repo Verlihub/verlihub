@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -148,11 +149,8 @@ namespace nVerliHub {
 				 */
 				virtual int StartListening(int OverrideDefaultPort=0);
 
-				/**
-				* Stop main loop and set error code.
-				* @param code The error code.
-				*/
-				void stop(int);
+				// set stop code and exit main loop using delay
+				void stop(int code, unsigned delay = 0);
 
 				/**
 				 * Stop handling the given connection.
@@ -282,19 +280,15 @@ namespace nVerliHub {
 			*/
 			virtual int OnNewConn(cAsyncConn*);
 
-			/// Structure that contains timers
-			struct sTimers
+			struct sTimers // structure that contains timers
 			{
-				/// Server time of the last call of OnTimerBase
-				cTime main;
-				/// Connection time of the last call of cAsyncConn::OnTimerBase
-				cTime conn;
+				cTime main; // server time of the last call of OnTimerBase
+				cTime conn; // connection time of the last call of cAsyncConn::OnTimerBase
+				cTime stop; // stop delay
 			};
-			/// Timer structure
-			sTimers mT;
 
-			/// Errore code when main loop stops
-			int mRunResult;
+			sTimers mT; // timer structure
+			int mRunResult; // stop code
 		private:
 			/// Pointer to the connection that server is currently handling
 			cAsyncConn * mNowTreating;
