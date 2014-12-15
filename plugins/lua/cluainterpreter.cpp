@@ -35,106 +35,109 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nLuaPlugin {
 
-cLuaInterpreter::cLuaInterpreter(string scriptname) : mScriptName(scriptname)
+cLuaInterpreter::cLuaInterpreter(string scriptname):
+	mScriptName(scriptname)
 {
-	mL = luaL_newstate(); // lua_open() could be used in <=5.1
+	mL = luaL_newstate();
 }
 
 cLuaInterpreter::~cLuaInterpreter()
 {
-	char * args[] = { NULL };
-	if(mL) {
+	char *args[] = { NULL };
+
+	if (mL) {
 		CallFunction("UnLoad", args);
 		lua_close(mL);
 	}
+
 	clean();
 }
 
 bool cLuaInterpreter::Init()
 {
-
 	luaL_openlibs(mL);
 	lua_newtable(mL);
 
-	RegisterFunction("SendDataToUser",    &_SendToUser); /* back compatibility */
-	RegisterFunction("SendToUser",    &_SendToUser);
-	RegisterFunction("SendDataToAll",     &_SendToClass); /* back compatibility */
-	RegisterFunction("SendToClass",     &_SendToClass);
-	RegisterFunction("SendToAll",     &_SendToAll);
+	RegisterFunction("SendDataToUser", &_SendToUser); // backward compatibility
+	RegisterFunction("SendToUser", &_SendToUser);
+	RegisterFunction("SendDataToAll", &_SendToClass); // backward compatibility
+	RegisterFunction("SendToClass", &_SendToClass);
+	RegisterFunction("SendToAll", &_SendToAll);
 	RegisterFunction("SendToActive", &_SendToActive);
 	RegisterFunction("SendToActiveClass", &_SendToActiveClass);
 	RegisterFunction("SendToPassive", &_SendToPassive);
 	RegisterFunction("SendToPassiveClass", &_SendToPassiveClass);
-	RegisterFunction("SendPMToAll",       &_SendPMToAll);
-	RegisterFunction("CloseConnection",   &_Disconnect); /* back compatibility */
-	RegisterFunction("Disconnect",   &_Disconnect);
-	RegisterFunction("DisconnectByName",   &_Disconnect); /* back compatibility */
+	RegisterFunction("SendPMToAll", &_SendPMToAll);
+	RegisterFunction("CloseConnection", &_Disconnect); // backward compatibility
+	RegisterFunction("Disconnect", &_Disconnect);
+	RegisterFunction("DisconnectByName", &_Disconnect); // backward compatibility
 	RegisterFunction("DisconnectNice", &_DisconnectNice);
 	RegisterFunction("StopHub", &_StopHub);
 	RegisterFunction("GetUserCC", &_GetUserCC);
 	RegisterFunction("GetUserCN", &_GetUserCN);
 	RegisterFunction("GetUserCity", &_GetUserCity);
+
 	#if HAVE_LIBGEOIP
-	RegisterFunction("GetIPCC", &_GetIPCC);
-	RegisterFunction("GetIPCN", &_GetIPCN);
-	RegisterFunction("GetIPCity", &_GetIPCity);
-	RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
-	RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
+		RegisterFunction("GetIPCC", &_GetIPCC);
+		RegisterFunction("GetIPCN", &_GetIPCN);
+		RegisterFunction("GetIPCity", &_GetIPCity);
+		RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
+		RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
 	#endif
-	RegisterFunction("GetMyINFO",         &_GetMyINFO);
-	RegisterFunction("GetUpTime",         &_GetUpTime);
-	RegisterFunction("RegBot",          &_RegBot);
-	RegisterFunction("AddRobot",          &_RegBot); /* back compatibility */
-	RegisterFunction("UnRegBot",          &_UnRegBot);
-	RegisterFunction("DelRobot",          &_UnRegBot); /* back compatibility */
-	RegisterFunction("EditBot",          &_EditBot);
-	RegisterFunction("IsBot",          &_IsBot);
-	RegisterFunction("GetHubIp",          &_GetHubIp);
-	RegisterFunction("GetHubSecAlias",          &_GetHubSecAlias);
+
+	RegisterFunction("GetMyINFO", &_GetMyINFO);
+	RegisterFunction("GetUpTime", &_GetUpTime);
+	RegisterFunction("RegBot", &_RegBot);
+	RegisterFunction("AddRobot", &_RegBot); // backward compatibility
+	RegisterFunction("UnRegBot", &_UnRegBot);
+	RegisterFunction("DelRobot", &_UnRegBot); // backward compatibility
+	RegisterFunction("EditBot", &_EditBot);
+	RegisterFunction("IsBot", &_IsBot);
+	RegisterFunction("GetHubIp", &_GetHubIp);
+	RegisterFunction("GetHubSecAlias", &_GetHubSecAlias);
 	RegisterFunction("AddChatUser", &_AddChatUser);
 	RegisterFunction("DelChatUser", &_DelChatUser);
 	RegisterFunction("IsChatUser", &_IsChatUser);
-	RegisterFunction("AddRegUser",          &_AddRegUser);
-	RegisterFunction("DelRegUser",          &_DelRegUser);
-	RegisterFunction("GetUserClass",      &_GetUserClass);
-	RegisterFunction("GetUserHost",       &_GetUserHost);
-	RegisterFunction("GetUserIP",         &_GetUserIP);
-	RegisterFunction("IsUserOnline",         &_IsUserOnline);
+	RegisterFunction("AddRegUser", &_AddRegUser);
+	RegisterFunction("DelRegUser", &_DelRegUser);
+	RegisterFunction("GetUserClass", &_GetUserClass);
+	RegisterFunction("GetUserHost", &_GetUserHost);
+	RegisterFunction("GetUserIP", &_GetUserIP);
+	RegisterFunction("IsUserOnline", &_IsUserOnline);
 	RegisterFunction("GetUserSupports", &_GetUserSupports);
 	RegisterFunction("GetUserVersion", &_GetUserVersion);
 	RegisterFunction("InUserSupports", &_InUserSupports);
-	RegisterFunction("Ban",               &_Ban);
-	RegisterFunction("KickUser",          &_KickUser);
+	RegisterFunction("Ban", &_Ban);
+	RegisterFunction("KickUser", &_KickUser);
 	RegisterFunction("KickRedirUser", &_KickRedirUser);
 	RegisterFunction("ReportUser", &_ReportUser);
 	RegisterFunction("SendToOpChat", &_SendToOpChat);
 	RegisterFunction("ParseCommand", &_ParseCommand);
-	RegisterFunction("SetConfig",         &_SetConfig);
-	RegisterFunction("GetConfig",         &_GetConfig);
-	RegisterFunction("SQLQuery",          &_SQLQuery);
-	RegisterFunction("SQLFetch",          &_SQLFetch);
-	RegisterFunction("SQLFree",           &_SQLFree);
-	RegisterFunction("GetUsersCount",     &_GetUsersCount);
+	RegisterFunction("SetConfig", &_SetConfig);
+	RegisterFunction("GetConfig", &_GetConfig);
+	RegisterFunction("SQLQuery", &_SQLQuery);
+	RegisterFunction("SQLFetch", &_SQLFetch);
+	RegisterFunction("SQLFree", &_SQLFree);
+	RegisterFunction("GetUsersCount", &_GetUsersCount);
 	RegisterFunction("GetTotalShareSize", &_GetTotalShareSize);
-	RegisterFunction("GetNickList",       &_GetNickList);
-	RegisterFunction("GetOPList",       &_GetOPList);
-	RegisterFunction("GetBotList",       &_GetBotList);
+	RegisterFunction("GetNickList", &_GetNickList);
+	RegisterFunction("GetOPList", &_GetOPList);
+	RegisterFunction("GetBotList", &_GetBotList);
 	RegisterFunction("GetLuaBots", &_GetLuaBots);
-	RegisterFunction("GetBots", &_GetLuaBots); /* back compatibility */
-	RegisterFunction("GetTempRights",       &_GetTempRights);
-	RegisterFunction("SetTempRights",       &_SetTempRights);
-	RegisterFunction("GetVHCfgDir",       &_GetVHCfgDir);
+	RegisterFunction("GetBots", &_GetLuaBots); // backward compatibility
+	RegisterFunction("GetTempRights", &_GetTempRights);
+	RegisterFunction("SetTempRights", &_SetTempRights);
+	RegisterFunction("GetVHCfgDir", &_GetVHCfgDir);
 	RegisterFunction("GetTopic", &_GetTopic);
 	RegisterFunction("SetTopic", &_SetTopic);
-
 	RegisterFunction("ScriptCommand", &_ScriptCommand);
 
 	lua_setglobal(mL, "VH");
+	int status = luaL_dofile(mL, (char*)mScriptName.c_str());
 
-	int status = luaL_dofile(mL, (char *)mScriptName.c_str());
-	if(status) {
-		unsigned char *error = (unsigned char *) luaL_checkstring (mL, 1);
-		ReportLuaError((char *) error);
+	if (status) {
+		const char *error = luaL_checkstring(mL, 1);
+		ReportLuaError(error);
 		return false;
 	}
 
@@ -147,55 +150,63 @@ bool cLuaInterpreter::Init()
 
 void cLuaInterpreter::Load()
 {
-	// call Main() first if exists
-
-	char * args[] = {
-		(char *)mScriptName.c_str(), // set first argument to script name, could be useful for path detection
+	char *args[] = {
+		(char*)mScriptName.c_str(), // set first argument to script name, could be useful for path detection
 		NULL
 	};
 
-	CallFunction("Main", args);
-	//if (!CallFunction("Main", args)) @todo: unload self
+	CallFunction("Main", args); // call Main() first
+
+	/*
+		if (!CallFunction("Main", args))
+			UnloadScript(); // todo
+	*/
 }
 
-void cLuaInterpreter::ReportLuaError(char * error)
+void cLuaInterpreter::ReportLuaError(const char *error)
 {
-	if(cpiLua::me && cpiLua::me->log_level) {
-		string error2 = _("Lua error");
-		error2.append(": ");
-		error2.append(error);
-		cServerDC * server = cServerDC::sCurrentServer;
-		if(server) SendPMToAll( (char *) error2.c_str(), (char *) server->mC.hub_security.c_str(), 3, 10);
+	if (cpiLua::me && cpiLua::me->log_level) {
+		cServerDC *serv = cServerDC::sCurrentServer;
+
+		if (serv) {
+			string toall = _("Lua error");
+			toall.append(": ");
+
+			if (error)
+				toall.append(error);
+			else
+				toall.append(_("Unknown error"));
+
+			string start, end;
+			serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
+			serv->SendToAllWithNick(start, end, eUC_OPERATOR, eUC_MASTER);
+		}
 	}
-//	char * args[] = { error, NULL };
-	// Dropped because of crash
-	//CallFunction("OnError", args);
 }
 
-void cLuaInterpreter::RegisterFunction(const char *fncname, int (*fncptr)(lua_State *))
+void cLuaInterpreter::RegisterFunction(const char *fncname, int (*fncptr)(lua_State*))
 {
 	lua_pushstring(mL, fncname);
 	lua_pushcfunction(mL, fncptr);
 	lua_rawset(mL, -3);
 }
 
-bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *conn)
+bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn)
 {
 	lua_settop(mL, 0);
 	int base = lua_gettop(mL);
 	lua_pushliteral(mL, "_TRACEBACK");
 
 	#if defined LUA_GLOBALSINDEX
-		lua_rawget(mL, LUA_GLOBALSINDEX); // <=5.1
+		lua_rawget(mL, LUA_GLOBALSINDEX);
 	#else
-		lua_pushglobaltable(mL); // >=5.2
+		lua_pushglobaltable(mL);
 	#endif
 
 	lua_insert(mL, base);
 	lua_getglobal(mL, func);
 
-	if (lua_isnil(mL, -1)) {
-		// function not exists
+	if (lua_isnil(mL, -1)) { // function dont exist
 		lua_pop(mL, -1); // remove nil value
 		lua_remove(mL, base); // remove _TRACEBACK
 	} else {
@@ -209,10 +220,8 @@ bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *co
 		int result = lua_pcall(mL, i, 1, base);
 
 		if (result) {
-			const char *msg = lua_tostring(mL, -1);
-			if (msg == NULL) msg = "Unknown error";
-			cout << "Lua error: " << msg << endl;
-			ReportLuaError((char*)msg);
+			const char *error = lua_tostring(mL, -1);
+			ReportLuaError(error);
 			lua_pop(mL, 1);
 			lua_remove(mL, base); // remove _TRACEBACK
 			return true;
@@ -222,19 +231,19 @@ bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *co
 
 		if (lua_istable(mL, -1)) {
 			/*
-			* new style, advanced table return:
-			*
-			* table index = 1, type = string:
-			* value: data = protocol message to send
-			* value: empty = dont send anything
-			*
-			* table index = 2, type = boolean:
-			* value: 0 = discard
-			* value: 1 = dont discard
-			*
-			* table index = 3, type = boolean:
-			* value: 0 = disconnect user
-			* value: 1 = dont disconnect
+				new style, advanced table return
+
+				table index = 1, type = string
+				value: data = protocol message to send
+				value: empty = dont send anything
+
+				table index = 2, type = boolean
+				value: 0 = discard
+				value: 1 = dont discard
+
+				table index = 3, type = boolean
+				value: 0 = disconnect user
+				value: 1 = dont disconnect
 			*/
 
 			i = lua_gettop(mL);
@@ -245,18 +254,22 @@ bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *co
 					int key = (int)lua_tonumber(mL, -2);
 
 					if (key == 1) { // message?
-						if (lua_isstring(mL, -1) && (conn != NULL)) { // value at index 1 must be a string, connection is required
+						if (lua_isstring(mL, -1) && conn) { // value at index 1 must be a string, connection is required
 							string data = lua_tostring(mL, -1);
-							if (!data.empty()) conn->Send(data, false); // send data, script must add the ending pipe
+
+							if (data.size())
+								conn->Send(data, false); // send data, script must add the ending pipe
 						}
 					} else if (key == 2) { // discard?
 						if (lua_isnumber(mL, -1)) { // value at index 2 must be a boolean
-							if ((int)lua_tonumber(mL, -1) == 0) ret = false;
+							if ((int)lua_tonumber(mL, -1) == 0)
+								ret = false;
 						} else { // accept boolean and nil
-							if ((int)lua_toboolean(mL, -1) == 0) ret = false;
+							if ((int)lua_toboolean(mL, -1) == 0)
+								ret = false;
 						}
 					} else if (key == 3) { // disconnect?
-						if (conn != NULL) { // connection is required
+						if (conn) { // connection is required
 							if (lua_isnumber(mL, -1)) { // value at index 3 must be a boolean
 								if ((int)lua_tonumber(mL, -1) == 0) {
 									conn->CloseNow(); // disconnect user
@@ -276,17 +289,18 @@ bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *co
 			}
 		} else if (lua_isnumber(mL, -1)) {
 			/*
-			* old school, simple boolean return for backward compatibility:
-			*
-			* type = boolean:
-			* value: 0 = discard
-			* value: 1 = dont discard
+				old school, simple boolean return for backward compatibility
+
+				type = boolean
+				value: 0 = discard
+				value: 1 = dont discard
 			*/
 
-			if ((int)lua_tonumber(mL, -1) == 0) ret = false;
-		//} else { // accept boolean and nil
-			// same as above
-			//if ((int)lua_toboolean(mL, -1) == 0) ret = false;
+			if ((int)lua_tonumber(mL, -1) == 0)
+				ret = false;
+		//} else { // accept boolean and nil, same as above
+			//if ((int)lua_toboolean(mL, -1) == 0)
+				//ret = false;
 		}
 
 		lua_pop(mL, 1);
@@ -296,5 +310,6 @@ bool cLuaInterpreter::CallFunction(const char * func, char * args[], cConnDC *co
 
 	return true;
 }
+
 	}; // namespace nLuaPlugin
 }; // namespace nVerliHub

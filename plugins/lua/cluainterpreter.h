@@ -46,9 +46,9 @@ public:
 	~cLuaInterpreter();
 
 	bool Init();
-	void ReportLuaError(char *);
-	bool CallFunction(const char *, char * [], cConnDC *conn = NULL);
-	void RegisterFunction(const char *, int (*)(lua_State *));
+	void ReportLuaError(const char*);
+	bool CallFunction(const char*, char *[], cConnDC *conn = NULL);
+	void RegisterFunction(const char*, int (*)(lua_State*));
 	void Load();
 
 	string mScriptName;
@@ -64,22 +64,22 @@ public:
 	tvBot botList;
 
 	void addBot(char *Nick, char *MyINFO, int Share, int Class) {
-		bool found = false;
+		bool add = true;
 
 		for (unsigned int i = 0; i < botList.size(); i++) {
 			if (strcmp(botList[i]->uNick, Nick) == 0) {
-				found = true;
+				add = false;
 				break;
 			}
 		}
 
-		if (!found) {
-			mScriptBot *temp = new mScriptBot;
-			temp->uNick = Nick;
-			temp->uMyINFO = MyINFO;
-			temp->uShare = Share;
-			temp->uClass = Class;
-			botList.push_back(temp);
+		if (add) {
+			mScriptBot *item = new mScriptBot;
+			item->uNick = Nick;
+			item->uMyINFO = MyINFO;
+			item->uShare = Share;
+			item->uClass = Class;
+			botList.push_back(item);
 		}
 	}
 
@@ -93,7 +93,7 @@ public:
 			}
 		}
 
-		if (bot != NULL) {
+		if (bot) {
 			// dont need to set nick
 			bot->uMyINFO = MyINFO;
 			bot->uShare = Share;
@@ -114,8 +114,10 @@ public:
 		tvBot::iterator it;
 
 		for (it = botList.begin(); it != botList.end(); ++it) {
-			if (*it != NULL) delete *it;
-			*it = NULL;
+			if (*it) {
+				delete (*it);
+				(*it) = NULL;
+			}
 		}
 
 		botList.clear();
@@ -126,4 +128,5 @@ public:
 
 	}; // namespace nLuaPlugin
 }; // namespace nVerliHub
+
 #endif
