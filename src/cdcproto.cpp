@@ -1934,6 +1934,13 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgBotINFO.CallAll(conn, msg)) {
+			conn->CloseNow();
+			return -1;
+		}
+	#endif
+
 	os << autosprintf(_("Pinger entered the hub: %s"), msg->ChunkString(eCH_1_PARAM).c_str());
 
 	if (conn->Log(2))
@@ -1941,13 +1948,6 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (mS->mC.botinfo_report)
 		mS->ReportUserToOpchat(conn, os.str());
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgBotINFO.CallAll(conn, msg)) {
-			conn->CloseNow();
-			return -1;
-		}
-	#endif
 
 	os.str("");
 	os.clear();
