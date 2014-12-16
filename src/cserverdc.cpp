@@ -1451,7 +1451,7 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 	char c = ' ';
 	is >> n >> c;
 
-	if(n >= 0) {
+	if (n >= 0) {
 		m = 1; // multiplicator
 
 		if (c == ' ')
@@ -1461,32 +1461,25 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 			case 'y':
 			case 'Y':
 				m *= 12; // year = 12 * month
-				break;
 			case 'M':
 				m *= 4; // month = 4 * week
-				break;
 			case 'w':
 			case 'W':
 				m *= 7; // week = 7 days
-				break;
 			case 'd':
 			case 'D':
 				m *= 24; // 24 hours
-				break;
 			case 'h':
 			case 'H':
 				m *= 60; // 60 minutes
-				break;
 			case 'm':
 				m *= 60; // 60 seconds
-				break;
 			case 's':
 			case 'S':
 				break;
 			default:
 				err << _("Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, w(eeks), M(onths) and y(ears)");
 				return 0;
-				break;
 		}
 
 		u = (n * m);
