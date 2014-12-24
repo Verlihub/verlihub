@@ -1263,44 +1263,70 @@ bool cDCConsole::cfRaw::operator()()
 
 bool cDCConsole::cfClean::operator()()
 {
+	if (!mConn || !mConn->mpUser || (mConn->mpUser->mClass < eUC_OPERATOR))
+		return false;
 
-	static const char *cleanames[] = { "banlist", "unbanlist", "kicklist", "temprights" };
-	enum { CLEAN_BAN, CLEAN_UNBAN, CLEAN_KICK, CLEAN_TRIGHTS };
-	static const int cleanids[]= { CLEAN_BAN, CLEAN_UNBAN, CLEAN_KICK, CLEAN_TRIGHTS };
+	static const char *cleanames[] = {
+		"banlist",
+		"tempbans",
+		"unbanlist",
+		"kicklist",
+		"temprights"
+	};
 
-	if(!mConn->mpUser) return false;
-	if(mConn->mpUser->mClass < eUC_OPERATOR) return false;
+	enum {
+		CLEAN_BAN,
+		CLEAN_TBAN,
+		CLEAN_UNBAN,
+		CLEAN_KICK,
+		CLEAN_TRIGHTS
+	};
+
+	static const int cleanids[] = {
+		CLEAN_BAN,
+		CLEAN_TBAN,
+		CLEAN_UNBAN,
+		CLEAN_KICK,
+		CLEAN_TRIGHTS
+	};
 
 	string tmp;
 	int CleanType = eBF_NICKIP;
-	if(mIdRex->PartFound(1)) {
-		mIdRex->Extract( 1, mIdStr, tmp);
-		CleanType = this->StringToIntFromList(tmp, cleanames, cleanids, sizeof(cleanames)/sizeof(char*));
+
+	if (mIdRex->PartFound(1)) {
+		mIdRex->Extract(1, mIdStr, tmp);
+		CleanType = this->StringToIntFromList(tmp, cleanames, cleanids, sizeof(cleanames) / sizeof(char*));
+
 		if (CleanType < 0)
-		    return false;
+			return false;
 	}
+
 	switch (CleanType) {
 		case CLEAN_BAN:
 			mS->mBanList->TruncateTable();
-			(*mOS) << endl << _("All bans have been deleted.");
-		break;
+			(*mOS) << _("Ban list has been cleaned.");
+			break;
+		case CLEAN_TBAN:
+			mS->mBanList->RemoveOldShortTempBans(0);
+			(*mOS) << _("Temporary ban list has been cleaned.");
+			break;
 		case CLEAN_UNBAN:
 			mS->mUnBanList->TruncateTable();
-			(*mOS) << endl << _("All unbans have been deleted.");
-		break;
+			(*mOS) << _("Unban list has been cleaned.");
+			break;
 		case CLEAN_KICK:
 		  	mS->mKickList->TruncateTable();
-			(*mOS) << endl << _("All kicks have been deleted.");
-		break;
+			(*mOS) << _("Kick list has been cleaned.");
+			break;
 		case CLEAN_TRIGHTS:
 			mS->mPenList->TruncateTable();
-			(*mOS) << endl << _("All temporary rights have been deleted.");
-		break;
+			(*mOS) << _("Temporary right list has been cleaned.");
+			break;
 		default:
-			(*mOS) << _("This command is not implemented.") << "\r\n" << _("Available command are: ") << endl;
+			(*mOS) << _("This command is not implemented, available commands") << ":\r\n";
 			return false;
-		break;
 	}
+
 	return true;
 }
 

@@ -242,7 +242,7 @@ void cDCConf::AddVars()
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
 	Add("wrongpass_message", wrongpass_message, "");
-	Add("wrongpassword_report", wrongpassword_report, 1);
+	Add("wrongpassword_report", wrongpassword_report, true);
 	Add("wrongauthip_report", wrongauthip_report, 1);
 	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);

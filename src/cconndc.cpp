@@ -470,11 +470,11 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			pfkick.mReason = to_user.str();
 			serv->mBanList->NewBan(pfban, pfkick, serv->mC.proto_flood_tban_time, eBF_NICKIP);
 			serv->mBanList->AddBan(pfban);
-		} else
-			serv->mBanList->AddIPTempBan(this->GetSockAddress(), (serv->mTime.Sec() + serv->mC.proto_flood_tban_time), "protocol flood");
+		} else // user missing, create short ban
+			serv->mBanList->AddIPTempBan(AddrIP(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, _("Protocol flood"), eBT_FLOOD);
 	}
 
-	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_SYNTAX);
+	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_LOGIN_ERR);
 	return true;
 }
 

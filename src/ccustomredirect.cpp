@@ -44,15 +44,36 @@ namespace nVerliHub {
 			os << setw(35) << setiosflags(ios::left) << tr.mAddress;
 			os << setw(30) << setiosflags(ios::left);
 			int flag = tr.mFlag;
-			if (flag & eKick) buff += "ban and kick,";
-			if (flag & eUserLimit) buff += "hub full,";
-			if (flag & eShareLimit) buff += "share limit,";
-			if (flag & eTag) buff += "invalid tag,";
-			if (flag & eWrongPasswd) buff += "wrong password,";
-			if (flag & eInvalidKey) buff += "invalid key,";
-			if (flag & eHubBusy) buff += "hub busy,";
-			if (flag & eReconnect) buff += "reconnect,";
-			if (flag & eBadNick) buff += "bad nick,";
+
+			if (flag & eKick)
+				buff += "ban and kick,";
+
+			if (flag & eUserLimit)
+				buff += "hub full,";
+
+			if (flag & eShareLimit)
+				buff += "share limit,";
+
+			if (flag & eTag)
+				buff += "invalid tag,";
+
+			if (flag & eWrongPasswd)
+				buff += "wrong password,";
+
+			if (flag & eInvalidKey)
+				buff += "invalid key,";
+
+			if (flag & eHubBusy)
+				buff += "hub busy,";
+
+			if (flag & eReconnect)
+				buff += "reconnect,";
+
+			if (flag & eBadNick)
+				buff += "bad nick,";
+
+			if (flag & eClone)
+				buff += "clone,";
 
 			if (buff.empty())
 				buff = "default";

@@ -742,12 +742,27 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		return -1;
 	}
 
-	long until = mBanList->IsIPTempBanned(conn->GetSockAddress()); // check short ip ban
+	if (mBanList->IsIPTempBanned(conn->AddrIP())) { // check temporary ip ban
+		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(cBanList::Ip2Num(conn->AddrIP()));
 
-	if (until > mTime.Sec()) {
-		os << autosprintf(_("You're still banned since previous kick, ban will expire in %s."), cTime(until - mTime.Sec()).AsPeriod().AsString().c_str());
-		ConnCloseMsg(conn, os.str(), 1000, eCR_KICKED);
-		return -1;
+		if (tban && (tban->mUntil > mTime.Sec())) {
+			os << autosprintf(_("You're still temporarily banned for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
+
+			switch (tban->mType) {
+				case eBT_PASSW:
+					ConnCloseMsg(conn, os.str(), 1000, eCR_PASSWORD);
+					break;
+				case eBT_FLOOD:
+					ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+					break;
+				default:
+					ConnCloseMsg(conn, os.str(), 1000, eCR_KICKED);
+					break;
+			}
+
+			return -1;
+		} else // ban expired, do nothing
+			mBanList->DelIPTempBan(conn->AddrIP());
 	}
 
 	conn->SetTimeOut(eTO_KEY, mC.timeout_length[eTO_KEY], mTime);
@@ -951,8 +966,8 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		mInProgresUsers.Remove(conn->mpUser);
 	}
 
-	if (conn->GetTheoricalClass() <= mC.max_class_int_login) // login flood detection
-		mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.int_login, "login later");
+	if (mC.int_login && (conn->GetTheoricalClass() <= mC.max_class_int_login)) // login flood detection
+		mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.int_login, _("Reconnecting too fast"), eBT_RECON);
 
 	// users special rights and restrictions
 	cPenaltyList::sPenalty pen;
@@ -1146,83 +1161,83 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	if (!conn)
 		return 0;
 
-	stringstream errmsg;
-	bool close = false; // time_t n;
-
-	// first validate ip and host
-	// phase 1: test nick validity
-	// phase 2: test ip and host ban (registered users pass)
-	// phase 3: test nickban
-	// then we're done
-
+	bool close = false;
 	static cRegUserInfo *sRegInfo = new cRegUserInfo;
 
-	if ((nick.size() < mC.max_nick * 2) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo) {
+	if ((nick.size() < (mC.max_nick * 2)) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo) {
 		conn->mRegInfo = sRegInfo;
 		sRegInfo = new cRegUserInfo;
 	}
 
 	tVAL_NICK vn = ValidateNick(conn, nick); // validate nick
+	stringstream errmsg;
 
 	if (vn != eVN_OK) {
 		string extra;
 
-		switch (vn) {
-			case eVN_CHARS:
-				errmsg << _("Your nick contains forbidden characters.");
+		if (vn == eVN_BANNED) {
+			cBanList::sTempBan *tban = mBanList->mTempNickBanlist.GetByHash(mBanList->mTempNickBanlist.HashLowerString(nick));
 
-				if (mC.nick_chars.size())
-					errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
+			if (tban && (tban->mUntil > mTime.Sec())) {
+				errmsg << autosprintf(_("You're still temporarily banned for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
 
-				closeReason = eCR_BADNICK;
-				break;
+				switch (tban->mType) {
+					case eBT_RECON:
+						closeReason = eCR_RECONNECT;
+						break;
+					case eBT_CLONE:
+						closeReason = eCR_CLONE;
+						break;
+				}
+			} else { // ban expired, do nothing
+				mBanList->DelNickTempBan(nick);
+				vn = eVN_OK;
+			}
+		} else {
+			switch (vn) {
+				case eVN_CHARS:
+					errmsg << _("Your nick contains forbidden characters.");
 
-			case eVN_SHORT:
-				errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
-				closeReason = eCR_BADNICK;
-				break;
+					if (mC.nick_chars.size())
+						errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
 
-			case eVN_LONG:
-				errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
-				closeReason = eCR_BADNICK;
-				break;
+					break;
+				case eVN_SHORT:
+					errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
+					break;
+				case eVN_LONG:
+					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
+					break;
+				case eVN_USED: // never appears here
+					errmsg << _("Your nick is already taken by another user.");
+					extra = "$ValidateDenide ";
+					extra += nick;
+					break;
+				case eVN_PREFIX:
+					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
+					break;
+				case eVN_NOT_REGED_OP:
+					errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
+					break;
+				default:
+					errmsg << _("Unknown bad nick error, sorry.");
+					break;
+			}
 
-			case eVN_USED: // never happens here
-				errmsg << _("Your nick is already in use, please use something else.");
-				closeReason = eCR_BADNICK;
-				extra = "$ValidateDenide";
-				break;
-
-			case eVN_PREFIX:
-				errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
-				closeReason = eCR_BADNICK;
-				break;
-
-			case eVN_NOT_REGED_OP:
-				errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
-				closeReason = eCR_BADNICK;
-				break;
-
-			case eVN_BANNED:
-				errmsg << autosprintf(_("You are reconnecting too fast, please wait %s."), cTime(mBanList->IsNickTempBanned(nick) - cTime().Sec()).AsPeriod().AsString().c_str());
-				closeReason = eCR_RECONNECT;
-				break;
-
-			default:
-				errmsg << _("Unknown bad nick error, sorry.");
-				//closeReason = eCR_BADNICK;
-				break;
+			closeReason = eCR_BADNICK;
 		}
 
-		if (extra.size())
-			conn->Send(extra);
+		if (vn != eVN_OK) {
+			if (extra.size())
+				conn->Send(extra, true);
 
-		DCPublicHS(errmsg.str(), conn);
+			DCPublicHS(errmsg.str(), conn);
 
-		if (conn->Log(2))
-			conn->LogStream() << "Bad nick: " << nick << " (" << errmsg.str() << ")" << endl;
+			if (conn->Log(2))
+				conn->LogStream() << errmsg.str() << endl;
 
-		return 0;
+			return 0;
+		}
 	}
 
 	cBan Ban(this);
@@ -1319,7 +1334,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 			return eVN_NOT_REGED_OP;
 	}
 
-	if (mBanList->IsNickTempBanned(nick) > now.Sec())
+	if (mBanList->IsNickTempBanned(nick)) // check temporary nick ban
 		return eVN_BANNED;
 
 	return eVN_OK;
@@ -1710,7 +1725,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 				ReportUserToOpchat(conn, os.str());
 
 			if (mC.clone_det_tban_time) { // add temporary nick ban
-				mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, os.str());
+				mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
 				/*
 				cBan ccban(this);
 				cKick cckick;

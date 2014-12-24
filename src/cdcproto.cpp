@@ -635,40 +635,42 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 	string omsg;
 
-	// Check user password
-	if(conn->mpUser->CheckPwd(pwd)) {
-		conn->SetLSFlag( eLS_PASSWD );
-		// Setup user class
-		conn->mpUser->Register();
+	if (conn->mpUser->CheckPwd(pwd)) { // check password
+		conn->SetLSFlag(eLS_PASSWD);
+		conn->mpUser->Register(); // set class
 		mS->mR->Login(conn, conn->mpUser->mNick);
-		mS->DCHello(conn->mpUser->mNick,conn);
-		// If op send LoggedIn and Oplist
-		if(conn->mpUser->mClass >= eUC_OPERATOR) {
+		mS->DCHello(conn->mpUser->mNick, conn);
+
+		if (conn->mpUser->mClass >= eUC_OPERATOR) { // operators get LogedIn
 			omsg = "$LogedIn ";
-			omsg+= conn->mpUser->mNick;
+			omsg += conn->mpUser->mNick;
 			conn->Send(omsg, true);
 		}
 	} else { // wrong password
-		// user is regged so report it
-		if (conn->mRegInfo && conn->mRegInfo->getClass() > 0) {
+		if (conn->mRegInfo && (conn->mRegInfo->getClass() > 0)) { // user is regged
 			omsg = "$BadPass";
-			conn->Send(omsg);
-		 	if (conn->mRegInfo->getClass() >= mS->mC.wrongpassword_report) mS->ReportUserToOpchat(conn, _("Wrong password"));
+			conn->Send(omsg, true);
+			omsg = _("Incorrect password");
 
-			if (!mS->mC.wrongpass_message.empty())
+			if (mS->mC.wrongpassword_report)
+				mS->ReportUserToOpchat(conn, omsg);
+
+			if (mS->mC.wrongpass_message.size())
 				omsg = mS->mC.wrongpass_message;
-			else
-				omsg = _("You provided an incorrect password and have been temporarily banned.");
 
-			mS->mBanList->AddNickTempBan(conn->mpUser->mNick, mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg);
+			mS->mBanList->AddIPTempBan(conn->AddrIP(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
+
+			if (conn->Log(2))
+				conn->LogStream() << omsg << endl;
+
 			mS->mR->LoginError(conn, conn->mpUser->mNick);
-			if (conn->Log(2)) conn->LogStream() << "Wrong password, banned for " << mS->mC.pwd_tmpban <<" seconds" << endl;
-			mS->ConnCloseMsg(conn, omsg, 2000, eCR_PASSWORD);
-			return -1;
+			mS->ConnCloseMsg(conn, _("You've been temporarily banned due to incorrect password."), 1000, eCR_PASSWORD);
 		} else {
-			if (conn->Log(3)) conn->LogStream() << "User sent password but he isn't regged" << endl;
-			return -1;
+			if (conn->Log(3))
+				conn->LogStream() << "Password without reg" << endl;
 		}
+
+		return -1;
 	}
 
 	return 0;
@@ -953,7 +955,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			if (conn->Log(2))
 				conn->LogStream() << os.str() << endl;
 
-			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
 			delete tag;
 			tag = NULL;
 			return -1;

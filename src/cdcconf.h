@@ -262,7 +262,7 @@ public:
 	int password_min_len;
 	int pwd_tmpban;
 	string wrongpass_message;
-	int wrongpassword_report;
+	bool wrongpassword_report;
 	int wrongauthip_report;
 	bool clone_detect_report;
 	unsigned long clone_det_tban_time;

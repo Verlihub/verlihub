@@ -50,38 +50,29 @@ namespace nVerliHub {
 			case eCR_INVALID_USER:
 			case eCR_KICKED:
 				return eKick;
-				break;
 			case eCR_USERLIMIT:
 				return eUserLimit;
-				break;
 			case eCR_SHARE_LIMIT:
 				return eShareLimit;
-				break;
 			case eCR_TAG_INVALID:
 			case eCR_TAG_NONE:
 				return eTag;
-				break;
 			case eCR_PASSWORD:
 				return eWrongPasswd;
-				break;
 			case eCR_INVALID_KEY:
 				return eInvalidKey;
-				break;
 			case eCR_HUB_LOAD:
 				return eHubBusy;
-				break;
 			case eCR_RECONNECT:
 				return eReconnect;
-				break;
+			case eCR_CLONE:
+				return eClone;
 			case eCR_BADNICK:
 				return eBadNick;
-				break;
 			case eCR_NOREDIR:
 				return -1;
-				break;
 			default:
 				return 0;
-				break;
 		}
 	}
 
@@ -210,7 +201,8 @@ namespace nVerliHub {
 		help += " 32\t\t\t- Invalid key\r\n";
 		help += " 64\t\t\t- Hub is busy\r\n";
 		help += " 128\t\t\t- Too fast reconnect\r\n";
-		help += " 256\t\t\t- Bad nick, already used, too short etc.\r\n\r\n";
+		help += " 256\t\t\t- Bad nick, already used, too short, etc\r\n";
+		help += " 512\t\t\t- Clone detection\r\n\r\n";
 		help += " Remember to make the sum of selected above flags.\r\n";
 
 		cDCProto::EscapeChars(help, help);

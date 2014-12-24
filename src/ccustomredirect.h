@@ -37,7 +37,8 @@ namespace nVerliHub {
 			eInvalidKey = 0x000020,
 			eHubBusy = 0x000040,
 			eReconnect = 0x000080,
-			eBadNick = 0x000100
+			eBadNick = 0x000100,
+			eClone = 0x000200
 		};
 	};
 

@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -31,9 +32,20 @@ using std::string;
 using std::ostream;
 
 namespace nVerliHub {
+	namespace nEnums {
+		enum tTempBanType // temporary ban type
+		{
+			eBT_PASSW = 0, // incorrect password
+			eBT_RECON = 1, // too fast reconnect
+			eBT_FLOOD = 2, // protocol flood
+			eBT_CLONE = 3 // clone detected
+		};
+	};
+
 	namespace nSocket {
 		class cConnDC;
 	};
+
 	namespace nTables {
 		class cUnBanList;
 		/// @addtogroup Core
@@ -51,22 +63,24 @@ namespace nVerliHub {
 		 * and nickname that is not stored in database.
 		 * @author Daniel Muller
 		 */
-		class cBanList : public nConfig::cConfMySQL
+		class cBanList: public nConfig::cConfMySQL
 		{
 			friend class nVerliHub::nSocket::cServerDC;
 
-			/**
-			 * Structure that describes a temporary ban.
-			 */
-			struct sTempBan
+			struct sTempBan // temporary ban structure
 			{
-				sTempBan(long u, const string &reason) : mUntil(u), mReason(reason)
-				{};
-				/// Time when the ban will expired.
-				long mUntil;
-				/// Reason of the ban
-				string mReason;
+				sTempBan(long until, const string &reason, unsigned bantype):
+					mUntil(until),
+					mReason(reason),
+					mType(bantype)
+				{
+				};
+
+				long mUntil; // expiration time
+				string mReason; // reason
+				unsigned mType; // type
 			};
+
 			public:
 				/**
 				 * Class constructor.
@@ -86,24 +100,6 @@ namespace nVerliHub {
 				 * @param ban A cBan instance.
 				 */
 				void AddBan(cBan &ban);
-
-				/**
-				* Temporary ban a nickname with the given reason.
-				* This will add a new entry in mTempNickBanlist list.
-				* @param ip The nickname to ban.
-				* @param until The end of the ban.
-				* @param reason The reason of the ban.
-				*/
-				void AddNickTempBan(const string &nick, long until, const string &reason);
-
-				/**
-				 * Temporary ban an IP address with the given reason.
-				 * This will add a new entry in mTempIPBanlist list.
-				 * @param ip The IP address in network byte order.
-				 * @param until The end of the ban.
-				 * @param reason The reason of the ban.
-				 */
-				void AddIPTempBan(unsigned long ip, long until, const string &reason);
 
 				/**
 				 * Populate a stream to build a WHERE condition for a SELECT statement.
@@ -138,17 +134,25 @@ namespace nVerliHub {
 				 */
 				void DelBan(cBan &ban);
 
-				/**
-				 * Delete a temporary ban on IP address in mTempIPBanlist list
-				 * @param ip The IP address.
-				 */
+				// add temporary nick or ip ban
+				void AddNickTempBan(const string &nick, long until, const string &reason, unsigned bantype);
+				void AddIPTempBan(const string &ip, long until, const string &reason, unsigned bantype);
+				void AddIPTempBan(unsigned long ip, long until, const string &reason, unsigned bantype);
+
+				// delete temporary nick or ip ban
+				void DelNickTempBan(const string &nick);
+				void DelIPTempBan(const string &ip);
 				void DelIPTempBan(unsigned long ip);
 
-				/**
-				 * Delete a temporary ban on nickname in mTempNickBanlist list
-				 * @param ip The nickname.
-				 */
-				void DelNickTempBan(const string &nick);
+				// check if nick or ip is temporarily banned
+				bool IsNickTempBanned(const string &nick);
+				bool IsIPTempBanned(const string &ip);
+				bool IsIPTempBanned(unsigned long ip);
+
+				// list of temporary nick and ip bans
+				typedef tHashArray<sTempBan*> tTempNickIPBans;
+				tTempNickIPBans mTempNickBanlist;
+				tTempNickIPBans mTempIPBanlist;
 
 				/**
 				 * Extract the level domain substring from the given host.
@@ -158,22 +162,6 @@ namespace nVerliHub {
 				 * @return True if the substring can be extracted or false otherwise.
 				 */
 				bool GetHostSubstring(const string &hostname, string &dest, int level);
-
-				/**
-				 * Check if an IP address is temporary banned.
-				 * Search if done in mTempIPBanlist list.
-				 * @param ip The IP address.
-				 * @return The end of the ban if the ban if found or zero otherwise.
-				 */
-				long IsIPTempBanned(unsigned long ip);
-
-				/**
-				 * Check if a nickname is temporary banned.
-				 * Search if done in mTempNickBanlist list.
-				 * @param ip The nickname.
-				 * @return The end of the ban if the ban if found or zero otherwise.
-				 */
-				long IsNickTempBanned(const string &nick);
 
 				/**
 				 * Convert an Internet address in standard format (dotted string)
@@ -311,15 +299,6 @@ namespace nVerliHub {
 			private:
 				/// Pointer to unbanlist manager.
 				cUnBanList *mUnBanList;
-
-				/// Define a list of temporary bans.
-				typedef tHashArray<sTempBan *> tTempNickBans;
-
-				/// List of temporary bans on nickname.
-				tTempNickBans mTempNickBanlist;
-
-				/// List of temporary bans on IP address.
-				tTempNickBans mTempIPBanlist;
 
 				/// Pointer to cServerDC instance.
 				nSocket::cServerDC* mS;

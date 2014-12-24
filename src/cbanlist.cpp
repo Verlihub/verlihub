@@ -1,6 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
+	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -31,7 +32,10 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nTables {
 
-cBanList::cBanList(cServerDC *s) : cConfMySQL(s->mMySQL), mS(s),mModel(s)
+cBanList::cBanList(cServerDC *s):
+	cConfMySQL(s->mMySQL),
+	mS(s),
+	mModel(s)
 {
 	mMySQLTable.mName = "banlist";
 	AddCol("ip", "varchar(15)", "", true, mModel.mIP);
@@ -46,7 +50,7 @@ cBanList::cBanList(cServerDC *s) : cConfMySQL(s->mMySQL), mS(s),mModel(s)
 	AddCol("date_limit", "int(11)", "", true, mModel.mDateEnd);
 	AddCol("nick_op", "varchar(64)", "", true, mModel.mNickOp);
 	AddCol("reason", "text", "", true, mModel.mReason);
-	AddCol("share_size", "varchar(15)", "", true, mModel.mShare);
+	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
 	mMySQLTable.mExtra = "UNIQUE (ip,nick), ";
 	mMySQLTable.mExtra += "INDEX nick_index (nick), ";
 	mMySQLTable.mExtra += "INDEX date_index (date_limit), ";
@@ -455,76 +459,101 @@ void cBanList::Num2Ip(unsigned long mask, string &ip)
 	ip = os.str();
 }
 
-long cBanList::IsNickTempBanned(const string &nick)
-{
-	unsigned long hash= mTempNickBanlist.HashLowerString(nick);
-	sTempBan *tban = this->mTempNickBanlist.GetByHash(hash);
-	if(tban != NULL) {
-		return tban->mUntil;
-	}
-	return 0;
-}
-
-long cBanList::IsIPTempBanned(unsigned long ip)
-{
-	unsigned long hash=ip;
-	sTempBan *tban = this->mTempIPBanlist.GetByHash(hash);
-	if(tban != NULL) {
-		return tban->mUntil;
-	}
-	return 0;
-}
-
-void cBanList::AddNickTempBan(const string &nick, long until, const string &reason)
+void cBanList::AddNickTempBan(const string &nick, long until, const string &reason, unsigned bantype)
 {
 	unsigned long hash = mTempNickBanlist.HashLowerString(nick);
-	sTempBan *tban = this->mTempNickBanlist.GetByHash(hash);
-	if(tban != NULL) {
+	sTempBan *tban = mTempNickBanlist.GetByHash(hash);
+
+	if (tban) {
 		tban->mUntil = time_t(until);
 		tban->mReason = reason;
+		tban->mType = bantype;
 	} else {
-		tban = new sTempBan(until, reason);
-		this->mTempNickBanlist.AddWithHash(tban, hash );
+		tban = new sTempBan(until, reason, bantype);
+		mTempNickBanlist.AddWithHash(tban, hash);
 	}
 }
 
-void cBanList::AddIPTempBan(unsigned long ip, long until, const string &reason)
+void cBanList::AddIPTempBan(const string &ip, long until, const string &reason, unsigned bantype)
 {
-	unsigned long hash = ip;
-	sTempBan *tban = this->mTempIPBanlist.GetByHash(hash);
-	if(tban != NULL) {
+	unsigned long hash = Ip2Num(ip);
+	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
+
+	if (tban) {
 		tban->mUntil = time_t(until);
 		tban->mReason = reason;
+		tban->mType = bantype;
 	} else {
-		tban = new sTempBan(until, reason);
-		this->mTempIPBanlist.AddWithHash(tban, hash );
+		tban = new sTempBan(until, reason, bantype);
+		mTempIPBanlist.AddWithHash(tban, hash);
+	}
+}
+
+void cBanList::AddIPTempBan(unsigned long ip, long until, const string &reason, unsigned bantype)
+{
+	sTempBan *tban = mTempIPBanlist.GetByHash(ip);
+
+	if (tban) {
+		tban->mUntil = time_t(until);
+		tban->mReason = reason;
+		tban->mType = bantype;
+	} else {
+		tban = new sTempBan(until, reason, bantype);
+		mTempIPBanlist.AddWithHash(tban, ip);
 	}
 }
 
 void cBanList::DelNickTempBan(const string &nick)
 {
-	unsigned long hash= mTempNickBanlist.HashLowerString(nick);
-	sTempBan *tban = this->mTempNickBanlist.GetByHash(hash);
-	if(tban != NULL) {
-		this->mTempNickBanlist.RemoveByHash(hash);
+	unsigned long hash = mTempNickBanlist.HashLowerString(nick);
+	sTempBan *tban = mTempNickBanlist.GetByHash(hash);
+
+	if (tban) {
+		mTempNickBanlist.RemoveByHash(hash);
+		delete tban;
+	}
+}
+
+void cBanList::DelIPTempBan(const string &ip)
+{
+	unsigned long hash = Ip2Num(ip);
+	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
+
+	if (tban) {
+		mTempIPBanlist.RemoveByHash(hash);
 		delete tban;
 	}
 }
 
 void cBanList::DelIPTempBan(unsigned long ip)
 {
-	unsigned long hash = ip;
-	sTempBan *tban = this->mTempIPBanlist.GetByHash(hash);
-	if(tban != NULL) {
-		this->mTempIPBanlist.RemoveByHash(hash);
+	sTempBan *tban = mTempIPBanlist.GetByHash(ip);
+
+	if (tban) {
+		mTempIPBanlist.RemoveByHash(ip);
 		delete tban;
 	}
+}
+
+bool cBanList::IsNickTempBanned(const string &nick)
+{
+	return mTempNickBanlist.ContainsHash(mTempNickBanlist.HashLowerString(nick));
+}
+
+bool cBanList::IsIPTempBanned(const string &ip)
+{
+	return mTempIPBanlist.ContainsHash(Ip2Num(ip));
+}
+
+bool cBanList::IsIPTempBanned(unsigned long ip)
+{
+	return mTempIPBanlist.ContainsHash(ip);
 }
 
 int cBanList::RemoveOldShortTempBans(long before)
 {
 	int n = 0;
-	tTempNickBans::iterator it;
+	tTempNickIPBans::iterator it;
 	unsigned long Hash;
 	long Until;
 	sTempBan *tban;
