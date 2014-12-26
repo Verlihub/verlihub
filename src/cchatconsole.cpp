@@ -73,7 +73,8 @@ int cChatConsole::DoCommand(const string &str, cConnDC *conn)
 
 const char* cChatConsole::CmdId(int cmd)
 {
-	static string id = CmdPrefix();
+	static string id;
+	id = CmdPrefix();
 
 	switch (cmd) {
 		case eCHAT_INVITE:
@@ -97,7 +98,6 @@ const char* cChatConsole::CmdId(int cmd)
 
 	switch (cmd) {
 		case eCHAT_LEAVE:
-			break;
 		case eCHAT_MEMBERS:
 			break;
 		default:
@@ -113,13 +113,10 @@ const char* cChatConsole::GetParamsRegex(int cmd)
 	switch (cmd) { // invite|out <nick> [reason]
 		case eCHAT_INVITE:
 			return "^(\\S+)( (.*))?$";
-			break;
 		case eCHAT_OUT:
 			return "^(\\S+)( (.*))?$";
-			break;
 		default:
 			return "";
-			break;
 	}
 }
 

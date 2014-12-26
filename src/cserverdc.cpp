@@ -2199,11 +2199,11 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 
 	if (ref.empty())
 		uniq = false;
-	else {
+	else if (mCtmToHubList.size()) {
 		tCtmToHubList::iterator it;
 
 		for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
-			if ((*it) && ((*it)->mRef == ref)) {
+			if ((*it) && (StrCompare(ref, 0, ref.size(), (*it)->mRef) == 0)) {
 				uniq = false;
 				break;
 			}
@@ -2229,6 +2229,9 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 
 int cServerDC::CtmToHubRefererList(string &list)
 {
+	if (!mCtmToHubList.size())
+		return 0;
+
 	int count = 0;
 	tCtmToHubList::iterator it;
 
@@ -2247,6 +2250,9 @@ int cServerDC::CtmToHubRefererList(string &list)
 
 void cServerDC::CtmToHubClearList()
 {
+	if (!mCtmToHubList.size())
+		return;
+
 	tCtmToHubList::iterator it;
 
 	for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
