@@ -316,9 +316,37 @@ int _SendPMToAll(lua_State *L)
 	}
 	lua_pushboolean(L, 1);
 	return 1;
+}
 
+int _SendToOpChat(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:SendToOpChat, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
 
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
 
+	string data = (char*)lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	if (!SendToOpChat((char*)data.c_str())) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
 }
 
 int _Disconnect(lua_State *L)
@@ -530,7 +558,6 @@ int _GetUserCity(lua_State *L)
 }
 
 #if HAVE_LIBGEOIP
-
 int _GetIPCC(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -540,24 +567,17 @@ int _GetIPCC(lua_State *L)
 		return 2;
 	}
 
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		luaerror(L, ERR_SERV);
-		return 2;
-	}
-
 	if (!lua_isstring(L, 2)) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	string cc;
+	char *cc = GetIPCC((char*)ip.c_str());
 
-	if (serv->sGeoIP.GetCC(ip, cc)) {
+	if (cc) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cc.c_str());
+		lua_pushstring(L, (char*)cc);
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -575,24 +595,17 @@ int _GetIPCN(lua_State *L)
 		return 2;
 	}
 
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		luaerror(L, ERR_SERV);
-		return 2;
-	}
-
 	if (!lua_isstring(L, 2)) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	string cn;
+	char *cn = GetIPCN((char*)ip.c_str());
 
-	if (serv->sGeoIP.GetCN(ip, cn)) {
+	if (cn) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cn.c_str());
+		lua_pushstring(L, (char*)cn);
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -1051,7 +1064,6 @@ int _GetHostGeoIP(lua_State *L)
 
 	return 2;
 }
-
 #endif
 
 int _GetNickList(lua_State *L)
@@ -2267,33 +2279,6 @@ int _ReportUser(lua_State *L)
 	return 1;
 }
 
-int _SendToOpChat(lua_State *L)
-{
-	if (lua_gettop(L) != 2) {
-		luaL_error(L, "Error calling VH:SendToOpChat, expected 1 argument but got %d.", lua_gettop(L) - 1);
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-		return 2;
-	}
-
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (serv == NULL) {
-		luaerror(L, ERR_SERV);
-		return 2;
-	}
-
-	if (!lua_isstring(L, 2)) {
-		luaerror(L, ERR_PARAM);
-		return 2;
-	}
-
-	string msg = (char*)lua_tostring(L, 2);
-	serv->mOpChat->SendPMToAll(msg, NULL);
-	lua_pushboolean(L, 1);
-	return 1;
-}
-
 int _ParseCommand(lua_State *L)
 {
 	if (lua_gettop(L) != 4) {
@@ -2571,21 +2556,23 @@ int _ScriptCommand(lua_State *L)
 
 	cLuaInterpreter *li = FindLua(L);
 
-	if (li == NULL) {
-		luaerror(L, "Lua not found.");
+	if (!li) {
+		luaerror(L, ERR_LUA);
 		return 2;
 	}
 
-	string cmd = lua_tostring(L, 2);
-	string data = lua_tostring(L, 3);
+	string cmd = (char*)lua_tostring(L, 2);
+	string data = (char*)lua_tostring(L, 3);
+	string plug("lua");
 
-	if (!ScriptCommand(cmd, data, "lua", li->mScriptName)) {
+	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName)) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
 
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 void luaerror(lua_State *L, const char *errstr)

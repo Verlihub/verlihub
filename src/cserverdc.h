@@ -264,9 +264,14 @@ class cServerDC : public cAsyncSocketServer
 		bool AddToList(cUser *usr);
 
 		/*
-		* This method is a forwarder for ScriptAPI::OnScriptCommand.
+			This method is a forwarder for ScriptAPI::OnScriptCommand
 		*/
-		void OnScriptCommand(string, string, string, string);
+		void OnScriptCommand(string *cmd, string *data, string *plug, string *script);
+
+		/*
+			This method is a forwarder for ScriptAPI::OnOpChatMessage
+		*/
+		//bool OnOpChatMessage(string *nick, string *data);
 
 		/**
 		* This method tells the server what the server can receive and what actions to perform depending on hub health.
@@ -784,8 +789,7 @@ protected: // Protected methods
 private:
 	struct sCallBacks
 	{
-
-		sCallBacks(cVHPluginMgr * mgr) :
+		sCallBacks(cVHPluginMgr *mgr):
 			mOnNewConn(mgr, "VH_OnNewConn", &cVHPlugin::OnNewConn),
 			mOnCloseConn(mgr, "VH_OnCloseConn", &cVHPlugin::OnCloseConn),
 			mOnCloseConnEx(mgr, "VH_OnCloseConnEx", &cVHPlugin::OnCloseConnEx),
@@ -826,7 +830,9 @@ private:
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
 			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub)
-		{};
+			//mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage)
+		{
+		};
 
 		cVHCBL_Connection mOnNewConn;
 		cVHCBL_Connection mOnCloseConn;
@@ -868,11 +874,13 @@ private:
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_StrStrStrStr mOnScriptCommand;
 		cVHCBL_ConnText mOnCtmToHub;
+		//cVHCBL_Strings mOnOpChatMessage;
 	};
-	// Structure that holds all callbacks.
-	sCallBacks mCallBacks;
+
+	sCallBacks mCallBacks; // structure that holds all callbacks
 };
 
 	}; // namespace nServer
 }; // namespace nVerliHub
+
 #endif

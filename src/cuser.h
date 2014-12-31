@@ -269,16 +269,16 @@ public:
 	virtual ~cChatRoom();
 	cUserCollection *mCol;
 	virtual bool ReceiveMsg(cConnDC *conn, nProtocol::cMessageDC *msg);
-	virtual void SendPMToAll(const string & Msg, nSocket::cConnDC *FromConn);
+	virtual void SendPMToAll(const string &data, nSocket::cConnDC *conn);
 	virtual bool IsUserAllowed(cUser *);
 	cChatConsole *mConsole;
 };
 
-class cOpChat : public cChatRoom
+class cOpChat: public cChatRoom
 {
-public:
-	cOpChat(nSocket::cServerDC *server);
-	virtual bool IsUserAllowed(cUser *);
+	public:
+		cOpChat(nSocket::cServerDC *server);
+		virtual bool IsUserAllowed(cUser *user);
 };
 
 class cMainRobot : public cUserRobot

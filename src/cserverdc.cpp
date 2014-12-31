@@ -457,10 +457,17 @@ bool cServerDC::RemoveNick(cUser *User)
 	return true;
 }
 
-void cServerDC::OnScriptCommand(string cmd, string data, string plug, string script)
+void cServerDC::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
 }
+
+/*
+bool cServerDC::OnOpChatMessage(string *nick, string *data)
+{
+	return mCallBacks.mOnOpChatMessage.CallAll(nick, data);
+}
+*/
 
 void cServerDC::SendToAll(string &data, int cm, int cM) // class range is ignored here
 {

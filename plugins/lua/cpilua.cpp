@@ -122,6 +122,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnCtmToHub");
+	//RegisterCallBack("VH_OnOpChatMessage");
 	return true;
 }
 
@@ -796,24 +797,27 @@ bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 	return true;
 }
 
-bool cpiLua::OnScriptCommand(string cmd, string data, string plug, string script)
+bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
-	char * args[] = {
-		(char*)cmd.c_str(),
-		(char*)data.c_str(),
-		(char*)plug.c_str(),
-		(char*)script.c_str(),
-		NULL
-	};
+	if (cmd && data && plug && script) {
+		char *args[] = {
+			(char*)cmd->c_str(),
+			(char*)data->c_str(),
+			(char*)plug->c_str(),
+			(char*)script->c_str(),
+			NULL
+		};
 
-	CallAll("VH_OnScriptCommand", args);
+		CallAll("VH_OnScriptCommand", args);
+	}
+
 	return true;
 }
 
 bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 {
 	if (conn && ref) {
-		char* args[] = {
+		char *args[] = {
 			(char*)conn->mMyNick.c_str(),
 			(char*)conn->AddrIP().c_str(),
 			(char*)toString(conn->AddrPort()),
@@ -828,6 +832,23 @@ bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 	return true;
 }
 
+/*
+bool cpiLua::OnOpChatMessage(string *nick, string *data)
+{
+	if (nick && data) {
+		char *args[] = {
+			(char*)nick->c_str(),
+			(char*)data->c_str(),
+			NULL
+		};
+
+		CallAll("VH_OnOpChatMessage", args);
+	}
+
+	return true;
+}
+*/
+
 char * cpiLua::toString(int num)
 {
 	return autosprintf("%d", num);
@@ -840,4 +861,5 @@ char * cpiLua::longToString(long num)
 
 	}; // namepsace nLuaPlugin
 }; // namespace nVerliHub
+
 REGISTER_PLUGIN(nVerliHub::nLuaPlugin::cpiLua);

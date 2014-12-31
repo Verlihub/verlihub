@@ -330,19 +330,19 @@ class cVHCBL_Connection: public cVHCBL_Base
 		}
 };
 
-typedef tVHCBL_4Types<nSocket::cConnDC, std::string, int, int> cVHCBL_ConnTextIntInt;
-typedef tVHCBL_R4Types<cUser, std::string, int, int> cVHCBL_UsrStrIntInt;
-typedef tVHCBL_R4Types<cUser, std::string, std::string, std::string> cVHCBL_UsrStrStrStr;
-typedef tVHCBL_X4Types<std::string, std::string, std::string, std::string> cVHCBL_StrStrStrStr;
-typedef tVHCBL_3Types<cUser *, cUser *, std::string *> cVHCBL_UsrUsrStr;
-typedef tVHCBL_3Types<std::string, std::string, std::string> cVHCBL_StrStrStr;
-typedef tVHCBL_R3Types<cUser, std::string, int> cVHCBL_UsrStrInt;
+typedef tVHCBL_4Types<nSocket::cConnDC, string, int, int> cVHCBL_ConnTextIntInt;
+typedef tVHCBL_R4Types<cUser, string, int, int> cVHCBL_UsrStrIntInt;
+typedef tVHCBL_R4Types<cUser, string, string, string> cVHCBL_UsrStrStrStr;
+typedef tVHCBL_X4Types<string*, string*, string*, string*> cVHCBL_StrStrStrStr;
+typedef tVHCBL_3Types<cUser*, cUser*, string*> cVHCBL_UsrUsrStr;
+typedef tVHCBL_3Types<string, string, string> cVHCBL_StrStrStr;
+typedef tVHCBL_R3Types<cUser, string, int> cVHCBL_UsrStrInt;
 typedef tVHCBL_2Types<nSocket::cConnDC, nProtocol::cMessageDC> cVHCBL_Message;
 typedef tVHCBL_2Types<cUser, cUser> cVHCBL_UsrUsr;
 typedef tVHCBL_2Types<nSocket::cConnDC, cDCTag> cVHCBL_ConnTag;
-typedef tVHCBL_2Types<nSocket::cConnDC, std::string> cVHCBL_ConnText;
+typedef tVHCBL_2Types<nSocket::cConnDC, string> cVHCBL_ConnText;
 typedef tVHCBL_2Types<cUser, nTables::cBan> cVHCBL_UsrBan;
-typedef tVHCBL_R2Types<std::string, std::string> cVHCBL_Strings;
+typedef tVHCBL_R2Types<string*, string*> cVHCBL_Strings;
 typedef tVHCBL_1Type<string> cVHCBL_String;
 typedef tVHCBL_1Type<cUser> cVHCBL_User;
 typedef tVHCBL_R1Type<long> cVHCBL_Long;

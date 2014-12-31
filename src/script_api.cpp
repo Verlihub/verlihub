@@ -223,6 +223,22 @@ bool SendPMToAll(char *data, char *from, int min_class, int max_class)
 	return true;
 }
 
+bool SendToOpChat(char *data)
+{
+	if (!data)
+		return false;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv || !serv->mOpChat) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	serv->mOpChat->SendPMToAll(data, NULL);
+	return true;
+}
+
 bool CloseConnection(char *nick)
 {
 	cUser *usr = GetUser(nick);
@@ -260,51 +276,56 @@ bool StopHub(int code)
 	return true;
 }
 
-char * GetUserCC(char * nick)
+char* GetUserCC(char *nick)
 {
-	cUser *usr = GetUser(nick);
-	if((!usr) || (usr && !usr->mxConn))
-		return NULL;
-	else {
-		return (char *) usr->mxConn->mCC.c_str();
-	}
+	cUser *user = GetUser(nick);
 
+	if (user && user->mxConn)
+		return (char*)user->mxConn->mCC.c_str();
+
+	return NULL;
 }
 
 #if HAVE_LIBGEOIP
 
-string GetIPCC(const string ip)
+char* GetIPCC(char *ip)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	if (!ip)
+		return NULL;
 
-	if (!server) {
-		cerr << "Verlihub server is unfortunately not running or not found." << endl;
-		return "";
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return NULL;
 	}
 
 	string cc;
 
-	if (server->sGeoIP.GetCC(ip, cc))
-		return cc;
-	else
-		return "";
+	if (serv->sGeoIP.GetCC(ip, cc))
+		return (char*)cc.c_str();
+
+	return NULL;
 }
 
-string GetIPCN(const string ip)
+char* GetIPCN(char *ip)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	if (!ip)
+		return NULL;
 
-	if (!server) {
-		cerr << "Verlihub server is unfortunately not running or not found." << endl;
-		return "";
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return NULL;
 	}
 
 	string cn;
 
-	if (server->sGeoIP.GetCN(ip, cn))
-		return cn;
-	else
-		return "";
+	if (serv->sGeoIP.GetCN(ip, cn))
+		return (char*)cn.c_str();
+
+	return NULL;
 }
 
 #endif
@@ -585,17 +606,20 @@ bool DelRegUser(char *nick)
 	return server->mR->DelReg(nick);
 }
 
-bool ScriptCommand(string cmd, string data, string plug, string script)
+bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
-	if (serv == NULL) {
-		cerr << "ScriptCommand failed because server is not running or not found." << endl;
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
-	// do the restriction stuff, for example check cmd
-	// plug = "py" for python, "lua" for lua
+	/*
+		do the restriction stuff, for example check cmd
+		plug = "py" for python, "lua" for lua
+	*/
+
 	serv->OnScriptCommand(cmd, data, plug, script);
 	return true;
 }

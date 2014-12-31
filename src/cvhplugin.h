@@ -428,10 +428,13 @@ public:
 	* plug = ID of plugin that makes the call.
 	* script = ID of script that makes the call.
 	*/
-	virtual bool OnScriptCommand(string cmd, string data, string plug, string script) {return true;}
+	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script) { return true; }
 
 	// ctm2hub
 	virtual bool OnCtmToHub(nSocket::cConnDC *conn, string *ref) { return true; }
+
+	// opchat message
+	//virtual bool OnOpChatMessage(string *nick, string *data) { return true; }
 
 	/// per-user data of the plugin
 	virtual cPluginUserData *GetPluginUserData( cUser * );

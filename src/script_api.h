@@ -35,14 +35,15 @@ namespace nVerliHub {
 	bool SendToPassive(char *data);
 	bool SendToPassiveClass(char *data, int min_class, int max_class);
 	bool SendPMToAll(char *data, char *from, int min_class, int max_class);
+	bool SendToOpChat(char *data);
 	bool CloseConnection(char *nick);
 	bool CloseConnectionNice(char *nick);
 	bool StopHub(int code);
 	char* GetUserCC(char *nick);
 
 	#if HAVE_LIBGEOIP
-		string GetIPCC(const string);
-		string GetIPCN(const string);
+		char* GetIPCC(char *ip);
+		char* GetIPCN(char *ip);
 	#endif
 
 	char* GetMyINFO(char *nick);
@@ -58,7 +59,7 @@ namespace nVerliHub {
 	bool GetTempRights(char *nick, map<string,int> &rights);
 	bool AddRegUser(char *nick, int uClass, char *passwd, char* op);
 	bool DelRegUser(char *nick);
-	bool ScriptCommand(string, string, string, string);
+	bool ScriptCommand(string *cmd, string *data, string *plug, string *script);
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

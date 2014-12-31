@@ -38,6 +38,7 @@ namespace nVerliHub {
 	int _SendToPassive(lua_State *L);
 	int _SendToPassiveClass(lua_State *L);
 	int _SendPMToAll(lua_State *L);
+	int _SendToOpChat(lua_State *L);
 	int _Disconnect(lua_State *L);
 	int _DisconnectNice(lua_State *L);
 	int _StopHub(lua_State *L);
@@ -77,7 +78,6 @@ namespace nVerliHub {
 	int _KickUser(lua_State *L);
 	int _KickRedirUser(lua_State *L);
 	int _ReportUser(lua_State *L);
-	int _SendToOpChat(lua_State *L);
 	int _ParseCommand(lua_State *L);
 	int _SQLQuery(lua_State *L);
 	int _SQLFetch(lua_State *L);

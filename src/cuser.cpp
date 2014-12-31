@@ -554,31 +554,39 @@ cChatRoom::~cChatRoom()
 	mConsole = NULL;
 }
 
-void cChatRoom::SendPMToAll(const string & Msg, cConnDC *FromConn)
+void cChatRoom::SendPMToAll(const string &data, cConnDC *conn)
 {
-	string start, end, FromNick;
+	if (!this->mCol || !this->mxServer)
+		return;
 
-	if (FromConn && FromConn->mpUser) {
-		FromNick = FromConn->mpUser->mNick;
-	} else {
-		FromNick = mNick;
+	string from, start, end;
+
+	if (conn && conn->mpUser)
+		from = conn->mpUser->mNick;
+	else
+		from = mNick;
+
+	this->mxServer->mP.Create_PMForBroadcast(start, end, mNick, from, data);
+	bool temp = false;
+
+	if (conn && conn->mpUser) {
+		temp = conn->mpUser->mInList;
+		conn->mpUser->mInList = false;
 	}
 
-	if (mCol) {
-		this->mxServer->mP.Create_PMForBroadcast(start, end, mNick, FromNick, Msg);
-		bool temp_save_inlist = false;
+	this->mCol->SendToAllWithNick(start, end);
 
-		if (FromConn && FromConn->mpUser) {
-			temp_save_inlist = FromConn->mpUser->mInList;
-			FromConn->mpUser->mInList = false;
-		}
+	if (conn && conn->mpUser)
+		conn->mpUser->mInList = temp;
 
-		this->mCol->SendToAllWithNick(start,end);
+	/*
+	#ifndef WITHOUT_PLUGINS
+		string msg(data);
 
-		if (FromConn && FromConn->mpUser) {
-			FromConn->mpUser->mInList = temp_save_inlist;
-		}
-	}
+		if (this->mxServer->mC.opchat_name.size() && (StrCompare(mNick, 0, mNick.size(), this->mxServer->mC.opchat_name) == 0))
+			this->mxServer->OnOpChatMessage(&from, &msg);
+	#endif
+	*/
 }
 
 bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)
@@ -613,13 +621,17 @@ bool cChatRoom::IsUserAllowed(cUser *)
 	return false;
 }
 
-cOpChat::cOpChat(cServerDC *server) : cChatRoom(server->mC.opchat_name, &server->mOpchatList, server)
-{}
+cOpChat::cOpChat(cServerDC *server):
+	cChatRoom(server->mC.opchat_name, &server->mOpchatList, server)
+{
+}
 
 bool cOpChat::IsUserAllowed(cUser *user)
 {
-	if (user && (user->mClass >= eUC_OPERATOR)) return true;
-	else return false;
+	if (user && (user->mClass >= eUC_OPERATOR))
+		return true;
+	else
+		return false;
 }
 
 bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
