@@ -50,3 +50,6 @@ MACRO_LOG_FEATURE(ENABLE_PLUGIN "replacer" "Replace given patterns in text messa
 
 ADD_PLUGIN(ENABLE_PLUGIN floodprot)
 MACRO_LOG_FEATURE(ENABLE_PLUGIN "floodprot" "Offer more control from users flooding the hub")
+
+ADD_PLUGIN(ENABLE_PLUGIN perl)
+MACRO_LOG_FEATURE(ENABLE_PLUGIN "perl" "Allows you to use scripts written with Perl")

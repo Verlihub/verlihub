@@ -1,0 +1,11 @@
+Not implemented yet both in LuaScript and PerlScript:
+	vh::GetTempRights
+	vh::SetTempRights
+
+Use Math::Int64 instead of double in GetTotalShareSize???
+
+Return vh::GetNickList as array in array context??? Currently only separated *Array function implemented
+
+Fix everytime rebuild of vh module in cmake
+
+Update event handlers and callbacks (use ./lua_* to compare with LuaScript plugin)

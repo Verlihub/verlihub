@@ -1,25 +1,30 @@
-/*
-	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
-
-	Verlihub is free software; You can redistribute it
-	and modify it under the terms of the GNU General
-	Public License as published by the Free Software
-	Foundation, either version 3 of the license, or at
-	your option any later version.
-
-	Verlihub is distributed in the hope that it will be
-	useful, but without any warranty, without even the
-	implied warranty of merchantability or fitness for
-	a particular purpose. See the GNU General Public
-	License for more details.
-
-	Please see http://www.gnu.org/licenses/ for a copy
-	of the GNU General Public License.
-*/
-
+/**************************************************************************
+*   Copyright (C) 2003 by Dan Muller                                      *
+*   dan at verliba.cz                                                     *
+*                                                                         *
+*   Copyright (C) 2011 by Shurik                                          *
+*   shurik at sbin.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; either version 2 of the License, or     *
+*   (at your option) any later version.                                   *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef NSCRIPTSCPERLINTERPRETER_H
 #define NSCRIPTSCPERLINTERPRETER_H
+
+#define PERL_CALL "vh::VH__Call__Function"
+
 
 namespace nPerl
 {
@@ -28,8 +33,8 @@ namespace nPerl
 };
 using namespace nPerl;
 
-namespace nScripts
-{
+namespace nVerliHub {
+	namespace nPerlPlugin {
 
 /** \brief a wrapper for perl calling ; a c++ wrapper for the perl XS API
 
@@ -50,6 +55,8 @@ namespace nScripts
 class cPerlInterpreter
 {
 public:
+	std::string mScriptName;
+
 	cPerlInterpreter();
 	virtual ~cPerlInterpreter();
 
@@ -67,11 +74,14 @@ public:
 	/** parse arguments like for a command line of perl */
 	int Parse(int argc, char *argv[]);
 
-	int CallArgv(const char *Function, int Flags, char * Args [] );
+	bool CallArgv(const char *Function, char * Args [] );
+        void ReportPerlError(char *error);
+
 protected:
 	PerlInterpreter *mPerl;
 };
 
-};
+	}; // namespace nPerlPlugin
+}; // namespace nVerlihub
 
 #endif

@@ -1,66 +1,69 @@
-/*
-	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
+/**************************************************************************
+*   Copyright (C) 2004 by Dan Muller                                      *
+*   dan at verliba.cz                                                     *
+*                                                                         *
+*   Copyright (C) 2004 by Janos Horvath                                   *
+*   bourne at freemail dot hu                                             *
+*                                                                         *
+*   Copyright (C) 2011 by Shurik                                          *
+*   shurik at sbin.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; either version 2 of the License, or     *
+*   (at your option) any later version.                                   *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
+#ifndef CCONSOLE_H
+#define CCONSOLE_H
 
-	Verlihub is free software; You can redistribute it
-	and modify it under the terms of the GNU General
-	Public License as published by the Free Software
-	Foundation, either version 3 of the license, or at
-	your option any later version.
+#include "src/ccommandcollection.h"
 
-	Verlihub is distributed in the hope that it will be
-	useful, but without any warranty, without even the
-	implied warranty of merchantability or fitness for
-	a particular purpose. See the GNU General Public
-	License for more details.
-
-	Please see http://www.gnu.org/licenses/ for a copy
-	of the GNU General Public License.
-*/
-
-#ifndef NFORBIDCCONSOLE_H
-#define NFORBIDCCONSOLE_H
-
-#define HAVE_OSTREAM 1
-#include <verlihub/ccmdr.h>
-
-class cpiForbid;
-using namespace nCmdr;
-
-namespace nDirectConnect { class cConnDC; };
-using namespace nDirectConnect;
-
-namespace nForbid
-{
-
-
-/**
-a console that parses commands
-
-@author Daniel Muller
-*/
+namespace nVerliHub {
+	namespace nSocket {
+		class cConnDC;
+	};
+	namespace nPerlPlugin {
+		class cpiPerl;
 class cConsole
 {
 public:
-	cConsole(cpiForbid *);
+	cConsole(cpiPerl *);
 	virtual ~cConsole();
-	int DoCommand(const string &str, cConnDC * conn);
+	int DoCommand(const string &str, nSocket::cConnDC * conn);
+	cpiPerl *mPerl;
 protected:
-	cpiForbid *mForbid;
-	enum {eMSG_SEND, eMSG_Read };
-	class cfBase : public cCommand::sCmdFunc {
+	//enum {eMSG_SEND, eMSG_Read };
+	class cfBase : public nCmdr::cCommand::sCmdFunc {
 		public:
-		cpiForbid *GetPI(){ return ((cConsole *)(mCommand->mCmdr->mOwner))->mForbid;}
+		cpiPerl *GetPI(){ return ((cConsole *)(mCommand->mCmdr->mOwner))->mPerl;}
 	};
-	class cfGetForbidden : public cfBase { virtual bool operator()();} mcfForbidGet;
-	class cfAddForbidden : public cfBase { virtual bool operator()();} mcfForbidAdd;
-	class cfDelForbidden : public cfBase { virtual bool operator()();} mcfForbidDel;
-	cCommand mCmdForbidGet;
-	cCommand mCmdForbidAdd;
-	cCommand mCmdForbidDel;
-	cCmdr mCmdr;
+
+	class cfGetPerlScript : public cfBase { virtual bool operator()();} mcfPerlScriptGet;
+	class cfAddPerlScript : public cfBase { virtual bool operator()();} mcfPerlScriptAdd;
+	class cfDelPerlScript : public cfBase { virtual bool operator()();} mcfPerlScriptDel;
+	class cfReloadPerlScript : public cfBase { virtual bool operator()();} mcfPerlScriptRe;
+
+	nCmdr::cCommand mCmdPerlScriptGet;
+	nCmdr::cCommand mCmdPerlScriptAdd;
+	nCmdr::cCommand mCmdPerlScriptDel;
+	nCmdr::cCommand mCmdPerlScriptRe;
+	nCmdr::cCommand mCmdPerlScriptLog;
+	nCmdr::cCommand mCmdPerlScriptInfo;
+	nCmdr::cCommand mCmdPerlScriptVersion;
+	nCmdr::cCommandCollection mCmdr;
 };
 
-};
+	}; // namespace nPerlPlugin
+}; // namespace nVerliHub
 
 #endif

@@ -1,123 +1,228 @@
-/*
-	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2014 Verlihub Project, devs at verlihub-project dot org
-
-	Verlihub is free software; You can redistribute it
-	and modify it under the terms of the GNU General
-	Public License as published by the Free Software
-	Foundation, either version 3 of the license, or at
-	your option any later version.
-
-	Verlihub is distributed in the hope that it will be
-	useful, but without any warranty, without even the
-	implied warranty of merchantability or fitness for
-	a particular purpose. See the GNU General Public
-	License for more details.
-
-	Please see http://www.gnu.org/licenses/ for a copy
-	of the GNU General Public License.
-*/
-
-#define HAVE_OSTREAM 1
-#include <verlihub/cconndc.h>
+/**************************************************************************
+*   Copyright (C) 2004 by Dan Muller                                      *
+*   dan at verliba.cz                                                     *
+*                                                                         *
+*   Copyright (C) 2004 by Janos Horvath                                   *
+*   bourne at freemail dot hu                                             *
+*                                                                         *
+*   Copyright (C) 2011 by Shurik                                          *
+*   shurik at sbin.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; either version 2 of the License, or     *
+*   (at your option) any later version.                                   *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
+#include "src/cconndc.h"
+#include "src/cserverdc.h"
+#include "src/stringutils.h"
+#include "src/i18n.h"
 #include "cconsole.h"
-#include "cpiforbid.h"
-#include "cforbidden.h"
+#include "cpiperl.h"
+#include "cperlinterpreter.h"
+#include <dirent.h>
 
-using namespace nDirectConnect;
+#define PADDING 25
 
-namespace nForbid
+namespace nVerliHub {
+	using namespace nUtils;
+	namespace nPerlPlugin {
+
+static bool IsNumber(const char* s)
 {
-
-cConsole::cConsole(cpiForbid *forbid) :
-	mForbid(forbid),
-	mCmdForbidAdd(1,"\\+addforbidden ", "(\\S+)", &mcfForbidAdd),
-	mCmdForbidGet(0,"\\+getforbidden", "", &mcfForbidGet),
-	mCmdForbidDel(2,"\\+delforbidden ", "(\\S+)", &mcfForbidDel),
-	mCmdr(this)
-{
-	mCmdr.Add(&mCmdForbidAdd);
-	mCmdr.Add(&mCmdForbidDel);
-	mCmdr.Add(&mCmdForbidGet);
+	if (!s || !strlen(s)) return false;
+	for (unsigned int i = 0; i < strlen(s); i++)
+		switch (s[i]) {
+			case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': break;
+			default: return false;
+		}
+	return true;
 }
 
 
+cConsole::cConsole(cpiPerl *perl) :
+	mPerl(perl),
+	mCmdPerlScriptGet(0,"!perllist", "", &mcfPerlScriptGet),
+	mCmdPerlScriptAdd(1,"!perlload ", "(.*)", &mcfPerlScriptAdd),
+	mCmdPerlScriptDel(2,"!perlunload ", "(.*)", &mcfPerlScriptDel),
+	mCmdPerlScriptRe(3,"!perlreload ", "(.*)", &mcfPerlScriptRe),
+	mCmdr(this)
+{
+	mCmdr.Add(&mCmdPerlScriptAdd);
+	mCmdr.Add(&mCmdPerlScriptDel);
+	mCmdr.Add(&mCmdPerlScriptGet);
+	mCmdr.Add(&mCmdPerlScriptRe);
+}
+
 cConsole::~cConsole()
-{}
+{
+}
+
+bool cConsole::cfGetPerlScript::operator()()
+{
+	(*mOS) << _("Running Perl scripts:") << "\r\n";
+	(*mOS) << "\n ";
+	(*mOS) << setw(6) << setiosflags(ios::left) << "ID";
+	(*mOS) << toUpper(_("Script")) << "\n";
+	(*mOS) << " " << string(6+20,'=') << endl;
+	for(int i = 0; i < GetPI()->Size(); i++) {
+		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << GetPI()->mPerl.mPerl[i]->mScriptName << "\r\n";
+	}
+	return true;
+}
 
 int cConsole::DoCommand(const string &str, cConnDC * conn)
 {
 	ostringstream os;
-	cout << "cConsole::DoCommand" << endl;
+
 	if(mCmdr.ParseAll(str, os, conn) >= 0)
 	{
-		mForbid->mServer->DCPublicHS(os.str().data(),conn);
+		mPerl->mServer->DCPublicHS(os.str().c_str(),conn);
 		return 1;
 	}
 	return 0;
 }
 
-bool cConsole::cfGetForbidden::operator ( )()
+bool cConsole::cfDelPerlScript::operator()()
 {
-	string word;
-	
-	(*mOS) << "Forbidden words: " << "\r\n";
-	for(int i = 0; i < GetPI()->mForbidden->Size()-1; i++)
-		(*mOS) << (*GetPI()->mForbidden)[i]->mWord << "\r\n";
-	  
-	return false;
-}
+	string scriptfile;
+	GetParStr(1,scriptfile);
 
-bool cConsole::cfDelForbidden::operator ( )()
-{
-	string word;
-	bool isInList=false;
-	GetParStr(1, word);
-	
-	for(int i = 0; i < GetPI()->mForbidden->Size()-1; i++)
-		if((* GetPI()->mForbidden)[i]->mWord == word)
-			isInList = true;
-	
-	if(!isInList)
-	{
-		(*mOS) << "Forbidden word: " << word << " is NOT in list, so couldn't delete!" << "\r\n";
+	bool found = false;
+	bool number = false;
+	int i = 0, num = 0;
+	vector<cPerlInterpreter *>::iterator it;
+	cPerlInterpreter *pi;
+
+	if (IsNumber(scriptfile.c_str())) {
+		num = atoi(scriptfile.c_str());
+		number = true;
+	}
+
+	for(it = GetPI()->mPerl.mPerl.begin(); it != GetPI()->mPerl.mPerl.end(); ++it, ++i) {
+		pi = *it;
+		if ((number && num == i) || (!number && StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0)) {
+			found = true;
+			scriptfile = pi->mScriptName;
+			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << " ";
+			delete pi;
+			GetPI()->mPerl.mPerl.erase(it);
+			break;
+		}
+	}
+
+	if(!found) {
+		if(number)
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
+		else
+			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str()) << " ";
 		return false;
 	}
-	
-	cForbiddenWorker FWord;
-	FWord.mWord = word;
-	
-	GetPI()->mForbidden->DelForbidden(FWord);
-	(*mOS) << "Forbidden word: " << word << " deleted." << "\r\n";
-	
-	GetPI()->mForbidden->LoadAll();
 	return true;
 }
 
-bool cConsole::cfAddForbidden::operator ( )()
+bool cConsole::cfAddPerlScript::operator()()
 {
-	string word;
-	GetParStr(1,word);	
-	transform(word.begin(), word.end(), word.begin(), ::tolower);
-	
-	for(int i = 0; i < GetPI()->mForbidden->Size()-1; i++)
-	    if((*GetPI()->mForbidden)[i]->mWord == word)
-	    {
-	        (*mOS) << "Forbidden word: " << word << " already in list! NOT added!" << "\r\n";
-	        return false;
-	    }
-	
-	cForbiddenWorker FWord;
-	FWord.mWord = word;
-	
-	if (GetPI()->mForbidden->AddForbidden(FWord))
-	    (*mOS) << "Forbidden word: " << word << " added." << "\r\n";
-	else
-	    (*mOS) << "Forbidden word: " << word << " NOT added!" << "\r\n";
-	    
-	GetPI()->mForbidden->LoadAll();
-    
+	string scriptfile, pathname, filename;
+	bool number = false;
+	int num = 0;
+	GetParStr(1, scriptfile);
+	vector<cPerlInterpreter *>::iterator it;
+	cPerlInterpreter *pi;
+
+	if (IsNumber(scriptfile.c_str())) {
+		num = atoi(scriptfile.c_str());
+		number = true;
+	}
+	cServerDC *server= cServerDC::sCurrentServer;
+	pathname = server->mConfigBaseDir;
+
+
+	if(number) {
+		DIR *dir = opendir(pathname.c_str());
+		int i = 0;
+		if(!dir) {
+			(*mOS) << autosprintf(_("Failed loading directory %s."), pathname.c_str()) << " ";
+			return false;
+		}
+		struct dirent *dent = NULL;
+
+		while(NULL != (dent=readdir(dir))) {
+
+			filename = dent->d_name;
+			if((filename.size() > 4) && (StrCompare(filename,filename.size()-3,3,".pl")==0)) {
+				if(i == num)
+					scriptfile = pathname + "/" + filename;
+				i++;
+			}
+
+		}
+		closedir(dir);
+	}
+	char *argv[] = { (char*)"", (char*)scriptfile.c_str(), NULL };
+	for(it = GetPI()->mPerl.mPerl.begin(); it != GetPI()->mPerl.mPerl.end(); ++it) {
+		pi = *it;
+		if (StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0) {
+			(*mOS) << autosprintf(_("Script %s is already running."), scriptfile.c_str()) << " ";
+			return false;
+		}
+	}
+	GetPI()->mPerl.Parse(2, argv);
+	(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
 	return true;
 }
 
-};
+bool cConsole::cfReloadPerlScript::operator()()
+{
+	string scriptfile;
+	bool found = false, number = false;
+	int i, num;
+	i = num = 0;
+
+	GetParStr(1,scriptfile);
+	if (IsNumber(scriptfile.c_str())) {
+		num = atoi(scriptfile.c_str());
+		number = true;
+	}
+
+	cPerlInterpreter *pi;
+	vector<cPerlInterpreter *>::iterator it;
+	for(it = GetPI()->mPerl.mPerl.begin(); it != GetPI()->mPerl.mPerl.end(); ++it, ++i) {
+		pi = *it;
+		if ((number && num == i) || (!number && StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0)) {
+			found = true;
+			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << " ";
+			scriptfile = pi->mScriptName;
+			delete pi;
+			GetPI()->mPerl.mPerl.erase(it);
+			break;
+		}
+	}
+
+	if(!found) {
+		if(number)
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
+		else
+			(*mOS) << autosprintf(_("Script %s not stopped  because it is not running."), scriptfile.c_str()) << " ";
+		return false;
+	} else {
+		char *argv[] = { (char*)"", (char*)scriptfile.c_str(), NULL };
+		GetPI()->mPerl.Parse(2, argv);
+		(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
+		return true;
+	}
+}
+
+
+	}; // namespace nPerlPlugin
+}; // namespace nVerliHub

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "Compare LuaScript callbacks with PerlScript callbacks"
+
+grep RegisterFunction ../lua/cluainterpreter.cpp |grep -v ::|cut -d \" -f 2 |sort|uniq> cbsl
+perl -e '$f=1; while(<>) { last if /EXPORT_TAGS/ }; while(<>) { last if /;/; print; }' vh/vh.pm |tr -d ' \t'|sort|uniq|grep -v '^$' > cbs1
+diff -u cbs[1l]
+rm cbs[1l]
