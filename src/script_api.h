@@ -57,7 +57,7 @@ namespace nVerliHub {
 	int GetConfig(char *config_name, char *var, char *val, int size);
 	char* GetVHCfgDir();
 	bool GetTempRights(char *nick, map<string,int> &rights);
-	bool AddRegUser(char *nick, int uClass, char *passwd, char* op);
+	bool AddRegUser(char *nick, int uclass, char *pass, char* op);
 	bool DelRegUser(char *nick);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script);
 	int CheckBotNick(const string &nick);

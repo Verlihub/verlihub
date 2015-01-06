@@ -2455,55 +2455,60 @@ int _IsChatUser(lua_State *L)
 
 int _AddRegUser(lua_State *L)
 {
-	string nick, password, op;
-	int uClass, args = lua_gettop(L);
-	if(args >= 4 && args <= 5) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		nick = (char *) lua_tostring(L, 2);
-		if(!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		password = (char *) lua_tostring(L, 3);
-		if(!lua_isnumber(L, 4)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		uClass = (int) lua_tonumber(L, 4);
-		if(!lua_isnumber(L, 5)) op = "";
-		else op = (char *) lua_tostring(L, 5);
-		AddRegUser( (char *) nick.c_str(), uClass, (char *) password.c_str(), (char *) op.c_str());
-		lua_pushboolean(L, 1);
-		return 1;
-	}
-	else {
-		luaL_error(L, "Error calling VH:AddRegUser; expected at least 3 arguments and max 4 but got %d", lua_gettop(L) -1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 3) {
+		luaL_error(L, "Error calling VH:AddRegUser, expected 3 or 4 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
-		return 1;
+		lua_pushnil(L);
+		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isnumber(L, 4) || ((args >= 4) && !lua_isstring(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = (char*)lua_tostring(L, 2);
+	const string pass = (char*)lua_tostring(L, 3);
+	int uclass = (int)lua_tonumber(L, 4);
+	string op;
+
+	if (args >= 4)
+		op = (char*)lua_tostring(L, 5);
+
+	if (AddRegUser((char*)nick.c_str(), uclass, (char*)pass.c_str(), (char*)op.c_str()))
+		lua_pushboolean(L, 1);
+	else
+		lua_pushboolean(L, 0);
+
+	lua_pushnil(L);
+	return 2;
 }
 
 int _DelRegUser(lua_State *L)
 {
-	string nick;
-	if(lua_gettop(L) == 2) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		nick = (char *) lua_tostring(L, 2);
-		if(DelRegUser( ( char *) nick.c_str()))
-			lua_pushboolean(L, 1);
-		else
-			lua_pushboolean(L, 0);
-		return 1;
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:DelRegUser, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
 	}
-	luaL_error(L, "Error calling VH:DelRegUser; expected 1 argument but got %d", lua_gettop(L) -1);
-	lua_pushboolean(L, 0);
-	return 1;
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = (char*)lua_tostring(L, 2);
+
+	if (DelRegUser((char*)nick.c_str()))
+		lua_pushboolean(L, 1);
+	else
+		lua_pushboolean(L, 0);
+
+	lua_pushnil(L);
+	return 2;
 }
 
 int _GetTopic(lua_State *L)

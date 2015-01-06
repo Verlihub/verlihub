@@ -571,39 +571,51 @@ bool GetTempRights(char *nick,  map<string,int> &rights)
 	return true;
 }
 
-bool AddRegUser(char *nick, int uClass, char * passwd, char* op)
+bool AddRegUser(char *nick, int uclass, char *pass, char* op)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(server == NULL) {
-		  cerr << "Server verlihub is not running or not found." << endl;
-		  return false;
-	}
-
-	cConnDC * conn = NULL;
-
-	if(strlen(op) > 0) {
-		cUser *user = GetUser(op);
-		if(user && user->mxConn) conn = user->mxConn;
-	}
-	if(uClass == eUC_MASTER) return false;
-	if(strlen(passwd) < (unsigned int) server->mC.password_min_len)
+	if (!nick || (uclass == eUC_MASTER))
 		return false;
-	return server->mR->AddRegUser(nick, conn, uClass, passwd);
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	cConnDC *conn = NULL;
+
+	if (strlen(op)) {
+		cUser *user = GetUser(op);
+
+		if (user && user->mxConn)
+			conn = user->mxConn;
+	}
+
+	return serv->mR->AddRegUser(nick, conn, uclass, (strlen(pass) ? pass : NULL));
 }
 
 bool DelRegUser(char *nick)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(server == NULL) {
-		cerr << "Server verlihub is not running or not found." << endl;
+	if (!nick)
+		return false;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
 	cRegUserInfo ui;
-	bool RegFound = server->mR->FindRegInfo(ui, nick);
-	if(!RegFound) return false;
-	if(ui.mClass == eUC_MASTER) return false;
-	return server->mR->DelReg(nick);
+
+	if (!serv->mR->FindRegInfo(ui, nick))
+		return false;
+
+	if (ui.mClass == eUC_MASTER)
+		return false;
+
+	return serv->mR->DelReg(nick);
 }
 
 bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
