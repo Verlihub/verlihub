@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2013-2015 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1981,7 +1981,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << mS->mC.hub_encoding;
 
 	string info = os.str();
-	conn->Send(info, true);
+	conn->Send(info, true, false);
 	conn->SetLSFlag(eLS_BOTINFO);
 	return 0;
 }
