@@ -1,0 +1,18 @@
+Perl scripts event handlers must ALWAYS return value. Lua scripts
+allow you don't return any value in some handlers like Main/Unload/VH_OnTimer
+etc. But your perl script should ALWAYS return 1 in Main/Unload/VH_OnTimer.
+
+You may use vh::SQLQuery/Fetch/Free or use DBI interface (vh::VHDBConnect)
+
+Your hub_security will show you runtime errors (e.g. divide by zero). Compile
+time errors will be logged in $VERLIHUB_CFG/err file only.
+
+If you receive many errors '&vh::constant not defined' just type command:
+
+  perl -Mvh
+
+then submit bug with output of this command.
+
+vh::GetNickList/vh::GetOPList/vh::GetBotList have equivalent functions
+vh::GetNickListArray/vh::GetOPListArray/vh::GetBotListArray that returns
+array of nicks.

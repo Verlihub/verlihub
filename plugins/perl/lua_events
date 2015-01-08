@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "Compare LuaScript event handlers with PerlScript event handlers"
+
+grep VH_On cpiperl.cpp |grep Regist|cut -d \" -f 2 |sort|uniq > cbs1
+grep VH_On cpiperl.cpp |grep char|cut -d \" -f 2 |sort|uniq > cbs2
+grep virtual\ bool cpiperl.h |awk '{ print $3 }'|cut -d \( -f 1|sed s/^/VH_/|grep -v VH_AutoLoad|grep -v VH_RegisterAll|sort|uniq > cbs3
+grep RegisterCallBack ../lua/cpilua.cpp|cut -d \" -f 2 |sort|uniq > cbsl
+diff -u cbs[12]
+diff -u cbs[13]
+diff -u cbs[23]
+diff -u cbs[1l]
+rm cbs[123l]
