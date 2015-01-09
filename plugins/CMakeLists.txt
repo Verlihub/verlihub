@@ -25,6 +25,14 @@ Find_Package(PythonLibs)
 ADD_PLUGIN(PYTHONLIBS_FOUND python)
 MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written with Python (http://www.python.org)" "http://www.python.org" "2.4" "Python libray NOT found")
 
+# Perl plugin
+
+Find_Package(PerlLibs)
+IF(PERLLIBS_FOUND)
+	ADD_PLUGIN(ENABLE_PLUGIN perl)
+	MACRO_LOG_FEATURE(ENABLE_PLUGIN "perl" "Allows you to use scripts written with Perl")
+ENDIF()
+
 # Other plugins
 
 ADD_PLUGIN(ENABLE_PLUGIN forbid)
@@ -50,6 +58,3 @@ MACRO_LOG_FEATURE(ENABLE_PLUGIN "replacer" "Replace given patterns in text messa
 
 ADD_PLUGIN(ENABLE_PLUGIN floodprot)
 MACRO_LOG_FEATURE(ENABLE_PLUGIN "floodprot" "Offer more control from users flooding the hub")
-
-ADD_PLUGIN(ENABLE_PLUGIN perl)
-MACRO_LOG_FEATURE(ENABLE_PLUGIN "perl" "Allows you to use scripts written with Perl")
