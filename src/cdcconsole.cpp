@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2013-2015 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -629,11 +629,11 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
 	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n";
 	os << " == " << toUpper(_("Contributors")) << " ==\r\n";
-	os << "\tStefano, Intruder, Frog" << "\r\n";
+	os << "\tStefano, Intruder, Frog, Pavel Pimenov, Shurik" << "\r\n";
 	os << " == " << toUpper(_("Web part")) << " ==\r\n";
 	os << "\tStefano Simoncelli (netcelli@verlihub-project.org)" << "\r\n";
 	os << " == " << toUpper(_("Credits")) << " ==\r\n";
-	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hubsoft." << "\r\n";
+	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hub software." << "\r\n";
 	os << " == " << toUpper(_("More")) << " ==\r\n";
 	os << "\t" << _("Website") << ": http://verlihub.net/" << "\r\n";
 	os << "\t" << _("Manual") << ": http://verlihub.net/doc/" << "\r\n";
