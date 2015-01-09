@@ -1,4 +1,4 @@
-Find_Package(Perl REQUIRED)
+Find_Package(Perl)
 
 EXECUTE_PROCESS(
   COMMAND
