@@ -28,7 +28,6 @@ SET(PERLSCRIPT_SRCS
 
 ADD_LIBRARY(libperl_pi MODULE ${PERLSCRIPT_SRCS})
 SET_TARGET_PROPERTIES(libperl_pi PROPERTIES OUTPUT_NAME "perl_pi")
-find_library(PERL_LIBRARIES perl)
-target_link_libraries(libperl_pi ${PERL_LIBRARIES})
+target_link_libraries(libperl_pi ${PERL_LIBRARY})
 
 INSTALL(TARGETS libperl_pi LIBRARY DESTINATION lib)
