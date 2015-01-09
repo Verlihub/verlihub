@@ -21,6 +21,7 @@ ENDIF()
 
 # Python plugin
 
+SET(Python_ADDITIONAL_VERSIONS 2.4 2.5 2.6 2.7)
 Find_Package(PythonLibs)
 ADD_PLUGIN(PYTHONLIBS_FOUND python)
 MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written with Python (http://www.python.org)" "http://www.python.org" "2.4" "Python libray NOT found")
