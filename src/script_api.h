@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2013-2015 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -52,7 +52,7 @@ namespace nVerliHub {
 	char* GetUserIP(char *nick);
 	bool Ban(char *, const string, const string, unsigned, unsigned);
 	bool ParseCommand(char *nick, char *cmd, int pm);
-	bool KickUser(char *op, char *nick, char *reason);
+	bool KickUser(char *opnick, char *nick, char *reason);
 	bool SetConfig(char *config_name, char *var, char *val);
 	int GetConfig(char *config_name, char *var, char *val, int size);
 	char* GetVHCfgDir();

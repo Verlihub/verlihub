@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2013-2015 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -73,8 +73,11 @@ bool SendDataToUser(char *data, char *nick)
 	return true;
 }
 
-bool KickUser(char *op, char *nick, char *reason)
+bool KickUser(char *opnick, char *nick, char *reason)
 {
+	if (!opnick || !nick)
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -82,12 +85,17 @@ bool KickUser(char *op, char *nick, char *reason)
 		return false;
 	}
 
-	cUser *usr = GetUser(op);
+	cUser *opuser = GetUser(opnick);
 
-	if (!usr || !usr->mxConn)
+	if (!opuser)
 		return false;
 
-	serv->DCKickNick(NULL, usr, nick, reason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
+	cUser *user = GetUser(nick);
+
+	if (!user || !user->mxConn)
+		return false;
+
+	serv->DCKickNick(NULL, opuser, nick, reason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
 	return true;
 }
 
