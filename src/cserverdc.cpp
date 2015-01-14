@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+	Copyright (C) 2013-2015 RoLex, webmaster at feardc dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1895,36 +1895,33 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 
 void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain)
 {
-	if (conn) {
-		ostringstream os;
-		os << Msg;
+	if (!conn)
+		return;
 
-		if (conn->mpUser) // nick
-			os << " ][ " << autosprintf(_("Nick: %s"), conn->mpUser->mNick.c_str());
+	ostringstream os;
+	os << Msg;
 
-		os << " ][ " << autosprintf(_("IP: %s"), conn->AddrIP().c_str()); // ip
+	if (conn->mpUser) // nick
+		os << " ][ " << autosprintf(_("Nick: %s"), conn->mpUser->mNick.c_str());
 
-		if (mC.report_user_country && !conn->mCC.empty() && (conn->mCC != "--")) { // country
-			os << " ][ " << autosprintf(_("Country: %s"), conn->mCC.c_str()); // code
+	os << " ][ " << autosprintf(_("IP: %s"), conn->AddrIP().c_str()); // ip
 
-			if (!conn->mCN.empty() && (conn->mCN != "--")) // name
-				os << "=" << conn->mCN.c_str();
-		}
+	if (mC.report_user_country && conn->mCC.size() && (conn->mCC != "--")) // country code
+		os << "." << conn->mCC;
 
-		if (!mUseDNS && mC.report_dns_lookup)
-			conn->DNSLookup();
+	if (!mUseDNS && mC.report_dns_lookup)
+		conn->DNSLookup();
 
-		if (!conn->AddrHost().empty()) // host
-			os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
+	if (conn->AddrHost().size()) // host
+		os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
 
-		if (!ToMain && this->mOpChat)
-			this->mOpChat->SendPMToAll(os.str(), NULL);
-		else {
-			static string ChatMsg;
-			ChatMsg.erase();
-			cDCProto::Create_Chat(ChatMsg, mC.opchat_name, os.str());
-			this->mOpchatList.SendToAll(ChatMsg, false, true);
-		}
+	if (!ToMain && this->mOpChat)
+		this->mOpChat->SendPMToAll(os.str(), NULL);
+	else {
+		static string ChatMsg;
+		ChatMsg.erase();
+		cDCProto::Create_Chat(ChatMsg, mC.opchat_name, os.str());
+		this->mOpchatList.SendToAll(ChatMsg, false, true);
 	}
 }
 
