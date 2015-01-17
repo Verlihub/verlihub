@@ -110,8 +110,13 @@ void cInfoServer::SystemInfo(ostream &os)
 
 	os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("System uptime") << uptime.AsPeriod().AsString().c_str() << endl;
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Load averages") << autosprintf("%.2f %.2f %.2f", serverInfo.loads[0]/65536.0, serverInfo.loads[1]/65536.0, serverInfo.loads[2]/65536.0) << endl;
+#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total memory") << convertByte((long long int) sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE), false).c_str() << endl;
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free memory") << convertByte((long long int) sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE), false).c_str() << endl;
+#else
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total memory") << convertByte((long long int) serverInfo.totalram, false).c_str() << endl;
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free memory") << convertByte((long long int) serverInfo.freeram, false).c_str() << endl;
+#endif
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Shared memory") << convertByte((long long int) serverInfo.sharedram, false).c_str() << endl;
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Memory in buffers") << convertByte((long long int) serverInfo.bufferram, false).c_str() << endl;
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free swap") << convertByte((long long int) serverInfo.freeswap, false).c_str() << "/" << convertByte((long long int) serverInfo.totalswap, false).c_str() << endl;
