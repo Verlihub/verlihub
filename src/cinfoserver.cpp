@@ -24,6 +24,7 @@
 #include "cserverdc.h"
 #include "curr_date_time.h"
 #if defined HAVE_LINUX
+#include <unistd.h>
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
