@@ -4,6 +4,9 @@
 
 #include "ppport.h"
 
+#undef do_open
+#undef do_close
+
 #include "const-c.inc"
 
 #include "src/script_api.h"
