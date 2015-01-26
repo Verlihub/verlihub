@@ -2782,12 +2782,14 @@ void cDCProto::Create_OpList(string &dest, const string &nick)
 {
 	dest.append("$OpList ");
 	dest.append(nick);
+	dest.append("$$");
 }
 
 void cDCProto::Create_BotList(string &dest, const string &nick)
 {
 	dest.append("$BotList ");
 	dest.append(nick);
+	dest.append("$$");
 }
 
 cConnType *cDCProto::ParseSpeed(const string &uspeed)
