@@ -36,7 +36,7 @@
 #else
 #include <unistd.h>
 #endif
-#ifdef HAVE_NETBSD
+#ifdef HAVE_BSD
 #include <sys/syslimits.h>
 #endif
 
