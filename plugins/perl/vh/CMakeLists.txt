@@ -63,7 +63,6 @@ ADD_CUSTOM_TARGET(vh_const_make ALL DEPENDS const.pm)
 INSTALL(
   FILES
     ${CMAKE_CURRENT_BINARY_DIR}/blib/arch/auto/vh/vh.so
-    ${CMAKE_CURRENT_BINARY_DIR}/blib/arch/auto/vh/vh.bs
     ${CMAKE_CURRENT_BINARY_DIR}/blib/lib/auto/vh/autosplit.ix
   DESTINATION
     ${PERL_SITE_ARCH}/auto/vh/)
