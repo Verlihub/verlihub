@@ -1,20 +1,21 @@
 # 
 # Translators:
 # mauron, 2012
+# mauron, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-17 12:54+0100\n"
-"PO-Revision-Date: 2014-11-15 11:04+0000\n"
-"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2015-06-03 15:18+0100\n"
+"PO-Revision-Date: 2015-01-15 23:23+0000\n"
+"Last-Translator: mauron\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1254\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.6.10\n"
+"X-Generator: Poedit 1.8.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -32,16 +33,16 @@ msgstr "Yasaklanmýþ ifade listesi giriniz"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "Maalesef girdiðiniz düzenli ifade geçerli deðildir."
 
-#: ../plugins/forbid/cforbidden.cpp:78
+#: ../plugins/forbid/cforbidden.cpp:77
 #, c-format
 msgid "FORBID: User sent forbidden words in %s: %s"
 msgstr "YASAK: Kullanýcý %s konumunda yasaklý sözcük yolladý: %s"
 
-#: ../plugins/forbid/cforbidden.cpp:78
+#: ../plugins/forbid/cforbidden.cpp:77
 msgid "PUBLIC chat"
 msgstr "HERKESE AÇIK sohbet"
 
-#: ../plugins/forbid/cforbidden.cpp:78
+#: ../plugins/forbid/cforbidden.cpp:77
 msgid "PRIVATE chat"
 msgstr "ÖZEL sohbet"
 
@@ -221,39 +222,43 @@ msgstr "Kullanýlan bellek"
 msgid "Running Lua scripts:"
 msgstr "Su Lua betikleri çalýþmaktadýr:"
 
-#: ../plugins/lua/cconsole.cpp:115 ../plugins/python/cconsole.cpp:87
+#: ../plugins/lua/cconsole.cpp:115 ../plugins/perl/cconsole.cpp:71
+#: ../plugins/python/cconsole.cpp:87
 msgid "Script"
 msgstr "Betik"
 
 #: ../plugins/lua/cconsole.cpp:144 ../plugins/lua/cconsole.cpp:241
+#: ../plugins/perl/cconsole.cpp:112 ../plugins/perl/cconsole.cpp:199
 #: ../plugins/python/cconsole.cpp:120 ../plugins/python/cconsole.cpp:210
 #, c-format
 msgid "Script %s stopped."
 msgstr "%s adlý betik durduruldu."
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:251
+#: ../plugins/perl/cconsole.cpp:121 ../plugins/perl/cconsole.cpp:209
 #: ../plugins/python/cconsole.cpp:130 ../plugins/python/cconsole.cpp:219
 #, c-format
 msgid "Script #%s not stopped because it is not running."
 msgstr "#%s sayýlý betik durdurulmadý çünkü faal deðildi."
 
-#: ../plugins/lua/cconsole.cpp:155 ../plugins/python/cconsole.cpp:132
-#: ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:155 ../plugins/perl/cconsole.cpp:123
+#: ../plugins/python/cconsole.cpp:132 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script %s not stopped because it is not running."
 msgstr "%s adlý betik durdurulmadý çünkü faal deðildi."
 
-#: ../plugins/lua/cconsole.cpp:182
+#: ../plugins/lua/cconsole.cpp:182 ../plugins/perl/cconsole.cpp:150
 #, c-format
 msgid "Failed loading directory %s."
 msgstr "%s adlý klasörün yüklenmesi baþarýsýz oldu."
 
-#: ../plugins/lua/cconsole.cpp:205
+#: ../plugins/lua/cconsole.cpp:205 ../plugins/perl/cconsole.cpp:171
 #, c-format
 msgid "Script %s is already running."
 msgstr "%s adlý betik halihazýrda faaldir."
 
 #: ../plugins/lua/cconsole.cpp:210 ../plugins/lua/cconsole.cpp:259
+#: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:216
 #: ../plugins/python/cconsole.cpp:155 ../plugins/python/cconsole.cpp:232
 #, c-format
 msgid "Script %s is now running."
@@ -264,7 +269,7 @@ msgstr "%s adlý betik þimdi faaldir."
 msgid "Script %s not found or could not be parsed."
 msgstr "%s adlý betik bulunamadý ya da analizi baþarýsýz oldu."
 
-#: ../plugins/lua/cconsole.cpp:253
+#: ../plugins/lua/cconsole.cpp:253 ../plugins/perl/cconsole.cpp:211
 #, c-format
 msgid "Script %s not stopped  because it is not running."
 msgstr "%s adlý betik durdurulmadý çünkü faal deðildi."
@@ -279,9 +284,13 @@ msgstr "%s.%s, '%s''den '%s''e güncellenmiþtir."
 msgid "Current log level is %d."
 msgstr "Güncel kütük seviyesi þudur: %d."
 
-#: ../plugins/lua/cluainterpreter.cpp:164
+#: ../plugins/lua/cluainterpreter.cpp:172
 msgid "Lua error"
 msgstr "Lua hatasý"
+
+#: ../plugins/lua/cluainterpreter.cpp:178
+msgid "Unknown error"
+msgstr "Bilinmeyen hata"
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
@@ -328,6 +337,10 @@ msgid ""
 "%s"
 msgstr "#ÇEVRÝMDISI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
 
+#: ../plugins/perl/cconsole.cpp:68
+msgid "Running Perl scripts:"
+msgstr "Çalýþan Perl betikleri:"
+
 #: ../plugins/plugman/cconsole.cpp:44
 msgid "Plugman version"
 msgstr "Plugman sürümü"
@@ -349,7 +362,7 @@ msgstr "Eklentinin ismi azami 10 karakter içerebilir, baþka bir isim giriniz."
 msgid "Please provide a valid path for the plugin."
 msgstr "Eklenti için geçerli bir yol giriniz."
 
-#: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:133
+#: ../plugins/plugman/cconsole.cpp:185 ../plugins/plugman/cplugs.cpp:135
 msgid "Plugin loaded."
 msgstr "Eklenti yüklendi."
 
@@ -367,7 +380,7 @@ msgstr "Eklenti kaldýrýldý."
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Eklenti kaldýrýlmadý, muhtemelen yüklenmediðinden."
 
-#: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:181
+#: ../plugins/plugman/cconsole.cpp:228 ../plugins/plugman/cplugs.cpp:183
 msgid "Plugin reloaded."
 msgstr "Eklenti tekrar yüklendi."
 
@@ -375,57 +388,57 @@ msgstr "Eklenti tekrar yüklendi."
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr "Eklenti tekrar yüklenmedi, muhtemelen yüklenmediðinden."
 
-#: ../plugins/plugman/cplugs.cpp:48
+#: ../plugins/plugman/cplugs.cpp:50
 msgid "Plugin not found."
 msgstr "Eklenti bulunamadý"
 
-#: ../plugins/plugman/cplugs.cpp:117
+#: ../plugins/plugman/cplugs.cpp:119
 msgid "Plugin does not support scripts."
 msgstr "Eklenti betikleri desteklemiyor."
 
-#: ../plugins/plugman/cplugs.cpp:123
+#: ../plugins/plugman/cplugs.cpp:125
 msgid "Script loaded."
 msgstr "Betki yüklendi."
 
-#: ../plugins/plugman/cplugs.cpp:125
+#: ../plugins/plugman/cplugs.cpp:127
 msgid "Error loading script."
 msgstr "Betiðin yüklenmesinde hata oluþtu."
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid ""
 "Warning: The plugin should be recompiled because Verlihub has been recently "
 "updated."
 msgstr "Ýkaz: Betik tekrar derlenmelidir çünkü Verlihub yakýn geçmiþte güncellenmiþtir."
 
-#: ../plugins/plugman/cplugs.cpp:205
+#: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"
 msgstr "Ýsim"
 
-#: ../plugins/plugman/cplugs.cpp:205
+#: ../plugins/plugman/cplugs.cpp:207
 msgid "On"
 msgstr "Açýk"
 
-#: ../plugins/plugman/cplugs.cpp:205
+#: ../plugins/plugman/cplugs.cpp:207
 msgid "Off"
 msgstr "Kapalý"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Auto"
 msgstr "Otomatik"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr "El ile"
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 msgid "Path"
 msgstr "Yol"
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 msgid "Description"
 msgstr "Açýklama"
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 msgid "Last error"
 msgstr "Son hata"
 
@@ -488,14 +501,14 @@ msgstr "Maalesef girdiðiniz düzenli ifade analiz edilemedi."
 msgid "Word '%s' already exists."
 msgstr "'%s' kelimesi zaten mevcuttur."
 
-#: ../plugins/replacer/cconsole.cpp:146
+#: ../plugins/replacer/cconsole.cpp:145
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
 msgstr "%s kelimesi eklenmiþtir. Bu kelime herkese açýk sohbette %d sýnýfýna eþit ya da altýndaki kullanýcýlara gösterilmeyecektir. "
 
-#: ../plugins/replacer/cconsole.cpp:148
+#: ../plugins/replacer/cconsole.cpp:147
 #, c-format
 msgid "Error adding word '%s'."
 msgstr "%s' kelimesinin ilâvesinde hata."
