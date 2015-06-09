@@ -496,7 +496,7 @@ function autoload() # params
 	fi
 
 	local PLUGIN_MAP
-	local PLUGINS_PATH="$PREFIX/lib"	
+        local PLUGINS_PATH="$PLUGINDIR"
 
 	
 	if [ "_$ACTION" = "_list" ]; then
@@ -562,7 +562,7 @@ function autoload() # params
 			fi
 		else
 			if [ "_$ACTION" = "_on" ]; then
-				if ln -s "$PREFIX/lib/$PLUGIN_NAME" "$VERLIHUB_CFG/plugins/" > /dev/null 2>&1 ; then 
+                                if ln -s "$PLUGINDIR/$PLUGIN_NAME" "$VERLIHUB_CFG/plugins/" > /dev/null 2>&1 ; then
 					echo "-- Done"
 				else
 					echo_s "-- Cannot create symbolic link in '$VERLIHUB_CFG/plugins/'; please check permission\n" $RED
@@ -773,7 +773,7 @@ function install()
 	cp $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
-	ln -s $LIBDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+        ln -s $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
 
 	# Check if file has been created correctly
 	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false

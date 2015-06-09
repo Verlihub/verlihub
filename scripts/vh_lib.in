@@ -25,6 +25,7 @@ PREFIX=@prefix@
 BINDIR=@bindir@
 DATADIR=@datadir@
 LIBDIR=@libdir@
+PLUGINDIR=@plugindir@
 DAEMON_NAME="vh_daemon"
 TIMESTAMP=`date +%s`
 VER="1.9"
@@ -166,7 +167,7 @@ function _is_hub_running() # path_to_dbconfig
 # Get plugin name
 function _get_plugin_name() #path_to_plugin
 {
-		local PLUGIN_PATH="$PREFIX/lib/"
+                local PLUGIN_PATH="$PLUGINDIR"
 		echo ${1#$PLUGIN_PATH}
 }
 

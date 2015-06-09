@@ -1,12 +1,12 @@
 INSERT IGNORE INTO pi_plug (nick,autoload,path,detail) VALUES
-	("isp"    ,0,"@prefix@/lib/libisp_pi.so"   ,"Hub restrictions by ISP."),
-	("lua"    ,0,"@prefix@/lib/liblua_pi.so"   ,"Support for Lua scripts."),
-	("python"   ,0,"@prefix@/lib/libpython_pi.so"  ,"Support for Python scripts."),
-	("perl"   ,0,"@prefix@/lib/libperl_pi.so"  ,"Support for Perl scripts."),
-	("msg"    ,0,"@prefix@/lib/libmessenger_pi.so","Offline messenger system."),
-	("flood"  ,0,"@prefix@/lib/libfloodprot_pi.so","Advanced flood protection."),
-	("log"    ,0,"@prefix@/lib/libiplog_pi.so","IP and nick logger with history."),
-	("forbid" ,0,"@prefix@/lib/libforbid_pi.so","Filter chat from forbidden words."),
-	("chat"   ,0,"@prefix@/lib/libchatroom_pi.so","Multiple chatrooms to separate chat topics."),
-	("replacer",0,"@prefix@/lib/libreplacer_pi.so","Replace some words by other."),
-	("stats"  ,0,"@prefix@/lib/libstats_pi.so","Hub statistics, trace diverse values in the database.")
+        ("isp"    ,0,"@plugindir@/libisp_pi.so"   ,"Hub restrictions by ISP."),
+        ("lua"    ,0,"@plugindir@/liblua_pi.so"   ,"Support for Lua scripts."),
+        ("python"   ,0,"@plugindir@/libpython_pi.so"  ,"Support for Python scripts."),
+        ("perl"   ,0,"@plugindir@/libperl_pi.so"  ,"Support for Perl scripts."),
+        ("msg"    ,0,"@plugindir@/libmessenger_pi.so","Offline messenger system."),
+        ("flood"  ,0,"@plugindir@/libfloodprot_pi.so","Advanced flood protection."),
+        ("log"    ,0,"@plugindir@/libiplog_pi.so","IP and nick logger with history."),
+        ("forbid" ,0,"@plugindir@/libforbid_pi.so","Filter chat from forbidden words."),
+        ("chat"   ,0,"@plugindir@/libchatroom_pi.so","Multiple chatrooms to separate chat topics."),
+        ("replacer",0,"@plugindir@/libreplacer_pi.so","Replace some words by other."),
+        ("stats"  ,0,"@plugindir@/libstats_pi.so","Hub statistics, trace diverse values in the database.")

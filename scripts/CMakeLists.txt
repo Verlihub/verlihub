@@ -11,7 +11,8 @@ SET(SCRIPT_FILES
 # Autotool variables that will be replaced
 SET(prefix ${CMAKE_INSTALL_PREFIX})
 SET(exec_prefix ${CMAKE_INSTALL_PREFIX})
-SET(libdir ${CMAKE_INSTALL_PREFIX}/lib)
+SET(libdir ${CMAKE_INSTALL_PREFIX}/${LIBDIR})
+SET(plugindir ${CMAKE_INSTALL_PREFIX}/${PLUGINDIR})
 SET(bindir ${CMAKE_INSTALL_PREFIX}/bin)
 SET(datadir ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
 

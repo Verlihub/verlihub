@@ -37,4 +37,4 @@ ADD_LIBRARY(libvh_python_wrapper MODULE ${PYTHON_WRAPPER_SRCS})
 SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wrapper")
 target_link_libraries(libvh_python_wrapper ${PYTHON_LIBRARIES})
 
-INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION lib)
+INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION ${PLUGINDIR})

@@ -11,7 +11,7 @@ Find_Package(Lua52) # Lua 5.2
 
 IF(LUA52_FOUND)
 	ADD_PLUGIN(LUA52_FOUND lua)
-	MACRO_LOG_FEATURE(LUA52_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.1" "Lua libray NOT found")
+        MACRO_LOG_FEATURE(LUA52_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.2" "Lua libray NOT found")
 ELSE()
 	Find_Package(Lua51) # Lua 5.1
 	#Find_Package(LuaSocket)
