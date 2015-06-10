@@ -31,6 +31,7 @@ using namespace std;
 namespace nVerliHub {
 	namespace nUtils {
 
+#ifdef HAVE_LIBGEOIP
 cGeoIP::cGeoIP(): mGICO(TryCountryDB(GEOIP_STANDARD)), mGICI(TryCityDB(GEOIP_STANDARD))
 {
 }
@@ -43,6 +44,7 @@ cGeoIP::~cGeoIP()
 	if (mGICI)
 		GeoIP_delete(mGICI);
 }
+#endif
 
 bool cGeoIP::GetCC(const string &host, string &cc)
 {
@@ -61,6 +63,7 @@ bool cGeoIP::GetCC(const string &host, string &cc)
 	bool res = false;
 	string code = "--";
 
+#ifdef HAVE_LIBGEOIP
 	if (mGICO) {
 		const char *geo_code = GeoIP_country_code_by_name(mGICO, host.c_str());
 
@@ -69,6 +72,7 @@ bool cGeoIP::GetCC(const string &host, string &cc)
 			res = true;
 		}
 	}
+#endif
 
 	cc = code;
 	return res;
@@ -91,6 +95,7 @@ bool cGeoIP::GetCN(const string &host, string &cn)
 	bool res = false;
 	string name = "--";
 
+#ifdef HAVE_LIBGEOIP
 	if (mGICO) {
 		const char *geo_name = GeoIP_country_name_by_name(mGICO, host.c_str());
 
@@ -99,6 +104,7 @@ bool cGeoIP::GetCN(const string &host, string &cn)
 			res = true;
 		}
 	}
+#endif
 
 	cn = name;
 	return res;
@@ -120,6 +126,8 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 
 	bool res = false, own = false;
 	string city = "--";
+
+#ifdef HAVE_LIBGEOIP
 	GeoIP *gi;
 
 	if (!db.empty() && FileExists(db.c_str())) {
@@ -144,6 +152,7 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 		if (own)
 			GeoIP_delete(gi);
 	}
+#endif
 
 	geo_city = city;
 	return res;
@@ -194,6 +203,8 @@ bool cGeoIP::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, 
 	}
 
 	bool res = false, own = false;
+
+#ifdef HAVE_LIBGEOIP
 	GeoIP *gi;
 
 	if (!db.empty() && FileExists(db.c_str())) {
@@ -259,10 +270,12 @@ bool cGeoIP::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, 
 		if (own)
 			GeoIP_delete(gi);
 	}
+#endif
 
 	return res;
 }
 
+#ifdef HAVE_LIBGEOIP
 GeoIP *cGeoIP::TryCountryDB(int flags)
 {
 	// todo: try more directories
@@ -331,6 +344,7 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 
 	return mGICI;
 }
+#endif
 
 bool cGeoIP::FileExists(const char *name)
 {

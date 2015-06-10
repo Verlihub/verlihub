@@ -22,8 +22,10 @@
 #ifndef NUTILSCGEOIP_H
 #define NUTILSCGEOIP_H
 #include <string>
+#ifdef HAVE_LIBGEOIP
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+#endif
 
 using std::string;
 
@@ -94,6 +96,7 @@ namespace nVerliHub {
 				*/
 				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, float &geo_lat, float &geo_lon, int &geo_met, int &geo_area, const string &host, const string &db = "");
 			private:
+				#ifdef HAVE_LIBGEOIP
 				// pointer to geoip country instance
 				GeoIP *mGICO;
 
@@ -105,6 +108,7 @@ namespace nVerliHub {
 
 				// city database initialization function
 				GeoIP *TryCityDB(int flags);
+				#endif
 
 				// helper functions
 				bool FileExists(const char *name);

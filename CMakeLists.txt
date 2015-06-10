@@ -62,6 +62,9 @@ Find_Package(GeoIP)
 
 IF(GEOIP_FOUND)
 	ADD_DEFINITIONS(-DHAVE_LIBGEOIP)
+ELSE()
+	SET(GEOIP_INCLUDE_DIR "")
+	SET(GEOIP_LIBRARIES "")
 ENDIF(GEOIP_FOUND)
 
 MACRO_LOG_FEATURE(GEOIP_FOUND "geoip" "Geolocalization support library" "http://www.maxmind.com/geoip/api/c.shtml")
