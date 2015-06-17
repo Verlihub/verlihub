@@ -11,6 +11,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(MacroLogFeature)
 INCLUDE(VerliHubMacro)
+INCLUDE(GNUInstallDirs)
 OPTION(INSTALL_CMAKE_FILES "Install the *.cmake files into the CMake root" ON)
 
 # Detect OS
