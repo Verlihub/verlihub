@@ -31,7 +31,7 @@ cmake options
     install lib to <prefix for install>/<lib prefix>
     examples:
     -DLIB_INSTALL_DIR=lib64 - install lib to <prefix for install>/lib64
--DPLUGIN_INSTALL_DIR=<plugin prefix> (Default: <lib prefix>/verlihub)
+-DPLUGIN_INSTALL_DIR=<plugin prefix> (Default: <lib prefix>)
     install plugins to <prefix for install>/<plugin prefix>
     example:
     -DPLUGIN_INSTALL_DIR=lib64/vh_plugins
