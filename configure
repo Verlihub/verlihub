@@ -42,7 +42,7 @@ Options:
 	Installation directories:
 	--prefix=PREFIX         Install files in PREFIX. Default: $DEFAULT_PREFIX
 	--libdir=LIBDIR         Install libs in PREFIX/LIBDIR. Default: $LIB_DIR
-	--plugindir=PLUGINDIR   Install plugins in PREFIX/LUGINDIR. Default PREFIX/LIBDIR/verlihub
+	--plugindir=PLUGINDIR   Install plugins in PREFIX/PLUGINDIR. Default equal to LIBDIR
 
 	Optional features:
 	--enable-debug-output   Enable debugging output.  Default to no
