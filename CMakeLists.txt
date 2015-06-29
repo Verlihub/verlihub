@@ -1,3 +1,21 @@
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+#
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+
 cmake_minimum_required(VERSION 2.6)
 PROJECT(VERLIHUB)
 SET(VERLIHUB_VERSION_MAJOR 1)
@@ -154,14 +172,14 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_DESCRIPTION "Verlihub Direct Connect Hub Server")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Verlihub Direct Connect Hub Server")
 
-SET(CPACK_PACKAGE_CONTACT "bugs@verlihub-project.org")
+SET(CPACK_PACKAGE_CONTACT "info@verlihub.net")
 SET(CPACK_PACKAGE_VENDOR "Verlihub Team")
 SET(CPACK_PACKAGE_VERSION_MAJOR "${VERLIHUB_VERSION_MAJOR}")
 SET(CPACK_PACKAGE_VERSION_MINOR "${VERLIHUB_VERSION_MINOR}")
 SET(CPACK_PACKAGE_VERSION_PATCH "${VERLIHUB_VERSION_PATCH}")
 SET(CPACK_PACKAGE_VERSION "${VERLIHUB_VERSION}")
 SET(CPACK_DEBIAN_PACKAGE_SECTION "net")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.1, mysql-client-5.1, geoip-bin, gettext, libssl, openssl, libpcre3")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.5, mysql-client-5.5, geoip-bin, gettext, libssl, openssl, libpcre3")
 
 SET(CPACK_RPM_PACKAGE_LICENSE ${CPACK_RESOURCE_FILE_LICENSE})
 SET(CPACK_RPM_PACKAGE_URL "http://verlihub.net/")

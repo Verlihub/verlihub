@@ -1,8 +1,7 @@
 #!@BASH_PATH@
 
-#
-#	Copyright (C) 2006-2012 Verlihub Team, devs at verlihub-project dot org
-#	Copyright (C) 2013-2014 RoLex, webmaster at feardc dot net
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -15,10 +14,9 @@
 #	implied warranty of merchantability or fitness for
 #	a particular purpose. See the GNU General Public
 #	License for more details.
-
+#
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
-#
 
 # Include library
 source $(dirname $0)/vh_lib

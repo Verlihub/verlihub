@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2003-2005 Daniel Muller
+	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
 	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
@@ -18,4 +18,4 @@
 	of the GNU General Public License.
 */
 
-#define __CURR_DATE_TIME__ "2015-06-23"
+#define __CURR_DATE_TIME__ "2015-06-29"

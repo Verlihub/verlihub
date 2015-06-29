@@ -1,5 +1,5 @@
 Prerequisites:
-    CMake 2.x
+    CMake 2.6
     OpenSSL
     MySQL 5.x
     zlib

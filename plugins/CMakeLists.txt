@@ -1,3 +1,21 @@
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+#
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+
 # Plugman plugin
 
 SET(ENABLE_PLUGIN TRUE)
@@ -11,7 +29,7 @@ Find_Package(Lua52) # Lua 5.2
 
 IF(LUA52_FOUND)
 	ADD_PLUGIN(LUA52_FOUND lua)
-	MACRO_LOG_FEATURE(LUA52_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.1" "Lua libray NOT found")
+	MACRO_LOG_FEATURE(LUA52_FOUND "lua" "Allows you to use scripts written in Lua (http://www.lua.org)" "http://www.lua.org" "5.2" "Lua libray NOT found")
 ELSE()
 	Find_Package(Lua51) # Lua 5.1
 	#Find_Package(LuaSocket)
@@ -24,7 +42,7 @@ ENDIF()
 SET(Python_ADDITIONAL_VERSIONS 2.4 2.5 2.6 2.7)
 Find_Package(PythonLibs)
 ADD_PLUGIN(PYTHONLIBS_FOUND python)
-MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written with Python (http://www.python.org)" "http://www.python.org" "2.4" "Python libray NOT found")
+MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written with Python (http://www.python.org)" "http://www.python.org" "2.7" "Python libray NOT found")
 
 # Perl plugin
 
