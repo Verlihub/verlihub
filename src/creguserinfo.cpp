@@ -19,6 +19,7 @@
 */
 
 using namespace std;
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -65,34 +66,36 @@ cRegUserInfo::~cRegUserInfo(){}
 
 bool cRegUserInfo::PWVerify(const string &pass)
 {
-	string crypted_p;
-	unsigned char buf[MD5_DIGEST_LENGTH + 1];
-	bool Result = false;
-	string res; // used for hexadecimal conversion
-	char hex[32];
+	if (!mPasswd.size() || !pass.size()) // check both password lengths
+		return false;
+
+	string crypt_buf;
+	unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
+	char md5_hex[33];
+	bool result = false;
 
 	switch (mPWCrypt) {
 		case eCRYPT_ENCRYPT:
-			crypted_p = crypt(pass.c_str(), mPasswd.c_str());
-			Result = crypted_p == mPasswd;
+			crypt_buf = crypt(pass.c_str(), mPasswd.c_str());
+			result = crypt_buf == mPasswd;
 			break;
 		case eCRYPT_MD5:
-			MD5((const unsigned char*)pass.data(), pass.length(), buf);
-			buf[MD5_DIGEST_LENGTH] = 0;
+			MD5((const unsigned char*)pass.c_str(), pass.size(), md5_buf);
+			md5_buf[MD5_DIGEST_LENGTH] = 0;
 
-			for (int i = 0; i < 16; i++) { // convert to hexadecimal
-				sprintf(hex, "%02x", buf[i]);
-				res.append(hex);
+			for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
+				sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
 			}
 
-			Result = mPasswd == res; // string((const char*)buf)
+			md5_hex[32] = 0;
+			result = mPasswd == string(md5_hex);
 			break;
 		case eCRYPT_NONE:
-			Result = pass == mPasswd;
+			result = pass == mPasswd;
 			break;
 	}
 
-	return Result;
+	return result;
 }
 
 istream & operator >> (istream &is, cRegUserInfo &ui)
@@ -146,16 +149,15 @@ string & cRegUserInfo::GetNick(){
  */
 void cRegUserInfo::SetPass(string str, int crypt_method)
 {
-	string salt;
 	mPwdChange = !str.size();
 
 	if (str.size()) {
+		string salt;
 		static const char *saltchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./";
 		static const int saltcharsnum = strlen(saltchars);
 		unsigned char charsalt[2] = {((char*)&str)[0], ((char*)&str)[1]};
-		unsigned char buf[MD5_DIGEST_LENGTH + 1];
-		string res; // used for hexadecimal conversion
-		char hex[32];
+		unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
+		char md5_hex[33];
 
 		switch (crypt_method) {
 			case eCRYPT_ENCRYPT:
@@ -166,15 +168,15 @@ void cRegUserInfo::SetPass(string str, int crypt_method)
 				mPWCrypt = eCRYPT_ENCRYPT;
 				break;
 			case eCRYPT_MD5:
-				MD5((const unsigned char*)str.c_str(), str.size(), buf);
-				buf[MD5_DIGEST_LENGTH] = 0;
+				MD5((const unsigned char*)str.c_str(), str.size(), md5_buf);
+				md5_buf[MD5_DIGEST_LENGTH] = 0;
 
-				for (int i = 0; i < 16; i++) { // convert to hexadecimal
-					sprintf(hex, "%02x", buf[i]);
-					res.append(hex);
+				for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
+					sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
 				}
 
-				mPasswd = res; // string((char*)buf)
+				md5_hex[32] = 0;
+				mPasswd = string(md5_hex);
 				mPWCrypt = eCRYPT_MD5;
 				break;
 			case eCRYPT_NONE:
