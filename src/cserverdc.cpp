@@ -2149,7 +2149,7 @@ void cServerDC::DoStackTrace()
 	free(funcname);
 	free(symbollist);
 	cerr << "Stack backtrace:" << endl << endl << bt.str() << endl;
-	cAsyncConn *http = new cAsyncConn("www.te-home.net", 80); // try to send via http
+	cAsyncConn *http = new cAsyncConn("crash.verlihub.net", 80); // try to send via http
 
 	if (!http || !http->ok) {
 		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
@@ -2171,7 +2171,7 @@ void cServerDC::DoStackTrace()
 	hub_info << "Users: " << mUserCountTot << endl;
 	hub_info << "Stack backtrace:" << endl << endl;
 	http_req << "POST /vhcs.php HTTP/1.1\n";
-	http_req << "Host: www.te-home.net\n";
+	http_req << "Host: crash.verlihub.net\n";
 	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
 	http_req << "Content-Type: text/plain\n";
 	http_req << "Content-Length: " << (hub_info.str().size() + bt.str().size()) << "\n\n"; // end of headers
