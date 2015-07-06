@@ -10,6 +10,7 @@ function printhelp
 	echo -e "\t--include\t\tPrint include directories"
 	echo -e "\t--prefix\t\tPrint the installation prefix"
 	echo -e "\t--datadir\t\tPrint the data directory of Verlihub"
+	echo -e "\t--plugins\t\tPrint the plugins directory of Verlihub"
 	echo -e "\t--version\t\tPrint Verlihub version"
 	echo -e "\t--help\t\t\tPrint this help"
 }
@@ -22,7 +23,8 @@ fi;
 case "x$1" in
 "x--cflags") echo @VERLIHUB_INCLUDE_DIRS@ -I$prefix/include/verlihub ;;
 "x--include") echo @VERLIHUB_INCLUDE_DIRS@ -I$prefix/include/verlihub ;;
-"x--libs") echo @VERLIHUB_SCRIPTS_LIBS@ -L$prefix/lib ;;
+"x--libs") echo @VERLIHUB_SCRIPTS_LIBS@ -L$prefix/@LIBDIR@ ;;
+"x--plugins") echo @PLUGINDIR@ ;;
 "x--prefix") echo $prefix ;;
 "x--datadir") echo @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@ ;;
 "x--version") 

@@ -9,7 +9,7 @@ Optional dependencies:
     GeoIP
     Lua 5.x
     Python 2.x
-	dialog (for vh_gui script only)
+    dialog (for vh_gui script only)
 
 To install Verlihub, run the following commands:
 
@@ -21,3 +21,17 @@ make
 make install (as super user)
 ldconfig (as super user, this is required only when you get: cannot open shared object file, no such file or directory)
 updatedb (as super user, people say this command is needed to update slocate locations)
+
+--------------
+cmake options
+--------------
+-DCMAKE_INSTALL_PREFIX=/usr (Default: /usr/local)
+    install prefix
+-DLIB_INSTALL_DIR=<lib prefix> (default: lib)
+    install lib to <prefix for install>/<lib prefix>
+    examples:
+    -DLIB_INSTALL_DIR=lib64 - install lib to <prefix for install>/lib64
+-DPLUGIN_INSTALL_DIR=<plugin prefix> (Default: <lib prefix>)
+    install plugins to <prefix for install>/<plugin prefix>
+    example:
+    -DPLUGIN_INSTALL_DIR=lib64/vh_plugins
