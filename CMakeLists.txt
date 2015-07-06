@@ -16,7 +16,7 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 PROJECT(VERLIHUB)
 SET(VERLIHUB_VERSION_MAJOR 1)
 SET(VERLIHUB_VERSION_MINOR 0)
