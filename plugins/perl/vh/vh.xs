@@ -225,6 +225,8 @@ bool
 SetTopic(topic)
 	char * topic
 
+#ifdef HAVE_LIBGEOIP
+
 char *
 GetIPCC(ip)
 	char * ip
@@ -232,6 +234,8 @@ GetIPCC(ip)
 char *
 GetIPCN(ip)
 	char * ip
+
+#endif
 
 bool
 InUserSupports(nick, flag)
