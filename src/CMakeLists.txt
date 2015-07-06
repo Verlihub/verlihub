@@ -209,7 +209,7 @@ CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" ${CMAKE_BINARY_DIR
 #TODO: Add -rdynamic for backtracking
 INSTALL(TARGETS vhapi libverlihub verlihub
 	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
+        LIBRARY DESTINATION ${LIBDIR}
 )
 
 INSTALL(

@@ -22,6 +22,7 @@
 #
 #  VERLIHUB_INCLUDE_DIRS   - where to find cserverdc.h, etc.
 #  VERLIHUB_LIBRARIES      - List of libraries when using Verlihub.
+#  VERLIHUB_PLUGIN_DIR     - Where plugins must be stored
 #  VERLIHUB_FOUND          - True if Verlihub found.
 #
 #  VERLIHUB_VERSION_STRING - The version of Verlihub found (x.y.z)
@@ -71,6 +72,9 @@ if(VERLIHUB_CONFIG)
 	SET(VERLIHUB_VERSION_TWEAK ${CMAKE_MATCH_5})
 	SET(VERLIHUB_VERSION_STRING ${MY_TMP})
 	MESSAGE(STATUS "Verlihub version: ${VERLIHUB_VERSION_STRING}")
+
+	# Get plugins directory
+	exec_program(${VERLIHUB_CONFIG} ARGS --plugins OUTPUT_VARIABLE VERLIHUB_PLUGIN_DIR)
 
 else(VERLIHUB_CONFIG)
 	IF(VerliHub_FIND_REQUIRED)

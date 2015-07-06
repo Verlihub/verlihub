@@ -452,7 +452,7 @@ install() {
 	cp $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
-	ln -s $LIBDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+        ln -s $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
 
 	# Check if file has been created correctly
 	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false

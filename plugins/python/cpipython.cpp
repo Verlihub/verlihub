@@ -92,7 +92,7 @@ void cpiPython::OnLoad(cServerDC *server)
 
 	log4("PY: cpiPython::OnLoad   dlopen...\n");
 	//if (wrapper_path) lib_handle = dlopen( (string(wrapper_path) + "/libvh_python_wrapper.so").c_str(), RTLD_LAZY | RTLD_GLOBAL);
-	if (!lib_handle)  lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/lib/libvh_python_wrapper.so", RTLD_LAZY | RTLD_GLOBAL);
+    if (!lib_handle)  lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so", RTLD_LAZY | RTLD_GLOBAL);
 	// RTLD_GLOBAL exports all symbols from libvh_python_wrapper.so
 	// without RTLD_GLOBAL the lib will fail to import other python modules
 	// because they won't see any symbols from the linked libpython2.5

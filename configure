@@ -20,6 +20,8 @@ DEFAULT_PREFIX="/usr/local"
 PREFIX=$DEFAULT_PREFIX
 BUILD_TYPE="release"
 BUILD_DIR="build"
+LIB_DIR="lib"
+PLUGIN_DIR=""
 DEBUG=0
 cd `dirname $0`
 SRC_DIR="$PWD"
@@ -39,6 +41,8 @@ Options:
 
 	Installation directories:
 	--prefix=PREFIX         Install files in PREFIX. Default: $DEFAULT_PREFIX
+	--libdir=LIBDIR         Install libs in PREFIX/LIBDIR. Default: $LIB_DIR
+	--plugindir=PLUGINDIR   Install plugins in PREFIX/PLUGINDIR. Default equal to LIBDIR
 
 	Optional features:
 	--enable-debug-output   Enable debugging output.  Default to no
@@ -73,6 +77,8 @@ function run_cmake
 	REAL_BUILD_DIR=`pwd`
 	# finally start cmake
 	cmake -D CMAKE_INSTALL_PREFIX=$PREFIX \
+        -D LIB_INSTALL_DIR=$LIB_DIR \
+        -D PLUGIN_INSTALL_DIR=$PLUGIN_DIR \
         -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
         -D VERBOSE=$DEBUG \
         "$SRC_DIR" \
@@ -151,6 +157,8 @@ fi
     case "$1" in
     -h|--help)              print_help;      exit 0  ;;
     --prefix)               PREFIX=$2;       shift 2 ;;
+    --libdir)               LIB_DIR=$2       shift 2 ;;
+    --plugindir)            PLUGIN_DIR=$2    shift 2 ;;
     --enable-debug-output)  DEBUG=1;         shift   ;;
     --build-type)           BUILD_TYPE="$2"; shift 2 ;;
     --build-dir)            BUILD_DIR="$2";  shift 2 ;;
