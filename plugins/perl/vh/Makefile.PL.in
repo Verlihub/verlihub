@@ -35,7 +35,7 @@ WriteMakefile(
     'INC'		=> '-I. -I@VERLIHUB_SOURCE_DIR@ @VERLIHUB_INCLUDE_DIRS@',
     'OBJECT'		=> '$(O_FILES) -L@VERLIHUB_BINARY_DIR@/src -lvhapi @VERLIHUB_SCRIPTS_LIBS@ '.&ldopts,
     'CC'                => '@CMAKE_CXX_COMPILER@ -xc++',
-    'LD'                => '@CMAKE_LINKER@'
+    'LD'                => '@CMAKE_CXX_COMPILER@'
 );
 exit;
 if  (eval {require ExtUtils::Constant; 1}) {
