@@ -48,11 +48,13 @@ MACRO_LOG_FEATURE(PYTHONLIBS_FOUND "python" "Allows you to use scripts written w
 
 Find_Package(PerlLibs)
 # Workaround for Debian: libperl-dev required
-Find_Library(PERLLIBS_SO perl)
-IF(PERLLIBS_FOUND AND PERLLIBS_SO)
-	SET(PERLLIBS_FOUND TRUE)
-ELSE()
-	SET(PERLLIBS_FOUND FALSE)
+IF(EXISTS "/etc/debian_version")
+	Find_Library(PERLLIBS_SO perl)
+	IF(PERLLIBS_FOUND AND PERLLIBS_SO)
+		SET(PERLLIBS_FOUND TRUE)
+	ELSE()
+		SET(PERLLIBS_FOUND FALSE)
+	ENDIF()
 ENDIF()
 ADD_PLUGIN(PERLLIBS_FOUND perl)
 MACRO_LOG_FEATURE(PERLLIBS_FOUND "perl" "Allows you to use scripts written with Perl" "http://www.perl.org" "5.8" "Perl library NOT found")
