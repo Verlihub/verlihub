@@ -24,6 +24,7 @@
 #define PERL_CALL "vh::VH__Call__Function"
 
 
+#include <stdio.h>
 namespace nPerl
 {
 #include <EXTERN.h>               /* from the Perl distribution     */
