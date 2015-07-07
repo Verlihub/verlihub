@@ -30,9 +30,9 @@ namespace nVerliHub {
 cSetupList::cSetupList(cMySQL &mysql):cConfMySQL(mysql)
 {
 	mMySQLTable.mName = "SetupList";
-	AddCol("file", "varchar(15)", "", false, mModel.mFile);
+	AddCol("file", "varchar(30)", "", false, mModel.mFile);
 	AddPrimaryKey("file");
-	AddCol("var", "varchar(32)", "", false, mModel.mVarName);
+	AddCol("var", "varchar(50)", "", false, mModel.mVarName);
 	AddPrimaryKey("var");
 	AddCol("val", "text", "", true, mModel.mVarValue);
 	mMySQLTable.mExtra = "PRIMARY KEY (file, var)";

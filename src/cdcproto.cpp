@@ -1249,6 +1249,12 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string &text = msg->ChunkString(eCH_PM_MSG);
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+			return 0;
+	#endif
+
 	cUser::tFloodHashType Hash = 0;
 	Hash = tHashArray<void*>::HashString(text);
 
@@ -1266,11 +1272,6 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	}
 
 	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
-			return 0;
-	#endif
 
 	if (other->mxConn) // send it
 		other->mxConn->Send(msg->mStr);
