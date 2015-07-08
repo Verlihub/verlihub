@@ -56,7 +56,7 @@ class cObj
 		ostream & LogStream();
 		/** error log stream */
 		virtual ostream & ErrLog();
-        /** return the stream where logging  goes to */
+		/** return the stream where logging  goes to */
 		virtual ostream & Log();
 #ifdef ENABLE_SYSLOG
 	protected:
