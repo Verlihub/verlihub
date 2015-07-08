@@ -139,6 +139,24 @@ int main(int argc, char *argv[])
 			ConfigBase = "/etc/verlihub";
 	#endif
 
+	int port = 0;
+
+	vector<string> args(argv+1, argv+argc);
+	for (int i = 0; i < args.size(); i++)
+	{
+	#ifdef ENABLE_SYSLOG
+		if (args[i] == "-S" || args[i] == "--syslog")
+		{
+			cObj::msUseSyslog = 1;
+		}
+		else
+	#endif
+		{
+			stringstream arg(args[i]);
+			arg >> port;
+		}
+	}
+
 	cout << "Configuration directory: " << ConfigBase << endl;
 	cServerDC server(ConfigBase, argv[0]); // create server
 
@@ -152,13 +170,6 @@ int main(int argc, char *argv[])
 		cout << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
 		res = textdomain("verlihub");
 		cout << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
-	}
-
-	int port = 0;
-
-	if (argc > 1) {
-		stringstream arg(argv[1]);
-		arg >> port;
 	}
 
 	#ifndef _WIN32

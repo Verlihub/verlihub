@@ -56,14 +56,23 @@ class cObj
 		ostream & LogStream();
 		/** error log stream */
 		virtual ostream & ErrLog();
-		/** return the streal where logging  goes to */
+        /** return the stream where logging  goes to */
 		virtual ostream & Log();
+#ifdef ENABLE_SYSLOG
+	protected:
+		/** returns stream to for loggin to syslog */
+		virtual ostream & SysLog(int, bool is_error);
+#endif
 
 	public:
 		/** the Ascii representaition of class name */
 		const char * mClassName;
 		/** all events higher than this are discarded */
 		static int msLogLevel;
+#ifdef ENABLE_SYSLOG
+        /** send log messages to syslog */
+        static bool msUseSyslog;
+#endif
 		/** a string stream variable to log */
 		ostream *mToLog;
 		static const string mEmpty;
@@ -73,5 +82,5 @@ class cObj
 		/** object counter */
 		static int msCounterObj;
 };
-}; // namespace nVerliHub
+} // namespace nVerliHub
 #endif
