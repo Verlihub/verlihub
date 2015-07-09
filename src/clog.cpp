@@ -43,7 +43,7 @@ int cSyslogStreamBuf::sync()
 	return 0;
 }
 
-void cSyslogStreamBuf::set_level(int new_level, bool is_error)
+void cSyslogStreamBuf::SetLevel(int new_level, bool is_error)
 {
 	int _lvl = level;
 	if (is_error)

@@ -47,7 +47,7 @@ protected:
 	int sync();
 
 	friend class cSyslogStream;
-	void set_level(int new_level, bool is_error);
+	void SetLevel(int new_level, bool is_error);
 
 private:
 	int level = LOG_INFO;
@@ -63,7 +63,7 @@ public:
 		streambuf(name, is_daemon)
 	{ }
 
-	void set_level(int level, bool is_error) { streambuf.set_level(level, is_error); }
+	void SetLevel(int level, bool is_error) { streambuf.SetLevel(level, is_error); }
 
 private:
 	cSyslogStreamBuf streambuf;
