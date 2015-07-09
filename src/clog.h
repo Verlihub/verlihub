@@ -47,10 +47,10 @@ protected:
 	int sync();
 
 	friend class cSyslogStream;
-	void SetLevel(int new_level, bool is_error);
+	void SetLevel(int level, bool is_error);
 
 private:
-	int level = LOG_INFO;
+	int mLevel = LOG_INFO;
 
 	std::string buffer;
 };

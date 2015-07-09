@@ -132,7 +132,7 @@ ostream & cObj::LogStream()
 /** syslog log stream */
 ostream & cObj::SysLog(int level, bool is_error)
 {
-	static nLog::cSyslogStream sysLog(msSyslogIdent.data(), 1);
+	static nLog::cSyslogStream sysLog(msSyslogIdent, 1);
 	sysLog.SetLevel(level, is_error);
 	return sysLog;
 }

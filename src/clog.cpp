@@ -36,23 +36,23 @@ int cSyslogStreamBuf::sync()
 {
 	if(buffer.size())
 	{
-		syslog(level, "%s", buffer.data());
+		syslog(mLevel, "%s", buffer.data());
 
 		buffer.clear();
 	}
 	return 0;
 }
 
-void cSyslogStreamBuf::SetLevel(int new_level, bool is_error)
+void cSyslogStreamBuf::SetLevel(int level, bool is_error)
 {
-	int _lvl = level;
+	int _lvl = mLevel;
 	if (is_error)
 	{
-		_lvl = new_level < 2 ? LOG_ERR : LOG_WARNING;
+		_lvl = level < 2 ? LOG_ERR : LOG_WARNING;
 	}
 	else
 	{
-		switch (new_level) {
+		switch (level) {
 		case 0:
 			_lvl = LOG_INFO;
 			break;
@@ -64,9 +64,9 @@ void cSyslogStreamBuf::SetLevel(int new_level, bool is_error)
 			break;
 		}
 	}
-	if (_lvl != level)
+	if (_lvl != mLevel)
 		sync();
-	level = _lvl;
+	mLevel = _lvl;
 }
 
 	}
