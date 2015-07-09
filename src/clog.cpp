@@ -21,8 +21,9 @@
 #include "clog.h"
 
 namespace nVerliHub {
+	namespace nLog {
 
-syslog_streambuf::int_type syslog_streambuf::overflow(int_type c)
+cSyslogStreamBuf::int_type cSyslogStreamBuf::overflow(int_type c)
 {
 	if(traits_type::eq_int_type(c, traits_type::eof()))
 		sync();
@@ -31,7 +32,7 @@ syslog_streambuf::int_type syslog_streambuf::overflow(int_type c)
 	return c;
 }
 
-int syslog_streambuf::sync()
+int cSyslogStreamBuf::sync()
 {
 	if(buffer.size())
 	{
@@ -42,7 +43,7 @@ int syslog_streambuf::sync()
 	return 0;
 }
 
-void syslog_streambuf::set_level(int new_level, bool is_error)
+void cSyslogStreamBuf::set_level(int new_level, bool is_error)
 {
 	int _lvl = level;
 	if (is_error)
@@ -68,6 +69,7 @@ void syslog_streambuf::set_level(int new_level, bool is_error)
 	level = _lvl;
 }
 
+	}
 }
 
 #endif

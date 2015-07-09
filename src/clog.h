@@ -28,24 +28,25 @@
 #include <syslog.h>
 
 namespace nVerliHub {
+	namespace nLog {
 
-class syslog_stream;
+class cSyslogStream;
 
-class syslog_streambuf: public std::streambuf
+class cSyslogStreamBuf: public std::streambuf
 {
 public:
-	explicit syslog_streambuf(const std::string& name, bool is_daemon):
+	explicit cSyslogStreamBuf(const std::string& name, bool is_daemon):
 		std::basic_streambuf<char>()
 	{
 		openlog(name.size() ? name.data() : NULL, LOG_PID, is_daemon ? LOG_DAEMON : LOG_USER);
 	}
-	~syslog_streambuf() { closelog(); }
+	~cSyslogStreamBuf() { closelog(); }
 
 protected:
 	int_type overflow(int_type c = traits_type::eof());
 	int sync();
 
-	friend class syslog_stream;
+	friend class cSyslogStream;
 	void set_level(int new_level, bool is_error);
 
 private:
@@ -54,10 +55,10 @@ private:
 	std::string buffer;
 };
 
-class syslog_stream: public std::ostream
+class cSyslogStream: public std::ostream
 {
 public:
-	explicit syslog_stream(const std::string& name = std::string(), bool is_daemon = 1):
+	explicit cSyslogStream(const std::string& name = std::string(), bool is_daemon = 1):
 		std::ostream(&streambuf),
 		streambuf(name, is_daemon)
 	{ }
@@ -65,9 +66,10 @@ public:
 	void set_level(int level, bool is_error) { streambuf.set_level(level, is_error); }
 
 private:
-	syslog_streambuf streambuf;
+	cSyslogStreamBuf streambuf;
 };
 
+	}
 }
 
 #endif // ENABLE_SYSLOG

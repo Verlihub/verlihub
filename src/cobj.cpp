@@ -35,6 +35,7 @@ namespace nVerliHub {
 	int cObj::msLogLevel = 4;
 #ifdef ENABLE_SYSLOG
 	bool cObj::msUseSyslog = 0;
+	string cObj::msSyslogIdent = "verlihub";
 #endif
 	int cObj::msCounterObj = 0;
 	const string cObj::mEmpty;
@@ -131,7 +132,7 @@ ostream & cObj::LogStream()
 /** syslog log stream */
 ostream & cObj::SysLog(int level, bool is_error)
 {
-	static syslog_stream sysLog("verlihub", 1);
+	static nLog::cSyslogStream sysLog(msSyslogIdent.data(), 1);
 	sysLog.set_level(level, is_error);
 	return sysLog;
 }

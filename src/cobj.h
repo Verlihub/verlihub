@@ -70,8 +70,10 @@ class cObj
 		/** all events higher than this are discarded */
 		static int msLogLevel;
 #ifdef ENABLE_SYSLOG
-        /** send log messages to syslog */
-        static bool msUseSyslog;
+		/** send log messages to syslog */
+		static bool msUseSyslog;
+		/** syslog identifier */
+		static string msSyslogIdent;
 #endif
 		/** a string stream variable to log */
 		ostream *mToLog;
