@@ -27,6 +27,7 @@
 
 #include <syslog.h>
 
+namespace nVerliHub {
 
 class syslog_stream;
 
@@ -66,6 +67,8 @@ public:
 private:
 	syslog_streambuf streambuf;
 };
+
+}
 
 #endif // ENABLE_SYSLOG
 #endif // CLOG_H

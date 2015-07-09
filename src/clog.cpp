@@ -20,6 +20,7 @@
 #ifdef ENABLE_SYSLOG
 #include "clog.h"
 
+namespace nVerliHub {
 
 syslog_streambuf::int_type syslog_streambuf::overflow(int_type c)
 {
@@ -65,6 +66,8 @@ void syslog_streambuf::set_level(int new_level, bool is_error)
 	if (_lvl != level)
 		sync();
 	level = _lvl;
+}
+
 }
 
 #endif
