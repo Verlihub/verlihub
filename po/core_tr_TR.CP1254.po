@@ -5,16 +5,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2015-06-03 15:17+0100\n"
-"PO-Revision-Date: 2015-01-15 23:01+0000\n"
+"POT-Creation-Date: 2015-07-11 22:29+0200\n"
+"PO-Revision-Date: 2015-06-29 18:59+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
-"Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/verlihub-100/language/tr_TR/)\n"
+"Language-Team: Turkish (Turkey) (http://www.transifex.com/p/verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1254\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.8.1\n"
+"X-Generator: Poedit 1.8.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../src\n"
@@ -24,17 +24,17 @@ msgstr ""
 msgid "Unknown ban"
 msgstr "Bilinmeyen yasak"
 
-#: ../src/cban.cpp:87 ../src/cuser.cpp:233
+#: ../src/cban.cpp:87 ../src/cuser.cpp:232
 msgid "Nickname"
 msgstr "Rumuz"
 
-#: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:300
-#: ../src/cdcconsole.cpp:366 ../src/cdcconsole.cpp:528
-#: ../src/cdcconsole.cpp:1135 ../src/cuser.cpp:240
+#: ../src/cban.cpp:88 ../src/cban.cpp:127 ../src/cdcconsole.cpp:299
+#: ../src/cdcconsole.cpp:365 ../src/cdcconsole.cpp:527
+#: ../src/cdcconsole.cpp:1131 ../src/cuser.cpp:239
 msgid "IP"
 msgstr "ÝP"
 
-#: ../src/cban.cpp:89 ../src/cdcconsole.cpp:1143
+#: ../src/cban.cpp:89 ../src/cdcconsole.cpp:1139
 msgid "Reason"
 msgstr "Sebep"
 
@@ -42,7 +42,7 @@ msgstr "Sebep"
 msgid "Extra message"
 msgstr "Ekstra mesaj"
 
-#: ../src/cban.cpp:92 ../src/cbanlist.cpp:427
+#: ../src/cban.cpp:92 ../src/cbanlist.cpp:426
 msgid "Time"
 msgstr "Zaman"
 
@@ -67,7 +67,7 @@ msgstr "Paylaþým"
 msgid "Removed: %s by %s because %s"
 msgstr "Kaldýrýldý: %s, %s tarafýndan çünkü %s"
 
-#: ../src/cban.cpp:121 ../src/cbanlist.cpp:427
+#: ../src/cban.cpp:121 ../src/cbanlist.cpp:426
 msgid "OP"
 msgstr "OP"
 
@@ -116,48 +116,48 @@ msgstr "Süresi birmiþ %s"
 msgid "Permanent"
 msgstr "Daimi"
 
-#: ../src/cbanlist.cpp:427
+#: ../src/cbanlist.cpp:426
 msgid "Entry"
 msgstr "Girdi"
 
-#: ../src/cbanlist.cpp:427
+#: ../src/cbanlist.cpp:426
 msgid "Ban on"
 msgstr "Yasaklama"
 
-#: ../src/cchatconsole.cpp:141 ../src/cchatconsole.cpp:198
+#: ../src/cchatconsole.cpp:140 ../src/cchatconsole.cpp:197
 #, c-format
 msgid "User not online: %s"
 msgstr "Kullanýcý çevrimiçinde deðil: %s"
 
-#: ../src/cchatconsole.cpp:146
+#: ../src/cchatconsole.cpp:145
 #, c-format
 msgid "User not in chatroom: %s"
 msgstr "Kullanýcý salonda deðil: %s"
 
-#: ../src/cchatconsole.cpp:151
+#: ../src/cchatconsole.cpp:150
 #, c-format
 msgid "You have no rights to remove user from chatroom: %s"
 msgstr "Kullanýcýyý salondan kaldýrma yetkiniz yoktur: %s"
 
-#: ../src/cchatconsole.cpp:164
+#: ../src/cchatconsole.cpp:163
 #, c-format
 msgid "User removed from chatroom: %s"
 msgstr "Kullanýcý salondan kaldýrýldý: %s"
 
-#: ../src/cchatconsole.cpp:174
+#: ../src/cchatconsole.cpp:173
 msgid "You are removed from chatroom."
 msgstr "Salondan kaldýrýldýnýz."
 
-#: ../src/cchatconsole.cpp:184
+#: ../src/cchatconsole.cpp:183
 msgid "Chatroom members"
 msgstr "Salon mensuplarý"
 
-#: ../src/cchatconsole.cpp:203
+#: ../src/cchatconsole.cpp:202
 #, c-format
 msgid "User is already in chatroom: %s"
 msgstr "Zaten sohbet salonunda bulunan kullanýcýlar: %s"
 
-#: ../src/cchatconsole.cpp:216
+#: ../src/cchatconsole.cpp:215
 #, c-format
 msgid "User added to chatroom: %s"
 msgstr "Kullanýcý salonda eklendi: %s"
@@ -179,55 +179,55 @@ msgstr "Parametreler düzenli ifade"
 msgid "Command parameters error"
 msgstr "Komut parametreleri hatasý"
 
-#: ../src/cconndc.cpp:150
+#: ../src/cconndc.cpp:149
 msgid "Key"
 msgstr "Anahtar"
 
-#: ../src/cconndc.cpp:150
+#: ../src/cconndc.cpp:149
 msgid "ValidateNick"
 msgstr "ValidateNick"
 
-#: ../src/cconndc.cpp:150
+#: ../src/cconndc.cpp:149
 msgid "Login"
 msgstr "Giriþ"
 
-#: ../src/cconndc.cpp:150
+#: ../src/cconndc.cpp:149
 msgid "MyINFO"
 msgstr "MyINFO"
 
-#: ../src/cconndc.cpp:150
+#: ../src/cconndc.cpp:149
 msgid "Password"
 msgstr "Parola"
 
-#: ../src/cconndc.cpp:162
+#: ../src/cconndc.cpp:161
 #, c-format
 msgid "Operation timeout: %s"
 msgstr "Ýþlemde zaman aþýmý: %s"
 
-#: ../src/cconndc.cpp:170
+#: ../src/cconndc.cpp:169
 msgid "General timeout"
 msgstr "Genel zaman aþýmý"
 
-#: ../src/cconndc.cpp:399
+#: ../src/cconndc.cpp:398
 msgid "Protocol flood detected"
 msgstr "Protokol tekrarý (flood) tespit edildi"
 
-#: ../src/cconndc.cpp:403 ../src/cdcproto.cpp:2475 ../src/cserverdc.cpp:1803
-#: ../src/cserverdc.cpp:1835 ../src/cserverdc.cpp:1862
+#: ../src/cconndc.cpp:402 ../src/cdcproto.cpp:2475 ../src/cserverdc.cpp:1802
+#: ../src/cserverdc.cpp:1834 ../src/cserverdc.cpp:1861
 msgid "Chat"
 msgstr "Sohbet"
 
-#: ../src/cconndc.cpp:436 ../src/cdcproto.cpp:1073 ../src/cdcproto.cpp:2421
-#: ../src/cdcproto.cpp:2514 ../src/cdctag.cpp:204 ../src/ctrigger.cpp:178
+#: ../src/cconndc.cpp:435 ../src/cdcproto.cpp:1072 ../src/cdcproto.cpp:2421
+#: ../src/cdcproto.cpp:2514 ../src/cdctag.cpp:203 ../src/ctrigger.cpp:177
 msgid "Unknown"
 msgstr "Bilinmeyen"
 
-#: ../src/cconndc.cpp:474
+#: ../src/cconndc.cpp:473
 msgid "Protocol flood"
 msgstr "Protokol tekrarý (flood)"
 
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:349
-#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:432
+#: ../src/cpluginmanager.cpp:168 ../src/ctriggers.cpp:431
 msgid "Name"
 msgstr "Ýsim"
 
@@ -251,65 +251,65 @@ msgstr "Asgari gönderim/oluk"
 msgid "Description"
 msgstr "Açýklama"
 
-#: ../src/ccustomredirect.cpp:87 ../src/cdcclient.cpp:54
+#: ../src/ccustomredirect.cpp:86 ../src/cdcclient.cpp:53
 msgid "Enabled"
 msgstr "Etkin"
 
-#: ../src/ccustomredirect.cpp:89 ../src/cdcclient.cpp:54
+#: ../src/ccustomredirect.cpp:88 ../src/cdcclient.cpp:53
 msgid "Disabled"
 msgstr "Devre dýþý"
 
-#: ../src/ccustomredirects.cpp:252
+#: ../src/ccustomredirects.cpp:251
 msgid "Count"
 msgstr "Sayý"
 
-#: ../src/ccustomredirects.cpp:253 ../src/cdcconsole.cpp:693
+#: ../src/ccustomredirects.cpp:252 ../src/cdcconsole.cpp:689
 msgid "Address"
 msgstr "Adres"
 
-#: ../src/ccustomredirects.cpp:254
+#: ../src/ccustomredirects.cpp:253
 msgid "Type"
 msgstr "Tip"
 
-#: ../src/ccustomredirects.cpp:255 ../src/cdcclients.cpp:353
+#: ../src/ccustomredirects.cpp:254 ../src/cdcclients.cpp:353
 msgid "Status"
 msgstr "Durum"
 
-#: ../src/cdcclient.cpp:46
+#: ../src/cdcclient.cpp:45
 msgid "Any"
 msgstr "Herhangi biri"
 
-#: ../src/cdcclient.cpp:48
+#: ../src/cdcclient.cpp:47
 #, c-format
 msgid "Minimum: %.2f"
 msgstr "Asgari: %.2f"
 
-#: ../src/cdcclient.cpp:50
+#: ../src/cdcclient.cpp:49
 #, c-format
 msgid "Maximum: %.2f"
 msgstr "Azami: %.2f"
 
-#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:129
-#: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
+#: ../src/cdcclient.cpp:52 ../src/creguserinfo.cpp:131
 #: ../src/creguserinfo.cpp:132 ../src/creguserinfo.cpp:133
 #: ../src/creguserinfo.cpp:134 ../src/creguserinfo.cpp:135
-#: ../src/cuser.cpp:238 ../src/cuser.cpp:260 ../src/cuser.cpp:268
-#: ../src/cuser.cpp:272 ../src/cuser.cpp:280 ../src/cuser.cpp:290
-#: ../src/cuser.cpp:294 ../src/cuser.cpp:302 ../src/cuser.cpp:306
-#: ../src/cuser.cpp:314 ../src/cuser.cpp:324 ../src/cuser.cpp:334
-#: ../src/cuser.cpp:344 ../src/cuser.cpp:354 ../src/cuser.cpp:364
-#: ../src/cuser.cpp:374
+#: ../src/creguserinfo.cpp:136 ../src/creguserinfo.cpp:137
+#: ../src/cuser.cpp:237 ../src/cuser.cpp:259 ../src/cuser.cpp:267
+#: ../src/cuser.cpp:271 ../src/cuser.cpp:279 ../src/cuser.cpp:289
+#: ../src/cuser.cpp:293 ../src/cuser.cpp:301 ../src/cuser.cpp:305
+#: ../src/cuser.cpp:313 ../src/cuser.cpp:323 ../src/cuser.cpp:333
+#: ../src/cuser.cpp:343 ../src/cuser.cpp:353 ../src/cuser.cpp:363
+#: ../src/cuser.cpp:373
 msgid "Yes"
 msgstr "Evet"
 
-#: ../src/cdcclient.cpp:53 ../src/creguserinfo.cpp:129
-#: ../src/creguserinfo.cpp:130 ../src/creguserinfo.cpp:131
+#: ../src/cdcclient.cpp:52 ../src/creguserinfo.cpp:131
 #: ../src/creguserinfo.cpp:132 ../src/creguserinfo.cpp:133
 #: ../src/creguserinfo.cpp:134 ../src/creguserinfo.cpp:135
-#: ../src/cuser.cpp:262 ../src/cuser.cpp:274 ../src/cuser.cpp:284
-#: ../src/cuser.cpp:296 ../src/cuser.cpp:308 ../src/cuser.cpp:318
-#: ../src/cuser.cpp:328 ../src/cuser.cpp:338 ../src/cuser.cpp:348
-#: ../src/cuser.cpp:358 ../src/cuser.cpp:368
+#: ../src/creguserinfo.cpp:136 ../src/creguserinfo.cpp:137
+#: ../src/cuser.cpp:261 ../src/cuser.cpp:273 ../src/cuser.cpp:283
+#: ../src/cuser.cpp:295 ../src/cuser.cpp:307 ../src/cuser.cpp:317
+#: ../src/cuser.cpp:327 ../src/cuser.cpp:337 ../src/cuser.cpp:347
+#: ../src/cuser.cpp:357 ../src/cuser.cpp:367
 msgid "No"
 msgstr "Hayýr"
 
@@ -317,7 +317,7 @@ msgstr "Hayýr"
 msgid "Client ID"
 msgstr "Ýstemci kimliði"
 
-#: ../src/cdcclients.cpp:351 ../src/cinfoserver.cpp:142
+#: ../src/cdcclients.cpp:351 ../src/cinfoserver.cpp:141
 #: ../src/cpluginmanager.cpp:169
 msgid "Version"
 msgstr "Sürüm"
@@ -326,942 +326,938 @@ msgstr "Sürüm"
 msgid "Banned?"
 msgstr "Yasaklý mý?"
 
-#: ../src/cdcconsole.cpp:223
+#: ../src/cdcconsole.cpp:222
 msgid "User commands are currently disabled."
 msgstr "Kullanýcý komutlarý þu anda devre dýþý býrakýlmýþtýr."
 
-#: ../src/cdcconsole.cpp:279
+#: ../src/cdcconsole.cpp:278
 msgid "Full list of commands"
 msgstr "Komutlarýn tam listesi"
 
-#: ../src/cdcconsole.cpp:299 ../src/cdcconsole.cpp:332
-#: ../src/cdcconsole.cpp:365
+#: ../src/cdcconsole.cpp:298 ../src/cdcconsole.cpp:331
+#: ../src/cdcconsole.cpp:364
 msgid "User"
 msgstr "Kullanýcý"
 
-#: ../src/cdcconsole.cpp:302 ../src/cdcconsole.cpp:337
-#: ../src/cdcconsole.cpp:371 ../src/cdcconsole.cpp:1012
+#: ../src/cdcconsole.cpp:301 ../src/cdcconsole.cpp:336
+#: ../src/cdcconsole.cpp:370 ../src/cdcconsole.cpp:1008
 #, c-format
 msgid "User not found: %s"
 msgstr "Kullanýcý bulunamadý: %s"
 
-#: ../src/cdcconsole.cpp:308 ../src/cdcconsole.cpp:343
-#: ../src/cdcconsole.cpp:377
+#: ../src/cdcconsole.cpp:307 ../src/cdcconsole.cpp:342
+#: ../src/cdcconsole.cpp:376
 msgid "Please specify one or more nicks separated by space."
 msgstr "Bir ya da daha fazla rumuzu boþluklarla ayrýlmýþ þekilde belirtiniz."
 
-#: ../src/cdcconsole.cpp:310 ../src/cdcconsole.cpp:345
-#: ../src/cdcconsole.cpp:379
+#: ../src/cdcconsole.cpp:309 ../src/cdcconsole.cpp:344
+#: ../src/cdcconsole.cpp:378
 #, c-format
 msgid "Showing %d results"
 msgstr "%d sonuç gösteriliyor"
 
-#: ../src/cdcconsole.cpp:333 ../src/cdcconsole.cpp:369
-#: ../src/cdcconsole.cpp:1136 ../src/cuser.cpp:241
+#: ../src/cdcconsole.cpp:332 ../src/cdcconsole.cpp:368
+#: ../src/cdcconsole.cpp:1132 ../src/cuser.cpp:240
 msgid "Host"
 msgstr "Makine"
 
-#: ../src/cdcconsole.cpp:335
+#: ../src/cdcconsole.cpp:334
 #, c-format
 msgid "Unable to resolve users hostname: %s"
 msgstr "Kullanýcýnýn makine ismi çözümlenemedi: %s"
 
-#: ../src/cdcconsole.cpp:367 ../src/cdcconsole.cpp:529 ../src/cuser.cpp:242
+#: ../src/cdcconsole.cpp:366 ../src/cdcconsole.cpp:528 ../src/cuser.cpp:241
 msgid "Country"
 msgstr "Ülke"
 
-#: ../src/cdcconsole.cpp:368 ../src/cdcconsole.cpp:530 ../src/cuser.cpp:243
+#: ../src/cdcconsole.cpp:367 ../src/cdcconsole.cpp:529 ../src/cuser.cpp:242
 msgid "City"
 msgstr "Kent"
 
-#: ../src/cdcconsole.cpp:414
+#: ../src/cdcconsole.cpp:413
 #, c-format
 msgid "Please note, hub has been scheduled to restart in: %s"
 msgstr "Dikkatinize, hub þu süre sonunda tekrar baþlatýlacaktýr: %s"
 
-#: ../src/cdcconsole.cpp:416
+#: ../src/cdcconsole.cpp:415
 msgid "Please note, hub will be restarted now."
 msgstr "Dikkatinize, hub þimde tekrar baþlatýlacaktýr."
 
-#: ../src/cdcconsole.cpp:419
+#: ../src/cdcconsole.cpp:418
 #, c-format
 msgid "Please note, hub has been scheduled to stop in: %s"
 msgstr "Dikkatinize, hub þu süre sonunda durdurulacaktýr: %s"
 
-#: ../src/cdcconsole.cpp:421
+#: ../src/cdcconsole.cpp:420
 msgid "Please note, hub will be stopped now."
 msgstr "Dikkatinize, hub þimdi durdurulacaktýr."
 
-#: ../src/cdcconsole.cpp:439
+#: ../src/cdcconsole.cpp:438
 msgid "No rights."
 msgstr "Ýzin yok."
 
-#: ../src/cdcconsole.cpp:457
+#: ../src/cdcconsole.cpp:456
 #, c-format
 msgid "Configuration file %s is empty."
 msgstr "%s yapýlandýrma dosyasý boþtur."
 
-#: ../src/cdcconsole.cpp:459
+#: ../src/cdcconsole.cpp:458
 #, c-format
 msgid "Configuration file %s"
 msgstr "Yapýlandýrma dosyasý %s"
 
-#: ../src/cdcconsole.cpp:491
+#: ../src/cdcconsole.cpp:490
 msgid "Usage example: !ccbc :US:GB: <message>"
 msgstr "Kullaným misali: !ccbc :US:GB: <mesaj>"
 
-#: ../src/cdcconsole.cpp:505
+#: ../src/cdcconsole.cpp:504
 #, c-format
 msgid "Message delivered to %d users in zones %s in %s."
 msgstr "Mesaj %d kullanýcýya (%s bölgesinde %s konumunda bulunan) ulaþtýrýldý."
 
-#: ../src/cdcconsole.cpp:514 ../src/cserverdc.cpp:930
+#: ../src/cdcconsole.cpp:513 ../src/cserverdc.cpp:929
 msgid "Your information"
 msgstr "Verileriniz"
 
-#: ../src/cdcconsole.cpp:527
+#: ../src/cdcconsole.cpp:526
 msgid "Your IP information"
 msgstr "IP verileriniz"
 
-#: ../src/cdcconsole.cpp:542
+#: ../src/cdcconsole.cpp:541
 msgid "This command is currently disabled."
 msgstr "Bu komut güncel olarak devre dýþý býrakýlmýþtýr."
 
-#: ../src/cdcconsole.cpp:550 ../src/cdcproto.cpp:1408
+#: ../src/cdcconsole.cpp:549 ../src/cdcproto.cpp:1408
 msgid "Main chat is currently disabled for users with your class."
 msgstr "Ana sohbet salonu güncel olarak sizin sýnýfýnýzdaki kullanýcýlar için devre dýþýdýr."
 
-#: ../src/cdcconsole.cpp:597
+#: ../src/cdcconsole.cpp:596
 msgid "Now you will see public chat messages, to disable use +nochat command."
 msgstr "Artýk herkesin görebileceði sohbet mesajlarýný göreceksiniz, devre dýþý býrakmak için +nochat komutunu kullanýn."
 
-#: ../src/cdcconsole.cpp:600
+#: ../src/cdcconsole.cpp:599
 msgid "You already see public chat messages, to disable use +nochat command."
 msgstr "Zaten herkesin görebileceði sohbet mesajlarýný görüyorsunuz, devre dýþý býrakmak için +nochat komutunu kullanýn."
 
-#: ../src/cdcconsole.cpp:603
+#: ../src/cdcconsole.cpp:602
 msgid "Now you won't see public chat messages, to restore use +chat command."
 msgstr "Artýk herkesin görebileceði sohbet mesajlarýný görmeyeceksiniz, görmek için +chat komutunu kullanýn."
 
-#: ../src/cdcconsole.cpp:606
+#: ../src/cdcconsole.cpp:605
 msgid ""
 "You already don't see public chat messages, to restore use +chat command."
 msgstr "Zaten herkesin görebileceði sohbet mesajlarýný görmüyorsunuz, görmek için +chat komutunu kullanýn."
 
-#: ../src/cdcconsole.cpp:621
+#: ../src/cdcconsole.cpp:620
 msgid "Authors"
 msgstr "Yazarlar"
 
-#: ../src/cdcconsole.cpp:626
+#: ../src/cdcconsole.cpp:624
 msgid "Translators"
 msgstr "Tercümanlar"
 
-#: ../src/cdcconsole.cpp:631
+#: ../src/cdcconsole.cpp:629
 msgid "Contributors"
 msgstr "Katkýda bulunanlar"
 
-#: ../src/cdcconsole.cpp:633
-msgid "Web part"
-msgstr "Að (web) bölümü"
-
-#: ../src/cdcconsole.cpp:635
+#: ../src/cdcconsole.cpp:631
 msgid "Credits"
 msgstr "Tanýtma yazýlarý"
 
-#: ../src/cdcconsole.cpp:637
+#: ../src/cdcconsole.cpp:633
 msgid "More"
 msgstr "Dahasý"
 
-#: ../src/cdcconsole.cpp:638
+#: ../src/cdcconsole.cpp:634
 msgid "Website"
 msgstr "Að sitesi"
 
-#: ../src/cdcconsole.cpp:639
+#: ../src/cdcconsole.cpp:635
 msgid "Manual"
 msgstr "Kullanýcý kýlavuzu"
 
-#: ../src/cdcconsole.cpp:640
+#: ../src/cdcconsole.cpp:636
 msgid "Support hub"
 msgstr "Destek hub'ý"
 
-#: ../src/cdcconsole.cpp:654
+#: ../src/cdcconsole.cpp:650
 msgid "Unregistered"
 msgstr "Kayýtsýz"
 
-#: ../src/cdcconsole.cpp:657 ../src/cdcproto.cpp:1055
-#: ../src/creguserinfo.cpp:109 ../src/ctrigger.cpp:160
+#: ../src/cdcconsole.cpp:653 ../src/cdcproto.cpp:1054
+#: ../src/creguserinfo.cpp:111 ../src/ctrigger.cpp:159
 msgid "Registered"
 msgstr "Kayýtlý"
 
-#: ../src/cdcconsole.cpp:660 ../src/cdcproto.cpp:1058
-#: ../src/creguserinfo.cpp:109 ../src/ctrigger.cpp:163
+#: ../src/cdcconsole.cpp:656 ../src/cdcproto.cpp:1057
+#: ../src/creguserinfo.cpp:111 ../src/ctrigger.cpp:162
 msgid "VIP"
 msgstr "VÝP"
 
-#: ../src/cdcconsole.cpp:663 ../src/cdcproto.cpp:1061
-#: ../src/creguserinfo.cpp:109 ../src/ctrigger.cpp:166
+#: ../src/cdcconsole.cpp:659 ../src/cdcproto.cpp:1060
+#: ../src/creguserinfo.cpp:111 ../src/ctrigger.cpp:165
 msgid "Operator"
 msgstr "Operatör"
 
-#: ../src/cdcconsole.cpp:666
+#: ../src/cdcconsole.cpp:662
 msgid "Super operator"
 msgstr "Süper operatör"
 
-#: ../src/cdcconsole.cpp:669 ../src/creguserinfo.cpp:109
+#: ../src/cdcconsole.cpp:665 ../src/creguserinfo.cpp:111
 msgid "Administrator"
 msgstr "Yönetici"
 
-#: ../src/cdcconsole.cpp:672 ../src/cdcproto.cpp:1070
-#: ../src/creguserinfo.cpp:109 ../src/ctrigger.cpp:175
+#: ../src/cdcconsole.cpp:668 ../src/cdcproto.cpp:1069
+#: ../src/creguserinfo.cpp:111 ../src/ctrigger.cpp:174
 msgid "Master"
 msgstr "Master"
 
-#: ../src/cdcconsole.cpp:677 ../src/cdctag.cpp:208
+#: ../src/cdcconsole.cpp:673 ../src/cdctag.cpp:207
 msgid "Active"
 msgstr "Aktif"
 
-#: ../src/cdcconsole.cpp:679 ../src/cdctag.cpp:210
+#: ../src/cdcconsole.cpp:675 ../src/cdctag.cpp:209
 msgid "Passive"
 msgstr "Pasif"
 
-#: ../src/cdcconsole.cpp:692 ../src/cinfoserver.cpp:168
+#: ../src/cdcconsole.cpp:688 ../src/cinfoserver.cpp:167
 msgid "Hub owner"
 msgstr "Hub sahibi"
 
-#: ../src/cdcconsole.cpp:694
+#: ../src/cdcconsole.cpp:690
 msgid "Total users"
 msgstr "Kullanýcý toplamý"
 
-#: ../src/cdcconsole.cpp:695
+#: ../src/cdcconsole.cpp:691
 msgid "Total bots"
 msgstr "Robot toplamý"
 
-#: ../src/cdcconsole.cpp:696 ../src/cinfoserver.cpp:187
+#: ../src/cdcconsole.cpp:692 ../src/cinfoserver.cpp:186
 msgid "Total share"
 msgstr "Paylaþým toplamý"
 
-#: ../src/cdcconsole.cpp:699 ../src/cdctag.cpp:222 ../src/cdctag.cpp:230
-#: ../src/cinfoserver.cpp:157 ../src/cserverdc.cpp:1942
+#: ../src/cdcconsole.cpp:695 ../src/cdctag.cpp:221 ../src/cdctag.cpp:229
+#: ../src/cinfoserver.cpp:156 ../src/cserverdc.cpp:1941
 msgid "Not available"
 msgstr "Mevcut deðil"
 
-#: ../src/cdcconsole.cpp:702 ../src/cinfoserver.cpp:149
-#: ../src/cserverdc.cpp:1945
+#: ../src/cdcconsole.cpp:698 ../src/cinfoserver.cpp:148
+#: ../src/cserverdc.cpp:1944
 msgid "Recovery mode"
 msgstr "Kurtarma kipi"
 
-#: ../src/cdcconsole.cpp:703 ../src/cinfoserver.cpp:151
-#: ../src/cserverdc.cpp:1946
+#: ../src/cdcconsole.cpp:699 ../src/cinfoserver.cpp:150
+#: ../src/cserverdc.cpp:1945
 msgid "Near capacity"
 msgstr "Kapasiteye yakýn"
 
-#: ../src/cdcconsole.cpp:704 ../src/cinfoserver.cpp:153
-#: ../src/cserverdc.cpp:1947
+#: ../src/cdcconsole.cpp:700 ../src/cinfoserver.cpp:152
+#: ../src/cserverdc.cpp:1946
 msgid "Progressive mode"
 msgstr "Progresif kip"
 
-#: ../src/cdcconsole.cpp:705 ../src/cinfoserver.cpp:155
-#: ../src/cserverdc.cpp:1948
+#: ../src/cdcconsole.cpp:701 ../src/cinfoserver.cpp:154
+#: ../src/cserverdc.cpp:1947
 msgid "Normal mode"
 msgstr "Normal kip"
 
-#: ../src/cdcconsole.cpp:708
+#: ../src/cdcconsole.cpp:704
 msgid "Hub health"
 msgstr "Hub sýhhati"
 
-#: ../src/cdcconsole.cpp:709
+#: ../src/cdcconsole.cpp:705
 msgid "Your status"
 msgstr "Durumunuz"
 
-#: ../src/cdcconsole.cpp:710
+#: ../src/cdcconsole.cpp:706
 msgid "Your can search every"
 msgstr "Aramalar için aralýk þudur:"
 
-#: ../src/cdcconsole.cpp:710
+#: ../src/cdcconsole.cpp:706
 #, c-format
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d saniye"
 
-#: ../src/cdcconsole.cpp:711
+#: ../src/cdcconsole.cpp:707
 msgid "Connection type"
 msgstr "Baðlantý türü"
 
-#: ../src/cdcconsole.cpp:712
+#: ../src/cdcconsole.cpp:708
 msgid "You are sharing"
 msgstr "Paylaþtýðýnýz"
 
-#: ../src/cdcconsole.cpp:715
+#: ../src/cdcconsole.cpp:711
 msgid "hidden"
 msgstr "saklý"
 
-#: ../src/cdcconsole.cpp:727
+#: ../src/cdcconsole.cpp:723
 msgid "This functionality is currently disabled."
 msgstr "Bu iþlev þu anda devre dýþý býrakýlmýþtýr."
 
-#: ../src/cdcconsole.cpp:731
+#: ../src/cdcconsole.cpp:727
 msgid "Registration failed, please contact an operator for more help."
 msgstr "Kayýt olma baþarýsýz oldu, yardým için bir operatörle irtibata geçin."
 
-#: ../src/cdcconsole.cpp:747
+#: ../src/cdcconsole.cpp:743
 #, c-format
 msgid "Your nick must start with: %s"
 msgstr "Rumuzunuz %s ile baþlamalýdýr"
 
-#: ../src/cdcconsole.cpp:760
+#: ../src/cdcconsole.cpp:756
 #, c-format
 msgid "You need to share at least %s."
 msgstr "En az %s paylaþmanýz gerekmektedir."
 
-#: ../src/cdcconsole.cpp:770
+#: ../src/cdcconsole.cpp:766
 msgid "You are already registered."
 msgstr "Zaten kayýtlýsýnýz."
 
-#: ../src/cdcconsole.cpp:781 ../src/cdcconsole.cpp:903 ../src/cdcproto.cpp:613
+#: ../src/cdcconsole.cpp:777 ../src/cdcconsole.cpp:899 ../src/cdcproto.cpp:612
 #, c-format
 msgid "Minimum password length is %d characters, please retry."
 msgstr "Asgari parola uzunluðu %d karakterdir, tekrar deneyiniz."
 
-#: ../src/cdcconsole.cpp:796
+#: ../src/cdcconsole.cpp:792
 #, c-format
 msgid "A new user has been registered with class %d"
 msgstr "Yeni bir kullanýcý %d sýnýfýyla kayýt edildi"
 
-#: ../src/cdcconsole.cpp:799
+#: ../src/cdcconsole.cpp:795
 #, c-format
 msgid ""
 "You are now registered with nick %s, please reconnect and login with your "
 "new password: %s"
 msgstr "Artýk %s rumuzu ile kayýtlýsýnýz, tekrar baðlanýp yeni parolanýz ile giriþ yapýnýz: %s"
 
-#: ../src/cdcconsole.cpp:801
+#: ../src/cdcconsole.cpp:797
 msgid "An error occured while registering."
 msgstr "Kayýt sýrasýnda bir hata meydana geldi."
 
-#: ../src/cdcconsole.cpp:815
+#: ../src/cdcconsole.cpp:811
 #, c-format
 msgid "Registration request with password %s"
 msgstr "%s parolasý ile kayýt talebi"
 
-#: ../src/cdcconsole.cpp:817
+#: ../src/cdcconsole.cpp:813
 msgid "Registration request without password"
 msgstr "Parolasýz kayýt talebi"
 
-#: ../src/cdcconsole.cpp:820
+#: ../src/cdcconsole.cpp:816
 msgid "Thank you, your request has been sent to operators."
 msgstr "Teþekkür ederiz, isteðiniz operatörlere gönderilmiþtir."
 
-#: ../src/cdcconsole.cpp:831
+#: ../src/cdcconsole.cpp:827
 msgid "You do not have permissions to change the topic."
 msgstr "Konuyu deðiþtirmek için yeterli izniniz yok."
 
-#: ../src/cdcconsole.cpp:837
+#: ../src/cdcconsole.cpp:833
 #, c-format
 msgid ""
 "Topic must be max 255 characters long. Your topic was %d characters long."
 msgstr "Konu azami 255 karakter içerebilir. Konunuzun uzunluðu %d karakterdir."
 
-#: ../src/cdcconsole.cpp:853
+#: ../src/cdcconsole.cpp:849
 #, c-format
 msgid "%s changed topic to: %s"
 msgstr "%s mevzuyu %s olarak deðiþtirdi"
 
-#: ../src/cdcconsole.cpp:855
+#: ../src/cdcconsole.cpp:851
 #, c-format
 msgid "%s removed topic."
 msgstr "%s mevzuyu kaldýrdý"
 
-#: ../src/cdcconsole.cpp:895
+#: ../src/cdcconsole.cpp:891
 msgid "You are not allowed to change your password now, ask an operator."
 msgstr "SÝmdi parolanýzý deðiþtirme müsaadeniz yok, bir operatörden yardým isteyin."
 
-#: ../src/cdcconsole.cpp:909 ../src/cdcconsole.cpp:2241
-#: ../src/cdcproto.cpp:621
+#: ../src/cdcconsole.cpp:905 ../src/cdcconsole.cpp:2237
+#: ../src/cdcproto.cpp:620
 msgid "Error updating password."
 msgstr "Parolanýn güncellenmesinde bir hata meydana geldi."
 
-#: ../src/cdcconsole.cpp:915 ../src/cdcproto.cpp:628
+#: ../src/cdcconsole.cpp:911 ../src/cdcproto.cpp:627
 msgid "Password updated successfully."
 msgstr "Parola baþarýlý bir þekilde güncellendi."
 
-#: ../src/cdcconsole.cpp:928
+#: ../src/cdcconsole.cpp:924
 msgid ""
 "Please use: !hideme <class> where <class> is the maximum class of users that"
 " may not see your actions."
 msgstr "Lütfen <sýnýf>'ýn faaliyetlerinizi göremeyecek azami kullanýcý sýnýfý olacaðý !hideme <sýnýf> komutunu kullanýnýz."
 
-#: ../src/cdcconsole.cpp:934
+#: ../src/cdcconsole.cpp:930
 #, c-format
 msgid "Your command actions are now hidden from users with class below %d."
 msgstr "Faaliyetleriniz artýk %d sýnýfýnýn altýndaki kullanýcýlardan saklýdýr."
 
-#: ../src/cdcconsole.cpp:947
+#: ../src/cdcconsole.cpp:943
 msgid ""
 "Type !help for more information (usage !userlimit <max_users> "
 "[<minutes>=60])"
 msgstr "Daha fazla bilgi için !help komutunu kullanýnýz (kullaným !userlimit <azami_kullanýcý> [<dakika>=60])"
 
-#: ../src/cdcconsole.cpp:976
+#: ../src/cdcconsole.cpp:972
 msgid "Usage: !class <nick> [<class>=3]"
 msgstr "Kullaným: !class <rumuz> [<sýnýf>=3]"
 
-#: ../src/cdcconsole.cpp:976
+#: ../src/cdcconsole.cpp:972
 #, c-format
 msgid "maximum class is %d"
 msgstr "azami sýnýf þudur: %d"
 
-#: ../src/cdcconsole.cpp:987
+#: ../src/cdcconsole.cpp:983
 #, c-format
 msgid "Temporarily changed class to %d for user: %s"
 msgstr "Þu kullanýcý için  sýnýf geçici olarak %d olarak deðiþtirilmiþtir: %s"
 
-#: ../src/cdcconsole.cpp:1009
+#: ../src/cdcconsole.cpp:1005
 #, c-format
 msgid "You have no rights to change class for user: %s"
 msgstr "Þu kullanýcý için sýnýf deðiþtirme müsaadeniz yok: %s"
 
-#: ../src/cdcconsole.cpp:1031
+#: ../src/cdcconsole.cpp:1027
 #, c-format
 msgid "Kicks of user %s are now hidden."
 msgstr "%s adlý kullanýcýnýn kovmalarý artýk saklýdýr."
 
-#: ../src/cdcconsole.cpp:1034 ../src/cdcconsole.cpp:1060
-#: ../src/cdcconsole.cpp:1096 ../src/cdcconsole.cpp:1339
-#: ../src/cdcconsole.cpp:1478 ../src/cdcconsole.cpp:1733
-#: ../src/cdcconsole.cpp:1982 ../src/cdcconsole.cpp:2043
-#: ../src/cdcconsole.cpp:2062 ../src/cdcconsole.cpp:2113
-#: ../src/cdcconsole.cpp:2160 ../src/cdcconsole.cpp:2431
+#: ../src/cdcconsole.cpp:1030 ../src/cdcconsole.cpp:1056
+#: ../src/cdcconsole.cpp:1092 ../src/cdcconsole.cpp:1335
+#: ../src/cdcconsole.cpp:1474 ../src/cdcconsole.cpp:1729
+#: ../src/cdcconsole.cpp:1978 ../src/cdcconsole.cpp:2039
+#: ../src/cdcconsole.cpp:2058 ../src/cdcconsole.cpp:2109
+#: ../src/cdcconsole.cpp:2156 ../src/cdcconsole.cpp:2427
 msgid "You have no rights to do this."
 msgstr "Bunu yapma izniniz yok."
 
-#: ../src/cdcconsole.cpp:1037 ../src/cdcconsole.cpp:1063
-#: ../src/cdcconsole.cpp:1098 ../src/cdcproto.cpp:2137
+#: ../src/cdcconsole.cpp:1033 ../src/cdcconsole.cpp:1059
+#: ../src/cdcconsole.cpp:1094 ../src/cdcproto.cpp:2137
 #, c-format
 msgid "User %s not found."
 msgstr "%s adlý kullanýcý bulunamadý."
 
-#: ../src/cdcconsole.cpp:1057
+#: ../src/cdcconsole.cpp:1053
 #, c-format
 msgid "Kicks of user %s are now visible."
 msgstr "%s adlý kullanýcýnýn kovmalarý artýk görünür."
 
-#: ../src/cdcconsole.cpp:1081
+#: ../src/cdcconsole.cpp:1077
 msgid "Use !protect <nickname> <class>."
 msgstr "!protect <rumuz> <sýnýf> komutunu kullanýnýz."
 
-#: ../src/cdcconsole.cpp:1081
+#: ../src/cdcconsole.cpp:1077
 msgid "Please type !help for more info."
 msgstr "Ek yardým için !help komutunu kullanýnýz."
 
-#: ../src/cdcconsole.cpp:1082
+#: ../src/cdcconsole.cpp:1078
 #, c-format
 msgid "Max class is %d"
 msgstr "Azami sýnýf þudur: %d"
 
-#: ../src/cdcconsole.cpp:1093
+#: ../src/cdcconsole.cpp:1089
 #, c-format
 msgid "User %s is temporarily protected from class %d"
 msgstr "%s adlý kullanýcý geçici olarak %d sýnýfýndan korunmuþtur"
 
-#: ../src/cdcconsole.cpp:1108
+#: ../src/cdcconsole.cpp:1104
 msgid ""
 "Reloading triggers, custom redirects, configuration and registration list "
 "cache."
 msgstr "Tetikleyiciler, özel yönlendirmeler, yapýlandýrma ve kayýt listesi önbelleði yeniden yükleniyor."
 
-#: ../src/cdcconsole.cpp:1121
+#: ../src/cdcconsole.cpp:1117
 msgid "Report command is currently disabled."
 msgstr "Rapor komutu þu anda devre dýþýdýr."
 
-#: ../src/cdcconsole.cpp:1134
+#: ../src/cdcconsole.cpp:1130
 #, c-format
 msgid "Reported user %s"
 msgstr "Bildirilen kullanýcý %s"
 
-#: ../src/cdcconsole.cpp:1138
+#: ../src/cdcconsole.cpp:1134
 #, c-format
 msgid "Reported offline user %s"
 msgstr "Bildirilen çevrimdýþý kullanýcý %s"
 
-#: ../src/cdcconsole.cpp:1141
+#: ../src/cdcconsole.cpp:1137
 msgid "Without reason"
 msgstr "Nedensiz"
 
-#: ../src/cdcconsole.cpp:1147
+#: ../src/cdcconsole.cpp:1143
 msgid "Thank you, your report has been accepted."
 msgstr "Teþekkür ederiz, raporunuz kabul edilmiþtir."
 
-#: ../src/cdcconsole.cpp:1260
+#: ../src/cdcconsole.cpp:1256
 msgid "Protocol command successfully sent."
 msgstr "Protokol komutu baþarýyla gönderildi."
 
-#: ../src/cdcconsole.cpp:1307
+#: ../src/cdcconsole.cpp:1303
 msgid "Ban list has been cleaned."
 msgstr "Yasaklama listesi temizlendi."
 
-#: ../src/cdcconsole.cpp:1311
+#: ../src/cdcconsole.cpp:1307
 msgid "Temporary ban list has been cleaned."
 msgstr "Geçici yasaklama listesi temizlendi."
 
-#: ../src/cdcconsole.cpp:1315
+#: ../src/cdcconsole.cpp:1311
 msgid "Unban list has been cleaned."
 msgstr "Yasaklama kaldýrma listesi temizlendi."
 
-#: ../src/cdcconsole.cpp:1319
+#: ../src/cdcconsole.cpp:1315
 msgid "Kick list has been cleaned."
 msgstr "Kovma listesi temizlendi."
 
-#: ../src/cdcconsole.cpp:1323
+#: ../src/cdcconsole.cpp:1319
 msgid "Temporary right list has been cleaned."
 msgstr "Geçici izin listesi temizlendi."
 
-#: ../src/cdcconsole.cpp:1326
+#: ../src/cdcconsole.cpp:1322
 msgid "This command is not implemented, available commands"
 msgstr "Bu komut desteklenmemektedir, mevcut komutlar"
 
-#: ../src/cdcconsole.cpp:1380
+#: ../src/cdcconsole.cpp:1376
 msgid "Please provide a valid ban time."
 msgstr "Geçerli bir yasaklama süresi giriniz."
 
-#: ../src/cdcconsole.cpp:1399 ../src/cdcconsole.cpp:1442
+#: ../src/cdcconsole.cpp:1395 ../src/cdcconsole.cpp:1438
 msgid "No reason specified"
 msgstr "Hiçbir sebep girilmedi"
 
-#: ../src/cdcconsole.cpp:1403 ../src/cdcconsole.cpp:1509
-#: ../src/cdcconsole.cpp:2181 ../src/cdcconsole.cpp:2214
-#: ../src/cdcconsole.cpp:2254
+#: ../src/cdcconsole.cpp:1399 ../src/cdcconsole.cpp:1505
+#: ../src/cdcconsole.cpp:2177 ../src/cdcconsole.cpp:2210
+#: ../src/cdcconsole.cpp:2250
 msgid "Action has been discarded by plugin."
 msgstr "Eylem eklenti tarafýndan atýldý."
 
-#: ../src/cdcconsole.cpp:1408
+#: ../src/cdcconsole.cpp:1404
 msgid "Removed ban"
 msgstr "Yasaklama kaldýrýldý"
 
-#: ../src/cdcconsole.cpp:1410
+#: ../src/cdcconsole.cpp:1406
 msgid "Ban information"
 msgstr "Yasaklama verileri"
 
-#: ../src/cdcconsole.cpp:1433
+#: ../src/cdcconsole.cpp:1429
 #, c-format
 msgid "%d ban found."
 msgid_plural "%d bans found."
 msgstr[0] "%d yasak bulundu."
 
-#: ../src/cdcconsole.cpp:1487
+#: ../src/cdcconsole.cpp:1483
 #, c-format
 msgid "Unknown range format: %s"
 msgstr "Bilinmeyen alan biçimi: %s"
 
-#: ../src/cdcconsole.cpp:1538
+#: ../src/cdcconsole.cpp:1534
 msgid "Added new ban"
 msgstr "Yeni yasaklama eklendi"
 
-#: ../src/cdcconsole.cpp:1550
+#: ../src/cdcconsole.cpp:1546
 msgid "This command is not implemented, available commands are"
 msgstr "Bu komut desteklenmemektedir, mevcut komutlar þunlardýr:"
 
-#: ../src/cdcconsole.cpp:1599
+#: ../src/cdcconsole.cpp:1595
 msgid ""
 "This command is not implemented, available commands are: hubinfo serverinfo "
 "portinfo"
 msgstr "Bu komut desteklenmemektedir, mevcut komutlar þunlardýr: hubinfo, serverinfo, portinfo"
 
-#: ../src/cdcconsole.cpp:1662 ../src/cdcconsole.cpp:1968
-#: ../src/cdcconsole.cpp:2314
+#: ../src/cdcconsole.cpp:1658 ../src/cdcconsole.cpp:1964
+#: ../src/cdcconsole.cpp:2310
 msgid "This command is not implemented."
 msgstr "Bu komut desteklenmemektedir."
 
-#: ../src/cdcconsole.cpp:1693
+#: ../src/cdcconsole.cpp:1689
 #, c-format
 msgid "Undefined configuration variable: %s"
 msgstr "Tanýmsýz yapýlandýrma deðiþkeni: %s"
 
-#: ../src/cdcconsole.cpp:1708
+#: ../src/cdcconsole.cpp:1704
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr "Yapýlandýrma %s.%s '%s''den '%s''e güncellenmiþtir."
 
-#: ../src/cdcconsole.cpp:1718
+#: ../src/cdcconsole.cpp:1714
 #, c-format
 msgid ""
 "Warning: Verlihub allows maximum %d users, but current resource limit is %d."
 " Consider to run ulimit -n <max_users> and restart the hub."
 msgstr "Ýkaz: Verlihub azami %d kullanýcýya izin verir fakat güncel kaynak sýnýrý þudur: %d. ulimit -n <azami_kullanýcý> komutunu çalýþtýrýp hub'ý tekrar baþlatmayý düþünün."
 
-#: ../src/cdcconsole.cpp:1746
+#: ../src/cdcconsole.cpp:1742
 #, c-format
 msgid "%s is not in list."
 msgstr "%s listede deðil."
 
-#: ../src/cdcconsole.cpp:1822
+#: ../src/cdcconsole.cpp:1818
 #, c-format
 msgid "Resetting main chat right for %s."
 msgstr "%s için ana sohbet izni sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1823
+#: ../src/cdcconsole.cpp:1819
 #, c-format
 msgid "Resetting private chat right for %s."
 msgstr "%s için özel sohbet müsaadesi sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1824
+#: ../src/cdcconsole.cpp:1820
 #, c-format
 msgid "Resetting main and private chat rights for %s."
 msgstr "%s için ana ve özel sohbet izinleri sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1825
+#: ../src/cdcconsole.cpp:1821
 #, c-format
 msgid "Resetting download right for %s."
 msgstr "%s için indirme izni sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1826
+#: ../src/cdcconsole.cpp:1822
 #, c-format
 msgid "Resetting search right for %s."
 msgstr "%s için arama izni sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1827
+#: ../src/cdcconsole.cpp:1823
 #, c-format
 msgid "Resetting hidden share right for %s."
 msgstr "%s için saklý paylaþým hakký sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1828
+#: ../src/cdcconsole.cpp:1824
 #, c-format
 msgid "Resetting registering right for %s."
 msgstr "%s için kayýt hakký sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1829
+#: ../src/cdcconsole.cpp:1825
 #, c-format
 msgid "Resetting kick right for %s."
 msgstr "%s için kovma hakký sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1830
+#: ../src/cdcconsole.cpp:1826
 #, c-format
 msgid "Resetting operator chat right for %s."
 msgstr "%s için operatör sohbet izni sýfýrlanýyor."
 
-#: ../src/cdcconsole.cpp:1836
+#: ../src/cdcconsole.cpp:1832
 #, c-format
 msgid "Error setting right for %s."
 msgstr "%s için izin belirlenmesinde hata."
 
-#: ../src/cdcconsole.cpp:1889
+#: ../src/cdcconsole.cpp:1885
 #, c-format
 msgid "Found %d user with IP %s"
 msgid_plural "Found %d users with IP %s"
 msgstr[0] "%d kullanýcý %s IP adresi ile bulundu"
 
-#: ../src/cdcconsole.cpp:1899
+#: ../src/cdcconsole.cpp:1895
 #, c-format
 msgid "Found %d user with range %s"
 msgid_plural "Found %d users with range %s"
 msgstr[0] "%d kullanýcý %s alaný ile bulundu"
 
-#: ../src/cdcconsole.cpp:1904
+#: ../src/cdcconsole.cpp:1900
 msgid "Country code must be 2 characters long, for example US."
 msgstr "Ülke kodu iki karakter içermelidir, mesela US."
 
-#: ../src/cdcconsole.cpp:1912
+#: ../src/cdcconsole.cpp:1908
 #, c-format
 msgid "Found %d user with country code %s"
 msgid_plural "Found %d users with country code %s"
 msgstr[0] "%d kullanýcý %s ülke kodu ile bulundu"
 
-#: ../src/cdcconsole.cpp:1917
+#: ../src/cdcconsole.cpp:1913
 msgid "City name can't be empty."
 msgstr "Kent ismi boþ olamaz."
 
-#: ../src/cdcconsole.cpp:1924
+#: ../src/cdcconsole.cpp:1920
 #, c-format
 msgid "Found %d user with city %s"
 msgid_plural "Found %d users with city %s"
 msgstr[0] "%d kullanýcý %s kenti ile bulundu"
 
-#: ../src/cdcconsole.cpp:1934
+#: ../src/cdcconsole.cpp:1930
 msgid "No users found."
 msgstr "Hiçbir kullanýcý bulunamadý."
 
-#: ../src/cdcconsole.cpp:1958 ../src/cdcproto.cpp:2143
+#: ../src/cdcconsole.cpp:1954 ../src/cdcproto.cpp:2143
 msgid "Please provide a valid reason."
 msgstr "Geçerli bir sebep giriniz."
 
-#: ../src/cdcconsole.cpp:1994
+#: ../src/cdcconsole.cpp:1990
 msgid "Loaded plugins"
 msgstr "Yüklü eklentiler"
 
-#: ../src/cdcconsole.cpp:1998
+#: ../src/cdcconsole.cpp:1994
 msgid "Available callbacks"
 msgstr "Mevcut geriçaðýrýmlar"
 
-#: ../src/cdcconsole.cpp:2048
+#: ../src/cdcconsole.cpp:2044
 msgid ""
 "Valid classdif_reg value must be between 1 and 5, please correct this first."
 msgstr "Geçerli classdif_reg deðeri 1 ilâ 5 arasý olmalýdýr, evvela bunu düzeltiniz."
 
-#: ../src/cdcconsole.cpp:2070
+#: ../src/cdcconsole.cpp:2066
 #, c-format
 msgid "Found %d registered users with class %d"
 msgstr "%d kayýtlý kullanýcý %d sýnýfýnda bulundu"
 
-#: ../src/cdcconsole.cpp:2072
+#: ../src/cdcconsole.cpp:2068
 #, c-format
 msgid "No registered users with class %d found."
 msgstr "%d sýnýfýnda hiçbir kayýtlý kullanýcý bulunamadý."
 
-#: ../src/cdcconsole.cpp:2097 ../src/cdcconsole.cpp:2166
+#: ../src/cdcconsole.cpp:2093 ../src/cdcconsole.cpp:2162
 msgid "Missing command parameters."
 msgstr "Eksik komut parametreleri."
 
-#: ../src/cdcconsole.cpp:2156
+#: ../src/cdcconsole.cpp:2152
 #, c-format
 msgid "Registered user not found: %s"
 msgstr "Kayýtlý kullanýcý bulunamadý: %s"
 
-#: ../src/cdcconsole.cpp:2158 ../src/cdcconsole.cpp:2175
+#: ../src/cdcconsole.cpp:2154 ../src/cdcconsole.cpp:2171
 #, c-format
 msgid "%s is already registered."
 msgstr "%s zaten kayýtlýdýr."
 
-#: ../src/cdcconsole.cpp:2191
+#: ../src/cdcconsole.cpp:2187
 #, c-format
 msgid ""
 "You have been registered with class %d, please set up your password with "
 "+passwd <password> command."
 msgstr "%d sýnýfý ile kaydýnýz oluþturuldu, parolanýzý +passwd <parola> komutu ile ayarlayýnýz."
 
-#: ../src/cdcconsole.cpp:2193
+#: ../src/cdcconsole.cpp:2189
 #, c-format
 msgid "You have been registered with class %d and following password: %s"
 msgstr "%d sýnýfýnda þu parola ile kaydýnýz oluþturuldu: %s"
 
-#: ../src/cdcconsole.cpp:2201
+#: ../src/cdcconsole.cpp:2197
 #, c-format
 msgid ""
 "%s has been registered with class %d, please tell him to set his password."
 msgstr "%s, %d sýnýfý ile kayýt oldu, ona parolasýný ayarlamasý gerektiðini söyleyiniz."
 
-#: ../src/cdcconsole.cpp:2203
+#: ../src/cdcconsole.cpp:2199
 #, c-format
 msgid "%s has been registered with class %d and password."
 msgstr "%s parola ve %d sýnýfý ile kayýt olmuþtur."
 
-#: ../src/cdcconsole.cpp:2205
+#: ../src/cdcconsole.cpp:2201
 msgid "Error adding new user."
 msgstr "Yeni kullanýcý eklenmesinde hata."
 
-#: ../src/cdcconsole.cpp:2222
+#: ../src/cdcconsole.cpp:2218
 #, c-format
 msgid "%s has been unregistered, user information"
 msgstr "%s kaydý kaldýrýldý, kullanýcý verileri"
 
-#: ../src/cdcconsole.cpp:2227
+#: ../src/cdcconsole.cpp:2223
 #, c-format
 msgid "Error unregistering %s, user information"
 msgstr "%s kaydýnýn kaldýrýlmasýnda hata, kullanýcý verileri"
 
-#: ../src/cdcconsole.cpp:2239
+#: ../src/cdcconsole.cpp:2235
 msgid "Password updated."
 msgstr "Parola güncellendi."
 
-#: ../src/cdcconsole.cpp:2247
+#: ../src/cdcconsole.cpp:2243
 msgid ""
 "You can change your password now, use +passwd command followed by your new "
 "password."
 msgstr "Simdi parolanýzý deðiþtirebilirsiniz, +passwd komutunu kullanýn ve ardýndan parolanýzý girin."
 
-#: ../src/cdcconsole.cpp:2284
+#: ../src/cdcconsole.cpp:2280
 #, c-format
 msgid "Your class has been changed to %s."
 msgstr "Sýnýfýnýz %s olarak deðiþtirilmiþtir."
 
-#: ../src/cdcconsole.cpp:2290
+#: ../src/cdcconsole.cpp:2286
 msgid "Your registration has been enabled."
 msgstr "Kaydýnýz etkinleþtirilmiþtir."
 
-#: ../src/cdcconsole.cpp:2296
+#: ../src/cdcconsole.cpp:2292
 msgid "Your registration has been disabled."
 msgstr "Kaydýnýz devre dýþý býrakýlmýþtýr."
 
-#: ../src/cdcconsole.cpp:2300
+#: ../src/cdcconsole.cpp:2296
 #, c-format
 msgid "You are protected by classes greater than %s."
 msgstr "%s üzeri sýnýflar tarafýndan korunuyorsunuz."
 
-#: ../src/cdcconsole.cpp:2305
+#: ../src/cdcconsole.cpp:2301
 #, c-format
 msgid "You kicks are hidden by classes greater than %s."
 msgstr "Kovmalarýnýz %s üzeri sýnýflar tarafýndan saklanmaktadýr."
 
-#: ../src/cdcconsole.cpp:2310
+#: ../src/cdcconsole.cpp:2306
 #, c-format
 msgid "%s registration information"
 msgstr "%s kayýt verileri"
 
-#: ../src/cdcconsole.cpp:2327
+#: ../src/cdcconsole.cpp:2323
 msgid "Your share is now visible."
 msgstr "Paylaþýmýnýz artýk görünülür."
 
-#: ../src/cdcconsole.cpp:2333
+#: ../src/cdcconsole.cpp:2329
 msgid "Your share is now hidden."
 msgstr "Paylaþýmýnýz artýk saklýdýr."
 
-#: ../src/cdcconsole.cpp:2337
+#: ../src/cdcconsole.cpp:2333
 #, c-format
 msgid "Updated variable %s to value %s for user %s."
 msgstr ";%s deðiþkeni %s deðerine %s kullanýcýsý için güncellenmiþtir."
 
-#: ../src/cdcconsole.cpp:2346
+#: ../src/cdcconsole.cpp:2342
 #, c-format
 msgid "Error setting variable %s to value %s for user %s."
 msgstr "%s deðiþkeninin %s deðerine %s kullanýcýsý için güncellenmesinde hata oluþtu."
 
-#: ../src/cdcconsole.cpp:2444
+#: ../src/cdcconsole.cpp:2440
 #, c-format
 msgid "Message delivered to %d users in %s."
 msgstr "Mesaj %d kullanýcýya ki %s içinde teslim edildi."
 
-#: ../src/cdcproto.cpp:110
+#: ../src/cdcproto.cpp:109
 #, c-format
 msgid "Probably attempt of NULL character attack: %s"
 msgstr "Muhtemelen NULL karakter saldýrýsý teþebbüsü: %s"
 
-#: ../src/cdcproto.cpp:206
+#: ../src/cdcproto.cpp:205
 msgid "See you."
 msgstr "Görüþmek üzere."
 
-#: ../src/cdcproto.cpp:259
+#: ../src/cdcproto.cpp:258
 msgid "Invalid login sequence, your client already sent key."
 msgstr "Geçersiz giriþ dizisi, istemciniz zaten anahtar yolladý."
 
-#: ../src/cdcproto.cpp:276
+#: ../src/cdcproto.cpp:275
 msgid "Your client provided invalid key in response to lock."
 msgstr "Kilide cevap olarak istemciniz geçersiz bir anahtar yolladý."
 
-#: ../src/cdcproto.cpp:298
+#: ../src/cdcproto.cpp:297
 msgid "Invalid login sequence, your client already sent supports."
 msgstr "Geçersiz giriþ dizisi, istemciniz zaten supports (destekleme) göndermiþtir."
 
-#: ../src/cdcproto.cpp:401
+#: ../src/cdcproto.cpp:400
 msgid "Invalid login sequence, your client already validated nick."
 msgstr "Geçersiz giriþ dizisi, istemciniz zaten rumuzunuzu doðrulamýþtýr."
 
-#: ../src/cdcproto.cpp:456
+#: ../src/cdcproto.cpp:455
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
 msgstr "%s ülke bölgesinin kullanýcý sayýsý sýnýrý %d/%d çevrimiçi kullanýcý ile aþýlmýþtýr."
 
-#: ../src/cdcproto.cpp:459
+#: ../src/cdcproto.cpp:458
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
 msgstr "%s IP bölgesinin kullanýcý sayýsý sýnýrý %d/%d çevrimiçi kullanýcý ile aþýlmýþtýr."
 
-#: ../src/cdcproto.cpp:473
+#: ../src/cdcproto.cpp:472
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
 msgstr "Ana bölgenin kullanýcý sayýsý sýnýrý %d/%d çevrimiçi kullanýcý ile aþýlmýþtýr."
 
-#: ../src/cdcproto.cpp:481
+#: ../src/cdcproto.cpp:480
 #, c-format
 msgid "User limit exceeded at %d online users."
 msgstr "Kullanýcý sayýsý sýnýrý %d çevrimiçi kullanýcý ile aþýlmýþtýr."
 
-#: ../src/cdcproto.cpp:489
+#: ../src/cdcproto.cpp:488
 msgid "This is a registered users only hub."
 msgstr "Bu, sadece kayýtlý kullanýcýlarý kabul eden bir hubdýr."
 
-#: ../src/cdcproto.cpp:508
+#: ../src/cdcproto.cpp:507
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
 msgstr "%s IP adresinden kullanýcý sýnýrý %d çevrimiçi kullanýcý ile aþýlmýþtýr."
 
-#: ../src/cdcproto.cpp:524
+#: ../src/cdcproto.cpp:523
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr "%s unsurundan müsaade IP uyuþmazlýðý"
 
-#: ../src/cdcproto.cpp:525
+#: ../src/cdcproto.cpp:524
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
 msgstr "Bu hesap için izin IP adresi sizin IP adresinizle uyuþmuyor: %s"
 
-#: ../src/cdcproto.cpp:585
+#: ../src/cdcproto.cpp:584
 msgid "Invalid login sequence, you client already sent password."
 msgstr "Geçersiz giriþ dizisi, istemciniz zaten parola gönderdi."
 
-#: ../src/cdcproto.cpp:653
+#: ../src/cdcproto.cpp:652
 msgid "Incorrect password"
 msgstr "Yanlýþ parola"
 
-#: ../src/cdcproto.cpp:667
+#: ../src/cdcproto.cpp:666
 msgid "You've been temporarily banned due to incorrect password."
 msgstr "Yanlýþ parola nedeniyle geçici olarak yasaklandýnýz."
 
-#: ../src/cdcproto.cpp:687
+#: ../src/cdcproto.cpp:686
 msgid "Invalid login sequence, you client already sent version."
 msgstr "Geçersiz giriþ dizisi, istemciniz zaten sürüm gönderdi."
 
-#: ../src/cdcproto.cpp:767
+#: ../src/cdcproto.cpp:766
 msgid "Your client didn't specify a tag."
 msgstr "Ýstemciniz herhangi bir etiket belirtmedi."
 
-#: ../src/cdcproto.cpp:832
+#: ../src/cdcproto.cpp:831
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d online passive users, please become active"
 " to enter the hub."
 msgstr "Pasif kullanýcý sýnýrý %d çevrimiçi pasif kullanýcýlar ile aþýlmýþtýr, huba girmek için lütfen aktif olun."
 
-#: ../src/cdcproto.cpp:894
+#: ../src/cdcproto.cpp:893
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s, %s for active users, %s for passive "
 "users."
 msgstr "%s paylaþýyorsunuz fakat izin verilen asgari deðer %s, aktif kullanýcýlar için %s, pasif kullanýcýlar içinse þudur: %s."
 
-#: ../src/cdcproto.cpp:896
+#: ../src/cdcproto.cpp:895
 #, c-format
 msgid "You share %s but maximum allowed is %s."
 msgstr "%s paylaþýyorsunuz fakat izin verilen azami deðer þudur: %s."
 
-#: ../src/cdcproto.cpp:953
+#: ../src/cdcproto.cpp:952
 #, c-format
 msgid "You are already in the hub using another nick: %s"
 msgstr "Baþka bir rumuz kullanarak zaten hub'dasýnýz: %s"
 
-#: ../src/cdcproto.cpp:972
+#: ../src/cdcproto.cpp:971
 msgid "You are banned from this hub."
 msgstr "Bu hub'da yasaklandýnýz."
 
-#: ../src/cdcproto.cpp:1049 ../src/creguserinfo.cpp:110
-#: ../src/ctrigger.cpp:154
+#: ../src/cdcproto.cpp:1048 ../src/creguserinfo.cpp:112
+#: ../src/ctrigger.cpp:153
 msgid "Pinger"
 msgstr "Pingci"
 
-#: ../src/cdcproto.cpp:1052 ../src/creguserinfo.cpp:109
-#: ../src/ctrigger.cpp:157
+#: ../src/cdcproto.cpp:1051 ../src/creguserinfo.cpp:111
+#: ../src/ctrigger.cpp:156
 msgid "Guest"
 msgstr "Misafir"
 
-#: ../src/cdcproto.cpp:1064 ../src/creguserinfo.cpp:109
-#: ../src/ctrigger.cpp:169
+#: ../src/cdcproto.cpp:1063 ../src/creguserinfo.cpp:111
+#: ../src/ctrigger.cpp:168
 msgid "Cheef"
 msgstr "Sef"
 
-#: ../src/cdcproto.cpp:1067 ../src/ctrigger.cpp:172
+#: ../src/cdcproto.cpp:1066 ../src/ctrigger.cpp:171
 msgid "Administator"
 msgstr "Yönetici"
 
-#: ../src/cdcproto.cpp:1239 ../src/cdcproto.cpp:1314
+#: ../src/cdcproto.cpp:1238 ../src/cdcproto.cpp:1314
 msgid "Private chat is currently disabled for users with your class."
 msgstr "Özel sohbet güncel olarak sizin sýnýfýnýzdaki kullanýcýlar için devre dýþý býrakýlmýþtýr."
 
-#: ../src/cdcproto.cpp:1246 ../src/cdcproto.cpp:1321
+#: ../src/cdcproto.cpp:1245 ../src/cdcproto.cpp:1321
 msgid "You can't talk to this user."
 msgstr "Bu kullanýcý ile konuþamazsýnýz."
 
-#: ../src/cdcproto.cpp:1259 ../src/cdcproto.cpp:1334
+#: ../src/cdcproto.cpp:1264 ../src/cdcproto.cpp:1334
 msgid "Private message flood detected from your client."
 msgstr "Ýstemcinizden özel mesaj tekrarý (flood) tespit edildi."
 
-#: ../src/cdcproto.cpp:1260
+#: ../src/cdcproto.cpp:1265
 #, c-format
 msgid "Same message flood in PM: %s"
 msgstr "Özel sohbette ayný mesaj tekrarý: %s"
@@ -1448,280 +1444,280 @@ msgstr "Sohbet mesajýnýz %d karakter içermektedir fakat azami karakter sýnýrý þu
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr "Sohbet mesajýnýz %d satýr içermektedir fakat azami satýr sýnýrý þudur: %d"
 
-#: ../src/cdctag.cpp:62
+#: ../src/cdctag.cpp:61
 msgid "Your client is banned."
 msgstr "Ýstemciniz yasaklanmýþtýr."
 
-#: ../src/cdctag.cpp:70
+#: ../src/cdctag.cpp:69
 msgid "Connections through proxy server are not allowed in this hub."
 msgstr "Vekil sunucular vasýtasýyla yapýlan baðlantýlara bu hubda izin verilmez."
 
-#: ../src/cdctag.cpp:76
+#: ../src/cdctag.cpp:75
 msgid "Passive connections are restricted, consider changing to active."
 msgstr "Pasif baðlantýlar kýsýtlanýr, aktif olarak deðiþtirmeyi düþünün."
 
-#: ../src/cdctag.cpp:82
+#: ../src/cdctag.cpp:81
 msgid ""
 "Your client tag is reporting less than 0 hubs or less than 0 slots, looks "
 "like a bug in your client."
 msgstr "Ýstemci etiketiniz 0'dan az hub ya da 0'dan az oluk belirtiyor, istemcinizde bir hata var gibi görünüyor."
 
-#: ../src/cdctag.cpp:88
+#: ../src/cdctag.cpp:87
 msgid "Unknown clients are not allowed in this hub."
 msgstr "Bilinmeyen istemciler bu hub'da kabul edilmezler."
 
-#: ../src/cdctag.cpp:94
+#: ../src/cdctag.cpp:93
 #, c-format
 msgid "Too many open hubs, maximum is %d and you have %d."
 msgstr "Çok fazla açýk hub, azami deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:100
+#: ../src/cdctag.cpp:99
 #, c-format
 msgid "Too few open hubs, minimum is %d and you have %d."
 msgstr "Çok az açýk hub, asgari deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:106
+#: ../src/cdctag.cpp:105
 #, c-format
 msgid "Too few open hubs as user, minimum is %d and you have %d."
 msgstr "Kullanýcý olarak çok az açýk hub, asgari deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:112
+#: ../src/cdctag.cpp:111
 #, c-format
 msgid "Too few open hubs as registered user, minimum is %d and you have %d."
 msgstr "Kayýtlý kullanýcý olarak çok az açýk hub, asgari deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:118
+#: ../src/cdctag.cpp:117
 #, c-format
 msgid "Too few open hubs as operator, minimum is %d and you have %d."
 msgstr "Operatör olarak çok az açýk hub, asgari deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:124
+#: ../src/cdctag.cpp:123
 #, c-format
 msgid ""
 "Too little open slots for your connection type %s, minimum is %d and you "
 "have %d."
 msgstr "%s baðlantý türünüz için çok az açýk oluk, asgari deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:130
+#: ../src/cdctag.cpp:129
 #, c-format
 msgid ""
 "Too many open slots for your connection type %s, maximum is %d and you have "
 "%d."
 msgstr "%s baðlantý türünüz için çok fazla açýk oluk, azami deðer %d olmakla birlikte sizde þudur: %d."
 
-#: ../src/cdctag.cpp:139
+#: ../src/cdctag.cpp:138
 #, c-format
 msgid "Your slots per hub ratio %.2f is too low, minimum is %.2f."
 msgstr "Hub baþýna oluk oranýnýz olan %.2f çok düþüktür, asgari deðer þudur: %.2f."
 
-#: ../src/cdctag.cpp:140 ../src/cdctag.cpp:147
+#: ../src/cdctag.cpp:139 ../src/cdctag.cpp:146
 #, c-format
 msgid "Open %d slots for %d hubs."
 msgstr "%d oluk %d hub için açýnýz."
 
-#: ../src/cdctag.cpp:146
+#: ../src/cdctag.cpp:145
 #, c-format
 msgid "Your slots per hub ratio %.2f is too high, maximum is %.2f."
 msgstr "Hub baþýna oluk oranýnýz olan %.2f çok yüksektir, azami deðer þudur: %.2f."
 
-#: ../src/cdctag.cpp:155
+#: ../src/cdctag.cpp:154
 #, c-format
 msgid ""
 "Too low upload limit for your connection type %s, minimum upload rate is "
 "%.2f."
 msgstr "%s baðlantý türünüz için çok düþük gönderme sýnýrý, asgari gönderme oraný þudur: %.2f."
 
-#: ../src/cdctag.cpp:161
+#: ../src/cdctag.cpp:160
 #, c-format
 msgid ""
 "Too low upload limit per slot for your connection type %s, minimum upload "
 "limit is %.2f per slot."
 msgstr "%s baðlantý türünüz için çok düþük oluk baþýna gönderme sýnýrý, asgari oluk baþýna gönderme sýnýrý þudur: %.2f."
 
-#: ../src/cdctag.cpp:176
+#: ../src/cdctag.cpp:175
 msgid "Your client version is too old, please upgrade it."
 msgstr "Ýstemci sürümünüz çok eski, lütfen güncelleyiniz."
 
-#: ../src/cdctag.cpp:179
+#: ../src/cdctag.cpp:178
 #, c-format
 msgid "Allowed minimum version number for %s client is: %.2f"
 msgstr "%s istemcisi için izin verilen asgari sürüm þudur: %.2f"
 
-#: ../src/cdctag.cpp:181
+#: ../src/cdctag.cpp:180
 #, c-format
 msgid "Allowed minimum version number for your client is: %.2f"
 msgstr "Ýstemciniz için izin verilen asgari sürüm þudur: %.2f"
 
-#: ../src/cdctag.cpp:188
+#: ../src/cdctag.cpp:187
 msgid "Your client version is too recent, please downgrade it."
 msgstr "Ýstemci sürümünüz çok yenidir, lütfen eski bir sürüme dönün."
 
-#: ../src/cdctag.cpp:191
+#: ../src/cdctag.cpp:190
 #, c-format
 msgid "Allowed maximum version number for %s client is: %.2f"
 msgstr "%s istemcisi için müsaade edilen en yüksek sürüm numarasý þudur: %.2f"
 
-#: ../src/cdctag.cpp:193
+#: ../src/cdctag.cpp:192
 #, c-format
 msgid "Allowed maximum version number for your client is: %.2f"
 msgstr "Ýstemciniz için müsaade edilen en yüksek sürüm numarasý þudur: %.2f"
 
-#: ../src/cdctag.cpp:204
+#: ../src/cdctag.cpp:203
 msgid "Client"
 msgstr "Ýstemci"
 
-#: ../src/cdctag.cpp:205
+#: ../src/cdctag.cpp:204
 msgid "Mode"
 msgstr "Kip"
 
-#: ../src/cdctag.cpp:212
+#: ../src/cdctag.cpp:211
 msgid "SOCKS5"
 msgstr "SOCKS5"
 
-#: ../src/cdctag.cpp:214
+#: ../src/cdctag.cpp:213
 msgid "Other"
 msgstr "Diðer"
 
-#: ../src/cdctag.cpp:217
+#: ../src/cdctag.cpp:216
 msgid "Open hubs"
 msgstr "Açýk hublar"
 
-#: ../src/cdctag.cpp:225
+#: ../src/cdctag.cpp:224
 msgid "Open slots"
 msgstr "Açýk oluklar"
 
-#: ../src/cinfoserver.cpp:81
+#: ../src/cinfoserver.cpp:80
 msgid "Port information"
 msgstr "Port verileri"
 
-#: ../src/cinfoserver.cpp:85
+#: ../src/cinfoserver.cpp:84
 #, c-format
 msgid "Port %d: %d"
 msgstr "Port %d: %d"
 
-#: ../src/cinfoserver.cpp:100
+#: ../src/cinfoserver.cpp:99
 msgid "Unable to retrive system information."
 msgstr "Sistem verileri alýnamadý."
 
-#: ../src/cinfoserver.cpp:106
+#: ../src/cinfoserver.cpp:105
 msgid "System information"
 msgstr "Sistem verileri"
 
-#: ../src/cinfoserver.cpp:112
+#: ../src/cinfoserver.cpp:111
 msgid "System uptime"
 msgstr "Sistemin çalýþma süresi"
 
-#: ../src/cinfoserver.cpp:113
+#: ../src/cinfoserver.cpp:112
 msgid "Load averages"
 msgstr "Yük ortalamalarý"
 
-#: ../src/cinfoserver.cpp:115 ../src/cinfoserver.cpp:118
+#: ../src/cinfoserver.cpp:114 ../src/cinfoserver.cpp:117
 msgid "Total memory"
 msgstr "Toplam hafýza"
 
-#: ../src/cinfoserver.cpp:116 ../src/cinfoserver.cpp:119
+#: ../src/cinfoserver.cpp:115 ../src/cinfoserver.cpp:118
 msgid "Free memory"
 msgstr "Boþ hafýza"
 
-#: ../src/cinfoserver.cpp:121
+#: ../src/cinfoserver.cpp:120
 msgid "Shared memory"
 msgstr "Paylaþýmlý hafýza"
 
-#: ../src/cinfoserver.cpp:122
+#: ../src/cinfoserver.cpp:121
 msgid "Memory in buffers"
 msgstr "Tamponlardaki bellek"
 
-#: ../src/cinfoserver.cpp:123
+#: ../src/cinfoserver.cpp:122
 msgid "Free swap"
 msgstr "Boþ takas alaný"
 
-#: ../src/cinfoserver.cpp:124
+#: ../src/cinfoserver.cpp:123
 msgid "Number of processes"
 msgstr "Süreç sayýsý"
 
-#: ../src/cinfoserver.cpp:128
+#: ../src/cinfoserver.cpp:127
 msgid "Information is not available."
 msgstr "Veri mevcut deðil."
 
-#: ../src/cinfoserver.cpp:141
+#: ../src/cinfoserver.cpp:140
 msgid "Hub information"
 msgstr "Hub verileri"
 
-#: ../src/cinfoserver.cpp:145
+#: ../src/cinfoserver.cpp:144
 msgid "Uptime"
 msgstr "Çalýþma süresi"
 
-#: ../src/cinfoserver.cpp:159
+#: ../src/cinfoserver.cpp:158
 msgid "Server frequency"
 msgstr "Sunucu frekansý"
 
-#: ../src/cinfoserver.cpp:160
+#: ../src/cinfoserver.cpp:159
 msgid "Hub name"
 msgstr "Hub ismi "
 
-#: ../src/cinfoserver.cpp:176
+#: ../src/cinfoserver.cpp:175
 msgid "Hub category"
 msgstr "Hub kategorisi"
 
-#: ../src/cinfoserver.cpp:184
+#: ../src/cinfoserver.cpp:183
 msgid "Hub locale"
 msgstr "Hub lisaný"
 
-#: ../src/cinfoserver.cpp:186
+#: ../src/cinfoserver.cpp:185
 msgid "Online users"
 msgstr "Çevrimiçi kullanýcýlar"
 
-#: ../src/cinfoserver.cpp:186
+#: ../src/cinfoserver.cpp:185
 msgid "of"
 msgstr "üzeri"
 
-#: ../src/cinfoserver.cpp:188
+#: ../src/cinfoserver.cpp:187
 msgid "User list count"
 msgstr "Kullanýcý liste sayýsý"
 
-#: ../src/cinfoserver.cpp:189
+#: ../src/cinfoserver.cpp:188
 msgid "Hello user count"
 msgstr "Hello kullanýcý sayýsý"
 
-#: ../src/cinfoserver.cpp:190
+#: ../src/cinfoserver.cpp:189
 msgid "In progress users"
 msgstr "Ýlerlemedeki kullanýcýlar"
 
-#: ../src/cinfoserver.cpp:191
+#: ../src/cinfoserver.cpp:190
 msgid "Active user count"
 msgstr "Faal kullanýcý sayýsý"
 
-#: ../src/cinfoserver.cpp:192
+#: ../src/cinfoserver.cpp:191
 msgid "Passive user count"
 msgstr "Pasif kullanýcý sayýsý"
 
-#: ../src/cinfoserver.cpp:193
+#: ../src/cinfoserver.cpp:192
 msgid "Operator user count"
 msgstr "Operatör kullanýcý sayýsý"
 
-#: ../src/cinfoserver.cpp:194
+#: ../src/cinfoserver.cpp:193
 msgid "Bot user count"
 msgstr "Bot kullanýcý sayýsý"
 
-#: ../src/cinfoserver.cpp:203 ../src/cinfoserver.cpp:208
-#: ../src/cinfoserver.cpp:215
+#: ../src/cinfoserver.cpp:202 ../src/cinfoserver.cpp:207
+#: ../src/cinfoserver.cpp:214
 #, c-format
 msgid "Users in zone #%d"
 msgstr "#%d alanýnda kullanýcýlar"
 
-#: ../src/cinfoserver.cpp:208
+#: ../src/cinfoserver.cpp:207
 msgid "Not set"
 msgstr "Ayarlý deðil"
 
-#: ../src/cinfoserver.cpp:208
+#: ../src/cinfoserver.cpp:207
 msgid "[CC]"
 msgstr "[CC]"
 
-#: ../src/cinfoserver.cpp:216
+#: ../src/cinfoserver.cpp:215
 msgid "[IP]"
 msgstr "[IP]"
 
-#: ../src/cinfoserver.cpp:221
+#: ../src/cinfoserver.cpp:220
 msgid "All other users"
 msgstr "Diðer tüm kullanýcýlar"
 
@@ -1770,729 +1766,729 @@ msgstr "%s için kaydetme izni %s olarak ayarlanýyor."
 msgid "Setting operator chat right for %s to %s."
 msgstr "%s için operatör sohbet izni %s olarak ayarlanýyor."
 
-#: ../src/creglist.cpp:115
+#: ../src/creglist.cpp:114
 msgid "On"
 msgstr "Açýk"
 
-#: ../src/creguserinfo.cpp:109
+#: ../src/creguserinfo.cpp:111
 msgid "6-err"
 msgstr "6-err"
 
-#: ../src/creguserinfo.cpp:109
+#: ../src/creguserinfo.cpp:111
 msgid "7-err"
 msgstr "7-err"
 
-#: ../src/creguserinfo.cpp:109
+#: ../src/creguserinfo.cpp:111
 msgid "8-err"
 msgstr "8-err"
 
-#: ../src/creguserinfo.cpp:109
+#: ../src/creguserinfo.cpp:111
 msgid "9-err"
 msgstr "9-err"
 
-#: ../src/creguserinfo.cpp:110
+#: ../src/creguserinfo.cpp:112
 msgid "Class"
 msgstr "Sýnýf"
 
-#: ../src/creguserinfo.cpp:110
+#: ../src/creguserinfo.cpp:112
 msgid "Invalid"
 msgstr "Geçersiz"
 
-#: ../src/creguserinfo.cpp:111
+#: ../src/creguserinfo.cpp:113
 msgid "Last login"
 msgstr "Son giriþ"
 
-#: ../src/creguserinfo.cpp:111 ../src/creguserinfo.cpp:123
+#: ../src/creguserinfo.cpp:113 ../src/creguserinfo.cpp:125
 msgid "from"
 msgstr "tarafýndan"
 
-#: ../src/creguserinfo.cpp:112
+#: ../src/creguserinfo.cpp:114
 msgid "Registered since"
 msgstr "Su tarihten beri kayýtlý"
 
-#: ../src/creguserinfo.cpp:115
+#: ../src/creguserinfo.cpp:117
 #, c-format
 msgid "by %s"
 msgstr "%s tarafýndan"
 
-#: ../src/creguserinfo.cpp:117 ../src/creguserinfo.cpp:125
+#: ../src/creguserinfo.cpp:119 ../src/creguserinfo.cpp:127
 msgid "No information"
 msgstr "Veri yok"
 
-#: ../src/creguserinfo.cpp:120
+#: ../src/creguserinfo.cpp:122
 msgid "Last error"
 msgstr "Son hata"
 
-#: ../src/creguserinfo.cpp:128
+#: ../src/creguserinfo.cpp:130
 msgid "Login errors/total"
 msgstr "Giriþ hatalarý/toplam"
 
-#: ../src/creguserinfo.cpp:129
+#: ../src/creguserinfo.cpp:131
 msgid "Password set"
 msgstr "Parola belirlendi"
 
-#: ../src/creguserinfo.cpp:130
+#: ../src/creguserinfo.cpp:132
 msgid "Account enabled"
 msgstr "Hesap etkinleþtirildi"
 
-#: ../src/creguserinfo.cpp:131
+#: ../src/creguserinfo.cpp:133
 msgid "Protected"
 msgstr "Korumalý"
 
-#: ../src/creguserinfo.cpp:132
+#: ../src/creguserinfo.cpp:134
 msgid "Hidden kicks"
 msgstr "Saklý kovmalar"
 
-#: ../src/creguserinfo.cpp:133
+#: ../src/creguserinfo.cpp:135
 msgid "Hidden key"
 msgstr "Saklý anahtar"
 
-#: ../src/creguserinfo.cpp:134
+#: ../src/creguserinfo.cpp:136
 msgid "Hidden share"
 msgstr "Saklý paylaþým"
 
-#: ../src/creguserinfo.cpp:135
+#: ../src/creguserinfo.cpp:137
 msgid "Hidden share messages"
 msgstr "Saklý paylaþým mesajlarý"
 
-#: ../src/creguserinfo.cpp:136
+#: ../src/creguserinfo.cpp:138
 msgid "Authorization IP"
 msgstr "Müsaade IP adresi"
 
-#: ../src/creguserinfo.cpp:137
+#: ../src/creguserinfo.cpp:139
 msgid "Alternate IP"
 msgstr "Alternatif ÝP"
 
-#: ../src/cserverdc.cpp:396
+#: ../src/cserverdc.cpp:395
 msgid "You won't see public chat messages, to restore use +chat command."
 msgstr "Herkesin görebileceði sohbet mesajlarýný görmeyeceksiniz, görmek için +chat komutunu kullanýn."
 
-#: ../src/cserverdc.cpp:747
+#: ../src/cserverdc.cpp:746
 msgid ""
 "Hub is currently unable to service your request, please try again in a few "
 "minutes."
 msgstr "Hub þu anda isteðinizi yerine getiremiyor, lütfen birkaç dakika sonra tekrar deneyiniz."
 
-#: ../src/cserverdc.cpp:756 ../src/cserverdc.cpp:1189
+#: ../src/cserverdc.cpp:755 ../src/cserverdc.cpp:1188
 #, c-format
 msgid "You're still temporarily banned for %s because: %s"
 msgstr "%s süresi için hâlâ geçici olarak yasaklýsýnýz çünkü: %s"
 
-#: ../src/cserverdc.cpp:814
+#: ../src/cserverdc.cpp:813
 msgid "Another user has logged in with same nick and IP address."
 msgstr "Baþka bir kullanýcý ayný rumuz ve IP adresi ile giriþ yapmýþtýr."
 
-#: ../src/cserverdc.cpp:828 ../src/cserverdc.cpp:1219
+#: ../src/cserverdc.cpp:827 ../src/cserverdc.cpp:1218
 msgid "Your nick is already taken by another user."
 msgstr "Rumuzunuz zaten baþka bir kullanýcý tarafýndan alýnmýþtýr."
 
-#: ../src/cserverdc.cpp:899
+#: ../src/cserverdc.cpp:898
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
 msgstr "Parolanýzý þimdi +passwd komutu ile ya da parola diyaloðunda girerek belirtmelisiniz."
 
-#: ../src/cserverdc.cpp:901
+#: ../src/cserverdc.cpp:900
 msgid "You must set your password now using +passwd command."
 msgstr "Parlonýzý þimdi +passwd komutu ile belirtmelisiniz."
 
-#: ../src/cserverdc.cpp:977
+#: ../src/cserverdc.cpp:976
 msgid "Reconnecting too fast"
 msgstr "Çok hýzlý tekrar baðlaným"
 
-#: ../src/cserverdc.cpp:1206
+#: ../src/cserverdc.cpp:1205
 msgid "Your nick contains forbidden characters."
 msgstr "Rumuzunuz yasaklý karakterler içermektedir."
 
-#: ../src/cserverdc.cpp:1209
+#: ../src/cserverdc.cpp:1208
 #, c-format
 msgid "Valid nick characters: %s"
 msgstr "Geçerli rumuz karakterleri: %s"
 
-#: ../src/cserverdc.cpp:1213
+#: ../src/cserverdc.cpp:1212
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr "Rumuzunuz çok kýsa, müsaade edilen asgari uzunluk %d karakterdir."
 
-#: ../src/cserverdc.cpp:1216
+#: ../src/cserverdc.cpp:1215
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr "Rumuzunuz çok uzun, müsaade edilen azami uzunluk %d karakterdir."
 
-#: ../src/cserverdc.cpp:1224
+#: ../src/cserverdc.cpp:1223
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
 msgstr "Lütfen þu rumuz öneklerinden birini kullanýn: %s"
 
-#: ../src/cserverdc.cpp:1227
+#: ../src/cserverdc.cpp:1226
 msgid ""
 "Your nick contains operator prefix but you are not registered, please remove"
 " it."
 msgstr "Rumuzunuzda operatör öneki bulunuyor ancak kayýtlý deðilsiniz, lütfen öneki kaldýrýn."
 
-#: ../src/cserverdc.cpp:1230
+#: ../src/cserverdc.cpp:1229
 msgid "Unknown bad nick error, sorry."
 msgstr "Bilinmeyen kötü rumuz hatasý, özür dileriz."
 
-#: ../src/cserverdc.cpp:1262
+#: ../src/cserverdc.cpp:1261
 msgid "You are banned from this hub"
 msgstr "Bu hubda yasaklandýnýz"
 
-#: ../src/cserverdc.cpp:1278
+#: ../src/cserverdc.cpp:1277
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr "Su rumuz önekini kullanýnýz: %s"
 
-#: ../src/cserverdc.cpp:1424
+#: ../src/cserverdc.cpp:1423
 #, c-format
 msgid ""
 "DDoS detection filtered %lu new connections and found %d new exploited hubs"
 msgstr "DDoS tespiti %lu yeni baðlantýyý süzdü ve %d sömürülen yeni hub buldu"
 
-#: ../src/cserverdc.cpp:1426
+#: ../src/cserverdc.cpp:1425
 #, c-format
 msgid "DDoS detection filtered %lu new connections."
 msgstr "DDoS tespiti %lu yeni baðlantýyý süzdü."
 
-#: ../src/cserverdc.cpp:1436
+#: ../src/cserverdc.cpp:1435
 #, c-format
 msgid "DDoS stopped, filtered totally %lu connections."
 msgstr "DDoS sona erdi, %lu baðlantý tamamen süzüldü."
 
-#: ../src/cserverdc.cpp:1503
+#: ../src/cserverdc.cpp:1502
 msgid ""
 "Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, "
 "w(eeks), M(onths) and y(ears)"
 msgstr "Mevcut zaman birimleri þunlardýr: s(aniye), m (dakika), h (saat), d (gün, ki varsayýlan deðerdir), w (hafta), m (ay), Y(ýl)"
 
-#: ../src/cserverdc.cpp:1509
+#: ../src/cserverdc.cpp:1508
 msgid "Please provide positive number for time unit."
 msgstr "Zaman birimi olarak pozitif bir sayý giriniz."
 
-#: ../src/cserverdc.cpp:1529
+#: ../src/cserverdc.cpp:1528
 msgid "Hublist registration results"
 msgstr "Hub listesi kayýt sonuçlarý"
 
-#: ../src/cserverdc.cpp:1533
+#: ../src/cserverdc.cpp:1532
 #, c-format
 msgid "Sending information to: %s:%d"
 msgstr "Þuna veri gönderiliyor: %s:%d"
 
-#: ../src/cserverdc.cpp:1539
+#: ../src/cserverdc.cpp:1538
 msgid "Error connecting"
 msgstr "Baðlantý sýrasýnda hata"
 
-#: ../src/cserverdc.cpp:1582
+#: ../src/cserverdc.cpp:1581
 msgid "Done"
 msgstr "Tamamlandý"
 
-#: ../src/cserverdc.cpp:1584
+#: ../src/cserverdc.cpp:1583
 msgid "Error sending"
 msgstr "Gönderme sýrasýnda hata"
 
-#: ../src/cserverdc.cpp:1598
+#: ../src/cserverdc.cpp:1597
 msgid "Finished registering in hublists."
 msgstr "Hub listelerine kayýt sona erdi."
 
-#: ../src/cserverdc.cpp:1610
+#: ../src/cserverdc.cpp:1609
 msgid "Hublist host is empty, nothing to do."
 msgstr "Hub listesi makine ismi boþ, yapýlacak bir þey yok."
 
-#: ../src/cserverdc.cpp:1618
+#: ../src/cserverdc.cpp:1617
 msgid "Registering in hublists, please wait..."
 msgstr "Hub listelerine kayýt sürmektedir, bekleyiniz..."
 
-#: ../src/cserverdc.cpp:1729
+#: ../src/cserverdc.cpp:1728
 #, c-format
 msgid "Detected clone of user with share %s: %s"
 msgstr "Kullanýcýnýn klonu %s paylaþým ile tespit edildi: %s"
 
-#: ../src/cserverdc.cpp:1735
+#: ../src/cserverdc.cpp:1734
 msgid "Clone detected"
 msgstr "Klon tespit edildi"
 
-#: ../src/cserverdc.cpp:1798
+#: ../src/cserverdc.cpp:1797
 msgid "Protocol command has been unlocked after stopped flood from all"
 msgstr "Protokol komutunun kilidi tekrar (flood) durdurulduktan sonra kaldýrýlmýþtýr"
 
-#: ../src/cserverdc.cpp:1830
+#: ../src/cserverdc.cpp:1829
 msgid "Protocol command has been locked due to detection of flood from all"
 msgstr "Protokol komutu tekrar (flood) sebebiyle kilitlenmiþtir."
 
-#: ../src/cserverdc.cpp:1857
+#: ../src/cserverdc.cpp:1856
 msgid ""
 "Sorry, following protocol command is temporarily locked due to flood "
 "detection"
 msgstr "Özür dileriz, þu protokol komutu tekrar (flood) tespiti sebebiyle geçici olarak kilitlenmiþtir."
 
-#: ../src/cserverdc.cpp:1905 ../src/cuser.cpp:254
+#: ../src/cserverdc.cpp:1904 ../src/cuser.cpp:253
 #, c-format
 msgid "Nick: %s"
 msgstr "Rumuz: %s"
 
-#: ../src/cserverdc.cpp:1907
+#: ../src/cserverdc.cpp:1906
 #, c-format
 msgid "IP: %s"
 msgstr "IP: %s"
 
-#: ../src/cserverdc.cpp:1916
+#: ../src/cserverdc.cpp:1915
 #, c-format
 msgid "Host: %s"
 msgstr "Makine: %s"
 
-#: ../src/cserverdc.cpp:1951
+#: ../src/cserverdc.cpp:1950
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr "Yazýlým: %s %s @ %s"
 
-#: ../src/cserverdc.cpp:1952
+#: ../src/cserverdc.cpp:1951
 #, c-format
 msgid "Uptime: %s"
 msgstr "Çalýþma süresi: %s"
 
-#: ../src/cserverdc.cpp:1953
+#: ../src/cserverdc.cpp:1952
 #, c-format
 msgid "Users: %d"
 msgstr "Kullanýcýlar: %d"
 
-#: ../src/cserverdc.cpp:1954
+#: ../src/cserverdc.cpp:1953
 #, c-format
 msgid "Share: %s"
 msgstr "Paylaþým: %s"
 
-#: ../src/cserverdc.cpp:1955
+#: ../src/cserverdc.cpp:1954
 #, c-format
 msgid "Status: %s"
 msgstr "Durum: %s"
 
-#: ../src/cserverdc.cpp:1958
+#: ../src/cserverdc.cpp:1957
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr "Yazýlým: %s %s @ %s%s ][ Çalýþma süresi: %s ][ Kullanýcýlar: %d ][ Paylaþým: %s"
 
-#: ../src/cserverdc.cpp:2018
+#: ../src/cserverdc.cpp:2017
 #, c-format
 msgid "You have been kicked because %s"
 msgstr "Kovuldunuz çünkü %s"
 
-#: ../src/cserverdc.cpp:2028
+#: ../src/cserverdc.cpp:2027
 #, c-format
 msgid "Kicked user %s"
 msgstr "%s adlý kullanýcý kovuldu"
 
-#: ../src/cserverdc.cpp:2030
+#: ../src/cserverdc.cpp:2029
 #, c-format
 msgid "Dropped user %s"
 msgstr "%s adlý kullanýcý býrakýldý"
 
-#: ../src/cserverdc.cpp:2032
+#: ../src/cserverdc.cpp:2031
 #, c-format
 msgid "with IP %s"
 msgstr "%s IP ile"
 
-#: ../src/cserverdc.cpp:2035
+#: ../src/cserverdc.cpp:2034
 #, c-format
 msgid "and host %s"
 msgstr "ve %s makine ismi ile"
 
-#: ../src/cserverdc.cpp:2064
+#: ../src/cserverdc.cpp:2063
 msgid "dropped"
 msgstr "býrakýldý"
 
-#: ../src/cserverdc.cpp:2068
+#: ../src/cserverdc.cpp:2067
 msgid "Disconnect prevented by a plugin."
 msgstr "Baðlantý kesilmesi bir eklenti tarafýndan engellendi."
 
-#: ../src/cserverdc.cpp:2079
+#: ../src/cserverdc.cpp:2078
 #, c-format
 msgid "User banned for %s."
 msgstr "Kullanýcý %s nedeniyle yasaklandý."
 
-#: ../src/cserverdc.cpp:2081
+#: ../src/cserverdc.cpp:2080
 msgid "User banned permanently."
 msgstr "Kullanýcý daimi olarak yasaklandý."
 
-#: ../src/cserverdc.cpp:2093
+#: ../src/cserverdc.cpp:2092
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
 msgstr "%s adlý kullanýcýnýn kovulmasýnda hata oluþtu çünkü %d sýnýfýnýn altýndaki tüm sýnýflardan korunmaktadýr"
 
-#: ../src/cserverdc.cpp:2228
+#: ../src/cserverdc.cpp:2227
 msgid "DDoS detected, gathering attack information..."
 msgstr "DDoS tespit edildi, saldýrý hakkýnda bilgi toplanýyor..."
 
-#: ../src/ctime.cpp:79
+#: ../src/ctime.cpp:78
 #, c-format
 msgid "%ld week"
 msgid_plural "%ld weeks"
 msgstr[0] "%ld hafta"
 
-#: ../src/ctime.cpp:85
+#: ../src/ctime.cpp:84
 #, c-format
 msgid "%ld day"
 msgid_plural "%ld days"
 msgstr[0] "%ld gün"
 
-#: ../src/ctime.cpp:91
+#: ../src/ctime.cpp:90
 #, c-format
 msgid "%ld hour"
 msgid_plural "%ld hours"
 msgstr[0] "%ld saat"
 
-#: ../src/ctime.cpp:97
+#: ../src/ctime.cpp:96
 #, c-format
 msgid "%ld min"
 msgid_plural "%ld mins"
 msgstr[0] "%ld dakika"
 
-#: ../src/ctime.cpp:103 ../src/ctime.cpp:122
+#: ../src/ctime.cpp:102 ../src/ctime.cpp:121
 #, c-format
 msgid "%ld sec"
 msgid_plural "%ld secs"
 msgstr[0] "%ld saniye"
 
-#: ../src/ctime.cpp:108
+#: ../src/ctime.cpp:107
 #, c-format
 msgid "%ld msec"
 msgid_plural "%ld msecs"
 msgstr[0] "%ld msan"
 
-#: ../src/ctime.cpp:116
+#: ../src/ctime.cpp:115
 #, c-format
 msgid "%d msecs"
 msgstr "%d msan"
 
-#: ../src/ctime.cpp:122
+#: ../src/ctime.cpp:121
 #, c-format
 msgid "%ld usec"
 msgid_plural "%ld usecs"
 msgstr[0] "%ld µsan"
 
-#: ../src/ctriggers.cpp:318
+#: ../src/ctriggers.cpp:317
 msgid ""
 "The definition is empty or not specified. Please define it with -d option."
 msgstr "Taným boþtur ya da belirtilmemiþtir. Lütfen -d seçeneðiyle tanýmlayýnýz."
 
-#: ../src/ctriggers.cpp:323
+#: ../src/ctriggers.cpp:322
 msgid "It's not allowed to define dbconfig file as trigger."
 msgstr "dbconfig'i bir tetik olarak tanýmlamaya izin verilmez."
 
-#: ../src/ctriggers.cpp:326
+#: ../src/ctriggers.cpp:325
 #, c-format
 msgid "User '%s' tried to define dbconfig as trigger"
 msgstr "'%s' adlý kullanýcý dbconfig'i bir tetik olarak tanýmlamaya çalýþtý"
 
-#: ../src/ctriggers.cpp:337
+#: ../src/ctriggers.cpp:336
 #, c-format
 msgid ""
 "The file %s for the trigger %s must be locate in Verlihub config folder (use"
 " %%[CFG] variable; for ex %%[CFG]/%s)"
 msgstr "%s dosyasý, %s tetiði için Verlihub yapýlandýrma dosyasýnda bulunmalýdýr (%%[CFG] deðiþkenini kullanýn; mesela %%[CFG]/%s)"
 
-#: ../src/ctriggers.cpp:433
+#: ../src/ctriggers.cpp:432
 msgid "Definition"
 msgstr "Taným"
 
-#: ../src/ctriggers.cpp:434
+#: ../src/ctriggers.cpp:433
 msgid "Flag"
 msgstr "Bayrak"
 
-#: ../src/ctriggers.cpp:435
+#: ../src/ctriggers.cpp:434
 msgid "Send as"
 msgstr "Olarak gönder"
 
-#: ../src/ctriggers.cpp:436
+#: ../src/ctriggers.cpp:435
 msgid "Min class"
 msgstr "Asgari sýnýf"
 
-#: ../src/ctriggers.cpp:437
+#: ../src/ctriggers.cpp:436
 msgid "Max class"
 msgstr "Azami sýnýf"
 
-#: ../src/cuser.cpp:234
+#: ../src/cuser.cpp:233
 msgid "Default class"
 msgstr "Varsayýlan sýnýf"
 
-#: ../src/cuser.cpp:235
+#: ../src/cuser.cpp:234
 msgid "In list"
 msgstr "Listede"
 
-#: ../src/cuser.cpp:238
+#: ../src/cuser.cpp:237
 msgid "Special user"
 msgstr "Özel kullanýcý"
 
-#: ../src/cuser.cpp:253
+#: ../src/cuser.cpp:252
 msgid "User rights information"
 msgstr "Kullanýcý izin bilgileri"
 
-#: ../src/cuser.cpp:255
+#: ../src/cuser.cpp:254
 #, c-format
 msgid "Class: %d"
 msgstr "Sýnýf: %d"
 
-#: ../src/cuser.cpp:260 ../src/cuser.cpp:262 ../src/cuser.cpp:266
-#: ../src/cuser.cpp:268
+#: ../src/cuser.cpp:259 ../src/cuser.cpp:261 ../src/cuser.cpp:265
+#: ../src/cuser.cpp:267
 #, c-format
 msgid "Can use main chat: %s"
 msgstr "Ana sohbeti kullanabilir: %s"
 
-#: ../src/cuser.cpp:265 ../src/cuser.cpp:277 ../src/cuser.cpp:299
-#: ../src/cuser.cpp:311
+#: ../src/cuser.cpp:264 ../src/cuser.cpp:276 ../src/cuser.cpp:298
+#: ../src/cuser.cpp:310
 #, c-format
 msgid "No [%s]"
 msgstr "Hayýr [%s]"
 
-#: ../src/cuser.cpp:272 ../src/cuser.cpp:274 ../src/cuser.cpp:278
-#: ../src/cuser.cpp:280
+#: ../src/cuser.cpp:271 ../src/cuser.cpp:273 ../src/cuser.cpp:277
+#: ../src/cuser.cpp:279
 #, c-format
 msgid "Can use private chat: %s"
 msgstr "Özel sohbeti kullanabilir: %s"
 
-#: ../src/cuser.cpp:284 ../src/cuser.cpp:288 ../src/cuser.cpp:290
+#: ../src/cuser.cpp:283 ../src/cuser.cpp:287 ../src/cuser.cpp:289
 #, c-format
 msgid "Can use operator chat: %s"
 msgstr "Operatör sohbetini kullanabilir: %s"
 
-#: ../src/cuser.cpp:287 ../src/cuser.cpp:321 ../src/cuser.cpp:331
-#: ../src/cuser.cpp:341 ../src/cuser.cpp:351 ../src/cuser.cpp:361
-#: ../src/cuser.cpp:371
+#: ../src/cuser.cpp:286 ../src/cuser.cpp:320 ../src/cuser.cpp:330
+#: ../src/cuser.cpp:340 ../src/cuser.cpp:350 ../src/cuser.cpp:360
+#: ../src/cuser.cpp:370
 #, c-format
 msgid "Yes [%s]"
 msgstr "Evet [%s]"
 
-#: ../src/cuser.cpp:294 ../src/cuser.cpp:296 ../src/cuser.cpp:300
-#: ../src/cuser.cpp:302
+#: ../src/cuser.cpp:293 ../src/cuser.cpp:295 ../src/cuser.cpp:299
+#: ../src/cuser.cpp:301
 #, c-format
 msgid "Can search files: %s"
 msgstr "Dosya arayabilir: %s"
 
-#: ../src/cuser.cpp:306 ../src/cuser.cpp:308 ../src/cuser.cpp:312
-#: ../src/cuser.cpp:314
+#: ../src/cuser.cpp:305 ../src/cuser.cpp:307 ../src/cuser.cpp:311
+#: ../src/cuser.cpp:313
 #, c-format
 msgid "Can download files: %s"
 msgstr "Dosya indirebilir: %s"
 
-#: ../src/cuser.cpp:318 ../src/cuser.cpp:322 ../src/cuser.cpp:324
+#: ../src/cuser.cpp:317 ../src/cuser.cpp:321 ../src/cuser.cpp:323
 #, c-format
 msgid "Can hide share: %s"
 msgstr "Paylaþýmý saklayabilir: %s"
 
-#: ../src/cuser.cpp:328 ../src/cuser.cpp:332 ../src/cuser.cpp:334
+#: ../src/cuser.cpp:327 ../src/cuser.cpp:331 ../src/cuser.cpp:333
 #, c-format
 msgid "Can register users: %s"
 msgstr "Kullanýcý kaydedebilir: %s"
 
-#: ../src/cuser.cpp:338 ../src/cuser.cpp:342 ../src/cuser.cpp:344
+#: ../src/cuser.cpp:337 ../src/cuser.cpp:341 ../src/cuser.cpp:343
 #, c-format
 msgid "Can drop users: %s"
 msgstr "Kullanýcý atabilir: %s"
 
-#: ../src/cuser.cpp:348 ../src/cuser.cpp:352 ../src/cuser.cpp:354
+#: ../src/cuser.cpp:347 ../src/cuser.cpp:351 ../src/cuser.cpp:353
 #, c-format
 msgid "Can kick users: %s"
 msgstr "Kullanýcý kovabilir: %s"
 
-#: ../src/cuser.cpp:358 ../src/cuser.cpp:362 ../src/cuser.cpp:364
+#: ../src/cuser.cpp:357 ../src/cuser.cpp:361 ../src/cuser.cpp:363
 #, c-format
 msgid "Can temporarily ban users: %s"
 msgstr "Kullanýcýlarý geçici olarak yasaklayabilir: %s"
 
-#: ../src/cuser.cpp:368 ../src/cuser.cpp:372 ../src/cuser.cpp:374
+#: ../src/cuser.cpp:367 ../src/cuser.cpp:371 ../src/cuser.cpp:373
 #, c-format
 msgid "Can permanently ban users: %s"
 msgstr "Kullanýcýlarý daimi olarak yasaklayabilir: %s"
 
-#: ../src/cuser.cpp:405
+#: ../src/cuser.cpp:404
 #, c-format
 msgid "You're no longer allowed to use main chat for %s."
 msgstr "%s için ana sohbeti kullanma izniniz artýk yoktur."
 
-#: ../src/cuser.cpp:408
+#: ../src/cuser.cpp:407
 msgid "You're now allowed to use main chat."
 msgstr "Artýk ana sohbeti kullanabilirsiniz."
 
-#: ../src/cuser.cpp:415
+#: ../src/cuser.cpp:414
 #, c-format
 msgid "You're no longer allowed to use private chat for %s."
 msgstr "%s için özel sohbeti kullanma izniniz artýk yoktur."
 
-#: ../src/cuser.cpp:418
+#: ../src/cuser.cpp:417
 msgid "You're now allowed to use private chat."
 msgstr "Artýk özel sohbeti kullanabilirsiniz."
 
-#: ../src/cuser.cpp:425
+#: ../src/cuser.cpp:424
 #, c-format
 msgid "You're no longer allowed to search files for %s."
 msgstr "%s için dosya arama izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:428
+#: ../src/cuser.cpp:427
 msgid "You're now allowed to search files."
 msgstr "Artýk dosya arama izniniz var"
 
-#: ../src/cuser.cpp:435
+#: ../src/cuser.cpp:434
 #, c-format
 msgid "You're no longer allowed to download files for %s."
 msgstr "%s için dosya indirme izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:438
+#: ../src/cuser.cpp:437
 msgid "You're now allowed to download files."
 msgstr "Artýk dosya indirme izniniz var."
 
-#: ../src/cuser.cpp:445
+#: ../src/cuser.cpp:444
 msgid "You're no longer allowed to kick users."
 msgstr "Kullanýcýlarý kovma izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:448
+#: ../src/cuser.cpp:447
 #, c-format
 msgid "You're now allowed to kick users for %s."
 msgstr "%s için artýk kullanýcý kovma müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:455
+#: ../src/cuser.cpp:454
 msgid "You're no longer allowed to register users."
 msgstr "Kullanýcýlarý kaydetme izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:458
+#: ../src/cuser.cpp:457
 #, c-format
 msgid "You're now allowed to register users for %s."
 msgstr "%s için artýk kullanýcý kaydetme müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:465
+#: ../src/cuser.cpp:464
 msgid "You're no longer allowed to use operator chat."
 msgstr "Operatör sohbet salonunu kullanma izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:468
+#: ../src/cuser.cpp:467
 #, c-format
 msgid "You're now allowed to use operator chat for %s."
 msgstr "%s için artýk operatör sohbet salonunu kullanma müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:475
+#: ../src/cuser.cpp:474
 msgid "You're no longer allowed to hide share."
 msgstr "Paylaþýmý saklama izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:478
+#: ../src/cuser.cpp:477
 #, c-format
 msgid "You're now allowed to hide share for %s."
 msgstr "Artýk %s için paylaþým saklama müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:485
+#: ../src/cuser.cpp:484
 msgid "You're no longer allowed to drop users."
 msgstr "Kullanýcýlarý atma izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:488
+#: ../src/cuser.cpp:487
 #, c-format
 msgid "You're now allowed to drop users for %s."
 msgstr "%s için artýk kullanýcý atma müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:495
+#: ../src/cuser.cpp:494
 msgid "You're no longer allowed to temporarily ban users."
 msgstr "Kullanýcýlarý geçici olarak yasaklama izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:498
+#: ../src/cuser.cpp:497
 #, c-format
 msgid "You're now allowed to temporarily ban users for %s."
 msgstr "%s için artýk kullanýcýlarý geçici olarak yasaklama müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:505
+#: ../src/cuser.cpp:504
 msgid "You're no longer allowed to permanently ban users."
 msgstr "Kullanýcýlarý daimi olarak yasaklama izniniz kaldýrýlmýþtýr."
 
-#: ../src/cuser.cpp:508
+#: ../src/cuser.cpp:507
 #, c-format
 msgid "You're now allowed to permanently ban users for %s."
 msgstr "%s için artýk kullanýcýlarý daimi olarak yasaklama müsaadeniz vardýr."
 
-#: ../src/cuser.cpp:606
+#: ../src/cuser.cpp:605
 msgid "Unknown chatroom command specified."
 msgstr "Bilinmeyen sohbet salonu komutu belirtildi."
 
-#: ../src/cuser.cpp:613
+#: ../src/cuser.cpp:612
 msgid "You can't use this chatroom, use main chat instead."
 msgstr "Bu sohbet salonunu kullanamazsýnýz, yerine ana sohbet salonunu kullanýnýz."
 
-#: ../src/cuser.cpp:648
+#: ../src/cuser.cpp:647
 msgid "Hub security doesn't accept private messages, use main chat instead."
 msgstr "Hub güvenliði özel mesajlarý kabul etmemektedir, yerine ana sohbeti kullanýn."
 
-#: ../src/cvhplugin.cpp:89
+#: ../src/cvhplugin.cpp:88
 #, c-format
 msgid "Plugin %s %s cannot load extra script."
 msgstr "%s %s eklentisi ek betik yükleyemez."
 
-#: ../src/cvhplugin.cpp:95
+#: ../src/cvhplugin.cpp:94
 #, c-format
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr "%s %s eklentisi '%s' betiðini yükleyemez."
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "B"
 msgstr "B"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "KB"
 msgstr "KB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "MB"
 msgstr "MB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "GB"
 msgstr "GB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "TB"
 msgstr "TB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "PB"
 msgstr "PB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "EB"
 msgstr "EB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "ZB"
 msgstr "ZB"
 
-#: ../src/stringutils.cpp:235
+#: ../src/stringutils.cpp:234
 msgid "YB"
 msgstr "YB"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "B/s"
 msgstr "B/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "KB/s"
 msgstr "KB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "MB/s"
 msgstr "MB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "GB/s"
 msgstr "GB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "TB/s"
 msgstr "TB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "PB/s"
 msgstr "PB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "EB/s"
 msgstr "EB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "ZB/s"
 msgstr "ZB/s"
 
-#: ../src/stringutils.cpp:236
+#: ../src/stringutils.cpp:235
 msgid "YB/s"
 msgstr "YB/s"
 
