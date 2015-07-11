@@ -139,24 +139,6 @@ int main(int argc, char *argv[])
 			ConfigBase = "/etc/verlihub";
 	#endif
 
-	int port = 0;
-
-	vector<string> args(argv+1, argv+argc);
-	for (int i = 0; i < args.size(); i++)
-	{
-	#ifdef ENABLE_SYSLOG
-		if (args[i] == "-S" || args[i] == "--syslog")
-		{
-			cObj::msUseSyslog = 1;
-		}
-		else
-	#endif
-		{
-			stringstream arg(args[i]);
-			arg >> port;
-		}
-	}
-
 	cout << "Configuration directory: " << ConfigBase << endl;
 	cServerDC server(ConfigBase, argv[0]); // create server
 
@@ -178,6 +160,24 @@ int main(int argc, char *argv[])
 		signal(SIGQUIT, mySigQuitHandler);
 		signal(SIGSEGV, mySigServHandler);
 	#endif
+
+	int port = 0;
+
+	vector<string> args(argv+1, argv+argc);
+	for (int i = 0; i < args.size(); i++)
+	{
+	#ifdef ENABLE_SYSLOG
+		if (args[i] == "-S" || args[i] == "--syslog")
+		{
+			cObj::msUseSyslog = 1;
+		}
+		else
+	#endif
+		{
+			stringstream arg(args[i]);
+			arg >> port;
+		}
+	}
 
 	server.StartListening(port);
 	result = server.run(); // run the main loop until it stops itself

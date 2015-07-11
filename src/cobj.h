@@ -60,7 +60,7 @@ class cObj
 		virtual ostream & Log();
 #ifdef ENABLE_SYSLOG
 	protected:
-		/** returns stream to for loggin to syslog */
+		/** syslog stream */
 		virtual ostream & SysLog(int, bool is_error);
 #endif
 

@@ -28,31 +28,6 @@ namespace nVerliHub {
 
 cDCConf::cDCConf( cServerDC &serv ): mS(serv)
 {
-	/*
-	// lengths are completely wrong
-	max_length[eDC_KEY]=128;
-	max_length[eDC_VALIDATENICK]=64;
-	max_length[eDC_MYPASS]=64;
-	max_length[eDC_VERSION]=32;
-	max_length[eDC_GETNICKLIST]=16;
-	max_length[eDC_MYINFO]=128;
-	max_length[eDC_GETINFO] = 10+max_nick;
-	max_length[eDC_USERIP] = 11 + max_nick;
-	max_length[eDC_CONNECTTOME] = 32 * 2 * max_nick;
-	max_length[eDC_MCONNECTTOME] = 32 * 2 * max_nick;
-	max_length[eDC_RCONNECTTOME]=64;
-	max_length[eDC_TO]=2048;
-	max_length[eDC_MCTO] = 2048;
-	max_length[eDC_CHAT]=1024;
-	max_length[eDC_QUIT]=64;
-	max_length[eDC_OPFORCEMOVE]=512;
-	max_length[eDC_KICK]=64;
-	max_length[eDC_SEARCH_PAS]=256;
-	max_length[eDC_SEARCH]=256;
-	max_length[eDC_SR]=256;
-	max_length[eDC_MSEARCH]=256;
-	max_length[eDC_UNKNOWN]=8;
-	*/
 }
 
 cDCConf::~cDCConf()
@@ -265,6 +240,10 @@ void cDCConf::AddVars()
 	Add("tban_kick", tban_kick, 300);
 	Add("tban_max", tban_max, 3600 * 24 * 30);
 	Add("log_level",mS.msLogLevel, 0);
+#ifdef ENABLED_SYSLOG
+	Add("use_syslog", mS.msUseSyslog, 0);
+	Add("syslog_ident", mS.msUseSyslog, "verlihub");
+#endif
 	Add("dns_lookup",mS.mUseDNS, 0);
 	Add("report_dns_lookup",report_dns_lookup,0);
 	Add("report_user_country", report_user_country, true);
