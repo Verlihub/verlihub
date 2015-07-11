@@ -154,30 +154,19 @@ int main(int argc, char *argv[])
 		cout << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
 	}
 
+	int port = 0;
+
+	if (argc > 1) {
+		stringstream arg(argv[1]);
+		arg >> port;
+	}
+
 	#ifndef _WIN32
 		signal(SIGPIPE, mySigPipeHandler);
 		signal(SIGIO, mySigIOHandler);
 		signal(SIGQUIT, mySigQuitHandler);
 		signal(SIGSEGV, mySigServHandler);
 	#endif
-
-	int port = 0;
-
-	vector<string> args(argv+1, argv+argc);
-	for (int i = 0; i < args.size(); i++)
-	{
-	#ifdef ENABLE_SYSLOG
-		if (args[i] == "-S" || args[i] == "--syslog")
-		{
-			cObj::msUseSyslog = 1;
-		}
-		else
-	#endif
-		{
-			stringstream arg(args[i]);
-			arg >> port;
-		}
-	}
 
 	server.StartListening(port);
 	result = server.run(); // run the main loop until it stops itself

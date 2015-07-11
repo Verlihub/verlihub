@@ -55,7 +55,6 @@ SET(VERLIHUB_HDRS
 	cmessagedc.h
 	cmutex.h
 	cmysql.h
-	clog.h
 	cobj.h
 	coperator.h
 	cpcre.h
@@ -136,7 +135,6 @@ SET(VERLIHUB_SRCS
 	cmessagedc.cpp
 	cmutex.cpp
 	cmysql.cpp
-	clog.cpp
 	cobj.cpp
 	coperator.cpp
 	cpcre.cpp

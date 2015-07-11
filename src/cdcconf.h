@@ -92,6 +92,7 @@ public:
 	unsigned int max_passive_sr;
 	unsigned tban_kick;
 	unsigned tban_max;
+	//unsigned int max_length[nEnums::eDC_UNKNOWN+1];
 	unsigned max_nick;
 	unsigned min_nick;
 	string nick_chars;
