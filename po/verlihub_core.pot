@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2015-07-11 22:29+0200\n"
-"PO-Revision-Date: 2015-07-11 22:29+0200\n"
+"POT-Creation-Date: 2015-07-14 20:46+0200\n"
+"PO-Revision-Date: 2015-07-14 20:46+0200\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
 "Language: en_GB\n"
@@ -210,8 +210,8 @@ msgstr ""
 msgid "Protocol flood detected"
 msgstr ""
 
-#: ../src/cconndc.cpp:402 ../src/cdcproto.cpp:2475 ../src/cserverdc.cpp:1802
-#: ../src/cserverdc.cpp:1834 ../src/cserverdc.cpp:1861
+#: ../src/cconndc.cpp:402 ../src/cdcproto.cpp:2475 ../src/cserverdc.cpp:1800
+#: ../src/cserverdc.cpp:1832 ../src/cserverdc.cpp:1859
 msgid "Chat"
 msgstr ""
 
@@ -413,7 +413,7 @@ msgstr ""
 msgid "Message delivered to %d users in zones %s in %s."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:513 ../src/cserverdc.cpp:929
+#: ../src/cdcconsole.cpp:513 ../src/cserverdc.cpp:927
 msgid "Your information"
 msgstr ""
 
@@ -535,27 +535,27 @@ msgid "Total share"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:695 ../src/cdctag.cpp:221 ../src/cdctag.cpp:229
-#: ../src/cinfoserver.cpp:156 ../src/cserverdc.cpp:1941
+#: ../src/cinfoserver.cpp:156 ../src/cserverdc.cpp:1939
 msgid "Not available"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:698 ../src/cinfoserver.cpp:148
-#: ../src/cserverdc.cpp:1944
+#: ../src/cserverdc.cpp:1942
 msgid "Recovery mode"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:699 ../src/cinfoserver.cpp:150
-#: ../src/cserverdc.cpp:1945
+#: ../src/cserverdc.cpp:1943
 msgid "Near capacity"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:700 ../src/cinfoserver.cpp:152
-#: ../src/cserverdc.cpp:1946
+#: ../src/cserverdc.cpp:1944
 msgid "Progressive mode"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:701 ../src/cinfoserver.cpp:154
-#: ../src/cserverdc.cpp:1947
+#: ../src/cserverdc.cpp:1945
 msgid "Normal mode"
 msgstr ""
 
@@ -635,7 +635,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:811
 #, c-format
-msgid "Registration request with password %s"
+msgid "Registration request with password: %s"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:813
@@ -1866,258 +1866,258 @@ msgstr ""
 msgid "You won't see public chat messages, to restore use +chat command."
 msgstr ""
 
-#: ../src/cserverdc.cpp:746
+#: ../src/cserverdc.cpp:744
 msgid ""
 "Hub is currently unable to service your request, please try again in a few "
 "minutes."
 msgstr ""
 
-#: ../src/cserverdc.cpp:755 ../src/cserverdc.cpp:1188
+#: ../src/cserverdc.cpp:753 ../src/cserverdc.cpp:1186
 #, c-format
 msgid "You're still temporarily banned for %s because: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:813
+#: ../src/cserverdc.cpp:811
 msgid "Another user has logged in with same nick and IP address."
 msgstr ""
 
-#: ../src/cserverdc.cpp:827 ../src/cserverdc.cpp:1218
+#: ../src/cserverdc.cpp:825 ../src/cserverdc.cpp:1216
 msgid "Your nick is already taken by another user."
 msgstr ""
 
-#: ../src/cserverdc.cpp:898
+#: ../src/cserverdc.cpp:896
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
 msgstr ""
 
-#: ../src/cserverdc.cpp:900
+#: ../src/cserverdc.cpp:898
 msgid "You must set your password now using +passwd command."
 msgstr ""
 
-#: ../src/cserverdc.cpp:976
+#: ../src/cserverdc.cpp:974
 msgid "Reconnecting too fast"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1205
+#: ../src/cserverdc.cpp:1203
 msgid "Your nick contains forbidden characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1208
+#: ../src/cserverdc.cpp:1206
 #, c-format
 msgid "Valid nick characters: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1212
+#: ../src/cserverdc.cpp:1210
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1215
+#: ../src/cserverdc.cpp:1213
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1223
+#: ../src/cserverdc.cpp:1221
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1226
+#: ../src/cserverdc.cpp:1224
 msgid ""
 "Your nick contains operator prefix but you are not registered, please remove "
 "it."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1229
+#: ../src/cserverdc.cpp:1227
 msgid "Unknown bad nick error, sorry."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1261
+#: ../src/cserverdc.cpp:1259
 msgid "You are banned from this hub"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1277
+#: ../src/cserverdc.cpp:1275
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1423
+#: ../src/cserverdc.cpp:1421
 #, c-format
 msgid ""
 "DDoS detection filtered %lu new connections and found %d new exploited hubs"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1425
+#: ../src/cserverdc.cpp:1423
 #, c-format
 msgid "DDoS detection filtered %lu new connections."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1435
+#: ../src/cserverdc.cpp:1433
 #, c-format
 msgid "DDoS stopped, filtered totally %lu connections."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1502
+#: ../src/cserverdc.cpp:1500
 msgid ""
 "Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, "
 "w(eeks), M(onths) and y(ears)"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1508
+#: ../src/cserverdc.cpp:1506
 msgid "Please provide positive number for time unit."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1528
+#: ../src/cserverdc.cpp:1526
 msgid "Hublist registration results"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1532
+#: ../src/cserverdc.cpp:1530
 #, c-format
 msgid "Sending information to: %s:%d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1538
+#: ../src/cserverdc.cpp:1536
 msgid "Error connecting"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1581
+#: ../src/cserverdc.cpp:1579
 msgid "Done"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1581
 msgid "Error sending"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1597
+#: ../src/cserverdc.cpp:1595
 msgid "Finished registering in hublists."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1609
+#: ../src/cserverdc.cpp:1607
 msgid "Hublist host is empty, nothing to do."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1617
+#: ../src/cserverdc.cpp:1615
 msgid "Registering in hublists, please wait..."
 msgstr ""
 
-#: ../src/cserverdc.cpp:1728
+#: ../src/cserverdc.cpp:1726
 #, c-format
 msgid "Detected clone of user with share %s: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1734
+#: ../src/cserverdc.cpp:1732
 msgid "Clone detected"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1797
+#: ../src/cserverdc.cpp:1795
 msgid "Protocol command has been unlocked after stopped flood from all"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1829
+#: ../src/cserverdc.cpp:1827
 msgid "Protocol command has been locked due to detection of flood from all"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1856
+#: ../src/cserverdc.cpp:1854
 msgid ""
 "Sorry, following protocol command is temporarily locked due to flood "
 "detection"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1904 ../src/cuser.cpp:253
+#: ../src/cserverdc.cpp:1902 ../src/cuser.cpp:253
 #, c-format
 msgid "Nick: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1906
+#: ../src/cserverdc.cpp:1904
 #, c-format
 msgid "IP: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1915
+#: ../src/cserverdc.cpp:1913
 #, c-format
 msgid "Host: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1950
+#: ../src/cserverdc.cpp:1948
 #, c-format
 msgid "Software: %s %s @ %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1951
+#: ../src/cserverdc.cpp:1949
 #, c-format
 msgid "Uptime: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1952
+#: ../src/cserverdc.cpp:1950
 #, c-format
 msgid "Users: %d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1953
+#: ../src/cserverdc.cpp:1951
 #, c-format
 msgid "Share: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1954
+#: ../src/cserverdc.cpp:1952
 #, c-format
 msgid "Status: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:1957
+#: ../src/cserverdc.cpp:1955
 #, c-format
 msgid "Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2017
+#: ../src/cserverdc.cpp:2015
 #, c-format
 msgid "You have been kicked because %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2027
+#: ../src/cserverdc.cpp:2025
 #, c-format
 msgid "Kicked user %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2029
+#: ../src/cserverdc.cpp:2027
 #, c-format
 msgid "Dropped user %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2031
+#: ../src/cserverdc.cpp:2029
 #, c-format
 msgid "with IP %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2034
+#: ../src/cserverdc.cpp:2032
 #, c-format
 msgid "and host %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2063
+#: ../src/cserverdc.cpp:2061
 msgid "dropped"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2067
+#: ../src/cserverdc.cpp:2065
 msgid "Disconnect prevented by a plugin."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2078
+#: ../src/cserverdc.cpp:2076
 #, c-format
 msgid "User banned for %s."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2080
+#: ../src/cserverdc.cpp:2078
 msgid "User banned permanently."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2092
+#: ../src/cserverdc.cpp:2090
 #, c-format
 msgid ""
 "Error kicking user %s because he is protected against all classes below %d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2227
+#: ../src/cserverdc.cpp:2225
 msgid "DDoS detected, gathering attack information..."
 msgstr ""
 
@@ -2408,15 +2408,15 @@ msgstr ""
 msgid "You're now allowed to permanently ban users for %s."
 msgstr ""
 
-#: ../src/cuser.cpp:605
+#: ../src/cuser.cpp:603
 msgid "Unknown chatroom command specified."
 msgstr ""
 
-#: ../src/cuser.cpp:612
+#: ../src/cuser.cpp:610
 msgid "You can't use this chatroom, use main chat instead."
 msgstr ""
 
-#: ../src/cuser.cpp:647
+#: ../src/cuser.cpp:645
 msgid "Hub security doesn't accept private messages, use main chat instead."
 msgstr ""
 
