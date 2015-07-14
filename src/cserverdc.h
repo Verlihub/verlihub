@@ -270,7 +270,7 @@ class cServerDC : public cAsyncSocketServer
 		/*
 			This method is a forwarder for ScriptAPI::OnOpChatMessage
 		*/
-		//bool OnOpChatMessage(string *nick, string *data);
+		bool OnOpChatMessage(string *nick, string *data);
 
 		/**
 		* This method tells the server what the server can receive and what actions to perform depending on hub health.
@@ -828,8 +828,8 @@ private:
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
-			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub)
-			//mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage)
+			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub),
+			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage)
 		{
 		};
 
@@ -873,7 +873,7 @@ private:
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_StrStrStrStr mOnScriptCommand;
 		cVHCBL_ConnText mOnCtmToHub;
-		//cVHCBL_Strings mOnOpChatMessage;
+		cVHCBL_Strings mOnOpChatMessage;
 	};
 
 	sCallBacks mCallBacks; // structure that holds all callbacks

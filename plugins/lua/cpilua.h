@@ -79,7 +79,7 @@ public:
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
-	//virtual bool OnOpChatMessage(string *nick, string *data);
+	virtual bool OnOpChatMessage(string *nick, string *data);
 	char* toString(int);
 	char* longToString(long);
 

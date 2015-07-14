@@ -242,7 +242,7 @@ bool SendToOpChat(char *data)
 		return false;
 	}
 
-	serv->mOpChat->SendPMToAll(data, NULL);
+	serv->mOpChat->SendPMToAll(data, NULL, true);
 	return true;
 }
 

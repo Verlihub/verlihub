@@ -433,7 +433,7 @@ public:
 	virtual bool OnCtmToHub(nSocket::cConnDC *conn, string *ref) { return true; }
 
 	// opchat message
-	//virtual bool OnOpChatMessage(string *nick, string *data) { return true; }
+	virtual bool OnOpChatMessage(string *nick, string *data) { return true; }
 
 	/// per-user data of the plugin
 	virtual cPluginUserData *GetPluginUserData( cUser * );

@@ -808,7 +808,7 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 		if (!text.empty()) text = text.substr(1); // strip space
 
 		if (!text.empty())
-			os << autosprintf(_("Registration request with password %s"), text.c_str());
+			os << autosprintf(_("Registration request with password: %s"), text.c_str());
 		else
 			os << _("Registration request without password");
 

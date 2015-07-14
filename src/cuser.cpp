@@ -553,7 +553,7 @@ cChatRoom::~cChatRoom()
 	mConsole = NULL;
 }
 
-void cChatRoom::SendPMToAll(const string &data, cConnDC *conn)
+void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug)
 {
 	if (!this->mCol || !this->mxServer)
 		return;
@@ -578,14 +578,12 @@ void cChatRoom::SendPMToAll(const string &data, cConnDC *conn)
 	if (conn && conn->mpUser)
 		conn->mpUser->mInList = temp;
 
-	/*
 	#ifndef WITHOUT_PLUGINS
-		string msg(data);
-
-		if (this->mxServer->mC.opchat_name.size() && (StrCompare(mNick, 0, mNick.size(), this->mxServer->mC.opchat_name) == 0))
+		if (!fromplug) {
+			string msg(data);
 			this->mxServer->OnOpChatMessage(&from, &msg);
+		}
 	#endif
-	*/
 }
 
 bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)

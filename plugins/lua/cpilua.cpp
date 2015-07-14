@@ -120,7 +120,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnCtmToHub");
-	//RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnOpChatMessage");
 	return true;
 }
 
@@ -830,7 +830,6 @@ bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 	return true;
 }
 
-/*
 bool cpiLua::OnOpChatMessage(string *nick, string *data)
 {
 	if (nick && data) {
@@ -845,7 +844,6 @@ bool cpiLua::OnOpChatMessage(string *nick, string *data)
 
 	return true;
 }
-*/
 
 char * cpiLua::toString(int num)
 {
