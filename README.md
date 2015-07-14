@@ -18,9 +18,9 @@ Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating 
 Links
 ==============
 
-  Website: http://www.verlihub.net/
-  Documentation: http://www.verlihub.net/doc/
-  Crash Server: http://crash.verlihub.net/
-  Translate: http://transifex.com/projects/p/verlihub-100/
-  Ledokol: http://ledo.feardc.net/
-  Support hub: dchub://hub.verlihub.net:7777/
+  * Website: http://www.verlihub.net/
+  * Documentation: http://www.verlihub.net/doc/
+  * Crash Server: http://crash.verlihub.net/
+  * Translate: http://transifex.com/projects/p/verlihub-100/
+  * Ledokol: http://ledo.feardc.net/
+  * Support hub: dchub://hub.verlihub.net:7777/
