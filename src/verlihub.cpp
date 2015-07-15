@@ -37,6 +37,7 @@
 #include "script_api.h"
 #include "i18n.h"
 #include "dirsettings.h"
+#include <getopt.h>
 
 using namespace std;
 using namespace nVerliHub;
@@ -82,6 +83,9 @@ void mySigHupHandler(int i)
 
 #endif
 
+#define MAIN_LOG_NOTICE if (mainLogger.Log(0)) mainLogger.LogStream()
+#define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
+
 bool DirExists(const char *dirname)
 {
 	DIR *dir ;
@@ -101,12 +105,58 @@ int main(int argc, char *argv[])
 {
 	int result = 0;
 	string ConfigBase;
+	int port = 0;
+	cObj mainLogger("main");
+
+	const char* short_options = "Ss:d:";
+
+	const struct option long_options[] = {
+		{"syslog",          no_argument,        0, 'S'},
+		{"syslog-suffix",   required_argument,  0, 's'},
+		{"config-dir",      required_argument,  0, 'd'},
+		{NULL, 0, NULL, 0}
+	};
+
+	int long_index = -1;
+	int opt = -1;
+	char *OptDirName = NULL;
+
+	while( (opt = getopt_long(argc, argv, short_options, long_options, &long_index)) != -1 ) {
+		switch( opt ) {
+			case 'S':
+#ifdef ENABLE_SYSLOG
+				cObj::msUseSyslog = 1;
+#else
+				MAIN_LOG_NOTICE << "Logging to syslog is disabled at compile time" << endl;
+#endif
+				break;
+			case 's':
+#ifdef ENABLE_SYSLOG
+				cObj::msSyslogIdent += "-";
+				cObj::msSyslogIdent += optarg;
+#else
+				MAIN_LOG_NOTICE << "Logging to syslog is disabled at compile time" << endl;
+#endif
+				break;
+			case 'd':
+				OptDirName = optarg;
+				break;
+
+			default:
+				/* unreachable */
+				break;
+		}
+	}
+	if (optind < argc) {
+		stringstream arg(argv[optind]);
+		arg >> port;
+	}
 
 	#ifdef _WIN32
 		TCHAR Buffer[BUFSIZE];
 
 		if (!GetCurrentDirectory(BUFSIZE, Buffer)) {
-			cout << "Unable to get current directory because: " << GetLastError() << endl;
+			MAIN_LOG_ERROR << "Unable to get current directory because: " << GetLastError() << endl;
 			return 1;
 		}
 
@@ -118,11 +168,15 @@ int main(int argc, char *argv[])
 
 		if (HomeDir) {
 			tmp = HomeDir;
-			tmp += "/.verlihub";
-			DirName = tmp.c_str();
-
-			if (DirExists(DirName))
-				ConfigBase = DirName;
+			tmp += "/.config/verlihub";
+			if (DirExists(tmp.c_str()))
+				ConfigBase = tmp;
+			else {
+				tmp = HomeDir;
+				tmp += "/.verlihub";
+				if (DirExists(tmp.c_str()))
+					ConfigBase = tmp;
+			}
 		}
 
 		DirName = "./.verlihub";
@@ -132,43 +186,46 @@ int main(int argc, char *argv[])
 
 		DirName = getenv("VERLIHUB_CFG");
 
-		if ((DirName != NULL) && DirExists(DirName))
+		if ((OptDirName != NULL) && DirExists(OptDirName))
+			ConfigBase = OptDirName;
+		else if ((DirName != NULL) && DirExists(DirName))
 			ConfigBase = DirName;
 
 		if (!ConfigBase.size())
 			ConfigBase = "/etc/verlihub";
 	#endif
 
-	cout << "Configuration directory: " << ConfigBase << endl;
-	cServerDC server(ConfigBase, argv[0]); // create server
+	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
+	try
+	{
+		cServerDC server(ConfigBase, argv[0]); // create server
 
-	if (!server.mDBConf.locale.empty()) { // set locale when defined
-		cout << "Found locale configuration: " << server.mDBConf.locale << endl;
-		cout << "Setting environment variable LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
-		cout << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
-		char *res = setlocale(LC_ALL, server.mDBConf.locale.c_str());
-		cout << "Setting hub locale: " << ((res) ? res : "Error") << endl;
-		res = bindtextdomain("verlihub", LOCALEDIR);
-		cout << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
-		res = textdomain("verlihub");
-		cout << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
+		if (!server.mDBConf.locale.empty()) { // set locale when defined
+			MAIN_LOG_NOTICE << "Found locale configuration: " << server.mDBConf.locale << endl;
+			MAIN_LOG_NOTICE << "Setting environment variable LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
+			MAIN_LOG_NOTICE << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
+			char *res = setlocale(LC_ALL, server.mDBConf.locale.c_str());
+			MAIN_LOG_NOTICE << "Setting hub locale: " << ((res) ? res : "Error") << endl;
+			res = bindtextdomain("verlihub", LOCALEDIR);
+			MAIN_LOG_NOTICE << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
+			res = textdomain("verlihub");
+			MAIN_LOG_NOTICE << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
+		}
+
+		#ifndef _WIN32
+			signal(SIGPIPE, mySigPipeHandler);
+			signal(SIGIO,   mySigIOHandler);
+			signal(SIGQUIT, mySigQuitHandler);
+			signal(SIGSEGV, mySigServHandler);
+		#endif
+
+		server.StartListening(port);
+		result = server.run(); // run the main loop until it stops itself
+		return result;
 	}
-
-	int port = 0;
-
-	if (argc > 1) {
-		stringstream arg(argv[1]);
-		arg >> port;
+	catch (const char *exception)
+	{
+		MAIN_LOG_ERROR << exception << endl;
+		return 1;
 	}
-
-	#ifndef _WIN32
-		signal(SIGPIPE, mySigPipeHandler);
-		signal(SIGIO, mySigIOHandler);
-		signal(SIGQUIT, mySigQuitHandler);
-		signal(SIGSEGV, mySigServHandler);
-	#endif
-
-	server.StartListening(port);
-	result = server.run(); // run the main loop until it stops itself
-	return result;
 }

@@ -54,16 +54,27 @@ class cObj
 		void SetClassName(const char *name){mClassName=name;}
 		/** return selected log stream */
 		ostream & LogStream();
-		/** error log stream */
+		/** stderr log stream */
 		virtual ostream & ErrLog();
-		/** return the streal where logging  goes to */
+		/** stdout log stream */
 		virtual ostream & Log();
+#ifdef ENABLE_SYSLOG
+	protected:
+		/** syslog log stream */
+		virtual ostream & SysLog(int, bool is_error);
+#endif
 
 	public:
 		/** the Ascii representaition of class name */
 		const char * mClassName;
 		/** all events higher than this are discarded */
 		static int msLogLevel;
+#ifdef ENABLE_SYSLOG
+		/** send log messages to syslog */
+		static bool msUseSyslog;
+		/** syslog identifier */
+		static string msSyslogIdent;
+#endif
 		/** a string stream variable to log */
 		ostream *mToLog;
 		static const string mEmpty;
@@ -73,5 +84,5 @@ class cObj
 		/** object counter */
 		static int msCounterObj;
 };
-}; // namespace nVerliHub
+} // namespace nVerliHub
 #endif
