@@ -32,7 +32,7 @@ namespace nVerliHub {
 	namespace nPerlPlugin {
 		using namespace nSocket;
 
-cPerlInterpreter::cPerlInterpreter()
+cPerlInterpreter::cPerlInterpreter() : cObj("cPerlInterpreter")
 {
 	mPerl = perl_alloc();
 	if (!mPerl) throw "No Memory for Perl";
@@ -93,7 +93,7 @@ bool cPerlInterpreter::CallArgv(const char *Function, char * Args [] )
 	} else if(n==1) {
 	  ret = POPi;
 	} else {
-	  cerr << "Call " << Function << ": expected 1 return value, but " << n << " returned" << endl;
+	  vhErr(1) << "Call " << Function << ": expected 1 return value, but " << n << " returned" << endl;
 	}
 	FREETMPS;
 	LEAVE;

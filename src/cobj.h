@@ -26,6 +26,9 @@
 #define __int64 long long
 #endif
 
+#define vhLog(level) if (Log(level)) LogStream()
+#define vhErr(level) if (ErrLog(level)) LogStream()
+
 using namespace std;
 
 /** Base class for every object, inque method of logging events (virtual)

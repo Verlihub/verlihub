@@ -98,7 +98,7 @@ public:
 	virtual int Save();
 };
 
-class cFloodprotect
+class cFloodprotect: public cObj
 {
 public:
 	cFloodprotect(nSocket::cServerDC *);

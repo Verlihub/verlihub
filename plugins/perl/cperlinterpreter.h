@@ -25,6 +25,7 @@
 
 
 #include <stdio.h>
+#include "src/cobj.h"
 namespace nPerl
 {
 #include <EXTERN.h>               /* from the Perl distribution     */
@@ -51,7 +52,7 @@ namespace nVerliHub {
   *
   * @author Daniel Muller
   */
-class cPerlInterpreter
+class cPerlInterpreter: public cObj
 {
 public:
 	std::string mScriptName;
