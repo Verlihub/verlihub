@@ -21,6 +21,7 @@
 #ifndef NUTILSCGEOIP_H
 #define NUTILSCGEOIP_H
 #include <string>
+#include "cobj.h"
 #ifdef HAVE_LIBGEOIP
 #include <GeoIP.h>
 #include <GeoIPCity.h>
@@ -37,7 +38,7 @@ namespace nVerliHub {
 			This class is used to get the country code of an IP address.
 			Author: Daniel Muller
 		 */
-		class cGeoIP
+		class cGeoIP: public cObj
 		{
 			public:
 				// class constructor

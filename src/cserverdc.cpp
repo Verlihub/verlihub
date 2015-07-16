@@ -2105,7 +2105,7 @@ void cServerDC::DoStackTrace()
 	int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
 
 	if (!addrlen) {
-		cerr << "Stack backtrace is empty, possibly corrupt" << endl;
+		vhErr(0) << "Stack backtrace is empty, possibly corrupt" << endl;
 		return;
 	}
 
@@ -2146,11 +2146,11 @@ void cServerDC::DoStackTrace()
 
 	free(funcname);
 	free(symbollist);
-	cerr << "Stack backtrace:" << endl << endl << bt.str() << endl;
+	vhErr(0) << "Stack backtrace:" << endl << endl << bt.str() << endl;
 	cAsyncConn *http = new cAsyncConn("crash.verlihub.net", 80); // try to send via http
 
 	if (!http || !http->ok) {
-		cerr << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
+		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
 
 		if (http) {
 			http->Close();
@@ -2178,9 +2178,9 @@ void cServerDC::DoStackTrace()
 	http->Write(http_req.str(), true);
 
 	if (http->ok)
-		cerr << "Successfully sent stack backtrace to crash server" << endl;
+		vhErr(0) << "Successfully sent stack backtrace to crash server" << endl;
 	else
-		cerr << "Failed sending to crash server, please send above stack backtrace to developers" << endl;
+		vhErr(0) << "Failed sending to crash server, please send above stack backtrace to developers" << endl;
 
 	http->Close();
 	delete http;

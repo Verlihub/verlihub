@@ -31,7 +31,7 @@ a Utility to interpolate a value of a "cConfig' variable between two time events
 
 @author Daniel Muller
 */
-class cInterpolExp : public cTempFunctionBase
+class cInterpolExp : public cTempFunctionBase, cObj
 {
 public:
 	cInterpolExp(unsigned int &var, long toval, int skip, int togo);

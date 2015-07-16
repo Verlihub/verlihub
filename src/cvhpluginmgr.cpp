@@ -29,9 +29,8 @@ cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string &pluginDir):
 	cPluginManager(pluginDir), mServer(server)
 {
 	SetClassName("cVHPluginMgr");
-	if (Log(0))
-		LogStream() << "using plugins in: " << pluginDir << endl;
-	cout << "------------------------" << endl;
+	vhLog(0) << "using plugins in: " << pluginDir << endl;
+	vhLog(0) << "------------------------" << endl;
 }
 
 cVHPluginMgr::~cVHPluginMgr()
@@ -39,8 +38,7 @@ cVHPluginMgr::~cVHPluginMgr()
 
 void cVHPluginMgr::OnPluginLoad(cPluginBase *pi)
 {
-	if (Log(0))
-		LogStream() << "OnPluginLoad: " << pi->Name() << endl;
+	vhLog(0) << "OnPluginLoad: " << pi->Name() << endl;
 	((cVHPlugin *)pi)->OnLoad(mServer);
 }
 

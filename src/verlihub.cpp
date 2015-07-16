@@ -43,28 +43,32 @@ using namespace std;
 using namespace nVerliHub;
 using namespace nVerliHub::nSocket;
 
+cObj mainLogger("main");
+#define MAIN_LOG_NOTICE if (mainLogger.Log(0)) mainLogger.LogStream()
+#define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
+
 #if ! defined _WIN32
 void mySigPipeHandler(int i)
 {
 	signal(SIGPIPE,mySigPipeHandler);
-	cout << "Received SIGPIPE, ignoring it, " << i << endl;
+	MAIN_LOG_NOTICE << "Received SIGPIPE, ignoring it, " << i << endl;
 }
 
 void mySigIOHandler(int i)
 {
 	signal(SIGIO  ,mySigIOHandler  );
-	cout << endl << "Received SIGIO, ignoring it, " << i << endl;
+	MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
 }
 
 void mySigQuitHandler(int i)
 {
-	cout << "Received a " << i << " signal, quiting";
+	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting";
 	exit(0);
 }
 
 void mySigServHandler(int i)
 {
-	cerr << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
+	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
 	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
 
 	if (serv)
@@ -76,15 +80,12 @@ void mySigServHandler(int i)
 void mySigHupHandler(int i)
 {
 	signal(SIGPIPE,mySigHupHandler);
-	cout << "Received a " << i << " signal";
+	MAIN_LOG_NOTICE << "Received a " << i << " signal";
 	cServerDC *Hub = (cServerDC *)cServerDC::sCurrentServer;
 	if (Hub) Hub->mC.Load();
 }
 
 #endif
-
-#define MAIN_LOG_NOTICE if (mainLogger.Log(0)) mainLogger.LogStream()
-#define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
 
 bool DirExists(const char *dirname)
 {
@@ -106,7 +107,6 @@ int main(int argc, char *argv[])
 	int result = 0;
 	string ConfigBase;
 	int port = 0;
-	cObj mainLogger("main");
 
 	const char* short_options = "Ss:d:";
 
