@@ -44,22 +44,22 @@ extern "C"
 #define W_NOSTRING = "SG083tcs0ODEgbns623OFfew"
 
 // function positions in the hook table:
-enum { W_OnNewConn, W_OnCloseConn, W_OnParsedMsgChat, W_OnParsedMsgPM, W_OnParsedMsgMCTo, W_OnParsedMsgSearch, W_OnParsedMsgSR, W_OnParsedMsgMyINFO, W_OnFirstMyINFO, W_OnParsedMsgValidateNick, W_OnParsedMsgAny, W_OnParsedMsgAnyEx, W_OnParsedMsgSupport, W_OnParsedMsgBotINFO, W_OnParsedMsgVersion, W_OnParsedMsgMyPass, W_OnParsedMsgConnectToMe, W_OnParsedMsgRevConnectToMe, W_OnUnknownMsg, W_OnOperatorCommand, W_OnOperatorKicks, W_OnOperatorDrops, W_OnValidateTag, W_OnUserCommand, W_OnUserLogin, W_OnUserLogout, W_OnTimer, W_OnNewReg, W_OnNewBan };
+enum { W_OnNewConn, W_OnCloseConn, W_OnParsedMsgChat, W_OnParsedMsgPM, W_OnParsedMsgMCTo, W_OnParsedMsgSearch, W_OnParsedMsgSR, W_OnParsedMsgMyINFO, W_OnFirstMyINFO, W_OnParsedMsgValidateNick, W_OnParsedMsgAny, W_OnParsedMsgAnyEx, W_OnOpChatMessage, W_OnCtmToHub, W_OnParsedMsgSupport, W_OnParsedMsgBotINFO, W_OnParsedMsgVersion, W_OnParsedMsgMyPass, W_OnParsedMsgConnectToMe, W_OnParsedMsgRevConnectToMe, W_OnUnknownMsg, W_OnOperatorCommand, W_OnOperatorKicks, W_OnOperatorDrops, W_OnValidateTag, W_OnUserCommand, W_OnUserLogin, W_OnUserLogout, W_OnTimer, W_OnNewReg, W_OnNewBan };
 
 // MAX_HOOKS must be more than the number of elements in above enum
 const int W_MAX_HOOKS = 50;
 
 // function positions in the callback table
-enum { W_SendDataToUser, W_SendDataToAll, W_SendPMToAll, W_CloseConnection, W_GetMyINFO, W_SetMyINFO, W_GetUserClass, W_GetUserHost, W_GetUserIP, W_GetUserCC, W_GetIPCC, W_GetIPCN, W_GetNickList, W_GetOpList, W_Ban, W_KickUser, W_ParseCommand, W_SetConfig, W_GetConfig, W_AddRobot, W_DelRobot, W_SQL, W_SQLQuery, W_SQLFetch, W_SQLFree, W_GetUsersCount, W_GetTotalShareSize, W_UserRestrictions, W_Topic, W_mc, W_usermc, W_classmc, W_pm };
+enum { W_SendToOpChat, W_SendToActive, W_SendToPassive, W_SendToActiveClass, W_SendToPassiveClass, W_SendDataToUser, W_SendDataToAll, W_SendPMToAll, W_CloseConnection, W_GetMyINFO, W_SetMyINFO, W_GetUserClass, W_GetUserHost, W_GetUserIP, W_GetUserCC, W_GetIPCC, W_GetIPCN, W_GetNickList, W_GetOpList, W_Ban, W_KickUser, W_ParseCommand, W_SetConfig, W_GetConfig, W_AddRobot, W_DelRobot, W_SQL, W_SQLQuery, W_SQLFetch, W_SQLFree, W_GetUsersCount, W_GetTotalShareSize, W_GetHubConfigDir, W_UserRestrictions, W_Topic, W_mc, W_usermc, W_classmc, W_pm };
 
-// the maximum number of values that can be returned inside w_Treturn
-#define W_MAX_RETVALS 10
+// MAX_CALLBACKS must be more than the number of elements in above enum
+const int W_MAX_CALLBACKS = 50;
 
 // possible return values, as follows: nothing, long, double, char*, void*, char**
 enum { w_ret_none, w_ret_int, w_ret_float, w_ret_char, w_ret_void, w_ret_tab };
 
-// MAX_CALLBACKS must be more than the number of elements in above enum
-const int W_MAX_CALLBACKS = 50;
+// the maximum number of values that can be returned inside w_Treturn
+#define W_MAX_RETVALS 10
 
 typedef struct
 {

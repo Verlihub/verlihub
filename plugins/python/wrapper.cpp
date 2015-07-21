@@ -136,7 +136,7 @@ w_Targs* w_vapack (const char* format, va_list ap )
 			case 'd': a->args[i].type = 'd'; a->args[i].d = va_arg(ap, double); break;
 			case 'p': a->args[i].type = 'p'; a->args[i].p = va_arg(ap, void*);  break;
 		}
-	if (log_level > 5) { printf("PY: pack   format: %s\n", w_packprint(a)); fflush(stdout); }
+	if (log_level > 5) { log("PY: pack   format: %s\n", w_packprint(a)); }
 	return a;
 }
 
@@ -379,6 +379,31 @@ long BasicCall (int func, PyObject *args, const char *in_format)
 	return 0;
 }
 
+static PyObject * __SendToOpChat(PyObject *self, PyObject *args) // (data)
+{
+	return pybool(BasicCall(W_SendToOpChat, args, "s"));
+}
+
+static PyObject * __SendToActive(PyObject *self, PyObject *args) // (data)
+{
+	return pybool(BasicCall(W_SendToActive, args, "s"));
+}
+
+static PyObject * __SendToPassive(PyObject *self, PyObject *args) // (data)
+{
+	return pybool(BasicCall(W_SendToPassive, args, "s"));
+}
+
+static PyObject * __SendToActiveClass(PyObject *self, PyObject *args) // (data, min_class, max_class)
+{
+	return pybool(BasicCall(W_SendToActiveClass, args, "sll"));
+}
+
+static PyObject * __SendToPassiveClass(PyObject *self, PyObject *args) // (data, min_class, max_class)
+{
+	return pybool(BasicCall(W_SendToPassiveClass, args, "sll"));
+}
+
 static PyObject * __SendDataToUser(PyObject *self, PyObject *args)  // (data, nick)
 {	return pybool( BasicCall( W_SendDataToUser, args, "ss" ) );	}
 
@@ -614,6 +639,10 @@ static PyObject * __GetTotalShareSize(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject * __GetHubConfigDir(PyObject *self, PyObject *args)
+{
+	return Py_BuildValue("s", BasicCall(W_GetHubConfigDir, args, ""));
+}
 
 static PyObject * __usermc(PyObject *self, PyObject *args)  //  (data, nick)
 {	return pybool( BasicCall( W_usermc, args, "ss" ) );	}
@@ -725,6 +754,11 @@ static PyObject * __decode(PyObject *self, PyObject *args)
 
 
 static PyMethodDef w_vh_methods[] = {
+	{"SendToOpChat", __SendToOpChat, METH_VARARGS},
+	{"SendToActive", __SendToActive, METH_VARARGS},
+	{"SendToPassive", __SendToPassive, METH_VARARGS},
+	{"SendToActiveClass", __SendToActiveClass, METH_VARARGS},
+	{"SendToPassiveClass", __SendToPassiveClass, METH_VARARGS},
 	{"SendDataToUser",		__SendDataToUser,		METH_VARARGS},
 	{"SendDataToAll",		__SendDataToAll,		METH_VARARGS},
 	{"SendPMToAll",			__SendPMToAll,			METH_VARARGS},
@@ -751,6 +785,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"SQL",				__SQL,				METH_VARARGS},
 	{"GetUsersCount",		__GetUsersCount,		METH_VARARGS},
 	{"GetTotalShareSize",		__GetTotalShareSize,		METH_VARARGS},
+	{"GetHubConfigDir", __GetHubConfigDir, METH_VARARGS},
 	{"usermc",			__usermc,			METH_VARARGS},
 	{"pm",				__pm,				METH_VARARGS},
 	{"mc",				__mc,				METH_VARARGS},
@@ -1015,26 +1050,26 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 	w_Targs *res = NULL;
 	if (!script->state) return NULL;
 	if (func > W_MAX_HOOKS) return NULL;
-	if (func > W_MAX_HOOKS) return NULL;
 	if (!params) return NULL;
-	
+
 	PyEval_AcquireThread(script->state);
-	
+
 	PyObject * args = NULL;
 	PyObject * pFunc = NULL;
-		
+
 	pFunc = w_GetHook(func);
 	if (!pFunc) { PyEval_ReleaseThread(script->state); return NULL; }
-	
+
 	char *s0 = NULL;
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *s3 = NULL;
 	char *s4 = NULL;
 	char *s5 = NULL;
-	
-	switch(func)
-	{
+	long l0 = 0;
+	long l1 = 0;
+
+	switch (func) {
 		case W_OnTimer:
 			if (! w_unpack( params, ""))
 			{ log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params)); break; }
@@ -1063,24 +1098,40 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 		case W_OnParsedMsgSR:
 		case W_OnParsedMsgAny:
 		case W_OnParsedMsgAnyEx:
+		case W_OnOpChatMessage:
 		case W_OnUnknownMsg:
 			if (! w_unpack( params, "ss", &s0, &s1))
 			{ log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params)); break; }
 			args = Py_BuildValue("(zz)", s0, s1);
 			break;
 		case W_OnOperatorKicks:
-		case W_OnNewReg:
 		case W_OnParsedMsgPM:
 		case W_OnParsedMsgMCTo:
 			if (! w_unpack( params, "sss", &s0, &s1, &s2))
 			{ log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params)); break; }
 			args = Py_BuildValue("(zzz)", s0, s1, s2);
 			break;
+		case W_OnNewReg:
+			if (!w_unpack(params, "sls", &s0, &l0, &s1)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
+				break;
+			}
+
+			args = Py_BuildValue("(zlz)", s0, l0, s1);
+			break;
 		case W_OnNewBan:
 		case W_OnParsedMsgConnectToMe:
 			if (! w_unpack( params, "ssss", &s0, &s1, &s2, &s3))
 			{ log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params)); break; }
 			args = Py_BuildValue("(zzzz)", s0, s1, s2, s3);
+			break;
+		case W_OnCtmToHub:
+			if (!w_unpack(params, "sslls", &s0, &s1, &l0, &l1, &s2)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
+				break;
+			}
+
+			args = Py_BuildValue("(zzllz)", s0, s1, l0, l1, s2);
 			break;
 		case W_OnParsedMsgMyINFO:
 		case W_OnFirstMyINFO:
@@ -1169,6 +1220,8 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 					}
 			//case W_OnParsedMsgAny:
 			//case W_OnParsedMsgAnyEx:
+			//case W_OnOpChatMessage:
+			//case W_OnCtmToHub:
 			//case W_OnUnknownMsg:
 			//case W_OnOperatorKicks:
 			//case W_OnParsedMsgPM:
@@ -1201,8 +1254,7 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 
 const char * w_HookName(int hook)
 {
-	switch(hook)
-	{
+	switch (hook) {
 		case W_OnNewConn: 			return "OnNewConn";
 		case W_OnCloseConn: 		return "OnCloseConn";
 		case W_OnParsedMsgChat: 	return "OnParsedMsgChat";
@@ -1215,6 +1267,8 @@ const char * w_HookName(int hook)
 		case W_OnParsedMsgValidateNick: return "OnParsedMsgValidateNick";
 		case W_OnParsedMsgAny: 		return "OnParsedMsgAny";
 		case W_OnParsedMsgAnyEx:	return "OnParsedMsgAnyEx";
+		case W_OnOpChatMessage: return "OnOpChatMessage";
+		case W_OnCtmToHub: return "OnCtmToHub";
 		case W_OnParsedMsgSupport: 	return "OnParsedMsgSupport";
 		case W_OnParsedMsgBotINFO: 	return "OnParsedMsgBotINFO";
 		case W_OnParsedMsgVersion: 	return "OnParsedMsgVersion";
@@ -1230,7 +1284,7 @@ const char * w_HookName(int hook)
 		case W_OnUserLogin: 		return "OnUserLogin";
 		case W_OnUserLogout: 		return "OnUserLogout";
 		case W_OnTimer: 		return "OnTimer";
-		case W_OnNewReg: 		return "OnNewReg";
+		case W_OnNewReg: return "OnNewReg";
 		case W_OnNewBan: 		return "OnNewBan";
 		default:			return NULL;
 	}	
@@ -1238,8 +1292,12 @@ const char * w_HookName(int hook)
 
 const char * w_CallName(int callback)
 {
-	switch(callback)
-	{
+	switch (callback) {
+		case W_SendToOpChat: return "SendToOpChat";
+		case W_SendToActive: return "SendToActive";
+		case W_SendToPassive: return "SendToPassive";
+		case W_SendToActiveClass: return "SendToActiveClass";
+		case W_SendToPassiveClass: return "SendToPassiveClass";
 		case W_SendDataToUser: 		return "SendDataToUser";
 		case W_SendDataToAll: 		return "SendDataToAll";
 		case W_SendPMToAll: 		return "SendPMToAll";
@@ -1267,6 +1325,7 @@ const char * w_CallName(int callback)
 		case W_SQLFree: 		return "SQLFree";
 		case W_GetUsersCount: 		return "GetUsersCount";
 		case W_GetTotalShareSize: 	return "GetTotalShareSize";
+		case W_GetHubConfigDir: return "GetHubConfigDir";
 		case W_UserRestrictions: 	return "UserRestrictions";
 		case W_Topic: 			return "Topic";
 		case W_mc: 			return "mc";

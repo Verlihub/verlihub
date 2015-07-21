@@ -58,6 +58,8 @@ public:
 	virtual bool OnParsedMsgValidateNick(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgAny(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgAnyEx(nSocket::cConnDC *, nProtocol::cMessageDC *);
+	virtual bool OnOpChatMessage(std::string *, std::string *);
+	virtual bool OnCtmToHub(nSocket::cConnDC *, std::string *);
 	virtual bool OnParsedMsgSupport(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgBotINFO(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgVersion(nSocket::cConnDC *, nProtocol::cMessageDC *);
@@ -72,8 +74,8 @@ public:
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
-	virtual bool OnTimer(long msec);
-	virtual bool OnNewReg(nTables::cRegUserInfo *);
+	virtual bool OnTimer(long);
+	virtual bool OnNewReg(cUser *, std::string *, long);
 	virtual bool OnNewBan(nTables::cBan *);
 
 	bool AutoLoad();
@@ -140,6 +142,11 @@ public:
 };
 	}; // namespace nPythonPlugin
 
+extern "C" w_Targs* _SendToOpChat(int id, w_Targs* args); // (char *data);
+extern "C" w_Targs* _SendToActive(int id, w_Targs* args); // (char *data);
+extern "C" w_Targs* _SendToPassive(int id, w_Targs* args); // (char *data);
+extern "C" w_Targs* _SendToActiveClass(int id, w_Targs* args); // (char *data, long min_class, long max_class);
+extern "C" w_Targs* _SendToPassiveClass(int id, w_Targs* args); // (char *data, long min_class, long max_class);
 extern "C" w_Targs* _SendDataToUser    (int id, w_Targs* args);  //(char *data, char *nick);
 extern "C" w_Targs* _SendDataToAll     (int id, w_Targs* args);  //(char *data, long min_class, long max_class);
 extern "C" w_Targs* _SendPMToAll       (int id, w_Targs* args);  //(char *data, char *from, long min_class, long max_class);
@@ -168,6 +175,7 @@ extern "C" w_Targs* _DelRobot          (int id, w_Targs* args);  //(char *robot)
 extern "C" w_Targs* _SQL               (int id, w_Targs* args);  //(char *query, long limit);
 extern "C" w_Targs* _GetUsersCount     (int id, w_Targs* args);  //();
 extern "C" w_Targs* _GetTotalShareSize (int id, w_Targs* args);  //();
+extern "C" w_Targs* _GetHubConfigDir(int id, w_Targs* args); // ();
 extern "C" w_Targs* _UserRestrictions  (int id, w_Targs* args);  //(char *nick, char *gagtime, char *nopmtime, char *nosearchtime, char *noctmtime);
 extern "C" w_Targs* _Topic             (int id, w_Targs* args);  //(char* topic);
 }; // namespace nVerliHub

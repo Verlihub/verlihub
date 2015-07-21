@@ -79,16 +79,16 @@ bool cConsole::cfGetPythonScript::operator()()
 		(*mOS) << _("Python interpreter is not loaded.");
 		return true;
 	}
-	(*mOS) << _("Loaded Python scripts:") << "\r\n";
 
-	(*mOS) << "\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << "ID";
-	(*mOS) << toUpper(_("Script")) << "\n";
-	(*mOS) << " " << string(6+20,'=') << endl;
+	(*mOS) << _("Loaded Python scripts") << ":\r\n\r\n";
+	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
+	(*mOS) << toUpper(_("Script")) << "\r\n";
+	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
 
-	for(int i = 0; i < GetPI()->Size(); i++) {
+	for (int i = 0; i < GetPI()->Size(); i++) {
 		(*mOS) << " " << setw(6) << setiosflags(ios::left) << GetPI()->mPython[i]->id << GetPI()->mPython[i]->mScriptName << "\r\n";
 	}
+
 	return true;
 }
 
@@ -116,7 +116,7 @@ bool cConsole::cfDelPythonScript::operator()()
 		li = *it;
 		if((number && num == li->id) || (!number && StrCompare(li->mScriptName,0,li->mScriptName.size(),scriptfile) == 0)) {
 			found = true;
-			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
 
@@ -126,9 +126,9 @@ bool cConsole::cfDelPythonScript::operator()()
 
 	if(!found) {
 		if(number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str());
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str());
 	}
 	return true;
 }
@@ -151,9 +151,9 @@ bool cConsole::cfAddPythonScript::operator()()
 
 	GetPI()->mPython.push_back(ip);
 	if(ip->Init())
-		(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str()) << " ";
+		(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str());
 	else {
-		(*mOS) << autosprintf(_("Script %s not found or could not be parsed!."), scriptfile.c_str()) << " ";
+		(*mOS) << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
 		GetPI()->mPython.pop_back();
 		delete ip;
 	}
@@ -175,7 +175,7 @@ bool cConsole::cfLogPythonScript::operator()()
 	ss.str("");
 	ss << level;
    	string newValue = ss.str();
-	(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'"), "pi_python", "log_level", oldValue.c_str(), newValue.c_str()) << "\r\n";
+	(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'."), "pi_python", "log_level", oldValue.c_str(), newValue.c_str());
 	cpiPython::me->LogLevel( atoi(level.c_str()) );
 	return true;
 }
@@ -228,9 +228,9 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 		GetPI()->mPython.push_back(ip);
 		if(ip->Init())
-			(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str());
 		else {
-			(*mOS) << autosprintf(_("Script %s not found or could not be parsed!."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
 			GetPI()->mPython.pop_back();
 			delete ip;
 		}

@@ -120,6 +120,11 @@ void cpiPython::OnLoad(cServerDC *server)
 	{ log("PY: cpiPython::OnLoad   Error locating vh_python_wrapper function symbols: %s\n", dlerror()); return; }
 
 	w_Tcallback* callbacklist = (w_Tcallback*) calloc(W_MAX_CALLBACKS, sizeof(void*));
+	callbacklist[W_SendToOpChat] = &_SendToOpChat;
+	callbacklist[W_SendToActive] = &_SendToActive;
+	callbacklist[W_SendToPassive] = &_SendToPassive;
+	callbacklist[W_SendToActiveClass] = &_SendToActiveClass;
+	callbacklist[W_SendToPassiveClass] = &_SendToPassiveClass;
 	callbacklist[W_SendDataToUser] = &_SendDataToUser;
 	callbacklist[W_SendDataToAll] = &_SendDataToAll;
 	callbacklist[W_SendPMToAll] = &_SendPMToAll;
@@ -148,6 +153,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_SQL] = &_SQL;
 	callbacklist[W_GetUsersCount] = &_GetUsersCount;
 	callbacklist[W_GetTotalShareSize] = &_GetTotalShareSize;
+	callbacklist[W_GetHubConfigDir] = &_GetHubConfigDir;
 	callbacklist[W_UserRestrictions] = &_UserRestrictions;
 	callbacklist[W_Topic] = &_Topic;
 
@@ -180,6 +186,8 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgValidateNick");
 	RegisterCallBack("VH_OnParsedMsgAny");
 	RegisterCallBack("VH_OnParsedMsgAnyEx");
+	RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnParsedMsgSupport");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
 	RegisterCallBack("VH_OnParsedMsgVersion");
@@ -905,6 +913,26 @@ bool cpiPython::OnParsedMsgAnyEx(cConnDC *conn, cMessageDC *msg)
 	return true;
 }
 
+bool cpiPython::OnOpChatMessage(string *nick, string *data)
+{
+	if (nick && data) {
+		w_Targs* args = lib_pack("ss", nick->c_str(), data->c_str());
+		return CallAll(W_OnOpChatMessage, args);
+	}
+
+	return true;
+}
+
+bool cpiPython::OnCtmToHub(cConnDC *conn, string *ref)
+{
+	if (conn && ref) {
+		w_Targs* args = lib_pack("sslls", conn->mMyNick.c_str(), conn->AddrIP().c_str(), conn->AddrPort(), conn->GetServPort(), ref->c_str());
+		return CallAll(W_OnCtmToHub, args);
+	}
+
+	return true;
+}
+
 bool cpiPython::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 {
 	if((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL))
@@ -990,23 +1018,23 @@ bool cpiPython::OnUserLogout(cUser *user)
 
 bool cpiPython::OnTimer(long msec)
 {
-
-	//return true;  // disabled for now
-	w_Targs* args = lib_pack( "" );
+	//return true; // disabled for now
+	w_Targs* args = lib_pack(""); // "l", (long)msec
 	return CallAll(W_OnTimer, args);
 }
 
-bool cpiPython::OnNewReg(cRegUserInfo *reginfo)
+bool cpiPython::OnNewReg(cUser *op, string *nick, long cls) // todo: is not called
 {
-	if(reginfo != NULL)
-	{
-		w_Targs* args = lib_pack( "sss", reginfo->mRegOp.c_str(), reginfo->mNick.c_str(), reginfo->mClass);
-		return CallAll(W_OnNewReg, args);
-	}
-	return true;
+	string opnick("hub-security");
+
+	if (op)
+		opnick = op->mNick;
+
+	w_Targs* args = lib_pack("sls", nick->c_str(), (long)cls, opnick.c_str());
+	return CallAll(W_OnNewReg, args);
 }
 
-bool cpiPython::OnNewBan(cBan *ban)
+bool cpiPython::OnNewBan(cBan *ban) // todo: is not called
 {
 //long mDateStart, long mDateEnd, int mType, unsigned long mRangeMin, unsigned long mRangeMax, string mMail, __int64 mShare, string mHost, string mNick, string mIP
 	if(ban != NULL)
@@ -1099,6 +1127,68 @@ w_Targs* _pm (int id, w_Targs* args) // (char *data, char *nick)
 	return NULL;
 }
 
+w_Targs* _SendToOpChat(int id, w_Targs* args) // (char *data)
+{
+	char *data;
+
+	if (!cpiPython::lib_unpack(args, "s", &data) || !data)
+		return NULL;
+
+	string msg(data);
+	cpiPython::me->server->mOpChat->SendPMToAll(msg, NULL, true);
+	return w_ret1;
+}
+
+w_Targs* _SendToActive(int id, w_Targs* args) // (char *data)
+{
+	char *data;
+
+	if (!cpiPython::lib_unpack(args, "s", &data) || !data)
+		return NULL;
+
+	string msg(data);
+	cpiPython::me->server->mActiveUsers.SendToAll(msg, false, true);
+	return w_ret1;
+}
+
+w_Targs* _SendToPassive(int id, w_Targs* args) // (char *data)
+{
+	char *data;
+
+	if (!cpiPython::lib_unpack(args, "s", &data) || !data)
+		return NULL;
+
+	string msg(data);
+	cpiPython::me->server->mPassiveUsers.SendToAll(msg, false, true);
+	return w_ret1;
+}
+
+w_Targs* _SendToActiveClass(int id, w_Targs* args) // (char *data, long min_class, long max_class)
+{
+	char *data;
+	long minclass, maxclass;
+
+	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data)
+		return NULL;
+
+	string msg(data);
+	cpiPython::me->server->mActiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, true);
+	return w_ret1;
+}
+
+w_Targs* _SendToPassiveClass(int id, w_Targs* args) // (char *data, long min_class, long max_class)
+{
+	char *data;
+	long minclass, maxclass;
+
+	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data)
+		return NULL;
+
+	string msg(data);
+	cpiPython::me->server->mPassiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, true);
+	return w_ret1;
+}
+
 w_Targs* _SendDataToUser (int id, w_Targs* args) // (char *data, char *nick)
 {
 	char *data, *nick;
@@ -1114,7 +1204,7 @@ w_Targs* _SendDataToAll (int id, w_Targs* args) // (char *data, long min_class, 
 {
 	char *data;
 	long minclass, maxclass;
-	if (!cpiPython::cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
+	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
 	if (!data) return NULL;
 	string msg = data;
 	// we would use the call below but it is buggy - it does not care about provided class range
@@ -1402,6 +1492,11 @@ w_Targs* _GetTotalShareSize (int id, w_Targs* args) // ()
 	ostringstream o;
 	o << share;
 	return cpiPython::lib_pack("s", strdup(o.str().c_str()));
+}
+
+w_Targs* _GetHubConfigDir(int id, w_Targs* args) // ()
+{
+	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mConfigBaseDir.c_str())); // todo: returns none
 }
 
 w_Targs* _UserRestrictions (int id, w_Targs* args) // (char *nick, char *nochattime, char *nopmtime, char *nosearchtime, char *noctmtime)
