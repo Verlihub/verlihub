@@ -19,6 +19,7 @@
 */
 
 #include "cobj.h"
+#include "clog.h"
 #include "ctime.h"
 #include <iostream>
 using namespace std;
@@ -32,6 +33,10 @@ using namespace std;
 
 namespace nVerliHub {
 	int cObj::msLogLevel = 4;
+#ifdef ENABLE_SYSLOG
+	bool cObj::msUseSyslog = 0;
+	string cObj::msSyslogIdent = "verlihub";
+#endif
 	int cObj::msCounterObj = 0;
 	const string cObj::mEmpty;
 	using nUtils::cTime;
@@ -54,19 +59,29 @@ cObj::~cObj()
 /** log something into a given stream */
 int cObj::StrLog(ostream &ostr, int level)
 {
-	cTime now;
 	if(level <= msLogLevel)
 	{
-		ostr << " (" << level << ") ";
-		if(1)
+#ifdef ENABLE_SYSLOG
+		if (msUseSyslog)
 		{
-			ostr.width(26);
-			ostr << left << now.AsDate() << " # ";
+			ostr << " (" << level << ") "
+			<< mClassName << " # ";
 		}
-		ostr.width(15);
-		ostr << right << mClassName;
-		ostr.width(0);
-		ostr << left << " - " ;
+		else
+#endif
+		{
+			cTime now;
+			ostr << " (" << level << ") ";
+			if(1)
+			{
+				ostr.width(26);
+				ostr << left << now.AsDate() << " # ";
+			}
+			ostr.width(15);
+			ostr << right << mClassName;
+			ostr.width(0);
+			ostr << left << " - " ;
+		}
 		return 1;
 	}
 	return 0;
@@ -74,15 +89,25 @@ int cObj::StrLog(ostream &ostr, int level)
 
 int cObj::Log(int level)
 {
+#ifdef ENABLE_SYSLOG
+	if (msUseSyslog)
+		mToLog = &SysLog(level, 0);
+	else
+#endif
 	mToLog = &Log();
-	return StrLog(cout, level);
+	return StrLog(*mToLog, level);
 }
 
 /** error Log or not an event */
 int cObj::ErrLog(int level)
 {
+#ifdef ENABLE_SYSLOG
+	if (msUseSyslog)
+		mToLog = &SysLog(level, 1);
+	else
+#endif
 	mToLog = &ErrLog();
-	return StrLog(cerr, level);
+	return StrLog(*mToLog, level);
 }
 
 /** return the streal where logging  goes to */
@@ -103,4 +128,14 @@ ostream & cObj::LogStream()
 	return *mToLog;
 }
 
-}; // namespace nVerliHub
+#ifdef ENABLE_SYSLOG
+/** syslog log stream */
+ostream & cObj::SysLog(int level, bool is_error)
+{
+	static nLog::cSyslogStream sysLog(msSyslogIdent, 1);
+	sysLog.SetLevel(level, is_error);
+	return sysLog;
+}
+#endif
+
+} // namespace nVerliHub

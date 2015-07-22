@@ -459,7 +459,7 @@ namespace nVerliHub {
 				 * Class constructor.
 				 * @param initialSize Initial size of the hash array.
 				 */
-				tHashArray(unsigned initialSize=1024)
+				tHashArray(unsigned initialSize=1024): cObj("tHashArray")
 				{
 					mData = new tData(initialSize);
 					mSize = 0;

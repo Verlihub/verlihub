@@ -50,7 +50,7 @@ int cFloodCfg::Save()
 	return 0;
 }
 
-cFloodprotect::cFloodprotect(cServerDC * server) : mS(server), mCfg(server)
+cFloodprotect::cFloodprotect(cServerDC * server) : mS(server), mCfg(server), cObj("cFloodProtect")
 {
 }
 
@@ -214,18 +214,18 @@ int cFloodprotect::KickAll(cConnDC *conn)
 			{
 				if(tempConn->mpUser)
 				{
-					cout << "KICKING: " << tempConn->mpUser->mNick << endl;
+					vhLog(2) << "KICKING: " << tempConn->mpUser->mNick << endl;
 				}
 				else
 				{
-					cout << "KICKING: Could not determine nick!" << endl;
+					vhLog(2) << "KICKING: Could not determine nick!" << endl;
 				}
 				tempConn->CloseNow();
 				cnt++;
 			}
 		}
 	}
-	cout << "CNT: " << cnt << endl;
+	vhLog(3) << "CNT: " << cnt << endl;
 	return cnt;
 }
 

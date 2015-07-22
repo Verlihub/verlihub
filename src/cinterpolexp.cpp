@@ -29,9 +29,10 @@ cInterpolExp::cInterpolExp(unsigned int &var, long toval, int togo, int skip):
 	mVariable(var),
 	mTargetValue(toval),
 	mStepsToGo(togo),
-	mSkipSteps(skip)
+	mSkipSteps(skip),
+	cObj("cInterpolExp")
 {
-	cout << " constructor " << endl;
+	vhLog(5) << " constructor " << endl;
 	mInitValue = mVariable;
 	mCurrentValue = mInitValue;
 	mNextStep = (mTargetValue - mInitValue) /2;
@@ -50,13 +51,13 @@ cInterpolExp::~cInterpolExp()
  */
 void cInterpolExp::step()
 {
-	cout << " step " << mStepsToGo << "  " << mSkipedSteps << "  "  << mSkipSteps << endl;
+	vhLog(5) << " step " << mStepsToGo << "  " << mSkipedSteps << "  "  << mSkipSteps << endl;
 	mStepsToGo --;
 	if( ( mSkipedSteps++ ) >= mSkipSteps )
 	{
 		mSkipedSteps = 0;
 		mVariable += mNextStep;
-		cout << "step " << mNextStep << " value " << mVariable << endl;
+		vhLog(5) << "step " << mNextStep << " value " << mVariable << endl;
 		mNextStep /= 2;
 	}
 }

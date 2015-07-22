@@ -400,7 +400,7 @@ int cAsyncConn::SetupUDP(const string &host, int port)
 	mSockDesc = CreateSock(true);
 
 	if(mSockDesc == INVALID_SOCKET) {
-		cout << "Error getting socket.\n" << endl;
+		vhErr(1) << "Error getting socket." << endl;
 		ok = false;
 		return -1;
 	}
@@ -415,7 +415,7 @@ int cAsyncConn::SetupUDP(const string &host, int port)
 		ok = true;
 		return 0;
 	} else {
-		cout << "Error resolving host " << host << endl;
+		vhErr(2) << "Error resolving host " << host << endl;
 		ok = false;
 		return -1;
 	}
@@ -440,7 +440,7 @@ int cAsyncConn::Connect(const string &host, int port)
 	mSockDesc = CreateSock();
 
 	if(mSockDesc == INVALID_SOCKET) {
-		cout << "Error getting socket.\n" << endl;
+		vhErr(1) << "Error getting socket." << endl;
 		ok = false;
 		return -1;
 	}
@@ -457,14 +457,14 @@ int cAsyncConn::Connect(const string &host, int port)
 
 		int s = connect(mSockDesc, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr));
 		if(s==-1) {
-			cout << "Error connecting to " << host << ":" << port << endl;
+			vhErr(1) << "Error connecting to " << host << ":" << port << endl;
 			ok = false;
 			return -1;
 		}
 		ok = true;
 		return 0;
 	} else {
-		cout << "Error resolving host " << host << endl;
+		vhErr(2) << "Error resolving host " << host << endl;
 		ok = false;
 		return -1;
 	}
@@ -544,7 +544,7 @@ int cAsyncConn::ListenSock(int sock)
 	if(sock < 0)
 		return -1;
 	if(listen(sock, 100) == -1) {
-		cout << "Error listening" << endl;
+		vhErr(0) << "Error listening" << endl;
 		return -1;
 	}
 	return sock;
@@ -620,7 +620,7 @@ tSocket cAsyncConn::AcceptSock()
 
 	if(socknum == INVALID_SOCKET) {
 		#ifdef _WIN32
-		cout << WSAGetLastError() << "  " << sizeof(fd_set) << endl;
+		vhErr(1) << WSAGetLastError() << "  " << sizeof(fd_set) << endl;
 		#endif
 		return INVALID_SOCKET;
 	}

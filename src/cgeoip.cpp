@@ -31,7 +31,7 @@ namespace nVerliHub {
 	namespace nUtils {
 
 #ifdef HAVE_LIBGEOIP
-cGeoIP::cGeoIP(): mGICO(TryCountryDB(GEOIP_STANDARD)), mGICI(TryCityDB(GEOIP_STANDARD))
+cGeoIP::cGeoIP(): mGICO(TryCountryDB(GEOIP_STANDARD)), mGICI(TryCityDB(GEOIP_STANDARD)), cObj("cGeoIP")
 {
 }
 
@@ -281,7 +281,7 @@ GeoIP *cGeoIP::TryCountryDB(int flags)
 	mGICO = GeoIP_new(flags);
 
 	if (!mGICO)
-		cout << "Database not detected: Maxmind GeoIP Country" << endl;
+		vhLog(1) << "Database not detected: Maxmind GeoIP Country" << endl;
 
 	return mGICO;
 }
@@ -339,7 +339,7 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 		mGICI = GeoIP_open("./GeoIPCity.dat", flags);
 
 	if (!mGICI)
-		cout << "Database not detected: Maxmind GeoIP City" << endl;
+		vhLog(1) << "Database not detected: Maxmind GeoIP City" << endl;
 
 	return mGICI;
 }

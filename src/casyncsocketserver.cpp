@@ -96,8 +96,8 @@ cAsyncSocketServer::~cAsyncSocketServer()
 	#ifdef _WIN32
 	WSACleanup();
 	#endif
-	cout << "Allocated objects: " << cObj::GetCount() << endl;
-	cout << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
+	vhLog(2) << "Allocated objects: " << cObj::GetCount() << endl;
+	vhLog(2) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
 }
 
 int cAsyncSocketServer::run()
@@ -106,8 +106,7 @@ int cAsyncSocketServer::run()
 	mbRun = true;
 	cTime now;
 
-	if (Log(1))
-		LogStream() << "Main loop start" << endl;
+	vhLog(1) << "Main loop start" << endl;
 
 	while (mbRun) {
 		mTime.Get();
@@ -130,8 +129,7 @@ int cAsyncSocketServer::run()
 			mbRun = false;
 	}
 
-	if (Log(1))
-		LogStream() << "Main loop stop with code " << mRunResult << endl;
+	vhLog(1) << "Main loop stop with code " << mRunResult << endl;
 
 	return mRunResult;
 }
@@ -212,7 +210,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 		todo: does this leave any memory leaks?
 	*/
 	if ((it == mConnList.end()) || (it == emptyit)) {
-		cout << "Invalid iterator for connection: " << old_conn << endl;
+		vhErr(1) << "Invalid iterator for connection: " << old_conn << endl;
 		badit = true;
 		//throw "Deleting connection without iterator";
 	}
@@ -221,7 +219,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 		cAsyncConn *found = (*it);
 
 		if (found != old_conn) {
-			cout << "Connection not found: " << old_conn << endl;
+			vhErr(1) << "Connection not found: " << old_conn << endl;
 			throw "Deleting non existing connection";
 		}
 	}
@@ -358,7 +356,7 @@ void cAsyncSocketServer::TimeStep()
 				i++;
 			} while(new_conn && i <= 101);
 #ifdef _WIN32
-			cout << "num connections" << mConnChooser.mConnList.size() << endl;
+			vhLog(1) << "num connections" << mConnChooser.mConnList.size() << endl;
 #endif
 
 		}
