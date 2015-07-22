@@ -105,9 +105,17 @@ function _register() # nickname, class, password, input_password_crypt, reg_date
 function get_path_from_defaults()
 {
 	CONFIG_DIR="/etc/verlihub"
-	[ -d $PREFIX/etc/verlihub ] && CONFIG_DIR="$PREFIX/etc/verlihub"
-	[ -d ./.verlihub ] && CONFIG_DIR="./.verlihub"
-	[ -d ~/.verlihub ] && CONFIG_DIR="${HOME}/.verlihub"
+	GETENT=$(which getent);
+	if [ -n $GETENT ]; then
+		VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}');
+		if [ -n "$VH_USER_DIR" ] && [ -e "$VH_USER_DIR/dbconfig" ]; then
+			CONFIG_DIR="$VH_USER_DIR";
+		fi
+	fi
+	[ -e $PREFIX/etc/verlihub/dbconfig ]  && CONFIG_DIR="$PREFIX/etc/verlihub"
+	[ -e ./.verlihub/dbconfig ] && CONFIG_DIR="./.verlihub"
+	[ -e ~/.verlihub/dbconfig ] && CONFIG_DIR="${HOME}/.verlihub"
+	[ -e ~/.config/verlihub/dbconfig ] && CONFIG_DIR="${HOME}/.config/verlihub"
 }
 
 # Check if path is correct or not and set it as config directory; 
@@ -121,7 +129,6 @@ function set_path() #path_to_be_checked, #print_searching
 		fi
 		get_path_from_defaults
 	fi
-
 	if [ -d "$CONFIG_DIR" ] && [ -f "$CONFIG_DIR/dbconfig" ]; then
 		export VERLIHUB_CFG=$CONFIG_DIR
 		return 0;		

@@ -685,19 +685,51 @@ function install()
 	# Select path where to put verlihub config file
 	IS_CHOOSEN_FOLDER_OK=false
 
+	declare -A FOLDERS;
+	FCOUNT=0;
+	IS_VH_CFG_NEEDS_CHOWN=false
+	VH_USER_DIR=""
+
+	if [ $EUID -eq 0 ]; then
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="/etc/verlihub";
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="$PREFIX/etc/verlihub";
+		GETENT=$(which getent);
+		if [ -n $GETENT ]; then
+			VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}');
+			if [ -n "$VH_USER_DIR" ]; then
+				IS_VH_CFG_NEEDS_CHOWN=true
+				FCOUNT=$(expr $FCOUNT + 1);
+				FOLDERS[$FCOUNT]="$VH_USER_DIR";
+			fi
+		fi
+	else
+		echo_s "\nRun vh --install as " $BLUE_BOLD;
+		echo_s "root" $RED_BOLD;
+		echo_s " to perfom system-wide setup" $BLUE_BOLD;
+		echo "";
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="$HOME/.config/verlihub";
+		if [ -d "$HOME/.verlihub" ]; then
+			FCOUNT=$(expr $FCOUNT + 1);
+			FOLDERS[$FCOUNT]="$HOME/.verlihub";
+		fi
+	fi
+
 	until $IS_CHOOSEN_FOLDER_OK;
 	do
 		echo_s "\n-- You need to choose a place for the configuration files\n" $RED_BOLD;
-		echo_s "\t[1] " $BOLD && echo "/etc/verlihub"
-		echo_s "\t[2] " $BOLD && echo "$HOME/.verlihub"
-		echo_s "\t[3] " $BOLD && echo "$PREFIX/etc/verlihub"
-		echo_s "\t[4] " $BOLD && echo "Other, choose path where put config file"
+		for i in `seq 1 $FCOUNT`; do
+			echo_s "\t[$i] " $BOLD && echo ${FOLDERS[$i]}
+		done
+		echo_s "\t[9] " $BOLD && echo "Other, choose path where put config file"
 
 		local VALIDATE=false
 		until $VALIDATE
 		do	
 			local CHOOSEN_FOLDER=$(ask "Select number")
-			if [ "$CHOOSEN_FOLDER" = 1 ] || [ "$CHOOSEN_FOLDER" = 2 ] || [ "$CHOOSEN_FOLDER" = 3 ] || [ "$CHOOSEN_FOLDER" = 4 ]; then
+			if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ] || [ "$CHOOSEN_FOLDER" == "9" ]; then
 				VALIDATE=true
 			else
 				echo_s "-- Insert a valid number from the list\n" $RED
@@ -705,13 +737,12 @@ function install()
 		done
 
 		# Get selected folder
-		case $CHOOSEN_FOLDER in
-			"1") CHOOSEN_FOLDER="/etc/verlihub/";;
-			"2") CHOOSEN_FOLDER="$HOME/.verlihub/";;
-			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub/";;
-			"4") CHOOSEN_FOLDER=$(ask "Type complete path");
-		esac
-	
+		if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ]; then
+			CHOOSEN_FOLDER="${FOLDERS[$CHOOSEN_FOLDER]}";
+		elif [ "$CHOOSEN_FOLDER" == "9" ]; then
+			CHOOSEN_FOLDER=$(ask "Type complete path");
+		fi
+
 		CHOOSEN_FOLDER_NOT_EXISTS=false
 		if [ -d $CHOOSEN_FOLDER ]; then
 			echo -n "-- The folder '$CHOOSEN_FOLDER' already exists (existing configuration will be backup). "
@@ -772,6 +803,11 @@ function install()
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
         ln -s $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+
+	if $IS_VH_CFG_NEEDS_CHOWN && [ "$CHOOSEN_FOLDER" == "$VH_USER_DIR" ]; then
+		chown -R verlihub "$CHOOSEN_FOLDER";
+		chmod 0750 "$CHOOSEN_FOLDER";
+	fi
 
 	# Check if file has been created correctly
 	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false

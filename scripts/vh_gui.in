@@ -81,15 +81,34 @@ function _ask_admin_access()
 
 function _choose_folder() #title, #message
 {
+	FOLDERS=("$HOME/.config/verlihub" "$HOME/.verlihub" "/etc/verlihub" "$PREFIX/etc/verlihub");
+	GETENT=$(which getent);
+	if [ -n $GETENT ]; then
+		VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}');
+		if [ -n "$VH_USER_DIR" ]; then
+			FOLDERS+=("$VH_USER_DIR");
+		fi
+	fi
+	POSSIBLE_FOLDER=();
+	DIALOG_OPTIONS=();
+	I=1;
+	for f in ${FOLDERS[@]}; do
+		echo "$f";
+		if [ -e "$f/dbconfig" ]; then
+			POSSIBLE_FOLDER[$I]=$f;
+			IS_DEF="off";
+			if [ $I == "1" ]; then IS_DEF="on"; fi
+			DIALOG_OPTIONS+=($I $f $IS_DEF);
+			I=$(expr $I + 1);
+		fi
+	done
 	IS_CHOOSEN_FOLDER_OK=false
 	until $IS_CHOOSEN_FOLDER_OK;
 	do
 		$DIALOG --title "$1"\
 			--cancel-label "Quit" \
 			--radiolist "You need to specify hub with configuration folder. Move using [UP] [DOWN], [Space] to select a item" 14 80 17\
-			"1" "/etc/verlihub" "on"\
-			"2" "$HOME/.verlihub" "off"\
-			"3" "$PREFIX/etc/verlihub" "off"\
+			${DIALOG_OPTIONS[@]}\
 			"Other" "Choose path where put config file" "off" 2>$_TEMP
 
 		OPT=${?}
@@ -97,14 +116,13 @@ function _choose_folder() #title, #message
 			_quit;
 		fi
 	
-		CHOOSEN_FOLDER=`cat $_TEMP`
+		CHOOSEN_FOLDER=`cat $_TEMP`;
 		# Get selected folder
-		case $CHOOSEN_FOLDER in
-			"1") CHOOSEN_FOLDER="/etc/verlihub";;
-			"2") CHOOSEN_FOLDER="$HOME/.verlihub";;
-			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub";;
-			"Other") $DIALOG --title "$TITLE" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;;
-		esac
+		if [ -n "$POSSIBLE_FOLDER[$CHOOSEN_FOLDER]" ]; then
+			CHOOSEN_FOLDER=${POSSIBLE_FOLDER[$CHOOSEN_FOLDER]};
+		else
+			$DIALOG --title "$TITLE" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;
+		fi
 		
 		if ! set_path $CHOOSEN_FOLDER > /dev/null 2>&1 ; then
 			$DIALOG --title "$TITLE" --msgbox "The path '$CHOOSEN_FOLDER' is not a valid config directory. Please specify another folder." 8 49
@@ -378,6 +396,41 @@ install() {
 		_quit;
 	fi
 
+	declare -A FOLDERS;
+	FCOUNT=0;
+	IS_VH_CFG_NEEDS_CHOWN=false
+	VH_USER_DIR=""
+
+	if [ $EUID -eq 0 ]; then
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="/etc/verlihub";
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="$PREFIX/etc/verlihub";
+		GETENT=$(which getent);
+		if [ -n $GETENT ]; then
+			VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}');
+			if [ -n "$VH_USER_DIR" ]; then
+				IS_VH_CFG_NEEDS_CHOWN=true
+				FCOUNT=$(expr $FCOUNT + 1);
+				FOLDERS[$FCOUNT]="$VH_USER_DIR";
+			fi
+		fi
+	else
+		$DIALOG --msgbox "Run vh_gui as root if you want to perfom system-wide setup" 5 45
+		FCOUNT=$(expr $FCOUNT + 1);
+		FOLDERS[$FCOUNT]="$HOME/.config/verlihub";
+		if [ -d "$HOME/.verlihub" ]; then
+			FCOUNT=$(expr $FCOUNT + 1);
+			FOLDERS[$FCOUNT]="$HOME/.verlihub";
+		fi
+	fi
+	FOLDERS_OPTIONS=();
+	for i in `seq 1 $FCOUNT`; do
+		local IS_DEF="off";
+		if [ $i == "1" ]; then IS_DEF="on"; fi
+		FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);
+	done
+
 	# Select path where to put verlihub config file
 	IS_CHOOSEN_FOLDER_OK=false
 	until $IS_CHOOSEN_FOLDER_OK;
@@ -385,9 +438,7 @@ install() {
 		$DIALOG --title "Verlihub's config folder"\
 			--cancel-label "Quit" \
 			--radiolist "You need to choose a place for the configuration files. Move using [UP] [DOWN], [Space] to select a item" 14 80 17\
-			"1" "/etc/verlihub" "on"\
-			"2" "$HOME/.verlihub" "off"\
-			"3" "$PREFIX/etc/verlihub" "off"\
+			${FOLDERS_OPTIONS[*]}\
 			"Other" "Choose path where put config file" "off" 2>$_TEMP
 
 		OPT=${?}
@@ -397,12 +448,11 @@ install() {
 	
 		CHOOSEN_FOLDER=`cat $_TEMP`
 		# Get selected folder
-		case $CHOOSEN_FOLDER in
-			"1") CHOOSEN_FOLDER="/etc/verlihub";;
-			"2") CHOOSEN_FOLDER="$HOME/.verlihub";;
-			"3") CHOOSEN_FOLDER="$PREFIX/etc/verlihub";;
-			"Other") $DIALOG --title "Verlihub's config folder" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;;
-		esac
+		if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ]; then
+			CHOOSEN_FOLDER="${FOLDERS[$CHOOSEN_FOLDER]}";
+		else
+			$DIALOG --title "Verlihub's config folder" --dselect "$HOME" 25 60 2>$_TEMP && CHOOSEN_FOLDER=`cat $_TEMP` || _quit;
+		fi
 		
 		CHOOSEN_FOLDER_NOT_EXISTS=false
 		if [ -d $CHOOSEN_FOLDER ]; then
@@ -444,15 +494,20 @@ install() {
 	echo "db_data = $MYSQL_DB_NAME" >> $CONFIG
 	echo "db_user = $MYSQL_USER" >> $CONFIG
 	echo "db_pass = $MYSQL_PASSWORD" >> $CONFIG
-	
+
 	$DIALOG --title "Verlihub's config folder" --msgbox "Config file has been successfully written in '$CONFIG'. Now they will be created other directories and files." 7 60
-	
+
 	$DIALOG --infobox "Copy files and accessing to MySQL server; this could take some times..." 5 45
 	# Import other files from verlihub directory
 	cp $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
         ln -s $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+
+    if $IS_VH_CFG_NEEDS_CHOWN && [ "$CHOOSEN_FOLDER" == "$VH_USER_DIR" ]; then
+		chown -R verlihub "$CHOOSEN_FOLDER";
+		chmod 0750 "$CHOOSEN_FOLDER";
+	fi
 
 	# Check if file has been created correctly
 	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false
