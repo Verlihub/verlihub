@@ -40,25 +40,42 @@ a class encapsulating operations with mysql conenction
 
 @author Daniel Muller
 */
-class cMySQL : public cObj
+class cMySQL: public cObj
 {
 	friend class cQuery;
 	public:
 		cMySQL();
-		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
+		cMySQL(string &host, string &user, string &pass, string &data, string &charset, string &collation);
 		~cMySQL();
 		void Init();
-		bool Connect(string &host, string &user, string &passwd, string &db, string &charset);
+		bool Connect(string &host, string &user, string &passwd, string &db);
+
 		string GetDBName()
 		{
 			return mDBName;
 		}
-		public: void Error(int level, string text);
+
+		string GetDBCharset()
+		{
+			return mDBCharset;
+		}
+
+		string GetDBCollation()
+		{
+			return mDBCollation;
+		}
+
+		public:
+			void Error(int level, string text);
 
 	private:
 		string mDBName;
+		string mDBCharset;
+		string mDBCollation;
 		MYSQL *mDBHandle;
 };
+
 	}; // namespace nMySQL
 }; // namespace nVerliHub
+
 #endif

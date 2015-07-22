@@ -22,23 +22,22 @@
 
 namespace nVerliHub {
 	namespace nConfig {
-cDBConf::cDBConf(const string &file):cConfigFile(file,false)
+cDBConf::cDBConf(const string &file): cConfigFile(file, false)
 {
 	msLogLevel = 1;
-	Add("db_host",db_host,string("localhost"));
-	Add("db_user",db_user,string("verlihub"));
-	Add("db_pass",db_pass,string(""));
-	Add("db_data",db_data,string("verlihub"));
-	Add("db_charset", db_charset, string(""));
-	Add("config_name",config_name,string("config"));
-	Add("locale",locale,string(""));
+	Add("db_host", db_host, string("localhost"));
+	Add("db_user", db_user, string("verlihub"));
+	Add("db_pass", db_pass, string(""));
+	Add("db_data", db_data, string("verlihub"));
+	Add("db_charset", db_charset, string("utf8"));
+	Add("db_collation", db_collation, string("utf8_unicode_ci"));
+	Add("config_name", config_name, string("config"));
+	Add("locale", locale, string(""));
 	Load();
 }
 
-
 cDBConf::~cDBConf()
-{
-}
+{}
 
 	}; // namespace nConfig
 }; // namespace nVerliHub

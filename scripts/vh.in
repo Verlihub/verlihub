@@ -44,7 +44,7 @@ function _ask_admin_access()
 help_me()
 {
 	echo_s "$SCRIPT\n" $BOLD
-	echo "This is a utility script for VerliHub, usage:"
+	echo "This is a utility script for Verlihub, usage:"
 	echo
 	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
@@ -607,8 +607,16 @@ function install()
 		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" $MYSQL_PASSWORD)
 		MYSQL_HOST=$(get_db_host)
 		MYSQL_HOST=$(ask "MySQL hostname" $MYSQL_HOST)
+		MYSQL_CHARSET="utf8"
+		MYSQL_CHARSET=$(ask "MySQL character set (experts only, leave for default)" $MYSQL_CHARSET)
+		MYSQL_COLLATION="utf8_unicode_ci"
+		MYSQL_COLLATION=$(ask "MySQL collation (experts only, leave for default)" $MYSQL_COLLATION)
+		VH_HUB_LOCALE=""
+		VH_HUB_LOCALE=$(ask "Hub locale (experts only, leave for default)" $VH_HUB_LOCALE)
+		VH_HUB_ENCODING="CP1252"
+		VH_HUB_ENCODING=$(ask "Hub encoding (experts only, leave for default)" $VH_HUB_ENCODING)
 
-		echo_s "This is information about MySQL:\n"
+		echo_s "This is information about your MySQL server and the hub:\n"
 		echo_s "\tDatabase" $BOLD
 		echo_s ": $MYSQL_DB_NAME \n"
 		echo_s "\tUsername" $BOLD
@@ -617,6 +625,15 @@ function install()
 		echo_s ": $MYSQL_PASSWORD \n"
 		echo_s "\tHostname" $BOLD
 		echo_s ": $MYSQL_HOST \n"
+		echo_s "\tCharset" $BOLD
+		echo_s ": $MYSQL_CHARSET \n"
+		echo_s "\tCollation" $BOLD
+		echo_s ": $MYSQL_COLLATION \n"
+		echo_s "\tHub locale" $BOLD
+		echo_s ": $VH_HUB_LOCALE \n"
+		echo_s "\tHub encoding" $BOLD
+		echo_s ": $VH_HUB_ENCODING \n"
+
 		yes_or_no "Do you want to continue with this information?" && ARE_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
 	done
 
@@ -675,8 +692,8 @@ function install()
 	if [ "_$MYSQL_ADMIN_USER"  = "_" -o "_$MYSQL_ADMIN_PASSWORD"  = "_" ]; then
 		_ask_admin_access
 	fi
-	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
-	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; 
+	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`$MYSQL_CHARSET\` COLLATE \`$MYSQL_COLLATION\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to '$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
+	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ;
 	then
 		echo_s "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again\n"
 		exit 1;
@@ -790,11 +807,17 @@ function install()
 	fi
 
 	# Print information for MySQL access
-	echo "db_host = $MYSQL_HOST" >  $CONFIG
+	echo "db_host = $MYSQL_HOST" > $CONFIG
 	echo "db_data = $MYSQL_DB_NAME" >> $CONFIG
 	echo "db_user = $MYSQL_USER" >> $CONFIG
 	echo "db_pass = $MYSQL_PASSWORD" >> $CONFIG
-	
+	echo "db_charset = $MYSQL_CHARSET" >> $CONFIG
+	echo "db_collation = $MYSQL_COLLATION" >> $CONFIG
+
+	if [ ! -z "$VH_HUB_LOCALE" ]; then
+		echo "locale = $VH_HUB_LOCALE" >> $CONFIG
+	fi
+
 	echo_s "\n-- Config file has been successfully written in '$CONFIG'.\n" $RED_BOLD
 	echo "-- Now they will be created other directories and files."
 	echo "-- Copy files and accessing to MySQL server; this could take some times..."
@@ -864,6 +887,7 @@ function install()
 	_mysql_update "hub_name" $VH_HUB_NAME
 	_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
 	_mysql_update "listen_port" $VH_HUB_PORT
+	_mysql_update "hub_encoding" $VH_HUB_ENCODING
 	if ! _register $VH_MASTER_NAME "10" $VH_MASTER_PASSWORD "plain" ; then
 		echo_s "-- A error occured with registering user '$VH_MASTER_NAME'. Please do it manually\n" $RED_BOLD
 	fi

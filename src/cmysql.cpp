@@ -20,22 +20,25 @@
 
 #include "cmysql.h"
 #include "mysql_version.h"
+#include "i18n.h"
 
 namespace nVerliHub {
 
 	namespace nMySQL {
 
-cMySQL::cMySQL() : cObj("cMySQL")
+cMySQL::cMySQL(): cObj("cMySQL")
 {
 	Init();
 }
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"), mDBName(data)
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, string &collation): cObj("cMySQL"), mDBName(data)
 {
+	mDBCharset = charset;
+	mDBCollation = collation;
 	Init();
 
-	if (!Connect(host, user, pass, data, charset))
-		throw "Mysql connection error.";
+	if (!Connect(host, user, pass, data))
+		throw "MySQL connection error";
 }
 
 cMySQL::~cMySQL()
@@ -47,14 +50,15 @@ void cMySQL::Init()
 {
 	mDBHandle = NULL;
 	mDBHandle = mysql_init(mDBHandle);
-	if(!mDBHandle)
-		Error(0, string("Can't init mysql structure :(.: "));
+
+	if (!mDBHandle)
+		Error(0, _("Can't initiate MySQL structure"));
 }
 
-bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
+bool cMySQL::Connect(string &host, string &user, string &pass, string &data)
 {
 	if (Log(1))
-		LogStream() << "Connecting to MySQL server: " << user << " @ " << host << " / " << data << " using " << ((charset.empty()) ? "utf8" : charset) << " encoding" << endl;
+		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using character set '" << ((mDBCharset.size()) ? mDBCharset : "utf8") << "' and collation '" << ((mDBCollation.size()) ? mDBCollation : "utf8_unicode_ci") << "'" << endl;
 
 	mysql_options(mDBHandle, MYSQL_OPT_COMPRESS, 0);
 
@@ -62,11 +66,11 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 		mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, "true");
 	#endif
 
-	if (!charset.empty())
-		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
+	if (mDBCharset.size())
+		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, mDBCharset.c_str());
 
 	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, 0, 0)) {
-		Error(1, string("Connection to mysql server failed: "));
+		Error(1, _("Connection to MySQL server failed"));
 		return false;
 	}
 
@@ -75,7 +79,8 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 
 void cMySQL::Error(int level, string text)
 {
-	if(ErrLog(level)) LogStream() << text << mysql_error(mDBHandle) << endl;
+	if (ErrLog(level))
+		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;
 }
 
 	}; // namepspace nMySQL

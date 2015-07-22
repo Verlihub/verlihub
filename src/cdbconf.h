@@ -29,7 +29,7 @@ config of the database
 
 @author Daniel Muller
 */
-class cDBConf : public cConfigFile
+class cDBConf: public cConfigFile
 {
 public:
 	cDBConf(const string &);
@@ -40,6 +40,7 @@ public:
 	string db_pass;
 	string db_data;
 	string db_charset;
+	string db_collation;
 	string config_name;
 	string locale;
 	//bool allow_exec;
@@ -49,4 +50,5 @@ public:
 
 	}; // namespace nConfig
 };// namespace nVerliHub
+
 #endif
