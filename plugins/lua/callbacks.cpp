@@ -1591,7 +1591,7 @@ int _GetLuaBots(lua_State *L)
 
 		if (li) {
 			for (unsigned int j = 0; j < li->botList.size(); j++) {
-				//if (li->botList[j]) {
+				if (li->botList[j] && li->mScriptName.size() && li->botList[j]->uNick && li->botList[j]->uMyINFO) {
 					lua_pushnumber(L, ++key);
 					lua_newtable(L);
 					int k = lua_gettop(L);
@@ -1613,7 +1613,7 @@ int _GetLuaBots(lua_State *L)
 					lua_rawset(L, k);
 
 					lua_rawset(L, z);
-				//}
+				}
 			}
 		}
 	}
