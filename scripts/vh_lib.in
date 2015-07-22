@@ -70,11 +70,14 @@ function _register() # nickname, class, password, input_password_crypt, reg_date
 		fi;
 	fi;
 
-	# Registration date
-	if [ "_$5" != "_" ]; then	
-		SQL_FIELDS="$SQL_FIELDS,reg_date"
+	# registration date
+	SQL_FIELDS="$SQL_FIELDS,reg_date"
+	if [ "_$5" != "_" ]; then
 		SQL_VALUES="$SQL_VALUES,'$5'"
+	else # set registration date regardless
+		SQL_VALUES="$SQL_VALUES,unix_timestamp(now())"
 	fi;
+
 	# OP creator
 	if [ "_$6" != "_" ]; then	
 		SQL_FIELDS="$SQL_FIELDS,reg_op"
