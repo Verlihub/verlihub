@@ -210,6 +210,7 @@ function help_me()
 	echo_s "  -r, --run" $RED && echo -e "\t[ID]\t\tRun a single hub or all hubs togheter"
 	echo_s "  -s, --stop" $RED && echo -e "\t[ID]\t\tStop a single hub or all hubs togheter"
 	echo_s "  -q, --restart" $RED && echo -e "\t[ID]\t\tRestart a single hub or all hubs togheter"
+	echo_s "  -R, --reload" $RED && echo -e "\t[ID]\t\tForce hub to reload it's configuration and caches"
 	echo_s "  -v, --version" $RED && echo -e "\t\t\tPrint version information"
 	echo_s "  -h, --help" $RED && echo -e "\t\t\tShow this help"
 }
@@ -234,6 +235,7 @@ function action() # action type [1 = start, 2= stop, 3= restart], number [option
 		1) ACTION=run;;
 		2) ACTION=stop;;
 		3) ACTION=restart;;
+		4) ACTION=reload;;
 		"A") exit 1;;
 	esac;
 
@@ -375,6 +377,7 @@ case "_$1" in
 	"_-r"|"_--run")		shift; action 1 $*;;
 	"_-s"|"_--stop")	shift; action 2 $*;;
 	"_-q"|"_--restart")	shift; action 3 $*;;
+	"_-R"|"_--reload")	shift; action 4 $*;;
 	"_-a"|"_--add")		shift; add $*;;
 	"_-d"|"_--del")		shift; del $*;;
 	*)					echo_s "Unknown option $1, try $SCRIPT --help\n" $RED; exit;;
