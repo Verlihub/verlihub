@@ -23,6 +23,7 @@ shift
 PID=
 
 trap "stop_hub" SIGQUIT SIGTERM SIGKILL SIGINT
+trap "reload_hub" SIGHUP
 
 function start_hub()
 {
@@ -38,6 +39,16 @@ function stop_hub()
 		echo Killing hub..
 		kill -3 $PID
 		echo
+	fi
+}
+
+function reload_hub()
+{
+	if [ "_$PID" != "_" ]; then
+		echo Reloading hub..
+		kill -SIGHUP $PID
+		echo
+		wait $PID
 	fi
 }
 

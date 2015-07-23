@@ -79,10 +79,11 @@ void mySigServHandler(int i)
 
 void mySigHupHandler(int i)
 {
-	signal(SIGPIPE,mySigHupHandler);
-	MAIN_LOG_NOTICE << "Received a " << i << " signal";
+	MAIN_LOG_NOTICE << "Received a " << i << " signal" << endl;
 	cServerDC *Hub = (cServerDC *)cServerDC::sCurrentServer;
-	if (Hub) Hub->mC.Load();
+	if (Hub) {
+		Hub->Reload();
+	}
 }
 
 #endif
@@ -107,13 +108,15 @@ int main(int argc, char *argv[])
 	int result = 0;
 	string ConfigBase;
 	int port = 0;
+	int verbosity = 0;
 
-	const char* short_options = "Ss:d:";
+	const char* short_options = "Ss:d:v";
 
 	const struct option long_options[] = {
 		{"syslog",          no_argument,        0, 'S'},
 		{"syslog-suffix",   required_argument,  0, 's'},
 		{"config-dir",      required_argument,  0, 'd'},
+		{"verbose",         no_argument,        0, 'v'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -140,6 +143,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'd':
 				OptDirName = optarg;
+				break;
+			case 'v':
+				verbosity++;
 				break;
 
 			default:
@@ -199,6 +205,7 @@ int main(int argc, char *argv[])
 	try
 	{
 		cServerDC server(ConfigBase, argv[0]); // create server
+		cObj::msLogLevel += verbosity;
 
 		if (!server.mDBConf.locale.empty()) { // set locale when defined
 			MAIN_LOG_NOTICE << "Found locale configuration: " << server.mDBConf.locale << endl;
@@ -217,6 +224,7 @@ int main(int argc, char *argv[])
 			signal(SIGIO,   mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
+			signal(SIGHUP,  mySigHupHandler);
 		#endif
 
 		server.StartListening(port);

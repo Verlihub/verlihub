@@ -1099,15 +1099,8 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdReload(istringstream &cmd_line, cConnDC *conn)
 {
-	ostringstream os;
-
-	os << _("Reloading triggers, custom redirects, configuration and registration list cache.");
-	mTriggers->ReloadAll();
-	mRedirects->ReloadAll();
-	mOwner->mC.Load();
-	mOwner->DCPublicHS(os.str().c_str(),conn);
-	if (mOwner->mC.use_reglist_cache)
-		mOwner->mR->UpdateCache();
+	mOwner->DCPublicHS(_("Reloading triggers, custom redirects, configuration and registration list cache.") ,conn);
+	mOwner->Reload();
 	return 1;
 }
 

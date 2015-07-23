@@ -2266,5 +2266,15 @@ void cServerDC::CtmToHubClearList()
 	mCtmToHubList.clear();
 }
 
+void cServerDC::Reload()
+{
+	mC.Load();
+	mCo->mTriggers->ReloadAll();
+	mCo->mRedirects->ReloadAll();
+	mCo->mDCClients->ReloadAll();
+	if (mC.use_reglist_cache)
+		mR->UpdateCache();
+}
+
 	}; // namespace nServer
 }; // namespace nVerliHub
