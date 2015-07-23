@@ -93,6 +93,20 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	mCallBacks(&mPluginManager)
 {
 	sCurrentServer = this;
+
+	if ( ! mDBConf.locale.empty())
+	{
+		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
+		vhLog(1) << "Setting environment variable LANG: " << ((setenv("LANG", mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
+		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
+		char *res = setlocale(LC_ALL, mDBConf.locale.c_str());
+		vhLog(1) << "Setting hub locale: " << ((res) ? res : "Error") << endl;
+		res = bindtextdomain("verlihub", LOCALEDIR);
+		vhLog(1) << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
+		res = textdomain("verlihub");
+		vhLog(1) << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
+	}
+
 	mSetupList.CreateTable();
 	mC.AddVars();
 	mC.Save();

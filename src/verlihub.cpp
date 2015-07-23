@@ -200,18 +200,6 @@ int main(int argc, char *argv[])
 	{
 		cServerDC server(ConfigBase, argv[0]); // create server
 
-		if (!server.mDBConf.locale.empty()) { // set locale when defined
-			MAIN_LOG_NOTICE << "Found locale configuration: " << server.mDBConf.locale << endl;
-			MAIN_LOG_NOTICE << "Setting environment variable LANG: " << ((setenv("LANG", server.mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
-			MAIN_LOG_NOTICE << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
-			char *res = setlocale(LC_ALL, server.mDBConf.locale.c_str());
-			MAIN_LOG_NOTICE << "Setting hub locale: " << ((res) ? res : "Error") << endl;
-			res = bindtextdomain("verlihub", LOCALEDIR);
-			MAIN_LOG_NOTICE << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
-			res = textdomain("verlihub");
-			MAIN_LOG_NOTICE << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
-		}
-
 		#ifndef _WIN32
 			signal(SIGPIPE, mySigPipeHandler);
 			signal(SIGIO,   mySigIOHandler);
