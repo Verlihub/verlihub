@@ -39,6 +39,7 @@ public:
 		std::basic_streambuf<char>()
 	{
 		openlog(name.size() ? name.data() : NULL, LOG_PID, is_daemon ? LOG_DAEMON : LOG_USER);
+		mLevel = LOG_INFO;
 	}
 	~cSyslogStreamBuf() { closelog(); }
 
@@ -50,7 +51,7 @@ protected:
 	void SetLevel(int level, bool is_error);
 
 private:
-	int mLevel = LOG_INFO;
+	int mLevel;
 
 	std::string buffer;
 };
