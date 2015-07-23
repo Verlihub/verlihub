@@ -66,7 +66,7 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	cAsyncSocketServer(), // create parent class
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
-	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_collation), // create and connect to mysql
+	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // create and connect to mysql
 	mC(*this), // create the config object
 	mSetupList(mMySQL),
 	mP(this),

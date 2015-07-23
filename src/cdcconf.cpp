@@ -87,12 +87,12 @@ void cDCConf::AddVars()
 	Add("extra_listen_ports", extra_listen_ports,string(""));
 	// End hub info and basic settings
 
-	// Hublist configuration
-	Add("hublist_host",hublist_host,string("reg.publichublist.com hublist.te-home.net reg.hublist.org"));
-	Add("hublist_port",hublist_port,2501);
-	Add("hublist_send_minshare",hublist_send_minshare,true);
-	Add("timer_hublist_period", mS.mHublistTimer.mMinDelay.tv_sec,(__typeof__( mS.mHublistTimer.mMinDelay.tv_sec)) 3*3600);
-	// End hublist configuration
+	// begin hublist configuration
+	Add("hublist_host", hublist_host, string("hublist.te-home.net"));
+	Add("hublist_port", hublist_port, 2501);
+	Add("hublist_send_minshare", hublist_send_minshare, true);
+	Add("timer_hublist_period", mS.mHublistTimer.mMinDelay.tv_sec, (__typeof__(mS.mHublistTimer.mMinDelay.tv_sec)) 3 * 3600);
+	// end hublist configuration
 
 	// Max users configuration
 	Add("max_users",max_users_total,6000);

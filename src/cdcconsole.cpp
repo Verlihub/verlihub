@@ -618,9 +618,10 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 
 	os << "Verlihub " << VERSION << " @ " << __CURR_DATE_TIME__ << "\r\n";
 	os << " == " << toUpper(_("Authors")) << " ==\r\n";
-	os << "\tVerliba, Daniel Muller, dan at verliba dot cz" << "\r\n";
-	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net" << "\r\n";
-	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru" << "\r\n";
+	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
+	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
+	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru\r\n";
+	os << "\tVovochka404, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
 	os << " == " << toUpper(_("Translators")) << " ==\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN), Polish (Zorro, Krzychu), German (Ettore Atalan),\r\n";

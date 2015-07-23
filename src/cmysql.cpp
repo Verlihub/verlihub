@@ -19,6 +19,7 @@
 */
 
 #include "cmysql.h"
+#include "cconfmysql.h"
 #include "mysql_version.h"
 #include "i18n.h"
 
@@ -31,13 +32,11 @@ cMySQL::cMySQL(): cObj("cMySQL")
 	Init();
 }
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, string &collation): cObj("cMySQL"), mDBName(data)
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"), mDBName(data)
 {
-	mDBCharset = charset;
-	mDBCollation = collation;
 	Init();
 
-	if (!Connect(host, user, pass, data))
+	if (!Connect(host, user, pass, data, charset))
 		throw "MySQL connection error";
 }
 
@@ -55,10 +54,10 @@ void cMySQL::Init()
 		Error(0, _("Can't initiate MySQL structure"));
 }
 
-bool cMySQL::Connect(string &host, string &user, string &pass, string &data)
+bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
 {
 	if (Log(1))
-		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using character set '" << ((mDBCharset.size()) ? mDBCharset : "utf8") << "' and collation '" << ((mDBCollation.size()) ? mDBCollation : "utf8_unicode_ci") << "'" << endl;
+		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : DEFAULT_CHARSET) << endl;
 
 	mysql_options(mDBHandle, MYSQL_OPT_COMPRESS, 0);
 
@@ -66,8 +65,8 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data)
 		mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, "true");
 	#endif
 
-	if (mDBCharset.size())
-		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, mDBCharset.c_str());
+	if (charset.size())
+		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
 
 	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, 0, 0)) {
 		Error(1, _("Connection to MySQL server failed"));

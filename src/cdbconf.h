@@ -40,7 +40,6 @@ public:
 	string db_pass;
 	string db_data;
 	string db_charset;
-	string db_collation;
 	string config_name;
 	string locale;
 	//bool allow_exec;

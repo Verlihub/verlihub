@@ -45,24 +45,14 @@ class cMySQL: public cObj
 	friend class cQuery;
 	public:
 		cMySQL();
-		cMySQL(string &host, string &user, string &pass, string &data, string &charset, string &collation);
+		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
 		~cMySQL();
 		void Init();
-		bool Connect(string &host, string &user, string &passwd, string &db);
+		bool Connect(string &host, string &user, string &passwd, string &db, string &charset);
 
 		string GetDBName()
 		{
 			return mDBName;
-		}
-
-		string GetDBCharset()
-		{
-			return mDBCharset;
-		}
-
-		string GetDBCollation()
-		{
-			return mDBCollation;
 		}
 
 		public:
@@ -70,8 +60,6 @@ class cMySQL: public cObj
 
 	private:
 		string mDBName;
-		string mDBCharset;
-		string mDBCollation;
 		MYSQL *mDBHandle;
 };
 

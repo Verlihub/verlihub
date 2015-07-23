@@ -39,7 +39,7 @@ void cMySQLColumn::AppendDesc(ostream &os) const
 {
 	string isNull;
 	mNull ? isNull = "" : isNull = " NOT NULL";
-	os << mName << " " << mType /*<< " CHARACTER SET " << ((mQuery.getMySQL().GetDBCharset().size()) ? mQuery.getMySQL().GetDBCharset() : "utf8") << " COLLATE " << ((mQuery.getMySQL().GetDBCollation().size()) ? mQuery.getMySQL().GetDBCollation() : "utf8_unicode_ci") << " "*/<< isNull; // who added charset here? query fails
+	os << mName << " " << mType << isNull;
 
 	if (mDefault.size()) {
 		os << " DEFAULT '";
@@ -79,7 +79,6 @@ bool cMySQLTable::GetCollation()
 	}
 
 	n = mQuery.StoreResult();
-
 	cMySQLColumn col;
 
 	for (; i < n; i++) {
@@ -144,8 +143,7 @@ bool cMySQLTable::CreateTable()
 	if (mExtra.size())
 		mQuery.OStream() << ", " << mExtra;
 
-	// todo: alter charset if db_charset changes
-	mQuery.OStream() << ") CHARACTER SET " << ((mQuery.getMySQL().GetDBCharset().size()) ? mQuery.getMySQL().GetDBCharset() : "utf8") << " COLLATE " << ((mQuery.getMySQL().GetDBCollation().size()) ? mQuery.getMySQL().GetDBCollation() : "utf8_unicode_ci");
+	mQuery.OStream() << ") CHARACTER SET " << DEFAULT_CHARSET << " COLLATE " << DEFAULT_COLLATION;
 	mQuery.Query();
 	mQuery.Clear();
 	return true;
@@ -157,7 +155,6 @@ void cMySQLTable::TruncateTable()
 	mQuery.Query();
 	mQuery.Clear();
 }
-
 
 bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 {
@@ -186,11 +183,11 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 		}
 	}
 
-	if (GetCollation() && (mCollation != ((mQuery.getMySQL().GetDBCollation().size()) ? mQuery.getMySQL().GetDBCollation() : "utf8_unicode_ci"))) {
+	if (GetCollation() && (mCollation != DEFAULT_COLLATION)) {
 		if (Log(1))
-			LogStream() << "Altering table '" << mName << "', setting collation to '" << ((mQuery.getMySQL().GetDBCollation().size()) ? mQuery.getMySQL().GetDBCollation() : "utf8_unicode_ci") << "'" << endl;
+			LogStream() << "Altering table " << mName << ", setting character set to " << DEFAULT_CHARSET << " and collation to " << DEFAULT_COLLATION << endl;
 
-		mQuery.OStream() << "ALTER TABLE " << mName << " CHARACTER SET " << ((mQuery.getMySQL().GetDBCharset().size()) ? mQuery.getMySQL().GetDBCharset() : "utf8") << " COLLATE " << ((mQuery.getMySQL().GetDBCollation().size()) ? mQuery.getMySQL().GetDBCollation() : "utf8_unicode_ci");
+		mQuery.OStream() << "ALTER TABLE " << mName << " CHARACTER SET " << DEFAULT_CHARSET << " COLLATE " << DEFAULT_COLLATION;
 		mQuery.Query();
 		mQuery.Clear();
 	}
@@ -200,6 +197,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 
 	}; // namespace nMySQL
 	namespace nConfig {
+
 cConfMySQL::cConfMySQL(cMySQL &mysql): mMySQL(mysql), mQuery(mMySQL), mMySQLTable(mMySQL)
 {
 	if (mItemCreator != NULL)

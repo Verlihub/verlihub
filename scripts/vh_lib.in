@@ -192,6 +192,12 @@ function get_db_user() { echo $(get_var_from_conf "db_user" "verlihub"); }
 # Return db_pass
 function get_db_pass() { echo $(get_var_from_conf "db_pass" "$TIMESTAMP"); }
 
+# return db_charset
+function get_db_charset() { echo $(get_var_from_conf "db_charset" ""); }
+
+# return locale
+function get_hub_locale() { echo $(get_var_from_conf "locale" ""); }
+
 # Connect to MySQL server
 function mysql_connect() { 
 	@BASH_PATH@ -c "mysql -h $(get_db_host) -D $(get_db_name) -u $(get_db_user) -p$(get_db_pass) $1" && return 0 || return 1;

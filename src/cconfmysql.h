@@ -27,6 +27,9 @@
 #include "cmysql.h"
 #include "cquery.h"
 
+#define DEFAULT_COLLATION "utf8_unicode_ci"
+#define DEFAULT_CHARSET "utf8"
+
 using namespace std;
 
 namespace nVerliHub {
@@ -66,7 +69,6 @@ public:
 	};
 };
 
-
 class cMySQLColumn
 {
 public:
@@ -81,7 +83,7 @@ public:
 	bool operator!=(const cMySQLColumn &col) const;
 };
 
-class cMySQLTable : public cObj
+class cMySQLTable: public cObj
 {
 public:
 	cMySQLTable(cMySQL &);
@@ -106,7 +108,7 @@ public:
   *@author Daniel Muller
   */
 
-class cConfMySQL : public cConfigBase //<sMySQLItemCreator>
+class cConfMySQL: public cConfigBase //<sMySQLItemCreator>
 {
 public:
 	cConfMySQL(nMySQL::cMySQL &mysql);
@@ -226,4 +228,5 @@ private:
 
 	}; // namespace nConfig
 }; // namespace nVerliHub
+
 #endif
