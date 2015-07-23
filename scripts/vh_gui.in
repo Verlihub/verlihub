@@ -140,6 +140,7 @@ help_me()
 	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
 	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
+	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
 	echo_s "  -s, --stop" $RED && echo -e "\t[path_to_dbconfig] \tStop the hub from the given dbconfig path"
 	echo_s "  -t, --status" $RED && echo -e "\t[path_to_dbconfig] \tCheck if hub is running or not"
 	echo_s "  -v, --version" $RED && echo -e "\t\t\t\tPrint version information"
@@ -271,6 +272,39 @@ function kill_hub() # restart
 	if [ "$1" != "restart" ]; then
 		$DIALOG --title "$TITLE" --msgbox "Done" 6 30
 	fi
+}
+
+function reload_hub() # restart
+{
+	# Set title
+	if [ "$1" != "restart" ]; then
+		TITLE="Stop a hub"
+	else
+		TITLE="Restart hub"
+	fi	
+
+	_choose_folder $TITLE
+
+	# Check if hub is already running
+	if ! _is_hub_running $CONFIG_DIR ; then
+		$DIALOG --title "$TITLE" --msgbox "Hub with config path '$CONFIG_DIR' is not running." 8 49
+		if [ -f $PID_FILE ]; then
+			if [ -w $PID_FILE ]; then
+				rm -f $PID_FILE
+			else
+				$DIALOG --title "$TITLE" --msgbox "PID file $PID_FILE already exists. Can't remove it, please do it manually" 8 49
+			fi
+		fi
+		return 1;
+	fi
+	_get_pid $CONFIG_DIR
+	$DIALOG --infobox "Reloading verlihub (PID: $PID_RESULT)..." 4 45
+	if ! kill -SIGHUP $PID_RESULT > /dev/null 2>&1 ; then
+		$DIALOG --title "$TITLE" --msgbox "Error: USER HAS NO RIGHT TO SEND SIGNALS TO THE PROCESS. Please run vh_gui --reload as root" 7 50 
+		_quit;
+	fi
+	
+	$DIALOG --title "$TITLE" --msgbox "Done" 6 30
 }
 
 hub_status()
@@ -590,6 +624,7 @@ case "_$1" in
 	"_-r"|"_--run")		run_hub;;
 	"_-s"|"_--stop")	kill_hub;;
 	"_-q"|"_--restart")	kill_hub "restart"; run_hub "restart";;
+	"_-R"|"_--reload")	reload_hub;;
 	"_-t"|"_--status")	hub_status;;
 # 	"_-g"|"_--geoip")	shift; update_geoip $1;;
 # 	"_-a"|"_--autoload")shift; autoload $@;;

@@ -646,6 +646,9 @@ class cServerDC : public cAsyncSocketServer
 		int CtmToHubRefererList(string &list);
 		void CtmToHubClearList();
 
+		// Reloads configuration and all caches.
+		void Reload();
+
 protected: // Protected methods
 	/**
 	* This method is called when user is logged in.

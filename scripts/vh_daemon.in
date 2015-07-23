@@ -23,13 +23,17 @@ shift
 PID=
 
 trap "stop_hub" SIGQUIT SIGTERM SIGKILL SIGINT
+trap "reload_hub" SIGHUP
 
 function start_hub()
 {
 	$VERLIHUB $* &
 	PID=$!
-	wait $PID
-	return $?
+	while ps -p $PID  2>&1 >/dev/null; do # this cycle is needed to stay here after SIGHUP
+		wait $PID
+		TMP=$?
+	done
+	return $TMP
 }
 
 function stop_hub()
@@ -37,6 +41,15 @@ function stop_hub()
 	if [ "_$PID" != "_" ]; then
 		echo Killing hub..
 		kill -3 $PID
+		echo
+	fi
+}
+
+function reload_hub()
+{
+	if [ "_$PID" != "_" ]; then
+		echo Reloading hub..
+		kill -SIGHUP $PID
 		echo
 	fi
 }

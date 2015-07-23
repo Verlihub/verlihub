@@ -49,6 +49,7 @@ help_me()
 	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
 	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
+	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
 	echo_s "  -s, --stop" $RED && echo -e "\t[path_to_dbconfig] \tStop the hub from the given dbconfig path"
 	echo_s "  -t, --status" $RED && echo -e "\t[path_to_dbconfig] \tCheck if hub is running or not"
 	echo_s "  -g, --geoip" $RED && echo -e "\t\t\t\tUpdate GeoIP"
@@ -219,6 +220,35 @@ function kill_hub() # path_to_dbconfig
 	rm -f "$CONFIG_DIR/pid"
 	sleep 2
 	echo " Done"
+}
+
+function reload_hub()
+{
+	# Check config directory
+	if ! set_path $1 ; then
+		exit 1;
+	fi
+
+	# Check if hub is already running
+	if ! _is_hub_running $CONFIG_DIR ; then
+		echo_s "-- Hub with config path '$CONFIG_DIR' is not running\n" $RED
+		if [ -f $PID_FILE ]; then
+			if [ -w $PID_FILE ]; then
+				rm -f $PID_FILE
+			else
+				echo_s "-- PID file $PID_FILE already exists. Can't remove it, please do it manually\n" $RED
+			fi
+		fi
+		return 1;
+	fi
+	
+	_get_pid $CONFIG_DIR
+	echo -n "-- Reloading verlihub (PID: $PID_RESULT)..."
+	if ! kill -SIGHUP $PID_RESULT > /dev/null 2>&1 ; then
+		echo_s " USER HAS NO RIGHT TO SEND SIGNALS TO THE PROCESS\n" $RED
+		exit 1;
+	fi
+	echo_s "[OK]\n" $GREEN
 }
 
 # Check if hub is running or not
@@ -909,6 +939,7 @@ case "_$1" in
 	"_-r"|"_--run")		shift; run_hub $@;;
 	"_-s"|"_--stop")	shift; kill_hub $@;;
 	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;
+	"_-R"|"_--reload")	shift; reload_hub $@;;
 	"_-t"|"_--status")	shift; hub_status $1;;
 	"_-g"|"_--geoip")	shift; update_geoip $1;;
 	"_-a"|"_--autoload")shift; autoload $@;;
