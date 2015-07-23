@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-14 20:46+0200\n"
-"PO-Revision-Date: 2015-07-14 20:46+0200\n"
+"POT-Creation-Date: 2015-07-23 13:20+0200\n"
+"PO-Revision-Date: 2015-07-23 13:20+0200\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
 "Language: en_GB\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.2\n"
+"X-Generator: Poedit 1.8.3\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
@@ -220,7 +220,7 @@ msgid "Running Lua scripts:"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:113 ../plugins/perl/cconsole.cpp:71
-#: ../plugins/python/cconsole.cpp:86
+#: ../plugins/python/cconsole.cpp:85
 msgid "Script"
 msgstr ""
 
@@ -262,6 +262,7 @@ msgid "Script %s is now running."
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:212 ../plugins/lua/cconsole.cpp:261
+#: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:233
 #, c-format
 msgid "Script %s not found or could not be parsed."
 msgstr ""
@@ -271,7 +272,7 @@ msgstr ""
 msgid "Script %s not stopped  because it is not running."
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:280
+#: ../plugins/lua/cconsole.cpp:280 ../plugins/python/cconsole.cpp:178
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
 msgstr ""
@@ -445,22 +446,16 @@ msgstr ""
 msgid "Python interpreter is not loaded."
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:82
-msgid "Loaded Python scripts:"
+#: ../plugins/python/cconsole.cpp:83
+msgid "Loaded Python scripts"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:84
+msgid "ID"
 msgstr ""
 
 #: ../plugins/python/cconsole.cpp:148 ../plugins/python/cconsole.cpp:225
 msgid "Failed to allocate new Python interpreter."
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:233
-#, c-format
-msgid "Script %s not found or could not be parsed!."
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:178
-#, c-format
-msgid "Updated %s.%s from '%s' to '%s'"
 msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66
