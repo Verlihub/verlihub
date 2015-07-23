@@ -29,8 +29,11 @@ function start_hub()
 {
 	$VERLIHUB $* &
 	PID=$!
-	wait $PID
-	return $?
+	while ps -p $PID  2>&1 >/dev/null; do # this cycle is needed to stay here after SIGHUP
+		wait $PID
+		TMP=$?
+	done
+	return $TMP
 }
 
 function stop_hub()
@@ -48,7 +51,6 @@ function reload_hub()
 		echo Reloading hub..
 		kill -SIGHUP $PID
 		echo
-		wait $PID
 	fi
 }
 
