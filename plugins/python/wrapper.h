@@ -50,7 +50,7 @@ enum { W_OnNewConn, W_OnCloseConn, W_OnParsedMsgChat, W_OnParsedMsgPM, W_OnParse
 const int W_MAX_HOOKS = 50;
 
 // function positions in the callback table
-enum { W_SendToOpChat, W_SendToActive, W_SendToPassive, W_SendToActiveClass, W_SendToPassiveClass, W_SendDataToUser, W_SendDataToAll, W_SendPMToAll, W_CloseConnection, W_GetMyINFO, W_SetMyINFO, W_GetUserClass, W_GetUserHost, W_GetUserIP, W_GetUserCC, W_GetIPCC, W_GetIPCN, W_GetNickList, W_GetOpList, W_Ban, W_KickUser, W_ParseCommand, W_SetConfig, W_GetConfig, W_AddRobot, W_DelRobot, W_SQL, W_SQLQuery, W_SQLFetch, W_SQLFree, W_GetUsersCount, W_GetTotalShareSize, W_GetHubConfigDir, W_UserRestrictions, W_Topic, W_mc, W_usermc, W_classmc, W_pm };
+enum { W_SendToOpChat, W_SendToActive, W_SendToPassive, W_SendToActiveClass, W_SendToPassiveClass, W_SendDataToUser, W_SendDataToAll, W_SendPMToAll, W_CloseConnection, W_GetMyINFO, W_SetMyINFO, W_GetUserClass, W_GetUserHost, W_GetUserIP, W_GetUserCC, W_GetIPCC, W_GetIPCN, W_GetNickList, W_GetOpList, W_Ban, W_KickUser, W_ParseCommand, W_SetConfig, W_GetConfig, W_AddRobot, W_DelRobot, W_SQL, W_SQLQuery, W_SQLFetch, W_SQLFree, W_GetUsersCount, W_GetTotalShareSize, W_UserRestrictions, W_Topic, W_mc, W_usermc, W_classmc, W_pm };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum
 const int W_MAX_CALLBACKS = 50;

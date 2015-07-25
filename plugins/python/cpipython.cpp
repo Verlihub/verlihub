@@ -153,7 +153,6 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_SQL] = &_SQL;
 	callbacklist[W_GetUsersCount] = &_GetUsersCount;
 	callbacklist[W_GetTotalShareSize] = &_GetTotalShareSize;
-	callbacklist[W_GetHubConfigDir] = &_GetHubConfigDir;
 	callbacklist[W_UserRestrictions] = &_UserRestrictions;
 	callbacklist[W_Topic] = &_Topic;
 
@@ -1030,7 +1029,7 @@ bool cpiPython::OnNewReg(cUser *op, string *nick, long cls) // todo: is not call
 	if (op)
 		opnick = op->mNick;
 
-	w_Targs* args = lib_pack("sls", nick->c_str(), (long)cls, opnick.c_str());
+	w_Targs* args = lib_pack("ssl", opnick.c_str(), nick->c_str(), (long)cls);
 	return CallAll(W_OnNewReg, args);
 }
 
@@ -1492,11 +1491,6 @@ w_Targs* _GetTotalShareSize (int id, w_Targs* args) // ()
 	ostringstream o;
 	o << share;
 	return cpiPython::lib_pack("s", strdup(o.str().c_str()));
-}
-
-w_Targs* _GetHubConfigDir(int id, w_Targs* args) // ()
-{
-	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mConfigBaseDir.c_str())); // todo: returns none
 }
 
 w_Targs* _UserRestrictions (int id, w_Targs* args) // (char *nick, char *nochattime, char *nopmtime, char *nosearchtime, char *noctmtime)

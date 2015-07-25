@@ -639,11 +639,6 @@ static PyObject * __GetTotalShareSize(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject * __GetHubConfigDir(PyObject *self, PyObject *args)
-{
-	return Py_BuildValue("s", BasicCall(W_GetHubConfigDir, args, ""));
-}
-
 static PyObject * __usermc(PyObject *self, PyObject *args)  //  (data, nick)
 {	return pybool( BasicCall( W_usermc, args, "ss" ) );	}
 
@@ -785,7 +780,6 @@ static PyMethodDef w_vh_methods[] = {
 	{"SQL",				__SQL,				METH_VARARGS},
 	{"GetUsersCount",		__GetUsersCount,		METH_VARARGS},
 	{"GetTotalShareSize",		__GetTotalShareSize,		METH_VARARGS},
-	{"GetHubConfigDir", __GetHubConfigDir, METH_VARARGS},
 	{"usermc",			__usermc,			METH_VARARGS},
 	{"pm",				__pm,				METH_VARARGS},
 	{"mc",				__mc,				METH_VARARGS},
@@ -1112,12 +1106,12 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 			args = Py_BuildValue("(zzz)", s0, s1, s2);
 			break;
 		case W_OnNewReg:
-			if (!w_unpack(params, "sls", &s0, &l0, &s1)) {
+			if (!w_unpack(params, "ssl", &s0, &s1, &l0)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
 				break;
 			}
 
-			args = Py_BuildValue("(zlz)", s0, l0, s1);
+			args = Py_BuildValue("(zzl)", s0, s1, l0);
 			break;
 		case W_OnNewBan:
 		case W_OnParsedMsgConnectToMe:
@@ -1222,6 +1216,7 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 			//case W_OnParsedMsgAnyEx:
 			//case W_OnOpChatMessage:
 			//case W_OnCtmToHub:
+			//case W_OnNewReg:
 			//case W_OnUnknownMsg:
 			//case W_OnOperatorKicks:
 			//case W_OnParsedMsgPM:
@@ -1325,7 +1320,6 @@ const char * w_CallName(int callback)
 		case W_SQLFree: 		return "SQLFree";
 		case W_GetUsersCount: 		return "GetUsersCount";
 		case W_GetTotalShareSize: 	return "GetTotalShareSize";
-		case W_GetHubConfigDir: return "GetHubConfigDir";
 		case W_UserRestrictions: 	return "UserRestrictions";
 		case W_Topic: 			return "Topic";
 		case W_mc: 			return "mc";

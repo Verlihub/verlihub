@@ -175,7 +175,6 @@ extern "C" w_Targs* _DelRobot          (int id, w_Targs* args);  //(char *robot)
 extern "C" w_Targs* _SQL               (int id, w_Targs* args);  //(char *query, long limit);
 extern "C" w_Targs* _GetUsersCount     (int id, w_Targs* args);  //();
 extern "C" w_Targs* _GetTotalShareSize (int id, w_Targs* args);  //();
-extern "C" w_Targs* _GetHubConfigDir(int id, w_Targs* args); // ();
 extern "C" w_Targs* _UserRestrictions  (int id, w_Targs* args);  //(char *nick, char *gagtime, char *nopmtime, char *nosearchtime, char *noctmtime);
 extern "C" w_Targs* _Topic             (int id, w_Targs* args);  //(char* topic);
 }; // namespace nVerliHub
