@@ -61,6 +61,7 @@ namespace nVerliHub {
 		#if HAVE_LIBGEOIP
 			cGeoIP cServerDC::sGeoIP;
 		#endif
+			int cServerDC::sSendCrashReport = 1;
 
 cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	cAsyncSocketServer(), // create parent class
@@ -2161,6 +2162,12 @@ void cServerDC::DoStackTrace()
 	free(funcname);
 	free(symbollist);
 	vhErr(0) << "Stack backtrace:" << endl << endl << bt.str() << endl;
+
+	if (!sSendCrashReport) {
+		vhErr(0) << "Crash reporting is disabled" << endl;
+		return;
+	}
+
 	cAsyncConn *http = new cAsyncConn("crash.verlihub.net", 80); // try to send via http
 
 	if (!http || !http->ok) {

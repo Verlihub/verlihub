@@ -426,8 +426,10 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 
 	if (code >= 0)
 		mOwner->stop(code, delay);
-	else
+	else {
+		cServerDC::sSendCrashReport = 0;
 		*(int*)1 = 0;
+	}
 
 	return 1;
 }
