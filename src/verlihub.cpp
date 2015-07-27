@@ -62,7 +62,7 @@ void mySigIOHandler(int i)
 
 void mySigQuitHandler(int i)
 {
-	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting";
+	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting" << endl;
 	exit(0);
 }
 
@@ -74,7 +74,7 @@ void mySigServHandler(int i)
 	if (serv)
 		serv->DoStackTrace();
 
-	exit(0);
+	exit(128+i); // proper exit code for this signal
 }
 
 void mySigHupHandler(int i)
@@ -222,6 +222,6 @@ int main(int argc, char *argv[])
 	catch (const char *exception)
 	{
 		MAIN_LOG_ERROR << exception << endl;
-		return 1;
+		return 3;
 	}
 }

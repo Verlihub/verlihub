@@ -21,6 +21,8 @@
 VERLIHUB=$1
 shift
 PID=
+LAST_CRASH=0
+CRASHES=0
 
 trap "stop_hub" SIGQUIT SIGTERM SIGKILL SIGINT
 trap "reload_hub" SIGHUP
@@ -39,7 +41,7 @@ function start_hub()
 function stop_hub()
 {
 	if [ "_$PID" != "_" ]; then
-		echo Killing hub..
+		echo "-- Killing hub.."
 		kill -3 $PID
 		echo
 	fi
@@ -48,21 +50,39 @@ function stop_hub()
 function reload_hub()
 {
 	if [ "_$PID" != "_" ]; then
-		echo Reloading hub..
+		echo "-- Reloading hub.."
 		kill -SIGHUP $PID
 		echo
 	fi
 }
 
 CODE=1
-until [[ $CODE != 1 ]]; do
+while [[ $CODE != 0 ]]; do
 	start_hub $*
 	CODE=$?
 	if [[ $CODE == 1 ]]; then
 		echo -n "-- Restarting in a while..."
 		sleep 5;
 		echo " Done."
+	elif [[ $CODE -eq 3 ]] | [[ $CODE -eq 139 ]]; then
+		echo "-- Hub exists with code $CODE";
+		DATE=`date +%s`
+		LAST_CRASH_DIFF=$(expr $DATE - $LAST_CRASH)
+		if [ $LAST_CRASH_DIFF -gt 60 ]; then
+			CRASHES=1
+		else
+			CRASHES=$(expr $CRASHES + 1)
+			if [ $CRASHES -gt 3 ]; then
+				echo "-- Too many crashes in short time, stopping."
+				exit $CODE
+			fi
+		fi
+		LAST_CRASH=$DATE
+		echo "-- Restarting..."
+		sleep 2
+		echo " Done."
 	else
+		CODE=0
 		echo -n "-- Stopping..."
 		sleep 1
 		echo " Done."
