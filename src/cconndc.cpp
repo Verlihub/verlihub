@@ -150,6 +150,17 @@ const char *cConnDC::GetTimeOutType(tTimeOut timeout)
 	return timeoutType[timeout];
 }
 
+int cConnDC::GetTheoricalClass()
+{
+	if (mFeatures & eSF_BOTINFO)
+		return -1;
+
+	if (!mRegInfo || !mRegInfo->mEnabled)
+		return 0;
+
+	return mRegInfo->mClass;
+}
+
 int cConnDC::OnTimer(cTime &now)
 {
 	ostringstream os;

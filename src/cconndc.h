@@ -275,16 +275,8 @@ namespace nVerliHub {
 				 * login procedure of the user is valid.
 				 * @return The user class.
 				 */
-				int GetTheoricalClass()
-				{
-					if (mFeatures & eSF_BOTINFO)
-						return -1;
+				int GetTheoricalClass();
 
-					if (!mRegInfo || !mRegInfo->mEnabled)
-						return 0;
-
-					return mRegInfo->mClass;
-				}
 
 				/**
 				 * Check if the user needs a password.
