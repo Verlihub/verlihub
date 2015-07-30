@@ -15,6 +15,7 @@
 
 using namespace nVerliHub;
 using namespace nVerliHub::nPerlPlugin::nCallback;
+using namespace std;
 
 bool Ban(char *nick, char *op, char *reason, unsigned howlong, unsigned bantype) {
 	return Ban(nick,string(op),string(reason),howlong,bantype);
@@ -25,6 +26,31 @@ bool SendDataToAll(char *data, int min_class, int max_class) {
 }
 
 MODULE = vh		PACKAGE = vh		
+
+PROTOTYPES: DISABLE
+
+TYPEMAP: <<END
+string        T_STRING
+
+INPUT
+T_STRING
+  {
+	  if (SvTYPE($arg) != SVt_PV) {
+		  warn(\"${Package}::$func_name() -- $var is invalid svtype\");
+		  XSRETURN_UNDEF;
+	  }
+	  if (SvCUR($arg) == 0) {
+		  warn(\"${Package}::$func_name() -- $var is empty\");
+		  XSRETURN_UNDEF;
+	  }
+	  $var = string(SvPV_nolen($arg));
+  }
+
+OUTPUT
+T_STRING
+  sv_setpvn($arg, $var.c_str(), $var.size());
+
+END
 
 INCLUDE: const-xs.inc
 
@@ -145,7 +171,7 @@ PPCODE:
 	if(size >= 63) {
 		delete [] val;
 		val = new char[size+1];
-		int size = GetConfig(configname, variable, val, size+1);
+		size = GetConfig(configname, variable, val, size+1);
 	}
 	XPUSHs(sv_2mortal(newSVpv(val, size)));
 	delete [] val;
@@ -179,13 +205,13 @@ int
 IsUserOnline(nick)
 	char *  nick
 
-char *
+void
 GetHubIp()
 PPCODE:
 	char * addr = GetHubIp();
 	XPUSHs(sv_2mortal(newSVpv(addr, strlen(addr))));
 
-char *
+void
 GetHubSecAlias()
 PPCODE:
 	char * hubsec = GetHubSecAlias();
@@ -227,11 +253,11 @@ SetTopic(topic)
 
 #ifdef HAVE_LIBGEOIP
 
-char *
+string
 GetIPCC(ip)
 	char * ip
 
-char *
+string
 GetIPCN(ip)
 	char * ip
 
