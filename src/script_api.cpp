@@ -295,7 +295,7 @@ char* GetUserCC(char *nick)
 
 #ifdef HAVE_LIBGEOIP
 
-char* GetIPCC(char *ip)
+const string GetIPCC(const char *ip)
 {
 	if (!ip)
 		return NULL;
@@ -310,12 +310,12 @@ char* GetIPCC(char *ip)
 	string cc;
 
 	if (serv->sGeoIP.GetCC(ip, cc))
-		return (char*)cc.c_str();
+		return cc;
 
 	return NULL;
 }
 
-char* GetIPCN(char *ip)
+const string GetIPCN(const char *ip)
 {
 	if (!ip)
 		return NULL;
@@ -330,7 +330,7 @@ char* GetIPCN(char *ip)
 	string cn;
 
 	if (serv->sGeoIP.GetCN(ip, cn))
-		return (char*)cn.c_str();
+		return cn;
 
 	return NULL;
 }
@@ -383,7 +383,7 @@ char *GetUserIP(char *nick)
 	}
 }
 
-bool Ban(char *nick, const string op, const string reason, unsigned howlong, unsigned bantype)
+bool Ban(char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(!server) {

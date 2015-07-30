@@ -27,11 +27,11 @@
 
 using namespace nVerliHub::nUtils;
 
-static const char * toString(int number)
+const string toString(int number)
 {
 	ostringstream os;
 	os << number;
-	return os.str().c_str();
+	return os.str();
 }
 
 nVerliHub::nPerlPlugin::cpiPerl::cpiPerl():
@@ -389,8 +389,8 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnHubCommand(cConnDC *conn , std::string *
 	char *args[]= {		(char *)"VH_OnHubCommand",
 				(char *)conn->mpUser->mNick.c_str(),
 				(char *)command->c_str(),
-				(char *)toString(op),
-				(char *)toString(pm),
+				(char *)toString(op).c_str(),
+				(char *)toString(pm).c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
@@ -489,7 +489,7 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnDelReg(std::string mNick, int mClass)
 {
 	char *args[]= {		(char *)"VH_OnDelReg",
 				(char *) mNick.c_str(),
-				(char *) toString(mClass),
+				(char *) toString(mClass).c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
@@ -499,8 +499,8 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnUpdateClass(std::string mNick, int oldCl
 {
 	char *args[]= {		(char *)"VH_OnUpdateClass",
 				(char *) mNick.c_str(),
-				(char *) toString(oldClass),
-				(char *) toString(newClass),
+				(char *) toString(oldClass).c_str(),
+				(char *) toString(newClass).c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;

@@ -41,15 +41,15 @@ namespace nVerliHub {
 	char* GetUserCC(char *nick);
 
 #ifdef HAVE_LIBGEOIP
-	char* GetIPCC(char *ip);
-	char* GetIPCN(char *ip);
+	const string GetIPCC(const char *ip);
+	const string GetIPCN(const char *ip);
 #endif
 
 	char* GetMyINFO(char *nick);
 	int GetUserClass(char *nick);
 	char* GetUserHost(char *nick);
 	char* GetUserIP(char *nick);
-	bool Ban(char *, const string, const string, unsigned, unsigned);
+	bool Ban(char *, const string &, const string &, unsigned, unsigned);
 	bool ParseCommand(char *nick, char *cmd, int pm);
 	bool KickUser(char *opnick, char *nick, char *reason);
 	bool SetConfig(char *config_name, char *var, char *val);

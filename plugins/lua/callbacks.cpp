@@ -571,11 +571,11 @@ int _GetIPCC(lua_State *L)
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	char *cc = GetIPCC((char*)ip.c_str());
+	const char *cc = GetIPCC(ip.c_str()).c_str();
 
 	if (cc) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cc);
+		lua_pushstring(L, cc);
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -599,7 +599,7 @@ int _GetIPCN(lua_State *L)
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	char *cn = GetIPCN((char*)ip.c_str());
+	const char *cn = GetIPCN(ip.c_str()).c_str();
 
 	if (cn) {
 		lua_pushboolean(L, 1);
