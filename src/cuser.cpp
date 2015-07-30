@@ -66,7 +66,8 @@ bool cUserBase::HasFeature(unsigned feature)
 void cUserBase::Send(string &data, bool, bool)
 {}
 
-cUser::cUser() :
+cUser::cUser():
+	mMyFlag(0),
 	mShare(0),
 	mSearchNumber(0),
 	mRights(0),
@@ -100,11 +101,12 @@ cUser::cUser() :
 }
 
 /** Constructor */
-cUser::cUser(const string &nick) :
-	cUserBase( nick ),
+cUser::cUser(const string &nick):
+	cUserBase(nick),
 	mxConn(NULL),
 	mxServer(NULL),
 	mBanTime(0),
+	mMyFlag(0),
 	mShare(0),
 	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,
@@ -135,7 +137,8 @@ cUser::cUser(const string &nick) :
 	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
 }
 
-cUser::~cUser() {}
+cUser::~cUser()
+{}
 
 bool cUser::CanSend()
 {

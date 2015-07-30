@@ -159,6 +159,8 @@ public:
 	nSocket::cServerDC * mxServer;
 	/* Email retrived from MyINFO */
 	string mEmail;
+	// client flag in myinfo
+	unsigned mMyFlag;
 	/* True if user is in passive mode */
 	bool IsPassive;
 

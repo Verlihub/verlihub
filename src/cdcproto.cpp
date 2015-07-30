@@ -1096,8 +1096,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	tag = NULL;
 	speed = msg->ChunkString(eCH_MI_SPEED);
 
-	if ((!mS->mC.show_speed) && !speed.empty()) // hide speed but keep status byte
-		speed.assign(speed, speed.length() - 1, -1);
+	if (speed.size()) {
+		conn->mpUser->mMyFlag = speed[speed.size() - 1];
+
+		if (!mS->mC.show_speed) // hide speed but keep status byte
+			speed.assign(speed, speed.size() - 1, -1);
+	}
 
 	if (!mS->mC.show_email) // hide email
 		email = "";
@@ -1465,6 +1469,12 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (nick == conn->mpUser->mNick) {
+		os << _("You're trying connect to yourself.");
+		mS->DCPublicHS(os.str(), conn);
+		return -1;
+	}
+
 	if (conn->mpUser->mClass < mS->mC.min_class_use_hub) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download unless you are registered with class: %d"), mS->mC.min_class_use_hub);
@@ -1518,18 +1528,67 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string &port = msg->ChunkString(eCH_CM_PORT);
+	size_t pize = port.size();
 
-	if (port.empty() || (port.size() > 6))
+	if (!pize)
 		return -1;
 
 	string extra;
+	size_t pos = port.find_first_of(' ');
 
-	if (port[port.size() - 1] == 'S') { // secure connection
+	if (pos != string::npos) { // nat
+		string natnick = port.substr(pos + 1);
+
+		if (natnick.size()) {
+			if (CheckUserNick(conn, natnick))
+				return -1;
+
+			port.assign(port, 0, pos);
+			pize = port.size();
+
+			if (!pize || (pize > 7))
+				return -1;
+
+			if ((pize > 2) && (port.substr(pize - 2) == "NS")) { // + tls
+				if (conn->mpUser->mMyFlag & 0x20) {
+					if (conn->mFeatures & eSF_TLS) // only if sender supports it
+						extra = "NS " + natnick;
+					else
+						extra = "N " + natnick;
+				}
+
+				port.assign(port, 0, pize - 2);
+			} else if (port[pize - 1] == 'N') {
+				if (conn->mpUser->mMyFlag & 0x20)
+					extra = "N " + natnick;
+
+				port.assign(port, 0, pize - 1);
+			}
+		} else
+			port.assign(port, 0, pos);
+	} else if ((pize > 2) && (port.substr(pize - 2) == "RS")) { // nat + tls
+		if (conn->mpUser->mMyFlag & 0x20) {
+			if (conn->mFeatures & eSF_TLS) // only if sender supports it
+				extra = "RS";
+			else
+				extra = 'R';
+		}
+
+		port.assign(port, 0, pize - 2);
+	} else if (port[pize - 1] == 'R') { // nat
+		if (conn->mpUser->mMyFlag & 0x20)
+			extra = 'R';
+
+		port.assign(port, 0, pize - 1);
+	} else if (port[pize - 1] == 'S') { // tls
 		if (conn->mFeatures & eSF_TLS) // only if sender supports it
 			extra = 'S';
 
-		port.assign(port, 0, port.size() - 1);
+		port.assign(port, 0, pize - 1);
 	}
+
+	if (port.empty() || (port.size() > 5))
+		return -1;
 
 	__int64 iport = StringAsLL(port);
 
@@ -1590,6 +1649,12 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!other->mxConn) {
 		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	if (nick == conn->mpUser->mNick) {
+		os << _("You're trying connect to yourself.");
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
