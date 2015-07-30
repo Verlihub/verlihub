@@ -1,0 +1,19 @@
+string        T_STRING
+
+INPUT
+T_STRING
+	{
+		if (SvTYPE($arg) != SVt_PV) {
+			warn(\"${Package}::$func_name() -- $var is invalid svtype\");
+			XSRETURN_UNDEF;
+		}
+		if (SvCUR($arg) == 0) {
+			warn(\"${Package}::$func_name() -- $var is empty\");
+			XSRETURN_UNDEF;
+		}
+		$var = string(SvPV_nolen($arg));
+	}
+
+OUTPUT
+T_STRING
+	sv_setpvn($arg, $var.c_str(), $var.size());
