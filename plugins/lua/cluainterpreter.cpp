@@ -76,13 +76,13 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserCN", &_GetUserCN);
 	RegisterFunction("GetUserCity", &_GetUserCity);
 
-	#if HAVE_LIBGEOIP
-		RegisterFunction("GetIPCC", &_GetIPCC);
-		RegisterFunction("GetIPCN", &_GetIPCN);
-		RegisterFunction("GetIPCity", &_GetIPCity);
-		RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
-		RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
-	#endif
+#ifdef HAVE_LIBGEOIP
+	RegisterFunction("GetIPCC", &_GetIPCC);
+	RegisterFunction("GetIPCN", &_GetIPCN);
+	RegisterFunction("GetIPCity", &_GetIPCity);
+	RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
+	RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
+#endif
 
 	RegisterFunction("GetMyINFO", &_GetMyINFO);
 	RegisterFunction("GetUpTime", &_GetUpTime);

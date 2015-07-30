@@ -44,13 +44,13 @@ namespace nVerliHub {
 	int _GetUserCC(lua_State *L);
 	int _GetUserCN(lua_State *L);
 	int _GetUserCity(lua_State *L);
-	#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 	int _GetIPCC(lua_State *L);
 	int _GetIPCN(lua_State *L);
 	int _GetIPCity(lua_State *L);
 	int _GetUserGeoIP(lua_State *L);
 	int _GetHostGeoIP(lua_State *L);
-	#endif
+#endif
 	int _GetVHCfgDir(lua_State *L);
 	int _GetUpTime(lua_State *L);
 	int _RegBot(lua_State *L);

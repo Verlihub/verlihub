@@ -40,10 +40,10 @@ namespace nVerliHub {
 	bool StopHub(int code);
 	char* GetUserCC(char *nick);
 
-	#if HAVE_LIBGEOIP
-		char* GetIPCC(char *ip);
-		char* GetIPCN(char *ip);
-	#endif
+#ifdef HAVE_LIBGEOIP
+	char* GetIPCC(char *ip);
+	char* GetIPCN(char *ip);
+#endif
 
 	char* GetMyINFO(char *nick);
 	int GetUserClass(char *nick);

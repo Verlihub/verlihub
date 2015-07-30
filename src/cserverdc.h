@@ -34,7 +34,7 @@
 #include "cdcproto.h"
 #include "csetuplist.h"
 #include "ctempfunctionbase.h"
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
 #endif
 #include "cusercollection.h"
@@ -49,9 +49,9 @@
 using namespace std;
 
 namespace nVerliHub {
-	#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 	using nUtils::cGeoIP;
-	#endif
+#endif
 	using namespace nPlugin;
 	using namespace nThread;
 	using namespace nSocket;
@@ -609,10 +609,10 @@ class cServerDC : public cAsyncSocketServer
 		// User peak
 		unsigned mUsersPeak;
 
-		#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 		// GeoIp object for country code support
 		static cGeoIP sGeoIP;
-		#endif
+#endif
 
 		// Send crash report on sigserv
 		static int sSendCrashReport;

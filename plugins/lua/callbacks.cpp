@@ -555,7 +555,7 @@ int _GetUserCity(lua_State *L)
 	return 2;
 }
 
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 int _GetIPCC(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {

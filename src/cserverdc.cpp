@@ -58,9 +58,9 @@ namespace nVerliHub {
 	namespace nSocket {
 		cServerDC * cServerDC::sCurrentServer = NULL;
 
-		#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 			cGeoIP cServerDC::sGeoIP;
-		#endif
+#endif
 			int cServerDC::sSendCrashReport = 1;
 
 cServerDC::cServerDC( string CfgBase , const string &ExecPath):

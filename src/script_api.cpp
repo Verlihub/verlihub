@@ -21,7 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
 #endif
 #include <iostream>
@@ -293,7 +293,7 @@ char* GetUserCC(char *nick)
 	return NULL;
 }
 
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 
 char* GetIPCC(char *ip)
 {

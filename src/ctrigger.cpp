@@ -24,7 +24,7 @@
 #include "cconndc.h"
 #include "curr_date_time.h"
 #include "stringutils.h"
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
 #endif
 #include <stdlib.h>

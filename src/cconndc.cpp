@@ -19,7 +19,7 @@
 */
 
 #include "cconndc.h"
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
 #endif
 #include "creglist.h"
@@ -490,7 +490,7 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 
 	conn = new cConnDC(sd, mServer);
 	conn->mxMyFactory = this;
-#if HAVE_LIBGEOIP
+#ifdef HAVE_LIBGEOIP
 	if (
 		mServer->sGeoIP.GetCC(conn->AddrIP(),conn->mCC) &&
 		mServer->mC.cc_zone[0].size()
