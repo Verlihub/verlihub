@@ -89,6 +89,11 @@ namespace nVerliHub {
 			eFC_MCTO,
 			eFC_LAST_FC
 		} tFloodCounters;
+
+		typedef enum // myinfo flags
+		{
+			eMF_NAT = 0x20 // nat connection support
+		} tMyFlags;
 	};
 
 using namespace nTables;

@@ -652,7 +652,7 @@ int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
 			if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
 				continue;
 
-			if (other->mpUser->IsPassive) // dont send to passive user
+			if (other->mpUser->IsPassive && !(other->mpUser->mMyFlag & eMF_NAT)) // passive request to passive user, allow if other user supports nat connection
 				continue;
 
 			if (other->mpUser->mShare <= 0) // dont send to user without share

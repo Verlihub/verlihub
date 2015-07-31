@@ -1550,7 +1550,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 				return -1;
 
 			if ((pize > 2) && (port.substr(pize - 2) == "NS")) { // + tls
-				if (conn->mpUser->mMyFlag & 0x20) {
+				if (conn->mpUser->mMyFlag & eMF_NAT) {
 					if (conn->mFeatures & eSF_TLS) // only if sender supports it
 						extra = "NS " + natnick;
 					else
@@ -1559,7 +1559,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 				port.assign(port, 0, pize - 2);
 			} else if (port[pize - 1] == 'N') {
-				if (conn->mpUser->mMyFlag & 0x20)
+				if (conn->mpUser->mMyFlag & eMF_NAT)
 					extra = "N " + natnick;
 
 				port.assign(port, 0, pize - 1);
@@ -1567,7 +1567,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		} else
 			port.assign(port, 0, pos);
 	} else if ((pize > 2) && (port.substr(pize - 2) == "RS")) { // nat + tls
-		if (conn->mpUser->mMyFlag & 0x20) {
+		if (conn->mpUser->mMyFlag & eMF_NAT) {
 			if (conn->mFeatures & eSF_TLS) // only if sender supports it
 				extra = "RS";
 			else
@@ -1576,7 +1576,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 		port.assign(port, 0, pize - 2);
 	} else if (port[pize - 1] == 'R') { // nat
-		if (conn->mpUser->mMyFlag & 0x20)
+		if (conn->mpUser->mMyFlag & eMF_NAT)
 			extra = 'R';
 
 		port.assign(port, 0, pize - 1);
@@ -1647,7 +1647,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (!other->mxConn) {
+	if (!other->mxConn || !other->mxConn->mpUser) {
 		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
@@ -1659,7 +1659,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (other->IsPassive) { // passive request to passive user
+	if (other->IsPassive && !(other->mxConn->mpUser->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
 		os << autosprintf(_("You can't download from user because he is in passive mode: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
@@ -1781,7 +1781,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		addr = "Hub:" + addr;
 	} else {
 		string &port = msg->ChunkString(eCH_AS_PORT);
-		port.assign(port, 0, port.find_first_of(' ')); // solution for misparsed port
+		port.assign(port, 0, port.find_first_of(' ')); // todo: temporary solution for misparsed port
 
 		if (port.empty() || (port.size() > 5))
 			return -1;
