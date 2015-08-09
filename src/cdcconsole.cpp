@@ -2070,7 +2070,10 @@ bool cDCConsole::cfRegUsr::operator()()
 	int ParClass = 1;
 	mParRex->Extract(1, mParStr, nick);
 	bool WithPar = mParRex->PartFound(3);
-	if (Action != eAC_SET && WithPar) mParRex->Extract(3, mParStr, par);
+
+	if ((Action != eAC_SET) && WithPar)
+		mParRex->Extract(3, mParStr, par);
+
 	bool WithPass = false;
 
 	if (Action == eAC_NEW) {
@@ -2091,7 +2094,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		}
 
 		mParRex->Extract(5, mParStr, field);
-		if (WithPar) mParRex->Extract(6, mParStr, par);
+		mParRex->Extract(6, mParStr, par);
 	}
 
 	cUser *user = mS->mUserList.GetUserByNick(nick);
@@ -2100,21 +2103,20 @@ bool cDCConsole::cfRegUsr::operator()()
 	bool RegFound = mS->mR->FindRegInfo(ui, nick);
 	bool authorized = false;
 
-	// check rights
-	if (RegFound && ((MyClass < eUC_MASTER) && !((MyClass >= (int)(ui.mClass + mS->mC.classdif_reg) && MyClass >= (ui.mClassProtect)) || ((Action == eAC_INFO) && (MyClass >= (ui.mClass - 1)))))) {
+	if (RegFound && ((MyClass < eUC_MASTER) && !((MyClass >= (int)(ui.mClass + mS->mC.classdif_reg) && MyClass >= (ui.mClassProtect)) || ((Action == eAC_INFO) && (MyClass >= (ui.mClass - 1)))))) { // check rights
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	switch (Action) {
-		case eAC_CLASS:
-		case eAC_PROTECT:
-		case eAC_HIDEKICK:
-		case eAC_NEW:
-			std::istringstream lStringIS(par);
-			lStringIS >> ParClass;
-			break;
-	};
+	if ((Action == eAC_CLASS) || (Action == eAC_PROTECT) || (Action == eAC_HIDEKICK) || (Action == eAC_NEW) || ((Action == eAC_SET) && (field == "class"))) { // convert par to class number
+		std::istringstream lStringIS(par);
+		lStringIS >> ParClass;
+
+		if ((ParClass < eUC_PINGER) || (ParClass == eUC_NORMUSER) || ((ParClass > eUC_ADMIN) && (ParClass < eUC_MASTER)) || (ParClass > eUC_MASTER)) { // validate class number
+			(*mOS) << _("You specified invalid class number.");
+			return false;
+		}
+	}
 
 	switch (Action) {
 		case eAC_SET:
@@ -2139,7 +2141,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		case eAC_INFO:
 			authorized = RegFound && (MyClass >= eUC_OPERATOR);
 			break;
-	};
+	}
 
 	if (MyClass == eUC_MASTER) authorized = RegFound || (!RegFound && (Action == eAC_NEW));
 
