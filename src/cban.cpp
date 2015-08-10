@@ -33,22 +33,25 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nTables {
 
-cBan::cBan(cServerDC *s) : cObj("cBan"), mS(s)
+cBan::cBan(cServerDC *s): cObj("cBan"), mS(s)
 {
 	mShare = 0;
 	mDateStart = 0;
 	mDateEnd = 0;
+	mLastHit = 0;
 	mType = 0;
 	mRangeMin = 0;
 	mRangeMax = 0;
 }
-cBan::~cBan(){}
 
-cUnBan::cUnBan(cServerDC *s):cBan(s){}
+cBan::~cBan()
+{}
+
+cUnBan::cUnBan(cServerDC *s): cBan(s)
+{}
 
 cUnBan::cUnBan(cBan &Ban, cServerDC *s): cBan(s)
 {
-
 	mIP = Ban.mIP;
 	mNick = Ban.mNick;
 	mHost = Ban.mHost;
@@ -57,11 +60,14 @@ cUnBan::cUnBan(cBan &Ban, cServerDC *s): cBan(s)
 	mRangeMax = Ban.mRangeMax;
 	mDateStart = Ban.mDateStart;
 	mDateEnd = Ban.mDateEnd;
+	mLastHit = Ban.mLastHit;
 	mNickOp = Ban.mNickOp;
 	mReason = Ban.mReason;
 	mType = Ban.mType;
 }
-cUnBan::~cUnBan(){}
+
+cUnBan::~cUnBan()
+{}
 
 ostream & operator << (ostream &os, cBan &ban)
 {
@@ -120,6 +126,14 @@ void cBan::DisplayComplete(ostream &os)
 	DisplayUser(os);
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("OP") << mNickOp.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Ban type") << this->GetBanType() << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last hit");
+
+	if (!mLastHit)
+		os << _("Never");
+	else
+		os << autosprintf(_("%s ago"), cTime(cTime().Sec() - mLastHit).AsPeriod().AsString().c_str());
+
+	os << "\r\n";
 }
 
 const char *cBan::GetBanType()
@@ -183,5 +197,6 @@ void cBan::DisplayInline(ostream &os)
 	os << "\t\t" << GetBanType() << "\t\t" << mNickOp;
 	DisplayKick(os);
 }
+
 	}; // namespace nTables
 }; // Namespace nVerliHub

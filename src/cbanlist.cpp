@@ -47,6 +47,7 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("range_to", "bigint(32)", "", true, mModel.mRangeMax);
 	AddCol("date_start", "int(11)", "0", true, mModel.mDateStart);
 	AddCol("date_limit", "int(11)", "", true, mModel.mDateEnd);
+	AddCol("last_hit", "int(11)", "", true, mModel.mLastHit);
 	AddCol("nick_op", "varchar(64)", "", true, mModel.mNickOp);
 	AddCol("reason", "text", "", true, mModel.mReason);
 	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
@@ -78,9 +79,7 @@ cUnBanList::~cUnBanList(){}
 void cBanList::Cleanup()
 {
 	time_t Now = cTime().Sec();
-	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName <<
-		" WHERE date_limit IS NOT NULL AND date_limit < " <<
-		Now - 3600*24*7;
+	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName << " WHERE date_limit IS NOT NULL AND date_limit < " << (Now - (3600 * 24 * 7));
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -88,8 +87,7 @@ void cBanList::Cleanup()
 void cUnBanList::Cleanup()
 {
 	time_t Now = cTime().Sec();
-	mQuery.OStream() << "DELETE FROM " <<
-		mMySQLTable.mName << " WHERE date_unban < " << Now - 3600*24*30;
+	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName << " WHERE date_unban < " << (Now - (3600 * 24 * 30));
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -98,7 +96,6 @@ int cBanList::UpdateBan(cBan &ban)
 {
 	nMySQL::cQuery query(mMySQL);
 	SetBaseTo(&ban);
-
 	UpdateFields(query.OStream());
 	WherePKey(query.OStream());
 	query.Query();
@@ -113,16 +110,18 @@ bool cBanList::LoadBanByKey(cBan &ban)
 
 void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, const string &reason, unsigned length, unsigned mask)
 {
-	if(connection) {
-		ban.mIP   = connection->AddrIP();
+	if (connection) {
+		ban.mIP = connection->AddrIP();
 		ban.mHost = connection->AddrHost();
 		ban.mDateStart = cTime().Sec();
 		ban.mDateEnd = ban.mDateStart + length;
+		ban.mLastHit = 0;
 		ban.mReason = reason;
 		ban.mNickOp = nickOp;
 		ban.SetType(mask);
-		if(connection->mpUser) {
-			ban.mNick  = connection->mpUser->mNick;
+
+		if (connection->mpUser) {
+			ban.mNick = connection->mpUser->mNick;
 			ban.mShare = connection->mpUser->mShare;
 		} else {
 			ban.mNick = "nonick_" + ban.mIP;
@@ -207,18 +206,18 @@ void cBanList::AddBan(cBan &ban)
 bool cBanList::TestBan(cBan &ban, cConnDC *connection, const string &nick, unsigned mask)
 {
 	if (connection != NULL) {
+		time_t Now = cTime().Sec();
 		ostringstream query;
-		bool fristWhere = false;
+		bool firstWhere = false;
 		string ip = connection->AddrIP();
 		SelectFields(query);
 		string host = connection->AddrHost();
 		query << " WHERE (";
 
-		// ip and nick and both are done by this first one
-		if (mask & (eBF_NICKIP | eBF_IP)) {
+		if (mask & (eBF_NICKIP | eBF_IP)) { // ip, nick and both are done by this first one
 			AddTestCondition(query, ip, eBF_IP);
 			query << " OR ";
-			fristWhere = true;
+			firstWhere = true;
 		}
 
 		if (mask & (eBF_NICKIP | eBF_NICK))
@@ -227,13 +226,14 @@ bool cBanList::TestBan(cBan &ban, cConnDC *connection, const string &nick, unsig
 		if (mask & eBF_RANGE)
 			AddTestCondition(query << " OR ", ip, eBF_RANGE);
 
-		if (connection->mpUser != NULL) {
-			if (mask & eBF_SHARE) {
-				ostringstream os (ostringstream::out);
-				os << connection->mpUser->mShare;
-				if (fristWhere) query << " OR ";
-				AddTestCondition(query, os.str(), eBF_SHARE); //fix or condition
-			}
+		if (connection->mpUser && (mask & eBF_SHARE)) {
+			ostringstream os (ostringstream::out);
+			os << connection->mpUser->mShare;
+
+			if (firstWhere)
+				query << " OR ";
+
+			AddTestCondition(query, os.str(), eBF_SHARE); // fix or condition?
 		}
 
 		if (mask & eBF_HOST1)
@@ -251,11 +251,20 @@ bool cBanList::TestBan(cBan &ban, cConnDC *connection, const string &nick, unsig
 		if (mask & eBF_PREFIX)
 			AddTestCondition(query << " OR ", nick, eBF_PREFIX);
 
-		query << " ) AND ( (date_limit >= " << cTime().Sec() << ") OR date_limit IS NULL OR (date_limit = 0)) ORDER BY date_limit DESC LIMIT 1";
-		if (StartQuery(query.str()) == -1) return false;
+		query << ") AND ((date_limit >= " << Now << ") OR date_limit IS NULL OR (date_limit = 0)) ORDER BY date_limit DESC LIMIT 1";
+
+		if (StartQuery(query.str()) == -1)
+			return false;
+
 		SetBaseTo(&ban);
 		bool found = (Load() >= 0);
 		EndQuery();
+
+		if (found) {
+			ban.mLastHit = Now;
+			UpdatePK();
+		}
+
 		return found;
 	}
 
@@ -283,15 +292,18 @@ int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 
 void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
 {
-	ban.mIP   = kick.mIP;
+	ban.mIP = kick.mIP;
 	ban.mDateStart = cTime().Sec();
-	if(period)
+
+	if (period)
 		ban.mDateEnd = ban.mDateStart + period;
 	else
 		ban.mDateEnd = 0;
+
+	ban.mLastHit = 0;
 	ban.mReason = kick.mReason;
 	ban.mNickOp = kick.mOp;
-	ban.mNick  = kick.mNick;
+	ban.mNick = kick.mNick;
 	ban.SetType(mask);
 	ban.mHost = kick.mHost;
 	ban.mShare = kick.mShare;

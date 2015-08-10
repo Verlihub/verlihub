@@ -48,8 +48,10 @@ namespace nVerliHub {
 			eBF_PREFIX = 1 << 8,
 			/// Reverse host is banned
 			eBF_HOSTR1 = 1 << 9,
+			eBF_LAST = 1 << 10 // last item, used for iteration only
 		};
 	};
+
 	namespace nSocket {
 		class cServerDC;
 	};
@@ -114,9 +116,10 @@ namespace nVerliHub {
 				*/
 				void SetType(unsigned type)
 				{
-					for(mType = 0; mType < 11; mType++)
-						if(type == (unsigned)(1 << mType))
+					for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
+						if (type == (unsigned)(1 << mType))
 							break;
+					}
 				}
 
 				/**
@@ -147,6 +150,7 @@ namespace nVerliHub {
 
 				/// End of the ban in Unix time format.
 				long mDateEnd;
+				long mLastHit; // last ban hit in unix time format
 
 				/// Ban type.
 				unsigned mType;

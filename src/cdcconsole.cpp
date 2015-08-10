@@ -1440,6 +1440,7 @@ bool cDCConsole::cfBan::operator()()
 		else
 			Ban.mDateEnd = 0;
 
+		Ban.mLastHit = 0;
 		Ban.SetType(BanType);
 
 		switch (BanType) {
