@@ -1826,7 +1826,7 @@ int _EditBot(lua_State *L)
 		iclass = (int)lua_tonumber(L, 3);
 
 	if ((iclass < eUC_PINGER) || (iclass > eUC_MASTER) || ((iclass > eUC_ADMIN) && (iclass < eUC_MASTER))) {
-		luaerror(L, "Invalid bot class specified");
+		luaerror(L, ERR_CLASS);
 		return 2;
 	}
 
