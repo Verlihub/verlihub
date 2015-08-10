@@ -60,7 +60,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mDCClients(NULL),
 	mCmdr(this),
 	mUserCmdr(this),
- 	mCmdBan(int(eCM_BAN),".(del|rm|un|info|list|ls)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)( (.*)$)?", &mFunBan),
+ 	mCmdBan(int(eCM_BAN),".(del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)( (.*)$)?", &mFunBan),
 	mCmdGag(int(eCM_GAG),".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo) ", "(\\S+)( (\\d+\\w))?", &mFunGag),
 	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+) (.*)", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
@@ -1335,9 +1335,9 @@ bool cDCConsole::cfBan::operator()()
 	static const char *bannames[] = {"nick", "ip", "nickip", "", "range", "host1", "host2", "host3", "hostr1", "share", "prefix"};
 	static const int banids[] = {eBF_NICK, eBF_IP, eBF_NICKIP, eBF_NICKIP, eBF_RANGE, eBF_HOST1, eBF_HOST2, eBF_HOST3, eBF_HOSTR1, eBF_SHARE, eBF_PREFIX};
 	enum {BAN_BAN, BAN_UNBAN, BAN_INFO, BAN_LIST};
-	static const char *prefixnames[] = {"add", "new", "rm", "del", "un", "info", "check", "list", "ls"};
-	static const int prefixids[] = {BAN_BAN, BAN_BAN, BAN_UNBAN, BAN_UNBAN, BAN_UNBAN, BAN_INFO, BAN_INFO, BAN_LIST, BAN_LIST};
-	//".(del|rm|un|info|list|ls)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)( (.*)$)?"
+	static const char *prefixnames[] = {"add", "new", "rm", "del", "un", "info", "check", "list", "ls", "lst"};
+	static const int prefixids[] = {BAN_BAN, BAN_BAN, BAN_UNBAN, BAN_UNBAN, BAN_UNBAN, BAN_INFO, BAN_INFO, BAN_LIST, BAN_LIST, BAN_LIST};
+	//".(del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)( (.*)$)?"
 	enum {BAN_PREFIX = 1, BAN_TYPE = 2, BAN_LENGTH = 4, BAN_THIS = 6, BAN_WHO = 1, BAN_REASON = 3};
 	string tmp;
 	int BanAction = BAN_BAN;
