@@ -101,7 +101,7 @@ void cBan::DisplayUser(ostream &os)
 		cTime HowLong(mDateEnd - cTime().Sec());
 		os << HowLong.AsPeriod().AsString().c_str() << " " << _("remaining");
 	} else
-		os << _("Permanently");
+		os << _("Permanent");
 
 	os << "\r\n";
 	string initialRange, endRange;
@@ -163,6 +163,13 @@ void cBan::DisplayKick(ostream &os)
 	} else {
 		os << _("Permanent");
 	}
+
+	os << "\t\t";
+
+	if (!mLastHit)
+		os << _("Never");
+	else
+		os << cTime(cTime().Sec() - mLastHit).AsPeriod().AsString();
 }
 
 void cBan::DisplayInline(ostream &os)

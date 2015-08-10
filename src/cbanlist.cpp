@@ -435,7 +435,7 @@ void cBanList::List(ostream &os, int count)
 	db_iterator it;
 	SetBaseTo(&mModel);
 
-	os << "\r\n\t" << _("Entry") << "\t\t" << _("Ban on") << "\t\t" << _("OP") << "\t\t" << _("Time") << "\r\n";
+	os << "\r\n\r\n\t" << _("Entry") << "\t\t" << _("Type") << "\t\t" << _("OP") << "\t\t" << _("Time") << "\t\t" << _("Last hit") << "\r\n";
 	os << "\t" << string(160, '-') << "\r\n";
 
 	for (it = db_begin(); it != db_end(); ++it) {
