@@ -37,7 +37,7 @@ namespace nVerliHub {
 	bool SendToOpChat(char *data);
 	bool CloseConnection(char *nick);
 	bool CloseConnectionNice(char *nick);
-	bool StopHub(int code);
+	bool StopHub(int code, unsigned delay);
 	char* GetUserCC(char *nick);
 
 #ifdef HAVE_LIBGEOIP

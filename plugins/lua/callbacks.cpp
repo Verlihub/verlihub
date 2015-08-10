@@ -23,6 +23,7 @@
 #define ERR_SERV "Error getting server"
 #define ERR_LUA "Error getting Lua"
 #define ERR_PLUG "Error getting plugin"
+#define ERR_CLASS "Invalid class number"
 
 extern "C"
 {
@@ -300,7 +301,7 @@ int _SendPMToAll(lua_State *L)
 		/*string start, end;
 		cServerDC *server = GetCurrentVerlihub();
 		if(server == NULL) {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 		server->mP.Create_PMForBroadcast(start, end, from, from, data);
@@ -398,27 +399,34 @@ int _DisconnectNice(lua_State *L)
 
 int _StopHub(lua_State *L)
 {
-	if (lua_gettop(L) == 2) {
-		if (!lua_isnumber(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
+	int args = lua_gettop(L) - 1;
 
-		int code = (int)lua_tonumber(L, 2);
-
-		if (!StopHub(code)) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:StopHub, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:StopHub, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isnumber(L, 2) || ((args >= 2) && !lua_isnumber(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	int code = (int)lua_tonumber(L, 2);
+	unsigned delay = 0;
+
+	if (args >= 2)
+		delay = (unsigned)lua_tonumber(L, 3);
+
+	if (!StopHub(code, delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _GetMyINFO(lua_State *L)
@@ -1095,7 +1103,7 @@ int _GetOPList(lua_State *L)
 			lua_pushstring(L, oplist);
 			return 2;
 		} else {
-				luaerror(L, "Error getting server");
+				luaerror(L, ERR_SERV);
 				return 2;
 		}
 	} else {
@@ -1119,7 +1127,7 @@ int _GetBotList(lua_State *L)
 			lua_pushstring(L, botlist);
 			return 2;
 		} else {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 	} else {
@@ -1202,7 +1210,7 @@ int _IsUserOnline(lua_State *L)
 	if(lua_gettop(L) == 2) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server == NULL) {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 		if(!lua_isstring(L, 2)) {
@@ -1691,8 +1699,8 @@ int _RegBot(lua_State *L)
 	} else
 		iclass = (int)lua_tonumber(L, 3);
 
-	if ((iclass < -1) || (iclass > 10) || ((iclass > 5) && (iclass < 10))) {
-		luaerror(L, "Invalid bot class specified");
+	if ((iclass < eUC_PINGER) || (iclass > eUC_MASTER) || ((iclass > eUC_ADMIN) && (iclass < eUC_MASTER))) {
+		luaerror(L, ERR_CLASS);
 		return 2;
 	}
 
@@ -1817,7 +1825,7 @@ int _EditBot(lua_State *L)
 	} else
 		iclass = (int)lua_tonumber(L, 3);
 
-	if ((iclass < -1) || (iclass > 10) || ((iclass > 5) && (iclass < 10))) {
+	if ((iclass < eUC_PINGER) || (iclass > eUC_MASTER) || ((iclass > eUC_ADMIN) && (iclass < eUC_MASTER))) {
 		luaerror(L, "Invalid bot class specified");
 		return 2;
 	}
@@ -2012,13 +2020,13 @@ int _SQLQuery(lua_State *L)
 	if(lua_gettop(L) == 2) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server == NULL) {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 
 		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
 		if(pi == NULL) {
-			luaerror(L, "Error getting LUA plugin");
+			luaerror(L, ERR_LUA);
 			return 2;
 		}
 
@@ -2055,13 +2063,13 @@ int _SQLFetch(lua_State *L)
 	if(lua_gettop(L) == 2) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server == NULL) {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 
 		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
 		if(pi == NULL) {
-			luaerror(L, "Error getting LUA plugin");
+			luaerror(L, ERR_LUA);
 			return 2;
 		}
 
@@ -2115,14 +2123,14 @@ int _SQLFree(lua_State *L)
 	if(lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server == NULL) {
-			luaerror(L, "Error getting server");
+			luaerror(L, ERR_SERV);
 			return 2;
 		}
 
 		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
 		if(pi == NULL)
 		{
-			luaerror(L, "Error getting LUA plugin");
+			luaerror(L, ERR_LUA);
 			return 2;
 		}
 
@@ -2161,7 +2169,7 @@ int _GetUpTime(lua_State *L)
 	cServerDC *server = GetCurrentVerlihub();
 
 	if (server == NULL) {
-		luaerror(L, "Error getting server");
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
 
@@ -2207,7 +2215,7 @@ int _GetHubIp(lua_State *L)
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(server == NULL) {
-		luaerror(L, "Error getting server");
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
 	lua_pushboolean(L, 1);
@@ -2219,7 +2227,7 @@ int _GetHubSecAlias(lua_State *L)
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(server == NULL) {
-		luaerror(L, "Error getting server");
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
 	lua_pushboolean(L, 1);
@@ -2456,7 +2464,7 @@ int _AddRegUser(lua_State *L)
 	int args = lua_gettop(L) - 1;
 
 	if (args < 3) {
-		luaL_error(L, "Error calling VH:AddRegUser, expected 3 or 4 arguments but got %d.", args);
+		luaL_error(L, "Error calling VH:AddRegUser, expected atleast 3 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2470,6 +2478,12 @@ int _AddRegUser(lua_State *L)
 	const string nick = (char*)lua_tostring(L, 2);
 	const string pass = (char*)lua_tostring(L, 3);
 	int uclass = (int)lua_tonumber(L, 4);
+
+	if ((uclass < eUC_PINGER) || (uclass == eUC_NORMUSER) || ((uclass > eUC_ADMIN) && (uclass < eUC_MASTER)) || (uclass > eUC_MASTER)) { // validate class number
+		luaerror(L, ERR_CLASS);
+		return 2;
+	}
+
 	string op;
 
 	if (args >= 4)
@@ -2513,7 +2527,7 @@ int _GetTopic(lua_State *L)
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(server == NULL) {
-		luaerror(L, "Error getting server");
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
 	lua_pushstring(L, server->mC.hub_topic.c_str());
@@ -2524,7 +2538,7 @@ int _SetTopic(lua_State *L)
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(server == NULL) {
-		luaerror(L, "Error getting server");
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
 	string topic;

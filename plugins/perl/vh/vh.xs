@@ -218,8 +218,9 @@ int
 SQLFree()
 
 bool
-StopHub(code)
+StopHub(code, delay)
 	int code
+	unsigned delay
 
 const char *
 GetTopic()

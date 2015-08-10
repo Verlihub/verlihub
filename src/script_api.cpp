@@ -270,7 +270,7 @@ bool CloseConnectionNice(char *nick)
 	}
 }
 
-bool StopHub(int code)
+bool StopHub(int code, unsigned delay)
 {
 	cServerDC *server = GetCurrentVerlihub();
 
@@ -279,7 +279,7 @@ bool StopHub(int code)
 		return false;
 	}
 
-	server->cAsyncSocketServer::stop(code);
+	server->cAsyncSocketServer::stop(code, delay);
 	return true;
 }
 
