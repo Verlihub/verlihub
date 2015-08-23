@@ -630,19 +630,19 @@ function install()
 	until $ARE_DB_INFO_OK;
 	do
 		MYSQL_DB_NAME=$(get_db_name)
-		MYSQL_DB_NAME=$(ask "Choose database name" $MYSQL_DB_NAME)
+		MYSQL_DB_NAME=$(ask "Choose database name" "$MYSQL_DB_NAME")
 		MYSQL_USER=$(get_db_user)
-		MYSQL_USER=$(ask "MySQL user to access to '$MYSQL_DB_NAME'" $MYSQL_USER)
+		MYSQL_USER=$(ask "MySQL user to access to '$MYSQL_DB_NAME'" "$MYSQL_USER")
 		MYSQL_PASSWORD=$(get_db_pass)
-		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" $MYSQL_PASSWORD)
+		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" "$MYSQL_PASSWORD")
 		MYSQL_HOST=$(get_db_host)
-		MYSQL_HOST=$(ask "MySQL hostname" $MYSQL_HOST)
+		MYSQL_HOST=$(ask "MySQL hostname" "$MYSQL_HOST")
 		MYSQL_CHARSET=$(get_db_charset)
-		MYSQL_CHARSET=$(ask "MySQL charset (experts only, leave empty for default)" $MYSQL_CHARSET)
+		MYSQL_CHARSET=$(ask "MySQL charset (experts only, leave empty for default)" "$MYSQL_CHARSET" "true")
 		VH_HUB_LOCALE=$(get_hub_locale)
-		VH_HUB_LOCALE=$(ask "Hub locale (experts only, leave empty for default)" $VH_HUB_LOCALE)
-		VH_HUB_ENCODING=""
-		VH_HUB_ENCODING=$(ask "Hub encoding (experts only, leave empty for default)" $VH_HUB_ENCODING)
+		VH_HUB_LOCALE=$(ask "Hub locale (experts only, leave empty for default)" "$VH_HUB_LOCALE" "true")
+		VH_HUB_ENCODING=$(get_hub_encoding)
+		VH_HUB_ENCODING=$(ask "Hub encoding (experts only, leave empty for default)" "$VH_HUB_ENCODING" "true")
 
 		echo_s "This is information about your MySQL server and the hub:\n"
 		echo_s "\tDatabase" $BOLD
@@ -672,7 +672,7 @@ function install()
 		IS_MYSQL_HOST_OK=false
 		until $IS_MYSQL_HOST_OK;
 		do
-			CURRENT_ADDRESS=$(ask "Address" )
+			CURRENT_ADDRESS=$(ask "Address")
 	
 			if [ "_$CURRENT_ADDRESS" = "_" ]; then
 				echo_s "You enter a empty value please retry with configuration\n"
@@ -838,11 +838,11 @@ function install()
 	echo "db_user = $MYSQL_USER" >> $CONFIG
 	echo "db_pass = $MYSQL_PASSWORD" >> $CONFIG
 
-	if [ ! -z "$MYSQL_CHARSET" ]; then
+	if [ "_$MYSQL_CHARSET" != "_" ]; then
 		echo "db_charset = $MYSQL_CHARSET" >> $CONFIG
 	fi
 
-	if [ ! -z "$VH_HUB_LOCALE" ]; then
+	if [ "_$VH_HUB_LOCALE" != "_" ]; then
 		echo "locale = $VH_HUB_LOCALE" >> $CONFIG
 	fi
 
@@ -891,7 +891,7 @@ function install()
 		VH_MASTER_NAME=$(ask "Master name" "[SU]$REALUSER")
 		VH_MASTER_PASSWORD=$(ask "Master password" "$TIMESTAMP")
 		VH_HUB_PORT=$(ask "Hub port" "$PORT")
-		VH_HUB_HOST=$(ask "Hub host" $HOSTNAME)
+		VH_HUB_HOST=$(ask "Hub host" "$HOSTNAME")
 		VH_HUB_NAME=$(ask "Hub name" "hub of $REALUSER")
 
 		echo_s "Is this info correct?\n"
@@ -916,7 +916,7 @@ function install()
 	_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
 	_mysql_update "listen_port" $VH_HUB_PORT
 
-	if [ ! -z "$VH_HUB_ENCODING" ]; then
+	if [ "_$VH_HUB_ENCODING" != "_" ]; then
 		_mysql_update "hub_encoding" $VH_HUB_ENCODING
 	fi
 

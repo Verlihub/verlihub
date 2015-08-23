@@ -176,8 +176,8 @@ function _is_hub_running() # path_to_dbconfig
 # Get plugin name
 function _get_plugin_name() #path_to_plugin
 {
-                local PLUGIN_PATH="$PLUGINDIR"
-		echo ${1#$PLUGIN_PATH}
+	local PLUGIN_PATH="$PLUGINDIR"
+	echo ${1#$PLUGIN_PATH}
 }
 
 # Return db_host
@@ -197,6 +197,9 @@ function get_db_charset() { echo $(get_var_from_conf "db_charset" ""); }
 
 # return locale
 function get_hub_locale() { echo $(get_var_from_conf "locale" ""); }
+
+# return encoding, returns nothing for now
+function get_hub_encoding() { echo ""; }
 
 # Connect to MySQL server
 function mysql_connect() { 
@@ -317,27 +320,32 @@ function echo_s() # (message,color)
 	return 0
 } 
 
-# Make question to user
-function ask() # question, default value
+# make question to user
+function ask() # question, default value, allow empty
 {
 	if [ "_$1" == "_" ]; then
 		exit;
 	fi
+
 	if [ "_$2" != "_" ]; then
 		read -p "$1 ($2): " VALUE
+
 		if [ "_$VALUE" == "_" ]; then
 			VALUE=$2
 		fi
 	else
 		IS_ANSWER_NOT_EMPTY=false
+
 		until $IS_ANSWER_NOT_EMPTY;
 		do
 			read -p "$1: " VALUE
-			if [ "_$VALUE" != "_" ]; then
+
+			if [ "_$VALUE" != "_" ] || [ "$3" == "true" ]; then
 				IS_ANSWER_NOT_EMPTY=true
 			fi
 		done
 	fi
+
 	echo "$VALUE"
 }
 
