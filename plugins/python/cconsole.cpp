@@ -25,12 +25,13 @@
 #include "cpythoninterpreter.h"
 #include "src/stringutils.h"
 #include "src/i18n.h"
+#include <dirent.h>
 
 namespace nVerliHub {
 	using namespace nUtils;
 	namespace nPythonPlugin {
 
-cConsole::cConsole(cpiPython *pyt) :
+cConsole::cConsole(cpiPython *pyt):
 	mPython(pyt),
 	mCmdPythonScriptAdd(1,"!pyload ", "(\\S+)", &mcfPythonScriptAdd),
 	mCmdPythonScriptGet(0,"!pylist", "", &mcfPythonScriptGet),
@@ -47,8 +48,7 @@ cConsole::cConsole(cpiPython *pyt) :
 }
 
 cConsole::~cConsole()
-{
-}
+{}
 
 int cConsole::DoCommand(const string &str, cConnDC *conn)
 {
@@ -80,7 +80,7 @@ bool cConsole::cfGetPythonScript::operator()()
 		return true;
 	}
 
-	(*mOS) << _("Loaded Python scripts") << ":\r\n\r\n";
+	(*mOS) << _("Running Python scripts") << ":\r\n\r\n ";
 	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
 	(*mOS) << toUpper(_("Script")) << "\r\n";
 	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
@@ -94,71 +94,189 @@ bool cConsole::cfGetPythonScript::operator()()
 
 bool cConsole::cfDelPythonScript::operator()()
 {
-	string scriptfile;
-	GetParStr(1,scriptfile);
-
 	if (!GetPI()->online) {
 		(*mOS) << _("Python interpreter is not loaded.");
-		return true;
+		return false;
 	}
 
-	bool found = false;
+	string scriptfile;
+	GetParStr(1, scriptfile);
 	bool number = false;
 	int num = 0;
+
 	if (GetPI()->IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
 		number = true;
+	} else if (scriptfile.find_first_of('/') == string::npos) {
+		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
 	vector<cPythonInterpreter *>::iterator it;
 	cPythonInterpreter *li;
-	for(it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
+	bool found = false;
+
+	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
-		if((number && num == li->id) || (!number && StrCompare(li->mScriptName,0,li->mScriptName.size(),scriptfile) == 0)) {
+
+		if ((number && num == li->id) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
 			found = true;
 			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
-
 			break;
 		}
 	}
 
-	if(!found) {
-		if(number)
+	if (!found) {
+		if (number)
 			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str());
 		else
 			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str());
 	}
+
 	return true;
 }
 
 bool cConsole::cfAddPythonScript::operator()()
 {
+	if (!GetPI()->online) {
+		(*mOS) << _("Python interpreter is not loaded.");
+		return false;
+	}
+
 	string scriptfile;
 	GetParStr(1, scriptfile);
+	bool number = false;
+	int num = 0;
 
-	if(!GetPI()->online) {
-		(*mOS) << _("Python interpreter is not loaded.");
-		return true;
+	if (GetPI()->IsNumber(scriptfile.c_str())) {
+		num = atoi(scriptfile.c_str());
+		number = true;
+	} else if (scriptfile.find_first_of('/') == string::npos) {
+		scriptfile = GetPI()->mScriptDir + scriptfile;
+	}
+
+	if (number) {
+		DIR *dir = opendir(GetPI()->mScriptDir.c_str());
+
+		if (!dir) {
+			(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
+			return false;
+		}
+
+		string filename;
+		struct dirent *dent = NULL;
+		int i = 0;
+
+		while (NULL != (dent = readdir(dir))) {
+			filename = dent->d_name;
+
+			if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
+				if (i == num) {
+					scriptfile = GetPI()->mScriptDir + filename;
+					break;
+				}
+
+				i++;
+			}
+		}
+
+		closedir(dir);
 	}
 
 	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
-	if(!ip) {
+
+	if (!ip) {
 		(*mOS) << _("Failed to allocate new Python interpreter.");
-		return true;
+		return false;
 	}
 
-	GetPI()->mPython.push_back(ip);
-	if(ip->Init())
+	vector<cPythonInterpreter *>::iterator it;
+	cPythonInterpreter *li;
+
+	if (ip->Init()) {
+		for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
+			li = *it;
+
+			if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
+				(*mOS) << autosprintf(_("Script %s is already running."), scriptfile.c_str());
+				delete ip;
+				return false;
+			}
+		}
+
 		(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str());
-	else {
+		GetPI()->AddData(ip);
+	} else {
 		(*mOS) << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
-		GetPI()->mPython.pop_back();
 		delete ip;
+		return false;
 	}
 
 	return true;
+}
+
+bool cConsole::cfReloadPythonScript::operator()()
+{
+	if (!GetPI()->online) {
+		(*mOS) << _("Python interpreter is not loaded.");
+		return false;
+	}
+
+	string scriptfile;
+	GetParStr(1, scriptfile);
+	bool number = false;
+	int num = 0;
+
+	if (GetPI()->IsNumber(scriptfile.c_str())) {
+		num = atoi(scriptfile.c_str());
+		number = true;
+	} else if (scriptfile.find_first_of('/') == string::npos) {
+		scriptfile = GetPI()->mScriptDir + scriptfile;
+	}
+
+	vector<cPythonInterpreter *>::iterator it;
+	cPythonInterpreter *li;
+	bool found = false;
+
+	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
+		li = *it;
+
+		if ((number && num == li->id) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
+			found = true;
+			scriptfile = li->mScriptName;
+			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
+			delete li;
+			GetPI()->mPython.erase(it);
+			break;
+		}
+	}
+
+	if (!found) {
+		if (number)
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str());
+		else
+			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str());
+
+		return false;
+	} else {
+		cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
+
+		if (!ip) {
+			(*mOS) << " " << _("Failed to allocate new Python interpreter.");
+			return false;
+		}
+
+		if (ip->Init()) {
+			(*mOS) << " " << autosprintf(_("Script %s is now running."), scriptfile.c_str());
+			GetPI()->AddData(ip);
+			return true;
+		} else {
+			(*mOS) << " " << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
+			delete ip;
+			return false;
+		}
+	}
 }
 
 bool cConsole::cfLogPythonScript::operator()()
@@ -167,75 +285,18 @@ bool cConsole::cfLogPythonScript::operator()()
 		(*mOS) << _("Python interpreter is not loaded.");
 		return true;
 	}
+
 	string level;
 	GetParStr(1, level);
 	ostringstream ss;
-   	ss << cpiPython::log_level;
-   	string oldValue = ss.str();
+	ss << cpiPython::log_level;
+	string oldValue = ss.str();
 	ss.str("");
 	ss << level;
-   	string newValue = ss.str();
+	string newValue = ss.str();
 	(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'."), "pi_python", "log_level", oldValue.c_str(), newValue.c_str());
-	cpiPython::me->LogLevel( atoi(level.c_str()) );
+	cpiPython::me->LogLevel(atoi(level.c_str()));
 	return true;
-}
-
-bool cConsole::cfReloadPythonScript::operator()()
-{
-	string scriptfile;
-	GetParStr(1,scriptfile);
-
-	if (!GetPI()->online) {
-		(*mOS) << _("Python interpreter is not loaded.");
-		return true;
-	}
-
-	bool found = false;
-	bool number = false;
-	int num = 0;
-	if (GetPI()->IsNumber(scriptfile.c_str())) {
-		num = atoi(scriptfile.c_str());
-		number = true;
-	}
-
-	vector<cPythonInterpreter *>::iterator it;
-	cPythonInterpreter *li;
-	string name;
-	for(it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
-		li = *it;
-		if((number && num == li->id) || (!number && StrCompare(li->mScriptName,0,li->mScriptName.size(),scriptfile) == 0)) {
-			found = true;
-			name = li->mScriptName;
-			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str()) << " ";
-			delete li;
-			GetPI()->mPython.erase(it);
-			break;
-		}
-	}
-
-	if(!found) {
-		if(number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
-		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str()) << " ";
-		return false;
-	} else {
-		cPythonInterpreter *ip = new cPythonInterpreter(name);
-		if(!ip) {
-			(*mOS) << _("Failed to allocate new Python interpreter.");
-			return true;
-		}
-
-		GetPI()->mPython.push_back(ip);
-		if(ip->Init())
-			(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str());
-		else {
-			(*mOS) << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
-			GetPI()->mPython.pop_back();
-			delete ip;
-		}
-		return true;
-	}
 }
 
 	}; // namespace nPythonPlugin

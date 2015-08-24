@@ -207,38 +207,45 @@ bool cpiPython::RegisterAll()
 
 bool cpiPython::AutoLoad()
 {
-	if (log_level < 1) { if(Log(0)) LogStream() << "Open dir: " << mScriptDir << endl; }
-	log1( "PY: Autoload   Loading scripts from dir: %s\n", mScriptDir.c_str() );
-	string pathname, filename;
+	if ((log_level < 1) && Log(0))
+		LogStream() << "Opening directory: " << mScriptDir << endl;
+
+	log1("PY: Autoload, loading scripts from directory: %s\n", mScriptDir.c_str());
 	DIR *dir = opendir(mScriptDir.c_str());
-	if(!dir)
-	{
-		if (log_level < 1) { if(Log(1)) LogStream() << "Open dir error" << endl; }
-		log1( "PY: Autoload   Failed to open directory\n" );
+
+	if (!dir) {
+		if ((log_level < 1) && Log(1))
+			LogStream() << "Error opening directory" << endl;
+
+		log1("PY: Autoload, filed to open directory\n");
 		return false;
 	}
+
+	string filename, pathname;
 	struct dirent *dent = NULL;
 
-	while(NULL != (dent=readdir(dir)))
-	{
+	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
-		if((filename.size() > 4) && (StrCompare(filename,filename.size()-3,3,".py")==0))
-		{
+
+		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
 			pathname = mScriptDir + filename;
 			cPythonInterpreter *ip = new cPythonInterpreter (pathname);
-			if(!ip) continue;
 
-			mPython.push_back(ip);
-			if(ip->Init())
-			{
-				if (log_level < 1) { if(Log(1)) LogStream() << "Success loading Python script: " << filename << endl; }
-				log1( "PY: Autoload   Success loading script: [ %d ] %s\n", ip->id, filename.c_str() );
-			}
-			else
-			{
-				if (log_level < 1) { if(Log(1)) LogStream() << "Failed loading Python script: " << filename << endl; }
-				log1( "PY: Autoload   Failed loading script: [ %d ] %s\n", ip->id, filename.c_str() );
-				mPython.pop_back();
+			if (!ip)
+				continue;
+
+			if (ip->Init()) {
+				AddData(ip);
+
+				if ((log_level < 1) && Log(1))
+					LogStream() << "Success loading and parsing Python script: " << filename << endl;
+
+				log1("PY: Autoload, success loading script: %s [%d]\n", filename.c_str(), ip->id);
+			} else {
+				if ((log_level < 1) && Log(1))
+					LogStream() << "Failed loading or parsing Python script: " << filename << endl;
+
+				log1("PY: Autoload, failed loading script: %s\n", filename.c_str());
 				delete ip;
 			}
 		}

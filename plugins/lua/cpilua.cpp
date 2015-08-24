@@ -126,31 +126,39 @@ bool cpiLua::RegisterAll()
 
 bool cpiLua::AutoLoad()
 {
-	if(Log(0))
-		LogStream() << "Open dir: " << mScriptDir << endl;
-	string pathname, filename;
+	if (Log(0))
+		LogStream() << "Opening directory: " << mScriptDir << endl;
+
 	DIR *dir = opendir(mScriptDir.c_str());
-	if(!dir) {
-		if(Log(1))
+
+	if (!dir) {
+		if (Log(1))
 			LogStream() << "Error opening directory" << endl;
+
 		return false;
 	}
+
+	string pathname, filename;
 	struct dirent *dent = NULL;
 
-	while(NULL != (dent=readdir(dir))) {
+	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
-		if((filename.size() > 4) && (StrCompare(filename,filename.size()-4,4,".lua")==0)) {
+
+		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
 			pathname = mScriptDir + filename;
 			cLuaInterpreter *ip = new cLuaInterpreter(pathname);
-			if(ip) {
-				if(ip->Init()) {
+
+			if (ip) {
+				if (ip->Init()) {
 					AddData(ip);
 					ip->Load();
-					if(Log(1))
-						LogStream() << "Success loading and parsing LUA script: " << filename << endl;
+
+					if (Log(1))
+						LogStream() << "Success loading and parsing Lua script: " << filename << endl;
 				} else {
-					if(Log(1))
-						LogStream() << "Failed loading or parsing LUA script: " << filename << endl;
+					if (Log(1))
+						LogStream() << "Failed loading or parsing Lua script: " << filename << endl;
+
 					delete ip;
 				}
 			}
