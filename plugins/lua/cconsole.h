@@ -37,19 +37,20 @@ public:
 	int DoCommand(const string &str, nSocket::cConnDC *conn);
 	cpiLua *mLua;
 protected:
-	//enum {eMSG_SEND, eMSG_Read };
-	class cfBase : public nCmdr::cCommand::sCmdFunc {
+	//enum { eMSG_SEND, eMSG_READ };
+	class cfBase: public nCmdr::cCommand::sCmdFunc {
 		public:
-		cpiLua *GetPI(){ return ((cConsole *)(mCommand->mCmdr->mOwner))->mLua;}
+			cpiLua *GetPI() { return ((cConsole *)(mCommand->mCmdr->mOwner))->mLua; }
 	};
 
-	class cfGetLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptGet;
-	class cfAddLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptAdd;
-	class cfDelLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptDel;
-	class cfReloadLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptRe;
-	class cfLogLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptLog;
-	class cfInfoLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptInfo;
-	class cfVersionLuaScript : public cfBase { virtual bool operator()();} mcfLuaScriptVersion;
+	class cfGetLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptGet;
+	class cfAddLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptAdd;
+	class cfDelLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptDel;
+	class cfReloadLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptRe;
+	class cfLogLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptLog;
+	class cfInfoLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptInfo;
+	class cfVersionLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptVersion;
+	class cfFilesLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptFiles;
 
 	nCmdr::cCommand mCmdLuaScriptGet;
 	nCmdr::cCommand mCmdLuaScriptAdd;
@@ -58,6 +59,7 @@ protected:
 	nCmdr::cCommand mCmdLuaScriptLog;
 	nCmdr::cCommand mCmdLuaScriptInfo;
 	nCmdr::cCommand mCmdLuaScriptVersion;
+	nCmdr::cCommand mCmdLuaScriptFiles;
 	nCmdr::cCommandCollection mCmdr;
 };
 

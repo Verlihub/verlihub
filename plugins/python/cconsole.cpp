@@ -33,11 +33,12 @@ namespace nVerliHub {
 
 cConsole::cConsole(cpiPython *pyt):
 	mPython(pyt),
-	mCmdPythonScriptAdd(1,"!pyload ", "(\\S+)", &mcfPythonScriptAdd),
-	mCmdPythonScriptGet(0,"!pylist", "", &mcfPythonScriptGet),
-	mCmdPythonScriptDel(2,"!pyunload ", "(\\S+)", &mcfPythonScriptDel),
-	mCmdPythonScriptRe(3,"!pyreload ", "(\\S+)", &mcfPythonScriptRe),
-	mCmdPythonScriptLog(4,"!pylog ", "(\\d+)", &mcfPythonScriptLog),
+	mCmdPythonScriptGet(0, "!pylist", "", &mcfPythonScriptGet),
+	mCmdPythonScriptAdd(1, "!pyload ", "(\\S+)", &mcfPythonScriptAdd),
+	mCmdPythonScriptDel(2, "!pyunload ", "(\\S+)", &mcfPythonScriptDel),
+	mCmdPythonScriptRe(3, "!pyreload ", "(\\S+)", &mcfPythonScriptRe),
+	mCmdPythonScriptLog(4, "!pylog ", "(\\d+)", &mcfPythonScriptLog),
+	mCmdPythonScriptFiles(5, "!pyfiles", "", &mcfPythonScriptFiles),
 	mCmdr(this)
 {
 	mCmdr.Add(&mCmdPythonScriptAdd);
@@ -45,6 +46,7 @@ cConsole::cConsole(cpiPython *pyt):
 	mCmdr.Add(&mCmdPythonScriptGet);
 	mCmdr.Add(&mCmdPythonScriptRe);
 	mCmdr.Add(&mCmdPythonScriptLog);
+	mCmdr.Add(&mCmdPythonScriptFiles);
 }
 
 cConsole::~cConsole()
@@ -57,7 +59,7 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 	if (cmd != NULL) {
 		int id = cmd->GetID();
 
-		if (id >= 0 && id <= 4 && conn && conn->mpUser && conn->mpUser->mClass < mPython->mServer->mC.plugin_mod_class) {
+		if ((id >= 0) && (id <= 5) && conn && conn->mpUser && (conn->mpUser->mClass < mPython->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
 			mPython->mServer->DCPublicHS(_("You have no rights to do this."), conn);
 			return 1;
 		}
@@ -80,7 +82,7 @@ bool cConsole::cfGetPythonScript::operator()()
 		return true;
 	}
 
-	(*mOS) << _("Running Python scripts") << ":\r\n\r\n ";
+	(*mOS) << _("Loaded Python scripts") << ":\r\n\r\n ";
 	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
 	(*mOS) << toUpper(_("Script")) << "\r\n";
 	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
@@ -89,6 +91,36 @@ bool cConsole::cfGetPythonScript::operator()()
 		(*mOS) << " " << setw(6) << setiosflags(ios::left) << GetPI()->mPython[i]->id << GetPI()->mPython[i]->mScriptName << "\r\n";
 	}
 
+	return true;
+}
+
+bool cConsole::cfFilesPythonScript::operator()()
+{
+	DIR *dir = opendir(GetPI()->mScriptDir.c_str());
+
+	if (!dir) {
+		(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
+		return false;
+	}
+
+	(*mOS) << autosprintf(_("Python scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n ";
+	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
+	(*mOS) << toUpper(_("Script")) << "\r\n";
+	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
+	string filename;
+	struct dirent *dent = NULL;
+	int i = 0;
+
+	while (NULL != (dent = readdir(dir))) {
+		filename = dent->d_name;
+
+		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
+			(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << filename << "\r\n";
+			i++;
+		}
+	}
+
+	closedir(dir);
 	return true;
 }
 
@@ -129,9 +161,9 @@ bool cConsole::cfDelPythonScript::operator()()
 
 	if (!found) {
 		if (number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script #%s not stopped because it's not loaded."), scriptfile.c_str());
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script %s not stopped because it's not loaded."), scriptfile.c_str());
 	}
 
 	return true;
@@ -199,16 +231,16 @@ bool cConsole::cfAddPythonScript::operator()()
 			li = *it;
 
 			if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
-				(*mOS) << autosprintf(_("Script %s is already running."), scriptfile.c_str());
+				(*mOS) << autosprintf(_("Script %s is already loaded."), scriptfile.c_str());
 				delete ip;
 				return false;
 			}
 		}
 
-		(*mOS) << autosprintf(_("Script %s is now running."), ip->mScriptName.c_str());
+		(*mOS) << autosprintf(_("Script %s is now loaded."), ip->mScriptName.c_str());
 		GetPI()->AddData(ip);
 	} else {
-		(*mOS) << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
+		(*mOS) << autosprintf(_("Script %s not found or couldn't be parsed."), scriptfile.c_str());
 		delete ip;
 		return false;
 	}
@@ -254,9 +286,9 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 	if (!found) {
 		if (number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script #%s not stopped because it's not loaded."), scriptfile.c_str());
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script %s not stopped because it's not loaded."), scriptfile.c_str());
 
 		return false;
 	} else {
@@ -268,11 +300,11 @@ bool cConsole::cfReloadPythonScript::operator()()
 		}
 
 		if (ip->Init()) {
-			(*mOS) << " " << autosprintf(_("Script %s is now running."), scriptfile.c_str());
+			(*mOS) << " " << autosprintf(_("Script %s is now loaded."), scriptfile.c_str());
 			GetPI()->AddData(ip);
 			return true;
 		} else {
-			(*mOS) << " " << autosprintf(_("Script %s not found or could not be parsed."), scriptfile.c_str());
+			(*mOS) << " " << autosprintf(_("Script %s not found or couldn't be parsed."), scriptfile.c_str());
 			delete ip;
 			return false;
 		}

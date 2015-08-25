@@ -39,22 +39,24 @@ public:
 	int DoCommand(const string &str, nSocket::cConnDC *conn);
 	cpiPython *mPython;
 protected:
-	class cfBase : public nCmdr::cCommand::sCmdFunc {
+	class cfBase: public nCmdr::cCommand::sCmdFunc {
 		public:
-		cpiPython *GetPI(){ return ((cConsole *)(mCommand->mCmdr->mOwner))->mPython;}
+			cpiPython *GetPI() { return ((cConsole *)(mCommand->mCmdr->mOwner))->mPython; }
 	};
 
-	class cfAddPythonScript : public cfBase { virtual bool operator()();} mcfPythonScriptAdd;
-	class cfGetPythonScript : public cfBase { virtual bool operator()();} mcfPythonScriptGet;
-	class cfDelPythonScript : public cfBase { virtual bool operator()();} mcfPythonScriptDel;
-	class cfReloadPythonScript : public cfBase { virtual bool operator()();} mcfPythonScriptRe;
-	class cfLogPythonScript : public cfBase { virtual bool operator()();} mcfPythonScriptLog;
+	class cfAddPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptAdd;
+	class cfGetPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptGet;
+	class cfDelPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptDel;
+	class cfReloadPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptRe;
+	class cfLogPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptLog;
+	class cfFilesPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptFiles;
 
 	nCmdr::cCommand mCmdPythonScriptAdd;
 	nCmdr::cCommand mCmdPythonScriptGet;
 	nCmdr::cCommand mCmdPythonScriptDel;
 	nCmdr::cCommand mCmdPythonScriptRe;
 	nCmdr::cCommand mCmdPythonScriptLog;
+	nCmdr::cCommand mCmdPythonScriptFiles;
 	nCmdr::cCommandCollection mCmdr;
 };
 
