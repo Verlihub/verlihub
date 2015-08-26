@@ -150,7 +150,7 @@ bool cConsole::cfDelPythonScript::operator()()
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if ((number && num == li->id) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
+		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
 			delete li;
@@ -176,7 +176,7 @@ bool cConsole::cfAddPythonScript::operator()()
 		return false;
 	}
 
-	string scriptfile;
+	string scriptfile, filename;
 	GetParStr(1, scriptfile);
 	bool number = false;
 	int num = 0;
@@ -196,7 +196,6 @@ bool cConsole::cfAddPythonScript::operator()()
 			return false;
 		}
 
-		string filename;
 		struct dirent *dent = NULL;
 		int i = 0;
 
@@ -274,7 +273,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if ((number && num == li->id) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
+		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());

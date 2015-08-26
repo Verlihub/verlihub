@@ -176,7 +176,7 @@ bool cConsole::cfDelLuaScript::operator()()
 	for (it = GetPI()->mLua.begin(); it != GetPI()->mLua.end(); ++it, ++i) {
 		li = *it;
 
-		if ((number && num == i) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
+		if ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
@@ -200,7 +200,7 @@ bool cConsole::cfDelLuaScript::operator()()
 
 bool cConsole::cfAddLuaScript::operator()()
 {
-	string scriptfile;
+	string scriptfile, filename;
 	GetParStr(1, scriptfile);
 	bool number = false;
 	int num = 0;
@@ -220,7 +220,6 @@ bool cConsole::cfAddLuaScript::operator()()
 			return false;
 		}
 
-		string filename;
 		struct dirent *dent = NULL;
 		int i = 0;
 
@@ -295,7 +294,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 	for (it = GetPI()->mLua.begin(); it != GetPI()->mLua.end(); ++it, ++i) {
 		li = *it;
 
-		if ((number && num == i) || (!number && StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
+		if ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
 			scriptfile = li->mScriptName;

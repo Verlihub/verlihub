@@ -50,12 +50,15 @@ cZLib::~cZLib()
 
 char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen)
 {
+	if (!buffer)
+		return NULL;
+
 	/*
 		check if we are compressing same data as last time
 		then return last compressed buffer to save resources
 	*/
 
-	if (inLastLen && outLastLen && (len == inLastLen) && buffer && inBuf && (memcmp(buffer, inBuf, len) == 0)) {
+	if (inLastLen && outLastLen && (len == inLastLen) && inBuf && (memcmp(buffer, inBuf, len) == 0)) {
 		outLen = outLastLen;
 
 		if (len <= outLastLen) // fall back already here

@@ -249,10 +249,10 @@ bool SendToOpChat(char *data)
 bool CloseConnection(char *nick)
 {
 	cUser *usr = GetUser(nick);
-	if((!usr) || (usr && !usr->mxConn))
+
+	if (!usr || !usr->mxConn) {
 		return false;
-	else
-	{
+	} else {
 		usr->mxConn->CloseNow();
 		return true;
 	}
@@ -262,7 +262,7 @@ bool CloseConnectionNice(char *nick)
 {
 	cUser *usr = GetUser(nick);
 
-	if ((!usr) || (usr && !usr->mxConn)) {
+	if (!usr || !usr->mxConn) {
 		return false;
 	} else {
 		usr->mxConn->CloseNice(1000, eCR_KICKED);
@@ -340,8 +340,11 @@ const string GetIPCN(const char *ip)
 char *GetMyINFO(char *nick)
 {
 	cUser *usr = GetUser(nick);
-	if(usr) return (char*) usr->mMyINFO.c_str();
-	else return (char *)"";
+
+	if (usr)
+		return (char*)usr->mMyINFO.c_str();
+	else
+		return (char *)"";
 }
 
 int GetUserClass(char *nick)
@@ -357,17 +360,20 @@ int GetUserClass(char *nick)
 char *GetUserHost(char *nick)
 {
 	cUser *usr = GetUser(nick);
-	if ((!usr) || (usr && !usr->mxConn))
+
+	if (!usr || !usr->mxConn) {
 		return (char *)"";
-	else
-	{
+	} else {
 		cServerDC *server = GetCurrentVerlihub();
-		if ( server == NULL) {
+
+		if (!server) {
 			cerr << "Server verlihub is unfortunately not running or not found." << endl;
 			return (char *)"";
 		}
-		if(!server->mUseDNS)
+
+		if (!server->mUseDNS)
 			usr->mxConn->DNSLookup();
+
 		return (char*)usr->mxConn->AddrHost().c_str();
 	}
 }
@@ -375,10 +381,10 @@ char *GetUserHost(char *nick)
 char *GetUserIP(char *nick)
 {
 	cUser *usr = GetUser(nick);
-	if ((!usr) || (usr && !usr->mxConn))
+
+	if (!usr || !usr->mxConn) {
 		return (char *)"";
-	else
-	{
+	} else {
 		return (char*)usr->mxConn->AddrIP().c_str();
 	}
 }
@@ -386,12 +392,16 @@ char *GetUserIP(char *nick)
 bool Ban(char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
 	cServerDC *server = GetCurrentVerlihub();
-	if(!server) {
+
+	if (!server) {
 		cerr << "Server verlihub is unfortunately not running or not found." << endl;
 		return false;
 	}
+
 	cUser *usr = GetUser(nick);
-	if ((!usr) || (usr && !usr->mxConn)) return false;
+
+	if (!usr || !usr->mxConn)
+		return false;
 
 	cBan ban(server);
 	server->mBanList->NewBan(ban, usr->mxConn, op, reason, howlong, bantype);
@@ -410,7 +420,10 @@ bool ParseCommand(char *nick, char *cmd, int pm)
 	}
 
 	cUser *usr = GetUser(nick);
-	if (!usr || !usr->mxConn) return false;
+
+	if (!usr || !usr->mxConn)
+		return false;
+
 	serv->mP.ParseForCommands(cmd, usr->mxConn, pm);
 	return true;
 }
