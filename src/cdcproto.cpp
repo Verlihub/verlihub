@@ -512,10 +512,11 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	// send hub name without topic
-	string emp;
-	Create_HubName(omsg, mS->mC.hub_name, emp);
-	conn->Send(omsg);
+	if (mS->mC.hub_name.size()) { // send hub name without topic
+		string emp;
+		Create_HubName(omsg, mS->mC.hub_name, emp);
+		conn->Send(omsg);
+	}
 
 	// check authorization ip
 	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) {
@@ -2825,7 +2826,7 @@ void cDCProto::Create_HubName(string &dest, string &name, string &topic)
 {
 	dest = "$HubName " + name;
 
-	if (topic.length()) {
+	if (topic.size()) {
 		dest += " - ";
 		dest += topic;
 	}

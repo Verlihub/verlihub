@@ -900,13 +900,17 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 void cServerDC::AfterUserLogin(cConnDC *conn)
 {
+	if (!conn || !conn->mpUser)
+		return;
+
 	ostringstream os;
-	if(conn->Log(3))
-		conn->LogStream() << "Entered the hub." << endl;
+
+	if (conn->Log(3))
+		conn->LogStream() << "Entered the hub" << endl;
+
 	mCo->mTriggers->TriggerAll(eTF_MOTD, conn);
 
-	// the user has to set or change password
-	if (conn->mRegInfo && conn->mRegInfo->mPwdChange) {
+	if (conn->mRegInfo && conn->mRegInfo->mPwdChange) { // the user has to set or change password
 		if (mC.send_pass_request)
 			os << _("You must set your password now using +passwd command or entering it in password dialog.");
 		else
@@ -921,6 +925,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 			if user replies with $MyPass then hub sets his password
 			this equals +passwd command
 		*/
+
 		if (mC.send_pass_request) {
 			conn->mpUser->mSetPass = true;
 			string getpass("$GetPass");
@@ -931,8 +936,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		os.str("");
 	}
 
-	// send the hub topic
-	if (!mC.hub_topic.empty()) {
+	if (mC.hub_topic.size()) { // send the hub topic
 		string topic("$HubTopic ");
 		topic += mC.hub_topic + "|";
 		conn->Send(topic, false);
@@ -944,13 +948,14 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		DCPublicHS(os.str(), conn);
 	}
 
-	if(mUserList.Size() > mUsersPeak)
+	if (mUserList.Size() > mUsersPeak)
 		mUsersPeak = mUserList.Size();
+
 	#ifndef WITHOUT_PLUGINS
-	if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) { // todo: i think we need to move this before hubtopic and userinfo
-		conn->CloseNow();
-		return;
-	}
+		if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) { // todo: i think we need to move this before hubtopic and userinfo
+			conn->CloseNow();
+			return;
+		}
 	#endif
 
 	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER)) {
@@ -967,20 +972,18 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 void cServerDC::DoUserLogin(cConnDC *conn)
 {
-	// verify we didn't get here by chance
-	if(eLS_LOGIN_DONE != conn->GetLSFlag(eLS_LOGIN_DONE)) {
-		if(conn->ErrLog(2))
-			conn->LogStream() << "User Login when not all done"<<endl;
+	if (eLS_LOGIN_DONE != conn->GetLSFlag(eLS_LOGIN_DONE)) { // verify we didnt get here by chance
+		if (conn->ErrLog(2))
+			conn->LogStream() << "User login when not all done" << endl;
+
 		conn->CloseNow();
 		return;
 	}
 
-	// check if same nick already exists
-	if (!VerifyUniqueNick(conn))
+	if (!VerifyUniqueNick(conn)) // check if same nick already exists
 		return;
 
-	// he is not anymore in progress
-	if (mInProgresUsers.ContainsNick(conn->mpUser->mNick)) {
+	if (mInProgresUsers.ContainsNick(conn->mpUser->mNick)) { // he is not anymore in progress
 		mInProgresUsers.FlushForUser(conn->mpUser);
 		mInProgresUsers.Remove(conn->mpUser);
 	}
@@ -988,27 +991,24 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	if (mC.int_login && (conn->GetTheoricalClass() <= mC.max_class_int_login)) // login flood detection
 		mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.int_login, _("Reconnecting too fast"), eBT_RECON);
 
-	// users special rights and restrictions
-	cPenaltyList::sPenalty pen;
+	cPenaltyList::sPenalty pen; // users special rights and restrictions
+
 	if (mPenList->LoadTo(pen, conn->mpUser->mNick) && (conn->mpUser->mClass != eUC_PINGER))
 		conn->mpUser->ApplyRights(pen);
 
-	// insert user to userlist
-	if(!AddToList(conn->mpUser)) {
+	if (!AddToList(conn->mpUser)) { // insert user to userlist
 		conn->CloseNow();
 		return;
 	}
 
-	ShowUserToAll(conn->mpUser); // display user to others
-
-	if (!mC.hub_topic.empty()) { // send hub name with topic
+	if (mC.hub_name.size() && mC.hub_topic.size()) { // send hub name with topic
 		static string omsg;
 		omsg.erase();
 		cDCProto::Create_HubName(omsg, mC.hub_name, mC.hub_topic);
 		conn->Send(omsg);
 	}
 
-	if ((conn->mFeatures & eSF_FAILOVER) && !mC.hub_failover_hosts.empty()) { // send failover hosts if not empty and client supports it
+	if ((conn->mFeatures & eSF_FAILOVER) && mC.hub_failover_hosts.size()) { // send failover hosts if not empty and client supports it
 		static string omsg;
 		omsg.erase();
 		omsg.append("$FailOver ");
@@ -1016,6 +1016,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		conn->Send(omsg, true);
 	}
 
+	ShowUserToAll(conn->mpUser); // display user to others
 	SendHeaders(conn, 1);
 	AfterUserLogin(conn);
 	conn->ClearTimeOut(eTO_LOGIN);
