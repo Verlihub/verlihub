@@ -375,33 +375,44 @@ bool cServerDC::DelRobot(cUserRobot *robot)
 
 bool cServerDC::AddToList(cUser *usr)
 {
-	if(!usr) {
-		if(ErrLog(1)) LogStream() << "Adding a NULL user to userlist" << endl;
+	if (!usr) {
+		if (ErrLog(1))
+			LogStream() << "Adding a NULL user to userlist" << endl;
+
 		return false;
 	}
-	if(usr->mInList) {
-		if(ErrLog(2)) LogStream() << "User is already in the user list, he says it " << endl;
+
+	if (usr->mInList) {
+		if (ErrLog(2))
+			LogStream() << "User is already in userlist" << endl;
+
 		return false;
 	}
 
 	tUserHash Hash = mUserList.Nick2Hash(usr->mNick);
 
-	if(!mUserList.AddWithHash(usr, Hash)) {
-		if(ErrLog(2)) LogStream() << "Adding twice user with same hash " << usr->mNick << endl;
+	if (!mUserList.AddWithHash(usr, Hash)) {
+		if (ErrLog(2))
+			LogStream() << "Adding twice user with same hash: " << usr->mNick << endl;
+
 		usr->mInList = false;
 		return false;
 	}
 
 	usr->mInList = true;
-	if(!usr->IsPassive)
-		mActiveUsers.AddWithHash(usr, Hash);
-	if(usr->IsPassive)
+
+	if (usr->IsPassive)
 		mPassiveUsers.AddWithHash(usr, Hash);
-	if(usr->mClass >= eUC_OPERATOR && ! (usr->mxConn && usr->mxConn->mRegInfo && usr->mxConn->mRegInfo->mHideKeys))
+	else
+		mActiveUsers.AddWithHash(usr, Hash);
+
+	if ((usr->mClass >= eUC_OPERATOR) && !(usr->mxConn && usr->mxConn->mRegInfo && usr->mxConn->mRegInfo->mHideKeys))
 		mOpList.AddWithHash(usr, Hash);
-	if(usr->Can(eUR_OPCHAT, mTime.Sec()))
+
+	if (usr->Can(eUR_OPCHAT, mTime.Sec()))
 		mOpchatList.AddWithHash(usr, Hash);
-	if(usr->mxConn && !(usr->mxConn->mFeatures & eSF_NOHELLO))
+
+	if (usr->mxConn && !(usr->mxConn->mFeatures & eSF_NOHELLO))
 		mHelloUsers.AddWithHash(usr, Hash);
 
 	if ((usr->mClass >= eUC_OPERATOR) || mC.chat_default_on) {
@@ -410,10 +421,10 @@ bool cServerDC::AddToList(cUser *usr)
 		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), usr->mxConn);
 	}
 
-	if(usr->mxConn && usr->mxConn->Log(3))
-		usr->mxConn->LogStream() << "Adding at the end of Nicklist" << endl;
+	if (usr->mxConn && usr->mxConn->Log(3))
+		usr->mxConn->LogStream() << "Adding at the end of nicklist" << endl;
 
-	if(usr->mxConn && usr->mxConn->Log(3))
+	if (usr->mxConn && usr->mxConn->Log(3))
 		usr->mxConn->LogStream() << "Becomes in list" << endl;
 
 	return true;
@@ -980,8 +991,8 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		return;
 	}
 
-	if (!VerifyUniqueNick(conn)) // check if same nick already exists
-		return;
+	//if (!VerifyUniqueNick(conn)) // this is already done somewhere else
+		//return;
 
 	if (mInProgresUsers.ContainsNick(conn->mpUser->mNick)) { // he is not anymore in progress
 		mInProgresUsers.FlushForUser(conn->mpUser);
@@ -1023,35 +1034,38 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	conn->mpUser->mT.login.Get();
 }
 
+/*
+	if user asks for nicklist, login will happen after the sending of nicklist ends, otherwise it will happen now
+*/
+
 bool cServerDC::BeginUserLogin(cConnDC *conn)
 {
-	// If user asks for nicklist, then login will happen after the sending of nicklist ends
-	// otherwise it will happen now
 	unsigned int WantedMask;
+
 	if (mC.delayed_login)
 	 	WantedMask = eLS_LOGIN_DONE - eLS_NICKLST;
 	else
 		WantedMask = eLS_LOGIN_DONE;
 
-	if(WantedMask == conn->GetLSFlag(WantedMask)) {
-		if(conn->Log(2))
+	if (WantedMask == conn->GetLSFlag(WantedMask)) {
+		if (conn->Log(2))
 			conn->LogStream() << "Begin login" << endl;
-		// Check if nick is unique
-		if(VerifyUniqueNick(conn)) {
-			if (!mC.delayed_login)  {
+
+		if (VerifyUniqueNick(conn)) { // check if nick is unique
+			if (!mC.delayed_login) {
 				DoUserLogin(conn);
 			} else {
 				mInProgresUsers.Add(conn->mpUser);
 			}
 
-			if (conn->mSendNickList) {
-				// this may won't send all data at once...
-				mP.NickList(conn);	// this will set mNickListInProgress
+			if (conn->mSendNickList) { // this may not send all data at once
+				mP.NickList(conn); // this will set mNickListInProgress
 				conn->mSendNickList = false;
-				return true;	// return here since we don't know that the list was sent or not
-						// OnFlushDone() will do the login after the NickList is flushed
+				return true; // return here since we dont know that the list was sent or not
+				// OnFlushDone() will do the login after the NickList is flushed
 			}
-			if(!conn->mpUser->mInList) {
+
+			if (!conn->mpUser->mInList) {
 				DoUserLogin(conn);
 			}
 		} else {
@@ -1061,6 +1075,7 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 		conn->CloseNow();
 		return false;
 	}
+
 	return true;
 }
 
@@ -1228,7 +1243,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 				case eVN_LONG:
 					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
 					break;
-				case eVN_USED: // never appears here
+				case eVN_USED:
 					errmsg << _("Your nick is already taken by another user.");
 					extra = "$ValidateDenide ";
 					extra += nick;
@@ -1352,6 +1367,16 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 
 		if (StrCompare(nick, 0, 4, "[OP]") == 0)
 			return eVN_NOT_REGED_OP;
+	}
+
+	string userkey; // check if user with same nick already logged in
+	mUserList.Nick2Key(nick, userkey);
+
+	if (mUserList.ContainsKey(userkey)) {
+		cUser *olduser = mUserList.GetUserByKey(userkey);
+
+		if (olduser && olduser->mxConn && (conn->AddrIP() != olduser->mxConn->AddrIP())) // make sure its not same user
+			return eVN_USED;
 	}
 
 	if (mBanList->IsNickTempBanned(nick)) // check temporary nick ban

@@ -2445,7 +2445,7 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 
 bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 {
-	if (!conn || (conn->mpUser && (conn->mpUser->mInList || !inlist)))
+	if (!conn || (conn->mpUser && (!inlist || conn->mpUser->mInList || (mS->mC.delayed_login && mS->mInProgresUsers.ContainsNick(conn->mpUser->mNick)))))
 		return false;
 
 	ostringstream rsn;
