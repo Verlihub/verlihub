@@ -65,7 +65,7 @@ while [[ $CODE != 0 ]]; do
 		sleep 5;
 		echo " Done."
 	elif [[ $CODE -eq 3 ]] | [[ $CODE -eq 139 ]]; then
-		echo "-- Hub exists with code $CODE";
+		echo "-- Hub exits with code $CODE";
 		DATE=`date +%s`
 		LAST_CRASH_DIFF=$(expr $DATE - $LAST_CRASH)
 		if [ $LAST_CRASH_DIFF -gt 60 ]; then

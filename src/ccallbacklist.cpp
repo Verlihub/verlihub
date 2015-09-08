@@ -58,10 +58,10 @@ bool cCallBackList::Register(cPluginBase *plugin)
 {
 	if(!plugin)
 		return false;
-	tPICont::iterator i = find(mPlugins.begin(), mPlugins.end(), plugin);
-	if(i != mPlugins.end())
+	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plugin);
+	if(i != mPlugList.end())
 		return false;
-	mPlugins.push_back(plugin);
+	mPlugList.push_back(plugin);
 	return true;
 }
 
@@ -69,22 +69,22 @@ bool cCallBackList::Unregister(cPluginBase *plugin)
 {
 	if(!plugin)
 		return false;
-	tPICont::iterator i = find(mPlugins.begin(), mPlugins.end(), plugin);
-	if(i == mPlugins.end())
+	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plugin);
+	if(i == mPlugList.end())
 		return false;
-	mPlugins.erase(i);
+	mPlugList.erase(i);
 	return true;
 }
 
 bool cCallBackList::CallAll()
 {
 	mCallOne.mCall = true;
-	return for_each(mPlugins.begin() , mPlugins.end(), mCallOne).mCall;
+	return for_each(mPlugList.begin() , mPlugList.end(), mCallOne).mCall;
 }
 
 void cCallBackList::ListRegs(ostream &os, const char *indent)
 {
-	for(tPICont::iterator i = mPlugins.begin(); i != mPlugins.end(); ++i)
+	for(tPICont::iterator i = mPlugList.begin(); i != mPlugList.end(); ++i)
 		os << indent << (*i)->Name() << "\r\n";
 }
 	}; // namespace nPlugin

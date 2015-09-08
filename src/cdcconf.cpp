@@ -21,12 +21,13 @@
 #include "cserverdc.h"
 #include "cdcconf.h"
 #include <string>
+
 using namespace std;
 
 namespace nVerliHub {
 	namespace nTables {
 
-cDCConf::cDCConf( cServerDC &serv ): mS(serv)
+cDCConf::cDCConf(cServerDC &serv): mS(serv)
 {
 	/*
 	// lengths are completely wrong
@@ -56,8 +57,7 @@ cDCConf::cDCConf( cServerDC &serv ): mS(serv)
 }
 
 cDCConf::~cDCConf()
-{
-}
+{}
 
 void cDCConf::AddVars()
 {
@@ -232,10 +232,10 @@ void cDCConf::AddVars()
 	Add("dest_report_chat", dest_report_chat, false);
 	Add("dest_regme_chat", dest_regme_chat, false);
 	Add("dest_drop_chat", dest_drop_chat, false);
-	Add("disable_me_cmd", disable_me_cmd, false);
-	Add("disable_regme_cmd", disable_regme_cmd, false);
-	Add("disable_usr_cmds", disable_usr_cmds, false);
-	Add("disable_report_cmd", disable_report_cmd, false);
+	Add("disable_me_cmd", disable_me_cmd, 0); // todo: convert to bool
+	Add("disable_regme_cmd", disable_regme_cmd, 0); // todo: convert to bool
+	Add("disable_usr_cmds", disable_usr_cmds, 0); // todo: convert to bool
+	Add("disable_report_cmd", disable_report_cmd, 0); // todo: convert to bool
 	Add("always_ask_password", always_ask_password, false);
 	Add("default_password_encryption",default_password_encryption,1); //eCRYPT_ENCRYPT
 	Add("password_min_len", password_min_len, 6);
@@ -269,6 +269,7 @@ void cDCConf::AddVars()
 	Add("report_dns_lookup",report_dns_lookup,0);
 	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks",hide_all_kicks,1);
+	Add("hide_msg_badctm", hide_msg_badctm, false);
 	Add("timer_conn_period", mS.timer_conn_period, 4);
 	Add("timer_serv_period", mS.timer_serv_period, 1);
 	Add("min_frequency", min_frequency, 0.3);
@@ -343,7 +344,6 @@ void cDCConf::AddVars()
 	Add("msg_welcome_master",msg_welcome[10]);
 	// End custom messages
 }
-
 
 /*!
     \fn nDirectConnect::nTables::cDCConf::Load()

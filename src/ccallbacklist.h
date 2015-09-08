@@ -128,7 +128,7 @@ namespace nVerliHub {
 				};
 			private:
 				/// List of registered plugins.
-				tPICont mPlugins;
+				tPICont mPlugList;
 
 				/// Pointer to plugin manager instance.
 				cPluginManager *mMgr;

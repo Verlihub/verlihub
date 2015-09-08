@@ -576,7 +576,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn, false))
+	if (CheckUserLogin(conn, msg, false))
 		return -1;
 
 	ostringstream os;
@@ -678,7 +678,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn, false))
+	if (CheckUserLogin(conn, msg, false))
 		return -1;
 
 	ostringstream os;
@@ -715,7 +715,7 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn, false))
+	if (CheckUserLogin(conn, msg, false))
 		return -1;
 
 	if (conn->CheckProtoFlood(msg->mStr, ePF_NICKLIST)) // protocol flood
@@ -743,7 +743,7 @@ int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn, false))
+	if (CheckUserLogin(conn, msg, false))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1157,7 +1157,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1200,7 +1200,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1286,7 +1286,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1371,7 +1371,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1445,7 +1445,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1459,14 +1459,20 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
-		os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
-		mS->DCPublicHS(os.str(), conn);
+		if (!mS->mC.hide_msg_badctm) {
+			os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
 		return -1;
 	}
 
 	if (!other->mxConn) {
-		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
-		mS->DCPublicHS(os.str(), conn);
+		if (!mS->mC.hide_msg_badctm) {
+			os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
 		return -1;
 	}
 
@@ -1624,7 +1630,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1643,14 +1649,20 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
-		os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
-		mS->DCPublicHS(os.str(), conn);
+		if (!mS->mC.hide_msg_badctm) {
+			os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
 		return -2;
 	}
 
 	if (!other->mxConn || !other->mxConn->mpUser) {
-		os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
-		mS->DCPublicHS(os.str(), conn);
+		if (!mS->mC.hide_msg_badctm) {
+			os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
 		return -2;
 	}
 
@@ -1729,7 +1741,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	// todo
@@ -1738,7 +1750,7 @@ int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1936,7 +1948,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1974,7 +1986,7 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn, false))
+	if (CheckUserLogin(conn, msg, false))
 		return -1;
 
 	ostringstream os;
@@ -2058,7 +2070,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.user_ip_class)))
@@ -2106,7 +2118,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_Kick(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, conn->mpUser->Can(eUR_KICK, mS->mTime.Sec())))
@@ -2121,7 +2133,7 @@ int cDCProto::DCO_Kick(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.min_class_redir)))
@@ -2176,7 +2188,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
@@ -2245,7 +2257,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
@@ -2274,7 +2286,7 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_GetBanList(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
@@ -2286,7 +2298,7 @@ int cDCProto::DCO_GetBanList(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
@@ -2307,7 +2319,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
@@ -2324,7 +2336,7 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 {
-	if (CheckUserLogin(conn))
+	if (CheckUserLogin(conn, msg))
 		return -1;
 
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= mS->mC.topic_mod_class)))
@@ -2431,17 +2443,34 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 	helper functions
 */
 
-bool cDCProto::CheckUserLogin(cConnDC *conn, bool inlist)
+bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 {
-	if (conn->mpUser && (conn->mpUser->mInList || !inlist))
+	if (!conn || (conn->mpUser && (conn->mpUser->mInList || !inlist)))
 		return false;
 
-	string rsn = _("Invalid login sequence, your client must validate nick first.");
+	ostringstream rsn;
+	string pref;
 
-	if (conn->Log(1))
-		conn->LogStream() << rsn << endl;
+	if (msg && msg->mStr.size()) {
+		pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));
 
-	mS->ConnCloseMsg(conn, rsn, 1000, eCR_LOGIN_ERR);
+		if (pref.size())
+			EscapeChars(pref, pref);
+	}
+
+	if (pref.size())
+		rsn << autosprintf(_("Invalid login sequence, your client must validate nick first: %s"), pref.c_str());
+	else
+		rsn << _("Invalid login sequence, your client must validate nick first.");
+
+	if (conn->Log(1)) {
+		if (msg && msg->mStr.size())
+			conn->LogStream() << "Invalid login sequence: " << msg->mStr << endl;
+		else
+			conn->LogStream() << "Invalid login sequence" << endl;
+	}
+
+	mS->ConnCloseMsg(conn, rsn.str(), 1000, eCR_LOGIN_ERR);
 	return true;
 }
 

@@ -159,6 +159,7 @@ public:
 	int hide_all_kicks;
 	int optimize_userlist;
 	bool filter_lan_requests;
+	bool hide_msg_badctm; // hide following messages: connecting to offline user, connecting to bot
 	int search_number;
 	int int_search;
 	int int_search_pas;
@@ -207,10 +208,10 @@ public:
 	int int_chat_ms;
 	int int_nicklist;
 	int int_myinfo;
-	int disable_me_cmd; // TODO: Convert to bool
-	int disable_regme_cmd;
-	int disable_usr_cmds;
-	int disable_report_cmd;
+	int disable_me_cmd; // todo: convert to bool
+	int disable_regme_cmd; // todo: convert to bool
+	int disable_usr_cmds; // todo: convert to bool
+	int disable_report_cmd; // todo: convert to bool
 	bool disable_zlib;
 	int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
@@ -243,7 +244,7 @@ public:
 	double tag_min_version;
 	double tag_max_version;
 	string cc_zone[3];
-	int show_tags; // 0 - no at all; 1 - only to ops, 2- only to everyone ;)
+	int show_tags; // 0 - no at all, 1 - only to ops, 2 - show to everyone
 	int show_desc_len; // cut first n bytes of description
 	int autoreg_class;
 	int show_email;

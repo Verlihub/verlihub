@@ -321,7 +321,7 @@ protected:
 	int DCO_GetTopic(cMessageDC * msg, nSocket::cConnDC * conn);
 
 	// helper functions
-	bool CheckUserLogin(nSocket::cConnDC *conn, bool inlist = true);
+	bool CheckUserLogin(nSocket::cConnDC *conn, cMessageDC *msg, bool inlist = true);
 	bool CheckUserRights(nSocket::cConnDC *conn, cMessageDC *msg, bool cond);
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
