@@ -249,6 +249,8 @@ protected:
 	*/
 	static void Create_Quit(string &dest, const string &nick);
 
+	// $ValidateDenide
+	static void Create_ValidateDenide(string &dest, const string &nick);
 	// hello, operator and bot lists
 	static void Create_Hello(string &dest, const string &nick);
 	static void Create_OpList(string &dest, const string &nick);

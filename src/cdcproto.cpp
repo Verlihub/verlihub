@@ -2873,6 +2873,12 @@ void cDCProto::Create_Hello(string &dest, const string &nick)
 	dest.append(nick);
 }
 
+void cDCProto::Create_ValidateDenide(string &dest, const string &nick)
+{
+	dest.append("$ValidateDenide ");
+	dest.append(nick);
+}
+
 void cDCProto::Create_OpList(string &dest, const string &nick)
 {
 	dest.append("$OpList ");

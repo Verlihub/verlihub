@@ -850,8 +850,9 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		} else {
 			omsg = _("Your nick is already taken by another user.");
 			DCPublicHS(omsg, conn);
-			omsg = "$ValidateDenide " + conn->mpUser->mNick;
-			conn->Send(omsg);
+			omsg.clear();
+			cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_BADNICK);
 			return false;
 		}
@@ -888,8 +889,9 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 				} else {
 					omsg = _("Your nick is already taken by another user.");
 					DCPublicHS(omsg, conn);
-					omsg = "$ValidateDenide " + conn->mpUser->mNick;
-					conn->Send(omsg);
+					omsg.clear();
+					cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+					conn->Send(omsg, true);
 				}
 
 				// todo: add redirect for this
@@ -1245,8 +1247,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					break;
 				case eVN_USED:
 					errmsg << _("Your nick is already taken by another user.");
-					extra = "$ValidateDenide ";
-					extra += nick;
+					cDCProto::Create_ValidateDenide(extra, nick);
 					break;
 				case eVN_PREFIX:
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
@@ -1263,10 +1264,10 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		}
 
 		if (vn != eVN_OK) {
+			DCPublicHS(errmsg.str(), conn);
+
 			if (extra.size())
 				conn->Send(extra, true);
-
-			DCPublicHS(errmsg.str(), conn);
 
 			if (conn->Log(2))
 				conn->LogStream() << errmsg.str() << endl;
@@ -1325,7 +1326,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 	if (nick.npos != nick.find_first_of(ProhibitedChars)) // check all for special nick chars
 		return eVN_CHARS;
 
-	if (!conn->mRegInfo || !conn->mRegInfo->mEnabled) {
+	if (!conn->mRegInfo || !conn->mRegInfo->mEnabled) { // user is not registered
 		if (nick.size() > mC.max_nick)
 			return eVN_LONG;
 
@@ -1365,18 +1366,18 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 				return eVN_PREFIX;
 		}
 
-		if (StrCompare(nick, 0, 4, "[OP]") == 0)
+		if (StrCompare(nick, 0, 4, "[OP]") == 0) // operator prefix
 			return eVN_NOT_REGED_OP;
-	}
 
-	string userkey; // check if user with same nick already logged in
-	mUserList.Nick2Key(nick, userkey);
+		string userkey; // check if user with same nick already logged in
+		mUserList.Nick2Key(nick, userkey);
 
-	if (mUserList.ContainsKey(userkey)) {
-		cUser *olduser = mUserList.GetUserByKey(userkey);
+		if (mUserList.ContainsKey(userkey)) {
+			cUser *olduser = mUserList.GetUserByKey(userkey);
 
-		if (olduser && olduser->mxConn && (conn->AddrIP() != olduser->mxConn->AddrIP())) // make sure its not same user
-			return eVN_USED;
+			if (olduser && olduser->mxConn && (conn->AddrIP() != olduser->mxConn->AddrIP())) // make sure its not same user
+				return eVN_USED;
+		}
 	}
 
 	if (mBanList->IsNickTempBanned(nick)) // check temporary nick ban
