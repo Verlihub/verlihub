@@ -96,7 +96,7 @@ public:
 	unsigned max_nick;
 	unsigned min_nick;
 	string nick_chars;
-	unsigned max_chat_msg;
+	unsigned int max_chat_msg;
 	int max_chat_lines;
 	int max_flood_counter_pm;
 	int max_flood_counter_mcto;
@@ -142,12 +142,12 @@ public:
 	int hublist_port;
 	bool hublist_send_minshare;
 	/** checking prefferences */
-	unsigned classdif_reg;
-	unsigned classdif_search;
-	unsigned classdif_download;
-	unsigned classdif_pm;
-	unsigned classdif_mcto;
-	unsigned classdif_kick;
+	unsigned int classdif_reg;
+	unsigned int classdif_search;
+	unsigned int classdif_download;
+	unsigned int classdif_pm;
+	unsigned int classdif_mcto;
+	unsigned int classdif_kick;
 	int min_class_register;
 	int min_class_bc;
 	int min_class_bc_guests;
@@ -208,19 +208,19 @@ public:
 	int int_chat_ms;
 	int int_nicklist;
 	int int_myinfo;
-	int disable_me_cmd; // todo: convert to bool
-	int disable_regme_cmd; // todo: convert to bool
-	int disable_usr_cmds; // todo: convert to bool
-	int disable_report_cmd; // todo: convert to bool
+	int disable_me_cmd; // todo: convert to bool or use as class
+	int disable_regme_cmd; // todo: convert to bool or use as class
+	int disable_usr_cmds; // todo: convert to bool or use as class
+	int disable_report_cmd; // todo: convert to bool or use as class
 	bool disable_zlib;
-	int zlib_min_len;
+	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;
 	int private_class;
 	int ul_portion;
-	int min_search_chars;
+	unsigned int min_search_chars;
 	string ip_zone4_min;
 	string ip_zone4_max;
 	string ip_zone5_min;
@@ -280,4 +280,5 @@ public: // Public attributes
 };
 	}; // nmaespace nTables
 }; // namespace nVerliHub
+
 #endif

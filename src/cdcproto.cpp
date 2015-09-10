@@ -501,7 +501,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 	// user limit from single ip
 	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER)) {
-		int cnt = mS->CntConnIP(conn->mAddrIP);
+		unsigned int cnt = mS->CntConnIP(conn->mAddrIP);
 
 		if (cnt >= mS->mC.max_users_from_ip) {
 			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), cnt);
@@ -828,7 +828,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	int theoclass = conn->GetTheoricalClass();
 
-	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive != -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > mS->mC.max_users_passive)) { // passive user limit
+	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive > -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d online passive users, please become active to enter the hub."), mS->mPassiveUsers.Size());
 
 		if (conn->Log(2))
@@ -1246,7 +1246,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	if ((conn->mpUser->mClass + mS->mC.classdif_pm) < other->mClass) {
+	if ((conn->mpUser->mClass + (int)mS->mC.classdif_pm) < other->mClass) {
 		os << _("You can't talk to this user.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
@@ -1322,7 +1322,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	if ((conn->mpUser->mClass + mS->mC.classdif_mcto) < other->mClass) {
+	if ((conn->mpUser->mClass + (int)mS->mC.classdif_mcto) < other->mClass) {
 		os << _("You can't talk to this user.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
@@ -1491,7 +1491,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	unsigned long use_hub_share = 0; // check use hub share
+	unsigned __int64 use_hub_share = 0; // check use hub share
 
 	switch (conn->mpUser->mClass) {
 		case eUC_NORMUSER:
@@ -1502,6 +1502,8 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 			break;
 		case eUC_VIPUSER:
 			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+		default:
 			break;
 	}
 
@@ -1519,7 +1521,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) // check temporary right
 		return -4; // todo: notify user
 
-	if (((conn->mpUser->mClass + mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -1693,7 +1695,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	unsigned long use_hub_share = 0; // check use hub share
+	unsigned __int64 use_hub_share = 0; // check use hub share
 
 	switch (conn->mpUser->mClass) {
 		case eUC_NORMUSER:
@@ -1704,6 +1706,8 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 			break;
 		case eUC_VIPUSER:
 			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+		default:
 			break;
 	}
 
@@ -1721,7 +1725,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) // check temporary right
 		return -4; // todo: notify user
 
-	if ((conn->mpUser->mClass + mS->mC.classdif_download < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -1770,16 +1774,14 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	bool passive;
+	bool passive = true;
 
 	switch (msg->mType) { // detect search mode once
 		case eDC_SEARCH:
 		case eDC_MSEARCH:
 			passive = false;
 			break;
-		case eDC_SEARCH_PAS:
-		case eDC_MSEARCH_PAS:
-			passive = true;
+		default:
 			break;
 	}
 
@@ -1882,7 +1884,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	unsigned long use_hub_share = 0; // check use hub share
+	unsigned __int64 use_hub_share = 0; // check use hub share
 
 	switch (conn->mpUser->mClass) {
 		case eUC_NORMUSER:
@@ -1893,6 +1895,8 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 		case eUC_VIPUSER:
 			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+		default:
 			break;
 	}
 
@@ -2034,7 +2038,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	char sep = '$';
 	char pipe = '|';
 	cConnType *ConnType = mS->mConnTypes->FindConnType("default");
-	__int64 minshare = mS->mC.min_share;
+	unsigned __int64 minshare = mS->mC.min_share;
 
 	if (mS->mC.min_share_use_hub > minshare)
 		minshare = mS->mC.min_share_use_hub;
@@ -2050,7 +2054,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << mS->mC.hub_host << sep;
 	os << mS->mC.hub_desc << sep;
 	os << mS->mC.max_users_total << sep;
-	os << StringFrom((__int64)(1024 * 1024) * minshare) << sep;
+	os << StringFrom((unsigned __int64)(1024 * 1024) * minshare) << sep;
 	os << ((ConnType) ? ConnType->mTagMinSlots : 0) << sep;
 	os << mS->mC.tag_max_hubs << sep;
 	os << "Verlihub " << VERSION << sep;
@@ -2773,9 +2777,9 @@ bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
 	if (!conn || !conn->mxServer) return true;
 	cServerDC *Server = conn->Server();
 	ostringstream errmsg;
-	int count = text.size();
+	unsigned int count = text.size();
 
-	if ((Server->mC.max_chat_msg == 0) || (count > Server->mC.max_chat_msg)) {
+	if (!Server->mC.max_chat_msg || (count > Server->mC.max_chat_msg)) {
 		errmsg << autosprintf(_("Your chat message contains %d characters but maximum allowed is %d characters."), count, Server->mC.max_chat_msg);
 		Server->DCPublicHS(errmsg.str(), conn);
 		return false;
@@ -2976,14 +2980,14 @@ void cDCProto::UnEscapeChars(const string &src, string &dst, bool WithDCN)
 	}
 }
 
-void cDCProto::UnEscapeChars(const string &src, char *dst, int &len ,bool WithDCN)
+void cDCProto::UnEscapeChars(const string &src, char *dst, unsigned int &len, bool WithDCN)
 {
 	size_t pos, pos2 = 0;
 	string start, end;
 	unsigned char c;
-	int i = 0;
+	unsigned int i = 0;
 
-	if(!WithDCN) {
+	if (!WithDCN) {
 		start = "&#";
 		end =";";
 	} else {
@@ -2992,23 +2996,31 @@ void cDCProto::UnEscapeChars(const string &src, char *dst, int &len ,bool WithDC
 	}
 
 	pos = src.find(start);
+
 	while ((pos != src.npos) && (i < src.size())) {
 		if (pos > pos2) {
 			memcpy(dst + i, src.c_str() + pos2, pos - pos2);
 			i += pos - pos2;
 		}
+
 		pos2 = src.find(end, pos);
-		if ((pos2 != src.npos) && ((pos2 - pos) <= (start.size()+3))) {
+
+		if ((pos2 != src.npos) && ((pos2 - pos) <= (start.size() + 3))) {
 				c = atoi(src.substr(pos + start.size(), 3).c_str());
 				dst[i++] = c;
 				pos2 += end.size();
 		}
+
 		pos = src.find(start, pos + 1);
 	}
-	if (pos2 < src.size()) {
-		memcpy(dst + i, src.c_str() + pos2, src.size() - pos2 + 1);
-		i += src.size() - pos2;
+
+	pos = src.size();
+
+	if (pos2 < pos) {
+		memcpy(dst + i, src.c_str() + pos2, (pos - pos2) + 1);
+		i += pos - pos2;
 	}
+
 	len = i;
 }
 
@@ -3059,22 +3071,21 @@ void cDCProto::EscapeChars(const char *buf, int len, string &dest, bool WithDCN)
 
 void cDCProto::Lock2Key(const string &Lock, string &fkey)
 {
-	int count = 0, len = Lock.size();
+	unsigned int count = 0, len = Lock.size();
 	char *key = 0;
-	char * lock = new char[len+1];
+	char *lock = new char[len + 1];
 	UnEscapeChars(Lock, lock, len, true);
-
-	key = new char[len+1];
-
+	key = new char[len + 1];
 	key[0] = lock[0] ^ lock[len - 1] ^ lock[len - 2] ^ 5;
-	while(++count < len)
+
+	while (++count < len)
 		key[count] = lock[count] ^ lock[count - 1];
-	key[len]=0;
 
+	key[len] = 0;
 	count = 0;
-	while(count++ < len)
-		key[count - 1] = ((key[count - 1] << 4)) | ((key[count - 1] >> 4));
 
+	while (count++ < len)
+		key[count - 1] = ((key[count - 1] << 4)) | ((key[count - 1] >> 4));
 
 	cDCProto::EscapeChars(key, len, fkey, true);
 	delete [] key;

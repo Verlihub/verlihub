@@ -298,13 +298,13 @@ char* GetUserCC(char *nick)
 const string GetIPCC(const char *ip)
 {
 	if (!ip)
-		return NULL;
+		return "";
 
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
 		cerr << "Server not found" << endl;
-		return NULL;
+		return "";
 	}
 
 	string cc;
@@ -312,19 +312,19 @@ const string GetIPCC(const char *ip)
 	if (serv->sGeoIP.GetCC(ip, cc))
 		return cc;
 
-	return NULL;
+	return "";
 }
 
 const string GetIPCN(const char *ip)
 {
 	if (!ip)
-		return NULL;
+		return "";
 
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
 		cerr << "Server not found" << endl;
-		return NULL;
+		return "";
 	}
 
 	string cn;
@@ -332,19 +332,19 @@ const string GetIPCN(const char *ip)
 	if (serv->sGeoIP.GetCN(ip, cn))
 		return cn;
 
-	return NULL;
+	return "";
 }
 
 #endif
 
-char *GetMyINFO(char *nick)
+const char *GetMyINFO(char *nick)
 {
 	cUser *usr = GetUser(nick);
 
 	if (usr)
-		return (char*)usr->mMyINFO.c_str();
+		return usr->mMyINFO.c_str();
 	else
-		return (char *)"";
+		return "";
 }
 
 int GetUserClass(char *nick)
@@ -357,35 +357,35 @@ int GetUserClass(char *nick)
 		return -2;
 }
 
-char *GetUserHost(char *nick)
+const char *GetUserHost(char *nick)
 {
 	cUser *usr = GetUser(nick);
 
 	if (!usr || !usr->mxConn) {
-		return (char *)"";
+		return "";
 	} else {
 		cServerDC *server = GetCurrentVerlihub();
 
 		if (!server) {
 			cerr << "Server verlihub is unfortunately not running or not found." << endl;
-			return (char *)"";
+			return "";
 		}
 
 		if (!server->mUseDNS)
 			usr->mxConn->DNSLookup();
 
-		return (char*)usr->mxConn->AddrHost().c_str();
+		return usr->mxConn->AddrHost().c_str();
 	}
 }
 
-char *GetUserIP(char *nick)
+const char *GetUserIP(char *nick)
 {
 	cUser *usr = GetUser(nick);
 
 	if (!usr || !usr->mxConn) {
-		return (char *)"";
+		return "";
 	} else {
-		return (char*)usr->mxConn->AddrIP().c_str();
+		return usr->mxConn->AddrIP().c_str();
 	}
 }
 
@@ -522,13 +522,13 @@ __int64 GetTotalShareSize()
 	return server->mTotalShare;
 }
 
-char *__GetNickList()
+const char *__GetNickList()
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if(server)
 	{
-		return (char*)server->mUserList.GetNickList().c_str();
-	} else return (char *) "";
+		return server->mUserList.GetNickList().c_str();
+	} else return "";
 }
 
 char * GetVHCfgDir()
@@ -700,7 +700,7 @@ extern "C" {
 	{
 		return __GetUsersCount();
 	}
-	char *GetNickList()
+	const char *GetNickList()
 	{
 		return __GetNickList();
 	}

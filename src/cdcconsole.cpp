@@ -2037,13 +2037,13 @@ bool cDCConsole::cfRegUsr::operator()()
 		return false;
 	}
 
-	if (mS->mC.classdif_reg > 10) {
+	if (mS->mC.classdif_reg > eUC_MASTER) {
 		(*mOS) << _("Valid classdif_reg value must be between 1 and 5, please correct this first.");
 		return false;
 	}
 
 	if (Action == eAC_LIST) {
-		int cls = 0;
+		int cls = eUC_REGUSER;
 		this->GetParInt(1, cls);
 
 		/*if (!this->GetParInt(1, cls)) {
@@ -2051,7 +2051,7 @@ bool cDCConsole::cfRegUsr::operator()()
 			return false;
 		}*/
 
-		if ((MyClass < eUC_MASTER) && (cls >= 0) && (cls > (MyClass - mS->mC.classdif_reg))) {
+		if ((MyClass < eUC_MASTER) && (cls >= eUC_NORMUSER) && (cls > (int)(MyClass - mS->mC.classdif_reg))) {
 			(*mOS) << _("You have no rights to do this.");
 			return false;
 		}
@@ -2068,7 +2068,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	}
 
 	string nick, par, field, pass;
-	int ParClass = 1;
+	int ParClass = eUC_REGUSER;
 	mParRex->Extract(1, mParStr, nick);
 	bool WithPar = mParRex->PartFound(3);
 

@@ -451,7 +451,7 @@ namespace nVerliHub {
 			/// Search result counter.
 			/// @todo Is still used? If yes we have to move it somewhere
 			/// outside this class.
-			int mSRCounter;
+			unsigned int mSRCounter;
 		};
 		/// @}
 	}; // namespace nSocket

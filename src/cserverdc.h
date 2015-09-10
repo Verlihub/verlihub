@@ -549,7 +549,7 @@ class cServerDC : public cAsyncSocketServer
 		* ip = The IP address.
 		* return = The number of found users.
 		*/
-		int CntConnIP(string ip);
+		unsigned int CntConnIP(string ip);
 
 		// clone detection
 		bool CheckUserClone(cConnDC *conn, string &clone);

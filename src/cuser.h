@@ -204,7 +204,7 @@ public:
 	/** minimal class users that can see this one as operator */
 	//nEnums::tUserCl mOpClassMin;
 	/** User share */
-	__int64 mShare;
+	unsigned __int64 mShare;
 	/** the list of nicks queued to send either as to nicklist or myinfo. */
 	string mQueueUL;
 	/** ip, that user has for downloads ises in connect to me */

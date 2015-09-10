@@ -47,7 +47,7 @@ char *
 GetUserCC(nick)
 	char * nick
 
-char *
+const char *
 GetMyINFO(nick)
 	char *	nick
 
@@ -85,11 +85,11 @@ int
 GetUserClass(nick)
 	char *	nick
 
-char *
+const char *
 GetUserHost(nick)
 	char *	nick
 
-char *
+const char *
 GetUserIP(nick)
 	char *	nick
 
@@ -156,7 +156,7 @@ PPCODE:
 int
 GetUsersCount()
 
-char *
+const char *
 GetNickList()
 
 char *

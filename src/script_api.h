@@ -45,10 +45,10 @@ namespace nVerliHub {
 	const string GetIPCN(const char *ip);
 #endif
 
-	char* GetMyINFO(char *nick);
+	const char* GetMyINFO(char *nick);
 	int GetUserClass(char *nick);
-	char* GetUserHost(char *nick);
-	char* GetUserIP(char *nick);
+	const char* GetUserHost(char *nick);
+	const char* GetUserIP(char *nick);
 	bool Ban(char *, const string &, const string &, unsigned, unsigned);
 	bool ParseCommand(char *nick, char *cmd, int pm);
 	bool KickUser(char *opnick, char *nick, char *reason);
@@ -64,7 +64,7 @@ namespace nVerliHub {
 
 	extern "C" {
 		int GetUsersCount();
-		char* GetNickList();
+		const char* GetNickList();
 	}
 
 	__int64 GetTotalShareSize();

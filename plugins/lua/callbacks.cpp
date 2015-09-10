@@ -579,11 +579,11 @@ int _GetIPCC(lua_State *L)
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	const char *cc = GetIPCC(ip.c_str()).c_str();
+	const string cc = GetIPCC(ip.c_str());
 
-	if (cc) {
+	if (cc.size()) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, cc);
+		lua_pushstring(L, (char*)cc.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -607,11 +607,11 @@ int _GetIPCN(lua_State *L)
 	}
 
 	string ip = (char*)lua_tostring(L, 2);
-	const char *cn = GetIPCN(ip.c_str()).c_str();
+	const string cn = GetIPCN(ip.c_str());
 
-	if (cn) {
+	if (cn.size()) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cn);
+		lua_pushstring(L, (char*)cn.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -908,7 +908,7 @@ int _GetHostGeoIP(lua_State *L)
 	float geo_lat, geo_lon;
 	int geo_met, geo_area;
 
-	if (serv->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host.c_str(), db)) {
+	if (serv->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
 		lua_pushboolean(L, 1);
 		lua_newtable(L);
 		int x = lua_gettop(L);
@@ -1074,7 +1074,7 @@ int _GetHostGeoIP(lua_State *L)
 
 int _GetNickList(lua_State *L)
 {
-	char *nicklist;
+	const char *nicklist;
 	int result = 1;
 	if(lua_gettop(L) == 1) {
 		nicklist = GetNickList();
@@ -1092,7 +1092,7 @@ int _GetNickList(lua_State *L)
 
 int _GetOPList(lua_State *L)
 {
-	char *oplist;
+	const char *oplist;
 	int result = 1;
 	if(lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
@@ -1163,7 +1163,8 @@ int _GetUserClass(lua_State *L)
 
 int _GetUserHost(lua_State *L)
 {
-	string nick, host;
+	string nick;
+	const char *host;
 
 	if(lua_gettop(L) == 2) {
 		if(!lua_isstring(L, 2)) {
@@ -1173,7 +1174,7 @@ int _GetUserHost(lua_State *L)
 		nick = (char *)lua_tostring(L, 2);
 		host = GetUserHost((char*)nick.c_str());
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char *)host.c_str());
+		lua_pushstring(L, host);
 		return 2;
 	} else {
 		luaL_error(L, "Error calling VH:GetUserHost; expected 1 argument but got %d", lua_gettop(L) - 1);
@@ -1185,7 +1186,8 @@ int _GetUserHost(lua_State *L)
 
 int _GetUserIP(lua_State *L)
 {
-	string nick, ip;
+	string nick;
+	const char *ip;
 
 	if(lua_gettop(L) == 2) {
 		if(!lua_isstring(L, 2)) {
@@ -1195,7 +1197,7 @@ int _GetUserIP(lua_State *L)
 		nick = (char *)lua_tostring(L, 2);
 		ip = GetUserIP((char*)nick.c_str());
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char *)ip.c_str());
+		lua_pushstring(L, ip);
 		return 2;
 	} else {
 		luaL_error(L, "Error calling VH:GetUserIP; expected 1 argument but got %d", lua_gettop(L) - 1);
@@ -1849,7 +1851,7 @@ int _EditBot(lua_State *L)
 		share = IntToStr(ishare);
 	}
 
-	robot->mMyINFO = ""; // clear old and create new myinfo
+	robot->mMyINFO.clear(); // clear old and create new myinfo
 	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
 	robot->mMyINFO_basic = robot->mMyINFO;
 	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send new myinfo
@@ -2530,7 +2532,7 @@ int _GetTopic(lua_State *L)
 		luaerror(L, ERR_SERV);
 		return 2;
 	}
-	lua_pushstring(L, server->mC.hub_topic.c_str());
+	lua_pushstring(L, (char*)server->mC.hub_topic.c_str());
 	return 1;
 }
 

@@ -277,7 +277,7 @@ You may use these callbacks from your scripts.
 
   bool Ban(char *nick, char *op, char *nick, unsigned howlong, int bantype)
   bool CloseConnection(char *nick)
-  char *GetMyINFO(char *nick)
+  const char *GetMyINFO(char *nick)
   char *ParseCommand(char *command_line)
   bool SendDataToAll(char *data, int min_class, int max_class)
   bool SendDataToUser(char *data, char *nick)

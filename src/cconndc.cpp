@@ -328,7 +328,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if (GetTheoricalClass() > serv->mC.max_class_proto_flood)
 		return false;
 
-	unsigned long period = 0;
+	long period = 0;
 	unsigned int limit = 0;
 
 	switch (type) {

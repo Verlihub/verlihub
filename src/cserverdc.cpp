@@ -1732,10 +1732,10 @@ int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, c
 	return cnt;
 }
 
-int cServerDC::CntConnIP(string ip)
+unsigned int cServerDC::CntConnIP(string ip)
 {
 	cUserCollection::iterator i;
-	int cnt = 0;
+	unsigned int cnt = 0;
 	cConnDC *conn;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
