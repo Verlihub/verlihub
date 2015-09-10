@@ -428,32 +428,32 @@ bool ParseCommand(char *nick, char *cmd, int pm)
 	return true;
 }
 
-bool SetConfig(char *config_name, char *var, char *val)
+bool SetConfig(const char *config_name, const char *var, const char *val)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(!server)
-	{
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
-	string file(server->mDBConf.config_name);
-
+	string file(serv->mDBConf.config_name);
 	cConfigItemBase *ci = NULL;
-	if(file == server->mDBConf.config_name)
-	{
-		ci = server->mC[var];
-		if( !ci )
-		{
-		cerr << "Undefined variable: " << var << endl;
-		return false;
+
+	if (file == serv->mDBConf.config_name) {
+		ci = serv->mC[var];
+
+		if (!ci) {
+			cerr << "Undefined variable: " << var << endl;
+			return false;
 		}
 	}
-	if(ci)
-	{
+
+	if (ci) {
 		ci->ConvertFrom(val);
-		server->mSetupList.SaveItem(file.c_str(), ci);
+		serv->mSetupList.SaveItem(file.c_str(), ci);
 	}
+
 	return true;
 }
 

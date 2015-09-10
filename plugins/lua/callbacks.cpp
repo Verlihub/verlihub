@@ -1517,34 +1517,41 @@ int _SetConfig(lua_State *L)
 {
 	string config_name, var, val;
 
-	if(lua_gettop(L) == 4) {
-		if(!lua_isstring(L, 2)) {
+	if (lua_gettop(L) == 4) {
+		if (!lua_isstring(L, 2)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		config_name = (char *)lua_tostring(L, 2);
-		if(!lua_isstring(L, 3)) {
+
+		config_name = (char*)lua_tostring(L, 2);
+
+		if (!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		var = (char *)lua_tostring(L, 3);
-		if(!lua_isstring(L, 4)) {
+
+		var = (char*)lua_tostring(L, 3);
+
+		if (!lua_isstring(L, 4)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		val = (char *)lua_tostring(L, 4);
-		if(!SetConfig((char *)config_name.c_str(), (char *)var.c_str(), (char *)val.c_str())) {
-			//lua_pushboolean(L, 0);
+
+		val = (char*)lua_tostring(L, 4);
+
+		if (!SetConfig(config_name.c_str(), var.c_str(), val.c_str())) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
 	} else {
-		luaL_error(L, "Error calling VH:SetConfig; expected 3 argument but got %d", lua_gettop(L) - 1);
+		luaL_error(L, "Error calling VH:SetConfig, expected 3 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
 	lua_pushboolean(L, 1);
+	lua_pushnil(L);
 	return 1;
 }
 
@@ -2538,24 +2545,28 @@ int _GetTopic(lua_State *L)
 
 int _SetTopic(lua_State *L)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(server == NULL) {
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
 		luaerror(L, ERR_SERV);
 		return 2;
 	}
+
 	string topic;
-	if(lua_gettop(L) == 2) {
-		if(!lua_isstring(L, 2)) {
+
+	if (lua_gettop(L) == 2) {
+		if (!lua_isstring(L, 2)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		topic = (char *) lua_tostring(L, 2);
+
+		topic = (char*)lua_tostring(L, 2);
 	}
 
 	string message;
-	cDCProto::Create_HubName(message, server->mC.hub_name, topic);
-	server->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
-	SetConfig((char*)"config", (char*)"hub_topic", (char*)topic.c_str());
+	cDCProto::Create_HubName(message, serv->mC.hub_name, topic);
+	serv->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
+	SetConfig("config", "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);
 	return 1;
 }
