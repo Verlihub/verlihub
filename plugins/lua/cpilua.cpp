@@ -25,6 +25,7 @@
 #include "src/i18n.h"
 #include <dirent.h>
 #include <string>
+#include <cctype>
 #include "src/script_api.h"
 
 namespace nVerliHub {
@@ -53,14 +54,16 @@ cpiLua::~cpiLua()
 	this->Empty();
 }
 
-bool cpiLua::IsNumber(const char* s)
+bool cpiLua::IsNumber(const char *s)
 {
-	if (!s || !strlen(s)) return false;
-	for (unsigned int i = 0; i < strlen(s); i++)
-		switch (s[i]) {
-			case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': break;
-			default: return false;
-		}
+	if (!s || !strlen(s))
+		return false;
+
+	for (unsigned int i = 0; i < strlen(s); i++) {
+		if (!isdigit(s[i]))
+			return false;
+	}
+
 	return true;
 }
 

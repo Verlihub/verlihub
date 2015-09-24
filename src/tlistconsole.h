@@ -86,15 +86,13 @@ public:
 		if (Cmd) {
 			ostringstream os;
 
-			if (!this->IsConnAllowed(conn, Cmd->GetID())) {
-				os << _("You have no rights to do this.");
-				this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
-			} else {
+			if (this->IsConnAllowed(conn, Cmd->GetID()))
 				mCmdr.ExecuteCommand(Cmd, os, conn);
-
-				if (os.str().size())
-					this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
-			}
+			else
+				os << _("You have no rights to do this.");
+		
+			if (os.str().size())
+				this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
 
 			return 1;
 		}

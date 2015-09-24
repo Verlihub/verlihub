@@ -28,6 +28,7 @@
 #include <string>
 //#include <string.h>
 #include <algorithm>
+#include <cctype>
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -458,8 +459,6 @@ bool cpiPython::SetConf(const char *conf, const char *var, const char *val)
 	return true;
 }
 
-
-
 void cpiPython::LogLevel( int level )
 {
 	int old = log_level;
@@ -477,21 +476,8 @@ bool cpiPython::IsNumber(const char *s)
 		return false;
 
 	for (unsigned int i = 0; i < strlen(s); i++) {
-		switch (s[i]) {
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				break;
-			default:
-				return false;
-		}
+		if (!isdigit(s[i]))
+			return false;
 	}
 
 	return true;
@@ -1116,7 +1102,7 @@ w_Targs* _classmc (int id, w_Targs* args) // (char *data)
 	cUser *u;
 	log4("Py: classmc   got nicklist: %s\n", nlist.c_str());
 	if (nlist.length() < 13) return NULL;
-	size_t pos, start = 10;
+	size_t pos = 0, start = 10;
 	const char *separator = "$$";
 	while(start < nlist.length())
 	{
@@ -1237,7 +1223,7 @@ w_Targs* _SendDataToAll (int id, w_Targs* args) // (char *data, long min_class, 
 	cUser *u;
 	log4("Py: SendDataToAll   got nicklist: %s\n", nlist.c_str());
 	if (nlist.length() < 13) return NULL;
-	size_t pos, start = 10;
+	size_t pos = 0, start = 10;
 	const char *separator = "$$";
 	while(start < nlist.length())
 	{

@@ -437,7 +437,7 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 bool cDCConsole::cfGetConfig::operator()()
 {
 	if (mConn->mpUser->mClass < eUC_ADMIN) {
-		*mOS << _("No rights.");
+		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
@@ -833,7 +833,7 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 	if(topic[0] == ' ')
 		topic = topic.substr(1);
 	if(topic.length() > 255) {
-		os << autosprintf(_("Topic must be max 255 characters long. Your topic was %d characters long."), (int) topic.length());
+		os << autosprintf(_("Topic must not exceed 255 characters, your topic is %d characters."), (int)topic.length());
 		mOwner->DCPublicHS(os.str().data(),conn);
 		return 1;
 	}
@@ -1027,13 +1027,13 @@ int cDCConsole::CmdHideKick(istringstream &cmd_line, cConnDC *conn)
 		user = mOwner->mUserList.GetUserByNick(s);
 		if(user) {
 			if(user-> mxConn && user->mClass < conn->mpUser->mClass) {
-				os << autosprintf(_("Kicks of user %s are now hidden."), s.c_str()) << endl;
+				os << autosprintf(_("Kicks of user %s are now hidden."), s.c_str());
 				user->mHideKick = true;
 			} else {
-				os << autosprintf(_("You have no rights to do this.")) << endl;
+				os << autosprintf(_("You have no rights to do this."));
 			}
 		} else {
-			os << autosprintf(_("User %s not found."), s.c_str()) << endl;
+			os << autosprintf(_("User %s not found."), s.c_str());
 		}
 	}
 	mOwner->DCPublicHS(os.str().c_str(),conn);
@@ -1053,13 +1053,13 @@ int cDCConsole::CmdUnHideKick(istringstream &cmd_line, cConnDC *conn)
 		user = mOwner->mUserList.GetUserByNick(s);
 		if(user) {
 			if(user-> mxConn && user->mClass < conn->mpUser->mClass) {
-				os << autosprintf(_("Kicks of user %s are now visible."), s.c_str()) << endl;
+				os << autosprintf(_("Kicks of user %s are now visible."), s.c_str());
 				user->mHideKick = false;
 			} else {
-				os << _("You have no rights to do this.") << endl;
+				os << _("You have no rights to do this.");
 			}
 		} else
-			os << autosprintf(_("User %s not found."), s.c_str()) << endl;
+			os << autosprintf(_("User %s not found."), s.c_str());
 	}
 	mOwner->DCPublicHS(os.str().c_str(),conn);
 	return 1;
@@ -1143,7 +1143,11 @@ bool cDCConsole::cfReport::operator()()
 bool cDCConsole::cfRaw::operator()()
 {
 	if (!mConn || !mConn->mpUser) return false;
-	if (mConn->mpUser->mClass < eUC_ADMIN) return false;
+
+	if (mConn->mpUser->mClass < eUC_ADMIN) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
 
 	enum {eRW_ALL, eRW_USR, eRW_HELLO, eRW_PASSIVE, eRW_ACTIVE};
 	static const char *actionnames[] = {"all", "user", "usr", "hello", "hel", "passive", "pas", "active", "act"};
@@ -1255,8 +1259,13 @@ bool cDCConsole::cfRaw::operator()()
 
 bool cDCConsole::cfClean::operator()()
 {
-	if (!mConn || !mConn->mpUser || (mConn->mpUser->mClass < eUC_OPERATOR))
+	if (!mConn || !mConn->mpUser)
 		return false;
+
+	if (mConn->mpUser->mClass < eUC_OPERATOR) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
 
 	static const char *cleanames[] = {
 		"banlist",
@@ -1550,8 +1559,10 @@ bool cDCConsole::cfBan::operator()()
 
 bool cDCConsole::cfInfo::operator()()
 {
-	if (mConn->mpUser->mClass < eUC_OPERATOR)
+	if (mConn->mpUser->mClass < eUC_OPERATOR) {
+		(*mOS) << _("You have no rights to do this.");
 		return false;
+	}
 
 	enum {
 		eINFO_HUB,
@@ -1600,7 +1611,12 @@ bool cDCConsole::cfTrigger::operator()()
 {
 	string ntrigger;
 	string text, cmd;
-	if(mConn->mpUser->mClass < eUC_MASTER) return false;
+
+	if (mConn->mpUser->mClass < eUC_MASTER) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
    	mIdRex->Extract(2,mIdStr,cmd);
 	enum {eAC_ADD, eAC_DEL, eAC_EDIT, eAC_DEF, eAC_FLAGS};
 	static const char *actionnames[]={"new","add","del","edit","def", "setflags"};
@@ -1663,8 +1679,10 @@ bool cDCConsole::cfSetVar::operator()()
 	string file(mS->mDBConf.config_name),var,val, fake_val;
 	bool DeleteItem = false;
 
-	if(mConn->mpUser->mClass < eUC_ADMIN)
+	if (mConn->mpUser->mClass < eUC_ADMIN) {
+		(*mOS) << _("You have no rights to do this.");
 		return false;
+	}
 
 	// [file] variable value style
 	if (mParRex->PartFound(2))
@@ -1853,8 +1871,10 @@ bool cDCConsole::cfCmd::operator()()
 
 bool cDCConsole::cfWho::operator()()
 {
-	if (this->mConn->mpUser->mClass < eUC_OPERATOR)
+	if (this->mConn->mpUser->mClass < eUC_OPERATOR) {
+		(*mOS) << _("You have no rights to do this.");
 		return false;
+	}
 
 	enum {eAC_IP, eAC_RANGE, eAC_CC, eAC_CITY};
 	static const char * actionnames [] = {"ip", "range", "subnet", "cc", "city"};
@@ -1935,7 +1955,11 @@ bool cDCConsole::cfKick::operator()()
 	static const char * actionnames [] = { "kick", "drop" };
 	static const int actionids [] = { eAC_KICK, eAC_DROP };
 
-	if (this->mConn->mpUser->mClass < eUC_VIPUSER) return false;
+	if (this->mConn->mpUser->mClass < eUC_VIPUSER) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
 	string tmp;
 	mIdRex->Extract(1,mIdStr,tmp);
 	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames)/sizeof(char*));
@@ -1970,8 +1994,7 @@ bool cDCConsole::cfPlug::operator()()
 	static const char * actionnames [] = { "in","out","list","reg","reload", NULL};
 	static const int actionids [] = { eAC_IN, eAC_OUT, eAC_LIST, eAC_REG, eAC_RELAOD };
 
-	if (this->mConn->mpUser->mClass < mS->mC.plugin_mod_class)
-	{
+	if (this->mConn->mpUser->mClass < mS->mC.plugin_mod_class) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
@@ -2348,11 +2371,25 @@ bool cDCConsole::cfRegUsr::operator()()
 
 bool cDCConsole::cfRedirToConsole::operator()()
 {
-	if (this->mConn->mpUser->mClass < eUC_OPERATOR)
+	if (!this->mConn || !this->mConn->mpUser)
 		return false;
-	if(this->mConsole != NULL)
-		return mConsole->OpCommand(mIdStr + mParStr, mConn);
-	else return false;
+
+	if (this->mConn->mpUser->mClass < eUC_OPERATOR) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
+	if (this->mConsole) {
+		if (mConsole->OpCommand(mIdStr + mParStr, mConn)) {
+			return true;
+		} else {
+			(*mOS) << _("This command is not implemented.");
+			return false;
+		}
+	} else {
+		(*mOS) << _("Command console is not ready.");
+		return false;
+	}
 }
 
 bool cDCConsole::cfBc::operator()()

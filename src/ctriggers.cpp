@@ -200,7 +200,7 @@ void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 
 	switch (cmd) {
 		case eLC_LST:
-			help_str = "!lsttrigger\r\nGive a list of triggers";
+			help_str = "!lsttrigger\r\n" + string(_("Show list of triggers"));
 			break;
 		case eLC_ADD:
 		case eLC_MOD:
@@ -220,8 +220,10 @@ void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 			break;
 	}
 
-	cDCProto::EscapeChars(help_str, help_str);
-	os << help_str;
+	if (help_str.size ()) {
+		cDCProto::EscapeChars(help_str, help_str);
+		os << help_str;
+	}
 }
 
   /**

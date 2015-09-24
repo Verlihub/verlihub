@@ -729,7 +729,7 @@ static PyObject * __decode(PyObject *self, PyObject *args)
 	ostringstream dest;
 	if ( !PyArg_ParseTuple(args, "s:decode", &data) ) return NULL;
 	str = data;
-	size_t pos, len = str.length();
+	size_t pos = 0, len = str.length();
 	while (true)
 	{
 		size_t fpos = str.find("&#", pos);

@@ -65,6 +65,12 @@ cCommand *cCommandCollection::FindCommand(const string &commandLine)
 
 bool cCommandCollection::ExecuteCommand(cCommand *command, ostream &os, void *options)
 {
+	if (!command->TestParams()) {
+		os << _("Command parameters error") << ":\r\n\r\n";
+		command->GetSyntaxHelp(os);
+		return false;
+	}
+
 	/*
 	if (command->Execute(os, options))
 		os << _("[OK]");
@@ -72,17 +78,7 @@ bool cCommandCollection::ExecuteCommand(cCommand *command, ostream &os, void *op
 		os << _("[ERROR]");
 	*/
 
-	if (!command->TestParams()) {
-		os << _("Command parameters error") << ":\r\n\r\n";
-		command->GetSyntaxHelp(os);
-		return false;
-	}
-
-	if (!command->Execute(os, options)) {
-		os << autosprintf(_("Command prefix or suffix is not implemented: %s"), command->mIdStr.c_str());
-		return false;
-	}
-
+	command->Execute(os, options);
 	return true;
 }
 
