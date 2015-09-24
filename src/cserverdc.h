@@ -401,7 +401,7 @@ class cServerDC : public cAsyncSocketServer
 		* conn = User connection.
 		* where = Appearance destination, 1 - on login, 2 - on connection.
 		*/
-		void SendHeaders(cConnDC *, int where);
+		void SendHeaders(cConnDC *, unsigned int where);
 
 		/**
 		* Remove an user from lists.

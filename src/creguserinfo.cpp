@@ -58,11 +58,12 @@ cRegUserInfo::cRegUserInfo():
 	mLoginLast(0),
 	mLogoutLast(0),
 	mErrorLast(0),
-	mEnabled(1),
-	mPwdChange(false)
+	mPwdChange(false),
+	mEnabled(true)
 {}
 
-cRegUserInfo::~cRegUserInfo(){}
+cRegUserInfo::~cRegUserInfo()
+{}
 
 bool cRegUserInfo::PWVerify(const string &pass)
 {
@@ -155,7 +156,7 @@ void cRegUserInfo::SetPass(string str, int crypt_method)
 		string salt;
 		static const char *saltchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./";
 		static const int saltcharsnum = strlen(saltchars);
-		unsigned char charsalt[2] = {((char*)&str)[0], ((char*)&str)[1]};
+		unsigned char charsalt[2] = {(unsigned char)((char*)&str)[0], (unsigned char)((char*)&str)[1]};
 		unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
 		char md5_hex[33];
 

@@ -162,6 +162,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 		case eDC_MYINFO:
 			this->DC_MyINFO(msg, conn);
 			break;
+		case eDC_IN:
+			this->DC_IN(msg, conn);
+			break;
 		case eDC_GETINFO:
 			this->DC_GetINFO(msg, conn);
 			break;
@@ -386,7 +389,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver");
+	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver"); // todo: IN
 	conn->Send(omsg);
 	conn->SetLSFlag(eLS_SUPPORTS);
 	return 0;
@@ -1152,6 +1155,105 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	conn->ClearTimeOut(eTO_MYINFO);
+	return 0;
+}
+
+int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	ostringstream os;
+
+	if (!(conn->mFeatures & eSF_IN)) { // check support
+		os << _("Invalid login sequence, you didn't specify support for IN command.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &nick = msg->ChunkString(eCH_IN_NICK);
+
+	if (CheckUserNick(conn, nick))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_IN)) // protocol flood
+		return -1;
+
+	string &data = msg->ChunkString(eCH_IN_DATA);
+
+	if (data.empty())
+		return 0;
+
+	string back_in, back_full, part, body, sep("$$");
+	bool empt;
+	data.append(sep);
+	size_t pos = data.find(sep);
+
+	while (pos != string::npos) {
+		part = data.substr(0, pos);
+		data = data.substr(pos + 2); // size of sep
+		pos = data.find(sep);
+
+		if (part.size() < 2) // id + data
+			continue;
+
+		body = part.substr(1);
+		empt = ((body[1] == '$') ? true : false);
+
+		if (!empt && (body.find('$') != string::npos)) // make sure body is free from bad characters
+			continue;
+
+		switch (part[0]) {
+			case 'D': // description
+				// todo
+				break;
+
+			case 'T': // tag
+				// todo
+					// todo
+				break;
+
+			case 'C': // connection
+				// todo
+				break;
+
+			case 'F': // status
+				// todo
+				break;
+
+			case 'E': // email
+				// todo
+				break;
+
+			case 'S': // share
+				// todo
+				break;
+
+			default: // unknown
+				// todo: add more
+				break;
+		}
+	}
+
+	if (back_in.empty())
+		return 0;
+
+	/*
+		todo
+			finish this command
+			use iteration for broadcast like in search
+			users who support it get shrot command
+			users who dont get full command
+			dont forget IN supports flag
+	*/
+
 	return 0;
 }
 
@@ -2083,38 +2185,37 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &lst = msg->ChunkString(eCH_1_PARAM);
+	string &data = msg->ChunkString(eCH_1_PARAM);
 
-	if (lst.empty())
+	if (data.empty())
 		return -1;
 
-	string sep("$$");
-	lst += sep;
-	int pos;
 	cUser *other;
-	string userip;
+	string back, nick, sep("$$");
+	data.append(sep);
+	size_t pos = data.find(sep);
 
-	while (lst.find(sep) != string::npos) {
-		pos = lst.find(sep);
-		string nick = lst.substr(0, pos);
+	while (pos != string::npos) {
+		nick = data.substr(0, pos);
+		data = data.substr(pos + 2); // size of sep
+		pos = data.find(sep);
 
-		if (!nick.empty()) {
-			other = mS->mUserList.GetUserByNick(nick);
+		if (nick.empty())
+			continue;
 
-			if (other && other->mxConn && other->mxConn->mpUser && other->mxConn->mpUser->mInList) {
-				userip.append(nick);
-				userip.append(" ");
-				userip.append(other->mxConn->AddrIP());
-				userip.append(sep);
-			}
+		other = mS->mUserList.GetUserByNick(nick);
+
+		if (other && other->mxConn && other->mxConn->mpUser && other->mxConn->mpUser->mInList) {
+			back.append(nick);
+			back.append(" ");
+			back.append(other->mxConn->AddrIP());
+			back.append(sep);
 		}
-
-		lst = lst.substr(pos + sep.length());
 	}
 
-	if (!userip.empty()) {
-		userip = "$UserIP " + userip;
-		conn->Send(userip, true);
+	if (back.size()) {
+		back = "$UserIP " + back;
+		conn->Send(back, true);
 	}
 
 	return 0;
@@ -2557,6 +2658,9 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 		case eDC_MYINFO:
 			cmd = "MyINFO";
 			break;
+		case eDC_IN:
+			cmd = "IN";
+			break;
 		case eDCO_USERIP:
 			cmd = "UserIP";
 			break;
@@ -2790,7 +2894,7 @@ bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
 
 	count = CountLines(text);
 
-	if ((Server->mC.max_chat_lines == 0) || (count > Server->mC.max_chat_lines)) {
+	if (!Server->mC.max_chat_lines || (count > Server->mC.max_chat_lines)) {
 		errmsg << autosprintf(_("Your chat message contains %d lines but maximum allowed is %d lines."), count, Server->mC.max_chat_lines);
 		Server->DCPublicHS(errmsg.str(), conn);
 		return false;

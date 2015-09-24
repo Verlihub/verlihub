@@ -31,9 +31,11 @@ namespace nVerliHub {
 	namespace nUtils {
 
 #ifdef HAVE_LIBGEOIP
-cGeoIP::cGeoIP(): mGICO(TryCountryDB(GEOIP_STANDARD)), mGICI(TryCityDB(GEOIP_STANDARD)), cObj("cGeoIP")
-{
-}
+cGeoIP::cGeoIP():
+	cObj("cGeoIP"),
+	mGICO(TryCountryDB(GEOIP_STANDARD)),
+	mGICI(TryCityDB(GEOIP_STANDARD))
+{}
 
 cGeoIP::~cGeoIP()
 {

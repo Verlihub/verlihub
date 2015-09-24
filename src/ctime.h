@@ -67,7 +67,7 @@ class cTime : public timeval
 	operator long() const { return long(tv_sec)*1000000+long(tv_usec);}
 	operator bool() const { return !(!tv_sec && !tv_usec);}
 	int operator! () { return !tv_sec && !tv_usec;}
-	long Sec(){return tv_sec;}
+	long Sec() const { return tv_sec; }
 	unsigned long MiliSec(){return (unsigned long)(tv_sec)*1000+(unsigned long)(tv_usec)/1000;}
 
 	cTime & Normalize()

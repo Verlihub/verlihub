@@ -97,7 +97,7 @@ public:
 	unsigned min_nick;
 	string nick_chars;
 	unsigned int max_chat_msg;
-	int max_chat_lines;
+	unsigned int max_chat_lines;
 	int max_flood_counter_pm;
 	int max_flood_counter_mcto;
 	int nicklist_on_login;
@@ -181,6 +181,8 @@ public:
 	unsigned int int_flood_to_limit;
 	unsigned long int_flood_myinfo_period;
 	unsigned int int_flood_myinfo_limit;
+	unsigned long int_flood_in_period;
+	unsigned int int_flood_in_limit;
 	unsigned long int_flood_search_period;
 	unsigned int int_flood_search_limit;
 	unsigned long int_flood_sr_period;
@@ -208,10 +210,10 @@ public:
 	int int_chat_ms;
 	int int_nicklist;
 	int int_myinfo;
-	int disable_me_cmd; // todo: convert to bool or use as class
-	int disable_regme_cmd; // todo: convert to bool or use as class
-	int disable_usr_cmds; // todo: convert to bool or use as class
-	int disable_report_cmd; // todo: convert to bool or use as class
+	bool disable_me_cmd;
+	bool disable_regme_cmd;
+	bool disable_usr_cmds;
+	bool disable_report_cmd;
 	bool disable_zlib;
 	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub

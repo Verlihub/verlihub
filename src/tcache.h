@@ -114,7 +114,7 @@ namespace nVerliHub {
 				 * Return the time in seconds of last update operation.
 				 * @return The last update.
 				 */
-				unsigned GetLastUpdate() //const
+				unsigned GetLastUpdate() const
 				{
 					return mLastUpdate.Sec();
 				}

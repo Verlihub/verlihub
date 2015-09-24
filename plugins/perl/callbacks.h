@@ -18,6 +18,9 @@
 	of the GNU General Public License.
 */
 
+#ifndef CALLBACKS_H
+#define CALLBACKS_H
+
 namespace nVerliHub {
 namespace nPerlPlugin {
 namespace nCallback {
@@ -44,3 +47,5 @@ bool ScriptCommand(char *, char *);
 } // nVerliHub
 } // nPerlPlugin
 } // nCallback
+
+#endif

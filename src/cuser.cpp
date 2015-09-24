@@ -36,17 +36,16 @@ namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
 
-cTime user_global_time;
-
-cUserBase::cUserBase() :
+cUserBase::cUserBase():
 	cObj((const char *)"User"),
 	mClass(eUC_NORMUSER),
 	mInList(false)
 {}
 
-cUserBase::~cUserBase() {}
+cUserBase::~cUserBase()
+{}
 
-cUserBase::cUserBase(const string &nick) :
+cUserBase::cUserBase(const string &nick):
 	cObj((const char *)"User"),
 	mNick(nick),
 	mClass(eUC_NORMUSER),
@@ -68,11 +67,11 @@ void cUserBase::Send(string &data, bool, bool)
 
 cUser::cUser():
 	mMyFlag(0),
-	mShare(0),
-	mSearchNumber(0),
 	mRights(0),
 	mBanTime(0),
 	mToBan(false),
+	mShare(0),
+	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,
 	//mVisibleClassMin(eUC_NORMUSER),
 	//mOpClassMin(eUC_NORMUSER)
@@ -105,8 +104,8 @@ cUser::cUser(const string &nick):
 	cUserBase(nick),
 	mxConn(NULL),
 	mxServer(NULL),
-	mBanTime(0),
 	mMyFlag(0),
+	mBanTime(0),
 	mShare(0),
 	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,
@@ -194,6 +193,7 @@ void cUser::Register()
 	}
 }
 
+/*
 long cUser::ShareEnthropy(const string &sharesize)
 {
 	char diff[20];
@@ -227,6 +227,7 @@ long cUser::ShareEnthropy(const string &sharesize)
 
 	return score;
 }
+*/
 
 void cUser::DisplayInfo(ostream &os, int DisplClass)
 {

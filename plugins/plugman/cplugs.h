@@ -78,6 +78,7 @@ public:
 
 	// -- required methods
 	cPlug();
+	virtual ~cPlug(){};
 	virtual void OnLoad();
 	friend ostream& operator << (ostream &, const cPlug &plug);
 
@@ -107,6 +108,8 @@ public:
 	time_t mVHTime;
 
 };
+
 	}; // namespace nPlugMan
 }; // namespace nVerliHub
+
 #endif//CPLUG_H

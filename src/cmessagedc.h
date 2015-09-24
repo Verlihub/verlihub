@@ -29,7 +29,7 @@
 #include "cprotocol.h"
 namespace nVerliHub {
 	namespace nEnums {
-		typedef enum // these constants correspond to sDC_Commands in the .cpp file
+		typedef enum // these constants corresponds to sDC_Commands in .cpp file
 		{
 			eDC_GETINFO,
 			eDCO_USERIP,
@@ -37,6 +37,7 @@ namespace nVerliHub {
 			eDC_SEARCH,
 			eDC_SR,
 			eDC_MYINFO,
+			eDC_IN,
 			eDC_KEY,
 			eDC_VALIDATENICK,
 			eDC_MYPASS,
@@ -89,6 +90,8 @@ namespace nVerliHub {
 		enum {eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG};
 		// MyINFO : INFO is all the rest together
 		enum { eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE };
+		// IN
+		enum { eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA };
 		/// connecttome   $ConnectToMe <remoteNick> <senderIp>:<senderPort>
 		enum {eCH_CM_ALL, eCH_CM_NICK, eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT};
 		//OpForce move

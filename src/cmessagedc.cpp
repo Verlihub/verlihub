@@ -27,19 +27,20 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nProtocol {
 
-cProtoCommand /*cMessageDC::*/sDC_Commands[]=
+cProtoCommand /*cMessageDC::*/sDC_Commands[]=  // this list corresponds to tDCMsg enum in .h file
 {
-	cProtoCommand(string("$GetINFO ")),  // check: logged_in(FI), nick
+	cProtoCommand(string("$GetINFO ")), // check: logged_in(FI), nick
 	cProtoCommand(string("$UserIP ")),
 	cProtoCommand(string("$Search Hub:")), // check: nick, delay //this must be first!! before the nex one
 	cProtoCommand(string("$Search ")), // check: ip, delay
 	cProtoCommand(string("$SR ")), // check: nick
 	cProtoCommand(string("$MyINFO ")), // check: after_nick, nick, share_min_max
+	cProtoCommand(string("$IN ")), // check: nick, data
 	cProtoCommand(string("$Key ")),
 	cProtoCommand(string("$ValidateNick ")),
 	cProtoCommand(string("$MyPass ")),
 	cProtoCommand(string("$Version ")),
-	cProtoCommand(string("$GetNickList")), //
+	cProtoCommand(string("$GetNickList")),
 	cProtoCommand(string("$ConnectToMe ")), // check: ip, nick
 	cProtoCommand(string("$MultiConnectToMe ")), // same as above
 	cProtoCommand(string("$RevConnectToMe ")), // check: nick, other_nick
@@ -50,7 +51,7 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=
 	cProtoCommand(string("$OpForceMove $Who:")), // check: op, nick
 	cProtoCommand(string("$Kick ")), // check: op, nick, conn
 	cProtoCommand(string("$MultiSearch Hub:")), // check: nick, delay
-	cProtoCommand(string("$MultiSearch ")),  // check: ip, delay
+	cProtoCommand(string("$MultiSearch ")), // check: ip, delay
 	cProtoCommand(string("$Supports ")),
 	cProtoCommand(string("$Ban ")),
 	cProtoCommand(string("$TempBan ")),
@@ -71,8 +72,7 @@ cMessageDC::cMessageDC():
 }
 
 cMessageDC::~cMessageDC()
-{
-}
+{}
 
 /*
 	parses the string and sets the state variables
@@ -186,6 +186,18 @@ bool cMessageDC::SplitChunks()
 			if(!SplitOnTwo( '$', eCH_MI_MAIL, eCH_MI_MAIL, eCH_MI_SIZE)) mError =1;
 			if(!ChunkRedRight(eCH_MI_SIZE,1)) mError =1;
 			break;
+		
+		case eDC_IN:
+			/*
+				$IN <nick>$<data>[$<data>]
+				eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA
+			*/
+
+			if (!SplitOnTwo(mKWSize, '$', eCH_IN_NICK, eCH_IN_DATA))
+				mError = 1;
+
+			break;
+		
 		case eDCO_OPFORCEMOVE:
 			 //$OpForceMove $Who:<victimNick>$Where:<newIp>$Msg:<reasonMsg>
 			 //NICK DEST REASON

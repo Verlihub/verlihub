@@ -25,8 +25,8 @@ SET(VERLIHUB_HDRS
 	cbanlist.h
 	ccallbacklist.h
 	cchatconsole.h
-	ccommandcollection.h
 	ccommand.h
+	ccommandcollection.h
 	cconfigbase.h
 	cconfigfile.h
 	cconfigitembase.h
@@ -37,6 +37,8 @@ SET(VERLIHUB_HDRS
 	cconnpoll.h
 	cconnselect.h
 	cconntypes.h
+	ccustomredirect.h
+	ccustomredirects.h
 	cdbconf.h
 	cdcclient.h
 	cdcclients.h
@@ -51,11 +53,11 @@ SET(VERLIHUB_HDRS
 	cinterpolexp.h
 	ckick.h
 	ckicklist.h
+	clog.h
 	cmeanfrequency.h
 	cmessagedc.h
 	cmutex.h
 	cmysql.h
-	clog.h
 	cobj.h
 	coperator.h
 	cpcre.h
@@ -78,12 +80,16 @@ SET(VERLIHUB_HDRS
 	ctrigger.h
 	ctriggers.h
 	curr_date_time.h
-	cusercollection.h
 	cuser.h
+	cusercollection.h
 	cvhplugin.h
 	cvhpluginmgr.h
 	cworkerthread.h
+	czlib.h
+	gettext.h
+	i18n.h
 	script_api.h
+	stdafx.h # ?
 	stringutils.h
 	tcache.h
 	tchashlistmap.h
@@ -94,10 +100,6 @@ SET(VERLIHUB_HDRS
 	tmysqlmemorylist.h
 	tmysqlmemoryordlist.h
 	tpluginbase.h
-	ccustomredirects.h
-	ccustomredirect.h
-	czlib.h
-	i18n.h
 )
 
 SET(VERLIHUB_SRCS
@@ -107,8 +109,8 @@ SET(VERLIHUB_SRCS
 	cbanlist.cpp
 	ccallbacklist.cpp
 	cchatconsole.cpp
-	ccommandcollection.cpp
 	ccommand.cpp
+	ccommandcollection.cpp
 	cconfigbase.cpp
 	cconfigfile.cpp
 	cconfigitembase.cpp
@@ -118,6 +120,8 @@ SET(VERLIHUB_SRCS
 	cconnpoll.cpp
 	cconnselect.cpp
 	cconntypes.cpp
+	ccustomredirect.cpp
+	ccustomredirects.cpp
 	cdbconf.cpp
 	cdcclient.cpp
 	cdcclients.cpp
@@ -132,11 +136,11 @@ SET(VERLIHUB_SRCS
 	cinterpolexp.cpp
 	ckick.cpp
 	ckicklist.cpp
+	clog.cpp
 	cmeanfrequency.cpp
 	cmessagedc.cpp
 	cmutex.cpp
 	cmysql.cpp
-	clog.cpp
 	cobj.cpp
 	coperator.cpp
 	cpcre.cpp
@@ -158,18 +162,18 @@ SET(VERLIHUB_SRCS
 	ctimeout.cpp
 	ctrigger.cpp
 	ctriggers.cpp
-	cusercollection.cpp
 	cuser.cpp
+	cusercollection.cpp
 	cvhplugin.cpp
 	cvhpluginmgr.cpp
 	cworkerthread.cpp
+	czlib.cpp
 	script_api.cpp
+	stdafx.cpp # ?
 	stringutils.cpp
 	thasharray.cpp
 	tpluginbase.cpp
-	ccustomredirects.cpp
-	ccustomredirect.cpp
-	czlib.cpp
+	#verlihub.cpp
 )
 
 # ----------------------------------------------------------------------------------------------------

@@ -590,7 +590,7 @@ function autoload() # params
 			fi
 		else
 			if [ "_$ACTION" = "_on" ]; then
-                                if ln -s "$PLUGINDIR/$PLUGIN_NAME" "$VERLIHUB_CFG/plugins/" > /dev/null 2>&1 ; then
+                                if ln -sf "$PLUGINDIR/$PLUGIN_NAME" "$VERLIHUB_CFG/plugins/" > /dev/null 2>&1 ; then
 					echo "-- Done"
 				else
 					echo_s "-- Cannot create symbolic link in '$VERLIHUB_CFG/plugins/'; please check permission\n" $RED
@@ -853,7 +853,7 @@ function install()
 	cp $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
-        ln -s $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+        ln -sf $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
 
 	if $IS_VH_CFG_NEEDS_CHOWN && [ "$CHOOSEN_FOLDER" == "$VH_USER_DIR" ]; then
 		chown -R verlihub "$CHOOSEN_FOLDER";

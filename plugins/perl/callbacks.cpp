@@ -69,8 +69,8 @@ MYSQL_ROW nVerliHub::nPerlPlugin::nCallback::SQLFetch(int r, int &cols) {
 
 int nVerliHub::nPerlPlugin::nCallback::SQLFree() {
 	cpiPerl *pi = GetPI();
-
 	pi->mQuery->Clear();
+	return 1;
 }
 
 int nVerliHub::nPerlPlugin::nCallback::IsUserOnline(char *nick) {
@@ -140,7 +140,7 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(char *nick, int uclass, char *des
 
 bool nVerliHub::nPerlPlugin::nCallback::EditBot(char *nick, int uclass, char *desc, char *speed, char *email, char *share) {
 	cServerDC *server = GetCurrentVerlihub();
-	cpiPerl *pi = GetPI();
+	//cpiPerl *pi = GetPI();
 	cUserRobot *robot = (cUserRobot*) server->mRobotList.GetUserBaseByNick(nick);
 
 	if(robot != NULL) {
@@ -191,7 +191,7 @@ bool nVerliHub::nPerlPlugin::nCallback::SetTopic(char *_topic) {
 }
 
 bool nVerliHub::nPerlPlugin::nCallback::ScriptCommand(char *_cmd, char *_data) {
-	cServerDC *server = GetCurrentVerlihub();
+	//cServerDC *server = GetCurrentVerlihub();
 	std::string cmd = _cmd;
 	std::string data = _data;
 	std::string plugin("perl");

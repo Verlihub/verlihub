@@ -160,10 +160,10 @@ void cDCConf::AddVars()
 	// Mainchat messages configuration
 	Add("max_message_size",mS.mMaxLineLength, (unsigned long)10240);
 	Add("max_chat_msg",max_chat_msg,256u);
-	Add("max_chat_lines",max_chat_lines,5);
-	Add("delayed_chat",delayed_chat, false);
+	Add("max_chat_lines", max_chat_lines, 5);
+	Add("delayed_chat", delayed_chat, false);
 	Add("int_chat_ms",int_chat_ms,1000);
-	Add("chat_default_on",chat_default_on, true);
+	Add("chat_default_on", chat_default_on, true);
 	Add("mainchat_class",mainchat_class,0);
 	Add("private_class", private_class, 0);
 	// End mainchat messages configuration
@@ -185,6 +185,8 @@ void cDCConf::AddVars()
 	Add("int_flood_to_limit", int_flood_to_limit, 5);
 	Add("int_flood_myinfo_period", int_flood_myinfo_period, 60);
 	Add("int_flood_myinfo_limit", int_flood_myinfo_limit, 20);
+	Add("int_flood_in_period", int_flood_in_period, 60);
+	Add("int_flood_in_limit", int_flood_in_limit, 20);
 	Add("int_flood_search_period", int_flood_search_period, 60);
 	Add("int_flood_search_limit", int_flood_search_limit, 30);
 	Add("int_flood_sr_period", int_flood_sr_period, 30);
@@ -232,12 +234,12 @@ void cDCConf::AddVars()
 	Add("dest_report_chat", dest_report_chat, false);
 	Add("dest_regme_chat", dest_regme_chat, false);
 	Add("dest_drop_chat", dest_drop_chat, false);
-	Add("disable_me_cmd", disable_me_cmd, 0); // todo: convert to bool or use as class
-	Add("disable_regme_cmd", disable_regme_cmd, 0); // todo: convert to bool or use as class
-	Add("disable_usr_cmds", disable_usr_cmds, 0); // todo: convert to bool or use as class
-	Add("disable_report_cmd", disable_report_cmd, 0); // todo: convert to bool or use as class
+	Add("disable_me_cmd", disable_me_cmd, false);
+	Add("disable_regme_cmd", disable_regme_cmd, false);
+	Add("disable_usr_cmds", disable_usr_cmds, false);
+	Add("disable_report_cmd", disable_report_cmd, false);
 	Add("always_ask_password", always_ask_password, false);
-	Add("default_password_encryption",default_password_encryption,1); //eCRYPT_ENCRYPT
+	Add("default_password_encryption", default_password_encryption, 1); // eCRYPT_ENCRYPT
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
 	Add("wrongpass_message", wrongpass_message, "");
@@ -246,7 +248,7 @@ void cDCConf::AddVars()
 	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);
 	Add("botinfo_report", botinfo_report, 0);
-	Add("send_user_ip",send_user_ip,false);
+	Add("send_user_ip", send_user_ip, false);
 	Add("user_ip_class", user_ip_class, 3);
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
@@ -254,7 +256,7 @@ void cDCConf::AddVars()
 	// End user control configuration
 
 	// Advanced hub configuration and tweaks
-	Add("extended_welcome_message", extended_welcome_message, 1);
+	Add("extended_welcome_message", extended_welcome_message, true);
 	Add("host_header", host_header, 1);
 	Add("int_myinfo",int_myinfo,60);
 	Add("int_nicklist",int_nicklist,60);
@@ -266,7 +268,7 @@ void cDCConf::AddVars()
 	Add("tban_max", tban_max, 3600 * 24 * 30);
 	Add("log_level",mS.msLogLevel, 0);
 	Add("dns_lookup",mS.mUseDNS, 0);
-	Add("report_dns_lookup",report_dns_lookup,0);
+	Add("report_dns_lookup", report_dns_lookup, false);
 	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks",hide_all_kicks,1);
 	Add("hide_msg_badctm", hide_msg_badctm, false);
@@ -276,11 +278,11 @@ void cDCConf::AddVars()
 	Add("step_delay", mS.mStepDelay, 50);
 	Add("max_upload_kbps",max_upload_kbps, 2000000.0);
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
-	Add("use_reglist_cache",use_reglist_cache, true);
-	Add("use_penlist_cache",use_penlist_cache, true);
-	Add("delayed_login" ,delayed_login,  1);
+	Add("use_reglist_cache", use_reglist_cache, true);
+	Add("use_penlist_cache", use_penlist_cache, true);
+	Add("delayed_login", delayed_login, false);
 	Add("delayed_myinfo",delayed_myinfo, 1);
-	Add("drop_invalid_key",drop_invalid_key, 0);
+	Add("drop_invalid_key", drop_invalid_key, false);
 	Add("delayed_ping",delayed_ping,60);
 	Add("disable_zlib", disable_zlib, true);
 	Add("zlib_min_len", zlib_min_len, 100);
@@ -297,11 +299,11 @@ void cDCConf::AddVars()
 	// End advanced hub configuration and tweaks
 
 	 // Tag configuration
-	Add("show_tags",show_tags,2);
-	Add("tag_allow_none",tag_allow_none, true);
-	Add("tag_allow_unknown",tag_allow_unknown,1);
-	Add("tag_allow_passive",tag_allow_passive, true);
-	Add("tag_allow_sock5",tag_allow_sock5, true);
+	Add("show_tags", show_tags, 2);
+	Add("tag_allow_none", tag_allow_none, true);
+	Add("tag_allow_unknown", tag_allow_unknown, true);
+	Add("tag_allow_passive", tag_allow_passive, true);
+	Add("tag_allow_sock5", tag_allow_sock5, true);
 	Add("tag_sum_hubs", tag_sum_hubs, 3);
 	Add("tag_min_class_ignore",tag_min_class_ignore ,(int)eUC_OPERATOR);
 	Add("show_desc_len",show_desc_len,-1);

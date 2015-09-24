@@ -193,13 +193,17 @@ cPluginBase * cPluginManager::GetPlugin(const string &Name)
 		return NULL;
 }
 
-cPluginBase * cPluginManager::GetPluginByLib(const string &lib)
+cPluginBase * cPluginManager::GetPluginByLib(const string &path)
 {
 	tPlugins::iterator it;
+
 	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
-		if ((*it)->GetFilename() == lib) return (*it)->mPlugin;
+		if ((*it)->GetFilename() == path)
+			return (*it)->mPlugin;
 	}
+
 	return NULL;
 }
+
 	}; // namespace nPlugin
 }; // namespace nVerliHub

@@ -77,10 +77,11 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
-	mSockDesc(desc),
+	mZlibFlag(false),
 	mIterator(0),
-	ok(desc>0),
+	ok(desc > 0),
 	mWritable(true),
+	mSockDesc(desc),
 	mxServer(s),
 	mxMyFactory(NULL),
 	mxAcceptingFactory(NULL),
@@ -88,8 +89,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	mpMsgParser(NULL),
 	mAddrPort(0),
 	mServPort(0),
-	mType(ct),
-	mZlibFlag(false)
+	mType(ct)
 {
 	mMaxBuffer = MAX_SEND_SIZE;
 	struct sockaddr saddr;
@@ -127,21 +127,20 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	memset (&mCloseAfter,0, sizeof(mCloseAfter));
 }
 
-
 /** connect to given host (ip) on port */
-cAsyncConn::cAsyncConn(const string &host , int port, bool udp):
+cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
-#if !defined _WIN32
-	mSockDesc(-1),
-#else
-	mSockDesc(0),
-#endif
-	mBufEnd(0),
-	mBufReadPos(0),
-	mCloseAfter(0,0),
+	mZlibFlag(false),
 	mIterator(0),
 	ok(false),
 	mWritable(true),
+
+	#if !defined _WIN32
+		mSockDesc(-1),
+	#else
+		mSockDesc(0),
+	#endif
+
 	mxServer(NULL),
 	mxMyFactory(NULL),
 	mxAcceptingFactory(NULL),
@@ -149,7 +148,9 @@ cAsyncConn::cAsyncConn(const string &host , int port, bool udp):
 	mpMsgParser(NULL),
 	mAddrPort(port),
 	mType(eCT_SERVER),
-	mZlibFlag(false)
+	mBufEnd(0),
+	mBufReadPos(0),
+	mCloseAfter(0, 0)
 {
 	mMaxBuffer=MAX_SEND_SIZE;
 	ClearLine();

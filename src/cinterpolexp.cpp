@@ -26,25 +26,21 @@ namespace nVerliHub {
 	namespace nUtils {
 
 cInterpolExp::cInterpolExp(unsigned int &var, long toval, int togo, int skip):
+	cObj("cInterpolExp"),
 	mVariable(var),
 	mTargetValue(toval),
 	mStepsToGo(togo),
-	mSkipSteps(skip),
-	cObj("cInterpolExp")
+	mSkipSteps(skip)
 {
 	vhLog(5) << " constructor " << endl;
 	mInitValue = mVariable;
 	mCurrentValue = mInitValue;
-	mNextStep = (mTargetValue - mInitValue) /2;
+	mNextStep = (mTargetValue - mInitValue) / 2;
 	mSkipedSteps = 0;
 }
 
-
 cInterpolExp::~cInterpolExp()
-{
-}
-
-
+{}
 
 /*!
     \fn nUtils::cInterpolExp::step()

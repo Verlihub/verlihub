@@ -26,15 +26,15 @@ INCLUDE_DIRECTORIES(${VERLIHUB_BINARY_DIR} ${VERLIHUB_SOURCE_DIR}/src)
 ADD_DEFINITIONS(-DPLUGMAN_VERSION="${PLUGMAN_VERSION}")
 
 SET(PLUGMAN_SRCS
+	cconsole.cpp
 	cpiplug.cpp
 	cplugs.cpp
-	cconsole.cpp
 )
 
 SET(PLUGMAN_HDRS
+	cconsole.h
 	cpiplug.h
 	cplugs.h
-	cconsole.h
 )
 
 ADD_LIBRARY(plug_pi MODULE ${PLUGMAN_SRCS})

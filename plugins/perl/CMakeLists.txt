@@ -29,19 +29,21 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_DEFINITIONS(-g -DPERLSCRIPT_VERSION="${PERLSCRIPT_VERSION}" `perl -MExtUtils::Embed -e ccopts`)
 
 SET(PERLSCRIPT_HDRS
-	cpiperl.h
+	callbacks.h
 	cconsole.h
 	cperlinterpreter.h
 	cperlmulti.h
-	callbacks.h
+	cperlscript.h
+	cpiperl.h
 )
 
 SET(PERLSCRIPT_SRCS
-	cpiperl.cpp
+	callbacks.cpp
 	cconsole.cpp
 	cperlinterpreter.cpp
 	cperlmulti.cpp
-	callbacks.cpp
+	cperlscript.cpp
+	cpiperl.cpp
 )
 
 ADD_LIBRARY(libperl_pi MODULE ${PERLSCRIPT_SRCS})

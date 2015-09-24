@@ -26,14 +26,14 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nProtocol {
 
-cProtocol::cProtocol() : cObj("cProtocol")
+cProtocol::cProtocol():
+	cObj("cProtocol")
 {}
-
 
 cProtocol::~cProtocol()
 {}
 
-cMessageParser::cMessageParser(int MaxChunks) :
+cMessageParser::cMessageParser(int MaxChunks):
 	cObj("cMessageParser"),
 	mChunks(MaxChunks),
 	mChStrings(NULL),
@@ -47,9 +47,8 @@ cMessageParser::cMessageParser(int MaxChunks) :
 	mKWSize(0),
 	mMaxChunks(MaxChunks)
 {
-	mChStrings = new std::string[2*mMaxChunks];
+	mChStrings = new std::string[2 * mMaxChunks];
 }
-
 
 cMessageParser::~cMessageParser()
 {
@@ -97,33 +96,37 @@ void cMessageParser::ApplyChunk(unsigned int n)
 /** return the n'th chunk (as splited by SplitChunks) function */
 string &cMessageParser::ChunkString(unsigned int n)
 {
-	if(!n) return mStr;  // the zero-th string is allways the complete one, and it's pointer is reserved for the empty string
-	if(n > mChunks.size()) // this should never happen, but if it happens, we are prepared;
-	{
+	if (!n) // the zeroth string is always the complete one, and its pointer is reserved for the empty string
+		return mStr;
+
+	if (n > mChunks.size()) { // this should never happen, but if it happens, we are prepared
 		return mChStrings[0];
 	}
+
 	unsigned long flag = 1 << n;
-	if(!(mChStrMap & flag))
-	{
+
+	if (!(mChStrMap & flag)) {
 		mChStrMap |= flag;
-		try
-		{
-			tChunk &chu=mChunks[n];
-			if (chu.first >= 0 && chu.second >= 0 &&
-				chu.first < mStr.length() && chu.second < mStr.length())
-			{
-					mChStrings[n].assign(mStr, chu.first, chu.second);
+
+		try {
+			tChunk &chu = mChunks[n];
+
+			if ((chu.first >= 0) && (chu.second >= 0) && ((unsigned int)chu.first < mStr.length()) && ((unsigned int)chu.second < mStr.length())) {
+				mChStrings[n].assign(mStr, chu.first, chu.second);
 			} else {
-				if(ErrLog(1)) LogStream() << "Error in parsing message, chunk " << n << ": " << mStr << endl;
+				if (ErrLog(1))
+					LogStream() << "Error in parsing message, chunk " << n << ": " << mStr << endl;
+
 				return mEmptyStr; // in this case dont return mChStrings[n] below, it can contain data from previously parsed message
 			}
+
 			//ShrinkStringToFit(mChStrings[n]);
-		}
-		catch(...)
-		{
-			if(ErrLog(1)) LogStream() << "Exception in chunk string" << endl;
+		} catch (...) {
+			if (ErrLog(1))
+				LogStream() << "Exception in chunk string" << endl;
 		}
 	}
+
 	return mChStrings[n];
 }
 
@@ -185,8 +188,8 @@ bool cMessageParser::SplitOnTwo(const string &lim, int ch, int cn1, int cn2, boo
 bool cMessageParser::ChunkRedLeft(int cn, int amount)
 {
 	tChunk &ch = mChunks[cn];
-	if ((ch.first + amount) < mLen)
-	{
+
+	if ((unsigned int)(ch.first + amount) < mLen) {
 		ch.first += amount;
 		ch.second -= amount;
 		return true;

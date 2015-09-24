@@ -32,17 +32,22 @@ namespace nVerliHub {
 	namespace nPerlPlugin {
 		using namespace nSocket;
 
-cPerlInterpreter::cPerlInterpreter() : cObj("cPerlInterpreter")
+cPerlInterpreter::cPerlInterpreter():
+	cObj("cPerlInterpreter")
 {
 	mPerl = perl_alloc();
-	if (!mPerl) throw "No Memory for Perl";
+
+	if (!mPerl)
+		throw "No memory for Perl";
+
+	my_perl = mPerl;
 	SetMyContext();
 	perl_construct(mPerl);
 }
 
 cPerlInterpreter::~cPerlInterpreter()
 {
-	PerlInterpreter *my_perl = mPerl;
+	//PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	perl_destruct(mPerl);
 	perl_free(mPerl);
@@ -65,7 +70,7 @@ void cPerlInterpreter::SetMyContext()
 /** parse arguments like for a command line of perl */
 int cPerlInterpreter::Parse(int argc, char *argv[])
 {
-	PerlInterpreter *my_perl = mPerl;
+	//PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	int result = perl_parse(mPerl, xs_init, argc, argv, NULL);
 	PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
@@ -78,7 +83,7 @@ int cPerlInterpreter::Parse(int argc, char *argv[])
 
 bool cPerlInterpreter::CallArgv(const char *Function, char * Args [] )
 {
-	PerlInterpreter *my_perl = mPerl;
+	//PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
 	dSP;
 	int n;

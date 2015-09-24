@@ -21,32 +21,35 @@
 #include "ccommand.h"
 #include "i18n.h"
 #include <iostream>
+
 using namespace std;
 
 namespace nVerliHub {
 	namespace nCmdr {
 
-cCommand::cCommand(int ID, const char *regexId, const char *paramRegex, sCmdFunc *CmdFunc) :
-mID(ID), mIdentificator(regexId, PCRE_ANCHORED),
-mParamsParser(paramRegex, PCRE_DOTALL, 64), mCmdFunc(CmdFunc),
-mIdRegexStr(regexId),
-mParStr(paramRegex)
+cCommand::cCommand(int ID, const char *regexId, const char *paramRegex, sCmdFunc *CmdFunc):
+	mID(ID),
+	mIdentificator(regexId, PCRE_ANCHORED),
+	mParamsParser(paramRegex, PCRE_DOTALL, 64),
+	mCmdFunc(CmdFunc),
+	mParStr(paramRegex),
+	mIdRegexStr(regexId)
 {
 	mCmdr = NULL;
-	if(CmdFunc != NULL) {
+
+	if (CmdFunc != NULL) {
 		CmdFunc->mCommand = this;
 		CmdFunc->mIdRex = &mIdentificator;
 		CmdFunc->mParRex = &mParamsParser;
 	}
 }
 
-cCommand::cCommand() :
-mCmdr(NULL),
-mID(-1),
-mParamsParser(64),
-mCmdFunc(NULL)
-{
-}
+cCommand::cCommand():
+	mCmdr(NULL),
+	mID(-1),
+	mParamsParser(64),
+	mCmdFunc(NULL)
+{}
 
 void cCommand::Init(int ID, const char *regexId, const char *paramRegex, sCmdFunc *CmdFunc)
 {
@@ -98,18 +101,20 @@ int cCommand::sCmdFunc::StringToIntFromList(const string &str, const char *strin
 	int theInt = -1;
 	int i;
 
-	for(i = 0; i < item_count; i++) {
-		if(str == stringlist[i]) {
+	for (i = 0; i < item_count; i++) {
+		if (str == stringlist[i]) {
 			theInt = intlist[i];
 			return theInt;
 		}
 	}
 
-	if(theInt == -1) {
+	if (theInt == -1) {
 		(*mOS) << autosprintf(_("Command suffix %s is not implemented, known suffixes are"), str.c_str()) << ":";
-		for(i = 0; i < item_count; i++)
+
+		for (i = 0; i < item_count; i++)
 			(*mOS) << " " << stringlist[i];
 	}
+
 	return theInt;
 }
 

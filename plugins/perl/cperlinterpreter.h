@@ -23,13 +23,23 @@
 
 #define PERL_CALL "vh::VH__Call__Function"
 
-
 #include <stdio.h>
 #include "src/cobj.h"
+#include "src/i18n.h"
+
+#ifdef _
+#undef _
+#endif
+
 namespace nPerl
 {
 #include <EXTERN.h>               /* from the Perl distribution     */
 #include <perl.h>                 /* from the Perl distribution     */
+
+#ifdef _
+#undef _
+#define _(string) gettext (string)
+#endif
 };
 using namespace nPerl;
 
@@ -79,6 +89,7 @@ public:
 
 protected:
 	PerlInterpreter *mPerl;
+	PerlInterpreter *my_perl;
 };
 
 	}; // namespace nPerlPlugin

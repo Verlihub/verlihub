@@ -264,15 +264,19 @@ int cServerDC::StartListening(int OverrideDefaultPort)
 	return _result;
 }
 
-tMsgAct cServerDC::Filter( tDCMsg msg, cConnDC *conn )
+tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 {
 	tMsgAct result = eMA_PROCEED;
-	if(!conn) {
-		if(ErrLog(0)) LogStream() << "Got NULL conn into filter" << endl;
+
+	if (!conn) {
+		if (ErrLog(0))
+			LogStream() << "Got NULL connection into filter" << endl;
+
 		return eMA_ERROR;
 	}
-	if(!conn->mpUser || !conn->mpUser->mInList) {
-		switch(msg) {
+
+	if (!conn->mpUser || !conn->mpUser->mInList) {
+		switch (msg) {
 			case eDC_KEY:
 			case eDC_VALIDATENICK:
 			case eDC_MYPASS:
@@ -280,29 +284,37 @@ tMsgAct cServerDC::Filter( tDCMsg msg, cConnDC *conn )
 			case eDC_GETNICKLIST:
 			case eDC_MYINFO:
 			case eDC_UNKNOWN:
-			break;
-			default: result = eMA_HANGUP;
+				break;
+			default:
+				result = eMA_HANGUP;
+				break;
 		}
 	} else {
-		switch(msg) {
+		switch (msg) {
 			case eDC_KEY:
 			case eDC_VALIDATENICK:
 			case eDC_MYPASS:
 			case eDC_VERSION:
 				result=eMA_HANGUP;
-			break;
-			default: break;
+				break;
+			default:
+				break;
 		}
 	}
 
-	switch(mSysLoad) {
-		case eSL_SYSTEM_DOWN: return eMA_TBAN; break; // locked up
-		case eSL_RECOVERY: return eMA_HANGUP1; break; // attempting recovery
-		case eSL_CAPACITY: break; // limits reached
-		case eSL_PROGRESSIVE: break; // approaching limits
-		case eSL_NORMAL: break; // normal mode
-		default: break;
+	switch (mSysLoad) {
+		case eSL_SYSTEM_DOWN: // locked up
+			return eMA_TBAN;
+		case eSL_RECOVERY: // attempting recovery
+			return eMA_HANGUP1;
+		case eSL_CAPACITY: // limits reached
+		case eSL_PROGRESSIVE: // approaching limits
+		case eSL_NORMAL: // normal mode
+			break;
+		default:
+			break;
 	}
+
 	return result;
 }
 
@@ -1552,7 +1564,7 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 
 int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 {
-	__int64 min_share = mC.min_share; // prepare
+	unsigned __int64 min_share = mC.min_share; // prepare
 
 	if (mC.min_share_use_hub > min_share)
 		min_share = mC.min_share_use_hub;
@@ -1799,7 +1811,7 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 	if (!conn || !conn->mpUser || (conn->mpUser->mClass > mC.max_class_proto_flood))
 		return false;
 
-	unsigned long period = 0;
+	long period = 0;
 	unsigned int limit = 0;
 
 	switch (type) {
@@ -1964,7 +1976,7 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 	}
 }
 
-void cServerDC::SendHeaders(cConnDC * conn, int where)
+void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 {
 	/*
 	* 0 = dont send headers
@@ -2225,10 +2237,11 @@ void cServerDC::DoStackTrace()
 	http_req << bt.str();
 	http->Write(http_req.str(), true);
 
-	if (http->ok)
+	if (http->ok) {
 		vhErr(0) << "Successfully sent stack backtrace to crash server" << endl;
-	else
+	} else {
 		vhErr(0) << "Failed sending to crash server, please send above stack backtrace to developers" << endl;
+	}
 
 	http->Close();
 	delete http;

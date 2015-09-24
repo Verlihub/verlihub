@@ -26,9 +26,8 @@ vector<w_TScript*> w_Scripts;
 
 static int log_level = 0;
 
-
-#define pybool(a) (a) ? ({ Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; })
-#define pybool2(a) (a) ? ({ free(a); Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; })
+#define pybool(a) ((a) ? ({ /*Py_INCREF(Py_True); */Py_True; }) : ({ /*Py_INCREF(Py_False); */Py_False; }))
+#define pybool2(a) ((a) ? ({ free(a); /*Py_INCREF(Py_True); */Py_True; }) : ({ /*Py_INCREF(Py_False); */Py_False; }))
 
 // logging levels:
 // 0 - plugin critical errors, interpreter errors, bad call arguments
@@ -42,9 +41,7 @@ static int log_level = 0;
 #define log5(...)  if (log_level > 4) { printf( __VA_ARGS__ ); fflush(stdout); }
 #define log6(...)  if (log_level > 5) { printf( __VA_ARGS__ ); fflush(stdout); }
 
-
 // TODO: use some better string handling tools ... and maybe use more C++ ;)
-
 
 void w_LogLevel (int level)
 {
@@ -119,7 +116,7 @@ const char* w_packprint (w_Targs* a);  // forward declaration
 w_Targs* w_vapack (const char* format, va_list ap )
 {
 	w_Targs* a;
-	for (int i=0; i < strlen(format); i++)
+	for (unsigned int i=0; i < strlen(format); i++)
 		switch (format[i])
 		{
 			case 'l': case 's': case 'd': case 'p': break;
@@ -128,7 +125,7 @@ w_Targs* w_vapack (const char* format, va_list ap )
 	a = (w_Targs*) calloc(strlen(format)+1, sizeof(w_Telement));
 	if (!a) return NULL;
 	a->format = format;
-	for (int i=0; i < strlen(format); i++)
+	for (unsigned int i=0; i < strlen(format); i++)
 		switch (format[i])
 		{
 			case 'l': a->args[i].type = 'l'; a->args[i].l = va_arg(ap, long);   break;
@@ -149,7 +146,7 @@ int w_vaunpack (w_Targs* a, const char* format, va_list ap )
 	
 	if (!a || !a->format) return 0;
 	if (strcmp (format, a->format) != 0) return 0;
-	for (int i=0; i < strlen(format); i++)
+	for (unsigned int i=0; i < strlen(format); i++)
 	{
 		switch (format[i])
 		{
@@ -160,7 +157,7 @@ int w_vaunpack (w_Targs* a, const char* format, va_list ap )
 		{ log1("PY: unpack: format string and stored argument types don't match!\n"); return 0; }
 	}
 	a->format = format;
-	for (int i=0; i < strlen(format); i++)
+	for (unsigned int i=0; i < strlen(format); i++)
 		switch (format[i])
 		{
 			case 'l': l = va_arg(ap, long*);   *l = a->args[i].l;  break;
@@ -198,7 +195,7 @@ const char* w_packprint (w_Targs* a)
 	if (!a || !a->format) return "(null)";
 	o = string() + a->format + " ( ";
 	char *buf = (char*) calloc(410, sizeof(char));
-	for (int i=0; i < strlen(a->format); i++)
+	for (unsigned int i=0; i < strlen(a->format); i++)
 	{
 		if (i > 0) o += ", ";
 		switch (a->format[i])
@@ -225,7 +222,7 @@ const char *GetName(const char *path)
 
 int GetFreeID()
 {
-	int id = 0;
+	unsigned int id = 0;
 	while (id < w_Scripts.size())
 	{
 		if (!w_Scripts[id]) return id;
@@ -247,7 +244,7 @@ int GetID()
 	{
 		id = PyInt_AsLong(f);
 		Py_XDECREF(f);
-		if (id > -1 && id < w_Scripts.size() && w_Scripts[id]) return id;
+		if ((id > -1) && ((unsigned long)id < w_Scripts.size()) && w_Scripts[id]) return id;
 		log("PY: GetID: no script pointer found at retrieved id: %ld\n", id); return -1;
 	}
 	return -1;
@@ -709,7 +706,7 @@ static PyObject * __encode(PyObject *self, PyObject *args)
 	char *data;
 	ostringstream dest;
 	if ( !PyArg_ParseTuple(args, "s:encode", &data) ) return NULL;
-	for (int i=0; i < strlen(data); i++)
+	for (unsigned int i=0; i < strlen(data); i++)
 	{
 		switch (data[i])
 		{
@@ -732,10 +729,10 @@ static PyObject * __decode(PyObject *self, PyObject *args)
 	ostringstream dest;
 	if ( !PyArg_ParseTuple(args, "s:decode", &data) ) return NULL;
 	str = data;
-	int pos = 0, len = str.length();
+	size_t pos, len = str.length();
 	while (true)
 	{
-		int fpos = str.find("&#", pos);
+		size_t fpos = str.find("&#", pos);
 		if (fpos == string::npos) { dest << str.substr(pos); break; }
 		dest << str.substr(pos, fpos-pos);
 		if ( fpos + l1 <= len && str.substr(pos, l1) == t1) { dest << r1; pos += l1; continue; }
@@ -824,7 +821,7 @@ int w_Begin(w_Tcallback* cblist)
 int w_End()
 {
 	if (!w_Python) return 0;
-	for (int id = 0; id < w_Scripts.size(); id++)
+	for (unsigned int id = 0; id < w_Scripts.size(); id++)
 		if (w_Scripts[id]) { log2( "PY: End   found a running interpreter. Shutting it down first then ending\n"); w_Unload(id); }
 	
 	if (w_Python->state) 
@@ -965,7 +962,7 @@ int w_Load(w_Targs* args)
 	
 int w_Unload(int id)
 {
-	if (id < 0 || id >= w_Scripts.size() || !w_Scripts[id]) { log("PY: Unload   error: No script with id: %d\n", id); return -1; }
+	if ((id < 0) || ((unsigned int)id >= w_Scripts.size()) || !w_Scripts[id]) { log("PY: Unload   error: No script with id: %d\n", id); return -1; }
 	w_TScript *script = w_Scripts[id];
 	PyThreadState * state = script->state;
 	if(state) 
@@ -1009,7 +1006,7 @@ int w_Unload(int id)
 	
 int w_HasHook(int id, int hook)
 {
-	if (id < 0 || id >= w_Scripts.size() || !w_Scripts[id]) { log("PY: HasHook error: No script with id: %d\n", id); return 0; }
+	if ((id < 0) || ((unsigned int)id >= w_Scripts.size()) || !w_Scripts[id]) { log("PY: HasHook error: No script with id: %d\n", id); return 0; }
 	w_TScript *script = w_Scripts[id];
 	if (!script || hook < 0 || hook >= W_MAX_HOOKS) return 0;
 	if (hook == W_OnOperatorCommand) return 1;
@@ -1038,7 +1035,7 @@ PyObject * w_GetHook(int hook)
 
 w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means further processing by another plugins or the hub
 {
-	if (id < 0 || id >= w_Scripts.size() || !w_Scripts[id]) { log2("PY: CallHook error: No script with id: %d\n", id); return NULL; }
+	if ((id < 0) || ((unsigned int)id >= w_Scripts.size()) || !w_Scripts[id]) { log2("PY: CallHook error: No script with id: %d\n", id); return NULL; }
 	w_TScript *script = w_Scripts[id];
 	const char *name = script->name;
 	w_Targs *res = NULL;

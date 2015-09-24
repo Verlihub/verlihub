@@ -37,6 +37,7 @@ class cBasicItemCreator
 {
 	public:
 		cBasicItemCreator(){};
+		virtual ~cBasicItemCreator(){};
 		NewItemMethod(bool, Bool);
 		NewItemMethod(char, Char);
 		NewItemMethod(int, Int);
@@ -127,8 +128,8 @@ class cConfigBaseBase : public cObj
 
 
 #define DeclareAddMethods(TYPE) \
-cConfigItemBase * Add(const string &name, TYPE &var); \
-cConfigItemBase * Add(const string &name, TYPE &var, TYPE const & def);
+cConfigItemBase* Add(const string &name, TYPE &var); \
+cConfigItemBase* Add(const string &name, TYPE &var, TYPE const &def);
 
 /**
 This is a base class for every configuration like structure.

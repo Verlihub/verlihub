@@ -53,8 +53,15 @@ struct sUserInfo
 	bool mDisabled;
 	list<nEnums::tFloodType> mFloodTypes;
 
-	sUserInfo(string ip) : mIP(ip), mActionCounter(0), mDisabled(false) {}
-	~sUserInfo() {}
+	sUserInfo(string ip):
+		mActionCounter(0),
+		mIP(ip),
+		mDisabled(false)
+	{}
+
+	~sUserInfo()
+	{}
+
 	void addFloodType(nEnums::tFloodType ft)
 	{
 	    if(mFloodTypes.size() == 10)

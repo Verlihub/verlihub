@@ -46,7 +46,7 @@ class cForbiddenWorker
 {
 public:
 	cForbiddenWorker();
-	~cForbiddenWorker();
+	virtual ~cForbiddenWorker();
 	int DoIt(const string & cmd_line, nSocket::cConnDC *conn, nSocket::cServerDC *server, int mask);
 	bool CheckMsg(const string &msg);
 	bool PrepareRegex();

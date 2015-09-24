@@ -58,7 +58,7 @@ public:
 	typedef tcHashListMap<cPluginLoader*> tPlugins;
 	string &GetError(){ return mLastLoadError;}
 	cPluginBase * GetPlugin(const string &Name);
-	cPluginBase * GetPluginByLib(const string &lib);
+	cPluginBase * GetPluginByLib(const string &path);
 protected:
 	string mPluginDir;
 	typedef tcHashListMap<cCallBackList*> tCBList;
@@ -66,8 +66,8 @@ protected:
 	tCBList mCallBacks;
 	string mLastLoadError;
 };
-}; // namespace nPlugin
 
+}; // namespace nPlugin
 }; // namespace nVerliHub
 
 #endif

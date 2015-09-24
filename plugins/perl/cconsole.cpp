@@ -45,7 +45,7 @@ static bool IsNumber(const char* s)
 }
 
 
-cConsole::cConsole(cpiPerl *perl) :
+cConsole::cConsole(cpiPerl *perl):
 	mPerl(perl),
 	mCmdPerlScriptGet(0,"!perllist", "", &mcfPerlScriptGet),
 	mCmdPerlScriptAdd(1,"!perlload ", "(.*)", &mcfPerlScriptAdd),
@@ -65,9 +65,8 @@ cConsole::~cConsole()
 
 bool cConsole::cfGetPerlScript::operator()()
 {
-	(*mOS) << _("Running Perl scripts:") << "\r\n";
-	(*mOS) << "\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << "ID";
+	(*mOS) << _("Running Perl scripts") << ":\r\n\r\n ";
+	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
 	(*mOS) << toUpper(_("Script")) << "\n";
 	(*mOS) << " " << string(6+20,'=') << endl;
 	for(int i = 0; i < GetPI()->Size(); i++) {
@@ -217,7 +216,6 @@ bool cConsole::cfReloadPerlScript::operator()()
 		return true;
 	}
 }
-
 
 	}; // namespace nPerlPlugin
 }; // namespace nVerliHub

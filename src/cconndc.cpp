@@ -348,6 +348,10 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			period = serv->mC.int_flood_myinfo_period;
 			limit = serv->mC.int_flood_myinfo_limit;
 			break;
+		case ePF_IN:
+			period = serv->mC.int_flood_in_period;
+			limit = serv->mC.int_flood_in_limit;
+			break;
 		case ePF_SEARCH:
 			period = serv->mC.int_flood_search_period;
 			limit = serv->mC.int_flood_search_limit;
@@ -420,6 +424,9 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			break;
 		case ePF_MYINFO:
 			to_user << "MyINFO";
+			break;
+		case ePF_IN:
+			to_user << "IN";
 			break;
 		case ePF_SEARCH:
 			to_user << "Search";

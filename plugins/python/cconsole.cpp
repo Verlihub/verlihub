@@ -33,8 +33,8 @@ namespace nVerliHub {
 
 cConsole::cConsole(cpiPython *pyt):
 	mPython(pyt),
-	mCmdPythonScriptGet(0, "!pylist", "", &mcfPythonScriptGet),
-	mCmdPythonScriptAdd(1, "!pyload ", "(\\S+)", &mcfPythonScriptAdd),
+	mCmdPythonScriptAdd(0, "!pyload ", "(\\S+)", &mcfPythonScriptAdd),
+	mCmdPythonScriptGet(1, "!pylist", "", &mcfPythonScriptGet),
 	mCmdPythonScriptDel(2, "!pyunload ", "(\\S+)", &mcfPythonScriptDel),
 	mCmdPythonScriptRe(3, "!pyreload ", "(\\S+)", &mcfPythonScriptRe),
 	mCmdPythonScriptLog(4, "!pylog ", "(\\d+)", &mcfPythonScriptLog),
@@ -145,28 +145,24 @@ bool cConsole::cfDelPythonScript::operator()()
 
 	vector<cPythonInterpreter *>::iterator it;
 	cPythonInterpreter *li;
-	bool found = false;
 
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
 		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
-			found = true;
-			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
+			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
-			break;
+			return true;
 		}
 	}
 
-	if (!found) {
-		if (number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it's not loaded."), scriptfile.c_str());
-		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it's not loaded."), scriptfile.c_str());
-	}
+	if (number)
+		(*mOS) << autosprintf(_("Script not stopped because it's not loaded: #%d"), num);
+	else
+		(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
 
-	return true;
+	return false;
 }
 
 bool cConsole::cfAddPythonScript::operator()()
@@ -215,6 +211,18 @@ bool cConsole::cfAddPythonScript::operator()()
 		closedir(dir);
 	}
 
+	vector<cPythonInterpreter *>::iterator it;
+	cPythonInterpreter *li;
+
+	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
+		li = *it;
+
+		if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
+			(*mOS) << autosprintf(_("Script is already loaded: %s"), scriptfile.c_str());
+			return false;
+		}
+	}
+
 	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
 
 	if (!ip) {
@@ -222,29 +230,15 @@ bool cConsole::cfAddPythonScript::operator()()
 		return false;
 	}
 
-	vector<cPythonInterpreter *>::iterator it;
-	cPythonInterpreter *li;
-
 	if (ip->Init()) {
-		for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
-			li = *it;
-
-			if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
-				(*mOS) << autosprintf(_("Script %s is already loaded."), scriptfile.c_str());
-				delete ip;
-				return false;
-			}
-		}
-
-		(*mOS) << autosprintf(_("Script %s is now loaded."), ip->mScriptName.c_str());
+		(*mOS) << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
 		GetPI()->AddData(ip);
+		return true;
 	} else {
-		(*mOS) << autosprintf(_("Script %s not found or couldn't be parsed."), scriptfile.c_str());
+		(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		delete ip;
 		return false;
 	}
-
-	return true;
 }
 
 bool cConsole::cfReloadPythonScript::operator()()
@@ -276,7 +270,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			scriptfile = li->mScriptName;
-			(*mOS) << autosprintf(_("Script %s stopped."), li->mScriptName.c_str());
+			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
 			break;
@@ -285,28 +279,26 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 	if (!found) {
 		if (number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it's not loaded."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: #%d"), num);
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it's not loaded."), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
+	}
 
+	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
+
+	if (!ip) {
+		(*mOS) << " " << _("Failed to allocate new Python interpreter.");
 		return false;
+	}
+
+	if (ip->Init()) {
+		(*mOS) << " " << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
+		GetPI()->AddData(ip);
+		return true;
 	} else {
-		cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
-
-		if (!ip) {
-			(*mOS) << " " << _("Failed to allocate new Python interpreter.");
-			return false;
-		}
-
-		if (ip->Init()) {
-			(*mOS) << " " << autosprintf(_("Script %s is now loaded."), scriptfile.c_str());
-			GetPI()->AddData(ip);
-			return true;
-		} else {
-			(*mOS) << " " << autosprintf(_("Script %s not found or couldn't be parsed."), scriptfile.c_str());
-			delete ip;
-			return false;
-		}
+		(*mOS) << " " << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
+		delete ip;
+		return false;
 	}
 }
 

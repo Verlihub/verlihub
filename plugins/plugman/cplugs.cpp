@@ -33,14 +33,13 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nPlugMan {
 
-cPlug::cPlug() :
+cPlug::cPlug():
 	mLoadOnStartup(true),
 	mReloadNext(false),
 	mUnloadNext(false),
-	mOwner(NULL),
-	mLoadTime(0)
+	mLoadTime(0),
+	mOwner(NULL)
 {}
-
 
 void cPlug::OnLoad()
 {
@@ -87,13 +86,15 @@ cVHPlugin *cPlug::IsLoaded() const
 {
 	if(IsScript()) {
 		cVHPlugin *plugin = GetDestPlugin();
-		if(plugin && plugin->IsScriptLoaded(mPath))
+
+		if (plugin && plugin->IsScriptLoaded(mPath))
 			return plugin;
 		else
 			return NULL;
 	} else {
-		cVHPluginMgr *pm = mOwner?mOwner->mPM:NULL;
-		if(pm)
+		cVHPluginMgr *pm = ((mOwner) ? mOwner->mPM : NULL);
+
+		if (pm)
 			return (cVHPlugin *)pm->GetPluginByLib(mPath);
 		else
 			return NULL;

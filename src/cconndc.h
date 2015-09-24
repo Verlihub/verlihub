@@ -143,6 +143,7 @@ namespace nVerliHub {
 			ePF_PRIV,
 			ePF_MCTO,
 			ePF_MYINFO,
+			ePF_IN,
 			ePF_SEARCH,
 			ePF_SR,
 			ePF_CTM,

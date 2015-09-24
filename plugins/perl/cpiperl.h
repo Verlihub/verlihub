@@ -26,7 +26,7 @@
 #include "cconsole.h"
 #include "cperlmulti.h"
 
-#define PERLSCRIPT_PI_IDENTIFIER "PerlScript"
+#define PERLSCRIPT_PI_IDENTIFIER "Perl"
 
 namespace nVerliHub {
 	namespace nPerlPlugin {

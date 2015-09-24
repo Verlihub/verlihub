@@ -106,11 +106,12 @@ using namespace nTables;
 		class cServerDC;
 	};
 
-/**
- * Basic class for users, every users must have at least this info..
- * @author Daniel Muller
- * */
-class cUserBase : public cObj
+/*
+	basic class for users, every users must have at least this info
+	@author Daniel Muller
+*/
+
+class cUserBase: public cObj
 {
 public:
 	cUserBase();
@@ -118,16 +119,19 @@ public:
 	virtual ~cUserBase();
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
-	virtual void Send(string &data, bool pipe, bool flush=true);
-public: // Public attributes
-	/** user's  nickname */
+	virtual void Send(string &data, bool pipe, bool flush = true);
+public:
+	// users myinfo parts
 	string mNick;
+	string mDescStr;
+	string mTagStr;
+	string mConnStr;
+	string mMailStr;
 	string mMyINFO;
 	string mMyINFO_basic;
-	/** the uers's class */
+	// users class
 	nEnums::tUserCl mClass;
-	/** if the user was already added to the list
-	 * - it's more like is the Hello command was sent... */
+	// if the user was added to the list
 	bool mInList;
 };
 
@@ -240,7 +244,7 @@ public:
 	protected: // Protected attributes
 
 	public:
-	long ShareEnthropy(const string &sharesize);
+	//long ShareEnthropy(const string &sharesize);
 	void DisplayInfo(ostream &os, int DisplClass);
 	void DisplayRightsInfo(ostream &os, bool head = false);
 

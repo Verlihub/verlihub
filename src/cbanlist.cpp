@@ -33,8 +33,8 @@ namespace nVerliHub {
 
 cBanList::cBanList(cServerDC *s):
 	cConfMySQL(s->mMySQL),
-	mS(s),
-	mModel(s)
+	mModel(s),
+	mS(s)
 {
 	mMySQLTable.mName = "banlist";
 	AddCol("ip", "varchar(15)", "", true, mModel.mIP);

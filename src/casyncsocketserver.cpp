@@ -41,17 +41,17 @@ namespace nVerliHub {
 cAsyncSocketServer::cAsyncSocketServer(int port):
 	cObj("cAsyncSocketServer"),
 	mAddr("0.0.0.0"),
+	mPort(port),
 	timer_conn_period(4),
 	timer_serv_period(1),
 	mStepDelay(0),
 	mMaxLineLength(10240),
 	mUseDNS(0),
 	mFrequency(mTime, 90.0, 20),
-	mPort(port),
+	mbRun(false),
 	mFactory(NULL),
-	mNowTreating(NULL),
 	mRunResult(0),
-	mbRun(false)
+	mNowTreating(NULL)
 {
 	#ifdef _WIN32
 	if(!this->WSinitialized) {

@@ -30,11 +30,13 @@ namespace nVerliHub {
 	};
 	namespace nConfig {
 	using namespace nCmdr;
+
 /**
 a console that parses commands for Lists based on tMySQLMemoryList
 
 @author Daniel Muller
 */
+
 template <class DATA_TYPE, class LIST_TYPE, class OWNER_TYPE>
 class tListConsole : public tConsoleBase<OWNER_TYPE>
 {
@@ -48,9 +50,10 @@ public:
 		mCmdr(this)
 	{}
 
-	virtual ~tListConsole(){};
+	virtual ~tListConsole()
+	{};
 
-	enum { eLC_ADD, eLC_DEL, eLC_MOD, eLC_LST, eLC_HELP, eLC_FREE};
+	enum { eLC_ADD, eLC_DEL, eLC_MOD, eLC_LST, eLC_HELP, eLC_FREE };
 
 	virtual void AddCommands()
 	{
@@ -66,48 +69,62 @@ public:
 		mCmdr.Add(&mCmdHelp);
 	}
 
-	virtual int OpCommand(const string &str, nSocket::cConnDC*conn)
+	virtual int OpCommand(const string &str, nSocket::cConnDC *conn)
 	{
-		return this->DoCommand(str,conn);
+		return this->DoCommand(str, conn);
 	}
 
-	virtual int UsrCommand(const string &str , nSocket::cConnDC *conn)
+	virtual int UsrCommand(const string &str, nSocket::cConnDC *conn)
 	{
-		return this->DoCommand(str,conn);
+		return this->DoCommand(str, conn);
 	}
 
-	virtual int DoCommand(const string &str, nSocket::cConnDC * conn)
+	virtual int DoCommand(const string &str, nSocket::cConnDC *conn)
 	{
-		ostringstream os;
 		cCommand *Cmd = mCmdr.FindCommand(str);
-		if (Cmd != NULL && this->IsConnAllowed(conn, Cmd->GetID()))
-		{
-			mCmdr.ExecuteCommand(Cmd, os, conn);
-			this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
+
+		if (Cmd) {
+			ostringstream os;
+
+			if (!this->IsConnAllowed(conn, Cmd->GetID())) {
+				os << _("You have no rights to do this.");
+				this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
+			} else {
+				mCmdr.ExecuteCommand(Cmd, os, conn);
+
+				if (os.str().size())
+					this->mOwner->mServer->DCPublicHS(os.str().c_str(), conn);
+			}
+
 			return 1;
 		}
+
 		return 0;
 	}
 
-
 	virtual const char * GetParamsRegex(int) = 0;
 	virtual LIST_TYPE *GetTheList() = 0;
-	virtual const char *CmdSuffix() {return "";}
-	virtual const char *CmdPrefix() {return "\\+";}
-	virtual void ListHead(ostream *os){}
-	virtual bool IsConnAllowed(nSocket::cConnDC *conn,int cmd){return true;}
+	virtual const char *CmdSuffix() { return ""; }
+	virtual const char *CmdPrefix() { return "\\+"; }
+	virtual void ListHead(ostream *os) {}
+	virtual bool IsConnAllowed(nSocket::cConnDC *conn, int cmd) { return true; }
 	virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, DATA_TYPE &data) = 0;
 
 	virtual const char *CmdWord(int cmd)
 	{
-		switch(cmd)
-		{
-			case eLC_ADD: return "add"; break;
-			case eLC_DEL: return "del"; break;
-			case eLC_MOD: return "mod"; break;
-			case eLC_LST: return "lst"; break;
-			case eLC_HELP: return "h"; break;
-			default: return "???";
+		switch (cmd) {
+			case eLC_ADD:
+				return "add";
+			case eLC_DEL:
+				return "del";
+			case eLC_MOD:
+				return "mod";
+			case eLC_LST:
+				return "lst";
+			case eLC_HELP:
+				return "h";
+			default:
+				return "???";
 		}
 	}
 
@@ -115,7 +132,10 @@ public:
 	{
 		static string id;
 		id = CmdSuffix();
-		if(!(cmd == eLC_LST || cmd == eLC_HELP)) id += " ";
+
+		if (!((cmd == eLC_LST) || (cmd == eLC_HELP)))
+			id += " ";
+
 		return id.c_str();
 	}
 
@@ -139,39 +159,53 @@ public:
 	}
 
 	virtual OWNER_TYPE * GetPlugin() { return this->mOwner; }
+
 protected:
-
-
-	class cfBase : public cDCCommand::sDCCmdFunc
+	class cfBase: public cDCCommand::sDCCmdFunc
 	{
 		public:
-		~cfBase(){};
-		tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *GetConsole(){
-			return (tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *)(mCommand->mCmdr->mOwner);
-		}
-		virtual LIST_TYPE *GetTheList() { if(this->GetConsole() != NULL) return this->GetConsole()->GetTheList(); else return NULL;}
- 		virtual void GetSyntaxHelp(ostream &os, cCommand *cmd)
-		{
-			this->GetConsole()->GetHelpForCommand(cmd->GetID(),os);
-		}
+			~cfBase()
+			{};
 
+			tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *GetConsole()
+			{
+				return (tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *)(mCommand->mCmdr->mOwner);
+			}
+
+			virtual LIST_TYPE *GetTheList()
+			{
+				if (this->GetConsole() != NULL)
+					return this->GetConsole()->GetTheList();
+				else
+					return NULL;
+			}
+
+			virtual void GetSyntaxHelp(ostream &os, cCommand *cmd)
+			{
+				this->GetConsole()->GetHelpForCommand(cmd->GetID(), os);
+			}
 	};
 
-	class cfAdd : public cfBase
+	class cfAdd: public cfBase
 	{
 	public:
-		virtual ~cfAdd(){};
+		virtual ~cfAdd()
+		{};
+
 		virtual bool operator()()
 		{
 			DATA_TYPE Data;
-			if ( this->GetConsole() &&  this->GetConsole()->ReadDataFromCmd(this, eLC_ADD, Data)) {
+
+			if (this->GetConsole() && this->GetConsole()->ReadDataFromCmd(this, eLC_ADD, Data)) {
 				LIST_TYPE *list = this->GetTheList();
+
 				if (list) {
 					if (!list->FindData(Data)) {
 						DATA_TYPE *AddedData = list->AddData(Data);
+
 						if (AddedData) {
 							list->OnLoadData(*AddedData);
-							(*this->mOS) << _("Item successfully added") << ": " << *AddedData;
+							(*this->mOS) << _("Item successfully added") << ": " << (*AddedData);
 							return true;
 						} else {
 							(*this->mOS) << _("Unable to add item.");
@@ -183,48 +217,51 @@ protected:
 			//} else {
 				//(*this->mOS) << "\r\n";
 			}
+
 			return false;
 		}
 	} mcfAdd;
 
-	class cfDel : public cfBase
+	class cfDel: public cfBase
 	{
 	public:
-		virtual ~cfDel(){};
+		virtual ~cfDel()
+		{};
+
 		virtual bool operator()()
 		{
 			DATA_TYPE Data;
-			if ( this->GetConsole() && this->GetConsole()->ReadDataFromCmd(this, eLC_DEL, Data))
-			{
-				if (this->GetTheList() && this->GetTheList()->FindData(Data))
-				{
+
+			if (this->GetConsole() && this->GetConsole()->ReadDataFromCmd(this, eLC_DEL, Data)) {
+				if (this->GetTheList() && this->GetTheList()->FindData(Data)) {
 					this->GetTheList()->DelData(Data);
 					(*this->mOS) << _("Item successfully deleted.");
 					return true;
 				}
 			}
+
 			(*this->mOS) << _("Item not found.");
 			return false;
 		}
 	} mcfDel;
 
-	class cfMod : public cfBase
+	class cfMod: public cfBase
 	{
 	public:
-		virtual ~cfMod(){};
+		virtual ~cfMod()
+		{};
+
 		virtual bool operator()()
 		{
 			DATA_TYPE Data, * pOrig;
 			tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *Console;
-			Console =  this->GetConsole();
-			if ( Console && Console->ReadDataFromCmd(this, eLC_MOD, Data))
-			{
-				if (this->GetTheList() && (pOrig = this->GetTheList()->FindData(Data)))
-				{
-					if(Console->ReadDataFromCmd(this, eLC_MOD, *pOrig))
-					{
+			Console = this->GetConsole();
+
+			if (Console && Console->ReadDataFromCmd(this, eLC_MOD, Data)) {
+				if (this->GetTheList() && (pOrig = this->GetTheList()->FindData(Data))) {
+					if (Console->ReadDataFromCmd(this, eLC_MOD, *pOrig)) {
 						this->GetTheList()->UpdateData(*pOrig);
-						(*this->mOS) << _("Item successfully modified") << ": " << *pOrig;
+						(*this->mOS) << _("Item successfully modified") << ": " << (*pOrig);
 						return true;
 					} else {
 						(*this->mOS) << _("Error in item data.");
@@ -232,21 +269,24 @@ protected:
 					}
 				}
 			}
+
 			(*this->mOS) << _("Item not found.");
 			return false;
 		}
 	} mcfMod;
 
-	class cfLst : public cfBase
+	class cfLst: public cfBase
 	{
 	public:
-		virtual ~cfLst(){};
+		virtual ~cfLst()
+		{};
+
 		virtual bool operator()()
 		{
 			DATA_TYPE *pData;
 			this->GetConsole()->ListHead(this->mOS);
-			for(int i = 0; i < this->GetTheList()->Size(); i++)
-			{
+
+			for(int i = 0; i < this->GetTheList()->Size(); i++) {
 				pData = (*this->GetTheList())[i];
 				(*this->mOS) << "\r\n" << (*pData);
 			}
@@ -255,10 +295,12 @@ protected:
 		}
 	} mcfLst;
 
-	class cfHelp : public cfBase
+	class cfHelp: public cfBase
 	{
 		public:
-			virtual ~cfHelp(){};
+			virtual ~cfHelp()
+			{};
+
 			virtual bool operator()()
 			{
 				this->GetConsole()->GetHelp(*this->mOS);

@@ -29,7 +29,8 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nFloodProtectPlugin {
 
-cFloodCfg::cFloodCfg(cServerDC *server) : mS(server)
+cFloodCfg::cFloodCfg(cServerDC *server):
+	mS(server)
 {
 	Add("max_conn_per_ip",mMaxConnPerIP,55);
 	Add("max_users_per_ip",mMaxUsersPerIP,50);
@@ -50,9 +51,11 @@ int cFloodCfg::Save()
 	return 0;
 }
 
-cFloodprotect::cFloodprotect(cServerDC * server) : mS(server), mCfg(server), cObj("cFloodProtect")
-{
-}
+cFloodprotect::cFloodprotect(cServerDC *server):
+	cObj("cFloodProtect"),
+	mS(server),
+	mCfg(server)
+{}
 
 cFloodprotect::~cFloodprotect()
 {

@@ -35,7 +35,8 @@ const string toString(int number)
 }
 
 nVerliHub::nPerlPlugin::cpiPerl::cpiPerl():
-mConsole(this), mQuery(NULL)
+	mQuery(NULL),
+	mConsole(this)
 {
 	mName = PERLSCRIPT_PI_IDENTIFIER;
 	mVersion= PERLSCRIPT_VERSION;
