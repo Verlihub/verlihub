@@ -26,8 +26,8 @@ vector<w_TScript*> w_Scripts;
 
 static int log_level = 0;
 
-#define pybool(a) ((a) ? ({ /*Py_INCREF(Py_True); */Py_True; }) : ({ /*Py_INCREF(Py_False); */Py_False; }))
-#define pybool2(a) ((a) ? ({ free(a); /*Py_INCREF(Py_True); */Py_True; }) : ({ /*Py_INCREF(Py_False); */Py_False; }))
+#define pybool(a) ((a) ? ({ Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; }))
+#define pybool2(a) ((a) ? ({ free(a); Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; }))
 
 // logging levels:
 // 0 - plugin critical errors, interpreter errors, bad call arguments

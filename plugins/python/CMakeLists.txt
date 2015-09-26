@@ -44,6 +44,10 @@ SET(PYTHON_WRAPPER_SRCS
 	wrapper.cpp
 )
 
+IF(CMAKE_COMPILER_IS_GNUCC) # prevent strict aliasing warning
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cpipython.cpp" "${CMAKE_CURRENT_BINARY_DIR}/cpipython.cpp" @ONLY)
 LIST(APPEND PYTHON_SRCS "${CMAKE_CURRENT_BINARY_DIR}/cpipython.cpp")
 
