@@ -93,6 +93,27 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 	fi
 	echo "-- Starting hub from directory '$CONFIG_DIR', this could take some time";
 
+	# check and rewrite plugin symbolic links
+	echo "-- Checking plugin symbolic links before hub start"
+
+	for FILE in "$CONFIG_DIR"/plugins/lib*_pi.so ; do
+		local NAME=$(basename "$FILE")
+
+		if [ "_$NAME" = "_" ] ; then
+			echo_s "-- Failed to get base name for $FILE\n" $RED
+		else
+			echo -n "-- Checking symbolic link for $NAME .. "
+
+			if [[ -L "$FILE" ]] ; then
+				echo_s "[OK]\n" $GREEN
+			else
+				echo_s "[RE]\n" $RED
+				ln -sf "$PLUGINDIR/$NAME" "$FILE"
+			fi
+		fi
+	done
+
+	# continue starting hub
 	LOG_FILE="$CONFIG_DIR/log"
 	ERROR_FILE="$CONFIG_DIR/err"
 	PID_FILE="$CONFIG_DIR/pid"
