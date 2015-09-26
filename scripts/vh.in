@@ -104,11 +104,15 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 		else
 			echo -n "-- Checking symbolic link for $NAME .. "
 
-			if [[ -L "$FILE" ]] ; then
+			if [ -L "$FILE" ] ; then
 				echo_s "[OK]\n" $GREEN
 			else
-				echo_s "[RE]\n" $RED
-				ln -sf "$PLUGINDIR/$NAME" "$FILE"
+				if [ -f "$PLUGINDIR/$NAME" ] ; then
+					echo_s "[RE]\n" $GREEN
+					ln -sf "$PLUGINDIR/$NAME" "$FILE"
+				else
+					echo_s "[NO]\n" $RED
+				fi
 			fi
 		fi
 	done
