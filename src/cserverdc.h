@@ -272,6 +272,11 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		bool OnOpChatMessage(string *nick, string *data);
 
+		/*
+			This method is a forwarder for ScriptAPI::OnUnLoad
+		*/
+		bool OnUnLoad(long code);
+
 		/**
 		* This method tells the server what the server can receive and what actions to perform depending on hub health.
 		* It is a kind of message filter.
@@ -835,7 +840,8 @@ private:
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
 			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub),
-			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage)
+			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage),
+			mOnUnLoad(mgr, "VH_OnUnLoad", &cVHPlugin::OnUnLoad)
 		{
 		};
 
@@ -880,6 +886,7 @@ private:
 		cVHCBL_StrStrStrStr mOnScriptCommand;
 		cVHCBL_ConnText mOnCtmToHub;
 		cVHCBL_Strings mOnOpChatMessage;
+		cVHCBL_Long mOnUnLoad;
 	};
 
 	sCallBacks mCallBacks; // structure that holds all callbacks

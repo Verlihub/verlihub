@@ -435,6 +435,9 @@ public:
 	// opchat message
 	virtual bool OnOpChatMessage(string *nick, string *data) { return true; }
 
+	// hub stop
+	virtual bool OnUnLoad(long code) { return true; }
+
 	/// per-user data of the plugin
 	virtual cPluginUserData *GetPluginUserData( cUser * );
 	virtual cPluginUserData *SetPluginUserData( cUser *, cPluginUserData *NewData );

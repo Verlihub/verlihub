@@ -50,19 +50,24 @@ cObj mainLogger("main");
 #if ! defined _WIN32
 void mySigPipeHandler(int i)
 {
-	signal(SIGPIPE,mySigPipeHandler);
+	signal(SIGPIPE, mySigPipeHandler);
 	MAIN_LOG_NOTICE << "Received SIGPIPE, ignoring it, " << i << endl;
 }
 
 void mySigIOHandler(int i)
 {
-	signal(SIGIO  ,mySigIOHandler  );
+	signal(SIGIO, mySigIOHandler);
 	MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
 }
 
 void mySigQuitHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting" << endl;
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (serv)
+		serv->OnUnLoad(0);
+
 	exit(0);
 }
 
@@ -71,19 +76,21 @@ void mySigServHandler(int i)
 	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
 	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
 
-	if (serv)
+	if (serv) {
+		serv->OnUnLoad(9);
 		serv->DoStackTrace();
+	}
 
-	exit(128+i); // proper exit code for this signal
+	exit(128 + i); // proper exit code for this signal
 }
 
 void mySigHupHandler(int i)
 {
-	MAIN_LOG_NOTICE << "Received a " << i << " signal" << endl;
-	cServerDC *Hub = (cServerDC *)cServerDC::sCurrentServer;
-	if (Hub) {
-		Hub->Reload();
-	}
+	MAIN_LOG_NOTICE << "Received a " << i << " signal, reloading" << endl;
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (serv)
+		serv->Reload();
 }
 
 #endif

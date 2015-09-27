@@ -59,6 +59,7 @@ public:
 	virtual bool OnParsedMsgAny(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgAnyEx(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnOpChatMessage(std::string *, std::string *);
+	virtual bool OnUnLoad(long);
 	virtual bool OnCtmToHub(nSocket::cConnDC *, std::string *);
 	virtual bool OnParsedMsgSupport(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgBotINFO(nSocket::cConnDC *, nProtocol::cMessageDC *);

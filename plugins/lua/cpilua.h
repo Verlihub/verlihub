@@ -80,6 +80,7 @@ public:
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
 	virtual bool OnOpChatMessage(string *nick, string *data);
+	virtual bool OnUnLoad(long code);
 	char* toString(int);
 	char* longToString(long);
 

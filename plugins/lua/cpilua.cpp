@@ -124,6 +124,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnUnLoad");
 	return true;
 }
 
@@ -853,6 +854,17 @@ bool cpiLua::OnOpChatMessage(string *nick, string *data)
 		CallAll("VH_OnOpChatMessage", args);
 	}
 
+	return true;
+}
+
+bool cpiLua::OnUnLoad(long code)
+{
+	char *args[] = {
+		(char*)toString(code),
+		NULL
+	};
+
+	CallAll("VH_OnUnLoad", args);
 	return true;
 }
 

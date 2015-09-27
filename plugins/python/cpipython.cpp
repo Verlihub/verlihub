@@ -187,6 +187,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgAny");
 	RegisterCallBack("VH_OnParsedMsgAnyEx");
 	RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnUnLoad");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnParsedMsgSupport");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
@@ -929,6 +930,12 @@ bool cpiPython::OnOpChatMessage(string *nick, string *data)
 	return true;
 }
 
+bool cpiPython::OnUnLoad(long code)
+{
+	w_Targs* args = lib_pack("l", (long)code);
+	return CallAll(W_OnUnLoad, args);
+}
+
 bool cpiPython::OnCtmToHub(cConnDC *conn, string *ref)
 {
 	if (conn && ref) {
@@ -1024,8 +1031,7 @@ bool cpiPython::OnUserLogout(cUser *user)
 
 bool cpiPython::OnTimer(long msec)
 {
-	//return true; // disabled for now
-	w_Targs* args = lib_pack(""); // "l", (long)msec
+	w_Targs* args = lib_pack("l", (long)msec);
 	return CallAll(W_OnTimer, args);
 }
 

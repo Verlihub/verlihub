@@ -1061,11 +1061,24 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 	long l1 = 0;
 
 	switch (func) {
+		/*
 		case W_OnTimer:
 			if (! w_unpack( params, ""))
 			{ log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params)); break; }
 			args = Py_BuildValue("()");
 			break;
+		*/
+
+		case W_OnTimer:
+		case W_OnUnLoad:
+			if (!w_unpack(params, "l", &l0)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
+				break;
+			}
+
+			args = Py_BuildValue("(l)", l0);
+			break;
+
 		case W_OnUserLogin:
 		case W_OnUserLogout:
 		case W_OnNewConn:
@@ -1212,6 +1225,7 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 			//case W_OnParsedMsgAny:
 			//case W_OnParsedMsgAnyEx:
 			//case W_OnOpChatMessage:
+			//case W_OnUnLoad:
 			//case W_OnCtmToHub:
 			//case W_OnNewReg:
 			//case W_OnUnknownMsg:
@@ -1260,6 +1274,7 @@ const char * w_HookName(int hook)
 		case W_OnParsedMsgAny: 		return "OnParsedMsgAny";
 		case W_OnParsedMsgAnyEx:	return "OnParsedMsgAnyEx";
 		case W_OnOpChatMessage: return "OnOpChatMessage";
+		case W_OnUnLoad: return "OnUnLoad";
 		case W_OnCtmToHub: return "OnCtmToHub";
 		case W_OnParsedMsgSupport: 	return "OnParsedMsgSupport";
 		case W_OnParsedMsgBotINFO: 	return "OnParsedMsgBotINFO";
@@ -1275,7 +1290,7 @@ const char * w_HookName(int hook)
 		case W_OnUserCommand: 		return "OnUserCommand";
 		case W_OnUserLogin: 		return "OnUserLogin";
 		case W_OnUserLogout: 		return "OnUserLogout";
-		case W_OnTimer: 		return "OnTimer";
+		case W_OnTimer: return "OnTimer";
 		case W_OnNewReg: return "OnNewReg";
 		case W_OnNewBan: 		return "OnNewBan";
 		default:			return NULL;

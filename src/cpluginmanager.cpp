@@ -35,7 +35,7 @@ namespace nVerliHub {
 
 	namespace nPlugin {
 
-cPluginManager::cPluginManager(const string &path) :
+cPluginManager::cPluginManager(const string &path):
 	cObj("cPluginMgr"),
 	mPluginDir(path)
 {
@@ -43,7 +43,10 @@ cPluginManager::cPluginManager(const string &path) :
 		mPluginDir.append("/");
 }
 
-cPluginManager::~cPluginManager(){}
+cPluginManager::~cPluginManager()
+{
+	//this->UnLoadAll();
+}
 
 bool cPluginManager::LoadAll()
 {
@@ -72,6 +75,20 @@ bool cPluginManager::LoadAll()
 	closedir(dir);
 	return true;
 }
+
+/*
+	todo: crash
+
+void cPluginManager::UnLoadAll()
+{
+	tPlugins::iterator it;
+
+	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
+		if (*it)
+			this->UnloadPlugin((*it)->mPlugin->Name());
+	}
+}
+*/
 
 bool cPluginManager::LoadPlugin(const string &file)
 {

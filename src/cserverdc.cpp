@@ -184,10 +184,11 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 
 	try {
 		mPluginManager.LoadAll();
-	} catch (...)
-	{
-		if(ErrLog(1)) LogStream() << "Plugin loading error" << endl;
+	} catch (...) {
+		if (ErrLog(1))
+			LogStream() << "Plugin load error" << endl;
 	}
+
 	mUsersPeak = 0;
 
 	// protocol flood from all
@@ -207,6 +208,18 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
+	/*
+		todo: crash
+
+	try { // unload all plugins
+		mPluginManager.UnLoadAll();
+	} catch (...) {
+		if (ErrLog(1))
+			LogStream() << "Plugin unload error" << endl;
+	}
+	*/
+
+	this->OnUnLoad(0);
 	CtmToHubClearList(); // ctm2hub
 
 	if (mNetOutLog && mNetOutLog.is_open())
@@ -496,12 +509,27 @@ bool cServerDC::RemoveNick(cUser *User)
 
 void cServerDC::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
-	mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
+	#ifndef WITHOUT_PLUGINS
+		mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
+	#endif
 }
 
 bool cServerDC::OnOpChatMessage(string *nick, string *data)
 {
-	return mCallBacks.mOnOpChatMessage.CallAll(nick, data);
+	#ifndef WITHOUT_PLUGINS
+		return mCallBacks.mOnOpChatMessage.CallAll(nick, data);
+	#endif
+
+	return true;
+}
+
+bool cServerDC::OnUnLoad(long code)
+{
+	#ifndef WITHOUT_PLUGINS
+		return mCallBacks.mOnUnLoad.CallAll(code);
+	#endif
+
+	return true;
 }
 
 void cServerDC::SendToAll(string &data, int cm, int cM) // class range is ignored here

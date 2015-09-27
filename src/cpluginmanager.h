@@ -46,6 +46,7 @@ public:
 	cPluginManager(const string &dir);
 	~cPluginManager();
 	bool LoadAll();
+	//void UnLoadAll();
 	bool LoadPlugin(const string &);
 	bool UnloadPlugin(const string &name);
 	bool ReloadPlugin(const string &name);
