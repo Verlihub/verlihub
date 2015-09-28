@@ -64,7 +64,7 @@ public:
 	friend class nVerliHub::nSocket::cConnDC;
 public:
 	unsigned int max_users_total;
-	int max_users_passive;
+	int max_users_passive; // -1 means disabled, 0 means what it is
 	unsigned int max_users_from_ip;
 	unsigned int max_users[7];
 	string hubfull_message;
@@ -90,23 +90,23 @@ public:
 	int min_class_use_hub;
 	int min_class_use_hub_passive;
 	unsigned int max_passive_sr;
-	unsigned tban_kick;
-	unsigned tban_max;
+	unsigned int tban_kick;
+	unsigned int tban_max;
 	//unsigned int max_length[nEnums::eDC_UNKNOWN+1];
-	unsigned max_nick;
-	unsigned min_nick;
+	unsigned int max_nick;
+	unsigned int min_nick;
 	string nick_chars;
 	unsigned int max_chat_msg;
 	unsigned int max_chat_lines;
-	int max_flood_counter_pm;
-	int max_flood_counter_mcto;
-	int nicklist_on_login;
+	unsigned int max_flood_counter_pm;
+	unsigned int max_flood_counter_mcto;
+	bool nicklist_on_login;
 	bool delayed_login;
-	int delayed_search;
-	int delayed_myinfo; // implies also delayed quit
+	bool delayed_search;
+	bool delayed_myinfo; // implies also delayed quit
 	bool drop_invalid_key;
 	bool delayed_chat;
-	int delayed_ping;
+	int delayed_ping; // is number of seconds, not bool
 	double min_frequency;
 	string nick_prefix;
 	bool nick_prefix_nocase;
@@ -139,7 +139,7 @@ public:
 	string hub_failover_hosts;
 	string hub_owner;
 	string hublist_host;
-	int hublist_port;
+	unsigned int hublist_port;
 	bool hublist_send_minshare;
 	/** checking prefferences */
 	unsigned int classdif_reg;
@@ -156,11 +156,11 @@ public:
 	int min_class_redir;
 	int max_class_int_login;
 	int max_class_check_clone;
-	int hide_all_kicks;
-	int optimize_userlist;
+	bool hide_all_kicks;
+	bool optimize_userlist;
 	bool filter_lan_requests;
 	bool hide_msg_badctm; // hide following messages: connecting to offline user, connecting to bot
-	int search_number;
+	unsigned int search_number;
 	int int_search;
 	int int_search_pas;
 	int int_search_reg_pas;
@@ -242,15 +242,15 @@ public:
 	bool tag_allow_sock5;
 	bool tag_allow_passive;
 	int tag_min_class_ignore;
-	int tag_sum_hubs;
+	unsigned int tag_sum_hubs;
 	double tag_min_version;
 	double tag_max_version;
 	string cc_zone[3];
 	int show_tags; // 0 - no at all, 1 - only to ops, 2 - show to everyone
-	int show_desc_len; // cut first n bytes of description
+	int show_desc_len; // cut first x bytes of description, -1 means disabled
 	int autoreg_class;
-	int show_email;
-	int show_speed;
+	bool show_email;
+	bool show_speed;
 	bool send_user_ip;
 	int user_ip_class;
 	bool send_user_info;
@@ -260,16 +260,16 @@ public:
 	bool use_penlist_cache;
 	bool chat_default_on;
 	bool always_ask_password;
-	int default_password_encryption;
-	int password_min_len;
-	int pwd_tmpban;
+	unsigned int default_password_encryption;
+	unsigned int password_min_len;
+	unsigned int pwd_tmpban;
 	string wrongpass_message;
 	bool wrongpassword_report;
-	int wrongauthip_report;
+	int wrongauthip_report; // is class number, not bool
 	bool clone_detect_report;
 	unsigned long clone_det_tban_time;
 	bool nullchars_report;
-	int botinfo_report;
+	bool botinfo_report;
 	double timeout_length[6];
 
 	string ban_extra_message;
@@ -280,6 +280,7 @@ public:
 public: // Public attributes
 	nSocket::cServerDC & mS;
 };
+
 	}; // nmaespace nTables
 }; // namespace nVerliHub
 

@@ -1691,6 +1691,13 @@ int cServerDC::RegisterInHublist(string host, int port, cConnDC *conn)
 		return 0;
 	}
 
+	if (!CheckPortNumber(port)) {
+		if (conn)
+			DCPublicHS(_("Hublist port number is invalid, nothing to do."), conn);
+
+		return 0;
+	}
+
 	string reply;
 
 	if (conn) {
@@ -1970,6 +1977,14 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 	}
 
 	return false;
+}
+
+bool cServerDC::CheckPortNumber(unsigned int port)
+{
+	if ((port < 1) || (port > 65535))
+		return false;
+
+	return true;
 }
 
 void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain)

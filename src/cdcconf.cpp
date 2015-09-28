@@ -19,6 +19,7 @@
 */
 
 #include "cserverdc.h"
+#include "creguserinfo.h"
 #include "cdcconf.h"
 #include <string>
 
@@ -140,7 +141,7 @@ void cDCConf::AddVars()
 	Add("int_search_op",int_search_op,1);
 	Add("min_search_chars", min_search_chars, 4);
 	Add("max_passive_sr",max_passive_sr,25);
-	Add("delayed_search",delayed_search, 1);
+	Add("delayed_search", delayed_search, true);
 	// End search configuration
 
 	// Nicklist configuration
@@ -152,8 +153,8 @@ void cDCConf::AddVars()
 	Add("nick_prefix_cc", nick_prefix_cc, false);
 	Add("nick_prefix_autoreg",nick_prefix_autoreg,string(""));
 	Add("autoreg_class", autoreg_class, -1);
-	Add("nicklist_on_login",nicklist_on_login, 1);
-	Add("optimize_userlist",optimize_userlist,0);
+	Add("nicklist_on_login", nicklist_on_login, true);
+	Add("optimize_userlist", optimize_userlist, false);
 	Add("ul_portion",ul_portion,50);
 	// End nicklist configuration
 
@@ -164,17 +165,17 @@ void cDCConf::AddVars()
 	Add("delayed_chat", delayed_chat, false);
 	Add("int_chat_ms",int_chat_ms,1000);
 	Add("chat_default_on", chat_default_on, true);
-	Add("mainchat_class",mainchat_class,0);
-	Add("private_class", private_class, 0);
+	Add("mainchat_class", mainchat_class, (int)eUC_NORMUSER);
+	Add("private_class", private_class, (int)eUC_NORMUSER);
 	// End mainchat messages configuration
 
-	// Private message configuration
+	// private message configuration
 	Add("max_flood_counter_pm", max_flood_counter_pm, 5);
 	Add("max_flood_counter_mcto", max_flood_counter_mcto, 5);
-	// End private message configuration
+	// end private message configuration
 
 	// protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
-	Add("max_class_proto_flood", max_class_proto_flood, 2);
+	Add("max_class_proto_flood", max_class_proto_flood, (int)eUC_VIPUSER);
 	Add("proto_flood_report", proto_flood_report, true);
 	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // 30 minutes
 	Add("int_flood_chat_period", int_flood_chat_period, 10);
@@ -218,17 +219,17 @@ void cDCConf::AddVars()
 	Add("classdif_mcto", classdif_mcto, 10);
 	//Add("classdif_search",classdif_search,10);
 	Add("classdif_download",classdif_download,10);
-	Add("min_class_use_hub",min_class_use_hub,0);
-	Add("min_class_use_hub_passive",min_class_use_hub_passive,0);
-	Add("min_class_register" , min_class_register, 4);
-	Add("min_class_redir",min_class_redir,4);
-	Add("min_class_bc", min_class_bc, 4);
-	Add("min_class_bc_guests", min_class_bc_guests, 4);
-	Add("min_class_bc_regs", min_class_bc_regs, 4);
-	Add("min_class_bc_vips", min_class_bc_vips, 4);
+	Add("min_class_use_hub", min_class_use_hub, (int)eUC_NORMUSER);
+	Add("min_class_use_hub_passive", min_class_use_hub_passive, (int)eUC_NORMUSER);
+	Add("min_class_register" , min_class_register, (int)eUC_CHEEF);
+	Add("min_class_redir", min_class_redir, (int)eUC_CHEEF);
+	Add("min_class_bc", min_class_bc, (int)eUC_CHEEF);
+	Add("min_class_bc_guests", min_class_bc_guests, (int)eUC_CHEEF);
+	Add("min_class_bc_regs", min_class_bc_regs, (int)eUC_CHEEF);
+	Add("min_class_bc_vips", min_class_bc_vips, (int)eUC_CHEEF);
 	Add("bc_reply",mS.LastBCNick,mEmpty);
-	Add("plugin_mod_class",plugin_mod_class,5);
-	Add("topic_mod_class",topic_mod_class,4);
+	Add("plugin_mod_class", plugin_mod_class, (int)eUC_ADMIN);
+	Add("topic_mod_class", topic_mod_class, (int)eUC_CHEEF);
 	Add("cmd_start_op", cmd_start_op, string("!+/"));
 	Add("cmd_start_user", cmd_start_user, string("+!/"));
 	Add("dest_report_chat", dest_report_chat, false);
@@ -239,7 +240,7 @@ void cDCConf::AddVars()
 	Add("disable_usr_cmds", disable_usr_cmds, false);
 	Add("disable_report_cmd", disable_report_cmd, false);
 	Add("always_ask_password", always_ask_password, false);
-	Add("default_password_encryption", default_password_encryption, 1); // eCRYPT_ENCRYPT
+	Add("default_password_encryption", default_password_encryption, (unsigned int)cRegUserInfo::eCRYPT_ENCRYPT); // 1
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
 	Add("wrongpass_message", wrongpass_message, "");
@@ -247,9 +248,9 @@ void cDCConf::AddVars()
 	Add("wrongauthip_report", wrongauthip_report, 1);
 	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);
-	Add("botinfo_report", botinfo_report, 0);
+	Add("botinfo_report", botinfo_report, false);
 	Add("send_user_ip", send_user_ip, false);
-	Add("user_ip_class", user_ip_class, 3);
+	Add("user_ip_class", user_ip_class, (int)eUC_OPERATOR);
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
 	Add("ban_bypass_class", ban_bypass_class, (int)eUC_MASTER);
@@ -261,7 +262,7 @@ void cDCConf::AddVars()
 	Add("int_myinfo",int_myinfo,60);
 	Add("int_nicklist",int_nicklist,60);
 	Add("int_login",int_login, 60);
-	Add("max_class_int_login",max_class_int_login,3);
+	Add("max_class_int_login", max_class_int_login, (int)eUC_OPERATOR);
 	Add("max_class_check_clone", max_class_check_clone, -1); // -1 means disabled
 	Add("clone_det_tban_time", clone_det_tban_time, 1800); // 30 minutes
 	Add("tban_kick", tban_kick, 300);
@@ -270,7 +271,7 @@ void cDCConf::AddVars()
 	Add("dns_lookup",mS.mUseDNS, 0);
 	Add("report_dns_lookup", report_dns_lookup, false);
 	Add("report_user_country", report_user_country, true);
-	Add("hide_all_kicks",hide_all_kicks,1);
+	Add("hide_all_kicks", hide_all_kicks, true);
 	Add("hide_msg_badctm", hide_msg_badctm, false);
 	Add("timer_conn_period", mS.timer_conn_period, 4);
 	Add("timer_serv_period", mS.timer_serv_period, 1);
@@ -281,9 +282,9 @@ void cDCConf::AddVars()
 	Add("use_reglist_cache", use_reglist_cache, true);
 	Add("use_penlist_cache", use_penlist_cache, true);
 	Add("delayed_login", delayed_login, false);
-	Add("delayed_myinfo",delayed_myinfo, 1);
+	Add("delayed_myinfo", delayed_myinfo, true);
 	Add("drop_invalid_key", drop_invalid_key, false);
-	Add("delayed_ping",delayed_ping,60);
+	Add("delayed_ping", delayed_ping, 60);
 	Add("disable_zlib", disable_zlib, true);
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
@@ -305,12 +306,12 @@ void cDCConf::AddVars()
 	Add("tag_allow_passive", tag_allow_passive, true);
 	Add("tag_allow_sock5", tag_allow_sock5, true);
 	Add("tag_sum_hubs", tag_sum_hubs, 3);
-	Add("tag_min_class_ignore",tag_min_class_ignore ,(int)eUC_OPERATOR);
+	Add("tag_min_class_ignore", tag_min_class_ignore, (int)eUC_OPERATOR);
 	Add("show_desc_len",show_desc_len,-1);
 	Add("desc_insert_mode", desc_insert_mode, false);
 	Add("desc_insert_vars", desc_insert_vars, string("")); // %[CLASS], %[CLASSNAME], %[MODE], %[CC], %[CN], %[CITY]
-	Add("show_email",show_email,1);
-	Add("show_speed",show_speed,1);
+	Add("show_email", show_email, true);
+	Add("show_speed", show_speed, true);
 	Add("tag_min_hs_ratio", tag_min_hs_ratio, 0.);
 	Add("tag_max_hs_ratio", tag_max_hs_ratio, 0.);
 	Add("tag_max_hubs",tag_max_hubs, 0);

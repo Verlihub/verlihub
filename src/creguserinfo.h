@@ -47,6 +47,12 @@ class cRegUserInfo
 		friend class cUser;
 		friend class cRegList;
 
+		typedef enum { // crypt methods
+			eCRYPT_NONE,
+			eCRYPT_ENCRYPT,
+			eCRYPT_MD5
+		} tCryptMethods;
+
 		/**
 		* Get the class of the user.
 		* @return The class
@@ -72,9 +78,8 @@ class cRegUserInfo
 		* @param crypt_method The crypt method to use
 		* @return Zero on success or -1 on failure
 		*/
-		void SetPass(string password, int crypt_method);
+		void SetPass(string password, tCryptMethods crypt_method);
 
-		enum {eCRYPT_NONE, eCRYPT_ENCRYPT, eCRYPT_MD5};
 	public: // Public attributes
 		/** nickname */
 		string mNick;

@@ -142,9 +142,9 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int cl, const char *p
 	ui.mRegOp = (op && op->mpUser) ? op->mpUser->mNick : string("hub-security");
 
 	if(password)
-		ui.SetPass(string(password),mS->mC.default_password_encryption);
+		ui.SetPass(string(password), (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
 	else
-		ui.SetPass(string(),mS->mC.default_password_encryption);
+		ui.SetPass(string(), (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
 
 	if(cl < 0)
 		ui.mPwdChange = false;
@@ -161,7 +161,7 @@ bool cRegList::ChangePwd(const string &nick, const string &pwd, int crypt)
 {
 	if(!FindRegInfo(mModel, nick))
 		return false;
-	mModel.SetPass(pwd,mS->mC.default_password_encryption);
+	mModel.SetPass(pwd, (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
 	return UpdatePK();
 }
 

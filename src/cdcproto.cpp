@@ -612,7 +612,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			return 0;
 		}
 
-		if (pwd.size() < (unsigned int)mS->mC.password_min_len) {
+		if (pwd.size() < mS->mC.password_min_len) {
 			os << autosprintf(_("Minimum password length is %d characters, please retry."), mS->mC.password_min_len);
 			mS->DCPrivateHS(os.str(), conn);
 			mS->DCPublicHS(os.str(), conn);
@@ -1289,7 +1289,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 	if ((conn->mpUser->mT.login < user->mT.login) && (mS->mTime < (user->mT.login + 60))) // if user logged in then ignore it, client is dcgui and one myinfo sent already
 		return 0;
 
-	if (mS->mC.optimize_userlist == eULO_GETINFO) {
+	if (mS->mC.optimize_userlist) { // eULO_GETINFO = true
 		conn->mpUser->mQueueUL.append(other);
 		conn->mpUser->mQueueUL.append("|");
 	} else if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it

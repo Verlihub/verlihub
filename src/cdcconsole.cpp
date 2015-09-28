@@ -776,7 +776,7 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 			getline(cmd_line, text);
 			if (!text.empty()) text = text.substr(1); // strip space
 
-			if (text.size() < (unsigned int)mOwner->mC.password_min_len) {
+			if (text.size() < mOwner->mC.password_min_len) {
 				os << autosprintf(_("Minimum password length is %d characters, please retry."), mOwner->mC.password_min_len);
 				mOwner->DCPublicHS(os.str(), conn);
 				return 1;
@@ -898,7 +898,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream & cmd_line, cConnDC * conn)
 	}
 
 	cmd_line >> str >> crypt;
-	if(str.size() < (unsigned int) mOwner->mC.password_min_len) {
+	if(str.size() < mOwner->mC.password_min_len) {
 		ostr << autosprintf(_("Minimum password length is %d characters, please retry."), mOwner->mC.password_min_len);
 		mOwner->DCPrivateHS(ostr.str(),conn);
 		mOwner->DCPublicHS(ostr.str(),conn);

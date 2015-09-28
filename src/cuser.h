@@ -175,29 +175,39 @@ public:
 
 	/* Rights of the user */
 	unsigned long mRights;
-	/** different time stamps */
-	struct sTimes
+
+	struct sTimes // different time stamps
 	{
-		/* Connection time */
+		// connection time
 		cTime connect;
-		/* Login time, when the user is pushed in userlist */
+		// login time, when the user is pushed in userlist
 		cTime login;
-		/* Last search time */
+		// last search time
 		cTime search;
-		/* Time when MyInfo was sent */
+		// time when myinfo was sent
 		cTime info;
-		/* Last chat message time*/
+		// last chat message time
 		cTime chat;
-		/* Last getnicklist time */
+		// last getnicklist time
 		cTime nicklist;
-		/* Last private message time (to any user) */
+		// last private message time to any user
 		cTime pm;
-		sTimes():connect(0l),login(0l),search(0l),info(0l),chat(0l),nicklist(0l),pm(0l){}
+
+		sTimes():
+			connect(0l),
+			login(0l),
+			search(0l),
+			info(0l),
+			chat(0l),
+			nicklist(0l),
+			pm(0l)
+		{}
 	};
+
 	sTimes mT;
 	typedef tHashArray<void*>::tHashType tFloodHashType;
 	tFloodHashType mFloodHashes[nEnums::eFH_LAST_FH];
- 	int mFloodCounters[nEnums::eFC_LAST_FC];
+ 	unsigned int mFloodCounters[nEnums::eFC_LAST_FC];
 
 	/** 0 means perm ban, otherwiese in seconds */
 	long mBanTime;
@@ -237,7 +247,7 @@ public:
 	/** class protection against kicking */
 	int mProtectFrom;
 	/* Numeber of searches */
-	int mSearchNumber;
+	unsigned int mSearchNumber;
 	/* The class over which the users are able to see kick messages*/
 	int mHideKicksForClass;
 

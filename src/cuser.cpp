@@ -95,8 +95,8 @@ cUser::cUser():
 	mHideCtmMsg = false;
 	mSetPass = false;
 	IsPassive = true;
-	memset(mFloodHashes, 0 ,sizeof(mFloodHashes));
-	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
+	memset(mFloodHashes, 0, sizeof(mFloodHashes));
+	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
 
 /** Constructor */
@@ -132,8 +132,8 @@ cUser::cUser(const string &nick):
 	mHideShare = false;
 	mHideCtmMsg = false;
 	mSetPass = false;
-	memset(mFloodHashes, 0 , sizeof(mFloodHashes));
-	memset(mFloodCounters, 0 ,sizeof(mFloodCounters));
+	memset(mFloodHashes, 0, sizeof(mFloodHashes));
+	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
 
 cUser::~cUser()

@@ -148,7 +148,7 @@ string & cRegUserInfo::GetNick(){
 /*!
     \fn ::nTables::cRegUserInfo::SetPass(const string &)
  */
-void cRegUserInfo::SetPass(string str, int crypt_method)
+void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
 {
 	mPwdChange = !str.size();
 

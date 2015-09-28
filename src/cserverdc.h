@@ -109,7 +109,7 @@ namespace nVerliHub {
 		enum
 		{
 			eULO_NONE = 0,
-			eULO_GETINFO = 1
+			eULO_GETINFO = 1 // optimize_userlist = true
 		};
 
 		enum
@@ -564,6 +564,9 @@ class cServerDC : public cAsyncSocketServer
 		cTime mProtoFloodAllTimes[nEnums::ePFA_LAST];
 		bool mProtoFloodAllLocks[nEnums::ePFA_LAST];
 		bool CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type);
+
+		// helper functions
+		bool CheckPortNumber(unsigned int port);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;
