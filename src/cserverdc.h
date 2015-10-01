@@ -622,8 +622,8 @@ class cServerDC : public cAsyncSocketServer
 		static cGeoIP sGeoIP;
 #endif
 
-		// Send crash report on sigserv
-		static int sSendCrashReport;
+		// prevent stack trace on core dump
+		static bool mStackTrace;
 
 		// stack trace
 		void DoStackTrace();

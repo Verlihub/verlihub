@@ -58,12 +58,13 @@ namespace nVerliHub {
 	namespace nSocket {
 		cServerDC * cServerDC::sCurrentServer = NULL;
 
-#ifdef HAVE_LIBGEOIP
+		#ifdef HAVE_LIBGEOIP
 			cGeoIP cServerDC::sGeoIP;
-#endif
-			int cServerDC::sSendCrashReport = 1;
+		#endif
 
-cServerDC::cServerDC( string CfgBase , const string &ExecPath):
+		bool cServerDC::mStackTrace = true;
+
+cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	cAsyncSocketServer(), // create parent class
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
@@ -80,7 +81,7 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 	mOpChat(NULL),
 	mExecPath(ExecPath),
 	mSysLoad(eSL_NORMAL),
-	mUserList(true,true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
+	mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
 	mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
 	mOpchatList(true),
 	mRobotList(true),
@@ -95,8 +96,7 @@ cServerDC::cServerDC( string CfgBase , const string &ExecPath):
 {
 	sCurrentServer = this;
 
-	if ( ! mDBConf.locale.empty())
-	{
+	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
 		vhLog(1) << "Setting environment variable LANG: " << ((setenv("LANG", mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
 		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
@@ -1600,7 +1600,7 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 	char pipe = '|';
 	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string curhost, lock, key;
+	string curhost, lock(""), key(""), data("");
 	size_t pos_space;
 	cAsyncConn *pHubList;
 
@@ -1628,8 +1628,10 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 
 		to_serv.str("");
 		to_serv.clear();
-		key = "";
-		pHubList->SetLineToRead(&lock, pipe, 1024);
+		lock.clear();
+		key.clear();
+		data.clear();
+		pHubList->SetLineToRead(&lock, pipe, 256);
 		pHubList->ReadAll();
 		pHubList->ReadLineLocal();
 
@@ -1643,7 +1645,8 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 			cDCProto::Lock2Key(lock, key);
 		}
 
-		to_serv << "$Key " << key << pipe; // create registration data
+		cDCProto::Create_Key(data, key);
+		to_serv << data << pipe; // create registration data
 		to_serv << mC.hub_name << pipe;
 		to_serv << mC.hub_host << pipe;
 
@@ -1653,7 +1656,6 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 		to_serv << mC.hub_desc << pipe;
 		to_serv << mUserList.Size() << pipe;
 		to_serv << mTotalShare << pipe;
-
 		pHubList->Write(to_serv.str(), true); // send it
 
 		if (reply.size()) {
@@ -2198,6 +2200,9 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 
 void cServerDC::DoStackTrace()
 {
+	if (!mStackTrace)
+		return;
+
 	void* addrlist[64];
 	int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
 
@@ -2245,10 +2250,8 @@ void cServerDC::DoStackTrace()
 	free(symbollist);
 	vhErr(0) << "Stack backtrace:" << endl << endl << bt.str() << endl;
 
-	if (!sSendCrashReport) {
-		vhErr(0) << "Crash reporting is disabled" << endl;
+	if (!mC.send_crash_report)
 		return;
-	}
 
 	cAsyncConn *http = new cAsyncConn("crash.verlihub.net", 80); // try to send via http
 

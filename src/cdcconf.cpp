@@ -253,6 +253,7 @@ void cDCConf::AddVars()
 	Add("user_ip_class", user_ip_class, (int)eUC_OPERATOR);
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
+	Add("send_crash_report", send_crash_report, true);
 	Add("ban_bypass_class", ban_bypass_class, (int)eUC_MASTER);
 	// End user control configuration
 

@@ -255,6 +255,7 @@ public:
 	int user_ip_class;
 	bool send_user_info;
 	bool send_pass_request;
+	bool send_crash_report;
 	int ban_bypass_class;
 	bool use_reglist_cache;
 	bool use_penlist_cache;

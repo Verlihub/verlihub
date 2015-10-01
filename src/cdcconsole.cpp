@@ -424,10 +424,10 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 	mOwner->mP.Create_Chat(msg, mOwner->mC.hub_security, os.str());
 	mOwner->mUserList.SendToAll(msg, false, true);
 
-	if (code >= 0)
+	if (code >= 0) {
 		mOwner->stop(code, delay);
-	else {
-		cServerDC::sSendCrashReport = 0;
+	} else {
+		cServerDC::mStackTrace = false;
 		*(int*)1 = 0;
 	}
 

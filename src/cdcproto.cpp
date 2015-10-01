@@ -2881,7 +2881,9 @@ bool cDCProto::isLanIP(string ip)
 
 bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
 {
-	if (!conn || !conn->mxServer) return true;
+	if (!conn || !conn->mxServer)
+		return true;
+
 	cServerDC *Server = conn->Server();
 	ostringstream errmsg;
 	unsigned int count = text.size();
@@ -2903,9 +2905,28 @@ bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
 	return true;
 }
 
-void cDCProto::Create_MyINFO(string &dest, const string&nick, const string &desc, const string&speed, const string &mail, const string &share)
+const string &cDCProto::GetMyInfo(cUserBase *User, int ForClass)
 {
-	dest.reserve(dest.size()+nick.size()+desc.size()+speed.size()+mail.size()+share.size()+ 20);
+	if ((mS->mC.show_tags + int(ForClass >= eUC_OPERATOR)) >= 2)
+		return User->mMyINFO;
+	else
+		return User->mMyINFO_basic;
+}
+
+void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic)
+{
+	if (dest[dest.size() - 1] == '|')
+		dest.resize(dest.size() - 1);
+
+	if (DoBasic)
+		dest.append(MyINFO_basic);
+	else
+		dest.append(MyINFO);
+}
+
+void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share)
+{
+	dest.reserve(dest.size() + nick.size() + desc.size() + speed.size() + mail.size() + share.size() + 20);
 	dest.append("$MyINFO $ALL ");
 	dest.append(nick);
 	dest.append(" ");
@@ -2919,23 +2940,13 @@ void cDCProto::Create_MyINFO(string &dest, const string&nick, const string &desc
 	dest.append("$");
 }
 
-void cDCProto::Create_Chat(string &dest, const string&nick,const string &text)
+void cDCProto::Create_Chat(string &dest, const string &nick,const string &text)
 {
-	dest.reserve(dest.size()+nick.size()+text.size()+ 4);
+	dest.reserve(dest.size() + nick.size() + text.size() + 4);
 	dest.append("<");
 	dest.append(nick);
 	dest.append("> ");
 	dest.append(text);
-}
-
-void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic)
-{
-	if(dest[dest.size()-1]=='|')
-		dest.resize(dest.size()-1);
-	if(DoBasic)
-		dest.append(MyINFO_basic);
-	else
-		dest.append(MyINFO);
 }
 
 void cDCProto::Create_PM(string &dest,const string &from, const string &to, const string &sign, const string &text)
@@ -2964,11 +2975,12 @@ void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &f
 
 void cDCProto::Create_HubName(string &dest, string &name, string &topic)
 {
-	dest = "$HubName " + name;
+	dest.append("$HubName ");
+	dest.append(name);
 
 	if (topic.size()) {
-		dest += " - ";
-		dest += topic;
+		dest.append(" - ");
+		dest.append(topic);
 	}
 }
 
@@ -3004,18 +3016,16 @@ void cDCProto::Create_BotList(string &dest, const string &nick)
 	dest.append("$$");
 }
 
-cConnType *cDCProto::ParseSpeed(const string &uspeed)
+void cDCProto::Create_Key(string &dest, const string &key)
 {
-	string speed(uspeed, 0, uspeed.size() -1);
-	return mS->mConnTypes->FindConnType(speed);
+	dest.append("$Key ");
+	dest.append(key);
 }
 
-const string &cDCProto::GetMyInfo(cUserBase * User, int ForClass)
+cConnType *cDCProto::ParseSpeed(const string &uspeed)
 {
-	if((mS->mC.show_tags + int (ForClass >= eUC_OPERATOR) >= 2))
-		return User->mMyINFO;
-	else
-		return User->mMyINFO_basic;
+	string speed(uspeed, 0, uspeed.size() - 1);
+	return mS->mConnTypes->FindConnType(speed);
 }
 
 void cDCProto::ParseReferer(const string &lock, string &ref)
@@ -3072,17 +3082,18 @@ void cDCProto::ParseReferer(const string &lock, string &ref)
 
 void cDCProto::UnEscapeChars(const string &src, string &dst, bool WithDCN)
 {
-	size_t pos;
 	dst = src;
-	pos = dst.find("&#36;");
+	size_t pos = dst.find("&#36;");
+
 	while (pos != dst.npos) {
-		dst.replace(pos,5, "$");
+		dst.replace(pos, 5, "$");
 		pos = dst.find("&#36;", pos);
 	}
 
 	pos = dst.find("&#124;");
+
 	while (pos != dst.npos) {
-		dst.replace(pos,6, "|");
+		dst.replace(pos, 6, "|");
 		pos = dst.find("&#124;", pos);
 	}
 }
@@ -3096,7 +3107,7 @@ void cDCProto::UnEscapeChars(const string &src, char *dst, unsigned int &len, bo
 
 	if (!WithDCN) {
 		start = "&#";
-		end =";";
+		end = ";";
 	} else {
 		start = "/%DCN";
 		end = "%/";
@@ -3134,51 +3145,76 @@ void cDCProto::UnEscapeChars(const string &src, char *dst, unsigned int &len, bo
 void cDCProto::EscapeChars(const string &src, string &dst, bool WithDCN)
 {
 	dst = src;
-	size_t pos;
+	size_t pos = dst.find_first_of("\x05\x24\x60\x7C\x7E\x00"); // 0, 5, 36, 96, 124, 126
 	ostringstream os;
-	pos = dst.find_first_of("\x05\x24\x60\x7C\x7E\x00"); // 0, 5, 36, 96, 124, 126
+
 	while (pos != dst.npos) {
 		os.str("");
-		if (! WithDCN) os << "&#" << unsigned(dst[pos]) << ";";
-		else os << "/%DCN" << unsigned(dst[pos]) << "%/";
-		dst.replace(pos,1, os.str());
+
+		if (!WithDCN)
+			os << "&#" << unsigned(dst[pos]) << ";";
+		else
+			os << "/%DCN" << unsigned(dst[pos]) << "%/";
+
+		dst.replace(pos, 1, os.str());
 		pos = dst.find_first_of("\x05\x24\x60\x7C\x7E\x00", pos);
 	}
 }
 
 void cDCProto::EscapeChars(const char *buf, int len, string &dest, bool WithDCN)
 {
-	dest ="";
+	dest = "";
 	unsigned char c;
 	unsigned int olen = 0;
 	ostringstream os;
-	while(len-- > 0) {
+
+	while (len-- > 0) {
 		c = *(buf++);
 		olen = 0;
-		switch(c) {
-			case 0: case 5: case 36: case 96: case 124: case 126:
+
+		switch (c) {
+			case 0:
+			case 5:
+			case 36:
+			case 96:
+			case 124:
+			case 126:
 				os.str("");
-				if(!WithDCN)
+
+				if (!WithDCN) {
 					os << "&#" << unsigned(c) << ";";
-				else {
-					if(c < 10) olen = 7;
-					else if(c > 10 && c < 100) olen = 6;
+				} else {
+					if (c < 10)
+						olen = 7;
+					else if ((c > 10) && (c < 100))
+						olen = 6;
+
 					os.width(olen);
 					os.fill('0');
 					os << left << "/%DCN" << unsigned(c);
 					os.width(0);
 					os << "%/";
 				}
+
 				dest += os.str();
-			break;
-			default: dest += c; break;
-		};
+				break;
+			default:
+				dest += c;
+				break;
+		}
 	}
 }
 
 void cDCProto::Lock2Key(const string &Lock, string &fkey)
 {
-	unsigned int count = 0, len = Lock.size();
+	unsigned int len = Lock.size();
+
+	if (len < 2) {
+		fkey = "";
+		return;
+	}
+
+	size_t count = 0;
 	char *key = 0;
 	char *lock = new char[len + 1];
 	UnEscapeChars(Lock, lock, len, true);

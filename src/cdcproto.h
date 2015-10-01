@@ -202,7 +202,7 @@ protected:
 	* @param nick The sender.
 	* @param text The message.
 	*/
-	static void Create_Chat(string &dest, const string&nick,const string &text);
+	static void Create_Chat(string &dest, const string &nick,const string &text);
 
 	/**
 	* Create protocol message for hub name ($HubName).
@@ -222,7 +222,7 @@ protected:
 	* @param mail E-Mail address.
 	* @param share Share in bytes.
 	*/
-	static void Create_MyINFO(string &dest, const string&nick, const string &desc, const string&speed, const string &mail, const string &share);
+	static void Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share);
 
 	/**
 	* Create a private message ($To protocol message).
@@ -253,10 +253,11 @@ protected:
 
 	// $ValidateDenide
 	static void Create_ValidateDenide(string &dest, const string &nick);
-	// hello, operator and bot lists
+	// hello, operator and bot lists, etc
 	static void Create_Hello(string &dest, const string &nick);
 	static void Create_OpList(string &dest, const string &nick);
 	static void Create_BotList(string &dest, const string &nick);
+	static void Create_Key(string &dest, const string &key);
 
 	/**
 	* Treat mainchat messages.
