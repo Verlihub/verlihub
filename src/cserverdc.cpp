@@ -1656,6 +1656,10 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 		to_serv << mC.hub_desc << pipe;
 		to_serv << mUserList.Size() << pipe;
 		to_serv << mTotalShare << pipe;
+
+		if (mC.hublist_send_listhost) // hublist host with port
+			to_serv << curhost << ':' << StringFrom(port) << pipe;
+
 		pHubList->Write(to_serv.str(), true); // send it
 
 		if (reply.size()) {

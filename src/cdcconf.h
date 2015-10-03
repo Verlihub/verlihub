@@ -141,7 +141,8 @@ public:
 	string hublist_host;
 	unsigned int hublist_port;
 	bool hublist_send_minshare;
-	/** checking prefferences */
+	bool hublist_send_listhost;
+	// checking preferences
 	unsigned int classdif_reg;
 	unsigned int classdif_search;
 	unsigned int classdif_download;

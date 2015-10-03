@@ -92,6 +92,7 @@ void cDCConf::AddVars()
 	Add("hublist_host", hublist_host, string("hublist.te-home.net"));
 	Add("hublist_port", hublist_port, 2501);
 	Add("hublist_send_minshare", hublist_send_minshare, true);
+	Add("hublist_send_listhost", hublist_send_listhost, true);
 	Add("timer_hublist_period", mS.mHublistTimer.mMinDelay.tv_sec, (__typeof__(mS.mHublistTimer.mMinDelay.tv_sec)) 3 * 3600);
 	// end hublist configuration
 
