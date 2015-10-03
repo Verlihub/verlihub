@@ -1,6 +1,5 @@
 # 
 # Translators:
-# uNix <unix.sk@azet.sk>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
@@ -8,21 +7,21 @@ msgstr ""
 "POT-Creation-Date: 2015-10-03 12:24+0200\n"
 "PO-Revision-Date: 2015-09-28 09:30+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
-"Language-Team: Slovak (Slovakia) (http://www.transifex.com/feardc/verlihub-100/language/sk_SK/)\n"
+"Language-Team: Lithuanian (Lithuania) (http://www.transifex.com/feardc/verlihub-100/language/lt_LT/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CP1250\n"
+"Content-Type: text/plain; charset=CP1257\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sk_SK\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Language: lt_LT\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 1.8.5\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../src\n"
-"X-Poedit-SourceCharset: CP1250\n"
+"X-Poedit-SourceCharset: CP1257\n"
 
 #: ../src/cban.cpp:85
 msgid "Unknown ban"
-msgstr "Nezn·my ban"
+msgstr ""
 
 #: ../src/cban.cpp:93 ../src/cuser.cpp:236
 msgid "Nickname"
@@ -32,7 +31,7 @@ msgstr ""
 #: ../src/cdcconsole.cpp:365 ../src/cdcconsole.cpp:529
 #: ../src/cdcconsole.cpp:1127 ../src/cuser.cpp:243
 msgid "IP"
-msgstr "IP adresa"
+msgstr ""
 
 #: ../src/cban.cpp:95 ../src/cdcconsole.cpp:1135
 msgid "Reason"
@@ -65,7 +64,7 @@ msgstr ""
 #: ../src/cban.cpp:121 ../src/cban.cpp:148
 #, c-format
 msgid "Removed: %s by %s because %s"
-msgstr "Odstr·nenÈ: %s by %s pretoûe %s"
+msgstr ""
 
 #: ../src/cban.cpp:127 ../src/cbanlist.cpp:438
 msgid "OP"
@@ -94,7 +93,7 @@ msgstr ""
 
 #: ../src/cban.cpp:141
 msgid "Nick"
-msgstr "Prez˝vka"
+msgstr ""
 
 #: ../src/cban.cpp:141
 msgid "Host level 1"
@@ -190,19 +189,19 @@ msgstr ""
 
 #: ../src/cconndc.cpp:149
 msgid "Key"
-msgstr "Kæ˙Ë"
+msgstr ""
 
 #: ../src/cconndc.cpp:149
 msgid "ValidateNick"
-msgstr "Overiù prez˝vku"
+msgstr ""
 
 #: ../src/cconndc.cpp:149
 msgid "Login"
-msgstr "Prihl·siù sa"
+msgstr ""
 
 #: ../src/cconndc.cpp:149
 msgid "MyINFO"
-msgstr "MyINFO"
+msgstr ""
 
 #: ../src/cconndc.cpp:149
 msgid "Password"
@@ -215,7 +214,7 @@ msgstr ""
 
 #: ../src/cconndc.cpp:180
 msgid "General timeout"
-msgstr "VöeobecnÈ timeout"
+msgstr ""
 
 #: ../src/cconndc.cpp:413
 msgid "Protocol flood detected"
@@ -305,7 +304,7 @@ msgstr ""
 #: ../src/cuser.cpp:347 ../src/cuser.cpp:357 ../src/cuser.cpp:367
 #: ../src/cuser.cpp:377
 msgid "Yes"
-msgstr "¡no"
+msgstr ""
 
 #: ../src/cdcclient.cpp:52 ../src/creguserinfo.cpp:132
 #: ../src/creguserinfo.cpp:133 ../src/creguserinfo.cpp:134
@@ -316,7 +315,7 @@ msgstr "¡no"
 #: ../src/cuser.cpp:331 ../src/cuser.cpp:341 ../src/cuser.cpp:351
 #: ../src/cuser.cpp:361 ../src/cuser.cpp:371
 msgid "No"
-msgstr "Nie"
+msgstr ""
 
 #: ../src/cdcclients.cpp:350
 msgid "Client ID"
@@ -409,7 +408,7 @@ msgstr ""
 #: ../src/cdcconsole.cpp:2178 ../src/cdcconsole.cpp:2378
 #: ../src/cdcconsole.cpp:2463 ../src/tlistconsole.h:92
 msgid "You have no rights to do this."
-msgstr "Nem·te ûiadne pr·vo to urobiù."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:458
 #, c-format
@@ -465,7 +464,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:622
 msgid "Authors"
-msgstr "Autori"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:627
 msgid "Translators"
@@ -473,11 +472,11 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:632
 msgid "Contributors"
-msgstr "Prispievatelia"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:634
 msgid "Credits"
-msgstr "Credits"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:636
 msgid "More"
@@ -497,22 +496,22 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:653
 msgid "Unregistered"
-msgstr "Neregistrovan˝ [NOREG]"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:656 ../src/cdcproto.cpp:1058
 #: ../src/creguserinfo.cpp:112 ../src/ctrigger.cpp:159
 msgid "Registered"
-msgstr "Registrovan˝ [REG]"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:659 ../src/cdcproto.cpp:1061
 #: ../src/creguserinfo.cpp:112 ../src/ctrigger.cpp:162
 msgid "VIP"
-msgstr "VIP [VIP]"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:662 ../src/cdcproto.cpp:1064
 #: ../src/creguserinfo.cpp:112 ../src/ctrigger.cpp:165
 msgid "Operator"
-msgstr "Oper·tor [OP]"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:665
 msgid "Super operator"
@@ -525,15 +524,15 @@ msgstr ""
 #: ../src/cdcconsole.cpp:671 ../src/cdcproto.cpp:1073
 #: ../src/creguserinfo.cpp:112 ../src/ctrigger.cpp:174
 msgid "Master"
-msgstr "Master [M]"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:676 ../src/cdctag.cpp:207
 msgid "Active"
-msgstr "AktÌvni"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:678 ../src/cdctag.cpp:209
 msgid "Passive"
-msgstr "PasÌvni"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:691 ../src/cinfoserver.cpp:167
 msgid "Hub owner"
@@ -610,7 +609,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:726
 msgid "This functionality is currently disabled."
-msgstr "T·to funkcia je moment·lne vypnut·."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:730
 msgid "Registration failed, please contact an operator for more help."
@@ -633,12 +632,12 @@ msgstr ""
 #: ../src/cdcconsole.cpp:780 ../src/cdcconsole.cpp:902 ../src/cdcproto.cpp:616
 #, c-format
 msgid "Minimum password length is %d characters, please retry."
-msgstr "Minim·lna dÂûka hesla je %d znakov, sk˙ste to prosÌm znova."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:795
 #, c-format
 msgid "A new user has been registered with class %d"
-msgstr "Nov˝ pouûÌvateæ je registrovan˝ s class %d"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:798
 #, c-format
@@ -662,11 +661,11 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:819
 msgid "Thank you, your request has been sent to operators."
-msgstr "œakujeme, Vaöa poûiadavka bol odoslana oper·torom."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:830
 msgid "You do not have permissions to change the topic."
-msgstr "Nem·te opr·vnenie k zmene topicu."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:836
 #, c-format
@@ -690,22 +689,22 @@ msgstr ""
 #: ../src/cdcconsole.cpp:908 ../src/cdcconsole.cpp:2259
 #: ../src/cdcproto.cpp:624
 msgid "Error updating password."
-msgstr "Chyba pri aktualiz·cii hesla."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:914 ../src/cdcproto.cpp:631
 msgid "Password updated successfully."
-msgstr "Heslo ˙speöne aktualizovanÈ."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:927
 msgid ""
 "Please use: !hideme <class> where <class> is the maximum class of users that"
 " may not see your actions."
-msgstr "ProsÌm, pouûite: !hideme <class> kde <class> je maxim·lna trieda uûÌvateæov, ktorÈ nemusia vidieù vaöe akcie."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:933
 #, c-format
 msgid "Your command actions are now hidden from users with class below %d."
-msgstr "V·ö prÌkaz akcie je teraz skryt˝ od uûÌvateæov s triedou niûöou neû %d."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:946
 msgid ""
@@ -735,18 +734,18 @@ msgstr ""
 #: ../src/cdcconsole.cpp:1030
 #, c-format
 msgid "Kicks of user %s are now hidden."
-msgstr "Kick uûÌvateæov %s s˙ teraz skrytÈ."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1036 ../src/cdcconsole.cpp:1062
 #: ../src/cdcconsole.cpp:1097 ../src/cdcproto.cpp:2320
 #, c-format
 msgid "User %s not found."
-msgstr "UûÌvateæ %s nebol n·jden˝."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1056
 #, c-format
 msgid "Kicks of user %s are now visible."
-msgstr "Kick uûÌvateæov %s s˙ teraz viditeænÈ."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1080
 msgid "Use !protect <nickname> <class>."
@@ -754,17 +753,17 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1080
 msgid "Please type !help for more info."
-msgstr "ProsÌm, napÌöte! Pomoc pre viac inform·ciÌ."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1081
 #, c-format
 msgid "Max class is %d"
-msgstr "Max trieda je %d"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1092
 #, c-format
 msgid "User %s is temporarily protected from class %d"
-msgstr "UûÌvateæ %s je doËasne chr·nen˝ pred triedou %d"
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1105
 msgid ""
@@ -774,7 +773,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1113
 msgid "Report command is currently disabled."
-msgstr "Spr·va prÌkaz je v s˙Ëasnosti zak·zanÈ."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1126
 #, c-format
@@ -792,7 +791,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1139
 msgid "Thank you, your report has been accepted."
-msgstr "œakujem v·m, Vaöa spr·va bola prijat·."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1256
 msgid "Protocol command successfully sent."
@@ -824,7 +823,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1381
 msgid "Please provide a valid ban time."
-msgstr "UveÔte prosÌm platnÈ z·kaz Ëas."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1400 ../src/cdcconsole.cpp:1443
 msgid "No reason specified"
@@ -874,7 +873,7 @@ msgstr ""
 #: ../src/cdcconsole.cpp:1671 ../src/cdcconsole.cpp:1985
 #: ../src/cdcconsole.cpp:2332 ../src/cdcconsole.cpp:2386
 msgid "This command is not implemented."
-msgstr "Tento prÌkaz nie je implementovan·."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:1704
 #, c-format
@@ -994,7 +993,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:1975 ../src/cdcproto.cpp:2326
 msgid "Please provide a valid reason."
-msgstr "UveÔte, prosÌm, k tomu p·dny dÙvod."
+msgstr ""
 
 #: ../src/cdcconsole.cpp:2010
 msgid "Loaded plugins"
@@ -1406,7 +1405,7 @@ msgstr ""
 #: ../src/cdcproto.cpp:2284
 #, c-format
 msgid "You are being redirected to %s because: %s"
-msgstr "Ste presmerovanÌ na%s, pretoûe:%s"
+msgstr ""
 
 #: ../src/cdcproto.cpp:2332
 msgid "You can't ban a protected user or with higher privilegies."
@@ -1419,27 +1418,27 @@ msgstr ""
 #: ../src/cdcproto.cpp:2344
 #, c-format
 msgid "You are being temporarily banned for %s because %s"
-msgstr "Nach·dzate sa doËasne zak·zan˝ pre%s, pretoûe%s"
+msgstr ""
 
 #: ../src/cdcproto.cpp:2346
 #, c-format
 msgid "You are banned because %s"
-msgstr "Ste zak·zan˝, pretoûe%s"
+msgstr ""
 
 #: ../src/cdcproto.cpp:2383
 #, c-format
 msgid "No banned user found with ip %s."
-msgstr "éiadne zo zak·zan˝ch uûÌvateæov nenaöli ip%s."
+msgstr ""
 
 #: ../src/cdcproto.cpp:2387
 #, c-format
 msgid "Removed %d bans."
-msgstr "Odstr·nenÈ%d z·kazov."
+msgstr ""
 
 #: ../src/cdcproto.cpp:2456
 #, c-format
 msgid "Topis is set to: %s"
-msgstr "Topis je nastaven˝ na:%s"
+msgstr ""
 
 #: ../src/cdcproto.cpp:2570
 #, c-format
@@ -2119,7 +2118,7 @@ msgstr ""
 #: ../src/cserverdc.cpp:2118
 #, c-format
 msgid "You have been kicked because %s"
-msgstr "Bol ste vyhoden˝, pretoûe %s"
+msgstr ""
 
 #: ../src/cserverdc.cpp:2128
 #, c-format
@@ -2236,7 +2235,7 @@ msgstr ""
 #: ../src/ctriggers.cpp:319
 msgid ""
 "The definition is empty or not specified. Please define it with -d option."
-msgstr "T·to definÌcia je pr·zdna alebo nie je öpecifikovan·. ProsÌm, definvujte to s voæbou -d."
+msgstr ""
 
 #: ../src/ctriggers.cpp:324
 msgid "It's not allowed to define dbconfig file as trigger."
