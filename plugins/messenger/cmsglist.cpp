@@ -121,8 +121,7 @@ void cMsgList::DeliverOnline(cUser *dest, sMessage &msg)
 	string omsg;
 	ostringstream os;
 	os << msg.AsOnline();
-	cDCProto::Create_PM(omsg, msg.mSender, dest->mNick,
-			msg.mSender, os.str() );
+	cDCProto::Create_PM(omsg, msg.mSender, dest->mNick, msg.mSender, os.str());
 	dest->mxConn->Send(omsg, true);
 }
 
@@ -188,13 +187,11 @@ int cMsgList::DeliverMessagesSinceSync(unsigned sync)
 
 int cMsgList::DeliverModelToUser(cUser *dest)
 {
-	string omsg;
+	string omsg, pm;
 	ostringstream os;
-	bool SenderOffline;
-
+	bool SenderOffline = (NULL == mServer->mUserList.GetUserByNick(mModel.mSender));
 	os.str("");
-	omsg.erase();
-	SenderOffline =  (NULL == mServer->mUserList.GetUserByNick(mModel.mSender));
+	omsg.clear();
 
 	if (SenderOffline) {
 		omsg += "$Hello ";
@@ -203,8 +200,8 @@ int cMsgList::DeliverModelToUser(cUser *dest)
 	}
 
 	os << mModel.AsDelivery();
-
-	cDCProto::Create_PM(omsg, mModel.mSender, dest->mNick, mModel.mSender, os.str());
+	cDCProto::Create_PM(pm, mModel.mSender, dest->mNick, mModel.mSender, os.str());
+	omsg += pm;
 
 	if (SenderOffline) {
 		omsg += "|$Quit ";

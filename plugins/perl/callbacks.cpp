@@ -145,7 +145,6 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(char *nick, int uclass, char *de
 
 	if(robot != NULL) {
 		//Clear myinfo
-		robot->mMyINFO = "";
 		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
 		robot->mMyINFO_basic = robot->mMyINFO;
 		//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);

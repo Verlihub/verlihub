@@ -538,7 +538,7 @@ bool cUserRobot::SendPMTo(cConnDC *conn, const string &msg)
 	{
 		string pm;
 		cDCProto::Create_PM(pm, mNick,conn->mpUser->mNick, mNick, msg);
-		conn->Send(pm,true);
+		conn->Send(pm, true);
 		return true;
 	}
 	return false;

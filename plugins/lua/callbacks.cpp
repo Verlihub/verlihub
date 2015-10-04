@@ -298,15 +298,20 @@ int _SendPMToAll(lua_State *L)
 			max_class = (int) lua_tonumber(L, 5);
 		}
 
-		/*string start, end;
+		/*
+		string start, end;
 		cServerDC *server = GetCurrentVerlihub();
+
 		if(server == NULL) {
 			luaerror(L, ERR_SERV);
 			return 2;
 		}
+
 		server->mP.Create_PMForBroadcast(start, end, from, from, data);
-		server->SendToAllWithNick(start,end, min_class, max_class);*/
-		SendPMToAll((char *) data.c_str(),(char *)  from.c_str(), min_class, max_class);
+		server->SendToAllWithNick(start, end, min_class, max_class);
+		*/
+
+		SendPMToAll((char*)data.c_str(), (char*)from.c_str(), min_class, max_class);
 	} else {
 		luaL_error(L, "Error calling VH:SendPMToAll; expected at least 4 arguments but got %d", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
@@ -1742,19 +1747,16 @@ int _RegBot(lua_State *L)
 	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
 	robot->mMyINFO_basic = robot->mMyINFO;
 
-	static string msg;
-	msg.erase();
+	string msg;
 	serv->mP.Create_Hello(msg, robot->mNick); // send hello
 	serv->mHelloUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
 	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send myinfo
 
 	if (robot->mClass >= eUC_OPERATOR) { // send short oplist
-		msg.erase();
 		serv->mP.Create_OpList(msg, robot->mNick);
 		serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
 	}
 
-	msg.erase();
 	serv->mP.Create_BotList(msg, robot->mNick); // send short botlist
 	serv->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 
@@ -1871,8 +1873,7 @@ int _EditBot(lua_State *L)
 			if (!serv->mOpchatList.ContainsNick(nick)) // add to opchat list
 				serv->mOpchatList.Add(robot);
 
-			static string msg;
-			msg.erase();
+			string msg;
 			serv->mP.Create_OpList(msg, robot->mNick); // send short oplist
 			serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
 		} else if ((robot->mClass >= eUC_OPERATOR) && (iclass < eUC_OPERATOR)) { // changing from op

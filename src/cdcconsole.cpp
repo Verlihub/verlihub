@@ -501,7 +501,7 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 	if (mOwner->LastBCNick != "disable")
 		mOwner->LastBCNick = conn->mpUser->mNick;
 
-	int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
+	unsigned int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
 	TimeAfter.Get();
 	ostr << autosprintf(_("Message delivered to %d users in zones %s in %s."), count, cc_zone.c_str(), (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	mOwner->DCPublicHS(ostr.str(), conn);
@@ -824,7 +824,7 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream os;
-	string omsg,topic;
+	string omsg, topic;
 	getline(cmd_line,topic);
 	if(conn->mpUser->mClass < mOwner->mC.topic_mod_class) {
 		mOwner->DCPublicHS(_("You do not have permissions to change the topic."),conn);
@@ -990,8 +990,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 				mOwner->mOpchatList.Add(user);
 
 				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
-					static string msg;
-					msg.erase();
+					string msg;
 					mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
 					mOwner->mUserList.SendToAll(msg, false, true); // no cache
 					mOwner->mOpList.Add(user);
@@ -1171,27 +1170,26 @@ bool cDCConsole::cfRaw::operator()()
 
 	switch (CmdID) {
 		case eRC_HUBNAME:
-			theCommand = "$HubName ";
+			cDCProto::Create_HubName(theCommand, "", "");
 			break;
 		case eRC_HELLO:
-			theCommand = "$Hello ";
+			cDCProto::Create_Hello(theCommand, "");
 			break;
 		case eRC_QUIT:
 			cDCProto::Create_Quit(theCommand, "");
 			break;
 		case eRC_REDIR:
-			theCommand = "$ForceMove ";
+			cDCProto::Create_ForceMove(theCommand, "");
 			break;
 		case eRC_PM:
 			mS->mP.Create_PMForBroadcast(theCommand, endOfCommand, mS->mC.hub_security, mConn->mpUser->mNick, param);
 			WithNick = true;
 			break;
 		case eRC_CHAT:
-			theCommand = "<" + mConn->mpUser->mNick +"> ";
+			cDCProto::Create_Chat(theCommand, mConn->mpUser->mNick, "");
 			break;
 		default:
 			return false;
-			break;
 	}
 
 	if (!WithNick) {
@@ -2185,7 +2183,7 @@ bool cDCConsole::cfRegUsr::operator()()
  		return false;
 	}
 
-	static string msg;
+	string msg;
 
 	switch (Action) {
 		case eAC_NEW: // new
@@ -2282,7 +2280,6 @@ bool cDCConsole::cfRegUsr::operator()()
 					mS->mOpchatList.Add(user);
 
 					if (RegFound && !ui.mHideKeys) {
-						msg.erase();
 						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
 						mS->mUserList.SendToAll(msg, false, true); // no cache
 						mS->mOpList.Add(user);

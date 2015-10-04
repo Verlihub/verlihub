@@ -194,8 +194,9 @@ int cConnDC::OnTimer(cTime &now)
 	// upload line optimisation  - upload userlist slowlier
 	if(mpUser && mpUser->mQueueUL.size()) {
 		unsigned long pos = 0,ppos=0;
-		string buf,nick;
+		string buf, nick;
 		cUser *other;
+
 		for(i=0; i < Server()->mC.ul_portion; i++) {
 			pos=mpUser->mQueueUL.find_first_of('|',ppos);
 			if(pos == mpUser->mQueueUL.npos) break;
@@ -206,14 +207,16 @@ int cConnDC::OnTimer(cTime &now)
 
 			// check if user found
 			if(!other) {
-				if(nick != Server()->mC.hub_security && nick != Server()->mC.opchat_name) {
+				if ((nick != Server()->mC.hub_security) && (nick != Server()->mC.opchat_name)) {
 					cDCProto::Create_Quit(buf, nick);
 				}
 			} else {
+				buf.clear(); // only if nothing was added before
 				buf.append(Server()->mP.GetMyInfo(other, mpUser->mClass));
 			}
 		}
-		Send(buf,true);
+
+		Send(buf, true);
 
 		if(pos != mpUser->mQueueUL.npos)
 			pos++;
@@ -268,14 +271,16 @@ void cConnDC::OnFlushDone()
 
 int cConnDC::OnCloseNice()
 {
+	string omsg;
+
 	if (!this->mCloseRedirect.empty()) {
-		string omsg = "$ForceMove " + this->mCloseRedirect;
+		cDCProto::Create_ForceMove(omsg, this->mCloseRedirect);
 		Send(omsg, true);
 	} else if (mxServer) {
 		string address = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
 
-		if (!address.empty()) {
-			string omsg = "$ForceMove " + address;
+		if (address.size()) {
+			cDCProto::Create_ForceMove(omsg, address);
 			Send(omsg, true);
 		}
 	}

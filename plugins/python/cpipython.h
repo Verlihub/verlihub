@@ -33,7 +33,6 @@
 #include <dlfcn.h>
 
 #define PYTHON_PI_IDENTIFIER "Python"
-#define PYTHON_PI_VERSION "1.2.0"
 
 using std::vector;
 namespace nVerliHub {

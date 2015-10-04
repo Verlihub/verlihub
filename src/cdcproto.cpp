@@ -425,7 +425,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	static string omsg;
+	string omsg;
 
 	// User limit
 	int limit = mS->mC.max_users_total;
@@ -491,10 +491,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 				os << _("This is a registered users only hub.");
 		}
 
-		if (conn->Log(2)) conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << conn->mCC << endl;
-		omsg = "$HubIsFull";
-		conn->Send(omsg);
+		if (conn->Log(2))
+			conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << conn->mCC << endl;
+
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+		Create_HubIsFull(omsg); // must be sent after chat message
+		conn->Send(omsg, true);
 		return -1;
 	} else {
 		conn->SetLSFlag(eLS_ALLOWED);
@@ -502,23 +504,21 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		mS->mUserCount[conn->mGeoZone]++;
 	}
 
-	// user limit from single ip
-	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER)) {
+	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER)) { // user limit from single ip
 		unsigned int cnt = mS->CntConnIP(conn->mAddrIP);
 
 		if (cnt >= mS->mC.max_users_from_ip) {
 			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), cnt);
-			omsg = "$HubIsFull";
-			conn->Send(omsg);
 			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+			Create_HubIsFull(omsg); // must be sent after chat message
+			conn->Send(omsg, true);
 			return -1;
 		}
 	}
 
 	if (mS->mC.hub_name.size()) { // send hub name without topic
-		string emp;
-		Create_HubName(omsg, mS->mC.hub_name, emp);
-		conn->Send(omsg);
+		Create_HubName(omsg, mS->mC.hub_name, "");
+		conn->Send(omsg, true);
 	}
 
 	// check authorization ip
@@ -531,8 +531,8 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->NeedsPassword()) {
-		omsg="$GetPass";
-		conn->Send(omsg);
+		Create_GetPass(omsg);
+		conn->Send(omsg, true);
 	} else {
 		mS->DCHello(nick, conn);
 		conn->SetLSFlag(eLS_PASSWD);
@@ -644,15 +644,12 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		mS->mR->Login(conn, conn->mpUser->mNick);
 		mS->DCHello(conn->mpUser->mNick, conn);
 
-		if (conn->mpUser->mClass >= eUC_OPERATOR) { // operators get LogedIn
-			omsg = "$LogedIn ";
-			omsg += conn->mpUser->mNick;
+		if (conn->mpUser->mClass >= eUC_OPERATOR) { // operators get $LogedIn
+			Create_LogedIn(omsg, conn->mpUser->mNick);
 			conn->Send(omsg, true);
 		}
 	} else { // wrong password
 		if (conn->mRegInfo && (conn->mRegInfo->getClass() > 0)) { // user is regged
-			omsg = "$BadPass";
-			conn->Send(omsg, true);
 			omsg = _("Incorrect password");
 
 			if (mS->mC.wrongpassword_report)
@@ -668,6 +665,8 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 			mS->mR->LoginError(conn, conn->mpUser->mNick);
 			mS->ConnCloseMsg(conn, _("You've been temporarily banned due to incorrect password."), 1000, eCR_PASSWORD);
+			Create_BadPass(omsg); // must be sent after chat message
+			conn->Send(omsg, true);
 		} else {
 			if (conn->Log(3))
 				conn->LogStream() << "Password without reg" << endl;
@@ -837,8 +836,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		if (conn->Log(2))
 			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
 
-		string omsg = "$HubIsFull";
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+		string omsg;
+		Create_HubIsFull(omsg); // must be sent after chat message
 		conn->Send(omsg, true);
 		delete tag;
 		tag = NULL;
@@ -1461,11 +1461,10 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		if (other->mxConn->mFeatures & eSF_MCTO) { // send as is if supported by client
 			mcto = msg->mStr;
 		} else { // else convert to private main chat message
-			mcto.erase();
 			Create_Chat(mcto, conn->mpUser->mNick, text);
 		}
 
-		other->mxConn->Send(mcto);
+		other->mxConn->Send(mcto, true);
 	}
 
 	return 0;
@@ -1720,14 +1719,8 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		addr = conn->mAddrIP;
 	}
 
-	string ctm = "$ConnectToMe ";
-	ctm += nick;
-	ctm += ' ';
-	ctm += addr;
-	ctm += ':';
-	ctm += StringFrom(iport);
-	ctm += extra;
-
+	string ctm;
+	Create_ConnectToMe(ctm, nick, addr, StringFrom(iport), extra);
 	other->mxConn->Send(ctm, true); // send it
 	return 0;
 }
@@ -2022,16 +2015,14 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	conn->mpUser->mSearchNumber++; // set counter last of all
-
-	string search = "$Search ";
-	search += addr;
-	search += ' ';
+	string search;
 
 	if (passive) {
 		conn->mSRCounter = 0;
-		search += msg->ChunkString(eCH_PS_QUERY);
-	} else
-		search += msg->ChunkString(eCH_AS_QUERY);
+		Create_Search(search, addr, msg->ChunkString(eCH_PS_QUERY));
+	} else {
+		Create_Search(search, addr, msg->ChunkString(eCH_AS_QUERY));
+	}
 
 	mS->SearchToAll(conn, search, passive); // send it
 
@@ -2191,7 +2182,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	cUser *other;
-	string back, nick, sep("$$");
+	string back(""), nick, sep("$$"), omsg;
 	data.append(sep);
 	size_t pos = data.find(sep);
 
@@ -2214,8 +2205,8 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (back.size()) {
-		back = "$UserIP " + back;
-		conn->Send(back, true);
+		Create_UserIP(omsg, back);
+		conn->Send(omsg, true);
 	}
 
 	return 0;
@@ -2430,12 +2421,12 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
-	string topic("$HubTopic ");
+	if (mS->mC.hub_topic.size()) {
+		string topic;
+		Create_HubTopic(topic, mS->mC.hub_topic);
+		conn->Send(topic, true);
+	}
 
-	if (mS->mC.hub_topic.size())
-		topic += mS->mC.hub_topic;
-
-	conn->Send(topic);
 	return 0;
 }
 
@@ -2926,7 +2917,7 @@ void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const strin
 
 void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share)
 {
-	dest.reserve(dest.size() + nick.size() + desc.size() + speed.size() + mail.size() + share.size() + 20);
+	dest.clear();
 	dest.append("$MyINFO $ALL ");
 	dest.append(nick);
 	dest.append(" ");
@@ -2940,9 +2931,9 @@ void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &des
 	dest.append("$");
 }
 
-void cDCProto::Create_Chat(string &dest, const string &nick,const string &text)
+void cDCProto::Create_Chat(string &dest, const string &nick, const string &text)
 {
-	dest.reserve(dest.size() + nick.size() + text.size() + 4);
+	dest.clear();
 	dest.append("<");
 	dest.append(nick);
 	dest.append("> ");
@@ -2951,6 +2942,7 @@ void cDCProto::Create_Chat(string &dest, const string &nick,const string &text)
 
 void cDCProto::Create_PM(string &dest,const string &from, const string &to, const string &sign, const string &text)
 {
+	dest.clear();
 	dest.append("$To: ");
 	dest.append(to);
 	dest.append(" From: ");
@@ -2964,6 +2956,8 @@ void cDCProto::Create_PM(string &dest,const string &from, const string &to, cons
 
 void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text)
 {
+	start.clear();
+	end.clear();
 	start.append("$To: ");
 	end.append(" From: ");
 	end.append(from);
@@ -2973,8 +2967,9 @@ void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &f
 	end.append(text);
 }
 
-void cDCProto::Create_HubName(string &dest, string &name, string &topic)
+void cDCProto::Create_HubName(string &dest, const string &name, const string &topic)
 {
+	dest.clear();
 	dest.append("$HubName ");
 	dest.append(name);
 
@@ -2984,26 +2979,52 @@ void cDCProto::Create_HubName(string &dest, string &name, string &topic)
 	}
 }
 
+void cDCProto::Create_HubTopic(string &dest, const string &topic)
+{
+	dest.clear();
+	dest.append("$HubTopic ");
+	dest.append(topic);
+}
+
 void cDCProto::Create_Quit(string &dest, const string &nick)
 {
+	dest.clear();
 	dest.append("$Quit ");
 	dest.append(nick);
 }
 
 void cDCProto::Create_Hello(string &dest, const string &nick)
 {
+	dest.clear();
 	dest.append("$Hello ");
+	dest.append(nick);
+}
+
+void cDCProto::Create_LogedIn(string &dest, const string &nick)
+{
+	dest.clear();
+	dest.append("$LogedIn ");
 	dest.append(nick);
 }
 
 void cDCProto::Create_ValidateDenide(string &dest, const string &nick)
 {
+	dest.clear();
 	dest.append("$ValidateDenide ");
 	dest.append(nick);
 }
 
+void cDCProto::Create_NickList(string &dest, const string &nick)
+{
+	dest.clear();
+	dest.append("$NickList ");
+	dest.append(nick);
+	dest.append("$$");
+}
+
 void cDCProto::Create_OpList(string &dest, const string &nick)
 {
+	dest.clear();
 	dest.append("$OpList ");
 	dest.append(nick);
 	dest.append("$$");
@@ -3011,6 +3032,7 @@ void cDCProto::Create_OpList(string &dest, const string &nick)
 
 void cDCProto::Create_BotList(string &dest, const string &nick)
 {
+	dest.clear();
 	dest.append("$BotList ");
 	dest.append(nick);
 	dest.append("$$");
@@ -3018,8 +3040,69 @@ void cDCProto::Create_BotList(string &dest, const string &nick)
 
 void cDCProto::Create_Key(string &dest, const string &key)
 {
+	dest.clear();
 	dest.append("$Key ");
 	dest.append(key);
+}
+
+void cDCProto::Create_FailOver(string &dest, const string &addr)
+{
+	dest.clear();
+	dest.append("$FailOver ");
+	dest.append(addr);
+}
+
+void cDCProto::Create_ForceMove(string &dest, const string &addr)
+{
+	dest.clear();
+	dest.append("$ForceMove ");
+	dest.append(addr);
+}
+
+void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra)
+{
+	dest.clear();
+	dest.append("$ConnectToMe ");
+	dest.append(nick);
+	dest.append(" ");
+	dest.append(addr);
+	dest.append(":");
+	dest.append(port);
+	dest.append(extra);
+}
+
+void cDCProto::Create_Search(string &dest, const string &addr, const string &query)
+{
+	dest.clear();
+	dest.append("$Search ");
+	dest.append(addr);
+	dest.append(" ");
+	dest.append(query);
+}
+
+void cDCProto::Create_UserIP(string &dest, const string &list)
+{
+	dest.clear();
+	dest.append("$UserIP ");
+	dest.append(list);
+}
+
+void cDCProto::Create_GetPass(string &dest)
+{
+	dest.clear();
+	dest.append("$GetPass");
+}
+
+void cDCProto::Create_BadPass(string &dest)
+{
+	dest.clear();
+	dest.append("$BadPass");
+}
+
+void cDCProto::Create_HubIsFull(string &dest)
+{
+	dest.clear();
+	dest.append("$HubIsFull");
 }
 
 cConnType *cDCProto::ParseSpeed(const string &uspeed)

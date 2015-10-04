@@ -196,68 +196,29 @@ protected:
 	*/
 	static bool CheckChatMsg(const string &text, nSocket::cConnDC *conn);
 
-	/**
-	* Create a message to send in mainchat.
-	* @param dest String to store the result.
-	* @param nick The sender.
-	* @param text The message.
-	*/
-	static void Create_Chat(string &dest, const string &nick,const string &text);
-
-	/**
-	* Create protocol message for hub name ($HubName).
-	* Hub topic, if not empty, is also appended after hub name.
-	* @param dest String to store the result.
-	* @param name Hub name.
-	* @param topice Hub topic.
-	*/
-	static void Create_HubName(string &dest, string &name, string &topic);
-
-	/**
-	* Create MyINFO string ($MyINFO protocol message).
-	* @param dest String to store MyINFO.
-	* @param nick Nickname.
-	* @param desc Description.
-	* @param speed Speed.
-	* @param mail E-Mail address.
-	* @param share Share in bytes.
-	*/
+	// protocol creation helper functions, note, they all clear destination buffer before appending new data
+	static void Create_Chat(string &dest, const string &nick, const string &text);
+	static void Create_HubName(string &dest, const string &name, const string &topic);
 	static void Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share);
-
-	/**
-	* Create a private message ($To protocol message).
-	* @param dest String to store private message.
-	* @param from The sender.
-	* @param to The recipient.
-	* @param sign The sender.
-	* @param text The message.
-	*/
-	static void Create_PM(string &dest,const string &from, const string &to, const string &sign, const string &text);
-
-	/**
-	* Create a private message that should be sent to everyone ($To protocol message).
-	* @param start Destination filled with first part of the protocol message ($To: ).
-	* @param end Destination that contains the rest of the protocol message.
-	* @param from The sender.
-	* @param sign The sender.
-	* @param text The message.
-	*/
+	static void Create_PM(string &dest, const string &from, const string &to, const string &sign, const string &text);
 	static void Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text);
-
-	/**
-	* Create quit protocol message ($Quit).
-	* @param dest String to store quit message.
-	* @param nick The nick.
-	*/
 	static void Create_Quit(string &dest, const string &nick);
-
-	// $ValidateDenide
 	static void Create_ValidateDenide(string &dest, const string &nick);
-	// hello, operator and bot lists, etc
 	static void Create_Hello(string &dest, const string &nick);
+	static void Create_LogedIn(string &dest, const string &nick);
+	static void Create_NickList(string &dest, const string &nick);
 	static void Create_OpList(string &dest, const string &nick);
 	static void Create_BotList(string &dest, const string &nick);
 	static void Create_Key(string &dest, const string &key);
+	static void Create_FailOver(string &dest, const string &addr);
+	static void Create_ForceMove(string &dest, const string &addr);
+	static void Create_HubTopic(string &dest, const string &topic);
+	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra);
+	static void Create_Search(string &dest, const string &addr, const string &query);
+	static void Create_UserIP(string &dest, const string &list);
+	static void Create_GetPass(string &dest);
+	static void Create_BadPass(string &dest);
+	static void Create_HubIsFull(string &dest);
 
 	/**
 	* Treat mainchat messages.

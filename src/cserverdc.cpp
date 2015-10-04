@@ -163,14 +163,14 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	cUser *VerliHub;
 	VerliHub=new cMainRobot(mC.hub_security, this);
 	VerliHub->mClass=tUserCl(10);
-	mP.Create_MyINFO(VerliHub->mMyINFO ,VerliHub->mNick,mC.hub_security_desc,speed,mail,share);
+	mP.Create_MyINFO(VerliHub->mMyINFO, VerliHub->mNick, mC.hub_security_desc, speed, mail, share);
 	VerliHub->mMyINFO_basic = VerliHub->mMyINFO;
 	AddRobot((cMainRobot*)VerliHub);
 
 	if(mC.opchat_name.size()) {
 		mOpChat=new cOpChat(this);
 		mOpChat->mClass=tUserCl(10);
-		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick,mC.opchat_desc,speed,mail,share);
+		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share);
 		mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 		AddRobot((cMainRobot*)mOpChat);
 	}
@@ -334,9 +334,8 @@ tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 {
 	if (conn) {
-		if (!txt.empty()) {
-			static string msg;
-			msg.erase();
+		if (txt.size()) {
+			string msg;
 			mP.Create_Chat(msg, from, txt);
 			conn->Send(msg, true);
 		}
@@ -349,8 +348,7 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 
 int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_class, int max_class)
 {
-	static string msg;
-	msg.erase();
+	string msg;
 	mP.Create_Chat(msg, from, txt);
 
 	if ((min_class != eUC_NORMUSER) || (max_class != eUC_MASTER))
@@ -368,8 +366,7 @@ int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 
 void cServerDC::DCPublicHSToAll(const string &text)
 {
-	static string msg;
-	msg.erase();
+	string msg;
 	mP.Create_Chat(msg, mC.hub_security, text);
 	mUserList.SendToAll(msg, true, true);
 }
@@ -492,18 +489,17 @@ bool cServerDC::RemoveNick(cUser *User)
 	if(mInProgresUsers.ContainsHash(Hash))
 		mInProgresUsers.RemoveByHash(Hash);
 
-	if(User->mInList) {
-		User->mInList=false;
-		static string omsg;
-		omsg = "";
+	if (User->mInList) {
+		User->mInList = false;
+		string omsg;
 		cDCProto::Create_Quit(omsg, User->mNick);
+		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 
-		// delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
-		mUserList.SendToAll(omsg,mC.delayed_myinfo, true);
-		if(mC.show_tags == 1) {
-			mOpchatList.SendToAll(omsg,mC.delayed_myinfo, true);
+		if (mC.show_tags == 1) {
+			mOpchatList.SendToAll(omsg, mC.delayed_myinfo, true);
 		}
 	}
+
 	return true;
 }
 
@@ -890,7 +886,6 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		} else {
 			omsg = _("Your nick is already taken by another user.");
 			DCPublicHS(omsg, conn);
-			omsg.clear();
 			cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
 			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_BADNICK);
@@ -929,7 +924,6 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 				} else {
 					omsg = _("Your nick is already taken by another user.");
 					DCPublicHS(omsg, conn);
-					omsg.clear();
 					cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
 					conn->Send(omsg, true);
 				}
@@ -981,8 +975,9 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 		if (mC.send_pass_request) {
 			conn->mpUser->mSetPass = true;
-			string getpass("$GetPass");
-			conn->Send(getpass);
+			string getpass;
+			cDCProto::Create_GetPass(getpass);
+			conn->Send(getpass, true);
 		}
 
 		conn->SetTimeOut(eTO_SETPASS, mC.timeout_length[eTO_SETPASS], this->mTime);
@@ -990,9 +985,9 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	}
 
 	if (mC.hub_topic.size()) { // send the hub topic
-		string topic("$HubTopic ");
-		topic += mC.hub_topic + "|";
-		conn->Send(topic, false);
+		string topic;
+		cDCProto::Create_HubTopic(topic, mC.hub_topic);
+		conn->Send(topic, true);
 	}
 
 	if (mC.send_user_info) {
@@ -1054,18 +1049,15 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		return;
 	}
 
+	string omsg;
+
 	if (mC.hub_name.size() && mC.hub_topic.size()) { // send hub name with topic
-		static string omsg;
-		omsg.erase();
 		cDCProto::Create_HubName(omsg, mC.hub_name, mC.hub_topic);
-		conn->Send(omsg);
+		conn->Send(omsg, true);
 	}
 
 	if ((conn->mFeatures & eSF_FAILOVER) && mC.hub_failover_hosts.size()) { // send failover hosts if not empty and client supports it
-		static string omsg;
-		omsg.erase();
-		omsg.append("$FailOver ");
-		omsg.append(mC.hub_failover_hosts);
+		cDCProto::Create_FailOver(omsg, mC.hub_failover_hosts);
 		conn->Send(omsg, true);
 	}
 
@@ -1123,18 +1115,15 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 bool cServerDC::ShowUserToAll(cUser *user)
 {
-	static string msg;
-	msg.erase();
+	string msg;
 	mP.Create_Hello(msg, user->mNick); // send hello
 	mHelloUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
-	msg.erase();
 	msg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
 	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // use cache, so this can be after user is added
 	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
 	if ((user->mClass >= eUC_OPERATOR) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
-		msg.erase();
 		mP.Create_OpList(msg, user->mNick);
 		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
 		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
@@ -1180,8 +1169,7 @@ void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int rea
 
 int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 {
-	static string msg;
-	msg.erase();
+	string msg;
 	mP.Create_Hello(msg, nick);
 	conn->Send(msg, true);
 
@@ -1628,9 +1616,8 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 
 		to_serv.str("");
 		to_serv.clear();
-		lock.clear();
-		key.clear();
-		data.clear();
+		lock.erase();
+		key.erase();
 		pHubList->SetLineToRead(&lock, pipe, 256);
 		pHubList->ReadAll();
 		pHubList->ReadLineLocal();
@@ -2015,11 +2002,10 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 	if (conn->AddrHost().size()) // host
 		os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
 
-	if (!ToMain && this->mOpChat)
+	if (!ToMain && this->mOpChat) {
 		this->mOpChat->SendPMToAll(os.str(), NULL);
-	else {
-		static string ChatMsg;
-		ChatMsg.erase();
+	} else {
+		string ChatMsg;
 		cDCProto::Create_Chat(ChatMsg, mC.opchat_name, os.str());
 		this->mOpchatList.SendToAll(ChatMsg, false, true);
 	}

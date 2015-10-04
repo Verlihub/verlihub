@@ -1456,19 +1456,16 @@ w_Targs* _AddRobot (int id, w_Targs* args) // (char *nick, long uclass, char *de
 		cpiPython::me->server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
 		robot->mMyINFO_basic = robot->mMyINFO;
 
-		static string msg;
-		msg.erase();
+		string msg;
 		cpiPython::me->server->mP.Create_Hello(msg, robot->mNick); // send hello
 		cpiPython::me->server->mHelloUsers.SendToAll(msg, cpiPython::me->server->mC.delayed_myinfo, true);
 		cpiPython::me->server->mUserList.SendToAll(robot->mMyINFO, cpiPython::me->server->mC.delayed_myinfo, true); // send myinfo
 
 		if (robot->mClass >= eUC_OPERATOR) { // send short oplist
-			msg.erase();
 			cpiPython::me->server->mP.Create_OpList(msg, robot->mNick);
 			cpiPython::me->server->mUserList.SendToAll(msg, cpiPython::me->server->mC.delayed_myinfo, true);
 		}
 
-		msg.erase();
 		cpiPython::me->server->mP.Create_BotList(msg, robot->mNick); // send short botlist
 		cpiPython::me->server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, cpiPython::me->server->mC.delayed_myinfo, true);
 
@@ -1587,8 +1584,7 @@ w_Targs* _Topic (int id, w_Targs* args) // (char* topic)
 		cpiPython::me->server->mC.hub_topic = topic;
 		string msg, sTopic;
 		sTopic = topic;
-		cpiPython::me->server->mP.Create_HubName( msg, cpiPython::me->server->mC.hub_name, sTopic);
-
+		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic);
 		cpiPython::me->server->mUserList.SendToAll(msg, eUC_NORMUSER, eUC_MASTER);
 	}
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mC.hub_topic.c_str()));
