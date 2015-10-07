@@ -134,9 +134,9 @@ bool cSetupList::LoadItem(const char *FromFile, cConfigItemBase *ci)
 	return true;
 }
 
-int cSetupList::ReplaceNickChars(string &src, string &dst)
+unsigned int cSetupList::ReplaceNickChars(const string &src, string &dst)
 {
-	int count = 0;
+	unsigned int count = 0;
 	size_t pos;
 	dst = src;
 

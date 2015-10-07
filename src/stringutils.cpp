@@ -277,9 +277,9 @@ __int64 StringAsLL(const string &str)
 #endif
 }
 
-int CountLines(const string &str)
+unsigned int CountLines(const string &str)
 {
-	int lines = 1;
+	unsigned int lines = 1;
 
 	for (unsigned int pos = 0; pos < str.size(); pos++) {
 		if (str[pos] == '\n') {

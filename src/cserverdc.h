@@ -567,6 +567,7 @@ class cServerDC : public cAsyncSocketServer
 
 		// helper functions
 		bool CheckPortNumber(unsigned int port);
+		string EraseNewLines(const string &src);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;

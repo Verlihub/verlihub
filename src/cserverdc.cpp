@@ -2182,6 +2182,32 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 	}
 }
 
+string cServerDC::EraseNewLines(const string &src)
+{
+	string dst(src);
+	size_t pos;
+
+	while (dst.size() > 0) {
+		pos = dst.find("\r");
+
+		if (pos != dst.npos)
+			dst.erase(pos, 1);
+		else
+			break;
+	}
+
+	while (dst.size() > 0) {
+		pos = dst.find("\n");
+
+		if (pos != dst.npos)
+			dst.erase(pos, 1);
+		else
+			break;
+	}
+
+	return dst;
+}
+
 /*
 	this functions collects stack backtrace of the caller functions and demangles it
 	then it tries to send backtrace to crash server via http
@@ -2210,11 +2236,11 @@ void cServerDC::DoStackTrace()
 		char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
 
 		for (char *p = symbollist[i]; *p; ++p) {
-			if (*p == '(')
+			if (*p == '(') {
 				begin_name = p;
-			else if (*p == '+')
+			} else if (*p == '+') {
 				begin_offset = p;
-			else if ((*p == ')') && begin_offset) {
+			} else if ((*p == ')') && begin_offset) {
 				end_offset = p;
 				break;
 			}
@@ -2230,10 +2256,12 @@ void cServerDC::DoStackTrace()
 			if (!status) {
 				funcname = ret;
 				bt << symbollist[i] << ": " << funcname << " +" << begin_offset << endl;
-			} else
+			} else {
 				bt << symbollist[i] << ": " << begin_name << "() +" << begin_offset << endl;
-		} else
+			}
+		} else {
 			bt << symbollist[i] << endl;
+		}
 	}
 
 	free(funcname);
@@ -2257,20 +2285,17 @@ void cServerDC::DoStackTrace()
 		return;
 	}
 
-	ostringstream hub_info, http_req;
-	cTime uptime;
-	uptime -= mStartTime;
-	hub_info << "Address: " << mAddr << ':' << mPort << endl;
-	hub_info << "Uptime: " << uptime.AsPeriod().AsString() << endl;
-	hub_info << "Users: " << mUserCountTot << endl;
-	hub_info << "Stack backtrace:" << endl << endl;
+	ostringstream http_req;
 	http_req << "POST /vhcs.php HTTP/1.1\n";
 	http_req << "Host: crash.verlihub.net\n";
 	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
 	http_req << "Content-Type: text/plain\n";
-	http_req << "Content-Length: " << (hub_info.str().size() + bt.str().size()) << "\n\n"; // end of headers
-	http_req << hub_info.str();
-	http_req << bt.str();
+	http_req << "Content-Length: " << bt.str().size() << "\n";
+	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\n"; // remove new lines, they will break our request
+	http_req << "Hub-Info-Address: " << mAddr << ':' << mPort << "\n";
+	http_req << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\n"; // uptime in seconds
+	http_req << "Hub-Info-Users: " << mUserCountTot << "\n\n"; // end of headers
+	http_req << bt.str(); // content itself
 	http->Write(http_req.str(), true);
 
 	if (http->ok) {
