@@ -53,12 +53,14 @@ cMessageParser::cMessageParser(int MaxChunks):
 cMessageParser::~cMessageParser()
 {
 	mChunks.clear();
-	if (mChStrings != NULL)
+
+	if (mChStrings)
 		delete[] mChStrings;
+
 	mChStrings = NULL;
 }
 
-/** reinitialize the structure */
+// reinitialize the structure
 void cMessageParser::ReInit()
 {
 	mChunks.clear();
@@ -75,7 +77,7 @@ void cMessageParser::ReInit()
 	mKWSize = 0;
 }
 
-/** apply the chunkstring ito the main string */
+// apply the chunkstring into the main string
 void cMessageParser::ApplyChunk(unsigned int n)
 {
 	if (!n)
@@ -93,15 +95,14 @@ void cMessageParser::ApplyChunk(unsigned int n)
 	}
 }
 
-/** return the n'th chunk (as splited by SplitChunks) function */
+// return the n'th chunk, as splited by SplitChunks function
 string &cMessageParser::ChunkString(unsigned int n)
 {
 	if (!n) // the zeroth string is always the complete one, and its pointer is reserved for the empty string
 		return mStr;
 
-	if (n > mChunks.size()) { // this should never happen, but if it happens, we are prepared
+	if (n > mChunks.size()) // this should never happen, but if it happens, we are prepared
 		return mChStrings[0];
-	}
 
 	unsigned long flag = 1 << n;
 
@@ -111,16 +112,13 @@ string &cMessageParser::ChunkString(unsigned int n)
 		try {
 			tChunk &chu = mChunks[n];
 
-			if ((chu.first >= 0) && (chu.second >= 0) && ((unsigned int)chu.first < mStr.length()) && ((unsigned int)chu.second < mStr.length())) {
+			if ((chu.first >= 0) && (chu.second >= 0) && ((unsigned int)chu.first <= mStr.length()) && ((unsigned int)chu.second <= mStr.length())) { // chunk can be empty
 				mChStrings[n].assign(mStr, chu.first, chu.second);
-			} else {
-				if (ErrLog(1))
-					LogStream() << "Error in parsing message, chunk " << n << ": " << mStr << endl;
-
-				return mEmptyStr; // in this case dont return mChStrings[n] below, it can contain data from previously parsed message
+			} else if (ErrLog(1)) {
+				LogStream() << "Error in parsing message, chunk " << n << ": " << mStr << endl;
 			}
 
-			//ShrinkStringToFit(mChStrings[n]);
+			ShrinkStringToFit(mChStrings[n]);
 		} catch (...) {
 			if (ErrLog(1))
 				LogStream() << "Exception in chunk string" << endl;
@@ -130,61 +128,71 @@ string &cMessageParser::ChunkString(unsigned int n)
 	return mChStrings[n];
 }
 
-/** splits message into two chunks by a delimiter adn stores them in the chunklist */
+// splits message into two chunks by a delimiter and stores them in the chunklist
 bool cMessageParser::SplitOnTwo(size_t start, const string &lim, int cn1, int cn2, size_t len, bool left)
 {
-	if(!len) len = mLen;
+	if (!len)
+		len = mLen;
+
 	unsigned long i;
-	if(left)
-	{
-		i = mStr.find(lim,start);
-		if(i == mStr.npos || i-start >= len) return false;
+
+	if (left) {
+		i = mStr.find(lim, start);
+
+		if ((i == mStr.npos) || ((i - start) >= len))
+			return false;
+	} else {
+		i = mStr.rfind(lim, (start + len) - lim.length());
+
+		if ((i == mStr.npos) || (i < start))
+			return false;
 	}
-	else
-	{
-		i = mStr.rfind(lim,start+len-lim.length());
-		if(i == mStr.npos || i < start) return false;
-	}
-	SetChunk(cn1,start,i-start);
-	SetChunk(cn2, i+lim.length(), mLen - i - lim.length());
+
+	SetChunk(cn1, start, i - start);
+	SetChunk(cn2, i + lim.length(), mLen - i - lim.length());
 	return true;
 }
 
-/** splits message into two chunks by a delimiter adn stores them in the chunklist */
+// splits message into two chunks by a delimiter and stores them in the chunklist
 bool cMessageParser::SplitOnTwo(size_t start, const char lim, int cn1, int cn2, size_t len, bool left)
 {
-	if(!len) len = mLen;
+	if (!len)
+		len = mLen;
+
 	unsigned long i;
-	if(left)
-	{
-		i = mStr.find_first_of(lim,start);
-		if(i == mStr.npos || i-start >= len) return false;
+
+	if (left) {
+		i = mStr.find_first_of(lim, start);
+
+		if ((i == mStr.npos) || ((i - start) >= len))
+			return false;
+	} else {
+		i = mStr.find_last_of(lim, (start + len) - 1);
+
+		if ((i == mStr.npos) || (i < start))
+			return false;
 	}
-	else
-	{
-		i = mStr.find_last_of(lim,start+len-1);
-		if(i == mStr.npos || i < start) return false;
-	}
-	SetChunk(cn1,start,i-start);
-	SetChunk(cn2, i+1, mLen - i - 1);
+
+	SetChunk(cn1, start, i - start);
+	SetChunk(cn2, i + 1, mLen - i - 1);
 	return true;
 }
 
-/** splits the chunk number "ch" into two chunks by a delimiter adn stores them in the chunklist under numbers cn1 and cn2 */
+// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
 bool cMessageParser::SplitOnTwo(const char lim, int ch, int cn1, int cn2, bool left)
 {
 	tChunk &chu = mChunks[ch];
-	return SplitOnTwo(chu.first, lim, cn1, cn2,chu.second, left );
+	return SplitOnTwo(chu.first, lim, cn1, cn2, chu.second, left);
 }
 
-/** splits the chunk number "ch" into two chunks by a delimiter adn stores them in the chunklist under numbers cn1 and cn2 */
+// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
 bool cMessageParser::SplitOnTwo(const string &lim, int ch, int cn1, int cn2, bool left)
 {
 	tChunk &chu = mChunks[ch];
-	return SplitOnTwo(chu.first, lim, cn1, cn2,chu.second, left );
+	return SplitOnTwo(chu.first, lim, cn1, cn2, chu.second, left);
 }
 
-/** reduce the chunk from left by amount, cn is the chunk number */
+// reduce the chunk from left by amount, "cn" is the chunk number
 bool cMessageParser::ChunkRedLeft(int cn, int amount)
 {
 	tChunk &ch = mChunks[cn];
@@ -198,25 +206,25 @@ bool cMessageParser::ChunkRedLeft(int cn, int amount)
 	}
 }
 
-/** reduce the chunk from right by amount, cn is the chunk number */
+// reduce the chunk from right by amount, "cn" is the chunk number
 bool cMessageParser::ChunkRedRight(int cn, int amount)
 {
 	mChunks[cn].second -= amount;
 	return true;
 }
 
-/** get string */
-string & cMessageParser::GetStr()
+// get the string
+string &cMessageParser::GetStr()
 {
 	return mStr;
 }
 
-/** fill in a given chunk */
-void cMessageParser::SetChunk(int n,int start,int len)
+// fill in a given chunk
+void cMessageParser::SetChunk(int n, int start, int len)
 {
 	tChunk &ch = mChunks[n];
-	ch.first=start;
-	ch.second=len;
+	ch.first = start;
+	ch.second = len;
 }
 
 	}; // namespace nProtocol

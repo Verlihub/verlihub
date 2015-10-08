@@ -60,9 +60,6 @@ class cMessageParser : public cObj
 		/** The actual message string */
 		string mStr;
 
-		// empty string is case of an error
-		string mEmptyStr;
-
 		/** the type for message chunks */
 		typedef pair<int,int> tChunk;
 		typedef vector<tChunk> tChunkList;
@@ -98,25 +95,25 @@ class cMessageParser : public cObj
 		size_t mKWSize;
 
 	protected:
-		/** reduce the chunk from left by amount, cn is the chunk number */
+		// reduce the chunk from left by amount, "cn" is the chunk number
 		bool ChunkRedLeft(int cn, int amount);
-		/** splits message into two chunks by a delimiter adn stores them in the chunklist */
-		bool SplitOnTwo(size_t start, const string & lim, int cn1, int cn2, size_t len=0,bool left=true);
-		/** splits the chunk number "ch" into two chunks by a delimiter adn stores them in the chunklist under numbers cn1 and cn2 */
-		bool SplitOnTwo(const string & lim, int ch, int cn1, int cn2, bool left=true);
-		/** splits message into two chunks by a delimiter adn stores them in the chunklist */
-		bool SplitOnTwo(size_t start, const char lim, int cn1, int cn2, size_t len=0,bool left=true);
-		/** splits the chunk number "ch" into two chunks by a delimiter adn stores them in the chunklist under numbers cn1 and cn2 */
-		bool SplitOnTwo(const char lim, int ch, int cn1, int cn2, bool left=true);
-		/** reduce the chunk from right by amount, cn is the chunk number */
+		// splits message into two chunks by a delimiter and stores them in the chunklist
+		bool SplitOnTwo(size_t start, const string &lim, int cn1, int cn2, size_t len = 0, bool left = true);
+		// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
+		bool SplitOnTwo(const string &lim, int ch, int cn1, int cn2, bool left = true);
+		// splits message into two chunks by a delimiter and stores them in the chunklist
+		bool SplitOnTwo(size_t start, const char lim, int cn1, int cn2, size_t len = 0, bool left = true);
+		// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
+		bool SplitOnTwo(const char lim, int ch, int cn1, int cn2, bool left = true);
+		// reduce the chunk from right by amount, "cn" is the chunk number
 		bool ChunkRedRight(int cn, int amount);
-		/** fill in a given chunk */
-		void SetChunk(int,int,int);
+		// fill in a given chunk
+		void SetChunk(int n, int start, int len);
 
-	protected: // Private methods
+		// maximum number of chunks
 		int mMaxChunks;
-
 };
+
 /**
  a B*ase class for protocols
 

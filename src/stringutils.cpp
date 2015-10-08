@@ -280,10 +280,12 @@ __int64 StringAsLL(const string &str)
 unsigned int CountLines(const string &str)
 {
 	unsigned int lines = 1;
+	size_t slen = str.size();
 
-	for (unsigned int pos = 0; pos < str.size(); pos++) {
-		if (str[pos] == '\n') {
-			lines++;
+	if (slen) {
+		for (unsigned int pos = 0; pos < slen; pos++) {
+			if (str[pos] == '\n')
+				lines++;
 		}
 	}
 

@@ -844,6 +844,7 @@ void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 {
 	if(conn->Log(4))
 		conn->LogStream() << "IN: " << (*str) << "|" << endl;
+
 	conn->mpMsgParser->Parse();
 	conn->mxProtocol->TreatMsg(conn->mpMsgParser, conn);
 }
@@ -1179,27 +1180,35 @@ int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 	return 0;
 }
 
-bool cServerDC::MinDelay(cTime &then, int min)
+bool cServerDC::MinDelay(cTime &then, unsigned int min)
 {
-	// @todo use timeins instead of mindelay, or change to microsecond resolution
+	/*
+		todo
+			use timeins instead of mindelay, or change to microsecond resolution
+	*/
+
 	cTime now;
-	cTime diff=now-then;
-	if(diff.Sec() >= min) {
-		then = now;
-		return true;
-	}
-	return false;
+	cTime diff = now - then;
+	bool res = false;
+
+	if (diff.Sec() >= min)
+		res = true;
+
+	then = now; // update timestamp in any case, this prevents user from flooding for example in search
+	return res;
 }
 
-bool cServerDC::MinDelayMS(cTime& what, long unsigned int min)
+bool cServerDC::MinDelayMS(cTime &then, long unsigned int min)
 {
 	cTime now;
-	cTime diff=now-what;
-	if(diff.MiliSec() >= min) {
-		what = now;
-		return true;
-	}
-	return false;
+	cTime diff = now - then;
+	bool res = false;
+
+	if (diff.MiliSec() >= min)
+		res = true;
+
+	then = now; // update timestamp in any case, this prevents user from flooding for example in main chat
+	return res;
 }
 
 bool cServerDC::AllowNewConn()
