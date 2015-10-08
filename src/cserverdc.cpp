@@ -1180,7 +1180,7 @@ int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 	return 0;
 }
 
-bool cServerDC::MinDelay(cTime &then, unsigned int min)
+bool cServerDC::MinDelay(cTime &then, unsigned int min, bool update)
 {
 	/*
 		todo
@@ -1189,26 +1189,32 @@ bool cServerDC::MinDelay(cTime &then, unsigned int min)
 
 	cTime now;
 	cTime diff = now - then;
-	bool res = false;
 
-	if (diff.Sec() >= min)
-		res = true;
+	if (diff.Sec() >= min) {
+		then = now;
+		return true;
+	}
 
-	then = now; // update timestamp in any case, this prevents user from flooding for example in search
-	return res;
+	if (update) // update timestamp
+		then = now;
+
+	return false;
 }
 
-bool cServerDC::MinDelayMS(cTime &then, long unsigned int min)
+bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 {
 	cTime now;
 	cTime diff = now - then;
-	bool res = false;
 
-	if (diff.MiliSec() >= min)
-		res = true;
+	if (diff.MiliSec() >= min) {
+		then = now;
+		return true;
+	}
 
-	then = now; // update timestamp in any case, this prevents user from flooding for example in main chat
-	return res;
+	if (update) // update timestamp
+		then = now;
+
+	return false;
 }
 
 bool cServerDC::AllowNewConn()

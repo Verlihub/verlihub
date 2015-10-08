@@ -740,7 +740,7 @@ protected: // Protected methods
 	* @param int Timeout in seconds.
 	* @return True if timer is expired or false otherwise.
 	*/
-	bool MinDelay(cTime &then, unsigned int min);
+	bool MinDelay(cTime &then, unsigned int min, bool update = false);
 
 	/**
 	* Check if timeout if expired (milli-seconds resolution).
@@ -748,7 +748,7 @@ protected: // Protected methods
 	* @param int Timeout in seconds.
 	* @return True if timer is expired or false otherwise.
 	*/
-	bool MinDelayMS(cTime &then, long unsigned int min);
+	bool MinDelayMS(cTime &then, unsigned long min, bool update = false);
 
 	/**
 	* This method is triggered when there is a new incoming connection.

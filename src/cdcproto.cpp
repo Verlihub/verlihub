@@ -1492,11 +1492,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (conn->mpUser->mClass < eUC_VIPUSER) { // check chat delay
-		long delay = mS->mC.int_chat_ms;
+		cTime diff = mS->mTime - conn->mpUser->mT.chat;
 
-		if (!mS->MinDelayMS(conn->mpUser->mT.chat, delay)) {
-			cTime diff = mS->mTime - conn->mpUser->mT.chat;
-			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you made %s."), delay, diff.AsPeriod().AsString().c_str());
+		if (!mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // keep resetting timer when user dont read what we say
+			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you made %s."), mS->mC.int_chat_ms, diff.AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return 0;
 		}
@@ -1922,7 +1921,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		saddr.append(StringFrom(iport));
 	}
 
-	int delay;
+	unsigned int delay;
 
 	switch (conn->mpUser->mClass) { // prepare delay
 		case eUC_REGUSER:
