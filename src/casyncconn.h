@@ -193,10 +193,16 @@ namespace nVerliHub {
 					return mAddrPort;
 				}
 
-				// returns server port that user is connected to
+				// return server address and port that user is connected to
+
 				const int GetServPort()
 				{
 					return mServPort;
+				}
+
+				const string GetServAddr()
+				{
+					return mServAddr;
 				}
 
 				/**
@@ -517,7 +523,8 @@ namespace nVerliHub {
 				/// Port of the connection.
 				int mAddrPort;
 
-				// server port that user is connected to
+				// server address and port that user is connected to
+				string mServAddr;
 				int mServPort;
 
 				/// The maximum size of the buffer that contains stock data.

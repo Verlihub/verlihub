@@ -190,9 +190,12 @@ bool cpiLua::CallAll(const char * fncname, char * args[], cConnDC *conn)
 
 bool cpiLua::OnNewConn(cConnDC *conn)
 {
-	if (conn != NULL) {
-		char * args[] = {
-			(char *)conn->AddrIP().c_str(),
+	if (conn) {
+		char *args[] = {
+			(char*)conn->AddrIP().c_str(),
+			(char*)toString(conn->AddrPort()),
+			(char*)conn->GetServAddr().c_str(),
+			(char*)toString(conn->GetServPort()),
 			NULL
 		};
 

@@ -72,7 +72,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nSocket {
 
-char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE+1];
+char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE + 1];
 unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
@@ -95,36 +95,38 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	struct sockaddr saddr;
 	struct sockaddr_in *addr_in;
 	socklen_t addr_size;
-
 	addr_size = sizeof(saddr);
-
-	mIp=0;
+	mIp = 0;
 	ClearLine();
 	mBufEnd = mBufReadPos = 0;
-	if(mSockDesc) {
-		if(0 > getpeername(mSockDesc, &saddr, &addr_size)) {
-			if(Log(2))
+
+	if (mSockDesc) {
+		if (0 > getpeername(mSockDesc, &saddr, &addr_size)) {
+			if (Log(2))
 				LogStream() << "Error getting peer name, closing" << endl;
+
 			CloseNow();
 		}
-		addr_in = (struct sockaddr_in *)&saddr;
-		// Copy IP
-		mIp = addr_in->sin_addr.s_addr;
-		// IP address
-		mAddrIP = inet_ntoa(addr_in->sin_addr);
-		// Host name
-		if(mxServer && mxServer->mUseDNS)
-			DNSLookup();
-		// Port number
-		mAddrPort = addr_in->sin_port;
 
-		// get server port that user is connected to
-		if (getsockname(mSockDesc, &saddr, &addr_size) == 0) {
+		addr_in = (struct sockaddr_in *)&saddr;
+		mIp = addr_in->sin_addr.s_addr; // copy ip
+		mAddrIP = inet_ntoa(addr_in->sin_addr); // ip address
+
+		if(mxServer && mxServer->mUseDNS) // host name
+			DNSLookup();
+
+		mAddrPort = ntohs(addr_in->sin_port); // port number
+
+		if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
 			addr_in = (struct sockaddr_in *)&saddr;
+			mServAddr = inet_ntoa(addr_in->sin_addr);
 			mServPort = ntohs(addr_in->sin_port);
+		} else if (Log(2)) {
+			LogStream() << "Error getting socket name" << endl;
 		}
 	}
-	memset (&mCloseAfter,0, sizeof(mCloseAfter));
+
+	memset (&mCloseAfter, 0, sizeof(mCloseAfter));
 }
 
 /** connect to given host (ip) on port */
