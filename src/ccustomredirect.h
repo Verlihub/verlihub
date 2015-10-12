@@ -37,7 +37,8 @@ namespace nVerliHub {
 			eHubBusy = 0x000040,
 			eReconnect = 0x000080,
 			eBadNick = 0x000100,
-			eClone = 0x000200
+			eClone = 0x000200,
+			eSelf = 0x000400
 		};
 	};
 
@@ -88,6 +89,7 @@ namespace nVerliHub {
 				// Enable or disable redirect
 				int mEnable;
 		};
+
 	}; // namespace nTables
 }; // namespace nVerliHub
 

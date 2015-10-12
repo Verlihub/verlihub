@@ -43,7 +43,7 @@ namespace nVerliHub {
 		SetBaseTo(&mModel);
 	}
 
-	int cRedirects::MapTo(int Type)
+	int cRedirects::MapTo(unsigned int Type)
 	{
 		switch (Type) {
 			case eCR_INVALID_USER:
@@ -66,6 +66,8 @@ namespace nVerliHub {
 				return eReconnect;
 			case eCR_CLONE:
 				return eClone;
+			case eCR_SELF:
+				return eSelf;
 			case eCR_BADNICK:
 				return eBadNick;
 			case eCR_NOREDIR:
@@ -84,7 +86,7 @@ namespace nVerliHub {
 	@return The stream
 	*/
 
-	char *cRedirects::MatchByType(int Type)
+	char *cRedirects::MatchByType(unsigned int Type)
 	{
 		iterator it;
 		cRedirect *redirect;
@@ -201,7 +203,8 @@ namespace nVerliHub {
 		help += " 64\t\t\t- Hub is busy\r\n";
 		help += " 128\t\t\t- Too fast reconnect\r\n";
 		help += " 256\t\t\t- Bad nick, already used, too short, etc\r\n";
-		help += " 512\t\t\t- Clone detection\r\n\r\n";
+		help += " 512\t\t\t- Clone detection\r\n";
+		help += " 1024\t\t\t- Same user connects twice\r\n\r\n";
 		help += " Remember to make the sum of selected above flags.\r\n";
 
 		cDCProto::EscapeChars(help, help);

@@ -712,7 +712,7 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub health") << mServer->mStatus.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your status") << uType.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your can search every") << autosprintf(ngettext("%d second", "%d seconds", sInt), sInt) << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(ngettext("You can search every %d second", "You can search every %d seconds", sInt), sInt) << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("You are sharing") << convertByte(conn->mpUser->mShare, false).c_str();
 

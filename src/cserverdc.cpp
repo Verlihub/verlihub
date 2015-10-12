@@ -871,12 +871,10 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 					if (olduser->mxConn->Log(2))
 						olduser->mxConn->LogStream() << "Closing because of a new connection" << endl;
 
-					omsg = _("Another user has logged in with same nick and IP address.");
-					DCPublicHS(omsg, olduser->mxConn);
-					olduser->mxConn->CloseNow();
+					ConnCloseMsg(olduser->mxConn, _("Another user has logged in with same nick and IP address."), 1000, eCR_SELF);
 				} else {
 					if (ErrLog(1))
-						LogStream() << "[CRITICAL] Found user " << olduser->mNick << " without a valid conneciton pointer" << endl;
+						LogStream() << "Critical, found user " << olduser->mNick << " without a valid conneciton pointer" << endl;
 				}
 
 				RemoveNick(olduser);
@@ -1164,7 +1162,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 
 void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int reason)
 {
-	DCPublicHS(msg,conn);
+	DCPublicHS(msg, conn);
 	conn->CloseNice(msec, reason);
 }
 

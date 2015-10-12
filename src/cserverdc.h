@@ -132,6 +132,7 @@ namespace nVerliHub {
 			eCR_INVALID_KEY, // lock2key is invalid
 			eCR_RECONNECT, // too fast reconnect
 			eCR_CLONE, // clone detected
+			eCR_SELF, // same user connects twice
 			eCR_BADNICK, // bad nick, already used, too short, etc
 			eCR_NOREDIR // do not redirect, special reason
 		};
