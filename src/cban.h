@@ -114,13 +114,7 @@ namespace nVerliHub {
 				* Set the type of the ban.
 				* @param type Ban type.
 				*/
-				void SetType(unsigned type)
-				{
-					for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
-						if (type == (unsigned)(1 << mType))
-							break;
-					}
-				}
+				void SetType(unsigned type);
 
 				/**
 				* Write ban information to the output stream.

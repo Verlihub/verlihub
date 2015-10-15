@@ -142,6 +142,14 @@ const char *cBan::GetBanType()
 	return banTypes[mType];
 }
 
+void cBan::SetType(unsigned type)
+{
+	for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
+		if (type == (unsigned)(1 << mType))
+			break;
+	}
+}
+
 void cUnBan::DisplayComplete(ostream &os)
 {
 	this->cBan::DisplayComplete(os);
