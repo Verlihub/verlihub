@@ -75,9 +75,11 @@ int cPerlInterpreter::Parse(int argc, char *argv[])
 	int result = perl_parse(mPerl, xs_init, argc, argv, NULL);
 	PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 	mScriptName = argv[1];
-	
-	char *args[] = { (char *)"Main", NULL };
-	CallArgv(PERL_CALL, args);
+	if (!result)
+	{
+		char *args[] = { (char *)"Main", NULL };
+		CallArgv(PERL_CALL, args);
+	}
 	return result;
 }
 

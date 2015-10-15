@@ -173,8 +173,10 @@ bool cConsole::cfAddPerlScript::operator()()
 			return false;
 		}
 	}
-	GetPI()->mPerl.Parse(2, argv);
-	(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
+	if(GetPI()->mPerl.Parse(2, argv))
+		(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
+	else
+		(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
 	return true;
 }
 
@@ -214,7 +216,10 @@ bool cConsole::cfReloadPerlScript::operator()()
 	} else {
 		char *argv[] = { (char*)"", (char*)scriptfile.c_str(), NULL };
 		GetPI()->mPerl.Parse(2, argv);
-		(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
+		if(GetPI()->mPerl.Parse(2, argv))
+			(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
+		else
+			(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
 		return true;
 	}
 }

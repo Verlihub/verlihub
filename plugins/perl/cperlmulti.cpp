@@ -40,7 +40,10 @@ cPerlMulti::~cPerlMulti()
 int cPerlMulti::Parse(int argc, char*argv[]) {
 	cPerlInterpreter *perl = new cPerlInterpreter();
 	int ret = perl->Parse(argc, argv);
-	mPerl.push_back(perl);
+	if (ret)
+		delete perl;
+	else
+		mPerl.push_back(perl);
 	return ret;
 }
 

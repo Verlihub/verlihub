@@ -123,10 +123,13 @@ bool nVerliHub::nPerlPlugin::cpiPerl::AutoLoad()
 		if((filename.size() > 3) && (StrCompare(filename,filename.size()-3,3,".pl")==0)) {
 			pathname = mScriptDir + filename;
 			char *argv[] = { (char*)"", (char*)pathname.c_str(), NULL };
-			mPerl.Parse(2, argv);
-			// FIXME: check weither all ok?
-			if(Log(1))
-				LogStream() << "Success loading and parsing Perl script: " << filename << endl;
+			if (mPerl.Parse(2, argv))
+				if(ErrLog(1))
+					LogStream() << "Failed parsing Perl script: " << filename << endl;
+			else {
+				if(Log(1))
+					LogStream() << "Success loading and parsing Perl script: " << filename << endl;
+			}
 		}
 	}
 
