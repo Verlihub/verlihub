@@ -132,6 +132,7 @@ namespace nVerliHub {
 			eCR_INVALID_KEY, // lock2key is invalid
 			eCR_RECONNECT, // too fast reconnect
 			eCR_CLONE, // clone detected
+			eCR_SELF, // same user connects twice
 			eCR_BADNICK, // bad nick, already used, too short, etc
 			eCR_NOREDIR // do not redirect, special reason
 		};
@@ -567,6 +568,7 @@ class cServerDC : public cAsyncSocketServer
 
 		// helper functions
 		bool CheckPortNumber(unsigned int port);
+		string EraseNewLines(const string &src);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;
@@ -739,7 +741,7 @@ protected: // Protected methods
 	* @param int Timeout in seconds.
 	* @return True if timer is expired or false otherwise.
 	*/
-	bool MinDelay(cTime &what, int min);
+	bool MinDelay(cTime &then, unsigned int min, bool update = false);
 
 	/**
 	* Check if timeout if expired (milli-seconds resolution).
@@ -747,7 +749,7 @@ protected: // Protected methods
 	* @param int Timeout in seconds.
 	* @return True if timer is expired or false otherwise.
 	*/
-	bool MinDelayMS(cTime &what, long unsigned int min);
+	bool MinDelayMS(cTime &then, unsigned long min, bool update = false);
 
 	/**
 	* This method is triggered when there is a new incoming connection.

@@ -42,8 +42,8 @@ namespace nVerliHub {
 				virtual void AddFields();
 				cRedirect * Find(const string &name); //@todo Trigger stuff
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);
-				char *MatchByType(int Type);
-				int MapTo(int Type);
+				char *MatchByType(unsigned int Type);
+				int MapTo(unsigned int Type);
 				void Random(int &key);
 				void CountPlusPlus(char *addr);
 		};
@@ -67,6 +67,7 @@ namespace nVerliHub {
 				virtual void GetHelp(ostream &os);
 
 		};
+
 	}; // namespace nTables
 }; // namespace nVerliHub
 

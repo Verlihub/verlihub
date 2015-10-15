@@ -48,7 +48,7 @@ void ReplaceVarInString(const string &src,const string &var,string &dest, __int6
 string convertByte(__int64 byte, bool UnitType);
 string StringFrom(__int64 const &ll);
 __int64 StringAsLL(const string &);
-int CountLines(const string &);
+unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 
 	}; // namespace nUtils

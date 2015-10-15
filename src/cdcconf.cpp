@@ -134,12 +134,12 @@ void cDCConf::AddVars()
 	// search configuration
 	Add("filter_lan_requests", filter_lan_requests, false);
 	Add("search_number", search_number, 1);
-	Add("int_search",int_search,32);
-	Add("int_search_pas",int_search_pas,48);
-	Add("int_search_reg",int_search_reg,16);
+	Add("int_search", int_search, 32);
+	Add("int_search_pas", int_search_pas, 48);
+	Add("int_search_reg", int_search_reg, 16);
 	Add("int_search_reg_pas", int_search_reg_pas, 48);
-	Add("int_search_vip",int_search_vip,8);
-	Add("int_search_op",int_search_op,1);
+	Add("int_search_vip", int_search_vip, 8);
+	Add("int_search_op", int_search_op, 1);
 	Add("min_search_chars", min_search_chars, 4);
 	Add("max_passive_sr",max_passive_sr,25);
 	Add("delayed_search", delayed_search, true);
@@ -156,7 +156,7 @@ void cDCConf::AddVars()
 	Add("autoreg_class", autoreg_class, -1);
 	Add("nicklist_on_login", nicklist_on_login, true);
 	Add("optimize_userlist", optimize_userlist, false);
-	Add("ul_portion",ul_portion,50);
+	Add("ul_portion", ul_portion, 50);
 	// End nicklist configuration
 
 	// Mainchat messages configuration
@@ -164,7 +164,7 @@ void cDCConf::AddVars()
 	Add("max_chat_msg",max_chat_msg,256u);
 	Add("max_chat_lines", max_chat_lines, 5);
 	Add("delayed_chat", delayed_chat, false);
-	Add("int_chat_ms",int_chat_ms,1000);
+	Add("int_chat_ms", int_chat_ms, (unsigned long)1000);
 	Add("chat_default_on", chat_default_on, true);
 	Add("mainchat_class", mainchat_class, (int)eUC_NORMUSER);
 	Add("private_class", private_class, (int)eUC_NORMUSER);
@@ -261,8 +261,8 @@ void cDCConf::AddVars()
 	// Advanced hub configuration and tweaks
 	Add("extended_welcome_message", extended_welcome_message, true);
 	Add("host_header", host_header, 1);
-	Add("int_myinfo",int_myinfo,60);
-	Add("int_nicklist",int_nicklist,60);
+	Add("int_myinfo", int_myinfo, 60);
+	Add("int_nicklist", int_nicklist, 60);
 	Add("int_login",int_login, 60);
 	Add("max_class_int_login", max_class_int_login, (int)eUC_OPERATOR);
 	Add("max_class_check_clone", max_class_check_clone, -1); // -1 means disabled

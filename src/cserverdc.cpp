@@ -844,6 +844,7 @@ void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 {
 	if(conn->Log(4))
 		conn->LogStream() << "IN: " << (*str) << "|" << endl;
+
 	conn->mpMsgParser->Parse();
 	conn->mxProtocol->TreatMsg(conn->mpMsgParser, conn);
 }
@@ -870,12 +871,10 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 					if (olduser->mxConn->Log(2))
 						olduser->mxConn->LogStream() << "Closing because of a new connection" << endl;
 
-					omsg = _("Another user has logged in with same nick and IP address.");
-					DCPublicHS(omsg, olduser->mxConn);
-					olduser->mxConn->CloseNow();
+					ConnCloseMsg(olduser->mxConn, _("Another user has logged in with same nick and IP address."), 1000, eCR_SELF);
 				} else {
 					if (ErrLog(1))
-						LogStream() << "[CRITICAL] Found user " << olduser->mNick << " without a valid conneciton pointer" << endl;
+						LogStream() << "Critical, found user " << olduser->mNick << " without a valid conneciton pointer" << endl;
 				}
 
 				RemoveNick(olduser);
@@ -1163,7 +1162,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 
 void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int reason)
 {
-	DCPublicHS(msg,conn);
+	DCPublicHS(msg, conn);
 	conn->CloseNice(msec, reason);
 }
 
@@ -1179,26 +1178,40 @@ int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 	return 0;
 }
 
-bool cServerDC::MinDelay(cTime &then, int min)
+bool cServerDC::MinDelay(cTime &then, unsigned int min, bool update)
 {
-	// @todo use timeins instead of mindelay, or change to microsecond resolution
+	/*
+		todo
+			use timeins instead of mindelay, or change to microsecond resolution
+	*/
+
 	cTime now;
-	cTime diff=now-then;
-	if(diff.Sec() >= min) {
+	cTime diff = now - then;
+
+	if (diff.Sec() >= min) {
 		then = now;
 		return true;
 	}
+
+	if (update) // update timestamp
+		then = now;
+
 	return false;
 }
 
-bool cServerDC::MinDelayMS(cTime& what, long unsigned int min)
+bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 {
 	cTime now;
-	cTime diff=now-what;
-	if(diff.MiliSec() >= min) {
-		what = now;
+	cTime diff = now - then;
+
+	if (diff.MiliSec() >= min) {
+		then = now;
 		return true;
 	}
+
+	if (update) // update timestamp
+		then = now;
+
 	return false;
 }
 
@@ -2182,6 +2195,32 @@ void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const 
 	}
 }
 
+string cServerDC::EraseNewLines(const string &src)
+{
+	string dst(src);
+	size_t pos;
+
+	while (dst.size() > 0) {
+		pos = dst.find("\r");
+
+		if (pos != dst.npos)
+			dst.erase(pos, 1);
+		else
+			break;
+	}
+
+	while (dst.size() > 0) {
+		pos = dst.find("\n");
+
+		if (pos != dst.npos)
+			dst.erase(pos, 1);
+		else
+			break;
+	}
+
+	return dst;
+}
+
 /*
 	this functions collects stack backtrace of the caller functions and demangles it
 	then it tries to send backtrace to crash server via http
@@ -2210,11 +2249,11 @@ void cServerDC::DoStackTrace()
 		char *begin_name = 0, *begin_offset = 0, *end_offset = 0;
 
 		for (char *p = symbollist[i]; *p; ++p) {
-			if (*p == '(')
+			if (*p == '(') {
 				begin_name = p;
-			else if (*p == '+')
+			} else if (*p == '+') {
 				begin_offset = p;
-			else if ((*p == ')') && begin_offset) {
+			} else if ((*p == ')') && begin_offset) {
 				end_offset = p;
 				break;
 			}
@@ -2230,10 +2269,12 @@ void cServerDC::DoStackTrace()
 			if (!status) {
 				funcname = ret;
 				bt << symbollist[i] << ": " << funcname << " +" << begin_offset << endl;
-			} else
+			} else {
 				bt << symbollist[i] << ": " << begin_name << "() +" << begin_offset << endl;
-		} else
+			}
+		} else {
 			bt << symbollist[i] << endl;
+		}
 	}
 
 	free(funcname);
@@ -2257,20 +2298,17 @@ void cServerDC::DoStackTrace()
 		return;
 	}
 
-	ostringstream hub_info, http_req;
-	cTime uptime;
-	uptime -= mStartTime;
-	hub_info << "Address: " << mAddr << ':' << mPort << endl;
-	hub_info << "Uptime: " << uptime.AsPeriod().AsString() << endl;
-	hub_info << "Users: " << mUserCountTot << endl;
-	hub_info << "Stack backtrace:" << endl << endl;
+	ostringstream http_req;
 	http_req << "POST /vhcs.php HTTP/1.1\n";
 	http_req << "Host: crash.verlihub.net\n";
 	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
 	http_req << "Content-Type: text/plain\n";
-	http_req << "Content-Length: " << (hub_info.str().size() + bt.str().size()) << "\n\n"; // end of headers
-	http_req << hub_info.str();
-	http_req << bt.str();
+	http_req << "Content-Length: " << bt.str().size() << "\n";
+	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\n"; // remove new lines, they will break our request
+	http_req << "Hub-Info-Address: " << mAddr << ':' << mPort << "\n";
+	http_req << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\n"; // uptime in seconds
+	http_req << "Hub-Info-Users: " << mUserCountTot << "\n\n"; // end of headers
+	http_req << bt.str(); // content itself
 	http->Write(http_req.str(), true);
 
 	if (http->ok) {

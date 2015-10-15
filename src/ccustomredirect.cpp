@@ -74,6 +74,9 @@ namespace nVerliHub {
 			if (flag & eClone)
 				buff += "clone,";
 
+			if (flag & eSelf)
+				buff += "self,";
+
 			if (buff.empty())
 				buff = "default";
 			else

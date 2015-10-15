@@ -1491,41 +1491,45 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 	ostringstream os;
 
-	// check if delay is ok
-	if (conn->mpUser->mClass < eUC_VIPUSER) {
-		long delay = mS->mC.int_chat_ms;
+	if (conn->mpUser->mClass < eUC_VIPUSER) { // check chat delay
+		cTime diff = mS->mTime - conn->mpUser->mT.chat;
 
-		if (!mS->MinDelayMS(conn->mpUser->mT.chat, delay)) {
-			cTime diff = mS->mTime - conn->mpUser->mT.chat;
-			os << autosprintf(_("Not sent because minimum chat delay is %lu ms but you made %s."), delay, diff.AsPeriod().AsString().c_str());
+		if (!mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // keep resetting timer when user dont read what we say
+			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you made %s."), mS->mC.int_chat_ms, diff.AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return 0;
 		}
 	}
 
-	// check for commands
 	string &text = msg->ChunkString(eCH_CH_MSG);
-	if (ParseForCommands(text, conn, 0)) return 0;
 
-	// check if user is allowed to use main chat
-	if (!conn->mpUser->Can(eUR_CHAT, mS->mTime.Sec(), 0)) return -4;
+	if (ParseForCommands(text, conn, 0)) // check for commands
+		return 0;
+
+	if (!conn->mpUser->Can(eUR_CHAT, mS->mTime.Sec(), 0)) { // check if user is allowed to use main chat
+		mS->DCPublicHS(_("You're not allowed to use main chat right now."), conn);
+		return -4;
+	}
 
 	if (conn->mpUser->mClass < mS->mC.mainchat_class) {
 		mS->DCPublicHS(_("Main chat is currently disabled for users with your class."), conn);
 		return 0;
 	}
 
-	// check flood
-	cUser::tFloodHashType Hash = 0;
+	cUser::tFloodHashType Hash = 0; // check same message flood
 	Hash = tHashArray<void*>::HashString(msg->mStr);
-	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_CHAT])) return -5;
+
+	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_CHAT])) {
+		mS->DCPublicHS(_("Your message wasn't sent because it equals your previous message."), conn);
+		return -5;
+	}
+
 	conn->mpUser->mFloodHashes[eFH_CHAT] = Hash;
 
-	// check message length
-	if (conn->mpUser->mClass < eUC_VIPUSER && !cDCProto::CheckChatMsg(text, conn)) return 0;
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && !CheckChatMsg(text, conn)) // check message length and other conditions
+		return 0;
 
-	// if this is a kick message, process it separately
-	if ((mKickChatPattern.Exec(text) >= 4) && (!mKickChatPattern.PartFound(1) || (mKickChatPattern.Compare(2, text, conn->mpUser->mNick) == 0))) {
+	if (text.size() && (mKickChatPattern.Exec(text) >= 4) && (!mKickChatPattern.PartFound(1) || (mKickChatPattern.Compare(2, text, conn->mpUser->mNick) == 0))) { // if this is a kick message, process it separately
 		if (conn->mpUser->mClass >= eUC_OPERATOR) {
 			string kick_reason, other;
 			mKickChatPattern.Extract(4, text, kick_reason);
@@ -1537,7 +1541,8 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	}
 
 	#ifndef WITHOUT_PLUGINS
-	if (!mS->mCallBacks.mOnParsedMsgChat.CallAll(conn, msg)) return 0;
+		if (!mS->mCallBacks.mOnParsedMsgChat.CallAll(conn, msg))
+			return 0;
 	#endif
 
 	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true); // finally send the message
@@ -1880,18 +1885,18 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	string addr;
+	string saddr("");
 
 	if (passive) { // verify sender
-		addr = msg->ChunkString(eCH_PS_NICK);
+		string &nick = msg->ChunkString(eCH_PS_NICK);
 
-		if (CheckUserNick(conn, addr))
+		if (CheckUserNick(conn, nick))
 			return -1;
 
-		addr = "Hub:" + addr;
+		saddr.append("Hub:");
+		saddr.append(nick);
 	} else {
 		string &port = msg->ChunkString(eCH_AS_PORT);
-		port.assign(port, 0, port.find_first_of(' ')); // todo: temporary solution for misparsed port
 
 		if (port.empty() || (port.size() > 5))
 			return -1;
@@ -1901,20 +1906,22 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		if ((iport < 1) || (iport > 65535))
 			return -1;
 
-		addr = msg->ChunkString(eCH_AS_IP);
+		string &addr = msg->ChunkString(eCH_AS_IP);
 
-		if (!CheckIP(conn, addr)) {
+		if (CheckIP(conn, addr)) {
+			saddr.append(addr);
+		} else {
 			if (conn->Log(3))
 				conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
-			addr = conn->mAddrIP;
+			saddr.append(conn->mAddrIP);
 		}
 
-		addr += ':';
-		addr += StringFrom(iport);
+		saddr.append(":");
+		saddr.append(StringFrom(iport));
 	}
 
-	int delay;
+	unsigned int delay;
 
 	switch (conn->mpUser->mClass) { // prepare delay
 		case eUC_REGUSER:
@@ -1942,8 +1949,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
-	} else
+	} else {
 		conn->mpUser->mSearchNumber = 0;
+	}
 
 	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
 		string patt; // check search length
@@ -2019,9 +2027,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (passive) {
 		conn->mSRCounter = 0;
-		Create_Search(search, addr, msg->ChunkString(eCH_PS_QUERY));
+		Create_Search(search, saddr, msg->ChunkString(eCH_PS_QUERY));
 	} else {
-		Create_Search(search, addr, msg->ChunkString(eCH_AS_QUERY));
+		Create_Search(search, saddr, msg->ChunkString(eCH_AS_QUERY));
 	}
 
 	mS->SearchToAll(conn, search, passive); // send it
@@ -2802,13 +2810,16 @@ int cDCProto::NickList(cConnDC *conn)
 
 int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 {
+	if (text.empty())
+		return 0;
+
 	ostringstream omsg;
 
 	// operator commands
 
-	if (conn->mpUser->mClass >= eUC_OPERATOR && mS->mC.cmd_start_op.find_first_of(text[0]) != string::npos) {
+	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.cmd_start_op.find_first_of(text[0]) != string::npos)) {
 		#ifndef WITHOUT_PLUGINS
-		if ((mS->mCallBacks.mOnOperatorCommand.CallAll(conn, (string*)&text)) && (mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 1, pm)))
+		if (mS->mCallBacks.mOnOperatorCommand.CallAll(conn, (string*)&text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 1, pm))
 		#endif
 		{
 			if (!mS->mCo->OpCommand(text, conn) && !mS->mCo->UsrCommand(text, conn)) {
@@ -2824,7 +2835,7 @@ int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 
 	if (mS->mC.cmd_start_user.find_first_of(text[0]) != string::npos) {
 		#ifndef WITHOUT_PLUGINS
-		if ((mS->mCallBacks.mOnUserCommand.CallAll(conn, (string*)&text)) && (mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 0, pm)))
+		if (mS->mCallBacks.mOnUserCommand.CallAll(conn, (string*)&text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 0, pm))
 		#endif
 		{
 			if (!mS->mCo->UsrCommand(text, conn)) {

@@ -56,11 +56,10 @@ public:
 	void OutputFile(const string &, ostream &os);
 	bool SaveItem(const char *InFile, cConfigItemBase *);
 	bool LoadItem(const char *FromFile, cConfigItemBase *);
-	int ReplaceNickChars(string &src, string &dst);
+	unsigned int ReplaceNickChars(const string &src, string &dst);
 private:
 	cSetup mModel;
 };
-
 
 	}; // namespace nTables
 }; // namespace VerliHub

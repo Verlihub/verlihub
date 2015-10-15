@@ -183,12 +183,12 @@ int cConnDC::OnTimer(cTime &now)
 		Server()->ConnCloseMsg(this,os.str(),6000, eCR_TO_ANYACTION);
 	}
 
-	// check frozen users, send to every user, every minute an empty message
-	cTime ten_min_ago;
+	cTime ten_min_ago; // check frozen users, send to every user, every minute an empty message
 	ten_min_ago = ten_min_ago - 600;
-	if(Server()->MinDelay(mT.ping,Server()->mC.delayed_ping) && mpUser && mpUser->mInList && mpUser->mT.login < ten_min_ago) {
-		omsg="";
-		Send(omsg,true);
+
+	if (Server()->MinDelay(mT.ping, Server()->mC.delayed_ping) && mpUser && mpUser->mInList && (mpUser->mT.login < ten_min_ago)) {
+		omsg = "";
+		Send(omsg, true);
 	}
 
 	// upload line optimisation  - upload userlist slowlier
@@ -197,7 +197,7 @@ int cConnDC::OnTimer(cTime &now)
 		string buf, nick;
 		cUser *other;
 
-		for(i=0; i < Server()->mC.ul_portion; i++) {
+		for(unsigned int i = 0; i < Server()->mC.ul_portion; i++) {
 			pos=mpUser->mQueueUL.find_first_of('|',ppos);
 			if(pos == mpUser->mQueueUL.npos) break;
 

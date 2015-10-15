@@ -106,7 +106,7 @@ public:
 	bool delayed_myinfo; // implies also delayed quit
 	bool drop_invalid_key;
 	bool delayed_chat;
-	int delayed_ping; // is number of seconds, not bool
+	unsigned int delayed_ping; // is number of seconds, not bool
 	double min_frequency;
 	string nick_prefix;
 	bool nick_prefix_nocase;
@@ -162,13 +162,13 @@ public:
 	bool filter_lan_requests;
 	bool hide_msg_badctm; // hide following messages: connecting to offline user, connecting to bot
 	unsigned int search_number;
-	int int_search;
-	int int_search_pas;
-	int int_search_reg_pas;
-	int int_search_reg;
-	int int_search_vip;
-	int int_search_op;
-	int int_login;
+	unsigned int int_search;
+	unsigned int int_search_pas;
+	unsigned int int_search_reg_pas;
+	unsigned int int_search_reg;
+	unsigned int int_search_vip;
+	unsigned int int_search_op;
+	unsigned int int_login;
 
 	// protocol flood
 	int max_class_proto_flood;
@@ -208,9 +208,9 @@ public:
 	unsigned long int_flood_all_to_period;
 	unsigned int int_flood_all_to_limit;
 
-	int int_chat_ms;
-	int int_nicklist;
-	int int_myinfo;
+	unsigned long int_chat_ms;
+	unsigned int int_nicklist;
+	unsigned int int_myinfo;
 	bool disable_me_cmd;
 	bool disable_regme_cmd;
 	bool disable_usr_cmds;
@@ -222,7 +222,7 @@ public:
 	int topic_mod_class;
 	int mainchat_class;
 	int private_class;
-	int ul_portion;
+	unsigned int ul_portion;
 	unsigned int min_search_chars;
 	string ip_zone4_min;
 	string ip_zone4_max;

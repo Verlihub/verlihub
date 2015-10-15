@@ -240,7 +240,10 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 			if (cmdid == "help") return CmdHelp(cmd_line, conn);
 			if (cmdid == "myinfo") return CmdMyInfo(cmd_line, conn);
 			if (cmdid == "myip") return CmdMyIp(cmd_line, conn);
-			if (cmdid == "me") return CmdMe(cmd_line, conn);
+
+			if (cmdid == "me")
+				return CmdMe(cmd_line, conn);
+
 			if (cmdid == "regme") return CmdRegMe(cmd_line, conn);
 			if (cmdid == "chat") return CmdChat(cmd_line, conn, true);
 			if (cmdid == "nochat") return CmdChat(cmd_line, conn, false);
@@ -552,39 +555,42 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	string text, tmpline; // prepare text
+	string text, temp; // prepare text
 	getline(cmd_line, text);
 
 	while (cmd_line.good()) {
-		tmpline = "";
-		getline(cmd_line, tmpline);
-		text += "\r\n" + tmpline;
+		temp = "";
+		getline(cmd_line, temp);
+		text += "\r\n" + temp;
 	}
 
-	if (text.size() && (text[0] == ' ')) // small fix
+	if (text.size() && (text[0] == ' ')) // small fix for getline
 		text = text.substr(1);
 
-	string mestr; // check for flood as if it was regular mainchat message
-	mestr = '<';
-	mestr += conn->mpUser->mNick;
-	mestr += "> ";
-	mestr += text;
+	temp.clear(); // check for flood as if it was regular mainchat message
+	temp.append("<");
+	temp.append(conn->mpUser->mNick);
+	temp.append("> ");
+	temp.append(text);
 	cUser::tFloodHashType Hash = 0;
-	Hash = tHashArray<void*>::HashString(mestr);
+	Hash = tHashArray<void*>::HashString(temp);
 
-	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_CHAT]))
+	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR) && (Hash == conn->mpUser->mFloodHashes[eFH_CHAT])) {
+		mOwner->DCPublicHS(_("Your message wasn't sent because it equals your previous message."), conn);
 		return 1;
+	}
 
 	conn->mpUser->mFloodHashes[eFH_CHAT] = Hash;
 
-	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length and other conditions
 		return 1;
 
-	string msg = "** "; // send message
-	msg += conn->mpUser->mNick;
-	msg += " ";
-	msg += text;
-	mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_chat, true);
+	temp.clear(); // create and send message
+	temp.append("** ");
+	temp.append(conn->mpUser->mNick);
+	temp.append(" ");
+	temp.append(text);
+	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
 
@@ -706,7 +712,7 @@ int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
 
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub health") << mServer->mStatus.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your status") << uType.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your can search every") << autosprintf(ngettext("%d second", "%d seconds", sInt), sInt) << "\r\n";
+	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(ngettext("You can search every %d second", "You can search every %d seconds", sInt), sInt) << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << "\r\n";
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("You are sharing") << convertByte(conn->mpUser->mShare, false).c_str();
 
