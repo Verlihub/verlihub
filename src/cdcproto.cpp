@@ -1144,7 +1144,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 
 			if (mS->mC.show_tags >= 1)
-				mS->mOpList.SendToAll(myinfo_full, mS->mC.delayed_myinfo, true);
+				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO = myinfo_full; // keep it

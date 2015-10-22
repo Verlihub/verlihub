@@ -510,9 +510,6 @@ bool cServerDC::RemoveNick(cUser *User)
 		cDCProto::Create_Quit(omsg, User->mNick);
 		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo, true);
-
-		if (mC.show_tags == 1)
-			mOpList.SendToAll(omsg, mC.delayed_myinfo, true);
 	}
 
 	return true;
@@ -1167,7 +1164,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 
 	if (mC.show_tags == 1) { // patch eventually for ops
 		msg = mP.GetMyInfo(user, eUC_OPERATOR);
-		mOpList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
+		mUserList.SendToAllWithClass(msg, eUC_OPERATOR, eUC_MASTER, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
 		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not
 	}
 
