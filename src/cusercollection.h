@@ -212,8 +212,21 @@ public:
 	tHashType Nick2Hash(const string &Nick) { string Key; Nick2Key(Nick, Key); return Key2Hash(Key); /*return Key2HashLower(Nick);*/ }
 	void Nick2Key(const string &Nick, string &Key);
 
-	cUserBase* GetUserBaseByKey (const string &Key ){ return GetByHash(Key2Hash(Key));}
-	cUserBase* GetUserBaseByNick(const string &Nick){ return GetByHash(Nick2Hash(Nick));}
+	cUserBase* GetUserBaseByKey(const string &Key)
+	{
+		if (Key.size())
+			return GetByHash(Key2Hash(Key));
+		else
+			return NULL;
+	}
+
+	cUserBase* GetUserBaseByNick(const string &Nick)
+	{
+		if (Nick.size())
+			return GetByHash(Nick2Hash(Nick));
+		else
+			return NULL;
+	}
 
 	bool   ContainsKey (const string &Key ){ return ContainsHash(Key2Hash(Key)); }
 	bool   ContainsNick(const string &Nick){ return ContainsHash(Nick2Hash(Nick)); }
@@ -277,8 +290,21 @@ public:
 		mRemakeNextIPList = mKeepIPList;
 	}
 
-	cUser* GetUserByKey (const string &Key ){ return (cUser*)GetByHash(Key2Hash(Key));}
-	cUser* GetUserByNick(const string &Nick){ return (cUser *)GetByHash(Nick2Hash(Nick));}
+	cUser* GetUserByKey(const string &Key)
+	{
+		if (Key.size())
+			return (cUser*)GetByHash(Key2Hash(Key));
+		else
+			return NULL;
+	}
+
+	cUser* GetUserByNick(const string &Nick)
+	{
+		if (Nick.size())
+			return (cUser*)GetByHash(Nick2Hash(Nick));
+		else
+			return NULL;
+	}
 
 	string &GetIPList();
 

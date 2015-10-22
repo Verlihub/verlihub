@@ -78,17 +78,17 @@ cUser::cUser():
 {
 	mxConn = NULL;
 	mxServer = NULL;
-	SetRight( eUR_CHAT,0, true );
-	SetRight( eUR_PM,0, true );
-	SetRight( eUR_SEARCH, 0, true );
-	SetRight( eUR_CTM, 0, true );
-	SetRight( eUR_KICK, 0, false );
-	SetRight( eUR_REG, 0, false );
-	SetRight( eUR_OPCHAT, 0, false );
-	SetRight( eUR_DROP, 0, false );
-	SetRight( eUR_TBAN, 0, false );
-	SetRight( eUR_PBAN, 0, false );
-	SetRight( eUR_NOSHARE, 0, false );
+	SetRight(eUR_CHAT, 0, true);
+	SetRight(eUR_PM, 0, true);
+	SetRight(eUR_SEARCH, 0, true);
+	SetRight(eUR_CTM, 0, true);
+	SetRight(eUR_KICK, 0, false);
+	SetRight(eUR_REG, 0, false);
+	SetRight(eUR_OPCHAT, 0, false);
+	SetRight(eUR_DROP, 0, false);
+	SetRight(eUR_TBAN, 0, false);
+	SetRight(eUR_PBAN, 0, false);
+	SetRight(eUR_NOSHARE, 0, false);
 	mProtectFrom = 0;
 	mHideKick = false;
 	mHideShare = false;
@@ -116,17 +116,17 @@ cUser::cUser(const string &nick):
 	IsPassive = true;
 	mRights = 0;
 	mToBan = false;
-	SetRight( eUR_CHAT, 0, true );
-	SetRight( eUR_PM, 0, true );
-	SetRight( eUR_SEARCH, 0, true );
-	SetRight( eUR_CTM, 0, true );
-	SetRight( eUR_KICK, 0, false );
-	SetRight( eUR_REG, 0, false );
-	SetRight( eUR_OPCHAT, 0, false );
-	SetRight( eUR_DROP, 0, false );
-	SetRight( eUR_TBAN, 0, false );
-	SetRight( eUR_PBAN, 0, false );
-	SetRight( eUR_NOSHARE, 0, false );
+	SetRight(eUR_CHAT, 0, true);
+	SetRight(eUR_PM, 0, true);
+	SetRight(eUR_SEARCH, 0, true);
+	SetRight(eUR_CTM, 0, true);
+	SetRight(eUR_KICK, 0, false);
+	SetRight(eUR_REG, 0, false);
+	SetRight(eUR_OPCHAT, 0, false);
+	SetRight(eUR_DROP, 0, false);
+	SetRight(eUR_TBAN, 0, false);
+	SetRight(eUR_PBAN, 0, false);
+	SetRight(eUR_NOSHARE, 0, false);
 	mProtectFrom = 0;
 	mHideKick = false;
 	mHideShare = false;
@@ -379,22 +379,69 @@ void cUser::DisplayRightsInfo(ostream &os, bool head)
 
 bool cUser::Can(unsigned Right, long now, int OtherClass)
 {
-	if( mClass >= nEnums::eUC_ADMIN ) return true;
-	switch(Right)
-	{
-		case nEnums::eUR_CHAT: if(!mGag || (mGag > now)) return false; break;
-		case nEnums::eUR_PM  : if(!mNoPM || (mNoPM > now)) return false; break;
-		case nEnums::eUR_SEARCH: if(!mNoSearch || (mNoSearch > now)) return false; break;
-		case nEnums::eUR_CTM: if(!mNoCTM || (mNoCTM > now)) return false; break;
-		case nEnums::eUR_KICK   : if((mClass < nEnums::eUC_OPERATOR) && mCanKick && (mCanKick < now)) return false; break;
-		case nEnums::eUR_DROP   : if((mClass < nEnums::eUC_OPERATOR) && mCanDrop && (mCanDrop < now)) return false; break;
-		case nEnums::eUR_TBAN   : if((mClass < nEnums::eUC_OPERATOR) && mCanTBan && (mCanTBan < now)) return false; break;
-		case nEnums::eUR_PBAN   : if((mClass < nEnums::eUC_OPERATOR) && mCanPBan && (mCanPBan < now)) return false; break;
-		case nEnums::eUR_NOSHARE: if((mClass < nEnums::eUC_VIPUSER ) && mCanShare0 && (mCanShare0 < now)) return false; break;
-		case nEnums::eUR_REG: if((mClass < mxServer->mC.min_class_register ) && mCanReg && (mCanReg < now)) return false; break;
-		case nEnums::eUR_OPCHAT: if((mClass < eUC_OPERATOR ) && mCanOpchat && (mCanOpchat < now)) return false; break;
-		default: break;
-	};
+	if (mClass >= nEnums::eUC_ADMIN)
+		return true;
+
+	switch (Right) {
+		case nEnums::eUR_CHAT:
+			if (!mGag || (mGag > now))
+				return false;
+
+			break;
+		case nEnums::eUR_PM:
+			if (!mNoPM || (mNoPM > now))
+				return false;
+
+			break;
+		case nEnums::eUR_SEARCH:
+			if (!mNoSearch || (mNoSearch > now))
+				return false;
+
+			break;
+		case nEnums::eUR_CTM:
+			if (!mNoCTM || (mNoCTM > now))
+				return false;
+
+			break;
+		case nEnums::eUR_KICK:
+			if ((mClass < nEnums::eUC_OPERATOR) && mCanKick && (mCanKick < now))
+				return false;
+
+			break;
+		case nEnums::eUR_DROP:
+			if ((mClass < nEnums::eUC_OPERATOR) && mCanDrop && (mCanDrop < now))
+				return false;
+
+			break;
+		case nEnums::eUR_TBAN:
+			if ((mClass < nEnums::eUC_OPERATOR) && mCanTBan && (mCanTBan < now))
+				return false;
+
+			break;
+		case nEnums::eUR_PBAN:
+			if ((mClass < nEnums::eUC_OPERATOR) && mCanPBan && (mCanPBan < now))
+				return false;
+
+			break;
+		case nEnums::eUR_NOSHARE:
+			if ((mClass < nEnums::eUC_VIPUSER) && mCanShare0 && (mCanShare0 < now))
+				return false;
+
+			break;
+		case nEnums::eUR_REG:
+			if ((mClass < mxServer->mC.min_class_register) && mCanReg && (mCanReg < now))
+				return false;
+
+			break;
+		case nEnums::eUR_OPCHAT:
+			if ((mClass < mxServer->mC.opchat_class) && mCanOpchat && (mCanOpchat < now))
+				return false;
+
+			break;
+		default:
+			break;
+	}
+
 	return true;
 }
 
@@ -617,19 +664,18 @@ bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)
 	return false;
 }
 
-bool cChatRoom::IsUserAllowed(cUser *)
+bool cChatRoom::IsUserAllowed(cUser *user)
 {
 	return false;
 }
 
 cOpChat::cOpChat(cServerDC *server):
 	cChatRoom(server->mC.opchat_name, &server->mOpchatList, server)
-{
-}
+{}
 
 bool cOpChat::IsUserAllowed(cUser *user)
 {
-	if (user && (user->mClass >= eUC_OPERATOR))
+	if (user && this->mxServer && (user->mClass >= this->mxServer->mC.opchat_class))
 		return true;
 	else
 		return false;

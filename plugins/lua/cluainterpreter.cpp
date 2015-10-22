@@ -76,13 +76,13 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserCN", &_GetUserCN);
 	RegisterFunction("GetUserCity", &_GetUserCity);
 
-#ifdef HAVE_LIBGEOIP
-	RegisterFunction("GetIPCC", &_GetIPCC);
-	RegisterFunction("GetIPCN", &_GetIPCN);
-	RegisterFunction("GetIPCity", &_GetIPCity);
-	RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
-	RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
-#endif
+	#ifdef HAVE_LIBGEOIP
+		RegisterFunction("GetIPCC", &_GetIPCC);
+		RegisterFunction("GetIPCN", &_GetIPCN);
+		RegisterFunction("GetIPCity", &_GetIPCity);
+		RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
+		RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
+	#endif
 
 	RegisterFunction("GetMyINFO", &_GetMyINFO);
 	RegisterFunction("GetUpTime", &_GetUpTime);
@@ -163,7 +163,7 @@ void cLuaInterpreter::Load()
 
 void cLuaInterpreter::ReportLuaError(const char *error)
 {
-	if (cpiLua::me && cpiLua::me->log_level) {
+	if (cpiLua::me && (cpiLua::me->log_level > 0)) {
 		cServerDC *serv = cServerDC::sCurrentServer;
 
 		if (serv) {
@@ -177,7 +177,7 @@ void cLuaInterpreter::ReportLuaError(const char *error)
 
 			string start, end;
 			serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
-			serv->SendToAllWithNick(start, end, eUC_OPERATOR, eUC_MASTER);
+			serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
 		}
 	}
 }

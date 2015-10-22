@@ -29,6 +29,7 @@ namespace nVerliHub {
 	};
 	namespace nLuaPlugin {
 		class cpiLua;
+
 class cConsole
 {
 public:
@@ -40,7 +41,7 @@ protected:
 	//enum { eMSG_SEND, eMSG_READ };
 	class cfBase: public nCmdr::cCommand::sCmdFunc {
 		public:
-			cpiLua *GetPI() { return ((cConsole *)(mCommand->mCmdr->mOwner))->mLua; }
+			cpiLua *GetPI() { return ((cConsole*)(mCommand->mCmdr->mOwner))->mLua; }
 	};
 
 	class cfGetLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptGet;
@@ -48,6 +49,7 @@ protected:
 	class cfDelLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptDel;
 	class cfReloadLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptRe;
 	class cfLogLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptLog;
+	class cfErrLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptErr;
 	class cfInfoLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptInfo;
 	class cfVersionLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptVersion;
 	class cfFilesLuaScript: public cfBase { virtual bool operator()(); } mcfLuaScriptFiles;
@@ -57,6 +59,7 @@ protected:
 	nCmdr::cCommand mCmdLuaScriptDel;
 	nCmdr::cCommand mCmdLuaScriptRe;
 	nCmdr::cCommand mCmdLuaScriptLog;
+	nCmdr::cCommand mCmdLuaScriptErr;
 	nCmdr::cCommand mCmdLuaScriptInfo;
 	nCmdr::cCommand mCmdLuaScriptVersion;
 	nCmdr::cCommand mCmdLuaScriptFiles;

@@ -1140,10 +1140,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				string send_info;
 				send_info = GetMyInfo(conn->mpUser, eUC_NORMUSER);
 				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true);
+				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true);
 			}
 
 			if (mS->mC.show_tags >= 1)
-				mS->mOpchatList.SendToAll(myinfo_full, mS->mC.delayed_myinfo, true);
+				mS->mOpList.SendToAll(myinfo_full, mS->mC.delayed_myinfo, true);
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
@@ -1954,19 +1955,6 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
-		string patt; // check search length
-
-		if (passive)
-			patt = msg->ChunkString(eCH_PS_SEARCHPATTERN);
-		else
-			patt = msg->ChunkString(eCH_AS_SEARCHPATTERN);
-
-		if (patt.size() < mS->mC.min_search_chars) {
-			os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
-			mS->DCPublicHS(os.str(), conn);
-			return -1;
-		}
-
 		cUser::tFloodHashType Hash = 0; // check same message flood
 		Hash = tHashArray<void*>::HashString(msg->mStr);
 
@@ -2015,7 +2003,47 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (!conn->mpUser->Can(eUR_SEARCH, mS->mTime.Sec(), 0)) // check temporary right
-		return -4; // todo: notify user
+		return -4;
+
+	string lims, spat;
+
+	if (passive) {
+		lims = msg->ChunkString(eCH_PS_SEARCHLIMITS);
+		spat = msg->ChunkString(eCH_PS_SEARCHPATTERN);
+	} else {
+		lims = msg->ChunkString(eCH_AS_SEARCHLIMITS);
+		spat = msg->ChunkString(eCH_AS_SEARCHPATTERN);
+	}
+
+	size_t limlen = lims.size();
+
+	if (limlen < 8) // check limits length
+		return -1;
+
+	size_t patlen = spat.size();
+
+	if (!patlen) // check base search length
+		return -4;
+
+	if (lims.substr(limlen - 3) == "?9?") { // check tth searches
+		bool tthpref = true;
+
+		if ((patlen < 4) || (StrCompare(spat, 0, 4, "TTH:") != 0))
+			tthpref = false;
+
+		if ((patlen < 43) || (patlen > 43) || (!tthpref)) { // change search type
+			lims[limlen - 2] = '1';
+
+			if (tthpref)
+				spat = spat.substr(4);
+		}
+	}
+
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator
+		os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
+		mS->DCPublicHS(os.str(), conn);
+		return -1;
+	}
 
  	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
@@ -2023,15 +2051,12 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	conn->mpUser->mSearchNumber++; // set counter last of all
-	string search;
 
-	if (passive) {
+	if (passive)
 		conn->mSRCounter = 0;
-		Create_Search(search, saddr, msg->ChunkString(eCH_PS_QUERY));
-	} else {
-		Create_Search(search, saddr, msg->ChunkString(eCH_AS_QUERY));
-	}
 
+	string search;
+	Create_Search(search, saddr, lims, spat);
 	mS->SearchToAll(conn, search, passive); // send it
 
 	/*
@@ -3082,13 +3107,14 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 	dest.append(extra);
 }
 
-void cDCProto::Create_Search(string &dest, const string &addr, const string &query)
+void cDCProto::Create_Search(string &dest, const string &addr, const string &lims, const string &spat)
 {
 	dest.clear();
 	dest.append("$Search ");
 	dest.append(addr);
 	dest.append(" ");
-	dest.append(query);
+	dest.append(lims);
+	dest.append(spat);
 }
 
 void cDCProto::Create_UserIP(string &dest, const string &list)

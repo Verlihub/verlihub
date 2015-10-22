@@ -966,54 +966,70 @@ int cDCConsole::CmdUserLimit(istringstream & cmd_line, cConnDC * conn)
 	return 1;
 }
 
-/** class user (change temporarily his class)
+/*
 	!class <nick> <new_class_0_to_5>
 */
+
 int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream os;
-	string s;
-	cUser *user;
-	int nclass = 3, oclass, mclass = conn->mpUser->mClass;
-	cmd_line >> s >> nclass;
+	string nick;
+	int new_class = 3, old_class = 0, op_class = conn->mpUser->mClass;
+	cmd_line >> nick >> new_class;
 
-	if (!s.size() || nclass < 0 || nclass > 5 || nclass >= mclass) {
-		os << _("Usage: !class <nick> [<class>=3]") << " (" << autosprintf(_("maximum class is %d"), mclass) << ")";
+	if (nick.empty() || (new_class < 0) || (new_class > 5) || (new_class >= op_class)) {
+		os << _("Command usage") << ": !class <nick> [class=3] (" << autosprintf(_("maximum class is %d or %d"), 5, op_class) << ")";
 		mOwner->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
 
-	user = mOwner->mUserList.GetUserByNick(s);
+	cUser *user = mOwner->mUserList.GetUserByNick(nick);
 
 	if (user && user->mxConn) {
-		oclass = user->mClass;
+		old_class = user->mClass;
 
-		if (oclass < mclass) {
-			os << autosprintf(_("Temporarily changed class to %d for user: %s"), nclass, s.c_str());
-			user->mClass = (tUserCl)nclass;
+		if (old_class < op_class) {
+			os << autosprintf(_("Temporarily changing class from %d to %d for user: %s"), old_class, new_class, nick.c_str());
+			user->mClass = (tUserCl)new_class;
 
-			if ((oclass < eUC_OPERATOR) && (nclass >= eUC_OPERATOR)) {
-				mOwner->mOpchatList.Add(user);
+			if ((old_class < mOwner->mC.opchat_class) && (new_class >= mOwner->mC.opchat_class)) { // opchat list
+				if (!mOwner->mOpchatList.ContainsNick(user->mNick))
+					mOwner->mOpchatList.Add(user);
+			} else if ((old_class >= mOwner->mC.opchat_class) && (new_class < mOwner->mC.opchat_class)) {
+				if (mOwner->mOpchatList.ContainsNick(user->mNick))
+					mOwner->mOpchatList.Remove(user);
+			}
 
+			string msg;
+
+			if ((old_class < eUC_OPERATOR) && (new_class >= eUC_OPERATOR)) { // oplist
 				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
-					string msg;
 					mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
-					mOwner->mUserList.SendToAll(msg, false, true); // no cache
-					mOwner->mOpList.Add(user);
-				}
-			} else if ((oclass >= eUC_OPERATOR) && (nclass < eUC_OPERATOR)) {
-				mOwner->mOpchatList.Remove(user);
+					mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+					mOwner->mInProgresUsers.SendToAll(msg, false, true);
 
-				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys))
-					mOwner->mOpList.Remove(user);
-					// user will remain in users oplist until they reconnect
-					// solution would be to send quit and hello + myinfo again, todo
+					if (!mOwner->mOpList.ContainsNick(user->mNick))
+						mOwner->mOpList.Add(user);
+				}
+			} else if ((old_class >= eUC_OPERATOR) && (new_class < eUC_OPERATOR)) {
+				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
+					if (mOwner->mOpList.ContainsNick(user->mNick))
+						mOwner->mOpList.Remove(user);
+
+					mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
+					mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+					mOwner->mInProgresUsers.SendToAll(msg, false, true);
+					mOwner->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+					mOwner->mHelloUsers.SendToAll(msg, false, true);
+					mOwner->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+					mOwner->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+				}
 			}
 		} else {
-			os << autosprintf(_("You have no rights to change class for user: %s"), s.c_str());
+			os << autosprintf(_("You have no rights to change class for user: %s"), nick.c_str());
 		}
 	} else {
-		os << autosprintf(_("User not found: %s"), s.c_str());
+		os << autosprintf(_("User not found: %s"), nick.c_str());
 	}
 
 	mOwner->DCPublicHS(os.str().c_str(), conn);
@@ -1802,29 +1818,49 @@ bool cDCConsole::cfGag::operator()()
 
 	cUser *usr = mS->mUserList.GetUserByNick(nick);
 
-	if (usr != NULL) {
+	if (usr) {
 		switch (Action) {
-			case eAC_GAG: usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true); break;
-			case eAC_NOPM: usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true); break;
-			case eAC_NOCHATS: usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true); usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true); break;
-			case eAC_NODL: usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true); break;
-			case eAC_NOSEARCH: usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true); break;
-			case eAC_NOSHARE: usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true); break;
-			case eAC_CANREG: usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true); break;
-			case eAC_KVIP: usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true); break;
-			case eAC_OPCHAT: usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true); break;
-			default: return false;
-		};
+			case eAC_GAG:
+				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
+				break;
+			case eAC_NOPM:
+				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
+				break;
+			case eAC_NOCHATS:
+				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
+				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
+				break;
+			case eAC_NODL:
+				usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true);
+				break;
+			case eAC_NOSEARCH:
+				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
+				break;
+			case eAC_NOSHARE:
+				usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true);
+				break;
+			case eAC_CANREG:
+				usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true);
+				break;
+			case eAC_KVIP:
+				usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true);
+				break;
+			case eAC_OPCHAT:
+				usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true);
+				break;
+			default:
+				return false;
+		}
 
-		// apply rights to user object
-		usr->ApplyRights(penalty);
+		usr->ApplyRights(penalty); // apply rights to user object
 		cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(usr->mNick);
 
-		// apply operator chat right
-		if (usr->Can(eUR_OPCHAT, mS->mTime.Sec()))
-			mS->mOpchatList.AddWithHash(usr, Hash);
-		else {
-			if (mS->mOpchatList.ContainsHash(Hash)) mS->mOpchatList.RemoveByHash(Hash);
+		if (usr->Can(eUR_OPCHAT, mS->mTime.Sec())) { // apply operator chat right
+			if (!mS->mOpchatList.ContainsHash(Hash))
+				mS->mOpchatList.AddWithHash(usr, Hash);
+		} else {
+			if (mS->mOpchatList.ContainsHash(Hash))
+				mS->mOpchatList.RemoveByHash(Hash);
 		}
 	}
 
@@ -2270,6 +2306,7 @@ bool cDCConsole::cfRegUsr::operator()()
 			}
 
 			break;
+
 		case eAC_CLASS: // class
 			#ifndef WITHOUT_PLUGINS
 				if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
@@ -2279,31 +2316,45 @@ bool cDCConsole::cfRegUsr::operator()()
 			#endif
 
 			if (user && user->mxConn) { // no need to reconnect for class to take effect
-				int oclass = user->mClass;
-				user->mClass = (tUserCl)ParClass;
+				if ((user->mClass < mS->mC.opchat_class) && (ParClass >= mS->mC.opchat_class)) { // opchat list
+					if (!mS->mOpchatList.ContainsNick(user->mNick))
+						mS->mOpchatList.Add(user);
+				} else if ((user->mClass >= mS->mC.opchat_class) && (ParClass < mS->mC.opchat_class)) {
+					if (mS->mOpchatList.ContainsNick(user->mNick))
+						mS->mOpchatList.Remove(user);
+				}
 
-				if ((oclass < eUC_OPERATOR) && (ParClass >= eUC_OPERATOR)) {
-					mS->mOpchatList.Add(user);
-
+				if ((user->mClass < eUC_OPERATOR) && (ParClass >= eUC_OPERATOR)) { // oplist
 					if (RegFound && !ui.mHideKeys) {
 						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-						mS->mUserList.SendToAll(msg, false, true); // no cache
-						mS->mOpList.Add(user);
-					}
-				} else if ((oclass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
-					mS->mOpchatList.Remove(user);
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
 
+						if (!mS->mOpList.ContainsNick(user->mNick))
+							mS->mOpList.Add(user);
+					}
+				} else if ((user->mClass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
 					if (RegFound && !ui.mHideKeys) {
-						mS->mOpList.Remove(user);
-						// user will remain in users oplist until they reconnect
-						// solution would be to send quit and hello + myinfo again, todo
+						if (mS->mOpList.ContainsNick(user->mNick))
+							mS->mOpList.Remove(user);
+
+						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
+						mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+						mS->mHelloUsers.SendToAll(msg, false, true);
+						mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+						mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
 					}
 				}
+
+				user->mClass = (tUserCl)ParClass;
 			}
 
 			field = "class";
 			ostr << autosprintf(_("Your class has been changed to %s."), par.c_str());
 			break;
+
 		case eAC_ENABLE: //enable
 			field = "enabled";
 			par = "1";

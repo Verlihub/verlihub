@@ -214,7 +214,7 @@ protected:
 	static void Create_ForceMove(string &dest, const string &addr);
 	static void Create_HubTopic(string &dest, const string &topic);
 	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra);
-	static void Create_Search(string &dest, const string &addr, const string &query);
+	static void Create_Search(string &dest, const string &addr, const string &lims, const string &spat);
 	static void Create_UserIP(string &dest, const string &list);
 	static void Create_GetPass(string &dest);
 	static void Create_BadPass(string &dest);

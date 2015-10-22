@@ -81,23 +81,29 @@ public:
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
 	virtual bool OnOpChatMessage(string *nick, string *data);
 	virtual bool OnUnLoad(long code);
+
 	char* toString(int);
 	char* longToString(long);
-
 	bool AutoLoad();
-	bool CallAll(const char *, char * [], cConnDC *conn = NULL);
-	int Size() { return mLua.size(); }
-	void SetLogLevel(int);
-	bool IsNumber(const char*);
+	bool CallAll(const char *, char *[], cConnDC *conn = NULL);
+	unsigned int Size() { return mLua.size(); }
+	void SetLogLevel(int level);
+	void SetErrClass(int eclass);
+	const char* GetConf(const char *conf, const char *var);
+	bool SetConf(const char *conf, const char *var, const char *val);
+	bool IsNumber(const char *str);
+
 	void Empty()
 	{
 		tvLuaInterpreter::iterator it;
 
-		for(it = mLua.begin(); it != mLua.end(); ++it) {
-			if(*it != NULL)
+		for (it = mLua.begin(); it != mLua.end(); ++it) {
+			if ((*it) != NULL) {
 				delete *it;
-			*it = NULL;
+				(*it) = NULL;
+			}
 		}
+
 		mLua.clear();
 	}
 
@@ -106,22 +112,26 @@ public:
 		mLua.push_back(ip);
 	}
 
-	cLuaInterpreter * operator[](int i)
+	cLuaInterpreter * operator[](unsigned int i)
 	{
-		if(i < 0 || i > Size()) return NULL;
+		if ((i < 0) || (i > Size()))
+			return NULL;
+		else
 			return mLua[i];
 	}
 
 	cConsole mConsole;
 	nMySQL::cQuery *mQuery;
-	typedef vector<cLuaInterpreter *> tvLuaInterpreter;
+	typedef vector<cLuaInterpreter*> tvLuaInterpreter;
 	tvLuaInterpreter mLua;
-
 	string mScriptDir;
-
 	static int log_level;
+	static int err_class;
+	static cServerDC *server;
 	static cpiLua *me;
 };
+
 	}; // namespace nLuaPlugin
 }; // namespace nVerliHub
+
 #endif

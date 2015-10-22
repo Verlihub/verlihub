@@ -178,21 +178,21 @@ bool cMessageParser::SplitOnTwo(size_t start, const char lim, int cn1, int cn2, 
 	return true;
 }
 
-// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
+// splits the chunk number ch into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
 bool cMessageParser::SplitOnTwo(const char lim, int ch, int cn1, int cn2, bool left)
 {
 	tChunk &chu = mChunks[ch];
 	return SplitOnTwo(chu.first, lim, cn1, cn2, chu.second, left);
 }
 
-// splits the chunk number "ch" into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
+// splits the chunk number ch into two chunks by a delimiter and stores them in the chunklist under numbers cn1 and cn2
 bool cMessageParser::SplitOnTwo(const string &lim, int ch, int cn1, int cn2, bool left)
 {
 	tChunk &chu = mChunks[ch];
 	return SplitOnTwo(chu.first, lim, cn1, cn2, chu.second, left);
 }
 
-// reduce the chunk from left by amount, "cn" is the chunk number
+// reduce the chunk from left by amount, cn is the chunk number
 bool cMessageParser::ChunkRedLeft(int cn, int amount)
 {
 	tChunk &ch = mChunks[cn];
@@ -206,10 +206,17 @@ bool cMessageParser::ChunkRedLeft(int cn, int amount)
 	}
 }
 
-// reduce the chunk from right by amount, "cn" is the chunk number
+// reduce the chunk from right by amount, cn is the chunk number
 bool cMessageParser::ChunkRedRight(int cn, int amount)
 {
 	mChunks[cn].second -= amount;
+	return true;
+}
+
+// increase the chunk from left by amount, cn is the chunk number
+bool cMessageParser::ChunkIncLeft(int cn, int amount)
+{
+	mChunks[cn].second += amount;
 	return true;
 }
 

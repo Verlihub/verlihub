@@ -259,6 +259,9 @@ bool cMessageDC::SplitChunks()
 			if (!SplitOnTwo('?', eCH_PS_QUERY, eCH_PS_SEARCHLIMITS, eCH_PS_SEARCHPATTERN, false))
 				mError = true;
 
+			if (!ChunkIncLeft(eCH_PS_SEARCHLIMITS, 1)) // get back last question mark
+				mError = true;
+
 			break;
 
 		case eDC_MSEARCH: // not implemented, but should be same as active search
@@ -278,6 +281,9 @@ bool cMessageDC::SplitChunks()
 				mError = true;
 
 			if (!SplitOnTwo('?', eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN, false))
+				mError = true;
+
+			if (!ChunkIncLeft(eCH_AS_SEARCHLIMITS, 1)) // get back last question mark
 				mError = true;
 
 			break;

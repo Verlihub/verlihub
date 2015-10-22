@@ -66,8 +66,15 @@ cCommand *cCommandCollection::FindCommand(const string &commandLine)
 bool cCommandCollection::ExecuteCommand(cCommand *command, ostream &os, void *options)
 {
 	if (!command->TestParams()) {
-		os << _("Command parameters error") << ":\r\n\r\n";
-		command->GetSyntaxHelp(os);
+		ostringstream help;
+		command->GetSyntaxHelp(help);
+		os << _("Command parameters error");
+
+		if (help.str().size())
+			os << ":\r\n\r\n" << help.str();
+		else
+			os << ".";
+
 		return false;
 	}
 

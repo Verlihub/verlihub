@@ -113,21 +113,28 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mC.Save();
 	mC.Load();
 	mConnTypes = new cConnTypes(this);
-	mCo = new cDCConsole(this,mMySQL);
-	mR = new cRegList(mMySQL,this);
+	mCo = new cDCConsole(this, mMySQL);
+	mR = new cRegList(mMySQL, this);
 	mBanList = new cBanList(this);
 	mUnBanList = new cUnBanList(this);
 	mPenList = new cPenaltyList(mMySQL);
 	mKickList = new cKickList(mMySQL);
 	mZLib = new cZLib();
-	int i;
-	for ( i = 0; i <= USER_ZONES; i++ ) mUserCount[i]=0;
-	for ( i = 0; i <= USER_ZONES; i++ ) mUploadZone[i].SetPeriod(60.);
+	unsigned int i;
+
+	for (i = 0; i <= USER_ZONES; i++)
+		mUserCount[i] = 0;
+
+	for (i = 0; i <= USER_ZONES; i++)
+		mUploadZone[i].SetPeriod(60.);
 
 	SetClassName("cServerDC");
 
 	mR->CreateTable();
-	if(mC.use_reglist_cache) mR->ReloadCache();
+
+	if (mC.use_reglist_cache)
+		mR->ReloadCache();
+
 	mBanList->CreateTable();
 	mBanList->Cleanup();
 	mUnBanList->CreateTable();
@@ -138,10 +145,11 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mPenList->CreateTable();
 	mPenList->Cleanup();
 	mConnTypes->OnStart();
-	if(mC.use_penlist_cache) mPenList->ReloadCache();
 
-	// setup userlists
-	string nctmp;
+	if (mC.use_penlist_cache)
+		mPenList->ReloadCache();
+
+	string nctmp; // setup userlists
 	nctmp="$NickList ";
 	mUserList.SetNickListStart(nctmp);
 	nctmp="$OpList ";
@@ -158,24 +166,24 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	nctmp="$PassiveList ";
 	mPassiveUsers.SetNickListStart(nctmp);
 
-	// add the users
-	string speed(/*"Hub\x9"*/"\x1"),mail(""),share("0");
+	string speed(/*"Hub\x9"*/"\x1"), mail(""), share("0"); // add the users
 	cUser *VerliHub;
-	VerliHub=new cMainRobot(mC.hub_security, this);
-	VerliHub->mClass=tUserCl(10);
+	VerliHub = new cMainRobot(mC.hub_security, this);
+	VerliHub->mClass = tUserCl(10);
 	mP.Create_MyINFO(VerliHub->mMyINFO, VerliHub->mNick, mC.hub_security_desc, speed, mail, share);
 	VerliHub->mMyINFO_basic = VerliHub->mMyINFO;
 	AddRobot((cMainRobot*)VerliHub);
 
-	if(mC.opchat_name.size()) {
-		mOpChat=new cOpChat(this);
-		mOpChat->mClass=tUserCl(10);
+	if (mC.opchat_name.size()) {
+		mOpChat = new cOpChat(this);
+		mOpChat->mClass = tUserCl(10);
 		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share);
 		mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 		AddRobot((cMainRobot*)mOpChat);
 	}
+
 	string net_log(mConfigBaseDir);
-	net_log.append( "/net_out.log");
+	net_log.append("/net_out.log");
 	mNetOutLog.open(net_log.c_str(), ios::out);
 	mTotalShare = 0;
 	mTotalSharePeak = 0;
@@ -474,19 +482,26 @@ bool cServerDC::RemoveNick(cUser *User)
 	                return false;
 		}
 	}
-	if(mOpList.ContainsHash(Hash))
+
+	if (mOpList.ContainsHash(Hash))
 		mOpList.RemoveByHash(Hash);
-	if(mOpchatList.ContainsHash(Hash))
+
+	if (mOpchatList.ContainsHash(Hash))
 		mOpchatList.RemoveByHash(Hash);
-	if(mActiveUsers.ContainsHash(Hash))
+
+	if (mActiveUsers.ContainsHash(Hash))
 		mActiveUsers.RemoveByHash(Hash);
-	if(mPassiveUsers.ContainsHash(Hash))
+
+	if (mPassiveUsers.ContainsHash(Hash))
 		mPassiveUsers.RemoveByHash(Hash);
-	if(mHelloUsers.ContainsHash(Hash))
+
+	if (mHelloUsers.ContainsHash(Hash))
 		mHelloUsers.RemoveByHash(Hash);
-	if(mChatUsers.ContainsHash(Hash))
+
+	if (mChatUsers.ContainsHash(Hash))
 		mChatUsers.RemoveByHash(Hash);
-	if(mInProgresUsers.ContainsHash(Hash))
+
+	if (mInProgresUsers.ContainsHash(Hash))
 		mInProgresUsers.RemoveByHash(Hash);
 
 	if (User->mInList) {
@@ -494,10 +509,10 @@ bool cServerDC::RemoveNick(cUser *User)
 		string omsg;
 		cDCProto::Create_Quit(omsg, User->mNick);
 		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
+		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo, true);
 
-		if (mC.show_tags == 1) {
-			mOpchatList.SendToAll(omsg, mC.delayed_myinfo, true);
-		}
+		if (mC.show_tags == 1)
+			mOpList.SendToAll(omsg, mC.delayed_myinfo, true);
 	}
 
 	return true;
@@ -1151,10 +1166,9 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	}
 
 	if (mC.show_tags == 1) { // patch eventually for ops
-		msg.erase();
 		msg = mP.GetMyInfo(user, eUC_OPERATOR);
-		mOpchatList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
-		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not, ops are dangerous creatures, they may have idea to kick people for not seeing their tags
+		mOpList.SendToAll(msg, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
+		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not
 	}
 
 	return true;
@@ -1217,7 +1231,7 @@ bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 
 bool cServerDC::AllowNewConn()
 {
-	return mConnList.size() <= (unsigned) mC.max_users_total + mC.max_extra_regs + mC.max_extra_vips + mC.max_extra_ops + mC.max_extra_cheefs + mC.max_extra_admins + 300;
+	return (mConnList.size() <= (unsigned)(mC.max_users_total + mC.max_extra_regs + mC.max_extra_vips + mC.max_extra_ops + mC.max_extra_cheefs + mC.max_extra_admins + 300));
 }
 
 int cServerDC::SaveFile(const string &file, const string &text)
@@ -1438,48 +1452,53 @@ int cServerDC::OnTimer(cTime &now)
 	mChatUsers.FlushCache();
 	mInProgresUsers.FlushCache();
 	mRobotList.FlushCache();
-
 	mSysLoad = eSL_NORMAL;
-	if(mFrequency.mNumFill > 0) {
+
+	if (mFrequency.mNumFill > 0) {
 		double freq = mFrequency.GetMean(mTime);
 
-		if(freq < 1.2 * mC.min_frequency) mSysLoad = eSL_PROGRESSIVE;
-		if(freq < 1.0 * mC.min_frequency) mSysLoad = eSL_CAPACITY;
-		if(freq < 0.8 * mC.min_frequency) mSysLoad = eSL_RECOVERY;
-		if(freq < 0.5 * mC.min_frequency) mSysLoad = eSL_SYSTEM_DOWN;
-	}
-
-	if(mC.max_upload_kbps > 0.00001) {
-		int zone;
-		double total_upload=0.;
-		for(zone = 0; zone <= USER_ZONES; zone++)
-			total_upload += this->mUploadZone[zone].GetMean(this->mTime);
-		if ((total_upload / 1024.0) > mC.max_upload_kbps) {
+		if (freq < (1.2 * mC.min_frequency))
 			mSysLoad = eSL_PROGRESSIVE;
-		}
+
+		if (freq < (1.0 * mC.min_frequency))
+			mSysLoad = eSL_CAPACITY;
+
+		if (freq < (0.8 * mC.min_frequency))
+			mSysLoad = eSL_RECOVERY;
+
+		if (freq < (0.5 * mC.min_frequency))
+			mSysLoad = eSL_SYSTEM_DOWN;
 	}
 
-	// perform all temp functions
-	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); ++i) {
+	if (mC.max_upload_kbps > 0.00001) {
+		unsigned int zone;
+		double total_upload = 0.;
+
+		for (zone = 0; zone <= USER_ZONES; zone++)
+			total_upload += this->mUploadZone[zone].GetMean(this->mTime);
+
+		if ((total_upload / 1024.0) > mC.max_upload_kbps)
+			mSysLoad = eSL_PROGRESSIVE;
+	}
+
+	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); ++i) { // perform all temp functions
 		if (*i) {
-			// delete finished functions
-			if((*i)->done()) {
+			if ((*i)->done()) { // delete finished functions
 				delete *i;
 				(*i) = NULL;
-			} else {
-				// step the rest
+			} else { // step the rest
 				(*i)->step();
 			}
 		}
 	}
 
-	if (bool(mSlowTimer.mMinDelay) && mSlowTimer.Check(mTime, 1) == 0)
+	if (bool(mSlowTimer.mMinDelay) && (mSlowTimer.Check(mTime, 1) == 0))
 		mBanList->RemoveOldShortTempBans(mTime.Sec());
 
-	if (bool(mHublistTimer.mMinDelay) && mHublistTimer.Check(mTime, 1) == 0)
+	if (bool(mHublistTimer.mMinDelay) && (mHublistTimer.Check(mTime, 1) == 0))
 		this->RegisterInHublist(mC.hublist_host, mC.hublist_port, NULL);
 
-	if (bool(mReloadcfgTimer.mMinDelay) && mReloadcfgTimer.Check(mTime, 1) == 0) {
+	if (bool(mReloadcfgTimer.mMinDelay) && (mReloadcfgTimer.Check(mTime, 1) == 0)) {
 		mC.Load();
 		//mCo->mTriggers->ReloadAll();
 
@@ -1539,9 +1558,12 @@ int cServerDC::OnTimer(cTime &now)
 	mBanList->mTempNickBanlist.AutoResize();
 	mBanList->mTempIPBanlist.AutoResize();
 	mCo->mTriggers->OnTimer(now.Sec());
+
 	#ifndef WITHOUT_PLUGINS
-	if (!mCallBacks.mOnTimer.CallAll(now.MiliSec())) return false;
+		if (!mCallBacks.mOnTimer.CallAll(now.MiliSec()))
+			return false;
 	#endif
+
 	return true;
 }
 

@@ -23,10 +23,10 @@
 #include "src/cbanlist.h"
 #include "src/cserverdc.h"
 #include "src/i18n.h"
+#include "src/script_api.h"
 #include <dirent.h>
 #include <string>
 #include <cctype>
-#include "src/script_api.h"
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -35,9 +35,14 @@ namespace nVerliHub {
 	using namespace nMySQL;
 	namespace nLuaPlugin {
 
-cpiLua    *cpiLua::me = NULL;
-int	  cpiLua::log_level = 1;
-cpiLua::cpiLua() : mConsole(this), mQuery(NULL)
+cServerDC *cpiLua::server = NULL;
+cpiLua *cpiLua::me = NULL;
+int cpiLua::log_level = 1;
+int cpiLua::err_class = 3;
+
+cpiLua::cpiLua():
+	mConsole(this),
+	mQuery(NULL)
 {
 	mName = LUA_PI_IDENTIFIER;
 	mVersion = LUA_PI_VERSION;
@@ -46,6 +51,13 @@ cpiLua::cpiLua() : mConsole(this), mQuery(NULL)
 
 cpiLua::~cpiLua()
 {
+	ostringstream o;
+	o << log_level;
+	this->SetConf("pi_lua", "log_level", o.str().c_str());
+	o.str("");
+	o << err_class;
+	this->SetConf("pi_lua", "err_class", o.str().c_str());
+
 	if (mQuery != NULL) {
 		mQuery->Clear();
 		delete mQuery;
@@ -54,32 +66,113 @@ cpiLua::~cpiLua()
 	this->Empty();
 }
 
-bool cpiLua::IsNumber(const char *s)
+bool cpiLua::IsNumber(const char *str)
 {
-	if (!s || !strlen(s))
+	if (!str || !strlen(str))
 		return false;
 
-	for (unsigned int i = 0; i < strlen(s); i++) {
-		if (!isdigit(s[i]))
+	for (unsigned int i = 0; i < strlen(str); i++) {
+		if (!isdigit(str[i]))
 			return false;
 	}
 
 	return true;
 }
 
-void cpiLua::SetLogLevel( int level )
+void cpiLua::SetLogLevel(int level)
 {
-	//int old = log_level;
 	log_level = level;
-	//SetConf("pi_lua", "log_level", o.str().c_str());
+	ostringstream o;
+	o << level;
+	this->SetConf("pi_lua", "log_level", o.str().c_str());
 }
 
-void cpiLua::OnLoad(cServerDC *server)
+void cpiLua::SetErrClass(int eclass)
 {
-	cVHPlugin::OnLoad(server);
+	err_class = eclass;
+	ostringstream o;
+	o << eclass;
+	this->SetConf("pi_lua", "err_class", o.str().c_str());
+}
 
-	mQuery = new cQuery(server->mMySQL);
-	mScriptDir = mServer->mConfigBaseDir + "/scripts/";
+const char* cpiLua::GetConf(const char *conf, const char *var)
+{
+	if (!server || !conf || !var)
+		return NULL;
+
+	string file(conf), fake;
+	bool delci = false;
+	cConfigItemBase *ci = NULL;
+
+	if (file == server->mDBConf.config_name) {
+		ci = server->mC[var];
+	} else {
+		delci = true;
+		ci = new cConfigItemBaseString(fake, var);
+		server->mSetupList.LoadItem(file.c_str(), ci);
+	}
+
+	if (ci) {
+		static string res("");
+		ci->ConvertTo(res);
+
+		if (delci)
+			delete ci;
+
+		ci = NULL;
+		return res.c_str();
+	}
+
+	return NULL;
+}
+
+bool cpiLua::SetConf(const char *conf, const char *var, const char *val)
+{
+	if (!server || !conf || !var || !val)
+		return false;
+
+	string file(conf), fake;
+	bool delci = false;
+	cConfigItemBase *ci = NULL;
+
+	if (file == server->mDBConf.config_name) {
+		ci = server->mC[var];
+	} else {
+		delci = true;
+		ci = new cConfigItemBaseString(fake, var);
+		server->mSetupList.LoadItem(file.c_str(), ci);
+	}
+
+	if (ci) {
+		ci->ConvertFrom(val);
+		server->mSetupList.SaveItem(file.c_str(), ci);
+
+		if (delci)
+			delete ci;
+
+		ci = NULL;
+		return true;
+	}
+
+	return false;
+}
+
+void cpiLua::OnLoad(cServerDC *serv)
+{
+	cVHPlugin::OnLoad(serv);
+	mQuery = new cQuery(serv->mMySQL);
+	this->server = serv;
+	mScriptDir = mServer->mConfigBaseDir + "/scripts/"; // todo: why we use mServer here?
+
+	const char *temp = this->GetConf("pi_lua", "log_level"); // get log level
+
+	if (temp && (strlen(temp) > 0) && IsNumber(temp))
+		log_level = atoi(temp);
+
+	temp = this->GetConf("pi_lua", "err_class"); // get error class
+
+	if (temp && (strlen(temp) > 0) && IsNumber(temp))
+		err_class = atoi(temp);
 
 	AutoLoad();
 }
@@ -173,7 +266,7 @@ bool cpiLua::AutoLoad()
 	return true;
 }
 
-bool cpiLua::CallAll(const char * fncname, char * args[], cConnDC *conn)
+bool cpiLua::CallAll(const char *fncname, char *args[], cConnDC *conn)
 {
 	bool ret = true;
 
@@ -181,7 +274,16 @@ bool cpiLua::CallAll(const char * fncname, char * args[], cConnDC *conn)
 		tvLuaInterpreter::iterator it;
 
 		for (it = mLua.begin(); it != mLua.end(); ++it) {
-			if (!(*it)->CallFunction(fncname, args, conn)) ret = false;
+			if (!(*it)->CallFunction(fncname, args, conn))
+				ret = false;
+
+			/*
+				todo
+					we dont break here
+					it means that all scripts get function call
+					ret is set to what last script returns, even if previous returned false
+					look over this
+			*/
 		}
 	}
 

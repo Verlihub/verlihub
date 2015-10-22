@@ -1744,21 +1744,23 @@ int _RegBot(lua_State *L)
 		share = IntToStr(ishare);
 	}
 
-	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
-	robot->mMyINFO_basic = robot->mMyINFO;
-
 	string msg;
 	serv->mP.Create_Hello(msg, robot->mNick); // send hello
 	serv->mHelloUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share); // create myinfo
+	robot->mMyINFO_basic = robot->mMyINFO;
 	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send myinfo
+	serv->mInProgresUsers.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true);
 
 	if (robot->mClass >= eUC_OPERATOR) { // send short oplist
 		serv->mP.Create_OpList(msg, robot->mNick);
 		serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
+		serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
 	}
 
 	serv->mP.Create_BotList(msg, robot->mNick); // send short botlist
 	serv->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
+	serv->mInProgresUsers.SendToAllWithFeature(msg, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 
 	li->addBot((char*)nick.c_str(), (char*)robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // add to lua bots
 	lua_pushboolean(L, 1);
@@ -1860,35 +1862,43 @@ int _EditBot(lua_State *L)
 		share = IntToStr(ishare);
 	}
 
-	robot->mMyINFO.clear(); // clear old and create new myinfo
-	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
-	robot->mMyINFO_basic = robot->mMyINFO;
-	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send new myinfo
-
 	if (robot->mClass != iclass) { // different class
-		if ((robot->mClass < eUC_OPERATOR) && (iclass >= eUC_OPERATOR)) { // changing to op
+		string msg;
+
+		if ((robot->mClass < serv->mC.opchat_class) && (iclass >= serv->mC.opchat_class)) { // add to opchat list
+			if (!serv->mOpchatList.ContainsNick(nick))
+				serv->mOpchatList.Add(robot);
+		} else if ((robot->mClass >= serv->mC.opchat_class) && (iclass < serv->mC.opchat_class)) { // remove from opchat list
+			if (serv->mOpchatList.ContainsNick(nick))
+				serv->mOpchatList.Remove(robot);
+		}
+
+		if ((robot->mClass < eUC_OPERATOR) && (iclass >= eUC_OPERATOR)) { // changing from user to op
 			if (!serv->mOpList.ContainsNick(nick)) // add to oplist
 				serv->mOpList.Add(robot);
 
-			if (!serv->mOpchatList.ContainsNick(nick)) // add to opchat list
-				serv->mOpchatList.Add(robot);
-
-			string msg;
-			serv->mP.Create_OpList(msg, robot->mNick); // send short oplist
+			serv->mP.Create_OpList(msg, robot->mNick); // send short oplist to users
 			serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-		} else if ((robot->mClass >= eUC_OPERATOR) && (iclass < eUC_OPERATOR)) { // changing from op
+			serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+		} else if ((robot->mClass >= eUC_OPERATOR) && (iclass < eUC_OPERATOR)) { // changing from op to user
 			if (serv->mOpList.ContainsNick(nick)) // remove from oplist
 				serv->mOpList.Remove(robot);
 
-			if (serv->mOpchatList.ContainsNick(nick)) // remove from opchat list
-				serv->mOpchatList.Remove(robot);
-
-			// robot will remain in users oplist until they reconnect
-			// solution would be to send quit and hello + myinfo with botlist again, todo
+			serv->mP.Create_Quit(msg, robot->mNick); // send quit to users
+			serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
+			serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+			serv->mP.Create_Hello(msg, robot->mNick); // send hello
+			serv->mHelloUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
 		}
 
 		robot->mClass = (tUserCl)iclass; // set new class
 	}
+
+	robot->mMyINFO.clear(); // clear old and create new myinfo, must be sent after quit
+	serv->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
+	robot->mMyINFO_basic = robot->mMyINFO;
+	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send new myinfo
+	serv->mInProgresUsers.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true);
 
 	li->editBot((char*)nick.c_str(), (char*)robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // edit in lua bots
 	lua_pushboolean(L, 1);

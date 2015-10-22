@@ -45,10 +45,11 @@ cConsole::cConsole(cpiLua *lua):
 	mCmdLuaScriptAdd(1, "!luaload ", "(.*)", &mcfLuaScriptAdd),
 	mCmdLuaScriptDel(2, "!luaunload ", "(.*)", &mcfLuaScriptDel),
 	mCmdLuaScriptRe(3, "!luareload ", "(.*)", &mcfLuaScriptRe),
-	mCmdLuaScriptLog(4, "!lualog", "(.*)", &mcfLuaScriptLog), // (\\d+)
-	mCmdLuaScriptInfo(5, "!luainfo", "", &mcfLuaScriptInfo),
-	mCmdLuaScriptVersion(6, "!luaversion", "", &mcfLuaScriptVersion),
-	mCmdLuaScriptFiles(7, "!luafiles", "", &mcfLuaScriptFiles),
+	mCmdLuaScriptLog(4, "!lualog ", "(\\d+)", &mcfLuaScriptLog),
+	mCmdLuaScriptErr(5, "!luaerr ", "(\\d+)", &mcfLuaScriptErr),
+	mCmdLuaScriptInfo(6, "!luainfo", "", &mcfLuaScriptInfo),
+	mCmdLuaScriptVersion(7, "!luaversion", "", &mcfLuaScriptVersion),
+	mCmdLuaScriptFiles(8, "!luafiles", "", &mcfLuaScriptFiles),
 	mCmdr(this)
 {
 	mCmdr.Add(&mCmdLuaScriptAdd);
@@ -57,6 +58,7 @@ cConsole::cConsole(cpiLua *lua):
 	mCmdr.Add(&mCmdLuaScriptRe);
 	mCmdr.Add(&mCmdLuaScriptInfo);
 	mCmdr.Add(&mCmdLuaScriptLog);
+	mCmdr.Add(&mCmdLuaScriptErr);
 	mCmdr.Add(&mCmdLuaScriptVersion);
 	mCmdr.Add(&mCmdLuaScriptFiles);
 }
@@ -68,10 +70,10 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 {
 	nCmdr::cCommand *cmd = mCmdr.FindCommand(str);
 
-	if (cmd != NULL) {
+	if (cmd) {
 		int id = cmd->GetID();
 
-		if ((id >= 0) && (id <= 7) && conn && conn->mpUser && (conn->mpUser->mClass < mLua->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
+		if ((id >= 0) && (id <= 8) && conn && conn->mpUser && (conn->mpUser->mClass < mLua->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
 			mLua->mServer->DCPublicHS(_("You have no rights to do this."), conn);
 			return 1;
 		}
@@ -98,7 +100,7 @@ bool cConsole::cfVersionLuaScript::operator()()
 
 bool cConsole::cfInfoLuaScript::operator()()
 {
-	int size = 0;
+	unsigned int size = 0;
 
 	if (GetPI()->Size() > 0)
 		size = lua_gc(GetPI()->mLua[0]->mL, LUA_GCCOUNT, 0);
@@ -116,7 +118,7 @@ bool cConsole::cfGetLuaScript::operator()()
 	(*mOS) << toUpper(_("Script")) << "\r\n";
 	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
 
-	for (int i = 0; i < GetPI()->Size(); i++) {
+	for (unsigned int i = 0; i < GetPI()->Size(); i++) {
 		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << GetPI()->mLua[i]->mScriptName << "\r\n";
 	}
 
@@ -325,7 +327,6 @@ bool cConsole::cfReloadLuaScript::operator()()
 bool cConsole::cfLogLuaScript::operator()()
 {
 	int level;
-	ostringstream msg;
 
 	if (GetParInt(1, level)) {
 		stringstream ss;
@@ -334,11 +335,30 @@ bool cConsole::cfLogLuaScript::operator()()
 		ss.str("");
 		ss << level;
 		string newValue = ss.str();
-		(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'."), "pi_lua", "log_level", oldValue.c_str(), newValue.c_str());
 		cpiLua::me->SetLogLevel(level);
+		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), "pi_lua", "log_level", oldValue.c_str(), newValue.c_str());
 	} else {
-		msg << autosprintf(_("Current log level: %d"), cpiLua::log_level);
-		(*mOS) << msg.str();
+		(*mOS) << autosprintf(_("Current log level: %d"), cpiLua::log_level);
+	}
+
+	return true;
+}
+
+bool cConsole::cfErrLuaScript::operator()()
+{
+	int eclass;
+
+	if (GetParInt(1, eclass)) {
+		stringstream ss;
+		ss << cpiLua::err_class;
+		string oldValue = ss.str();
+		ss.str("");
+		ss << eclass;
+		string newValue = ss.str();
+		cpiLua::me->SetErrClass(eclass);
+		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), "pi_lua", "err_class", oldValue.c_str(), newValue.c_str());
+	} else {
+		(*mOS) << autosprintf(_("Current error class: %d"), cpiLua::err_class);
 	}
 
 	return true;

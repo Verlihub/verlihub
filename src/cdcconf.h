@@ -122,6 +122,7 @@ public:
 	string hub_security_desc;
 	string opchat_name;
 	string opchat_desc;
+	int opchat_class;
 	string cmd_start_op;
 	string cmd_start_user;
 	bool dest_report_chat;
