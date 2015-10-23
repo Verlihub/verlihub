@@ -1696,57 +1696,68 @@ bool cDCConsole::cfTrigger::operator()()
 
 bool cDCConsole::cfSetVar::operator()()
 {
-	string file(mS->mDBConf.config_name),var,val, fake_val;
-	bool DeleteItem = false;
-
 	if (mConn->mpUser->mClass < eUC_ADMIN) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	// [file] variable value style
-	if (mParRex->PartFound(2))
-		mParRex->Extract(2,mParStr,file);
+	string file(mS->mDBConf.config_name), var, val, fake_val;
+	bool found = true, delci = false;
 
-	mParRex->Extract(3,mParStr,var);
-	// file.variable value style
-	size_t pos  = var.find('.');
-	if(pos != string::npos) {
+	if (mParRex->PartFound(2)) // [file] variable value style
+		mParRex->Extract(2, mParStr, file);
+
+	mParRex->Extract(3, mParStr, var);
+	size_t pos = var.find('.'); // file.variable value style
+
+	if (pos != string::npos) {
 		file = var.substr(0, pos);
-		var = var.substr(pos+1);
+		var = var.substr(pos + 1);
 	}
-	mParRex->Extract(4,mParStr,val);
 
+	mParRex->Extract(4, mParStr, val);
 	cConfigItemBase *ci = NULL;
+
 	if (file == mS->mDBConf.config_name) {
 		ci = mS->mC[var];
-		if(!ci) {
-			(*mOS) << autosprintf(_("Undefined configuration variable: %s"), var.c_str());
+
+		if (!ci) {
+			(*mOS) << autosprintf(_("Undefined configuration variable: %s.%s"), file.c_str(), var.c_str());
 			return false;
 		}
 	} else {
-		DeleteItem = true;
-		ci = new cConfigItemBaseString(fake_val,var);
-		mS->mSetupList.LoadItem(file.c_str(), ci);
+		delci = true;
+		ci = new cConfigItemBaseString(fake_val, var);
+		found = mS->mSetupList.LoadItem(file.c_str(), ci);
 	}
 
-	if(ci) {
-		ostringstream oldValue;
-		oldValue << *ci;
-		ci->ConvertFrom(val);
-		ostringstream newValue;
-		newValue << *ci;
-		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), file.c_str(), var.c_str(), oldValue.str().c_str(), newValue.str().c_str());
-		mS->mSetupList.SaveItem(file.c_str(), ci);
-		if(DeleteItem)
+	if (ci) {
+		if (found) {
+			ostringstream oldValue;
+			oldValue << (*ci);
+			ci->ConvertFrom(val);
+			ostringstream newValue;
+			newValue << (*ci);
+			(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), file.c_str(), var.c_str(), oldValue.str().c_str(), newValue.str().c_str());
+			mS->mSetupList.SaveItem(file.c_str(), ci);
+		} else {
+			(*mOS) << autosprintf(_("Undefined configuration variable: %s.%s"), file.c_str(), var.c_str());
+		}
+
+		if (delci)
 			delete ci;
+
 		ci = NULL;
+
+		if (!found)
+			return false;
 	}
 
 	struct rlimit userLimit;
-	// Get maximum file descriptor number
-	if(!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total)
-		(*mOS) << "\n" << autosprintf(_("Warning: Verlihub allows maximum %d users, but current resource limit is %d. Consider to run ulimit -n <max_users> and restart the hub."), mS->mC.max_users_total, (int) userLimit.rlim_cur);
+
+	if (!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total) // get maximum file descriptor number
+		(*mOS) << "\r\n" << autosprintf(_("Warning: Verlihub allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), mS->mC.max_users_total, (int)userLimit.rlim_cur);
+
 	return true;
 }
 

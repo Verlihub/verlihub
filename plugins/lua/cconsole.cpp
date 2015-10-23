@@ -330,15 +330,15 @@ bool cConsole::cfLogLuaScript::operator()()
 
 	if (GetParInt(1, level)) {
 		stringstream ss;
-		ss << cpiLua::log_level;
+		ss << GetPI()->log_level;
 		string oldValue = ss.str();
 		ss.str("");
 		ss << level;
 		string newValue = ss.str();
-		cpiLua::me->SetLogLevel(level);
+		GetPI()->SetLogLevel(level);
 		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), "pi_lua", "log_level", oldValue.c_str(), newValue.c_str());
 	} else {
-		(*mOS) << autosprintf(_("Current log level: %d"), cpiLua::log_level);
+		(*mOS) << autosprintf(_("Current log level: %d"), GetPI()->log_level);
 	}
 
 	return true;
@@ -350,15 +350,15 @@ bool cConsole::cfErrLuaScript::operator()()
 
 	if (GetParInt(1, eclass)) {
 		stringstream ss;
-		ss << cpiLua::err_class;
+		ss << GetPI()->err_class;
 		string oldValue = ss.str();
 		ss.str("");
 		ss << eclass;
 		string newValue = ss.str();
-		cpiLua::me->SetErrClass(eclass);
+		GetPI()->SetErrClass(eclass);
 		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), "pi_lua", "err_class", oldValue.c_str(), newValue.c_str());
 	} else {
-		(*mOS) << autosprintf(_("Current error class: %d"), cpiLua::err_class);
+		(*mOS) << autosprintf(_("Current error class: %d"), GetPI()->err_class);
 	}
 
 	return true;

@@ -129,9 +129,9 @@ bool cSetupList::LoadItem(const char *FromFile, cConfigItemBase *ci)
 {
 	mModel.mFile = FromFile;
 	mModel.mVarName = ci->mName;
-	LoadPK();
+	bool res = LoadPK();
 	ci->ConvertFrom(mModel.mVarValue);
-	return true;
+	return res;
 }
 
 unsigned int cSetupList::ReplaceNickChars(const string &src, string &dst)

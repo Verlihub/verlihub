@@ -89,9 +89,9 @@ public:
 	unsigned int Size() { return mLua.size(); }
 	void SetLogLevel(int level);
 	void SetErrClass(int eclass);
-	const char* GetConf(const char *conf, const char *var);
+	const char* GetConf(const char *conf, const char *var, const char *def = NULL);
 	bool SetConf(const char *conf, const char *var, const char *val);
-	bool IsNumber(const char *str);
+	bool IsNumber(const char *num);
 
 	void Empty()
 	{

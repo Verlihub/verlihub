@@ -51,12 +51,12 @@ cpiLua::cpiLua():
 
 cpiLua::~cpiLua()
 {
-	ostringstream o;
-	o << log_level;
-	this->SetConf("pi_lua", "log_level", o.str().c_str());
-	o.str("");
-	o << err_class;
-	this->SetConf("pi_lua", "err_class", o.str().c_str());
+	ostringstream val;
+	val << this->log_level;
+	this->SetConf("pi_lua", "log_level", val.str().c_str());
+	val.str("");
+	val << this->err_class;
+	this->SetConf("pi_lua", "err_class", val.str().c_str());
 
 	if (mQuery != NULL) {
 		mQuery->Clear();
@@ -66,13 +66,13 @@ cpiLua::~cpiLua()
 	this->Empty();
 }
 
-bool cpiLua::IsNumber(const char *str)
+bool cpiLua::IsNumber(const char *num)
 {
-	if (!str || !strlen(str))
+	if (!num || !strlen(num))
 		return false;
 
-	for (unsigned int i = 0; i < strlen(str); i++) {
-		if (!isdigit(str[i]))
+	for (unsigned int i = 0; i < strlen(num); i++) {
+		if (!isdigit(num[i]))
 			return false;
 	}
 
@@ -81,57 +81,60 @@ bool cpiLua::IsNumber(const char *str)
 
 void cpiLua::SetLogLevel(int level)
 {
-	log_level = level;
-	ostringstream o;
-	o << level;
-	this->SetConf("pi_lua", "log_level", o.str().c_str());
+	ostringstream val;
+	val << level;
+	this->SetConf("pi_lua", "log_level", val.str().c_str());
+	this->log_level = level;
 }
 
 void cpiLua::SetErrClass(int eclass)
 {
-	err_class = eclass;
-	ostringstream o;
-	o << eclass;
-	this->SetConf("pi_lua", "err_class", o.str().c_str());
+	ostringstream val;
+	val << eclass;
+	this->SetConf("pi_lua", "err_class", val.str().c_str());
+	this->err_class = eclass;
 }
 
-const char* cpiLua::GetConf(const char *conf, const char *var)
+const char* cpiLua::GetConf(const char *conf, const char *var, const char *def)
 {
 	if (!server || !conf || !var)
-		return NULL;
+		return def;
 
-	string file(conf), fake;
-	bool delci = false;
+	string file(conf), val(def ? def : "");
+	static string res;
+	bool found = true, delci = false;
 	cConfigItemBase *ci = NULL;
 
 	if (file == server->mDBConf.config_name) {
 		ci = server->mC[var];
 	} else {
 		delci = true;
-		ci = new cConfigItemBaseString(fake, var);
-		server->mSetupList.LoadItem(file.c_str(), ci);
+		ci = new cConfigItemBaseString(val, var);
+		found = server->mSetupList.LoadItem(file.c_str(), ci);
 	}
 
 	if (ci) {
-		static string res("");
-		ci->ConvertTo(res);
+		if (found)
+			ci->ConvertTo(res);
 
 		if (delci)
 			delete ci;
 
 		ci = NULL;
-		return res.c_str();
+
+		if (found)
+			return res.c_str();
 	}
 
-	return NULL;
+	return def;
 }
 
 bool cpiLua::SetConf(const char *conf, const char *var, const char *val)
 {
-	if (!server || !conf || !var || !val)
+	if (!server || !conf || !var)
 		return false;
 
-	string file(conf), fake;
+	string file(conf), def(val ? val : "");
 	bool delci = false;
 	cConfigItemBase *ci = NULL;
 
@@ -139,12 +142,11 @@ bool cpiLua::SetConf(const char *conf, const char *var, const char *val)
 		ci = server->mC[var];
 	} else {
 		delci = true;
-		ci = new cConfigItemBaseString(fake, var);
-		server->mSetupList.LoadItem(file.c_str(), ci);
+		ci = new cConfigItemBaseString(def, var);
 	}
 
 	if (ci) {
-		ci->ConvertFrom(val);
+		ci->ConvertFrom(def);
 		server->mSetupList.SaveItem(file.c_str(), ci);
 
 		if (delci)
@@ -162,17 +164,21 @@ void cpiLua::OnLoad(cServerDC *serv)
 	cVHPlugin::OnLoad(serv);
 	mQuery = new cQuery(serv->mMySQL);
 	this->server = serv;
-	mScriptDir = mServer->mConfigBaseDir + "/scripts/"; // todo: why we use mServer here?
+	mScriptDir = serv->mConfigBaseDir + "/scripts/";
 
-	const char *temp = this->GetConf("pi_lua", "log_level"); // get log level
+	ostringstream def;
+	def << this->log_level;
+	const char *level = this->GetConf("pi_lua", "log_level", def.str().c_str()); // get log level
 
-	if (temp && (strlen(temp) > 0) && IsNumber(temp))
-		log_level = atoi(temp);
+	if (IsNumber(level))
+		this->log_level = atoi(level);
 
-	temp = this->GetConf("pi_lua", "err_class"); // get error class
+	def.str("");
+	def << this->err_class;
+	const char *eclass = this->GetConf("pi_lua", "err_class", def.str().c_str()); // get error class
 
-	if (temp && (strlen(temp) > 0) && IsNumber(temp))
-		err_class = atoi(temp);
+	if (IsNumber(eclass))
+		this->err_class = atoi(eclass);
 
 	AutoLoad();
 }
