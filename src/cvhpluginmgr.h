@@ -333,6 +333,7 @@ typedef tVHCBL_4Types<nSocket::cConnDC, string, int, int> cVHCBL_ConnTextIntInt;
 typedef tVHCBL_R4Types<cUser, string, int, int> cVHCBL_UsrStrIntInt;
 typedef tVHCBL_R4Types<cUser, string, string, string> cVHCBL_UsrStrStrStr;
 typedef tVHCBL_X4Types<string*, string*, string*, string*> cVHCBL_StrStrStrStr;
+typedef tVHCBL_X4Types<string*, string*, int, int> cVHCBL_StrStrIntInt;
 typedef tVHCBL_3Types<cUser*, cUser*, string*> cVHCBL_UsrUsrStr;
 typedef tVHCBL_3Types<string, string, string> cVHCBL_StrStrStr;
 typedef tVHCBL_R3Types<cUser, string, int> cVHCBL_UsrStrInt;

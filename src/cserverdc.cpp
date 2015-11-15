@@ -354,16 +354,17 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 	return 0;
 }
 
-int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_class, int max_class)
+int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_class, int max_class, bool delay)
 {
-	string msg;
+	string msg, nick(from), data(txt);
 	mP.Create_Chat(msg, from, txt);
 
 	if ((min_class != eUC_NORMUSER) || (max_class != eUC_MASTER))
-		mUserList.SendToAllWithClass(msg, min_class, max_class, true, true);
+		mUserList.SendToAllWithClass(msg, min_class, max_class, delay, true);
 	else
-		mUserList.SendToAll(msg, true, true);
+		mUserList.SendToAll(msg, delay, true);
 
+	this->OnPublicBotMessage(&nick, &data, min_class, max_class); // todo: make it discardable if needed
 	return 1;
 }
 
@@ -372,11 +373,12 @@ int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 	return DCPublic(mC.hub_security, text, conn);
 }
 
-void cServerDC::DCPublicHSToAll(const string &text)
+void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 {
-	string msg;
-	mP.Create_Chat(msg, mC.hub_security, text);
-	mUserList.SendToAll(msg, true, true);
+	string msg, nick(mC.hub_security), data(text);
+	mP.Create_Chat(msg, nick, text);
+	mUserList.SendToAll(msg, delay, true);
+	this->OnPublicBotMessage(&nick, &data, 0, 10); // todo: make it discardable if needed
 }
 
 int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, string *nick)
@@ -526,6 +528,15 @@ bool cServerDC::OnOpChatMessage(string *nick, string *data)
 {
 	#ifndef WITHOUT_PLUGINS
 		return mCallBacks.mOnOpChatMessage.CallAll(nick, data);
+	#endif
+
+	return true;
+}
+
+bool cServerDC::OnPublicBotMessage(string *nick, string *data, int min_class, int max_class)
+{
+	#ifndef WITHOUT_PLUGINS
+		return mCallBacks.mOnPublicBotMessage.CallAll(nick, data, min_class, max_class);
 	#endif
 
 	return true;
@@ -1024,7 +1035,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 			ReplaceVarInString(ToSend, "CC", ToSend, conn->mCC);
 			ReplaceVarInString(ToSend, "CN", ToSend, conn->mCN);
 			ReplaceVarInString(ToSend, "CITY", ToSend, conn->mCity);
-			DCPublicHSToAll(ToSend);
+			DCPublicHSToAll(ToSend, mC.delayed_chat);
 		}
 	}
 }

@@ -423,9 +423,7 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 			os << _("Please note, hub will be stopped now.");
 	}
 
-	string msg;
-	mOwner->mP.Create_Chat(msg, mOwner->mC.hub_security, os.str());
-	mOwner->mUserList.SendToAll(msg, false, true);
+	mOwner->DCPublicHSToAll(os.str(), (delay ? mOwner->mC.delayed_chat : false));
 
 	if (code >= 0) {
 		mOwner->stop(code, delay);
@@ -858,7 +856,8 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 		os << autosprintf(_("%s changed topic to: %s"), conn->mpUser->mNick.c_str(), topic.c_str());
 	else
 		os << autosprintf(_("%s removed topic."), conn->mpUser->mNick.c_str());
-	mOwner->DCPublicHSToAll(os.str());
+
+	mOwner->DCPublicHSToAll(os.str(), mOwner->mC.delayed_chat);
 	return 1;
 }
 

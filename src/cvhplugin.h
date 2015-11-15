@@ -435,6 +435,9 @@ public:
 	// opchat message
 	virtual bool OnOpChatMessage(string *nick, string *data) { return true; }
 
+	// public bot message
+	virtual bool OnPublicBotMessage(string *nick, string *data, int min_class, int max_class) { return true; }
+
 	// hub stop
 	virtual bool OnUnLoad(long code) { return true; }
 

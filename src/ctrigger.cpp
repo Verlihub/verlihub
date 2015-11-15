@@ -228,8 +228,9 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 				string msg;
 				server.mP.Create_Chat(msg, sender, buf);
 				server.SendToAllNoNickVars(msg, this->mMinClass, this->mMaxClass);
+				server.OnPublicBotMessage(&sender, &buf, this->mMinClass, this->mMaxClass); // todo: make it discardable if needed
 			} else { // no vars
-				server.DCPublicToAll(sender, buf, this->mMinClass, this->mMaxClass);
+				server.DCPublicToAll(sender, buf, this->mMinClass, this->mMaxClass, server.mC.delayed_chat);
 			}
 		}
 	} else if (!timeTrigger) { // to single

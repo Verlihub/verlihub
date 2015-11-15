@@ -629,12 +629,10 @@ void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug)
 	if (conn && conn->mpUser)
 		conn->mpUser->mInList = temp;
 
-	#ifndef WITHOUT_PLUGINS
-		if (!fromplug) {
-			string msg(data);
-			this->mxServer->OnOpChatMessage(&from, &msg);
-		}
-	#endif
+	if (!fromplug) {
+		string msg(data);
+		this->mxServer->OnOpChatMessage(&from, &msg);
+	}
 }
 
 bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)

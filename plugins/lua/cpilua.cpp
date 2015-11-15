@@ -223,6 +223,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnPublicBotMessage");
 	RegisterCallBack("VH_OnUnLoad");
 	return true;
 }
@@ -963,6 +964,23 @@ bool cpiLua::OnOpChatMessage(string *nick, string *data)
 		};
 
 		CallAll("VH_OnOpChatMessage", args);
+	}
+
+	return true;
+}
+
+bool cpiLua::OnPublicBotMessage(string *nick, string *data, int min_class, int max_class)
+{
+	if (nick && data) {
+		char *args[] = {
+			(char*)nick->c_str(),
+			(char*)data->c_str(),
+			(char*)toString(min_class),
+			(char*)toString(max_class),
+			NULL
+		};
+
+		CallAll("VH_OnPublicBotMessage", args);
 	}
 
 	return true;

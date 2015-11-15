@@ -187,6 +187,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgAny");
 	RegisterCallBack("VH_OnParsedMsgAnyEx");
 	RegisterCallBack("VH_OnOpChatMessage");
+	RegisterCallBack("VH_OnPublicBotMessage");
 	RegisterCallBack("VH_OnUnLoad");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnParsedMsgSupport");
@@ -925,6 +926,16 @@ bool cpiPython::OnOpChatMessage(string *nick, string *data)
 	if (nick && data) {
 		w_Targs* args = lib_pack("ss", nick->c_str(), data->c_str());
 		return CallAll(W_OnOpChatMessage, args);
+	}
+
+	return true;
+}
+
+bool cpiPython::OnPublicBotMessage(string *nick, string *data, long min_class, long max_class)
+{
+	if (nick && data) {
+		w_Targs* args = lib_pack("ssll", nick->c_str(), data->c_str(), (long)min_class, (long)max_class);
+		return CallAll(W_OnPublicBotMessage, args);
 	}
 
 	return true;

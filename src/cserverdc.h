@@ -274,6 +274,11 @@ class cServerDC : public cAsyncSocketServer
 		bool OnOpChatMessage(string *nick, string *data);
 
 		/*
+			This method is a forwarder for ScriptAPI::OnPublicBotMessage
+		*/
+		bool OnPublicBotMessage(string *nick, string *data, int min_class, int max_class);
+
+		/*
 			This method is a forwarder for ScriptAPI::OnUnLoad
 		*/
 		bool OnUnLoad(long code);
@@ -351,7 +356,7 @@ class cServerDC : public cAsyncSocketServer
 		* Send a public message to all users as hub security.
 		* @param text  The message to send
 		*/
-		void DCPublicHSToAll(const string &text);
+		void DCPublicHSToAll(const string &text, bool delay = true);
 
 		/**
 		* Send a message in mainchat to everyone.
@@ -364,7 +369,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param max_class Maximum class (default to 10).
 		* @return Always one.
 		*/
-		int DCPublicToAll(const string &from, const string &txt, int min_class = 0, int max_class = 10);
+		int DCPublicToAll(const string &from, const string &txt, int min_class = 0, int max_class = 10, bool delay = true);
 
 		/**
 		* Remove a robot from lists.
@@ -846,9 +851,9 @@ private:
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
 			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub),
 			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage),
+			mOnPublicBotMessage(mgr, "VH_OnPublicBotMessage", &cVHPlugin::OnPublicBotMessage),
 			mOnUnLoad(mgr, "VH_OnUnLoad", &cVHPlugin::OnUnLoad)
-		{
-		};
+		{};
 
 		cVHCBL_Connection mOnNewConn;
 		cVHCBL_Connection mOnCloseConn;
@@ -891,6 +896,7 @@ private:
 		cVHCBL_StrStrStrStr mOnScriptCommand;
 		cVHCBL_ConnText mOnCtmToHub;
 		cVHCBL_Strings mOnOpChatMessage;
+		cVHCBL_StrStrIntInt mOnPublicBotMessage;
 		cVHCBL_Long mOnUnLoad;
 	};
 
