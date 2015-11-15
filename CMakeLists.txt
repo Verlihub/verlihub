@@ -224,6 +224,7 @@ ENDIF(WITH_LUA)
 
 SET(CPACK_GENERATOR "DEB;RPM;TBZ2")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${VERLIHUB_VERSION}-${CMAKE_SYSTEM_PROCESSOR}")
+SET(CPACK_SET_DESTDIR ON)
 
 INCLUDE(CPack)
 # ----------------------------------------------------------------------------------------------------
