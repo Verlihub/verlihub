@@ -378,7 +378,7 @@ void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 	string msg, nick(mC.hub_security), data(text);
 	mP.Create_Chat(msg, nick, text);
 	mUserList.SendToAll(msg, delay, true);
-	this->OnPublicBotMessage(&nick, &data, 0, 10); // todo: make it discardable if needed
+	this->OnPublicBotMessage(&nick, &data, (int)eUC_NORMUSER, (int)eUC_MASTER); // todo: make it discardable if needed
 }
 
 int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, string *nick)
