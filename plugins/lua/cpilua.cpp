@@ -299,6 +299,8 @@ bool cpiLua::CallAll(const char *fncname, char *args[], cConnDC *conn)
 
 bool cpiLua::OnNewConn(cConnDC *conn)
 {
+	bool res = true;
+
 	if (conn) {
 		char *args[] = {
 			(char*)conn->AddrIP().c_str(),
@@ -308,10 +310,12 @@ bool cpiLua::OnNewConn(cConnDC *conn)
 			NULL
 		};
 
-		return CallAll("VH_OnNewConn", args, conn);
+		res = CallAll("VH_OnNewConn", args, conn);
+		delete [] args[1];
+		delete [] args[3];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnCloseConn(cConnDC *conn)
@@ -338,30 +342,34 @@ bool cpiLua::OnCloseConn(cConnDC *conn)
 	return true;
 }
 
-bool cpiLua::OnCloseConnEx(cConnDC *conn) // @todo: dont include this callback in your final scripts, it might change before final release
+bool cpiLua::OnCloseConnEx(cConnDC *conn)
 {
-	if (conn != NULL) {
-		if (conn->mpUser != NULL) {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
-				(char *)toString(conn->mCloseReason),
-				(char *)conn->mpUser->mNick.c_str(),
+	bool res = true;
+
+	if (conn) {
+		if (conn->mpUser) {
+			char *args[] = {
+				(char*)conn->AddrIP().c_str(),
+				(char*)toString(conn->mCloseReason),
+				(char*)conn->mpUser->mNick.c_str(),
 				NULL
 			};
 
-			return CallAll("VH_OnCloseConnEx", args, conn);
+			res = CallAll("VH_OnCloseConnEx", args, conn);
+			delete [] args[1];
 		} else {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
-				(char *)toString(conn->mCloseReason),
+			char *args[] = {
+				(char*)conn->AddrIP().c_str(),
+				(char*)toString(conn->mCloseReason),
 				NULL
 			};
 
-			return CallAll("VH_OnCloseConnEx", args, conn);
+			res = CallAll("VH_OnCloseConnEx", args, conn);
+			delete [] args[1];
 		}
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
@@ -598,75 +606,87 @@ bool cpiLua::OnParsedMsgAny(cConnDC *conn, cMessageDC *msg)
 
 bool cpiLua::OnParsedMsgAnyEx(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser == NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->AddrIP().c_str(),
-			(char *)msg->mStr.c_str(),
-			(char *)toString(conn->AddrPort()),
-			(char *)toString(conn->GetServPort()),
+	bool res = true;
+
+	if (conn && msg && !conn->mpUser) {
+		char *args[] = {
+			(char*)conn->AddrIP().c_str(),
+			(char*)msg->mStr.c_str(),
+			(char*)toString(conn->AddrPort()),
+			(char*)toString(conn->GetServPort()),
 			NULL
 		};
 
-		return CallAll("VH_OnParsedMsgAnyEx", args, conn);
+		res = CallAll("VH_OnParsedMsgAnyEx", args, conn);
+		delete [] args[2];
+		delete [] args[3];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (msg != NULL) && (msg->mStr.size() > 0)) {
-		if (conn->mpUser != NULL) {
-			char * args[] = {
-				(char *)conn->mpUser->mNick.c_str(),
-				(char *)msg->mStr.c_str(),
-				(char *)toString(1),
-				(char *)conn->AddrIP().c_str(),
+	bool res = true;
+
+	if (conn && msg && msg->mStr.size()) {
+		if (conn->mpUser) {
+			char *args[] = {
+				(char*)conn->mpUser->mNick.c_str(),
+				(char*)msg->mStr.c_str(),
+				(char*)toString(1),
+				(char*)conn->AddrIP().c_str(),
 				NULL
 			};
 
-			return CallAll("VH_OnUnknownMsg", args, conn);
+			res = CallAll("VH_OnUnknownMsg", args, conn);
+			delete [] args[2];
 		} else {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
-				(char *)msg->mStr.c_str(),
-				(char *)toString(0),
+			char *args[] = {
+				(char*)conn->AddrIP().c_str(),
+				(char*)msg->mStr.c_str(),
+				(char*)toString(0),
 				NULL
 			};
 
-			return CallAll("VH_OnUnknownMsg", args, conn);
+			res = CallAll("VH_OnUnknownMsg", args, conn);
+			delete [] args[2];
 		}
 	}
 
-	return true;
+	return res;
 }
 
 /*
 bool cpiLua::OnUnparsedMsg(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (msg != NULL) && (msg->mStr.size() > 0)) {
-		if (conn->mpUser != NULL) {
-			char * args[] = {
-				(char *)conn->mpUser->mNick.c_str(),
-				(char *)msg->mStr.c_str(),
-				(char *)toString(1),
+	bool res = true;
+
+	if (conn && msg && msg->mStr.size()) {
+		if (conn->mpUser) {
+			char *args[] = {
+				(char*)conn->mpUser->mNick.c_str(),
+				(char*)msg->mStr.c_str(),
+				(char*)toString(1),
 				NULL
 			};
 
-			return CallAll("VH_OnUnparsedMsg", args, conn);
+			res = CallAll("VH_OnUnparsedMsg", args, conn);
+			delete [] args[2];
 		} else {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
-				(char *)msg->mStr.c_str(),
-				(char *)toString(0),
+			char *args[] = {
+				(char*)conn->AddrIP().c_str(),
+				(char*)msg->mStr.c_str(),
+				(char*)toString(0),
 				NULL
 			};
 
-			return CallAll("VH_OnUnparsedMsg", args, conn);
+			res = CallAll("VH_OnUnparsedMsg", args, conn);
+			delete [] args[2];
 		}
 	}
 
-	return true;
+	return res;
 }
 */
 
@@ -735,19 +755,23 @@ bool cpiLua::OnUserCommand(cConnDC *conn, string *command)
 
 bool cpiLua::OnHubCommand(cConnDC *conn, string *command, int op, int pm)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)command->c_str(),
-			(char *)toString(op),
-			(char *)toString(pm),
+	bool res = true;
+
+	if (conn && conn->mpUser && command) {
+		char *args[] = {
+			(char*)conn->mpUser->mNick.c_str(),
+			(char*)command->c_str(),
+			(char*)toString(op),
+			(char*)toString(pm),
 			NULL
 		};
 
-		return CallAll("VH_OnHubCommand", args, conn);
+		res = CallAll("VH_OnHubCommand", args, conn);
+		delete [] args[2];
+		delete [] args[3];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnValidateTag(cConnDC *conn, cDCTag *tag)
@@ -815,66 +839,80 @@ bool cpiLua::OnUserLogout(cUser *user)
 
 bool cpiLua::OnTimer(long msec)
 {
-	char * args[] = {
-		(char *)longToString(msec),
+	char *args[] = {
+		(char*)longToString(msec),
 		NULL
 	};
 
-	return CallAll("VH_OnTimer", args);
+	bool res = CallAll("VH_OnTimer", args);
+	delete [] args[0];
+	return res;
 }
 
 bool cpiLua::OnNewReg(cUser *user, string mNick, int mClass)
 {
-	if (user != NULL) {
-		char * args[] = {
-			(char *)mNick.c_str(),
-			(char *)toString(mClass),
-			(char *)user->mNick.c_str(),
+	bool res = true;
+
+	if (user) {
+		char *args[] = {
+			(char*)mNick.c_str(),
+			(char*)toString(mClass),
+			(char*)user->mNick.c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnNewReg", args, user->mxConn);
+		res = CallAll("VH_OnNewReg", args, user->mxConn);
+		delete [] args[1];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnDelReg(cUser *user, string mNick, int mClass)
 {
-	if (user != NULL) {
-		char * args[] = {
-			(char *)mNick.c_str(),
-			(char *)toString(mClass),
-			(char *)user->mNick.c_str(),
+	bool res = true;
+
+	if (user) {
+		char *args[] = {
+			(char*)mNick.c_str(),
+			(char*)toString(mClass),
+			(char*)user->mNick.c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnDelReg", args, user->mxConn);
+		res = CallAll("VH_OnDelReg", args, user->mxConn);
+		delete [] args[1];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnUpdateClass(cUser *user, string mNick, int oldClass, int newClass)
 {
-	if (user != NULL) {
-		char * args[] = {
-			(char *)mNick.c_str(),
-			(char *)toString(oldClass),
-			(char *)toString(newClass),
-			(char *)user->mNick.c_str(),
+	bool res = true;
+
+	if (user) {
+		char *args[] = {
+			(char*)mNick.c_str(),
+			(char*)toString(oldClass),
+			(char*)toString(newClass),
+			(char*)user->mNick.c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnUpdateClass", args, user->mxConn);
+		res = CallAll("VH_OnUpdateClass", args, user->mxConn);
+		delete [] args[1];
+		delete [] args[2];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnNewBan(cUser *user, cBan *ban)
 {
-	if ((user != NULL) && (ban != NULL)) {
+	bool res = true;
+
+	if (user && ban) {
 		string ranmin, ranmax;
 
 		if (ban->mRangeMin > 0)
@@ -883,24 +921,30 @@ bool cpiLua::OnNewBan(cUser *user, cBan *ban)
 		if (ban->mRangeMax > 0)
 			cBanList::Num2Ip(ban->mRangeMax, ranmax);
 
-		char * args[] = {
-			(char *)ban->mIP.c_str(),
-			(char *)ban->mNick.c_str(),
-			(char *)ban->mHost.c_str(),
-			(char *)(ban->mShare > 0 ? longToString(ban->mShare) : ""),
-			(char *)ranmin.c_str(),
-			(char *)ranmax.c_str(),
-			(char *)toString(ban->mType),
-			(char *)longToString(ban->mDateEnd),
-			(char *)ban->mReason.c_str(),
-			(char *)ban->mNickOp.c_str(),
+		char *args[] = {
+			(char*)ban->mIP.c_str(),
+			(char*)ban->mNick.c_str(),
+			(char*)ban->mHost.c_str(),
+			(char*)((ban->mShare > 0) ? longToString(ban->mShare) : ""),
+			(char*)ranmin.c_str(),
+			(char*)ranmax.c_str(),
+			(char*)toString(ban->mType),
+			(char*)longToString(ban->mDateEnd),
+			(char*)ban->mReason.c_str(),
+			(char*)ban->mNickOp.c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnNewBan", args, user->mxConn);
+		res = CallAll("VH_OnNewBan", args, user->mxConn);
+
+		if (ban->mShare > 0)
+			delete [] args[3];
+
+		delete [] args[6];
+		delete [] args[7];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
@@ -938,6 +982,8 @@ bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *sc
 
 bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 {
+	bool res = true;
+
 	if (conn && ref) {
 		char *args[] = {
 			(char*)conn->mMyNick.c_str(),
@@ -948,10 +994,12 @@ bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 			NULL
 		};
 
-		return CallAll("VH_OnCtmToHub", args, conn);
+		res = CallAll("VH_OnCtmToHub", args, conn);
+		delete [] args[2];
+		delete [] args[3];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnOpChatMessage(string *nick, string *data)
@@ -971,6 +1019,8 @@ bool cpiLua::OnOpChatMessage(string *nick, string *data)
 
 bool cpiLua::OnPublicBotMessage(string *nick, string *data, int min_class, int max_class)
 {
+	bool res = true;
+
 	if (nick && data) {
 		char *args[] = {
 			(char*)nick->c_str(),
@@ -980,29 +1030,32 @@ bool cpiLua::OnPublicBotMessage(string *nick, string *data, int min_class, int m
 			NULL
 		};
 
-		CallAll("VH_OnPublicBotMessage", args);
+		res = CallAll("VH_OnPublicBotMessage", args);
+		delete [] args[2];
+		delete [] args[3];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnUnLoad(long code)
 {
 	char *args[] = {
-		(char*)toString(code),
+		(char*)longToString(code),
 		NULL
 	};
 
-	CallAll("VH_OnUnLoad", args);
-	return true;
+	bool res = CallAll("VH_OnUnLoad", args);
+	delete [] args[0];
+	return res;
 }
 
-char * cpiLua::toString(int num)
+char* cpiLua::toString(int num)
 {
 	return autosprintf("%d", num);
 }
 
-char * cpiLua::longToString(long num)
+char* cpiLua::longToString(long num)
 {
 	return autosprintf("%lu", num);
 }

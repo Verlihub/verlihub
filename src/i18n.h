@@ -26,7 +26,6 @@
 #include <locale.h> 
 #define _(string) gettext (string)
 
-#include <autosprintf.h>
 using gnu::autosprintf;
 
 #endif

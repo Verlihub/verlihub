@@ -18,4 +18,4 @@
 	of the GNU General Public License.
 */
 
-#define __CURR_DATE_TIME__ "2015-11-15"
+#define __CURR_DATE_TIME__ "2015-11-23"
