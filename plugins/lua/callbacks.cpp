@@ -1569,17 +1569,20 @@ int _GetConfig(lua_State *L)
 	if(lua_gettop(L) == 3) {
 		if(!lua_isstring(L, 2)) {
 			luaerror(L, ERR_PARAM);
+			delete [] val;
 			return 2;
 		}
 		config_name = (char *)lua_tostring(L, 2);
 		if(!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
+			delete [] val;
 			return 2;
 		}
 		var = (char *)lua_tostring(L, 3);
 		size = GetConfig((char *)config_name.c_str(), (char *)var.c_str(), val, 64);
 		if(size < 0) {
 			luaerror(L, "Error calling GetConfig API");
+			delete [] val;
 			return 2;
 		}
 		if(size >= 63) {
@@ -1590,12 +1593,12 @@ int _GetConfig(lua_State *L)
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, val);
 		delete [] val;
-		val = 0;
 		return 2;
 	} else {
 		luaL_error(L, "Error calling VH:GetConfig; expected 2 argument but got %d", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
+		delete [] val;
 		return 2;
 	}
 }
