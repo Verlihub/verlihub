@@ -634,23 +634,21 @@ bool cpiLua::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 			char *args[] = {
 				(char*)conn->mpUser->mNick.c_str(),
 				(char*)msg->mStr.c_str(),
-				(char*)toString(1),
+				(char*)"1",
 				(char*)conn->AddrIP().c_str(),
 				NULL
 			};
 
 			res = CallAll("VH_OnUnknownMsg", args, conn);
-			delete [] args[2];
 		} else {
 			char *args[] = {
 				(char*)conn->AddrIP().c_str(),
 				(char*)msg->mStr.c_str(),
-				(char*)toString(0),
+				(char*)"0",
 				NULL
 			};
 
 			res = CallAll("VH_OnUnknownMsg", args, conn);
-			delete [] args[2];
 		}
 	}
 
@@ -667,22 +665,20 @@ bool cpiLua::OnUnparsedMsg(cConnDC *conn, cMessageDC *msg)
 			char *args[] = {
 				(char*)conn->mpUser->mNick.c_str(),
 				(char*)msg->mStr.c_str(),
-				(char*)toString(1),
+				(char*)"1",
 				NULL
 			};
 
 			res = CallAll("VH_OnUnparsedMsg", args, conn);
-			delete [] args[2];
 		} else {
 			char *args[] = {
 				(char*)conn->AddrIP().c_str(),
 				(char*)msg->mStr.c_str(),
-				(char*)toString(0),
+				(char*)"0",
 				NULL
 			};
 
 			res = CallAll("VH_OnUnparsedMsg", args, conn);
-			delete [] args[2];
 		}
 	}
 
