@@ -511,12 +511,9 @@ class cServerDC : public cAsyncSocketServer
 		unsigned Str2Period(const string &, ostream &);
 
 		/*
-		* Check if nick is valid, length, characters, prefix, ban, etc.
-		* @param conn The connection object.
-		* @param nick The nick of the user.
-		* @return Integer that explains the reason.
+			Check if nick is valid, length, characters, prefix, ban, etc.
 		*/
-		tVAL_NICK ValidateNick(cConnDC *conn, const string &nick);
+		tVAL_NICK ValidateNick(cConnDC *conn, const string &nick, string &more);
 
 		/**
 		* Check if the user is allowed to enter the hub.

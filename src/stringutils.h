@@ -50,6 +50,7 @@ string StringFrom(__int64 const &ll);
 __int64 StringAsLL(const string &);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
+string StrByteList(const string &data, const string &sep = " ");
 
 	}; // namespace nUtils
 }; // namespace nVerliHub

@@ -204,6 +204,7 @@ protected:
 	static void Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text);
 	static void Create_Quit(string &dest, const string &nick);
 	static void Create_ValidateDenide(string &dest, const string &nick);
+	static void Create_BadNick(string &dest, const string &id, const string &par = "");
 	static void Create_Hello(string &dest, const string &nick);
 	static void Create_LogedIn(string &dest, const string &nick);
 	static void Create_NickList(string &dest, const string &nick);

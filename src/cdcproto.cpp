@@ -3050,6 +3050,18 @@ void cDCProto::Create_ValidateDenide(string &dest, const string &nick)
 	dest.append(nick);
 }
 
+void cDCProto::Create_BadNick(string &dest, const string &id, const string &par)
+{
+	dest.clear();
+	dest.append("$BadNick ");
+	dest.append(id);
+
+	if (par.size()) {
+		dest.append(" ");
+		dest.append(par);
+	}
+}
+
 void cDCProto::Create_NickList(string &dest, const string &nick)
 {
 	dest.clear();

@@ -1269,7 +1269,8 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		sRegInfo = new cRegUserInfo;
 	}
 
-	tVAL_NICK vn = ValidateNick(conn, nick); // validate nick
+	string more("");
+	tVAL_NICK vn = ValidateNick(conn, nick, more); // validate nick
 	stringstream errmsg;
 
 	if (vn != eVN_OK) {
@@ -1301,23 +1302,34 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					if (mC.nick_chars.size())
 						errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
 
+					cDCProto::Create_BadNick(extra, "BadChar", StrByteList(more));
 					break;
+
 				case eVN_SHORT:
 					errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
+					cDCProto::Create_BadNick(extra, "TooShort", StringFrom(mC.min_nick));
 					break;
+
 				case eVN_LONG:
 					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
+					cDCProto::Create_BadNick(extra, "TooLong", StringFrom(mC.max_nick));
 					break;
+
 				case eVN_USED:
 					errmsg << _("Your nick is already taken by another user.");
 					cDCProto::Create_ValidateDenide(extra, nick);
 					break;
+
 				case eVN_PREFIX:
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
+					cDCProto::Create_BadNick(extra, "BadPrefix", mC.nick_prefix);
 					break;
+
 				case eVN_NOT_REGED_OP:
 					errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
+					cDCProto::Create_BadNick(extra, "BadPrefix");
 					break;
+
 				default:
 					errmsg << _("Unknown bad nick error, sorry.");
 					break;
@@ -1380,27 +1392,50 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	return 1;
 }
 
-tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
+tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &more)
 {
-	cTime now;
-	string ProhibitedChars("$|<> ");
-	//ProhibitedChars.append("\0", 1);
+	string bad_nick_chars("<> $|"); // check special chars
+	bool bad = false;
+	unsigned i;
+	char chr;
 
-	if (nick.npos != nick.find_first_of(ProhibitedChars)) // check all for special nick chars
+	for (i = 0; i < bad_nick_chars.size(); ++i) {
+		chr = bad_nick_chars[i];
+
+		if ((nick.find(chr) != nick.npos) && (more.find(chr) == more.npos)) {
+			more.append(1, chr);
+			bad = true;
+		}
+	}
+
+	if (bad)
 		return eVN_CHARS;
 
-	if (!conn->mRegInfo || !conn->mRegInfo->mEnabled) { // user is not registered
-		if (nick.size() > mC.max_nick)
+	if (!conn->mRegInfo || !conn->mRegInfo->mEnabled) { // user must be unregistered
+		if (nick.size() > mC.max_nick) // check high length
 			return eVN_LONG;
 
-		if (nick.size() < mC.min_nick)
+		if (nick.size() < mC.min_nick) // check low length
 			return eVN_SHORT;
 
-		if ((mC.nick_chars.size() > 0) && (nick.npos != nick.find_first_not_of(mC.nick_chars.c_str())))
-			return eVN_CHARS;
+		if (mC.nick_chars.size()) { // check bad chars
+			bad = false;
 
-		if (mC.nick_prefix.size() > 0) { // check nick prefix
-			bool ok = false;
+			for (i = 0; i < nick.size(); ++i) {
+				chr = nick[i];
+
+				if ((mC.nick_chars.find(chr) == mC.nick_chars.npos) && (more.find(chr) == more.npos)) {
+					more.append(1, chr);
+					bad = true;
+				}
+			}
+
+			if (bad)
+				return eVN_CHARS;
+		}
+
+		if (mC.nick_prefix.size()) { // check nick prefix
+			bad = true;
 			istringstream is(mC.nick_prefix);
 			string pref, snick;
 
@@ -1413,23 +1448,23 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick)
 				pref = mEmpty;
 				is >> pref;
 
-				if (!pref.size())
+				if (pref.empty())
 					break;
 
 				if (mC.nick_prefix_nocase)
 					pref = toLower(pref);
 
-				if (StrCompare(snick, 0, pref.length(), pref) == 0) {
-					ok = true;
+				if ((snick.size() >= pref.size()) && (StrCompare(snick, 0, pref.size(), pref) == 0)) {
+					bad = false;
 					break;
 				}
 			}
 
-			if (!ok)
+			if (bad)
 				return eVN_PREFIX;
 		}
 
-		if (StrCompare(nick, 0, 4, "[OP]") == 0) // operator prefix
+		if ((nick.size() >= 4) && (StrCompare(nick, 0, 4, "[OP]") == 0)) // operator prefix
 			return eVN_NOT_REGED_OP;
 
 		string userkey; // check if user with same nick already logged in

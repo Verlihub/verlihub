@@ -309,5 +309,19 @@ bool LimitLines(const string &str, int max)
 	return true;
 }
 
+string StrByteList(const string &data, const string &sep)
+{
+	string res("");
+
+	for (unsigned i = 0; i < data.size(); ++i) {
+		if (i > 0)
+			res.append(" ");
+
+		res.append(StringFrom(int(data[i])));
+	}
+
+	return res;
+}
+
 	}; // namespace nUtils
 }; // namespace nVerliHub
