@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-03 12:24+0200\n"
-"PO-Revision-Date: 2015-09-27 08:31+0000\n"
-"Last-Translator: hostpl-1 <zbyszekslyz@hostpl.eu>\n"
+"POT-Creation-Date: 2015-11-29 03:19+0100\n"
+"PO-Revision-Date: 2015-10-22 13:22+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/feardc/verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.6\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -187,113 +187,119 @@ msgstr "Twoja nazwa uzytkownika powinna byc zgodna z %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Twoj typ polaczenia powinien pasowac do %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:75 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "Nie masz uprawnien aby to zrobic."
 
-#: ../plugins/lua/cconsole.cpp:92
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua version"
 msgstr "Wersja Lua"
 
-#: ../plugins/lua/cconsole.cpp:93
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Lua library version"
 msgstr "Wersja bibliotek lua"
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Copyright"
 msgstr "Prawo autorskie"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:97
 msgid "Authors"
 msgstr "Autorzy"
 
-#: ../plugins/lua/cconsole.cpp:106
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Version date"
 msgstr "Wersja daty"
 
-#: ../plugins/lua/cconsole.cpp:107
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Loaded scripts"
 msgstr "Zaladowane skrypty"
 
-#: ../plugins/lua/cconsole.cpp:108
+#: ../plugins/lua/cconsole.cpp:110
 msgid "Memory used"
 msgstr "Uzyta pamiec"
 
-#: ../plugins/lua/cconsole.cpp:114
+#: ../plugins/lua/cconsole.cpp:116
 msgid "Loaded Lua scripts"
 msgstr "Zaladowane skrypty Lua"
 
-#: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:136
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "ID"
 
-#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Skrypt"
 
-#: ../plugins/lua/cconsole.cpp:131 ../plugins/lua/cconsole.cpp:212
+#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Ladowanie katalogu: %s niepowiodlo sie."
 
-#: ../plugins/lua/cconsole.cpp:135
+#: ../plugins/lua/cconsole.cpp:137
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Skrypt Lua znaleziono w : %s"
 
-#: ../plugins/lua/cconsole.cpp:179 ../plugins/lua/cconsole.cpp:291
+#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Skrypt: %s zatrzymany."
 
-#: ../plugins/lua/cconsole.cpp:187 ../plugins/lua/cconsole.cpp:301
+#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Skrypt nie zostal zatrzymany, poniewaz nie jest uruchomiony: #%d"
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Skrypt nie zostal zatrzymany, poniewaz nie jest uruchomiony: %s"
 
-#: ../plugins/lua/cconsole.cpp:243 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Skrypt: %s jest juz zaladowany."
 
-#: ../plugins/lua/cconsole.cpp:251 ../plugins/lua/cconsole.cpp:309
+#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Nie mozna przydzielic nowego Lua interpretera jezyka."
 
-#: ../plugins/lua/cconsole.cpp:256 ../plugins/lua/cconsole.cpp:314
+#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Skrypt: %s zostal zaladowany."
 
-#: ../plugins/lua/cconsole.cpp:261 ../plugins/lua/cconsole.cpp:319
+#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Skrypt: %s nieznaleziony lub nie moze byc analizowany."
 
-#: ../plugins/lua/cconsole.cpp:337 ../plugins/python/cconsole.cpp:320
+#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
 #, c-format
-msgid "Updated %s.%s from '%s' to '%s'."
-msgstr "Zaktualizowany %s.%s od '%s' do '%s'."
+msgid "Updated configuration %s.%s from '%s' to '%s'."
+msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:340
+#: ../plugins/lua/cconsole.cpp:341
 #, c-format
 msgid "Current log level: %d"
 msgstr "Aktualny poziom logowania to: %d."
+
+#: ../plugins/lua/cconsole.cpp:361
+#, c-format
+msgid "Current error class: %d"
+msgstr ""
 
 #: ../plugins/lua/cluainterpreter.cpp:170
 msgid "Lua error"
@@ -324,7 +330,7 @@ msgstr[2] "Masz %d wiadomosci w Twojej skrzynce."
 msgid "You have no new message in your box."
 msgstr "Nie masz nowych wiadomosci w skrzynce."
 
-#: ../plugins/messenger/cmsglist.cpp:232
+#: ../plugins/messenger/cmsglist.cpp:229
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -332,7 +338,7 @@ msgid ""
 "Subject: %s\n"
 msgstr "Od: %s Do: %s\nData: %s\nTemat: %s\n"
 
-#: ../plugins/messenger/cmsglist.cpp:235
+#: ../plugins/messenger/cmsglist.cpp:232
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -342,7 +348,7 @@ msgid ""
 "----\n"
 msgstr "Od: %s Do: %s\nData: %s\nTemat: %s\n%s\n----\n"
 
-#: ../plugins/messenger/cmsglist.cpp:238
+#: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
 msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
@@ -354,12 +360,12 @@ msgstr "#Wiadomosci Offline# [%s]\nTemat: %s -------------------------\n%s"
 msgid "Running Perl scripts"
 msgstr "Uruchamianie skryptow Perl"
 
-#: ../plugins/perl/cconsole.cpp:113 ../plugins/perl/cconsole.cpp:200
+#: ../plugins/perl/cconsole.cpp:113 ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s stopped."
 msgstr "Skrypt %s zatrzymany."
 
-#: ../plugins/perl/cconsole.cpp:122 ../plugins/perl/cconsole.cpp:210
+#: ../plugins/perl/cconsole.cpp:122 ../plugins/perl/cconsole.cpp:212
 #, c-format
 msgid "Script #%s not stopped because it is not running."
 msgstr "Skrypt #%s nie zatrzymal sie, poniewaz nie jest uruchomiony."
@@ -379,12 +385,12 @@ msgstr "Ladowanie katalogu %s niepowiodlo sie."
 msgid "Script %s is already running."
 msgstr "Skrypt %s jest juz uruchomiony."
 
-#: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:217
+#: ../plugins/perl/cconsole.cpp:179 ../plugins/perl/cconsole.cpp:222
 #, c-format
 msgid "Script %s is now running."
 msgstr "Skrypt %s obecnie jest  uruchomiony."
 
-#: ../plugins/perl/cconsole.cpp:212
+#: ../plugins/perl/cconsole.cpp:214
 #, c-format
 msgid "Script %s not stopped  because it is not running."
 msgstr "Skrypt %s nie zatrzymal sie, poniewaz nie jest uruchomiony."
@@ -508,6 +514,11 @@ msgstr "Skrypt Python znaleziono w : %s"
 #: ../plugins/python/cconsole.cpp:229 ../plugins/python/cconsole.cpp:290
 msgid "Failed to allocate new Python interpreter."
 msgstr "Nie udalo sie przydzielic nowego Phytona."
+
+#: ../plugins/python/cconsole.cpp:320
+#, c-format
+msgid "Updated %s.%s from '%s' to '%s'."
+msgstr "Zaktualizowany %s.%s od '%s' do '%s'."
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
