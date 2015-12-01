@@ -54,7 +54,7 @@ public:
 	virtual bool OnParsedMsgAny(cConnDC *, cMessageDC *);
 	virtual bool OnParsedMsgAnyEx(cConnDC *, cMessageDC *);
 	virtual bool OnUnknownMsg(cConnDC *, cMessageDC *);
-	virtual bool OnParsedMsgSupport(cConnDC *, cMessageDC *);
+	virtual bool OnParsedMsgSupports(cConnDC *, cMessageDC *, string *);
 	virtual bool OnParsedMsgBotINFO(cConnDC *, cMessageDC *);
 	virtual bool OnParsedMsgVersion(cConnDC *, cMessageDC *);
 	virtual bool OnParsedMsgMyPass(cConnDC *, cMessageDC *);

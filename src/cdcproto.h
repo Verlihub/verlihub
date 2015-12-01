@@ -220,6 +220,8 @@ protected:
 	static void Create_GetPass(string &dest);
 	static void Create_BadPass(string &dest);
 	static void Create_HubIsFull(string &dest);
+	static void Create_Supports(string &dest, const string &flags);
+	static void Create_NickRule(string &dest, const string &rules);
 
 	/**
 	* Treat mainchat messages.
@@ -292,6 +294,7 @@ protected:
 	bool CheckUserRights(nSocket::cConnDC *conn, cMessageDC *msg, bool cond);
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
+	bool FindInSupports(const string &list, const string &flag);
 
 	/**
 	* Escape DC string.

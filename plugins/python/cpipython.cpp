@@ -190,7 +190,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnPublicBotMessage");
 	RegisterCallBack("VH_OnUnLoad");
 	RegisterCallBack("VH_OnCtmToHub");
-	RegisterCallBack("VH_OnParsedMsgSupport");
+	RegisterCallBack("VH_OnParsedMsgSupports");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
 	RegisterCallBack("VH_OnParsedMsgVersion");
 	RegisterCallBack("VH_OnParsedMsgMyPass");
@@ -649,13 +649,13 @@ bool cpiPython::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 	return true;
 }
 
-bool cpiPython::OnParsedMsgSupport(cConnDC *conn, cMessageDC *msg)
+bool cpiPython::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back)
 {
-	if((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL))
-	{
-		w_Targs* args = lib_pack( "ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgSupport, args);
+	if (conn && msg && back) {
+		w_Targs* args = lib_pack("sss", conn->AddrIP().c_str(), msg->mStr.c_str(), back->c_str());
+		return CallAll(W_OnParsedMsgSupports, args);
 	}
+
 	return true;
 }
 

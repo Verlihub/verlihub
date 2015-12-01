@@ -155,14 +155,12 @@ public:
 	*/
 	virtual bool OnParsedMsgAnyEx(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg) {return true;}
 
-	//! Event handler function that is called when $Support message is received
-	/*!
-	 * 	Use RegisterCallBack("VH_OnParsedMsgSupport") to register it. This event cannot be discardable.
-	\param conn The pointer to the connection that sent the message
-	\param msg The pointer to cMessageDC object
-	\todo Add it in cdcproto.cpp
-	 */
-	virtual bool OnParsedMsgSupport(nSocket::cConnDC* conn, nProtocol::cMessageDC *msg){ return true; }
+	/*
+		Event handler function that is called when $Supports message is received.
+		Use RegisterCallBack("VH_OnParsedMsgSupports") to register it.
+		This event is discardable.
+	*/
+	virtual bool OnParsedMsgSupports(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg, string *back) { return true; }
 
 	/*
 	* Event handler function that is called when $BotINFO message is received.

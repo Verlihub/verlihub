@@ -200,7 +200,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgValidateNick");
 	RegisterCallBack("VH_OnParsedMsgAny");
 	RegisterCallBack("VH_OnParsedMsgAnyEx");
-	RegisterCallBack("VH_OnParsedMsgSupport");
+	RegisterCallBack("VH_OnParsedMsgSupports");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
 	RegisterCallBack("VH_OnParsedMsgVersion");
 	RegisterCallBack("VH_OnParsedMsgMyPass");
@@ -419,16 +419,17 @@ bool cpiLua::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 	return true;
 }
 
-bool cpiLua::OnParsedMsgSupport(cConnDC *conn, cMessageDC *msg)
+bool cpiLua::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back)
 {
-	if ((conn != NULL) && (msg != NULL)) {
-	    char * args[] = {
-			(char *)conn->AddrIP().c_str(),
-			(char *)msg->mStr.c_str(),
+	if (conn && msg && back) {
+	    char *args[] = {
+			(char*)conn->AddrIP().c_str(),
+			(char*)msg->mStr.c_str(),
+			(char*)back->c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnParsedMsgSupport", args, conn);
+		return CallAll("VH_OnParsedMsgSupports", args, conn);
 	}
 
 	return true;

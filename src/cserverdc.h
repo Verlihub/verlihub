@@ -230,6 +230,7 @@ class cServerDC : public cAsyncSocketServer
 		cZLib *mZLib;
 		// Process name
 		string mExecPath;
+		string mBadNickChars; // forbidden nick characters
 
 		/**
 		* Base class constructor.
@@ -486,9 +487,10 @@ class cServerDC : public cAsyncSocketServer
 				conn: sender connection
 				data: search command
 				passive: search mode flag
+				tth: tth search flag
 				return: send count
 		*/
-		int SearchToAll(cConnDC *conn, string &data, bool passive);
+		int SearchToAll(cConnDC *conn, string &data, bool passive, bool tth);
 
 		/**
 		* Notify all users of a new user.
@@ -782,7 +784,7 @@ protected: // Protected methods
 	*/
 	bool VerifyUniqueNick(cConnDC *conn);
 
-    public:
+	public:
 	// Usercount of zones (CC and IP-range zones)
 	int mUserCount[USER_ZONES+1];
 	// Total number of users
@@ -812,7 +814,7 @@ private:
 			mOnCloseConnEx(mgr, "VH_OnCloseConnEx", &cVHPlugin::OnCloseConnEx),
 			mOnUnknownMsg(mgr, "VH_OnUnknownMsg", &cVHPlugin::OnUnknownMsg),
 			//mOnUnparsedMsg(mgr, "VH_OnUnparsedMsg", &cVHPlugin::OnUnparsedMsg),
-			mOnParsedMsgSupport(mgr, "VH_OnParsedMsgSupport", &cVHPlugin::OnParsedMsgSupport),
+			mOnParsedMsgSupports(mgr, "VH_OnParsedMsgSupports", &cVHPlugin::OnParsedMsgSupports),
 			mOnParsedMsgBotINFO(mgr, "VH_OnParsedMsgBotINFO", &cVHPlugin::OnParsedMsgBotINFO),
 			mOnParsedMsgVersion(mgr, "VH_OnParsedMsgVersion", &cVHPlugin::OnParsedMsgVersion),
 			mOnParsedMsgMyPass(mgr, "VH_OnParsedMsgMyPass", &cVHPlugin::OnParsedMsgMyPass),
@@ -857,7 +859,7 @@ private:
 		cVHCBL_Connection mOnCloseConnEx;
 		cVHCBL_Message mOnUnknownMsg;
 		//cVHCBL_Message mOnUnparsedMsg;
-		cVHCBL_Message mOnParsedMsgSupport;
+		cVHCBL_ConnMsgStr mOnParsedMsgSupports;
 		cVHCBL_Message mOnParsedMsgBotINFO;
 		cVHCBL_Message mOnParsedMsgVersion;
 		cVHCBL_Message mOnParsedMsgMyPass;

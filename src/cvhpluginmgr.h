@@ -220,6 +220,33 @@ template <class Type1, class Type2, class Type3> class tVHCBL_R3Types: public cV
 		}
 };
 
+template <class Type1, class Type2, class Type3> class tVHCBL_X3Types: public cVHCBL_Base
+{
+	public:
+		typedef bool (cVHPlugin::*tpfX3TypesFunc)(Type1 *, Type2 *, Type3 *);
+	protected:
+		tpfX3TypesFunc mX3TFunc;
+		Type1 *mData1;
+		Type2 *mData2;
+		Type3 *mData3;
+	public:
+		// constructor
+		tVHCBL_X3Types(cVHPluginMgr *mgr, const char *id, tpfX3TypesFunc pFunc): cVHCBL_Base(mgr, id), mX3TFunc(pFunc) { mData1 = NULL; mData2 = NULL; mData3 = NULL; }
+		virtual ~tVHCBL_X3Types() {}
+		virtual bool CallOne(cVHPlugin *pi) { return (pi->*mX3TFunc)(mData1, mData2, mData3); }
+
+		virtual bool CallAll(Type1 *par1, Type2 *par2, Type3 *par3) {
+			mData1 = par1;
+			mData2 = par2;
+			mData3 = par3;
+
+			if (mData1 && mData2 && mData3)
+				return this->cCallBackList::CallAll();
+			else
+				return false;
+		}
+};
+
 template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_4Types: public cVHCBL_Base
 {
 	public:
@@ -337,6 +364,7 @@ typedef tVHCBL_X4Types<string*, string*, int, int> cVHCBL_StrStrIntInt;
 typedef tVHCBL_3Types<cUser*, cUser*, string*> cVHCBL_UsrUsrStr;
 typedef tVHCBL_3Types<string, string, string> cVHCBL_StrStrStr;
 typedef tVHCBL_R3Types<cUser, string, int> cVHCBL_UsrStrInt;
+typedef tVHCBL_X3Types<nSocket::cConnDC, nProtocol::cMessageDC, string> cVHCBL_ConnMsgStr;
 typedef tVHCBL_2Types<nSocket::cConnDC, nProtocol::cMessageDC> cVHCBL_Message;
 typedef tVHCBL_2Types<cUser, cUser> cVHCBL_UsrUsr;
 typedef tVHCBL_2Types<nSocket::cConnDC, cDCTag> cVHCBL_ConnTag;

@@ -1366,7 +1366,9 @@ int _InUserSupports(lua_State *L)
 	((flag == "ZLine") && (usr->mxConn->mFeatures & eSF_ZLINE)) ||
 	((flag == "GetZBlock") && (usr->mxConn->mFeatures & eSF_GETZBLOCK)) ||
 	((flag == "ACTM") && (usr->mxConn->mFeatures & eSF_ACTM)) ||
-	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS))
+	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS)) ||
+	((flag == "NickRule") && (usr->mxConn->mFeatures & eSF_NICKRULE)) ||
+	((flag == "ExtJSON") && (usr->mxConn->mFeatures & eSF_EXTJSON))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

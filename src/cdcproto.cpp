@@ -310,9 +310,9 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	string &supports = msg->ChunkString(eCH_1_PARAM);
-	conn->mSupportsText = supports; // save user supports in plain format
+	conn->mSupportsText = supports; // save user supports in plain text format
 	istringstream is(supports);
-	string feature;
+	string feature, omsg, pars("");
 
 	while (1) {
 		feature = mS->mEmpty;
@@ -321,76 +321,145 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		if (!feature.size())
 			break;
 
-		if (feature == "OpPlus")
+		if (feature == "OpPlus") {
 			conn->mFeatures |= eSF_OPPLUS;
-		else if (feature == "NoHello")
+			pars.append("OpPlus ");
+
+		} else if (feature == "NoHello") {
 			conn->mFeatures |= eSF_NOHELLO;
-		else if (feature == "NoGetINFO")
+			pars.append("NoHello ");
+
+		} else if (feature == "NoGetINFO") {
 			conn->mFeatures |= eSF_NOGETINFO;
-		else if (feature == "DHT0")
+			pars.append("NoGetINFO ");
+
+		} else if (feature == "DHT0") {
 			conn->mFeatures |= eSF_DHT0;
-		else if (feature == "QuickList")
+
+		} else if (feature == "QuickList") {
 			conn->mFeatures |= eSF_QUICKLIST;
-		else if (feature == "BotINFO")
+
+		} else if (feature == "BotINFO") {
 			conn->mFeatures |= eSF_BOTINFO;
-		else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
+			pars.append("HubINFO ");
+
+		} else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
 			conn->mFeatures |= eSF_ZLIB;
 			conn->mZlibFlag = true;
-		} else if (feature == "ChatOnly")
+			pars.append("ZPipe0 ");
+
+		} else if (feature == "ChatOnly") {
 			conn->mFeatures |= eSF_CHATONLY;
-		else if (feature == "MCTo")
+
+		} else if (feature == "MCTo") {
 			conn->mFeatures |= eSF_MCTO;
-		else if (feature == "UserCommand")
+			pars.append("MCTo ");
+
+		} else if (feature == "UserCommand") {
 			conn->mFeatures |= eSF_USERCOMMAND;
-		else if (feature == "BotList")
+
+		} else if (feature == "BotList") {
 			conn->mFeatures |= eSF_BOTLIST;
-		else if (feature == "HubTopic")
+			pars.append("BotList ");
+
+		} else if (feature == "HubTopic") {
 			conn->mFeatures |= eSF_HUBTOPIC;
-		else if (feature == "UserIP2")
+			pars.append("HubTopic ");
+
+		} else if (feature == "UserIP2") {
 			conn->mFeatures |= eSF_USERIP2;
-		else if (feature == "TTHSearch")
+			pars.append("UserIP2 ");
+
+		} else if (feature == "TTHSearch") {
 			conn->mFeatures |= eSF_TTHSEARCH;
-		else if (feature == "Feed")
+			pars.append("TTHSearch ");
+
+		} else if (feature == "Feed") {
 			conn->mFeatures |= eSF_FEED;
-		else if (feature == "ClientID")
+
+		} else if (feature == "ClientID") {
 			conn->mFeatures |= eSF_CLIENTID;
-		else if (feature == "IN")
+
+		} else if (feature == "IN") {
 			conn->mFeatures |= eSF_IN;
-		else if (feature == "BanMsg")
+			//pars.append("IN "); // todo
+
+		} else if (feature == "BanMsg") {
 			conn->mFeatures |= eSF_BANMSG;
-		else if (feature == "TLS")
+
+		} else if (feature == "TLS") {
 			conn->mFeatures |= eSF_TLS;
-		else if (feature == "IPv4")
+
+		} else if (feature == "IPv4") {
 			conn->mFeatures |= eSF_IPV4;
-		else if (feature == "IP64")
+
+		} else if (feature == "IP64") {
 			conn->mFeatures |= eSF_IP64;
-		else if (feature == "FailOver")
+
+		} else if (feature == "FailOver") {
 			conn->mFeatures |= eSF_FAILOVER;
-		else if (feature == "NickChange")
+			pars.append("FailOver ");
+
+		} else if (feature == "NickChange") {
 			conn->mFeatures |= eSF_NICKCHANGE;
-		else if (feature == "ClientNick")
+
+		} else if (feature == "ClientNick") {
 			conn->mFeatures |= eSF_CLIENTNICK;
-		else if (feature == "FeaturedNetworks")
+
+		} else if (feature == "FeaturedNetworks") {
 			conn->mFeatures |= eSF_FEATNET;
-		else if (feature == "ZLine")
+
+		} else if (feature == "ZLine") {
 			conn->mFeatures |= eSF_ZLINE;
-		else if (feature == "GetZBlock")
+
+		} else if (feature == "GetZBlock") {
 			conn->mFeatures |= eSF_GETZBLOCK;
-		else if (feature == "ACTM")
+
+		} else if (feature == "ACTM") {
 			conn->mFeatures |= eSF_ACTM;
-		else if (feature == "SaltPass")
+
+		} else if (feature == "SaltPass") {
 			conn->mFeatures |= eSF_SALTPASS;
+
+		} else if (feature == "NickRule") {
+			conn->mFeatures |= eSF_NICKRULE;
+			pars.append("NickRule ");
+
+		} else if (feature == "ExtJSON") {
+			conn->mFeatures |= eSF_EXTJSON;
+		}
 	}
 
 	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgSupport.CallAll(conn, msg)) {
-			conn->CloseNow();
-			return -1;
-		}
-	#endif
+	string copy(pars);
 
-	string omsg("$Supports OpPlus NoGetINFO NoHello UserIP2 HubINFO HubTopic ZPipe0 MCTo BotList FailOver"); // todo: IN
-	conn->Send(omsg);
+	if (mS->mCallBacks.mOnParsedMsgSupports.CallAll(conn, msg, &copy))
+	#endif
+	{
+		Create_Supports(omsg, pars); // send our supports based on client supports
+		conn->Send(omsg, true);
+	}
+
+	if (conn->mFeatures & eSF_NICKRULE) { // send nick rule command
+		pars.clear();
+		pars.append("Min ");
+		pars.append(StringFrom(mS->mC.min_nick));
+		pars.append("$$Max ");
+		pars.append(StringFrom(mS->mC.max_nick));
+		pars.append("$$Char ");
+		pars.append(StrByteList(mS->mBadNickChars));
+		pars.append("$$");
+
+		if (mS->mC.nick_prefix.size()) {
+			pars.append("Pref ");
+			pars.append(mS->mC.nick_prefix);
+			pars.append("$$");
+		}
+
+		Create_NickRule(omsg, pars);
+		conn->Send(omsg, true);
+	}
+
 	conn->SetLSFlag(eLS_SUPPORTS);
 	return 0;
 }
@@ -2025,14 +2094,17 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (!patlen) // check base search length
 		return -4;
 
-	if (lims.substr(limlen - 3) == "?9?") { // check tth searches
+	bool tth = (lims.substr(limlen - 3) == "?9?");
+
+	if (tth) { // check tth searches
 		bool tthpref = true;
 
 		if ((patlen < 4) || (StrCompare(spat, 0, 4, "TTH:") != 0))
 			tthpref = false;
 
-		if ((patlen < 43) || (patlen > 43) || (!tthpref)) { // change search type
+		if ((patlen != 43) || !tthpref) { // change search type
 			lims[limlen - 2] = '1';
+			tth = false;
 
 			if (tthpref)
 				spat = spat.substr(4);
@@ -2057,7 +2129,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	string search;
 	Create_Search(search, saddr, lims, spat);
-	mS->SearchToAll(conn, search, passive); // send it
+	mS->SearchToAll(conn, search, passive, tth); // send it
 
 	/*
 		send conditional and filtered search request because
@@ -2066,6 +2138,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			pingers dont need to get any searches
 			users dont need to get their own searches
 			some users are in lan and others are in wan
+			some users dont support tth searches
 
 		if (passive)
 			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search);
@@ -2454,7 +2527,7 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserRights(conn, msg, (conn->mpUser->mClass >= eUC_OPERATOR)))
 		return -1;
 
-	if (mS->mC.hub_topic.size()) {
+	if (mS->mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) {
 		string topic;
 		Create_HubTopic(topic, mS->mC.hub_topic);
 		conn->Send(topic, true);
@@ -2768,6 +2841,28 @@ bool cDCProto::CheckUserNick(cConnDC *conn, const string &nick)
 
 	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 	return true;
+}
+
+bool cDCProto::FindInSupports(const string &list, const string &flag)
+{
+	if (list.empty())
+		return false;
+
+	istringstream is(list);
+	string item;
+
+	while (1) {
+		item.clear();
+		is >> item;
+
+		if (item.empty())
+			break;
+
+		if (item == flag)
+			return true;
+	}
+
+	return false;
 }
 
 int cDCProto::NickList(cConnDC *conn)
@@ -3152,6 +3247,20 @@ void cDCProto::Create_HubIsFull(string &dest)
 {
 	dest.clear();
 	dest.append("$HubIsFull");
+}
+
+void cDCProto::Create_Supports(string &dest, const string &flags)
+{
+	dest.clear();
+	dest.append("$Supports ");
+	dest.append(flags);
+}
+
+void cDCProto::Create_NickRule(string &dest, const string &rules)
+{
+	dest.clear();
+	dest.append("$NickRule ");
+	dest.append(rules);
 }
 
 cConnType *cDCProto::ParseSpeed(const string &uspeed)

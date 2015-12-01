@@ -103,8 +103,7 @@ namespace nVerliHub {
 			eTO_MAXTO
 		} tTimeOut;
 
-		// support flags for client and hub features sent in $Supports protocol message
-		typedef enum
+		typedef enum // support flags for client and hub features sent in $Supports
 		{
 			eSF_OPPLUS = 1,
 			eSF_NOHELLO = 1 << 1,
@@ -134,7 +133,9 @@ namespace nVerliHub {
 			eSF_ZLINE = 1 << 25,
 			eSF_GETZBLOCK = 1 << 26,
 			eSF_ACTM = 1 << 27,
-			eSF_SALTPASS = 1 << 28
+			eSF_SALTPASS = 1 << 28,
+			eSF_NICKRULE = 1 << 29,
+			eSF_EXTJSON = 1 << 30
 		} tSupportFeature;
 
 		typedef enum

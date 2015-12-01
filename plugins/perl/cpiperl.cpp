@@ -70,7 +70,7 @@ bool nVerliHub::nPerlPlugin::cpiPerl::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgValidateNick");
 	RegisterCallBack("VH_OnParsedMsgAny");
 	RegisterCallBack("VH_OnParsedMsgAnyEx");
-	RegisterCallBack("VH_OnParsedMsgSupport");
+	RegisterCallBack("VH_OnParsedMsgSupports");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
 	RegisterCallBack("VH_OnParsedMsgVersion");
 	RegisterCallBack("VH_OnParsedMsgMyPass");
@@ -206,13 +206,22 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnUnknownMsg(cConnDC *conn , cMessageDC *m
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnParsedMsgSupport(cConnDC *conn , cMessageDC *msg)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back)
 {
-	char *args[] =  {	(char *)"VH_OnParsedMsgSupport",
-				(char *)conn->AddrIP().c_str(),
-				(char *)msg->mStr.c_str(),
-				NULL };
-	bool ret = mPerl.CallArgv(PERL_CALL, args);
+	bool ret = true;
+
+	if (conn && msg && back) {
+		char *args[] = {
+			(char*)"VH_OnParsedMsgSupports",
+			(char*)conn->AddrIP().c_str(),
+			(char*)msg->mStr.c_str(),
+			(char*)back->c_str(),
+			NULL
+		};
+
+		ret = mPerl.CallArgv(PERL_CALL, args);
+	}
+
 	return ret;
 }
 

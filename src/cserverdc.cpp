@@ -80,6 +80,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mKickList(NULL),
 	mOpChat(NULL),
 	mExecPath(ExecPath),
+	mBadNickChars("<> $|"),
 	mSysLoad(eSL_NORMAL),
 	mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
 	mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
@@ -709,7 +710,7 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
-int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
+int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, bool tth)
 {
 	cConnDC *other;
 	tCLIt i;
@@ -723,6 +724,9 @@ int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
 				continue;
 
 			if (other->mpUser->IsPassive && !(other->mpUser->mMyFlag & eMF_NAT)) // passive request to passive user, allow if other user supports nat connection
+				continue;
+
+			if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
 				continue;
 
 			if (other->mpUser->mShare <= 0) // dont send to user without share
@@ -750,6 +754,9 @@ int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
 				if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
 					continue;
 
+				if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
+					continue;
+
 				if (other->mpUser->mShare <= 0) // dont send to user without share
 					continue;
 
@@ -773,6 +780,9 @@ int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive)
 				other = (cConnDC*)(*i);
 
 				if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
+					continue;
+
+				if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
 					continue;
 
 				if (other->mpUser->mShare <= 0) // dont send to user without share
@@ -1006,7 +1016,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		os.str("");
 	}
 
-	if (mC.hub_topic.size()) { // send the hub topic
+	if (mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) { // send the hub topic
 		string topic;
 		cDCProto::Create_HubTopic(topic, mC.hub_topic);
 		conn->Send(topic, true);
@@ -1302,17 +1312,17 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					if (mC.nick_chars.size())
 						errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
 
-					cDCProto::Create_BadNick(extra, "BadChar", StrByteList(more));
+					cDCProto::Create_BadNick(extra, "Char", StrByteList(more));
 					break;
 
 				case eVN_SHORT:
 					errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
-					cDCProto::Create_BadNick(extra, "TooShort", StringFrom(mC.min_nick));
+					cDCProto::Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
 					break;
 
 				case eVN_LONG:
 					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
-					cDCProto::Create_BadNick(extra, "TooLong", StringFrom(mC.max_nick));
+					cDCProto::Create_BadNick(extra, "Max", StringFrom(mC.max_nick));
 					break;
 
 				case eVN_USED:
@@ -1322,12 +1332,12 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 				case eVN_PREFIX:
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
-					cDCProto::Create_BadNick(extra, "BadPrefix", mC.nick_prefix);
+					cDCProto::Create_BadNick(extra, "Pref", mC.nick_prefix);
 					break;
 
 				case eVN_NOT_REGED_OP:
 					errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
-					cDCProto::Create_BadNick(extra, "BadPrefix");
+					cDCProto::Create_BadNick(extra, "Pref");
 					break;
 
 				default:
@@ -1394,13 +1404,12 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &more)
 {
-	string bad_nick_chars("<> $|"); // check special chars
 	bool bad = false;
 	unsigned i;
 	char chr;
 
-	for (i = 0; i < bad_nick_chars.size(); ++i) {
-		chr = bad_nick_chars[i];
+	for (i = 0; i < mBadNickChars.size(); ++i) {
+		chr = mBadNickChars[i];
 
 		if ((nick.find(chr) != nick.npos) && (more.find(chr) == more.npos)) {
 			more.append(1, chr);
