@@ -230,7 +230,7 @@ class cServerDC : public cAsyncSocketServer
 		cZLib *mZLib;
 		// Process name
 		string mExecPath;
-		string mBadNickChars; // forbidden nick characters
+		string mBadNickNmdcChars, mBadNickOwnChars; // forbidden nick characters
 
 		/**
 		* Base class constructor.

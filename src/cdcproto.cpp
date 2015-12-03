@@ -447,7 +447,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		pars.append("$$Max ");
 		pars.append(StringFrom(mS->mC.max_nick));
 		pars.append("$$Char ");
-		pars.append(StrByteList(mS->mBadNickChars));
+		pars.append(StrByteList(mS->mBadNickOwnChars)); // dont list all forbidden nmdc characters
 		pars.append("$$");
 
 		if (mS->mC.nick_prefix.size()) {

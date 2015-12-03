@@ -80,7 +80,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mKickList(NULL),
 	mOpChat(NULL),
 	mExecPath(ExecPath),
-	mBadNickChars("<> $|"),
+	mBadNickNmdcChars(" $|"),
+	mBadNickOwnChars("<>"),
 	mSysLoad(eSL_NORMAL),
 	mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
 	mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
@@ -1404,12 +1405,13 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &more)
 {
+	string bad_nick_chars(mBadNickNmdcChars + mBadNickOwnChars);
 	bool bad = false;
 	unsigned i;
 	char chr;
 
-	for (i = 0; i < mBadNickChars.size(); ++i) {
-		chr = mBadNickChars[i];
+	for (i = 0; i < bad_nick_chars.size(); ++i) {
+		chr = bad_nick_chars[i];
 
 		if ((nick.find(chr) != nick.npos) && (more.find(chr) == more.npos)) {
 			more.append(1, chr);
