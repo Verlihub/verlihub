@@ -175,39 +175,67 @@ public:
 	int max_class_proto_flood;
 	bool proto_flood_report;
 	unsigned long proto_flood_tban_time;
+
 	unsigned long int_flood_chat_period;
 	unsigned int int_flood_chat_limit;
+	unsigned int proto_flood_chat_action;
+
 	unsigned long int_flood_mcto_period;
 	unsigned int int_flood_mcto_limit;
+	unsigned int proto_flood_mcto_action;
+
 	unsigned long int_flood_to_period;
 	unsigned int int_flood_to_limit;
+	unsigned int proto_flood_to_action;
+
 	unsigned long int_flood_myinfo_period;
 	unsigned int int_flood_myinfo_limit;
+	unsigned int proto_flood_myinfo_action;
+
 	unsigned long int_flood_in_period;
 	unsigned int int_flood_in_limit;
+	unsigned int proto_flood_in_action;
+
 	unsigned long int_flood_search_period;
 	unsigned int int_flood_search_limit;
+	unsigned int proto_flood_search_action;
+
 	unsigned long int_flood_sr_period;
 	unsigned int int_flood_sr_limit;
+	unsigned int proto_flood_sr_action;
+
 	unsigned long int_flood_ctm_period;
 	unsigned int int_flood_ctm_limit;
+	unsigned int proto_flood_ctm_action;
+
 	unsigned long int_flood_rctm_period;
 	unsigned int int_flood_rctm_limit;
+	unsigned int proto_flood_rctm_action;
+
 	unsigned long int_flood_nicklist_period;
 	unsigned int int_flood_nicklist_limit;
+	unsigned int proto_flood_nicklist_action;
+
 	unsigned long int_flood_getinfo_period;
 	unsigned int int_flood_getinfo_limit;
+	unsigned int proto_flood_getinfo_action;
+
 	unsigned long int_flood_ping_period;
 	unsigned int int_flood_ping_limit;
+	unsigned int proto_flood_ping_action;
+
 	unsigned long int_flood_unknown_period;
 	unsigned int int_flood_unknown_limit;
-	// from all
+	unsigned int proto_flood_unknown_action;
+
+	// flood from all
 	unsigned long int_flood_all_chat_period;
 	unsigned int int_flood_all_chat_limit;
 	unsigned long int_flood_all_mcto_period;
 	unsigned int int_flood_all_mcto_limit;
 	unsigned long int_flood_all_to_period;
 	unsigned int int_flood_all_to_limit;
+	// end of section
 
 	unsigned long int_chat_ms;
 	unsigned int int_nicklist;

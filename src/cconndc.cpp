@@ -335,62 +335,76 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 
 	long period = 0;
 	unsigned int limit = 0;
+	unsigned int action = 3;
 
 	switch (type) {
 		case ePF_CHAT:
 			period = serv->mC.int_flood_chat_period;
 			limit = serv->mC.int_flood_chat_limit;
+			action = serv->mC.proto_flood_chat_action;
 			break;
 		case ePF_PRIV:
 			period = serv->mC.int_flood_to_period;
 			limit = serv->mC.int_flood_to_limit;
+			action = serv->mC.proto_flood_to_action;
 			break;
 		case ePF_MCTO:
 			period = serv->mC.int_flood_mcto_period;
 			limit = serv->mC.int_flood_mcto_limit;
+			action = serv->mC.proto_flood_mcto_action;
 			break;
 		case ePF_MYINFO:
 			period = serv->mC.int_flood_myinfo_period;
 			limit = serv->mC.int_flood_myinfo_limit;
+			action = serv->mC.proto_flood_myinfo_action;
 			break;
 		case ePF_IN:
 			period = serv->mC.int_flood_in_period;
 			limit = serv->mC.int_flood_in_limit;
+			action = serv->mC.proto_flood_in_action;
 			break;
 		case ePF_SEARCH:
 			period = serv->mC.int_flood_search_period;
 			limit = serv->mC.int_flood_search_limit;
+			action = serv->mC.proto_flood_search_action;
 			break;
 		case ePF_SR:
 			period = serv->mC.int_flood_sr_period;
 			limit = serv->mC.int_flood_sr_limit;
+			action = serv->mC.proto_flood_sr_action;
 			break;
 		case ePF_CTM:
 			period = serv->mC.int_flood_ctm_period;
 			limit = serv->mC.int_flood_ctm_limit;
+			action = serv->mC.proto_flood_ctm_action;
 			break;
 		case ePF_RCTM:
 			period = serv->mC.int_flood_rctm_period;
 			limit = serv->mC.int_flood_rctm_limit;
+			action = serv->mC.proto_flood_rctm_action;
 			break;
 		case ePF_NICKLIST:
 			period = serv->mC.int_flood_nicklist_period;
 			limit = serv->mC.int_flood_nicklist_limit;
+			action = serv->mC.proto_flood_nicklist_action;
 			break;
 		case ePF_GETINFO:
 			if (!mFeatures || (mFeatures & eSF_NOGETINFO)) { // dont check old clients that dont have NoGetINFO support flag because they will send this command for every user on hub
 				period = serv->mC.int_flood_getinfo_period;
 				limit = serv->mC.int_flood_getinfo_limit;
+				action = serv->mC.proto_flood_getinfo_action;
 			}
 
 			break;
 		case ePF_PING:
 			period = serv->mC.int_flood_ping_period;
 			limit = serv->mC.int_flood_ping_limit;
+			action = serv->mC.proto_flood_ping_action;
 			break;
 		case ePF_UNKNOWN:
 			period = serv->mC.int_flood_unknown_period;
 			limit = serv->mC.int_flood_unknown_limit;
+			action = serv->mC.proto_flood_unknown_action;
 			break;
 	}
 
@@ -481,7 +495,18 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if (serv->mC.proto_flood_report) // report if enabled
 		serv->ReportUserToOpchat(this, to_feed.str());
 
-	if (serv->mC.proto_flood_tban_time) { // add temporary ban
+	switch (action) { // protocol flood actions
+		case 0: // notify only
+			return false;
+		case 1: // skip
+			return true;
+		//case 2: // drop
+			//break;
+		//case 3: // ban
+			//break;
+	}
+
+	if ((action >= 3) && serv->mC.proto_flood_tban_time) { // add temporary ban
 		if (mpUser) { // we have user, create full ban
 			cBan pfban(serv);
 			cKick pfkick;
