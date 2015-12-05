@@ -178,11 +178,12 @@ void cDCConf::AddVars()
 
 	/*
 		protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
-		actions: 0 = notify only, 1 = skip, 2 = drop, 3 = ban (default)
+		actions: 0 = report only, 1 = skip, 2 = drop, 3 = ban (default)
 	*/
 	Add("max_class_proto_flood", max_class_proto_flood, (int)eUC_VIPUSER);
 	Add("proto_flood_report", proto_flood_report, true);
-	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // 30 minutes
+	Add("proto_flood_tban_time", proto_flood_tban_time, 1800); // in seconds, 30 minutes
+	Add("proto_flood_report_time", proto_flood_report_time, 600); // in seconds, 10 minutes
 
 	Add("int_flood_chat_period", int_flood_chat_period, 10);
 	Add("int_flood_chat_limit", int_flood_chat_limit, 5);

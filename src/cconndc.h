@@ -409,6 +409,7 @@ namespace nVerliHub {
 				// protocol flood
 				unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
 				cTime mProtoFloodTimes[nEnums::ePF_LAST];
+				cTime mProtoFloodReports[nEnums::ePF_LAST];
 				bool CheckProtoFlood(const string &data, int type);
 
 				// ctm2hub

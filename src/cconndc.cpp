@@ -55,6 +55,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	// protocol flood
 	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
 	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
+	memset(mProtoFloodReports, 0, sizeof(mProtoFloodReports));
 }
 
 cConnDC::~cConnDC()
@@ -414,6 +415,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if (!mProtoFloodCounts[type]) {
 		mProtoFloodCounts[type] = 1;
 		mProtoFloodTimes[type] = serv->mTime;
+		mProtoFloodReports[type] = cTime(serv->mTime.Sec() - (signed)serv->mC.proto_flood_report_time);
 		return false;
 	}
 
@@ -488,12 +490,17 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 		to_feed << ": " << pref;
 
 	to_feed << " [" << mProtoFloodCounts[type] << ':' << dif << ':' << period << ']';
+	dif = serv->mTime.Sec() - mProtoFloodReports[type].Sec(); // report if enabled and not too often
 
-	if (Log(1))
-		LogStream() << to_feed.str() << endl;
+	if ((dif < 0) || (dif >= (signed)serv->mC.proto_flood_report_time)) {
+		mProtoFloodReports[type] = serv->mTime;
 
-	if (serv->mC.proto_flood_report) // report if enabled
-		serv->ReportUserToOpchat(this, to_feed.str());
+		if (serv->mC.proto_flood_report)
+			serv->ReportUserToOpchat(this, to_feed.str());
+
+		if (Log(1))
+			LogStream() << to_feed.str() << endl;
+	}
 
 	switch (action) { // protocol flood actions
 		case 0: // notify only

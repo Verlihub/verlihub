@@ -175,6 +175,7 @@ public:
 	int max_class_proto_flood;
 	bool proto_flood_report;
 	unsigned long proto_flood_tban_time;
+	unsigned long proto_flood_report_time;
 
 	unsigned long int_flood_chat_period;
 	unsigned int int_flood_chat_limit;
