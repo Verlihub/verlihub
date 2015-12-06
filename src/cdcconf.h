@@ -89,6 +89,7 @@ public:
 	unsigned long min_share_use_hub_vip;
 	int min_class_use_hub;
 	int min_class_use_hub_passive;
+	unsigned long use_hub_msg_time;
 	unsigned int max_passive_sr;
 	unsigned int tban_kick;
 	unsigned int tban_max;
@@ -158,11 +159,14 @@ public:
 	int min_class_redir;
 	int max_class_int_login;
 	int max_class_check_clone;
+	bool allow_same_user;
 	bool hide_all_kicks;
 	bool optimize_userlist;
+	bool use_search_filter;
 	bool filter_lan_requests;
-	bool hide_msg_badctm; // hide following messages: connecting to offline user, connecting to bot
+	bool hide_msg_badctm;
 	unsigned int search_number;
+	unsigned int min_search_chars;
 	unsigned int int_search;
 	unsigned int int_search_pas;
 	unsigned int int_search_reg_pas;
@@ -253,7 +257,6 @@ public:
 	int mainchat_class;
 	int private_class;
 	unsigned int ul_portion;
-	unsigned int min_search_chars;
 	string ip_zone4_min;
 	string ip_zone4_max;
 	string ip_zone5_min;

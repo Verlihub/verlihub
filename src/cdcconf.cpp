@@ -81,11 +81,13 @@ void cDCConf::AddVars()
 	Add("hub_host", hub_host, string(""));
 	Add("hub_failover_hosts", hub_failover_hosts, string(""));
 	Add("listen_ip",mS.mAddr,string("0.0.0.0"));
+
 	#if !defined _WIN32
-	Add("listen_port", mS.mPort, 4111);
+		Add("listen_port", mS.mPort, 4111);
 	#else
-	Add("listen_port",mS.mPort, 411);
+		Add("listen_port", mS.mPort, 411);
 	#endif
+
 	Add("extra_listen_ports", extra_listen_ports,string(""));
 	// End hub info and basic settings
 
@@ -133,6 +135,7 @@ void cDCConf::AddVars()
 	// End share configuration
 
 	// search configuration
+	Add("use_search_filter", use_search_filter, true);
 	Add("filter_lan_requests", filter_lan_requests, false);
 	Add("search_number", search_number, 1);
 	Add("int_search", int_search, 32);
@@ -255,6 +258,7 @@ void cDCConf::AddVars()
 	Add("classdif_download",classdif_download,10);
 	Add("min_class_use_hub", min_class_use_hub, (int)eUC_NORMUSER);
 	Add("min_class_use_hub_passive", min_class_use_hub_passive, (int)eUC_NORMUSER);
+	Add("use_hub_msg_time", use_hub_msg_time, 0);
 	Add("min_class_register" , min_class_register, (int)eUC_CHEEF);
 	Add("min_class_redir", min_class_redir, (int)eUC_CHEEF);
 	Add("min_class_bc", min_class_bc, (int)eUC_CHEEF);
@@ -307,7 +311,19 @@ void cDCConf::AddVars()
 	Add("report_dns_lookup", report_dns_lookup, false);
 	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks", hide_all_kicks, true);
+	Add("allow_same_user", allow_same_user, true);
+
+	/*
+		hide following messages
+			connect request to offline user
+			connect request to bot
+			connect request to self
+			connect request to user with hidden share
+			connect request to user in lan or wan
+			passive connect request to passive user
+	*/
 	Add("hide_msg_badctm", hide_msg_badctm, false);
+
 	Add("timer_conn_period", mS.timer_conn_period, 4);
 	Add("timer_serv_period", mS.timer_serv_period, 1);
 	Add("min_frequency", min_frequency, 0.3);

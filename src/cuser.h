@@ -192,6 +192,8 @@ public:
 		cTime nicklist;
 		// last private message time to any user
 		cTime pm;
+		cTime msg_ctm; // last use hub message times
+		cTime msg_search;
 
 		sTimes():
 			connect(0l),
@@ -200,7 +202,9 @@ public:
 			info(0l),
 			chat(0l),
 			nicklist(0l),
-			pm(0l)
+			pm(0l),
+			msg_ctm(0l),
+			msg_search(0l)
 		{}
 	};
 
@@ -320,6 +324,6 @@ public:
 	virtual bool ReceiveMsg(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg);
 };
 
-
 }; // namespace nVerliHub
+
 #endif

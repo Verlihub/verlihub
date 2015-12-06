@@ -899,6 +899,15 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		if (!sameuser && olduser && olduser->mxConn && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO_basic == olduser->mMyINFO_basic))
 			sameuser = true;
 
+		if (sameuser && !mC.allow_same_user) { // dont allow same users
+			omsg = _("You're already logged in with same nick and IP address.");
+			DCPublicHS(omsg, conn);
+			cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+			conn->Send(omsg, true);
+			conn->CloseNice(1000, eCR_SELF);
+			return false;
+		}
+
 		if (sameuser) {
 			if (olduser) {
 				if (olduser->mxConn) {
