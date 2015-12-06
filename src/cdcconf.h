@@ -160,6 +160,7 @@ public:
 	int max_class_int_login;
 	int max_class_check_clone;
 	bool allow_same_user;
+	int max_class_same_user;
 	bool hide_all_kicks;
 	bool optimize_userlist;
 	bool use_search_filter;
