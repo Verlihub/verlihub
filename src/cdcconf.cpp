@@ -312,7 +312,7 @@ void cDCConf::AddVars()
 	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks", hide_all_kicks, true);
 	Add("allow_same_user", allow_same_user, true);
-	Add("max_class_same_user", max_class_same_user, (int)eUC_VIPUSER);
+	Add("max_class_same_user", max_class_same_user, (int)eUC_NORMUSER);
 
 	/*
 		hide following messages
