@@ -1303,7 +1303,41 @@ int _GetUserSupports(lua_State *L)
 
 	lua_pushboolean(L, 1);
 	lua_pushstring(L, (char*)usr->mxConn->mSupportsText.c_str());
-	return 2; // tips: return number equals number of pushed values including last null value
+	return 2;
+}
+
+int _GetUserHubURL(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:GetUserHubURL, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn) {
+		luaerror(L, "User not found");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, (char*)user->mxConn->mHubURL.c_str());
+	return 2;
 }
 
 int _InUserSupports(lua_State *L)
@@ -1368,6 +1402,7 @@ int _InUserSupports(lua_State *L)
 	((flag == "ACTM") && (usr->mxConn->mFeatures & eSF_ACTM)) ||
 	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS)) ||
 	((flag == "NickRule") && (usr->mxConn->mFeatures & eSF_NICKRULE)) ||
+	((flag == "HubURL") && (usr->mxConn->mFeatures & eSF_HUBURL)) ||
 	((flag == "ExtJSON") && (usr->mxConn->mFeatures & eSF_EXTJSON))
 	) {
 		lua_pushboolean(L, 1);

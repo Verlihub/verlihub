@@ -72,8 +72,9 @@ namespace nVerliHub {
 			eLS_SUPPORTS = 1 << 7,
 			// botinfo
 			eLS_BOTINFO = 1 << 8,
-			/// All the flags explained above. This means the login
-			/// procedure is complete.
+			// myhuburl
+			eLS_MYHUBURL = 1 << 9,
+			// sum of some flags above, means the login procedure is complete
 			eLS_LOGIN_DONE = eLS_KEYOK | eLS_VALNICK | eLS_PASSWD | eLS_VERSION | eLS_MYINFO | eLS_ALLOWED | eLS_NICKLST | eLS_SUPPORTS
 		} tLogStatus;
 
@@ -135,7 +136,8 @@ namespace nVerliHub {
 			eSF_ACTM = 1 << 27,
 			eSF_SALTPASS = 1 << 28,
 			eSF_NICKRULE = 1 << 29,
-			eSF_EXTJSON = 1 << 30
+			eSF_EXTJSON = 1 << 30,
+			eSF_HUBURL = 1 << 31
 		} tSupportFeature;
 
 		typedef enum
@@ -145,6 +147,7 @@ namespace nVerliHub {
 			ePF_MCTO,
 			ePF_MYINFO,
 			ePF_IN,
+			ePF_EXTJSON,
 			ePF_SEARCH,
 			ePF_SR,
 			ePF_CTM,
@@ -412,6 +415,8 @@ namespace nVerliHub {
 				cTime mProtoFloodReports[nEnums::ePF_LAST];
 				bool CheckProtoFlood(const string &data, int type);
 
+				// hub url
+				string mHubURL;
 				// ctm2hub
 				string mMyNick;
 			private:

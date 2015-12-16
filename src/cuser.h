@@ -129,6 +129,8 @@ public:
 	string mMailStr;
 	string mMyINFO;
 	string mMyINFO_basic;
+	// last extjson
+	string mLastExtJSON;
 	// users class
 	nEnums::tUserCl mClass;
 	// if the user was added to the list

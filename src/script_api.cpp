@@ -65,8 +65,8 @@ bool SendDataToUser(char *data, char *nick)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	usr->mxConn->Send(omsg, CheckDataPipe(omsg), true);
 	return true;
@@ -112,8 +112,8 @@ bool SendToClass(char *data, int min_class, int max_class)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;
@@ -130,8 +130,8 @@ bool SendToAll(char *data)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mUserList.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
@@ -148,8 +148,8 @@ bool SendToActive(char *data)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mActiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
@@ -169,8 +169,8 @@ bool SendToActiveClass(char *data, int min_class, int max_class)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;
@@ -187,8 +187,8 @@ bool SendToPassive(char *data)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mPassiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
 	return true;
@@ -208,8 +208,8 @@ bool SendToPassiveClass(char *data, int min_class, int max_class)
 
 	string omsg(data);
 
-	if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		return false;
+	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
+		//return false;
 
 	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
 	return true;

@@ -208,6 +208,10 @@ void cDCConf::AddVars()
 	Add("int_flood_in_limit", int_flood_in_limit, 20);
 	Add("proto_flood_in_action", proto_flood_in_action, 3);
 
+	Add("int_flood_extjson_period", int_flood_extjson_period, 60);
+	Add("int_flood_extjson_limit", int_flood_extjson_limit, 20);
+	Add("proto_flood_extjson_action", proto_flood_extjson_action, 3);
+
 	Add("int_flood_search_period", int_flood_search_period, 60);
 	Add("int_flood_search_limit", int_flood_search_limit, 30);
 	Add("proto_flood_search_action", proto_flood_search_action, 3);
@@ -340,6 +344,7 @@ void cDCConf::AddVars()
 	Add("disable_zlib", disable_zlib, true);
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
+	Add("disable_extjson_fwd", disable_extjson_fwd, false); // extjson forward
 
 	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};
 	double to_default[] = { 60. , 30., 600., 40., 30., 300. };

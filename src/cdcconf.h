@@ -202,6 +202,10 @@ public:
 	unsigned int int_flood_in_limit;
 	unsigned int proto_flood_in_action;
 
+	unsigned long int_flood_extjson_period;
+	unsigned int int_flood_extjson_limit;
+	unsigned int proto_flood_extjson_action;
+
 	unsigned long int_flood_search_period;
 	unsigned int int_flood_search_limit;
 	unsigned int proto_flood_search_action;
@@ -253,6 +257,7 @@ public:
 	bool disable_zlib;
 	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
+	bool disable_extjson_fwd; // extjson forward
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;

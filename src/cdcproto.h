@@ -160,6 +160,8 @@ protected:
 	int DC_MyINFO(cMessageDC * msg, nSocket::cConnDC * conn);
 	// $IN
 	int DC_IN(cMessageDC *msg, nSocket::cConnDC *conn);
+	// $ExtJSON
+	int DC_ExtJSON(cMessageDC *msg, nSocket::cConnDC *conn);
 	/** Treat the DC message in a appropriate way */
 	int DCO_Kick(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
@@ -219,6 +221,7 @@ protected:
 	static void Create_UserIP(string &dest, const string &list);
 	static void Create_GetPass(string &dest);
 	static void Create_BadPass(string &dest);
+	static void Create_GetHubURL(string &dest);
 	static void Create_HubIsFull(string &dest);
 	static void Create_Supports(string &dest, const string &flags);
 	static void Create_NickRule(string &dest, const string &rules);
@@ -280,6 +283,11 @@ protected:
 	* @return Always 0.
 	*/
 	int DC_Supports(cMessageDC * msg, nSocket::cConnDC * conn);
+
+	/*
+		$MyHubURL <url>
+	*/
+	int DC_MyHubURL(cMessageDC *msg, nSocket::cConnDC *conn);
 
 	/**
 	* Send hub topic to an user.

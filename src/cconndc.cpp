@@ -364,6 +364,11 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			limit = serv->mC.int_flood_in_limit;
 			action = serv->mC.proto_flood_in_action;
 			break;
+		case ePF_EXTJSON:
+			period = serv->mC.int_flood_extjson_period;
+			limit = serv->mC.int_flood_extjson_limit;
+			action = serv->mC.proto_flood_extjson_action;
+			break;
 		case ePF_SEARCH:
 			period = serv->mC.int_flood_search_period;
 			limit = serv->mC.int_flood_search_limit;
@@ -448,6 +453,9 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			break;
 		case ePF_IN:
 			to_user << "IN";
+			break;
+		case ePF_EXTJSON:
+			to_user << "ExtJSON";
 			break;
 		case ePF_SEARCH:
 			to_user << "Search";

@@ -38,6 +38,7 @@ namespace nVerliHub {
 			eDC_SR,
 			eDC_MYINFO,
 			eDC_IN,
+			eDC_EXTJSON,
 			eDC_KEY,
 			eDC_VALIDATENICK,
 			eDC_MYPASS,
@@ -55,6 +56,7 @@ namespace nVerliHub {
 			eDC_MSEARCH_PAS,
 			eDC_MSEARCH,
 			eDC_SUPPORTS,
+			eDC_MYHUBURL, // hub url
 			eDCO_BAN,
 			eDCO_TBAN,
 			eDCO_UNBAN,
@@ -92,6 +94,8 @@ namespace nVerliHub {
 		enum { eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE };
 		// IN
 		enum { eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA };
+		// ExtJSON
+		enum { eCH_EJ_ALL, eCH_EJ_DEST, eCH_EJ_NICK, eCH_EJ_PARS };
 		/// connecttome   $ConnectToMe <remoteNick> <senderIp>:<senderPort>
 		enum {eCH_CM_ALL, eCH_CM_NICK, eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT};
 		//OpForce move

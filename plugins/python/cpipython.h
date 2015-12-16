@@ -62,6 +62,7 @@ public:
 	virtual bool OnUnLoad(long);
 	virtual bool OnCtmToHub(nSocket::cConnDC *, std::string *);
 	virtual bool OnParsedMsgSupports(nSocket::cConnDC *, nProtocol::cMessageDC *, string *);
+	virtual bool OnParsedMsgMyHubURL(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgBotINFO(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgVersion(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgMyPass(nSocket::cConnDC *, nProtocol::cMessageDC *);
@@ -163,6 +164,7 @@ extern "C" w_Targs* _GetNickList       (int id, w_Targs* args);  //();
 extern "C" w_Targs* _GetOpList         (int id, w_Targs* args);  //();
 extern "C" w_Targs* _GetUserHost       (int id, w_Targs* args);  //(char *nick);
 extern "C" w_Targs* _GetUserIP         (int id, w_Targs* args);  //(char *nick);
+extern "C" w_Targs* _GetUserHubURL(int id, w_Targs* args); // (char *nick)
 extern "C" w_Targs* _GetUserCC         (int id, w_Targs* args);  //(char *nick);
 extern "C" w_Targs* _GetIPCC           (int id, w_Targs* args);  //(char *ip);
 extern "C" w_Targs* _GetIPCN           (int id, w_Targs* args);  //(char *ip);

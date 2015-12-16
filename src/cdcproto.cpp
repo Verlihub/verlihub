@@ -165,6 +165,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 		case eDC_IN:
 			this->DC_IN(msg, conn);
 			break;
+		case eDC_EXTJSON:
+			this->DC_ExtJSON(msg, conn);
+			break;
 		case eDC_GETINFO:
 			this->DC_GetINFO(msg, conn);
 			break;
@@ -210,6 +213,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			break;
 		case eDC_SUPPORTS:
 			this->DC_Supports(msg, conn);
+			break;
+		case eDC_MYHUBURL:
+			this->DC_MyHubURL(msg, conn);
 			break;
 		case eDCO_BAN:
 		case eDCO_TBAN:
@@ -425,8 +431,13 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
 
+		} else if (feature == "HubURL") {
+			conn->mFeatures |= eSF_HUBURL;
+			pars.append("HubURL ");
+
 		} else if (feature == "ExtJSON") {
 			conn->mFeatures |= eSF_EXTJSON;
+			pars.append("ExtJSON ");
 		}
 	}
 
@@ -605,6 +616,11 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	} else {
 		mS->DCHello(nick, conn);
 		conn->SetLSFlag(eLS_PASSWD);
+
+		if (conn->mFeatures & eSF_HUBURL) { // send hub url command
+			Create_GetHubURL(omsg);
+			conn->Send(omsg, true);
+		}
 	}
 
 	try {
@@ -616,10 +632,10 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 
 		#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgValidateNick.CallAll(conn, msg)) {
-			conn->CloseNow();
-			return -2;
-		}
+			if (!mS->mCallBacks.mOnParsedMsgValidateNick.CallAll(conn, msg)) {
+				conn->CloseNow();
+				return -2;
+			}
 		#endif
 
 	} catch(...) {
@@ -713,6 +729,11 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		mS->mR->Login(conn, conn->mpUser->mNick);
 		mS->DCHello(conn->mpUser->mNick, conn);
 
+		if (conn->mFeatures & eSF_HUBURL) { // send hub url command
+			Create_GetHubURL(omsg);
+			conn->Send(omsg, true);
+		}
+
 		if (conn->mpUser->mClass >= eUC_OPERATOR) { // operators get $LogedIn
 			Create_LogedIn(omsg, conn->mpUser->mNick);
 			conn->Send(omsg, true);
@@ -744,6 +765,55 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	return 0;
+}
+
+int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg, false))
+		return -1;
+
+	ostringstream os;
+
+	if (!(conn->mFeatures & eSF_HUBURL)) { // check support
+		os << _("Invalid login sequence, you didn't specify support for hub URL command.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (conn->GetLSFlag(eLS_MYHUBURL)) { // already sent
+		os << _("Invalid login sequence, your client already sent hub URL.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &url = msg->ChunkString(eCH_1_PARAM);
+	conn->mHubURL = url;
+
+	/*
+		todo
+			perform planned work with hub url
+	*/
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgMyHubURL.CallAll(conn, msg)) {
+			conn->CloseNow();
+			return -1;
+		}
+	#endif
+
+	conn->SetLSFlag(eLS_MYHUBURL);
 	return 0;
 }
 
@@ -1323,6 +1393,47 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 			users who dont get full command
 			dont forget IN supports flag
 	*/
+
+	return 0;
+}
+
+int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	ostringstream os;
+
+	if (!(conn->mFeatures & eSF_EXTJSON)) { // check support
+		os << _("Invalid login sequence, you didn't specify support for ExtJSON command.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	string &nick = msg->ChunkString(eCH_EJ_NICK);
+
+	if (CheckUserNick(conn, nick))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_EXTJSON)) // protocol flood
+		return -1;
+
+	if (!mS->mC.disable_extjson_fwd) { // forward to users who support this if enabled
+		string &pars = msg->ChunkString(eCH_EJ_PARS);
+
+		if (pars != conn->mpUser->mLastExtJSON) { // and only if changed
+			conn->mpUser->mLastExtJSON = pars;
+			mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON, mS->mC.delayed_myinfo, true);
+			mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON, mS->mC.delayed_myinfo, true);
+		}
+	}
 
 	return 0;
 }
@@ -2784,6 +2895,9 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 		case eDC_IN:
 			cmd = "IN";
 			break;
+		case eDC_EXTJSON:
+			cmd = "ExtJSON";
+			break;
 		case eDCO_USERIP:
 			cmd = "UserIP";
 			break;
@@ -2820,6 +2934,9 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 			break;
 		case eDC_SUPPORTS:
 			cmd = "Supports";
+			break;
+		case eDC_MYHUBURL:
+			cmd = "MyHubURL";
 			break;
 		case eDCO_BAN:
 			cmd = "Ban";
@@ -3267,6 +3384,12 @@ void cDCProto::Create_BadPass(string &dest)
 {
 	dest.clear();
 	dest.append("$BadPass");
+}
+
+void cDCProto::Create_GetHubURL(string &dest)
+{
+	dest.clear();
+	dest.append("$GetHubURL");
 }
 
 void cDCProto::Create_HubIsFull(string &dest)

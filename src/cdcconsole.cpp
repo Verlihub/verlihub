@@ -2110,8 +2110,8 @@ bool cDCConsole::cfRegUsr::operator()()
 		return false;
 	}
 
-	if (mS->mC.classdif_reg > eUC_MASTER) {
-		(*mOS) << _("Valid classdif_reg value must be between 1 and 5, please correct this first.");
+	if ((mS->mC.classdif_reg < eUC_NORMUSER) || (mS->mC.classdif_reg > eUC_ADMIN)) {
+		(*mOS) << autosprintf(_("Valid classdif_reg value is between %d and %d, please correct this first."), eUC_NORMUSER, eUC_ADMIN);
 		return false;
 	}
 
@@ -2124,7 +2124,7 @@ bool cDCConsole::cfRegUsr::operator()()
 			return false;
 		}*/
 
-		if ((MyClass < eUC_MASTER) && (cls >= eUC_NORMUSER) && (cls > (int)(MyClass - mS->mC.classdif_reg))) {
+		if ((MyClass < eUC_MASTER) && (cls >= eUC_NORMUSER) && (cls > int(MyClass - mS->mC.classdif_reg))) {
 			(*mOS) << _("You have no rights to do this.");
 			return false;
 		}
@@ -2177,7 +2177,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	bool RegFound = mS->mR->FindRegInfo(ui, nick);
 	bool authorized = false;
 
-	if (RegFound && ((MyClass < eUC_MASTER) && !((MyClass >= (int)(ui.mClass + mS->mC.classdif_reg) && MyClass >= (ui.mClassProtect)) || ((Action == eAC_INFO) && (MyClass >= (ui.mClass - 1)))))) { // check rights
+	if (RegFound && ((MyClass < eUC_MASTER) && !((MyClass >= int(ui.mClass + mS->mC.classdif_reg) && (MyClass >= ui.mClassProtect)) || ((Action == eAC_INFO) && (MyClass >= (ui.mClass - 1)))))) { // check rights
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
@@ -2194,35 +2194,36 @@ bool cDCConsole::cfRegUsr::operator()()
 
 	switch (Action) {
 		case eAC_SET:
-			authorized = RegFound && ((MyClass >= eUC_ADMIN) && (MyClass > ui.mClass) && (field != "class"));
+			authorized = (RegFound && ((MyClass >= eUC_ADMIN) && (MyClass > ui.mClass) && (field != "class")));
 			break;
 		case eAC_NEW:
-			authorized = !RegFound && (MyClass >= (int)(ParClass + mS->mC.classdif_reg));
+			authorized = (!RegFound && (MyClass >= int(ParClass + mS->mC.classdif_reg)));
 			break;
 		case eAC_PASS:
 		case eAC_HIDEKICK:
 		case eAC_ENABLE:
 		case eAC_DISABLE:
 		case eAC_DEL:
-			authorized = RegFound && (MyClass >= (int)(ui.mClass + mS->mC.classdif_reg));
+			authorized = (RegFound && (MyClass >= int(ui.mClass + mS->mC.classdif_reg)));
 			break;
 		case eAC_CLASS:
-			authorized = RegFound && (MyClass >= (int)(ui.mClass + mS->mC.classdif_reg)) && (MyClass >= (int)(ParClass + mS->mC.classdif_reg));
+			authorized = (RegFound && (MyClass >= int(ui.mClass + mS->mC.classdif_reg)) && (MyClass >= int(ParClass + mS->mC.classdif_reg)));
 			break;
 		case eAC_PROTECT:
-			authorized = RegFound && (MyClass >= (int)(ui.mClass + mS->mC.classdif_reg)) && (MyClass >= (ParClass + 1));
+			authorized = (RegFound && (MyClass >= int(ui.mClass + mS->mC.classdif_reg)) && (MyClass >= (ParClass + 1)));
 			break;
 		case eAC_INFO:
-			authorized = RegFound && (MyClass >= eUC_OPERATOR);
+			authorized = (RegFound && (MyClass >= eUC_OPERATOR));
 			break;
 	}
 
-	if (MyClass == eUC_MASTER) authorized = RegFound || (!RegFound && (Action == eAC_NEW));
+	if (MyClass == eUC_MASTER)
+		authorized = (RegFound || (!RegFound && (Action == eAC_NEW)));
 
 	if (!authorized) {
-		if (!RegFound)
+		if (!RegFound && (Action != eAC_NEW))
 			(*mOS) << autosprintf(_("Registered user not found: %s"), nick.c_str());
-		else if (Action == eAC_NEW)
+		else if (RegFound && (Action == eAC_NEW))
 			(*mOS) << autosprintf(_("%s is already registered."), nick.c_str());
 		else
 			(*mOS) << _("You have no rights to do this.");

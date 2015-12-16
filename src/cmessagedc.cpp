@@ -36,6 +36,7 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=  // this list corresponds to tDCMs
 	cProtoCommand(string("$SR ")), // check: nick
 	cProtoCommand(string("$MyINFO ")), // check: after_nick, nick, share_min_max
 	cProtoCommand(string("$IN ")), // check: nick, data
+	cProtoCommand(string("$ExtJSON ")), // check: nick
 	cProtoCommand(string("$Key ")),
 	cProtoCommand(string("$ValidateNick ")),
 	cProtoCommand(string("$MyPass ")),
@@ -53,6 +54,7 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[]=  // this list corresponds to tDCMs
 	cProtoCommand(string("$MultiSearch Hub:")), // check: nick, delay
 	cProtoCommand(string("$MultiSearch ")), // check: ip, delay
 	cProtoCommand(string("$Supports ")),
+	cProtoCommand(string("$MyHubURL ")),
 	cProtoCommand(string("$Ban ")),
 	cProtoCommand(string("$TempBan ")),
 	cProtoCommand(string("$UnBan ")),
@@ -104,6 +106,7 @@ bool cMessageDC::SplitChunks()
 
 	switch (mType) { // now try to find chunks one by one
 		case eDC_SUPPORTS: // single parameter
+		case eDC_MYHUBURL:
 		case eDC_KEY:
 		case eDC_VALIDATENICK:
 		case eDC_MYPASS:
@@ -225,7 +228,28 @@ bool cMessageDC::SplitChunks()
 				mError = true;
 
 			break;
-		
+
+		case eDC_EXTJSON:
+			/*
+				$ExtJSON $ALL <nick> { parameters with values } $
+				eCH_EJ_ALL, eCH_EJ_DEST, eCH_EJ_NICK, eCH_EJ_PARS
+			*/
+
+			if (!SplitOnTwo(mKWSize, ' ', eCH_EJ_DEST, eCH_EJ_NICK))
+				mError = true;
+
+			if (!SplitOnTwo(' ', eCH_EJ_NICK, eCH_EJ_NICK, eCH_EJ_PARS))
+				mError = true;
+
+			/*
+				todo
+					if we ever will use parameters of this command
+					then we need to finish parsing them over here
+					for now we dont need to spend resources doing that
+			*/
+
+			break;
+
 		case eDCO_OPFORCEMOVE:
 			/*
 				$OpForceMove $Who:<victimNick>$Where:<newIp>$Msg:<reasonMsg>

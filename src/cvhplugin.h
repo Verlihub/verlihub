@@ -163,6 +163,13 @@ public:
 	virtual bool OnParsedMsgSupports(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg, string *back) { return true; }
 
 	/*
+		Event handler function that is called when $MyHubURL message is received.
+		Use RegisterCallBack("VH_OnParsedMsgMyHubURL") to register it.
+		This event is discardable.
+	*/
+	virtual bool OnParsedMsgMyHubURL(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg) { return true; }
+
+	/*
 	* Event handler function that is called when $BotINFO message is received.
 	* Use RegisterCallBack("VH_OnParsedMsgBotINFO") to register it. This event can be discarded.
 	* conn = The pointer to the connection that sent the message.
