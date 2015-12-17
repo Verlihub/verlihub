@@ -231,22 +231,12 @@ bool cMessageDC::SplitChunks()
 
 		case eDC_EXTJSON:
 			/*
-				$ExtJSON $ALL <nick> { parameters with values } $
-				eCH_EJ_ALL, eCH_EJ_DEST, eCH_EJ_NICK, eCH_EJ_PARS
+				$ExtJSON <nick> {parameters with values}
+				eCH_EJ_ALL, eCH_EJ_NICK, eCH_EJ_PARS
 			*/
 
-			if (!SplitOnTwo(mKWSize, ' ', eCH_EJ_DEST, eCH_EJ_NICK))
+			if (!SplitOnTwo(mKWSize, ' ', eCH_EJ_NICK, eCH_EJ_PARS))
 				mError = true;
-
-			if (!SplitOnTwo(' ', eCH_EJ_NICK, eCH_EJ_NICK, eCH_EJ_PARS))
-				mError = true;
-
-			/*
-				todo
-					if we ever will use parameters of this command
-					then we need to finish parsing them over here
-					for now we dont need to spend resources doing that
-			*/
 
 			break;
 

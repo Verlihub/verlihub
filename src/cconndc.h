@@ -106,38 +106,39 @@ namespace nVerliHub {
 
 		typedef enum // support flags for client and hub features sent in $Supports
 		{
-			eSF_OPPLUS = 1,
-			eSF_NOHELLO = 1 << 1,
-			eSF_NOGETINFO = 1 << 2,
-			eSF_DHT0 = 1 << 3,
-			eSF_QUICKLIST = 1 << 4,
-			eSF_BOTINFO = 1 << 5,
-			eSF_ZLIB = 1 << 6,
-			eSF_CHATONLY = 1 << 7,
-			eSF_MCTO = 1 << 8,
-			eSF_USERCOMMAND = 1 << 9,
-			eSF_BOTLIST = 1 << 10,
-			eSF_HUBTOPIC = 1 << 11,
-			eSF_USERIP2 = 1 << 12,
-			eSF_TTHSEARCH = 1 << 13,
-			eSF_FEED = 1 << 14,
-			eSF_CLIENTID = 1 << 15,
-			eSF_IN = 1 << 16,
-			eSF_BANMSG = 1 << 17,
-			eSF_TLS = 1 << 18,
-			eSF_IPV4 = 1 << 19,
-			eSF_IP64 = 1 << 20,
-			eSF_FAILOVER = 1 << 21,
-			eSF_NICKCHANGE = 1 << 22,
-			eSF_CLIENTNICK = 1 << 23,
-			eSF_FEATNET = 1 << 24,
-			eSF_ZLINE = 1 << 25,
-			eSF_GETZBLOCK = 1 << 26,
-			eSF_ACTM = 1 << 27,
-			eSF_SALTPASS = 1 << 28,
-			eSF_NICKRULE = 1 << 29,
-			eSF_EXTJSON = 1 << 30,
-			eSF_HUBURL = 1 << 31
+			eSF_OPPLUS = 1ul,
+			eSF_NOHELLO = 1ul << 1,
+			eSF_NOGETINFO = 1ul << 2,
+			eSF_DHT0 = 1ul << 3,
+			eSF_QUICKLIST = 1ul << 4,
+			eSF_BOTINFO = 1ul << 5,
+			eSF_ZLIB = 1ul << 6,
+			eSF_CHATONLY = 1ul << 7,
+			eSF_MCTO = 1ul << 8,
+			eSF_USERCOMMAND = 1ul << 9,
+			eSF_BOTLIST = 1ul << 10,
+			eSF_HUBTOPIC = 1ul << 11,
+			eSF_USERIP2 = 1ul << 12,
+			eSF_TTHSEARCH = 1ul << 13,
+			eSF_FEED = 1ul << 14,
+			eSF_CLIENTID = 1ul << 15,
+			eSF_IN = 1ul << 16,
+			eSF_BANMSG = 1ul << 17,
+			eSF_TLS = 1ul << 18,
+			eSF_IPV4 = 1ul << 19,
+			eSF_IP64 = 1ul << 20,
+			eSF_FAILOVER = 1ul << 21,
+			eSF_NICKCHANGE = 1ul << 22,
+			eSF_CLIENTNICK = 1ul << 23,
+			eSF_FEATNET = 1ul << 24,
+			eSF_ZLINE = 1ul << 25,
+			eSF_GETZBLOCK = 1ul << 26,
+			eSF_ACTM = 1ul << 27,
+			eSF_SALTPASS = 1ul << 28,
+			eSF_NICKRULE = 1ul << 29,
+			eSF_EXTJSON = 1ul << 30,
+			eSF_HUBURL = 1ul << 31,
+			eSF_EXTJSON2 = 1ul << 32
 		} tSupportFeature;
 
 		typedef enum
@@ -359,10 +360,14 @@ namespace nVerliHub {
 				/// Pointer to cUser instance.
 				cUser * mpUser;
 
-				/// Protocol extenstion supported by the client.
-				/// @see tSupportFeature
-				/// @todo Move to cProtocol class.
-				unsigned mFeatures;
+				/*
+					Protocol extenstions supported by the client.
+					See tSupportFeature enum.
+
+					todo
+						Move to cProtocol class.
+				*/
+				unsigned long mFeatures;
 
 				/// Protocol version
 				/// @todo Move to cProtocol class.

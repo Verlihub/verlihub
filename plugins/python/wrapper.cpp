@@ -540,6 +540,19 @@ static PyObject * __GetUserHubURL(PyObject *self, PyObject *args) // (nick)
 	Py_RETURN_NONE;
 }
 
+static PyObject * __GetUserExtJSON(PyObject *self, PyObject *args) // (nick)
+{
+	char *res;
+
+	if (Call(W_GetUserExtJSON, args, "s", "s", &res)) {
+		PyObject *p = Py_BuildValue("s", res);
+		freee(res);
+		return p;
+	}
+
+	Py_RETURN_NONE;
+}
+
 static PyObject * __GetUserCC(PyObject *self, PyObject *args)  // (nick)
 {
 	char *res;
@@ -778,6 +791,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserHost",			__GetUserHost,			METH_VARARGS},
 	{"GetUserIP",			__GetUserIP,			METH_VARARGS},
 	{"GetUserHubURL", __GetUserHubURL, METH_VARARGS},
+	{"GetUserExtJSON", __GetUserExtJSON, METH_VARARGS},
 	{"GetUserCC",			__GetUserCC,			METH_VARARGS},
 	{"GetIPCC",			    __GetIPCC,			    METH_VARARGS},
 	{"GetIPCN",			    __GetIPCN,			    METH_VARARGS},
@@ -1107,6 +1121,7 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 		case W_OnUserCommand:
 		case W_OnValidateTag:
 		case W_OnParsedMsgMyHubURL:
+		case W_OnParsedMsgExtJSON:
 		case W_OnParsedMsgChat:
 		case W_OnParsedMsgBotINFO:
 		case W_OnParsedMsgVersion:
@@ -1313,6 +1328,7 @@ const char * w_HookName(int hook)
 		case W_OnCtmToHub: return "OnCtmToHub";
 		case W_OnParsedMsgSupports: return "OnParsedMsgSupports";
 		case W_OnParsedMsgMyHubURL: return "OnParsedMsgMyHubURL";
+		case W_OnParsedMsgExtJSON: return "OnParsedMsgExtJSON";
 		case W_OnParsedMsgBotINFO: 	return "OnParsedMsgBotINFO";
 		case W_OnParsedMsgVersion: 	return "OnParsedMsgVersion";
 		case W_OnParsedMsgMyPass: 	return "OnParsedMsgMyPass";
@@ -1351,6 +1367,7 @@ const char * w_CallName(int callback)
 		case W_GetUserHost: 		return "GetUserHost";
 		case W_GetUserIP: 		return "GetUserIP";
 		case W_GetUserHubURL: return "GetUserHubURL";
+		case W_GetUserExtJSON: return "GetUserExtJSON";
 		case W_GetUserCC: 		return "GetUserCC";
 		case W_GetIPCC: 		return "GetIPCC";
 		case W_GetIPCN: 		return "GetIPCN";

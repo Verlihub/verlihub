@@ -118,7 +118,7 @@ public:
 	cUserBase(const string &nick);
 	virtual ~cUserBase();
 	virtual bool CanSend();
-	virtual bool HasFeature(unsigned feature);
+	virtual bool HasFeature(unsigned long feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
 public:
 	// users myinfo parts
@@ -130,7 +130,7 @@ public:
 	string mMyINFO;
 	string mMyINFO_basic;
 	// last extjson
-	string mLastExtJSON;
+	string mExtJSON;
 	// users class
 	nEnums::tUserCl mClass;
 	// if the user was added to the list
@@ -154,7 +154,7 @@ public:
 	cUser(const string &nick);
 	virtual ~cUser();
 	virtual bool CanSend();
-	virtual bool HasFeature(unsigned feature);
+	virtual bool HasFeature(unsigned long feature);
 	virtual void Send(string &data, bool pipe, bool flush=true);
 	/** check for the right to ... */
 	inline int HaveRightTo(unsigned int mask){ return mRights & mask; }

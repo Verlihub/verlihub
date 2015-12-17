@@ -57,6 +57,7 @@ public:
 	virtual bool OnParsedMsgAnyEx(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgSupports(nSocket::cConnDC *, nProtocol::cMessageDC *, string *);
 	virtual bool OnParsedMsgMyHubURL(nSocket::cConnDC *, nProtocol::cMessageDC *);
+	virtual bool OnParsedMsgExtJSON(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgBotINFO(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgVersion(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgMyPass(nSocket::cConnDC *, nProtocol::cMessageDC *);

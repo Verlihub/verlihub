@@ -142,6 +142,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserHost] = &_GetUserHost;
 	callbacklist[W_GetUserIP] = &_GetUserIP;
 	callbacklist[W_GetUserHubURL] = &_GetUserHubURL;
+	callbacklist[W_GetUserExtJSON] = &_GetUserExtJSON;
 	callbacklist[W_GetUserCC] = &_GetUserCC;
 	callbacklist[W_GetIPCC] = &_GetIPCC;
 	callbacklist[W_GetIPCN] = &_GetIPCN;
@@ -193,6 +194,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnParsedMsgSupports");
 	RegisterCallBack("VH_OnParsedMsgMyHubURL");
+	RegisterCallBack("VH_OnParsedMsgExtJSON");
 	RegisterCallBack("VH_OnParsedMsgBotINFO");
 	RegisterCallBack("VH_OnParsedMsgVersion");
 	RegisterCallBack("VH_OnParsedMsgMyPass");
@@ -666,6 +668,16 @@ bool cpiPython::OnParsedMsgMyHubURL(cConnDC *conn, cMessageDC *msg)
 	if (conn && conn->mpUser && msg) {
 		w_Targs* args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
 		return CallAll(W_OnParsedMsgMyHubURL, args);
+	}
+
+	return true;
+}
+
+bool cpiPython::OnParsedMsgExtJSON(cConnDC *conn, cMessageDC *msg)
+{
+	if (conn && conn->mpUser && msg) {
+		w_Targs* args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
+		return CallAll(W_OnParsedMsgExtJSON, args);
 	}
 
 	return true;
@@ -1411,6 +1423,25 @@ w_Targs* _GetUserHubURL(int id, w_Targs* args) // (char *nick)
 		url = user->mxConn->mHubURL.c_str();
 
 	return cpiPython::lib_pack( "s", strdup(url));
+}
+
+w_Targs* _GetUserExtJSON(int id, w_Targs* args) // (char *nick)
+{
+	char *nick;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
+	const char *pars = "";
+	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
+	if (user)
+		pars = user->mExtJSON.c_str();
+
+	return cpiPython::lib_pack( "s", strdup(pars));
 }
 
 w_Targs* _GetUserCC (int id, w_Targs* args) // (char* nick)

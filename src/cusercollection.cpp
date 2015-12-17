@@ -213,7 +213,7 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithFeature(string &Data, unsigned long feature, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append("|");
@@ -235,7 +235,7 @@ void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool 
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned long feature, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append("|");

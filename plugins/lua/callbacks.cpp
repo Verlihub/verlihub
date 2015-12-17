@@ -1340,6 +1340,40 @@ int _GetUserHubURL(lua_State *L)
 	return 2;
 }
 
+int _GetUserExtJSON(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:GetUserExtJSON, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user) {
+		luaerror(L, "User not found");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, (char*)user->mExtJSON.c_str());
+	return 2;
+}
+
 int _InUserSupports(lua_State *L)
 {
 	if (lua_gettop(L) < 3) {
@@ -1403,7 +1437,8 @@ int _InUserSupports(lua_State *L)
 	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS)) ||
 	((flag == "NickRule") && (usr->mxConn->mFeatures & eSF_NICKRULE)) ||
 	((flag == "HubURL") && (usr->mxConn->mFeatures & eSF_HUBURL)) ||
-	((flag == "ExtJSON") && (usr->mxConn->mFeatures & eSF_EXTJSON))
+	((flag == "ExtJSON") && (usr->mxConn->mFeatures & eSF_EXTJSON)) ||
+	((flag == "ExtJSON2") && (usr->mxConn->mFeatures & eSF_EXTJSON2))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

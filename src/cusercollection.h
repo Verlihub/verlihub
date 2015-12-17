@@ -111,10 +111,10 @@ public:
 	struct ufSendWithFeature: public unary_function<void, iterator>
 	{
 		string &mData;
-		unsigned feature;
+		unsigned long feature;
 		bool flush;
 
-		ufSendWithFeature(string &Data, unsigned _feature, bool _flush): mData(Data)
+		ufSendWithFeature(string &Data, unsigned long _feature, bool _flush): mData(Data)
 		{
 			feature = _feature;
 			flush = _flush;
@@ -128,10 +128,10 @@ public:
 	{
 		string &mData;
 		int min_class, max_class;
-		unsigned feature;
+		unsigned long feature;
 		bool flush;
 
-		ufSendWithClassFeature(string &Data, int _min_class, int _max_class, unsigned _feature, bool _flush): mData(Data)
+		ufSendWithClassFeature(string &Data, int _min_class, int _max_class, unsigned long _feature, bool _flush): mData(Data)
 		{
 			min_class = _min_class;
 			max_class = _max_class;
@@ -242,8 +242,8 @@ public:
 	void SendToAll(string &Data, bool UseCache = false, bool AddPipe = true);
 	void SendToAllWithNick(string &Start, string &End);
 	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache = false, bool AddPipe = true);
-	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache = false, bool AddPipe = true);
-	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache = false, bool AddPipe = true);
+	void SendToAllWithFeature(string &Data, unsigned long feature, bool UseCache = false, bool AddPipe = true);
+	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned long feature, bool UseCache = false, bool AddPipe = true);
 	void FlushCache();
 	void FlushForUser(cUserBase *User);
 

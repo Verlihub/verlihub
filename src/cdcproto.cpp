@@ -437,7 +437,10 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if (feature == "ExtJSON") {
 			conn->mFeatures |= eSF_EXTJSON;
-			pars.append("ExtJSON ");
+
+		} else if (feature == "ExtJSON2") {
+			conn->mFeatures |= eSF_EXTJSON2;
+			pars.append("ExtJSON2 ");
 		}
 	}
 
@@ -1404,7 +1407,7 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 
 	ostringstream os;
 
-	if (!(conn->mFeatures & eSF_EXTJSON)) { // check support
+	if (!(conn->mFeatures & eSF_EXTJSON2)) { // check support
 		os << _("Invalid login sequence, you didn't specify support for ExtJSON command.");
 
 		if (conn->Log(1))
@@ -1425,13 +1428,16 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_EXTJSON)) // protocol flood
 		return -1;
 
-	if (!mS->mC.disable_extjson_fwd) { // forward to users who support this if enabled
-		string &pars = msg->ChunkString(eCH_EJ_PARS);
-
-		if (pars != conn->mpUser->mLastExtJSON) { // and only if changed
-			conn->mpUser->mLastExtJSON = pars;
-			mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON, mS->mC.delayed_myinfo, true);
-			mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON, mS->mC.delayed_myinfo, true);
+	if (!mS->mC.disable_extjson_fwd) { // forward to users who support this, if enabled and if changed
+		#ifndef WITHOUT_PLUGINS
+		if (mS->mCallBacks.mOnParsedMsgExtJSON.CallAll(conn, msg))
+		#endif
+		{
+			if (msg->mStr != conn->mpUser->mExtJSON) {
+				mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+				mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+				conn->mpUser->mExtJSON = msg->mStr;
+			}
 		}
 	}
 

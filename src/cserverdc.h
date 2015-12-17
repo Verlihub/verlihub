@@ -490,7 +490,13 @@ class cServerDC : public cAsyncSocketServer
 				tth: tth search flag
 				return: send count
 		*/
-		int SearchToAll(cConnDC *conn, string &data, bool passive, bool tth);
+		unsigned int SearchToAll(cConnDC *conn, string &data, bool passive, bool tth);
+
+		/*
+			collect all user $ExtJSON commands into one buffer
+			return number of items added to destination buffer
+		*/
+		unsigned int CollectExtJSON(string &dest, const string &nick);
 
 		/**
 		* Notify all users of a new user.
@@ -816,6 +822,7 @@ private:
 			//mOnUnparsedMsg(mgr, "VH_OnUnparsedMsg", &cVHPlugin::OnUnparsedMsg),
 			mOnParsedMsgSupports(mgr, "VH_OnParsedMsgSupports", &cVHPlugin::OnParsedMsgSupports),
 			mOnParsedMsgMyHubURL(mgr, "VH_OnParsedMsgMyHubURL", &cVHPlugin::OnParsedMsgMyHubURL),
+			mOnParsedMsgExtJSON(mgr, "VH_OnParsedMsgExtJSON", &cVHPlugin::OnParsedMsgExtJSON),
 			mOnParsedMsgBotINFO(mgr, "VH_OnParsedMsgBotINFO", &cVHPlugin::OnParsedMsgBotINFO),
 			mOnParsedMsgVersion(mgr, "VH_OnParsedMsgVersion", &cVHPlugin::OnParsedMsgVersion),
 			mOnParsedMsgMyPass(mgr, "VH_OnParsedMsgMyPass", &cVHPlugin::OnParsedMsgMyPass),
@@ -862,6 +869,7 @@ private:
 		//cVHCBL_Message mOnUnparsedMsg;
 		cVHCBL_ConnMsgStr mOnParsedMsgSupports;
 		cVHCBL_Message mOnParsedMsgMyHubURL;
+		cVHCBL_Message mOnParsedMsgExtJSON;
 		cVHCBL_Message mOnParsedMsgBotINFO;
 		cVHCBL_Message mOnParsedMsgVersion;
 		cVHCBL_Message mOnParsedMsgMyPass;

@@ -711,11 +711,11 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
-int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, bool tth)
+unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, bool tth)
 {
 	cConnDC *other;
 	tCLIt i;
-	int count = 0;
+	unsigned int count = 0;
 
 	if (passive) { // passive search
 		for (i = mConnList.begin(); i != mConnList.end(); i++) {
@@ -802,6 +802,36 @@ int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, bool tth)
 				count++;
 			}
 		}
+	}
+
+	return count;
+}
+
+unsigned int cServerDC::CollectExtJSON(string &dest, const string &nick)
+{
+	dest.clear();
+	cConnDC *conn;
+	tCLIt i;
+	unsigned int count = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC*)(*i);
+
+		if (!conn || !conn->ok || !conn->mpUser || !conn->mpUser->mInList) // base condition
+			continue;
+
+		if (!(conn->mFeatures & eSF_EXTJSON2)) // only those who support this
+			continue;
+
+		if (conn->mpUser->mNick == nick) // skip self
+			continue;
+
+		if (conn->mpUser->mExtJSON.empty()) // only those who actually have something
+			continue;
+
+		dest.append(conn->mpUser->mExtJSON);
+		dest.append("|");
+		count++;
 	}
 
 	return count;
@@ -992,6 +1022,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	if (!conn || !conn->mpUser)
 		return;
 
+	string omsg;
 	ostringstream os;
 
 	if (conn->Log(3))
@@ -1017,22 +1048,23 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 		if (mC.send_pass_request) {
 			conn->mpUser->mSetPass = true;
-			string getpass;
-			cDCProto::Create_GetPass(getpass);
-			conn->Send(getpass, true);
+			cDCProto::Create_GetPass(omsg);
+			conn->Send(omsg, true);
 		}
 
 		conn->SetTimeOut(eTO_SETPASS, mC.timeout_length[eTO_SETPASS], this->mTime);
-		os.str("");
 	}
 
+	if (!mC.disable_extjson_fwd && (conn->mFeatures & eSF_EXTJSON2) && this->CollectExtJSON(omsg, conn->mpUser->mNick)) // send extjson collection
+		conn->Send(omsg, false); // no pipe, it is already added by collector
+
 	if (mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) { // send the hub topic
-		string topic;
-		cDCProto::Create_HubTopic(topic, mC.hub_topic);
-		conn->Send(topic, true);
+		cDCProto::Create_HubTopic(omsg, mC.hub_topic);
+		conn->Send(omsg, true);
 	}
 
 	if (mC.send_user_info) {
+		os.str("");
 		os << _("Your information") << ":\r\n";
 		conn->mpUser->DisplayInfo(os, eUC_OPERATOR);
 		DCPublicHS(os.str(), conn);
@@ -1048,15 +1080,13 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		}
 	#endif
 
-	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER)) {
-		if (mC.msg_welcome[conn->mpUser->mClass].size()) {
-			string ToSend;
-			ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", ToSend, conn->mpUser->mNick);
-			ReplaceVarInString(ToSend, "CC", ToSend, conn->mCC);
-			ReplaceVarInString(ToSend, "CN", ToSend, conn->mCN);
-			ReplaceVarInString(ToSend, "CITY", ToSend, conn->mCity);
-			DCPublicHSToAll(ToSend, mC.delayed_chat);
-		}
+	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) {
+		omsg.clear();
+		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick);
+		ReplaceVarInString(omsg, "CC", omsg, conn->mCC);
+		ReplaceVarInString(omsg, "CN", omsg, conn->mCN);
+		ReplaceVarInString(omsg, "CITY", omsg, conn->mCity);
+		DCPublicHSToAll(omsg, mC.delayed_chat);
 	}
 }
 

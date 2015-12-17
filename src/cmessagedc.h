@@ -95,7 +95,7 @@ namespace nVerliHub {
 		// IN
 		enum { eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA };
 		// ExtJSON
-		enum { eCH_EJ_ALL, eCH_EJ_DEST, eCH_EJ_NICK, eCH_EJ_PARS };
+		enum { eCH_EJ_ALL, eCH_EJ_NICK, eCH_EJ_PARS };
 		/// connecttome   $ConnectToMe <remoteNick> <senderIp>:<senderPort>
 		enum {eCH_CM_ALL, eCH_CM_NICK, eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT};
 		//OpForce move
