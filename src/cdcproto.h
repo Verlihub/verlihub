@@ -186,7 +186,7 @@ protected:
 	// ctm2hub
 	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);
 	int DCC_Lock(cMessageDC *msg, nSocket::cConnDC *conn);
-	void ParseReferer(const string &lock, string &ref);
+	void ParseReferer(const string &lock, string &ref, bool inlock = true);
 
  public:
 	/**

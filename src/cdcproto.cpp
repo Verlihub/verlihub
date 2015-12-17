@@ -802,7 +802,7 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	string &url = msg->ChunkString(eCH_1_PARAM);
-	conn->mHubURL = url;
+	ParseReferer(url, conn->mHubURL, false);
 
 	/*
 		todo
@@ -3424,56 +3424,115 @@ cConnType *cDCProto::ParseSpeed(const string &uspeed)
 	return mS->mConnTypes->FindConnType(speed);
 }
 
-void cDCProto::ParseReferer(const string &lock, string &ref)
+void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 {
-	size_t pos = lock.find("Ref=");
+	size_t pos;
 
-	if (pos != lock.npos) {
-		ref = toLower(lock.substr(pos + 4));
+	if (inlock) {
+		pos = lock.find("Ref=");
 
-		while (ref.size() > 7) {
-			pos = ref.find("dchub://");
+		if (pos == lock.npos)
+			return;
 
-			if (pos != ref.npos)
-				ref.erase(pos, 8);
-			else
-				break;
-		}
-
-		while (ref.size() > 2) {
-			pos = ref.find("...");
-
-			if (pos != ref.npos)
-				ref.erase(pos, 3);
-			else
-				break;
-		}
-
-		while (ref.size() > 0) {
-			pos = ref.find('/');
-
-			if (pos != ref.npos)
-				ref.erase(pos, 1);
-			else
-				break;
-		}
-
-		while (ref.size() > 0) {
-			pos = ref.find(' ');
-
-			if (pos != ref.npos)
-				ref.erase(pos, 1);
-			else
-				break;
-		}
-
-		if (ref.size() > 3) {
-			pos = ref.find(":411", ref.size() - 4);
-
-			if (pos != ref.npos)
-				ref.erase(pos, 4);
-		}
+		ref = lock.substr(pos + 4);
+	} else {
+		ref = lock;
 	}
+
+	ref = toLower(ref);
+
+	while (ref.size() > 7) {
+		pos = ref.find("dchub://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 8);
+		else
+			break;
+	}
+
+	while (ref.size() > 6) {
+		pos = ref.find("nmdc://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 7);
+		else
+			break;
+	}
+
+	while (ref.size() > 7) {
+		pos = ref.find("nmdcs://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 8);
+		else
+			break;
+	}
+
+	while (ref.size() > 5) {
+		pos = ref.find("adc://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 6);
+		else
+			break;
+	}
+
+	while (ref.size() > 6) {
+		pos = ref.find("adcs://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 7);
+		else
+			break;
+	}
+
+	while (ref.size() > 2) {
+		pos = ref.find("...");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 3);
+		else
+			break;
+	}
+
+	while (ref.size() > 1) {
+		pos = ref.find("..");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 2);
+		else
+			break;
+	}
+
+	while (ref.size() > 0) {
+		pos = ref.find('/');
+
+		if (pos != ref.npos)
+			ref.erase(pos, 1);
+		else
+			break;
+	}
+
+	while (ref.size() > 0) {
+		pos = ref.find(' ');
+
+		if (pos != ref.npos)
+			ref.erase(pos, 1);
+		else
+			break;
+	}
+
+	if (ref.size() > 3) {
+		pos = ref.find(":411", ref.size() - 4);
+
+		if (pos != ref.npos)
+			ref.erase(pos, 4);
+	}
+
+	pos = ref.size();
+
+	if ((pos > 0) && (ref[pos - 1] == '.'))
+		ref.erase(pos - 1, 1);
 }
 
 void cDCProto::UnEscapeChars(const string &src, string &dst, bool WithDCN)
