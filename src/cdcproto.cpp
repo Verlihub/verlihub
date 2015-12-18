@@ -396,12 +396,6 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (feature == "TLS") {
 			conn->mFeatures |= eSF_TLS;
 
-		} else if (feature == "IPv4") {
-			conn->mFeatures |= eSF_IPV4;
-
-		} else if (feature == "IP64") {
-			conn->mFeatures |= eSF_IP64;
-
 		} else if (feature == "FailOver") {
 			conn->mFeatures |= eSF_FAILOVER;
 			pars.append("FailOver ");
@@ -434,9 +428,6 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (feature == "HubURL") {
 			conn->mFeatures |= eSF_HUBURL;
 			pars.append("HubURL ");
-
-		} else if (feature == "ExtJSON") {
-			conn->mFeatures |= eSF_EXTJSON;
 
 		} else if (feature == "ExtJSON2") {
 			conn->mFeatures |= eSF_EXTJSON2;
@@ -807,6 +798,8 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 	/*
 		todo
 			perform planned work with hub url
+			if enabled, check hub url, iterate list by space
+			if enabled, send $SetHubURL with correct url including port
 	*/
 
 	#ifndef WITHOUT_PLUGINS

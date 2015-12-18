@@ -57,7 +57,7 @@ bool cUserBase::CanSend()
 	return false;
 }
 
-bool cUserBase::HasFeature(unsigned long feature)
+bool cUserBase::HasFeature(unsigned feature)
 {
 	return false;
 }
@@ -144,7 +144,7 @@ bool cUser::CanSend()
 	return mInList && mxConn && mxConn->ok;
 }
 
-bool cUser::HasFeature(unsigned long feature)
+bool cUser::HasFeature(unsigned feature)
 {
 	return mxConn && (mxConn->mFeatures & feature);
 }

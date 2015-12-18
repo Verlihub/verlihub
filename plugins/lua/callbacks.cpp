@@ -1425,8 +1425,6 @@ int _InUserSupports(lua_State *L)
 	((flag == "IN") && (usr->mxConn->mFeatures & eSF_IN)) ||
 	((flag == "BanMsg") && (usr->mxConn->mFeatures & eSF_BANMSG)) ||
 	((flag == "TLS") && (usr->mxConn->mFeatures & eSF_TLS)) ||
-	((flag == "IPv4") && (usr->mxConn->mFeatures & eSF_IPV4)) ||
-	((flag == "IP64") && (usr->mxConn->mFeatures & eSF_IP64)) ||
 	((flag == "FailOver") && (usr->mxConn->mFeatures & eSF_FAILOVER)) ||
 	((flag == "NickChange") && (usr->mxConn->mFeatures & eSF_NICKCHANGE)) ||
 	((flag == "ClientNick") && (usr->mxConn->mFeatures & eSF_CLIENTNICK)) ||
@@ -1437,7 +1435,6 @@ int _InUserSupports(lua_State *L)
 	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS)) ||
 	((flag == "NickRule") && (usr->mxConn->mFeatures & eSF_NICKRULE)) ||
 	((flag == "HubURL") && (usr->mxConn->mFeatures & eSF_HUBURL)) ||
-	((flag == "ExtJSON") && (usr->mxConn->mFeatures & eSF_EXTJSON)) ||
 	((flag == "ExtJSON2") && (usr->mxConn->mFeatures & eSF_EXTJSON2))
 	) {
 		lua_pushboolean(L, 1);
