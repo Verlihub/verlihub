@@ -3515,6 +3515,15 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 			break;
 	}
 
+	while (ref.size() > 0) {
+		pos = ref.find("\x9");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 1);
+		else
+			break;
+	}
+
 	if (ref.size() > 3) {
 		pos = ref.find(":411", ref.size() - 4);
 
