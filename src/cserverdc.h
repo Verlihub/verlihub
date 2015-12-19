@@ -493,10 +493,9 @@ class cServerDC : public cAsyncSocketServer
 		unsigned int SearchToAll(cConnDC *conn, string &data, bool passive, bool tth);
 
 		/*
-			collect all user $ExtJSON commands into one buffer
-			return number of items added to destination buffer
+			ExtJSON collector
 		*/
-		unsigned int CollectExtJSON(string &dest, const string &nick);
+		unsigned int CollectExtJSON(string &dest, cConnDC *conn);
 
 		/**
 		* Notify all users of a new user.

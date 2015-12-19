@@ -3049,17 +3049,24 @@ int cDCProto::NickList(cConnDC *conn)
 			conn->Send(mS->mRobotList.GetNickList(), true);
 
 		if (mS->mC.send_user_ip && conn->mpUser && (conn->mFeatures & eSF_USERIP2)) { // send $UserIP
-			if (conn->mpUser->mClass >= mS->mC.user_ip_class) // full list
+			if (conn->mpUser->mClass >= mS->mC.user_ip_class) { // full list
 				conn->Send(mS->mUserList.GetIPList(), true);
-			else { // own ip only
-				string uip;
-				cCompositeUserCollection::ufDoIpList DoUserIP(uip);
+			} else { // own ip only
+				string omsg;
+				cCompositeUserCollection::ufDoIpList DoUserIP(omsg);
 				DoUserIP.Clear();
 				DoUserIP(conn->mpUser);
-				conn->Send(uip, true);
+				conn->Send(omsg, true);
 			}
 		}
-	} catch(...) {
+
+		if (!mS->mC.disable_extjson_fwd && (conn->mFeatures & eSF_EXTJSON2)) { // extjson forward
+			string omsg;
+
+			if (mS->CollectExtJSON(omsg, conn))
+				conn->Send(omsg, false); // no pipe, its already added by collector
+		}
+	} catch (...) {
 		if (conn->ErrLog(2))
 			conn->LogStream() << "Exception in cDCProto::NickList" << endl;
 

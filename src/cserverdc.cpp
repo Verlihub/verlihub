@@ -807,29 +807,29 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 	return count;
 }
 
-unsigned int cServerDC::CollectExtJSON(string &dest, const string &nick)
+unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 {
 	dest.clear();
-	cConnDC *conn;
+	cConnDC *other;
 	tCLIt i;
 	unsigned int count = 0;
 
 	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC*)(*i);
+		other = (cConnDC*)(*i);
 
-		if (!conn || !conn->ok || !conn->mpUser || !conn->mpUser->mInList) // base condition
+		if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
 			continue;
 
-		if (!(conn->mFeatures & eSF_EXTJSON2)) // only those who support this
+		if (!(other->mFeatures & eSF_EXTJSON2)) // only those who support this
 			continue;
 
-		if (conn->mpUser->mNick == nick) // skip self
+		if (conn && conn->mpUser && (conn->mpUser->mNick == other->mpUser->mNick)) // skip self
 			continue;
 
-		if (conn->mpUser->mExtJSON.empty()) // only those who actually have something
+		if (other->mpUser->mExtJSON.empty()) // only those who actually have something
 			continue;
 
-		dest.append(conn->mpUser->mExtJSON);
+		dest.append(other->mpUser->mExtJSON);
 		dest.append("|");
 		count++;
 	}
@@ -1054,9 +1054,6 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 		conn->SetTimeOut(eTO_SETPASS, mC.timeout_length[eTO_SETPASS], this->mTime);
 	}
-
-	if (!mC.disable_extjson_fwd && (conn->mFeatures & eSF_EXTJSON2) && this->CollectExtJSON(omsg, conn->mpUser->mNick)) // send extjson collection
-		conn->Send(omsg, false); // no pipe, it is already added by collector
 
 	if (mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) { // send the hub topic
 		cDCProto::Create_HubTopic(omsg, mC.hub_topic);
