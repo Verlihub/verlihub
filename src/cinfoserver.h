@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -44,6 +44,8 @@ class cInfoServer: public nConfig::cConfigBase
 		cInfoServer();
 		~cInfoServer();
 		void PortInfo(ostream &os);
+		void ProtocolInfo(ostream &os);
+		void HubURLInfo(ostream &os);
 		void SystemInfo(ostream &os);
 		void SetServer(nSocket::cServerDC *Server);
 		void Output(ostream &os, int Class);
@@ -55,25 +57,47 @@ class cInfoServer: public nConfig::cConfigBase
 		virtual int Load() {
 			return 0;
 		}
+
 	private:
+
 		nSocket::cServerDC *mServer;
 
-		// port information
+		/*
+			port information needs
+		*/
+
+		/*
+			todo: not compiling
+
+			std::sort(mPortInfoList.begin(), mPortInfoList.end(), this->PortInfoSort);
+
+			bool PortInfoSort(const sPortInfoItem &left_item, const sPortInfoItem &right_item)
+			{
+				return (left_item.mCount < right_item.mCount);
+			}
+		*/
+
 		struct sPortInfoItem
 		{
-			int mPort;
-			int mCount;
+			unsigned int mPort;
+			unsigned int mCount;
 		};
 
 		typedef vector<sPortInfoItem*> tPortInfoList;
 		tPortInfoList mPortInfoList;
 
 		/*
-		bool PortInfoSort(const sPortInfoItem &left_item, const sPortInfoItem &right_item) // todo: not compiling
-		{
-			return (left_item.mCount < right_item.mCount);
-		}
+			hub url information needs
 		*/
+
+		struct sHubURLInfoItem
+		{
+			string mURL;
+			unsigned int mCount;
+		};
+
+		typedef vector<sHubURLInfoItem*> tHubURLInfoList;
+		tHubURLInfoList mHubURLInfoList;
 };
 
 }; // namespace nVerliHub

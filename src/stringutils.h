@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -45,7 +45,7 @@ void ReplaceVarInString(const string &src,const string &var,string &dest, double
 void ReplaceVarInString(const string &src,const string &var,string &dest, int by);
 void ReplaceVarInString(const string &src,const string &var,string &dest, long by);
 void ReplaceVarInString(const string &src,const string &var,string &dest, __int64 by);
-string convertByte(__int64 byte, bool UnitType);
+string convertByte(__int64 byte, bool UnitSec = false);
 string StringFrom(__int64 const &ll);
 __int64 StringAsLL(const string &);
 unsigned int CountLines(const string &);

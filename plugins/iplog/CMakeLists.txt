@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -19,7 +19,8 @@
 SET(IPLOG_VERSION_MAJOR 1)
 SET(IPLOG_VERSION_MINOR 2)
 SET(IPLOG_VERSION_PATCH 0)
-SET(IPLOG_VERSION "${IPLOG_VERSION_MAJOR}.${IPLOG_VERSION_MINOR}.${IPLOG_VERSION_PATCH}")
+SET(IPLOG_VERSION_TWEAK 0)
+SET(IPLOG_VERSION "${IPLOG_VERSION_MAJOR}.${IPLOG_VERSION_MINOR}.${IPLOG_VERSION_PATCH}.${IPLOG_VERSION_TWEAK}")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_DEFINITIONS(-DIPLOG_VERSION="${IPLOG_VERSION}")

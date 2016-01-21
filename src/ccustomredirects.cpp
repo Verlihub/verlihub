@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -27,7 +27,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nTables {
 
-	cRedirects::cRedirects( cServerDC *server ) :
+	cRedirects::cRedirects(cServerDC *server):
 		tMySQLMemoryList<cRedirect, cServerDC>(server->mMySQL, server, "custom_redirects")
 	{
 		SetClassName("nDC::cRedirects");
@@ -49,44 +49,50 @@ namespace nVerliHub {
 			case eCR_INVALID_USER:
 			case eCR_KICKED:
 				return eKick;
+
 			case eCR_USERLIMIT:
 				return eUserLimit;
+
 			case eCR_SHARE_LIMIT:
 				return eShareLimit;
+
 			case eCR_TAG_INVALID:
 			case eCR_TAG_NONE:
 				return eTag;
+
 			case eCR_PASSWORD:
 				return eWrongPasswd;
+
 			case eCR_INVALID_KEY:
 				return eInvalidKey;
+
 			case eCR_HUB_LOAD:
 				return eHubBusy;
+
 			case eCR_RECONNECT:
 				return eReconnect;
+
 			case eCR_CLONE:
 				return eClone;
+
 			case eCR_SELF:
 				return eSelf;
+
 			case eCR_BADNICK:
 				return eBadNick;
+
 			case eCR_NOREDIR:
 				return -1;
+
 			default:
 				return 0;
 		}
 	}
 
-	/**
-
-	Find a redirect address from a given type ID. If there is more than one address in the list...
-
-	@param[in,out] os The stream where to store the description.
-	@param[in,out] tr The cRedirect object that describes the redirect
-	@return The stream
+	/*
+		find redirect url from a given type
 	*/
-
-	char *cRedirects::MatchByType(unsigned int Type)
+	char* cRedirects::MatchByType(unsigned int Type)
 	{
 		iterator it;
 		cRedirect *redirect;
@@ -101,16 +107,18 @@ namespace nVerliHub {
 			if (i >= 10)
 				break;
 
-			redirect = *it;
+			redirect = (*it);
 
-			if (redirect->mEnable && (redirect->mFlag & iType)) {
-				redirects[i] = (char*)redirect->mAddress.c_str();
-				i++;
-			}
+			if (redirect) {
+				if (redirect->mEnable && (redirect->mFlag & iType)) {
+					redirects[i] = (char*)redirect->mAddress.c_str();
+					i++;
+				}
 
-			if (redirect->mEnable && !redirect->mFlag && (j < 10)) {
-				DefaultRedirect[j] = (char*)redirect->mAddress.c_str();
-				j++;
+				if (redirect->mEnable && !redirect->mFlag && (j < 10)) {
+					DefaultRedirect[j] = (char*)redirect->mAddress.c_str();
+					j++;
+				}
 			}
 		}
 
@@ -131,9 +139,12 @@ namespace nVerliHub {
 	void cRedirects::Random(int &key)
 	{
 		srand (time(NULL));
-		int temp = (int) (1.0 * key * rand()/(RAND_MAX+1.0));
-		if(temp < key) key = temp;
-		else key -= 1;
+		int temp = int(1.0 * key * rand() / (RAND_MAX + 1.0));
+
+		if (temp < key)
+			key = temp;
+		else
+			key -= 1;
 	}
 
 	void cRedirects::CountPlusPlus(char *addr)
@@ -142,9 +153,9 @@ namespace nVerliHub {
 		cRedirect *redirect;
 
 		for (it = begin(); it != end(); ++it) {
-			redirect = *it;
+			redirect = (*it);
 
-			if (addr == (char*)redirect->mAddress.c_str()) {
+			if (redirect && (addr == (char*)redirect->mAddress.c_str())) {
 				redirect->mCount++; // increase counter
 				break;
 			}
@@ -156,7 +167,8 @@ namespace nVerliHub {
 		return (D1.mAddress == D2.mAddress);
 	}
 
-	cRedirectConsole::cRedirectConsole(cDCConsole *console) : tRedirectConsoleBase(console)
+	cRedirectConsole::cRedirectConsole(cDCConsole *console):
+		tRedirectConsoleBase(console)
 	{
 		this->AddCommands();
 	}
@@ -167,30 +179,37 @@ namespace nVerliHub {
 	void cRedirectConsole::GetHelpForCommand(int cmd, ostream &os)
 	{
 		string help_str;
-		switch(cmd)
-		{
+
+		switch (cmd) {
 			case eLC_LST:
-				help_str = "!lstredirect\r\nShow the list of redirects";
+				help_str = "!lstredirect\r\n" + string(_("Show list of redirects"));
 				break;
+
 			case eLC_ADD:
 			case eLC_MOD:
-				help_str = "!(add|mod)redirect <address>"
-						"[ -f <\"redirect flag\">]"
-						"[ -e <enable/disable>]";
+				help_str = "!(add|mod)redirect <url>"
+					"[ -f <flags>]"
+					"[ -e <1/0>]";
+
 				break;
+
 			case eLC_DEL:
-				help_str = "!delredirect <address>"; break;
-				default: break;
+				help_str = "!delredirect <url>";
+				break;
+
+			default:
+				break;
 		}
-		cDCProto::EscapeChars(help_str,help_str);
-		os << help_str;
+
+		if (help_str.size()) {
+			cDCProto::EscapeChars(help_str, help_str);
+			os << help_str;
+		}
 	}
 
 	void cRedirectConsole::GetHelp(ostream &os)
 	{
-		string help;
-
-		help = "http://verlihub.net/doc/page/manual.redirects\r\n\r\n";
+		string help("http://verlihub.net/doc/page/manual.redirects\r\n\r\n");
 
 		help += " Available redirect flags:\r\n\r\n";
 		help += " 0\t\t\t- For any other reason\r\n";
@@ -211,31 +230,36 @@ namespace nVerliHub {
 		os << help;
 	}
 
-	const char * cRedirectConsole::GetParamsRegex(int cmd)
+	const char* cRedirectConsole::GetParamsRegex(int cmd)
 	{
-		switch(cmd)
-		{
+		switch (cmd) {
 			case eLC_ADD:
 			case eLC_MOD:
 				return "^(\\S+)("
-						"( -f ?(-?\\d+))?|" //[ -f<flag>]
-						"( -e ?(-?\\d))?|" // [ -e<1/0>]
-						")*\\s*$"; // the end of message
+						"( -f ?(\\d+))?|"
+						"( -e ?(1|0))?|"
+						")*\\s*$";
+
 			case eLC_DEL:
 				return "(\\S+)";
-				default: return "";break;
-		};
+
+			default:
+				return "";
+		}
 	}
 
 	bool cRedirectConsole::ReadDataFromCmd(cfBase *cmd, int CmdID, cRedirect &data)
 	{
 		enum {
 			eADD_ALL,
-   			eADD_ADDRESS, eADD_CHOICE,
+   			eADD_ADDRESS,
+			eADD_CHOICE,
    			eADD_FLAGp, eADD_FLAG,
-			eADD_ENABLEp, eADD_ENABLE };
-		cmd->GetParStr(eADD_ADDRESS,data.mAddress);
-		cmd->GetParInt(eADD_FLAG,data.mFlag);
+			eADD_ENABLEp, eADD_ENABLE
+		};
+
+		cmd->GetParStr(eADD_ADDRESS, data.mAddress);
+		cmd->GetParInt(eADD_FLAG, data.mFlag);
 		cmd->GetParInt(eADD_ENABLE, data.mEnable);
 		return true;
 	}
@@ -245,22 +269,18 @@ namespace nVerliHub {
 		return mOwner->mRedirects;
 	}
 
-	const char *cRedirectConsole::CmdSuffix(){ return "redirect";}
-	const char *cRedirectConsole::CmdPrefix(){ return "!";}
+	const char* cRedirectConsole::CmdSuffix() { return "redirect"; }
+	const char* cRedirectConsole::CmdPrefix() { return "!"; }
 
 	void cRedirectConsole::ListHead(ostream *os)
 	{
-		(*os) << "\r\n ";
-		(*os) << setw(10) << setiosflags(ios::left) << toUpper(_("Count"));
-		(*os) << setw(35) << setiosflags(ios::left) << toUpper(_("Address"));
-		(*os) << setw(35) << setiosflags(ios::left) << toUpper(_("Type"));
-		(*os) << toUpper(_("Status")) << "\r\n";
-		(*os) << " " << string(30 + 25 + 25, '=');
+		(*os) << "\r\n\t" << _("Hits") << "\t" << _("URL") << "\t\t\t\t" << _("Status") << "\t" << _("Type") << "\r\n\t" << string(130, '-');
 	}
 
-	bool cRedirectConsole::IsConnAllowed(cConnDC *conn,int cmd)
+	bool cRedirectConsole::IsConnAllowed(cConnDC *conn, int cmd)
 	{
-		return (conn && conn->mpUser && conn->mpUser->mClass >= eUC_ADMIN);
+		return (conn && conn->mpUser && (conn->mpUser->mClass >= eUC_ADMIN));
 	}
+
 	}; // namespace nTables
 }; // namespace nVerliHub

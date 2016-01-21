@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -40,9 +40,9 @@ cPlugs *cPlugConsole::GetTheList()
 void cPlugConsole::ListHead(ostream *os)
 {
 	(*os) << "\r\n\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Plugman version") << mOwner->Version().c_str() << "\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Verlihub executable") << mOwner->mServer->mExecPath.c_str() << "\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Verlihub build time") << cTime(mOwner->mList->mVHTime,0).AsDate() << "\r\n";
+	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s version"), mOwner->Name().c_str()) << mOwner->Version().c_str() << "\r\n";
+	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s executable"), HUB_VERSION_NAME) << mOwner->mServer->mExecPath.c_str() << "\r\n";
+	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s build time"), HUB_VERSION_NAME) << cTime(mOwner->mList->mVHTime, 0).AsDate() << "\r\n";
 }
 
 const char *cPlugConsole::CmdSuffix()

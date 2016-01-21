@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -452,7 +452,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 	switch (Right) {
 		case eUR_CHAT:
 			if (!allow) {
-				msg = _("You're no longer allowed to use main chat for %s.");
+				msg = _("You're no longer allowed to use main chat for: %s");
 				mGag = until;
 			} else {
 				msg = _("You're now allowed to use main chat.");
@@ -462,7 +462,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 			break;
 		case nEnums::eUR_PM:
 			if (!allow) {
-				msg = _("You're no longer allowed to use private chat for %s.");
+				msg = _("You're no longer allowed to use private chat for: %s");
 				mNoPM = until;
 			} else {
 				msg = _("You're now allowed to use private chat.");
@@ -472,7 +472,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 			break;
 		case nEnums::eUR_SEARCH:
 			if (!allow) {
-				msg = _("You're no longer allowed to search files for %s.");
+				msg = _("You're no longer allowed to search files for: %s");
 				mNoSearch = until;
 			} else {
 				msg = _("You're now allowed to search files.");
@@ -482,7 +482,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 			break;
 		case nEnums::eUR_CTM:
 			if (!allow) {
-				msg = _("You're no longer allowed to download files for %s.");
+				msg = _("You're no longer allowed to download files for: %s");
 				mNoCTM = until;
 			} else {
 				msg = _("You're now allowed to download files.");
@@ -495,7 +495,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to kick users.");
 				mCanKick = until;
 			} else {
-				msg = _("You're now allowed to kick users for %s.");
+				msg = _("You're now allowed to kick users for: %s");
 				mCanKick = 1;
 			}
 
@@ -505,7 +505,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to register users.");
 				mCanReg = until;
 			} else {
-				msg = _("You're now allowed to register users for %s.");
+				msg = _("You're now allowed to register users for: %s");
 				mCanReg = 1;
 			}
 
@@ -515,7 +515,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to use operator chat.");
 				mCanOpchat = until;
 			} else {
-				msg = _("You're now allowed to use operator chat for %s.");
+				msg = _("You're now allowed to use operator chat for: %s");
 				mCanOpchat = 1;
 			}
 
@@ -525,7 +525,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to hide share.");
 				mCanShare0 = until;
 			} else {
-				msg = _("You're now allowed to hide share for %s.");
+				msg = _("You're now allowed to hide share for: %s");
 				mCanShare0 = 1;
 			}
 
@@ -535,7 +535,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to drop users.");
 				mCanDrop = until;
 			} else {
-				msg = _("You're now allowed to drop users for %s.");
+				msg = _("You're now allowed to drop users for: %s");
 				mCanDrop = 1;
 			}
 
@@ -545,7 +545,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to temporarily ban users.");
 				mCanTBan = until;
 			} else {
-				msg = _("You're now allowed to temporarily ban users for %s.");
+				msg = _("You're now allowed to temporarily ban users for: %s");
 				mCanTBan = 1;
 			}
 
@@ -555,7 +555,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				msg = _("You're no longer allowed to permanently ban users.");
 				mCanPBan = until;
 			} else {
-				msg = _("You're now allowed to permanently ban users for %s.");
+				msg = _("You're now allowed to permanently ban users for: %s");
 				mCanPBan = 1;
 			}
 
@@ -564,7 +564,8 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 			break;
 	};
 
-	if (notify && !msg.empty() && (mxConn != NULL)) mxServer->DCPublicHS(autosprintf(msg.c_str(), cTime(until - cTime().Sec()).AsPeriod().AsString().c_str()), mxConn);
+	if (notify && msg.size() && mxConn)
+		mxServer->DCPublicHS(autosprintf(msg.c_str(), cTime(until - cTime().Sec()).AsPeriod().AsString().c_str()), mxConn);
 }
 
 void cUser::ApplyRights(cPenaltyList::sPenalty &pen)

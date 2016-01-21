@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -19,7 +19,8 @@
 SET(PYTHON_VERSION_MAJOR 1)
 SET(PYTHON_VERSION_MINOR 2)
 SET(PYTHON_VERSION_PATCH 1)
-SET(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.${PYTHON_VERSION_PATCH}")
+SET(PYTHON_VERSION_TWEAK 1)
+SET(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.${PYTHON_VERSION_PATCH}.${PYTHON_VERSION_TWEAK}")
 
 ADD_DEFINITIONS(-DPYTHON_PI_VERSION=\"${PYTHON_VERSION}\")
 

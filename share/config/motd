@@ -3,7 +3,7 @@
  Here you can put text that will be displayed to users upon entering the hub.
  Change it to suit your needs or use file trigger definition to store your MOTD.
 
- Welcome to Verlihub 1.0.0
+ Welcome to Verlihub 1.0.0.0
 
  +rules		- Hub rules
  +faq		- Frequently asked questions

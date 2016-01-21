@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -31,61 +31,69 @@ namespace nVerliHub {
 
 	cDCTagParser::cDCTagParser()
 	{
-		/**
-			Sub-patterns
-			0 - The whole tag
-			1 - The whole prefix
-			2 - Tag ID in prefix
-			3 - Client version in prefix
-			4 - Tag ID
-			5 - Client version
-			6 - The rest of the tag (called body)
-
+		/*
+			0 - whole chunk
+			1 - whole prefix
+			2 - id in prefix
+			3 - version in prefix
+			4 - id
+			5 - version
+			6 - body
 		*/
 
-		//General regex PREFIX VERSION<NAME V:version, M:mode, H:i/i/i, S:slot>
-		//"(<?([A-Za-z\\+]*)[\\[ ]?([.0-9]*)\\]?>?)?<([\\+:A-Za-z]+) ?V\\:([^,]+),([^>]*)>"
-		//"(<([A-Za-z\\+]*) ?([.0-9]*)>)?<([\\+:A-Za-z]+) ?V\\:([^,]+),([^>]*)>" // last used
-		if(!mTagRE.Compile("(<([A-Za-z\\+]*) ?([.0-9]*)>)?<([\\+\\-\\:A-Za-z0-9 ]+) ?[Vv]\\:([^,]+),([^>]*)>"))
-			throw "Error in tag general REGEX";
-		/**
-			Sub-patterns
-			0 - The whole mode chunck
-			1 - Client mode
-			2 - reg hubs
-			3 - op hubs
+		if (!mTagRE.Compile("(<(.+) +v?(.+)>)?<(.+?) +[Vv]\\:?([^,]+),([^>]*)>"))
+			throw "Error in tag general regular expression";
+
+		/*
+			0 - whole chunk
+			1 - version number
+			2 - additional information
 		*/
-		if(!mModeRE.Compile("[Mm]\\:(A|P|5|[A-Za-z0-9]+)"))
-			throw "Error in hubs general REGEX";
-		/**
-			Sub-patterns
-			0 - The whole hubs chunck
-			1 - Guest hubs
-			2 - Reg hubs
-			3 - OP hubs
+
+		if (!mVersRE.Compile("\\(?r?([\\d\\.]+)\\)?(\\-[^\\d]+(\\d+)?)?(\\-(\\d+))?"))
+			throw "Error in version regular expression";
+
+		/*
+			0 - whole chunk
+			1 - mode name
 		*/
-		if(!mHubsRE.Compile("[Hh]\\:(\\d+)(\\/\\d+)?(\\/\\d+)?"))
-			throw "Error in hubs general REGEX";
-		/**
-			Sub-patterns
-			0 - The whole chunck
-			1 - Slots
+
+		if (!mModeRE.Compile("[Mm]\\:([^,]+)"))
+			throw "Error in mode regular expression";
+
+		/*
+			0 - whole chunk
+			1 - guest hubs
+			2 - registered hubs
+			3 - operator hubs
 		*/
-		if(!mSlotsRE.Compile("[Ss]\\:(\\d+)"))
-			throw "Error in slots general REGEX";
-		/**
-			Sub-patterns
-			0 - The whole chunck
-			1 - Info
-			2 - Value
+
+		if (!mHubsRE.Compile("[Hh]\\:(\\d+)(\\/\\d+)?(\\/\\d+)?"))
+			throw "Error in hubs regular expression";
+
+		/*
+			0 - whole chunk
+			1 - slots
 		*/
-		if(!mLimitRE.Compile("([Bb]\\:|[Ll]\\:|[Ff]\\:\\d+\\/)(\\d+(\\.\\d)?)"))
-			throw "Error in limiter general REGEX";
+
+		if (!mSlotsRE.Compile("[Ss]\\:(\\d+)"))
+			throw "Error in slots regular expression";
+
+		/*
+			0 - whole chunk
+			1 - identifier
+			2 - value
+		*/
+
+		if (!mLimitRE.Compile("([Bb]\\:|[Ll]\\:|[Ff]\\:\\d+\\/)(\\d+(\\.\\d)?)"))
+			throw "Error in limiter regular expression";
 	}
+
 	namespace nTables {
 
-	cDCClients::cDCClients( cServerDC *server ) :
-		tMySQLMemoryList<cDCClient, cServerDC>(server->mMySQL, server, "dc_clients"), mServer(server)
+	cDCClients::cDCClients(cServerDC *server):
+		tMySQLMemoryList<cDCClient,cServerDC>(server->mMySQL, server, "dc_clients"),
+		mServer(server)
 	{
 		SetClassName("nDC::cDCClients");
 	}
@@ -95,8 +103,8 @@ namespace nVerliHub {
 		AddCol("name", "varchar(125)", "", false, mModel.mName);
 		AddPrimaryKey("name");
 		AddCol("tag_id", "varchar(125)", "", false, mModel.mTagID);
-		AddCol("min_version", "decimal(4,4)", "-1", false, mModel.mMinVersion);
-		AddCol("max_version", "decimal(4,4)", "-1", false, mModel.mMaxVersion);
+		AddCol("min_version", "decimal(8,5)", "-1", false, mModel.mMinVersion);
+		AddCol("max_version", "decimal(8,5)", "-1", false, mModel.mMaxVersion);
 		AddCol("ban", "tinyint(1)", "0", false, mModel.mBan);
 		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(name)";
@@ -107,13 +115,15 @@ namespace nVerliHub {
 	{
 		iterator it;
 		cDCClient *client;
+
 		for (it= begin(); it != end(); ++it) {
 			client = *it;
-			if(client->mEnable && client->mTagID == tagID)
+
+			if (client && client->mEnable && (client->mTagID == tagID))
 				return client;
 		}
-		// Unknwon client
-		return NULL;
+
+		return NULL; // unknwon client
 	}
 
 	bool cDCClients::CompareDataKey(const cDCClient &D1, const cDCClient &D2)
@@ -125,101 +135,141 @@ namespace nVerliHub {
 	{
 		mPositionInDesc = -1;
 
-		if(mParser.mTagRE.Exec(desc) >= 0)
+		if (mParser.mTagRE.Exec(desc) >= 0)
 			mPositionInDesc = mParser.mTagRE.StartOf(0);
-		return mPositionInDesc > -1;
+
+		return (mPositionInDesc > -1);
 	}
 
 	cDCTag* cDCClients::ParseTag(const string &desc)
 	{
-		string str;
+		string str, ver("0");;
 		cDCTag *tag = new cDCTag(mServer);
-		/**
-			Sub-patterns
-			0 - The whole tag
-			1 - The whole prefix
-			2 - Tag ID in prefix
-			3 - Client version in prefix
-			4 - Tag ID
-			5 - Client version
-			6 - The rest of the tag (called body)
 
+		/*
+			0 - whole chunk
+			1 - whole prefix
+			2 - id in prefix
+			3 - version in prefix
+			4 - id
+			5 - version
+			6 - body
 		*/
 
-		enum { eTP_COMPLETE, eTP_PREFIX, eTP_PTAGID, eTP_PVERSION, eTP_TAGID, eTP_VERSION, eTP_BODY};
-		//TODO: Detect invalid tag
-		//tag->mClientType = eCT_NOTAG;
-		tag->mClientMode = eCM_NOTAG;
+		enum {
+			eTP_COMPLETE,
+			eTP_PREFIX, eTP_PTAGID, eTP_PVERSION,
+			eTP_TAGID, eTP_VERSION,
+			eTP_BODY
+		};
+
+		tag->mClientMode = eCM_NOTAG; // todo: detect invalid tag
 		mPositionInDesc = -1;
-		string version("0");
-		if(mParser.mTagRE.Exec(desc) >= 0) {
-			// copy tag's parts
-			mPositionInDesc = mParser.mTagRE.StartOf(eTP_COMPLETE);
+
+		if (mParser.mTagRE.Exec(desc) >= 3) {
+			mPositionInDesc = mParser.mTagRE.StartOf(eTP_COMPLETE); // copy tag parts
 			mParser.mTagRE.Extract(eTP_COMPLETE, desc, tag->mTag);
 			mParser.mTagRE.Extract(eTP_BODY, desc, tag->mTagBody);
-			// determine client's type
-			mParser.mTagRE.Extract(eTP_TAGID,desc,tag->mTagID);
-			mParser.mTagRE.Extract(eTP_VERSION,desc, version);
-			if (mParser.mTagRE.PartFound(eTP_PREFIX))
-			{
-			  string tmp;
-			  mParser.mTagRE.Extract(eTP_PREFIX, desc, tmp);
-				if ((mParser.mTagRE.PartFound(eTP_PVERSION)) && (mParser.mTagRE.PartFound(eTP_PTAGID))) {
-				  mParser.mTagRE.Extract(eTP_PVERSION, desc, tmp);
-					mParser.mTagRE.Extract(eTP_PTAGID, desc, tag->mTagID);
-					mParser.mTagRE.Extract(eTP_PVERSION, desc, tag->mTagID);
+			mParser.mTagRE.Extract(eTP_TAGID, desc, tag->mTagID);
+			mParser.mTagRE.Extract(eTP_VERSION, desc, str);
+
+			/*
+				0 - whole chunk
+				1 - main version
+				2 - crap information
+				3 - crap number
+				4 - build information
+				5 - build number
+			*/
+
+			enum {
+				eVP_COMPLETE,
+				eVP_MAINVER,
+				eVP_CRAPINFO, eVP_CRAPNUM,
+				eVP_BUILDINFO, eVP_BUILDVER
+			};
+
+			if (mParser.mVersRE.Exec(str) >= 1) { // client version
+				mParser.mVersRE.Extract(eVP_MAINVER, str, ver);
+
+				if (mParser.mVersRE.PartFound(eVP_BUILDINFO)) {
+					mParser.mVersRE.Extract(eVP_BUILDVER, str, str);
+					ver.append(".");
+					ver.append(str);
+				}
+
+				size_t pos = ver.find('.');
+
+				if (pos != ver.npos) {
+					pos = ver.find('.', pos + 1);
+
+					while (pos != ver.npos) {
+						ver.erase(pos, 1);
+						pos = ver.find('.', pos);
+					}
 				}
 			}
+
+			/*
+			if (mParser.mTagRE.PartFound(eTP_PREFIX)) {
+				mParser.mTagRE.Extract(eTP_PTAGID, desc, tag->mTagID);
+				mParser.mTagRE.Extract(eTP_PVERSION, desc, str);
+			}
+			*/
 		}
-		//TODO: Use FindData
-		tag->client = FindTag(tag->mTagID);
 
-		// detect client mode
-		if (mParser.mModeRE.Exec(desc) >= 0) {
-			mParser.mModeRE.Extract(1, desc, str);
+		tag->client = FindTag(tag->mTagID); // todo: use FindData
 
-			if ((str == "A") || (str == "AA") || (str == "AP") || (str == "A5"))
+		if (mParser.mModeRE.Exec(tag->mTagBody) >= 1) { // client mode
+			mParser.mModeRE.Extract(1, tag->mTagBody, str);
+
+			if ((str == "A") || (str == "AA") || (str == "AP") || (str == "A5") || (str == "AN"))
 				tag->mClientMode = eCM_ACTIVE;
-			else if ((str == "P") || (str == "PP") || (str == "PA") || (str == "P5"))
+			else if ((str == "P") || (str == "PP") || (str == "PA") || (str == "P5") || (str == "PN"))
 				tag->mClientMode = eCM_PASSIVE;
-			else if ((str == "5") || (str == "55") || (str == "5A") || (str == "5P"))
+			else if ((str == "5") || (str == "55") || (str == "5A") || (str == "5P") || (str == "5N"))
 				tag->mClientMode = eCM_SOCK5;
 			else
 				tag->mClientMode = eCM_OTHER;
 		}
 
-		istringstream is(version);
+		istringstream is(ver);
 		is >> tag->mClientVersion;
 		is.clear();
 
 		int hubs = -1, hubs_usr = -1, hubs_reg = -1, hubs_op = -1, tmp;
 		char c;
 
-		if (mParser.mHubsRE.Exec(tag->mTagBody) >= 2) { // number of hubs
-			// hubs where the user is guest
-			mParser.mHubsRE.Extract(1, tag->mTagBody, str);
+		if (mParser.mHubsRE.Exec(tag->mTagBody) >= 1) { // number of hubs
+			mParser.mHubsRE.Extract(1, tag->mTagBody, str); // where user is guest
 			is.str(str);
 			is >> hubs;
 			is.clear();
 			hubs_usr = hubs;
 
-			if (mParser.mHubsRE.PartFound(2)) { // hubs where the user is regged
+			if (mParser.mHubsRE.PartFound(2)) { // where user is registered
 				tmp = 0;
 				mParser.mHubsRE.Extract(2, tag->mTagBody, str);
 				is.str(str);
 				is >> c >> tmp;
 				is.clear();
-				if (mServer->mC.tag_sum_hubs >= 2) hubs += tmp;
+
+				if (mServer->mC.tag_sum_hubs >= 2)
+					hubs += tmp;
+
 				hubs_reg = tmp;
 			}
 
-			if (mParser.mHubsRE.PartFound(3)) { // hubs where the user is operator
+			if (mParser.mHubsRE.PartFound(3)) { // where user is operator
 				tmp = 0;
 				mParser.mHubsRE.Extract(3, tag->mTagBody, str);
 				is.str(str);
 				is >> c >> tmp;
 				is.clear();
-				if (mServer->mC.tag_sum_hubs >= 3) hubs += tmp;
+
+				if (mServer->mC.tag_sum_hubs >= 3)
+					hubs += tmp;
+
 				hubs_op = tmp;
 			}
 
@@ -229,24 +279,25 @@ namespace nVerliHub {
 			tag->mHubsOp = hubs_op;
 		}
 
-		// Open slot
-		if(mParser.mSlotsRE.Exec( tag->mTagBody ) >= 2) {
-			mParser.mSlotsRE.Extract(1,tag->mTagBody,str);
+		if (mParser.mSlotsRE.Exec(tag->mTagBody) >= 1) { // number of slots
+			mParser.mSlotsRE.Extract(1, tag->mTagBody, str);
 			is.str(str);
 			is >> tag->mSlots;
 			is.clear();
 		}
-		// Limit
-		if(mParser.mLimitRE.Exec( tag->mTagBody ) >= 2) {
-			mParser.mLimitRE.Extract(2,tag->mTagBody,str);
+
+		if (mParser.mLimitRE.Exec(tag->mTagBody) >= 2) { // limiter
+			mParser.mLimitRE.Extract(2, tag->mTagBody, str);
 			is.str(str);
 			is >> tag->mLimit;
 			is.clear();
 		}
+
 		return tag;
 	}
 
-	cDCClientConsole::cDCClientConsole(cDCConsole *console) : tDCClientConsoleBase(console)
+	cDCClientConsole::cDCClientConsole(cDCConsole *console):
+		tDCClientConsoleBase(console)
 	{
 		this->AddCommands();
 	}
@@ -257,81 +308,124 @@ namespace nVerliHub {
 	void cDCClientConsole::GetHelpForCommand(int cmd, ostream &os)
 	{
 		string help_str;
-		switch(cmd)
-		{
+
+		switch (cmd) {
 			case eLC_LST:
-				help_str = "!lstclient\r\nGive the list of clients";
+				help_str = "!lstclient\r\n" + string(_("Show list of clients"));
 				break;
+
 			case eLC_ADD:
 			case eLC_MOD:
-				help_str = "!(add|mod)client <name>"
-						" -t <client_id>"
-						"[ -b <\"yes/no\">]"
-						"[ -v <\"min_version\">]"
-						"[ -V <\"max_version\">]"
-						"[ -e <enable/disable>]";
+				help_str = "!(add|mod)client <\"name\">"
+					"[ -t <\"id\">]"
+					"[ -b <1/0>]"
+					"[ -v <min_ver>]"
+					"[ -V <max_ver>]"
+					"[ -e <1/0>]";
+
 				break;
+
 			case eLC_DEL:
-				help_str = "!delclient <name>"; break;
-				default: break;
+				help_str = "!delclient <\"name\">";
+				break;
+
+			default:
+				break;
 		}
-		cDCProto::EscapeChars(help_str,help_str);
-		os << help_str;
+
+		if (help_str.size()) {
+			cDCProto::EscapeChars(help_str, help_str);
+			os << help_str;
+		}
 	}
 
 	void cDCClientConsole::GetHelp(ostream &os)
 	{
 		string help;
-		help = "Available options are:\r\n";
-		help += "-t \tClient identification (for ex. <++ V:0.75,M:A,H:1/0/0,S:2> client ID is '++')\r\n";
-		help += "-b \tBan client matching this rule (possible values are 0 or 1)\r\n";
+		help = "Available options are:\r\n\r\n";
+		help += "-t \tClient ID (in <++ V:0.75,M:A,H:1/0/0,S:1> ID is '++')\r\n";
+		help += "-b \tBan client matching this rule (0 - no, 1 - yes)\r\n";
 		help += "-v \tMinimum version number\r\n";
 		help += "-V \tMaximum version number\r\n";
-		help += "-e \tEnable or disable this rule (possible values are 0 or 1)\r\n";
+		help += "-e \tEnable or disable this rule (0 - off, 1 - on)\r\n";
 
-		cDCProto::EscapeChars(help,help);
+		cDCProto::EscapeChars(help, help);
 		os << help;
 	}
 
-	const char * cDCClientConsole::GetParamsRegex(int cmd)
+	const char* cDCClientConsole::GetParamsRegex(int cmd)
 	{
-		switch(cmd)
-		{
+		switch (cmd) {
 			case eLC_ADD:
 			case eLC_MOD:
-				return "^(\\S+)("
-						"( -t ?(-?\\S+))?|" //[ -t<tag_id>]
-						"( -b ?(-?\\d))?|" //[ -b<yes/no>]
-						"( -v ?(-?[1-9]{0,1}[0-9]{1}(?:\\.[0-9]{0,3})?))?|" //[ -v<min_version>]
-						"( -V ?(-?[1-9]{0,1}[0-9]{1}(?:\\.[0-9]{0,3})?))?|" //[ -V<max_version>]
-						"( -e ?(-?\\d))?|" // [ -e<1/0>]
-						")*\\s*$"; // the end of message
+				return "^(\"[^\"]+?\"|\\S+)("
+					"( -t ?(\"[^\"]+?\"|\\S+))?|"
+					"( -b ?(0|1))?|"
+					"( -v ?(\\-?\\d+(\\.\\d+)?))?|"
+					"( -V ?(\\-?\\d+(\\.\\d+)?))?|"
+					"( -e ?(0|1))?"
+					")*\\s*$";
+
 			case eLC_DEL:
-				return "(\\S+)";
-				default: return "";break;
-		};
+				return "(\".+?\"|\\S+)";
+
+			default:
+				return "";
+		}
 	}
 
 	bool cDCClientConsole::ReadDataFromCmd(cfBase *cmd, int CmdID, cDCClient &data)
 	{
+		cDCClient temp = data;
+
 		enum {
 			eDATA_ALL,
    			eDATA_NAME, eDATA_CHOICE,
    			eDATA_TAGIDp, eDATA_TAGID,
 			eDATA_CLIENTBANNEDp, eDATA_CLIENTBANNED,
-			eDATA_MINVp, eDATA_MINV,
-			eDATA_MAXVp, eDATA_MAXV,
-			eDATA_ENABLEp, eDATA_ENABLE };
-		cmd->GetParStr(eDATA_NAME,data.mName);
-		cmd->GetParStr(eDATA_TAGID,data.mTagID);
-		if(CmdID == eLC_ADD && data.mTagID.empty()) {
-			//os << _("Tag ID for a client cannot be empty");
+			eDATA_MINVp, eDATA_MINV, eDATA_MINVDECp,
+			eDATA_MAXVp, eDATA_MAXV, eDATA_MAXVDECp,
+			eDATA_ENABLEp, eDATA_ENABLE
+		};
+
+		cmd->GetParStr(eDATA_NAME, temp.mName);
+		size_t slen = temp.mName.size();
+
+		if (slen) {
+			if (temp.mName[0] == '"') {
+				temp.mName.erase(0, 1);
+				slen--;
+			}
+
+			if (slen && (temp.mName[slen - 1] == '"'))
+				temp.mName.erase(slen - 1, 1);
+		}
+
+		cmd->GetParStr(eDATA_TAGID, temp.mTagID);
+		slen = temp.mTagID.size();
+
+		if (slen) {
+			if (temp.mTagID[0] == '"') {
+				temp.mTagID.erase(0, 1);
+				slen--;
+			}
+
+			if (slen && (temp.mTagID[slen - 1] == '"')) {
+				temp.mTagID.erase(slen - 1, 1);
+				slen--;
+			}
+		}
+
+		if ((CmdID == eLC_ADD) && !slen) {
+			//os << _("Client ID can't be empty.");
 			return false;
 		}
-		cmd->GetParBool(eDATA_CLIENTBANNED,data.mBan);
-		cmd->GetParInt(eDATA_ENABLE, data.mEnable);
-		cmd->GetParDouble(eDATA_MINV, data.mMinVersion);
-		cmd->GetParDouble(eDATA_MAXV, data.mMaxVersion);
+
+		cmd->GetParBool(eDATA_CLIENTBANNED, temp.mBan);
+		cmd->GetParDouble(eDATA_MINV, temp.mMinVersion);
+		cmd->GetParDouble(eDATA_MAXV, temp.mMaxVersion);
+		cmd->GetParBool(eDATA_ENABLE, temp.mEnable);
+		data = temp;
 		return true;
 	}
 
@@ -340,23 +434,18 @@ namespace nVerliHub {
 		return mOwner->mDCClients;
 	}
 
-	const char *cDCClientConsole::CmdSuffix(){ return "client";}
-	const char *cDCClientConsole::CmdPrefix(){ return "!";}
+	const char *cDCClientConsole::CmdSuffix() { return "client"; }
+	const char *cDCClientConsole::CmdPrefix() { return "!"; }
 
 	void cDCClientConsole::ListHead(ostream *os)
 	{
-		*os << "\r\n ";
-		(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Name"));
-		(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Client ID"));
-		(*os) << setw(30) << setiosflags(ios::left) << toUpper(_("Version"));
-		(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Banned?"));
-		(*os) << toUpper(_("Status")) << "\r\n";
-		(*os) << " " << string(15+15+35+15+15,'=');
+		(*os) << "\r\n\t" << _("Name") << "\t\t\t" << _("ID") << "\t\t" << _("Version") << "\t\t\t" << _("Banned") << "\t" << _("Status") << "\r\n\t" << string(130, '-');
 	}
 
-	bool cDCClientConsole::IsConnAllowed(cConnDC *conn,int cmd)
+	bool cDCClientConsole::IsConnAllowed(cConnDC *conn, int cmd)
 	{
-		return (conn && conn->mpUser && conn->mpUser->mClass >= eUC_ADMIN);
+		return (conn && conn->mpUser && (conn->mpUser->mClass >= eUC_ADMIN));
 	}
+
 	}; // namespace nTables
 }; // namespace nVerliHub

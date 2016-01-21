@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -33,13 +33,12 @@ namespace nVerliHub {
 	using namespace nUtils;
 	namespace nTables {
 
-/**
-has the list of temporary user penalties... that save in database
-
+/*
+list of temporary user penalties that are saved in database
 @author Daniel Muller
 */
 
-class cPenaltyList : public cConfMySQL
+class cPenaltyList: public cConfMySQL
 {
 	public:
 		/**structure representing the MySQL table data */
@@ -73,20 +72,35 @@ class cPenaltyList : public cConfMySQL
 
 			bool ToKeepIt()
 			{
-				long Now = cTime().Sec();
-				if (mStartChat >  Now) return true;
-				if (mStartSearch > Now) return true;
-				if (mStartCTM > Now) return true;
-				if (mStartPM > Now) return true;
-				if (mStopKick > Now) return true;
-				if (mStopShare0 > Now) return true;
-				if (mStopReg > Now) return true;
-				if (mStopOpchat > Now) return true;
+				cTime Now = cTime().Sec();
+
+				if (mStartChat > Now)
+					return true;
+
+				if (mStartSearch > Now)
+					return true;
+
+				if (mStartCTM > Now)
+					return true;
+
+				if (mStartPM > Now)
+					return true;
+
+				if (mStopKick > Now)
+					return true;
+
+				if (mStopShare0 > Now)
+					return true;
+
+				if (mStopReg > Now)
+					return true;
+
+				if (mStopOpchat > Now)
+					return true;
+
 				return false;
 			}
-			friend ostream &operator << (ostream &, const sPenalty &);
 		};
-
 
 		cPenaltyList(nMySQL::cMySQL &mysql);
 		~cPenaltyList();
@@ -94,10 +108,19 @@ class cPenaltyList : public cConfMySQL
 		bool LoadTo(sPenalty &, const string &Nick);
 		bool AddPenalty(sPenalty &);
 		bool RemPenalty(sPenalty &);
+		void ListAll(ostream &os);
+
 		void ReloadCache()
 		{
-			mCache.Clear(); mCache.LoadAll();
+			mCache.Clear();
+			mCache.LoadAll();
 		}
+
+		void UpdateCache()
+		{
+			mCache.Update();
+		}
+
 		nConfig::tCache<string> mCache;
 	protected:
 		sPenalty mModel;

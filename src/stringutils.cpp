@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -229,29 +229,35 @@ void ReplaceVarInString(const string &src,const string &varname,string &dest, __
 	ReplaceVarInString(src, varname, dest, StringFrom(by));
 }
 
-string convertByte(__int64 byte, bool UnitType)
+string convertByte(__int64 byte, bool UnitSec)
 {
-	static const char *byteUnit[] = {_("B"), _("KB"), _("MB"), _("GB"), _("TB"), _("PB"), _("EB"), _("ZB"), _("YB")};
-	static const char *byteSecUnit[] = {_("B/s"), _("KB/s"), _("MB/s"), _("GB/s"), _("TB/s"), _("PB/s"), _("EB/s"), _("ZB/s"), _("YB/s")};
-	int unit;
+	static const char *byteUnit[] = { _("B"), _("KB"), _("MB"), _("GB"), _("TB"), _("PB"), _("EB"), _("ZB"), _("YB") };
+	static const char *byteSecUnit[] = { _("B/s"), _("KB/s"), _("MB/s"), _("GB/s"), _("TB/s"), _("PB/s"), _("EB/s"), _("ZB/s"), _("YB/s") };
+	unsigned int unit;
 	double long lByte = byte;
 
 	if (lByte < 1024) {
 		unit = 0;
 	} else {
-		for (unit = 0; lByte >= 1024; unit++) {
+		for (unit = 0; lByte >= 1024; unit++)
 			lByte /= 1024;
-		}
 	}
 
 	ostringstream os (ostringstream::out);
 	os.precision(2);
 	os << fixed << lByte << " ";
 
-	if (UnitType)
-		os << byteSecUnit[unit];
-	else
-		os << byteUnit[unit];
+	if (UnitSec) {
+		if (unit > (sizeof(byteSecUnit) / sizeof(char*)))
+			os << "X/s";
+		else
+			os << byteSecUnit[unit];
+	} else {
+		if (unit > (sizeof(byteUnit) / sizeof(char*)))
+			os << "X";
+		else
+			os << byteUnit[unit];
+	}
 
 	return os.str();
 }

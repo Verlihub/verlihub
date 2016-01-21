@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -63,7 +63,7 @@ cDCConf::~cDCConf()
 void cDCConf::AddVars()
 {
 	// Hub info and basic settings
-	Add("hub_name",hub_name,string("Verlihub"));
+	Add("hub_name", hub_name, HUB_VERSION_NAME);
 	Add("hub_desc",hub_desc,string(""));
 	Add("hub_topic",hub_topic,string(""));
 	Add("hub_category",hub_category,string(""));
@@ -71,9 +71,9 @@ void cDCConf::AddVars()
 	Add("hub_logo_url", hub_logo_url, string(""));
 	Add("hub_encoding", hub_encoding, string("CP1252"));
 	Add("hub_owner",hub_owner,string(""));
-	Add("hub_version",hub_version,VERSION);
+	Add("hub_version", hub_version, HUB_VERSION_VERS);
 	Add("hub_version_special",hub_version_special,string(""));
-	Add("hub_security", hub_security, string("Verlihub"));
+	Add("hub_security", hub_security, HUB_VERSION_NAME);
 	Add("hub_security_desc", hub_security_desc, string("Hub security"));
 	Add("opchat_name", opchat_name, string("OpChat"));
 	Add("opchat_desc", opchat_desc, string("Operator chat"));
@@ -163,16 +163,17 @@ void cDCConf::AddVars()
 	Add("ul_portion", ul_portion, 50);
 	// End nicklist configuration
 
-	// Mainchat messages configuration
-	Add("max_message_size",mS.mMaxLineLength, (unsigned long)10240);
-	Add("max_chat_msg",max_chat_msg,256u);
+	// main chat configuration
+	Add("max_message_size", mS.mMaxLineLength, 10240ul);
+	Add("max_chat_msg", max_chat_msg, 256u);
 	Add("max_chat_lines", max_chat_lines, 5);
 	Add("delayed_chat", delayed_chat, false);
-	Add("int_chat_ms", int_chat_ms, (unsigned long)1000);
+	Add("int_chat_ms", int_chat_ms, 1000ul);
 	Add("chat_default_on", chat_default_on, true);
-	Add("mainchat_class", mainchat_class, (int)eUC_NORMUSER);
-	Add("private_class", private_class, (int)eUC_NORMUSER);
-	// End mainchat messages configuration
+	Add("mainchat_class", mainchat_class, int(eUC_NORMUSER));
+	Add("private_class", private_class, int(eUC_NORMUSER));
+	Add("notify_gag_chats", notify_gag_chats, false);
+	// end of section
 
 	// private message configuration
 	Add("max_flood_counter_pm", max_flood_counter_pm, 5);
@@ -344,7 +345,7 @@ void cDCConf::AddVars()
 	Add("disable_zlib", disable_zlib, true);
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
-	Add("disable_extjson_fwd", disable_extjson_fwd, false); // extjson forward
+	Add("disable_extjson", disable_extjson, true); // extjson
 
 	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};
 	double to_default[] = { 60. , 30., 600., 40., 30., 300. };
@@ -411,7 +412,7 @@ void cDCConf::AddVars()
 int cDCConf::Load()
 {
 	mS.mSetupList.LoadFileTo(this,mS.mDBConf.config_name.c_str());
-	hub_version = VERSION;
+	hub_version = HUB_VERSION_VERS;
 	return 0;
 }
 
@@ -420,7 +421,7 @@ int cDCConf::Load()
  */
 int cDCConf::Save()
 {
-	hub_version = VERSION;
+	hub_version = HUB_VERSION_VERS;
 	mS.mSetupList.SaveFileTo(this,mS.mDBConf.config_name.c_str());
 	return 0;
 }

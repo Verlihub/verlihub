@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -27,12 +27,14 @@ namespace nVerliHub {
 	using namespace nMySQL;
 	namespace nTables {
 
-cPenaltyList::cPenaltyList(cMySQL &mysql) : cConfMySQL(mysql), mCache(mysql, "temp_rights", "nick")
+cPenaltyList::cPenaltyList(cMySQL &mysql):
+	cConfMySQL(mysql),
+	mCache(mysql, "temp_rights", "nick")
 {
 	mMySQLTable.mName = "temp_rights";
-	AddCol("nick", "varchar(64)", "", false, mModel.mNick);
+	AddCol("nick", "varchar(128) primary key", "", false, mModel.mNick);
 	AddPrimaryKey("nick");
-	AddCol("op", "varchar(64)", "", true, mModel.mOpNick);
+	AddCol("op", "varchar(128)", "", true, mModel.mOpNick);
 	AddCol("since", "int(11)", "", true, mModel.mSince);
 	AddCol("st_chat", "int(11)", "1", true, mModel.mStartChat);
 	AddCol("st_search", "int(11)", "1", true, mModel.mStartSearch);
@@ -42,63 +44,27 @@ cPenaltyList::cPenaltyList(cMySQL &mysql) : cConfMySQL(mysql), mCache(mysql, "te
 	AddCol("st_share0", "int(11)", "1", true, mModel.mStopShare0);
 	AddCol("st_reg", "int(11)", "1", true, mModel.mStopReg);
 	AddCol("st_opchat", "int(11)", "1", true, mModel.mStopOpchat);
-	mMySQLTable.mExtra = "PRIMARY KEY(nick), ";
-	mMySQLTable.mExtra = "INDEX creation_index(since)";
+	mMySQLTable.mExtra = "index creation_index(since)";
 	SetBaseTo(&mModel);
 }
 
-
 cPenaltyList::~cPenaltyList()
-{
-}
-
-ostream &operator << (ostream &os, const cPenaltyList::sPenalty &penalty)
-{
-	cTime Now = cTime().Sec();
-
-	if ((penalty.mStartChat > Now) && (penalty.mStartPM > Now))
-		os << autosprintf(_("Setting main and private chat rights for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStartChat - Now).AsPeriod().AsString().c_str());
-
-	if ((penalty.mStartChat > Now) && (penalty.mStartPM < Now))
-		os << autosprintf(_("Setting main chat right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStartChat - Now).AsPeriod().AsString().c_str());
-
-	if ((penalty.mStartPM > Now) && (penalty.mStartChat < Now))
-		os << autosprintf(_("Setting private chat right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStartPM - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStartSearch > Now)
-		os << autosprintf(_("Setting search right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStartSearch - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStartCTM > Now)
-		os << autosprintf(_("Setting download right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStartCTM - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStopKick > Now)
-		os << autosprintf(_("Setting kick right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStopKick - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStopShare0 > Now)
-		os << autosprintf(_("Setting hidden share right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStopShare0 - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStopReg > Now)
-		os << autosprintf(_("Setting registering right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStopReg - Now).AsPeriod().AsString().c_str());
-
-	if (penalty.mStopOpchat > Now)
-		os << autosprintf(_("Setting operator chat right for %s to %s."), penalty.mNick.c_str(), cTime(penalty.mStopOpchat - Now).AsPeriod().AsString().c_str());
-
-	return os;
-}
+{}
 
 void cPenaltyList::Cleanup()
 {
-	time_t Now = cTime().Sec();
+	cTime Now = cTime().Sec();
 	cQuery query(mMySQL);
-	query.OStream() << "DELETE FROM " << mMySQLTable.mName << " WHERE since <" << Now - 3600*24*7 <<
-		" AND st_kick != 0 AND st_share0 != 0 AND st_opchat != 0 AND st_reg != 0";
+	query.OStream() << "delete from `" << mMySQLTable.mName << "` where `since` < " << (Now - (3600 * 24 * 7)); // and `st_chat` != 0 and `st_search` != 0 and `st_ctm` != 0 and `st_pm` != 0 and `st_kick` != 0 and `st_share0` != 0 and `st_opchat` != 0 and `st_reg` != 0
 	query.Query();
 	query.Clear();
 }
 
 bool cPenaltyList::LoadTo(sPenalty &pen, const string &Nick)
 {
-	if(mCache.IsLoaded() && !mCache.Find(Nick)) return false;
+	if (mCache.IsLoaded() && !mCache.Find(Nick))
+		return false;
+
 	SetBaseTo(&pen);
 	pen.mNick = Nick;
 	return LoadPK();
@@ -110,31 +76,44 @@ bool cPenaltyList::AddPenalty(sPenalty &penal)
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
 	bool keep = false;
-	if (LoadPK())
-	{
-		if(penal.mStartChat > mModel.mStartChat) mModel.mStartChat = penal.mStartChat;
-		if(penal.mStartCTM > mModel.mStartCTM) mModel.mStartCTM = penal.mStartCTM;
-		if(penal.mStartPM > mModel.mStartPM) mModel.mStartPM = penal.mStartPM;
-		if(penal.mStartSearch > mModel.mStartSearch) mModel.mStartSearch = penal.mStartSearch;
-		if(penal.mStopKick > mModel.mStopKick) mModel.mStopKick = penal.mStopKick;
-		if(penal.mStopShare0 > mModel.mStopShare0) mModel.mStopShare0 = penal.mStopShare0;
-		if(penal.mStopReg > mModel.mStopReg) mModel.mStopReg = penal.mStopReg;
-		if(penal.mStopOpchat > mModel.mStopOpchat) mModel.mStopOpchat = penal.mStopOpchat;
+
+	if (LoadPK()) {
+		if (penal.mStartChat > mModel.mStartChat)
+			mModel.mStartChat = penal.mStartChat;
+
+		if (penal.mStartCTM > mModel.mStartCTM)
+			mModel.mStartCTM = penal.mStartCTM;
+
+		if (penal.mStartPM > mModel.mStartPM)
+			mModel.mStartPM = penal.mStartPM;
+
+		if (penal.mStartSearch > mModel.mStartSearch)
+			mModel.mStartSearch = penal.mStartSearch;
+
+		if (penal.mStopKick > mModel.mStopKick)
+			mModel.mStopKick = penal.mStopKick;
+
+		if (penal.mStopShare0 > mModel.mStopShare0)
+			mModel.mStopShare0 = penal.mStopShare0;
+
+		if (penal.mStopReg > mModel.mStopReg)
+			mModel.mStopReg = penal.mStopReg;
+
+		if (penal.mStopOpchat > mModel.mStopOpchat)
+			mModel.mStopOpchat = penal.mStopOpchat;
+
 		keep = mModel.ToKeepIt();
-	}
-	else
-	{
+	} else {
 		SetBaseTo(&penal);
 		keep = penal.ToKeepIt();
-		if (keep)
-		{
+
+		if (keep && mCache.IsLoaded())
 			mCache.Add(penal.mNick);
-		}
 	}
 
 	DeletePK();
 
-	if( keep )
+	if (keep)
 		return SavePK(false);
 	else
 		return false;
@@ -145,22 +124,181 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 	SetBaseTo(&mModel);
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
-	time_t Now = cTime().Sec();
-	if(LoadPK()) {
-		if(penal.mStartChat < Now) mModel.mStartChat = Now;
-		if(penal.mStartCTM < Now) mModel.mStartCTM = Now;
-		if(penal.mStartPM < Now) mModel.mStartPM = Now;
-		if(penal.mStartSearch < Now) mModel.mStartSearch = Now;
-		if(penal.mStopKick < Now) mModel.mStopKick = Now;
-		if(penal.mStopShare0 < Now) mModel.mStopShare0 = Now;
-		if(penal.mStopReg < Now) mModel.mStopReg = Now;
-		if(penal.mStopOpchat < Now) mModel.mStopOpchat = Now;
+	cTime Now = cTime().Sec();
+	bool keep = false;
+
+	if (LoadPK()) {
+		if (penal.mStartChat < Now)
+			mModel.mStartChat = 1;
+		else
+			keep = true;
+
+		if (penal.mStartCTM < Now)
+			mModel.mStartCTM = 1;
+		else
+			keep = true;
+
+		if (penal.mStartPM < Now)
+			mModel.mStartPM = 1;
+		else
+			keep = true;
+
+		if (penal.mStartSearch < Now)
+			mModel.mStartSearch = 1;
+		else
+			keep = true;
+
+		if (penal.mStopKick < Now)
+			mModel.mStopKick = 1;
+		else
+			keep = true;
+
+		if (penal.mStopShare0 < Now)
+			mModel.mStopShare0 = 1;
+		else
+			keep = true;
+
+		if (penal.mStopReg < Now)
+			mModel.mStopReg = 1;
+		else
+			keep = true;
+
+		if (penal.mStopOpchat < Now)
+			mModel.mStopOpchat = 1;
+		else
+			keep = true;
 	}
-	if(mModel.ToKeepIt())
+
+	DeletePK();
+
+	if (keep)
 		return SavePK();
-	else
-		DeletePK();
+
 	return true;
+}
+
+void cPenaltyList::ListAll(ostream &os)
+{
+	cQuery query(mMySQL);
+	query.OStream() << "select `nick` from `" << mMySQLTable.mName << "`";
+	query.Query();
+	unsigned int tot = query.StoreResult();
+	cTime now = cTime().Sec();
+	long dif;
+	MYSQL_ROW row = NULL;
+	bool sep;
+	sPenalty pen;
+	os << "\r\n\r\n\t" << _("Nick") << "\t\t" << _("Operator") << "\t\t" << _("Rights") << "\r\n";
+	os << "\t" << string(120, '-') << "\r\n";
+
+	for (unsigned int pos = 0; pos < tot; pos++) {
+		row = query.Row();
+
+		if (row && this->LoadTo(pen, row[0])) {
+			os << "\t" << pen.mNick << "\t\t" << pen.mOpNick << "\t\t";
+			sep = false;
+
+			if (pen.mStartChat > 1) {
+				dif = pen.mStartChat - now;
+
+				if (dif > 0) {
+					//if (sep)
+						//os << ", ";
+
+					os << autosprintf(_("Chat: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStartPM > 1) {
+				dif = pen.mStartPM - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("PM: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStartSearch > 1) {
+				dif = pen.mStartSearch - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Search: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStartCTM > 1) {
+				dif = pen.mStartCTM - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Download: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStopShare0 > 1) {
+				dif = pen.mStopShare0 - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Share: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStopReg > 1) {
+				dif = pen.mStopReg - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Register: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStopOpchat > 1) {
+				dif = pen.mStopOpchat - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Operator chat: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					sep = true;
+				}
+			}
+
+			if (pen.mStopKick > 1) {
+				dif = pen.mStopKick - now;
+
+				if (dif > 0) {
+					if (sep)
+						os << ", ";
+
+					os << autosprintf(_("Kick: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					//sep = true;
+				}
+			}
+
+			os << "\r\n";
+		}
+	}
+
+	query.Clear();
 }
 
 	}; // namespace nTables

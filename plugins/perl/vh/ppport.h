@@ -1,4 +1,3 @@
-
 /* ppport.h -- Perl/Pollution/Portability Version 2.0002 
  *
  * Automatically Created by Devel::PPPort on Wed May  5 23:27:54 2004 

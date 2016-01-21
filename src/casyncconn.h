@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -21,11 +21,12 @@
 #ifndef CASYNCCONN_H
 #define CASYNCCONN_H
 
-// buffer
-#define MAX_MESS_SIZE 0x2FFFF			// 196607, max length of message that we accept
-#define MAX_SEND_SIZE 0x3FFFFC			// 0x1FFFFE, 2097150 > 4194300, max size of output buffer
-#define MAX_SEND_FILL_SIZE 0x2BFFFC		// 0x15FFFE, 1441790 > 2883580, on this level incoming data is blocked
-#define MAX_SEND_UNBLOCK_SIZE 0x1BFFFC	// 0x07FFFFE, 8388606 > 1835004, under this level its unblocked again
+// buffer sizes
+#define MAX_MESS_SIZE			524288		// 0,50 mb, maximum size of read buffer
+#define MAX_SEND_SIZE			2097152		// 2,00 mb, maximum size of user output buffer
+#define MAX_SEND_FILL_SIZE		1310720		// 1,25 mb, on this level incoming data is blocked
+#define MAX_SEND_UNBLOCK_SIZE	1835008		// 1,75 mb, under this level its unblocked again
+
 #include "cobj.h"
 #include "ctime.h"
 #include "cconnbase.h"
@@ -188,14 +189,14 @@ namespace nVerliHub {
 				 * Return the port.
 				 * @return The port.
 				 */
-				const int AddrPort()
+				const unsigned int AddrPort()
 				{
 					return mAddrPort;
 				}
 
 				// return server address and port that user is connected to
 
-				const int GetServPort()
+				const unsigned int GetServPort()
 				{
 					return mServPort;
 				}
@@ -521,11 +522,11 @@ namespace nVerliHub {
 				unsigned long mIp;
 
 				/// Port of the connection.
-				int mAddrPort;
+				unsigned int mAddrPort;
 
 				// server address and port that user is connected to
 				string mServAddr;
-				int mServPort;
+				unsigned int mServPort;
 
 				/// The maximum size of the buffer that contains stock data.
 				/// @see msBuffer

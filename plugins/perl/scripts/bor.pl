@@ -28,4 +28,3 @@ sub VH_OnUserCommand {
 
   return 1;
 }
-

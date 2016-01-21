@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -19,7 +19,8 @@
 SET(FLOODPROT_VERSION_MAJOR 1)
 SET(FLOODPROT_VERSION_MINOR 5)
 SET(FLOODPROT_VERSION_PATCH 0)
-SET(FLOODPROT_VERSION "${FLOODPROT_VERSION_MAJOR}.${FLOODPROT_VERSION_MINOR}.${FLOODPROT_VERSION_PATCH}")
+SET(FLOODPROT_VERSION_TWEAK 0)
+SET(FLOODPROT_VERSION "${FLOODPROT_VERSION_MAJOR}.${FLOODPROT_VERSION_MINOR}.${FLOODPROT_VERSION_PATCH}.${FLOODPROT_VERSION_TWEAK}")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DFLOODPROT_VERSION="${FLOODPROT_VERSION}")

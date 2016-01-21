@@ -16,7 +16,7 @@ Optional dependencies:
 
 To install Verlihub, run the following commands:
 
-cd verlihub-1.0.0
+cd verlihub
 mkdir build
 cd build
 cmake ..

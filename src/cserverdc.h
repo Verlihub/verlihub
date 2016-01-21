@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -387,7 +387,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param NickForReply The nickname of the user to send the result.
 		* @return Always one.
 		*/
-		int DoRegisterInHublist(string host, int port, string reply);
+		int DoRegisterInHublist(string host, unsigned int port, string reply);
 
 		/**
 		* Register the hub to the given hublist.
@@ -398,7 +398,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param conn The user connection to send the result.
 		* @return One if the operation can be added and processed by thread or zero otherwise.
 		*/
-		int RegisterInHublist(string host, int port, cConnDC *conn);
+		int RegisterInHublist(string host, unsigned int port, cConnDC *conn);
 
 		/**
 		* Report an user to opchat.
@@ -543,28 +543,22 @@ class cServerDC : public cAsyncSocketServer
 		* @param separator The seperator to use to split the user inside destination string.
 		* @return The number of found users.
 		*/
-		int WhoCC(string CC, string &dest, const string&separator);
+		unsigned int WhoCC(const string &cc, string &dest, const string &sep);
 
-		// returns list of users that belongs to specific city
-		int WhoCity(string city, string &dest, const string &separator);
+		// return list of users with specific city
+		unsigned int WhoCity(const string &city, string &dest, const string &sep);
 
-		/**
-		* Return the list of the users that belongs to the specified IP range.
-		* @param ip_min Min IP range or the exact IP address.
-		* @param ip_max Max IP range.
-		* @param dest The string where to store the users.
-		* @param separator The seperator to use to split the user inside destination string.
-		* @param exact Set it to true if you want to use an exact IP address; in this case ip_max is ignored.
-		* @return The number of found users.
-		*/
-		int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string&separator, bool exact=true);
+		// return list of users with specific hub port number
+		unsigned int WhoHubPort(unsigned int port, string &dest, const string &sep);
 
-		/*
-		* Returns number of users with class <= 1 that are connected from specific IP address.
-		* ip = The IP address.
-		* return = The number of found users.
-		*/
-		unsigned int CntConnIP(string ip);
+		// return list of users with specific partial hub url
+		unsigned int WhoHubURL(const string &url, string &dest, const string &sep);
+
+		// return list of users with specific ip address range
+		unsigned int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact = true);
+
+		// return number of users with class <= 1 with specific ip address
+		unsigned int CntConnIP(const string &ip);
 
 		// clone detection
 		bool CheckUserClone(cConnDC *conn, string &clone);
@@ -592,12 +586,16 @@ class cServerDC : public cAsyncSocketServer
 		// Network output log
 		ofstream mNetOutLog;
 		// Hublist registration thread
-		#ifndef _WIN32 //TODO: Implement worker thread on Windows
-		cWorkerThread mHublistReg;
-		#endif
-		// Frequency for all zones
-		cMeanFrequency<unsigned long, 10> mUploadZone[USER_ZONES+1];
 
+		#ifndef _WIN32 // todo: implement worker thread on windows
+			cWorkerThread mHublistReg;
+		#endif
+
+		// traffic frequency for all zones
+		cMeanFrequency<unsigned long, 10> mUploadZone[USER_ZONES + 1];
+		cMeanFrequency<unsigned long, 10> mDownloadZone;
+
+		// temporary functions
 		typedef int tDC_MsgFunc(cMessageDC * msg, cConnDC * conn);
 		typedef vector<cTempFunctionBase *> tTmpFunc;
 		typedef tTmpFunc::iterator tTFIt;
@@ -625,8 +623,6 @@ class cServerDC : public cAsyncSocketServer
 		cUserCollection mChatUsers;
 		// List of bots
 		cUserCollection mRobotList;
-		// User peak
-		unsigned mUsersPeak;
 
 #ifdef HAVE_LIBGEOIP
 		// GeoIp object for country code support
@@ -789,15 +785,24 @@ protected: // Protected methods
 	*/
 	bool VerifyUniqueNick(cConnDC *conn);
 
-	public:
+public:
+
+	// protocol message counters
+	unsigned int mProtoCount[nEnums::eDC_UNKNOWN + 2]; // last is ping
+
+	// protocol total download = 0 and upload = 1
+	unsigned __int64 mProtoTotal[2];
+
 	// Usercount of zones (CC and IP-range zones)
-	int mUserCount[USER_ZONES+1];
+	unsigned int mUserCount[USER_ZONES + 1];
 	// Total number of users
-	int mUserCountTot;
+	unsigned int mUserCountTot;
+	// User peak
+	unsigned int mUsersPeak;
 	// Total share of the hub
-	__int64 mTotalShare;
+	unsigned __int64 mTotalShare;
 	// peak total share
-	__int64 mTotalSharePeak;
+	unsigned __int64 mTotalSharePeak;
 	// Health of the hub
 	string mStatus;
 	// cTime object when the hub was started
@@ -810,7 +815,9 @@ protected: // Protected methods
 	cTimeOut mReloadcfgTimer;
 	// Plugin manager
 	cVHPluginMgr mPluginManager;
+
 private:
+
 	struct sCallBacks
 	{
 		sCallBacks(cVHPluginMgr *mgr):

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,44 +29,44 @@
 #include "cprotocol.h"
 namespace nVerliHub {
 	namespace nEnums {
-		typedef enum // these constants corresponds to sDC_Commands in .cpp file
+		typedef enum // these constants correspond to sDC_Commands in .cpp file, note: they are ordered by frequency of usage for best performance
 		{
-			eDC_GETINFO,
-			eDCO_USERIP,
+			eDC_CONNECTTOME,
+			eDC_RCONNECTTOME,
+			eDC_SR,
 			eDC_SEARCH_PAS,
 			eDC_SEARCH,
-			eDC_SR,
 			eDC_MYINFO,
-			eDC_IN,
 			eDC_EXTJSON,
 			eDC_KEY,
+			eDC_SUPPORTS,
 			eDC_VALIDATENICK,
-			eDC_MYPASS,
 			eDC_VERSION,
 			eDC_GETNICKLIST,
-			eDC_CONNECTTOME,
-			eDC_MCONNECTTOME,
-			eDC_RCONNECTTOME,
+			eDC_MYHUBURL,
+			eDC_MYPASS,
 			eDC_TO,
-			eDC_MCTO,
 			eDC_CHAT,
-			eDC_QUIT,
-			eDCO_OPFORCEMOVE,
+			eDCB_BOTINFO,
+			eDC_GETINFO,
+			eDCO_USERIP,
 			eDCO_KICK,
+			eDCO_OPFORCEMOVE,
+			eDC_MCONNECTTOME,
 			eDC_MSEARCH_PAS,
 			eDC_MSEARCH,
-			eDC_SUPPORTS,
-			eDC_MYHUBURL, // hub url
+			eDC_MCTO,
+			eDC_QUIT,
 			eDCO_BAN,
 			eDCO_TBAN,
 			eDCO_UNBAN,
 			eDCO_GETBANLIST,
 			eDCO_WHOIP,
-			eDCO_SETTOPIC,
 			eDCO_GETTOPIC,
-			eDCB_BOTINFO,
-			eDCC_MYNICK, // ctm2hub
+			eDCO_SETTOPIC,
+			eDCC_MYNICK,
 			eDCC_LOCK,
+			eDC_IN,
 			eDC_UNKNOWN
 		} tDCMsg;
 

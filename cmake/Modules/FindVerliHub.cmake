@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -25,7 +25,7 @@
 #  VERLIHUB_PLUGIN_DIR     - Where plugins must be stored
 #  VERLIHUB_FOUND          - True if Verlihub found.
 #
-#  VERLIHUB_VERSION_STRING - The version of Verlihub found (x.y.z)
+#  VERLIHUB_VERSION_STRING - The version of Verlihub found
 #  VERLIHUB_VERSION_MAJOR  - The major version of Verlihub
 #  VERLIHUB_VERSION_MINOR  - The minor version of Verlihub
 #  VERLIHUB_VERSION_PATCH  - The patch version of Verlihub
@@ -64,7 +64,7 @@ if(VERLIHUB_CONFIG)
 	
 	# Get verlihub version
 	exec_program(${VERLIHUB_CONFIG} ARGS --version OUTPUT_VARIABLE MY_TMP)
-	string(REGEX MATCH "(([0-9]+)\\.([0-9]+)\\.([0-9]+)-?(.*))" MY_TMP "${MY_TMP}")
+	string(REGEX MATCH "(([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+))" MY_TMP "${MY_TMP}")
 
 	SET(VERLIHUB_VERSION_MAJOR ${CMAKE_MATCH_2})
 	SET(VERLIHUB_VERSION_MINOR ${CMAKE_MATCH_3})

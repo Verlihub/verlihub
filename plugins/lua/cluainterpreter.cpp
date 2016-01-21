@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -86,6 +86,7 @@ bool cLuaInterpreter::Init()
 
 	RegisterFunction("GetMyINFO", &_GetMyINFO);
 	RegisterFunction("GetUpTime", &_GetUpTime);
+	RegisterFunction("GetServFreq", &_GetServFreq);
 	RegisterFunction("RegBot", &_RegBot);
 	RegisterFunction("AddRobot", &_RegBot); // backward compatibility
 	RegisterFunction("UnRegBot", &_UnRegBot);
@@ -141,9 +142,9 @@ bool cLuaInterpreter::Init()
 		return false;
 	}
 
-	lua_pushstring(mL, LUA_PI_VERSION);
+	lua_pushstring(mL, LUA_VERSION);
 	lua_setglobal(mL, "_PLUGINVERSION");
-	lua_pushstring(mL, VERSION);
+	lua_pushstring(mL, HUB_VERSION_VERS);
 	lua_setglobal(mL, "_HUBVERSION");
 	return true;
 }

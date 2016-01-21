@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -59,7 +59,7 @@ void cTriggers::AddFields()
 {
 	AddCol("command", "varchar(30)", "", false, mModel.mCommand);
 	AddPrimaryKey("command");
-	AddCol("send_as", "varchar(50)", "Verlihub", true, mModel.mSendAs);
+	AddCol("send_as", "varchar(128)", "", true, mModel.mSendAs);
 	AddCol("def", "text", "", true, mModel.mDefinition);
 	AddCol("descr", "text", "", true, mModel.mDescription);
 	AddCol("min_class", "int(2)", "", true, mModel.mMinClass);
@@ -274,7 +274,6 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " %[HUBNAME]\t\t- Hub name\r\n";
 	help += " %[HUBTOPIC]\t\t- Hub topic\r\n";
 	help += " %[HUBDESC]\t\t- Hub description\r\n";
-	help += " %[VERSION_DATE]\t- Hub version date\r\n";
 	help += " %[TOTAL_SHARE]\t\t- Total share\r\n";
 	help += " %[SHAREPEAK]\t\t- Peak total share\r\n";
 	help += " %[ss]\t\t\t- Current second, 2 digits\r\n";
@@ -334,10 +333,12 @@ bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
 	GetPath(data.mDefinition, triggerPath, triggerName);
 	ReplaceVarInString(triggerPath, "CFG", triggerPath, vPath);
 	ExpandPath(triggerPath);
-	if((triggerPath.substr(0,vPath.length()) != vPath)) {
-		*cmd->mOS << autosprintf(_("The file %s for the trigger %s must be locate in Verlihub config folder (use %%[CFG] variable; for ex %%[CFG]/%s)"), data.mDefinition.c_str(), data.mCommand.c_str(), triggerName.c_str());
+
+	if ((triggerPath.substr(0, vPath.length()) != vPath)) {
+		(*cmd->mOS) << autosprintf(_("The file %s for the trigger %s must be located in %s configuration folder, use %%[CFG] variable, for example: %%[CFG]/%s"), data.mDefinition.c_str(), data.mCommand.c_str(), HUB_VERSION_NAME, triggerName.c_str());
 		return false;
 	}
+
 	return true;
 }
 

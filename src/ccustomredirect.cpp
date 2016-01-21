@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -33,43 +33,41 @@ namespace nVerliHub {
 			mCount = 0;
 		}
 
-		cRedirect::~cRedirect() {}
+		cRedirect::~cRedirect()
+		{}
 
 		ostream &operator << (ostream &os, cRedirect &tr)
 		{
-			string buff;
-			os << " ";
-			os << setw(10) << setiosflags(ios::left) << tr.mCount;
-			os << setw(35) << setiosflags(ios::left) << tr.mAddress;
-			os << setw(30) << setiosflags(ios::left);
 			int flag = tr.mFlag;
+			string buff;
+			os << "\t" << tr.mCount << "\t" << tr.mAddress << "\t\t" << (tr.mEnable ? _("On") : _("Off")) << "\t";
 
 			if (flag & eKick)
-				buff += "ban and kick,";
+				buff += "ban,";
 
 			if (flag & eUserLimit)
-				buff += "hub full,";
+				buff += "full,";
 
 			if (flag & eShareLimit)
-				buff += "share limit,";
+				buff += "share,";
 
 			if (flag & eTag)
-				buff += "invalid tag,";
+				buff += "tag,";
 
 			if (flag & eWrongPasswd)
-				buff += "wrong password,";
+				buff += "pass,";
 
 			if (flag & eInvalidKey)
-				buff += "invalid key,";
+				buff += "key,";
 
 			if (flag & eHubBusy)
-				buff += "hub busy,";
+				buff += "busy,";
 
 			if (flag & eReconnect)
-				buff += "reconnect,";
+				buff += "reconn,";
 
 			if (flag & eBadNick)
-				buff += "bad nick,";
+				buff += "nick,";
 
 			if (flag & eClone)
 				buff += "clone,";
@@ -78,18 +76,11 @@ namespace nVerliHub {
 				buff += "self,";
 
 			if (buff.empty())
-				buff = "default";
+				buff = "any";
 			else
 				buff.erase(buff.end() - 1);
 
 			os << buff;
-			os << setw(60) << setiosflags(ios::left);
-
-			if (tr.mEnable)
-				os << _("Enabled");
-			else
-				os << _("Disabled");
-
 			return os;
 		}
 

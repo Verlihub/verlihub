@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,6 +29,7 @@ namespace nVerliHub {
 	namespace nSocket {
 		class cConnDC;
 	};
+
 	namespace nTables {
 
 		/**
@@ -79,9 +80,10 @@ namespace nVerliHub {
 				// Client is banned from the hub
 				bool mBan;
 
-				//  Enable or disable a client
-				int mEnable;
+				// Enable or disable a client
+				bool mEnable;
 		};
+
 	}; // namespace nTables
 }; // namespace nVerliHub
 

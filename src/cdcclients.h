@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,39 +29,29 @@
 #include "cdcclient.h"
 
 using namespace std;
-namespace nVerliHub {
-	//using namespace nTables;
-	//namespace nUtils { class cPCRE; };
-	//using nConfig::tMySQLMemoryList;
 
-	namespace nEnums {
-		// TODO: Remove ME!
-		typedef enum {
-			eCT_NOTAG,
-			eCT_PLUSPLUS,
-			eCT_DCGUI,
-			eCT_ODC,
-			eCT_DC,
-			eCT_DCPRO,
-			eCT_STRONGDC,
-			eCT_IDC, eCT_ZDC,
-			eCT_APEXDC,
-			eCT_ZION,
-			eCT_UNKNOWN
-		} tClientType;
+namespace nVerliHub {
+	/*
+	using namespace nTables;
+
+	namespace nUtils {
+		class cPCRE;
 	};
 
-	/**
-	* Parser for DC Tag
-	* @author Daniel Muller, Simoncelli Davide
+	using nConfig::tMySQLMemoryList;
+	*/
+
+	/*
+		parser for dc tag
 	*/
 	class cDCTagParser
 	{
 		public:
-		// the constructor
+		// constructor
 		cDCTagParser();
-		/** the global teg's regular expression */
+		// regular expressions
 		nUtils::cPCRE mTagRE;
+		nUtils::cPCRE mVersRE;
 		nUtils::cPCRE mModeRE;
 		nUtils::cPCRE mHubsRE;
 		nUtils::cPCRE mSlotsRE;
@@ -71,6 +61,7 @@ namespace nVerliHub {
 	namespace nSocket {
 		class cServerDC;
 	};
+
 	class cDCConsole;
 
 	namespace nTables {
@@ -110,8 +101,8 @@ namespace nVerliHub {
 				virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, cDCClient &data);
 				virtual void GetHelpForCommand(int cmd, ostream &os);
 				virtual void GetHelp(ostream &os);
-
 		};
+
 	}; // namespace nTables
 }; // namespace nVerliHub
 

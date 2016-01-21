@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -19,7 +19,8 @@
 SET(PLUGMAN_VERSION_MAJOR 1)
 SET(PLUGMAN_VERSION_MINOR 2)
 SET(PLUGMAN_VERSION_PATCH 1)
-SET(PLUGMAN_VERSION "${PLUGMAN_VERSION_MAJOR}.${PLUGMAN_VERSION_MINOR}.${PLUGMAN_VERSION_PATCH}")
+SET(PLUGMAN_VERSION_TWEAK 1)
+SET(PLUGMAN_VERSION "${PLUGMAN_VERSION_MAJOR}.${PLUGMAN_VERSION_MINOR}.${PLUGMAN_VERSION_PATCH}.${PLUGMAN_VERSION_TWEAK}")
 
 INCLUDE_DIRECTORIES(${VERLIHUB_BINARY_DIR} ${VERLIHUB_SOURCE_DIR}/src)
 

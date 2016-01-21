@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -22,7 +22,6 @@
 #include "ctrigger.h"
 #include "cuser.h"
 #include "cconndc.h"
-#include "curr_date_time.h"
 #include "stringutils.h"
 #ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
@@ -187,11 +186,10 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "USERS_PASSIVE", buf, (int)server.mPassiveUsers.Size());
 		ReplaceVarInString(buf, "USERSPEAK", buf, (int)server.mUsersPeak);
 		ReplaceVarInString(buf, "UPTIME", buf, theTime.AsPeriod().AsString());
-		ReplaceVarInString(buf, "VERSION", buf, VERSION);
+		ReplaceVarInString(buf, "VERSION", buf, HUB_VERSION_VERS);
 		ReplaceVarInString(buf, "HUBNAME", buf, server.mC.hub_name);
 		ReplaceVarInString(buf, "HUBTOPIC", buf, server.mC.hub_topic);
 		ReplaceVarInString(buf, "HUBDESC", buf, server.mC.hub_desc);
-		ReplaceVarInString(buf, "VERSION_DATE", buf, __CURR_DATE_TIME__);
 		ReplaceVarInString(buf, "TOTAL_SHARE", buf, convertByte(server.mTotalShare, false));
 		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak, false)); // peak total share
 

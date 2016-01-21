@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -136,122 +136,165 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	#endif
 
 	switch (msg->mType) {
-		case eDC_UNKNOWN: // must be first
+		case eDC_UNKNOWN: // this must be first
+			if (Log(1))
+				LogStream() << "Incoming unknown command: " << msg->mStr << endl;
+
+			if (msg->mStr.size())
+				mS->mProtoCount[eDC_UNKNOWN]++;
+			else
+				mS->mProtoCount[eDC_UNKNOWN + 1]++;
+
 			this->DCU_Unknown(msg, conn);
 			return 1;
-			break;
+
 		case eMSG_UNPARSED:
 			msg->Parse();
-			return TreatMsg(msg, conn); // mS->mCallBacks.mOnUnparsedMsg.CallAll(conn, msg)
-			break;
-		case eDC_KEY:
-			this->DC_Key(msg, conn);
-			break;
-		case eDC_VALIDATENICK:
-			this->DC_ValidateNick(msg, conn);
-			break;
-		case eDC_MYPASS:
-			this->DC_MyPass(msg, conn);
-			break;
-		case eDC_VERSION:
-			this->DC_Version(msg, conn);
-			break;
-		case eDC_GETNICKLIST:
-			this->DC_GetNickList(msg, conn);
-			break;
-		case eDC_MYINFO:
-			this->DC_MyINFO(msg, conn);
-			break;
-		case eDC_IN:
-			this->DC_IN(msg, conn);
-			break;
-		case eDC_EXTJSON:
-			this->DC_ExtJSON(msg, conn);
-			break;
-		case eDC_GETINFO:
-			this->DC_GetINFO(msg, conn);
-			break;
-		case eDCO_USERIP:
-			this->DCO_UserIP(msg, conn);
-			break;
-		case eDC_MCONNECTTOME:
-			//this->DC_MultiConnectToMe(msg, conn);
-			//break;
+			return TreatMsg(msg, conn); // todo: mS->mCallBacks.mOnUnparsedMsg.CallAll(conn, msg)
+
 		case eDC_CONNECTTOME:
+		case eDC_MCONNECTTOME: // todo: this->DC_MultiConnectToMe(msg, conn);
 			this->DC_ConnectToMe(msg, conn);
 			break;
+
 		case eDC_RCONNECTTOME:
 			this->DC_RevConnectToMe(msg, conn);
 			break;
-		case eDC_TO:
-			this->DC_To(msg, conn);
-			break;
-		case eDC_MCTO:
-			this->DC_MCTo(msg, conn);
-			break;
-		case eDC_CHAT:
-			this->DC_Chat(msg, conn);
-			break;
-		case eDCO_OPFORCEMOVE:
-			this->DCO_OpForceMove(msg, conn);
-			break;
-		case eDCO_KICK:
-			this->DCO_Kick(msg, conn);
-			break;
-		case eDC_SEARCH:
-		case eDC_SEARCH_PAS:
-		case eDC_MSEARCH:
-		case eDC_MSEARCH_PAS:
-			this->DC_Search(msg, conn);
-			break;
+
 		case eDC_SR:
 			this->DC_SR(msg, conn);
 			break;
+
+		case eDC_SEARCH_PAS:
+		case eDC_SEARCH:
+		case eDC_MSEARCH_PAS:
+		case eDC_MSEARCH:
+			this->DC_Search(msg, conn);
+			break;
+
+		case eDC_MYINFO:
+			this->DC_MyINFO(msg, conn);
+			break;
+
+		case eDC_EXTJSON:
+			this->DC_ExtJSON(msg, conn);
+			break;
+
+		case eDC_KEY:
+			this->DC_Key(msg, conn);
+			break;
+
+		case eDC_SUPPORTS:
+			this->DC_Supports(msg, conn);
+			break;
+
+		case eDC_VALIDATENICK:
+			this->DC_ValidateNick(msg, conn);
+			break;
+
+		case eDC_VERSION:
+			this->DC_Version(msg, conn);
+			break;
+
+		case eDC_GETNICKLIST:
+			this->DC_GetNickList(msg, conn);
+			break;
+
+		case eDC_MYHUBURL:
+			this->DC_MyHubURL(msg, conn);
+			break;
+
+		case eDC_MYPASS:
+			this->DC_MyPass(msg, conn);
+			break;
+
+		case eDC_TO:
+			this->DC_To(msg, conn);
+			break;
+
+		case eDC_CHAT:
+			this->DC_Chat(msg, conn);
+			break;
+
+		case eDCB_BOTINFO:
+			this->DCB_BotINFO(msg, conn);
+			break;
+
+		case eDC_GETINFO:
+			this->DC_GetINFO(msg, conn);
+			break;
+
+		case eDCO_USERIP:
+			this->DCO_UserIP(msg, conn);
+			break;
+
+		case eDCO_KICK:
+			this->DCO_Kick(msg, conn);
+			break;
+
+		case eDCO_OPFORCEMOVE:
+			this->DCO_OpForceMove(msg, conn);
+			break;
+
+		case eDC_MCTO:
+			this->DC_MCTo(msg, conn);
+			break;
+
 		case eDC_QUIT:
 			mS->DCPublicHS(_("See you."), conn);
 			conn->CloseNice(1000, eCR_QUIT);
 			break;
-		case eDC_SUPPORTS:
-			this->DC_Supports(msg, conn);
-			break;
-		case eDC_MYHUBURL:
-			this->DC_MyHubURL(msg, conn);
-			break;
+
 		case eDCO_BAN:
 		case eDCO_TBAN:
 			this->DCO_TempBan(msg, conn);
 			break;
+
 		case eDCO_UNBAN:
 			this->DCO_UnBan(msg, conn);
 			break;
+
 		case eDCO_GETBANLIST:
 			this->DCO_GetBanList(msg, conn);
 			break;
+
 		case eDCO_WHOIP:
 			this->DCO_WhoIP(msg, conn);
 			break;
+
 		case eDCO_GETTOPIC:
 			this->DCO_GetTopic(msg, conn);
 			break;
+
 		case eDCO_SETTOPIC:
 			this->DCO_SetTopic(msg, conn);
 			break;
-		case eDCB_BOTINFO:
-			this->DCB_BotINFO(msg, conn);
-			break;
+
 		case eDCC_MYNICK:
 			this->DCC_MyNick(msg, conn);
 			break;
+
 		case eDCC_LOCK:
 			this->DCC_Lock(msg, conn);
 			break;
+
+		case eDC_IN:
+			this->DC_IN(msg, conn);
+			break;
+
 		default:
 			if (Log(1))
-				LogStream() << "Incoming untreated event" << endl;
+				LogStream() << "Incoming untreated command: " << msg->mStr << endl;
 
-			break;
+			if (msg->mStr.size())
+				mS->mProtoCount[eDC_UNKNOWN]++;
+			else
+				mS->mProtoCount[eDC_UNKNOWN + 1]++;
+
+			return 0;
 	}
 
+	mS->mProtoCount[msg->mType]++;
 	return 0;
 }
 
@@ -431,7 +474,9 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if (feature == "ExtJSON2") {
 			conn->mFeatures |= eSF_EXTJSON2;
-			pars.append("ExtJSON2 ");
+
+			if (!mS->mC.disable_extjson)
+				pars.append("ExtJSON2 ");
 		}
 	}
 
@@ -502,9 +547,9 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	string omsg;
 
 	// User limit
-	int limit = mS->mC.max_users_total;
-	int limit_cc = mS->mC.max_users[conn->mGeoZone];
-	int limit_extra = 0;
+	unsigned int limit = mS->mC.max_users_total;
+	unsigned int limit_cc = mS->mC.max_users[conn->mGeoZone];
+	unsigned int limit_extra = 0;
 
 	// Calculate user limits
 	if (conn->GetTheoricalClass() == eUC_PINGER)
@@ -1421,7 +1466,7 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_EXTJSON)) // protocol flood
 		return -1;
 
-	if (!mS->mC.disable_extjson_fwd) { // forward to users who support this, if enabled and if changed
+	if (!mS->mC.disable_extjson) { // forward to users who support this, if enabled and if changed
 		#ifndef WITHOUT_PLUGINS
 		if (mS->mCallBacks.mOnParsedMsgExtJSON.CallAll(conn, msg))
 		#endif
@@ -1516,8 +1561,16 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // todo: notify user
+	string &text = msg->ChunkString(eCH_PM_MSG);
+
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) {
+		mS->DCPrivateHS(_("You're not allowed to use private chat right now."), conn, &to);
+
+		if (mS->mC.notify_gag_chats)
+			mS->ReportUserToOpchat(conn, autosprintf(_("User tries to speak with gag in PM to %s: %s"), to.c_str(), text.c_str()));
+
 		return -4;
+	}
 
 	ostringstream os;
 
@@ -1534,8 +1587,6 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		mS->DCPublicHS(os.str(), conn);
 		return -4;
 	}
-
-	string &text = msg->ChunkString(eCH_PM_MSG);
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
@@ -1688,6 +1739,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 	if (!conn->mpUser->Can(eUR_CHAT, mS->mTime.Sec(), 0)) { // check if user is allowed to use main chat
 		mS->DCPublicHS(_("You're not allowed to use main chat right now."), conn);
+
+		if (mS->mC.notify_gag_chats)
+			mS->ReportUserToOpchat(conn, autosprintf(_("User tries to speak with gag in MC: %s"), text.c_str()));
+
 		return -4;
 	}
 
@@ -1893,9 +1948,9 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (port.empty() || (port.size() > 5))
 		return -1;
 
-	__int64 iport = StringAsLL(port);
+	unsigned int iport = StringAsLL(port);
 
-	if ((iport < 1) || (iport > 65535))
+	if (!mS->CheckPortNumber(iport))
 		return -1;
 
 	#ifndef WITHOUT_PLUGINS
@@ -2100,9 +2155,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		if (port.empty() || (port.size() > 5))
 			return -1;
 
-		__int64 iport = StringAsLL(port);
+		unsigned int iport = StringAsLL(port);
 
-		if ((iport < 1) || (iport > 65535))
+		if (!mS->CheckPortNumber(iport))
 			return -1;
 
 		string &addr = msg->ChunkString(eCH_AS_IP);
@@ -2392,7 +2447,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << StringFrom((unsigned __int64)(1024 * 1024) * minshare) << sep;
 	os << ((ConnType) ? ConnType->mTagMinSlots : 0) << sep;
 	os << mS->mC.tag_max_hubs << sep;
-	os << "Verlihub " << VERSION << sep;
+	os << HUB_VERSION_NAME << " " << HUB_VERSION_VERS << sep;
 	os << mS->mC.hub_owner << sep;
 	os << mS->mC.hub_category << sep;
 	os << mS->mC.hub_encoding;
@@ -2826,33 +2881,43 @@ bool cDCProto::CheckUserRights(cConnDC *conn, cMessageDC *msg, bool cond)
 		case eDCO_USERIP:
 			cmd = "UserIP";
 			break;
-		case eDCO_OPFORCEMOVE:
-			cmd = "OpForceMove";
-			break;
+
 		case eDCO_KICK:
 			cmd = "Kick";
 			break;
+
+		case eDCO_OPFORCEMOVE:
+			cmd = "OpForceMove";
+			break;
+
 		case eDCO_BAN:
 			cmd = "Ban";
 			break;
+
 		case eDCO_TBAN:
 			cmd = "TempBan";
 			break;
+
 		case eDCO_UNBAN:
 			cmd = "UnBan";
 			break;
+
 		case eDCO_GETBANLIST:
 			cmd = "GetBanList";
 			break;
+
 		case eDCO_WHOIP:
 			cmd = "WhoIP";
 			break;
+
 		case eDCO_GETTOPIC:
 			cmd = "GetTopic";
 			break;
+
 		case eDCO_SETTOPIC:
 			cmd = "SetTopic";
 			break;
+
 		default:
 			cmd = _("Unknown");
 			break;
@@ -2876,85 +2941,114 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 	string cmd;
 
 	switch (msg->mType) {
-		case eDC_KEY:
-			cmd = "Key";
-			break;
-		case eDC_VALIDATENICK:
-			cmd = "ValidateNick";
-			break;
-		case eDC_MYPASS:
-			cmd = "MyPass";
-			break;
-		case eDC_VERSION:
-			cmd = "Version";
-			break;
-		case eDC_MYINFO:
-			cmd = "MyINFO";
-			break;
-		case eDC_IN:
-			cmd = "IN";
-			break;
-		case eDC_EXTJSON:
-			cmd = "ExtJSON";
-			break;
-		case eDCO_USERIP:
-			cmd = "UserIP";
-			break;
-		case eDC_MCONNECTTOME:
 		case eDC_CONNECTTOME:
+		case eDC_MCONNECTTOME:
 			cmd = "ConnectToMe";
 			break;
+
 		case eDC_RCONNECTTOME:
 			cmd = "RevConnectToMe";
 			break;
-		case eDC_TO:
-			cmd = "To";
-			break;
-		case eDC_MCTO:
-			cmd = "MCTo";
-			break;
-		case eDC_CHAT:
-			cmd = _("Chat");
-			break;
-		case eDCO_OPFORCEMOVE:
-			cmd = "OpForceMove";
-			break;
-		case eDCO_KICK:
-			cmd = "Kick";
-			break;
-		case eDC_MSEARCH:
-		case eDC_MSEARCH_PAS:
-		case eDC_SEARCH:
-		case eDC_SEARCH_PAS:
-			cmd = "Search";
-			break;
+
 		case eDC_SR:
 			cmd = "SR";
 			break;
+
+		case eDC_SEARCH_PAS:
+		case eDC_SEARCH:
+		case eDC_MSEARCH_PAS:
+		case eDC_MSEARCH:
+			cmd = "Search";
+			break;
+
+		case eDC_MYINFO:
+			cmd = "MyINFO";
+			break;
+
+		case eDC_EXTJSON:
+			cmd = "ExtJSON";
+			break;
+
+		case eDC_KEY:
+			cmd = "Key";
+			break;
+
 		case eDC_SUPPORTS:
 			cmd = "Supports";
 			break;
+
+		case eDC_VALIDATENICK:
+			cmd = "ValidateNick";
+			break;
+
+		case eDC_VERSION:
+			cmd = "Version";
+			break;
+
 		case eDC_MYHUBURL:
 			cmd = "MyHubURL";
 			break;
-		case eDCO_BAN:
-			cmd = "Ban";
+
+		case eDC_MYPASS:
+			cmd = "MyPass";
 			break;
-		case eDCO_TBAN:
-			cmd = "TempBan";
+
+		case eDC_TO:
+			cmd = "To";
 			break;
-		case eDCO_UNBAN:
-			cmd = "UnBan";
+
+		case eDC_CHAT:
+			cmd = _("Chat");
 			break;
-		case eDCO_WHOIP:
-			cmd = "WhoIP";
-			break;
-		case eDCO_SETTOPIC:
-			cmd = "SetTopic";
-			break;
+
 		case eDCB_BOTINFO:
 			cmd = "BotINFO";
 			break;
+
+		case eDC_GETINFO:
+			cmd = "GetINFO";
+			break;
+
+		case eDCO_USERIP:
+			cmd = "UserIP";
+			break;
+
+		case eDCO_KICK:
+			cmd = "Kick";
+			break;
+
+		case eDCO_OPFORCEMOVE:
+			cmd = "OpForceMove";
+			break;
+
+		case eDC_MCTO:
+			cmd = "MCTo";
+			break;
+
+		case eDCO_BAN:
+			cmd = "Ban";
+			break;
+
+		case eDCO_TBAN:
+			cmd = "TempBan";
+			break;
+
+		case eDCO_UNBAN:
+			cmd = "UnBan";
+			break;
+
+		case eDCO_WHOIP:
+			cmd = "WhoIP";
+			break;
+
+		case eDCO_SETTOPIC:
+			cmd = "SetTopic";
+			break;
+
+		case eDC_IN:
+			cmd = "IN";
+			break;
+
 		default:
 			cmd = _("Unknown");
 			break;
@@ -3060,7 +3154,7 @@ int cDCProto::NickList(cConnDC *conn)
 			}
 		}
 
-		if (!mS->mC.disable_extjson_fwd && (conn->mFeatures & eSF_EXTJSON2)) { // extjson forward
+		if (!mS->mC.disable_extjson && (conn->mFeatures & eSF_EXTJSON2)) { // extjson
 			string omsg;
 
 			if (mS->CollectExtJSON(omsg, conn))

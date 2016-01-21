@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,11 +29,15 @@
 #include "i18n.h"
 
 using namespace std;
+
 namespace nVerliHub {
 	using namespace nTables;
 	using namespace nSocket;
 	using namespace nEnums;
-cDCTag::cDCTag(cServerDC *mS, cDCClient *c) : mServer(mS), client(c)
+
+cDCTag::cDCTag(cServerDC *mS, cDCClient *c):
+	mServer(mS),
+	client(c)
 {
 	mTotHubs = -1;
 	mHubsUsr = -1;
@@ -43,7 +47,8 @@ cDCTag::cDCTag(cServerDC *mS, cDCClient *c) : mServer(mS), client(c)
 	mLimit = -1;
 }
 
-cDCTag::cDCTag(cServerDC *mS) : mServer(mS)
+cDCTag::cDCTag(cServerDC *mS):
+	mServer(mS)
 {
 	mTotHubs = -1;
 	mHubsUsr = -1;
@@ -53,17 +58,16 @@ cDCTag::cDCTag(cServerDC *mS) : mServer(mS)
 	mLimit = -1;
 }
 
-cDCTag::~cDCTag() { }
+cDCTag::~cDCTag()
+{}
 
 bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 {
-	if (client && client->mBan) {
-		os << _("Your client is banned.");
+	if (client && client->mBan) { // check if client id is banned
+		os << autosprintf(_("Your client is banned from this hub: %s"), client->mName.c_str());
 		code = eTC_BANNED;
 		return false;
 	}
-
-	// not parsed or unknown tag
 
 	if ((mClientMode == eCM_SOCK5) && !mServer->mC.tag_allow_sock5) {
 		os << _("Connections through proxy server are not allowed in this hub.");
@@ -83,7 +87,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 		return false;
 	}
 
-	if (!mServer->mC.tag_allow_unknown && !client) {
+	if (!mServer->mC.tag_allow_unknown && !client) { // not parsed or unknown tag
 		os << _("Unknown clients are not allowed in this hub.");
 		code = eTC_UNKNOWN;
 		return false;
@@ -132,7 +136,9 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 	}
 
 	double ratio = 0;
-	if (mTotHubs > 0) ratio = (double)mSlots / mTotHubs;
+
+	if (mTotHubs > 0)
+		ratio = double(mSlots / mTotHubs);
 
 	if ((mServer->mC.tag_min_hs_ratio > 0) && (ratio < mServer->mC.tag_min_hs_ratio)) {
 		os << autosprintf(_("Your slots per hub ratio %.2f is too low, minimum is %.2f."), ratio, mServer->mC.tag_min_hs_ratio);
@@ -149,8 +155,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 	}
 
 	if (mLimit >= 0) {
-		// well, DCGUI bug, if (tag->mClientType == eCT_DCGUI) limit *= mSlots;
-		if ((conn_type->mTagMinLimit) > mLimit) {
+		if ((conn_type->mTagMinLimit) > mLimit) { // DCGUI bug, if (tag->mClientType == eCT_DCGUI) limit *= mSlots;
 			os << autosprintf(_("Too low upload limit for your connection type %s, minimum upload rate is %.2f."), conn_type->mIdentifier.c_str(), conn_type->mTagMinLimit);
 			code = eTC_MIN_LIMIT;
 			return false;
@@ -163,33 +168,32 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 		}
 	}
 
-	// use tag_min_version and tag_max_version for unknown client or use the version number in the matching rule
-	double minVersion = mServer->mC.tag_min_version, maxVersion = mServer->mC.tag_max_version;
+	double minVersion = mServer->mC.tag_min_version, maxVersion = mServer->mC.tag_max_version; // use tag_min_version and tag_max_version for unknown client or use the version number in the matching rule
 
 	if (client) {
 		minVersion = client->mMinVersion;
 		maxVersion = client->mMaxVersion;
 	}
 
-	if ((minVersion != -1) && (mClientVersion < minVersion)) {
+	if ((minVersion >= 0) && ((double)mClientVersion < minVersion)) {
 		os << _("Your client version is too old, please upgrade it.") << " ";
 
 		if (client)
-			os << autosprintf(_("Allowed minimum version number for %s client is: %.2f"), client->mName.c_str(), minVersion);
+			os << autosprintf(_("Minimum allowed version number for client %s is: %.4f"), client->mName.c_str(), minVersion);
 		else
-			os << autosprintf(_("Allowed minimum version number for your client is: %.2f"), minVersion);
+			os << autosprintf(_("Minimum allowed version number for your client is: %.4f"), minVersion);
 
 		code = eTC_MIN_VERSION;
 		return false;
 	}
 
-	if ((maxVersion != -1) && (mClientVersion < maxVersion)) {
+	if ((maxVersion >= 0) && ((double)mClientVersion > maxVersion)) {
 		os << _("Your client version is too recent, please downgrade it.") << " ";
 
 		if (client)
-			os << autosprintf(_("Allowed maximum version number for %s client is: %.2f"), client->mName.c_str(), maxVersion);
+			os << autosprintf(_("Maximum allowed version number for client %s is: %.4f"), client->mName.c_str(), maxVersion);
 		else
-			os << autosprintf(_("Allowed maximum version number for your client is: %.2f"), maxVersion);
+			os << autosprintf(_("Maximum allowed version number for your client is: %.4f"), maxVersion);
 
 		code = eTC_MAX_VERSION;
 		return false;
@@ -200,7 +204,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 
 ostream &operator << (ostream &os, cDCTag &tag)
 {
-	os << _("Client") << " " << (tag.client ? tag.client->mName : _("Unknown")) << " (v." << tag.mClientVersion << ")" << "\r\n";
+	os << "[::] " << _("Client") << ": " << (tag.client ? tag.client->mName : _("Unknown")) << " " << tag.mClientVersion << "\r\n";
 	os << "[::] " << _("Mode") << ": ";
 
 	if (tag.mClientMode == eCM_ACTIVE)

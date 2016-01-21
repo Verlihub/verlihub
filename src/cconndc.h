@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -140,18 +140,18 @@ namespace nVerliHub {
 
 		typedef enum
 		{
-			ePF_CHAT,
-			ePF_PRIV,
-			ePF_MCTO,
-			ePF_MYINFO,
-			ePF_IN,
-			ePF_EXTJSON,
-			ePF_SEARCH,
-			ePF_SR,
 			ePF_CTM,
 			ePF_RCTM,
+			ePF_SR,
+			ePF_SEARCH,
+			ePF_MYINFO,
+			ePF_EXTJSON,
 			ePF_NICKLIST,
+			ePF_PRIV,
+			ePF_CHAT,
 			ePF_GETINFO,
+			ePF_MCTO,
+			ePF_IN,
 			ePF_PING,
 			ePF_UNKNOWN,
 			ePF_LAST

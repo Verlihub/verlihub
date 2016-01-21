@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -147,17 +147,17 @@ bool cPlug::Plugin()
 
 bool cPlug::CheckMakeTime()
 {
-	// script don't have to be checked
-	if (IsScript())
+	if (IsScript()) // script dont need to be checked
 		return true;
 
 	mMakeTime = mOwner->GetFileTime(mPath);
 
-	if(mMakeTime && mMakeTime < mOwner->mVHTime) {
-		mLastError = _("Warning: The plugin should be recompiled because Verlihub has been recently updated.");
+	if (mMakeTime && (mMakeTime < mOwner->mVHTime)) {
+		mLastError = _("Plugin needs to be recompiled.");
 		SaveMe();
 		return false;
 	}
+
 	return true;
 }
 

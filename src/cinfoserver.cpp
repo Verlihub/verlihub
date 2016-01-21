@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -21,7 +21,6 @@
 #include "cinfoserver.h"
 #include "stringutils.h"
 #include "cserverdc.h"
-#include "curr_date_time.h"
 #if defined HAVE_LINUX
 #include <unistd.h>
 #include <sys/utsname.h>
@@ -38,6 +37,7 @@ namespace nVerliHub {
 	//using namespace std;
 	using namespace nUtils;
 	using namespace nSocket;
+	using namespace nEnums;
 
 cInfoServer::cInfoServer()
 {
@@ -49,7 +49,7 @@ void cInfoServer::PortInfo(ostream &os)
 	cUserCollection::iterator user_iter;
 	tPortInfoList::iterator port_iter;
 	cConnDC *conn;
-	int conn_port;
+	unsigned int conn_port;
 	bool add_port;
 
 	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
@@ -76,8 +76,7 @@ void cInfoServer::PortInfo(ostream &os)
 		}
 	}
 
-	//std::sort(mPortInfoList.begin(), mPortInfoList.end(), this->PortInfoSort); // todo: not compiling
-	os << _("Port information") << ":\r\n\r\n";
+	os << _("Hub ports information") << ":\r\n\r\n";
 
 	for (port_iter = mPortInfoList.begin(); port_iter != mPortInfoList.end(); ++port_iter) {
 		if (*port_iter) {
@@ -88,6 +87,116 @@ void cInfoServer::PortInfo(ostream &os)
 	}
 
 	mPortInfoList.clear();
+}
+
+void cInfoServer::HubURLInfo(ostream &os)
+{
+	cUserCollection::iterator user_iter;
+	tHubURLInfoList::iterator url_iter;
+	cConnDC *conn;
+	string conn_url;
+	bool add_url;
+	unsigned int no_url = 0;
+
+	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
+		conn = ((cUser*)(*user_iter))->mxConn;
+
+		if (conn) {
+			if (conn->mHubURL.size()) {
+				conn_url = conn->mHubURL;
+				add_url = true;
+
+				for (url_iter = mHubURLInfoList.begin(); url_iter != mHubURLInfoList.end(); ++url_iter) {
+					if ((*url_iter) && ((*url_iter)->mURL == conn_url)) {
+						(*url_iter)->mCount++;
+						add_url = false;
+						break;
+					}
+				}
+
+				if (add_url) {
+					sHubURLInfoItem *item = new sHubURLInfoItem;
+					item->mURL = conn_url;
+					item->mCount = 1;
+					mHubURLInfoList.push_back(item);
+				}
+			} else {
+				no_url++;
+			}
+		}
+	}
+
+	// todo: sort same as port information
+	os << _("Hub URL information") << ":\r\n\r\n";
+
+	for (url_iter = mHubURLInfoList.begin(); url_iter != mHubURLInfoList.end(); ++url_iter) {
+		if (*url_iter) {
+			os << " [*] " << (*url_iter)->mURL << " : " << (*url_iter)->mCount << "\r\n";
+			delete (*url_iter);
+			(*url_iter) = NULL;
+		}
+	}
+
+	if (no_url) {
+		if (mHubURLInfoList.size())
+			os << "\r\n";
+
+		os << " [*] " << autosprintf(_("Missing hub URL: %d"), no_url) << "\r\n";
+	}
+
+	mHubURLInfoList.clear();
+}
+
+void cInfoServer::ProtocolInfo(ostream &os)
+{
+	os << _("Protocol information") << ":\r\n\r\n";
+	os << " [*] &#36;Search: " << mServer->mProtoCount[nEnums::eDC_SEARCH] << "\r\n";
+	os << " [*] &#36;Search Hub: " << mServer->mProtoCount[nEnums::eDC_SEARCH_PAS] << "\r\n";
+	os << " [*] &#36;MultiSearch: " << mServer->mProtoCount[nEnums::eDC_MSEARCH] << "\r\n";
+	os << " [*] &#36;MultiSearch Hub: " << mServer->mProtoCount[nEnums::eDC_MSEARCH_PAS] << "\r\n";
+	os << " [*] &#36;SR: " << mServer->mProtoCount[nEnums::eDC_SR] << "\r\n";
+	os << " [*] &#36;ConnectToMe: " << mServer->mProtoCount[nEnums::eDC_CONNECTTOME] << "\r\n";
+	os << " [*] &#36;RevConnectToMe: " << mServer->mProtoCount[nEnums::eDC_RCONNECTTOME] << "\r\n";
+	os << " [*] &#36;MultiConnectToMe: " << mServer->mProtoCount[nEnums::eDC_MCONNECTTOME] << "\r\n";
+	os << " [*] &#36;Key: " << mServer->mProtoCount[nEnums::eDC_KEY] << "\r\n";
+	os << " [*] &#36;Supports: " << mServer->mProtoCount[nEnums::eDC_SUPPORTS] << "\r\n";
+	os << " [*] &#36;ValidateNick: " << mServer->mProtoCount[nEnums::eDC_VALIDATENICK] << "\r\n";
+	os << " [*] &#36;MyPass: " << mServer->mProtoCount[nEnums::eDC_MYPASS] << "\r\n";
+	os << " [*] &#36;Version: " << mServer->mProtoCount[nEnums::eDC_VERSION] << "\r\n";
+	os << " [*] &#36;MyHubURL: " << mServer->mProtoCount[nEnums::eDC_MYHUBURL] << "\r\n";
+	os << " [*] &#36;GetNickList: " << mServer->mProtoCount[nEnums::eDC_GETNICKLIST] << "\r\n";
+	os << " [*] &#36;MyINFO: " << mServer->mProtoCount[nEnums::eDC_MYINFO] << "\r\n";
+	os << " [*] &#36;ExtJSON: " << mServer->mProtoCount[nEnums::eDC_EXTJSON] << "\r\n";
+	os << " [*] &#36;IN: " << mServer->mProtoCount[nEnums::eDC_IN] << "\r\n";
+	os << " [*] &#36;UserIP: " << mServer->mProtoCount[nEnums::eDCO_USERIP] << "\r\n";
+	os << " [*] &#36;GetINFO: " << mServer->mProtoCount[nEnums::eDC_GETINFO] << "\r\n";
+	os << " [*] &#36;To: " << mServer->mProtoCount[nEnums::eDC_TO] << "\r\n";
+	os << " [*] &#36;MCTo: " << mServer->mProtoCount[nEnums::eDC_MCTO] << "\r\n";
+	os << " [*] " << autosprintf(_("Chat: %d"), mServer->mProtoCount[nEnums::eDC_CHAT]) << "\r\n";
+	os << " [*] &#36;OpForceMove: " << mServer->mProtoCount[nEnums::eDCO_OPFORCEMOVE] << "\r\n";
+	os << " [*] &#36;Kick: " << mServer->mProtoCount[nEnums::eDCO_KICK] << "\r\n";
+	os << " [*] &#36;Ban: " << mServer->mProtoCount[nEnums::eDCO_BAN] << "\r\n";
+	os << " [*] &#36;TempBan: " << mServer->mProtoCount[nEnums::eDCO_TBAN] << "\r\n";
+	os << " [*] &#36;UnBan: " << mServer->mProtoCount[nEnums::eDCO_UNBAN] << "\r\n";
+	os << " [*] &#36;GetBanList: " << mServer->mProtoCount[nEnums::eDCO_GETBANLIST] << "\r\n";
+	os << " [*] &#36;WhoIP: " << mServer->mProtoCount[nEnums::eDCO_WHOIP] << "\r\n";
+	os << " [*] &#36;SetTopic: " << mServer->mProtoCount[nEnums::eDCO_SETTOPIC] << "\r\n";
+	os << " [*] &#36;GetTopic: " << mServer->mProtoCount[nEnums::eDCO_GETTOPIC] << "\r\n";
+	os << " [*] &#36;BotINFO: " << mServer->mProtoCount[nEnums::eDCB_BOTINFO] << "\r\n";
+	os << " [*] &#36;Quit: " << mServer->mProtoCount[nEnums::eDC_QUIT] << "\r\n";
+	os << " [*] &#36;MyNick: " << mServer->mProtoCount[nEnums::eDCC_MYNICK] << "\r\n";
+	os << " [*] &#36;Lock: " << mServer->mProtoCount[nEnums::eDCC_LOCK] << "\r\n";
+	os << " [*] " << autosprintf(_("Ping: %d"), mServer->mProtoCount[nEnums::eDC_UNKNOWN + 1]) << "\r\n";
+	os << " [*] " << autosprintf(_("Unknown: %d"), mServer->mProtoCount[nEnums::eDC_UNKNOWN]) << "\r\n";
+	os << "\r\n";
+
+	double total_up = 0.;
+
+	for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
+		total_up += mServer->mUploadZone[zone].GetMean(mServer->mTime);
+
+	os << " [*] " << autosprintf(_("Total download: %s [%s]"), convertByte(mServer->mProtoTotal[0]).c_str(), convertByte(mServer->mDownloadZone.GetMean(mServer->mTime), true).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Total upload: %s [%s]"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
 }
 
 void cInfoServer::SystemInfo(ostream &os)
@@ -138,7 +247,7 @@ void cInfoServer::Output(ostream &os, int Class)
 	iterator it;
 	cTime theTime;
 	os << _("Hub information") << ":";
-	os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Version") << VERSION << " @ " << __CURR_DATE_TIME__ << "\r\n";
+	os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Version") << HUB_VERSION_VERS << "\r\n";
 	theTime = mServer->mTime;
 	theTime -= mServer->mStartTime;
 	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Uptime") << theTime.AsPeriod().AsString().c_str() << "\r\n";

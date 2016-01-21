@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <execinfo.h>
 #include <cxxabi.h>
-#include "curr_date_time.h"
 #include "cthreadwork.h"
 #include "stringutils.h"
 #include "cconntypes.h"
@@ -46,8 +45,6 @@
 #include "ctriggers.h"
 #include "i18n.h"
 
-#define HUB_VERSION_CLASS __CURR_DATE_TIME__
-#define HUB_VERSION_NAME "Verlihub"
 #define PADDING 25
 
 namespace nVerliHub {
@@ -130,6 +127,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	for (i = 0; i <= USER_ZONES; i++)
 		mUploadZone[i].SetPeriod(60.);
 
+	mDownloadZone.SetPeriod(60.);
 	SetClassName("cServerDC");
 
 	mR->CreateTable();
@@ -199,6 +197,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 			LogStream() << "Plugin load error" << endl;
 	}
 
+	memset(mProtoCount, 0, sizeof(mProtoCount));
+	memset(mProtoTotal, 0, sizeof(mProtoTotal));
 	mUsersPeak = 0;
 
 	// protocol flood from all
@@ -300,12 +300,12 @@ tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 
 	if (!conn->mpUser || !conn->mpUser->mInList) {
 		switch (msg) {
+			case eDC_MYINFO:
 			case eDC_KEY:
 			case eDC_VALIDATENICK:
-			case eDC_MYPASS:
 			case eDC_VERSION:
 			case eDC_GETNICKLIST:
-			case eDC_MYINFO:
+			case eDC_MYPASS:
 			case eDC_UNKNOWN:
 				break;
 			default:
@@ -316,9 +316,9 @@ tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 		switch (msg) {
 			case eDC_KEY:
 			case eDC_VALIDATENICK:
-			case eDC_MYPASS:
 			case eDC_VERSION:
-				result=eMA_HANGUP;
+			case eDC_MYPASS:
+				result = eMA_HANGUP;
 				break;
 			default:
 				break;
@@ -860,7 +860,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	omsg += " Pk=";
 	omsg += HUB_VERSION_NAME;
 	omsg += ' ';
-	omsg += VERSION;
+	omsg += HUB_VERSION_VERS;
 
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
@@ -906,8 +906,12 @@ string * cServerDC::FactoryString(cAsyncConn *conn)
 
 void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 {
-	if(conn->Log(4))
-		conn->LogStream() << "IN: " << (*str) << "|" << endl;
+	size_t len = (*str).size() + 1;
+	this->mDownloadZone.Insert(this->mTime, len);
+	this->mProtoTotal[0] += len;
+
+	if (conn->Log(4))
+		conn->LogStream() << "IN [" << len << "]: " << (*str) << "|" << endl;
 
 	conn->mpMsgParser->Parse();
 	conn->mxProtocol->TreatMsg(conn->mpMsgParser, conn);
@@ -1595,6 +1599,9 @@ int cServerDC::OnTimer(cTime &now)
 		if (mC.use_reglist_cache)
 			mR->UpdateCache();
 
+		if (mC.use_penlist_cache)
+			mPenList->UpdateCache();
+
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
 	}
@@ -1703,7 +1710,7 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 	return u;
 }
 
-int cServerDC::DoRegisterInHublist(string host, int port, string reply)
+int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 {
 	unsigned __int64 min_share = mC.min_share; // prepare
 
@@ -1800,7 +1807,7 @@ int cServerDC::DoRegisterInHublist(string host, int port, string reply)
 	return 1;
 }
 
-int cServerDC::RegisterInHublist(string host, int port, cConnDC *conn)
+int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 {
 	if (host.size() < 3) {
 		if (conn)
@@ -1819,13 +1826,13 @@ int cServerDC::RegisterInHublist(string host, int port, cConnDC *conn)
 	string reply;
 
 	if (conn) {
-		DCPublicHS(_("Registering in hublists, please wait..."), conn);
+		DCPublicHS(_("Registering in hublists, please wait."), conn);
 
 		if (conn->mpUser)
 			reply = conn->mpUser->mNick;
 	}
 
-	cThreadWork *work = new tThreadWork3T<cServerDC, string, int, string>(host, port, reply, this, &cServerDC::DoRegisterInHublist);
+	cThreadWork *work = new tThreadWork3T<cServerDC, string, unsigned int, string>(host, port, reply, this, &cServerDC::DoRegisterInHublist);
 
 	if (mHublistReg.AddWork(work))
 		return 1;
@@ -1836,33 +1843,17 @@ int cServerDC::RegisterInHublist(string host, int port, cConnDC *conn)
 	}
 }
 
-int cServerDC::WhoCC(string CC, string &dest, const string&separator)
+unsigned int cServerDC::WhoCC(const string &cc, string &dest, const string &sep)
 {
 	cUserCollection::iterator i;
-	int cnt=0;
-	cConnDC *conn;
-	for(i=mUserList.begin(); i != mUserList.end(); ++i) {
-		conn = ((cUser*)(*i))->mxConn;
-		if(conn && conn->mCC == CC) {
-			dest += separator;
-			dest += (*i)->mNick;
-			cnt++;
-		}
-	}
-	return cnt;
-}
-
-int cServerDC::WhoCity(string city, string &dest, const string &separator)
-{
-	cUserCollection::iterator i;
-	int cnt = 0;
+	unsigned int cnt = 0;
 	cConnDC *conn;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
 		conn = ((cUser*)(*i))->mxConn;
 
-		if (conn && conn->mCity == city) {
-			dest += separator;
+		if (conn && (conn->mCC == cc)) {
+			dest += sep;
 			dest += (*i)->mNick;
 			cnt++;
 		}
@@ -1871,21 +1862,81 @@ int cServerDC::WhoCity(string city, string &dest, const string &separator)
 	return cnt;
 }
 
-int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string&separator, bool exact)
+unsigned int cServerDC::WhoCity(const string &city, string &dest, const string &sep)
 {
 	cUserCollection::iterator i;
-	int cnt=0;
+	unsigned int cnt = 0;
 	cConnDC *conn;
-	for(i=mUserList.begin(); i!= mUserList.end(); ++i) {
+
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
 		conn = ((cUser*)(*i))->mxConn;
-		if(conn) {
+
+		if (conn && (conn->mCity == city)) {
+			dest += sep;
+			dest += (*i)->mNick;
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+unsigned int cServerDC::WhoHubPort(unsigned int port, string &dest, const string &sep)
+{
+	cUserCollection::iterator i;
+	unsigned int cnt = 0;
+	cConnDC *conn;
+
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && (conn->GetServPort() == port)) {
+			dest += sep;
+			dest += (*i)->mNick;
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+unsigned int cServerDC::WhoHubURL(const string &url, string &dest, const string &sep)
+{
+	cUserCollection::iterator i;
+	unsigned int cnt = 0;
+	cConnDC *conn;
+
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && (conn->mHubURL.find(url) != string::npos)) {
+			dest += sep;
+			dest += (*i)->mNick;
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact)
+{
+	cUserCollection::iterator i;
+	unsigned int cnt = 0;
+	cConnDC *conn;
+
+	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn) {
 			unsigned long num = cBanList::Ip2Num(conn->AddrIP());
-			if(exact && (ip_min == num)) {
-				dest += separator;
+
+			if (exact && (ip_min == num)) {
+				dest += sep;
 				dest += (*i)->mNick;
 				cnt++;
 			} else if ((ip_min <= num) && (ip_max >= num)) {
-				dest += separator;
+				dest += sep;
 				dest += (*i)->mNick;
 				dest += " (";
 				dest += conn->AddrIP();
@@ -1894,10 +1945,11 @@ int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, c
 			}
 		}
 	}
+
 	return cnt;
 }
 
-unsigned int cServerDC::CntConnIP(string ip)
+unsigned int cServerDC::CntConnIP(const string &ip)
 {
 	cUserCollection::iterator i;
 	unsigned int cnt = 0;
@@ -2159,14 +2211,14 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 				else if (mSysLoad == eSL_NORMAL) mStatus = _("Normal mode");
 			}
 
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s @ %s"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Uptime: %s"), runtime.AsPeriod().AsString().c_str()) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Users: %d"), mUserCountTot) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Share: %s"), convertByte(mTotalShare, false).c_str()) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Status: %s"), mStatus.c_str()) << "|";
 			if (!mC.hub_version_special.empty()) os << "<" << mC.hub_security << "> " << mC.hub_version_special << "|";
 		} else
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s @ %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"), HUB_VERSION_NAME, VERSION, HUB_VERSION_CLASS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot, convertByte(mTotalShare, false).c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"), HUB_VERSION_NAME, HUB_VERSION_VERS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot, convertByte(mTotalShare, false).c_str()) << "|";
 
 		string res = os.str();
 		conn->Send(res, false);
@@ -2413,7 +2465,7 @@ void cServerDC::DoStackTrace()
 	ostringstream http_req;
 	http_req << "POST /vhcs.php HTTP/1.1\n";
 	http_req << "Host: crash.verlihub.net\n";
-	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << VERSION << '/' << HUB_VERSION_CLASS << "\n";
+	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "\n";
 	http_req << "Content-Type: text/plain\n";
 	http_req << "Content-Length: " << bt.str().size() << "\n";
 	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\n"; // remove new lines, they will break our request
@@ -2519,8 +2571,12 @@ void cServerDC::Reload()
 	mCo->mTriggers->ReloadAll();
 	mCo->mRedirects->ReloadAll();
 	mCo->mDCClients->ReloadAll();
+
 	if (mC.use_reglist_cache)
 		mR->UpdateCache();
+
+	if (mC.use_penlist_cache)
+		mPenList->UpdateCache();
 }
 
 	}; // namespace nServer

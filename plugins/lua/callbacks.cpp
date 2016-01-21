@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -2300,6 +2300,22 @@ int _GetUpTime(lua_State *L)
 	else
 		lua_pushnumber(L, upTime.MiliSec());
 
+	return 2;
+}
+
+int _GetServFreq(lua_State *L)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	ostringstream freq;
+	freq << serv->mFrequency.GetMean(serv->mTime);
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, (char*)freq.str().c_str());
 	return 2;
 }
 

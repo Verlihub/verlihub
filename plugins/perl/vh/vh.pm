@@ -1,3 +1,21 @@
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+#
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+
 package vh;
 
 use 5.008;
@@ -289,16 +307,26 @@ See PerlScript plugin documentation and demo scripts for more information.
 =head1 AUTHORS
 
 Daniel Muller E<lt>dan at verliba dot czE<gt>
-
-Shurik E<lt>shurik at sbin dot ruE<gt>
+Verlihub Team E<lt>info at verlihub dot netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004 by Daniel Muller
+Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
-Copyright 2011-2013 by Shurik
+Verlihub is free software; You can redistribute it
+and modify it under the terms of the GNU General
+Public License as published by the Free Software
+Foundation, either version 3 of the license, or at
+your option any later version.
 
-This library is free software; you can redistribute it and/or modify
-it under the terms of GNU General Public License version 2 or later. 
+Verlihub is distributed in the hope that it will be
+useful, but without any warranty, without even the
+implied warranty of merchantability or fitness for
+a particular purpose. See the GNU General Public
+License for more details.
+
+Please see http://www.gnu.org/licenses/ for a copy
+of the GNU General Public License.
 
 =cut

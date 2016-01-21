@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -28,7 +28,6 @@ extern "C"
 #include "cconsole.h"
 #include "cpilua.h"
 #include "cluainterpreter.h"
-#include "curr_date_time.h"
 #include "src/stringutils.h"
 #include "src/i18n.h"
 #include <dirent.h>
@@ -105,7 +104,7 @@ bool cConsole::cfInfoLuaScript::operator()()
 	if (GetPI()->Size() > 0)
 		size = lua_gc(GetPI()->mLua[0]->mL, LUA_GCCOUNT, 0);
 
-	(*mOS) << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Version date") << __CURR_DATE_TIME__ << "\r\n";
+	(*mOS) << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub version") << HUB_VERSION_VERS << "\r\n";
 	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Loaded scripts") << GetPI()->Size() << "\r\n";
 	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Memory used") << convertByte(size * 1024, false).c_str();
 	return true;

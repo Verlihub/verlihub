@@ -1,20 +1,22 @@
 #!/bin/bash
+
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
-#    Original author: Diederik van der Boor ("vdboor" --at-- "codingdomain.com")
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
 #
-#   Emulation script of GNU ./configure to make compiling of KDE 4 software more standard.
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
 #
-#   This program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
-#
-#   Note for packagers:
-#     this script is only written to provide a more user friendly
-#     interaction between the command line and the cmake invocation.
-#     If you are familiar with CMake, you may call it directly too.
-#
-# ------------------------------
+#	Please see http://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
 
 DEFAULT_PREFIX="/usr/local"
 PREFIX=$DEFAULT_PREFIX

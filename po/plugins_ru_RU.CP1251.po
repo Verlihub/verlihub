@@ -1,6 +1,6 @@
 # 
 # Translators:
-# Alexander Zenkov <webmaster@feardc.net>, 2014-2015
+# Alexander Zenkov <webmaster@feardc.net>, 2014-2016
 # kosterinaleksey <kosterinaleksey@gmail.com>, 2012
 # MaxFox <maxfox@inbox.ru>, 2014
 # Stefano <netcelli@gmail.com>, 2011
@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-29 03:19+0100\n"
-"PO-Revision-Date: 2015-10-22 13:28+0000\n"
+"POT-Creation-Date: 2016-01-20 19:11+0100\n"
+"PO-Revision-Date: 2016-01-12 17:51+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/feardc/verlihub-100/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
@@ -192,125 +192,125 @@ msgstr "Ваш ник должен соответствовать %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Ваш тип соединения должен соответствовать %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "У вас нет прав для выполнения этого."
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
 msgstr "Версия Lua"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
 msgstr "Версия библиотеки Lua"
 
-#: ../plugins/lua/cconsole.cpp:96
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
 msgstr "Авторские права"
 
-#: ../plugins/lua/cconsole.cpp:97
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
 msgstr "Авторы"
 
-#: ../plugins/lua/cconsole.cpp:108
-msgid "Version date"
-msgstr "Дата версии"
+#: ../plugins/lua/cconsole.cpp:107
+msgid "Hub version"
+msgstr "Версия хаба"
 
-#: ../plugins/lua/cconsole.cpp:109
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Loaded scripts"
 msgstr "Загруженные скрипты"
 
-#: ../plugins/lua/cconsole.cpp:110
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Memory used"
 msgstr "Использование памяти"
 
-#: ../plugins/lua/cconsole.cpp:116
+#: ../plugins/lua/cconsole.cpp:115
 msgid "Loaded Lua scripts"
 msgstr "Загруженные Lua скрипты"
 
-#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "ID"
 
-#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Скрипт"
 
-#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
+#: ../plugins/lua/cconsole.cpp:132 ../plugins/lua/cconsole.cpp:213
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Ошибка при загрузке каталога: %s"
 
-#: ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:136
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Lua скрипты найденные в: %s"
 
-#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
+#: ../plugins/lua/cconsole.cpp:180 ../plugins/lua/cconsole.cpp:292
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Скрипт остановлен: %s"
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:188 ../plugins/lua/cconsole.cpp:302
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Скрипт не остановлен потому что он не загружен: #%d"
 
-#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
+#: ../plugins/lua/cconsole.cpp:190 ../plugins/lua/cconsole.cpp:304
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Скрипт не остановлен потому что он не загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:244 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Скрипт уже загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
+#: ../plugins/lua/cconsole.cpp:252 ../plugins/lua/cconsole.cpp:310
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Не удалось создать новый интерпретатор Lua."
 
-#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
+#: ../plugins/lua/cconsole.cpp:257 ../plugins/lua/cconsole.cpp:315
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Скрипт успешно загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:262 ../plugins/lua/cconsole.cpp:320
 #: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Скрипт не найден или не может быть загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:338 ../plugins/lua/cconsole.cpp:358
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr "Изменена конфигурация %s.%s с '%s' на '%s'."
 
-#: ../plugins/lua/cconsole.cpp:341
+#: ../plugins/lua/cconsole.cpp:340
 #, c-format
 msgid "Current log level: %d"
 msgstr "Текущий уровень логов: %d"
 
-#: ../plugins/lua/cconsole.cpp:361
+#: ../plugins/lua/cconsole.cpp:360
 #, c-format
 msgid "Current error class: %d"
 msgstr "Данный класс для ошибок: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:170
+#: ../plugins/lua/cluainterpreter.cpp:173
 msgid "Lua error"
 msgstr "Ошибка Lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:176
+#: ../plugins/lua/cluainterpreter.cpp:179
 msgid "Unknown error"
 msgstr "Неизвестная ошибка"
 
@@ -402,16 +402,19 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "Скрипт %s не остановлен потому что он не запущен."
 
 #: ../plugins/plugman/cconsole.cpp:43
-msgid "Plugman version"
-msgstr "Версия менеджера плагинов"
+#, c-format
+msgid "%s version"
+msgstr "Версия %s"
 
 #: ../plugins/plugman/cconsole.cpp:44
-msgid "Verlihub executable"
-msgstr "Исполняемый файл Verlihub"
+#, c-format
+msgid "%s executable"
+msgstr "Исполняемый файл %s"
 
 #: ../plugins/plugman/cconsole.cpp:45
-msgid "Verlihub build time"
-msgstr "Время сборки Verlihub"
+#, c-format
+msgid "%s build time"
+msgstr "Время сборки %s"
 
 #: ../plugins/plugman/cconsole.cpp:147
 msgid ""
@@ -464,11 +467,9 @@ msgstr "Скрипт загружен."
 msgid "Error loading script."
 msgstr "Ошибка загрузки скрипта."
 
-#: ../plugins/plugman/cplugs.cpp:157
-msgid ""
-"Warning: The plugin should be recompiled because Verlihub has been recently "
-"updated."
-msgstr "Внимание: Плагин следует перекомпилировать, потом что Verlihub был недавно обновлен."
+#: ../plugins/plugman/cplugs.cpp:156
+msgid "Plugin needs to be recompiled."
+msgstr "Плагин требует рекомпиляции."
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"

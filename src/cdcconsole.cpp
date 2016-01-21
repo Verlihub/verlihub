@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -35,7 +35,6 @@
 #include "ccommand.h"
 #include "ctriggers.h"
 #include "ccustomredirects.h"
-#include "curr_date_time.h"
 #include "config.h"
 #include "cdcclients.h"
 #include "i18n.h"
@@ -61,15 +60,15 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdr(this),
 	mUserCmdr(this),
  	mCmdBan(int(eCM_BAN),".(del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)( (.*)$)?", &mFunBan),
-	mCmdGag(int(eCM_GAG),".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo) ", "(\\S+)( (\\d+\\w))?", &mFunGag),
+	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
 	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+) (.*)", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
 	mCmdRegUsr(int(eCM_REG),".r(eg)?(n(ew)?(user)?|del(ete)?|pass(wd)?|(en|dis)able|(set)?class|(protect|hidekick)(class)?|set|=|info|list|lst) ", "(\\S+)( (((\\S+) )?(.*)))?", &mFunRegUsr),
 	mCmdRaw(int(eCM_RAW),".proto(\\S+)_(\\S+) ","(.*)", &mFunRaw),
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
-	mCmdWho(int(eCM_WHO),".w(ho)?(\\S+) ","(.*)", &mFunWho),
+	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK),".(kick|drop) ","(\\S+)( (.*)$)?", &mFunKick, eUR_KICK ),
-	mCmdInfo(int(eCM_INFO),".(hub|server|port)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO), ".(hub|server|port|url|huburl|prot|proto|protocol)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG),".plug(in|out|list|reg|reload) ","(\\S+)( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
@@ -622,7 +621,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 	string omsg;
 
-	os << "Verlihub " << VERSION << " @ " << __CURR_DATE_TIME__ << "\r\n";
+	os << HUB_VERSION_NAME << " " << HUB_VERSION_VERS << "\r\n";
 	os << " == " << toUpper(_("Authors")) << " ==\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
@@ -634,7 +633,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
 	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n";
 	os << " == " << toUpper(_("Contributors")) << " ==\r\n";
-	os << "\tIntruder, Frog, Pavel Pimenov" << "\r\n";
+	os << "\tIntruder, Frog" << "\r\n";
 	os << " == " << toUpper(_("Credits")) << " ==\r\n";
 	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hub software." << "\r\n";
 	os << " == " << toUpper(_("More")) << " ==\r\n";
@@ -1122,8 +1121,8 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdReload(istringstream &cmd_line, cConnDC *conn)
 {
-	mOwner->DCPublicHS(_("Reloading triggers, custom redirects, configuration and registration list cache.") ,conn);
 	mOwner->Reload();
+	mOwner->DCPublicHS(_("Done reloading all lists."), conn);
 	return 1;
 }
 
@@ -1340,10 +1339,12 @@ bool cDCConsole::cfClean::operator()()
 			break;
 		case CLEAN_TRIGHTS:
 			mS->mPenList->TruncateTable();
-			(*mOS) << _("Temporary right list has been cleaned.");
+			mS->mPenList->ReloadCache();
+
+			(*mOS) << _("Temporary rights list has been cleaned.");
 			break;
 		default:
-			(*mOS) << _("This command is not implemented, available commands") << ":\r\n";
+			(*mOS) << _("This command is not implemented.");
 			return false;
 	}
 
@@ -1578,6 +1579,9 @@ bool cDCConsole::cfBan::operator()()
 
 bool cDCConsole::cfInfo::operator()()
 {
+	if (!mConn || !mConn->mpUser)
+		return false;
+
 	if (mConn->mpUser->mClass < eUC_OPERATOR) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
@@ -1586,19 +1590,25 @@ bool cDCConsole::cfInfo::operator()()
 	enum {
 		eINFO_HUB,
 		eINFO_SERVER,
-		eINFO_PORT
+		eINFO_PORT,
+		eINFO_HUBURL,
+		eINFO_PROTOCOL
 	};
 
 	static const char *infonames[] = {
 		"hub",
 		"server",
-		"port"
+		"port",
+		"url", "huburl",
+		"prot", "proto", "protocol"
 	};
 
 	static const int infoids[] = {
 		eINFO_HUB,
 		eINFO_SERVER,
-		eINFO_PORT
+		eINFO_PORT,
+		eINFO_HUBURL, eINFO_HUBURL,
+		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL
 	};
 
 	string tmp;
@@ -1612,6 +1622,12 @@ bool cDCConsole::cfInfo::operator()()
 		case eINFO_PORT:
 			mInfoServer.PortInfo(*mOS);
 			break;
+		case eINFO_HUBURL:
+			mInfoServer.HubURLInfo(*mOS);
+			break;
+		case eINFO_PROTOCOL:
+			mInfoServer.ProtocolInfo(*mOS);
+			break;
 		case eINFO_SERVER:
 			mInfoServer.SystemInfo(*mOS);
 			break;
@@ -1619,7 +1635,7 @@ bool cDCConsole::cfInfo::operator()()
 			mInfoServer.Output(*mOS, mConn->mpUser->mClass);
 			break;
 		default:
-			(*mOS) << _("This command is not implemented, available commands are: hubinfo serverinfo portinfo");
+			(*mOS) << _("This command is not implemented.");
 			return false;
 	}
 
@@ -1755,146 +1771,277 @@ bool cDCConsole::cfSetVar::operator()()
 	struct rlimit userLimit;
 
 	if (!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total) // get maximum file descriptor number
-		(*mOS) << "\r\n" << autosprintf(_("Warning: Verlihub allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), mS->mC.max_users_total, (int)userLimit.rlim_cur);
+		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, (int)userLimit.rlim_cur);
 
 	return true;
 }
 
 bool cDCConsole::cfGag::operator()()
 {
-	enum {eAC_GAG, eAC_NOPM, eAC_NOCHATS, eAC_NODL, eAC_NOSEARCH, eAC_KVIP, eAC_NOSHARE, eAC_CANREG, eAC_OPCHAT, eAC_NOINFO};
-	static const char *actionnames[] = {"gag", "nochat", "nopm", "nochats", "noctm", "nodl", "nosearch", "kvip", "maykick", "noshare", "mayreg", "mayopchat", "noinfo", "mayinfo"};
-	static const int actionids[] = {eAC_GAG, eAC_GAG, eAC_NOPM, eAC_NOCHATS, eAC_NODL, eAC_NODL, eAC_NOSEARCH, eAC_KVIP, eAC_KVIP, eAC_NOSHARE, eAC_CANREG, eAC_OPCHAT, eAC_NOINFO, eAC_NOINFO};
-	string cmd;
-	mIdRex->Extract(2, mIdStr, cmd);
-	int Action = this->StringToIntFromList(cmd, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
-	if (Action < 0) return false;
+	if (!mConn || !mConn->mpUser)
+		return false;
+
+	enum {
+		eAC_GAG,
+		eAC_NOPM,
+		eAC_NOCHATS,
+		eAC_NODL,
+		eAC_NOSEARCH,
+		eAC_KVIP,
+		eAC_NOSHARE,
+		eAC_CANREG,
+		eAC_OPCHAT,
+		eAC_NOINFO,
+		eAC_LIST
+	};
+
+	static const char *actionnames[] = {
+		"gag", "nochat",
+		"nopm",
+		"nochats",
+		"noctm", "nodl",
+		"nosearch",
+		"kvip", "maykick",
+		"noshare",
+		"mayreg",
+		"mayopchat",
+		"noinfo", "mayinfo",
+		"temprights"
+	};
+
+	static const int actionids[] = {
+		eAC_GAG, eAC_GAG,
+		eAC_NOPM,
+		eAC_NOCHATS,
+		eAC_NODL, eAC_NODL,
+		eAC_NOSEARCH,
+		eAC_KVIP, eAC_KVIP,
+		eAC_NOSHARE,
+		eAC_CANREG,
+		eAC_OPCHAT,
+		eAC_NOINFO, eAC_NOINFO,
+		eAC_LIST
+	};
+
+	string temp;
+	mIdRex->Extract(2, mIdStr, temp);
+	int Action = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+
+	if (Action < 0)
+		return false;
 
 	if (mConn->mpUser->mClass < eUC_OPERATOR) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
+	if (Action == eAC_LIST) {
+		ostringstream os;
+		mS->mPenList->ListAll(os);
+		mS->DCPrivateHS(os.str(), mConn);
+		return true;
+	}
+
+	if (!mParRex->PartFound(1)) {
+		(*mOS) << _("Missing command parameters.");
+		return false;
+	}
+
+	string nick;
+	mParRex->Extract(1, mParStr, nick);
+
 	if (Action == eAC_NOINFO) {
-		string nick;
-		mParRex->Extract(1, mParStr, nick);
 		cUser *user = mS->mUserList.GetUserByNick(nick);
 
 		if (user && user->mxConn) {
-			user->DisplayRightsInfo(*mOS, true);
+			user->DisplayRightsInfo((*mOS), true);
 			return true;
 		} else {
-			(*mOS) << autosprintf(_("%s is not in list."), nick.c_str());
+			(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
 			return false;
 		}
 	}
 
-	string nick, howlong;
 	time_t period = 24 * 3600 * 7;
 	time_t Now = 1;
-	const bool isUn = mIdRex->PartFound(1);
-	mParRex->Extract(1, mParStr, nick);
+	bool isUn = mIdRex->PartFound(1);
 
 	if (mParRex->PartFound(3)) {
-		mParRex->Extract(3, mParStr, howlong);
-		period = mS->Str2Period(howlong, *mOS);
-		if (!period) return false;
+		mParRex->Extract(3, mParStr, temp);
+		period = mS->Str2Period(temp, (*mOS));
+
+		if (!period)
+			return false;
 	}
 
 	cPenaltyList::sPenalty penalty;
-	penalty.mNick = nick;
+
+	if (!mS->mPenList->LoadTo(penalty, nick))
+		penalty.mNick = nick;
+
 	penalty.mOpNick = mConn->mpUser->mNick;
-	if (!isUn) Now = cTime().Sec() + period;
+
+	if (!isUn)
+		Now = cTime().Sec() + period;
 
 	switch (Action) {
-		case eAC_GAG: penalty.mStartChat = Now; break;
-		case eAC_NOPM: penalty.mStartPM = Now; break;
-		case eAC_NOCHATS: penalty.mStartChat = Now; penalty.mStartPM = Now; break;
-		case eAC_NODL: penalty.mStartCTM = Now; break;
-		case eAC_NOSEARCH: penalty.mStartSearch = Now; break;
-		case eAC_KVIP: penalty.mStopKick = Now; break;
-		case eAC_OPCHAT: penalty.mStopOpchat = Now; break;
-		case eAC_NOSHARE: penalty.mStopShare0 = Now; break;
-		case eAC_CANREG: penalty.mStopReg = Now; break;
-		default: return false;
-	};
+		case eAC_GAG:
+			penalty.mStartChat = Now;
+			break;
+		case eAC_NOPM:
+			penalty.mStartPM = Now;
+			break;
+		case eAC_NOCHATS:
+			penalty.mStartChat = Now;
+			penalty.mStartPM = Now;
+			break;
+		case eAC_NODL:
+			penalty.mStartCTM = Now;
+			break;
+		case eAC_NOSEARCH:
+			penalty.mStartSearch = Now;
+			break;
+		case eAC_KVIP:
+			penalty.mStopKick = Now;
+			break;
+		case eAC_OPCHAT:
+			penalty.mStopOpchat = Now;
+			break;
+		case eAC_NOSHARE:
+			penalty.mStopShare0 = Now;
+			break;
+		case eAC_CANREG:
+			penalty.mStopReg = Now;
+			break;
+		default:
+			return false;
+	}
 
 	bool ret = false;
 
-	if (!isUn)
-		ret = mS->mPenList->AddPenalty(penalty);
-	else
+	if (isUn)
 		ret = mS->mPenList->RemPenalty(penalty);
+	else
+		ret = mS->mPenList->AddPenalty(penalty);
+
+	if (!ret) {
+		(*mOS) << autosprintf(_("Error setting right for: %s"), penalty.mNick.c_str());
+		return false;
+	}
 
 	cUser *usr = mS->mUserList.GetUserByNick(nick);
 
-	if (usr) {
-		switch (Action) {
-			case eAC_GAG:
+	switch (Action) {
+		case eAC_GAG:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting main chat right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting main chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
-				break;
-			case eAC_NOPM:
+
+			break;
+
+		case eAC_NOPM:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting private chat right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting private chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
-				break;
-			case eAC_NOCHATS:
+
+			break;
+
+		case eAC_NOCHATS:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting main and private chat rights for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting main and private chat rights for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr) {
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
 				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
-				break;
-			case eAC_NODL:
+			}
+
+			break;
+
+		case eAC_NODL:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting download right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting download right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true);
-				break;
-			case eAC_NOSEARCH:
+
+			break;
+
+		case eAC_NOSEARCH:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting search right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting search right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
 				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
-				break;
-			case eAC_NOSHARE:
+
+			break;
+
+		case eAC_NOSHARE:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting hidden share right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting hidden share right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true);
-				break;
-			case eAC_CANREG:
+
+			break;
+
+		case eAC_CANREG:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting registration right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting registration right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true);
-				break;
-			case eAC_KVIP:
+
+			break;
+
+		case eAC_KVIP:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting kick right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting kick right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr)
 				usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true);
-				break;
-			case eAC_OPCHAT:
+
+			break;
+
+		case eAC_OPCHAT:
+			if (isUn)
+				(*mOS) << autosprintf(_("Resetting operator chat right for: %s"), penalty.mNick.c_str());
+			else
+				(*mOS) << autosprintf(_("Setting operator chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+
+			if (usr) {
 				usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true);
-				break;
-			default:
-				return false;
-		}
+				cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(usr->mNick); // add or remove user in operator chat
 
-		usr->ApplyRights(penalty); // apply rights to user object
-		cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(usr->mNick);
+				if (isUn && mS->mOpchatList.ContainsHash(Hash))
+					mS->mOpchatList.RemoveByHash(Hash);
+				else if (!isUn && !mS->mOpchatList.ContainsHash(Hash))
+					mS->mOpchatList.AddWithHash(usr, Hash);
+			}
 
-		if (usr->Can(eUR_OPCHAT, mS->mTime.Sec())) { // apply operator chat right
-			if (!mS->mOpchatList.ContainsHash(Hash))
-				mS->mOpchatList.AddWithHash(usr, Hash);
-		} else {
-			if (mS->mOpchatList.ContainsHash(Hash))
-				mS->mOpchatList.RemoveByHash(Hash);
-		}
+			break;
+
+		default:
+			return false;
 	}
-
-	ostringstream description;
-	description << penalty;
-
-	if (ret) {
-		if (description.str() == "") {
-			switch (Action) {
-				case eAC_GAG: (*mOS) << autosprintf(_("Resetting main chat right for %s."), penalty.mNick.c_str()); break;
-				case eAC_NOPM: (*mOS) << autosprintf(_("Resetting private chat right for %s."), penalty.mNick.c_str()); break;
-				case eAC_NOCHATS: (*mOS) << autosprintf(_("Resetting main and private chat rights for %s."), penalty.mNick.c_str()); break;
-				case eAC_NODL: (*mOS) << autosprintf(_("Resetting download right for %s."), penalty.mNick.c_str()); break;
-				case eAC_NOSEARCH: (*mOS) << autosprintf(_("Resetting search right for %s."), penalty.mNick.c_str()); break;
-				case eAC_NOSHARE: (*mOS) << autosprintf(_("Resetting hidden share right for %s."), penalty.mNick.c_str()); break;
-				case eAC_CANREG: (*mOS) << autosprintf(_("Resetting registering right for %s."), penalty.mNick.c_str()); break;
-				case eAC_KVIP: (*mOS) << autosprintf(_("Resetting kick right for %s."), penalty.mNick.c_str()); break;
-				case eAC_OPCHAT: (*mOS) << autosprintf(_("Resetting operator chat right for %s."), penalty.mNick.c_str()); break;
-				default: return false;
-			};
-		} else
-			(*mOS) << description.str().c_str();
-	} else
-		(*mOS) << autosprintf(_("Error setting right for %s."), penalty.mNick.c_str());
 
 	return true;
 }
@@ -1921,14 +2068,41 @@ bool cDCConsole::cfCmd::operator()()
 
 bool cDCConsole::cfWho::operator()()
 {
-	if (this->mConn->mpUser->mClass < eUC_OPERATOR) {
+	if (!mConn || !mConn->mpUser)
+		return false;
+
+	if (mConn->mpUser->mClass < eUC_OPERATOR) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	enum {eAC_IP, eAC_RANGE, eAC_CC, eAC_CITY};
-	static const char * actionnames [] = {"ip", "range", "subnet", "cc", "city"};
-	static const int actionids [] = {eAC_IP, eAC_RANGE, eAC_RANGE, eAC_CC, eAC_CITY};
+	enum {
+		eAC_IP,
+		eAC_RANGE,
+		eAC_CC,
+		eAC_CITY,
+		eAC_HUBPORT,
+		eAC_HUBURL
+	};
+
+	static const char *actionnames[] = {
+		"ip", "addr",
+		"range", "subnet", "sub",
+		"cc", "country",
+		"city",
+		"hubport", "port",
+		"huburl", "url"
+	};
+
+	static const int actionids[] = {
+		eAC_IP, eAC_IP,
+		eAC_RANGE, eAC_RANGE, eAC_RANGE,
+		eAC_CC, eAC_CC,
+		eAC_CITY,
+		eAC_HUBPORT, eAC_HUBPORT,
+		eAC_HUBURL, eAC_HUBURL
+	};
+
 	string tmp;
 	mIdRex->Extract(2, mIdStr, tmp);
 	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
@@ -1936,63 +2110,85 @@ bool cDCConsole::cfWho::operator()()
 	if (Action < 0)
 		return false;
 
-	string separator("\r\n\t");
-	string userlist;
 	mParRex->Extract(0, mParStr, tmp);
+
+	if (tmp.empty()) {
+		(*mOS) << _("Missing command parameters.");
+		return false;
+	}
+
+	string sep("\r\n\t");
+	string who;
 	unsigned long ip_min, ip_max;
-	int cnt = 0;
+	unsigned int cnt, port = 0;
 
 	switch (Action) {
 		case eAC_IP:
 			ip_min = cBanList::Ip2Num(tmp);
 			ip_max = ip_min;
-			cnt = mS->WhoIP(ip_min, ip_max, userlist, separator, true);
+			cnt = mS->WhoIP(ip_min, ip_max, who, sep, true);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with IP %s", "Found %d users with IP %s", cnt), cnt, tmp.c_str());
 
 			break;
+
 		case eAC_RANGE:
 			if (!cDCConsole::GetIPRange(tmp, ip_min, ip_max))
 				return false;
 
-			cnt = mS->WhoIP(ip_min, ip_max, userlist, separator, false);
+			cnt = mS->WhoIP(ip_min, ip_max, who, sep, false);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with range %s", "Found %d users with range %s", cnt), cnt, tmp.c_str());
 
 			break;
+
 		case eAC_CC:
 			if (tmp.size() != 2) {
-				(*mOS) << _("Country code must be 2 characters long, for example US.");
+				(*mOS) << _("Country code must be 2 characters long, for example RU.");
 				return false;
 			}
 
 			tmp = toUpper(tmp);
-			cnt = mS->WhoCC(tmp, userlist, separator);
+			cnt = mS->WhoCC(tmp, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with country code %s", "Found %d users with country code %s", cnt), cnt, tmp.c_str());
 
 			break;
-		case eAC_CITY:
-			if (!tmp.size()) {
-				(*mOS) << _("City name can't be empty.");
-				return false;
-			}
 
-			cnt = mS->WhoCity(tmp, userlist, separator);
+		case eAC_CITY:
+			cnt = mS->WhoCity(tmp, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with city %s", "Found %d users with city %s", cnt), cnt, tmp.c_str());
 
 			break;
+
+		case eAC_HUBPORT:
+			port = StringAsLL(tmp);
+			cnt = mS->WhoHubPort(port, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user on hub port %d", "Found %d users on hub port %d", cnt), cnt, port);
+
+			break;
+
+		case eAC_HUBURL:
+			cnt = mS->WhoHubURL(tmp, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with hub URL %s", "Found %d users with hub URL %s", cnt), cnt, tmp.c_str());
+
+			break;
+
 		default:
 			return false;
 	}
 
 	if (cnt)
-		(*mOS) << ':' << userlist;
+		(*mOS) << ':' << who;
 	else
 		(*mOS) << _("No users found.");
 

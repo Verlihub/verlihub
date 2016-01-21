@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -42,7 +42,7 @@ namespace nVerliHub {
 			/// The user sends a valid tag in $MyINFO and client is connected
 			/// to the hub through a proxy
 			eCM_SOCK5,
-			// the user sends a valid tag in $MyINFO and client is connected in other unknown mode, this mode is marked as passive for now, todo: detect new modes like M:AP
+			// user sends a valid tag in $MyINFO and client is connected in other unknown mode, this mode is marked as passive for now
 			eCM_OTHER
 		} tClientMode;
 
@@ -90,7 +90,7 @@ namespace nVerliHub {
 			eTC_SOCK5,
 			/// The client is in passive mode
 			/// but passive connections are restricted
-			eTC_PASSIVE,
+			eTC_PASSIVE
 		};
 	}
 

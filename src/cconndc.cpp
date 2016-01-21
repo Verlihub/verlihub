@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -94,11 +94,13 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 	if (AddPipe)
 		data.append("|");
 
-	if ((data.size() > 1) && Log(5))
-		LogStream() << "OUT: " << data.substr(0, 100) << endl;
+	size_t len = data.size();
+
+	if ((len > 1) && Log(5))
+		LogStream() << "OUT [" << len << "]: " << data.substr(0, 100) << endl;
 
 	if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
-		Server()->mNetOutLog << data.size() << ": " << data.substr(0, 100) << endl;
+		Server()->mNetOutLog << len << ": " << data.substr(0, 100) << endl;
 
 	int ret = Write(data, Flush);
 	mTimeLastAttempt.Get();
@@ -107,10 +109,11 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 		//Server()->mUploadZone[mGeoZone].Dump();
 		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, ret);
 		//Server()->mUploadZone[mGeoZone].Dump();
+		Server()->mProtoTotal[1] += ret; // add total upload
 	}
 
 	if (AddPipe)
-		data.erase(data.size() - 1, 1);
+		data.erase(len - 1, 1);
 
 	return ret;
 }
@@ -217,7 +220,8 @@ int cConnDC::OnTimer(cTime &now)
 			}
 		}
 
-		Send(buf, true);
+		if (buf.size())
+			Send(buf, true);
 
 		if(pos != mpUser->mQueueUL.npos)
 			pos++;
@@ -339,61 +343,60 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	unsigned int action = 3;
 
 	switch (type) {
-		case ePF_CHAT:
-			period = serv->mC.int_flood_chat_period;
-			limit = serv->mC.int_flood_chat_limit;
-			action = serv->mC.proto_flood_chat_action;
-			break;
-		case ePF_PRIV:
-			period = serv->mC.int_flood_to_period;
-			limit = serv->mC.int_flood_to_limit;
-			action = serv->mC.proto_flood_to_action;
-			break;
-		case ePF_MCTO:
-			period = serv->mC.int_flood_mcto_period;
-			limit = serv->mC.int_flood_mcto_limit;
-			action = serv->mC.proto_flood_mcto_action;
-			break;
-		case ePF_MYINFO:
-			period = serv->mC.int_flood_myinfo_period;
-			limit = serv->mC.int_flood_myinfo_limit;
-			action = serv->mC.proto_flood_myinfo_action;
-			break;
-		case ePF_IN:
-			period = serv->mC.int_flood_in_period;
-			limit = serv->mC.int_flood_in_limit;
-			action = serv->mC.proto_flood_in_action;
-			break;
-		case ePF_EXTJSON:
-			period = serv->mC.int_flood_extjson_period;
-			limit = serv->mC.int_flood_extjson_limit;
-			action = serv->mC.proto_flood_extjson_action;
-			break;
-		case ePF_SEARCH:
-			period = serv->mC.int_flood_search_period;
-			limit = serv->mC.int_flood_search_limit;
-			action = serv->mC.proto_flood_search_action;
-			break;
-		case ePF_SR:
-			period = serv->mC.int_flood_sr_period;
-			limit = serv->mC.int_flood_sr_limit;
-			action = serv->mC.proto_flood_sr_action;
-			break;
 		case ePF_CTM:
 			period = serv->mC.int_flood_ctm_period;
 			limit = serv->mC.int_flood_ctm_limit;
 			action = serv->mC.proto_flood_ctm_action;
 			break;
+
 		case ePF_RCTM:
 			period = serv->mC.int_flood_rctm_period;
 			limit = serv->mC.int_flood_rctm_limit;
 			action = serv->mC.proto_flood_rctm_action;
 			break;
+
+		case ePF_SR:
+			period = serv->mC.int_flood_sr_period;
+			limit = serv->mC.int_flood_sr_limit;
+			action = serv->mC.proto_flood_sr_action;
+			break;
+
+		case ePF_SEARCH:
+			period = serv->mC.int_flood_search_period;
+			limit = serv->mC.int_flood_search_limit;
+			action = serv->mC.proto_flood_search_action;
+			break;
+
+		case ePF_MYINFO:
+			period = serv->mC.int_flood_myinfo_period;
+			limit = serv->mC.int_flood_myinfo_limit;
+			action = serv->mC.proto_flood_myinfo_action;
+			break;
+
+		case ePF_EXTJSON:
+			period = serv->mC.int_flood_extjson_period;
+			limit = serv->mC.int_flood_extjson_limit;
+			action = serv->mC.proto_flood_extjson_action;
+			break;
+
 		case ePF_NICKLIST:
 			period = serv->mC.int_flood_nicklist_period;
 			limit = serv->mC.int_flood_nicklist_limit;
 			action = serv->mC.proto_flood_nicklist_action;
 			break;
+
+		case ePF_PRIV:
+			period = serv->mC.int_flood_to_period;
+			limit = serv->mC.int_flood_to_limit;
+			action = serv->mC.proto_flood_to_action;
+			break;
+
+		case ePF_CHAT:
+			period = serv->mC.int_flood_chat_period;
+			limit = serv->mC.int_flood_chat_limit;
+			action = serv->mC.proto_flood_chat_action;
+			break;
+
 		case ePF_GETINFO:
 			if (!mFeatures || (mFeatures & eSF_NOGETINFO)) { // dont check old clients that dont have NoGetINFO support flag because they will send this command for every user on hub
 				period = serv->mC.int_flood_getinfo_period;
@@ -402,12 +405,32 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			}
 
 			break;
+
+		case ePF_MCTO:
+			period = serv->mC.int_flood_mcto_period;
+			limit = serv->mC.int_flood_mcto_limit;
+			action = serv->mC.proto_flood_mcto_action;
+			break;
+
+		case ePF_IN:
+			period = serv->mC.int_flood_in_period;
+			limit = serv->mC.int_flood_in_limit;
+			action = serv->mC.proto_flood_in_action;
+			break;
+
 		case ePF_PING:
 			period = serv->mC.int_flood_ping_period;
 			limit = serv->mC.int_flood_ping_limit;
 			action = serv->mC.proto_flood_ping_action;
 			break;
+
 		case ePF_UNKNOWN:
+			period = serv->mC.int_flood_unknown_period;
+			limit = serv->mC.int_flood_unknown_limit;
+			action = serv->mC.proto_flood_unknown_action;
+			break;
+
+		default:
 			period = serv->mC.int_flood_unknown_period;
 			limit = serv->mC.int_flood_unknown_limit;
 			action = serv->mC.proto_flood_unknown_action;
@@ -439,46 +462,63 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	to_user << _("Protocol flood detected") << ": ";
 
 	switch (type) {
-		case ePF_CHAT:
-			to_user << _("Chat");
-			break;
-		case ePF_PRIV:
-			to_user << "To";
-			break;
-		case ePF_MCTO:
-			to_user << "MCTo";
-			break;
-		case ePF_MYINFO:
-			to_user << "MyINFO";
-			break;
-		case ePF_IN:
-			to_user << "IN";
-			break;
-		case ePF_EXTJSON:
-			to_user << "ExtJSON";
-			break;
-		case ePF_SEARCH:
-			to_user << "Search";
-			break;
-		case ePF_SR:
-			to_user << "SR";
-			break;
 		case ePF_CTM:
 			to_user << "ConnectToMe";
 			break;
+
 		case ePF_RCTM:
 			to_user << "RevConnectToMe";
 			break;
+
+		case ePF_SR:
+			to_user << "SR";
+			break;
+
+		case ePF_SEARCH:
+			to_user << "Search";
+			break;
+
+		case ePF_MYINFO:
+			to_user << "MyINFO";
+			break;
+
+		case ePF_EXTJSON:
+			to_user << "ExtJSON";
+			break;
+
 		case ePF_NICKLIST:
 			to_user << "GetNickList";
 			break;
+
+		case ePF_PRIV:
+			to_user << "To";
+			break;
+
+		case ePF_CHAT:
+			to_user << _("Chat");
+			break;
+
 		case ePF_GETINFO:
 			to_user << "GetINFO";
 			break;
+
+		case ePF_MCTO:
+			to_user << "MCTo";
+			break;
+
+		case ePF_IN:
+			to_user << "IN";
+			break;
+
 		case ePF_PING:
 			to_user << "Ping";
 			break;
+
 		case ePF_UNKNOWN:
+			to_user << _("Unknown");
+			break;
+
+		default:
 			to_user << _("Unknown");
 			break;
 	}

@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -19,7 +19,8 @@
 SET(STATS_VERSION_MAJOR 1)
 SET(STATS_VERSION_MINOR 2)
 SET(STATS_VERSION_PATCH 0)
-SET(STATS_VERSION "${STATS_VERSION_MAJOR}.${STATS_VERSION_MINOR}.${STATS_VERSION_PATCH}")
+SET(STATS_VERSION_TWEAK 1)
+SET(STATS_VERSION "${STATS_VERSION_MAJOR}.${STATS_VERSION_MINOR}.${STATS_VERSION_PATCH}.${STATS_VERSION_TWEAK}")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_DEFINITIONS(-DSTATS_VERSION="${STATS_VERSION}")

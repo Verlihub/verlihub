@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2015 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -257,7 +257,7 @@ public:
 	bool disable_zlib;
 	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
-	bool disable_extjson_fwd; // extjson forward
+	bool disable_extjson; // extjson
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;
@@ -300,6 +300,7 @@ public:
 	bool use_reglist_cache;
 	bool use_penlist_cache;
 	bool chat_default_on;
+	bool notify_gag_chats;
 	bool always_ask_password;
 	unsigned int default_password_encryption;
 	unsigned int password_min_len;
