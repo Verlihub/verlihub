@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Verlihub 1.0.0
 ==============
 
@@ -24,3 +25,6 @@ Links
   * Translate: http://transifex.com/projects/p/verlihub-100/
   * Ledokol: http://ledo.feardc.net/
   * Support hub: dchub://hub.verlihub.net:7777/
+=======
+Main repository starting from version 1.0.0.0
+>>>>>>> c7a826bdb2ca33c5a557800867b11e0d4216dda6
