@@ -307,7 +307,8 @@ public:
 	unsigned int pwd_tmpban;
 	string wrongpass_message;
 	bool wrongpassword_report;
-	int wrongauthip_report; // is class number, not bool
+	bool report_pass_reset;
+	int wrongauthip_report; // note: is class number, not bool
 	bool clone_detect_report;
 	unsigned long clone_det_tban_time;
 	bool nullchars_report;

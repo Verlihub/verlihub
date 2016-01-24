@@ -621,25 +621,26 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 	string omsg;
 
-	os << HUB_VERSION_NAME << " " << HUB_VERSION_VERS << "\r\n";
-	os << " == " << toUpper(_("Authors")) << " ==\r\n";
+	os << "\r\n\r\n " << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "\r\n\r\n";
+	os << " " << _("Authors") << "\r\n\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
 	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru\r\n";
 	os << "\tVovochka404, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
-	os << " == " << toUpper(_("Translators")) << " ==\r\n";
-	os << "\tCzech (Uhlik), Italian (netcelli, Stefano), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
+	os << "\t" << _("Not forgetting other people who didn't want to be listed here.") << "\r\n\r\n";
+	os << " " << _("Translators") << "\r\n\r\n";
+	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN), Polish (Zorro, Krzychu), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
-	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n";
-	os << " == " << toUpper(_("Contributors")) << " ==\r\n";
-	os << "\tIntruder, Frog" << "\r\n";
-	os << " == " << toUpper(_("Credits")) << " ==\r\n";
-	os << "\tWe would like to thank everyone in VAZ for their input and valuable support and of course everyone who continues to use this great hub software." << "\r\n";
-	os << " == " << toUpper(_("More")) << " ==\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n\r\n";
+	os << " " << _("Contributors") << "\r\n\r\n";
+	os << "\tIntruder, Frog, Eco-Logical, DiegoZ" << "\r\n\r\n";
+	os << " " << _("Credits") << "\r\n\r\n";
+	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
+	os << " " << _("More") << "\r\n\r\n";
 	os << "\t" << _("Website") << ": http://verlihub.net/" << "\r\n";
 	os << "\t" << _("Manual") << ": http://verlihub.net/doc/" << "\r\n";
-	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/";
+	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n";
 
 	omsg = os.str();
 	mOwner->DCPublicHS(omsg, conn);
@@ -2614,6 +2615,9 @@ bool cDCConsole::cfRegUsr::operator()()
 			}
 
 			(*mOS) << autosprintf(_("Updated variable %s to value %s for user %s."), field.c_str(), par.c_str(), nick.c_str());
+
+			if ((Action == eAC_PASS) && !WithPar && mS->mC.report_pass_reset)
+				mS->ReportUserToOpchat(mConn, autosprintf(_("Password reset for: %s"), nick.c_str()), false);
 
 			if (user && user->mxConn && ostr.str().size()) { // send both in pm and mc, so user see the message for sure
 				mS->DCPrivateHS(ostr.str(), user->mxConn);

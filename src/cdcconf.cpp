@@ -288,6 +288,7 @@ void cDCConf::AddVars()
 	Add("pwd_tmpban", pwd_tmpban, 60);
 	Add("wrongpass_message", wrongpass_message, "");
 	Add("wrongpassword_report", wrongpassword_report, true);
+	Add("report_pass_reset", report_pass_reset, false);
 	Add("wrongauthip_report", wrongauthip_report, 1);
 	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);
