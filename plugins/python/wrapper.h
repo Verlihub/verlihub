@@ -44,7 +44,7 @@ extern "C"
 #define W_NOSTRING = "SG083tcs0ODEgbns623OFfew"
 
 // function positions in the hook table
-enum { W_OnNewConn, W_OnCloseConn, W_OnParsedMsgChat, W_OnParsedMsgPM, W_OnParsedMsgMCTo, W_OnParsedMsgSearch, W_OnParsedMsgSR, W_OnParsedMsgMyINFO, W_OnFirstMyINFO, W_OnParsedMsgValidateNick, W_OnParsedMsgAny, W_OnParsedMsgAnyEx, W_OnOpChatMessage, W_OnPublicBotMessage, W_OnUnLoad, W_OnCtmToHub, W_OnParsedMsgSupports, W_OnParsedMsgMyHubURL, W_OnParsedMsgExtJSON, W_OnParsedMsgBotINFO, W_OnParsedMsgVersion, W_OnParsedMsgMyPass, W_OnParsedMsgConnectToMe, W_OnParsedMsgRevConnectToMe, W_OnUnknownMsg, W_OnOperatorCommand, W_OnOperatorKicks, W_OnOperatorDrops, W_OnValidateTag, W_OnUserCommand, W_OnUserLogin, W_OnUserLogout, W_OnTimer, W_OnNewReg, W_OnNewBan };
+enum { W_OnNewConn, W_OnCloseConn, W_OnParsedMsgChat, W_OnParsedMsgPM, W_OnParsedMsgMCTo, W_OnParsedMsgSearch, W_OnParsedMsgSR, W_OnParsedMsgMyINFO, W_OnFirstMyINFO, W_OnParsedMsgValidateNick, W_OnParsedMsgAny, W_OnParsedMsgAnyEx, W_OnOpChatMessage, W_OnPublicBotMessage, W_OnUnLoad, W_OnCtmToHub, W_OnParsedMsgSupports, W_OnParsedMsgMyHubURL, W_OnParsedMsgExtJSON, W_OnParsedMsgBotINFO, W_OnParsedMsgVersion, W_OnParsedMsgMyPass, W_OnParsedMsgConnectToMe, W_OnParsedMsgRevConnectToMe, W_OnUnknownMsg, W_OnOperatorCommand, W_OnOperatorKicks, W_OnOperatorDrops, W_OnOperatorDropsWithReason, W_OnValidateTag, W_OnUserCommand, W_OnUserLogin, W_OnUserLogout, W_OnTimer, W_OnNewReg, W_OnNewBan };
 
 // MAX_HOOKS must be more than the number of elements in above enum
 const int W_MAX_HOOKS = 50;

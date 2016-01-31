@@ -1017,8 +1017,11 @@ bool cpiPython::OnOperatorKicks(cUser *op, cUser *user, string *why)
 bool cpiPython::OnOperatorDrops(cUser *op, cUser *user, string *why)
 {
 	if (op && user && why) {
-		w_Targs *args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
-		return CallAll(W_OnOperatorDrops, args);
+		// Calling the legacy version first
+		w_Targs *args = lib_pack("ss", op->mNick.c_str(), user->mNick.c_str());
+		CallAll(W_OnOperatorDrops, args);
+		args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
+		return CallAll(W_OnOperatorDropsWithReason, args);
 	}
 
 	return true;
