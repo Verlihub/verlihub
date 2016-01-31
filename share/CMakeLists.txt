@@ -21,7 +21,7 @@ SET(SQL_FILES
 	sql/default_file_trigger.sql
 	sql/default_reglist.sql
 	sql/default_custom_redirects.sql
-	sql/default_dc_clients.sql
+	sql/default_client_list.sql
 )
 
 SET(CONFIG_FILES
