@@ -1,12 +1,12 @@
 # 
 # Translators:
-# chatonhub <chatonhubfrance@gmail.com>, 2014-2015
+# chatonhub <chatonhubfrance@gmail.com>, 2014-2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub 1.0.0\n"
+"Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-29 03:19+0100\n"
-"PO-Revision-Date: 2015-10-22 13:22+0000\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 19:15+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: French (France) (http://www.transifex.com/feardc/verlihub-100/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
@@ -32,18 +32,18 @@ msgstr "Donnez une liste d'expressions interdites"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "Désolé, l'expression régulière que vous avez fournie n'est pas valide."
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "INTERDICTION : l'utilisateur a employé des mots interdits dans %s : %s"
+msgid "Forbidden words in %s: %s"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
-msgstr "Chat PUBLIC"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
-msgstr "Chat PRIVÉ"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
@@ -185,125 +185,125 @@ msgstr "Votre pseudo doit correspondre à %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Votre type de connexion doit correspondre à %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "Tu n'as pas le droit de faire ça."
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
 msgstr "Version de Lua"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
 msgstr "Version de la bibliothèque Lua"
 
-#: ../plugins/lua/cconsole.cpp:96
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
 msgstr "Copyright"
 
-#: ../plugins/lua/cconsole.cpp:97
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
 msgstr "Auteurs"
 
-#: ../plugins/lua/cconsole.cpp:108
-msgid "Version date"
-msgstr "Date de la version"
+#: ../plugins/lua/cconsole.cpp:107
+msgid "Hub version"
+msgstr "Version Hub"
 
-#: ../plugins/lua/cconsole.cpp:109
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Loaded scripts"
 msgstr "Les scripts sont chargés"
 
-#: ../plugins/lua/cconsole.cpp:110
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Memory used"
 msgstr "Mémoire utilisée"
 
-#: ../plugins/lua/cconsole.cpp:116
+#: ../plugins/lua/cconsole.cpp:115
 msgid "Loaded Lua scripts"
 msgstr "Les scripts Lua sont chargés"
 
-#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "ID"
 
-#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Script"
 
-#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
+#: ../plugins/lua/cconsole.cpp:132 ../plugins/lua/cconsole.cpp:213
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Échec du répertoire de chargement: %s"
 
-#: ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:136
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Scripts Lua trouvés dans: %s"
 
-#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
+#: ../plugins/lua/cconsole.cpp:180 ../plugins/lua/cconsole.cpp:292
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Script arrêté: %s"
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:188 ../plugins/lua/cconsole.cpp:302
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Script na pas été arrêté car il est pas chargé: #%d"
 
-#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
+#: ../plugins/lua/cconsole.cpp:190 ../plugins/lua/cconsole.cpp:304
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Script pas été arrêté car il est pas chargé: %s"
 
-#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:244 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Script est déjà chargé: %s"
 
-#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
+#: ../plugins/lua/cconsole.cpp:252 ../plugins/lua/cconsole.cpp:310
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Impossible d'allouer le news Lua."
 
-#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
+#: ../plugins/lua/cconsole.cpp:257 ../plugins/lua/cconsole.cpp:315
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Script est maintenant chargé: %s"
 
-#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:262 ../plugins/lua/cconsole.cpp:320
 #: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Script introuvable ou n'a pas pu être analysée: %s"
 
-#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:338 ../plugins/lua/cconsole.cpp:358
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr ""
+msgstr "Configuration de mise à jour %s.%s de '%s' to '%s'."
 
-#: ../plugins/lua/cconsole.cpp:341
+#: ../plugins/lua/cconsole.cpp:340
 #, c-format
 msgid "Current log level: %d"
 msgstr "Niveau du journal actuel: %d"
 
-#: ../plugins/lua/cconsole.cpp:361
+#: ../plugins/lua/cconsole.cpp:360
 #, c-format
 msgid "Current error class: %d"
-msgstr ""
+msgstr "Erreur de classe courante: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:170
+#: ../plugins/lua/cluainterpreter.cpp:173
 msgid "Lua error"
 msgstr "Lua erreur"
 
-#: ../plugins/lua/cluainterpreter.cpp:176
+#: ../plugins/lua/cluainterpreter.cpp:179
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -393,16 +393,19 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "Le script %s n'a pas été arrêté car il n'était pas exécuté."
 
 #: ../plugins/plugman/cconsole.cpp:43
-msgid "Plugman version"
-msgstr "Version de plugman"
+#, c-format
+msgid "%s version"
+msgstr "%s version"
 
 #: ../plugins/plugman/cconsole.cpp:44
-msgid "Verlihub executable"
-msgstr "Exécutable Verlihub"
+#, c-format
+msgid "%s executable"
+msgstr "%s exécutable"
 
 #: ../plugins/plugman/cconsole.cpp:45
-msgid "Verlihub build time"
-msgstr "Verlihub construit depuis"
+#, c-format
+msgid "%s build time"
+msgstr "%s Le temps de construction"
 
 #: ../plugins/plugman/cconsole.cpp:147
 msgid ""
@@ -455,11 +458,9 @@ msgstr "Script chargé."
 msgid "Error loading script."
 msgstr "Script Erreur lors du chargement ."
 
-#: ../plugins/plugman/cplugs.cpp:157
-msgid ""
-"Warning: The plugin should be recompiled because Verlihub has been recently "
-"updated."
-msgstr "Attention: Le plugin doit être recompilé parce Verlihub a été récemment mis à jour ."
+#: ../plugins/plugman/cplugs.cpp:156
+msgid "Plugin needs to be recompiled."
+msgstr "Plugin qui ont besoins d' être recompilées."
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"

@@ -1,14 +1,14 @@
 # 
 # Translators:
 # mauron, 2012
-# mauron, 2015
+# mauron, 2015-2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub 1.0.0\n"
+"Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-29 03:19+0100\n"
-"PO-Revision-Date: 2015-11-28 20:27+0000\n"
-"Last-Translator: mauron\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 19:15+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/feardc/verlihub-100/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1254\n"
@@ -33,18 +33,18 @@ msgstr "Yasaklanmýþ ifade listesi giriniz"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "Maalesef girdiðiniz düzenli ifade geçerli deðildir."
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "YASAK: Kullanýcý %s konumunda yasaklý sözcük yolladý: %s"
+msgid "Forbidden words in %s: %s"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
-msgstr "HERKESE AÇIK sohbet"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
-msgstr "ÖZEL sohbet"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
@@ -186,125 +186,125 @@ msgstr "Rumuzunuz þuna denk gelmelidir %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Baðlantý türünüz þuna denk gelmelidir %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "Bunu yapma yetkiniz yoktur."
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
 msgstr "Lua sürümü"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
 msgstr "Lua kütüphane sürümü"
 
-#: ../plugins/lua/cconsole.cpp:96
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
 msgstr "Telif hakký"
 
-#: ../plugins/lua/cconsole.cpp:97
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
 msgstr "Yazarlar"
 
-#: ../plugins/lua/cconsole.cpp:108
-msgid "Version date"
-msgstr "Sürüm tarihi"
+#: ../plugins/lua/cconsole.cpp:107
+msgid "Hub version"
+msgstr "Hub sürümü"
 
-#: ../plugins/lua/cconsole.cpp:109
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Loaded scripts"
 msgstr "Yüklü betikler"
 
-#: ../plugins/lua/cconsole.cpp:110
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Memory used"
 msgstr "Kullanýlan bellek"
 
-#: ../plugins/lua/cconsole.cpp:116
+#: ../plugins/lua/cconsole.cpp:115
 msgid "Loaded Lua scripts"
 msgstr "Yüklü Lua betikleri"
 
-#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "Kimlik"
 
-#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Betik"
 
-#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
+#: ../plugins/lua/cconsole.cpp:132 ../plugins/lua/cconsole.cpp:213
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Klasörün yüklenmesi baþarýsýz oldu: %s"
 
-#: ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:136
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Lua betikleri þurada bulundu: %s"
 
-#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
+#: ../plugins/lua/cconsole.cpp:180 ../plugins/lua/cconsole.cpp:292
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Betik durduruldu: %s"
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:188 ../plugins/lua/cconsole.cpp:302
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Betik durdurulmadý çünkü yüklü deðil: #%d"
 
-#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
+#: ../plugins/lua/cconsole.cpp:190 ../plugins/lua/cconsole.cpp:304
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Betik durdurulmadý çünkü yüklü deðil: %s"
 
-#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:244 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Betik zaten yüklü: %s"
 
-#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
+#: ../plugins/lua/cconsole.cpp:252 ../plugins/lua/cconsole.cpp:310
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Yeni Lua yorumlayýcýsý ayrýlamadý."
 
-#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
+#: ../plugins/lua/cconsole.cpp:257 ../plugins/lua/cconsole.cpp:315
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Betik artýk yüklüdür: %s"
 
-#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:262 ../plugins/lua/cconsole.cpp:320
 #: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Betik bulunamadý ya da ayrýþtýrýlamadý: %s"
 
-#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:338 ../plugins/lua/cconsole.cpp:358
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr "Yapýlandýrma %s.%s '%s''den '%s''e güncellenmiþtir."
 
-#: ../plugins/lua/cconsole.cpp:341
+#: ../plugins/lua/cconsole.cpp:340
 #, c-format
 msgid "Current log level: %d"
 msgstr "Güncel kütük seviyesi: %d"
 
-#: ../plugins/lua/cconsole.cpp:361
+#: ../plugins/lua/cconsole.cpp:360
 #, c-format
 msgid "Current error class: %d"
 msgstr "Güncel hata sýnýfý: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:170
+#: ../plugins/lua/cluainterpreter.cpp:173
 msgid "Lua error"
 msgstr "Lua hatasý"
 
-#: ../plugins/lua/cluainterpreter.cpp:176
+#: ../plugins/lua/cluainterpreter.cpp:179
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
 
@@ -393,16 +393,19 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "%s adlý betik durdurulmadý çünkü faal deðildi."
 
 #: ../plugins/plugman/cconsole.cpp:43
-msgid "Plugman version"
-msgstr "Plugman sürümü"
+#, c-format
+msgid "%s version"
+msgstr "%s sürümü"
 
 #: ../plugins/plugman/cconsole.cpp:44
-msgid "Verlihub executable"
-msgstr "Verlihub çalýþtýrýlabiliri"
+#, c-format
+msgid "%s executable"
+msgstr "%s çalýþtýrýlabiliri"
 
 #: ../plugins/plugman/cconsole.cpp:45
-msgid "Verlihub build time"
-msgstr "Verlihub derleme vakti"
+#, c-format
+msgid "%s build time"
+msgstr "%s derleme vakti"
 
 #: ../plugins/plugman/cconsole.cpp:147
 msgid ""
@@ -455,11 +458,9 @@ msgstr "Betki yüklendi."
 msgid "Error loading script."
 msgstr "Betiðin yüklenmesinde hata oluþtu."
 
-#: ../plugins/plugman/cplugs.cpp:157
-msgid ""
-"Warning: The plugin should be recompiled because Verlihub has been recently "
-"updated."
-msgstr "Ýkaz: Betik tekrar derlenmelidir çünkü Verlihub yakýn geçmiþte güncellenmiþtir."
+#: ../plugins/plugman/cplugs.cpp:156
+msgid "Plugin needs to be recompiled."
+msgstr "Eklentinin yeniden derlenmeye ihtiyacý vardýr."
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"

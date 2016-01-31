@@ -4,11 +4,11 @@
 # Stan Marian <marian.stan@omegahost.ro>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub 1.0.0\n"
+"Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-29 03:19+0100\n"
-"PO-Revision-Date: 2015-10-22 13:31+0000\n"
-"Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 19:15+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Romanian (Romania) (http://www.transifex.com/feardc/verlihub-100/language/ro_RO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
@@ -33,18 +33,18 @@ msgstr "Iata o lista cu expresii interzise"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "Ne pare rau dar sintaxa folosita de tine nu este valida"
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "FORBID: Utilizatorul a folosit cuvinte interzise in %s: %s"
+msgid "Forbidden words in %s: %s"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
-msgstr "Sesiune de chat PUBLICA"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
-msgstr "Sesiune de chat PRIVATA"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
@@ -186,125 +186,125 @@ msgstr "Numele tau de utilizator se potriveste cu %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Tipul tau de conexiune se potriveste cu %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "Nu ai permisiunile necesare acestei actiuni."
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
 msgstr "Versiune LUA"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
 msgstr "Versiunea librãriilor LUA"
 
-#: ../plugins/lua/cconsole.cpp:96
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
 msgstr "Drept de autor"
 
-#: ../plugins/lua/cconsole.cpp:97
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
 msgstr "Autori"
 
-#: ../plugins/lua/cconsole.cpp:108
-msgid "Version date"
-msgstr "Data versiunii"
+#: ../plugins/lua/cconsole.cpp:107
+msgid "Hub version"
+msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:109
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Loaded scripts"
 msgstr "Scripte  încãrcate"
 
-#: ../plugins/lua/cconsole.cpp:110
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Memory used"
 msgstr "Memorie utilizata"
 
-#: ../plugins/lua/cconsole.cpp:116
+#: ../plugins/lua/cconsole.cpp:115
 msgid "Loaded Lua scripts"
 msgstr "Scripte Lua încãrcate"
 
-#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "ID"
 
-#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Scriptul"
 
-#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
+#: ../plugins/lua/cconsole.cpp:132 ../plugins/lua/cconsole.cpp:213
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Încãrcarea directorului: %s a eºuat."
 
-#: ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:136
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Scripte Lua gãsite în: %s"
 
-#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
+#: ../plugins/lua/cconsole.cpp:180 ../plugins/lua/cconsole.cpp:292
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Script oprit: %s"
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:188 ../plugins/lua/cconsole.cpp:302
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Scriptul nu s-a oprit pentru cã nu s-a încãrcat: #%d"
 
-#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
+#: ../plugins/lua/cconsole.cpp:190 ../plugins/lua/cconsole.cpp:304
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Scriptul nu s-a oprit pentru cã nu s-a încãrcat: %s"
 
-#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:244 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Script deja încãrcat: %s"
 
-#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
+#: ../plugins/lua/cconsole.cpp:252 ../plugins/lua/cconsole.cpp:310
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Eºuare a alocãrii noului interpretor Lua."
 
-#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
+#: ../plugins/lua/cconsole.cpp:257 ../plugins/lua/cconsole.cpp:315
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "S-a încãrcat acum scriptul: %s"
 
-#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:262 ../plugins/lua/cconsole.cpp:320
 #: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Scriptul nu s-a gãsit s-au n-a putut fi accesat: %s"
 
-#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:338 ../plugins/lua/cconsole.cpp:358
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr "Se înnoieste configurarea %s.%s din '%s' în '%s'."
 
-#: ../plugins/lua/cconsole.cpp:341
+#: ../plugins/lua/cconsole.cpp:340
 #, c-format
 msgid "Current log level: %d"
 msgstr "Nivelul curent al log-ului: %d"
 
-#: ../plugins/lua/cconsole.cpp:361
+#: ../plugins/lua/cconsole.cpp:360
 #, c-format
 msgid "Current error class: %d"
 msgstr "Eroare curentã class: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:170
+#: ../plugins/lua/cluainterpreter.cpp:173
 msgid "Lua error"
 msgstr "Eroare generata de LUA"
 
-#: ../plugins/lua/cluainterpreter.cpp:176
+#: ../plugins/lua/cluainterpreter.cpp:179
 msgid "Unknown error"
 msgstr "Eroare necunoscuta"
 
@@ -395,16 +395,19 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "Scriptul %s nu a fost oprit deoarece nu ruleaza."
 
 #: ../plugins/plugman/cconsole.cpp:43
-msgid "Plugman version"
-msgstr "Versiune Plugman"
+#, c-format
+msgid "%s version"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:44
-msgid "Verlihub executable"
-msgstr "Executabil verlihub"
+#, c-format
+msgid "%s executable"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:45
-msgid "Verlihub build time"
-msgstr "Data compilarii Verlihub"
+#, c-format
+msgid "%s build time"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:147
 msgid ""
@@ -457,11 +460,9 @@ msgstr "Scriptul a fost incarcat."
 msgid "Error loading script."
 msgstr "Eroare la incarcarea scriptului."
 
-#: ../plugins/plugman/cplugs.cpp:157
-msgid ""
-"Warning: The plugin should be recompiled because Verlihub has been recently "
-"updated."
-msgstr "ATENTIE: pluginurile trebuiesc recompilate, deoarece versiunea de verlihub a fost upgradata !"
+#: ../plugins/plugman/cplugs.cpp:156
+msgid "Plugin needs to be recompiled."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"

@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-21 14:00+0100\n"
-"PO-Revision-Date: 2016-01-21 14:00+0100\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
 "Language: en_GB\n"
@@ -30,17 +30,17 @@ msgstr ""
 msgid "Sorry the regular expression you provided is not valid."
 msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
+msgid "Forbidden words in %s: %s"
 msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
 msgstr ""
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
 msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:88

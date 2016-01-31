@@ -1,15 +1,16 @@
 # 
 # Translators:
-# hostpl-1 <zbyszekslyz@hostpl.eu>, 2014-2015
+# hostpl <zbyszekslyz@hostpl.eu>, 2014-2015
 # hostpl <admin@hostpl.eu>, 2014
+# hostpl <zbyszekslyz@hostpl.eu>, 2016
 # Krzychu <krzychulex@gmail.com>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub 1.0.0\n"
+"Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-29 03:19+0100\n"
-"PO-Revision-Date: 2015-10-22 13:22+0000\n"
-"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 20:00+0000\n"
+"Last-Translator: hostpl <zbyszekslyz@hostpl.eu>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/feardc/verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
@@ -34,18 +35,18 @@ msgstr "Pokaz liste zakazanych wyrazen"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "Niestety wyrazenie regularne podane przez Ciebie jest nieprawidlowe."
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "FORBID: Wyslanie zakazanych slow przez uzytkownika %s: %s"
+msgid "Forbidden words in %s: %s"
+msgstr "Zakazane slowa na %s: %s"
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
-msgstr "Ogolnodostepny czat."
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr "glowny czat"
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
-msgstr "Prywatny czat"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr "prywatne wiadomosci"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
@@ -187,125 +188,125 @@ msgstr "Twoja nazwa uzytkownika powinna byc zgodna z %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Twoj typ polaczenia powinien pasowac do %[pattern]"
 
-#: ../plugins/lua/cconsole.cpp:77 ../plugins/python/cconsole.cpp:63
+#: ../plugins/lua/cconsole.cpp:76 ../plugins/python/cconsole.cpp:63
 msgid "You have no rights to do this."
 msgstr "Nie masz uprawnien aby to zrobic."
 
-#: ../plugins/lua/cconsole.cpp:94
+#: ../plugins/lua/cconsole.cpp:93
 msgid "Lua version"
 msgstr "Wersja Lua"
 
-#: ../plugins/lua/cconsole.cpp:95
+#: ../plugins/lua/cconsole.cpp:94
 msgid "Lua library version"
 msgstr "Wersja bibliotek lua"
 
-#: ../plugins/lua/cconsole.cpp:96
+#: ../plugins/lua/cconsole.cpp:95
 msgid "Copyright"
 msgstr "Prawo autorskie"
 
-#: ../plugins/lua/cconsole.cpp:97
+#: ../plugins/lua/cconsole.cpp:96
 msgid "Authors"
 msgstr "Autorzy"
 
-#: ../plugins/lua/cconsole.cpp:108
-msgid "Version date"
-msgstr "Wersja daty"
+#: ../plugins/lua/cconsole.cpp:107
+msgid "Hub version"
+msgstr "Wersja huba"
 
-#: ../plugins/lua/cconsole.cpp:109
+#: ../plugins/lua/cconsole.cpp:108
 msgid "Loaded scripts"
 msgstr "Zaladowane skrypty"
 
-#: ../plugins/lua/cconsole.cpp:110
+#: ../plugins/lua/cconsole.cpp:109
 msgid "Memory used"
 msgstr "Uzyta pamiec"
 
-#: ../plugins/lua/cconsole.cpp:116
+#: ../plugins/lua/cconsole.cpp:115
 msgid "Loaded Lua scripts"
 msgstr "Zaladowane skrypty Lua"
 
-#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:137
 #: ../plugins/perl/cconsole.cpp:71 ../plugins/python/cconsole.cpp:86
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr "ID"
 
-#: ../plugins/lua/cconsole.cpp:118 ../plugins/lua/cconsole.cpp:139
+#: ../plugins/lua/cconsole.cpp:117 ../plugins/lua/cconsole.cpp:138
 #: ../plugins/perl/cconsole.cpp:72 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr "Skrypt"
 
-#: ../plugins/lua/cconsole.cpp:133 ../plugins/lua/cconsole.cpp:214
+#: ../plugins/lua/cconsole.cpp:132 ../plugins/lua/cconsole.cpp:213
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:191
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr "Ladowanie katalogu: %s niepowiodlo sie."
 
-#: ../plugins/lua/cconsole.cpp:137
+#: ../plugins/lua/cconsole.cpp:136
 #, c-format
 msgid "Lua scripts found in: %s"
 msgstr "Skrypt Lua znaleziono w : %s"
 
-#: ../plugins/lua/cconsole.cpp:181 ../plugins/lua/cconsole.cpp:293
+#: ../plugins/lua/cconsole.cpp:180 ../plugins/lua/cconsole.cpp:292
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Skrypt: %s zatrzymany."
 
-#: ../plugins/lua/cconsole.cpp:189 ../plugins/lua/cconsole.cpp:303
+#: ../plugins/lua/cconsole.cpp:188 ../plugins/lua/cconsole.cpp:302
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Skrypt nie zostal zatrzymany, poniewaz nie jest uruchomiony: #%d"
 
-#: ../plugins/lua/cconsole.cpp:191 ../plugins/lua/cconsole.cpp:305
+#: ../plugins/lua/cconsole.cpp:190 ../plugins/lua/cconsole.cpp:304
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Skrypt nie zostal zatrzymany, poniewaz nie jest uruchomiony: %s"
 
-#: ../plugins/lua/cconsole.cpp:245 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:244 ../plugins/python/cconsole.cpp:221
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Skrypt: %s jest juz zaladowany."
 
-#: ../plugins/lua/cconsole.cpp:253 ../plugins/lua/cconsole.cpp:311
+#: ../plugins/lua/cconsole.cpp:252 ../plugins/lua/cconsole.cpp:310
 msgid "Failed to allocate new Lua interpreter."
 msgstr "Nie mozna przydzielic nowego Lua interpretera jezyka."
 
-#: ../plugins/lua/cconsole.cpp:258 ../plugins/lua/cconsole.cpp:316
+#: ../plugins/lua/cconsole.cpp:257 ../plugins/lua/cconsole.cpp:315
 #: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:295
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Skrypt: %s zostal zaladowany."
 
-#: ../plugins/lua/cconsole.cpp:263 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:262 ../plugins/lua/cconsole.cpp:320
 #: ../plugins/perl/cconsole.cpp:177 ../plugins/perl/cconsole.cpp:220
 #: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Skrypt: %s nieznaleziony lub nie moze byc analizowany."
 
-#: ../plugins/lua/cconsole.cpp:339 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:338 ../plugins/lua/cconsole.cpp:358
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr ""
+msgstr "Zaktualizowano konfiguracje %s.%s od '%s' do '%s'."
 
-#: ../plugins/lua/cconsole.cpp:341
+#: ../plugins/lua/cconsole.cpp:340
 #, c-format
 msgid "Current log level: %d"
 msgstr "Aktualny poziom logowania to: %d."
 
-#: ../plugins/lua/cconsole.cpp:361
+#: ../plugins/lua/cconsole.cpp:360
 #, c-format
 msgid "Current error class: %d"
-msgstr ""
+msgstr "Aktualna klasa bledu: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:170
+#: ../plugins/lua/cluainterpreter.cpp:173
 msgid "Lua error"
 msgstr "Blad lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:176
+#: ../plugins/lua/cluainterpreter.cpp:179
 msgid "Unknown error"
 msgstr "Nieznany blad"
 
@@ -396,16 +397,19 @@ msgid "Script %s not stopped  because it is not running."
 msgstr "Skrypt %s nie zatrzymal sie, poniewaz nie jest uruchomiony."
 
 #: ../plugins/plugman/cconsole.cpp:43
-msgid "Plugman version"
-msgstr "Wersja plugmana"
+#, c-format
+msgid "%s version"
+msgstr "%s wersja"
 
 #: ../plugins/plugman/cconsole.cpp:44
-msgid "Verlihub executable"
-msgstr "Verlihub wykonywalny"
+#, c-format
+msgid "%s executable"
+msgstr "%s wykonywalny"
 
 #: ../plugins/plugman/cconsole.cpp:45
-msgid "Verlihub build time"
-msgstr "Verlihub zbudowany w czasie"
+#, c-format
+msgid "%s build time"
+msgstr "%s zbudowany w czasie"
 
 #: ../plugins/plugman/cconsole.cpp:147
 msgid ""
@@ -458,11 +462,9 @@ msgstr "Skrypt zaladowany"
 msgid "Error loading script."
 msgstr "Blad ladowania skryptow."
 
-#: ../plugins/plugman/cplugs.cpp:157
-msgid ""
-"Warning: The plugin should be recompiled because Verlihub has been recently "
-"updated."
-msgstr "Uwaga: Plugin wymaga przekompilowania , poniewaz verlihub zostal niedawno zaktualizowany."
+#: ../plugins/plugman/cplugs.cpp:156
+msgid "Plugin needs to be recompiled."
+msgstr "Plugin potrzebuje ponownej kompilacji."
 
 #: ../plugins/plugman/cplugs.cpp:207
 msgid "Name"

@@ -10,10 +10,10 @@
 # Александр <plugmn@gmail.com>, 2011
 msgid ""
 msgstr ""
-"Project-Id-Version: Verlihub 1.0.0\n"
+"Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-20 19:11+0100\n"
-"PO-Revision-Date: 2016-01-12 17:51+0000\n"
+"POT-Creation-Date: 2016-01-31 20:13+0100\n"
+"PO-Revision-Date: 2016-01-31 19:16+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/feardc/verlihub-100/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
@@ -39,18 +39,18 @@ msgstr "Получить список запрещённых выражений"
 msgid "Sorry the regular expression you provided is not valid."
 msgstr "К сожалению регулярное выражение указанное вами недопустимо."
 
-#: ../plugins/forbid/cforbidden.cpp:76
+#: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
-msgid "FORBID: User sent forbidden words in %s: %s"
-msgstr "ЗАПРЕТ: Пользователь отправил запрещённые слова в %s: %s"
+msgid "Forbidden words in %s: %s"
+msgstr "Запрещённые слова в %s: %s"
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PUBLIC chat"
-msgstr "ПУБЛИЧНЫЙ чат"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr "главном чате"
 
-#: ../plugins/forbid/cforbidden.cpp:76
-msgid "PRIVATE chat"
-msgstr "ПРИВАТНЫЙ чат"
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr "личном сообщении"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
