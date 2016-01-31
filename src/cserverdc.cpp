@@ -1664,10 +1664,10 @@ int cServerDC::OnTimer(cTime &now)
 	return true;
 }
 
-unsigned cServerDC::Str2Period(const string &s, ostream &err)
+unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 {
 	istringstream is(s);
-	unsigned u = 0;
+	unsigned int u = 0;
 	int m, n = 0;
 	char c = ' ';
 	is >> n >> c;
@@ -1704,8 +1704,9 @@ unsigned cServerDC::Str2Period(const string &s, ostream &err)
 		}
 
 		u = (n * m);
-	} else
+	} else {
 		err << _("Please provide positive number for time unit.");
+	}
 
 	return u;
 }
@@ -2225,137 +2226,126 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 	}
 }
 
-void cServerDC::DCKickNick(ostream *use_os,cUser *OP, const string &Nick, const string &Reason, int flags)
+void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags)
 {
-	ostringstream ostr;
-	cUser *user = mUserList.GetUserByNick(Nick);
-	string NewReason(Reason);
-	cKick OldKick;
+	if (!op || nick.empty() || (op->mNick == nick))
+		return;
 
-	// Check if it is possible to kick the user
-	if(user && user->mxConn &&
-	    (user->mClass + (int) mC.classdif_kick <= OP->mClass) &&
-	    (OP->Can(eUR_KICK, mTime.Sec())) &&
-		//mClass >= eUC_OPERATOR) &&
-	    (OP->mNick != Nick))
-	{
-		if (user->mProtectFrom < OP->mClass) {
-			if(flags & eKCK_Reason) {
+	ostringstream ostr;
+	cUser *user = mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn) {
+		ostr << autosprintf(_("User not found: %s"), nick.c_str());
+	} else if (((user->mClass + int(mC.classdif_kick)) > op->mClass) || !op->Can(eUR_KICK, mTime.Sec())) {
+		ostr << autosprintf(_("You have no rights to kick user: %s"), nick.c_str());
+	} else if (user->mProtectFrom >= op->mClass) {
+		ostr << autosprintf(_("User is protected from your kicks: %s"), nick.c_str());
+	} else {
+		string new_why(why);
+		bool keep = true;
+
+		if (flags & eKI_BAN) {
+			#ifndef WITHOUT_PLUGINS
+				keep = mCallBacks.mOnOperatorKicks.CallAll(op, user, &new_why);
+			#endif
+		} else if (flags & eKI_DROP) {
+			#ifndef WITHOUT_PLUGINS
+				keep = mCallBacks.mOnOperatorDrops.CallAll(op, user, &new_why);
+			#endif
+		}
+
+		if (keep) {
+			cKick kick;
+			ostringstream os;
+
+			if (flags & eKI_BAN) {
+				if (user->mxConn->Log(2))
+					user->mxConn->LogStream() << "Kicked by " << op->mNick << " because: " << why << endl;
+
+				string temp;
 				user->mToBan = false;
-				// auto kickban
-				if(mP.mKickBanPattern.Exec(Reason) >= 0) {
-					unsigned u = 0;
-					string bantime;
-					mP.mKickBanPattern.Extract(1,Reason,bantime);
-					if(bantime.size()) {
-						ostringstream os;
-						if(!(u=Str2Period(bantime,os))) DCPublicHS(os.str(),OP->mxConn);
-					}
-					if (u > mC.tban_max)
-						u = mC.tban_max;
-					if (
-						(!u && OP->Can(eUR_PBAN, this->mTime)) ||
-						((u > 0) &&
-						(((u > mC.tban_kick) && OP->Can(eUR_TBAN, this->mTime)) ||
-						(u <= mC.tban_kick)
-						)
-						)
-					  )
+
+				if ((flags & eKI_WHY) && why.size() && (mP.mKickBanPattern.Exec(why) >= 0)) {
+					unsigned int age = 0;
+					mP.mKickBanPattern.Extract(1, why, temp);
+
+					if (temp.size())
+						age = Str2Period(temp, os);
+
+					if (age > mC.tban_max)
+						age = mC.tban_max;
+
+					if ((!age && op->Can(eUR_PBAN, mTime)) || (age && (((age > mC.tban_kick) && op->Can(eUR_TBAN, mTime)) || (age <= mC.tban_kick))))
 						user->mToBan = true;
 
-					user->mBanTime = u;
-					if ( mC.msg_replace_ban.size())
-						mP.mKickBanPattern.Replace(0, NewReason, mC.msg_replace_ban);
+					user->mBanTime = age;
+
+					if (mC.msg_replace_ban.size())
+						mP.mKickBanPattern.Replace(0, new_why, mC.msg_replace_ban);
 				}
-				mKickList->AddKick(user->mxConn, OP->mNick, &Reason, OldKick);
 
-				if(Reason.size()) {
-					string omsg;
-					ostr << OP->mNick << " is kicking " << Nick << " because: " << NewReason;
-					omsg = ostr.str();
-					if(!mC.hide_all_kicks && !OP->mHideKick)
-						SendToAll(omsg, OP->mHideKicksForClass ,int(eUC_MASTER));
+				temp = op->mNick;
+				temp += " is kicking ";
+				temp += nick;
+				temp += " because: ";
+				temp += new_why;
 
-					if(flags & eKCK_PM) {
-						ostr.str(mEmpty);
-						ostr << autosprintf(_("You have been kicked because %s"), NewReason.c_str());
-						DCPrivateHS(ostr.str(), user->mxConn, &OP->mNick, &OP->mNick);
-					}
+				if (!mC.hide_all_kicks && !op->mHideKick)
+					SendToAll(temp, op->mHideKicksForClass, int(eUC_MASTER));
+
+				if (flags & eKI_PM) {
+					os.str(mEmpty);
+
+					if (new_why.size())
+						os << autosprintf(_("You have been kicked because: %s"), new_why.c_str());
+					else
+						os << _("You have been kicked from hub.");
+
+					DCPrivateHS(os.str(), user->mxConn, &op->mNick, &op->mNick);
 				}
-			}
 
-			if (flags & eKCK_Drop) {
-				ostr.str(mEmpty); // send the message to the kicker
+				mKickList->AddKick(user->mxConn, op->mNick, (new_why.size() ? &new_why : NULL), mC.tban_kick, kick);
+				cBan ban(this);
+				mBanList->NewBan(ban, kick, (user->mToBan ? user->mBanTime : mC.tban_kick), eBF_NICKIP);
 
-				if (flags & eKCK_TBAN)
-					ostr << autosprintf(_("Kicked user %s"), Nick.c_str());
-				else
-					ostr << autosprintf(_("Dropped user %s"), Nick.c_str());
-
-				ostr << " " << autosprintf(_("with IP %s"), user->mxConn->AddrIP().c_str());
-
-				if (user->mxConn->AddrHost().length())
-					ostr << " " << autosprintf(_("and host %s"), user->mxConn->AddrHost().c_str());
-
-				ostr << ".";
-
-				if (user->mxConn->Log(2))
-					user->mxConn->LogStream() << "Kicked by " << OP->mNick << ", ban " << mC.tban_kick << "s" << endl;
-
-				if (OP->Log(3))
-					OP->LogStream() << "Kicking " << Nick << endl;
-
-				bool Disconnect = true;
-				mKickList->AddKick(user->mxConn, OP->mNick, NULL, OldKick);
-
-				if (OldKick.mReason.size()) {
-					#ifndef WITHOUT_PLUGINS
-						Disconnect = mCallBacks.mOnOperatorKicks.CallAll(OP, user, &OldKick.mReason);
-					#endif
+				if (ban.mDateEnd) {
+					cTime age(ban.mDateEnd - cTime().Sec(), 0);
+					ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());
 				} else {
-					#ifndef WITHOUT_PLUGINS
-						Disconnect = mCallBacks.mOnOperatorDrops.CallAll(OP, user);
-					#endif
+					ostr << autosprintf(_("User was kicked and banned permanently: %s"), nick.c_str());
 				}
 
-				if (Disconnect) {
-					user->mxConn->CloseNice(1000, eCR_KICKED);
+				mBanList->AddBan(ban);
+			} else if (flags & eKI_DROP) {
+				if (user->mxConn->Log(2))
+					user->mxConn->LogStream() << "Dropped by " << op->mNick << " because: " << new_why << endl;
 
-					if (!(flags & eKCK_TBAN)) {
-						string msg(OP->mNick);
-						msg += " ";
-						msg += _("dropped");
-						ReportUserToOpchat(user->mxConn,msg, mC.dest_drop_chat);
-					}
-				} else
-					ostr << " " << _("Disconnect prevented by a plugin.");
-
-				if (flags & eKCK_TBAN) { // temporarily ban kicked user
-					cBan Ban(this);
-					cKick Kick;
-					mKickList->FindKick(Kick, user->mNick, OP->mNick, 30, true, true);
-					mBanList->NewBan(Ban, Kick, (user->mToBan ? user->mBanTime : mC.tban_kick), eBF_NICKIP);
-					ostr << " ";
-
-					if (Ban.mDateEnd) {
-						cTime HowLong(Ban.mDateEnd - cTime().Sec(), 0);
-						ostr << autosprintf(_("User banned for %s."), HowLong.AsPeriod().AsString().c_str());
-					} else
-						ostr << _("User banned permanently.");
-
-					mBanList->AddBan(Ban);
-				}
-
-				if (!use_os)
-					DCPublicHS(ostr.str(), OP->mxConn);
+				if (new_why.size())
+					os << autosprintf(_("%s dropped user with reason: %s"), op->mNick.c_str(), new_why.c_str());
 				else
-					(*use_os) << ostr.str();
+					os << autosprintf(_("%s dropped user without reason"), op->mNick.c_str());
+
+				ReportUserToOpchat(user->mxConn, os.str(), mC.dest_drop_chat);
+
+				if ((flags & eKI_PM) && new_why.size())
+					DCPrivateHS(autosprintf(_("You have been dropped because: %s"), new_why.c_str()), user->mxConn, &op->mNick, &op->mNick);
+
+				mKickList->AddKick(user->mxConn, op->mNick, (new_why.size() ? &new_why : NULL), mC.tban_kick, kick, true);
+				ostr << autosprintf(_("User was dropped: %s"), nick.c_str());
 			}
-		} else if(flags & eKCK_Drop) {
-			ostr.str(mEmpty);
-			ostr << autosprintf(_("Error kicking user %s because he is protected against all classes below %d"), Nick.c_str(), user->mProtectFrom);
-			DCPublicHS(ostr.str(),OP->mxConn);
+
+			if (flags & eKI_CLOSE)
+				user->mxConn->CloseNice(1000, eCR_KICKED);
+		} else {
+			ostr << _("Your action was prevented by plugin.");
 		}
+	}
+
+	if (ostr.str().size()) {
+		if (use_os)
+			(*use_os) << ostr.str();
+		else if (op->mxConn)
+			DCPublicHS(ostr.str(), op->mxConn);
 	}
 }
 

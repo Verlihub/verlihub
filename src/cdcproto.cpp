@@ -1152,7 +1152,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		bool banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
 		if (banned && (theoclass <= eUC_REGUSER)) {
-			os << _("You are banned from this hub.") << "\r\n";
+			os << _("You are banned from this hub") << ":\r\n";
 			Ban.DisplayUser(os);
 			mS->DCPublicHS(os.str(), conn);
 
@@ -1766,10 +1766,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 	if (text.size() && (mKickChatPattern.Exec(text) >= 4) && (!mKickChatPattern.PartFound(1) || (mKickChatPattern.Compare(2, text, conn->mpUser->mNick) == 0))) { // if this is a kick message, process it separately
 		if (conn->mpUser->mClass >= eUC_OPERATOR) {
-			string kick_reason, other;
-			mKickChatPattern.Extract(4, text, kick_reason);
+			string other, why;
 			mKickChatPattern.Extract(3, text, other);
-			mS->DCKickNick(NULL, conn->mpUser, other, kick_reason, eKCK_Reason);
+			mKickChatPattern.Extract(4, text, why);
+			mS->DCKickNick(NULL, conn->mpUser, other, why, (eKI_WHY | eKI_BAN));
 		}
 
 		return 0;
@@ -2520,7 +2520,7 @@ int cDCProto::DCO_Kick(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_1_PARAM), mS->mEmpty, eKCK_Drop | eKCK_TBAN); // try to kick user
+	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_1_PARAM), mS->mEmpty, eKI_CLOSE); // try to kick user
 	return 0;
 }
 
@@ -2639,11 +2639,9 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	cBan ban(mS);
 	mS->mBanList->NewBan(ban, other->mxConn, conn->mpUser->mNick, msg->ChunkString(eCH_NB_REASON), period, eBF_NICKIP);
 	mS->mBanList->AddBan(ban);
-
-	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_NB_NICK), mS->mEmpty, eKCK_Drop);
-
+	mS->DCKickNick(NULL, conn->mpUser, msg->ChunkString(eCH_NB_NICK), mS->mEmpty, eKI_CLOSE); // drop only
 	ban.DisplayKick(os);
-	mS->DCPublicHS(os.str(),conn);
+	mS->DCPublicHS(os.str(), conn);
 	other->mxConn->CloseNice(1000, eCR_KICKED);
 	return 0;
 }
@@ -3576,6 +3574,24 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 
 		if (pos != ref.npos)
 			ref.erase(pos, 7);
+		else
+			break;
+	}
+
+	while (ref.size() > 6) {
+		pos = ref.find("http://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 7);
+		else
+			break;
+	}
+
+	while (ref.size() > 7) {
+		pos = ref.find("https://");
+
+		if (pos != ref.npos)
+			ref.erase(pos, 8);
 		else
 			break;
 	}

@@ -31,8 +31,6 @@
 //#include <algorithm>
 #include "i18n.h"
 
-#define PADDING 25
-
 namespace nVerliHub {
 	//using namespace std;
 	using namespace nUtils;
@@ -201,40 +199,47 @@ void cInfoServer::ProtocolInfo(ostream &os)
 
 void cInfoServer::SystemInfo(ostream &os)
 {
-#if defined HAVE_LINUX
-	struct sysinfo serverInfo;
+	#if defined HAVE_LINUX
+		struct sysinfo serverInfo;
 
-	if (sysinfo(&serverInfo)) {
-		os << _("Unable to retrive system information.");
-		return;
-	}
+		if (sysinfo(&serverInfo)) {
+			os << _("Unable to get system information.");
+			return;
+		}
 
-	cTime uptime(serverInfo.uptime);
-	utsname osname;
-	os << _("System information") << ":";
+		utsname osname;
+		os << _("System information") << ":\r\n\r\n";
 
-	if (uname(&osname) == 0) {
-		os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << "OS" << osname.sysname << " " << osname.release << " (" << osname.machine << ")";
-	}
+		if (uname(&osname) == 0) {
+			os << " [*] " << autosprintf(_("OS: %s"), osname.sysname) << "\r\n";
+			os << " [*] " << autosprintf(_("Kernel: %s [%s]"), osname.release, osname.machine) << "\r\n\r\n";
+		}
 
-	os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("System uptime") << uptime.AsPeriod().AsString().c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Load averages") << autosprintf("%.2f %.2f %.2f", serverInfo.loads[0]/65536.0, serverInfo.loads[1]/65536.0, serverInfo.loads[2]/65536.0) << endl;
-#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total memory") << convertByte((long long int) sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE), false).c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free memory") << convertByte((long long int) sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE), false).c_str() << endl;
-#else
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total memory") << convertByte((long long int) serverInfo.totalram, false).c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free memory") << convertByte((long long int) serverInfo.freeram, false).c_str() << endl;
-#endif
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Shared memory") << convertByte((long long int) serverInfo.sharedram, false).c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Memory in buffers") << convertByte((long long int) serverInfo.bufferram, false).c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Free swap") << convertByte((long long int) serverInfo.freeswap, false).c_str() << "/" << convertByte((long long int) serverInfo.totalswap, false).c_str() << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Number of processes") << serverInfo.procs;
-	/*struct rusage resourceUsage; // not used
-	getrusage(RUSAGE_SELF, &resourceUsage);*/
-#else
-	os << _("Information is not available.");
-#endif
+		os << " [*] " << autosprintf(_("Uptime: %s"), cTime(serverInfo.uptime).AsPeriod().AsString().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Load averages: %.2f %.2f %.2f"), (serverInfo.loads[0] / 65536.0), (serverInfo.loads[1] / 65536.0), (serverInfo.loads[2] / 65536.0)) << "\r\n";
+		os << " [*] " << autosprintf(_("Total processes: %d"), serverInfo.procs) << "\r\n\r\n";
+
+		#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
+			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
+			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
+		#else
+			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(serverInfo.totalram)).c_str()) << "\r\n";
+			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(serverInfo.freeram)).c_str()) << "\r\n";
+		#endif
+
+		os << " [*] " << autosprintf(_("Shared RAM: %s"), convertByte((__int64)(serverInfo.sharedram)).c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("RAM in buffers: %s"), convertByte((__int64)(serverInfo.bufferram)).c_str()) << "\r\n\r\n";
+
+		os << " [*] " << autosprintf(_("Total swap: %s"), convertByte((__int64)(serverInfo.totalswap)).c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Free swap: %s"), convertByte((__int64)(serverInfo.freeswap)).c_str()) << "\r\n";
+
+		/*
+		struct rusage resourceUsage;
+		getrusage(RUSAGE_SELF, &resourceUsage);
+		*/
+	#else
+		os << _("System information not available.");
+	#endif
 }
 
 void cInfoServer::SetServer(cServerDC *Server)
@@ -244,90 +249,124 @@ void cInfoServer::SetServer(cServerDC *Server)
 
 void cInfoServer::Output(ostream &os, int Class)
 {
-	iterator it;
-	cTime theTime;
-	os << _("Hub information") << ":";
-	os << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Version") << HUB_VERSION_VERS << "\r\n";
-	theTime = mServer->mTime;
-	theTime -= mServer->mStartTime;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Uptime") << theTime.AsPeriod().AsString().c_str() << "\r\n";
-	string loadType;
+	string temp;
+	os << _("Hub information") << ":\r\n\r\n";
+
+	os << " [*] " << autosprintf(_("Version: %s"), HUB_VERSION_VERS) << "\r\n";
+	os << " [*] " << autosprintf(_("Uptime: %s"), cTime(mServer->mTime - mServer->mStartTime).AsPeriod().AsString().c_str()) << "\r\n";
+	temp = _("Unknown");
 
 	if (mServer->mSysLoad >= eSL_RECOVERY)
-		loadType = _("Recovery mode");
+		temp = _("Recovery");
+
 	if (mServer->mSysLoad >= eSL_CAPACITY)
-		loadType = _("Near capacity");
+		temp = _("Capacity");
+
 	if (mServer->mSysLoad >= eSL_PROGRESSIVE)
-		loadType = _("Progressive mode");
+		temp = _("Progressive");
+
 	if (mServer->mSysLoad >= eSL_NORMAL)
-		loadType = _("Normal mode");
+		temp = _("Normal");
+
+	os << " [*] " << autosprintf(_("Frequency: %.4f [%s]"), mServer->mFrequency.GetMean(mServer->mTime), temp.c_str()) << "\r\n\r\n";
+
+	if (mServer->mC.hub_name.size())
+		temp = mServer->mC.hub_name;
 	else
-		loadType = _("Not available");
+		temp = _("Not set");
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Server frequency") << mServer->mFrequency.GetMean(mServer->mTime) << " " << "(" << loadType.c_str() << ")" << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub name") << mServer->mC.hub_name << "\r\n";
-	string hubOwner;
+	os << " [*] " << autosprintf(_("Name: %s"), temp.c_str()) << "\r\n";
 
-	if (!mServer->mC.hub_owner.empty())
-		hubOwner = mServer->mC.hub_owner;
+	if (mServer->mC.hub_owner.size())
+		temp = mServer->mC.hub_owner;
 	else
-		hubOwner = "--";
+		temp = _("Not set");
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub owner") << hubOwner << "\r\n";
-	string hubCategory;
+	os << " [*] " << autosprintf(_("Owner: %s"), temp.c_str()) << "\r\n";
 
-	if (!mServer->mC.hub_category.empty())
-		hubCategory = mServer->mC.hub_category;
+	if (mServer->mC.hub_category.size())
+		temp = mServer->mC.hub_category;
 	else
-		hubCategory = "--";
+		temp = _("Not set");
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub category") << hubCategory << "\r\n";
-	string hubLocale;
+	os << " [*] " << autosprintf(_("Category: %s"), temp.c_str()) << "\r\n";
 
-	if (!mServer->mDBConf.locale.empty())
-		hubLocale = mServer->mDBConf.locale;
+	if (mServer->mDBConf.locale.size())
+		temp = mServer->mDBConf.locale;
 	else
-		hubLocale = "--";
+		temp = _("Not set");
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub locale") << hubLocale << "\r\n";
-	os << "    " << string(30,'=') << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Online users") << mServer->mUserCountTot << " " << _("of") << " " << mServer->mC.max_users_total << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total share") << convertByte(mServer->mTotalShare, false).c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("User list count") << mServer->mUserList.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hello user count") << mServer->mHelloUsers.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("In progress users") << mServer->mInProgresUsers.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Active user count") << mServer->mActiveUsers.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Passive user count") << mServer->mPassiveUsers.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Operator user count") << mServer->mOpchatList.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) <<_("Bot user count") << mServer->mRobotList.Size() << "\r\n";
-	os << "    " << string(30,'=') << "\r\n";
+	os << " [*] " << autosprintf(_("Locale: %s"), temp.c_str()) << "\r\n\r\n";
+
+	os << " [*] " << autosprintf(_("Users: %d of %d"), mServer->mUserCountTot, mServer->mC.max_users_total) << "\r\n";
+	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mServer->mTotalShare).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("User list: %d"), mServer->mUserList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Hello users: %d"), mServer->mHelloUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Progress users: %d"), mServer->mInProgresUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Active users: %d"), mServer->mActiveUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Passive users: %d"), mServer->mPassiveUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Operator count: %d"), mServer->mOpchatList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Bot count: %d"), mServer->mRobotList.Size()) << "\r\n\r\n";
+
 	double total = 0, curr;
 
-	// print zone from 1 to 3
-	for (int i = 1; i < 4; i++) {
-		if (!mServer->mC.cc_zone[i-1].empty()) {
-			string zone = mServer->mC.cc_zone[i-1];
-			replace(zone.begin(), zone.end(), ':', ',');
-			os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("Users in zone #%d"), i) << mServer->mUserCount[i] << "/" << mServer->mC.max_users[i];
-			curr = mServer->mUploadZone[i].GetMean(mServer->mTime);
-			total += curr;
-			os << " (" << convertByte(curr, true).c_str() << ")" << " [" << zone.c_str() << "]" << "\r\n";
-		} else
-			os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("Users in zone #%d"), i) << _("Not set") << " " << _("[CC]") << "\r\n";
-	}
+	for (unsigned int i = 1; i < 4; i++) { // print zone from 1 to 3
+		if (mServer->mC.cc_zone[i - 1].size())
+			temp = mServer->mC.cc_zone[i - 1];
+		else
+			temp = _("Not set");
 
-	// print zone from 4 to 6
-	for (int i = 4; i <= USER_ZONES; i++) {
 		curr = mServer->mUploadZone[i].GetMean(mServer->mTime);
 		total += curr;
-		os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("Users in zone #%d"), i) << mServer->mUserCount[i] << "/" << mServer->mC.max_users[i];
-		os << " (" << convertByte(curr, true).c_str() << ") " << _("[IP]") << "\r\n";
+		os << " [*] " << autosprintf(_("Users in country zone #%d: %d of %d [%s] [%s]"), i, mServer->mUserCount[i], mServer->mC.max_users[i], convertByte(curr, true).c_str(), temp.c_str()) << "\r\n";
 	}
 
-	// print zone 0
-	total += mServer->mUploadZone[0].GetMean(mServer->mTime);
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("All other users") << mServer->mUserCount[0] << "/" << mServer->mC.max_users[0] << " (" << convertByte(total, true).c_str() << ")";
+	for (unsigned int i = 4; i <= USER_ZONES; i++) { // print zone from 4 to 6
+		if (i == 4) {
+			if (mServer->mC.ip_zone4_min.size()) {
+				temp = mServer->mC.ip_zone4_min;
+
+				if (mServer->mC.ip_zone4_max.size()) {
+					temp += "-";
+					temp += mServer->mC.ip_zone4_max;
+				}
+			} else {
+				temp = _("Not set");
+			}
+		} else if (i == 5) {
+			if (mServer->mC.ip_zone5_min.size()) {
+				temp = mServer->mC.ip_zone5_min;
+
+				if (mServer->mC.ip_zone5_max.size()) {
+					temp += "-";
+					temp += mServer->mC.ip_zone5_max;
+				}
+			} else {
+				temp = _("Not set");
+			}
+		} else if (i == 6) {
+			if (mServer->mC.ip_zone6_min.size()) {
+				temp = mServer->mC.ip_zone6_min;
+
+				if (mServer->mC.ip_zone6_max.size()) {
+					temp += "-";
+					temp += mServer->mC.ip_zone6_max;
+				}
+			} else {
+				temp = _("Not set");
+			}
+		}
+
+		curr = mServer->mUploadZone[i].GetMean(mServer->mTime);
+		total += curr;
+		os << " [*] " << autosprintf(_("Users in IP zone #%d: %d of %d [%s] [%s]"), i, mServer->mUserCount[i], mServer->mC.max_users[i], convertByte(curr, true).c_str(), temp.c_str()) << "\r\n";
+	}
+
+	total += mServer->mUploadZone[0].GetMean(mServer->mTime); // print zone 0
+	os << " [*] " << autosprintf(_("Other users: %d of %d [%s]"), mServer->mUserCount[0], mServer->mC.max_users[0], convertByte(total, true).c_str()) << "\r\n";
 }
 
-cInfoServer::~cInfoServer(){}
+cInfoServer::~cInfoServer()
+{}
+
 }; // namespace nVerliHub

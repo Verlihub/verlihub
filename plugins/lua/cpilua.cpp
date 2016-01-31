@@ -719,32 +719,33 @@ bool cpiLua::OnUnparsedMsg(cConnDC *conn, cMessageDC *msg)
 }
 */
 
-bool cpiLua::OnOperatorKicks(cUser *OP, cUser *user, string *reason)
+bool cpiLua::OnOperatorKicks(cUser *op, cUser *user, string *why)
 {
-	if ((OP != NULL) && (user != NULL) && (reason != NULL)) {
-		char * args[] = {
-			(char *)OP->mNick.c_str(),
-			(char *)user->mNick.c_str(),
-			(char *)reason->c_str(),
+	if (op && user && why) {
+		char *args[] = {
+			(char*)op->mNick.c_str(),
+			(char*)user->mNick.c_str(),
+			(char*)why->c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnOperatorKicks", args, OP->mxConn);
+		return CallAll("VH_OnOperatorKicks", args, op->mxConn);
 	}
 
 	return true;
 }
 
-bool cpiLua::OnOperatorDrops(cUser *OP, cUser *user)
+bool cpiLua::OnOperatorDrops(cUser *op, cUser *user, string *why)
 {
-	if ((OP != NULL) && (user != NULL)) {
-		char * args[] = {
-			(char *)OP->mNick.c_str(),
-			(char *)user->mNick.c_str(),
+	if (op && user && why) {
+		char *args[] = {
+			(char*)op->mNick.c_str(),
+			(char*)user->mNick.c_str(),
+			(char*)why->c_str(),
 			NULL
 		};
 
-		return CallAll("VH_OnOperatorDrops", args, OP->mxConn);
+		return CallAll("VH_OnOperatorDrops", args, op->mxConn);
 	}
 
 	return true;

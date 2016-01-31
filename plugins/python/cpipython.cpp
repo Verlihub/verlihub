@@ -1004,23 +1004,23 @@ bool cpiPython::OnOperatorCommand(cConnDC *conn, string *command)
 }
 
 
-bool cpiPython::OnOperatorKicks(cUser *OP, cUser *user, string *reason)
+bool cpiPython::OnOperatorKicks(cUser *op, cUser *user, string *why)
 {
-	if((OP != NULL) && (user !=NULL) && (reason != NULL))
-	{
-		w_Targs* args = lib_pack( "sss", OP->mNick.c_str(), user->mNick.c_str(), reason->c_str());
+	if (op && user && why) {
+		w_Targs *args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
 		return CallAll(W_OnOperatorKicks, args);
 	}
+
 	return true;
 }
 
-bool cpiPython::OnOperatorDrops(cUser *OP, cUser *user)
+bool cpiPython::OnOperatorDrops(cUser *op, cUser *user, string *why)
 {
-	if((OP != NULL) && (user != NULL))
-	{
-		w_Targs* args = lib_pack( "ss", OP->mNick.c_str(), user->mNick.c_str());
+	if (op && user && why) {
+		w_Targs *args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
 		return CallAll(W_OnOperatorDrops, args);
 	}
+
 	return true;
 }
 
@@ -1482,15 +1482,22 @@ w_Targs* _Ban (int id, w_Targs* args) // (char *nick, long howlong, long bantype
 	return NULL; // not implemented yet
 }
 
-w_Targs* _KickUser (int id, w_Targs* args) // (char *op, char *nick, char *data)
+w_Targs* _KickUser(int id, w_Targs* args) // (char *op, char *nick, char *data)
 {
 	char *op, *nick, *data;
-	if (!cpiPython::lib_unpack(args, "sss", &op, &nick, &data)) return NULL;
-	if (!nick || !op || !data) return NULL;
-	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(op);
-	if (!u) return NULL;
-	ostringstream os;
-	cpiPython::me->server->DCKickNick(&os, u, nick, data, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
+
+	if (!cpiPython::lib_unpack(args, "sss", &op, &nick, &data))
+		return NULL;
+
+	if (!nick || !op || !data)
+		return NULL;
+
+	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(op);
+
+	if (!user)
+		return NULL;
+
+	cpiPython::me->server->DCKickNick(NULL, user, nick, data, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	return w_ret1;
 }
 

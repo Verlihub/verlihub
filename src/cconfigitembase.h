@@ -122,6 +122,7 @@ public:
 	DeclarecConfigItemBaseT(char*, nEnums::eIT_PCHAR,PChar);
 	DeclarecConfigItemBaseT(string, nEnums::eIT_STRING,String);
 	DeclarecConfigItemBaseT(__int64, nEnums::eIT_LLONG,Int64);
+	DeclarecConfigItemBaseT(unsigned __int64, nEnums::eIT_ULLONG, UInt64);
 
 	}; // namespace nConfig
 }; // namespace nVerliHub

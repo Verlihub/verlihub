@@ -20,6 +20,7 @@
 
 #ifndef NDIRECTCONNECT_NTABLESCKICKLIST_H
 #define NDIRECTCONNECT_NTABLESCKICKLIST_H
+
 #include "cconfmysql.h"
 #include "ckick.h"
 
@@ -29,16 +30,17 @@ namespace nVerliHub {
 	};
 	namespace nTables {
 
-/**
-@author Daniel Muller
+/*
+	author
+		Daniel Muller
 */
-class cKickList : public nConfig::cConfMySQL
+class cKickList: public nConfig::cConfMySQL
 {
 public:
 	cKickList(nMySQL::cMySQL &mysql);
 	~cKickList();
-	bool AddKick(nSocket::cConnDC *,const string& OPNick, const string *, cKick &);
-	bool FindKick(cKick &Dest,const string& Nick, const string &OpNick, unsigned Age, bool WithReason, bool WithDrop, bool IsNick=true);
+	bool AddKick(nSocket::cConnDC *conn, const string &op, const string *why, unsigned int age, cKick &kick, bool drop = false);
+	bool FindKick(cKick &dest, const string &nick, const string &op, unsigned int age, bool why, bool drop, bool is_nick = true);
 	void Cleanup();
 protected:
 	cKick mModel;

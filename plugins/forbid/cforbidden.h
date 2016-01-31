@@ -47,7 +47,7 @@ class cForbiddenWorker
 public:
 	cForbiddenWorker();
 	virtual ~cForbiddenWorker();
-	int DoIt(const string & cmd_line, nSocket::cConnDC *conn, nSocket::cServerDC *server, int mask);
+	int DoIt(const string &cmd_line, nSocket::cConnDC *conn, nSocket::cServerDC *serv, int mask);
 	bool CheckMsg(const string &msg);
 	bool PrepareRegex();
 	// the forbidden word

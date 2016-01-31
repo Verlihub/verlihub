@@ -1117,7 +1117,6 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 			args = Py_BuildValue("(z)", s0);
 			break;
 		case W_OnOperatorCommand:
-		case W_OnOperatorDrops:
 		case W_OnUserCommand:
 		case W_OnValidateTag:
 		case W_OnParsedMsgMyHubURL:
@@ -1141,6 +1140,7 @@ w_Targs* w_CallHook (int id , int func, w_Targs* params)   // return > 0 means f
 			args = Py_BuildValue("(zz)", s0, s1);
 			break;
 
+		case W_OnOperatorDrops:
 		case W_OnOperatorKicks:
 		case W_OnParsedMsgSupports:
 		case W_OnParsedMsgPM:
@@ -1337,7 +1337,7 @@ const char * w_HookName(int hook)
 		case W_OnUnknownMsg: 		return "OnUnknownMsg";
 		case W_OnOperatorCommand: 	return "OnOperatorCommand";
 		case W_OnOperatorKicks: 	return "OnOperatorKicks";
-		case W_OnOperatorDrops: 	return "OnOperatorDrops";
+		case W_OnOperatorDrops: return "OnOperatorDrops";
 		case W_OnValidateTag: 		return "OnValidateTag";
 		case W_OnUserCommand: 		return "OnUserCommand";
 		case W_OnUserLogin: 		return "OnUserLogin";

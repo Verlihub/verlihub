@@ -67,8 +67,8 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdRaw(int(eCM_RAW),".proto(\\S+)_(\\S+) ","(.*)", &mFunRaw),
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
-	mCmdKick(int(eCM_KICK),".(kick|drop) ","(\\S+)( (.*)$)?", &mFunKick, eUR_KICK ),
-	mCmdInfo(int(eCM_INFO), ".(hub|server|port|url|huburl|prot|proto|protocol)info ?", "(\\S+)?", &mFunInfo),
+	mCmdKick(int(eCM_KICK), ".(kick|drop) ", "(\\S+)( (.*)$)?", &mFunKick, eUR_KICK),
+	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG),".plug(in|out|list|reg|reload) ","(\\S+)( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
@@ -861,27 +861,35 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 	return 1;
 }
 
-int cDCConsole::CmdKick(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
 {
-	ostringstream os;
-	string omsg, OtherNick, Reason;
-	string tmpline;
+	if (!conn || !conn->mpUser)
+		return 0;
 
-	if(conn && conn->mpUser && conn->mpUser->Can(eUR_KICK, mOwner->mTime.Sec())) {
-		cmd_line >> OtherNick;
-		getline(cmd_line,Reason);
-		while(cmd_line.good()) {
-			tmpline="";
-			getline(cmd_line,tmpline);
-			Reason += "\r\n" + tmpline;
-		}
-		if (Reason[0] == ' ') Reason = Reason.substr(1);
-		if (Reason.size() > 3) {
-			mOwner->DCKickNick(&os, conn->mpUser, OtherNick, Reason, eKCK_Drop | eKCK_Reason | eKCK_PM| eKCK_TBAN);
-		}
+	if (!conn->mpUser->Can(eUR_KICK, mOwner->mTime.Sec())) // todo: notify user about missing kick right
+		return 1;
+
+	ostringstream os;
+	string temp, nick, why;
+	cmd_line >> nick;
+	getline(cmd_line, why);
+
+	while (cmd_line.good()) {
+		temp.clear();
+		getline(cmd_line, temp);
+		why += "\r\n" + temp;
 	}
-	omsg = os.str();
-	mOwner->DCPublicHS(omsg,conn);
+
+	if (why.size() && (why[0] == ' '))
+		why = why.substr(1);
+
+	mOwner->DCKickNick(&os, conn->mpUser, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
+
+	if (os.str().size()) {
+		temp = os.str();
+		mOwner->DCPublicHS(temp, conn);
+	}
+
 	return 1;
 }
 
@@ -1354,7 +1362,9 @@ bool cDCConsole::cfClean::operator()()
 
 bool cDCConsole::cfBan::operator()()
 {
-	if (!mConn->mpUser) return false;
+	if (!mConn || !mConn->mpUser)
+		return false;
+
 	int MyClass = mConn->mpUser->mClass;
 
 	if (MyClass < eUC_OPERATOR) {
@@ -1422,7 +1432,7 @@ bool cDCConsole::cfBan::operator()()
 
 				#ifndef WITHOUT_PLUGINS
 				if (!mS->mCallBacks.mOnUnBan.CallAll(mConn->mpUser, Who, mConn->mpUser->mNick, tmp)) {
-					(*mOS) << _("Action has been discarded by plugin.");
+					(*mOS) << _("Your action was prevented by plugin.");
 					return false;
 				}
 				#endif
@@ -1528,13 +1538,13 @@ bool cDCConsole::cfBan::operator()()
 		}
 
 		#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnNewBan.CallAll(mConn->mpUser, &Ban)) {
-			(*mOS) << _("Action has been discarded by plugin.");
-			return false;
-		}
+			if (!mS->mCallBacks.mOnNewBan.CallAll(mConn->mpUser, &Ban)) {
+				(*mOS) << _("Your action was prevented by plugin.");
+				return false;
+			}
 		#endif
 
-		if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // try to kick users if ban type is ip or range
+		if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // drop users if ban type is ip or range
 			cUserCollection::iterator i;
 			cConnDC *conn;
 
@@ -1544,23 +1554,22 @@ bool cDCConsole::cfBan::operator()()
 				if (conn) {
 					unsigned long ipnum = cBanList::Ip2Num(conn->AddrIP());
 
-					if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum))) {
-						mS->DCKickNick(mOS, mConn->mpUser, (*i)->mNick, Ban.mReason, eKCK_Reason | eKCK_Drop);
-						(*mOS) << "\r\n";
-					}
+					if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum)))
+						conn->CloseNow();
 				}
 			}
-		} else { // try to kick user if ban type is other
+		} else if (Ban.mNick.size()) { // drop user if nick is specified
 			cUser *user = mS->mUserList.GetUserByNick(Ban.mNick);
 
-			if (user != NULL)
-				mS->DCKickNick(mOS, mConn->mpUser, Ban.mNick, Ban.mReason, eKCK_Reason | eKCK_Drop);
+			if (user && user->mxConn)
+				user->mxConn->CloseNow();
 		}
 
 		mS->mBanList->AddBan(Ban);
 		(*mOS) << _("Added new ban") << ":\r\n";
 		Ban.DisplayComplete(*mOS);
 		break;
+
 	case BAN_LIST:
 		{
 			GetParInt(BAN_WHO, BanCount);
@@ -1598,7 +1607,7 @@ bool cDCConsole::cfInfo::operator()()
 
 	static const char *infonames[] = {
 		"hub",
-		"server",
+		"serv", "server", "sys", "system", "os",
 		"port",
 		"url", "huburl",
 		"prot", "proto", "protocol"
@@ -1606,7 +1615,7 @@ bool cDCConsole::cfInfo::operator()()
 
 	static const int infoids[] = {
 		eINFO_HUB,
-		eINFO_SERVER,
+		eINFO_SERVER, eINFO_SERVER, eINFO_SERVER, eINFO_SERVER, eINFO_SERVER,
 		eINFO_PORT,
 		eINFO_HUBURL, eINFO_HUBURL,
 		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL
@@ -2198,40 +2207,59 @@ bool cDCConsole::cfWho::operator()()
 
 bool cDCConsole::cfKick::operator()()
 {
-	enum { eAC_KICK, eAC_DROP };
-	static const char * actionnames [] = { "kick", "drop" };
-	static const int actionids [] = { eAC_KICK, eAC_DROP };
+	if (!mConn || !mConn->mpUser)
+		return false;
 
-	if (this->mConn->mpUser->mClass < eUC_VIPUSER) {
+	enum {
+		eAC_KICK,
+		eAC_DROP
+	};
+
+	static const char *actionnames[] = {
+		"kick",
+		"drop"
+	};
+
+	static const int actionids[] = {
+		eAC_KICK,
+		eAC_DROP
+	};
+
+	if (mConn->mpUser->mClass < eUC_VIPUSER) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	string tmp;
-	mIdRex->Extract(1,mIdStr,tmp);
-	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames)/sizeof(char*));
-	if (Action < 0) return false;
+	string temp;
+	mIdRex->Extract(1, mIdStr, temp);
+	int Action = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
 
-	string nick, text;
-
-	mParRex->Extract(1,mParStr,nick);
-
-	switch(Action) {
-		case eAC_KICK:
-			if(!mParRex->PartFound(2)) {
-				(*mOS) << _("Please provide a valid reason.") << endl;
-				return false;
-			}
-			mParRex->Extract(2,mParStr,text);
-		case eAC_DROP:
-			mS->DCKickNick(mOS, this->mConn->mpUser, nick, text,
-				(Action == eAC_KICK) ?
-				(eKCK_Drop | eKCK_Reason | eKCK_PM| eKCK_TBAN) :
-				(eKCK_Drop | eKCK_Reason));
-		break;
-		default: (*mOS) << _("This command is not implemented.") << endl;
+	if (Action < 0)
 		return false;
-	};
+
+	string nick;
+	temp.clear();
+	mParRex->Extract(1, mParStr, nick);
+
+	if (mParRex->PartFound(2)) {
+		mParRex->Extract(2, mParStr, temp);
+
+		if (temp.size() && (temp[0] == ' ')) // small fix
+			temp = temp.substr(1);
+	}
+
+	switch (Action) {
+		case eAC_KICK:
+			mS->DCKickNick(mOS, mConn->mpUser, nick, temp, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
+			break;
+		case eAC_DROP:
+			mS->DCKickNick(mOS, mConn->mpUser, nick, temp, (eKI_CLOSE | eKI_PM | eKI_DROP));
+			break;
+		default:
+			(*mOS) << _("This command is not implemented.");
+			return false;
+	}
+
 	return true;
 }
 
@@ -2444,7 +2472,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 			#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnNewReg.CallAll(this->mConn->mpUser, nick, ParClass)) {
-				(*mOS) << _("Action has been discarded by plugin.");
+				(*mOS) << _("Your action was prevented by plugin.");
 				return false;
 			}
 			#endif
@@ -2477,7 +2505,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		case eAC_DEL: // delete
 			#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnDelReg.CallAll(this->mConn->mpUser, nick, ui.mClass)) {
-				(*mOS) << _("Action has been discarded by plugin.");
+				(*mOS) << _("Your action was prevented by plugin.");
 				return false;
 			}
 			#endif
@@ -2518,7 +2546,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		case eAC_CLASS: // class
 			#ifndef WITHOUT_PLUGINS
 				if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
-					(*mOS) << _("Action has been discarded by plugin.");
+					(*mOS) << _("Your action was prevented by plugin.");
 					return false;
 				}
 			#endif

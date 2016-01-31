@@ -44,6 +44,7 @@ class cBasicItemCreator
 		NewItemMethod(unsigned int, UInt);
 		NewItemMethod(long, Long);
 		NewItemMethod(__int64, Int64);
+		NewItemMethod(unsigned __int64, UInt64);
 		NewItemMethod(unsigned long, ULong);
 		NewItemMethod(char *, PChar);
 		NewItemMethod(string, String);
@@ -151,10 +152,13 @@ class cConfigBase : public cConfigBaseBase
 		DeclareAddMethods(long);
 		DeclareAddMethods(unsigned long);
 		DeclareAddMethods(__int64);
+		DeclareAddMethods(unsigned __int64);
 		DeclareAddMethods(string);
 		DeclareAddMethods(char *);
 		DeclareAddMethods(double);
 };
+
 	}; // namespace nConfig
 }; // namespace nVerliHub
+
 #endif

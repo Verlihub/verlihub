@@ -69,7 +69,7 @@ public:
 	virtual bool OnUserCommand(nSocket::cConnDC *, string *);
 	virtual bool OnHubCommand(nSocket::cConnDC *, string *, int, int);
 	virtual bool OnOperatorKicks(cUser *, cUser *, string *);
-	virtual bool OnOperatorDrops(cUser *, cUser *);
+	virtual bool OnOperatorDrops(cUser *, cUser *, string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);

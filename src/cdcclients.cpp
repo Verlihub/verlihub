@@ -92,7 +92,7 @@ namespace nVerliHub {
 	namespace nTables {
 
 	cDCClients::cDCClients(cServerDC *server):
-		tMySQLMemoryList<cDCClient,cServerDC>(server->mMySQL, server, "dc_clients"),
+		tMySQLMemoryList<cDCClient,cServerDC>(server->mMySQL, server, "client_list"),
 		mServer(server)
 	{
 		SetClassName("nDC::cDCClients");

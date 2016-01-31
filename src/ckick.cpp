@@ -29,9 +29,9 @@ cKick::cKick()
 	mTime = 0;
 	mIsDrop = false;
 }
+
 cKick::~cKick()
-{
-}
+{}
 
 	}; //namespace nTables
 }; //namespace nVerliHub

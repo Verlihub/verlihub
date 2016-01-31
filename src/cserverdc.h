@@ -139,10 +139,11 @@ namespace nVerliHub {
 
 		enum
 		{
-			eKCK_Drop = 1,
-			eKCK_Reason = 2,
-			eKCK_PM = 4,
-			eKCK_TBAN = 8
+			eKI_CLOSE = 1,
+			eKI_WHY = 2,
+			eKI_PM = 4,
+			eKI_BAN = 8,
+			eKI_DROP = 16
 		};
 
 		typedef enum
@@ -314,15 +315,10 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		virtual int StartListening(int OverrideDefaultPort=0);
 
-		/**
-		* Kick an user and close his connection.
-		* @param use_os A valid pointer to a strem where to store the message to send to the user. If NULL message is directly sent to the user.
-		* @param OP A pointer to cUser object of the operator who kicked the user.
-		* @param Nick The string of the nick to kick.
-		* @param Reason The reason of the kick.
-		* @param flags Change the behavior of the kick. For ex. also drop the user.
+		/*
+			kick user and perform different actions based of flags
 		*/
-		void DCKickNick(ostream *, cUser *OP, const string &Nick, const string &Reason, int flags);
+		void DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags);
 
 		/*
 			Send a private message to user from other user or hub security.
@@ -509,13 +505,10 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		bool ShowUserToAll(cUser *user);
 
-		/**
-		* Convert a string of time in seconds.
-		* @param str The string to convert.
-		* @param err Error stream.
-		* @return Converted time in seconds.
+		/*
+			convert string to time in seconds
 		*/
-		unsigned Str2Period(const string &, ostream &);
+		unsigned int Str2Period(const string &s, ostream &err);
 
 		/*
 			Check if nick is valid, length, characters, prefix, ban, etc.
@@ -848,7 +841,7 @@ private:
 			mOnHubCommand(mgr, "VH_OnHubCommand", &cVHPlugin::OnHubCommand),
 			mOnParsedMsgSR(mgr, "VH_OnParsedMsgSR", &cVHPlugin::OnParsedMsgSR),
 			mOnOperatorKicks( mgr, "VH_OnOperatorKicks", &cVHPlugin::OnOperatorKicks),
-			mOnOperatorDrops( mgr, "VH_OnOperatorDrops", &cVHPlugin::OnOperatorDrops),
+			mOnOperatorDrops(mgr, "VH_OnOperatorDrops", &cVHPlugin::OnOperatorDrops),
 			mOnUserLogin(mgr, "VH_OnUserLogin", &cVHPlugin::OnUserLogin),
 			mOnUserLogout  (mgr, "VH_OnUserLogout",   &cVHPlugin::OnUserLogout ),
 			mOnValidateTag(mgr, "VH_OnValidateTag", &cVHPlugin::OnValidateTag),
@@ -895,7 +888,7 @@ private:
 		cVHCBL_ConnTextIntInt mOnHubCommand;
 		cVHCBL_Message mOnParsedMsgSR;
 		cVHCBL_UsrUsrStr mOnOperatorKicks;
-		cVHCBL_UsrUsr mOnOperatorDrops;
+		cVHCBL_UsrUsrStr mOnOperatorDrops;
 		cVHCBL_User mOnUserLogin;
 		cVHCBL_User mOnUserLogout;
 		cVHCBL_ConnTag mOnValidateTag;

@@ -340,14 +340,12 @@ public:
 
 	virtual bool OnOperatorKicks(cUser* OP, cUser *User , string *Reason){ return true; }
 
-	//! Event handler function that is called when an operator drop an user
-	/*!
-	 * 	Use RegisterCallBack("VH_OnOperatorDrops") to register it. This event can be discardable.
-	\return Return false to ignore the kick, otherwise return true.
-	\param Op The operator that did the drop
-	\param User The dropped user
-	 */
-	virtual bool OnOperatorDrops(cUser* OP, cUser *User ){ return true; }
+	/*
+		event handler function called when operator drops user
+		use RegisterCallBack("VH_OnOperatorDrops") to register it
+		this event is discardable
+	*/
+	virtual bool OnOperatorDrops(cUser *op, cUser *user, string *why) { return true; }
 
 	//! Event handler function that is called when user login is completed
 	/*!

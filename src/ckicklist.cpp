@@ -27,11 +27,12 @@ namespace nVerliHub {
 	using namespace nConfig;
 	namespace nTables {
 
-cKickList::cKickList(cMySQL &mysql) : cConfMySQL(mysql)
+cKickList::cKickList(cMySQL &mysql):
+	cConfMySQL(mysql)
 {
 	SetClassName("cKickList");
 	mMySQLTable.mName = "kicklist";
-	AddCol("nick", "varchar(64)", "", false, mModel.mNick);
+	AddCol("nick", "varchar(128)", "", false, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("time", "int(11)", "", false, mModel.mTime);
 	AddPrimaryKey("time");
@@ -39,94 +40,86 @@ cKickList::cKickList(cMySQL &mysql) : cConfMySQL(mysql)
 	AddCol("host", "text", "", true, mModel.mHost);
 	AddCol("share_size", "varchar(15)", "", true, mModel.mShare);
 	AddCol("reason", "text", "", true, mModel.mReason);
-	AddCol("op", "varchar(64)", "", false, mModel.mOp);
+	AddCol("op", "varchar(128)", "", false, mModel.mOp);
 	AddCol("is_drop", "tinyint(1)", "", true, mModel.mIsDrop);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick, time), ";
-	mMySQLTable.mExtra+= "INDEX op_index (op), ";
-	mMySQLTable.mExtra+= "INDEX ip_index (ip), ";
-	mMySQLTable.mExtra+= "INDEX drop_index (is_drop)";
+	mMySQLTable.mExtra += "INDEX op_index (op), ";
+	mMySQLTable.mExtra += "INDEX ip_index (ip), ";
+	mMySQLTable.mExtra += "INDEX drop_index (is_drop)";
 	SetBaseTo(&mModel);
 }
 
-cKickList::~cKickList(){}
+cKickList::~cKickList()
+{}
 
-/*!
-    \fn cKickList::Cleanup()
- */
 void cKickList::Cleanup()
 {
-	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName << " WHERE time < " << cTime().Sec() - 24*3600*30;
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `time` < " << (cTime().Sec() - (24 * 3600 * 30));
 	mQuery.Query();
 	mQuery.Clear();
 }
 
-bool cKickList::AddKick(cConnDC *conn ,const string &OPNick, const string *reason, cKick &OldKick)
+bool cKickList::AddKick(cConnDC *conn, const string &op, const string *why, unsigned int age, cKick &kick, bool drop)
 {
-	if(!conn || !conn->mpUser) return false;
-	if(!FindKick(OldKick, conn->mpUser->mNick, OPNick,
-		300,
-		reason == NULL, reason != NULL ))
-	{
-		OldKick.mIP = conn->AddrIP();
-		OldKick.mNick = conn->mpUser->mNick;
+	if (!conn || !conn->mpUser)
+		return false;
 
-		if (OPNick.size())
-			OldKick.mOp = OPNick;
+	if (!FindKick(kick, conn->mpUser->mNick, op, age, drop, ((why != NULL) && why->size()))) {
+		kick.mIP = conn->AddrIP();
+		kick.mNick = conn->mpUser->mNick;
+
+		if (op.size())
+			kick.mOp = op;
 		else
-			OldKick.mOp = HUB_VERSION_NAME;
+			kick.mOp = HUB_VERSION_NAME;
 
-		OldKick.mTime = cTime().Sec();
-		OldKick.mHost = conn->AddrHost();
-		OldKick.mShare = conn->mpUser->mShare;
-		OldKick.mIsDrop = (reason == NULL);
+		kick.mTime = cTime().Sec();
+		kick.mHost = conn->AddrHost();
+		kick.mShare = conn->mpUser->mShare;
 	}
-	if(reason) OldKick.mReason += *reason; else OldKick.mIsDrop = true;
 
-	SetBaseTo(&OldKick);
+	if (why && why->size())
+		kick.mReason += (*why);
+
+	kick.mIsDrop = drop;
+	SetBaseTo(&kick);
 	DeletePK();
 	SavePK(false);
 	return true;
 }
 
-
-/*!
-    \fn cKickList::FindKick(cConnDC*, cConnDC*, unsigned)
- */
-bool cKickList::FindKick(cKick &Kick, const string &Nick, const string &OpNick, unsigned age, bool WithReason, bool WithDrop, bool IsNick)
+bool cKickList::FindKick(cKick &dest, const string &nick, const string &op, unsigned int age, bool why, bool drop, bool is_nick)
 {
 	ostringstream os;
-
 	SelectFields(os);
-	os <<" WHERE time > " << cTime().Sec()-age << " AND ";
-	cConfigItemBase * item = NULL;
+	os << " where `time` > " << (cTime().Sec() - age) << " and ";
+	cConfigItemBase *item = NULL;
 	string var;
-	if(IsNick)
-	{
-		Kick.mNick = Nick;
+
+	if (is_nick) {
+		dest.mNick = nick;
 		var = "nick";
-	}
-	else
-	{
-		Kick.mIP = Nick;
+	} else {
+		dest.mIP = nick;
 		var = "ip";
 	}
+
 	item = operator[](var);
-	SetBaseTo(&Kick);
+	SetBaseTo(&dest);
+	ufEqual(os, string(" and "), true, true, false)(item);
+	os << " and `reason` is " << (why ? "not " : "") << "null and `is_drop` = " << drop;
 
-	ufEqual(os, string(" AND "), true, true, false)(item);
+	if (op.size())
+		os << " and `op` = '" << op << "'";
 
-	os <<" AND reason IS " << (WithReason?"NOT ":"") << "NULL ";
-	os <<" AND is_drop = " << WithDrop;
-	if(OpNick.size())
-		os << " AND op = '" << OpNick << "'";
-	os <<" ORDER BY time DESC LIMIT 1";
-
+	os << " order by `time` desc limit 1";
 	bool found = false;
-	if( -1 != StartQuery(os.str()))
-	{
-		found = ( 0 <= Load());
+
+	if (StartQuery(os.str()) != -1) {
+		found = (0 <= Load());
 		EndQuery();
 	}
+
 	return found;
 }
 

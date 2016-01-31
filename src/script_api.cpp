@@ -74,7 +74,7 @@ bool SendDataToUser(char *data, char *nick)
 
 bool KickUser(char *opnick, char *nick, char *reason)
 {
-	if (!opnick || !nick)
+	if (!opnick || !nick || !reason)
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -94,7 +94,7 @@ bool KickUser(char *opnick, char *nick, char *reason)
 	if (!user || !user->mxConn)
 		return false;
 
-	serv->DCKickNick(NULL, opuser, nick, reason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
+	serv->DCKickNick(NULL, opuser, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	return true;
 }
 

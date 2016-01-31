@@ -1548,7 +1548,7 @@ int _KickRedirUser(lua_State *L)
 
 	cServerDC *serv = GetCurrentVerlihub();
 
-	if (serv == NULL) {
+	if (!serv) {
 		luaerror(L, ERR_SERV);
 		return 2;
 	}
@@ -1558,14 +1558,13 @@ int _KickRedirUser(lua_State *L)
 		return 2;
 	}
 
-	string niop = (char *)lua_tostring(L, 2);
-	string nius = (char *)lua_tostring(L, 3);
-	string reas = (char *)lua_tostring(L, 4);
-	string addr = (char *)lua_tostring(L, 5);
-
+	string niop = (char*)lua_tostring(L, 2);
+	string nius = (char*)lua_tostring(L, 3);
+	string reas = (char*)lua_tostring(L, 4);
+	string addr = (char*)lua_tostring(L, 5);
 	cUser *oper = serv->mUserList.GetUserByNick(niop);
 
-	if (oper == NULL) {
+	if (!oper) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -1573,15 +1572,14 @@ int _KickRedirUser(lua_State *L)
 
 	cUser *user = serv->mUserList.GetUserByNick(nius);
 
-	if ((user == NULL) || (user->mxConn == NULL)) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
 	user->mxConn->mCloseRedirect = addr; // set redirect
-	serv->DCKickNick(NULL, oper, nius, reas, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN); // kick user
-
+	serv->DCKickNick(NULL, oper, nius, reas, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN)); // kick user
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;

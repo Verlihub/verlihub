@@ -58,30 +58,27 @@ void cForbiddenWorker::OnLoad()
 	this->PrepareRegex();
 }
 
-int cForbiddenWorker::DoIt(const string & cmd_line, cConnDC *conn, cServerDC *server, int mask)
+int cForbiddenWorker::DoIt(const string &cmd_line, cConnDC *conn, cServerDC *serv, int mask)
 {
-	string text;
+	if (!conn || !conn->mpUser)
+		return 0;
 
-	if(mReason.size()) {
-		// User is kick user by hub security
-		ostringstream os;
-		cUser *OP = server->mUserList.GetUserByNick(server->mC.hub_security);
-		server->DCKickNick(&os, OP, conn->mpUser->mNick, mReason, eKCK_Drop | eKCK_Reason | eKCK_PM | eKCK_TBAN);
+	if (mReason.size()) {
+		cUser *op = serv->mUserList.GetUserByNick(serv->mC.hub_security);
+
+		if (op)
+			serv->DCKickNick(NULL, op, conn->mpUser->mNick, mReason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	}
 
-	// Notify it in opchat
-	if (eNOTIFY_OPS & mCheckMask) {
-
+	if (eNOTIFY_OPS & mCheckMask) { // notify in opchat
 		ostringstream os;
-		os << autosprintf(_("FORBID: User sent forbidden words in %s: %s"), (eCHECK_CHAT & mask) ? _("PUBLIC chat") : _("PRIVATE chat"), cmd_line.c_str());
-		text = os.str();
-		server->ReportUserToOpchat(conn, text, false);
+		os << autosprintf(_("Forbidden words in %s: %s"), (eCHECK_CHAT & mask) ? _("MC") : _("PM"), cmd_line.c_str());
+		serv->ReportUserToOpchat(conn, os.str(), false);
 
-		/* Send to the sender only :) */
-		/* Don't display to public if its a PM! Client already did it */
-		if(eCHECK_CHAT & mask)
-			server->DCPublic(conn->mpUser->mNick, cmd_line, conn);
+		if (eCHECK_CHAT & mask)
+			serv->DCPublic(conn->mpUser->mNick, cmd_line, conn);
 	}
+
 	return 1;
 }
 

@@ -72,7 +72,7 @@ public:
 	virtual bool OnUnknownMsg(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnOperatorCommand(nSocket::cConnDC *, std::string *);
 	virtual bool OnOperatorKicks(cUser *, cUser *, std::string *);
-	virtual bool OnOperatorDrops(cUser *, cUser *);
+	virtual bool OnOperatorDrops(cUser *, cUser *, std::string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
 	virtual bool OnUserLogin(cUser *);

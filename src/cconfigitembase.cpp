@@ -38,6 +38,7 @@ void cConfigItemBaseInt		::ConvertFrom(const std::string &str){*this = atoi(str.
 void cConfigItemBaseUInt	::ConvertFrom(const std::string &str){*this = atol(str.c_str());}
 void cConfigItemBaseLong	::ConvertFrom(const std::string &str){*this = atol(str.c_str());}
 void cConfigItemBaseInt64	::ConvertFrom(const std::string &str){*this = StringAsLL(str);}
+void cConfigItemBaseUInt64::ConvertFrom(const std::string &str) { (*this) = StringAsLL(str); }
 void cConfigItemBaseULong	::ConvertFrom(const std::string &str){*this = strtoul(str.c_str(),NULL,10);}
 void cConfigItemBaseDouble	::ConvertFrom(const std::string &str){*this = atof(str.c_str());}
 void cConfigItemBaseChar	::ConvertFrom(const std::string &str){*this = *str.c_str();}
@@ -63,6 +64,7 @@ void cConfigItemBaseInt		::ConvertTo(std::string &str){sprintf(mBuf,"%d",this->D
 void cConfigItemBaseUInt	::ConvertTo(std::string &str){sprintf(mBuf,"%u",this->Data()); str = mBuf;}
 void cConfigItemBaseLong	::ConvertTo(std::string &str){sprintf(mBuf,"%ld",this->Data()); str = mBuf;}
 void cConfigItemBaseInt64	::ConvertTo(std::string &str){sprintf(mBuf,"%lld",this->Data()); str = mBuf;}
+void cConfigItemBaseUInt64::ConvertTo(std::string &str) { sprintf(mBuf, "%llu", this->Data()); str = mBuf; }
 void cConfigItemBaseULong	::ConvertTo(std::string &str){sprintf(mBuf,"%lu",this->Data()); str = mBuf;}
 void cConfigItemBaseDouble	::ConvertTo(std::string &str){sprintf(mBuf,"%f",this->Data()); str = mBuf;}
 void cConfigItemBaseChar	::ConvertTo(std::string &str){sprintf(mBuf,"%c",this->Data()); str = mBuf;}
@@ -86,6 +88,14 @@ DefineReadFromStreamMethod(long,Long);
 DefineReadFromStreamMethod(unsigned long,ULong);
 
 std::istream &cConfigItemBaseInt64::ReadFromStream(std::istream& is)
+{
+	string tmp;
+	is >> tmp;
+	this->ConvertFrom(tmp);
+	return is;
+}
+
+std::istream& cConfigItemBaseUInt64::ReadFromStream(std::istream &is)
 {
 	string tmp;
 	is >> tmp;
@@ -121,7 +131,16 @@ DefineWriteToStreamMethod(double,Double);
 DefineWriteToStreamMethod(string,String);
 DefineWriteToStreamMethod(long,Long);
 DefineWriteToStreamMethod(unsigned long,ULong);
+
 std::ostream &cConfigItemBaseInt64::WriteToStream(std::ostream& os)
+{
+	string tmp;
+	this->ConvertTo(tmp);
+	os << tmp;
+	return os;
+}
+
+std::ostream& cConfigItemBaseUInt64::WriteToStream(std::ostream &os)
 {
 	string tmp;
 	this->ConvertTo(tmp);
@@ -137,6 +156,7 @@ bool cConfigItemBaseInt		::IsEmpty(){ return !this->Data();}
 bool cConfigItemBaseUInt	::IsEmpty(){ return !this->Data();}
 bool cConfigItemBaseLong	::IsEmpty(){ return !this->Data();}
 bool cConfigItemBaseInt64	::IsEmpty(){ return !this->Data();}
+bool cConfigItemBaseUInt64::IsEmpty() { return !this->Data(); }
 bool cConfigItemBaseULong	::IsEmpty(){ return !this->Data();}
 bool cConfigItemBaseChar	::IsEmpty(){ return !this->Data();}
 bool cConfigItemBasePChar	::IsEmpty(){ return !this->Data() || !*(this->Data());}

@@ -71,7 +71,7 @@ cUnBan::~cUnBan()
 
 ostream & operator << (ostream &os, cBan &ban)
 {
-	switch(ban.mDisplayType) {
+	switch (ban.mDisplayType) {
 		case 0:
 			ban.DisplayComplete(os);
 			break;
@@ -82,37 +82,50 @@ ostream & operator << (ostream &os, cBan &ban)
 			ban.DisplayKick(os);
 			break;
 		default:
-			os << _("Unknown ban") << endl;
+			os << _("Unknown");
+			break;
 	}
+
 	return os;
 }
 
 void cBan::DisplayUser(ostream &os)
 {
 	os << "\r\n";
-	if (mNick.size()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Nickname") << mNick.c_str() << "\r\n";
-	if (mIP.size() && (mIP[0] != '_')) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("IP") << mIP.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Reason") << mReason.c_str() << "\r\n";
-	// append extra ban message
-	if (!mS->mC.ban_extra_message.empty()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Extra message") << mS->mC.ban_extra_message << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Time");
+
+	if (mNick.size())
+		os << " [*] " << autosprintf(_("Nick: %s"), mNick.c_str()) << "\r\n";
+
+	if (mIP.size() && (mIP[0] != '_'))
+		os << " [*] " << autosprintf(_("IP: %s"), mIP.c_str()) << "\r\n";
+
+	string loaddr, hiaddr;
+
+	if (mRangeMin) {
+		cBanList::Num2Ip(mRangeMin, loaddr);
+		cBanList::Num2Ip(mRangeMax, hiaddr);
+		os << " [*] " << autosprintf(_("IP range: %s - %s"), loaddr.c_str(), hiaddr.c_str()) << "\r\n";
+	}
+
+	if (mShare)
+		os << " [*] " << autosprintf(_("Share: %llu [%s]"), mShare, convertByte(mShare, false).c_str()) << "\r\n";
+
+	if (mReason.size())
+		os << " [*] " << autosprintf(_("Reason: %s"), mReason.c_str()) << "\r\n";
+
+	if (mS->mC.ban_extra_message.size()) // extra ban message
+		os << " [*] " << autosprintf(_("Extra: %s"), mS->mC.ban_extra_message.c_str()) << "\r\n";
+
+	os << " [*] " << _("Time") << ": ";
 
 	if (mDateEnd) {
 		cTime HowLong(mDateEnd - cTime().Sec());
-		os << HowLong.AsPeriod().AsString().c_str() << " " << _("remaining");
-	} else
-		os << _("Permanent");
-
-	os << "\r\n";
-	string initialRange, endRange;
-
-	if (mRangeMin) {
-		cBanList::Num2Ip(mRangeMin, initialRange);
-		cBanList::Num2Ip(mRangeMax, endRange);
-		os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("IP range") << initialRange.c_str() << "-" << endRange.c_str() << "\r\n";
+		os << autosprintf(_("%s left"), HowLong.AsPeriod().AsString().c_str());
+	} else {
+		os << _("Permanently");
 	}
 
-	if (mShare) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Share") << mShare << " (" << convertByte(mShare, false).c_str() << ")" << "\r\n";
+	os << "\r\n";
 }
 
 void cUnBan::DisplayUser(ostream &os)
@@ -124,14 +137,17 @@ void cUnBan::DisplayUser(ostream &os)
 void cBan::DisplayComplete(ostream &os)
 {
 	DisplayUser(os);
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("OP") << mNickOp.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Ban type") << this->GetBanType() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last hit");
+	os << " [*] " << autosprintf(_("Type: %s"), this->GetBanType()) << "\r\n";
 
-	if (!mLastHit)
-		os << _("Never");
-	else
+	if (mNickOp.size())
+		os << " [*] " << autosprintf(_("Operator: %s"), mNickOp.c_str()) << "\r\n";
+
+	os << " [*] " << _("Last hit") << ": ";
+
+	if (mLastHit)
 		os << autosprintf(_("%s ago"), cTime(cTime().Sec() - mLastHit).AsPeriod().AsString().c_str());
+	else
+		os << _("Never");
 
 	os << "\r\n";
 }

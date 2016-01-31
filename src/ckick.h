@@ -21,7 +21,9 @@
 #ifndef CKICK_H
 #define CKICK_H
 #include <string>
+
 using namespace std;
+
 #if (!defined _WIN32) && (!defined __int64)
 #define __int64 long long
 #endif
@@ -43,9 +45,10 @@ public:
 	string mOp;
 	bool mIsDrop;
 	string mHost;
-	__int64 mShare;
+	unsigned __int64 mShare;
 };
 
 	}; // namespace nTables
 }; //namespace nVerliHub
+
 #endif
