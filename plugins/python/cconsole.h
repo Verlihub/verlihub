@@ -26,11 +26,13 @@
 #include <sstream>
 
 namespace nVerliHub {
-	namespace nSocket {
-		class cConnDC;
-	};
-	namespace nPythonPlugin {
-		class cpiPython;
+namespace nSocket {
+	class cConnDC;
+};
+namespace nPythonPlugin {
+
+class cpiPython;
+
 class cConsole
 {
 public:
@@ -38,18 +40,19 @@ public:
 	virtual ~cConsole();
 	int DoCommand(const string &str, nSocket::cConnDC *conn);
 	cpiPython *mPython;
+
 protected:
-	class cfBase: public nCmdr::cCommand::sCmdFunc {
+	class cfBase : public nCmdr::cCommand::sCmdFunc {
 		public:
 			cpiPython *GetPI() { return ((cConsole *)(mCommand->mCmdr->mOwner))->mPython; }
 	};
 
-	class cfAddPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptAdd;
-	class cfGetPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptGet;
-	class cfDelPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptDel;
-	class cfReloadPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptRe;
-	class cfLogPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptLog;
-	class cfFilesPythonScript: public cfBase { virtual bool operator()(); } mcfPythonScriptFiles;
+	class cfAddPythonScript    : public cfBase { virtual bool operator()(); } mcfPythonScriptAdd;
+	class cfGetPythonScript    : public cfBase { virtual bool operator()(); } mcfPythonScriptGet;
+	class cfDelPythonScript    : public cfBase { virtual bool operator()(); } mcfPythonScriptDel;
+	class cfReloadPythonScript : public cfBase { virtual bool operator()(); } mcfPythonScriptRe;
+	class cfLogPythonScript    : public cfBase { virtual bool operator()(); } mcfPythonScriptLog;
+	class cfFilesPythonScript  : public cfBase { virtual bool operator()(); } mcfPythonScriptFiles;
 
 	nCmdr::cCommand mCmdPythonScriptAdd;
 	nCmdr::cCommand mCmdPythonScriptGet;
@@ -60,7 +63,7 @@ protected:
 	nCmdr::cCommandCollection mCmdr;
 };
 
-	}; // namespace nPythonPlugin
-}; // namespace nVerliHub
+};  // namespace nPythonPlugin
+};  // namespace nVerliHub
 
 #endif

@@ -30,7 +30,7 @@
 
 using namespace std;
 namespace nVerliHub {
-	namespace nPythonPlugin {
+namespace nPythonPlugin {
 
 class cPythonInterpreter
 {
@@ -38,12 +38,13 @@ public:
 	cPythonInterpreter(string scriptname);
 	~cPythonInterpreter();
 	bool Init();
-	w_Targs *CallFunction(int, w_Targs*);
+	w_Targs *CallFunction(int, w_Targs *);
 	string mScriptName;
 	int id;
 	bool online;
 };
-	}; // namespace nPythonPlugin
-}; // namespace namespace
+
+};  // namespace nPythonPlugin
+};  // namespace namespace
 
 #endif

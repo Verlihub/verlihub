@@ -28,8 +28,8 @@
 #include <dirent.h>
 
 namespace nVerliHub {
-	using namespace nUtils;
-	namespace nPythonPlugin {
+using namespace nUtils;
+namespace nPythonPlugin {
 
 cConsole::cConsole(cpiPython *pyt):
 	mPython(pyt),
@@ -49,8 +49,7 @@ cConsole::cConsole(cpiPython *pyt):
 	mCmdr.Add(&mCmdPythonScriptFiles);
 }
 
-cConsole::~cConsole()
-{}
+cConsole::~cConsole() {}
 
 int cConsole::DoCommand(const string &str, cConnDC *conn)
 {
@@ -59,7 +58,9 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 	if (cmd != NULL) {
 		int id = cmd->GetID();
 
-		if ((id >= 0) && (id <= 5) && conn && conn->mpUser && (conn->mpUser->mClass < mPython->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
+		if ((id >= 0) && (id <= 5) && conn && conn->mpUser
+		&& (conn->mpUser->mClass < mPython->mServer->mC.plugin_mod_class)) {
+			// todo: use command list size instead of constant number
 			mPython->mServer->DCPublicHS(_("You have no rights to do this."), conn);
 			return 1;
 		}
@@ -67,7 +68,7 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 
 	ostringstream os;
 
-	if (mCmdr.ParseAll(str, os, conn) >= 0)	{
+	if (mCmdr.ParseAll(str, os, conn) >= 0) {
 		mPython->mServer->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
@@ -88,7 +89,8 @@ bool cConsole::cfGetPythonScript::operator()()
 	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
 
 	for (int i = 0; i < GetPI()->Size(); i++) {
-		(*mOS) << " " << setw(6) << setiosflags(ios::left) << GetPI()->mPython[i]->id << GetPI()->mPython[i]->mScriptName << "\r\n";
+		(*mOS) << " " << setw(6) << setiosflags(ios::left) << GetPI()->mPython[i]->id
+		<< GetPI()->mPython[i]->mScriptName << "\r\n";
 	}
 
 	return true;
@@ -149,7 +151,8 @@ bool cConsole::cfDelPythonScript::operator()()
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if ((number && (num == li->id))
+		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
@@ -267,7 +270,8 @@ bool cConsole::cfReloadPythonScript::operator()()
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if ((number && (num == li->id))
+		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
@@ -317,10 +321,11 @@ bool cConsole::cfLogPythonScript::operator()()
 	ss.str("");
 	ss << level;
 	string newValue = ss.str();
-	(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'."), "pi_python", "log_level", oldValue.c_str(), newValue.c_str());
+	(*mOS) << autosprintf(_("Updated %s.%s from '%s' to '%s'."), "pi_python", "log_level", 
+		oldValue.c_str(), newValue.c_str());
 	cpiPython::me->LogLevel(atoi(level.c_str()));
 	return true;
 }
 
-	}; // namespace nPythonPlugin
-}; // namespace nVerliHub
+};  // namespace nPythonPlugin
+};  // namespace nVerliHub
