@@ -36,7 +36,7 @@
 
 using std::vector;
 namespace nVerliHub {
-	namespace nPythonPlugin {
+namespace nPythonPlugin {
 
 class cpiPython : public nPlugin::cVHPlugin
 {
@@ -81,38 +81,38 @@ public:
 	virtual bool OnNewReg(cUser *, std::string *, long);
 	virtual bool OnNewBan(nTables::cBan *);
 
+	// Common code for OnParsedMsgMyINFO and OnFirstMyINFO:
+	bool OnParsedMsgMyINFO__(nSocket::cConnDC *, nProtocol::cMessageDC *, int, const char *);
+
 	bool AutoLoad();
-	const char *GetName (const char *path);
-	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, const char **speed, const char **mail, const char **size);
+	const char *GetName(const char *path);
+	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, 
+		const char **speed, const char **mail, const char **size);
 	const char *GetConf(const char *conf, const char *var);
 	bool SetConf(const char *conf, const char *var, const char *val);
-	w_Targs* SQL (int id, w_Targs* args);
+	w_Targs *SQL(int id, w_Targs *args);
 	void LogLevel(int);
-	bool IsNumber( const char* s );
-	int char2int( char c );
+	bool IsNumber(const char *s);
+	int char2int(char c);
 	cPythonInterpreter *GetInterpreter(int id);
-	bool CallAll(int func, w_Targs* args);
+	bool CallAll(int func, w_Targs *args);
 	int Size() { return mPython.size(); }
 
 	void Empty()
 	{
 		tvPythonInterpreter::iterator it;
-		for(it = mPython.begin(); it != mPython.end(); ++it)
-		{
-			if(*it != NULL) delete *it;
+		for (it = mPython.begin(); it != mPython.end(); ++it) {
+			if (*it != NULL) delete *it;
 			*it = NULL;
 		}
 		mPython.clear();
 	}
 
-	void AddData(cPythonInterpreter *ip)
-	{
-		mPython.push_back(ip);
-	}
+	void AddData(cPythonInterpreter *ip) { mPython.push_back(ip); }
 
-	cPythonInterpreter * operator[](int i)
+	cPythonInterpreter *operator[](int i)
 	{
-		if(i < 0 || i > Size()) return NULL;
+		if (i < 0 || i > Size()) return NULL;
 		return mPython[i];
 	}
 
@@ -123,7 +123,7 @@ public:
 	string mScriptDir;
 	bool online;
 
-	static void*        lib_handle;
+	static void        *lib_handle;
 	static w_TBegin     lib_begin;
 	static w_TEnd       lib_end;
 	static w_TReserveID lib_reserveid;
@@ -143,46 +143,49 @@ public:
 	static nSocket::cServerDC *server;
 	static cpiPython *me;
 };
-	}; // namespace nPythonPlugin
 
-extern "C" w_Targs* _SendToOpChat(int id, w_Targs* args); // (char *data);
-extern "C" w_Targs* _SendToActive(int id, w_Targs* args); // (char *data);
-extern "C" w_Targs* _SendToPassive(int id, w_Targs* args); // (char *data);
-extern "C" w_Targs* _SendToActiveClass(int id, w_Targs* args); // (char *data, long min_class, long max_class);
-extern "C" w_Targs* _SendToPassiveClass(int id, w_Targs* args); // (char *data, long min_class, long max_class);
-extern "C" w_Targs* _SendDataToUser    (int id, w_Targs* args);  //(char *data, char *nick);
-extern "C" w_Targs* _SendDataToAll     (int id, w_Targs* args);  //(char *data, long min_class, long max_class);
-extern "C" w_Targs* _SendPMToAll       (int id, w_Targs* args);  //(char *data, char *from, long min_class, long max_class);
-extern "C" w_Targs* _mc                (int id, w_Targs* args);  //(char *data);
-extern "C" w_Targs* _usermc            (int id, w_Targs* args);  //(char *data, char *nick);
-extern "C" w_Targs* _classmc           (int id, w_Targs* args);  //(char *data, long min_class, long max_class);
-extern "C" w_Targs* _pm                (int id, w_Targs* args);  //(char *data, char *nick);
-extern "C" w_Targs* _CloseConnection   (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _GetMyINFO         (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _SetMyINFO         (int id, w_Targs* args);  //(char *nick, char *desc, char *speed, char *email, char *size);
-extern "C" w_Targs* _GetUserClass      (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _GetNickList       (int id, w_Targs* args);  //();
-extern "C" w_Targs* _GetOpList         (int id, w_Targs* args);  //();
-extern "C" w_Targs* _GetUserHost       (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _GetUserIP         (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _GetUserHubURL(int id, w_Targs* args); // (char *nick)
-extern "C" w_Targs* _GetUserExtJSON(int id, w_Targs* args); // (char *nick)
-extern "C" w_Targs* _GetUserCC         (int id, w_Targs* args);  //(char *nick);
-extern "C" w_Targs* _GetIPCC           (int id, w_Targs* args);  //(char *ip);
-extern "C" w_Targs* _GetIPCN           (int id, w_Targs* args);  //(char *ip);
-extern "C" w_Targs* _Ban               (int id, w_Targs* args);  //(char *nick, long howlong, long bantype);
-extern "C" w_Targs* _KickUser          (int id, w_Targs* args);  //(char *op, char *nick, char *data);
-extern "C" w_Targs* _ParseCommand      (int id, w_Targs* args);  //(char *data);
-extern "C" w_Targs* _SetConfig         (int id, w_Targs* args);  //(char *conf, char *var, char *val);
-extern "C" w_Targs* _GetConfig         (int id, w_Targs* args);  //(char *conf, char *var);
-extern "C" w_Targs* _AddRobot          (int id, w_Targs* args);  //(char *nick, long uclass, char *desc, char *speed, char *email, char *share);
-extern "C" w_Targs* _DelRobot          (int id, w_Targs* args);  //(char *robot);
-extern "C" w_Targs* _SQL               (int id, w_Targs* args);  //(char *query, long limit);
-extern "C" w_Targs* _GetUsersCount     (int id, w_Targs* args);  //();
-extern "C" w_Targs* _GetTotalShareSize (int id, w_Targs* args);  //();
-extern "C" w_Targs* _UserRestrictions  (int id, w_Targs* args);  //(char *nick, char *gagtime, char *nopmtime, char *nosearchtime, char *noctmtime);
-extern "C" w_Targs* _Topic             (int id, w_Targs* args);  //(char* topic);
-}; // namespace nVerliHub
+};  // namespace nPythonPlugin
+
+extern "C" w_Targs *_SendToOpChat      (int id, w_Targs *args);
+extern "C" w_Targs *_SendToActive      (int id, w_Targs *args);
+extern "C" w_Targs *_SendToPassive     (int id, w_Targs *args);
+extern "C" w_Targs *_SendToActiveClass (int id, w_Targs *args);
+extern "C" w_Targs *_SendToPassiveClass(int id, w_Targs *args);
+extern "C" w_Targs *_SendDataToUser    (int id, w_Targs *args);
+extern "C" w_Targs *_SendDataToAll     (int id, w_Targs *args);
+extern "C" w_Targs *_SendPMToAll       (int id, w_Targs *args);
+extern "C" w_Targs *_mc                (int id, w_Targs *args);
+extern "C" w_Targs *_usermc            (int id, w_Targs *args);
+extern "C" w_Targs *_classmc           (int id, w_Targs *args);
+extern "C" w_Targs *_pm                (int id, w_Targs *args);
+extern "C" w_Targs *_CloseConnection   (int id, w_Targs *args);
+extern "C" w_Targs *_GetMyINFO         (int id, w_Targs *args);
+extern "C" w_Targs *_SetMyINFO         (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserClass      (int id, w_Targs *args);
+extern "C" w_Targs *_GetNickList       (int id, w_Targs *args);
+extern "C" w_Targs *_GetOpList         (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserHost       (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserIP         (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserHubURL     (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
+extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);
+extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
+extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
+extern "C" w_Targs *_Ban               (int id, w_Targs *args);
+extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
+extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
+extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
+extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
+extern "C" w_Targs *_AddRobot          (int id, w_Targs *args);
+extern "C" w_Targs *_DelRobot          (int id, w_Targs *args);
+extern "C" w_Targs *_SQL               (int id, w_Targs *args);
+extern "C" w_Targs *_GetUsersCount     (int id, w_Targs *args);
+extern "C" w_Targs *_GetTotalShareSize (int id, w_Targs *args);
+extern "C" w_Targs *_UserRestrictions  (int id, w_Targs *args);
+extern "C" w_Targs *_Topic             (int id, w_Targs *args);
+
+};  // namespace nVerliHub
+
 #define w_ret0    cpiPython::lib_pack("l", (long)0)
 #define w_ret1    cpiPython::lib_pack("l", (long)1)
 #define w_retnone cpiPython::lib_pack("")
@@ -192,7 +195,7 @@ extern "C" w_Targs* _Topic             (int id, w_Targs* args);  //(char* topic)
 // 1 - callback / hook logging - only their status
 // 2 - all function parameters and return values are printed
 // 3 - debugging info is printed
-#define log(...)                                        { printf( __VA_ARGS__ ); fflush(stdout); }
+#define log(...)                                  { printf( __VA_ARGS__ ); fflush(stdout); }
 #define log1(...) { if (cpiPython::log_level > 0) { printf( __VA_ARGS__ ); fflush(stdout); }; }
 #define log2(...) { if (cpiPython::log_level > 1) { printf( __VA_ARGS__ ); fflush(stdout); }; }
 #define log3(...) { if (cpiPython::log_level > 2) { printf( __VA_ARGS__ ); fflush(stdout); }; }
