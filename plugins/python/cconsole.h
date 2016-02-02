@@ -24,6 +24,8 @@
 #include "src/ccommandcollection.h"
 #include <string>
 #include <sstream>
+#include <vector>
+#include <algorithm>
 
 namespace nVerliHub {
 namespace nSocket {

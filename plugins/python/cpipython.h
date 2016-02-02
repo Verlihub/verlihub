@@ -108,7 +108,13 @@ public:
 		mPython.clear();
 	}
 
-	void AddData(cPythonInterpreter *ip) { mPython.push_back(ip); }
+	void AddData(cPythonInterpreter *ip, size_t position = (size_t)-1)
+	{
+		if (position >= mPython.size())
+			mPython.push_back(ip);
+		else
+			mPython.insert(mPython.begin() + position, ip);
+	}
 
 	cPythonInterpreter *operator[](int i)
 	{
