@@ -314,7 +314,8 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 	int required = -1;
 	int in_len = strlen(in_format);
 	for (int pos = 0, pos2 = 0, end = 0; pos < in_len && end < 1; pos++) {
-		log5("PY: [%ld:%s] Call %s: scanning arguments: pos:%d, pos2:%d, char:%c\n", id, name, w_CallName(func), pos, pos2, in_format[pos]);
+		log5("PY: [%ld:%s] Call %s: scanning arguments: pos:%d, pos2:%d, char:%c\n", id, name,
+			w_CallName(func), pos, pos2, in_format[pos]);
 		switch (in_format[pos]) {
 			case 'l': pack_format[pos2++] = 'l'; break;
 			case 'z':

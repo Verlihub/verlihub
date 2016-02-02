@@ -90,7 +90,8 @@ void cpiPython::OnLoad(cServerDC *server)
 
 	log4("PY: cpiPython::OnLoad   dlopen...\n");
 	if (!lib_handle)
-		lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so", RTLD_LAZY | RTLD_GLOBAL);
+		lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so",
+			RTLD_LAZY | RTLD_GLOBAL);
 	// RTLD_GLOBAL exports all symbols from libvh_python_wrapper.so
 	// without RTLD_GLOBAL the lib will fail to import other python modules
 	// because they won't see any symbols from the linked libpython2.5
@@ -595,7 +596,8 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 					// Normally you would use SendDataToAll and return 0 from your script,
 					// but this kind of message modification allows you to process it 
 					// not by just one but as many scripts as you want.
-					log2("PY: modifying message - Call %s: returned %s\n", lib_hookname(func), lib_packprint(result));
+					log2("PY: modifying message - Call %s: returned %s\n",
+						lib_hookname(func), lib_packprint(result));
 					if (nick) {
 						string &nick0 = msg->ChunkString(eCH_CH_NICK);
 						nick0 = nick;
@@ -609,7 +611,8 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 					ret = true;  // we've changed the message so we want the hub to process it and send it
 				} else {
 					// something unknown was returned... we will let the hub call other plugins
-					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
+					log1("PY: Call %s: unexpected return value: %s\n",
+						lib_hookname(func), lib_packprint(result));
 				}
 				free(result);
 			}
@@ -765,7 +768,8 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 					if (!num) ret = false;  // 0L means no more processing outside this plugin
 				} else if (lib_unpack(result, "sssss", &desc, &tag, &speed, &mail, &size)) {
 					// script wants to change the contents of myinfo
-					log2("PY: modifying message - Call %s: returned %s\n", lib_hookname(func), lib_packprint(result));
+					log2("PY: modifying message - Call %s: returned %s\n",
+						lib_hookname(func), lib_packprint(result));
 					if (desc || tag || speed || mail || size) {
 						// message chunks need updating to new MyINFO, which has the format:
 						// $MyINFO $ALL <nick> <interests>$ $<speed\x01>$<e-mail>$<sharesize>$
@@ -795,7 +799,8 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 					ret = true;  // we've changed myinfo so we want the hub to store it now
 				} else {
 					// something unknown was returned... we will let the hub call other plugins
-					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
+					log1("PY: Call %s: unexpected return value: %s\n",
+						lib_hookname(func), lib_packprint(result));
 				}
 				free(result);
 			}
