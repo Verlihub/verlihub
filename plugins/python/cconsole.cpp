@@ -99,28 +99,27 @@ bool cConsole::cfGetPythonScript::operator()()
 bool cConsole::cfFilesPythonScript::operator()()
 {
 	DIR *dir = opendir(GetPI()->mScriptDir.c_str());
-
 	if (!dir) {
 		(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
 		return false;
 	}
-
 	(*mOS) << autosprintf(_("Python scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n ";
 	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
 	(*mOS) << toUpper(_("Script")) << "\r\n";
 	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
 	string filename;
 	struct dirent *dent = NULL;
-	int i = 0;
+	vector<string> filenames;
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
-
-		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
-			(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << filename << "\r\n";
-			i++;
-		}
+		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
+			filenames.push_back(filename);
 	}
+	sort(filenames.begin(), filenames.end());
+
+	for (size_t i = 0; i < filenames.size(); i++)
+		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << filenames[i] << "\r\n";
 
 	closedir(dir);
 	return true;
@@ -255,6 +254,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 	GetParStr(1, scriptfile);
 	bool number = false;
 	int num = 0;
+	int position = 0;
 
 	if (GetPI()->IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
@@ -267,7 +267,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 	cPythonInterpreter *li;
 	bool found = false;
 
-	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
+	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it, ++position) {
 		li = *it;
 
 		if ((number && (num == li->id))
@@ -297,7 +297,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 	if (ip->Init()) {
 		(*mOS) << " " << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
-		GetPI()->AddData(ip);
+		GetPI()->AddData(ip, position);
 		return true;
 	} else {
 		(*mOS) << " " << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());

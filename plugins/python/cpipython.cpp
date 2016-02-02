@@ -26,6 +26,7 @@
 #include "src/ctime.h"
 #include <dirent.h>
 #include <string>
+#include <vector>
 #include <algorithm>
 #include <cctype>
 
@@ -227,25 +228,30 @@ bool cpiPython::AutoLoad()
 	}
 	string filename, pathname;
 	struct dirent *dent = NULL;
+	vector<string> filenames;
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
+		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
+			filenames.push_back(filename);
+	}
+	sort(filenames.begin(), filenames.end());
 
-		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
-			pathname = mScriptDir + filename;
-			cPythonInterpreter *ip = new cPythonInterpreter(pathname);
-			if (!ip) continue;
-			if (ip->Init()) {
-				AddData(ip);
-				if ((log_level < 1) && Log(1))
-					LogStream() << "Success loading and parsing Python script: " << filename << endl;
-				log1("PY: Autoload, success loading script: %s [%d]\n", filename.c_str(), ip->id);
-			} else {
-				if ((log_level < 1) && Log(1))
-					LogStream() << "Failed loading or parsing Python script: " << filename << endl;
-				log1("PY: Autoload, failed loading script: %s\n", filename.c_str());
-				delete ip;
-			}
+	for (size_t i = 0; i < filenames.size(); i++) {
+		const string &filename = filenames[i];
+		pathname = mScriptDir + filename;
+		cPythonInterpreter *ip = new cPythonInterpreter(pathname);
+		if (!ip) continue;
+		if (ip->Init()) {
+			AddData(ip);
+			if ((log_level < 1) && Log(1))
+				LogStream() << "Success loading and parsing Python script: " << filename << endl;
+			log1("PY: Autoload, success loading script: %s [%d]\n", filename.c_str(), ip->id);
+		} else {
+			if ((log_level < 1) && Log(1))
+				LogStream() << "Failed loading or parsing Python script: " << filename << endl;
+			log1("PY: Autoload, failed loading script: %s\n", filename.c_str());
+			delete ip;
 		}
 	}
 	closedir(dir);
