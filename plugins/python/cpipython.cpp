@@ -925,12 +925,13 @@ bool cpiPython::OnOperatorKicks(cUser *op, cUser *user, string *why)
 bool cpiPython::OnOperatorDrops(cUser *op, cUser *user, string *why)
 {
 	if (op && user && why) {
+		bool res1, res2;
 		w_Targs *args = lib_pack("ss", op->mNick.c_str(), user->mNick.c_str());
 		// Calling the legacy version first
-		if (!CallAll(W_OnOperatorDrops, args))
-			return false;
+		res1 = CallAll(W_OnOperatorDrops, args);
 		args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
-		return CallAll(W_OnOperatorDropsWithReason, args);
+		res2 = CallAll(W_OnOperatorDropsWithReason, args);
+		return res1 && res2;
 	}
 	return true;
 }
