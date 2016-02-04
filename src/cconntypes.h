@@ -89,7 +89,9 @@ namespace nVerliHub {
 				virtual bool IsConnAllowed(nSocket::cConnDC *conn,int cmd);
 				virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, cConnType &data);
 				virtual void GetHelpForCommand(int cmd, ostream &os);
+				virtual void GetHelp(ostream &os);
 		};
+
 	}; // namespace nTables
 }; // namespace nVerliHub
 

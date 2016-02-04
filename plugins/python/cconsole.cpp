@@ -83,15 +83,13 @@ bool cConsole::cfGetPythonScript::operator()()
 		return true;
 	}
 
-	(*mOS) << _("Loaded Python scripts") << ":\r\n\r\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
-	(*mOS) << toUpper(_("Script")) << "\r\n";
-	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
+	(*mOS) << _("Loaded Python scripts") << ":\r\n\r\n";
+	(*mOS) << "\t" << _("ID");
+	(*mOS) << "\t" << _("Script") << "\r\n";
+	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
 
-	for (int i = 0; i < GetPI()->Size(); i++) {
-		(*mOS) << " " << setw(6) << setiosflags(ios::left) << GetPI()->mPython[i]->id
-		<< GetPI()->mPython[i]->mScriptName << "\r\n";
-	}
+	for (unsigned int i = 0; i < GetPI()->Size(); i++)
+		(*mOS) << "\t" << GetPI()->mPython[i]->id << "\t" << GetPI()->mPython[i]->mScriptName << "\r\n";
 
 	return true;
 }
@@ -103,10 +101,10 @@ bool cConsole::cfFilesPythonScript::operator()()
 		(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
 		return false;
 	}
-	(*mOS) << autosprintf(_("Python scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
-	(*mOS) << toUpper(_("Script")) << "\r\n";
-	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
+	(*mOS) << autosprintf(_("Python scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n";
+	(*mOS) << "\t" << _("ID");
+	(*mOS) << "\t" << _("Script") << "\r\n";
+	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
 	string filename;
 	struct dirent *dent = NULL;
 	vector<string> filenames;
@@ -119,7 +117,7 @@ bool cConsole::cfFilesPythonScript::operator()()
 	sort(filenames.begin(), filenames.end());
 
 	for (size_t i = 0; i < filenames.size(); i++)
-		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << filenames[i] << "\r\n";
+		(*mOS) << "\t" << i << "\t" << filenames[i] << "\r\n";
 
 	closedir(dir);
 	return true;

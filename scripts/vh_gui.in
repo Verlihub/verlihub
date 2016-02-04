@@ -324,7 +324,7 @@ hub_status()
 install() {
 	REALUSER="$USER"
 	$DIALOG --title "Getting started" --msgbox "Hello $REALUSER, let's start with the configuration of database access... \nIf you have some problems with configuration you can: \n\n \
-			- Follow the official documentation: http://verlihub.net/doc/\n \
+			- Follow the official documentation: https://github.com/verlihub/verlihub/wiki/\n \
 			- Seek support on VAZ: dchub://hub.verlihub.net:7777/"  10 80 
 		
 	set_path $VERLIHUB_CFG > /dev/null 2>&1;

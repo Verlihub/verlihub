@@ -82,10 +82,11 @@ bool cCallBackList::CallAll()
 	return for_each(mPlugList.begin() , mPlugList.end(), mCallOne).mCall;
 }
 
-void cCallBackList::ListRegs(ostream &os, const char *indent)
+void cCallBackList::ListRegs(ostream &os, const string &sep)
 {
-	for(tPICont::iterator i = mPlugList.begin(); i != mPlugList.end(); ++i)
-		os << indent << (*i)->Name() << "\r\n";
+	for (tPICont::iterator i = mPlugList.begin(); i != mPlugList.end(); ++i)
+		os << (*i)->Name() << sep;
 }
+
 	}; // namespace nPlugin
 }; // namespace nVerliHub

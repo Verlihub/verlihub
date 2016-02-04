@@ -249,54 +249,15 @@ void cInfoServer::SetServer(cServerDC *Server)
 
 void cInfoServer::Output(ostream &os, int Class)
 {
-	string temp;
 	os << _("Hub information") << ":\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("Version: %s"), HUB_VERSION_VERS) << "\r\n";
 	os << " [*] " << autosprintf(_("Uptime: %s"), cTime(mServer->mTime - mServer->mStartTime).AsPeriod().AsString().c_str()) << "\r\n";
-	temp = _("Unknown");
-
-	if (mServer->mSysLoad >= eSL_RECOVERY)
-		temp = _("Recovery");
-
-	if (mServer->mSysLoad >= eSL_CAPACITY)
-		temp = _("Capacity");
-
-	if (mServer->mSysLoad >= eSL_PROGRESSIVE)
-		temp = _("Progressive");
-
-	if (mServer->mSysLoad >= eSL_NORMAL)
-		temp = _("Normal");
-
-	os << " [*] " << autosprintf(_("Frequency: %.4f [%s]"), mServer->mFrequency.GetMean(mServer->mTime), temp.c_str()) << "\r\n\r\n";
-
-	if (mServer->mC.hub_name.size())
-		temp = mServer->mC.hub_name;
-	else
-		temp = _("Not set");
-
-	os << " [*] " << autosprintf(_("Name: %s"), temp.c_str()) << "\r\n";
-
-	if (mServer->mC.hub_owner.size())
-		temp = mServer->mC.hub_owner;
-	else
-		temp = _("Not set");
-
-	os << " [*] " << autosprintf(_("Owner: %s"), temp.c_str()) << "\r\n";
-
-	if (mServer->mC.hub_category.size())
-		temp = mServer->mC.hub_category;
-	else
-		temp = _("Not set");
-
-	os << " [*] " << autosprintf(_("Category: %s"), temp.c_str()) << "\r\n";
-
-	if (mServer->mDBConf.locale.size())
-		temp = mServer->mDBConf.locale;
-	else
-		temp = _("Not set");
-
-	os << " [*] " << autosprintf(_("Locale: %s"), temp.c_str()) << "\r\n\r\n";
+	os << " [*] " << autosprintf(_("Frequency: %.4f [%s]"), mServer->mFrequency.GetMean(mServer->mTime), mServer->SysLoadName()) << "\r\n\r\n";
+	os << " [*] " << autosprintf(_("Name: %s"), (mServer->mC.hub_name.size() ? mServer->mC.hub_name.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Owner: %s"), (mServer->mC.hub_owner.size() ? mServer->mC.hub_owner.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Category: %s"), (mServer->mC.hub_category.size() ? mServer->mC.hub_category.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Locale: %s"), (mServer->mDBConf.locale.size() ? mServer->mDBConf.locale.c_str() : _("Not set"))) << "\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("Users: %d of %d"), mServer->mUserCountTot, mServer->mC.max_users_total) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mServer->mTotalShare).c_str()) << "\r\n";
@@ -305,23 +266,19 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << autosprintf(_("Progress users: %d"), mServer->mInProgresUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Active users: %d"), mServer->mActiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive users: %d"), mServer->mPassiveUsers.Size()) << "\r\n";
-	os << " [*] " << autosprintf(_("Operator count: %d"), mServer->mOpchatList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Operator count: %d of %d"), mServer->mOpchatList.Size(), mServer->mOpList.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Bot count: %d"), mServer->mRobotList.Size()) << "\r\n\r\n";
 
+	string temp;
 	double total = 0, curr;
 
-	for (unsigned int i = 1; i < 4; i++) { // print zone from 1 to 3
-		if (mServer->mC.cc_zone[i - 1].size())
-			temp = mServer->mC.cc_zone[i - 1];
-		else
-			temp = _("Not set");
-
+	for (unsigned int i = 1; i < 4; i++) { // print zone 1 to 3
 		curr = mServer->mUploadZone[i].GetMean(mServer->mTime);
 		total += curr;
-		os << " [*] " << autosprintf(_("Users in country zone #%d: %d of %d [%s] [%s]"), i, mServer->mUserCount[i], mServer->mC.max_users[i], convertByte(curr, true).c_str(), temp.c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Users in country zone #%d: %d of %d [%s] [%s]"), i, mServer->mUserCount[i], mServer->mC.max_users[i], convertByte(curr, true).c_str(), (mServer->mC.cc_zone[i - 1].size() ? mServer->mC.cc_zone[i - 1].c_str() : _("Not set"))) << "\r\n";
 	}
 
-	for (unsigned int i = 4; i <= USER_ZONES; i++) { // print zone from 4 to 6
+	for (unsigned int i = 4; i <= USER_ZONES; i++) { // print zone 4 to 6
 		if (i == 4) {
 			if (mServer->mC.ip_zone4_min.size()) {
 				temp = mServer->mC.ip_zone4_min;

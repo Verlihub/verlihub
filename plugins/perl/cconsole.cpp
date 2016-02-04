@@ -28,8 +28,6 @@
 #include <dirent.h>
 #include <cctype>
 
-#define PADDING 25
-
 namespace nVerliHub {
 	using namespace nUtils;
 	namespace nPerlPlugin {
@@ -67,13 +65,14 @@ cConsole::~cConsole()
 
 bool cConsole::cfGetPerlScript::operator()()
 {
-	(*mOS) << _("Running Perl scripts") << ":\r\n\r\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
-	(*mOS) << toUpper(_("Script")) << "\n";
-	(*mOS) << " " << string(6+20,'=') << endl;
-	for(int i = 0; i < GetPI()->Size(); i++) {
-		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << GetPI()->mPerl.mPerl[i]->mScriptName << "\r\n";
-	}
+	(*mOS) << _("Loaded Perl scripts") << ":\r\n\r\n";
+	(*mOS) << "\t" << _("ID");
+	(*mOS) << "\t" << _("Script") << "\r\n";
+	(*mOS) << "\t" << string(40, '-') << "\r\n";
+
+	for (unsigned int i = 0; i < GetPI()->Size(); i++)
+		(*mOS) << "\t" << i << "\t" << GetPI()->mPerl.mPerl[i]->mScriptName << "\r\n";
+
 	return true;
 }
 

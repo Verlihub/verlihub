@@ -77,7 +77,7 @@ public:
 	virtual bool OnHubName(std::string, std::string);
 	virtual bool OnScriptCommand(std::string, std::string, std::string, std::string);
 
-	int Size() { return mPerl.Size(); }
+	unsigned int Size() { return mPerl.Size(); }
 
 	nMySQL::cQuery *mQuery;
 

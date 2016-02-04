@@ -45,7 +45,8 @@
 #include "ctriggers.h"
 #include "i18n.h"
 
-#define PADDING 25
+#define CRASH_SERV_ADDR "crash.verlihub.net"
+#define CRASH_SERV_PORT 80
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -1868,14 +1869,22 @@ unsigned int cServerDC::WhoCity(const string &city, string &dest, const string &
 	cUserCollection::iterator i;
 	unsigned int cnt = 0;
 	cConnDC *conn;
+	string low;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
 		conn = ((cUser*)(*i))->mxConn;
 
-		if (conn && (conn->mCity == city)) {
-			dest += sep;
-			dest += (*i)->mNick;
-			cnt++;
+		if (conn) {
+			low = toLower(conn->mCity);
+
+			if (low.find(city) != string::npos) {
+				dest += sep;
+				dest += (*i)->mNick;
+				dest += " [";
+				dest += conn->mCity;
+				dest += "]";
+				cnt++;
+			}
 		}
 	}
 
@@ -1906,14 +1915,22 @@ unsigned int cServerDC::WhoHubURL(const string &url, string &dest, const string 
 	cUserCollection::iterator i;
 	unsigned int cnt = 0;
 	cConnDC *conn;
+	string low;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
 		conn = ((cUser*)(*i))->mxConn;
 
-		if (conn && (conn->mHubURL.find(url) != string::npos)) {
-			dest += sep;
-			dest += (*i)->mNick;
-			cnt++;
+		if (conn && conn->mHubURL.size()) {
+			low = toLower(conn->mHubURL);
+
+			if (low.find(url) != string::npos) {
+				dest += sep;
+				dest += (*i)->mNick;
+				dest += " [";
+				dest += conn->mHubURL;
+				dest += "]";
+				cnt++;
+			}
 		}
 	}
 
@@ -1939,9 +1956,9 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 			} else if ((ip_min <= num) && (ip_max >= num)) {
 				dest += sep;
 				dest += (*i)->mNick;
-				dest += " (";
+				dest += " [";
 				dest += conn->AddrIP();
-				dest += ")";
+				dest += "]";
 				cnt++;
 			}
 		}
@@ -2150,6 +2167,48 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 	return false;
 }
 
+char* cServerDC::SysLoadName()
+{
+	switch (mSysLoad) {
+		case eSL_NORMAL:
+			return _("Normal");
+		case eSL_PROGRESSIVE:
+			return _("Progressive");
+		case eSL_CAPACITY:
+			return _("Capacity");
+		case eSL_RECOVERY:
+			return _("Recovery");
+		case eSL_SYSTEM_DOWN:
+			return _("Down");
+		default:
+			return _("Unknown");
+	}
+}
+
+char* cServerDC::UserClassName(tUserCl ucl)
+{
+	switch (ucl) {
+		case eUC_PINGER:
+			return _("Pinger");
+		case eUC_NORMUSER:
+			return _("Guest");
+		case eUC_REGUSER:
+			return _("Registered");
+		case eUC_VIPUSER:
+			return _("VIP");
+		case eUC_OPERATOR:
+			return _("Operator");
+		case eUC_CHEEF:
+			return _("Cheef");
+		case eUC_ADMIN:
+			return _("Administrator");
+		case eUC_MASTER:
+			return _("Master");
+		default:
+			return _("Unknown");
+	}
+}
+
 bool cServerDC::CheckPortNumber(unsigned int port)
 {
 	if ((port < 1) || (port > 65535))
@@ -2203,20 +2262,11 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 		runtime -= mStartTime;
 
 		if (mC.extended_welcome_message) {
-			mStatus = _("Not available");
-
-			if (mFrequency.mNumFill > 0) {
-				if (mSysLoad == eSL_RECOVERY) mStatus = _("Recovery mode");
-				else if (mSysLoad == eSL_CAPACITY) mStatus = _("Near capacity");
-				else if (mSysLoad == eSL_PROGRESSIVE) mStatus = _("Progressive mode");
-				else if (mSysLoad == eSL_NORMAL) mStatus = _("Normal mode");
-			}
-
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Uptime: %s"), runtime.AsPeriod().AsString().c_str()) << "|";
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Users: %d"), mUserCountTot) << "|";
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Share: %s"), convertByte(mTotalShare, false).c_str()) << "|";
-			os << "<" << mC.hub_security << "> " << autosprintf(_("Status: %s"), mStatus.c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Share: %s"), convertByte(mTotalShare).c_str()) << "|";
+			os << "<" << mC.hub_security << "> " << autosprintf(_("Status: %s"), SysLoadName()) << "|";
 			if (!mC.hub_version_special.empty()) os << "<" << mC.hub_security << "> " << mC.hub_version_special << "|";
 		} else
 			os << "<" << mC.hub_security << "> " << autosprintf(_("Software: %s %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"), HUB_VERSION_NAME, HUB_VERSION_VERS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot, convertByte(mTotalShare, false).c_str()) << "|";
@@ -2438,7 +2488,7 @@ void cServerDC::DoStackTrace()
 	if (!mC.send_crash_report)
 		return;
 
-	cAsyncConn *http = new cAsyncConn("crash.verlihub.net", 80); // try to send via http
+	cAsyncConn *http = new cAsyncConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
 
 	if (!http || !http->ok) {
 		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
@@ -2454,7 +2504,7 @@ void cServerDC::DoStackTrace()
 
 	ostringstream http_req;
 	http_req << "POST /vhcs.php HTTP/1.1\n";
-	http_req << "Host: crash.verlihub.net\n";
+	http_req << "Host: " << CRASH_SERV_ADDR << "\n";
 	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "\n";
 	http_req << "Content-Type: text/plain\n";
 	http_req << "Content-Length: " << bt.str().size() << "\n";

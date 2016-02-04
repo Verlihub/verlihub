@@ -23,7 +23,6 @@
 
 #include "wrapper.h"
 #include <string>
-//#include <iostream>
 #include "src/script_api.h"
 #include <iostream>
 #include <string>

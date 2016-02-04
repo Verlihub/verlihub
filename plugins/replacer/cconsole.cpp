@@ -66,16 +66,16 @@ bool cConsole::cfGetReplacer::operator ( )()
 	(*mOS) << _("Replaced words") << ":\r\n";
 
 	(*mOS) << "\r\n ";
-	(*mOS) << setw(20) << setiosflags(ios::left) << toUpper(_("Word"));
-	(*mOS) << setw(20) << setiosflags(ios::left) << toUpper(_("Replace with"));
-	(*mOS) << toUpper(_("Affected class")) << "\n";
-	(*mOS) << " " << string(20+20+15,'=') << "\r\n";
+	(*mOS) << "\t" << _("Word");
+	(*mOS) << "\t" << _("Replace with");
+	(*mOS) << _("Affected class") << "\n";
+	(*mOS) << " " << string(20+20+15,'-') << "\r\n";
 	for(int i = 0; i < GetPI()->mReplacer->Size(); i++) {
 		fw = (*GetPI()->mReplacer)[i];
 		cDCProto::EscapeChars(fw->mWord, word);
 		cDCProto::EscapeChars(fw->mRepWord, rep_word);
-		(*mOS) << " " << setw(20) << setiosflags(ios::left) << word.c_str();
-		(*mOS) << setw(20) << setiosflags(ios::left) << rep_word.c_str();
+		(*mOS) << " " << "\t" << word.c_str();
+		(*mOS) << "\t" << rep_word.c_str();
 		(*mOS) << fw->mAfClass << "\r\n";
 	}
 

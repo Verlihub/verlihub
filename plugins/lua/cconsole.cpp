@@ -32,8 +32,6 @@ extern "C"
 #include "src/i18n.h"
 #include <dirent.h>
 
-#define PADDING 25
-
 namespace nVerliHub {
 	using namespace nUtils;
 	namespace nLuaPlugin {
@@ -90,10 +88,9 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 
 bool cConsole::cfVersionLuaScript::operator()()
 {
-	(*mOS) << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Lua version") << LUA_VERSION << "\r\n";
-	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Lua library version") << LUA_RELEASE << "\r\n";
-	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Copyright") << LUA_COPYRIGHT << "\r\n";
-	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Authors") << LUA_AUTHORS;
+	(*mOS) << "\r\n\r\n [*] " << autosprintf(_("Lua version: %s [%s]"), LUA_VERSION, LUA_RELEASE) << "\r\n";
+	(*mOS) << " [*] " << autosprintf(_("Copyright: %s"), LUA_COPYRIGHT) << "\r\n";
+	(*mOS) << " [*] " << autosprintf(_("Authors: %s"), LUA_AUTHORS) << "\r\n";
 	return true;
 }
 
@@ -104,22 +101,21 @@ bool cConsole::cfInfoLuaScript::operator()()
 	if (GetPI()->Size() > 0)
 		size = lua_gc(GetPI()->mLua[0]->mL, LUA_GCCOUNT, 0);
 
-	(*mOS) << "\r\n [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub version") << HUB_VERSION_VERS << "\r\n";
-	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Loaded scripts") << GetPI()->Size() << "\r\n";
-	(*mOS) << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Memory used") << convertByte(size * 1024, false).c_str();
+	(*mOS) << "\r\n\r\n [*] " << autosprintf(_("Hub version: %s"), HUB_VERSION_VERS) << "\r\n";
+	(*mOS) << " [*] " << autosprintf(_("Loaded scripts: %d"), GetPI()->Size()) << "\r\n";
+	(*mOS) << " [*] " << autosprintf(_("Memory used: %s"), convertByte(size * 1024).c_str()) << "\r\n";
 	return true;
 }
 
 bool cConsole::cfGetLuaScript::operator()()
 {
-	(*mOS) << _("Loaded Lua scripts") << ":\r\n\r\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
-	(*mOS) << toUpper(_("Script")) << "\r\n";
-	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
+	(*mOS) << _("Loaded Lua scripts") << ":\r\n\r\n";
+	(*mOS) << "\t" << _("ID");
+	(*mOS) << "\t" << _("Script") << "\r\n";
+	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
 
-	for (unsigned int i = 0; i < GetPI()->Size(); i++) {
-		(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << GetPI()->mLua[i]->mScriptName << "\r\n";
-	}
+	for (unsigned int i = 0; i < GetPI()->Size(); i++)
+		(*mOS) << "\t" << i << "\t" << GetPI()->mLua[i]->mScriptName << "\r\n";
 
 	return true;
 }
@@ -133,10 +129,10 @@ bool cConsole::cfFilesLuaScript::operator()()
 		return false;
 	}
 
-	(*mOS) << autosprintf(_("Lua scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n ";
-	(*mOS) << setw(6) << setiosflags(ios::left) << _("ID");
-	(*mOS) << toUpper(_("Script")) << "\r\n";
-	(*mOS) << " " << string(6 + 20, '=') << "\r\n";
+	(*mOS) << autosprintf(_("Lua scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n";
+	(*mOS) << "\t" << _("ID");
+	(*mOS) << "\t" << _("Script") << "\r\n";
+	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
 	string filename;
 	struct dirent *dent = NULL;
 	int i = 0;
@@ -145,7 +141,7 @@ bool cConsole::cfFilesLuaScript::operator()()
 		filename = dent->d_name;
 
 		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
-			(*mOS) << " " << setw(6) << setiosflags(ios::left) << i << filename << "\r\n";
+			(*mOS) << "\t" << i << "\t" << filename << "\r\n";
 			i++;
 		}
 	}

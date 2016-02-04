@@ -18,7 +18,6 @@
 	of the GNU General Public License.
 */
 
-#include <ios>
 #include "cserverdc.h"
 //#include "cconntypes.h"
 #include "cdcconsole.h"
@@ -32,7 +31,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nTables {
 
-cConnType::cConnType() :
+cConnType::cConnType():
 	mTagMaxSlots(100),
 	mTagMinSlots(0),
 	mTagMinLimit(-1.),
@@ -47,28 +46,24 @@ void cConnType::OnLoad()
 
 ostream &operator << (ostream &os, cConnType &ct)
 {
-	os << " ";
-	os << setw(15) << setiosflags(ios::left) << ct.mIdentifier;
-	os << setw(12) << setiosflags(ios::left) << ct.mTagMinSlots;
-	os << setw(10) << setiosflags(ios::left) << ct.mTagMaxSlots;
-	os << setw(15) << setiosflags(ios::left) << ct.mTagMinLimit;
-	os << setw(18) << setiosflags(ios::left) << ct.mTagMinLSRatio;
-	os << ct.mDescription.substr(0,20).c_str();
+	os << "\t" << ct.mIdentifier;
 
+	if (ct.mIdentifier.size() <= 8)
+		os << "\t";
 
-/*	os << ct.mIdentifier;
-	os << ": ";
-	os << autosprintf(_("Slots: %d..%d Min limiter: %.2f, %.2f/slot - %s"), ct.mTagMinSlots, ct.mTagMaxSlots, ct.mTagMinLimit, ct.mTagMinLSRatio, ct.mDescription.c_str());*/
+	os << "\t" << ct.mTagMinSlots << " - " << ct.mTagMaxSlots;
+	os << "\t" << ct.mTagMinLimit;
+	os << "\t" << ct.mTagMinLSRatio;
+	os << "\t\t" << ct.mDescription;
 	return os;
 }
 
-
-cConnTypes::cConnTypes(cServerDC *server)
-        : tConnTypesBase(server->mMySQL, server, "conn_types")
+cConnTypes::cConnTypes(cServerDC *server):
+	tConnTypesBase(server->mMySQL, server, "conn_types")
 {}
 
-
-cConnTypes::~cConnTypes() {}
+cConnTypes::~cConnTypes()
+{}
 
 void cConnTypes::AddFields()
 {
@@ -113,28 +108,34 @@ cConnTypeConsole::~cConnTypeConsole()
 void cConnTypeConsole::GetHelpForCommand(int cmd, ostream &os)
 {
 	string help_str;
-	switch(cmd)
-	{
+
+	switch (cmd) {
 		case eLC_LST:
-		help_str = "!lstconntype\r\nGive a list of registered connection types";
-		break;
+			help_str = "!lstconntype\r\n" + string(_("List of connection types"));
+			break;
 		case eLC_ADD:
 		case eLC_MOD:
-		help_str = "!(add|mod)conntype <type>[ -d <\"desc\">][ -S <max_slots>][ -s <min_slots>][ -l <min_limiter>][ -ls <min_ls_ratio>]\r\n"
-		"      add or edit a connection type\r\n"
-		"     * type - textual part of the connection type name\r\n"
-		"     * max_slots, min_slots - slot settings\r\n"
-		"     * desc - for your info\r\n"
-		"     * min_limiter - minimum value for upload limiter (decimal)\r\n"
-		"     * min_ls_ratio - minimum upload per slot";
-		break;
+			help_str = "!(add|mod)conntype <type>[ -d <\"desc\">][ -S <max_slots>][ -s <min_slots>][ -l <min_limiter>][ -ls <min_ls_ratio>]";
+			break;
 		case eLC_DEL:
-		help_str = "!delconntype <type>"; break;
-		default: break;
+			help_str = "!delconntype <type>";
+			break;
+		default:
+			break;
 	}
 
-	cDCProto::EscapeChars(help_str,help_str);
-	os << help_str;
+	if (help_str.size()) {
+		cDCProto::EscapeChars(help_str, help_str);
+		os << help_str;
+	}
+}
+
+void cConnTypeConsole::GetHelp(ostream &os)
+{
+	string help;
+	help = "https://github.com/verlihub/verlihub/wiki/connections/"; // todo: add more help
+	cDCProto::EscapeChars(help, help);
+	os << help;
 }
 
 const char * cConnTypeConsole::GetParamsRegex(int cmd)
@@ -181,24 +182,22 @@ cConnTypes *cConnTypeConsole::GetTheList()
 	return mOwner->mServer->mConnTypes;
 }
 
-const char *cConnTypeConsole::CmdSuffix(){ return "conntype";}
-const char *cConnTypeConsole::CmdPrefix(){ return "!";}
+const char* cConnTypeConsole::CmdSuffix() { return "conntype"; }
+const char* cConnTypeConsole::CmdPrefix() { return "!"; }
 
 void cConnTypeConsole::ListHead(ostream *os)
 {
-	(*os) << "\r\n ";
-	(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Name"));
-	(*os) << setw(12) << setiosflags(ios::left) << toUpper(_("Min slot"));
-	(*os) << setw(10) << setiosflags(ios::left) << toUpper(_("Max slot"));
-	(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Min upload"));
-	(*os) << setw(18) << setiosflags(ios::left) << toUpper(_("Min upload/slot"));
-	(*os) << toUpper(_("Description")) << "\r\n";
-	(*os) << " " << string(15+12+10+15+35,'=');
+	(*os) << "\r\n\r\n\t" << _("Name");
+	(*os) << "\t\t" << _("Slots");
+	(*os) << "\t" << _("Upload");
+	(*os) << "\t" << _("Upload per slot");
+	(*os) << "\t" << _("Description");
+	(*os) << "\r\n\t" << string(100, '-') << "\r\n";
 }
 
 bool cConnTypeConsole::IsConnAllowed(cConnDC *conn,int cmd)
 {
-	return (conn && conn->mpUser && conn->mpUser->mClass >= eUC_ADMIN);
+	return (conn && conn->mpUser && (conn->mpUser->mClass >= eUC_ADMIN));
 }
 
 	}; // namespace nTables

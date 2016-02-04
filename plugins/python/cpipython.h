@@ -96,7 +96,7 @@ public:
 	int char2int(char c);
 	cPythonInterpreter *GetInterpreter(int id);
 	bool CallAll(int func, w_Targs *args);
-	int Size() { return mPython.size(); }
+	unsigned int Size() { return mPython.size(); }
 
 	void Empty()
 	{
@@ -116,7 +116,7 @@ public:
 			mPython.insert(mPython.begin() + position, ip);
 	}
 
-	cPythonInterpreter *operator[](int i)
+	cPythonInterpreter *operator[](unsigned int i)
 	{
 		if (i < 0 || i > Size()) return NULL;
 		return mPython[i];

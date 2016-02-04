@@ -86,7 +86,7 @@ namespace nVerliHub {
 				 * @param os The stream.
 				 * @param indent The identation string to use for each element in the list.
 				 */
-				virtual void ListRegs(ostream &os, const char *indent);
+				virtual void ListRegs(ostream &os, const string &sep);
 
 				/**
 				 * Return the identifier of the callback list.

@@ -19,7 +19,6 @@
 */
 
 #include "ccustomredirect.h"
-#include <iomanip>
 #include "i18n.h"
 
 namespace nVerliHub {
@@ -39,48 +38,51 @@ namespace nVerliHub {
 		ostream &operator << (ostream &os, cRedirect &tr)
 		{
 			int flag = tr.mFlag;
-			string buff;
-			os << "\t" << tr.mCount << "\t" << tr.mAddress << "\t\t" << (tr.mEnable ? _("On") : _("Off")) << "\t";
+			string temp;
+			os << "\t" << tr.mCount;
+			os << "\t" << tr.mAddress;
+			os << "\t\t" << (tr.mEnable ? _("On") : _("Off"));
+			os << "\t";
 
 			if (flag & eKick)
-				buff += "ban,";
+				temp += "ban,";
 
 			if (flag & eUserLimit)
-				buff += "full,";
+				temp += "full,";
 
 			if (flag & eShareLimit)
-				buff += "share,";
+				temp += "share,";
 
 			if (flag & eTag)
-				buff += "tag,";
+				temp += "tag,";
 
 			if (flag & eWrongPasswd)
-				buff += "pass,";
+				temp += "pass,";
 
 			if (flag & eInvalidKey)
-				buff += "key,";
+				temp += "key,";
 
 			if (flag & eHubBusy)
-				buff += "busy,";
+				temp += "busy,";
 
 			if (flag & eReconnect)
-				buff += "reconn,";
+				temp += "reconn,";
 
 			if (flag & eBadNick)
-				buff += "nick,";
+				temp += "nick,";
 
 			if (flag & eClone)
-				buff += "clone,";
+				temp += "clone,";
 
 			if (flag & eSelf)
-				buff += "self,";
+				temp += "self,";
 
-			if (buff.empty())
-				buff = "any";
+			if (temp.empty())
+				temp = "any";
 			else
-				buff.erase(buff.end() - 1);
+				temp.erase(temp.end() - 1);
 
-			os << buff;
+			os << "\t" << temp;
 			return os;
 		}
 

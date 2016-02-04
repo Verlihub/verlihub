@@ -114,22 +114,22 @@ void cIPLog::GetHistory(const string &who, bool isNick, int limit, ostream &os)
 	};
 
 	os << "\n ";
-	os << setw(20) << setiosflags(ios::left) << toUpper(_("Date"));
-	os << setw(20) << setiosflags(ios::left) << toUpper(_("Action"));
-	os << setw(15) << setiosflags(ios::left) << (isNick ? "IP" : toUpper(_("Nickname")));
-	os << toUpper(_("Info")) << "\n";
-	os << " " << string(20+20+15+25,'=') << endl;
+	os << "\t" << _("Date");
+	os << "\t" << _("Action");
+	os << "\t" << (isNick ? "IP" : _("Nickname"));
+	os << _("Info") << "\n";
+	os << " " << string(70,'-') << endl;
 
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " <<  setw(20) << setiosflags(ios::left) << cTime(mModel.mDate,0).AsDate();
-		os << setw(20) << setiosflags(ios::left);
+		os << " " << "\t" << cTime(mModel.mDate,0).AsDate();
+		os << "\t";
 		if(mModel.mType < 4)
 			os << Actions[mModel.mType];
 		else
 			os << mModel.mType;
-		os << setw(15) << setiosflags(ios::left) << (isNick ? ip : mModel.mNick.substr(0,14));
+		os << "\t" << (isNick ? ip : mModel.mNick.substr(0,14));
 		if(mModel.mInfo < 16) {
 			if(strlen(Infos[mModel.mInfo]) > 0)
 				os << Infos[mModel.mInfo];
@@ -153,14 +153,14 @@ void cIPLog::GetLastLogin(const string &who, bool isNick, int limit, ostream &os
 	SetBaseTo(&mModel);
 
 	os << "\n ";
-	os << setw(25) << setiosflags(ios::left) << toUpper(_("Date"));
+	os << "\t" << _("Date");
 	os << (isNick ? "IP" : toUpper(_("Nickname"))) << "\n";
-	os << " " << string(25+20,'=') << endl;
+	os << " " << string(60, '-') << endl;
 
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " << setw(25) << setiosflags(ios::left) << cTime(mModel.mDate,0).AsDate();
+		os << " " << "\t" << cTime(mModel.mDate,0).AsDate();
 		os << (isNick ? ip : mModel.mNick) << endl;
 	}
 

@@ -25,15 +25,15 @@
 #include "stringutils.h"
 #include "i18n.h"
 
-#define PADDING 25
-
 namespace nVerliHub {
 	using namespace nEnums;
 	using namespace nUtils;
 	using namespace nSocket;
 	namespace nTables {
 
-cBan::cBan(cServerDC *s): cObj("cBan"), mS(s)
+cBan::cBan(cServerDC *s):
+	cObj("cBan"),
+	mS(s)
 {
 	mShare = 0;
 	mDateStart = 0;
@@ -47,10 +47,12 @@ cBan::cBan(cServerDC *s): cObj("cBan"), mS(s)
 cBan::~cBan()
 {}
 
-cUnBan::cUnBan(cServerDC *s): cBan(s)
+cUnBan::cUnBan(cServerDC *s):
+	cBan(s)
 {}
 
-cUnBan::cUnBan(cBan &Ban, cServerDC *s): cBan(s)
+cUnBan::cUnBan(cBan &Ban, cServerDC *s):
+	cBan(s)
 {
 	mIP = Ban.mIP;
 	mNick = Ban.mNick;

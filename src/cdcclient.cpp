@@ -19,7 +19,6 @@
 */
 
 #include "cdcclient.h"
-#include <iomanip>
 #include "i18n.h"
 
 namespace nVerliHub {
@@ -39,10 +38,15 @@ namespace nVerliHub {
 
 		ostream &operator << (ostream &os, cDCClient &tr)
 		{
-			os << "\t" << tr.mName << "\t\t\t" << tr.mTagID << "\t\t";
+			os << "\t" << tr.mName;
+
+			if (tr.mName.size() <= 8)
+				os << "\t";
+
+			os << "\t\t" << tr.mTagID << "\t\t";
 
  			if ((tr.mMinVersion < 0) && (tr.mMaxVersion < 0))
- 				os << _("Any");
+ 				os << _("Any") << "\t\t";
  			else if ((tr.mMinVersion >= 0) && (tr.mMaxVersion < 0))
  				os << autosprintf(_("Minimum: %.4f"), tr.mMinVersion);
  			else if ((tr.mMinVersion < 0) && (tr.mMaxVersion >= 0))
@@ -50,7 +54,7 @@ namespace nVerliHub {
  			else
  				os << autosprintf("%.4f", tr.mMinVersion) << " - " << autosprintf("%.4f", tr.mMaxVersion);
 
-			os << "\t\t\t" << (tr.mBan ? _("Yes") : _("No")) << "\t" << (tr.mEnable ? _("On") : _("Off"));
+			os << "\t" << (tr.mBan ? _("Yes") : _("No")) << "\t" << (tr.mEnable ? _("On") : _("Off"));
 			return os;
 		}
 

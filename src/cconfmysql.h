@@ -23,7 +23,6 @@
 #include "cconfigbase.h"
 #include "cconfigitembase.h"
 #include <iostream>
-#include <iomanip>
 #include "cmysql.h"
 #include "cquery.h"
 

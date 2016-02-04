@@ -25,8 +25,6 @@
 #include "src/i18n.h"
 #include <sys/stat.h>
 
-#define PADDING 15
-
 namespace nVerliHub {
 	using namespace nPlugin;
 	using namespace nUtils;
@@ -204,15 +202,14 @@ void cPlug::SaveMe()
 
 ostream& operator << (ostream &os, const cPlug &plug)
 {
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Name") << plug.mNick.c_str() << " [" << (plug.IsLoaded() ? toUpper(_("On")) : toUpper(_("Off"))) << "]";
-	os << " [" << (plug.mLoadOnStartup ? toUpper(_("Auto")) : toUpper(_("Manual"))) << "]" << endl;
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Path") << plug.mPath.c_str() << endl;
+	os << " [*] " << autosprintf(_("Name: %s [%s] [%s]"), plug.mNick.c_str(), (plug.IsLoaded() ? _("On") : _("Off")), (plug.mLoadOnStartup ? _("Automated") : _("Manual"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Path: %s"), plug.mPath.c_str()) << "\r\n";
 
-	if (!plug.mDesc.empty())
-		os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Description") << plug.mDesc.c_str() << endl;
+	if (plug.mDesc.size())
+		os << " [*] " << autosprintf(_("Description: %s"), plug.mDesc.c_str()) << "\r\n";
 
-	if (!plug.mLastError.empty())
-		os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last error") << plug.mLastError.c_str() << endl;
+	if (plug.mLastError.size())
+		os << " [*] " << autosprintf(_("Last error: %s"), plug.mLastError.c_str()) << "\r\n";
 
 	return os;
 }

@@ -31,13 +31,10 @@ using namespace std;
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <iomanip>
 #include <openssl/md5.h>
 #include "creguserinfo.h"
 #include "ctime.h"
 #include "i18n.h"
-
-#define PADDING 25
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -107,47 +104,29 @@ istream & operator >> (istream &is, cRegUserInfo &ui)
 	return is;
 }
 
-ostream & operator << (ostream &os, cRegUserInfo &ui)
+ostream& operator << (ostream &os, cRegUserInfo &ui)
 {
-	static const char *ClassName[] = {_("Guest"), _("Registered"), _("VIP"), _("Operator"), _("Cheef"), _("Administrator"), _("6-err"), _("7-err"), _("8-err"), _("9-err"), _("Master")};
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Class") << ((ui.mClass == -1) ? _("Pinger") : (ClassName[ui.mClass] ? ClassName[ui.mClass] : _("Invalid"))) << " [" << ui.mClass << "]\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last login") << cTime(ui.mLoginLast,0).AsDate() << " " << _("from") << " " << ui.mLoginIP << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Registered since");
-
-	if (ui.mRegDate)
-		os << cTime(ui.mRegDate, 0).AsDate() << " " << autosprintf(_("by %s"),ui.mRegOp.c_str());
-	else
-		os <<  _("No information");
-
-	os << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Last error");
-
-	if (ui.mErrorLast)
-		os << cTime(ui.mErrorLast).AsDate() << " " << _("from") << " " << ui.mErrorIP;
-	else
-		os <<  _("No information");
-
-	os << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Login errors/total") << ui.mErrorCount << "/" << ui.mLoginCount << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Password set") << ((ui.mPasswd.size() != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Account enabled") << ((ui.mEnabled != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Protected") << ((ui.mClassProtect != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hidden kicks") << ((ui.mHideKick != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hidden key") << ((ui.mHideKeys != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hidden share") << ((ui.mHideShare != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hidden share messages") << ((ui.mHideCtmMsg != 0) ? _("Yes") : _("No")) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Authorization IP") << (ui.mAuthIP.empty() ? "--" : ui.mAuthIP) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Alternate IP") << (ui.mAlternateIP.empty() ? "--" : ui.mAlternateIP);
+	os << "\r\n [*] " << autosprintf(_("Class: %d"), ui.mClass) << "\r\n";
+	os << " [*] " << autosprintf(_("Registered on: %s [%s]"), (ui.mRegDate ? cTime(ui.mRegDate, 0).AsDate().AsString().c_str() : _("Unknown")), (ui.mRegOp.size() ? ui.mRegOp.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Last login: %s [%d] [%s]"), (ui.mLoginLast ? cTime(ui.mLoginLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mLoginCount, (ui.mLoginIP.size() ? ui.mLoginIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Last error: %s [%d] [%s]"), (ui.mErrorLast ? cTime(ui.mErrorLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mErrorCount, (ui.mErrorIP.size() ? ui.mErrorIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Password set: %s"), ((ui.mPwdChange || ui.mPasswd.empty()) ? _("No") : _("Yes"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Enabled: %s"), (ui.mEnabled ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Protected: %s"), (ui.mClassProtect ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hide kicks: %s"), (ui.mHideKick ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hide key: %s"), (ui.mHideKeys ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hide share: %s"), (ui.mHideShare ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hide messages: %s"), (ui.mHideCtmMsg ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Authorization IP: %s"), (ui.mAuthIP.size() ? ui.mAuthIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Alternate IP: %s"), (ui.mAlternateIP.size() ? ui.mAlternateIP.c_str() : _("Not set"))) << "\r\n";
 	return os;
 }
 
-string & cRegUserInfo::GetNick(){
+string& cRegUserInfo::GetNick()
+{
 	return mNick;
 }
 
-/*!
-    \fn ::nTables::cRegUserInfo::SetPass(const string &)
- */
 void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
 {
 	mPwdChange = !str.size();

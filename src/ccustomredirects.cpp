@@ -209,7 +209,7 @@ namespace nVerliHub {
 
 	void cRedirectConsole::GetHelp(ostream &os)
 	{
-		string help("http://verlihub.net/doc/page/manual.redirects\r\n\r\n");
+		string help("https://github.com/verlihub/verlihub/wiki/redirects/\r\n\r\n");
 
 		help += " Available redirect flags:\r\n\r\n";
 		help += " 0\t\t\t- For any other reason\r\n";
@@ -274,7 +274,11 @@ namespace nVerliHub {
 
 	void cRedirectConsole::ListHead(ostream *os)
 	{
-		(*os) << "\r\n\t" << _("Hits") << "\t" << _("URL") << "\t\t\t\t" << _("Status") << "\t" << _("Type") << "\r\n\t" << string(130, '-');
+		(*os) << "\r\n\r\n\t" << _("Hits");
+		(*os) << "\t" << _("URL");
+		(*os) << "\t\t\t\t" << _("Status");
+		(*os) << "\t" << _("Type");
+		(*os) << "\r\n\t" << string(110, '-') << "\r\n";
 	}
 
 	bool cRedirectConsole::IsConnAllowed(cConnDC *conn, int cmd)

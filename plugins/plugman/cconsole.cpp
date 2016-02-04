@@ -27,8 +27,6 @@
 #include "cplugs.h"
 #include "src/i18n.h"
 
-#define PADDING 30
-
 namespace nVerliHub {
 	namespace nPlugMan {
 
@@ -40,9 +38,9 @@ cPlugs *cPlugConsole::GetTheList()
 void cPlugConsole::ListHead(ostream *os)
 {
 	(*os) << "\r\n\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s version"), mOwner->Name().c_str()) << mOwner->Version().c_str() << "\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s executable"), HUB_VERSION_NAME) << mOwner->mServer->mExecPath.c_str() << "\r\n";
-	(*os) << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(_("%s build time"), HUB_VERSION_NAME) << cTime(mOwner->mList->mVHTime, 0).AsDate() << "\r\n";
+	(*os) << " [*] " << autosprintf(_("%s version: %s"), mOwner->Name().c_str(), mOwner->Version().c_str()) << "\r\n";
+	(*os) << " [*] " << autosprintf(_("%s executable: %s"), HUB_VERSION_NAME, mOwner->mServer->mExecPath.c_str()) << "\r\n";
+	(*os) << " [*] " << autosprintf(_("%s build time: %s"), HUB_VERSION_NAME, cTime(mOwner->mList->mVHTime, 0).AsDate().AsString().c_str()) << "\r\n";
 }
 
 const char *cPlugConsole::CmdSuffix()

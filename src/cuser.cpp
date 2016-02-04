@@ -28,8 +28,6 @@
 #include "stringutils.h"
 #include <sys/time.h>
 
-#define PADDING 25
-
 namespace nVerliHub {
 	using namespace nProtocol;
 	using namespace nSocket;
@@ -231,21 +229,31 @@ long cUser::ShareEnthropy(const string &sharesize)
 
 void cUser::DisplayInfo(ostream &os, int DisplClass)
 {
-	//static const char *ClassName[] = {"Guest", "Registred", "VIP", "Operator", "Cheef", "Admin", "6-err", "7-err", "8-err", "9-err", "Master"};
-	//toUpper(ClassName[this->mClass])
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Nickname") << mNick << "\r\n";
-	if (this->mClass != this->mxConn->GetTheoricalClass()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Default class") << this->mxConn->GetTheoricalClass() << "\r\n";
-	if (DisplClass >= eUC_CHEEF) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("In list") << this->mInList << "\r\n";
-
 	if (!this->mxConn)
-		os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Special user") << _("Yes") << "\r\n";
-	else {
-		if (DisplClass >= eUC_OPERATOR) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("IP") << mxConn->AddrIP() << "\r\n";
-		if (DisplClass >= eUC_OPERATOR && mxConn->AddrHost().size()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Host") << mxConn->AddrHost() << "\r\n";
-		if (mxConn->mCC.size()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Country") << mxConn->mCC << "=" << mxConn->mCN << "\r\n";
-		if (mxConn->mCity.size()) os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("City") << mxConn->mCity << "\r\n";
-		if (mxConn->mRegInfo != NULL) os << *(mxConn->mRegInfo);
-	}
+		return;
+
+	os << "\r\n [*] " << autosprintf(_("Nick: %s"), this->mNick.c_str()) << "\r\n";
+
+	if (this->mClass != this->mxConn->GetTheoricalClass())
+		os << " [*] " << autosprintf(_("Default class: %d"), this->mxConn->GetTheoricalClass()) << "\r\n";
+
+	if (DisplClass >= eUC_CHEEF)
+		os << " [*] " << autosprintf(_("In list: %s"), (this->mInList ? _("Yes") : _("No"))) << "\r\n";
+
+	if (DisplClass >= eUC_OPERATOR)
+		os << " [*] " << autosprintf(_("IP: %s"), this->mxConn->AddrIP().c_str()) << "\r\n";
+
+	if ((DisplClass >= eUC_OPERATOR) && this->mxConn->AddrHost().size())
+		os << " [*] " << autosprintf(_("Host: %s"), this->mxConn->AddrHost().c_str()) << "\r\n";
+
+	if (this->mxConn->mCC.size())
+		os << " [*] " << autosprintf(_("Country: %s=%s"), this->mxConn->mCC.c_str(), this->mxConn->mCN.c_str()) << "\r\n";
+
+	if (this->mxConn->mCity.size())
+		os << " [*] " << autosprintf(_("City: %s"), this->mxConn->mCity.c_str()) << "\r\n";
+
+	if (this->mxConn->mRegInfo)
+		os << (*(this->mxConn->mRegInfo));
 }
 
 void cUser::DisplayRightsInfo(ostream &os, bool head)
@@ -253,128 +261,129 @@ void cUser::DisplayRightsInfo(ostream &os, bool head)
 	cTime now = cTime().Sec();
 
 	if (head) {
-		os << _("User rights information") << ":\r\n";
+		os << _("User rights information") << ":\r\n\r\n";
+
 		os << " [*] " << autosprintf(_("Nick: %s"), this->mNick.c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("Class: %d"), this->mClass) << "\r\n";
 	}
 
-	// main chat
-	if (this->mClass >= eUC_ADMIN)
+	if (this->mClass >= eUC_ADMIN) { // main chat
 		os << " [*] " << autosprintf(_("Can use main chat: %s"), _("Yes")) << "\r\n";
-	else if (!this->mGag)
+	} else if (!this->mGag) {
 		os << " [*] " << autosprintf(_("Can use main chat: %s"), _("No")) << "\r\n";
-	else if (this->mGag > now) {
+	} else if (this->mGag > now) {
 		ostringstream oss;
 		oss << autosprintf(_("No [%s]"), cTime(this->mGag - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can use main chat: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can use main chat: %s"), _("Yes")) << "\r\n";
+	}
 
-	// private chat
-	if (this->mClass >= eUC_ADMIN)
+	if (this->mClass >= eUC_ADMIN) { // private chat
 		os << " [*] " << autosprintf(_("Can use private chat: %s"), _("Yes")) << "\r\n";
-	else if (!this->mNoPM)
+	} else if (!this->mNoPM) {
 		os << " [*] " << autosprintf(_("Can use private chat: %s"), _("No")) << "\r\n";
-	else if (this->mNoPM > now) {
+	} else if (this->mNoPM > now) {
 		ostringstream oss;
 		oss << autosprintf(_("No [%s]"), cTime(this->mNoPM - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can use private chat: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can use private chat: %s"), _("Yes")) << "\r\n";
+	}
 
-	// operator chat
-	if ((this->mClass < eUC_OPERATOR) && this->mCanOpchat && (this->mCanOpchat < now))
+	if ((this->mClass < eUC_OPERATOR) && this->mCanOpchat && (this->mCanOpchat < now)) { // operator chat
 		os << " [*] " << autosprintf(_("Can use operator chat: %s"), _("No")) << "\r\n";
-	else if (this->mCanOpchat > now) {
+	} else if (this->mCanOpchat > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanOpchat - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can use operator chat: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can use operator chat: %s"), _("Yes")) << "\r\n";
+	}
 
-	// search files
-	if (this->mClass >= eUC_ADMIN)
+	if (this->mClass >= eUC_ADMIN) { // search files
 		os << " [*] " << autosprintf(_("Can search files: %s"), _("Yes")) << "\r\n";
-	else if (!this->mNoSearch)
+	} else if (!this->mNoSearch) {
 		os << " [*] " << autosprintf(_("Can search files: %s"), _("No")) << "\r\n";
-	else if (this->mNoSearch > now) {
+	} else if (this->mNoSearch > now) {
 		ostringstream oss;
 		oss << autosprintf(_("No [%s]"), cTime(this->mNoSearch - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can search files: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can search files: %s"), _("Yes")) << "\r\n";
+	}
 
-	// download files
-	if (this->mClass >= eUC_ADMIN)
+	if (this->mClass >= eUC_ADMIN) { // download files
 		os << " [*] " << autosprintf(_("Can download files: %s"), _("Yes")) << "\r\n";
-	else if (!this->mNoCTM)
+	} else if (!this->mNoCTM) {
 		os << " [*] " << autosprintf(_("Can download files: %s"), _("No")) << "\r\n";
-	else if (this->mNoCTM > now) {
+	} else if (this->mNoCTM > now) {
 		ostringstream oss;
 		oss << autosprintf(_("No [%s]"), cTime(this->mNoCTM - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can download files: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can download files: %s"), _("Yes")) << "\r\n";
+	}
 
-	// hide share
-	if ((this->mClass < eUC_VIPUSER) && this->mCanShare0 && (this->mCanShare0 < now))
+	if ((this->mClass < eUC_VIPUSER) && this->mCanShare0 && (this->mCanShare0 < now)) { // hide share
 		os << " [*] " << autosprintf(_("Can hide share: %s"), _("No")) << "\r\n";
-	else if (this->mCanShare0 > now) {
+	} else if (this->mCanShare0 > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanShare0 - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can hide share: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can hide share: %s"), _("Yes")) << "\r\n";
+	}
 
-	// register users
-	if ((this->mClass < mxServer->mC.min_class_register) && this->mCanReg && (this->mCanReg < now))
+	if ((this->mClass < mxServer->mC.min_class_register) && this->mCanReg && (this->mCanReg < now)) { // register users
 		os << " [*] " << autosprintf(_("Can register users: %s"), _("No")) << "\r\n";
-	else if (this->mCanReg > now) {
+	} else if (this->mCanReg > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanReg - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can register users: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can register users: %s"), _("Yes")) << "\r\n";
+	}
 
-	// drop users
-	if ((this->mClass < eUC_OPERATOR) && this->mCanDrop && (this->mCanDrop < now))
+	if ((this->mClass < eUC_OPERATOR) && this->mCanDrop && (this->mCanDrop < now)) { // drop users
 		os << " [*] " << autosprintf(_("Can drop users: %s"), _("No")) << "\r\n";
-	else if (this->mCanDrop > now) {
+	} else if (this->mCanDrop > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanDrop - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can drop users: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can drop users: %s"), _("Yes")) << "\r\n";
+	}
 
-	// kick users
-	if ((this->mClass < eUC_OPERATOR) && this->mCanKick && (this->mCanKick < now))
+	if ((this->mClass < eUC_OPERATOR) && this->mCanKick && (this->mCanKick < now)) { // kick users
 		os << " [*] " << autosprintf(_("Can kick users: %s"), _("No")) << "\r\n";
-	else if (this->mCanKick > now) {
+	} else if (this->mCanKick > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanKick - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can kick users: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can kick users: %s"), _("Yes")) << "\r\n";
+	}
 
-	// temporarily ban users
-	if ((this->mClass < eUC_OPERATOR) && this->mCanTBan && (this->mCanTBan < now))
+	if ((this->mClass < eUC_OPERATOR) && this->mCanTBan && (this->mCanTBan < now)) { // temporarily ban users
 		os << " [*] " << autosprintf(_("Can temporarily ban users: %s"), _("No")) << "\r\n";
-	else if (this->mCanTBan > now) {
+	} else if (this->mCanTBan > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanTBan - now).AsPeriod().AsString().c_str());
 		os << " [*] " << autosprintf(_("Can temporarily ban users: %s"), oss.str().c_str()) << "\r\n";
-	} else
+	} else {
 		os << " [*] " << autosprintf(_("Can temporarily ban users: %s"), _("Yes")) << "\r\n";
+	}
 
-	// permanently ban users
-	if ((this->mClass < eUC_OPERATOR) && this->mCanPBan && (this->mCanPBan < now))
-		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), _("No"));
-	else if (this->mCanPBan > now) {
+	if ((this->mClass < eUC_OPERATOR) && this->mCanPBan && (this->mCanPBan < now)) { // permanently ban users
+		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), _("No")) << "\r\n";
+	} else if (this->mCanPBan > now) {
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTime(this->mCanPBan - now).AsPeriod().AsString().c_str());
-		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), oss.str().c_str());
-	} else
-		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), _("Yes"));
+		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), oss.str().c_str()) << "\r\n";
+	} else {
+		os << " [*] " << autosprintf(_("Can permanently ban users: %s"), _("Yes")) << "\r\n";
+	}
 }
 
 bool cUser::Can(unsigned Right, long now, int OtherClass)

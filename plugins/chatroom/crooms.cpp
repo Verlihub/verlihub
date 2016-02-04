@@ -112,28 +112,28 @@ bool cRoom::IsUserAutoJoin(cUser *user)
 ostream& operator << (ostream &os, const cRoom &room)
 {
 	string roomTopic;
-	os << " ";
-		os << setw(20) << setiosflags(ios::left) << room.mNick.c_str();
-		if(room.mTopic.empty())
-			roomTopic = "--";
-		else
-			roomTopic = room.mTopic.substr(0,18).c_str();
-		os << setw(20) << setiosflags(ios::left) << roomTopic;
-		os << setw(10) << setiosflags(ios::left) << room.mAutoClassMin << "->" << room.mAutoClassMax;
-		os << setw(10) << setiosflags(ios::left) <<  room.mAutoCC.c_str();
-		os << setw(10) << setiosflags(ios::left) << room.mMinClass;
-		if(room.mUsers)
-			os << room.mUsers->Size();
+	os << "\t" << room.mNick;
+
+	if (room.mTopic.empty())
+		roomTopic = "--";
+	else
+		roomTopic = room.mTopic.substr(0, 18).c_str();
+
+	os << "\t" << roomTopic;
+	os << "\t" << room.mAutoClassMin << " - " << room.mAutoClassMax;
+	os << "\t" << room.mAutoCC;
+	os << "\t" << room.mMinClass;
+
+	if (room.mUsers)
+		os << room.mUsers->Size();
 
 	return os;
 }
-
 
 //--------------------------
 
 cRooms::cRooms(cVHPlugin *pi) : tRoomListBase(pi, "pi_chatroom")
 {}
-
 
 cRooms::~cRooms(){}
 

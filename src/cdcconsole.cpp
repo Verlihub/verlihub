@@ -41,8 +41,6 @@
 #include <algorithm>
 #include <sys/resource.h>
 
-#define PADDING 25
-
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nSocket;
@@ -69,7 +67,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK), ".(kick|drop) ", "(\\S+)( (.*)$)?", &mFunKick, eUR_KICK),
 	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol)info ?", "(\\S+)?", &mFunInfo),
-	mCmdPlug(int(eCM_PLUG),".plug(in|out|list|reg|reload) ","(\\S+)( (.*)$)?", &mFunPlug),
+	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
 	mCmdGetConfig(int(eCM_GETCONFIG),".(gc|getconfig) ?","(\\S+)?", &mFunGetConfig),
@@ -621,7 +619,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 	string omsg;
 
-	os << "\r\n\r\n " << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "\r\n\r\n";
+	os << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "\r\n\r\n";
 	os << " " << _("Authors") << "\r\n\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
@@ -638,8 +636,8 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " " << _("Credits") << "\r\n\r\n";
 	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
 	os << " " << _("More") << "\r\n\r\n";
-	os << "\t" << _("Website") << ": http://verlihub.net/" << "\r\n";
-	os << "\t" << _("Manual") << ": http://verlihub.net/doc/" << "\r\n";
+	os << "\t" << _("Website") << ": https://github.com/verlihub/" << "\r\n";
+	os << "\t" << _("Manual") << ": https://github.com/verlihub/verlihub/wiki/" << "\r\n";
 	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n";
 
 	omsg = os.str();
@@ -647,78 +645,54 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	return 1;
 }
 
-int cDCConsole::CmdUInfo(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 {
-	if (!conn->mpUser) return 0;
-	string uType, cType, hubOwner;
-	int sInt = 0;
-
-	if (conn->GetTheoricalClass() == eUC_NORMUSER) {
-		uType = _("Unregistered");
-		sInt = mOwner->mC.int_search;
-	} else if (conn->GetTheoricalClass() == eUC_REGUSER) {
-		uType = _("Registered");
-		sInt = mOwner->mC.int_search_reg;
-	} else if (conn->GetTheoricalClass() == eUC_VIPUSER) {
-		uType = _("VIP");
-		sInt = mOwner->mC.int_search_vip;
-	} else if (conn->GetTheoricalClass() == eUC_OPERATOR) {
-		uType = _("Operator");
-		sInt = mOwner->mC.int_search_op;
-	} else if (conn->GetTheoricalClass() == eUC_CHEEF) {
-		uType = _("Super operator");
-		sInt = mOwner->mC.int_search_op;
-	} else if (conn->GetTheoricalClass() == eUC_ADMIN) {
-		uType = _("Administrator");
-		sInt = mOwner->mC.int_search_op;
-	} else if (conn->GetTheoricalClass() == eUC_MASTER) {
-		uType = _("Master");
-		sInt = mOwner->mC.int_search_op;
-	}
-
-	if (!conn->mpUser->IsPassive == true) {
-		cType = _("Active");
-	} else {
-		cType = _("Passive");
-		sInt = mOwner->mC.int_search_pas;
-	}
+	if (!conn || !conn->mpUser)
+		return 0;
 
 	ostringstream os;
-	string omsg;
-	os << "\r\n";
+	int ucl = conn->GetTheoricalClass();
+	unsigned int sear = 0;
+	os << _("Hub information") << ":\r\n\r\n";
 
-	if(!mOwner->mC.hub_owner.empty())
-		hubOwner = mOwner->mC.hub_owner;
-	else
-		hubOwner = "--";
+	os << " [*] " << autosprintf(_("Owner: %s"), (mOwner->mC.hub_owner.size() ? mOwner->mC.hub_owner.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Address: %s"), mOwner->mC.hub_host.c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Status: %s"), mOwner->SysLoadName()) << "\r\n";
+	os << " [*] " << autosprintf(_("Users: %d"), mOwner->mUserCountTot) << "\r\n";
+	os << " [*] " << autosprintf(_("Bots: %d"), mOwner->mRobotList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mOwner->mTotalShare).c_str()) << "\r\n\r\n";
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub owner") << hubOwner << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Address") << mOwner->mC.hub_host.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total users") << mServer->mUserCountTot << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total bots") <<  mServer->mRobotList.Size() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Total share") << convertByte(mServer->mTotalShare, false).c_str() << "\r\n";
+	os << " " << _("Your information") << ":\r\n\r\n";
 
-	// hub health
-	mServer->mStatus = _("Not available");
+	os << " [*] " << autosprintf(_("Class: %d [%s]"), ucl, mOwner->UserClassName(nEnums::tUserCl(ucl))) << "\r\n";
 
-	if (mServer->mFrequency.mNumFill > 0) {
-		if (mServer->mSysLoad == eSL_RECOVERY) mServer->mStatus = _("Recovery mode");
-		else if (mServer->mSysLoad == eSL_CAPACITY) mServer->mStatus = _("Near capacity");
-		else if (mServer->mSysLoad == eSL_PROGRESSIVE) mServer->mStatus = _("Progressive mode");
-		else if (mServer->mSysLoad == eSL_NORMAL) mServer->mStatus = _("Normal mode");
+	if (ucl == eUC_NORMUSER) {
+		if (conn->mpUser->IsPassive)
+			sear = mOwner->mC.int_search_pas;
+		else
+			sear = mOwner->mC.int_search;
+	} else if (ucl == eUC_REGUSER) {
+		if (conn->mpUser->IsPassive)
+			sear = mOwner->mC.int_search_reg_pas;
+		else
+			sear = mOwner->mC.int_search_reg;
+	} else if (ucl == eUC_VIPUSER) {
+		sear = mOwner->mC.int_search_vip;
+	} else if (ucl == eUC_OPERATOR) {
+		sear = mOwner->mC.int_search_op;
+	} else if (ucl == eUC_CHEEF) {
+		sear = mOwner->mC.int_search_op;
+	} else if (ucl == eUC_ADMIN) {
+		sear = mOwner->mC.int_search_op;
+	} else if (ucl == eUC_MASTER) {
+		sear = mOwner->mC.int_search_op;
 	}
 
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Hub health") << mServer->mStatus.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Your status") << uType.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << autosprintf(ngettext("You can search every %d second", "You can search every %d seconds", sInt), sInt) << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("Connection type") << cType.c_str() << "\r\n";
-	os << " [*] " << setw(PADDING) << setiosflags(ios::left) << _("You are sharing") << convertByte(conn->mpUser->mShare, false).c_str();
-
-	if (conn->mpUser->mHideShare) // tell user that his share is hidden
-		os << " (" << _("hidden") << ")";
-
-	omsg = os.str();
-	mOwner->DCPublicHS(omsg, conn);
+	os << " [*] " << autosprintf(ngettext("Search interval: %d second", "Search interval: %d seconds", sear), sear) << "\r\n";
+	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->IsPassive ? _("Passive") : _("Active"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
+	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
 
@@ -2128,7 +2102,7 @@ bool cDCConsole::cfWho::operator()()
 	}
 
 	string sep("\r\n\t");
-	string who;
+	string who, low;
 	unsigned long ip_min, ip_max;
 	unsigned int cnt, port = 0;
 
@@ -2169,7 +2143,8 @@ bool cDCConsole::cfWho::operator()()
 			break;
 
 		case eAC_CITY:
-			cnt = mS->WhoCity(tmp, who, sep);
+			low = toLower(tmp);
+			cnt = mS->WhoCity(low, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with city %s", "Found %d users with city %s", cnt), cnt, tmp.c_str());
@@ -2186,7 +2161,8 @@ bool cDCConsole::cfWho::operator()()
 			break;
 
 		case eAC_HUBURL:
-			cnt = mS->WhoHubURL(tmp, who, sep);
+			low = toLower(tmp);
+			cnt = mS->WhoHubURL(low, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with hub URL %s", "Found %d users with hub URL %s", cnt), cnt, tmp.c_str());
@@ -2265,9 +2241,29 @@ bool cDCConsole::cfKick::operator()()
 
 bool cDCConsole::cfPlug::operator()()
 {
-	enum { eAC_IN, eAC_OUT, eAC_LIST, eAC_REG, eAC_RELAOD };
-	static const char * actionnames [] = { "in","out","list","reg","reload", NULL};
-	static const int actionids [] = { eAC_IN, eAC_OUT, eAC_LIST, eAC_REG, eAC_RELAOD };
+	enum {
+		eAC_IN,
+		eAC_OUT,
+		eAC_LIST,
+		eAC_REG,
+		eAC_RELOAD
+	};
+
+	static const char *actionnames[] = {
+		"in",
+		"out",
+		"list",
+		"reg", "call", "calls", "callback", "callbacks",
+		"reload"
+	};
+
+	static const int actionids[] = {
+		eAC_IN,
+		eAC_OUT,
+		eAC_LIST,
+		eAC_REG, eAC_REG, eAC_REG, eAC_REG, eAC_REG,
+		eAC_RELOAD
+	};
 
 	if (this->mConn->mpUser->mClass < mS->mC.plugin_mod_class) {
 		(*mOS) << _("You have no rights to do this.");
@@ -2275,46 +2271,54 @@ bool cDCConsole::cfPlug::operator()()
 	}
 
 	string tmp;
-	mIdRex->Extract(1,mIdStr,tmp);
-	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames)/sizeof(char*));
-	if (Action < 0) return false;
+	mIdRex->Extract(1, mIdStr, tmp);
+	int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
 
-	switch (Action)
-	{
+	if (Action < 0)
+		return false;
+
+	switch (Action) {
 		case eAC_LIST:
-			(*mOS) << _("Loaded plugins") << ":\r\n";
+			(*mOS) << _("Loaded plugins") << ":\r\n\r\n";
 			mS->mPluginManager.List(*mOS);
 			break;
 		case eAC_REG:
-			(*mOS) << _("Available callbacks") << ":\r\n";
+			(*mOS) << _("Plugin callbacks") << ":\r\n\r\n";
 			mS->mPluginManager.ListAll(*mOS);
 			break;
 		case eAC_OUT:
-			if(mParRex->PartFound(1)) {
+			if (mParRex->PartFound(1)) {
 				mParRex->Extract(1, mParStr, tmp);
-				if(!mS->mPluginManager.UnloadPlugin(tmp))
+
+				if (!mS->mPluginManager.UnloadPlugin(tmp))
 					return false;
 			}
+
 			break;
 		case eAC_IN:
-			if(mParRex->PartFound(1)) {
+			if (mParRex->PartFound(1)) {
 				mParRex->Extract(1, mParStr, tmp);
-				if(!mS->mPluginManager.LoadPlugin(tmp)) {
+
+				if (!mS->mPluginManager.LoadPlugin(tmp)) {
 					(*mOS) << mS->mPluginManager.GetError();
 					return false;
 				}
 			}
+
 			break;
-		case eAC_RELAOD:
-			if(GetParStr(1, tmp)) {
-				if(!mS->mPluginManager.ReloadPlugin(tmp)) {
+		case eAC_RELOAD:
+			if (GetParStr(1, tmp)) {
+				if (!mS->mPluginManager.ReloadPlugin(tmp)) {
 					(*mOS) << mS->mPluginManager.GetError();
 					return false;
 				}
 			}
+
 			break;
-		default: break;
+		default:
+			break;
 	}
+
 	return true;
 }
 

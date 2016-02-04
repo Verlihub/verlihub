@@ -46,13 +46,15 @@ namespace nVerliHub {
 
 cTrigger::cTrigger()
 {
-	mSeconds = mLastTrigger = mFlags = 0;
-	mMinClass=0;
-	mMaxClass=10;
-	mMaxLines=0;
-	mMaxSize=0;
-	mDelayUser=0;
-	mDelayTotal=0;
+	mSeconds = 0;
+	mLastTrigger = 0;
+	mFlags = 0;
+	mMinClass = 0;
+	mMaxClass = 10;
+	mMaxLines = 0;
+	mMaxSize = 0;
+	mDelayUser = 0;
+	mDelayTotal = 0;
 }
 
   /**
@@ -146,38 +148,8 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 			ReplaceVarInString(buf, "HOST", buf, conn->AddrHost());
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);
 			ReplaceVarInString(buf, "CLASS", buf, uclass);
-
-			switch (uclass) {
-				case eUC_PINGER:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Pinger"));
-					break;
-				case eUC_NORMUSER:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Guest"));
-					break;
-				case eUC_REGUSER:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Registered"));
-					break;
-				case eUC_VIPUSER:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("VIP"));
-					break;
-				case eUC_OPERATOR:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Operator"));
-					break;
-				case eUC_CHEEF:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Cheef"));
-					break;
-				case eUC_ADMIN:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Administator"));
-					break;
-				case eUC_MASTER:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Master"));
-					break;
-				default:
-					ReplaceVarInString(buf, "CLASSNAME", buf, _("Unknown"));
-					break;
-			}
-
-			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare, false));
+			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(uclass)));
+			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare));
 			ReplaceVarInString(buf, "SHARE_EXACT", buf, (__int64)conn->mpUser->mShare); // exact share size
 		}
 
@@ -190,8 +162,8 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "HUBNAME", buf, server.mC.hub_name);
 		ReplaceVarInString(buf, "HUBTOPIC", buf, server.mC.hub_topic);
 		ReplaceVarInString(buf, "HUBDESC", buf, server.mC.hub_desc);
-		ReplaceVarInString(buf, "TOTAL_SHARE", buf, convertByte(server.mTotalShare, false));
-		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak, false)); // peak total share
+		ReplaceVarInString(buf, "TOTAL_SHARE", buf, convertByte(server.mTotalShare));
+		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak)); // peak total share
 
 		char tmf[3];
 		sprintf(tmf, "%02d", lt->tm_sec);
@@ -262,19 +234,27 @@ Redefine << operator to show and describe a trigger
 
 ostream &operator << (ostream &os, cTrigger &tr)
 {
-	os << " ";
-	os << setw(30) << setiosflags(ios::left) << tr.mCommand.c_str();
-	os << setw(25) << setiosflags(ios::left) << tr.mDefinition.substr(0,24).c_str();
-	os << setw(8) << setiosflags(ios::left) << tr.mFlags;
-	os << setw(15) << setiosflags(ios::left) << (tr.mSendAs.size() ? tr.mSendAs.c_str() : "NULL"); // todo: use hub security nick, server.mC.hub_security
-	os << setw(10) << setiosflags(ios::left) << tr.mMinClass;
-	os << tr.mMaxClass;
+	string def(tr.mDefinition.substr(0, 30));
+	replace(def.begin(), def.end(), '\r', ' ');
+	replace(def.begin(), def.end(), '\n', ' ');
+
+	os << "\t" << tr.mCommand;
+
+	if (tr.mCommand.size() <= 8)
+		os << "\t";
+
+	os << "\t" << tr.mFlags;
+	os << "\t" << tr.mMinClass << " - " << tr.mMaxClass << "\t";
 
 	if (tr.mSeconds) {
 		cTime timeout = cTime(tr.mSeconds);
-		os << " Timeout: " <<  timeout.AsPeriod();
+		os << timeout.AsPeriod();
+	} else {
+		os << _("No");
 	}
 
+	os << "\t" << (tr.mSendAs.size() ? tr.mSendAs : _("Not set"));
+	os << "\t\t" << def;
 	return os;
 }
 

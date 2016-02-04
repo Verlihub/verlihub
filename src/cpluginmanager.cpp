@@ -22,7 +22,6 @@
 #include <config.h>
 #endif
 #include <sys/types.h>
-#include <iomanip>
 #include <dirent.h>
 #include "cpluginmanager.h"
 #include "cpluginloader.h"
@@ -182,21 +181,43 @@ bool cPluginManager::UnregisterCallBack(string id, cPluginBase *pi)
 
 void cPluginManager::List(ostream &os)
 {
-	os << " " << setw(40) << setiosflags(ios::left) << toUpper(_("Name"));
-	os << toUpper(_("Version")) << "\r\n";
-	os << " " << string(40+25,'=');
 	tPlugins::iterator it;
+	os << "\t" << _("Name");
+	os << "\t\t" << _("Version");
+	os << "\r\n\t" << string(40, '-') << "\r\n\r\n";
+
 	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
-		os << "\r\n " << setw(40) << setiosflags(ios::left) << (*it)->mPlugin->Name() << (*it)->mPlugin->Version();
+		if ((*it) && (*it)->mPlugin)
+			os << "\t" << (*it)->mPlugin->Name() << "\t\t" << (*it)->mPlugin->Version() << "\r\n";
 	}
 }
 
 void cPluginManager::ListAll(ostream &os)
 {
 	tCBList::iterator it;
+	os << "\t" << _("Name");
+	os << "\t\t\t\t\t" << _("Plugins");
+	os << "\r\n\t" << string(75, '-') << "\r\n\r\n";
+
 	for (it = mCallBacks.begin(); it != mCallBacks.end(); ++it) {
-		os << "\r\nCB: " << (*it)->Name();
-		(*it)->ListRegs(os,"\t");
+		if (*it) {
+			os << "\t" << (*it)->Name() << "\t";
+
+			if ((*it)->Name().size() <= 8)
+				os << "\t";
+
+			if ((*it)->Name().size() <= 16)
+				os << "\t";
+
+			if ((*it)->Name().size() <= 24)
+				os << "\t";
+
+			if ((*it)->Name().size() <= 32)
+				os << "\t";
+
+			(*it)->ListRegs(os, " ");
+			os << "\r\n";
+		}
 	}
 }
 

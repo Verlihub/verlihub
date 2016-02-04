@@ -342,7 +342,7 @@ namespace nVerliHub {
 	void cDCClientConsole::GetHelp(ostream &os)
 	{
 		string help;
-		help = "Available options are:\r\n\r\n";
+		help = "https://github.com/verlihub/verlihub/wiki/clients/\r\n\r\n";
 		help += "-t \tClient ID (in <++ V:0.75,M:A,H:1/0/0,S:1> ID is '++')\r\n";
 		help += "-b \tBan client matching this rule (0 - no, 1 - yes)\r\n";
 		help += "-v \tMinimum version number\r\n";
@@ -439,7 +439,12 @@ namespace nVerliHub {
 
 	void cDCClientConsole::ListHead(ostream *os)
 	{
-		(*os) << "\r\n\t" << _("Name") << "\t\t\t" << _("ID") << "\t\t" << _("Version") << "\t\t\t" << _("Banned") << "\t" << _("Status") << "\r\n\t" << string(130, '-');
+		(*os) << "\r\n\r\n\t" << _("Name");
+		(*os) << "\t\t\t" << _("ID");
+		(*os) << "\t\t" << _("Version");
+		(*os) << "\t\t\t" << _("Banned");
+		(*os) << "\t" << _("Status");
+		(*os) << "\r\n\t" << string(116, '-') << "\r\n";
 	}
 
 	bool cDCClientConsole::IsConnAllowed(cConnDC *conn, int cmd)

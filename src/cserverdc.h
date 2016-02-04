@@ -563,6 +563,8 @@ class cServerDC : public cAsyncSocketServer
 		bool CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type);
 
 		// helper functions
+		char* SysLoadName();
+		char* UserClassName(nEnums::tUserCl ucl);
 		bool CheckPortNumber(unsigned int port);
 		string EraseNewLines(const string &src);
 
@@ -796,8 +798,6 @@ public:
 	unsigned __int64 mTotalShare;
 	// peak total share
 	unsigned __int64 mTotalSharePeak;
-	// Health of the hub
-	string mStatus;
 	// cTime object when the hub was started
 	cTime mStartTime;
 	// Timer that deletes temp bans

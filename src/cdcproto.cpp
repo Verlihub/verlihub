@@ -1226,36 +1226,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			ReplaceVarInString(desc_prefix, "CN", desc_prefix, conn->mCN);
 			ReplaceVarInString(desc_prefix, "CITY", desc_prefix, conn->mCity);
 			ReplaceVarInString(desc_prefix, "CLASS", desc_prefix, conn->mpUser->mClass);
-
-			switch (conn->mpUser->mClass) {
-				case eUC_PINGER:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Pinger"));
-					break;
-				case eUC_NORMUSER:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Guest"));
-					break;
-				case eUC_REGUSER:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Registered"));
-					break;
-				case eUC_VIPUSER:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("VIP"));
-					break;
-				case eUC_OPERATOR:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Operator"));
-					break;
-				case eUC_CHEEF:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Cheef"));
-					break;
-				case eUC_ADMIN:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Administator"));
-					break;
-				case eUC_MASTER:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Master"));
-					break;
-				default:
-					ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, _("Unknown"));
-					break;
-			}
+			ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, mS->UserClassName(conn->mpUser->mClass));
 
 			switch (tag->mClientMode) {
 				case eCM_ACTIVE:

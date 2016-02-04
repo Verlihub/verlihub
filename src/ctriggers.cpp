@@ -238,7 +238,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 {
 	string help;
 
-	help = "http://verlihub.net/doc/page/manual.messages#File_Triggers\r\n\r\n";
+	help = "https://github.com/verlihub/verlihub/wiki/messages#file-triggers\r\n\r\n";
 
 	help += " Available trigger flags:\r\n\r\n";
 	help += " 0\t\t\t- Send to main chat, visible to user only\r\n";
@@ -407,7 +407,7 @@ cTriggers *cTriggerConsole::GetTheList()
 
   */
 
-const char *cTriggerConsole::CmdSuffix(){ return "trigger";}
+const char* cTriggerConsole::CmdSuffix() { return "trigger"; }
 
   /**
 
@@ -418,7 +418,7 @@ const char *cTriggerConsole::CmdSuffix(){ return "trigger";}
 
   */
 
-  const char *cTriggerConsole::CmdPrefix(){ return "!"; }
+const char* cTriggerConsole::CmdPrefix() { return "!"; }
 
   /**
 
@@ -430,14 +430,13 @@ const char *cTriggerConsole::CmdSuffix(){ return "trigger";}
 
 void cTriggerConsole::ListHead(ostream *os)
 {
-	(*os) << "\r\n ";
-	(*os) << setw(30) << setiosflags(ios::left) << toUpper(_("Name"));
-	(*os) << setw(25) << setiosflags(ios::left) << toUpper(_("Definition"));
-	(*os) << setw(8) << setiosflags(ios::left) << toUpper(_("Flag"));
-	(*os) << setw(15) << setiosflags(ios::left) << toUpper(_("Send as"));
-	(*os) << setw(10) << setiosflags(ios::left) << toUpper(_("Min class"));
-	(*os) << toUpper(_("Max class")) << "\r\n";
-	(*os) << " " << string(30+25+8+10+10+15,'=');
+	(*os) << "\r\n\r\n\t" << _("Name");
+	(*os) << "\t\t" << _("Flags");
+	(*os) << "\t" << _("Class");
+	(*os) << "\t" << _("Timer");
+	(*os) << "\t" << _("Sender");
+	(*os) << "\t\t" << _("Definition");
+	(*os) << "\r\n\t" << string(130, '-') << "\r\n";
 }
 
   /**
@@ -450,9 +449,9 @@ void cTriggerConsole::ListHead(ostream *os)
 
   */
 
-bool cTriggerConsole::IsConnAllowed(cConnDC *conn,int cmd)
+bool cTriggerConsole::IsConnAllowed(cConnDC *conn, int cmd)
 {
-	return (conn && conn->mpUser && conn->mpUser->mClass >= eUC_ADMIN);
+	return (conn && conn->mpUser && (conn->mpUser->mClass >= eUC_ADMIN));
 }
 
 };
