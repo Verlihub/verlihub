@@ -31,7 +31,6 @@
 #include "ctime.h"
 #include "creglist.h"
 #include <sstream>
-#include <iomanip>
 #include "ccommand.h"
 #include "ctriggers.h"
 #include "ccustomredirects.h"
@@ -1846,8 +1845,8 @@ bool cDCConsole::cfGag::operator()()
 		}
 	}
 
-	time_t period = 24 * 3600 * 7;
-	time_t Now = 1;
+	unsigned long period = 24 * 3600 * 7;
+	unsigned long Now = 1;
 	bool isUn = mIdRex->PartFound(1);
 
 	if (mParRex->PartFound(3)) {
@@ -1920,7 +1919,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting main chat right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting main chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting main chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
@@ -1931,7 +1930,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting private chat right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting private chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting private chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
@@ -1942,7 +1941,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting main and private chat rights for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting main and private chat rights for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting main and private chat rights for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr) {
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
@@ -1955,7 +1954,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting download right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting download right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting download right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true);
@@ -1966,7 +1965,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting search right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting search right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting search right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
 
@@ -1976,7 +1975,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting hidden share right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting hidden share right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting hidden share right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true);
@@ -1987,7 +1986,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting registration right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting registration right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting registration right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true);
@@ -1998,7 +1997,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting kick right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting kick right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting kick right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true);
@@ -2009,7 +2008,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isUn)
 				(*mOS) << autosprintf(_("Resetting operator chat right for: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting operator chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Setting operator chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr) {
 				usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true);

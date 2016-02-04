@@ -23,7 +23,6 @@
 #include "cdctag.h"
 #include "cconntypes.h"
 #include <string>
-#include <iostream>
 #include <math.h>
 #include "cdcconf.h"
 #include "i18n.h"
