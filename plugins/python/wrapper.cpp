@@ -1095,8 +1095,12 @@ int w_Load(w_Targs *args)
 	PyModule_AddStringConstant(m, "basedir", (char *)basedir);
 	PyModule_AddIntConstant(m, "starttime", starttime);
 
-	o = Py_BuildValue("(ii)", 1, 0);
+	const char *version = PYTHON_PI_VERSION;
+	long ver1 = 1, ver2 = 0, ver3 = 0, ver4 = 0;
+	sscanf(version, "%ld.%ld.%ld.%ld", &ver1, &ver2, &ver3, &ver4);
+	o = Py_BuildValue("(iiii)", ver1, ver2, ver3, ver4);
 	PyObject_SetAttrString(m, "__version__", o);
+	PyModule_AddStringConstant(m, "__version_string__", (char *)version);
 
 	fp = fopen(scriptname, "r");
 	if (fp == NULL) {
