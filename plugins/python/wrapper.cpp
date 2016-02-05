@@ -545,7 +545,7 @@ static PyObject *__SetMyINFO(PyObject *self, PyObject *args)
 
 static PyObject *__GetUserClass(PyObject *self, PyObject *args)
 {
-	long uclass = -1;
+	long uclass = -2;
 	if (Call(W_GetUserClass, args, "s", "l", &uclass)) return Py_BuildValue("l", uclass);
 	Py_RETURN_NONE;
 }
@@ -964,8 +964,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
-	{"ParseCommand", __ParseCommand, METH_VARARGS},
-	{"ScriptCommand", __ScriptCommand, METH_VARARGS},
+	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
+	{"ScriptCommand",      __ScriptCommand,      METH_VARARGS},
 	{"SetConfig",          __SetConfig,          METH_VARARGS},
 	{"GetConfig",          __GetConfig,          METH_VARARGS},
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
@@ -1508,7 +1508,7 @@ const char *w_HookName(int hook)
 		case W_OnOperatorDropsWithReason: return "OnOperatorDropsWithReason";
 		case W_OnValidateTag:             return "OnValidateTag";
 		case W_OnUserCommand:             return "OnUserCommand";
-		case W_OnScriptCommand: return "OnScriptCommand";
+		case W_OnScriptCommand:           return "OnScriptCommand";
 		case W_OnUserLogin:               return "OnUserLogin";
 		case W_OnUserLogout:              return "OnUserLogout";
 		case W_OnTimer:                   return "OnTimer";
@@ -1544,8 +1544,8 @@ const char *w_CallName(int callback)
 		case W_GetOpList:            return "GetOpList";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
-		case W_ParseCommand: return "ParseCommand";
-		case W_ScriptCommand: return "ScriptCommand";
+		case W_ParseCommand:         return "ParseCommand";
+		case W_ScriptCommand:        return "ScriptCommand";
 		case W_SetConfig:            return "SetConfig";
 		case W_GetConfig:            return "GetConfig";
 		case W_AddRobot:             return "AddRobot";

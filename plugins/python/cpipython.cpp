@@ -149,8 +149,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
-	callbacklist[W_ParseCommand] = &_ParseCommand;
-	callbacklist[W_ScriptCommand] = &_ScriptCommand;
+	callbacklist[W_ParseCommand]       = &_ParseCommand;
+	callbacklist[W_ScriptCommand]      = &_ScriptCommand;
 	callbacklist[W_SetConfig]          = &_SetConfig;
 	callbacklist[W_GetConfig]          = &_GetConfig;
 	callbacklist[W_AddRobot]           = &_AddRobot;
@@ -953,7 +953,6 @@ bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string 
 		w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), plug->c_str(), script->c_str());
 		return CallAll(W_OnScriptCommand, args);
 	}
-
 	return true;
 }
 
@@ -1282,7 +1281,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 w_Targs *_GetUserClass(int id, w_Targs *args)
 {
 	char *nick;
-	long uclass = -1;
+	long uclass = -2;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
@@ -1400,34 +1399,20 @@ w_Targs* _ParseCommand(int id, w_Targs *args)
 {
 	char *nick, *cmd;
 	int pm;
-
-	if (!cpiPython::lib_unpack(args, "ssl", &nick, &cmd, &pm))
-		return NULL;
-
-	if (!nick || !cmd)
-		return NULL;
-
-	if (!ParseCommand(nick, cmd, pm))
-		return NULL;
-
+	if (!cpiPython::lib_unpack(args, "ssl", &nick, &cmd, &pm)) return NULL;
+	if (!nick || !cmd) return NULL;
+	if (!ParseCommand(nick, cmd, pm)) return NULL;
 	return w_ret1;
 }
 
 w_Targs* _ScriptCommand(int id, w_Targs *args)
 {
 	char *cmd, *data;
-
-	if (!cpiPython::lib_unpack(args, "ss", &cmd, &data))
-		return NULL;
-
-	if (!cmd || !data)
-		return NULL;
-
+	if (!cpiPython::lib_unpack(args, "ss", &cmd, &data)) return NULL;
+	if (!cmd || !data) return NULL;
 	string plug("python"), s_cmd(cmd), s_data(data);
-
 	if (!ScriptCommand(&s_cmd, &s_data, &plug, &cpiPython::me->GetInterpreter(id)->mScriptName))
 		return NULL;
-
 	return w_ret1;
 }
 
