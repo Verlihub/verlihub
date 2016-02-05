@@ -149,7 +149,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
-	callbacklist[W_ParseCommand]       = &_ParseCommand;
+	callbacklist[W_ParseCommand] = &_ParseCommand;
+	callbacklist[W_ScriptCommand] = &_ScriptCommand;
 	callbacklist[W_SetConfig]          = &_SetConfig;
 	callbacklist[W_GetConfig]          = &_GetConfig;
 	callbacklist[W_AddRobot]           = &_AddRobot;
@@ -205,6 +206,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnOperatorDrops");
 	RegisterCallBack("VH_OnValidateTag");
 	RegisterCallBack("VH_OnUserCommand");
+	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnUserLogin");
 	RegisterCallBack("VH_OnUserLogout");
 	RegisterCallBack("VH_OnTimer");
@@ -945,6 +947,16 @@ bool cpiPython::OnUserCommand(cConnDC *conn, string *command)
 	return true;
 }
 
+bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
+{
+	if (cmd && data && plug && script) {
+		w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), plug->c_str(), script->c_str());
+		return CallAll(W_OnScriptCommand, args);
+	}
+
+	return true;
+}
+
 bool cpiPython::OnValidateTag(cConnDC *conn, cDCTag *tag)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (tag != NULL)) {
@@ -1384,9 +1396,39 @@ w_Targs *_KickUser(int id, w_Targs *args)
 	return w_ret1;
 }
 
-w_Targs *_ParseCommand(int id, w_Targs *args)
+w_Targs* _ParseCommand(int id, w_Targs *args)
 {
-	return NULL;  // not implemented yet
+	char *nick, *cmd;
+	int pm;
+
+	if (!cpiPython::lib_unpack(args, "ssl", &nick, &cmd, &pm))
+		return NULL;
+
+	if (!nick || !cmd)
+		return NULL;
+
+	if (!ParseCommand(nick, cmd, pm))
+		return NULL;
+
+	return w_ret1;
+}
+
+w_Targs* _ScriptCommand(int id, w_Targs *args)
+{
+	char *cmd, *data;
+
+	if (!cpiPython::lib_unpack(args, "ss", &cmd, &data))
+		return NULL;
+
+	if (!cmd || !data)
+		return NULL;
+
+	string plug("python"), s_cmd(cmd), s_data(data);
+
+	if (!ScriptCommand(&s_cmd, &s_data, &plug, &cpiPython::me->GetInterpreter(id)->mScriptName))
+		return NULL;
+
+	return w_ret1;
 }
 
 w_Targs *_SetConfig(int id, w_Targs *args)

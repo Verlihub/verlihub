@@ -75,6 +75,7 @@ public:
 	virtual bool OnOperatorDrops(cUser *, cUser *, std::string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
+	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
 	virtual bool OnTimer(long);
@@ -179,7 +180,8 @@ extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
-extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
+extern "C" w_Targs *_ParseCommand(int id, w_Targs *args);
+extern "C" w_Targs *_ScriptCommand(int id, w_Targs *args);
 extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_AddRobot          (int id, w_Targs *args);

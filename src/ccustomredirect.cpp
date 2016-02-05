@@ -42,7 +42,6 @@ namespace nVerliHub {
 			os << "\t" << tr.mCount;
 			os << "\t" << tr.mAddress;
 			os << "\t\t" << (tr.mEnable ? _("On") : _("Off"));
-			os << "\t";
 
 			if (flag & eKick)
 				temp += "ban,";

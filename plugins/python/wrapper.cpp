@@ -703,9 +703,14 @@ static PyObject *__KickUser(PyObject *self, PyObject *args)
 	return pybool(BasicCall(W_KickUser, args, "sss"));
 }
 
-static PyObject *__ParseCommand(PyObject *self, PyObject *args)
+static PyObject* __ParseCommand(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_ParseCommand, args, "s"));
+	return pybool(BasicCall(W_ParseCommand, args, "ssl"));
+}
+
+static PyObject* __ScriptCommand(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_ScriptCommand, args, "ss"));
 }
 
 static PyObject *__SetConfig(PyObject *self, PyObject *args)
@@ -959,7 +964,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
-	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
+	{"ParseCommand", __ParseCommand, METH_VARARGS},
+	{"ScriptCommand", __ScriptCommand, METH_VARARGS},
 	{"SetConfig",          __SetConfig,          METH_VARARGS},
 	{"GetConfig",          __GetConfig,          METH_VARARGS},
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
@@ -1322,15 +1328,18 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(zzl)", s0, s1, n0);
 			break;
+
 		case W_OnNewBan:
+		case W_OnScriptCommand:
 		case W_OnParsedMsgConnectToMe:
 			if (!w_unpack(params, "ssss", &s0, &s1, &s2, &s3)) {
-				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name,
-					w_HookName(func), w_packprint(params));
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
 				break;
 			}
+
 			args = Py_BuildValue("(zzzz)", s0, s1, s2, s3);
 			break;
+
 		case W_OnPublicBotMessage:
 			if (!w_unpack(params, "ssll", &s0, &s1, &n0, &n1)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name,
@@ -1499,6 +1508,7 @@ const char *w_HookName(int hook)
 		case W_OnOperatorDropsWithReason: return "OnOperatorDropsWithReason";
 		case W_OnValidateTag:             return "OnValidateTag";
 		case W_OnUserCommand:             return "OnUserCommand";
+		case W_OnScriptCommand: return "OnScriptCommand";
 		case W_OnUserLogin:               return "OnUserLogin";
 		case W_OnUserLogout:              return "OnUserLogout";
 		case W_OnTimer:                   return "OnTimer";
@@ -1534,7 +1544,8 @@ const char *w_CallName(int callback)
 		case W_GetOpList:            return "GetOpList";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
-		case W_ParseCommand:         return "ParseCommand";
+		case W_ParseCommand: return "ParseCommand";
+		case W_ScriptCommand: return "ScriptCommand";
 		case W_SetConfig:            return "SetConfig";
 		case W_GetConfig:            return "GetConfig";
 		case W_AddRobot:             return "AddRobot";

@@ -39,7 +39,7 @@ cBanList::cBanList(cServerDC *s):
 	mMySQLTable.mName = "banlist";
 	AddCol("ip", "varchar(15)", "", true, mModel.mIP);
 	AddPrimaryKey("ip");
-	AddCol("nick", "varchar(64)", "", true, mModel.mNick);
+	AddCol("nick", "varchar(128)", "", true, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("ban_type", "tinyint(4)", "0", true, mModel.mType);
 	AddCol("host", "text", "", true, mModel.mHost);
@@ -435,8 +435,12 @@ void cBanList::List(ostream &os, int count)
 	db_iterator it;
 	SetBaseTo(&mModel);
 
-	os << "\r\n\r\n\t" << _("Entry") << "\t\t" << _("Type") << "\t\t" << _("OP") << "\t\t" << _("Time") << "\t\t" << _("Last hit") << "\r\n";
-	os << "\t" << string(160, '-') << "\r\n";
+	os << "\r\n\r\n\t" << _("Item");
+	os << "\t\t\t\t" << _("Type");
+	os << "\t\t" << _("Operator");
+	os << "\t\t" << _("Time");
+	os << "\t\t\t" << _("Last hit") << "\r\n";
+	os << "\t" << string(160, '-') << "\r\n\r\n";
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		mModel.DisplayInline(os);

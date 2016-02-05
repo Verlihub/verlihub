@@ -185,49 +185,68 @@ void cBan::DisplayKick(ostream &os)
 			os << autosprintf(_("Expired %s"), cTime(mDateEnd, 0).AsDate().AsString().c_str());
 		} else {
 			os << HowLong.AsPeriod().AsString().c_str();
+			os << "\t";
 		}
 	} else {
 		os << _("Permanent");
+		os << "\t";
 	}
 
-	os << "\t\t";
+	os << "\t";
 
-	if (!mLastHit)
-		os << _("Never");
-	else
+	if (mLastHit)
 		os << cTime(cTime().Sec() - mLastHit).AsPeriod().AsString();
+	else
+		os << _("Never");
 }
 
 void cBan::DisplayInline(ostream &os)
 {
-	os << "\t";
+	const char* ban_type = GetBanType();
+	string item;
 
 	switch (1 << mType) {
 		case eBF_NICK:
-			os << mNick;
+		case eBF_PREFIX:
+			item = mNick;
 			break;
 		case eBF_NICKIP:
-			os << mNick + " + " + mIP;
+			item = mNick + " + " + mIP;
 			break;
 		case eBF_IP:
 		case eBF_RANGE:
-			os << mIP;
+			item = mIP;
 			break;
 		case eBF_HOST1:
 		case eBF_HOST2:
 		case eBF_HOST3:
-			os << mHost;
+			item = mHost;
 			break;
 		case eBF_SHARE:
-			os << mShare; // dont use convertByte(mShare, false) because we banned exact share
+			item = StringFrom(mShare); // dont use convertByte because we banned exact share
 			break;
-		case eBF_PREFIX:
 		default:
-			os << mNick;
+			item = mNick;
 			break;
 	}
 
-	os << "\t\t" << GetBanType() << "\t\t" << mNickOp;
+	os << "\t" << item;
+
+	if (item.size() <= 8)
+		os << "\t";
+
+	if (item.size() <= 16)
+		os << "\t";
+
+	if (item.size() <= 24)
+		os << "\t";
+
+	os << "\t" << ban_type;
+
+	if (strlen(ban_type) <= 8)
+		os << "\t";
+
+	os << "\t" << mNickOp;
 	DisplayKick(os);
 }
 
