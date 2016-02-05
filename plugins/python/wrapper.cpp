@@ -901,38 +901,40 @@ static PyObject *__decode(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "s:decode", &data)) return NULL;
 	str = data;
 	size_t pos = 0, len = str.length();
-	while (true) {
+	while (pos < len) {
 		size_t fpos = str.find("&#", pos);
 		if (fpos == string::npos) {
 			dest << str.substr(pos);
 			break;
 		}
 		dest << str.substr(pos, fpos - pos);
-		if (fpos + s1 <= len && str.substr(pos, s1) == t1) {
+		if (fpos + s1 <= len && str.compare(fpos, s1, t1, 0, s1) == 0) {
 			dest << r1;
-			pos += s1;
+			pos = fpos + s1;
 			continue;
 		}
-		if (fpos + s2 <= len && str.substr(pos, s2) == t2) {
+		if (fpos + s2 <= len && str.compare(fpos, s2, t2, 0, s2) == 0) {
 			dest << r2;
-			pos += s2;
+			pos = fpos + s2;
 			continue;
 		}
-		if (fpos + s3 <= len && str.substr(pos, s3) == t3) {
+		if (fpos + s3 <= len && str.compare(fpos, s3, t3, 0, s3) == 0) {
 			dest << r3;
-			pos += s3;
+			pos = fpos + s3;
 			continue;
 		}
-		if (fpos + s4 <= len && str.substr(pos, s4) == t4) {
+		if (fpos + s4 <= len && str.compare(fpos, s4, t4, 0, s4) == 0) {
 			dest << r4;
-			pos += s4;
+			pos = fpos + s4;
 			continue;
 		}
-		if (fpos + s5 <= len && str.substr(pos, s5) == t5) {
+		if (fpos + s5 <= len && str.compare(fpos, s5, t5, 0, s5) == 0) {
 			dest << r5;
-			pos += s5;
+			pos = fpos + s5;
 			continue;
 		}
+		dest << "&#";
+		pos = fpos + 2;
 	}
 	return Py_BuildValue("s", dest.str().c_str());
 }
