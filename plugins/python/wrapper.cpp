@@ -519,7 +519,7 @@ static PyObject *__SendPMToAll(PyObject *self, PyObject *args)
 
 static PyObject *__CloseConnection(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_CloseConnection, args, "s"));
+	return pybool(BasicCall(W_CloseConnection, args, "s|l"));
 }
 
 static PyObject *__GetMyINFO(PyObject *self, PyObject *args)
@@ -545,7 +545,7 @@ static PyObject *__SetMyINFO(PyObject *self, PyObject *args)
 
 static PyObject *__GetUserClass(PyObject *self, PyObject *args)
 {
-	long uclass = -1;
+	long uclass = -2;
 	if (Call(W_GetUserClass, args, "s", "l", &uclass)) return Py_BuildValue("l", uclass);
 	Py_RETURN_NONE;
 }
@@ -901,38 +901,40 @@ static PyObject *__decode(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "s:decode", &data)) return NULL;
 	str = data;
 	size_t pos = 0, len = str.length();
-	while (true) {
+	while (pos < len) {
 		size_t fpos = str.find("&#", pos);
 		if (fpos == string::npos) {
 			dest << str.substr(pos);
 			break;
 		}
 		dest << str.substr(pos, fpos - pos);
-		if (fpos + s1 <= len && str.substr(pos, s1) == t1) {
+		if (fpos + s1 <= len && str.compare(fpos, s1, t1, 0, s1) == 0) {
 			dest << r1;
-			pos += s1;
+			pos = fpos + s1;
 			continue;
 		}
-		if (fpos + s2 <= len && str.substr(pos, s2) == t2) {
+		if (fpos + s2 <= len && str.compare(fpos, s2, t2, 0, s2) == 0) {
 			dest << r2;
-			pos += s2;
+			pos = fpos + s2;
 			continue;
 		}
-		if (fpos + s3 <= len && str.substr(pos, s3) == t3) {
+		if (fpos + s3 <= len && str.compare(fpos, s3, t3, 0, s3) == 0) {
 			dest << r3;
-			pos += s3;
+			pos = fpos + s3;
 			continue;
 		}
-		if (fpos + s4 <= len && str.substr(pos, s4) == t4) {
+		if (fpos + s4 <= len && str.compare(fpos, s4, t4, 0, s4) == 0) {
 			dest << r4;
-			pos += s4;
+			pos = fpos + s4;
 			continue;
 		}
-		if (fpos + s5 <= len && str.substr(pos, s5) == t5) {
+		if (fpos + s5 <= len && str.compare(fpos, s5, t5, 0, s5) == 0) {
 			dest << r5;
-			pos += s5;
+			pos = fpos + s5;
 			continue;
 		}
+		dest << "&#";
+		pos = fpos + 2;
 	}
 	return Py_BuildValue("s", dest.str().c_str());
 }
@@ -964,8 +966,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
-	{"ParseCommand", __ParseCommand, METH_VARARGS},
-	{"ScriptCommand", __ScriptCommand, METH_VARARGS},
+	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
+	{"ScriptCommand",      __ScriptCommand,      METH_VARARGS},
 	{"SetConfig",          __SetConfig,          METH_VARARGS},
 	{"GetConfig",          __GetConfig,          METH_VARARGS},
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
@@ -1508,7 +1510,7 @@ const char *w_HookName(int hook)
 		case W_OnOperatorDropsWithReason: return "OnOperatorDropsWithReason";
 		case W_OnValidateTag:             return "OnValidateTag";
 		case W_OnUserCommand:             return "OnUserCommand";
-		case W_OnScriptCommand: return "OnScriptCommand";
+		case W_OnScriptCommand:           return "OnScriptCommand";
 		case W_OnUserLogin:               return "OnUserLogin";
 		case W_OnUserLogout:              return "OnUserLogout";
 		case W_OnTimer:                   return "OnTimer";
@@ -1544,8 +1546,8 @@ const char *w_CallName(int callback)
 		case W_GetOpList:            return "GetOpList";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
-		case W_ParseCommand: return "ParseCommand";
-		case W_ScriptCommand: return "ScriptCommand";
+		case W_ParseCommand:         return "ParseCommand";
+		case W_ScriptCommand:        return "ScriptCommand";
 		case W_SetConfig:            return "SetConfig";
 		case W_GetConfig:            return "GetConfig";
 		case W_AddRobot:             return "AddRobot";
