@@ -519,7 +519,7 @@ static PyObject *__SendPMToAll(PyObject *self, PyObject *args)
 
 static PyObject *__CloseConnection(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_CloseConnection, args, "s"));
+	return pybool(BasicCall(W_CloseConnection, args, "s|l"));
 }
 
 static PyObject *__GetMyINFO(PyObject *self, PyObject *args)

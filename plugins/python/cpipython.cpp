@@ -1198,11 +1198,13 @@ w_Targs *_SendPMToAll(int id, w_Targs *args)
 w_Targs *_CloseConnection(int id, w_Targs *args)
 {
 	char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
+	long nice;
+	if (!cpiPython::lib_unpack(args, "sl", &nick, &nice)) return NULL;
 	if (!nick) return NULL;
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
-		u->mxConn->CloseNow();
+		if (nice == 1) nice = 1000;
+		u->mxConn->CloseNice(nice, eCR_KICKED);
 		return w_ret1;
 	}
 	return NULL;
