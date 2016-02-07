@@ -27,7 +27,6 @@
 #include "src/cvhplugin.h"
 #include "src/cserverdc.h"
 #include "src/cuser.h"
-#include "src/script_api.h"
 #include <iostream>
 #include <vector>
 #include <dlfcn.h>

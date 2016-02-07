@@ -70,7 +70,6 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("CloseConnection", &_Disconnect); // backward compatibility
 	RegisterFunction("Disconnect", &_Disconnect);
 	RegisterFunction("DisconnectByName", &_Disconnect); // backward compatibility
-	RegisterFunction("DisconnectNice", &_DisconnectNice);
 	RegisterFunction("StopHub", &_StopHub);
 	RegisterFunction("GetUserCC", &_GetUserCC);
 	RegisterFunction("GetUserCN", &_GetUserCN);

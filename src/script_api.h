@@ -18,6 +18,9 @@
 	of the GNU General Public License.
 */
 
+#ifndef SCRIPT_API_H
+#define SCRIPT_API_H
+
 #ifndef _WIN32
 #define __int64 long long
 #endif
@@ -25,6 +28,7 @@
 #include <string>
 
 using namespace std;
+
 namespace nVerliHub {
 	bool SendDataToUser(char *data, char *nick);
 	bool SendToClass(char *data, int min_class, int max_class);
@@ -35,15 +39,14 @@ namespace nVerliHub {
 	bool SendToPassiveClass(char *data, int min_class, int max_class);
 	bool SendPMToAll(char *data, char *from, int min_class, int max_class);
 	bool SendToOpChat(char *data);
-	bool CloseConnection(char *nick);
-	bool CloseConnectionNice(char *nick);
+	bool CloseConnection(char *nick, long delay = 0);
 	bool StopHub(int code, unsigned delay);
 	char* GetUserCC(char *nick);
 
-#ifdef HAVE_LIBGEOIP
-	const string GetIPCC(const char *ip);
-	const string GetIPCN(const char *ip);
-#endif
+	#ifdef HAVE_LIBGEOIP
+		const string GetIPCC(const char *ip);
+		const string GetIPCN(const char *ip);
+	#endif
 
 	const char* GetMyINFO(char *nick);
 	int GetUserClass(char *nick);
@@ -67,5 +70,7 @@ namespace nVerliHub {
 		const char* GetNickList();
 	}
 
-	__int64 GetTotalShareSize();
+	unsigned __int64 GetTotalShareSize();
 };
+
+#endif

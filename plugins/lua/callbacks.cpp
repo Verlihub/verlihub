@@ -355,51 +355,34 @@ int _SendToOpChat(lua_State *L)
 
 int _Disconnect(lua_State *L)
 {
-	string nick;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) == 2) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		nick = (char *) lua_tostring(L, 2);
-		if(!CloseConnection((char*)nick.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:Disconnect; expected 1 argument but got %d", lua_gettop(L) - 1);
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-		return 2;
-	}
-	lua_pushboolean(L, 1);
-	return 1;
-}
-
-int _DisconnectNice(lua_State *L)
-{
-	if (lua_gettop(L) == 2) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		string nick = (char *)lua_tostring(L, 2);
-
-		if (!CloseConnectionNice((char*)nick.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:DisconnectNice, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:Disconnect, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	long delay = 0;
+
+	if (args >= 2)
+		delay = (long)lua_tonumber(L, 3);
+
+	if (!CloseConnection((char*)nick.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _StopHub(lua_State *L)

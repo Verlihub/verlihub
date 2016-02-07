@@ -246,28 +246,22 @@ bool SendToOpChat(char *data)
 	return true;
 }
 
-bool CloseConnection(char *nick)
+bool CloseConnection(char *nick, long delay)
 {
-	cUser *usr = GetUser(nick);
-
-	if (!usr || !usr->mxConn) {
+	if (!nick)
 		return false;
-	} else {
-		usr->mxConn->CloseNow();
-		return true;
-	}
-}
 
-bool CloseConnectionNice(char *nick)
-{
-	cUser *usr = GetUser(nick);
+	cUser *user = GetUser(nick);
 
-	if (!usr || !usr->mxConn) {
+	if (!user || !user->mxConn)
 		return false;
-	} else {
-		usr->mxConn->CloseNice(1000, eCR_KICKED);
-		return true;
-	}
+
+	if (delay)
+		user->mxConn->CloseNice(delay, eCR_KICKED);
+	else
+		user->mxConn->CloseNow();
+
+	return true;
 }
 
 bool StopHub(int code, unsigned delay)
@@ -510,7 +504,7 @@ int __GetUsersCount()
 	return server->mUserCountTot;
 }
 
-__int64 GetTotalShareSize()
+unsigned __int64 GetTotalShareSize()
 {
 	cServerDC *server = GetCurrentVerlihub();
 

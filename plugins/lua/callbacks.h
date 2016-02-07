@@ -38,7 +38,6 @@ namespace nVerliHub {
 	int _SendPMToAll(lua_State *L);
 	int _SendToOpChat(lua_State *L);
 	int _Disconnect(lua_State *L);
-	int _DisconnectNice(lua_State *L);
 	int _StopHub(lua_State *L);
 	int _GetMyINFO(lua_State *L);
 	int _GetUserCC(lua_State *L);
