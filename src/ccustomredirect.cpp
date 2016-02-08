@@ -41,7 +41,17 @@ namespace nVerliHub {
 			string temp;
 			os << "\t" << tr.mCount;
 			os << "\t" << tr.mAddress;
-			os << "\t\t" << (tr.mEnable ? _("On") : _("Off"));
+
+			if (tr.mAddress.size() <= 8)
+				os << "\t";
+
+			if (tr.mAddress.size() <= 16)
+				os << "\t";
+
+			if (tr.mAddress.size() <= 24)
+				os << "\t";
+
+			os << "\t" << (tr.mEnable ? _("On") : _("Off"));
 
 			if (flag & eKick)
 				temp += "ban,";
