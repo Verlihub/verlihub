@@ -223,6 +223,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnUnBan");
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnScriptCommand");
+	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnOpChatMessage");
 	RegisterCallBack("VH_OnPublicBotMessage");
@@ -285,14 +286,6 @@ bool cpiLua::CallAll(const char *fncname, char *args[], cConnDC *conn)
 		for (it = mLua.begin(); it != mLua.end(); ++it) {
 			if (!(*it)->CallFunction(fncname, args, conn))
 				ret = false;
-
-			/*
-				todo
-					we dont break here
-					it means that all scripts get function call
-					ret is set to what last script returns, even if previous returned false
-					look over this
-			*/
 		}
 	}
 
@@ -1005,6 +998,23 @@ bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *sc
 		};
 
 		CallAll("VH_OnScriptCommand", args);
+	}
+
+	return true;
+}
+
+bool cpiLua::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
+{
+	if (cmd && data && recipient && sender && resp) {
+		char *args[] = {
+			(char*)cmd->c_str(),
+			(char*)data->c_str(),
+			(char*)recipient->c_str(),
+			(char*)sender->c_str(),
+			NULL
+		};
+
+		CallAll("VH_OnScriptQuery", args, (cConnDC *)resp);
 	}
 
 	return true;

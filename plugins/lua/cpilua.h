@@ -80,6 +80,7 @@ public:
 	virtual bool OnNewBan(cUser *, cBan *);
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script);
+	virtual bool OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
 	virtual bool OnOpChatMessage(string *nick, string *data);
 	virtual bool OnPublicBotMessage(string *nick, string *data, int min_class, int max_class);

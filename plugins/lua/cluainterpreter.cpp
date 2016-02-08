@@ -131,6 +131,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetTopic", &_GetTopic);
 	RegisterFunction("SetTopic", &_SetTopic);
 	RegisterFunction("ScriptCommand", &_ScriptCommand);
+	RegisterFunction("ScriptQuery", &_ScriptQuery);
 
 	lua_setglobal(mL, "VH");
 	int status = luaL_dofile(mL, (char*)mScriptName.c_str());
@@ -193,6 +194,16 @@ void cLuaInterpreter::RegisterFunction(const char *fncname, int (*fncptr)(lua_St
 
 bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn)
 {
+	ScriptResponses *responses = NULL;
+
+	if (!strcmp(func, "VH_OnScriptQuery")) {
+		const char *recipient = args[2];
+		if (strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
+			return true;
+		responses = (ScriptResponses *)conn;
+		conn = NULL;
+	}
+
 	lua_settop(mL, 0);
 	int base = lua_gettop(mL);
 	lua_pushliteral(mL, "_TRACEBACK");
@@ -301,6 +312,13 @@ bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn
 		//} else { // accept boolean and nil, same as above
 			//if ((int)lua_toboolean(mL, -1) == 0)
 				//ret = false;
+
+		} else if (lua_isstring(mL, -1)) {
+			if (!strcmp(func, "VH_OnScriptQuery") && responses) {
+				const char *sender = mScriptName.c_str();
+				const char *data = lua_tostring(mL, -1);
+				responses->push_back(ScriptResponse(data, sender));
+			}
 		}
 
 		lua_pop(mL, 1);
