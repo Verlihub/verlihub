@@ -151,6 +151,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
 	callbacklist[W_ScriptCommand]      = &_ScriptCommand;
+	callbacklist[W_ScriptQuery]        = &_ScriptQuery;
 	callbacklist[W_SetConfig]          = &_SetConfig;
 	callbacklist[W_GetConfig]          = &_GetConfig;
 	callbacklist[W_AddRobot]           = &_AddRobot;
@@ -207,6 +208,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnValidateTag");
 	RegisterCallBack("VH_OnUserCommand");
 	RegisterCallBack("VH_OnScriptCommand");
+	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnUserLogin");
 	RegisterCallBack("VH_OnUserLogout");
 	RegisterCallBack("VH_OnTimer");
@@ -956,6 +958,41 @@ bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string 
 	return true;
 }
 
+bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
+{
+	if (!online || !cmd || !data || !recipient || !sender || !resp) return true;
+	int func = W_OnScriptQuery;
+	w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), recipient->c_str(), sender->c_str());
+	log2("PY: Call %s: parameters %s\n", lib_hookname(func), lib_packprint(args));
+	w_Targs *result;
+
+	if (Size()) {
+		tvPythonInterpreter::iterator it;
+		for (it = mPython.begin(); it != mPython.end(); ++it) {
+			char *response;
+			bool should_call = (*it)->receive_all_script_queries;
+			if (!should_call) {
+				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
+					should_call = true;
+			}
+			if (!should_call) continue;
+			result = (*it)->CallFunction(func, args);
+			if (!result) continue;
+			if (lib_unpack(result, "s", &response)) {
+				if (response) {
+					ScriptResponse sr;
+					sr.data = string(response);
+					sr.sender = (*it)->mScriptName;
+					resp->push_back(sr);
+				}
+			}
+			free(result);
+		}
+	}
+	free(args);
+	return true;
+}
+
 bool cpiPython::OnValidateTag(cConnDC *conn, cDCTag *tag)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (tag != NULL)) {
@@ -1416,6 +1453,39 @@ w_Targs* _ScriptCommand(int id, w_Targs *args)
 	if (!ScriptCommand(&s_cmd, &s_data, &plug, &cpiPython::me->GetInterpreter(id)->mScriptName))
 		return NULL;
 	return w_ret1;
+}
+
+w_Targs* _ScriptQuery(int id, w_Targs *args)
+{
+	char *cmd, *data, *recipient = NULL;
+	long use_long_output;
+	ScriptResponses responses;
+	if (!cpiPython::lib_unpack(args, "sssl", &cmd, &data, &recipient, &use_long_output)) return NULL;
+	if (!cmd || !data) return NULL;
+	if (!recipient) recipient = (char *)"";
+	string s_cmd(cmd), s_data(data), s_recipient(recipient);
+	string s_sender(cpiPython::me->GetInterpreter(id)->mScriptName);
+	
+	if (!ScriptQuery(&s_cmd, &s_data, &s_recipient, &s_sender, &responses))
+		return NULL;
+	if (responses.size() == 0)
+		return cpiPython::lib_pack("lllp", (long)1, (long)0, (long)0, (void *)NULL);
+	int rows = responses.size();
+	int cols = (use_long_output ? 2 : 1);
+	char **res = (char **)calloc(cols * rows, sizeof(char *));
+	if (!res) {
+		log1("PY: ScriptQuery   malloc failed\n");
+		return NULL;
+	}
+	for (int r = 0; r < rows; r++) {
+		if (cols == 1) {
+			res[r] = strdup(responses[r].data.c_str());
+		} else {
+			res[(r * cols)] = strdup(responses[r].data.c_str());
+			res[(r * cols) + 1] = strdup(responses[r].sender.c_str());
+		}
+	}
+	return cpiPython::lib_pack("lllp", (long)1, (long)rows, (long)cols, (void *)res);
 }
 
 w_Targs *_SetConfig(int id, w_Targs *args)

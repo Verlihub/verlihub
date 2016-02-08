@@ -713,6 +713,41 @@ static PyObject* __ScriptCommand(PyObject *self, PyObject *args)
 	return pybool(BasicCall(W_ScriptCommand, args, "ss"));
 }
 
+static PyObject* __ScriptQuery(PyObject *self, PyObject *args)
+{
+	char **fields;
+	long rows, cols, res;
+	PyObject *lst = PyList_New(0);
+	if (!Call(W_ScriptQuery, args, "ss|sl", "lllp", &res, &rows, &cols, (void **)&fields)) Py_RETURN_NONE;
+	if (!fields || !res || !rows || !cols) return lst;
+	if (cols == 1) {
+		for (int row = 0; row < rows; row++) {
+			if (!fields[row]) {
+				res = 0;
+				break;
+			}
+			PyList_Append(lst, Py_BuildValue("s", fields[row]));
+			free(fields[row]);
+		}
+	} else if (cols > 1) {
+		for (int row = 0; row < rows && res > 0; row++) {
+			PyObject *pyrow = PyTuple_New(cols);
+			for (int col = 0; col < cols; col++) {
+				if (!fields[row * cols + col]) {
+					res = 0;
+					break;
+				}
+				PyTuple_SetItem(pyrow, col, Py_BuildValue("s", fields[row * cols + col]));
+				free(fields[row * cols + col]);
+			}
+			if (!res) break;
+			PyList_Append(lst, pyrow);
+		}
+	}
+	free(fields);
+	return lst;
+}
+
 static PyObject *__SetConfig(PyObject *self, PyObject *args)
 {
 	// Arguments: conf, var, val
@@ -968,6 +1003,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"KickUser",           __KickUser,           METH_VARARGS},
 	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
 	{"ScriptCommand",      __ScriptCommand,      METH_VARARGS},
+	{"ScriptQuery",        __ScriptQuery,        METH_VARARGS},
 	{"SetConfig",          __SetConfig,          METH_VARARGS},
 	{"GetConfig",          __GetConfig,          METH_VARARGS},
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
@@ -1333,6 +1369,7 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 
 		case W_OnNewBan:
 		case W_OnScriptCommand:
+		case W_OnScriptQuery:
 		case W_OnParsedMsgConnectToMe:
 			if (!w_unpack(params, "ssss", &s0, &s1, &s2, &s3)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
@@ -1434,6 +1471,15 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 							PyErr_Print();
 						break;
 					}
+			case W_OnScriptQuery:
+				if (PyString_Check(pValue)) {
+					char *msg = PyString_AsString(pValue);
+					if (msg) {
+						log2("PY: [%d:%s] CallHook OnScriptQuery: returned %s\n", id, name, msg);
+						res = w_pack("s", msg);
+						break;
+					}
+				}
 			// case W_OnParsedMsgAny:
 			// case W_OnParsedMsgAnyEx:
 			// case W_OnOpChatMessage:
@@ -1511,6 +1557,7 @@ const char *w_HookName(int hook)
 		case W_OnValidateTag:             return "OnValidateTag";
 		case W_OnUserCommand:             return "OnUserCommand";
 		case W_OnScriptCommand:           return "OnScriptCommand";
+		case W_OnScriptQuery:             return "OnScriptQuery";
 		case W_OnUserLogin:               return "OnUserLogin";
 		case W_OnUserLogout:              return "OnUserLogout";
 		case W_OnTimer:                   return "OnTimer";
@@ -1548,6 +1595,7 @@ const char *w_CallName(int callback)
 		case W_KickUser:             return "KickUser";
 		case W_ParseCommand:         return "ParseCommand";
 		case W_ScriptCommand:        return "ScriptCommand";
+		case W_ScriptQuery:          return "ScriptQuery";
 		case W_SetConfig:            return "SetConfig";
 		case W_GetConfig:            return "GetConfig";
 		case W_AddRobot:             return "AddRobot";

@@ -26,6 +26,7 @@
 #endif
 #include <map>
 #include <string>
+#include "cvhplugin.h"
 
 using namespace std;
 
@@ -62,6 +63,7 @@ namespace nVerliHub {
 	bool AddRegUser(char *nick, int uclass, char *pass, char* op);
 	bool DelRegUser(char *nick);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script);
+	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

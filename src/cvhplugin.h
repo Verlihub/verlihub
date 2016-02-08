@@ -22,6 +22,7 @@
 #define NDIRECTCONNECT_NPLUGINCVHPLUGIN_H
 #include "cpluginbase.h"
 #include "cusercollection.h"
+#include <vector>
 
 using namespace std;
 namespace  nVerliHub {
@@ -47,7 +48,21 @@ namespace  nVerliHub {
 	class cUserRobot;
 	class cPluginRobot;
 
-	namespace nPlugin {
+class ScriptResponse
+{
+public:
+	string data;
+	string sender;
+	
+	ScriptResponse() {}
+	ScriptResponse(const string &data, const string &sender) : data(data), sender(sender) {}
+	ScriptResponse(const char *data, const char *sender) : data(data), sender(sender) {}
+};
+
+typedef vector<ScriptResponse> ScriptResponses;
+
+
+namespace nPlugin {
 
 //using cServerDC;
 //using cConnDC;
@@ -438,6 +453,17 @@ public:
 	* script = ID of script that makes the call.
 	*/
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script) { return true; }
+
+	/*
+	* Event handler function that is called when a script sends a query to other scripts.
+	* Use RegisterCallBack("VH_OnScriptQuery") to register it. This is not discardable.
+	* cmd = Command ID.
+	* data = Additional data.
+	* recipient = Path of script (or plugin name) that should answer the call (or empty string).
+	* sender = Path of script that makes the call (or plugin name, if it's not scripting plugin).
+	* reponses = a vector that will hold responses to the query.
+	*/
+	virtual bool OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses) { return true; }
 
 	// ctm2hub
 	virtual bool OnCtmToHub(nSocket::cConnDC *conn, string *ref) { return true; }

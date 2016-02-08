@@ -41,6 +41,7 @@ public:
 	string mScriptName;
 	int id;
 	bool online;
+	bool receive_all_script_queries;
 };
 
 };  // namespace nPythonPlugin
