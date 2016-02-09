@@ -107,9 +107,11 @@ enum {
 	W_GetUserHubURL,
 	W_GetUserExtJSON,
 	W_GetUserCC,
+#ifdef HAVE_LIBGEOIP
 	W_GetIPCC,
 	W_GetIPCN,
 	W_GetGeoIP,
+#endif
 	W_GetNickList,
 	W_GetOpList,
 	W_Ban,

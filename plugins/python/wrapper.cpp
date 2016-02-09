@@ -669,6 +669,8 @@ static PyObject *__GetUserCC(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+#ifdef HAVE_LIBGEOIP
+
 static PyObject *__GetIPCC(PyObject *self, PyObject *args)
 {
 	char *res;
@@ -712,6 +714,8 @@ static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
 	}
 	Py_RETURN_NONE;
 }
+
+#endif
 
 static PyObject *__Ban(PyObject *self, PyObject *args)
 {
@@ -1036,9 +1040,11 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserHubURL",      __GetUserHubURL,      METH_VARARGS},
 	{"GetUserExtJSON",     __GetUserExtJSON,     METH_VARARGS},
 	{"GetUserCC",          __GetUserCC,          METH_VARARGS},
+#ifdef HAVE_LIBGEOIP
 	{"GetIPCC",            __GetIPCC,            METH_VARARGS},
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
+#endif
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
 	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
@@ -1638,9 +1644,11 @@ const char *w_CallName(int callback)
 		case W_GetUserHubURL:        return "GetUserHubURL";
 		case W_GetUserExtJSON:       return "GetUserExtJSON";
 		case W_GetUserCC:            return "GetUserCC";
+#ifdef HAVE_LIBGEOIP
 		case W_GetIPCC:              return "GetIPCC";
 		case W_GetIPCN:              return "GetIPCN";
 		case W_GetGeoIP:             return "GetGeoIP";
+#endif
 		case W_GetNickList:          return "GetNickList";
 		case W_GetOpList:            return "GetOpList";
 		case W_Ban:                  return "Ban";
