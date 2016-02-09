@@ -147,6 +147,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
+	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
@@ -162,6 +163,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_UserRestrictions]   = &_UserRestrictions;
 	callbacklist[W_Topic]              = &_Topic;
 	callbacklist[W_name_and_version]   = &_name_and_version;
+	callbacklist[W_StopHub]            = &_StopHub;
 
 	const char *level = GetConf("pi_python", "log_level");
 	if (level && strlen(level) > 0) log_level = char2int(level[0]);
@@ -180,6 +182,7 @@ bool cpiPython::RegisterAll()
 {
 	RegisterCallBack("VH_OnNewConn");
 	RegisterCallBack("VH_OnCloseConn");
+	RegisterCallBack("VH_OnCloseConnEx");
 	RegisterCallBack("VH_OnParsedMsgChat");
 	RegisterCallBack("VH_OnParsedMsgPM");
 	RegisterCallBack("VH_OnParsedMsgMCTo");
@@ -573,6 +576,18 @@ bool cpiPython::OnCloseConn(cConnDC *conn)
 	if (conn != NULL) {
 		w_Targs *args = lib_pack("s", conn->AddrIP().c_str());
 		return CallAll(W_OnCloseConn, args);
+	}
+	return true;
+}
+
+bool cpiPython::OnCloseConnEx(cConnDC *conn)
+{
+	if (conn != NULL) {
+		const char *ip = conn->AddrIP().c_str();
+		long reason = conn->mCloseReason;
+		const char *nick = (conn->mpUser ? conn->mpUser->mNick.c_str() : "");
+		w_Targs *args = lib_pack("sls", ip, reason, nick);
+		return CallAll(W_OnCloseConnEx, args);
 	}
 	return true;
 }
@@ -1431,6 +1446,64 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cn));
 }
 
+w_Targs *_GetGeoIP(int id, w_Targs *args)
+{
+	const char *ip, *db;
+	if (!cpiPython::lib_unpack(args, "ss", &ip, &db)) return NULL;
+	if (!ip) return NULL;
+	if (!db) db = "";
+	string s_ip(ip);
+	string s_db(db);
+	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name;
+	string geo_tz, geo_cont, geo_city, geo_post, cont;
+	float geo_lat, geo_lon;
+	int geo_met, geo_area;
+
+	if (!cpiPython::me->server->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc,
+			geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post,
+			geo_lat, geo_lon, geo_met, geo_area, s_ip, s_db))
+		return NULL;
+
+	if (geo_cont == "AF") cont = "Africa";
+	else if (geo_cont == "AS") cont = "Asia";
+	else if (geo_cont == "EU") cont = "Europe";
+	else if (geo_cont == "NA") cont = "North America";
+	else if (geo_cont == "SA") cont = "South America";
+	else if (geo_cont == "OC") cont = "Oceania";
+	else if (geo_cont == "AN") cont = "Antarctica";
+
+	vector<string> *data = new vector<string>();
+	data->push_back("host");
+	data->push_back(geo_host);
+	data->push_back("range_low");
+	data->push_back(geo_ran_lo);
+	data->push_back("range_high");
+	data->push_back(geo_ran_hi);
+	data->push_back("country_code");
+	data->push_back(geo_cc);
+	data->push_back("country_code_xxx");
+	data->push_back(geo_ccc);
+	data->push_back("country");
+	data->push_back(geo_cn);
+	data->push_back("region_code");
+	data->push_back(geo_reg_code);
+	data->push_back("region");
+	data->push_back(geo_reg_name);
+	data->push_back("time_zone");
+	data->push_back(geo_tz);
+	data->push_back("continent_code");
+	data->push_back(geo_cont);
+	data->push_back("continent");
+	data->push_back(cont);
+	data->push_back("city");
+	data->push_back(geo_city);
+	data->push_back("postal_code");
+	data->push_back(geo_post);
+
+	return cpiPython::lib_pack("sdsdslslp", "latitude", geo_lat, "longitude", geo_lon,
+		"metro_code", geo_met, "area_code", geo_area, (void*)data);
+}
+
 w_Targs *_Ban(int id, w_Targs *args)
 {
 	return NULL;  // not implemented yet
@@ -1667,6 +1740,14 @@ w_Targs *_name_and_version(int id, w_Targs *args)
 	if (!version || !strlen(version)) version = py->version.c_str();
 	else py->version = version;
 	return cpiPython::lib_pack("ss", strdup(name), strdup(version));
+}
+
+w_Targs *_StopHub(int id, w_Targs *args)
+{
+	long code, delay;
+	if (!cpiPython::lib_unpack(args, "ll", &code, &delay)) return NULL;
+	if (StopHub(code, delay)) return w_ret1;
+	return NULL;
 }
 
 };  // namespace nVerliHub

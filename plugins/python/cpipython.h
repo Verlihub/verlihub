@@ -46,6 +46,7 @@ public:
 	virtual void OnLoad(nSocket::cServerDC *);
 	virtual bool OnNewConn(nSocket::cConnDC *);
 	virtual bool OnCloseConn(nSocket::cConnDC *);
+	virtual bool OnCloseConnEx(nSocket::cConnDC *);
 	virtual bool OnParsedMsgChat(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgPM(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgMCTo(nSocket::cConnDC *, nProtocol::cMessageDC *);
@@ -119,7 +120,7 @@ public:
 
 	cPythonInterpreter *operator[](unsigned int i)
 	{
-		if (i < 0 || i > Size()) return NULL;
+		if (i > Size()) return NULL;
 		return mPython[i];
 	}
 
@@ -178,6 +179,7 @@ extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
+extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
 extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
@@ -193,6 +195,7 @@ extern "C" w_Targs *_GetTotalShareSize (int id, w_Targs *args);
 extern "C" w_Targs *_UserRestrictions  (int id, w_Targs *args);
 extern "C" w_Targs *_Topic             (int id, w_Targs *args);
 extern "C" w_Targs *_name_and_version  (int id, w_Targs *args);
+extern "C" w_Targs *_StopHub           (int id, w_Targs *args);
 
 };  // namespace nVerliHub
 
