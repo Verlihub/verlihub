@@ -330,6 +330,33 @@ template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_X4Typ
 		}
 };
 
+template <class Type1, class Type2, class Type3, class Type4, class Type5> class tVHCBL_X5Types: public cVHCBL_Base
+{
+	public:
+		typedef bool (cVHPlugin::*tpfX5TypesFunc)(Type1, Type2, Type3, Type4, Type5);
+	protected:
+		tpfX5TypesFunc mX5TFunc;
+		Type1 mData1;
+		Type2 mData2;
+		Type3 mData3;
+		Type4 mData4;
+		Type5 mData5;
+	public:
+		// constructor
+		tVHCBL_X5Types(cVHPluginMgr *mgr, const char *id, tpfX5TypesFunc pFunc): cVHCBL_Base(mgr, id), mX5TFunc(pFunc) {}
+		virtual ~tVHCBL_X5Types() {}
+		virtual bool CallOne(cVHPlugin *pi) {return (pi->*mX5TFunc)(mData1, mData2, mData3, mData4, mData5);}
+
+		virtual bool CallAll(Type1 par1, Type2 par2, Type3 par3, Type4 par4, Type5 par5) {
+			mData1 = par1;
+			mData2 = par2;
+			mData3 = par3;
+			mData4 = par4;
+			mData5 = par5;
+			return this->cCallBackList::CallAll();
+		}
+};
+
 /*
 * \brief Verlihub CallBackList with a single connection parameter
 */
@@ -361,6 +388,7 @@ typedef tVHCBL_R4Types<cUser, string, int, int> cVHCBL_UsrStrIntInt;
 typedef tVHCBL_R4Types<cUser, string, string, string> cVHCBL_UsrStrStrStr;
 typedef tVHCBL_X4Types<string*, string*, string*, string*> cVHCBL_StrStrStrStr;
 typedef tVHCBL_X4Types<string*, string*, int, int> cVHCBL_StrStrIntInt;
+typedef tVHCBL_X5Types<string*, string*, string*, string*, ScriptResponses*> cVHCBL_StrStrStrStrResponses;
 typedef tVHCBL_3Types<cUser*, cUser*, string*> cVHCBL_UsrUsrStr;
 typedef tVHCBL_3Types<string, string, string> cVHCBL_StrStrStr;
 typedef tVHCBL_R3Types<cUser, string, int> cVHCBL_UsrStrInt;

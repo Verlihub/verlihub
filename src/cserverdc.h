@@ -271,6 +271,11 @@ class cServerDC : public cAsyncSocketServer
 		void OnScriptCommand(string *cmd, string *data, string *plug, string *script);
 
 		/*
+			This method is a forwarder for ScriptAPI::OnScriptQuery
+		*/
+		void OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
+
+		/*
 			This method is a forwarder for ScriptAPI::OnOpChatMessage
 		*/
 		bool OnOpChatMessage(string *nick, string *data);
@@ -855,6 +860,7 @@ private:
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
+			mOnScriptQuery(mgr, "VH_OnScriptQuery", &cVHPlugin::OnScriptQuery),
 			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub),
 			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage),
 			mOnPublicBotMessage(mgr, "VH_OnPublicBotMessage", &cVHPlugin::OnPublicBotMessage),
@@ -902,6 +908,7 @@ private:
 		cVHCBL_UsrBan mOnNewBan;
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_StrStrStrStr mOnScriptCommand;
+		cVHCBL_StrStrStrStrResponses mOnScriptQuery;
 		cVHCBL_ConnText mOnCtmToHub;
 		cVHCBL_Strings mOnOpChatMessage;
 		cVHCBL_StrStrIntInt mOnPublicBotMessage;
