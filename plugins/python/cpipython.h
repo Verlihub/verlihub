@@ -75,6 +75,7 @@ public:
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
 	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
+	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
 	virtual bool OnTimer(long);
@@ -85,7 +86,7 @@ public:
 	bool OnParsedMsgMyINFO__(nSocket::cConnDC *, nProtocol::cMessageDC *, int, const char *);
 
 	bool AutoLoad();
-	const char *GetName(const char *path);
+	static const char *GetName(const char *path);
 	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, 
 		const char **speed, const char **mail, const char **size);
 	const char *GetConf(const char *conf, const char *var);
@@ -179,8 +180,9 @@ extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
-extern "C" w_Targs *_ParseCommand(int id, w_Targs *args);
-extern "C" w_Targs *_ScriptCommand(int id, w_Targs *args);
+extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
+extern "C" w_Targs *_ScriptCommand     (int id, w_Targs *args);
+extern "C" w_Targs *_ScriptQuery       (int id, w_Targs *args);
 extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_AddRobot          (int id, w_Targs *args);
@@ -190,6 +192,7 @@ extern "C" w_Targs *_GetUsersCount     (int id, w_Targs *args);
 extern "C" w_Targs *_GetTotalShareSize (int id, w_Targs *args);
 extern "C" w_Targs *_UserRestrictions  (int id, w_Targs *args);
 extern "C" w_Targs *_Topic             (int id, w_Targs *args);
+extern "C" w_Targs *_name_and_version  (int id, w_Targs *args);
 
 };  // namespace nVerliHub
 

@@ -76,6 +76,7 @@ enum {
 	W_OnValidateTag,
 	W_OnUserCommand,
 	W_OnScriptCommand,
+	W_OnScriptQuery,
 	W_OnUserLogin,
 	W_OnUserLogout,
 	W_OnTimer,
@@ -113,6 +114,7 @@ enum {
 	W_KickUser,
 	W_ParseCommand,
 	W_ScriptCommand,
+	W_ScriptQuery,
 	W_SetConfig,
 	W_GetConfig,
 	W_AddRobot,
@@ -128,7 +130,8 @@ enum {
 	W_mc,
 	W_usermc,
 	W_classmc,
-	W_pm
+	W_pm,
+	W_name_and_version
 };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum
