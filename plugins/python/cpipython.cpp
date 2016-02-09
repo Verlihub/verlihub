@@ -145,9 +145,11 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
 	callbacklist[W_GetUserExtJSON]     = &_GetUserExtJSON;
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
+#ifdef HAVE_LIBGEOIP
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
+#endif
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
@@ -1424,6 +1426,8 @@ w_Targs *_GetUserCC(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cc));
 }
 
+#ifdef HAVE_LIBGEOIP
+
 w_Targs *_GetIPCC(int id, w_Targs *args)
 {
 	char *ip;
@@ -1503,6 +1507,8 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 	return cpiPython::lib_pack("sdsdslslp", "latitude", geo_lat, "longitude", geo_lon,
 		"metro_code", geo_met, "area_code", geo_area, (void*)data);
 }
+
+#endif
 
 w_Targs *_Ban(int id, w_Targs *args)
 {

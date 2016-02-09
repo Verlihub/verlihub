@@ -177,9 +177,13 @@ extern "C" w_Targs *_GetUserIP         (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHubURL     (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);
+
+#ifdef HAVE_LIBGEOIP
 extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
 extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
+#endif
+
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
 extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
