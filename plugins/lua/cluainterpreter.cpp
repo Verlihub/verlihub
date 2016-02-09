@@ -146,6 +146,21 @@ bool cLuaInterpreter::Init()
 	lua_setglobal(mL, "_PLUGINVERSION");
 	lua_pushstring(mL, HUB_VERSION_VERS);
 	lua_setglobal(mL, "_HUBVERSION");
+	lua_pushstring(mL, (char*)mScriptName.c_str());
+	lua_setglobal(mL, "_FILE");
+
+	const char *path = mScriptName.c_str();
+	for (int i = strlen(path) - 2; i >= 0; i--) {
+		if (path[i] == '/' || path[i] == '\\') {
+			path = &path[i + 1];
+			break;
+		}
+	}
+	// These two globals are to be set by the script, but should have sane defaults.
+	lua_pushstring(mL, (char*)path);
+	lua_setglobal(mL, "_NAME");
+	lua_pushstring(mL, (char*)"0.0.0");
+	lua_setglobal(mL, "_VERSION");
 	return true;
 }
 
@@ -198,7 +213,7 @@ bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn
 
 	if (!strcmp(func, "VH_OnScriptQuery")) {
 		const char *recipient = args[2];
-		if (strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
+		if (strlen(recipient) && strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
 			return true;
 		responses = (ScriptResponses *)conn;
 		conn = NULL;
@@ -313,12 +328,29 @@ bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn
 			//if ((int)lua_toboolean(mL, -1) == 0)
 				//ret = false;
 
-		} else if (lua_isstring(mL, -1)) {
-			if (!strcmp(func, "VH_OnScriptQuery") && responses) {
-				const char *sender = mScriptName.c_str();
-				const char *data = lua_tostring(mL, -1);
-				responses->push_back(ScriptResponse(data, sender));
+		}
+		if (!strcmp(func, "VH_OnScriptQuery") && responses) {
+			const char *command = args[0];
+			const char *answer = NULL;
+			const char *sender = mScriptName.c_str();
+			bool to_pop = false;
+
+			if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
+			if (!answer || !strlen(answer)) {
+				if (!strcmp(command, "_get_script_file")) {
+					answer = mScriptName.c_str();
+				} else if (!strcmp(command, "_get_script_version")) {
+					lua_getglobal(mL, "_VERSION");
+					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
+					to_pop = true;
+				} else if (!strcmp(command, "_get_script_name")) {
+					lua_getglobal(mL, "_NAME");
+					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
+					to_pop = true;
+				}
 			}
+			if (answer) responses->push_back(ScriptResponse(answer, sender));
+			if (to_pop) lua_pop(mL, 1);
 		}
 
 		lua_pop(mL, 1);

@@ -904,6 +904,18 @@ static PyObject *__Topic(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *__name_and_version(PyObject *self, PyObject *args)
+{
+	char *name, *version;
+	if (Call(W_name_and_version, args, "|ss", "ss", &name, &version)) {
+		PyObject *p = Py_BuildValue("ss", name, version);
+		freee(name);
+		freee(version);
+		return p;
+	}
+	Py_RETURN_NONE;
+}
+
 static PyObject *__encode(PyObject *self, PyObject *args)
 {
 	char *data;
@@ -1019,6 +1031,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"Topic",              __Topic,              METH_VARARGS},
 	{"encode",             __encode,             METH_VARARGS},
 	{"decode",             __decode,             METH_VARARGS},
+	{"name_and_version",   __name_and_version,   METH_VARARGS},
 	{NULL, NULL } };
 
 
@@ -1612,6 +1625,7 @@ const char *w_CallName(int callback)
 		case W_classmc:              return "classmc";
 		case W_usermc:               return "usermc";
 		case W_pm:                   return "pm";
+		case W_name_and_version:     return "name_and_version";
 		default:                     return NULL;
 	}
 }

@@ -2656,6 +2656,7 @@ int _ScriptCommand(lua_State *L)
 	if (lua_gettop(L) < 3) {
 		luaL_error(L, "Error calling VH:ScriptCommand, expected 2 arguments but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
+		lua_pushnil(L);
 		return 2;
 	}
 
@@ -2687,10 +2688,11 @@ int _ScriptCommand(lua_State *L)
 
 int _ScriptQuery(lua_State *L)
 {
-	int arg_num = lua_gettop(L);
+	int arg_num = lua_gettop(L) - 1;
 	if (arg_num < 2) {
-		luaL_error(L, "Error calling VH:ScriptQuery, expected 2 to 4 arguments but got %d.", lua_gettop(L) - 1);
+		luaL_error(L, "Error calling VH:ScriptQuery, expected 2 to 4 arguments but got %d.", arg_num);
 		lua_pushboolean(L, 0);
+		lua_pushnil(L);
 		return 2;
 	}
 
@@ -2722,6 +2724,7 @@ int _ScriptQuery(lua_State *L)
 		return 2;
 	}
 
+	lua_pushboolean(L, 1);
 	lua_newtable(L);
 	int z = lua_gettop(L);
 
@@ -2743,7 +2746,6 @@ int _ScriptQuery(lua_State *L)
 		}
 	}
 
-	lua_pushnil(L);
 	return 2;
 }
 

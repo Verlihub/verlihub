@@ -161,6 +161,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetTotalShareSize]  = &_GetTotalShareSize;
 	callbacklist[W_UserRestrictions]   = &_UserRestrictions;
 	callbacklist[W_Topic]              = &_Topic;
+	callbacklist[W_name_and_version]   = &_name_and_version;
 
 	const char *level = GetConf("pi_python", "log_level");
 	if (level && strlen(level) > 0) log_level = char2int(level[0]);
@@ -975,6 +976,18 @@ bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, stri
 				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
 					should_call = true;
 			}
+			if (!cmd->compare("_get_script_file")) {
+				resp->push_back(ScriptResponse((*it)->mScriptName, (*it)->mScriptName));
+				continue;
+			}
+			if (!cmd->compare("_get_script_name")) {
+				resp->push_back(ScriptResponse((*it)->name, (*it)->mScriptName));
+				continue;
+			}
+			if (!cmd->compare("_get_script_version")) {
+				resp->push_back(ScriptResponse((*it)->version, (*it)->mScriptName));
+				continue;
+			}
 			if (!should_call) continue;
 			result = (*it)->CallFunction(func, args);
 			if (!result) continue;
@@ -1641,6 +1654,19 @@ w_Targs *_Topic(int id, w_Targs *args)
 		cpiPython::me->server->mUserList.SendToAll(msg, eUC_NORMUSER, eUC_MASTER);
 	}
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mC.hub_topic.c_str()));
+}
+
+w_Targs *_name_and_version(int id, w_Targs *args)
+{
+	const char *name, *version;
+	cPythonInterpreter *py = cpiPython::me->GetInterpreter(id);
+	if (!py) return NULL;
+	if (!cpiPython::lib_unpack(args, "ss", &name, &version)) return NULL;
+	if (!name || !strlen(name)) name = py->name.c_str();
+	else py->name = name;
+	if (!version || !strlen(version)) version = py->version.c_str();
+	else py->version = version;
+	return cpiPython::lib_pack("ss", strdup(name), strdup(version));
 }
 
 };  // namespace nVerliHub

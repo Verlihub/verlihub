@@ -130,7 +130,8 @@ enum {
 	W_mc,
 	W_usermc,
 	W_classmc,
-	W_pm
+	W_pm,
+	W_name_and_version
 };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum

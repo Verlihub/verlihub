@@ -39,6 +39,8 @@ public:
 	bool Init();
 	w_Targs *CallFunction(int, w_Targs *);
 	string mScriptName;
+	string name;
+	string version;
 	int id;
 	bool online;
 	bool receive_all_script_queries;

@@ -33,6 +33,8 @@ cPythonInterpreter::cPythonInterpreter(string scriptname) : mScriptName(scriptna
 	id = -1;
 	online = false;
 	receive_all_script_queries = false;
+	name = cpiPython::GetName(scriptname.c_str());
+	version = "0.0.0";
 	return;
 }
 

@@ -86,7 +86,7 @@ public:
 	bool OnParsedMsgMyINFO__(nSocket::cConnDC *, nProtocol::cMessageDC *, int, const char *);
 
 	bool AutoLoad();
-	const char *GetName(const char *path);
+	static const char *GetName(const char *path);
 	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, 
 		const char **speed, const char **mail, const char **size);
 	const char *GetConf(const char *conf, const char *var);
@@ -192,6 +192,7 @@ extern "C" w_Targs *_GetUsersCount     (int id, w_Targs *args);
 extern "C" w_Targs *_GetTotalShareSize (int id, w_Targs *args);
 extern "C" w_Targs *_UserRestrictions  (int id, w_Targs *args);
 extern "C" w_Targs *_Topic             (int id, w_Targs *args);
+extern "C" w_Targs *_name_and_version  (int id, w_Targs *args);
 
 };  // namespace nVerliHub
 
