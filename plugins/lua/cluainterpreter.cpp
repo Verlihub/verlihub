@@ -147,7 +147,7 @@ bool cLuaInterpreter::Init()
 	lua_pushstring(mL, HUB_VERSION_VERS);
 	lua_setglobal(mL, "_HUBVERSION");
 	lua_pushstring(mL, (char*)mScriptName.c_str());
-	lua_setglobal(mL, "_FILE");
+	lua_setglobal(mL, "_SCRIPTFILE");
 
 	const char *path = mScriptName.c_str();
 	for (int i = strlen(path) - 2; i >= 0; i--) {
@@ -158,9 +158,9 @@ bool cLuaInterpreter::Init()
 	}
 	// These two globals are to be set by the script, but should have sane defaults.
 	lua_pushstring(mL, (char*)path);
-	lua_setglobal(mL, "_NAME");
+	lua_setglobal(mL, "_SCRIPTNAME");
 	lua_pushstring(mL, (char*)"0.0.0");
-	lua_setglobal(mL, "_VERSION");
+	lua_setglobal(mL, "_SCRIPTVERSION");
 	return true;
 }
 
@@ -340,11 +340,11 @@ bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn
 				if (!strcmp(command, "_get_script_file")) {
 					answer = mScriptName.c_str();
 				} else if (!strcmp(command, "_get_script_version")) {
-					lua_getglobal(mL, "_VERSION");
+					lua_getglobal(mL, "_SCRIPTVERSION");
 					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
 					to_pop = true;
 				} else if (!strcmp(command, "_get_script_name")) {
-					lua_getglobal(mL, "_NAME");
+					lua_getglobal(mL, "_SCRIPTNAME");
 					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
 					to_pop = true;
 				}
