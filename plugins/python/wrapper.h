@@ -46,6 +46,7 @@ extern "C" {
 enum {
 	W_OnNewConn,
 	W_OnCloseConn,
+	W_OnCloseConnEx,
 	W_OnParsedMsgChat,
 	W_OnParsedMsgPM,
 	W_OnParsedMsgMCTo,
@@ -108,6 +109,7 @@ enum {
 	W_GetUserCC,
 	W_GetIPCC,
 	W_GetIPCN,
+	W_GetGeoIP,
 	W_GetNickList,
 	W_GetOpList,
 	W_Ban,
@@ -131,7 +133,8 @@ enum {
 	W_usermc,
 	W_classmc,
 	W_pm,
-	W_name_and_version
+	W_name_and_version,
+	W_StopHub
 };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum

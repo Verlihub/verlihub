@@ -691,6 +691,28 @@ static PyObject *__GetIPCN(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
+{
+	double geo_lat, geo_lon;
+	long geo_met, geo_area;
+	const char *s0, *s1, *s2, *s3;
+	vector<string> *data = NULL;
+
+	if (Call(W_GetGeoIP, args, "s|s", "sdsdslslp", &s0, &geo_lat, &s1, &geo_lon, &s2, &geo_met,
+			&s3, &geo_area, &data)) {
+		PyObject *p = Py_BuildValue("{sdsdslsl}", s0, geo_lat, s1, geo_lon, s2, geo_met, s3, geo_area);
+		if (!p || !data) Py_RETURN_NONE;
+		for (size_t i = 0; i < data->size() / 2; i++) {
+			const char *key = (*data)[2 * i].c_str();
+			PyObject *val = Py_BuildValue("s", (*data)[2 * i + 1].c_str());
+			PyDict_SetItemString(p, key, val);
+		}
+		delete data;
+		return p;
+	}
+	Py_RETURN_NONE;
+}
+
 static PyObject *__Ban(PyObject *self, PyObject *args)
 {
 	// Arguments: nick, time, type
@@ -916,6 +938,11 @@ static PyObject *__name_and_version(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *__StopHub(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_StopHub, args, "l|l"));
+}
+
 static PyObject *__encode(PyObject *self, PyObject *args)
 {
 	char *data;
@@ -1011,6 +1038,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserCC",          __GetUserCC,          METH_VARARGS},
 	{"GetIPCC",            __GetIPCC,            METH_VARARGS},
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
+	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
 	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
@@ -1032,6 +1060,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"encode",             __encode,             METH_VARARGS},
 	{"decode",             __decode,             METH_VARARGS},
 	{"name_and_version",   __name_and_version,   METH_VARARGS},
+	{"StopHub",            __StopHub,            METH_VARARGS},
 	{NULL, NULL } };
 
 
@@ -1335,6 +1364,14 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(z)", s0);
 			break;
+		case W_OnCloseConnEx:
+			if (!w_unpack(params, "sls", &s0, &n0, &s1)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, 
+					w_HookName(func), w_packprint(params));
+				break;
+			}
+			args = Py_BuildValue("(zlz)", s0, n0, s1);
+			break;
 		case W_OnOperatorCommand:
 		case W_OnOperatorDrops:
 		case W_OnUserCommand:
@@ -1540,6 +1577,7 @@ const char *w_HookName(int hook)
 	switch (hook) {
 		case W_OnNewConn:                 return "OnNewConn";
 		case W_OnCloseConn:               return "OnCloseConn";
+		case W_OnCloseConnEx:             return "OnCloseConnEx";
 		case W_OnParsedMsgChat:           return "OnParsedMsgChat";
 		case W_OnParsedMsgPM:             return "OnParsedMsgPM";
 		case W_OnParsedMsgMCTo:           return "OnParsedMsgMCTo";
@@ -1602,6 +1640,7 @@ const char *w_CallName(int callback)
 		case W_GetUserCC:            return "GetUserCC";
 		case W_GetIPCC:              return "GetIPCC";
 		case W_GetIPCN:              return "GetIPCN";
+		case W_GetGeoIP:             return "GetGeoIP";
 		case W_GetNickList:          return "GetNickList";
 		case W_GetOpList:            return "GetOpList";
 		case W_Ban:                  return "Ban";
@@ -1626,6 +1665,7 @@ const char *w_CallName(int callback)
 		case W_usermc:               return "usermc";
 		case W_pm:                   return "pm";
 		case W_name_and_version:     return "name_and_version";
+		case W_StopHub:              return "StopHub";
 		default:                     return NULL;
 	}
 }
