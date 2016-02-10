@@ -44,7 +44,7 @@ static int log_level = 0;
 void w_LogLevel(int level) { log_level = level; }
 
 // Function is similar to Python's [_start:_end] slice
-char *w_SubStr(char *s, int _start, int _end)
+char *w_SubStr(const char *s, int _start, int _end)
 {
 	int start = _start, end = _end, len, len2;
 	char *s2;
@@ -63,7 +63,7 @@ char *w_SubStr(char *s, int _start, int _end)
 	return s2;
 }
 
-int w_IdentStr(char *s1, char *s2, int n)
+int w_IdentStr(const char *s1, const char *s2, int n)
 {
 	int len1, len2, i;
 	len1 = strlen(s1);
@@ -76,7 +76,7 @@ int w_IdentStr(char *s1, char *s2, int n)
 	return 1;
 }
 
-int w_FindStr(char *s, char *key, int start)
+int w_FindStr(const char *s, const char *key, int start)
 {
 	if (start < 0) start = 0;
 	int len, len1, len2, i;
@@ -572,18 +572,31 @@ static PyObject *__GetRawOpList(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *__GetNickList(PyObject *self, PyObject *args)
+static PyObject *__GetRawBotList(PyObject *self, PyObject *args)
 {
-	char *rawlist;
-	int len, pos = 10, i;
-	if (!Call(W_GetNickList, args, "", "s", &rawlist)) Py_RETURN_NONE;
+	char *lst;
+	if (Call(W_GetBotList, args, "", "s", &lst)) {
+		PyObject *p = Py_BuildValue("s", lst);
+		freee(lst);
+		return p;
+	}
+	Py_RETURN_NONE;
+}
 
-	len = strlen(rawlist);  // rawlist looks like this: "$NickList nick1$$nick2$$lastnick$$"
-	if (len <= 12 || !w_IdentStr(rawlist, (char *)"$NickList ", 10)) Py_RETURN_NONE;
+static PyObject *split_nick_list(const char *rawlist, const char *prefix)
+{
+	// rawlist looks like "$NickList nick1$$nick2$$lastnick$$"; here prefix is "$NickList "
+	if (!rawlist || !prefix || !strlen(rawlist) || !strlen(prefix)) Py_RETURN_NONE;
+	int i;
+	int len = strlen(rawlist);
+	int prefix_len = strlen(prefix);
+	int pos = prefix_len;
+	if (len <= prefix_len + 2 || !w_IdentStr(rawlist, prefix, prefix_len))
+		Py_RETURN_NONE;
 
 	PyObject *lst = PyList_New(0);
 	while (1) {
-		i = w_FindStr(rawlist, (char *)"$$", pos);
+		i = w_FindStr(rawlist, "$$", pos);
 		if (i < 0) break;
 		PyList_Append(lst, Py_BuildValue("s", w_SubStr(rawlist, pos, i)));
 		pos = i + 2;
@@ -592,22 +605,29 @@ static PyObject *__GetNickList(PyObject *self, PyObject *args)
 	return lst;
 }
 
+static PyObject *__GetNickList(PyObject *self, PyObject *args)
+{
+	const char *rawlist;
+	if (!Call(W_GetNickList, args, "", "s", &rawlist)) Py_RETURN_NONE;
+	PyObject *lst = split_nick_list(rawlist, "$NickList ");
+	freee(rawlist);
+	return lst;
+}
+
 static PyObject *__GetOpList(PyObject *self, PyObject *args)
 {
-	char *rawlist;
-	int len, pos = 8, i;
+	const char *rawlist;
 	if (!Call(W_GetOpList, args, "", "s", &rawlist)) Py_RETURN_NONE;
+	PyObject *lst = split_nick_list(rawlist, "$OpList ");
+	freee(rawlist);
+	return lst;
+}
 
-	len = strlen(rawlist);  // rawlist looks like this: "$OpList nick1$$nick2$$lastnick$$"
-	if (len <= 10 || !w_IdentStr(rawlist, (char *)"$OpList ", 8)) Py_RETURN_NONE;
-
-	PyObject *lst = PyList_New(0);
-	while (1) {
-		i = w_FindStr(rawlist, (char *)"$$", pos);
-		if (i < 0) break;
-		PyList_Append(lst, Py_BuildValue("s", w_SubStr(rawlist, pos, i)));
-		pos = i + 2;
-	}
+static PyObject *__GetBotList(PyObject *self, PyObject *args)
+{
+	const char *rawlist;
+	if (!Call(W_GetBotList, args, "", "s", &rawlist)) Py_RETURN_NONE;
+	PyObject *lst = split_nick_list(rawlist, "$BotList ");
 	freee(rawlist);
 	return lst;
 }
@@ -716,6 +736,17 @@ static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
 }
 
 #endif
+
+static PyObject *__AddRegUser(PyObject *self, PyObject *args)
+{
+	// Arguments: nick, class, password, op
+	return pybool(BasicCall(W_AddRegUser, args, "sl|ss"));
+}
+
+static PyObject *__DelRegUser(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_DelRegUser, args, "s"));
+}
 
 static PyObject *__Ban(PyObject *self, PyObject *args)
 {
@@ -832,6 +863,11 @@ static PyObject *__SQL(PyObject *self, PyObject *args)
 	PyTuple_SetItem(ret, 0, PyLong_FromLong(res));
 	PyTuple_SetItem(ret, 1, lst);
 	return ret;
+}
+
+static PyObject *__GetServFreq(PyObject *self, PyObject *args)
+{
+	return Py_BuildValue("d", BasicCall(W_GetServFreq, args, ""));
 }
 
 static PyObject *__GetUsersCount(PyObject *self, PyObject *args)
@@ -1033,8 +1069,10 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserClass",       __GetUserClass,       METH_VARARGS},
 	{"GetRawNickList",     __GetRawNickList,     METH_VARARGS},
 	{"GetRawOpList",       __GetRawOpList,       METH_VARARGS},
+	{"GetRawBotList",      __GetRawBotList,      METH_VARARGS},
 	{"GetNickList",        __GetNickList,        METH_VARARGS},
 	{"GetOpList",          __GetOpList,          METH_VARARGS},
+	{"GetBotList",         __GetBotList,         METH_VARARGS},
 	{"GetUserHost",        __GetUserHost,        METH_VARARGS},
 	{"GetUserIP",          __GetUserIP,          METH_VARARGS},
 	{"GetUserHubURL",      __GetUserHubURL,      METH_VARARGS},
@@ -1045,6 +1083,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
 #endif
+	{"AddRegUser",         __AddRegUser,         METH_VARARGS},
+	{"DelRegUser",         __DelRegUser,         METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
 	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
@@ -1055,6 +1095,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
 	{"DelRobot",           __DelRobot,           METH_VARARGS},
 	{"SQL",                __SQL,                METH_VARARGS},
+	{"GetServFreq",        __GetServFreq,        METH_VARARGS},
 	{"GetUsersCount",      __GetUsersCount,      METH_VARARGS},
 	{"GetTotalShareSize",  __GetTotalShareSize,  METH_VARARGS},
 	{"usermc",             __usermc,             METH_VARARGS},
@@ -1651,6 +1692,9 @@ const char *w_CallName(int callback)
 #endif
 		case W_GetNickList:          return "GetNickList";
 		case W_GetOpList:            return "GetOpList";
+		case W_GetBotList:           return "GetBotList";
+		case W_AddRegUser:           return "AddRegUser";
+		case W_DelRegUser:           return "DelRegUser";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
 		case W_ParseCommand:         return "ParseCommand";
@@ -1664,6 +1708,7 @@ const char *w_CallName(int callback)
 		case W_SQLQuery:             return "SQLQuery";
 		case W_SQLFetch:             return "SQLFetch";
 		case W_SQLFree:              return "SQLFree";
+		case W_GetServFreq:          return "GetServFreq";
 		case W_GetUsersCount:        return "GetUsersCount";
 		case W_GetTotalShareSize:    return "GetTotalShareSize";
 		case W_UserRestrictions:     return "UserRestrictions";

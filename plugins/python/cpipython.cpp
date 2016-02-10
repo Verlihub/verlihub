@@ -140,6 +140,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserClass]       = &_GetUserClass;
 	callbacklist[W_GetNickList]        = &_GetNickList;
 	callbacklist[W_GetOpList]          = &_GetOpList;
+	callbacklist[W_GetBotList]         = &_GetBotList;
 	callbacklist[W_GetUserHost]        = &_GetUserHost;
 	callbacklist[W_GetUserIP]          = &_GetUserIP;
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
@@ -150,6 +151,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 #endif
+	callbacklist[W_AddRegUser]         = &_AddRegUser;
+	callbacklist[W_DelRegUser]         = &_DelRegUser;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
@@ -160,6 +163,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_AddRobot]           = &_AddRobot;
 	callbacklist[W_DelRobot]           = &_DelRobot;
 	callbacklist[W_SQL]                = &_SQL;
+	callbacklist[W_GetServFreq]        = &_GetServFreq;
 	callbacklist[W_GetUsersCount]      = &_GetUsersCount;
 	callbacklist[W_GetTotalShareSize]  = &_GetTotalShareSize;
 	callbacklist[W_UserRestrictions]   = &_UserRestrictions;
@@ -1368,6 +1372,11 @@ w_Targs *_GetOpList(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mOpList.GetNickList().c_str()));
 }
 
+w_Targs *_GetBotList(int id, w_Targs *args)
+{
+	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mRobotList.GetNickList().c_str()));
+}
+
 w_Targs *_GetUserHost(int id, w_Targs *args)
 {
 	char *nick;
@@ -1510,6 +1519,28 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 
 #endif
 
+w_Targs *_AddRegUser(int id, w_Targs *args)
+{
+	char *nick, *password, *op;
+	long uclass;
+	if (!cpiPython::lib_unpack(args, "slss", &nick, &uclass, &password, &op)) return NULL;
+	if (uclass < -1 || uclass == 0 || uclass > 5) return NULL;
+	if (!nick || !strlen(nick)) return NULL;
+	if (!password) password = (char *)"";
+	if (!op) op = (char *)"";
+	if (AddRegUser(nick, (int)uclass, password, op)) return w_ret1;
+	return NULL;
+}
+
+w_Targs *_DelRegUser(int id, w_Targs *args)
+{
+	char *nick;
+	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
+	if (!nick || !strlen(nick)) return NULL;
+	if (DelRegUser(nick)) return w_ret1;
+	return NULL;
+}
+
 w_Targs *_Ban(int id, w_Targs *args)
 {
 	return NULL;  // not implemented yet
@@ -1644,6 +1675,11 @@ w_Targs *_DelRobot(int id, w_Targs *args)
 w_Targs *_SQL(int id, w_Targs *args)
 {
 	return cpiPython::me->SQL(id, args);
+}
+
+w_Targs *_GetServFreq(int id, w_Targs *args)
+{
+	return cpiPython::lib_pack("d", cpiPython::me->server->mFrequency.GetMean(cpiPython::me->server->mTime));
 }
 
 w_Targs *_GetUsersCount(int id, w_Targs *args)
