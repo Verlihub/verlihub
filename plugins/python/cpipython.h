@@ -75,6 +75,7 @@ public:
 	virtual bool OnOperatorDrops(cUser *, cUser *, std::string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
+	virtual bool OnHubCommand(nSocket::cConnDC *conn, std::string *command, int is_op_cmd, int in_pm);
 	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
 	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
 	virtual bool OnUserLogin(cUser *);
@@ -172,6 +173,7 @@ extern "C" w_Targs *_SetMyINFO         (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserClass      (int id, w_Targs *args);
 extern "C" w_Targs *_GetNickList       (int id, w_Targs *args);
 extern "C" w_Targs *_GetOpList         (int id, w_Targs *args);
+extern "C" w_Targs *_GetBotList        (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHost       (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserIP         (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHubURL     (int id, w_Targs *args);
@@ -184,6 +186,8 @@ extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
 extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
 #endif
 
+extern "C" w_Targs *_AddRegUser        (int id, w_Targs *args);
+extern "C" w_Targs *_DelRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
 extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
@@ -191,9 +195,11 @@ extern "C" w_Targs *_ScriptCommand     (int id, w_Targs *args);
 extern "C" w_Targs *_ScriptQuery       (int id, w_Targs *args);
 extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
+extern "C" w_Targs *_IsRobotNickBad    (int id, w_Targs *args);
 extern "C" w_Targs *_AddRobot          (int id, w_Targs *args);
 extern "C" w_Targs *_DelRobot          (int id, w_Targs *args);
 extern "C" w_Targs *_SQL               (int id, w_Targs *args);
+extern "C" w_Targs *_GetServFreq       (int id, w_Targs *args);
 extern "C" w_Targs *_GetUsersCount     (int id, w_Targs *args);
 extern "C" w_Targs *_GetTotalShareSize (int id, w_Targs *args);
 extern "C" w_Targs *_UserRestrictions  (int id, w_Targs *args);

@@ -140,6 +140,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserClass]       = &_GetUserClass;
 	callbacklist[W_GetNickList]        = &_GetNickList;
 	callbacklist[W_GetOpList]          = &_GetOpList;
+	callbacklist[W_GetBotList]         = &_GetBotList;
 	callbacklist[W_GetUserHost]        = &_GetUserHost;
 	callbacklist[W_GetUserIP]          = &_GetUserIP;
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
@@ -150,6 +151,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 #endif
+	callbacklist[W_AddRegUser]         = &_AddRegUser;
+	callbacklist[W_DelRegUser]         = &_DelRegUser;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
@@ -157,9 +160,11 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_ScriptQuery]        = &_ScriptQuery;
 	callbacklist[W_SetConfig]          = &_SetConfig;
 	callbacklist[W_GetConfig]          = &_GetConfig;
+	callbacklist[W_IsRobotNickBad]     = &_IsRobotNickBad;
 	callbacklist[W_AddRobot]           = &_AddRobot;
 	callbacklist[W_DelRobot]           = &_DelRobot;
 	callbacklist[W_SQL]                = &_SQL;
+	callbacklist[W_GetServFreq]        = &_GetServFreq;
 	callbacklist[W_GetUsersCount]      = &_GetUsersCount;
 	callbacklist[W_GetTotalShareSize]  = &_GetTotalShareSize;
 	callbacklist[W_UserRestrictions]   = &_UserRestrictions;
@@ -213,6 +218,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnOperatorDrops");
 	RegisterCallBack("VH_OnValidateTag");
 	RegisterCallBack("VH_OnUserCommand");
+	RegisterCallBack("VH_OnHubCommand");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnUserLogin");
@@ -967,6 +973,19 @@ bool cpiPython::OnUserCommand(cConnDC *conn, string *command)
 	return true;
 }
 
+bool cpiPython::OnHubCommand(cConnDC *conn, string *command, int is_op_cmd, int in_pm)
+{
+	// we chop the first char off command and put it in the prefix variable.
+	if (conn && conn->mpUser && command && command->size() > 0) {
+		long uclass = conn->mpUser->mClass;
+		const char *nick = conn->mpUser->mNick.c_str();
+		string prefix(*command, 0, 1);
+		w_Targs *args = lib_pack("sslls", nick, command->c_str() + 1, uclass, (long)in_pm, prefix.c_str());
+		return CallAll(W_OnHubCommand, args);
+	}
+	return true;
+}
+
 bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	if (cmd && data && plug && script) {
@@ -1368,6 +1387,11 @@ w_Targs *_GetOpList(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mOpList.GetNickList().c_str()));
 }
 
+w_Targs *_GetBotList(int id, w_Targs *args)
+{
+	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mRobotList.GetNickList().c_str()));
+}
+
 w_Targs *_GetUserHost(int id, w_Targs *args)
 {
 	char *nick;
@@ -1510,19 +1534,48 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 
 #endif
 
+w_Targs *_AddRegUser(int id, w_Targs *args)
+{
+	char *nick, *password, *op;
+	long uclass;
+	if (!cpiPython::lib_unpack(args, "slss", &nick, &uclass, &password, &op)) return NULL;
+	if (uclass < -1 || uclass == 0 || uclass > 5) return NULL;
+	if (!nick || !strlen(nick)) return NULL;
+	if (!password) password = (char *)"";
+	if (!op) op = (char *)"";
+	if (AddRegUser(nick, (int)uclass, password, op)) return w_ret1;
+	return NULL;
+}
+
+w_Targs *_DelRegUser(int id, w_Targs *args)
+{
+	char *nick;
+	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
+	if (!nick || !strlen(nick)) return NULL;
+	if (DelRegUser(nick)) return w_ret1;
+	return NULL;
+}
+
 w_Targs *_Ban(int id, w_Targs *args)
 {
-	return NULL;  // not implemented yet
+	char *op, *nick, *reason;
+	long seconds, ban_type;
+	if (!cpiPython::lib_unpack(args, "sssll", &op, &nick, &reason, &seconds, &ban_type)) return NULL;
+	if (!op || !nick) return NULL;
+	if (!reason) reason = (char *)"";
+	if (Ban(nick, op, reason, (unsigned)seconds, (unsigned)ban_type)) return w_ret1;
+	return NULL;
 }
 
 w_Targs *_KickUser(int id, w_Targs *args)
 {
-	char *op, *nick, *data;
-	if (!cpiPython::lib_unpack(args, "sss", &op, &nick, &data)) return NULL;
-	if (!nick || !op || !data) return NULL;
+	char *op, *nick, *reason, *address;
+	if (!cpiPython::lib_unpack(args, "ssss", &op, &nick, &reason, &address)) { return NULL; }
+	if (!nick || !op || !reason) return NULL;
 	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(op);
 	if (!user) return NULL;
-	cpiPython::me->server->DCKickNick(NULL, user, nick, data, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
+	if (address && strlen(address)) user->mxConn->mCloseRedirect = address;
+	cpiPython::me->server->DCKickNick(NULL, user, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	return w_ret1;
 }
 
@@ -1602,29 +1655,55 @@ w_Targs *_GetConfig(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", cpiPython::me->GetConf(conf, var));
 }
 
+long is_robot_nick_bad(const char *nick)
+{
+	// Returns: 0 = OK, 1 = already exists, 2 = empty, 3 = bad character, 4 = reserved nick.
+	if (!nick || !strlen(nick)) return eBOT_WITHOUT_NICK;
+	string badchars("\0$|<> "), s_nick(nick);
+	if (s_nick.find_first_of(badchars) != s_nick.npos) return eBOT_BAD_CHARS;
+	cServerDC *server = cpiPython::me->server;
+	if ((s_nick == server->mC.hub_security) || (s_nick == server->mC.opchat_name))
+		return eBOT_RESERVED_NICK;
+	if (server->mRobotList.ContainsNick(s_nick)) return eBOT_EXISTS;
+	return eBOT_OK;
+}
+
+w_Targs *_IsRobotNickBad(int id, w_Targs *args)
+{
+	char *nick;
+	long bad = (cpiPython::lib_unpack(args, "s", &nick) ? eBOT_OK : eBOT_API_ERROR);
+	if (!bad) bad = is_robot_nick_bad(nick);
+	return cpiPython::lib_pack("l", bad);
+}
+
 w_Targs *_AddRobot(int id, w_Targs *args)
 {
 	char *nick, *desc, *speed, *email, *share;
 	long uclass;
 	if (!cpiPython::lib_unpack(args, "slssss", &nick, &uclass, &desc, &speed, &email, &share)) return NULL;
 	if (!nick || !desc || !speed || !email || !share) return NULL;
+	if (is_robot_nick_bad(nick)) return NULL;
+	if (uclass < -1 || (uclass > 5 && uclass != 10)) uclass = 0;
+
 	cPluginRobot *robot = cpiPython::me->NewRobot(nick, uclass);
 	if (robot != NULL) {
-		cpiPython::me->server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
+		cServerDC *server = cpiPython::me->server;
+		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
 		robot->mMyINFO_basic = robot->mMyINFO;
 
 		string msg;
-		cpiPython::me->server->mP.Create_Hello(msg, robot->mNick);
-		cpiPython::me->server->mHelloUsers.SendToAll(msg, cpiPython::me->server->mC.delayed_myinfo, true);
-		cpiPython::me->server->mUserList.SendToAll(robot->mMyINFO, cpiPython::me->server->mC.delayed_myinfo, true);
+		server->mP.Create_Hello(msg, robot->mNick);
+		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
+		server->mUserList.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
+		server->mInProgresUsers.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
 
 		if (robot->mClass >= eUC_OPERATOR) {
-			cpiPython::me->server->mP.Create_OpList(msg, robot->mNick);
-			cpiPython::me->server->mUserList.SendToAll(msg, cpiPython::me->server->mC.delayed_myinfo, true);
+			server->mP.Create_OpList(msg, robot->mNick);
+			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
+			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
 		}
-		cpiPython::me->server->mP.Create_BotList(msg, robot->mNick);
-		cpiPython::me->server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, 
-			cpiPython::me->server->mC.delayed_myinfo, true);
+		server->mP.Create_BotList(msg, robot->mNick);
+		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
 		return w_ret1;
 	}
 	return NULL;
@@ -1644,6 +1723,11 @@ w_Targs *_DelRobot(int id, w_Targs *args)
 w_Targs *_SQL(int id, w_Targs *args)
 {
 	return cpiPython::me->SQL(id, args);
+}
+
+w_Targs *_GetServFreq(int id, w_Targs *args)
+{
+	return cpiPython::lib_pack("d", cpiPython::me->server->mFrequency.GetMean(cpiPython::me->server->mTime));
 }
 
 w_Targs *_GetUsersCount(int id, w_Targs *args)

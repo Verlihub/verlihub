@@ -76,6 +76,7 @@ enum {
 	W_OnOperatorDropsWithReason,
 	W_OnValidateTag,
 	W_OnUserCommand,
+	W_OnHubCommand,
 	W_OnScriptCommand,
 	W_OnScriptQuery,
 	W_OnUserLogin,
@@ -86,7 +87,7 @@ enum {
 };
 
 // MAX_HOOKS must be more than the number of elements in above enum
-const int W_MAX_HOOKS = 50;
+const int W_MAX_HOOKS = 100;
 
 // function positions in the callback table
 enum {
@@ -114,6 +115,9 @@ enum {
 #endif
 	W_GetNickList,
 	W_GetOpList,
+	W_GetBotList,
+	W_AddRegUser,
+	W_DelRegUser,
 	W_Ban,
 	W_KickUser,
 	W_ParseCommand,
@@ -121,12 +125,14 @@ enum {
 	W_ScriptQuery,
 	W_SetConfig,
 	W_GetConfig,
+	W_IsRobotNickBad,
 	W_AddRobot,
 	W_DelRobot,
 	W_SQL,
 	W_SQLQuery,
 	W_SQLFetch,
 	W_SQLFree,
+	W_GetServFreq,
 	W_GetUsersCount,
 	W_GetTotalShareSize,
 	W_UserRestrictions,
@@ -140,13 +146,23 @@ enum {
 };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum
-const int W_MAX_CALLBACKS = 50;
+const int W_MAX_CALLBACKS = 100;
 
 // possible return values, as follows: nothing, long, double, char*, void*, char**
 enum { w_ret_none, w_ret_int, w_ret_float, w_ret_char, w_ret_void, w_ret_tab };
 
 // the maximum number of values that can be returned inside w_Treturn
 #define W_MAX_RETVALS 10
+
+// values returned by IsRobotNickBad:
+enum {
+	eBOT_OK,
+	eBOT_EXISTS,
+	eBOT_WITHOUT_NICK,
+	eBOT_BAD_CHARS,
+	eBOT_RESERVED_NICK,
+	eBOT_API_ERROR,
+};
 
 typedef struct {
 	char type;
