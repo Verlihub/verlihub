@@ -26,6 +26,10 @@
 #include "cconsole.h"
 #include "cperlmulti.h"
 
+#ifndef _WIN32
+#define __int64 long long
+#endif
+
 #define PERLSCRIPT_PI_IDENTIFIER "Perl"
 
 namespace nVerliHub {
@@ -66,7 +70,7 @@ public:
 	virtual bool OnHubCommand(cConnDC *, std::string *, int, int);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
-	virtual bool OnTimer(long);
+	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cRegUserInfo *);
 	virtual bool OnNewBan(cBan *);
 	virtual bool OnUnBan(std::string, std::string, std::string);

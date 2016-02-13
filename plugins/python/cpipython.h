@@ -31,6 +31,10 @@
 #include <vector>
 #include <dlfcn.h>
 
+#ifndef _WIN32
+#define __int64 long long
+#endif
+
 #define PYTHON_PI_IDENTIFIER "Python"
 
 using std::vector;
@@ -80,7 +84,7 @@ public:
 	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
-	virtual bool OnTimer(long);
+	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser *, std::string *, long);
 	virtual bool OnNewBan(nTables::cBan *);
 

@@ -27,6 +27,9 @@
 #include "src/cmessagedc.h"
 #include "src/cserverdc.h"
 #include "cstats.h"
+#ifndef _WIN32
+#define __int64 long long
+#endif
 
 namespace nVerliHub {
 	namespace nStatsPlugin {
@@ -45,7 +48,7 @@ public:
 	virtual bool RegisterAll();
 	virtual bool OnParsedMsgSearch(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual void OnLoad(nSocket::cServerDC *);
-	virtual bool OnTimer(long msec);
+	virtual bool OnTimer(__int64 msec);
 	cStats * mStats;
 private:
 	nUtils::cTimeOut mStatsTimer;

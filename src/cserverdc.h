@@ -898,7 +898,7 @@ private:
 		cVHCBL_User mOnUserLogin;
 		cVHCBL_User mOnUserLogout;
 		cVHCBL_ConnTag mOnValidateTag;
-		cVHCBL_Long mOnTimer;
+		cVHCBL_int64 mOnTimer;
 		cVHCBL_String mNickListNicks;
 		cVHCBL_String mNickListInfos;
 		cVHCBL_String mOpListNicks;

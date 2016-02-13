@@ -1069,9 +1069,9 @@ bool cpiPython::OnUserLogout(cUser *user)
 	return true;
 }
 
-bool cpiPython::OnTimer(long msec)
+bool cpiPython::OnTimer(__int64 msec)
 {
-	w_Targs *args = lib_pack("l", (long)msec);
+	w_Targs *args = lib_pack("d", 1.0 * msec / 1000.0);
 	return CallAll(W_OnTimer, args);
 }
 

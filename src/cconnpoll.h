@@ -54,7 +54,7 @@ public:
 	  */
 	virtual int Choose(nUtils::cTime &tmout)
 	{
-		return this->poll(tmout.MiliSec());
+		return this->poll((int)tmout.MiliSec());
 	};
 
 	/**

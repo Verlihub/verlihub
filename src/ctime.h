@@ -30,6 +30,9 @@
 #endif
 #include <string>
 #include <sys/time.h>
+#ifndef _WIN32
+#define __int64 long long
+#endif
 
 namespace nVerliHub {
 	namespace nUtils {
@@ -68,7 +71,7 @@ class cTime : public timeval
 	operator bool() const { return !(!tv_sec && !tv_usec);}
 	int operator! () { return !tv_sec && !tv_usec;}
 	long Sec() const { return tv_sec; }
-	unsigned long MiliSec(){return (unsigned long)(tv_sec)*1000+(unsigned long)(tv_usec)/1000;}
+	__int64 MiliSec() { return (__int64)(tv_sec)*1000+(__int64)(tv_usec)/1000; }
 
 	cTime & Normalize()
 	{

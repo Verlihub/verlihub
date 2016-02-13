@@ -400,7 +400,7 @@ public:
 	* Use RegisterCallBack("VH_OnTimer") to register it. This event isnt discardable.
 	* msec = Current system time in milliseconds.
 	*/
-	virtual bool OnTimer(long msec) {return true;}
+	virtual bool OnTimer(__int64 msec) {return true;}
 
 	/// Called when loading and  when it's the correct time to register for callbacks
 	virtual bool RegisterAll() = 0;

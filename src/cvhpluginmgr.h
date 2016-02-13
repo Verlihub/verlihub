@@ -24,6 +24,10 @@
 #include "ccallbacklist.h"
 #include "cvhplugin.h"
 
+#ifndef _WIN32
+#define __int64 long long
+#endif
+
 namespace nVerliHub {
 	namespace nSocket {
 		class cServerDC;
@@ -402,6 +406,7 @@ typedef tVHCBL_R2Types<string*, string*> cVHCBL_Strings;
 typedef tVHCBL_1Type<string> cVHCBL_String;
 typedef tVHCBL_1Type<cUser> cVHCBL_User;
 typedef tVHCBL_R1Type<long> cVHCBL_Long;
+typedef tVHCBL_R1Type<__int64> cVHCBL_int64;
 
 	}; // namespace nPlugin
 }; // namespace nVerliHub

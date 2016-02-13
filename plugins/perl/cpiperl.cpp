@@ -428,7 +428,7 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnUserLogout(cUser *user)
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnTimer(long msec)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnTimer(__int64 msec)
 {
 	std::stringstream s;
 	s << msec;
