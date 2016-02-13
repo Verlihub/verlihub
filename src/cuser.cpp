@@ -677,8 +677,8 @@ bool cChatRoom::IsUserAllowed(cUser *user)
 	return false;
 }
 
-cOpChat::cOpChat(cServerDC *server):
-	cChatRoom(server->mC.opchat_name, &server->mOpchatList, server)
+cOpChat::cOpChat(const string &nick, cServerDC *server):
+	cChatRoom(nick, &server->mOpchatList, server)
 {}
 
 bool cOpChat::IsUserAllowed(cUser *user)

@@ -34,6 +34,8 @@ extern "C"
 #include <iostream>
 #include <vector>
 
+#define VH_TABLE_NAME "VH"
+
 using namespace std;
 namespace nVerliHub {
 	namespace nLuaPlugin {
@@ -47,7 +49,8 @@ public:
 	bool Init();
 	void ReportLuaError(const char*);
 	bool CallFunction(const char*, char *[], cConnDC *conn = NULL);
-	void RegisterFunction(const char*, int (*)(lua_State*));
+	void RegisterFunction(const char *func, int (*ptr)(lua_State*));
+	void VHPushString(const char *name, const char *val, bool update = false);
 	void Load();
 
 	string mScriptName;

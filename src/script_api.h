@@ -56,8 +56,8 @@ namespace nVerliHub {
 	bool Ban(char *, const string &, const string &, unsigned, unsigned);
 	bool ParseCommand(char *nick, char *cmd, int pm);
 	bool KickUser(char *opnick, char *nick, char *reason);
-	bool SetConfig(const char *config_name, const char *var, const char *val);
-	int GetConfig(char *config_name, char *var, char *val, int size);
+	bool SetConfig(const char *conf, const char *var, const char *val);
+	const char* GetConfig(const char *conf, const char *var, const char *def = NULL);
 	char* GetVHCfgDir();
 	bool GetTempRights(char *nick, map<string,int> &rights);
 	bool AddRegUser(char *nick, int uclass, char *pass, char* op);

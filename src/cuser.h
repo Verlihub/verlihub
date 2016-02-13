@@ -305,11 +305,11 @@ public:
 class cOpChat: public cChatRoom
 {
 	public:
-		cOpChat(nSocket::cServerDC *server);
+		cOpChat(const string &nick, nSocket::cServerDC *server);
 		virtual bool IsUserAllowed(cUser *user);
 };
 
-class cMainRobot : public cUserRobot
+class cMainRobot: public cUserRobot
 {
 public:
 	cMainRobot(const string &nick, nSocket::cServerDC *server = NULL):cUserRobot(nick,server){};

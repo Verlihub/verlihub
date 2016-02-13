@@ -1553,7 +1553,18 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(zzzzzz)", s0, s1, s2, s3, s4, s5);
 			break;
-		default: break;
+
+		case W_OnSetConfig:
+			if (!w_unpack(params, "sssssl", &s0, &s1, &s2, &s3, &s4, &n0)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
+				break;
+			}
+
+			args = Py_BuildValue("(zzzzzl)", s0, s1, s2, s3, s4, n0);
+			break;
+
+		default:
+			break;
 	}
 
 	if (!args) {
@@ -1714,6 +1725,7 @@ const char *w_HookName(int hook)
 		case W_OnTimer:                   return "OnTimer";
 		case W_OnNewReg:                  return "OnNewReg";
 		case W_OnNewBan:                  return "OnNewBan";
+		case W_OnSetConfig:               return "OnSetConfig";
 		default:                          return NULL;
 	}
 }

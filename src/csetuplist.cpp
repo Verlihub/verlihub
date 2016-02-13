@@ -20,6 +20,7 @@
 
 #include "csetuplist.h"
 #include "cdcproto.h"
+#include "cserverdc.h"
 
 namespace nVerliHub {
 	using namespace nConfig;
@@ -27,7 +28,8 @@ namespace nVerliHub {
 	using namespace nProtocol;
 	namespace nTables {
 
-cSetupList::cSetupList(cMySQL &mysql):cConfMySQL(mysql)
+cSetupList::cSetupList(cMySQL &mysql):
+	cConfMySQL(mysql)
 {
 	mMySQLTable.mName = "SetupList";
 	AddCol("file", "varchar(30)", "", false, mModel.mFile);
@@ -48,18 +50,14 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 	db_iterator it;
 	cConfigItemBase *item = NULL;
 	SelectFields(mQuery.OStream());
-	mQuery.OStream() << " WHERE file='" << file << "'";
+	mQuery.OStream() << " where `file` = '" << file << "'";
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		item = (*Config)[mModel.mVarName];
 
 		if (item) {
-			if (mModel.mVarName == "hub_security" || mModel.mVarName == "opchat_name") { // replace special chars in nick
-				string newval;
-
-				if (ReplaceNickChars(mModel.mVarValue, newval) > 0)
-					mModel.mVarValue = newval;
-			}
+			if ((mModel.mVarName == "hub_security") || (mModel.mVarName == "opchat_name")) // replace bad nick chars
+				cServerDC::RepBadNickChars(mModel.mVarValue);
 
 			item->ConvertFrom(mModel.mVarValue);
 		}
@@ -74,11 +72,11 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 	SelectFields(mQuery.OStream());
 
 	if (file == "plugins")
-		mQuery.OStream() << " WHERE file LIKE 'pi_%'";
+		mQuery.OStream() << " where `file` like 'pi_%'";
 	else
-		mQuery.OStream() << " WHERE file='" << file << "'";
+		mQuery.OStream() << " where `file` = '" << file << "'";
 
-	mQuery.OStream() << " ORDER BY `var` ASC";
+	mQuery.OStream() << " order by `var` asc";
 	string val;
 
 	for (it = db_begin(); it != db_end(); ++it) {
@@ -102,14 +100,6 @@ void cSetupList::SaveFileTo(cConfigBaseBase *Config, const char *file)
 
 	for(it = Config->begin(); it != Config->end(); ++it) {
 		mModel.mVarName = (*it)->mName;
-
-		if (mModel.mVarName == "hub_security" || mModel.mVarName == "opchat_name") { // replace special chars in nick
-			string newval;
-
-			if (ReplaceNickChars(mModel.mVarValue, newval) > 0)
-				mModel.mVarValue = newval;
-		}
-
 		(*it)->ConvertTo(mModel.mVarValue);
 		SavePK();
 	}
@@ -132,55 +122,6 @@ bool cSetupList::LoadItem(const char *FromFile, cConfigItemBase *ci)
 	bool res = LoadPK();
 	ci->ConvertFrom(mModel.mVarValue);
 	return res;
-}
-
-unsigned int cSetupList::ReplaceNickChars(const string &src, string &dst)
-{
-	unsigned int count = 0;
-	size_t pos;
-	dst = src;
-
-	pos = dst.find("$"); // dollar
-
-	while (pos != dst.npos) {
-		dst.replace(pos, 1, "_");
-		pos = dst.find("$", pos);
-		count++;
-	}
-
-	pos = dst.find("|"); // pipe
-
-	while (pos != dst.npos) {
-		dst.replace(pos, 1, "_");
-		pos = dst.find("|", pos);
-		count++;
-	}
-
-	pos = dst.find(" "); // space
-
-	while (pos != dst.npos) {
-		dst.replace(pos, 1, "_");
-		pos = dst.find(" ", pos);
-		count++;
-	}
-
-	pos = dst.find("<"); // less
-
-	while (pos != dst.npos) {
-		dst.replace(pos, 1, "_");
-		pos = dst.find("<", pos);
-		count++;
-	}
-
-	pos = dst.find(">"); // greater
-
-	while (pos != dst.npos) {
-		dst.replace(pos, 1, "_");
-		pos = dst.find(">", pos);
-		count++;
-	}
-
-	return count;
 }
 
 	}; // namespace nTables

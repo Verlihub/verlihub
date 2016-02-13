@@ -83,7 +83,8 @@ enum {
 	W_OnUserLogout,
 	W_OnTimer,
 	W_OnNewReg,
-	W_OnNewBan
+	W_OnNewBan,
+	W_OnSetConfig
 };
 
 // MAX_HOOKS must be more than the number of elements in above enum

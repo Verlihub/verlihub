@@ -422,8 +422,11 @@ bool ParseCommand(char *nick, char *cmd, int pm)
 	return true;
 }
 
-bool SetConfig(const char *config_name, const char *var, const char *val)
+bool SetConfig(const char *conf, const char *var, const char *val)
 {
+	if (!conf || !var)
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -431,65 +434,23 @@ bool SetConfig(const char *config_name, const char *var, const char *val)
 		return false;
 	}
 
-	string file(serv->mDBConf.config_name);
-	cConfigItemBase *ci = NULL;
-
-	if (file == serv->mDBConf.config_name) {
-		ci = serv->mC[var];
-
-		if (!ci) {
-			cerr << "Undefined variable: " << var << endl;
-			return false;
-		}
-	}
-
-	if (ci) {
-		ci->ConvertFrom(val);
-		serv->mSetupList.SaveItem(file.c_str(), ci);
-	}
-
-	return true;
+	string val_new, val_old;
+	return (serv->SetConfig(conf, var, val, val_new, val_old) == 1);
 }
 
-int GetConfig(char *config_name, char *var, char *buf, int size)
+const char* GetConfig(const char *conf, const char *var, const char *def)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(!server)
-	{
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
-		return -1;
+	if (!conf || !var)
+		return def;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return def;
 	}
 
-	if (size < 1) return -1;
-	buf[0] = 0;
-
-	string val;
-	string file(server->mDBConf.config_name);
-
-	cConfigItemBase *ci = NULL;
-	if(file == server->mDBConf.config_name)
-	{
-		ci = server->mC[var];
-		if(!ci)
-		{
-			cerr << "Undefined variable: " << var << endl;
-			return -1;
-		}
-	}
-
-	if(ci)
-	{
-		ci->ConvertTo(val);
-		if(!val.size()) return 0;
-		if(int(val.size()) < size)
-		{
-			memcpy(buf, val.data(), val.size());
-			buf[val.size()] = 0;
-		}
-		return val.size();
-	}
-
-	return -1;
+	return serv->GetConfig(conf, var, def);
 }
 
 int __GetUsersCount()
@@ -643,7 +604,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
 
 	/*
 		do the restriction stuff, for example check cmd
-		plug = "py" for python, "lua" for lua
+		plug = "python" for python, "lua" for lua, "perl" for perl
 	*/
 
 	serv->OnScriptCommand(cmd, data, plug, script);
@@ -685,7 +646,7 @@ int CheckBotNick(const string &nick)
 	if (nick.empty())
 		return 2;
 
-	string badchars("\0$|<> ");
+	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
 
 	if (nick.npos != nick.find_first_of(badchars))
 		return 3;

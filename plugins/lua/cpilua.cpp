@@ -53,10 +53,10 @@ cpiLua::~cpiLua()
 {
 	ostringstream val;
 	val << this->log_level;
-	this->SetConf("pi_lua", "log_level", val.str().c_str());
+	SetConfig("pi_lua", "log_level", val.str().c_str());
 	val.str("");
 	val << this->err_class;
-	this->SetConf("pi_lua", "err_class", val.str().c_str());
+	SetConfig("pi_lua", "err_class", val.str().c_str());
 
 	if (mQuery != NULL) {
 		mQuery->Clear();
@@ -83,7 +83,7 @@ void cpiLua::SetLogLevel(int level)
 {
 	ostringstream val;
 	val << level;
-	this->SetConf("pi_lua", "log_level", val.str().c_str());
+	SetConfig("pi_lua", "log_level", val.str().c_str());
 	this->log_level = level;
 }
 
@@ -91,72 +91,8 @@ void cpiLua::SetErrClass(int eclass)
 {
 	ostringstream val;
 	val << eclass;
-	this->SetConf("pi_lua", "err_class", val.str().c_str());
+	SetConfig("pi_lua", "err_class", val.str().c_str());
 	this->err_class = eclass;
-}
-
-const char* cpiLua::GetConf(const char *conf, const char *var, const char *def)
-{
-	if (!server || !conf || !var)
-		return def;
-
-	string file(conf), val(def ? def : "");
-	static string res;
-	bool found = true, delci = false;
-	cConfigItemBase *ci = NULL;
-
-	if (file == server->mDBConf.config_name) {
-		ci = server->mC[var];
-	} else {
-		delci = true;
-		ci = new cConfigItemBaseString(val, var);
-		found = server->mSetupList.LoadItem(file.c_str(), ci);
-	}
-
-	if (ci) {
-		if (found)
-			ci->ConvertTo(res);
-
-		if (delci)
-			delete ci;
-
-		ci = NULL;
-
-		if (found)
-			return res.c_str();
-	}
-
-	return def;
-}
-
-bool cpiLua::SetConf(const char *conf, const char *var, const char *val)
-{
-	if (!server || !conf || !var)
-		return false;
-
-	string file(conf), def(val ? val : "");
-	bool delci = false;
-	cConfigItemBase *ci = NULL;
-
-	if (file == server->mDBConf.config_name) {
-		ci = server->mC[var];
-	} else {
-		delci = true;
-		ci = new cConfigItemBaseString(def, var);
-	}
-
-	if (ci) {
-		ci->ConvertFrom(def);
-		server->mSetupList.SaveItem(file.c_str(), ci);
-
-		if (delci)
-			delete ci;
-
-		ci = NULL;
-		return true;
-	}
-
-	return false;
 }
 
 void cpiLua::OnLoad(cServerDC *serv)
@@ -168,16 +104,16 @@ void cpiLua::OnLoad(cServerDC *serv)
 
 	ostringstream def;
 	def << this->log_level;
-	const char *level = this->GetConf("pi_lua", "log_level", def.str().c_str()); // get log level
+	const char *level = GetConfig("pi_lua", "log_level", def.str().c_str()); // get log level
 
-	if (IsNumber(level))
+	if (level && IsNumber(level))
 		this->log_level = atoi(level);
 
 	def.str("");
 	def << this->err_class;
-	const char *eclass = this->GetConf("pi_lua", "err_class", def.str().c_str()); // get error class
+	const char *eclass = GetConfig("pi_lua", "err_class", def.str().c_str()); // get error class
 
-	if (IsNumber(eclass))
+	if (eclass && IsNumber(eclass))
 		this->err_class = atoi(eclass);
 
 	AutoLoad();
@@ -221,6 +157,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnDelReg");
 	RegisterCallBack("VH_OnNewBan");
 	RegisterCallBack("VH_OnUnBan");
+	RegisterCallBack("VH_OnSetConfig");
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnScriptQuery");
@@ -981,6 +918,40 @@ bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 		};
 
 		return CallAll("VH_OnUnBan", args, user->mxConn);
+	}
+
+	return true;
+}
+
+bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
+{
+	if (user && conf && var && val_new && val_old) {
+		char *args[] = {
+			(char*)user->mNick.c_str(),
+			(char*)conf->c_str(),
+			(char*)var->c_str(),
+			(char*)val_new->c_str(),
+			(char*)val_old->c_str(),
+			(char*)toString(val_type),
+			NULL
+		};
+
+		bool res = CallAll("VH_OnSetConfig", args, user->mxConn);
+
+		if (res && !strcmp(conf->c_str(), server->mDBConf.config_name.c_str()) && (!strcmp(var->c_str(), "hub_security") || !strcmp(var->c_str(), "opchat_name")) && Size()) {
+			tvLuaInterpreter::iterator it;
+
+			for (it = mLua.begin(); it != mLua.end(); ++it) {
+				if (*it) {
+					if (!strcmp(var->c_str(), "hub_security"))
+						(*it)->VHPushString("HubSec", val_new->c_str(), true);
+					else if (!strcmp(var->c_str(), "opchat_name"))
+						(*it)->VHPushString("OpChat", val_new->c_str(), true);
+				}
+			}
+		}
+
+		return res;
 	}
 
 	return true;

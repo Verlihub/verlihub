@@ -396,6 +396,13 @@ public:
 	virtual bool OnUnBan(cUser* User, string nick, string op, string reason) {return true;}
 
 	/*
+		event handler function that is called when a config is set either by user or within a plugin
+		use RegisterCallBack("VH_OnSetConfig") to register it
+		this event can be discarded
+	*/
+	virtual bool OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type) { return true; }
+
+	/*
 	* Event handler function that is called when timer is called.
 	* Use RegisterCallBack("VH_OnTimer") to register it. This event isnt discardable.
 	* msec = Current system time in milliseconds.

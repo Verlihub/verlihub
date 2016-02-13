@@ -76,10 +76,9 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mBanList(NULL),
 	mUnBanList(NULL),
 	mKickList(NULL),
+	mHubSec(NULL),
 	mOpChat(NULL),
 	mExecPath(ExecPath),
-	mBadNickNmdcChars(" $|"),
-	mBadNickOwnChars("<>"),
 	mSysLoad(eSL_NORMAL),
 	mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
 	mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
@@ -167,16 +166,20 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	nctmp="$PassiveList ";
 	mPassiveUsers.SetNickListStart(nctmp);
 
-	string speed(/*"Hub\x9"*/"\x1"), mail(""), share("0"); // add the users
-	cUser *VerliHub;
-	VerliHub = new cMainRobot(mC.hub_security, this);
-	VerliHub->mClass = tUserCl(10);
-	mP.Create_MyINFO(VerliHub->mMyINFO, VerliHub->mNick, mC.hub_security_desc, speed, mail, share);
-	VerliHub->mMyINFO_basic = VerliHub->mMyINFO;
-	AddRobot((cMainRobot*)VerliHub);
+	string speed("\x1"), mail(""), share("0"), val_new, val_old; // add the bots
+	mHubSec = new cMainRobot((mC.hub_security.size() ? mC.hub_security : HUB_VERSION_NAME), this);
+	mHubSec->mClass = tUserCl(10);
+	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share);
+	mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
+	AddRobot((cMainRobot*)mHubSec);
+
+	if (mC.hub_security.empty())
+		SetConfig(mDBConf.config_name.c_str(), "hub_security", HUB_VERSION_NAME, val_new, val_old);
+	else if (mC.hub_security == mC.opchat_name)
+		SetConfig(mDBConf.config_name.c_str(), "opchat_name", "", val_new, val_old);
 
 	if (mC.opchat_name.size()) {
-		mOpChat = new cOpChat(this);
+		mOpChat = new cOpChat(mC.opchat_name, this);
 		mOpChat->mClass = tUserCl(10);
 		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share);
 		mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
@@ -1453,7 +1456,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &more)
 {
-	string bad_nick_chars(mBadNickNmdcChars + mBadNickOwnChars);
+	string bad_nick_chars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
 	bool bad = false;
 	unsigned i;
 	char chr;
@@ -1629,7 +1632,8 @@ int cServerDC::OnTimer(cTime &now)
 					else
 						os << autosprintf(_("DDoS detection filtered %lu new connections."), mCtmToHubConf.mNew);
 
-					this->mOpChat->SendPMToAll(os.str(), NULL);
+					if (this->mOpChat) // todo: where else to notify?
+						this->mOpChat->SendPMToAll(os.str(), NULL);
 				}
 
 				mCtmToHubConf.mNew = 0;
@@ -1638,7 +1642,10 @@ int cServerDC::OnTimer(cTime &now)
 				if (mCtmToHubConf.mStart) {
 					ostringstream os;
 					os << autosprintf(_("DDoS stopped, filtered totally %lu connections."), total);
-					this->mOpChat->SendPMToAll(os.str(), NULL);
+
+					if (this->mOpChat) // todo: where else to notify?
+						this->mOpChat->SendPMToAll(os.str(), NULL);
+
 					mCtmToHubConf.mStart = false;
 				}
 
@@ -2432,6 +2439,218 @@ string cServerDC::EraseNewLines(const string &src)
 	return dst;
 }
 
+void cServerDC::RepBadNickChars(string &nick)
+{
+	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
+	size_t pos;
+
+	for (unsigned i = 0; i < badchars.size(); ++i) {
+		pos = nick.find(badchars[i]);
+
+		if (pos != nick.npos)
+			nick.replace(pos, 1, "_");
+	}
+}
+
+/*
+	global function to set SetupList config
+	also take care of any hub configs that needs to be updated in real time
+	returns one of following values
+		-3 - failed to create config
+		-2 - bad params
+		-1 - undefined config
+		0 - discarded by plugin
+		1 - done
+*/
+
+int cServerDC::SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user)
+{
+	if (!conf || !var || !val)
+		return -2;
+
+	val_new = string(val);
+	string sconf(conf), svar(var);
+	cConfigItemBase *ci = NULL;
+
+	if (sconf == mDBConf.config_name) {
+		ci = mC[var];
+
+		if (ci) {
+			ci->ConvertTo(val_old);
+
+			if ((svar == "hub_security") || (svar == "opchat_name")) // replace bot nick chars
+				RepBadNickChars(val_new);
+
+			ci->ConvertFrom(val_new);
+			ci->ConvertTo(val_new);
+
+			#ifndef WITHOUT_PLUGINS
+				if (!mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, ci->GetTypeID())) {
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+			#endif
+
+			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc")) && (val_new != val_old)) { // update bot nicks and descriptions
+				string speed("\x1"), mail(""), share("0"), data;
+
+				if (svar == "hub_security") {
+					if (val_new.empty() || (val_new == mC.opchat_name)) { // dont allow empty or equal to opchat nick
+						ci->ConvertFrom(val_old);
+						return 0;
+					}
+
+					DelRobot((cMainRobot*)mHubSec);
+					mHubSec->mNick = val_new;
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share);
+					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
+					AddRobot((cMainRobot*)mHubSec);
+					mP.Create_Hello(data, mHubSec->mNick); // send hello
+					mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
+					mUserList.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true); // send myinfo
+					mInProgresUsers.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true);
+					mP.Create_OpList(data, mHubSec->mNick); // send short oplist
+					mUserList.SendToAll(data, mC.delayed_myinfo, true);
+					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+					mP.Create_BotList(data, mHubSec->mNick); // send short botlist
+					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+
+				} else if (svar == "opchat_name") {
+					if (val_new == mC.hub_security) { // dont allow equal to hub security nick
+						ci->ConvertFrom(val_old);
+						return 0;
+					}
+
+					if (mOpChat)
+						DelRobot((cMainRobot*)mOpChat);
+
+					if (val_new.size()) {
+						if (mOpChat) {
+							mOpChat->mNick = val_new;
+						} else {
+							mOpChat = new cOpChat(val_new, this);
+							mOpChat->mClass = tUserCl(10);
+						}
+
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share);
+						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
+						AddRobot((cMainRobot*)mOpChat);
+						mP.Create_Hello(data, mOpChat->mNick); // send hello
+						mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
+						mUserList.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true); // send myinfo
+						mInProgresUsers.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true);
+						mP.Create_OpList(data, mOpChat->mNick); // send short oplist
+						mUserList.SendToAll(data, mC.delayed_myinfo, true);
+						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+						mP.Create_BotList(data, mOpChat->mNick); // send short botlist
+						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+						mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+					} else if (mOpChat) {
+						delete mOpChat;
+						mOpChat = NULL;
+					}
+
+				} else if (svar == "hub_security_desc") {
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share);
+					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
+					mUserList.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true); // send myinfo
+					mInProgresUsers.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true);
+
+				} else if (svar == "opchat_desc") {
+					if (mOpChat) {
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share);
+						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
+						mUserList.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true); // send myinfo
+						mInProgresUsers.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true);
+					}
+				}
+			}
+
+			mSetupList.SaveItem(conf, ci);
+			return 1;
+		} else {
+			#ifndef WITHOUT_PLUGINS
+			if (mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, -1))
+			#endif
+			{
+				if (ErrLog(1))
+					LogStream() << "Undefined SetConfig variable: " << conf << "." << var << endl;
+			}
+
+			return -1;
+		}
+	}
+
+	string fake;
+	ci = new cConfigItemBaseString(fake, var);
+
+	if (ci) {
+		bool load = mSetupList.LoadItem(conf, ci);
+
+		if (load)
+			ci->ConvertTo(val_old);
+
+		ci->ConvertFrom(val_new);
+		ci->ConvertTo(val_new);
+		bool save = true;
+
+		#ifndef WITHOUT_PLUGINS
+			save = mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, (load ? ci->GetTypeID() : -1));
+		#endif
+
+		if (save)
+			mSetupList.SaveItem(conf, ci);
+
+		delete ci;
+		ci = NULL;
+		return int(save);
+	}
+
+	return -3;
+}
+
+const char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
+{
+	if (!conf || !var)
+		return def;
+
+	string sconf(conf), val;
+	cConfigItemBase *ci = NULL;
+
+	if (sconf == mDBConf.config_name) {
+		ci = mC[var];
+
+		if (ci) {
+			ci->ConvertTo(val);
+			return val.c_str();
+		} else {
+			if (ErrLog(1))
+				LogStream() << "Undefined GetConfig variable: " << conf << "." << var << endl;
+
+			return def;
+		}
+	}
+
+	string fake;
+	ci = new cConfigItemBaseString(fake, var);
+
+	if (ci) {
+		bool load = mSetupList.LoadItem(conf, ci);
+
+		if (load)
+			ci->ConvertTo(val);
+
+		delete ci;
+		ci = NULL;
+
+		if (load)
+			return val.c_str();
+	}
+
+	return def;
+}
+
 /*
 	this functions collects stack backtrace of the caller functions and demangles it
 	then it tries to send backtrace to crash server via http
@@ -2569,7 +2788,10 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 
 	if ((++mCtmToHubConf.mNew > 9) && !mCtmToHubConf.mStart) {
 		string omsg = _("DDoS detected, gathering attack information...");
-		this->mOpChat->SendPMToAll(omsg, NULL);
+
+		if (this->mOpChat) // todo: where else to notify?
+			this->mOpChat->SendPMToAll(omsg, NULL);
+
 		mCtmToHubConf.mStart = true;
 	}
 }

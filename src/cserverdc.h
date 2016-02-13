@@ -46,6 +46,9 @@
 
 #define USER_ZONES 6
 
+#define BAD_NICK_CHARS_NMDC " $|"
+#define BAD_NICK_CHARS_OWN "<>"
+
 using namespace std;
 
 namespace nVerliHub {
@@ -223,15 +226,14 @@ class cServerDC : public cAsyncSocketServer
 		cUnBanList *mUnBanList;
 		// Kick list
 		cKickList *mKickList;
-		// OpChat room
-		cChatRoom *mOpChat;
+		cUser *mHubSec; // hub security bot
+		cChatRoom *mOpChat; // operator chat
 		// Connection types handler
 		cConnTypes *mConnTypes;
 		// ZLib compression class
 		cZLib *mZLib;
 		// Process name
 		string mExecPath;
-		string mBadNickNmdcChars, mBadNickOwnChars; // forbidden nick characters
 
 		/**
 		* Base class constructor.
@@ -572,6 +574,9 @@ class cServerDC : public cAsyncSocketServer
 		char* UserClassName(nEnums::tUserCl ucl);
 		bool CheckPortNumber(unsigned int port);
 		string EraseNewLines(const string &src);
+		static void RepBadNickChars(string &nick);
+		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
+		const char* GetConfig(const char *conf, const char *var, const char *def);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;
@@ -859,6 +864,7 @@ private:
 			mOnUpdateClass(mgr, "VH_OnUpdateClass", &cVHPlugin::OnUpdateClass),
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
+			mOnSetConfig(mgr, "VH_OnSetConfig", &cVHPlugin::OnSetConfig),
 			mOnScriptCommand(mgr, "VH_OnScriptCommand", &cVHPlugin::OnScriptCommand),
 			mOnScriptQuery(mgr, "VH_OnScriptQuery", &cVHPlugin::OnScriptQuery),
 			mOnCtmToHub(mgr, "VH_OnCtmToHub", &cVHPlugin::OnCtmToHub),
@@ -907,6 +913,7 @@ private:
 		cVHCBL_UsrStrIntInt mOnUpdateClass;
 		cVHCBL_UsrBan mOnNewBan;
 		cVHCBL_UsrStrStrStr mOnUnBan;
+		cVHCBL_UsrStrStrStrStrInt mOnSetConfig;
 		cVHCBL_StrStrStrStr mOnScriptCommand;
 		cVHCBL_StrStrStrStrResponses mOnScriptQuery;
 		cVHCBL_ConnText mOnCtmToHub;
