@@ -1517,7 +1517,6 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(zzl)", s0, s1, n0);
 			break;
-
 		case W_OnNewBan:
 		case W_OnScriptCommand:
 		case W_OnScriptQuery:
@@ -1526,10 +1525,8 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
 				break;
 			}
-
 			args = Py_BuildValue("(zzzz)", s0, s1, s2, s3);
 			break;
-
 		case W_OnPublicBotMessage:
 			if (!w_unpack(params, "ssll", &s0, &s1, &n0, &n1)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name,
@@ -1538,6 +1535,7 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(zzll)", s0, s1, n0, n1);
 			break;
+		case W_OnHubCommand:
 		case W_OnCtmToHub:
 			if (!w_unpack(params, "sslls", &s0, &s1, &n0, &n1, &s2)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name,
@@ -1708,6 +1706,7 @@ const char *w_HookName(int hook)
 		case W_OnOperatorDropsWithReason: return "OnOperatorDropsWithReason";
 		case W_OnValidateTag:             return "OnValidateTag";
 		case W_OnUserCommand:             return "OnUserCommand";
+		case W_OnHubCommand:              return "OnHubCommand";
 		case W_OnScriptCommand:           return "OnScriptCommand";
 		case W_OnScriptQuery:             return "OnScriptQuery";
 		case W_OnUserLogin:               return "OnUserLogin";

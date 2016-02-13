@@ -76,6 +76,7 @@ enum {
 	W_OnOperatorDropsWithReason,
 	W_OnValidateTag,
 	W_OnUserCommand,
+	W_OnHubCommand,
 	W_OnScriptCommand,
 	W_OnScriptQuery,
 	W_OnUserLogin,

@@ -218,6 +218,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnOperatorDrops");
 	RegisterCallBack("VH_OnValidateTag");
 	RegisterCallBack("VH_OnUserCommand");
+	RegisterCallBack("VH_OnHubCommand");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnUserLogin");
@@ -968,6 +969,19 @@ bool cpiPython::OnUserCommand(cConnDC *conn, string *command)
 	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), command->c_str());
 		return CallAll(W_OnUserCommand, args);
+	}
+	return true;
+}
+
+bool cpiPython::OnHubCommand(cConnDC *conn, string *command, int is_op_cmd, int in_pm)
+{
+	// we chop the first char off command and put it in the prefix variable.
+	if (conn && conn->mpUser && command && command->size() > 0) {
+		long uclass = conn->mpUser->mClass;
+		const char *nick = conn->mpUser->mNick.c_str();
+		string prefix(*command, 0, 1);
+		w_Targs *args = lib_pack("sslls", nick, command->c_str() + 1, uclass, (long)in_pm, prefix.c_str());
+		return CallAll(W_OnHubCommand, args);
 	}
 	return true;
 }

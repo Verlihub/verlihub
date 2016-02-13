@@ -75,6 +75,7 @@ public:
 	virtual bool OnOperatorDrops(cUser *, cUser *, std::string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
+	virtual bool OnHubCommand(nSocket::cConnDC *conn, std::string *command, int is_op_cmd, int in_pm);
 	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
 	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
 	virtual bool OnUserLogin(cUser *);
