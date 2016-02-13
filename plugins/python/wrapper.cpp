@@ -19,8 +19,11 @@
 */
 
 #include "wrapper.h"
+#include "src/cserverdc.h"
+#include "src/cban.h"
 
 using namespace std;
+using namespace nVerliHub::nEnums;
 
 vector<w_TScript *> w_Scripts;
 
@@ -601,7 +604,6 @@ static PyObject *split_nick_list(const char *rawlist, const char *prefix)
 		PyList_Append(lst, Py_BuildValue("s", w_SubStr(rawlist, pos, i)));
 		pos = i + 2;
 	}
-	freee(rawlist);
 	return lst;
 }
 
@@ -750,14 +752,14 @@ static PyObject *__DelRegUser(PyObject *self, PyObject *args)
 
 static PyObject *__Ban(PyObject *self, PyObject *args)
 {
-	// Arguments: nick, time, type
-	return pybool(BasicCall(W_Ban, args, "ssl"));
+	// Arguments: op, nick, reason, seconds, ban_type
+	return pybool(BasicCall(W_Ban, args, "sssll"));
 }
 
 static PyObject *__KickUser(PyObject *self, PyObject *args)
 {
-	// Arguments: op, nick, data
-	return pybool(BasicCall(W_KickUser, args, "sss"));
+	// Arguments: op, nick, reason, optional: redirect_address
+	return pybool(BasicCall(W_KickUser, args, "sss|s"));
 }
 
 static PyObject* __ParseCommand(PyObject *self, PyObject *args)
@@ -821,6 +823,14 @@ static PyObject *__GetConfig(PyObject *self, PyObject *args)
 		return p;
 	}
 	Py_RETURN_NONE;
+}
+
+static PyObject *__IsRobotNickBad(PyObject *self, PyObject *args)
+{
+	long bad;
+	if (!Call(W_IsRobotNickBad, args, "ss", "s", &bad))
+		bad = eBOT_API_ERROR;
+	return Py_BuildValue("l", bad);
 }
 
 static PyObject *__AddRobot(PyObject *self, PyObject *args)
@@ -1092,6 +1102,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"ScriptQuery",        __ScriptQuery,        METH_VARARGS},
 	{"SetConfig",          __SetConfig,          METH_VARARGS},
 	{"GetConfig",          __GetConfig,          METH_VARARGS},
+	{"IsRobotNickBad",     __IsRobotNickBad,     METH_VARARGS},
 	{"AddRobot",           __AddRobot,           METH_VARARGS},
 	{"DelRobot",           __DelRobot,           METH_VARARGS},
 	{"SQL",                __SQL,                METH_VARARGS},
@@ -1227,6 +1238,49 @@ int w_Load(w_Targs *args)
 	PyModule_AddStringConstant(m, "path", (char *)script->path);
 	PyModule_AddStringConstant(m, "basedir", (char *)basedir);
 	PyModule_AddIntConstant(m, "starttime", starttime);
+
+	// Reasons for closing a connection (from cserverdc.h):
+	PyModule_AddIntMacro(m, eCR_DEFAULT);
+	PyModule_AddIntMacro(m, eCR_INVALID_USER);
+	PyModule_AddIntMacro(m, eCR_KICKED);
+	PyModule_AddIntMacro(m, eCR_FORCEMOVE);
+	PyModule_AddIntMacro(m, eCR_QUIT);
+	PyModule_AddIntMacro(m, eCR_HUB_LOAD);
+	PyModule_AddIntMacro(m, eCR_TIMEOUT);
+	PyModule_AddIntMacro(m, eCR_TO_ANYACTION);
+	PyModule_AddIntMacro(m, eCR_USERLIMIT);
+	PyModule_AddIntMacro(m, eCR_SHARE_LIMIT);
+	PyModule_AddIntMacro(m, eCR_TAG_NONE);
+	PyModule_AddIntMacro(m, eCR_TAG_INVALID);
+	PyModule_AddIntMacro(m, eCR_PASSWORD);
+	PyModule_AddIntMacro(m, eCR_LOGIN_ERR);
+	PyModule_AddIntMacro(m, eCR_SYNTAX);
+	PyModule_AddIntMacro(m, eCR_INVALID_KEY);
+	PyModule_AddIntMacro(m, eCR_RECONNECT);
+	PyModule_AddIntMacro(m, eCR_CLONE);
+	PyModule_AddIntMacro(m, eCR_SELF);
+	PyModule_AddIntMacro(m, eCR_BADNICK);
+	PyModule_AddIntMacro(m, eCR_NOREDIR);
+
+	// values returned by IsRobotNickBad callback:
+	PyModule_AddIntMacro(m, eBOT_OK);
+	PyModule_AddIntMacro(m, eBOT_EXISTS);
+	PyModule_AddIntMacro(m, eBOT_WITHOUT_NICK);
+	PyModule_AddIntMacro(m, eBOT_BAD_CHARS);
+	PyModule_AddIntMacro(m, eBOT_RESERVED_NICK);
+	PyModule_AddIntMacro(m, eBOT_API_ERROR);
+
+	// ban flags used by Ban callback (from cban.h):
+	PyModule_AddIntMacro(m, eBF_NICKIP);
+	PyModule_AddIntMacro(m, eBF_IP);
+	PyModule_AddIntMacro(m, eBF_NICK);
+	PyModule_AddIntMacro(m, eBF_RANGE);
+	PyModule_AddIntMacro(m, eBF_HOST1);
+	PyModule_AddIntMacro(m, eBF_HOST2);
+	PyModule_AddIntMacro(m, eBF_HOST3);
+	PyModule_AddIntMacro(m, eBF_SHARE);
+	PyModule_AddIntMacro(m, eBF_PREFIX);
+	PyModule_AddIntMacro(m, eBF_HOSTR1);
 
 	const char *version = PYTHON_PI_VERSION;
 	long ver1 = 1, ver2 = 0, ver3 = 0, ver4 = 0;
@@ -1702,6 +1756,7 @@ const char *w_CallName(int callback)
 		case W_ScriptQuery:          return "ScriptQuery";
 		case W_SetConfig:            return "SetConfig";
 		case W_GetConfig:            return "GetConfig";
+		case W_IsRobotNickBad:       return "IsRobotNickBad";
 		case W_AddRobot:             return "AddRobot";
 		case W_DelRobot:             return "DelRobot";
 		case W_SQL:                  return "SQL";

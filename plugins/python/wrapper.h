@@ -124,6 +124,7 @@ enum {
 	W_ScriptQuery,
 	W_SetConfig,
 	W_GetConfig,
+	W_IsRobotNickBad,
 	W_AddRobot,
 	W_DelRobot,
 	W_SQL,
@@ -151,6 +152,16 @@ enum { w_ret_none, w_ret_int, w_ret_float, w_ret_char, w_ret_void, w_ret_tab };
 
 // the maximum number of values that can be returned inside w_Treturn
 #define W_MAX_RETVALS 10
+
+// values returned by IsRobotNickBad:
+enum {
+	eBOT_OK,
+	eBOT_EXISTS,
+	eBOT_WITHOUT_NICK,
+	eBOT_BAD_CHARS,
+	eBOT_RESERVED_NICK,
+	eBOT_API_ERROR,
+};
 
 typedef struct {
 	char type;

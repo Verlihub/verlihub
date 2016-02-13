@@ -194,6 +194,7 @@ extern "C" w_Targs *_ScriptCommand     (int id, w_Targs *args);
 extern "C" w_Targs *_ScriptQuery       (int id, w_Targs *args);
 extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
+extern "C" w_Targs *_IsRobotNickBad    (int id, w_Targs *args);
 extern "C" w_Targs *_AddRobot          (int id, w_Targs *args);
 extern "C" w_Targs *_DelRobot          (int id, w_Targs *args);
 extern "C" w_Targs *_SQL               (int id, w_Targs *args);
