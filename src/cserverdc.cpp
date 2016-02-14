@@ -1272,7 +1272,7 @@ bool cServerDC::MinDelay(cTime &then, unsigned int min, bool update)
 	cTime now;
 	cTime diff = now - then;
 
-	if (diff.Sec() >= min) {
+	if (diff.Sec() >= (long)min) {
 		then = now;
 		return true;
 	}
@@ -1288,7 +1288,7 @@ bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 	cTime now;
 	cTime diff = now - then;
 
-	if (diff.MiliSec() >= min) {
+	if (diff.MiliSec() >= (__int64)min) {
 		then = now;
 		return true;
 	}

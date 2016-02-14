@@ -1442,9 +1442,17 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 	char *s5 = NULL;
 	long n0 = 0;
 	long n1 = 0;
+	double f0 = 0.0;
 
 	switch (func) {
 		case W_OnTimer:
+			if (!w_unpack(params, "d", &f0)) {
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, 
+					w_HookName(func), w_packprint(params));
+				break;
+			}
+			args = Py_BuildValue("(d)", f0);
+			break;
 		case W_OnUnLoad:
 			if (!w_unpack(params, "l", &n0)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, 

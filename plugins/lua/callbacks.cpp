@@ -2249,8 +2249,11 @@ int _GetUpTime(lua_State *L)
 
 	if (sf == 1)
 		lua_pushnumber(L, upTime.Sec());
-	else
-		lua_pushnumber(L, upTime.MiliSec());
+	else {
+		stringstream s;
+		s << upTime.MiliSec();
+		lua_pushstring(L, s.str().c_str());
+	}
 
 	return 2;
 }

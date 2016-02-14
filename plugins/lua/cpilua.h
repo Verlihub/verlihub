@@ -73,7 +73,7 @@ public:
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
-	virtual bool OnTimer(long);
+	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser *, string, int);
 	virtual bool OnDelReg(cUser *, string, int);
 	virtual bool OnUpdateClass(cUser *, string, int, int);
@@ -117,7 +117,7 @@ public:
 
 	cLuaInterpreter * operator[](unsigned int i)
 	{
-		if ((i < 0) || (i > Size()))
+		if (i > Size())
 			return NULL;
 		else
 			return mLua[i];

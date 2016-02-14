@@ -26,6 +26,7 @@
 #include "src/script_api.h"
 #include <dirent.h>
 #include <string>
+#include <sstream>
 #include <cctype>
 
 namespace nVerliHub {
@@ -797,15 +798,17 @@ bool cpiLua::OnUserLogout(cUser *user)
 	return true;
 }
 
-bool cpiLua::OnTimer(long msec)
+bool cpiLua::OnTimer(__int64 msec)
 {
+	std::stringstream s;
+	s << msec;
+
 	char *args[] = {
-		(char*)longToString(msec),
+		(char *)s.str().c_str(),
 		NULL
 	};
 
 	bool res = CallAll("VH_OnTimer", args);
-	delete [] args[0];
 	return res;
 }
 
