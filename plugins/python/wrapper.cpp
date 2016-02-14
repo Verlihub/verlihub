@@ -1171,14 +1171,17 @@ int w_ReserveID() { return GetFreeID(); }
 
 int w_Load(w_Targs *args)
 {
-	const char *scriptname = "?";
-	const char *botname = "VH";
-	const char *opchatname = "OPchat";
-	const char *basedir = ".";
+	const char *scriptname;
+	const char *botname;
+	const char *opchatname;
+	const char *basedir;
+	const char *config_name;
 	long starttime = 0;
 	long id = 0;
-	if (!w_Python->state || !w_unpack(args, "lssssl", &id, &scriptname, &botname,
-		&opchatname, &basedir, &starttime))
+	if (!w_Python->state || !w_unpack(args, "lssssls", &id, &scriptname, &botname,
+		&opchatname, &basedir, &starttime, &config_name))
+		return -1;
+	if (!scriptname || !botname || !opchatname || !basedir || !config_name)
 		return -1;
 	if (id != GetFreeID()) {
 		log2("PY: cannot start a new python interpreter with ID %ld\n", id);
@@ -1188,10 +1191,11 @@ int w_Load(w_Targs *args)
 	w_Scripts[id] = script;
 	script->id = id;
 	script->callbacks = w_Python->callbacks;
-	script->botname = botname;
-	script->opchatname = opchatname;
+	script->botname = strdup(botname);
+	script->opchatname = strdup(opchatname);
 	script->path = strdup(scriptname);
-	script->name = GetName(script->path);
+	script->config_name = strdup(config_name);
+	script->name = strdup(GetName(script->path));
 	const char *name = script->name;
 
 	log2("PY: [%ld:%s] starting new python interpreter for %s\n", id, name, scriptname);
@@ -1237,6 +1241,7 @@ int w_Load(w_Targs *args)
 	PyModule_AddStringConstant(m, "name", (char *)script->name);
 	PyModule_AddStringConstant(m, "path", (char *)script->path);
 	PyModule_AddStringConstant(m, "basedir", (char *)basedir);
+	PyModule_AddStringConstant(m, "config_name", (char *)config_name);
 	PyModule_AddIntConstant(m, "starttime", starttime);
 
 	// Reasons for closing a connection (from cserverdc.h):
@@ -1373,6 +1378,11 @@ int w_Unload(int id)
 	if (script->hooks) free(script->hooks);
 	// we don't free callbacks because they point to the global w_Python->callbacks
 	w_Scripts[id] = NULL;
+	freee(script->botname);
+	freee(script->opchatname);
+	freee(script->path);
+	freee(script->config_name);
+	freee(script->name); 
 	free(script);
 	return -1;
 }
@@ -1409,6 +1419,41 @@ PyObject *w_GetHook(int hook)
 	return f;
 }
 
+// Only call this from inside w_CallHook!
+bool _update_settings(w_TScript *script, const char *cmd, const char *data, const char *plug, const char *path)
+{
+	if (!script || !cmd || !data || !plug || !path) return false;
+	int id = script->id;
+	const char *name = script->name;
+	if (!strlen(plug) && !strlen(path)) {
+		int to_change = 0;
+		if (!strcmp(cmd, "_hub_security_change") && strcmp(data, script->botname))
+			to_change = 1;
+		else if (!strcmp(cmd, "_opchat_name_change") && strcmp(data, script->opchatname))
+			to_change = 2;
+		if (to_change) {
+			PyObject *mod = NULL, *dict = NULL;
+			mod = PyDict_GetItemString(PyImport_GetModuleDict(), "vh");
+			if (mod) dict = PyModule_GetDict(mod);
+			if (!mod || !dict) {
+				log("PY:[%d:%s] can't get vh module or its dict\n", id, name);
+			} else {
+				log1("PY:[%d:%s] updating vh.%s\n", id, name, (to_change == 2 ? "opchatname" : "botname"));
+				PyObject *obj = Py_BuildValue("s", data);
+				if (obj) PyDict_SetItemString(dict, (to_change == 2 ? "opchatname" : "botname"), obj);
+			}
+			if (to_change == 1) {
+				freee(script->botname);
+				script->botname = strdup(data);
+			} else {
+				freee(script->opchatname);
+				script->opchatname = strdup(data);
+			}
+			return true;
+		}
+	}
+	return false;
+}
 
 w_Targs *w_CallHook(int id, int func, w_Targs *params)  
 {
@@ -1451,7 +1496,8 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 					w_HookName(func), w_packprint(params));
 				break;
 			}
-			args = Py_BuildValue("(d)", f0);
+			if (script->use_old_ontimer) args = Py_BuildValue("()");
+			else args = Py_BuildValue("(d)", f0);
 			break;
 		case W_OnUnLoad:
 			if (!w_unpack(params, "l", &n0)) {
@@ -1533,6 +1579,8 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
 				break;
 			}
+			if (func == W_OnScriptCommand)
+				_update_settings(script, s0, s1, s2, s3);
 			args = Py_BuildValue("(zzzz)", s0, s1, s2, s3);
 			break;
 		case W_OnPublicBotMessage:
@@ -1564,13 +1612,12 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 
 		case W_OnSetConfig:
 			if (!w_unpack(params, "sssssl", &s0, &s1, &s2, &s3, &s4, &n0)) {
-				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name,
+					w_HookName(func), w_packprint(params));
 				break;
 			}
-
 			args = Py_BuildValue("(zzzzzl)", s0, s1, s2, s3, s4, n0);
 			break;
-
 		default:
 			break;
 	}
@@ -1679,9 +1726,42 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 		}
 		Py_DECREF(pValue);
 	} else {
-		log("PY: [%d:%s] Call (%s): failed\n", id, name, w_HookName(func));
-		PyErr_Print();
-		fflush(stdout);
+		if (func == W_OnTimer && PyErr_Occurred()) {
+			// OnTimer was changed on September 27, 2015 from no arguments to one argument.
+			// We handle it here, so that logs aren't flooded with errors and old scripts keep working.
+			PyObject *exc, *val, *trace, *str;
+			PyErr_Fetch(&exc, &val, &trace);
+
+			if (exc != NULL) PyErr_NormalizeException(&exc, &val, &trace);
+			if (exc != NULL && PyErr_GivenExceptionMatches(exc, PyExc_TypeError)) {
+				char *error = NULL;
+				const char *use_zero = "OnTimer() takes no arguments";
+				const char *use_one = "OnTimer() takes exactly 1 argument";
+				Py_INCREF(val);
+				str = PyObject_Str(val);
+				if (str != NULL && PyString_Check(str) && PyString_GET_SIZE(str) != 0)
+					error = PyString_AsString(str);
+
+				if (!script->use_old_ontimer && error && !strncmp(error, use_zero, strlen(use_zero))) {
+					script->use_old_ontimer = true;
+					log("PY: [%d:%s] %s didn't expect an argument; we'll call it without it next time\n",
+						id, name, w_HookName(func));
+					Py_DECREF(val);
+					PyErr_Clear();
+				} else if (script->use_old_ontimer && error && !strncmp(error, use_one, strlen(use_one))) {
+					script->use_old_ontimer = false;
+					log("PY: [%d:%s] %s expected an argument; we'll call it with one next time\n",
+						id, name, w_HookName(func));
+					Py_DECREF(val);
+					PyErr_Clear();
+				}
+			}
+		}
+		if (PyErr_Occurred()) {
+			log("PY: [%d:%s] Call (%s): failed\n", id, name, w_HookName(func));
+			PyErr_Print();
+			fflush(stdout);
+		}
 	}
 	if (!res) res = w_pack("l", (long)1);
 

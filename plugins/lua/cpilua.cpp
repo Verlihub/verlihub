@@ -110,12 +110,16 @@ void cpiLua::OnLoad(cServerDC *serv)
 	if (level && IsNumber(level))
 		this->log_level = atoi(level);
 
+	if (level) free((void *)level);
+
 	def.str("");
 	def << this->err_class;
 	const char *eclass = GetConfig("pi_lua", "err_class", def.str().c_str()); // get error class
 
 	if (eclass && IsNumber(eclass))
 		this->err_class = atoi(eclass);
+
+	if (eclass) free((void *)eclass);
 
 	AutoLoad();
 }

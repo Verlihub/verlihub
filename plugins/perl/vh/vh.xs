@@ -166,6 +166,7 @@ PPCODE:
 		XSRETURN_UNDEF;
 	}
 	XPUSHs(sv_2mortal(newSVpv(val, strlen(val))));
+	free((void *)val);
 
 int
 GetUsersCount()

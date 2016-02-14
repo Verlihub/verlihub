@@ -2516,6 +2516,12 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 
+					#ifndef WITHOUT_PLUGINS
+						string empty = "";
+						string cmd_name = "_hub_security_change";
+						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &empty, &empty);
+					#endif
+
 				} else if (svar == "opchat_name") {
 					if (val_new == mC.hub_security) { // dont allow equal to hub security nick
 						ci->ConvertFrom(val_old);
@@ -2550,6 +2556,12 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						delete mOpChat;
 						mOpChat = NULL;
 					}
+
+					#ifndef WITHOUT_PLUGINS
+						string empty = "";
+						string cmd_name = "_opchat_name_change";
+						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &empty, &empty);
+					#endif
 
 				} else if (svar == "hub_security_desc") {
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share);
@@ -2612,6 +2624,8 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 const char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 {
+	if (def) def = strdup(def); // the caller will free non-null values returned by GetConfig!
+
 	if (!conf || !var)
 		return def;
 
@@ -2623,7 +2637,7 @@ const char* cServerDC::GetConfig(const char *conf, const char *var, const char *
 
 		if (ci) {
 			ci->ConvertTo(val);
-			return val.c_str();
+			return strdup(val.c_str());
 		} else {
 			if (ErrLog(1))
 				LogStream() << "Undefined GetConfig variable: " << conf << "." << var << endl;
@@ -2645,7 +2659,7 @@ const char* cServerDC::GetConfig(const char *conf, const char *var, const char *
 		ci = NULL;
 
 		if (load)
-			return val.c_str();
+			return strdup(val.c_str());
 	}
 
 	return def;

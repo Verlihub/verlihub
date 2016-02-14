@@ -441,13 +441,13 @@ bool SetConfig(const char *conf, const char *var, const char *val)
 const char* GetConfig(const char *conf, const char *var, const char *def)
 {
 	if (!conf || !var)
-		return def;
+		return (def ? strdup(def) : NULL);
 
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
 		cerr << "Server not found" << endl;
-		return def;
+		return (def ? strdup(def) : NULL);
 	}
 
 	return serv->GetConfig(conf, var, def);

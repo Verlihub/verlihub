@@ -1621,6 +1621,7 @@ int _GetConfig(lua_State *L)
 
 	lua_pushboolean(L, 1);
 	lua_pushstring(L, val);
+	free((void *)val);
 	return 2;
 }
 
