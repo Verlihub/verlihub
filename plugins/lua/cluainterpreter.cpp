@@ -132,8 +132,17 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("SetTopic", &_SetTopic);
 	RegisterFunction("ScriptCommand", &_ScriptCommand);
 	RegisterFunction("ScriptQuery", &_ScriptQuery);
+	cServerDC *serv = cServerDC::sCurrentServer;
 
-	lua_setglobal(mL, "VH");
+	if (serv) {
+		VHPushString("HubSec", serv->mC.hub_security.c_str());
+		VHPushString("OpChat", serv->mC.opchat_name.c_str());
+		VHPushString("HubVer", HUB_VERSION_VERS);
+		VHPushString("PlugVer", LUA_PI_VERSION);
+		VHPushString("ScriptName", mScriptName.c_str());
+	}
+
+	lua_setglobal(mL, VH_TABLE_NAME);
 	int status = luaL_dofile(mL, (char*)mScriptName.c_str());
 
 	if (status) {
@@ -142,22 +151,22 @@ bool cLuaInterpreter::Init()
 		return false;
 	}
 
-	lua_pushstring(mL, LUA_VERSION);
+	lua_pushstring(mL, LUA_PI_VERSION);
 	lua_setglobal(mL, "_PLUGINVERSION");
 	lua_pushstring(mL, HUB_VERSION_VERS);
 	lua_setglobal(mL, "_HUBVERSION");
 	lua_pushstring(mL, (char*)mScriptName.c_str());
 	lua_setglobal(mL, "_SCRIPTFILE");
-
 	const char *path = mScriptName.c_str();
+
 	for (int i = strlen(path) - 2; i >= 0; i--) {
-		if (path[i] == '/' || path[i] == '\\') {
+		if ((path[i] == '/') || (path[i] == '\\')) {
 			path = &path[i + 1];
 			break;
 		}
 	}
-	// These two globals are to be set by the script, but should have sane defaults.
-	lua_pushstring(mL, (char*)path);
+
+	lua_pushstring(mL, (char*)path); // these two globals are to be set by the script, but should have sane defaults
 	lua_setglobal(mL, "_SCRIPTNAME");
 	lua_pushstring(mL, (char*)"0.0.0");
 	lua_setglobal(mL, "_SCRIPTVERSION");
@@ -200,11 +209,29 @@ void cLuaInterpreter::ReportLuaError(const char *error)
 	}
 }
 
-void cLuaInterpreter::RegisterFunction(const char *fncname, int (*fncptr)(lua_State*))
+void cLuaInterpreter::RegisterFunction(const char *func, int (*ptr)(lua_State*))
 {
-	lua_pushstring(mL, fncname);
-	lua_pushcfunction(mL, fncptr);
+	lua_pushstring(mL, func);
+	lua_pushcfunction(mL, ptr);
 	lua_rawset(mL, -3);
+}
+
+void cLuaInterpreter::VHPushString(const char *name, const char *val, bool update)
+{
+	int pos = -3;
+
+	if (update)
+		lua_getglobal(mL, VH_TABLE_NAME);
+	else
+		pos = lua_gettop(mL);
+
+	lua_pushlstring(mL, name, strlen(name));
+	lua_pushstring(mL, val);
+
+	if (update)
+		lua_settable(mL, pos);
+	else
+		lua_rawset(mL, pos);
 }
 
 bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn)

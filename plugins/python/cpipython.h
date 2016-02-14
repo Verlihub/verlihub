@@ -87,6 +87,7 @@ public:
 	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser *, std::string *, long);
 	virtual bool OnNewBan(nTables::cBan *);
+	virtual bool OnSetConfig(cUser *user, std::string *conf, std::string *var, std::string *val_new, std::string *val_old, long val_type);
 
 	// Common code for OnParsedMsgMyINFO and OnFirstMyINFO:
 	bool OnParsedMsgMyINFO__(nSocket::cConnDC *, nProtocol::cMessageDC *, int, const char *);
@@ -95,8 +96,8 @@ public:
 	static const char *GetName(const char *path);
 	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, 
 		const char **speed, const char **mail, const char **size);
-	const char *GetConf(const char *conf, const char *var);
-	bool SetConf(const char *conf, const char *var, const char *val);
+	//const char *GetConf(const char *conf, const char *var);
+	//bool SetConf(const char *conf, const char *var, const char *val);
 	w_Targs *SQL(int id, w_Targs *args);
 	void LogLevel(int);
 	bool IsNumber(const char *s);

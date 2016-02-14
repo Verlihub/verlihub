@@ -37,26 +37,33 @@ table containing hub's setup variables that used to be in config file
 class cSetupList: public cConfMySQL
 {
 public:
-	/**
+	/*
 		a structure representing setup data (setup-file, varname and var value)
 	*/
 	class cSetup
 	{
-	public:
-		cSetup(){};
-		cSetup(string const & file, string const &var,string const &val):mFile(file),mVarName(var),mVarValue(val){}
-		string mFile;
-		string mVarName;
-		string mVarValue;
+		public:
+			cSetup()
+			{};
+
+			cSetup(const string &file, const string &var, const string &val):
+				mFile(file),
+				mVarName(var),
+				mVarValue(val)
+			{}
+
+			string mFile;
+			string mVarName;
+			string mVarValue;
 	};
+
 	cSetupList(nMySQL::cMySQL &mysql);
 	~cSetupList();
-	void LoadFileTo(cConfigBaseBase *, const char*);
-	void SaveFileTo(cConfigBaseBase *, const char*);
+	void LoadFileTo(cConfigBaseBase *, const char *);
+	void SaveFileTo(cConfigBaseBase *, const char *);
 	void OutputFile(const string &, ostream &os);
 	bool SaveItem(const char *InFile, cConfigItemBase *);
 	bool LoadItem(const char *FromFile, cConfigItemBase *);
-	unsigned int ReplaceNickChars(const string &src, string &dst);
 private:
 	cSetup mModel;
 };

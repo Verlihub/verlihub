@@ -151,29 +151,21 @@ SendDataToUser(data, nick)
 
 bool
 SetConfig(configname, variable, value)
-	char *	configname
-	char *	variable
-	char *	value
+	const char *	configname
+	const char *	variable
+	const char *	value
 
-char *
+const char *
 GetConfig(configname, variable)
-	char *	configname
-	char *	variable
+	const char *	configname
+	const char *	variable
 PPCODE:
-	char * val = new char[64];
-	int size = GetConfig(configname, variable, val, 64);
-	if (size<0) {
+	const char * val = GetConfig(configname, variable);
+	if (!val) {
 		croak("Error calling GetConfig");
-		delete [] val;
 		XSRETURN_UNDEF;
 	}
-	if(size >= 63) {
-		delete [] val;
-		val = new char[size+1];
-		size = GetConfig(configname, variable, val, size+1);
-	}
-	XPUSHs(sv_2mortal(newSVpv(val, size)));
-	delete [] val;
+	XPUSHs(sv_2mortal(newSVpv(val, strlen(val))));
 
 int
 GetUsersCount()

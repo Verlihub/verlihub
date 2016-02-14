@@ -1570,87 +1570,58 @@ int _KickRedirUser(lua_State *L)
 
 int _SetConfig(lua_State *L)
 {
-	string config_name, var, val;
-
-	if (lua_gettop(L) == 4) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		config_name = (char*)lua_tostring(L, 2);
-
-		if (!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		var = (char*)lua_tostring(L, 3);
-
-		if (!lua_isstring(L, 4)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		val = (char*)lua_tostring(L, 4);
-
-		if (!SetConfig(config_name.c_str(), var.c_str(), val.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
+	if (lua_gettop(L) < 4) {
 		luaL_error(L, "Error calling VH:SetConfig, expected 3 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string conf = (char*)lua_tostring(L, 2);
+	string var = (char*)lua_tostring(L, 3);
+	string val = (char*)lua_tostring(L, 4);
+
+	if (!SetConfig(conf.c_str(), var.c_str(), val.c_str())) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
-	return 1;
+	return 2;
 }
 
 int _GetConfig(lua_State *L)
 {
-	char *val = new char[64];
-	string config_name, var;
-	int size;
-
-	if(lua_gettop(L) == 3) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			delete [] val;
-			return 2;
-		}
-		config_name = (char *)lua_tostring(L, 2);
-		if(!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			delete [] val;
-			return 2;
-		}
-		var = (char *)lua_tostring(L, 3);
-		size = GetConfig((char *)config_name.c_str(), (char *)var.c_str(), val, 64);
-		if(size < 0) {
-			luaerror(L, "Error calling GetConfig API");
-			delete [] val;
-			return 2;
-		}
-		if(size >= 63) {
-			delete [] val;
-			val = new char[size+1];
-			GetConfig((char *)config_name.c_str(), (char *)var.c_str(), val, size+1);
-		}
-		lua_pushboolean(L, 1);
-		lua_pushstring(L, val);
-		delete [] val;
-		return 2;
-	} else {
-		luaL_error(L, "Error calling VH:GetConfig; expected 2 argument but got %d", lua_gettop(L) - 1);
+	if (lua_gettop(L) < 3) {
+		luaL_error(L, "Error calling VH:GetConfig, expected 2 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
-		delete [] val;
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string conf = (char*)lua_tostring(L, 2);
+	string var = (char*)lua_tostring(L, 3);
+	const char *val = GetConfig(conf.c_str(), var.c_str());
+
+	if (!val) {
+		luaerror(L, "Error calling GetConfig API");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, val);
+	return 2;
 }
 
 int _GetLuaBots(lua_State *L)
@@ -2646,9 +2617,9 @@ int _SetTopic(lua_State *L)
 		topic = (char*)lua_tostring(L, 2);
 	}
 
-	string message;
-	cDCProto::Create_HubName(message, serv->mC.hub_name, topic);
-	serv->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
+	string omsg;
+	cDCProto::Create_HubName(omsg, serv->mC.hub_name, topic);
+	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 	SetConfig("config", "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);
 	return 1;

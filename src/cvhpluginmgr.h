@@ -361,6 +361,44 @@ template <class Type1, class Type2, class Type3, class Type4, class Type5> class
 		}
 };
 
+template <class Type1, class Type2, class Type3, class Type4, class Type5, class Type6> class tVHCBL_6Types: public cVHCBL_Base
+{
+	public:
+		typedef bool (cVHPlugin::*tpfX6TypesFunc)(Type1, Type2, Type3, Type4, Type5, Type6);
+	protected:
+		tpfX6TypesFunc mX6TFunc;
+		Type1 mData1;
+		Type2 mData2;
+		Type3 mData3;
+		Type4 mData4;
+		Type5 mData5;
+		Type6 mData6;
+	public:
+		tVHCBL_6Types(cVHPluginMgr *mgr, const char *id, tpfX6TypesFunc pFunc):
+			cVHCBL_Base(mgr, id),
+			mX6TFunc(pFunc)
+		{}
+
+		virtual ~tVHCBL_6Types()
+		{}
+
+		virtual bool CallOne(cVHPlugin *pi)
+		{
+			return (pi->*mX6TFunc)(mData1, mData2, mData3, mData4, mData5, mData6);
+		}
+
+		virtual bool CallAll(Type1 par1, Type2 par2, Type3 par3, Type4 par4, Type5 par5, Type6 par6)
+		{
+			mData1 = par1;
+			mData2 = par2;
+			mData3 = par3;
+			mData4 = par4;
+			mData5 = par5;
+			mData6 = par6;
+			return this->cCallBackList::CallAll();
+		}
+};
+
 /*
 * \brief Verlihub CallBackList with a single connection parameter
 */
@@ -387,12 +425,13 @@ class cVHCBL_Connection: public cVHCBL_Base
 		}
 };
 
+typedef tVHCBL_6Types<cUser*, string*, string*, string*, string*, int> cVHCBL_UsrStrStrStrStrInt;
+typedef tVHCBL_X5Types<string*, string*, string*, string*, ScriptResponses*> cVHCBL_StrStrStrStrResponses;
 typedef tVHCBL_4Types<nSocket::cConnDC, string, int, int> cVHCBL_ConnTextIntInt;
 typedef tVHCBL_R4Types<cUser, string, int, int> cVHCBL_UsrStrIntInt;
 typedef tVHCBL_R4Types<cUser, string, string, string> cVHCBL_UsrStrStrStr;
 typedef tVHCBL_X4Types<string*, string*, string*, string*> cVHCBL_StrStrStrStr;
 typedef tVHCBL_X4Types<string*, string*, int, int> cVHCBL_StrStrIntInt;
-typedef tVHCBL_X5Types<string*, string*, string*, string*, ScriptResponses*> cVHCBL_StrStrStrStrResponses;
 typedef tVHCBL_3Types<cUser*, cUser*, string*> cVHCBL_UsrUsrStr;
 typedef tVHCBL_3Types<string, string, string> cVHCBL_StrStrStr;
 typedef tVHCBL_R3Types<cUser, string, int> cVHCBL_UsrStrInt;

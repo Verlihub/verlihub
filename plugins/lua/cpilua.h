@@ -79,6 +79,7 @@ public:
 	virtual bool OnUpdateClass(cUser *, string, int, int);
 	virtual bool OnNewBan(cUser *, cBan *);
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
+	virtual bool OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type);
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script);
 	virtual bool OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
@@ -93,8 +94,6 @@ public:
 	unsigned int Size() { return mLua.size(); }
 	void SetLogLevel(int level);
 	void SetErrClass(int eclass);
-	const char* GetConf(const char *conf, const char *var, const char *def = NULL);
-	bool SetConf(const char *conf, const char *var, const char *val);
 	bool IsNumber(const char *num);
 
 	void Empty()

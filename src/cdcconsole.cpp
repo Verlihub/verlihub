@@ -451,7 +451,7 @@ bool cDCConsole::cfGetConfig::operator()()
 	} else
 		mS->mSetupList.OutputFile(file.c_str(), lst);
 
-	if (lst.str() == "")
+	if (lst.str().empty())
 		os << autosprintf(_("Configuration file %s is empty."), file.c_str());
 	else
 		os << autosprintf(_("Configuration file %s"), file.c_str()) << ":\r\n\r\n" << lst.str();
@@ -800,38 +800,50 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 
 int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 {
+	if (!conn || !conn->mpUser)
+		return 0;
+
+	if (conn->mpUser->mClass < mOwner->mC.topic_mod_class) {
+		mOwner->DCPublicHS(_("You have no rights to change topic."), conn);
+		return 1;
+	}
+
+	string topic;
+	getline(cmd_line, topic);
 	ostringstream os;
-	string omsg, topic;
-	getline(cmd_line,topic);
-	if(conn->mpUser->mClass < mOwner->mC.topic_mod_class) {
-		mOwner->DCPublicHS(_("You do not have permissions to change the topic."),conn);
-		return 1;
-	}
-	if(topic[0] == ' ')
+
+	if (topic.size() && (topic[0] == ' '))
 		topic = topic.substr(1);
-	if(topic.length() > 255) {
-		os << autosprintf(_("Topic must not exceed 255 characters, your topic is %d characters."), (int)topic.length());
-		mOwner->DCPublicHS(os.str().data(),conn);
+
+	if (topic.size() > 255) {
+		os << autosprintf(_("Topic must not exceed 255 characters, your topic is %d characters."), int(topic.size()));
+		mOwner->DCPublicHS(os.str(), conn);
 		return 1;
 	}
 
-	mOwner->mC.hub_topic = topic;
-	// Save topic
-	cConfigItemBase *ci = mOwner->mC["hub_topic"];
-	if(ci) {
-		ci->ConvertFrom(topic);
-		mOwner->mSetupList.SaveItem(mOwner->mDBConf.config_name.c_str(), ci);
+	string file(mOwner->mDBConf.config_name), var("hub_topic"), val_new, val_old;
+	int res = mOwner->SetConfig(file.c_str(), var.c_str(), topic.c_str(), val_new, val_old, conn->mpUser);
+
+	if (res == 0) {
+		mOwner->DCPublicHS(_("Your action was prevented by plugin."), conn);
+		return 1;
 	}
 
-	cDCProto::Create_HubName(omsg, mOwner->mC.hub_name, topic);
-	mOwner->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
-	if (topic.length())
-		os << autosprintf(_("%s changed topic to: %s"), conn->mpUser->mNick.c_str(), topic.c_str());
-	else
-		os << autosprintf(_("%s removed topic."), conn->mpUser->mNick.c_str());
+	if (res == 1) {
+		string omsg;
+		cDCProto::Create_HubName(omsg, mOwner->mC.hub_name, topic);
+		mOwner->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 
-	mOwner->DCPublicHSToAll(os.str(), mOwner->mC.delayed_chat);
-	return 1;
+		if (topic.size())
+			os << autosprintf(_("%s changed topic to: %s"), conn->mpUser->mNick.c_str(), topic.c_str());
+		else
+			os << autosprintf(_("%s removed topic."), conn->mpUser->mNick.c_str());
+
+		mOwner->DCPublicHSToAll(os.str(), mOwner->mC.delayed_chat);
+		return 1;
+	}
+
+	return 0;
 }
 
 int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
@@ -1760,13 +1772,15 @@ bool cDCConsole::cfTrigger::operator()()
 
 bool cDCConsole::cfSetVar::operator()()
 {
+	if (!mConn || !mConn->mpUser)
+		return false;
+
 	if (mConn->mpUser->mClass < eUC_ADMIN) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	string file(mS->mDBConf.config_name), var, val, fake_val;
-	bool found = true, delci = false;
+	string file(mS->mDBConf.config_name), var, val, val_new, val_old;
 
 	if (mParRex->PartFound(2)) // [file] variable value style
 		mParRex->Extract(2, mParStr, file);
@@ -1780,47 +1794,25 @@ bool cDCConsole::cfSetVar::operator()()
 	}
 
 	mParRex->Extract(4, mParStr, val);
-	cConfigItemBase *ci = NULL;
+	int res = mS->SetConfig(file.c_str(), var.c_str(), val.c_str(), val_new, val_old, mConn->mpUser);
 
-	if (file == mS->mDBConf.config_name) {
-		ci = mS->mC[var];
-
-		if (!ci) {
+	switch (res) {
+		case -1:
 			(*mOS) << autosprintf(_("Undefined configuration variable: %s.%s"), file.c_str(), var.c_str());
-			return false;
-		}
-	} else {
-		delci = true;
-		ci = new cConfigItemBaseString(fake_val, var);
-		found = mS->mSetupList.LoadItem(file.c_str(), ci);
-	}
-
-	if (ci) {
-		if (found) {
-			ostringstream oldValue;
-			oldValue << (*ci);
-			ci->ConvertFrom(val);
-			ostringstream newValue;
-			newValue << (*ci);
-			(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), file.c_str(), var.c_str(), oldValue.str().c_str(), newValue.str().c_str());
-			mS->mSetupList.SaveItem(file.c_str(), ci);
-		} else {
-			(*mOS) << autosprintf(_("Undefined configuration variable: %s.%s"), file.c_str(), var.c_str());
-		}
-
-		if (delci)
-			delete ci;
-
-		ci = NULL;
-
-		if (!found)
+			return true;
+		case 0:
+			(*mOS) << _("Your action was prevented by plugin.");
+			return true;
+		case 1:
+			(*mOS) << autosprintf(_("Updated configuration %s.%s: %s -> %s"), file.c_str(), var.c_str(), val_old.c_str(), val_new.c_str());
+		default:
 			return false;
 	}
 
 	struct rlimit userLimit;
 
 	if (!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total) // get maximum file descriptor number
-		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, (int)userLimit.rlim_cur);
+		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, int(userLimit.rlim_cur));
 
 	return true;
 }

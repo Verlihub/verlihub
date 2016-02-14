@@ -70,7 +70,7 @@ cpiPython::~cpiPython()
 {
 	ostringstream o;
 	o << log_level;
-	SetConf("pi_python", "log_level", o.str().c_str());
+	SetConfig("pi_python", "log_level", o.str().c_str());
 	this->Empty();
 	if (lib_end) (*lib_end)();
 	if (lib_handle) dlclose(lib_handle);
@@ -172,7 +172,9 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_name_and_version]   = &_name_and_version;
 	callbacklist[W_StopHub]            = &_StopHub;
 
-	const char *level = GetConf("pi_python", "log_level");
+	ostringstream o;
+	o << log_level;
+	const char *level = GetConfig("pi_python", "log_level", o.str().c_str());
 	if (level && strlen(level) > 0) log_level = char2int(level[0]);
 
 	if (!lib_begin(callbacklist)) {
@@ -226,6 +228,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnTimer");
 	RegisterCallBack("VH_OnNewReg");
 	RegisterCallBack("VH_OnNewBan");
+	RegisterCallBack("VH_OnSetConfig");
 	return true;
 }
 
@@ -383,7 +386,8 @@ w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 	return lib_pack("lllp", (long)1, (long)rows, (long)cols, (void *)res);
 }
 
-const char *cpiPython::GetConf(const char *conf, const char *var)
+/*
+const char *cpiPython::GetConf(const char *conf, const char *var) // why is script_api version so bad? also here is bug with "config", server->mDBConf.config_name can have different name
 {
 	if (!conf || !var) {
 		log2("PY: GetConf   wrong parameters\n");
@@ -427,8 +431,10 @@ const char *cpiPython::GetConf(const char *conf, const char *var)
 	free(list);
 	return result;
 }
+*/
 
-bool cpiPython::SetConf(const char *conf, const char *var, const char *val)
+/*
+bool cpiPython::SetConf(const char *conf, const char *var, const char *val) // why is script_api version so bad? also here is bug with "config", server->mDBConf.config_name can have different name
 {
 	if (!conf || !var || !val) {
 		log2("PY: SetConf: wrong parameters\n");
@@ -487,6 +493,7 @@ bool cpiPython::SetConf(const char *conf, const char *var, const char *val)
 	if (!res) return false;
 	return true;
 }
+*/
 
 void cpiPython::LogLevel(int level)
 {
@@ -494,7 +501,7 @@ void cpiPython::LogLevel(int level)
 	log_level = level;
 	ostringstream o;
 	o << log_level;
-	SetConf("pi_python", "log_level", o.str().c_str());
+	SetConfig("pi_python", "log_level", o.str().c_str());
 	log("PY: log_level changed: %d --> %d\n", old, (int)log_level);
 	if (lib_loglevel) lib_loglevel(log_level);
 }
@@ -1092,9 +1099,17 @@ bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
 	return true;
 }
 
+bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, long val_type)
+{
+	if (user && conf && var && val_new && val_old) {
+		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), val_new->c_str(), val_old->c_str(), val_type);
+		return CallAll(W_OnSetConfig, args);
+	}
+
+	return true;
+}
+
 };  // namespace nPythonPlugin
-
-
 
 using namespace nPythonPlugin;
 
@@ -1176,8 +1191,15 @@ w_Targs *_pm(int id, w_Targs *args)
 w_Targs *_SendToOpChat(int id, w_Targs *args)
 {
 	char *data;
-	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &data) || !data)
+		return NULL;
+
 	string msg(data);
+
+	if (!cpiPython::me->server || !cpiPython::me->server->mOpChat)
+		return NULL;
+
 	cpiPython::me->server->mOpChat->SendPMToAll(msg, NULL, true);
 	return w_ret1;
 }
@@ -1638,12 +1660,7 @@ w_Targs *_SetConfig(int id, w_Targs *args)
 	char *conf, *var, *val;
 	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &val)) return NULL;
 	if (!conf || !var || !val) return NULL;
-	cpiPython *pi = cpiPython::me;
-	if (!pi) {
-		log1("PY: GetInterpreter: cannot find any interpreter with given id: %d\n", id);
-		return NULL;
-	}
-	if (pi->SetConf(conf, var, val)) w_ret1;
+	if (SetConfig(conf, var, val)) w_ret1;
 	return NULL;
 }
 
@@ -1652,14 +1669,16 @@ w_Targs *_GetConfig(int id, w_Targs *args)
 	char *conf, *var;
 	if (!cpiPython::lib_unpack(args, "ss", &conf, &var)) return NULL;
 	if (!conf || !var) return NULL;
-	return cpiPython::lib_pack("s", cpiPython::me->GetConf(conf, var));
+	const char *val = GetConfig(conf, var);
+	if (!val) return NULL;
+	return cpiPython::lib_pack("s", val);
 }
 
 long is_robot_nick_bad(const char *nick)
 {
 	// Returns: 0 = OK, 1 = already exists, 2 = empty, 3 = bad character, 4 = reserved nick.
 	if (!nick || !strlen(nick)) return eBOT_WITHOUT_NICK;
-	string badchars("\0$|<> "), s_nick(nick);
+	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
 	if (s_nick.find_first_of(badchars) != s_nick.npos) return eBOT_BAD_CHARS;
 	cServerDC *server = cpiPython::me->server;
 	if ((s_nick == server->mC.hub_security) || (s_nick == server->mC.opchat_name))
