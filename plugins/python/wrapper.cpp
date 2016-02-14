@@ -817,7 +817,7 @@ static PyObject *__GetConfig(PyObject *self, PyObject *args)
 {
 	// Arguments: conf, var
 	char *res;
-	if (Call(W_GetConfig, args, "ss", "s", &res)) {
+	if (Call(W_GetConfig, args, "ss|s", "s", &res)) {
 		PyObject *p = Py_BuildValue("s", res);
 		freee(res);
 		return p;

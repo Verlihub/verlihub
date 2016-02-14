@@ -1676,10 +1676,10 @@ w_Targs *_SetConfig(int id, w_Targs *args)
 
 w_Targs *_GetConfig(int id, w_Targs *args)
 {
-	char *conf, *var;
-	if (!cpiPython::lib_unpack(args, "ss", &conf, &var)) return NULL;
+	char *conf, *var, *def_val;
+	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &def_val)) return NULL;
 	if (!conf || !var) return NULL;
-	const char *val = GetConfig(conf, var);
+	const char *val = GetConfig(conf, var, def_val);
 	if (!val) return NULL;
 	return cpiPython::lib_pack("s", val);
 }
