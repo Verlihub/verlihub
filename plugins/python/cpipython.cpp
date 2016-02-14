@@ -176,6 +176,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	o << log_level;
 	const char *level = GetConfig("pi_python", "log_level", o.str().c_str());
 	if (level && strlen(level) > 0) log_level = char2int(level[0]);
+	freee(level);
 
 	if (!lib_begin(callbacklist)) {
 		log("PY: cpiPython::OnLoad   Initiating vh_python_wrapper failed!\n");
@@ -996,6 +997,15 @@ bool cpiPython::OnHubCommand(cConnDC *conn, string *command, int is_op_cmd, int 
 bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	if (cmd && data && plug && script) {
+		if (plug->empty() && script->empty()) {
+			if (!cmd->compare("_hub_security_change")) {
+				cpiPython::botname = *data;
+				log("PY: botname was updated to: %s\n", cpiPython::botname.c_str());
+			} else if (!cmd->compare("_opchat_name_change")) {
+				cpiPython::opchatname = *data;
+				log("PY: opchatname was updated to: %s\n", cpiPython::opchatname.c_str());
+			}
+		}
 		w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), plug->c_str(), script->c_str());
 		return CallAll(W_OnScriptCommand, args);
 	}
@@ -1102,10 +1112,10 @@ bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
 bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, long val_type)
 {
 	if (user && conf && var && val_new && val_old) {
-		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), val_new->c_str(), val_old->c_str(), val_type);
+		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), 
+			val_new->c_str(), val_old->c_str(), val_type);
 		return CallAll(W_OnSetConfig, args);
 	}
-
 	return true;
 }
 

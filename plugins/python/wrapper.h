@@ -84,7 +84,7 @@ enum {
 	W_OnTimer,
 	W_OnNewReg,
 	W_OnNewBan,
-	W_OnSetConfig
+	W_OnSetConfig,
 };
 
 // MAX_HOOKS must be more than the number of elements in above enum
@@ -143,7 +143,7 @@ enum {
 	W_classmc,
 	W_pm,
 	W_name_and_version,
-	W_StopHub
+	W_StopHub,
 };
 
 // MAX_CALLBACKS must be more than the number of elements in above enum
@@ -191,6 +191,8 @@ typedef struct {
 	char          *hooks;
 	const char    *botname;
 	const char    *opchatname;
+	bool           use_old_ontimer;
+	const char    *config_name;
 } w_TScript;
 
 // the following functions are all you need to use in the plugin that loads this wrapper
