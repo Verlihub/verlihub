@@ -187,7 +187,11 @@ bool cpiLua::AutoLoad()
 		return false;
 	}
 
-	string pathname, filename;
+	string pathname, filename, config("config");
+
+	if (server)
+		config = server->mDBConf.config_name;
+
 	struct dirent *dent = NULL;
 
 	while (NULL != (dent = readdir(dir))) {
@@ -195,7 +199,7 @@ bool cpiLua::AutoLoad()
 
 		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
 			pathname = mScriptDir + filename;
-			cLuaInterpreter *ip = new cLuaInterpreter(pathname);
+			cLuaInterpreter *ip = new cLuaInterpreter(config, pathname);
 
 			if (ip) {
 				if (ip->Init()) {
@@ -945,7 +949,7 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 
 		bool res = CallAll("VH_OnSetConfig", args, user->mxConn);
 
-		if (res && !strcmp(conf->c_str(), server->mDBConf.config_name.c_str()) && (!strcmp(var->c_str(), "hub_security") || !strcmp(var->c_str(), "opchat_name")) && Size()) {
+		if (res && server && !strcmp(conf->c_str(), server->mDBConf.config_name.c_str()) && (!strcmp(var->c_str(), "hub_security") || !strcmp(var->c_str(), "opchat_name")) && Size()) {
 			tvLuaInterpreter::iterator it;
 
 			for (it = mLua.begin(); it != mLua.end(); ++it) {

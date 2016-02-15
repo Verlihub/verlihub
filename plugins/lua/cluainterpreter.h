@@ -43,7 +43,7 @@ namespace nVerliHub {
 class cLuaInterpreter
 {
 public:
-	cLuaInterpreter(string);
+	cLuaInterpreter(string, string);
 	~cLuaInterpreter();
 
 	bool Init();
@@ -53,6 +53,7 @@ public:
 	void VHPushString(const char *name, const char *val, bool update = false);
 	void Load();
 
+	string mConfigName;
 	string mScriptName;
 
 	struct mScriptBot {

@@ -33,7 +33,8 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nLuaPlugin {
 
-cLuaInterpreter::cLuaInterpreter(string scriptname):
+cLuaInterpreter::cLuaInterpreter(string configname, string scriptname):
+	mConfigName(configname),
 	mScriptName(scriptname)
 {
 	mL = luaL_newstate();
@@ -139,6 +140,7 @@ bool cLuaInterpreter::Init()
 		VHPushString("OpChat", serv->mC.opchat_name.c_str());
 		VHPushString("HubVer", HUB_VERSION_VERS);
 		VHPushString("PlugVer", LUA_PI_VERSION);
+		VHPushString("ConfName", mConfigName.c_str());
 		VHPushString("ScriptName", mScriptName.c_str());
 	}
 

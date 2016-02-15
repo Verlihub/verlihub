@@ -334,8 +334,9 @@ install() {
 	do
 		MYSQL_DB_NAME=$(get_db_name)
 		MYSQL_USER=$(get_db_user)
-		MYSQL_PASSWORD=$(get_db_pass)
+		MYSQL_PASSWORD="" # $(get_db_pass)
 		MYSQL_HOST=$(get_db_host)
+		# todo: add charset, locale, encoding
 		# Ask information about MySQL account 
 		$DIALOG --backtitle "MySQL settings" \
 			--form "Please insert MySQL server setting below for the hub. If the account/DB does not exist it will be created later in this setup. You can use [UP] [DOWN] to select input field " 15 65 0 \

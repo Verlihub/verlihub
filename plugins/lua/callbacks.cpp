@@ -2586,17 +2586,6 @@ int _DelRegUser(lua_State *L)
 
 int _GetTopic(lua_State *L)
 {
-	cServerDC *server = GetCurrentVerlihub();
-	if(server == NULL) {
-		luaerror(L, ERR_SERV);
-		return 2;
-	}
-	lua_pushstring(L, (char*)server->mC.hub_topic.c_str());
-	return 1;
-}
-
-int _SetTopic(lua_State *L)
-{
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -2604,23 +2593,46 @@ int _SetTopic(lua_State *L)
 		return 2;
 	}
 
-	string topic;
+	lua_pushstring(L, (char*)serv->mC.hub_topic.c_str());
+	return 1;
+}
 
-	if (lua_gettop(L) == 2) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		topic = (char*)lua_tostring(L, 2);
+int _SetTopic(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:SetTopic, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
 	}
 
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	cLuaInterpreter *li = FindLua(L);
+
+	if (!li) {
+		luaerror(L, ERR_LUA);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string topic = (char*)lua_tostring(L, 2);
 	string omsg;
 	cDCProto::Create_HubName(omsg, serv->mC.hub_name, topic);
 	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
-	SetConfig("config", "hub_topic", topic.c_str());
+	SetConfig(li->mConfigName.c_str(), "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _ScriptCommand(lua_State *L)

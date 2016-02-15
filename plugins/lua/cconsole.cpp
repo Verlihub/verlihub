@@ -70,16 +70,18 @@ int cConsole::DoCommand(const string &str, cConnDC *conn)
 	if (cmd) {
 		int id = cmd->GetID();
 
-		if ((id >= 0) && (id <= 8) && conn && conn->mpUser && (conn->mpUser->mClass < mLua->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
-			mLua->mServer->DCPublicHS(_("You have no rights to do this."), conn);
+		if ((id >= 0) && (id <= 8) && conn && conn->mpUser && this->mLua && this->mLua->mServer && (conn->mpUser->mClass < this->mLua->mServer->mC.plugin_mod_class)) { // todo: use command list size instead of constant number
+			this->mLua->mServer->DCPublicHS(_("You have no rights to do this."), conn);
 			return 1;
 		}
 	}
 
 	ostringstream os;
 
-	if (mCmdr.ParseAll(str, os, conn) >= 0)	{
-		mLua->mServer->DCPublicHS(os.str().c_str(), conn);
+	if (conn && (mCmdr.ParseAll(str, os, conn) >= 0)) {
+		if (this->mLua && this->mLua->mServer)
+			this->mLua->mServer->DCPublicHS(os.str().c_str(), conn);
+
 		return 1;
 	}
 
@@ -96,10 +98,10 @@ bool cConsole::cfVersionLuaScript::operator()()
 
 bool cConsole::cfInfoLuaScript::operator()()
 {
-	unsigned int size = 0;
+	unsigned __int64 size = 0;
 
-	if (GetPI()->Size() > 0)
-		size = lua_gc(GetPI()->mLua[0]->mL, LUA_GCCOUNT, 0);
+	for (unsigned int i = 0; i < GetPI()->Size(); i++)
+		size += lua_gc(GetPI()->mLua[i]->mL, LUA_GCCOUNT, 0);
 
 	(*mOS) << "\r\n\r\n [*] " << autosprintf(_("Hub version: %s"), HUB_VERSION_VERS) << "\r\n";
 	(*mOS) << " [*] " << autosprintf(_("Loaded scripts: %d"), GetPI()->Size()) << "\r\n";
@@ -242,7 +244,12 @@ bool cConsole::cfAddLuaScript::operator()()
 		}
 	}
 
-	cLuaInterpreter *ip = new cLuaInterpreter(scriptfile);
+	string config("config");
+
+	if (GetPI()->server)
+		config = GetPI()->server->mDBConf.config_name;
+
+	cLuaInterpreter *ip = new cLuaInterpreter(config, scriptfile);
 
 	if (!ip) {
 		(*mOS) << _("Failed to allocate new Lua interpreter.");
@@ -300,7 +307,12 @@ bool cConsole::cfReloadLuaScript::operator()()
 			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
 	}
 
-	cLuaInterpreter *ip = new cLuaInterpreter(scriptfile);
+	string config("config");
+
+	if (GetPI()->server)
+		config = GetPI()->server->mDBConf.config_name;
+
+	cLuaInterpreter *ip = new cLuaInterpreter(config, scriptfile);
 
 	if (!ip) {
 		(*mOS) << " " << _("Failed to allocate new Lua interpreter.");
