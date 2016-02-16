@@ -2491,7 +2491,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				}
 			#endif
 
-			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc")) && (val_new != val_old)) { // update bot nicks and descriptions
+			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc") || (svar == "cmd_start_op") || (svar == "cmd_start_user")) && (val_new != val_old)) { // take care of special hub configs in real time
 				string speed("\x1"), mail(""), share("0"), data;
 
 				if (svar == "hub_security") {
@@ -2517,9 +2517,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 
 					#ifndef WITHOUT_PLUGINS
-						string empty = "";
+						data.clear();
 						string cmd_name = "_hub_security_change";
-						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &empty, &empty);
+						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &data, &data);
 					#endif
 
 				} else if (svar == "opchat_name") {
@@ -2558,9 +2558,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					}
 
 					#ifndef WITHOUT_PLUGINS
-						string empty = "";
+						data.clear();
 						string cmd_name = "_opchat_name_change";
-						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &empty, &empty);
+						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &data, &data);
 					#endif
 
 				} else if (svar == "hub_security_desc") {
@@ -2575,6 +2575,12 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						mUserList.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true); // send myinfo
 						mInProgresUsers.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true);
+					}
+
+				} else if ((svar == "cmd_start_op") || (svar == "cmd_start_user")) {
+					if (val_new.empty()) { // dont allow empty
+						ci->ConvertFrom(val_old);
+						return 0;
 					}
 				}
 			}

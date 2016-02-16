@@ -58,6 +58,8 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 		if (item) {
 			if ((mModel.mVarName == "hub_security") || (mModel.mVarName == "opchat_name")) // replace bad nick chars
 				cServerDC::RepBadNickChars(mModel.mVarValue);
+			else if (((mModel.mVarName == "cmd_start_op") || (mModel.mVarName == "cmd_start_user")) && mModel.mVarValue.empty()) // dont allow empty
+				mModel.mVarValue = string(DEFAULT_COMMAND_TRIGS);
 
 			item->ConvertFrom(mModel.mVarValue);
 		}

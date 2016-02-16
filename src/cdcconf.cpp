@@ -273,8 +273,8 @@ void cDCConf::AddVars()
 	Add("bc_reply",mS.LastBCNick,mEmpty);
 	Add("plugin_mod_class", plugin_mod_class, (int)eUC_ADMIN);
 	Add("topic_mod_class", topic_mod_class, (int)eUC_CHEEF);
-	Add("cmd_start_op", cmd_start_op, string("!+/"));
-	Add("cmd_start_user", cmd_start_user, string("+!/"));
+	Add("cmd_start_op", cmd_start_op, string(DEFAULT_COMMAND_TRIGS));
+	Add("cmd_start_user", cmd_start_user, string(DEFAULT_COMMAND_TRIGS));
 	Add("dest_report_chat", dest_report_chat, false);
 	Add("dest_regme_chat", dest_regme_chat, false);
 	Add("dest_drop_chat", dest_drop_chat, false);

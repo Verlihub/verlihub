@@ -48,6 +48,7 @@
 
 #define BAD_NICK_CHARS_NMDC " $|"
 #define BAD_NICK_CHARS_OWN "<>"
+#define DEFAULT_COMMAND_TRIGS "+!/"
 
 using namespace std;
 

@@ -113,11 +113,34 @@ bool cConsole::cfGetLuaScript::operator()()
 {
 	(*mOS) << _("Loaded Lua scripts") << ":\r\n\r\n";
 	(*mOS) << "\t" << _("ID");
-	(*mOS) << "\t" << _("Script") << "\r\n";
-	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
+	(*mOS) << "\t" << _("Script");
+	(*mOS) << "\t\t\t\t\t" << _("Memory") << "\r\n";
+	(*mOS) << "\t" << string(85, '-') << "\r\n\r\n";
 
-	for (unsigned int i = 0; i < GetPI()->Size(); i++)
-		(*mOS) << "\t" << i << "\t" << GetPI()->mLua[i]->mScriptName << "\r\n";
+	for (unsigned int i = 0; i < GetPI()->Size(); i++) {
+		(*mOS) << "\t" << i;
+		(*mOS) << "\t" << GetPI()->mLua[i]->mScriptName;
+		(*mOS) << "\t";
+
+		if (GetPI()->mLua[i]->mScriptName.size() <= 8)
+			(*mOS) << "\t";
+
+		if (GetPI()->mLua[i]->mScriptName.size() <= 16)
+			(*mOS) << "\t";
+
+		if (GetPI()->mLua[i]->mScriptName.size() <= 24)
+			(*mOS) << "\t";
+
+		if (GetPI()->mLua[i]->mScriptName.size() <= 32)
+			(*mOS) << "\t";
+
+		/*
+		if (GetPI()->mLua[i]->mScriptName.size() <= 40)
+			(*mOS) << "\t";
+		*/
+
+		(*mOS) << convertByte(lua_gc(GetPI()->mLua[i]->mL, LUA_GCCOUNT, 0) * 1024) << "\r\n";
+	}
 
 	return true;
 }
