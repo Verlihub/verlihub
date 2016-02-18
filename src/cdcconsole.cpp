@@ -612,18 +612,17 @@ int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 
 int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 {
-	if (!conn->mpUser)
+	if (!conn || !conn->mpUser)
 		return 0;
 
 	ostringstream os;
-	string omsg;
 
 	os << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "\r\n\r\n";
 	os << " " << _("Authors") << "\r\n\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
 	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru\r\n";
-	os << "\tVovochka404, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
+	os << "\tVovochka, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
 	os << "\t" << _("Not forgetting other people who didn't want to be listed here.") << "\r\n\r\n";
 	os << " " << _("Translators") << "\r\n\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
@@ -631,7 +630,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
 	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n\r\n";
 	os << " " << _("Contributors") << "\r\n\r\n";
-	os << "\tIntruder, Frog, Eco-Logical, DiegoZ" << "\r\n\r\n";
+	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
 	os << " " << _("Credits") << "\r\n\r\n";
 	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
 	os << " " << _("More") << "\r\n\r\n";
@@ -639,8 +638,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Manual") << ": https://github.com/verlihub/verlihub/wiki/" << "\r\n";
 	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n";
 
-	omsg = os.str();
-	mOwner->DCPublicHS(omsg, conn);
+	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
 
