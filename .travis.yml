@@ -14,7 +14,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake -DDEFINE_DEBUG=ON
+  - cmake -DDEFINE_DEBUG=ON ..
 
 script:
   - make
