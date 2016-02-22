@@ -7,12 +7,6 @@ language: cpp
 compiler:
   - gcc
 
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "C5NqUwHWEVDMM3MfLDcGtcRjXl1l6mXxSTlbijx5RYmUGcDOlhChIPLObiE3yE62S1HCKfLvY1FKUDdzzPbJMrUZJbz2+b5uZzY3Tu0NxTCodBDq3t/7aIsCpTaqWxymiGTwStw3T2sQ7/UTpRBAQ4sX5HBxpUYMPHr6JrXKm1t7+m++Rpk1GTO8bunqNXJVoR0Bg4g2oVLEqYL7+kbSTfy0K1+YRyXnUxSGbS+hws7BuBkdVPfy3lrP2jhjFb22A26C/vBSgo66ogUUZQCd1YmqbjHJrKvZJm40YVs0xjAPZ2LTDhr/T0U3NRYZlaL1QPY4lR/MWBQxpwps1ekzc+3yvsSkeiAGgkHroImZgLW27fCX0phHhqHUrkBqfADnvBUq60wPBlkWt/2cWY9oK7U0c9BnbQ0g4EbJHaU+MyjJGl4oklGbT2bxqgpVBDel6/qIgaqcUYpnHoMlUOScDPE/26vyW71Hlnw16ew+2RI0HDYf/ELUf5Fyo2ywIQz5VHU5oiN/Ioifm77UqNsMZuoZTWdynuG/dm9kUnTuCON4R3M4pWGdBzcqttx0vu52+mBC+MLuxyLuhhuUQYkZvZqr8poLo/KBU5AdtSzEglxJ9UATsfi/DTi7InHxwh4zJviXwMZ6vunqeV6tq3umihd9k2vXJhdiqGniTTSHrKs="
-
 before_install:
   - sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev
   - sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev 
@@ -25,13 +19,4 @@ before_script:
 script:
   - make
 
-addons:
-  coverity_scan:
-    project:
-      name: "frogged/verlihub"
-      description: "Verlihub"
-    # notification_email:
-    build_command_prepend: "mkdir build; cd build; cmake -DDEFINE_DEBUG=ON .."
-    build_command: "make"
-    # branch_pattern: coverity_scan
 
