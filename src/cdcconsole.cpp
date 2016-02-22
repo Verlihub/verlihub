@@ -1803,6 +1803,7 @@ bool cDCConsole::cfSetVar::operator()()
 			return true;
 		case 1:
 			(*mOS) << autosprintf(_("Updated configuration %s.%s: %s -> %s"), file.c_str(), var.c_str(), val_old.c_str(), val_new.c_str());
+			break;
 		default:
 			return false;
 	}
