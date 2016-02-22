@@ -1,0 +1,21 @@
+sudo: required
+
+# dist: trusty
+
+language: cpp
+
+compiler:
+  - gcc
+
+before_install:
+  - sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev
+  - sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev 
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DDEFINE_DEBUG=ON
+
+script:
+  - make
+
