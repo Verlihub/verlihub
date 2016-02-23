@@ -149,11 +149,12 @@ void cAsyncSocketServer::close()
 		if (*it) {
 			mConnChooser.DelConn(*it);
 
-			if (mFactory != NULL)
+			if (mFactory != NULL) {
 				mFactory->DeleteConn(*it);
-			else
+			} else {
 				delete (*it);
 				(*it) = NULL;
+			}
 		}
 	}
 }

@@ -105,6 +105,9 @@ bool cKickList::FindKick(cKick &dest, const string &nick, const string &op, unsi
 	}
 
 	item = operator[](var);
+
+	if (!item) return false;
+
 	SetBaseTo(&dest);
 	ufEqual(os, string(" and "), true, true, false)(item);
 	os << " and `reason` is " << (why ? "not " : "") << "null and `is_drop` = " << drop;

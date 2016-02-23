@@ -1719,6 +1719,11 @@ unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 		}
 
 		u = (n * m);
+
+		// overflow protection: if n is too big assume n = 1.
+		if (n && u < (unsigned)m)
+			return (unsigned)m;
+
 	} else {
 		err << _("Please provide positive number for time unit.");
 	}

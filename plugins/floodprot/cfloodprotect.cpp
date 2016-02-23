@@ -96,6 +96,8 @@ bool cFloodprotect::CleanUp(int secs)
 
 bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 {
+	if (!conn) return true;
+
 	if (conn && conn->mpUser && conn->mpUser->mClass >= eUC_OPERATOR) return true;
 
 	unsigned long Hash = cBanList::Ip2Num(conn->AddrIP());
@@ -179,9 +181,9 @@ bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 				//os << "FLOODPROTECT: Detected action types are: " << usr->getFloodTypes();
 				//text = os.str();
 				//mS->ReportUserToOpchat(conn, text, false);
-			        usr->mActionCounter = 0;
-			        usr->mElapsedTime = cTime(0,0);
-			        return true;
+				usr->mActionCounter = 0;
+				usr->mElapsedTime = cTime(0,0);
+				return true;
 			}
 		}
 	}

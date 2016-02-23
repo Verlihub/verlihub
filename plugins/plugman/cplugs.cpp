@@ -69,7 +69,7 @@ void cPlug::OnLoad()
 
 cPlug *cPlug::FindDestPlugin() const
 {
-	return mOwner->FindPlug(mDest);
+	return mOwner ? mOwner->FindPlug(mDest) : NULL;
 }
 
 cVHPlugin *cPlug::GetDestPlugin() const

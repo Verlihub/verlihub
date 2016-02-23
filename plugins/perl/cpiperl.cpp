@@ -355,16 +355,18 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnValidateTag(cConnDC *conn , cDCTag *tag)
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnOperatorCommand(cConnDC *conn , std::string *str)
 {
-	if((conn != NULL) && (conn->mpUser != NULL) && (str != NULL))
-		if(mConsole.DoCommand(*str, conn))
+	if ((conn != NULL) && (conn->mpUser != NULL) && (str != NULL)) {
+		if (mConsole.DoCommand(*str, conn))
 			return false;
 
-	char *args[]= {		(char *)"VH_OnOperatorCommand",
-				(char *)conn->mpUser->mNick.c_str(),
-				(char *) str->c_str(),
-				NULL};
-	bool ret = mPerl.CallArgv(PERL_CALL, args);
-	return ret;
+		char *args[]= {		(char *)"VH_OnOperatorCommand",
+					(char *)conn->mpUser->mNick.c_str(),
+					(char *) str->c_str(),
+					NULL};
+		bool ret = mPerl.CallArgv(PERL_CALL, args);
+		return ret;
+	}
+	return true;
 }
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnOperatorKicks(cUser *op , cUser *user, std::string *reason)

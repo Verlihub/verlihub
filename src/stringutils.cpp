@@ -107,7 +107,7 @@ void ExpandPath(string &Path)
 		string tmp = Path;
 
 		#ifdef _WIN32
-			char * cPath = new char[35];
+			char *cPath = new char[35];
 			int size = GetCurrentDirectory(35, cPath);
 
 			if (!size) {
@@ -122,9 +122,13 @@ void ExpandPath(string &Path)
 			Path = string(cPath);
 			delete[] cPath;
 		#elif defined HAVE_BSD
-			Path = getcwd(NULL, PATH_MAX);
+			char *cPath = getcwd(NULL, PATH_MAX);
+			Path = cPath;
+			free(cPath);
 		#else
-			Path = get_current_dir_name();
+			char *cPath = get_current_dir_name();
+			Path = cPath;
+			free(cPath);
 		#endif
 
 		Path += "/" + tmp.substr(2, tmp.length());
@@ -248,12 +252,12 @@ string convertByte(__int64 byte, bool UnitSec)
 	os << fixed << lByte << " ";
 
 	if (UnitSec) {
-		if (unit > (sizeof(byteSecUnit) / sizeof(char*)))
+		if (unit >= (sizeof(byteSecUnit) / sizeof(char*)))
 			os << "X/s";
 		else
 			os << byteSecUnit[unit];
 	} else {
-		if (unit > (sizeof(byteUnit) / sizeof(char*)))
+		if (unit >= (sizeof(byteUnit) / sizeof(char*)))
 			os << "X";
 		else
 			os << byteUnit[unit];

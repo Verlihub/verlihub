@@ -2024,6 +2024,7 @@ bool cDCConsole::cfGag::operator()()
 			else
 				(*mOS) << autosprintf(_("Setting search right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
+			if (usr)
 				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
 
 			break;
@@ -2395,7 +2396,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		return false;
 	}
 
-	if ((mS->mC.classdif_reg < eUC_NORMUSER) || (mS->mC.classdif_reg > eUC_ADMIN)) {
+	if (mS->mC.classdif_reg > eUC_ADMIN) {
 		(*mOS) << autosprintf(_("Valid classdif_reg value is between %d and %d, please correct this first."), eUC_NORMUSER, eUC_ADMIN);
 		return false;
 	}

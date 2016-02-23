@@ -503,8 +503,10 @@ tSocket cAsyncConn::CreateSock(bool udp)
 			return INVALID_SOCKET;
 
 		/* Fix the address already in use error */
-		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(sockoptval_t)) == INVALID_SOCKET)
+		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(sockoptval_t)) == INVALID_SOCKET) {
+			closesocket(sock);
 			return INVALID_SOCKET;
+		}
 	} else {
 		/* Create udp socket */
 		if((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)

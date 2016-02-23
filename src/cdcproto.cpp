@@ -71,9 +71,6 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	cMessageDC *msg = (cMessageDC*)pMsg;
 	cConnDC *conn = (cConnDC*)pConn;
 
-	if (!msg || !conn)
-		return -1;
-
 	/*
 		todo
 			tMsgAct action = mS->Filter(tDCMsg(msg->mType), conn);
@@ -1528,7 +1525,10 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 				return 0;
 		#endif
 
-		((cUserRobot*)mS->mRobotList.GetUserBaseByNick(to))->ReceiveMsg(conn, msg);
+		cUserRobot *robot = (cUserRobot*)mS->mRobotList.GetUserBaseByNick(to);
+
+		if (robot) robot->ReceiveMsg(conn, msg);
+
 		return 0;
 	}
 
@@ -2567,7 +2567,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	long period = 0;
 	// calculate time
 	if(msg->ChunkString(eCH_NB_TIME).size()) {
-		mS->Str2Period(msg->ChunkString(eCH_NB_TIME),os);
+		period = mS->Str2Period(msg->ChunkString(eCH_NB_TIME),os);
 		if(!period) {
 			mS->DCPublicHS(os.str(),conn);
 			return -1;
