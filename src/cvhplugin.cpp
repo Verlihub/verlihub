@@ -105,9 +105,12 @@ cPluginUserData *cVHPlugin::GetPluginUserData( cUser * User )
 
 cPluginUserData *cVHPlugin::SetPluginUserData( cUser *User, cPluginUserData *NewData )
 {
-	if (!mUserDataTable && User && NewData) {
+	if (!User || !NewData)
+		return NULL;
+
+	if (!mUserDataTable)
 		mUserDataTable = new tHashArray<cPluginUserData*>();
-	}
+
 	tHashArray<cPluginUserData*>::tHashType Hash = (tHashArray<cPluginUserData*>::tHashType) User;
 	cPluginUserData *OldData = mUserDataTable->GetByHash(Hash);
 	mUserDataTable->SetByHash(Hash, NewData);
