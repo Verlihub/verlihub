@@ -720,7 +720,7 @@ function install()
 		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ;
 		then
 			echo_s "-- The MySQL account cannot be created. Fix the problem and run the setup again\n"
-			die;
+			exit 1;
 		fi
 	else
 		echo_s "-- The MySQL account '$MYSQL_USER' has been found\n"
