@@ -18,21 +18,34 @@
 	of the GNU General Public License.
 */
 
-#ifndef _I18N_
-#define _I18N_
 
-#ifndef USE_CUSTOM_AUTOSPRINTF
-#include <autosprintf.h>
-using gnu::autosprintf;
+#ifdef USE_CUSTOM_AUTOSPRINTF
 
-#else
-#include <string>
-std::string my_autosprintf(const char *format, ...);
-#define autosprintf my_autosprintf
-#endif
+#include "i18n.h"
+#include <stdio.h>
+#include <stdarg.h>
 
-#include <libintl.h> 
-#include <locale.h> 
-#define _(string) gettext (string)
+const size_t my_autosprintf_buffer_size = 4096;
+
+static char my_autosprintf_buffer[my_autosprintf_buffer_size] = { 0, };
+
+std::string my_autosprintf_va(const char *format, va_list ap)
+{
+	if (!format || format[0] == '\0')
+		return std::string();
+
+	int res = vsnprintf(my_autosprintf_buffer, my_autosprintf_buffer_size, format, ap);
+	return res > 0 ? std::string(my_autosprintf_buffer) : std::string();
+}
+
+std::string my_autosprintf(const char *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	std::string res = my_autosprintf_va(format, ap);
+	va_end(ap);
+	return res;
+}
+
 
 #endif
