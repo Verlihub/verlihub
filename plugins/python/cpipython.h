@@ -62,7 +62,7 @@ public:
 	virtual bool OnParsedMsgAny(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgAnyEx(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnOpChatMessage(std::string *, std::string *);
-	virtual bool OnPublicBotMessage(std::string *, std::string *, long, long);
+	virtual bool OnPublicBotMessage(std::string *, std::string *, int, int);
 	virtual bool OnUnLoad(long);
 	virtual bool OnCtmToHub(nSocket::cConnDC *, std::string *);
 	virtual bool OnParsedMsgSupports(nSocket::cConnDC *, nProtocol::cMessageDC *, string *);
@@ -85,9 +85,9 @@ public:
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
 	virtual bool OnTimer(__int64);
-	virtual bool OnNewReg(cUser *, std::string *, long);
-	virtual bool OnNewBan(nTables::cBan *);
-	virtual bool OnSetConfig(cUser *user, std::string *conf, std::string *var, std::string *val_new, std::string *val_old, long val_type);
+	virtual bool OnNewReg(cUser* User, std::string mNick, int mClass);
+	virtual bool OnNewBan(cUser *, nTables::cBan *);
+	virtual bool OnSetConfig(cUser *user, std::string *conf, std::string *var, std::string *val_new, std::string *val_old, int val_type);
 
 	// Common code for OnParsedMsgMyINFO and OnFirstMyINFO:
 	bool OnParsedMsgMyINFO__(nSocket::cConnDC *, nProtocol::cMessageDC *, int, const char *);

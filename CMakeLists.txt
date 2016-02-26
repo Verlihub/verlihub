@@ -148,15 +148,19 @@ ENDIF(NOT HAVE_GETOPT_H)
 
 #TODO: Fix creguserinfo.cpp for HAVE_LIBSSL and crypto stuff
 
+# Use cmake -DUSE_CUSTOM_AUTOSPRINTF=ON to use our own autosprintf
+OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
+IF(USE_CUSTOM_AUTOSPRINTF)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
+	MESSAGE(STATUS "Using custom internal autosprintf implementation")
+ENDIF(USE_CUSTOM_AUTOSPRINTF)
+
 # Use cmake -DDEFINE_DEBUG=ON to enable debug
 OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF)
 IF(DEFINE_DEBUG)
-	# enable gcc specific stuff
-	IF(CMAKE_COMPILER_IS_GNUCC)
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF -Wall -O3 -g")
-		SET(CMAKE_BUILD_TYPE Debug)
-		MESSAGE(STATUS "Build type is " ${CMAKE_BUILD_TYPE})
-	ENDIF(CMAKE_COMPILER_IS_GNUCC)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -g")
+	SET(CMAKE_BUILD_TYPE Debug)
+	MESSAGE(STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 ENDIF(DEFINE_DEBUG)
 
 ADD_DEFINITIONS(-DHAVE_CONFIG_H)
@@ -177,7 +181,7 @@ CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/dirsettings.h.cm" "${CMAKE_BINARY_DIR}
 # ----------------------------------------------------------------------------------------------------
 
 if(INSTALL_CMAKE_FILES)
- 	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerliHub.cmake" DESTINATION ${CMAKE_ROOT}/Modules)
+	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerliHub.cmake" DESTINATION ${CMAKE_ROOT}/Modules)
 endif()
 
 # Create uninstall configuration file and uninstall target

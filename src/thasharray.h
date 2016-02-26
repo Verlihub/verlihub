@@ -154,8 +154,9 @@ namespace nVerliHub {
 				virtual DataType Update(DataType const data, unsigned hash);
 
 				/// Iterator to iterate throught the items of the container.
-				struct iterator
+				class iterator
 				{
+				public:
 					/**
 					 * Class constructor.
 					 */
@@ -301,7 +302,7 @@ namespace nVerliHub {
 				 */
 				struct sItem
 				{
-					friend struct iterator;
+					friend class iterator;
 					/// The data of the item.
 					DataType mData;
 

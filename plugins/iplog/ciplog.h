@@ -83,6 +83,8 @@ public:
 
 	void MakeSearchQuery(const string &who, bool IsNick, int action, int limit);
 	struct sUserStruct mModel;
+private:
+	using nVerliHub::cObj::Log; // we hide this overloaded function on purpose
 };
 	}; // namespace nIPLogPlugin
 }; // namespace nVerliHub
