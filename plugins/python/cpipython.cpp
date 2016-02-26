@@ -905,7 +905,7 @@ bool cpiPython::OnOpChatMessage(string *nick, string *data)
 	return true;
 }
 
-bool cpiPython::OnPublicBotMessage(string *nick, string *data, long min_class, long max_class)
+bool cpiPython::OnPublicBotMessage(string *nick, string *data, int min_class, int max_class)
 {
 	if (nick && data) {
 		w_Targs *args = lib_pack("ssll", nick->c_str(), data->c_str(), (long)min_class, (long)max_class);
@@ -1092,14 +1092,14 @@ bool cpiPython::OnTimer(__int64 msec)
 	return CallAll(W_OnTimer, args);
 }
 
-bool cpiPython::OnNewReg(cUser *op, string *nick, long cls)  // todo: is not called
+bool cpiPython::OnNewReg(cUser *op, string nick, int cls)  // todo: is not called
 {
 	const char *opnick = (op ? op->mNick : cpiPython::botname).c_str();
-	w_Targs *args = lib_pack("ssl", opnick, nick->c_str(), (long)cls);
+	w_Targs *args = lib_pack("ssl", opnick, nick.c_str(), (long)cls);
 	return CallAll(W_OnNewReg, args);
 }
 
-bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
+bool cpiPython::OnNewBan(cUser* user, cBan *ban) // todo: is not called
 {
 	if (ban != NULL) {
 		w_Targs *args = lib_pack("ssss", ban->mNickOp.c_str(), ban->mIP.c_str(),
@@ -1109,7 +1109,7 @@ bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
 	return true;
 }
 
-bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, long val_type)
+bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
 {
 	if (user && conf && var && val_new && val_old) {
 		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), 

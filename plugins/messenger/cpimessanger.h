@@ -47,7 +47,7 @@ public:
 	virtual bool RegisterAll();
 	virtual bool OnUserCommand(nSocket::cConnDC *, string *);
 	virtual bool OnUserLogin(cUser *);
-	virtual bool OnTimer();
+	virtual bool OnTimer(__int64 msec);
 	virtual void OnLoad(nSocket::cServerDC *);
 	cConsole mConsole;
 	cMsgList * mMsgs;

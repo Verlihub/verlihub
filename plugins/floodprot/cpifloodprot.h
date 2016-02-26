@@ -40,7 +40,7 @@ public:
 	virtual ~cpiFloodprot();
 	virtual void OnLoad(cServerDC *);
 	virtual bool RegisterAll();
-	virtual bool OnTimer();
+	virtual bool OnTimer(__int64 msec);
 	virtual bool OnParsedMsgChat(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgPM(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgSearch(nSocket::cConnDC *, nProtocol::cMessageDC *);

@@ -1074,12 +1074,20 @@ bool cpiLua::OnUnLoad(long code)
 
 char* cpiLua::toString(int num)
 {
+#ifdef USE_CUSTOM_AUTOSPRINTF
+	return strdup(autosprintf("%d", num).c_str());
+#else
 	return autosprintf("%d", num);
+#endif
 }
 
 char* cpiLua::longToString(long num)
 {
+#ifdef USE_CUSTOM_AUTOSPRINTF
+	return strdup(autosprintf("%lu", num).c_str());
+#else
 	return autosprintf("%lu", num);
+#endif
 }
 
 	}; // namepsace nLuaPlugin
