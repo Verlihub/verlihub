@@ -167,6 +167,7 @@ SET(VERLIHUB_SRCS
 	cvhpluginmgr.cpp
 	cworkerthread.cpp
 	czlib.cpp
+	i18n.cpp
 	script_api.cpp
 	stdafx.cpp # ?
 	stringutils.cpp

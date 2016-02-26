@@ -18,8 +18,6 @@
 	of the GNU General Public License.
 */
 
-using namespace std;
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -35,6 +33,8 @@ using namespace std;
 #include "creguserinfo.h"
 #include "ctime.h"
 #include "i18n.h"
+
+using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;

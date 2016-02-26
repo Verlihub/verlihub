@@ -64,22 +64,22 @@ public:
 	virtual bool OnParsedMsgMyPass(cConnDC *, cMessageDC *);
 	virtual bool OnOperatorCommand(cConnDC *, std::string *);
 	virtual bool OnOperatorKicks(cUser *, cUser *, std::string *);
-	virtual bool OnOperatorDrops(cUser *, cUser *);
+	virtual bool OnOperatorDrops(cUser *, cUser *, std::string *);
 	virtual bool OnValidateTag(cConnDC *, cDCTag *);
 	virtual bool OnUserCommand(cConnDC *, std::string *);
 	virtual bool OnHubCommand(cConnDC *, std::string *, int, int);
 	virtual bool OnUserLogin(cUser *);
 	virtual bool OnUserLogout(cUser *);
 	virtual bool OnTimer(__int64);
-	virtual bool OnNewReg(cRegUserInfo *);
-	virtual bool OnNewBan(cBan *);
-	virtual bool OnUnBan(std::string, std::string, std::string);
+	virtual bool OnNewReg(cUser *, string, int);
+	virtual bool OnNewBan(cUser *, nTables::cBan *);
+	virtual bool OnUnBan(cUser *, std::string, std::string, std::string);
 	virtual bool OnParsedMsgConnectToMe(cConnDC *, cMessageDC *);
 	virtual bool OnParsedMsgRevConnectToMe(cConnDC *, cMessageDC *);
-	virtual bool OnDelReg(std::string, int);
-	virtual bool OnUpdateClass(std::string, int, int);
+	virtual bool OnDelReg(cUser *, std::string, int);
+	virtual bool OnUpdateClass(cUser *, std::string, int, int);
 	virtual bool OnHubName(std::string, std::string);
-	virtual bool OnScriptCommand(std::string, std::string, std::string, std::string);
+	virtual bool OnScriptCommand(std::string *, std::string *, std::string *, std::string *);
 
 	unsigned int Size() { return mPerl.Size(); }
 

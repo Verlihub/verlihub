@@ -108,6 +108,8 @@ template <class Type1> class tVHCBL_1Type: public cVHCBL_Base
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll; // to suppress the -Woverload-virtual warning
 };
 
 template <class Type1> class tVHCBL_R1Type: public cVHCBL_Base
@@ -126,6 +128,8 @@ template <class Type1> class tVHCBL_R1Type: public cVHCBL_Base
 			mData1 = par1;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2> class tVHCBL_2Types: public cVHCBL_Base
@@ -151,6 +155,8 @@ template <class Type1, class Type2> class tVHCBL_2Types: public cVHCBL_Base
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2> class tVHCBL_R2Types: public cVHCBL_Base
@@ -172,6 +178,8 @@ template <class Type1, class Type2> class tVHCBL_R2Types: public cVHCBL_Base
 			mData2 = par2;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3> class tVHCBL_3Types: public cVHCBL_Base
@@ -195,6 +203,8 @@ template <class Type1, class Type2, class Type3> class tVHCBL_3Types: public cVH
 			mData3 = par3;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3> class tVHCBL_R3Types: public cVHCBL_Base
@@ -222,6 +232,8 @@ template <class Type1, class Type2, class Type3> class tVHCBL_R3Types: public cV
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3> class tVHCBL_X3Types: public cVHCBL_Base
@@ -249,6 +261,8 @@ template <class Type1, class Type2, class Type3> class tVHCBL_X3Types: public cV
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_4Types: public cVHCBL_Base
@@ -278,6 +292,8 @@ template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_4Type
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_R4Types: public cVHCBL_Base
@@ -307,6 +323,8 @@ template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_R4Typ
 			else
 				return false;
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_X4Types: public cVHCBL_Base
@@ -332,6 +350,8 @@ template <class Type1, class Type2, class Type3, class Type4> class tVHCBL_X4Typ
 			mData4 = par4;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3, class Type4, class Type5> class tVHCBL_X5Types: public cVHCBL_Base
@@ -359,6 +379,8 @@ template <class Type1, class Type2, class Type3, class Type4, class Type5> class
 			mData5 = par5;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 template <class Type1, class Type2, class Type3, class Type4, class Type5, class Type6> class tVHCBL_6Types: public cVHCBL_Base
@@ -397,6 +419,8 @@ template <class Type1, class Type2, class Type3, class Type4, class Type5, class
 			mData6 = par6;
 			return this->cCallBackList::CallAll();
 		}
+        private:
+                using cVHCBL_Base::CallAll;
 };
 
 /*
@@ -423,6 +447,8 @@ class cVHCBL_Connection: public cVHCBL_Base
 			else
 				return false;
 		}
+	private:
+		using cVHCBL_Base::CallAll;
 };
 
 typedef tVHCBL_6Types<cUser*, string*, string*, string*, string*, int> cVHCBL_UsrStrStrStrStrInt;
