@@ -60,7 +60,7 @@ public:
 	friend class nVerliHub::nSocket::cServerDC;
 	friend class nProtocol::cDCProto;
 	friend class nTables::cDCBanList;
-	friend class cDCConsole;
+	friend class nVerliHub::cDCConsole;
 	friend class nVerliHub::nSocket::cConnDC;
 public:
 	unsigned int max_users_total;
