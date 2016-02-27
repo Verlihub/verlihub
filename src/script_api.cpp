@@ -21,9 +21,11 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #ifdef HAVE_LIBGEOIP
 #include "cgeoip.h"
 #endif
+
 #include <iostream>
 #include <cserverdc.h>
 #include <cban.h>
@@ -33,17 +35,18 @@
 #include "cconfigitembase.h"
 
 using namespace std;
+
 namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nEnums;
 	using namespace nMySQL;
 
-cServerDC *GetCurrentVerlihub()
+cServerDC* GetCurrentVerlihub()
 {
-	return (cServerDC *)cServerDC::sCurrentServer;
+	return (cServerDC*)cServerDC::sCurrentServer;
 }
 
-cUser *GetUser(char *nick)
+cUser* GetUser(char *nick)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -230,7 +233,25 @@ bool SendPMToAll(char *data, char *from, int min_class, int max_class)
 	return true;
 }
 
-bool SendToOpChat(char *data)
+bool SendToChat(char *nick, char *text, int min_class, int max_class)
+{
+	if (!nick || !text)
+		return false;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	string omsg;
+	serv->mP.Create_Chat(omsg, nick, text);
+	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true);
+	return true;
+}
+
+bool SendToOpChat(char *data, char *nick)
 {
 	if (!data)
 		return false;
@@ -242,7 +263,12 @@ bool SendToOpChat(char *data)
 		return false;
 	}
 
-	serv->mOpChat->SendPMToAll(data, NULL, true);
+	cUser *user = NULL;
+
+	if (nick && strlen(nick))
+		user = GetUser(nick);
+
+	serv->mOpChat->SendPMToAll(data, (user ? user->mxConn : NULL), true);
 	return true;
 }
 

@@ -24,6 +24,7 @@
 #ifndef _WIN32
 #define __int64 long long
 #endif
+
 #include <map>
 #include <string>
 #include "cvhplugin.h"
@@ -39,7 +40,8 @@ namespace nVerliHub {
 	bool SendToPassive(char *data);
 	bool SendToPassiveClass(char *data, int min_class, int max_class);
 	bool SendPMToAll(char *data, char *from, int min_class, int max_class);
-	bool SendToOpChat(char *data);
+	bool SendToChat(char *nick, char *text, int min_class = 0, int max_class = 10);
+	bool SendToOpChat(char *data, char *nick = NULL);
 	bool CloseConnection(char *nick, long delay = 0);
 	bool StopHub(int code, unsigned delay);
 	char* GetUserCC(char *nick);

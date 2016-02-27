@@ -25,8 +25,10 @@ extern "C"
 {
     #include <lua.h>
 }
+
 #include "cpilua.h"
 #include "cluainterpreter.h"
+
 namespace nVerliHub {
 	int _SendToUser(lua_State *L);
 	int _SendToClass(lua_State *L);
@@ -36,6 +38,7 @@ namespace nVerliHub {
 	int _SendToPassive(lua_State *L);
 	int _SendToPassiveClass(lua_State *L);
 	int _SendPMToAll(lua_State *L);
+	int _SendToChat(lua_State *L);
 	int _SendToOpChat(lua_State *L);
 	int _Disconnect(lua_State *L);
 	int _StopHub(lua_State *L);
