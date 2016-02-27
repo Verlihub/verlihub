@@ -150,7 +150,7 @@ bool cConsole::cfDelPythonScript::operator()()
 
 		if ((number && (num == li->id))
 		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
-			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
+			(*mOS) << autosprintf(_("Script stopped: #%d %s"), li->id, li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
 			return true;
@@ -186,29 +186,28 @@ bool cConsole::cfAddPythonScript::operator()()
 
 	if (number) {
 		DIR *dir = opendir(GetPI()->mScriptDir.c_str());
-
 		if (!dir) {
 			(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
 			return false;
 		}
-
+		string filename;
 		struct dirent *dent = NULL;
-		int i = 0;
+		vector<string> filenames;
 
 		while (NULL != (dent = readdir(dir))) {
 			filename = dent->d_name;
-
-			if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0)) {
-				if (i == num) {
-					scriptfile = GetPI()->mScriptDir + filename;
-					break;
-				}
-
-				i++;
-			}
+			if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
+				filenames.push_back(filename);
 		}
-
 		closedir(dir);
+		sort(filenames.begin(), filenames.end());
+
+		if (num < 0 || (unsigned)num >= filenames.size()) {
+			(*mOS) << "Number " << num << " is out of range. "
+			<< "Get the right number using !pyfiles command or specify the script path instead.";
+			return false;
+		}
+		scriptfile = GetPI()->mScriptDir + filenames[num];
 	}
 
 	vector<cPythonInterpreter *>::iterator it;
@@ -218,7 +217,7 @@ bool cConsole::cfAddPythonScript::operator()()
 		li = *it;
 
 		if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
-			(*mOS) << autosprintf(_("Script is already loaded: %s"), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script is already loaded: #%d %s"), li->id, scriptfile.c_str());
 			return false;
 		}
 	}
@@ -231,7 +230,7 @@ bool cConsole::cfAddPythonScript::operator()()
 	}
 
 	if (ip->Init()) {
-		(*mOS) << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
+		(*mOS) << autosprintf(_("Script is now loaded: #%d %s"), ip->id, scriptfile.c_str());
 		GetPI()->AddData(ip);
 		return true;
 	} else {
@@ -272,7 +271,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
 			found = true;
 			scriptfile = li->mScriptName;
-			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
+			(*mOS) << autosprintf(_("Script stopped: #%d %s ... "), li->id, li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
 			break;
@@ -281,9 +280,9 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 	if (!found) {
 		if (number)
-			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: #%d"), num);
+			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: #%d ... "), num);
 		else
-			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
+			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s ... "), scriptfile.c_str());
 	}
 
 	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
@@ -294,7 +293,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 	}
 
 	if (ip->Init()) {
-		(*mOS) << " " << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
+		(*mOS) << " " << autosprintf(_("Script is now loaded: #%d %s"), ip->id, scriptfile.c_str());
 		GetPI()->AddData(ip, position);
 		return true;
 	} else {

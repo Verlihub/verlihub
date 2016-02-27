@@ -255,6 +255,7 @@ bool cpiPython::AutoLoad()
 		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
 			filenames.push_back(filename);
 	}
+	closedir(dir);
 	sort(filenames.begin(), filenames.end());
 
 	for (size_t i = 0; i < filenames.size(); i++) {
@@ -274,7 +275,6 @@ bool cpiPython::AutoLoad()
 			delete ip;
 		}
 	}
-	closedir(dir);
 	return true;
 }
 
