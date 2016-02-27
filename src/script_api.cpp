@@ -46,7 +46,7 @@ cServerDC* GetCurrentVerlihub()
 	return (cServerDC*)cServerDC::sCurrentServer;
 }
 
-cUser* GetUser(char *nick)
+cUser* GetUser(const char *nick)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -233,7 +233,7 @@ bool SendPMToAll(char *data, char *from, int min_class, int max_class)
 	return true;
 }
 
-bool SendToChat(char *nick, char *text, int min_class, int max_class)
+bool SendToChat(const char *nick, const char *text, int min_class, int max_class)
 {
 	if (!nick || !text)
 		return false;
@@ -251,7 +251,7 @@ bool SendToChat(char *nick, char *text, int min_class, int max_class)
 	return true;
 }
 
-bool SendToOpChat(char *data, char *nick)
+bool SendToOpChat(const char *data, const char *nick)
 {
 	if (!data)
 		return false;
