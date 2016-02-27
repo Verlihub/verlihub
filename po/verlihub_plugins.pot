@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-17 13:02+0100\n"
+"POT-Creation-Date: 2016-02-27 18:15+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -239,7 +239,7 @@ msgid "Memory"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:234
-#: ../plugins/python/cconsole.cpp:101 ../plugins/python/cconsole.cpp:191
+#: ../plugins/python/cconsole.cpp:101 ../plugins/python/cconsole.cpp:190
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr ""
@@ -250,24 +250,23 @@ msgid "Lua scripts found in: %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:201 ../plugins/lua/cconsole.cpp:318
-#: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:275
 #, c-format
 msgid "Script stopped: %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:209 ../plugins/lua/cconsole.cpp:328
-#: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:284
+#: ../plugins/python/cconsole.cpp:161
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:211 ../plugins/lua/cconsole.cpp:330
-#: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:286
+#: ../plugins/python/cconsole.cpp:163
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:265 ../plugins/python/cconsole.cpp:221
+#: ../plugins/lua/cconsole.cpp:265
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr ""
@@ -277,14 +276,13 @@ msgid "Failed to allocate new Lua interpreter."
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:283 ../plugins/lua/cconsole.cpp:346
-#: ../plugins/python/cconsole.cpp:234 ../plugins/python/cconsole.cpp:297
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:288 ../plugins/lua/cconsole.cpp:351
 #: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:219
-#: ../plugins/python/cconsole.cpp:238 ../plugins/python/cconsole.cpp:301
+#: ../plugins/python/cconsole.cpp:237 ../plugins/python/cconsole.cpp:300
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr ""
@@ -304,11 +302,11 @@ msgstr ""
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:199
+#: ../plugins/lua/cluainterpreter.cpp:200
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:205
+#: ../plugins/lua/cluainterpreter.cpp:206
 msgid "Unknown error"
 msgstr ""
 
@@ -503,8 +501,8 @@ msgid "Last error: %s"
 msgstr ""
 
 #: ../plugins/python/cconsole.cpp:82 ../plugins/python/cconsole.cpp:129
-#: ../plugins/python/cconsole.cpp:171 ../plugins/python/cconsole.cpp:247
-#: ../plugins/python/cconsole.cpp:310
+#: ../plugins/python/cconsole.cpp:171 ../plugins/python/cconsole.cpp:246
+#: ../plugins/python/cconsole.cpp:309
 msgid "Python interpreter is not loaded."
 msgstr ""
 
@@ -517,11 +515,41 @@ msgstr ""
 msgid "Python scripts found in: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:229 ../plugins/python/cconsole.cpp:292
+#: ../plugins/python/cconsole.cpp:153
+#, c-format
+msgid "Script stopped: #%d %s"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:220
+#, c-format
+msgid "Script is already loaded: #%d %s"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:228 ../plugins/python/cconsole.cpp:291
 msgid "Failed to allocate new Python interpreter."
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:322
+#: ../plugins/python/cconsole.cpp:233 ../plugins/python/cconsole.cpp:296
+#, c-format
+msgid "Script is now loaded: #%d %s"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:274
+#, c-format
+msgid "Script stopped: #%d %s ... "
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:283
+#, c-format
+msgid "Script not stopped because it's not loaded: #%d ... "
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:285
+#, c-format
+msgid "Script not stopped because it's not loaded: %s ... "
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:321
 #, c-format
 msgid "Updated %s.%s from '%s' to '%s'."
 msgstr ""
