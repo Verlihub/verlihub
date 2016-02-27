@@ -268,7 +268,7 @@ bool SendToOpChat(const char *data, const char *nick)
 	if (nick && strlen(nick))
 		user = GetUser(nick);
 
-	serv->mOpChat->SendPMToAll(data, (user ? user->mxConn : NULL), true);
+	serv->mOpChat->SendPMToAll(data, (user ? user->mxConn : NULL), true, false);
 	return true;
 }
 
