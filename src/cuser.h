@@ -297,7 +297,7 @@ public:
 	virtual ~cChatRoom();
 	cUserCollection *mCol;
 	virtual bool ReceiveMsg(cConnDC *conn, nProtocol::cMessageDC *msg);
-	virtual void SendPMToAll(const string &data, nSocket::cConnDC *conn, bool fromplug = false);
+	virtual void SendPMToAll(const string &data, nSocket::cConnDC *conn, bool fromplug = false, bool skipself = true);
 	virtual bool IsUserAllowed(cUser *);
 	cChatConsole *mConsole;
 };

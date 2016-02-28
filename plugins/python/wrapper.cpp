@@ -482,7 +482,7 @@ long BasicCall(int func, PyObject *args, const char *in_format)
 
 static PyObject *__SendToOpChat(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendToOpChat, args, "s"));
+	return pybool(BasicCall(W_SendToOpChat, args, "s|s"));
 }
 
 static PyObject *__SendToActive(PyObject *self, PyObject *args)
@@ -898,17 +898,17 @@ static PyObject *__GetTotalShareSize(PyObject *self, PyObject *args)
 
 static PyObject *__usermc(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_usermc, args, "ss"));
+	return pybool(BasicCall(W_usermc, args, "ss|s"));
 }
 
 static PyObject *__pm(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_pm, args, "ss"));
+	return pybool(BasicCall(W_pm, args, "ss|ss"));
 }
 
 static PyObject *__mc(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_mc, args, "s"));
+	return pybool(BasicCall(W_mc, args, "s|s"));
 }
 
 static PyObject *__classmc(PyObject *self, PyObject *args)

@@ -67,6 +67,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("SendToPassive", &_SendToPassive);
 	RegisterFunction("SendToPassiveClass", &_SendToPassiveClass);
 	RegisterFunction("SendPMToAll", &_SendPMToAll);
+	RegisterFunction("SendToChat", &_SendToChat);
 	RegisterFunction("SendToOpChat", &_SendToOpChat);
 	RegisterFunction("CloseConnection", &_Disconnect); // backward compatibility
 	RegisterFunction("Disconnect", &_Disconnect);

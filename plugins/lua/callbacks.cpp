@@ -142,7 +142,8 @@ int _SendToAll(lua_State *L)
 		return 2;
 	}
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToActive(lua_State *L)
@@ -322,16 +323,58 @@ int _SendPMToAll(lua_State *L)
 	return 1;
 }
 
-int _SendToOpChat(lua_State *L)
+int _SendToChat(lua_State *L)
 {
-	if (lua_gettop(L) < 2) {
-		luaL_error(L, "Error calling VH:SendToOpChat, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SendToChat, expected atleast 2 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2)) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	if ((args >= 4) && (!lua_isnumber(L, 4) || !lua_isnumber(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = (char*)lua_tostring(L, 2);
+	string text = (char*)lua_tostring(L, 3);
+	int min_class = 0, max_class = 10;
+
+	if (args >= 4) {
+		min_class = (int)lua_tonumber(L, 4);
+		max_class = (int)lua_tonumber(L, 5);
+	}
+
+	if (!SendToChat((char*)nick.c_str(), (char*)text.c_str(), min_class, max_class)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
+int _SendToOpChat(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToOpChat, expected atleast 1 argument but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isstring(L, 3))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
@@ -343,7 +386,12 @@ int _SendToOpChat(lua_State *L)
 		return 2;
 	}
 
-	if (!SendToOpChat((char*)data.c_str())) {
+	string nick("");
+
+	if (args >= 2)
+		nick = (char*)lua_tostring(L, 3);
+
+	if (!SendToOpChat((char*)data.c_str(), (nick.size() ? (char*)nick.c_str() : NULL))) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
@@ -1703,7 +1751,7 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -1821,7 +1869,7 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -1966,7 +2014,7 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -2024,7 +2072,7 @@ int _IsBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {

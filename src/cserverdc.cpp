@@ -80,8 +80,10 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mOpChat(NULL),
 	mExecPath(ExecPath),
 	mSysLoad(eSL_NORMAL),
-	mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
-	mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
+	// mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
+	mUserList(true, true, true, NULL, NULL),
+	// mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
+	mOpList(true, false, false, NULL, NULL),
 	mOpchatList(true),
 	mRobotList(true),
 	mUserCountTot(0),
@@ -94,6 +96,10 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mCallBacks(&mPluginManager)
 {
 	sCurrentServer = this;
+
+	mUserList.mNickListCB = &mCallBacks.mNickListNicks;
+	mUserList.mInfoListCB = &mCallBacks.mNickListInfos;
+	mOpList.mNickListCB = &mCallBacks.mOpListNicks;
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;

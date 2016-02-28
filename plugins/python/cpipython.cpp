@@ -255,6 +255,7 @@ bool cpiPython::AutoLoad()
 		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
 			filenames.push_back(filename);
 	}
+	closedir(dir);
 	sort(filenames.begin(), filenames.end());
 
 	for (size_t i = 0; i < filenames.size(); i++) {
@@ -274,7 +275,6 @@ bool cpiPython::AutoLoad()
 			delete ip;
 		}
 	}
-	closedir(dir);
 	return true;
 }
 
@@ -905,7 +905,7 @@ bool cpiPython::OnOpChatMessage(string *nick, string *data)
 	return true;
 }
 
-bool cpiPython::OnPublicBotMessage(string *nick, string *data, long min_class, long max_class)
+bool cpiPython::OnPublicBotMessage(string *nick, string *data, int min_class, int max_class)
 {
 	if (nick && data) {
 		w_Targs *args = lib_pack("ssll", nick->c_str(), data->c_str(), (long)min_class, (long)max_class);
@@ -1092,14 +1092,14 @@ bool cpiPython::OnTimer(__int64 msec)
 	return CallAll(W_OnTimer, args);
 }
 
-bool cpiPython::OnNewReg(cUser *op, string *nick, long cls)  // todo: is not called
+bool cpiPython::OnNewReg(cUser *op, string nick, int cls)  // todo: is not called
 {
 	const char *opnick = (op ? op->mNick : cpiPython::botname).c_str();
-	w_Targs *args = lib_pack("ssl", opnick, nick->c_str(), (long)cls);
+	w_Targs *args = lib_pack("ssl", opnick, nick.c_str(), (long)cls);
 	return CallAll(W_OnNewReg, args);
 }
 
-bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
+bool cpiPython::OnNewBan(cUser* user, cBan *ban) // todo: is not called
 {
 	if (ban != NULL) {
 		w_Targs *args = lib_pack("ssss", ban->mNickOp.c_str(), ban->mIP.c_str(),
@@ -1109,7 +1109,7 @@ bool cpiPython::OnNewBan(cBan *ban)  // todo: is not called
 	return true;
 }
 
-bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, long val_type)
+bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
 {
 	if (user && conf && var && val_new && val_old) {
 		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), 
@@ -1127,13 +1127,16 @@ using namespace nPythonPlugin;
 
 w_Targs *_usermc(int id, w_Targs *args)
 {
-	char *data, *nick;
-	if (!cpiPython::lib_unpack(args, "ss", &data, &nick)) return NULL;
-	if (!data || !nick) return NULL;
-	string msg = string() + "<" + cpiPython::botname + "> " + data + "|";
+	const char *msg, *nick, *mynick;
+	if (!cpiPython::lib_unpack(args, "sss", &msg, &nick, &mynick)) return NULL;
+	if (!msg) return NULL;
+	if (!mynick) mynick = cpiPython::botname.c_str();
+
+	string data = string() + "<" + mynick + "> " + msg + "|";
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
 	if (u && u->mxConn) {
-		u->mxConn->Send(msg, true);
+		u->mxConn->Send(data, true);
 		return w_ret1;
 	}
 	return NULL;
@@ -1141,58 +1144,37 @@ w_Targs *_usermc(int id, w_Targs *args)
 
 w_Targs *_mc(int id, w_Targs *args)
 {
-	char *data;
-	if (!cpiPython::lib_unpack(args, "s", &data)) return NULL;
-	if (!data) return NULL;
-	string msg = string() + "<" + cpiPython::botname + "> " + data + "|";
-	cpiPython::me->server->SendToAll(msg, 0, 10);
+	const char *msg, *mynick;
+	if (!cpiPython::lib_unpack(args, "ss", &msg, &mynick)) return NULL;
+	if (!msg) return NULL;
+	if (!mynick) mynick = cpiPython::botname.c_str();
+	if (!SendToChat(mynick, msg, 0, 10)) return NULL;
 	return w_ret1;
 }
 
 w_Targs *_classmc(int id, w_Targs *args)
 {
-	char *data;
+	const char *msg, *mynick;
 	long minclass, maxclass;
-	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
-	if (!data) return NULL;
-	string msg = string() + "<" + cpiPython::botname + "> " + data + "|";
-	// We didn't simply call cpiPython::me->server->SendToAll(msg, minclass, maxclass),
-	// because at the time of writing it was buggy: it didn't care about provided class range.
-
-	// nlist looks like this: "$NickList nick1$$nick2$$lastnick$$"
-	string nlist = cpiPython::me->server->mUserList.GetNickList();
-	string nick;
-	cUser *u;
-	log4("Py: classmc   got nicklist: %s\n", nlist.c_str());
-	if (nlist.length() < 13) return NULL;
-	size_t pos = 0, start = 10;
-	const char *separator = "$$";
-	while (start < nlist.length()) {
-		pos = nlist.find(separator, start);
-		if (pos == string::npos) break;
-		nick = nlist.substr(start, pos - start);
-		log4("Py: classmc   got nick: %s\n", nick.c_str());
-		start = pos + 2;
-		u = cpiPython::me->server->mUserList.GetUserByNick(nick.c_str());
-		if (u && u->mxConn) {
-			if (u->mClass < minclass || u->mClass > maxclass) continue;
-			u->mxConn->Send(msg, true);
-			log4("PY: classmc   sending message to %s\n", nick.c_str());
-		}
-	}
+	if (!cpiPython::lib_unpack(args, "slls", &msg, &minclass, &maxclass, &mynick)) return NULL;
+	if (!msg) return NULL;
+	if (!mynick) mynick = cpiPython::botname.c_str();
+	if (!SendToChat(mynick, msg, minclass, maxclass)) return NULL;
 	return w_ret1;
 }
 
 w_Targs *_pm(int id, w_Targs *args)
 {
-	char *data, *nick;
-	if (!cpiPython::lib_unpack(args, "ss", &data, &nick)) return NULL;
-	if (!data || !nick) return NULL;
-	string msg = string() + "$To: " + nick + " From: " + cpiPython::botname
-		+ " $<" + cpiPython::botname + "> " + data + "|";
+	const char *msg, *nick, *from, *mynick;
+	if (!cpiPython::lib_unpack(args, "ssss", &msg, &nick, &from, &mynick)) return NULL;
+	if (!msg || !nick) return NULL;
+	if (!from) from = cpiPython::botname.c_str();
+	if (!mynick) mynick = from;
+
+	string data = string() + "$To: " + nick + " From: " + from + " $<" + mynick + "> " + msg + "|";
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
-		u->mxConn->Send(msg, true);
+		u->mxConn->Send(data, true);
 		return w_ret1;
 	}
 	return NULL;
@@ -1200,17 +1182,9 @@ w_Targs *_pm(int id, w_Targs *args)
 
 w_Targs *_SendToOpChat(int id, w_Targs *args)
 {
-	char *data;
-
-	if (!cpiPython::lib_unpack(args, "s", &data) || !data)
-		return NULL;
-
-	string msg(data);
-
-	if (!cpiPython::me->server || !cpiPython::me->server->mOpChat)
-		return NULL;
-
-	cpiPython::me->server->mOpChat->SendPMToAll(msg, NULL, true);
+	const char *data, *mynick;
+	if (!cpiPython::lib_unpack(args, "ss", &data, &mynick) || !data) return NULL;
+	if (!SendToOpChat(data, mynick)) return NULL;
 	return w_ret1;
 }
 

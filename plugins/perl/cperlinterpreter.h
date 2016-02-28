@@ -31,8 +31,6 @@
 #undef _
 #endif
 
-namespace nPerl
-{
 #include <EXTERN.h>               /* from the Perl distribution     */
 #include <perl.h>                 /* from the Perl distribution     */
 
@@ -40,8 +38,6 @@ namespace nPerl
 #undef _
 #define _(string) gettext (string)
 #endif
-};
-using namespace nPerl;
 
 namespace nVerliHub {
 	namespace nPerlPlugin {

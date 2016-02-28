@@ -32,7 +32,7 @@ cpiMessanger::cpiMessanger() : mConsole(this), mMsgs(NULL), mReloadTimer(30., 0.
 	mVersion = MESSENGER_VERSION;
 }
 
-bool cpiMessanger::OnTimer()
+bool cpiMessanger::OnTimer(__int64 msec)
 {
 	if (mReloadTimer.Check(mServer->mTime, 1)==0) {
 		mMsgs->UpdateCache();

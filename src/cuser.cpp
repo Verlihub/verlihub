@@ -614,7 +614,7 @@ cChatRoom::~cChatRoom()
 	mConsole = NULL;
 }
 
-void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug)
+void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug, bool skipself)
 {
 	if (!this->mCol || !this->mxServer)
 		return;
@@ -629,14 +629,14 @@ void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug)
 	this->mxServer->mP.Create_PMForBroadcast(start, end, mNick, from, data);
 	bool temp = false;
 
-	if (conn && conn->mpUser) {
+	if (skipself && conn && conn->mpUser) {
 		temp = conn->mpUser->mInList;
 		conn->mpUser->mInList = false;
 	}
 
 	this->mCol->SendToAllWithNick(start, end);
 
-	if (conn && conn->mpUser)
+	if (skipself && conn && conn->mpUser)
 		conn->mpUser->mInList = temp;
 
 	if (!fromplug) {

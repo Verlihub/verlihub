@@ -44,7 +44,7 @@ class cRegUserInfo
 		/** friends */
 		friend ostream & operator << (ostream &, cRegUserInfo &i);
 		friend istream & operator >> (istream &, cRegUserInfo &i);
-		friend class cUser;
+		friend class nVerliHub::cUser;
 		friend class cRegList;
 
 		typedef enum { // crypt methods

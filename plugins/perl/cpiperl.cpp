@@ -380,11 +380,12 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnOperatorKicks(cUser *op , cUser *user, s
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnOperatorDrops(cUser *op , cUser *user)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnOperatorDrops(cUser *op , cUser *user, std::string *why)
 {
 	char *args[]= {		(char *)"VH_OnOperatorDrops",
 				(char *)op->mNick.c_str(),
 				(char *)user->mNick.c_str(),
+				(char *)why->c_str(),
 				NULL };
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
@@ -441,26 +442,30 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnTimer(__int64 msec)
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnNewReg(cRegUserInfo *reginfo)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnNewReg(cUser *op, string nick, int uclass)
 {
 	char *args[]= {		(char *)"VH_OnNewReg",
+				(char *)op->mNick.c_str(),
+				(char *)nick.c_str(),
+				(char *)toString(uclass).c_str(),
 				NULL };
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnNewBan(cBan *ban)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnNewBan(cUser* op, nTables::cBan *ban)
 {
 	char *args[]= {		(char *)"VH_OnNewBan",
 				(char *)ban->mIP.c_str(),
 				(char *)ban->mNick.c_str(),
 				(char *)ban->mReason.c_str(),
+				(char *)op->mNick.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnUnBan(std::string nick, std::string op, std::string reason)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnUnBan(cUser *opUser, std::string nick, std::string op, std::string reason)
 {
 	char *args[]= {		(char *)"VH_OnUnBan",
 				(char *) nick.c_str(),
@@ -501,34 +506,36 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnParsedMsgRevConnectToMe(cConnDC *conn, c
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnDelReg(std::string mNick, int mClass)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnDelReg(cUser *op, std::string mNick, int mClass)
 {
 	char *args[]= {		(char *)"VH_OnDelReg",
 				(char *) mNick.c_str(),
 				(char *) toString(mClass).c_str(),
+				(char *)op->mNick.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnUpdateClass(std::string mNick, int oldClass, int newClass)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnUpdateClass(cUser *op, std::string mNick, int oldClass, int newClass)
 {
 	char *args[]= {		(char *)"VH_OnUpdateClass",
 				(char *) mNick.c_str(),
 				(char *) toString(oldClass).c_str(),
 				(char *) toString(newClass).c_str(),
+				(char *)op->mNick.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
 }
 
-bool nVerliHub::nPerlPlugin::cpiPerl::OnScriptCommand(std::string cmd, std::string data, std::string plug, std::string script)
+bool nVerliHub::nPerlPlugin::cpiPerl::OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script)
 {
 	char *args[]= {		(char *) "VH_OnScriptCommand",
-				(char *) cmd.c_str(),
-				(char *) data.c_str(),
-				(char *) plug.c_str(),
-				(char *) script.c_str(),
+				(char *) cmd->c_str(),
+				(char *) data->c_str(),
+				(char *) plug->c_str(),
+				(char *) script->c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
