@@ -30,12 +30,18 @@ ELSE(CRYPT_LIBRARIES)
 			/usr/lib
 			/usr/local/lib
 		)
-	ELSE(HAVE_OPENBSD)
+	ELSEIF(HAVE_APPLE)
+		find_library(CRYPT_LIBRARIES NAMES gcrypt PATHS
+			/usr/local/lib
+			/usr/local/lib/libgcrypt/lib
+			/usr/lib
+		)
+	ELSE()
 		find_library(CRYPT_LIBRARIES NAMES crypt PATHS
 			/usr/lib
 			/usr/local/lib
 		)
-	ENDIF(HAVE_OPENBSD)
+	ENDIF()
 
 	IF(CRYPT_LIBRARIES)
 		SET(CRYPT_FOUND TRUE)

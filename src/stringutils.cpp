@@ -20,9 +20,11 @@
 
 #include "stringutils.h"
 #include "i18n.h"
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,11 +32,13 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
+
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
 #endif
+
 #ifdef HAVE_BSD
 #include <sys/syslimits.h>
 #endif
@@ -122,6 +126,10 @@ void ExpandPath(string &Path)
 			Path = string(cPath);
 			delete[] cPath;
 		#elif defined HAVE_BSD
+			char *cPath = getcwd(NULL, PATH_MAX);
+			Path = cPath;
+			free(cPath);
+		#elif defined HAVE_APPLE
 			char *cPath = getcwd(NULL, PATH_MAX);
 			Path = cPath;
 			free(cPath);
