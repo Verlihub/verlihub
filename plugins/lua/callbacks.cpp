@@ -1751,7 +1751,7 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -1869,7 +1869,7 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -2014,7 +2014,7 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -2072,7 +2072,7 @@ int _IsBot(lua_State *L)
 		return 2;
 	}
 
-	const string &nick = (char*)lua_tostring(L, 2);
+	const string nick = (char*)lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
