@@ -80,8 +80,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	endif()
 # Workaround for homebrew gettext path:
-	SET(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} /usr/local/opt/gettext )
+	SET(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} /usr/local/opt /usr/local/opt/gettext )
 	SET(GETTEXT_EXEC_PATH "/usr/local/opt/gettext" )
+	SET(OPENSSL_ROOT_DIR "/usr/local/opt/openssl" )
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(LIB_INSTALL_DIR)
