@@ -92,16 +92,16 @@ namespace nVerliHub {
 	/*
 		find redirect url from a given type
 	*/
-	char* cRedirects::MatchByType(unsigned int Type)
+	const char* cRedirects::MatchByType(unsigned int Type)
 	{
 		iterator it;
 		cRedirect *redirect;
-		char *redirects[10];
-		char *DefaultRedirect[10];
+		const char *redirects[10];
+		const char *DefaultRedirect[10];
 		int i = 0, j = 0, iType = MapTo(Type);
 
 		if (iType == -1) // do not redirect, special reason
-			return (char*)"";
+			return "";
 
 		for (it = begin(); it != end(); ++it) {
 			if (i >= 10)
@@ -111,12 +111,12 @@ namespace nVerliHub {
 
 			if (redirect) {
 				if (redirect->mEnable && (redirect->mFlag & iType)) {
-					redirects[i] = (char*)redirect->mAddress.c_str();
+					redirects[i] = redirect->mAddress.c_str();
 					i++;
 				}
 
 				if (redirect->mEnable && !redirect->mFlag && (j < 10)) {
-					DefaultRedirect[j] = (char*)redirect->mAddress.c_str();
+					DefaultRedirect[j] = redirect->mAddress.c_str();
 					j++;
 				}
 			}
@@ -124,7 +124,7 @@ namespace nVerliHub {
 
 		if (!i) { // use default redirect
 			if (!j)
-				return (char*)"";
+				return "";
 
 			Random(j);
 			CountPlusPlus(DefaultRedirect[j]);
@@ -147,7 +147,7 @@ namespace nVerliHub {
 			key -= 1;
 	}
 
-	void cRedirects::CountPlusPlus(char *addr)
+	void cRedirects::CountPlusPlus(const char *addr)
 	{
 		iterator it;
 		cRedirect *redirect;
@@ -155,7 +155,7 @@ namespace nVerliHub {
 		for (it = begin(); it != end(); ++it) {
 			redirect = (*it);
 
-			if (redirect && (addr == (char*)redirect->mAddress.c_str())) {
+			if (redirect && (addr == redirect->mAddress.c_str())) {
 				redirect->mCount++; // increase counter
 				break;
 			}

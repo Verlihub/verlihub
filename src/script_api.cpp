@@ -59,7 +59,7 @@ cUser* GetUser(const char *nick)
 	return usr; // user without connection, a bot, must be accepted as well
 }
 
-bool SendDataToUser(char *data, char *nick)
+bool SendDataToUser(const char *data, const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
@@ -75,7 +75,7 @@ bool SendDataToUser(char *data, char *nick)
 	return true;
 }
 
-bool KickUser(char *opnick, char *nick, char *reason)
+bool KickUser(const char *opnick, const char *nick, const char *reason)
 {
 	if (!opnick || !nick || !reason)
 		return false;
@@ -101,7 +101,7 @@ bool KickUser(char *opnick, char *nick, char *reason)
 	return true;
 }
 
-bool SendToClass(char *data, int min_class, int max_class)
+bool SendToClass(const char *data, int min_class, int max_class)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -122,7 +122,7 @@ bool SendToClass(char *data, int min_class, int max_class)
 	return true;
 }
 
-bool SendToAll(char *data)
+bool SendToAll(const char *data)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -140,7 +140,7 @@ bool SendToAll(char *data)
 	return true;
 }
 
-bool SendToActive(char *data)
+bool SendToActive(const char *data)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -158,7 +158,7 @@ bool SendToActive(char *data)
 	return true;
 }
 
-bool SendToActiveClass(char *data, int min_class, int max_class)
+bool SendToActiveClass(const char *data, int min_class, int max_class)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -179,7 +179,7 @@ bool SendToActiveClass(char *data, int min_class, int max_class)
 	return true;
 }
 
-bool SendToPassive(char *data)
+bool SendToPassive(const char *data)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -197,7 +197,7 @@ bool SendToPassive(char *data)
 	return true;
 }
 
-bool SendToPassiveClass(char *data, int min_class, int max_class)
+bool SendToPassiveClass(const char *data, int min_class, int max_class)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -218,7 +218,7 @@ bool SendToPassiveClass(char *data, int min_class, int max_class)
 	return true;
 }
 
-bool SendPMToAll(char *data, char *from, int min_class, int max_class)
+bool SendPMToAll(const char *data, const char *from, int min_class, int max_class)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -272,7 +272,7 @@ bool SendToOpChat(const char *data, const char *nick)
 	return true;
 }
 
-bool CloseConnection(char *nick, long delay)
+bool CloseConnection(const char *nick, long delay)
 {
 	if (!nick)
 		return false;
@@ -303,19 +303,19 @@ bool StopHub(int code, unsigned delay)
 	return true;
 }
 
-char* GetUserCC(char *nick)
+const char* GetUserCC(const char *nick)
 {
 	cUser *user = GetUser(nick);
 
 	if (user && user->mxConn)
-		return (char*)user->mxConn->mCC.c_str();
+		return user->mxConn->mCC.c_str();
 
 	return NULL;
 }
 
 #ifdef HAVE_LIBGEOIP
 
-const string GetIPCC(const char *ip)
+string GetIPCC(const char *ip)
 {
 	if (!ip)
 		return "";
@@ -335,7 +335,7 @@ const string GetIPCC(const char *ip)
 	return "";
 }
 
-const string GetIPCN(const char *ip)
+string GetIPCN(const char *ip)
 {
 	if (!ip)
 		return "";
@@ -357,7 +357,7 @@ const string GetIPCN(const char *ip)
 
 #endif
 
-const char *GetMyINFO(char *nick)
+const char *GetMyINFO(const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
@@ -367,7 +367,7 @@ const char *GetMyINFO(char *nick)
 		return "";
 }
 
-int GetUserClass(char *nick)
+int GetUserClass(const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
@@ -377,7 +377,7 @@ int GetUserClass(char *nick)
 		return -2;
 }
 
-const char *GetUserHost(char *nick)
+const char *GetUserHost(const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
@@ -398,7 +398,7 @@ const char *GetUserHost(char *nick)
 	}
 }
 
-const char *GetUserIP(char *nick)
+const char *GetUserIP(const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
@@ -409,7 +409,7 @@ const char *GetUserIP(char *nick)
 	}
 }
 
-bool Ban(char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
+bool Ban(const char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
 	cServerDC *server = GetCurrentVerlihub();
 
@@ -430,7 +430,7 @@ bool Ban(char *nick, const string &op, const string &reason, unsigned howlong, u
 	return true;
 }
 
-bool ParseCommand(char *nick, char *cmd, int pm)
+bool ParseCommand(const char *nick, const char *cmd, int pm)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -444,7 +444,8 @@ bool ParseCommand(char *nick, char *cmd, int pm)
 	if (!usr || !usr->mxConn)
 		return false;
 
-	serv->mP.ParseForCommands(cmd, usr->mxConn, pm);
+	string command(cmd);
+	serv->mP.ParseForCommands(command, usr->mxConn, pm);
 	return true;
 }
 
@@ -464,7 +465,7 @@ bool SetConfig(const char *conf, const char *var, const char *val)
 	return (serv->SetConfig(conf, var, val, val_new, val_old) == 1);
 }
 
-const char* GetConfig(const char *conf, const char *var, const char *def)
+char* GetConfig(const char *conf, const char *var, const char *def)
 {
 	if (!conf || !var)
 		return (def ? strdup(def) : NULL);
@@ -512,18 +513,18 @@ const char *__GetNickList()
 	} else return "";
 }
 
-char * GetVHCfgDir()
+const char * GetVHCfgDir()
 {
 	cServerDC *server = GetCurrentVerlihub();
 	if (!server) {
 		cerr << "Server verlihub is unfortunately not running or not found." << endl;
 		return 0;
 	}
-	return (char *) server->mConfigBaseDir.c_str();
+	return server->mConfigBaseDir.c_str();
 }
 
 #define count_of(arg) (sizeof(arg) / sizeof(arg[0]))
-bool GetTempRights(char *nick,  map<string,int> &rights)
+bool GetTempRights(const char *nick,  map<string,int> &rights)
 {
 	cUser *user = GetUser(nick);
 	if(user == NULL) return false;
@@ -572,7 +573,7 @@ bool GetTempRights(char *nick,  map<string,int> &rights)
 	return true;
 }
 
-bool AddRegUser(char *nick, int uclass, char *pass, char* op)
+bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op)
 {
 	if (!nick || (uclass == eUC_MASTER))
 		return false;
@@ -596,7 +597,7 @@ bool AddRegUser(char *nick, int uclass, char *pass, char* op)
 	return serv->mR->AddRegUser(nick, conn, uclass, (strlen(pass) ? pass : NULL));
 }
 
-bool DelRegUser(char *nick)
+bool DelRegUser(const char *nick)
 {
 	if (!nick)
 		return false;

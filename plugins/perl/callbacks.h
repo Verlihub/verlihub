@@ -25,24 +25,24 @@ namespace nVerliHub {
 namespace nPerlPlugin {
 namespace nCallback {
 
-int SQLQuery(char *query);
+int SQLQuery(const char *query);
 MYSQL_ROW SQLFetch(int r, int &cols);
 int SQLFree();
-int IsUserOnline(char *nick);
-int IsBot(char *nick);
+int IsUserOnline(const char *nick);
+int IsBot(const char *nick);
 int GetUpTime();
-char *GetHubIp();
-char *GetHubSecAlias();
-char *GetOPList();
-char *GetBotList();
-bool RegBot(char *nick, int uclass, char *desc, char *speed, char *email, char *share);
-bool EditBot(char *nick, int uclass, char *desc, char *speed, char *email, char *share);
-bool UnRegBot(char *nick);
-bool SetTopic(char *topic);
+const char *GetHubIp();
+const char *GetHubSecAlias();
+const char *GetOPList();
+const char *GetBotList();
+bool RegBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share);
+bool EditBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share);
+bool UnRegBot(const char *nick);
+bool SetTopic(const char *topic);
 const char *GetTopic();
-bool InUserSupports(char *nick, char *flag);
-bool ReportUser(char *nick, char *msg);
-bool ScriptCommand(char *, char *);
+bool InUserSupports(const char *nick, const char *flag);
+bool ReportUser(const char *nick, const char *msg);
+bool ScriptCommand(const char *, const char *);
 
 } // nVerliHub
 } // nPerlPlugin

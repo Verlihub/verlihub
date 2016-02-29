@@ -164,7 +164,7 @@ bool cConsole::cfAddPerlScript::operator()()
 		}
 		closedir(dir);
 	}
-	char *argv[] = { (char*)"", (char*)scriptfile.c_str(), NULL };
+	const char *argv[] = { "", scriptfile.c_str(), NULL };
 	for(it = GetPI()->mPerl.mPerl.begin(); it != GetPI()->mPerl.mPerl.end(); ++it) {
 		pi = *it;
 		if (StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0) {
@@ -213,7 +213,7 @@ bool cConsole::cfReloadPerlScript::operator()()
 			(*mOS) << autosprintf(_("Script %s not stopped  because it is not running."), scriptfile.c_str()) << " ";
 		return false;
 	} else {
-		char *argv[] = { (char*)"", (char*)scriptfile.c_str(), NULL };
+		const char *argv[] = { "", scriptfile.c_str(), NULL };
 		GetPI()->mPerl.Parse(2, argv);
 		if(GetPI()->mPerl.Parse(2, argv))
 			(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());

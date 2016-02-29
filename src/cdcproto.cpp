@@ -3140,7 +3140,7 @@ int cDCProto::NickList(cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
+int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 {
 	if (text.empty())
 		return 0;
@@ -3151,7 +3151,7 @@ int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 
 	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.cmd_start_op.find_first_of(text[0]) != string::npos)) {
 		#ifndef WITHOUT_PLUGINS
-		if (mS->mCallBacks.mOnOperatorCommand.CallAll(conn, (string*)&text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 1, pm))
+		if (mS->mCallBacks.mOnOperatorCommand.CallAll(conn, &text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, &text, 1, pm))
 		#endif
 		{
 			if (!mS->mCo->OpCommand(text, conn) && !mS->mCo->UsrCommand(text, conn)) {
@@ -3167,7 +3167,7 @@ int cDCProto::ParseForCommands(const string &text, cConnDC *conn, int pm)
 
 	if (mS->mC.cmd_start_user.find_first_of(text[0]) != string::npos) {
 		#ifndef WITHOUT_PLUGINS
-		if (mS->mCallBacks.mOnUserCommand.CallAll(conn, (string*)&text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, (string*)&text, 0, pm))
+		if (mS->mCallBacks.mOnUserCommand.CallAll(conn, &text) && mS->mCallBacks.mOnHubCommand.CallAll(conn, &text, 0, pm))
 		#endif
 		{
 			if (!mS->mCo->UsrCommand(text, conn)) {

@@ -32,38 +32,38 @@
 using namespace std;
 
 namespace nVerliHub {
-	bool SendDataToUser(char *data, char *nick);
-	bool SendToClass(char *data, int min_class, int max_class);
-	bool SendToAll(char *data);
-	bool SendToActive(char *data);
-	bool SendToActiveClass(char *data, int min_class, int max_class);
-	bool SendToPassive(char *data);
-	bool SendToPassiveClass(char *data, int min_class, int max_class);
-	bool SendPMToAll(char *data, char *from, int min_class, int max_class);
+	bool SendDataToUser(const char *data, const char *nick);
+	bool SendToClass(const char *data, int min_class, int max_class);
+	bool SendToAll(const char *data);
+	bool SendToActive(const char *data);
+	bool SendToActiveClass(const char *data, int min_class, int max_class);
+	bool SendToPassive(const char *data);
+	bool SendToPassiveClass(const char *data, int min_class, int max_class);
+	bool SendPMToAll(const char *data, const char *from, int min_class, int max_class);
 	bool SendToChat(const char *nick, const char *text, int min_class = 0, int max_class = 10);
 	bool SendToOpChat(const char *data, const char *nick = NULL);
-	bool CloseConnection(char *nick, long delay = 0);
+	bool CloseConnection(const char *nick, long delay = 0);
 	bool StopHub(int code, unsigned delay);
-	char* GetUserCC(char *nick);
+	const char* GetUserCC(const char *nick);
 
 	#ifdef HAVE_LIBGEOIP
-		const string GetIPCC(const char *ip);
-		const string GetIPCN(const char *ip);
+		string GetIPCC(const char *ip);
+		string GetIPCN(const char *ip);
 	#endif
 
-	const char* GetMyINFO(char *nick);
-	int GetUserClass(char *nick);
-	const char* GetUserHost(char *nick);
-	const char* GetUserIP(char *nick);
-	bool Ban(char *, const string &, const string &, unsigned, unsigned);
-	bool ParseCommand(char *nick, char *cmd, int pm);
-	bool KickUser(char *opnick, char *nick, char *reason);
+	const char* GetMyINFO(const char *nick);
+	int GetUserClass(const char *nick);
+	const char* GetUserHost(const char *nick);
+	const char* GetUserIP(const char *nick);
+	bool Ban(const char *, const string &, const string &, unsigned, unsigned);
+	bool ParseCommand(const char *nick, const char *cmd, int pm);
+	bool KickUser(const char *opnick, const char *nick, const char *reason);
 	bool SetConfig(const char *conf, const char *var, const char *val);
-	const char* GetConfig(const char *conf, const char *var, const char *def = NULL);
-	char* GetVHCfgDir();
-	bool GetTempRights(char *nick, map<string,int> &rights);
-	bool AddRegUser(char *nick, int uclass, char *pass, char* op);
-	bool DelRegUser(char *nick);
+	char* GetConfig(const char *conf, const char *var, const char *def = NULL);
+	const char* GetVHCfgDir();
+	bool GetTempRights(const char *nick, map<string,int> &rights);
+	bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op);
+	bool DelRegUser(const char *nick);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script);
 	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);

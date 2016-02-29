@@ -90,7 +90,7 @@ public:
 	char* toString(int);
 	char* longToString(long);
 	bool AutoLoad();
-	bool CallAll(const char *, char *[], cConnDC *conn = NULL);
+	bool CallAll(const char *, const char *[], cConnDC *conn = NULL);
 	unsigned int Size() { return mLua.size(); }
 	void SetLogLevel(int level);
 	void SetErrClass(int eclass);
