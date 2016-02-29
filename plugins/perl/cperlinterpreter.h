@@ -78,10 +78,10 @@ public:
 	void SetMyContext();
 
 	/** parse arguments like for a command line of perl */
-	int Parse(int argc, char *argv[]);
+	int Parse(int argc, const char *argv[]);
 
-	bool CallArgv(const char *Function, char * Args [] );
-        void ReportPerlError(char *error);
+	bool CallArgv(const char *Function, const char *Args[]);
+	void ReportPerlError(const char *error);
 
 protected:
 	PerlInterpreter *mPerl;

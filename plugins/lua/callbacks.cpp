@@ -64,14 +64,14 @@ int _SendToUser(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		data = (char *)lua_tostring(L, 2);
+		data = lua_tostring(L, 2);
 		if(!lua_isstring(L, 3))
 		{
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *)lua_tostring(L, 3);
-		if(!SendDataToUser((char *)data.c_str(), (char *)nick.c_str()))
+		nick = lua_tostring(L, 3);
+		if(!SendDataToUser(data.c_str(), nick.c_str()))
 		{
 			luaerror(L, ERR_CALL);
 			return 2;
@@ -96,7 +96,7 @@ int _SendToClass(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		data = (char *)lua_tostring(L, 2);
+		data = lua_tostring(L, 2);
 		if(!lua_isnumber(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
@@ -107,7 +107,7 @@ int _SendToClass(lua_State *L)
 			return 2;
 		}
 		max_class = (int)lua_tonumber(L, 4);
-		if(!SendToClass((char*)data.c_str(), min_class, max_class)) {
+		if(!SendToClass(data.c_str(), min_class, max_class)) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -130,8 +130,8 @@ int _SendToAll(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		data = (char *)lua_tostring(L, 2);
-		if(!SendToAll((char*)data.c_str())) {
+		data = lua_tostring(L, 2);
+		if(!SendToAll(data.c_str())) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -154,9 +154,9 @@ int _SendToActive(lua_State *L)
 			return 2;
 		}
 
-		string data = (char*)lua_tostring(L, 2);
+		string data = lua_tostring(L, 2);
 
-		if (!SendToActive((char*)data.c_str())) {
+		if (!SendToActive(data.c_str())) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -179,7 +179,7 @@ int _SendToActiveClass(lua_State *L)
 			return 2;
 		}
 
-		string data = (char *)lua_tostring(L, 2);
+		string data = lua_tostring(L, 2);
 
 		if (!lua_isnumber(L, 3)) {
 			luaerror(L, ERR_PARAM);
@@ -195,7 +195,7 @@ int _SendToActiveClass(lua_State *L)
 
 		int max_class = (int)lua_tonumber(L, 4);
 
-		if (!SendToActiveClass((char*)data.c_str(), min_class, max_class)) {
+		if (!SendToActiveClass(data.c_str(), min_class, max_class)) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -218,9 +218,9 @@ int _SendToPassive(lua_State *L)
 			return 2;
 		}
 
-		string data = (char*)lua_tostring(L, 2);
+		string data = lua_tostring(L, 2);
 
-		if (!SendToPassive((char*)data.c_str())) {
+		if (!SendToPassive(data.c_str())) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -243,7 +243,7 @@ int _SendToPassiveClass(lua_State *L)
 			return 2;
 		}
 
-		string data = (char *)lua_tostring(L, 2);
+		string data = lua_tostring(L, 2);
 
 		if (!lua_isnumber(L, 3)) {
 			luaerror(L, ERR_PARAM);
@@ -259,7 +259,7 @@ int _SendToPassiveClass(lua_State *L)
 
 		int max_class = (int)lua_tonumber(L, 4);
 
-		if (!SendToPassiveClass((char*)data.c_str(), min_class, max_class)) {
+		if (!SendToPassiveClass(data.c_str(), min_class, max_class)) {
 			luaerror(L, ERR_CALL);
 			return 2;
 		}
@@ -284,12 +284,12 @@ int _SendPMToAll(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		data = (char *) lua_tostring(L, 2);
+		data = lua_tostring(L, 2);
 		if(!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		from = (char *) lua_tostring(L, 3);
+		from = lua_tostring(L, 3);
 
 		if(lua_isnumber(L, 4)) {
 			min_class = (int) lua_tonumber(L, 4);
@@ -312,7 +312,7 @@ int _SendPMToAll(lua_State *L)
 		server->SendToAllWithNick(start, end, min_class, max_class);
 		*/
 
-		SendPMToAll((char*)data.c_str(), (char*)from.c_str(), min_class, max_class);
+		SendPMToAll(data.c_str(), from.c_str(), min_class, max_class);
 	} else {
 		luaL_error(L, "Error calling VH:SendPMToAll; expected at least 4 arguments but got %d", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
@@ -344,8 +344,8 @@ int _SendToChat(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
-	string text = (char*)lua_tostring(L, 3);
+	string nick = lua_tostring(L, 2);
+	string text = lua_tostring(L, 3);
 	int min_class = 0, max_class = 10;
 
 	if (args >= 4) {
@@ -353,7 +353,7 @@ int _SendToChat(lua_State *L)
 		max_class = (int)lua_tonumber(L, 5);
 	}
 
-	if (!SendToChat((char*)nick.c_str(), (char*)text.c_str(), min_class, max_class)) {
+	if (!SendToChat(nick.c_str(), text.c_str(), min_class, max_class)) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
@@ -379,7 +379,7 @@ int _SendToOpChat(lua_State *L)
 		return 2;
 	}
 
-	string data = (char*)lua_tostring(L, 2);
+	string data = lua_tostring(L, 2);
 
 	if (data.empty()) {
 		luaerror(L, ERR_CALL);
@@ -389,9 +389,9 @@ int _SendToOpChat(lua_State *L)
 	string nick("");
 
 	if (args >= 2)
-		nick = (char*)lua_tostring(L, 3);
+		nick = lua_tostring(L, 3);
 
-	if (!SendToOpChat((char*)data.c_str(), (nick.size() ? (char*)nick.c_str() : NULL))) {
+	if (!SendToOpChat(data.c_str(), (nick.size() ? nick.c_str() : NULL))) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
@@ -417,13 +417,13 @@ int _Disconnect(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	long delay = 0;
 
 	if (args >= 2)
 		delay = (long)lua_tonumber(L, 3);
 
-	if (!CloseConnection((char*)nick.c_str(), delay)) {
+	if (!CloseConnection(nick.c_str(), delay)) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
@@ -476,8 +476,8 @@ int _GetMyINFO(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *) lua_tostring(L, 2);
-		myinfo = GetMyINFO( (char*) nick.c_str());
+		nick = lua_tostring(L, 2);
+		myinfo = GetMyINFO(nick.c_str());
 		if(strlen(myinfo) < 1)
 		{
 			result = 0;
@@ -515,7 +515,7 @@ int _GetUserCC(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if (!usr || !usr->mxConn) {
@@ -525,7 +525,7 @@ int _GetUserCC(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)usr->mxConn->mCC.c_str());
+	lua_pushstring(L, usr->mxConn->mCC.c_str());
 	return 2;
 }
 
@@ -550,7 +550,7 @@ int _GetUserCN(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if (!usr || !usr->mxConn) {
@@ -560,7 +560,7 @@ int _GetUserCN(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)usr->mxConn->mCN.c_str());
+	lua_pushstring(L, usr->mxConn->mCN.c_str());
 	return 2;
 }
 
@@ -585,7 +585,7 @@ int _GetUserCity(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if (!usr || !usr->mxConn) {
@@ -595,7 +595,7 @@ int _GetUserCity(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)usr->mxConn->mCity.c_str());
+	lua_pushstring(L, usr->mxConn->mCity.c_str());
 	return 2;
 }
 
@@ -614,12 +614,12 @@ int _GetIPCC(lua_State *L)
 		return 2;
 	}
 
-	string ip = (char*)lua_tostring(L, 2);
+	string ip = lua_tostring(L, 2);
 	const string cc = GetIPCC(ip.c_str());
 
 	if (cc.size()) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cc.c_str());
+		lua_pushstring(L, cc.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -642,12 +642,12 @@ int _GetIPCN(lua_State *L)
 		return 2;
 	}
 
-	string ip = (char*)lua_tostring(L, 2);
+	string ip = lua_tostring(L, 2);
 	const string cn = GetIPCN(ip.c_str());
 
 	if (cn.size()) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)cn.c_str());
+		lua_pushstring(L, cn.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -684,15 +684,15 @@ int _GetIPCity(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		} else
-			db = (char*)lua_tostring(L, 3);
+			db = lua_tostring(L, 3);
 	}
 
-	string ip = (char*)lua_tostring(L, 2);
+	string ip = lua_tostring(L, 2);
 	string city;
 
 	if (serv->sGeoIP.GetCity(city, ip, db)) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, (char*)city.c_str());
+		lua_pushstring(L, city.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
@@ -722,7 +722,7 @@ int _GetUserGeoIP(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	string db;
 
 	if (lua_gettop(L) > 2) {
@@ -730,7 +730,7 @@ int _GetUserGeoIP(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		} else
-			db = (char*)lua_tostring(L, 3);
+			db = lua_tostring(L, 3);
 	}
 
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
@@ -751,43 +751,43 @@ int _GetUserGeoIP(lua_State *L)
 		int x = lua_gettop(L);
 
 		lua_pushliteral(L, "host");
-		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_host.c_str()); }
+		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_host.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "range_low");
-		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ran_lo.c_str()); }
+		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_lo.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "range_high");
-		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ran_hi.c_str()); }
+		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_hi.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country_code");
-		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cc.c_str()); }
+		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cc.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country_code_xxx");
-		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ccc.c_str()); }
+		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ccc.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country");
-		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cn.c_str()); }
+		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cn.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "region_code");
-		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_reg_code.c_str()); }
+		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_code.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "region");
-		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_reg_name.c_str()); }
+		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_name.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "time_zone");
-		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_tz.c_str()); }
+		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_tz.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "continent_code");
-		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cont.c_str()); }
+		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cont.c_str()); }
 		lua_rawset(L, x);
 
 		string cont;
@@ -809,15 +809,15 @@ int _GetUserGeoIP(lua_State *L)
 		}
 
 		lua_pushliteral(L, "continent");
-		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)cont.c_str()); }
+		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, cont.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "city");
-		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_city.c_str()); }
+		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_city.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "postal_code");
-		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_post.c_str()); }
+		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_post.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "latitude");
@@ -929,7 +929,7 @@ int _GetHostGeoIP(lua_State *L)
 		return 2;
 	}
 
-	string host = (char*)lua_tostring(L, 2);
+	string host = lua_tostring(L, 2);
 	string db;
 
 	if (lua_gettop(L) > 2) {
@@ -937,7 +937,7 @@ int _GetHostGeoIP(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		} else
-			db = (char*)lua_tostring(L, 3);
+			db = lua_tostring(L, 3);
 	}
 
 	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
@@ -950,43 +950,43 @@ int _GetHostGeoIP(lua_State *L)
 		int x = lua_gettop(L);
 
 		lua_pushliteral(L, "host");
-		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_host.c_str()); }
+		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_host.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "range_low");
-		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ran_lo.c_str()); }
+		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_lo.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "range_high");
-		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ran_hi.c_str()); }
+		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_hi.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country_code");
-		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cc.c_str()); }
+		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cc.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country_code_xxx");
-		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_ccc.c_str()); }
+		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ccc.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "country");
-		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cn.c_str()); }
+		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cn.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "region_code");
-		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_reg_code.c_str()); }
+		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_code.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "region");
-		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_reg_name.c_str()); }
+		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_name.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "time_zone");
-		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_tz.c_str()); }
+		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_tz.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "continent_code");
-		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_cont.c_str()); }
+		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cont.c_str()); }
 		lua_rawset(L, x);
 
 		string cont;
@@ -1008,15 +1008,15 @@ int _GetHostGeoIP(lua_State *L)
 		}
 
 		lua_pushliteral(L, "continent");
-		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)cont.c_str()); }
+		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, cont.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "city");
-		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_city.c_str()); }
+		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_city.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "postal_code");
-		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, (char*)geo_post.c_str()); }
+		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_post.c_str()); }
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "latitude");
@@ -1133,7 +1133,7 @@ int _GetOPList(lua_State *L)
 	if(lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server) {
-			oplist = (char*) server->mOpList.GetNickList().c_str();
+			oplist = server->mOpList.GetNickList().c_str();
 			if(strlen(oplist) < 1) result = 0;
 			lua_pushboolean(L, result);
 			lua_pushstring(L, oplist);
@@ -1152,12 +1152,12 @@ int _GetOPList(lua_State *L)
 
 int _GetBotList(lua_State *L)
 {
-	char *botlist;
+	const char *botlist;
 	int result = 1;
 	if(lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
 		if(server) {
-			botlist = (char*) server->mRobotList.GetNickList().c_str();
+			botlist = server->mRobotList.GetNickList().c_str();
 			if(strlen(botlist) < 1) result = 0;
 			lua_pushboolean(L, result);
 			lua_pushstring(L, botlist);
@@ -1184,8 +1184,8 @@ int _GetUserClass(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *)lua_tostring(L, 2);
-		uclass = GetUserClass((char*)nick.c_str());
+		nick = lua_tostring(L, 2);
+		uclass = GetUserClass(nick.c_str());
 		lua_pushboolean(L, 1);
 		lua_pushnumber(L, uclass);
 		return 2;
@@ -1207,8 +1207,8 @@ int _GetUserHost(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *)lua_tostring(L, 2);
-		host = GetUserHost((char*)nick.c_str());
+		nick = lua_tostring(L, 2);
+		host = GetUserHost(nick.c_str());
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, host);
 		return 2;
@@ -1230,8 +1230,8 @@ int _GetUserIP(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *)lua_tostring(L, 2);
-		ip = GetUserIP((char*)nick.c_str());
+		nick = lua_tostring(L, 2);
+		ip = GetUserIP(nick.c_str());
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, ip);
 		return 2;
@@ -1255,7 +1255,7 @@ int _IsUserOnline(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		string nick = (char *) lua_tostring(L, 2);
+		string nick = lua_tostring(L, 2);
 		cUser *usr = server->mUserList.GetUserByNick(nick);
 		lua_pushboolean(L, (usr == NULL ? 0 : 1));
 		return 1;
@@ -1288,7 +1288,7 @@ int _GetUserVersion(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if ((usr == NULL) || (usr->mxConn == NULL)) {
@@ -1298,7 +1298,7 @@ int _GetUserVersion(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)usr->mxConn->mVersion.c_str());
+	lua_pushstring(L, usr->mxConn->mVersion.c_str());
 	return 2;
 }
 
@@ -1323,7 +1323,7 @@ int _GetUserSupports(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if ((usr == NULL) || (usr->mxConn == NULL)) {
@@ -1333,7 +1333,7 @@ int _GetUserSupports(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)usr->mxConn->mSupportsText.c_str());
+	lua_pushstring(L, usr->mxConn->mSupportsText.c_str());
 	return 2;
 }
 
@@ -1358,7 +1358,7 @@ int _GetUserHubURL(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn) {
@@ -1367,7 +1367,7 @@ int _GetUserHubURL(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)user->mxConn->mHubURL.c_str());
+	lua_pushstring(L, user->mxConn->mHubURL.c_str());
 	return 2;
 }
 
@@ -1392,7 +1392,7 @@ int _GetUserExtJSON(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user) {
@@ -1401,7 +1401,7 @@ int _GetUserExtJSON(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)user->mExtJSON.c_str());
+	lua_pushstring(L, user->mExtJSON.c_str());
 	return 2;
 }
 
@@ -1426,7 +1426,7 @@ int _InUserSupports(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char *)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	string flag = lua_tostring(L, 3);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
@@ -1490,17 +1490,17 @@ int _Ban(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *) lua_tostring(L, 2);
+		nick = lua_tostring(L, 2);
 		if(!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		op = (char *) lua_tostring(L, 3);
+		op = lua_tostring(L, 3);
 		if(!lua_isstring(L, 4)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		reason = (char *) lua_tostring(L, 4);
+		reason = lua_tostring(L, 4);
 		if(!lua_isnumber(L, 5)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
@@ -1511,7 +1511,7 @@ int _Ban(lua_State *L)
 			return 2;
 		}
 		bantype = (int) lua_tonumber(L, 6);
-		if(!Ban((char *) nick.c_str(), op, reason, howlong, bantype)) {
+		if(!Ban(nick.c_str(), op, reason, howlong, bantype)) {
 			//lua_pushboolean(L, 0);
 			luaerror(L, "User not found");
 			return 2;
@@ -1537,20 +1537,20 @@ int _KickUser(lua_State *L)
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		op = (char *)lua_tostring(L, 2);
+		op = lua_tostring(L, 2);
 		if(!lua_isstring(L, 3))
 		{
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = (char *)lua_tostring(L, 3);
+		nick = lua_tostring(L, 3);
 		if(!lua_isstring(L, 4))
 		{
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		data = (char *)lua_tostring(L, 4);
-		if(!KickUser((char *)op.c_str(), (char *)nick.c_str(), (char *)data.c_str()))
+		data = lua_tostring(L, 4);
+		if(!KickUser(op.c_str(), nick.c_str(), data.c_str()))
 		{
 			//lua_pushboolean(L, 0);
 			luaerror(L, ERR_CALL);
@@ -1589,10 +1589,10 @@ int _KickRedirUser(lua_State *L)
 		return 2;
 	}
 
-	string niop = (char*)lua_tostring(L, 2);
-	string nius = (char*)lua_tostring(L, 3);
-	string reas = (char*)lua_tostring(L, 4);
-	string addr = (char*)lua_tostring(L, 5);
+	string niop = lua_tostring(L, 2);
+	string nius = lua_tostring(L, 3);
+	string reas = lua_tostring(L, 4);
+	string addr = lua_tostring(L, 5);
 	cUser *oper = serv->mUserList.GetUserByNick(niop);
 
 	if (!oper) {
@@ -1630,9 +1630,9 @@ int _SetConfig(lua_State *L)
 		return 2;
 	}
 
-	string conf = (char*)lua_tostring(L, 2);
-	string var = (char*)lua_tostring(L, 3);
-	string val = (char*)lua_tostring(L, 4);
+	string conf = lua_tostring(L, 2);
+	string var = lua_tostring(L, 3);
+	string val = lua_tostring(L, 4);
 
 	if (!SetConfig(conf.c_str(), var.c_str(), val.c_str())) {
 		luaerror(L, ERR_CALL);
@@ -1658,9 +1658,9 @@ int _GetConfig(lua_State *L)
 		return 2;
 	}
 
-	string conf = (char*)lua_tostring(L, 2);
-	string var = (char*)lua_tostring(L, 3);
-	const char *val = GetConfig(conf.c_str(), var.c_str());
+	string conf = lua_tostring(L, 2);
+	string var = lua_tostring(L, 3);
+	char *val = GetConfig(conf.c_str(), var.c_str());
 
 	if (!val) {
 		luaerror(L, "Error calling GetConfig API");
@@ -1669,7 +1669,7 @@ int _GetConfig(lua_State *L)
 
 	lua_pushboolean(L, 1);
 	lua_pushstring(L, val);
-	free((void *)val);
+	free(val);
 	return 2;
 }
 
@@ -1692,13 +1692,13 @@ int _GetLuaBots(lua_State *L)
 					int k = lua_gettop(L);
 
 					lua_pushliteral(L, "sScriptname");
-					lua_pushstring(L, (char*)li->mScriptName.c_str());
+					lua_pushstring(L, li->mScriptName.c_str());
 					lua_rawset(L, k);
 					lua_pushliteral(L, "sNick");
-					lua_pushstring (L, (char*)li->botList[j]->uNick);
+					lua_pushstring (L, li->botList[j]->uNick);
 					lua_rawset(L, k);
 					lua_pushliteral(L, "sMyINFO");
-					lua_pushstring(L, (char*)li->botList[j]->uMyINFO);
+					lua_pushstring(L, li->botList[j]->uMyINFO);
 					lua_rawset(L, k);
 					lua_pushliteral(L, "iShare");
 					lua_pushnumber(L, (int)li->botList[j]->uShare);
@@ -1751,7 +1751,7 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
+	const string nick = lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -1777,7 +1777,7 @@ int _RegBot(lua_State *L)
 	int iclass;
 
 	if (lua_isstring(L, 3)) {
-		string temp = (char*)lua_tostring(L, 3);
+		string temp = lua_tostring(L, 3);
 
 		if (temp.empty())
 			iclass = 0;
@@ -1798,14 +1798,14 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	string desc = (char*)lua_tostring(L, 4);
-	string speed = (char*)lua_tostring(L, 5);
-	string email = (char*)lua_tostring(L, 6);
+	string desc = lua_tostring(L, 4);
+	string speed = lua_tostring(L, 5);
+	string email = lua_tostring(L, 6);
 	string share;
 	int ishare;
 
 	if (lua_isstring(L, 7)) {
-		share = (char*)lua_tostring(L, 7);
+		share = lua_tostring(L, 7);
 
 		if (share.empty()) {
 			share = "0";
@@ -1835,7 +1835,7 @@ int _RegBot(lua_State *L)
 	serv->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 	serv->mInProgresUsers.SendToAllWithFeature(msg, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 
-	li->addBot((char*)nick.c_str(), (char*)robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // add to lua bots
+	li->addBot(nick.c_str(), robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // add to lua bots
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -1869,7 +1869,7 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
+	const string nick = lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -1902,7 +1902,7 @@ int _EditBot(lua_State *L)
 	int iclass;
 
 	if (lua_isstring(L, 3)) {
-		string temp = (char*)lua_tostring(L, 3);
+		string temp = lua_tostring(L, 3);
 
 		if (temp.empty())
 			iclass = 0;
@@ -1916,14 +1916,14 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	string desc = (char*)lua_tostring(L, 4);
-	string speed = (char*)lua_tostring(L, 5);
-	string email = (char*)lua_tostring(L, 6);
+	string desc = lua_tostring(L, 4);
+	string speed = lua_tostring(L, 5);
+	string email = lua_tostring(L, 6);
 	string share;
 	int ishare;
 
 	if (lua_isstring(L, 7)) {
-		share = (char*)lua_tostring(L, 7);
+		share = lua_tostring(L, 7);
 
 		if (share.empty()) {
 			share = "0";
@@ -1973,7 +1973,7 @@ int _EditBot(lua_State *L)
 	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send new myinfo
 	serv->mInProgresUsers.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true);
 
-	li->editBot((char*)nick.c_str(), (char*)robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // edit in lua bots
+	li->editBot(nick.c_str(), robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // edit in lua bots
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -2014,7 +2014,7 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
+	const string nick = lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -2044,7 +2044,7 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	li->delBot((char*)nick.c_str()); // delete from lua bots
+	li->delBot(nick.c_str()); // delete from lua bots
 	plug->DelRobot(robot); // delete bot
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
@@ -2072,7 +2072,7 @@ int _IsBot(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
+	const string nick = lua_tostring(L, 2);
 	int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
@@ -2133,7 +2133,7 @@ int _SQLQuery(lua_State *L)
 		    return 2;
 		}
 		pi->mQuery->Clear();
-		pi->mQuery->OStream() << (char *) lua_tostring(L, 2);
+		pi->mQuery->OStream() << lua_tostring(L, 2);
 		pi->mQuery->Query();
 		int i = pi->mQuery->StoreResult();
 
@@ -2199,7 +2199,7 @@ int _SQLFetch(lua_State *L)
 
 		int j = 0;
 		while(j < pi->mQuery->Cols()) {
-			lua_pushstring(L, (char *)row[j]);
+			lua_pushstring(L, row[j]);
 			j++;
 		}
 		return j + 1;
@@ -2316,7 +2316,7 @@ int _GetServFreq(lua_State *L)
 	ostringstream freq;
 	freq << serv->mFrequency.GetMean(serv->mTime);
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char*)freq.str().c_str());
+	lua_pushstring(L, freq.str().c_str());
 	return 2;
 }
 
@@ -2328,7 +2328,7 @@ int _GetHubIp(lua_State *L)
 		return 2;
 	}
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char *) server->mAddr.c_str());
+	lua_pushstring(L, server->mAddr.c_str());
 	return 2;
 }
 
@@ -2340,7 +2340,7 @@ int _GetHubSecAlias(lua_State *L)
 		return 2;
 	}
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, (char *) server->mC.hub_security.c_str());
+	lua_pushstring(L, server->mC.hub_security.c_str());
 	return 2;
 }
 
@@ -2379,8 +2379,8 @@ int _ReportUser(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
-	string msg = (char*)lua_tostring(L, 3);
+	string nick = lua_tostring(L, 2);
+	string msg = lua_tostring(L, 3);
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 
 	if ((usr == NULL) || (usr->mxConn == NULL)) {
@@ -2408,11 +2408,11 @@ int _ParseCommand(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
-	string cmd = (char*)lua_tostring(L, 3);
+	string nick = lua_tostring(L, 2);
+	string cmd = lua_tostring(L, 3);
 	int pm = (int)lua_tonumber(L, 4);
 
-	if (!ParseCommand((char*)nick.c_str(), (char*)cmd.c_str(), pm)) {
+	if (!ParseCommand(nick.c_str(), cmd.c_str(), pm)) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2470,7 +2470,7 @@ int _AddChatUser(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn || !user->mxConn->mpUser) {
@@ -2510,7 +2510,7 @@ int _DelChatUser(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn || !user->mxConn->mpUser) {
@@ -2550,7 +2550,7 @@ int _IsChatUser(lua_State *L)
 		return 2;
 	}
 
-	string nick = (char*)lua_tostring(L, 2);
+	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn || !user->mxConn->mpUser) {
@@ -2584,8 +2584,8 @@ int _AddRegUser(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
-	const string pass = (char*)lua_tostring(L, 3);
+	const string nick = lua_tostring(L, 2);
+	const string pass = lua_tostring(L, 3);
 	int uclass = (int)lua_tonumber(L, 4);
 
 	if ((uclass < eUC_PINGER) || (uclass == eUC_NORMUSER) || ((uclass > eUC_ADMIN) && (uclass < eUC_MASTER)) || (uclass > eUC_MASTER)) { // validate class number
@@ -2596,9 +2596,9 @@ int _AddRegUser(lua_State *L)
 	string op;
 
 	if (args >= 4)
-		op = (char*)lua_tostring(L, 5);
+		op = lua_tostring(L, 5);
 
-	if (AddRegUser((char*)nick.c_str(), uclass, (char*)pass.c_str(), (char*)op.c_str()))
+	if (AddRegUser(nick.c_str(), uclass, pass.c_str(), op.c_str()))
 		lua_pushboolean(L, 1);
 	else
 		lua_pushboolean(L, 0);
@@ -2621,9 +2621,9 @@ int _DelRegUser(lua_State *L)
 		return 2;
 	}
 
-	const string nick = (char*)lua_tostring(L, 2);
+	const string nick = lua_tostring(L, 2);
 
-	if (DelRegUser((char*)nick.c_str()))
+	if (DelRegUser(nick.c_str()))
 		lua_pushboolean(L, 1);
 	else
 		lua_pushboolean(L, 0);
@@ -2641,7 +2641,7 @@ int _GetTopic(lua_State *L)
 		return 2;
 	}
 
-	lua_pushstring(L, (char*)serv->mC.hub_topic.c_str());
+	lua_pushstring(L, serv->mC.hub_topic.c_str());
 	return 1;
 }
 
@@ -2673,7 +2673,7 @@ int _SetTopic(lua_State *L)
 		return 2;
 	}
 
-	string topic = (char*)lua_tostring(L, 2);
+	string topic = lua_tostring(L, 2);
 	string omsg;
 	cDCProto::Create_HubName(omsg, serv->mC.hub_name, topic);
 	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
@@ -2704,8 +2704,8 @@ int _ScriptCommand(lua_State *L)
 		return 2;
 	}
 
-	string cmd = (char*)lua_tostring(L, 2);
-	string data = (char*)lua_tostring(L, 3);
+	string cmd = lua_tostring(L, 2);
+	string data = lua_tostring(L, 3);
 	string plug("lua");
 
 	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName)) {
@@ -2745,9 +2745,9 @@ int _ScriptQuery(lua_State *L)
 		return 2;
 	}
 
-	string cmd = (char*)lua_tostring(L, 2);
-	string data = (char*)lua_tostring(L, 3);
-	string recipient = (arg_num > 2) ? (char*)lua_tostring(L, 4) : "";
+	string cmd = lua_tostring(L, 2);
+	string data = lua_tostring(L, 3);
+	string recipient = (arg_num > 2) ? lua_tostring(L, 4) : "";
 	int use_long_output = (arg_num > 3) ? lua_tonumber(L, 5) : 0;
 	ScriptResponses responses;
 
@@ -2765,15 +2765,15 @@ int _ScriptQuery(lua_State *L)
 			lua_pushnumber(L, i);
 			lua_newtable(L);
 			lua_pushnumber(L, 0);
-			lua_pushstring(L, (char*)responses[i].data.c_str());
+			lua_pushstring(L, responses[i].data.c_str());
 			lua_rawset(L, -3);
 			lua_pushnumber(L, 1);
-			lua_pushstring(L, (char*)responses[i].sender.c_str());
+			lua_pushstring(L, responses[i].sender.c_str());
 			lua_rawset(L, -3);
 			lua_rawset(L, z);
 		} else {
 			lua_pushnumber(L, i);
-			lua_pushstring(L, (char*)responses[i].data.c_str());
+			lua_pushstring(L, responses[i].data.c_str());
 			lua_rawset(L, -3);  // store the pair on the table
 		}
 	}

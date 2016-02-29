@@ -108,8 +108,6 @@ w_TScript *w_Python = NULL;
 // ":" end of format string
 // ";" end of format string
 
-const char *w_packprint(w_Targs *a);  // forward declaration
-
 w_Targs *w_vapack(const char *format, va_list ap)
 {
 	w_Targs *a;
@@ -379,7 +377,7 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 					break;
 				case 's':
 					a->args[i].type = 's';
-					a->args[i].s = (char *)NULL;
+					a->args[i].s = NULL;
 					break;
 				case 'd':
 					a->args[i].type = 'd';
@@ -414,7 +412,7 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 			case 's':
 				a->args[i].type = 's';
 				if (p == Py_None) {
-					a->args[i].s = (char *)NULL;
+					a->args[i].s = NULL;
 					break;
 				}
 				if (!PyString_Check(p)) {
@@ -527,7 +525,7 @@ static PyObject *__CloseConnection(PyObject *self, PyObject *args)
 
 static PyObject *__GetMyINFO(PyObject *self, PyObject *args)
 {
-	const char *nick, *desc, *tag, *speed, *mail, *size;
+	char *nick, *desc, *tag, *speed, *mail, *size;
 	if (Call(W_GetMyINFO, args, "s", "ssssss", &nick, &desc, &tag, &speed, &mail, &size)) {
 		PyObject *p = Py_BuildValue("(ssssss)", nick, desc, tag, speed, mail, size);
 		freee(nick);
@@ -601,7 +599,9 @@ static PyObject *split_nick_list(const char *rawlist, const char *prefix)
 	while (1) {
 		i = w_FindStr(rawlist, "$$", pos);
 		if (i < 0) break;
-		PyList_Append(lst, Py_BuildValue("s", w_SubStr(rawlist, pos, i)));
+		char *element = w_SubStr(rawlist, pos, i);
+		PyList_Append(lst, Py_BuildValue("s", element));
+		free(element);
 		pos = i + 2;
 	}
 	return lst;
@@ -609,7 +609,7 @@ static PyObject *split_nick_list(const char *rawlist, const char *prefix)
 
 static PyObject *__GetNickList(PyObject *self, PyObject *args)
 {
-	const char *rawlist;
+	char *rawlist;
 	if (!Call(W_GetNickList, args, "", "s", &rawlist)) Py_RETURN_NONE;
 	PyObject *lst = split_nick_list(rawlist, "$NickList ");
 	freee(rawlist);
@@ -618,7 +618,7 @@ static PyObject *__GetNickList(PyObject *self, PyObject *args)
 
 static PyObject *__GetOpList(PyObject *self, PyObject *args)
 {
-	const char *rawlist;
+	char *rawlist;
 	if (!Call(W_GetOpList, args, "", "s", &rawlist)) Py_RETURN_NONE;
 	PyObject *lst = split_nick_list(rawlist, "$OpList ");
 	freee(rawlist);
@@ -627,7 +627,7 @@ static PyObject *__GetOpList(PyObject *self, PyObject *args)
 
 static PyObject *__GetBotList(PyObject *self, PyObject *args)
 {
-	const char *rawlist;
+	char *rawlist;
 	if (!Call(W_GetBotList, args, "", "s", &rawlist)) Py_RETURN_NONE;
 	PyObject *lst = split_nick_list(rawlist, "$BotList ");
 	freee(rawlist);
@@ -924,11 +924,11 @@ static PyObject *__UserRestrictions(PyObject *self, PyObject *args, PyObject *ke
 	
 	// Values: "" == don't change, "0" == unset, "1" == set for a week, TIME == set for TIME,
 	// where TIME is any valid VH time value, such as "3h" (3 hours).
-	char *nochattime = (char *)"";
-	char *nopmtime = (char *)"";
-	char *nosearchtime = (char *)"";
-	char *noctmtime = (char *)"";
-	static char *kwlist[] = {(char *)"nick", (char *)"chat", (char *)"pm", (char *)"search", (char *)"ctm", 0};
+	char *nochattime = NULL;
+	char *nopmtime = NULL;
+	char *nosearchtime = NULL;
+	char *noctmtime = NULL;
+	static char *kwlist[] = {strdup("nick"), strdup("chat"), strdup("pm"), strdup("search"), strdup("ctm"), 0};
 
 	long id = GetID();
 	if (id < 0) {
@@ -995,7 +995,7 @@ static PyObject *__StopHub(PyObject *self, PyObject *args)
 
 static PyObject *__encode(PyObject *self, PyObject *args)
 {
-	char *data;
+	const char *data;
 	ostringstream dest;
 	if (!PyArg_ParseTuple(args, "s:encode", &data)) return NULL;
 	for (unsigned int i = 0; i < strlen(data); i++) {
@@ -1016,7 +1016,7 @@ static PyObject *__encode(PyObject *self, PyObject *args)
 
 static PyObject *__decode(PyObject *self, PyObject *args)
 {
-	char *data;
+	const char *data;
 	string str;
 	string t1 = "&#5;", t2 = "&#36;", t3 = "&#96;", t4 = "&#124;", t5 = "&#126;";
 	int s1 = 4, s2 = 5, s3 = 5, s4 = 6, s5 = 6;
@@ -1126,8 +1126,8 @@ int w_Begin(w_Tcallback *cblist)
 {
 	w_Python = (w_TScript *)calloc(1, sizeof(w_TScript));
 	w_Python->callbacks = (w_Tcallback *)calloc(W_MAX_CALLBACKS, sizeof(void *));
-	w_Python->name = "core";
-	w_Python->path = "core";
+	w_Python->name = strdup("core");
+	w_Python->path = strdup("core");
 
 	PyEval_InitThreads();
 	Py_Initialize();
@@ -1219,7 +1219,7 @@ int w_Load(w_Targs *args)
 	}
 	PyEval_ReleaseThread(script->state);
 
-	char *argv[] = { (char *)"<vh>", 0 };
+	static char *argv[] = { strdup("<vh>"), 0 };
 	FILE *fp;
 	PyObject *m, *o, *pFunc, *module;
 
@@ -1236,12 +1236,12 @@ int w_Load(w_Targs *args)
 		return w_Unload(id);
 	}
 	PyModule_AddIntConstant(m, "myid", (long)id);
-	PyModule_AddStringConstant(m, "botname", (char *)script->botname);
-	PyModule_AddStringConstant(m, "opchatname", (char *)script->opchatname);
-	PyModule_AddStringConstant(m, "name", (char *)script->name);
-	PyModule_AddStringConstant(m, "path", (char *)script->path);
-	PyModule_AddStringConstant(m, "basedir", (char *)basedir);
-	PyModule_AddStringConstant(m, "config_name", (char *)config_name);
+	PyModule_AddStringConstant(m, "botname", script->botname);
+	PyModule_AddStringConstant(m, "opchatname", script->opchatname);
+	PyModule_AddStringConstant(m, "name", script->name);
+	PyModule_AddStringConstant(m, "path", script->path);
+	PyModule_AddStringConstant(m, "basedir", basedir);
+	PyModule_AddStringConstant(m, "config_name", config_name);
 	PyModule_AddIntConstant(m, "starttime", starttime);
 
 	// Reasons for closing a connection (from cserverdc.h):
@@ -1292,7 +1292,7 @@ int w_Load(w_Targs *args)
 	sscanf(version, "%ld.%ld.%ld.%ld", &ver1, &ver2, &ver3, &ver4);
 	o = Py_BuildValue("(iiii)", ver1, ver2, ver3, ver4);
 	PyObject_SetAttrString(m, "__version__", o);
-	PyModule_AddStringConstant(m, "__version_string__", (char *)version);
+	PyModule_AddStringConstant(m, "__version_string__", version);
 
 	fp = fopen(scriptname, "r");
 	if (fp == NULL) {
@@ -1410,8 +1410,8 @@ PyObject *w_GetHook(int hook)
 		log("PY: error: Can't get __main__ module\n");
 		return NULL;
 	}
-	if (!PyObject_HasAttrString(m, (char *)s)) return NULL;
-	f = PyObject_GetAttrString(m, (char *)s);
+	if (!PyObject_HasAttrString(m, s)) return NULL;
+	f = PyObject_GetAttrString(m, s);
 	if (!f || !PyCallable_Check(f)) {
 		Py_XDECREF(f);
 		return NULL;
@@ -1479,12 +1479,12 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 		return NULL;
 	}
 
-	char *s0 = NULL;
-	char *s1 = NULL;
-	char *s2 = NULL;
-	char *s3 = NULL;
-	char *s4 = NULL;
-	char *s5 = NULL;
+	const char *s0 = NULL;
+	const char *s1 = NULL;
+	const char *s2 = NULL;
+	const char *s3 = NULL;
+	const char *s4 = NULL;
+	const char *s5 = NULL;
 	long n0 = 0;
 	long n1 = 0;
 	double f0 = 0.0;
@@ -1641,18 +1641,18 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			case W_OnParsedMsgChat:
 				if (PyString_Check(pValue)) {
 					// a replacement message
-					char *msg = PyString_AsString(pValue);
+					const char *msg = PyString_AsString(pValue);
 					if (msg) {
 						log2("PY: [%d:%s] CallHook OnParsedMsgChat: returned %s\n", id, name, msg);
-						res = w_pack("ss", (char *)NULL, msg);
+						res = w_pack("ss", NULL, msg);
 						break;
 					}
 				}
 				if (PyTuple_Check(pValue))
 					if (PyTuple_Size(pValue) == 2) {
 						// nick and message replacements (NULL values mean no change)
-						char *nick = NULL;
-						char *msg = NULL;
+						const char *nick = NULL;
+						const char *msg = NULL;
 						if (PyArg_ParseTuple(pValue, "zz:OnParsedMsgChat", &nick, &msg)) {
 							res = w_pack("ss", nick, msg);
 							log2("PY: [%d:%s] CallHook OnParsedMsgChat: returned ( %s, %s )\n",
@@ -1670,11 +1670,11 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 				if (PyTuple_Check(pValue))
 					if (PyTuple_Size(pValue) == 5) { 
 						// (desc, tag, speed, email, sharesize)
-						char *desc = NULL;
-						char *tag = NULL;
-						char *speed = NULL;
-						char *email = NULL;
-						char *share = NULL;
+						const char *desc = NULL;
+						const char *tag = NULL;
+						const char *speed = NULL;
+						const char *email = NULL;
+						const char *share = NULL;
 						if (PyArg_ParseTuple(pValue, (firstMyINFO ? "zzzzz:OnFirstMyINFO"
 								: "zzzzz:OnParsedMsgMyINFO"), &desc, &tag, &speed, &email, &share)) {
 							res = w_pack("sssss", desc, tag, speed, email, share);
@@ -1688,7 +1688,7 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 					}
 			case W_OnScriptQuery:
 				if (PyString_Check(pValue)) {
-					char *msg = PyString_AsString(pValue);
+					const char *msg = PyString_AsString(pValue);
 					if (msg) {
 						log2("PY: [%d:%s] CallHook OnScriptQuery: returned %s\n", id, name, msg);
 						res = w_pack("s", msg);
@@ -1734,7 +1734,7 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 
 			if (exc != NULL) PyErr_NormalizeException(&exc, &val, &trace);
 			if (exc != NULL && PyErr_GivenExceptionMatches(exc, PyExc_TypeError)) {
-				char *error = NULL;
+				const char *error = NULL;
 				const char *use_zero = "OnTimer() takes no arguments";
 				const char *use_one = "OnTimer() takes exactly 1 argument";
 				Py_INCREF(val);

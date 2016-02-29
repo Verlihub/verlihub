@@ -42,10 +42,10 @@ namespace nVerliHub {
 				virtual void AddFields();
 				cRedirect * Find(const string &name); //@todo Trigger stuff
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);
-				char *MatchByType(unsigned int Type);
+				const char *MatchByType(unsigned int Type);
 				int MapTo(unsigned int Type);
 				void Random(int &key);
-				void CountPlusPlus(char *addr);
+				void CountPlusPlus(const char *addr);
 		};
 
 

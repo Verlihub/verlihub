@@ -577,7 +577,7 @@ class cServerDC : public cAsyncSocketServer
 		string EraseNewLines(const string &src);
 		static void RepBadNickChars(string &nick);
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
-		const char* GetConfig(const char *conf, const char *var, const char *def);
+		char* GetConfig(const char *conf, const char *var, const char *def);
 
 		// The buffer that holds data to send to all
 		string mSendAllBuf;

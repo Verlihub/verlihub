@@ -94,10 +94,8 @@ public:
 
 	bool AutoLoad();
 	static const char *GetName(const char *path);
-	int SplitMyINFO(const char *msg, const char **nick, const char **desc, const char **tag, 
-		const char **speed, const char **mail, const char **size);
-	//const char *GetConf(const char *conf, const char *var);
-	//bool SetConf(const char *conf, const char *var, const char *val);
+	int SplitMyINFO(const char *msg, char **nick, char **desc, char **tag, 
+		char **speed, char **mail, char **size);
 	w_Targs *SQL(int id, w_Targs *args);
 	void LogLevel(int);
 	bool IsNumber(const char *s);

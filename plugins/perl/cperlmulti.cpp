@@ -32,12 +32,12 @@ cPerlMulti::cPerlMulti()
 
 cPerlMulti::~cPerlMulti()
 {
-	for(std::vector<cPerlInterpreter*>::const_iterator i = mPerl.begin(); i != mPerl.end(); i++)
+	for (std::vector<cPerlInterpreter*>::const_iterator i = mPerl.begin(); i != mPerl.end(); i++)
 		delete *i;
 }
 
 
-int cPerlMulti::Parse(int argc, char*argv[]) {
+int cPerlMulti::Parse(int argc, const char *argv[]) {
 	cPerlInterpreter *perl = new cPerlInterpreter();
 	int ret = perl->Parse(argc, argv);
 	if (ret)
@@ -47,7 +47,7 @@ int cPerlMulti::Parse(int argc, char*argv[]) {
 	return ret;
 }
 
-bool cPerlMulti::CallArgv(const char *Function, char * Args [] ) {
+bool cPerlMulti::CallArgv(const char *Function, const char *Args[]) {
 	int s=0;
 	for(std::vector<cPerlInterpreter*>::const_iterator i = mPerl.begin(); i != mPerl.end(); i++) {
 		// Push scriptname and cPerlInterpreter (required for vh::ScriptCommand)
@@ -59,8 +59,8 @@ bool cPerlMulti::CallArgv(const char *Function, char * Args [] ) {
 		mScriptStack.pop_back();
 		mIntStack.pop_back();
 		// Restore previous context for vh::ScriptCommand
-		if(mIntStack.size()) mIntStack.back()->SetMyContext();
-		if(!ret) return false;
+		if (mIntStack.size()) mIntStack.back()->SetMyContext();
+		if (!ret) return false;
 	}
 	return true;
 }
