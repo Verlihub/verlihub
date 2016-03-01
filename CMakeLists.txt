@@ -35,6 +35,10 @@ SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERL
 SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION}")
 SET(PROJECT_NAME "verlihub")
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/Modules)
+
+SET(OK_PLUGINS_COUNT 0)
+SET(ALL_PLUGINS_COUNT 12)
+
 INCLUDE(CheckIncludeFiles)
 INCLUDE(MacroLogFeature)
 INCLUDE(VerliHubMacro)
@@ -263,6 +267,15 @@ message(STATUS)
 message(STATUS "========== Verlihub Build Information ==========")
 message(STATUS "Build Version: ${VERLIHUB_VERSION}")
 message(STATUS "Install Prefix (CMAKE_INSTALL_PREFIX): ${CMAKE_INSTALL_PREFIX}")
+
+IF(OK_PLUGINS_COUNT EQUAL ALL_PLUGINS_COUNT)
+	message(STATUS "All ${ALL_PLUGINS_COUNT} plugins will be built.")
+ELSEIF(OK_PLUGINS_COUNT EQUAL 0)
+	message(STATUS "No plugins will be built.")
+ELSE()
+	message(STATUS "Only ${OK_PLUGINS_COUNT} from ${ALL_PLUGINS_COUNT} plugins will be built.")
+ENDIF()
+
 message(STATUS)
 message(STATUS "To build and install Verlihub, run \"make\" and \"make install\"")
 message(STATUS)
