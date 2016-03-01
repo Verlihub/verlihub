@@ -47,9 +47,11 @@ MACRO(ADD_PLUGIN _var _name) # _src
 	
 	OPTION(WITH_${PLUGIN_OPTION} "Whether to build the ${_name} plugin or not" TRUE)
 	IF(${_var} AND WITH_${PLUGIN_OPTION})
-		MESSAGE(STATUS "Building ${_name} plugin")
+		MESSAGE(STATUS "---- Will build ${_name} plugin")
 		ADD_SUBDIRECTORY(${_src})
+	ELSEIF(WITH_${PLUGIN_OPTION})
+		MESSAGE(STATUS "---- Cannot build ${_name} plugin (unsatisfied dependencies)")
 	ELSE(${_var} AND WITH_${PLUGIN_OPTION})
-		MESSAGE(STATUS "Not building ${_name} plugin")
+		MESSAGE(STATUS "---- Cannot build ${_name} plugin (user specified -DWITH_${PLUGIN_OPTION}=OFF)")
 	ENDIF(${_var} AND WITH_${PLUGIN_OPTION})
 ENDMACRO(ADD_PLUGIN)
