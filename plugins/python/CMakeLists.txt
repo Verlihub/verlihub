@@ -56,7 +56,7 @@ LIST(APPEND PYTHON_SRCS "${CMAKE_CURRENT_BINARY_DIR}/cpipython.cpp")
 
 ADD_LIBRARY(libpython_pi MODULE ${PYTHON_SRCS})
 SET_TARGET_PROPERTIES(libpython_pi PROPERTIES OUTPUT_NAME "python_pi")
-target_link_libraries(libpython_pi ${DL_LIBRARIES})
+TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub)
 
 ADD_LIBRARY(libvh_python_wrapper MODULE ${PYTHON_WRAPPER_SRCS})
 SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wrapper")

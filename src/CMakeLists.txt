@@ -199,11 +199,11 @@ target_link_libraries(libverlihub ${VERLIHUB_LIBS}) # pthread dl execinfo
 
 ADD_LIBRARY(vhapi SHARED "script_api.cpp")
 SET_TARGET_PROPERTIES(vhapi PROPERTIES VERSION ${VERLIHUB_VERSION} SOVERSION ${VERLIHUB_SOVERSION})
-
+TARGET_LINK_LIBRARIES(vhapi libverlihub)
 
 # Link libverlihub against verlihub executable
 ADD_EXECUTABLE(verlihub verlihub.cpp)
-target_link_libraries(verlihub libverlihub)
+TARGET_LINK_LIBRARIES(verlihub libverlihub)
 
 # ----------------------------------------------------------------------------------------------------
 # Generate verlihub_config

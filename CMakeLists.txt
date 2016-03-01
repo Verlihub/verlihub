@@ -79,7 +79,9 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	if("${isSystemDir}" STREQUAL "-1")
 		set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	endif()
-# Workaround for homebrew gettext path:
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -undefined warning -flat_namespace")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_FLAGS} -undefined warning -flat_namespace")
+# Workaround for homebrew path:
 	SET(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} /usr/local/opt /usr/local/opt/gettext )
 	SET(GETTEXT_EXEC_PATH "/usr/local/opt/gettext" )
 	SET(OPENSSL_ROOT_DIR "/usr/local/opt/openssl" )
