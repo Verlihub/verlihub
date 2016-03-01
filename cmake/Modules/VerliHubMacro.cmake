@@ -49,6 +49,8 @@ MACRO(ADD_PLUGIN _var _name) # _src
 	IF(${_var} AND WITH_${PLUGIN_OPTION})
 		MESSAGE(STATUS "---- Will build ${_name} plugin")
 		ADD_SUBDIRECTORY(${_src})
+		MATH(EXPR OK_PLUGINS_COUNT "${OK_PLUGINS_COUNT} + 1")
+		SET(OK_PLUGINS_COUNT "${OK_PLUGINS_COUNT}" PARENT_SCOPE)
 	ELSEIF(WITH_${PLUGIN_OPTION})
 		MESSAGE(STATUS "---- Cannot build ${_name} plugin (unsatisfied dependencies)")
 	ELSE(${_var} AND WITH_${PLUGIN_OPTION})
