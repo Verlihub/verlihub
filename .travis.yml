@@ -9,12 +9,12 @@ compiler:
   - clang
 
 os:
-  - linux
   - osx
+#  - linux
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gettext mariadb geoip lua libgcrypt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gettext mariadb geoip lua libgcrypt pcre; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev; fi
 
