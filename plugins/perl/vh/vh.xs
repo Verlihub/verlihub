@@ -39,15 +39,15 @@ using namespace nVerliHub;
 using namespace nVerliHub::nPerlPlugin::nCallback;
 using namespace std;
 
-bool Ban(char *nick, char *op, char *reason, unsigned howlong, unsigned bantype) {
-	return Ban(nick,string(op),string(reason),howlong,bantype);
+bool Ban(const char *nick, const char *op, const char *reason, unsigned howlong, unsigned bantype) {
+	return Ban(nick, string(op), string(reason), howlong, bantype);
 }
 
-bool SendDataToAll(char *data, int min_class, int max_class) {
+bool SendDataToAll(const char *data, int min_class, int max_class) {
 	return SendToClass(data, min_class, max_class);
 }
 
-MODULE = vh		PACKAGE = vh		
+MODULE = vh    PACKAGE = vh
 
 PROTOTYPES: DISABLE
 
@@ -55,112 +55,112 @@ INCLUDE: const-xs.inc
 
 bool
 Ban(nick, op, reason, howlong, bantype)
-	char *	nick
-	char *  op
-	char *  reason
-	unsigned	howlong
-	int	bantype
+	const char *nick
+	const char *op
+	const char *reason
+	unsigned howlong
+	int bantype
 
 bool
 CloseConnection(nick)
-	char *	nick
+	const char *nick
 
-char *
+const char *
 GetUserCC(nick)
-	char * nick
+	const char *nick
 
 const char *
 GetMyINFO(nick)
-	char *	nick
+	const char *nick
 
 bool
 AddRegUser(nick, uclass, passwd, op)
-	char * nick
+	const char *nick
 	int uclass
-	char * passwd
-	char * op
+	const char *passwd
+	const char *op
 
 bool
 DelRegUser(nick)
-	char * nick
+	const char *nick
 
 bool RegBot(nick, uclass, desc, speed, email, share)
-	char *	nick
-	int	uclass
-	char *	desc
-	char *	speed
-	char *	email
-	char *	share
+	const char *nick
+	int uclass
+	const char *desc
+	const char *speed
+	const char *email
+	const char *share
 
 bool EditBot(nick, uclass, desc, speed, email, share)
-	char *	nick
-	int	uclass
-	char *	desc
-	char *	speed
-	char *	email
-	char *	share
+	const char *nick
+	int uclass
+	const char *desc
+	const char *speed
+	const char *email
+	const char *share
 
 bool UnRegBot(nick)
-	char *	nick
+	const char *nick
 
 int
 GetUserClass(nick)
-	char *	nick
+	const char *nick
 
 const char *
 GetUserHost(nick)
-	char *	nick
+	const char *nick
 
 const char *
 GetUserIP(nick)
-	char *	nick
+	const char *nick
 
 bool
 ParseCommand(command_line, nick, pm)
-	char *	command_line
-	char *	nick
-	int	pm
+	const char *command_line
+	const char *nick
+	int pm
 
 bool
 SendToClass(data, min_class, max_class)
-	char *	data
-	int	min_class
-	int	max_class
+	const char *data
+	int min_class
+	int max_class
 
 bool
 SendToAll(data)
-	char *	data
+	const char *data
 
 bool
 SendPMToAll(data, from, min_class, max_class)
-	char *	data
-	char *	from
-	int	min_class
-	int	max_class
+	const char *data
+	const char *from
+	int min_class
+	int max_class
 
 bool
 KickUser(op, nick, reason)
-	char *	op
-	char *	nick
-	char *	reason
+	const char *op
+	const char *nick
+	const char *reason
 
 bool
 SendDataToUser(data, nick)
-	char *	data
-	char *	nick
+	const char *data
+	const char *nick
 
 bool
 SetConfig(configname, variable, value)
-	const char *	configname
-	const char *	variable
-	const char *	value
+	const char *configname
+	const char *variable
+	const char *value
 
 const char *
 GetConfig(configname, variable)
-	const char *	configname
-	const char *	variable
+	const char *configname
+	const char *variable
 PPCODE:
-	const char * val = GetConfig(configname, variable);
+	char *val = GetConfig(configname, variable);
 	if (!val) {
 		croak("Error calling GetConfig");
 		XSRETURN_UNDEF;
@@ -174,16 +174,16 @@ GetUsersCount()
 const char *
 GetNickList()
 
-char *
+const char *
 GetOPList()
 
-char *
+const char *
 GetBotList()
 
 double
 GetTotalShareSize()
 
-char *
+const char *
 GetVHCfgDir()
 
 int
@@ -191,31 +191,31 @@ GetUpTime()
 
 int
 IsBot(nick)
-	char *  nick
+	const char *nick
 
 int
 IsUserOnline(nick)
-	char *  nick
+	const char *nick
 
 void
 GetHubIp()
 PPCODE:
-	char * addr = GetHubIp();
+	const char *addr = GetHubIp();
 	XPUSHs(sv_2mortal(newSVpv(addr, strlen(addr))));
 
 void
 GetHubSecAlias()
 PPCODE:
-	char * hubsec = GetHubSecAlias();
+	const char *hubsec = GetHubSecAlias();
 	XPUSHs(sv_2mortal(newSVpv(hubsec, strlen(hubsec))));
 
 int
 SQLQuery(query)
-	char *	query
+	const char *query
 
 void
 SQLFetch(r)
-	int	r
+	int r
 PPCODE:
 	int cols;
 	MYSQL_ROW row = SQLFetch(r,cols);
@@ -242,35 +242,35 @@ GetTopic()
 
 bool
 SetTopic(topic)
-	char * topic
+	const char *topic
 
 #ifdef HAVE_LIBGEOIP
 
 string
 GetIPCC(ip)
-	char * ip
+	const char *ip
 
 string
 GetIPCN(ip)
-	char * ip
+	const char *ip
 
 #endif
 
 bool
 InUserSupports(nick, flag)
-	char * nick
-	char * flag
+	const char *nick
+	const char *flag
 
 bool
 ReportUser(nick, msg)
-	char * nick
-	char * msg
+	const char *nick
+	const char *msg
 
 bool
 SendToOpChat(msg)
-	char * msg
+	const char *msg
 
 bool
 ScriptCommand(cmd, data)
-	char * cmd
-	char * data
+	const char *cmd
+	const char *data

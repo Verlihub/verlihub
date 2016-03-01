@@ -36,7 +36,7 @@ static cpiPerl * GetPI() {
 	return (cpiPerl *)server->mPluginManager.GetPlugin(PERLSCRIPT_PI_IDENTIFIER);
 }
 
-int nVerliHub::nPerlPlugin::nCallback::SQLQuery(char *query) {
+int nVerliHub::nPerlPlugin::nCallback::SQLQuery(const char *query) {
 	cpiPerl *pi = GetPI();
 
 	pi->mQuery->Clear();
@@ -73,13 +73,13 @@ int nVerliHub::nPerlPlugin::nCallback::SQLFree() {
 	return 1;
 }
 
-int nVerliHub::nPerlPlugin::nCallback::IsUserOnline(char *nick) {
+int nVerliHub::nPerlPlugin::nCallback::IsUserOnline(const char *nick) {
 	cServerDC *server = GetCurrentVerlihub();
 	cUser *usr = server->mUserList.GetUserByNick(nick);
 	return usr == NULL ? 0 : 1;
 }
 
-int nVerliHub::nPerlPlugin::nCallback::IsBot(char *nick) {
+int nVerliHub::nPerlPlugin::nCallback::IsBot(const char *nick) {
 	cServerDC *server = GetCurrentVerlihub();
 	cUserRobot *robot = (cUserRobot *)server->mRobotList.GetUserBaseByNick(nick);
 	return robot == NULL ? 0 : 1;
@@ -92,28 +92,29 @@ int nVerliHub::nPerlPlugin::nCallback::GetUpTime() {
 	return upTime.Sec();
 }
 
-char *nVerliHub::nPerlPlugin::nCallback::GetHubIp() {
+const char *nVerliHub::nPerlPlugin::nCallback::GetHubIp() {
 	cServerDC *server = GetCurrentVerlihub();
-	return (char*)server->mAddr.c_str();
+	return server->mAddr.c_str();
 }
 
-char *nVerliHub::nPerlPlugin::nCallback::GetHubSecAlias() {
+const char *nVerliHub::nPerlPlugin::nCallback::GetHubSecAlias() {
 	cServerDC *server = GetCurrentVerlihub();
-	return (char*)server->mC.hub_security.c_str();
+	return server->mC.hub_security.c_str();
 }
 
-char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
+const char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
 	cServerDC *server = GetCurrentVerlihub();
-	return (char*)server->mOpList.GetNickList().c_str();
+	return server->mOpList.GetNickList().c_str();
 }
 
-char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
+const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 	cServerDC *server = GetCurrentVerlihub();
-	return (char*)server->mRobotList.GetNickList().c_str();
+	return server->mRobotList.GetNickList().c_str();
 }
 
 
-bool nVerliHub::nPerlPlugin::nCallback::RegBot(char *nick, int uclass, char *desc, char *speed, char *email, char *share) {
+bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, const char *desc,
+		const char *speed, const char *email, const char *share) {
 	cServerDC *server = GetCurrentVerlihub();
 	cpiPerl *pi = GetPI();
 
@@ -138,7 +139,8 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(char *nick, int uclass, char *des
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::EditBot(char *nick, int uclass, char *desc, char *speed, char *email, char *share) {
+bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, const char *desc,
+		const char *speed, const char *email, const char *share) {
 	cServerDC *server = GetCurrentVerlihub();
 	//cpiPerl *pi = GetPI();
 	cUserRobot *robot = (cUserRobot*) server->mRobotList.GetUserBaseByNick(nick);
@@ -159,7 +161,7 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(char *nick, int uclass, char *de
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::UnRegBot(char *nick) {
+bool nVerliHub::nPerlPlugin::nCallback::UnRegBot(const char *nick) {
 	cServerDC *server = GetCurrentVerlihub();
 	cpiPerl *pi = GetPI();
 
@@ -179,17 +181,17 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetTopic() {
 	return server->mC.hub_topic.c_str();
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::SetTopic(char *_topic) {
+bool nVerliHub::nPerlPlugin::nCallback::SetTopic(const char *_topic) {
 	cServerDC *server = GetCurrentVerlihub();
 	std::string topic = _topic;
 	std::string message;
-	SetConfig((char*)"config", (char*)"hub_topic", _topic);
+	SetConfig("config", "hub_topic", _topic);
 	cDCProto::Create_HubName(message, server->mC.hub_name, topic);
 	server->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::ScriptCommand(char *_cmd, char *_data) {
+bool nVerliHub::nPerlPlugin::nCallback::ScriptCommand(const char *_cmd, const char *_data) {
 	//cServerDC *server = GetCurrentVerlihub();
 	std::string cmd = _cmd;
 	std::string data = _data;
@@ -198,7 +200,7 @@ bool nVerliHub::nPerlPlugin::nCallback::ScriptCommand(char *_cmd, char *_data) {
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::InUserSupports(char *nick, char *_flag) {
+bool nVerliHub::nPerlPlugin::nCallback::InUserSupports(const char *nick, const char *_flag) {
 	cServerDC *serv = GetCurrentVerlihub();
 	std::string flag = _flag;
 	int iflag = atoi(_flag);
@@ -231,7 +233,7 @@ bool nVerliHub::nPerlPlugin::nCallback::InUserSupports(char *nick, char *_flag) 
 	return false;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::ReportUser(char *nick, char *msg) {
+bool nVerliHub::nPerlPlugin::nCallback::ReportUser(const char *nick, const char *msg) {
 	cServerDC *serv = GetCurrentVerlihub();
 	cUser *usr = serv->mUserList.GetUserByNick(nick);
 	if ((usr == NULL) || (usr->mxConn == NULL))

@@ -105,21 +105,21 @@ void cpiLua::OnLoad(cServerDC *serv)
 
 	ostringstream def;
 	def << this->log_level;
-	const char *level = GetConfig("pi_lua", "log_level", def.str().c_str()); // get log level
+	char *level = GetConfig("pi_lua", "log_level", def.str().c_str()); // get log level
 
 	if (level && IsNumber(level))
 		this->log_level = atoi(level);
 
-	if (level) free((void *)level);
+	if (level) free(level);
 
 	def.str("");
 	def << this->err_class;
-	const char *eclass = GetConfig("pi_lua", "err_class", def.str().c_str()); // get error class
+	char *eclass = GetConfig("pi_lua", "err_class", def.str().c_str()); // get error class
 
 	if (eclass && IsNumber(eclass))
 		this->err_class = atoi(eclass);
 
-	if (eclass) free((void *)eclass);
+	if (eclass) free(eclass);
 
 	AutoLoad();
 }
@@ -222,7 +222,7 @@ bool cpiLua::AutoLoad()
 	return true;
 }
 
-bool cpiLua::CallAll(const char *fncname, char *args[], cConnDC *conn)
+bool cpiLua::CallAll(const char *fncname, const char *args[], cConnDC *conn)
 {
 	bool ret = true;
 
@@ -243,11 +243,11 @@ bool cpiLua::OnNewConn(cConnDC *conn)
 	bool res = true;
 
 	if (conn) {
-		char *args[] = {
-			(char*)conn->AddrIP().c_str(),
-			(char*)toString(conn->AddrPort()),
-			(char*)conn->GetServAddr().c_str(),
-			(char*)toString(conn->GetServPort()),
+		const char *args[] = {
+			conn->AddrIP().c_str(),
+			toString(conn->AddrPort()),
+			conn->GetServAddr().c_str(),
+			toString(conn->GetServPort()),
 			NULL
 		};
 
@@ -263,16 +263,16 @@ bool cpiLua::OnCloseConn(cConnDC *conn)
 {
 	if (conn != NULL) {
 		if (conn->mpUser != NULL) {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
-				(char *)conn->mpUser->mNick.c_str(),
+			const char *args[] = {
+				conn->AddrIP().c_str(),
+				conn->mpUser->mNick.c_str(),
 				NULL
 			};
 
 			return CallAll("VH_OnCloseConn", args, conn);
 		} else {
-			char * args[] = {
-				(char *)conn->AddrIP().c_str(),
+			const char *args[] = {
+				conn->AddrIP().c_str(),
 				NULL
 			};
 
@@ -289,19 +289,19 @@ bool cpiLua::OnCloseConnEx(cConnDC *conn)
 
 	if (conn) {
 		if (conn->mpUser) {
-			char *args[] = {
-				(char*)conn->AddrIP().c_str(),
-				(char*)toString(conn->mCloseReason),
-				(char*)conn->mpUser->mNick.c_str(),
+			const char *args[] = {
+				conn->AddrIP().c_str(),
+				toString(conn->mCloseReason),
+				conn->mpUser->mNick.c_str(),
 				NULL
 			};
 
 			res = CallAll("VH_OnCloseConnEx", args, conn);
 			delete [] args[1];
 		} else {
-			char *args[] = {
-				(char*)conn->AddrIP().c_str(),
-				(char*)toString(conn->mCloseReason),
+			const char *args[] = {
+				conn->AddrIP().c_str(),
+				toString(conn->mCloseReason),
 				NULL
 			};
 
@@ -316,9 +316,9 @@ bool cpiLua::OnCloseConnEx(cConnDC *conn)
 bool cpiLua::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_CH_MSG).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_CH_MSG).c_str(),
 			NULL
 		}; // eCH_CH_ALL, eCH_CH_NICK, eCH_CH_MSG
 
@@ -331,10 +331,10 @@ bool cpiLua::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgPM(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_PM_MSG).c_str(),
-			(char *)msg->ChunkString(eCH_PM_TO).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_PM_MSG).c_str(),
+			msg->ChunkString(eCH_PM_TO).c_str(),
 			NULL
 		}; // eCH_PM_ALL, eCH_PM_TO, eCH_PM_FROM, eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG
 
@@ -347,10 +347,10 @@ bool cpiLua::OnParsedMsgPM(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_MCTO_MSG).c_str(),
-			(char *)msg->ChunkString(eCH_MCTO_TO).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_MCTO_MSG).c_str(),
+			msg->ChunkString(eCH_MCTO_TO).c_str(),
 			NULL
 		}; // eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
 
@@ -363,10 +363,10 @@ bool cpiLua::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back)
 {
 	if (conn && msg && back) {
-	    char *args[] = {
-			(char*)conn->AddrIP().c_str(),
-			(char*)msg->mStr.c_str(),
-			(char*)back->c_str(),
+		const char *args[] = {
+			conn->AddrIP().c_str(),
+			msg->mStr.c_str(),
+			back->c_str(),
 			NULL
 		};
 
@@ -379,9 +379,9 @@ bool cpiLua::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back)
 bool cpiLua::OnParsedMsgMyHubURL(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && msg) {
-	    char *args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->mStr.c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->mStr.c_str(),
 			NULL
 		};
 
@@ -394,9 +394,9 @@ bool cpiLua::OnParsedMsgMyHubURL(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgExtJSON(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && msg) {
-	    char *args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->mStr.c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->mStr.c_str(),
 			NULL
 		};
 
@@ -409,9 +409,9 @@ bool cpiLua::OnParsedMsgExtJSON(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgBotINFO(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-	    char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->mStr.c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->mStr.c_str(),
 			NULL
 		};
 
@@ -424,9 +424,9 @@ bool cpiLua::OnParsedMsgBotINFO(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgVersion(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (msg != NULL)) {
-	    char * args[] = {
-			(char *)conn->AddrIP().c_str(),
-			(char *)msg->mStr.c_str(),
+		const char *args[] = {
+			conn->AddrIP().c_str(),
+			msg->mStr.c_str(),
 			NULL
 		};
 
@@ -439,9 +439,9 @@ bool cpiLua::OnParsedMsgVersion(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgMyPass(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			//(char *)msg->ChunkString(eCH_1_ALL).c_str(), // dont show pass itself
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			//msg->ChunkString(eCH_1_ALL).c_str(), // dont show pass itself
 			NULL
 		}; // eCH_1_ALL, eCH_1_PARAM
 
@@ -454,9 +454,9 @@ bool cpiLua::OnParsedMsgMyPass(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgRevConnectToMe(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_RC_OTHER).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_RC_OTHER).c_str(),
 			NULL
 		};
 
@@ -469,11 +469,11 @@ bool cpiLua::OnParsedMsgRevConnectToMe(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_CM_NICK).c_str(),
-			(char *)msg->ChunkString(eCH_CM_IP).c_str(),
-			(char *)msg->ChunkString(eCH_CM_PORT).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_CM_NICK).c_str(),
+			msg->ChunkString(eCH_CM_IP).c_str(),
+			msg->ChunkString(eCH_CM_PORT).c_str(),
 			NULL
 		}; // eCH_CM_NICK, eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT
 
@@ -486,9 +486,9 @@ bool cpiLua::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_AS_ALL).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_AS_ALL).c_str(),
 			NULL
 		}; // active: eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY; passive: eCH_PS_ALL, eCH_PS_NICK, eCH_PS_QUERY
 
@@ -501,9 +501,9 @@ bool cpiLua::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgSR(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_SR_ALL).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_SR_ALL).c_str(),
 			NULL
 		}; // eCH_SR_ALL, eCH_SR_FROM, eCH_SR_PATH, eCH_SR_SIZE, eCH_SR_SLOTS, eCH_SR_SL_FR, eCH_SR_SL_TO, eCH_SR_HUBINFO, eCH_SR_TO
 
@@ -516,9 +516,9 @@ bool cpiLua::OnParsedMsgSR(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgMyINFO(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->ChunkString(eCH_MI_ALL).c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->ChunkString(eCH_MI_ALL).c_str(),
 			NULL
 		}; // eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE
 
@@ -531,12 +531,12 @@ bool cpiLua::OnParsedMsgMyINFO(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnFirstMyINFO(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)msg->ChunkString(eCH_MI_NICK).c_str(),
-			(char *)msg->ChunkString(eCH_MI_DESC).c_str(),
-			(char *)msg->ChunkString(eCH_MI_SPEED).c_str(),
-			(char *)msg->ChunkString(eCH_MI_MAIL).c_str(),
-			(char *)msg->ChunkString(eCH_MI_SIZE).c_str(),
+		const char *args[] = {
+			msg->ChunkString(eCH_MI_NICK).c_str(),
+			msg->ChunkString(eCH_MI_DESC).c_str(),
+			msg->ChunkString(eCH_MI_SPEED).c_str(),
+			msg->ChunkString(eCH_MI_MAIL).c_str(),
+			msg->ChunkString(eCH_MI_SIZE).c_str(),
 			NULL
 		}; // eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE
 
@@ -549,9 +549,9 @@ bool cpiLua::OnFirstMyINFO(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgValidateNick(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-			(char *)msg->ChunkString(eCH_1_ALL).c_str(),
-			(char *)conn->AddrIP().c_str(),
+		const char *args[] = {
+			msg->ChunkString(eCH_1_ALL).c_str(),
+			conn->AddrIP().c_str(),
 			NULL
 		}; // eCH_1_ALL, eCH_1_PARAM
 
@@ -564,9 +564,9 @@ bool cpiLua::OnParsedMsgValidateNick(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnParsedMsgAny(cConnDC *conn, cMessageDC *msg)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		char * args[] = {
-		    (char *)conn->mpUser->mNick.c_str(),
-			(char *)msg->mStr.c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			msg->mStr.c_str(),
 			NULL
 		};
 
@@ -581,11 +581,11 @@ bool cpiLua::OnParsedMsgAnyEx(cConnDC *conn, cMessageDC *msg)
 	bool res = true;
 
 	if (conn && msg && !conn->mpUser) {
-		char *args[] = {
-			(char*)conn->AddrIP().c_str(),
-			(char*)msg->mStr.c_str(),
-			(char*)toString(conn->AddrPort()),
-			(char*)toString(conn->GetServPort()),
+		const char *args[] = {
+			conn->AddrIP().c_str(),
+			msg->mStr.c_str(),
+			toString(conn->AddrPort()),
+			toString(conn->GetServPort()),
 			NULL
 		};
 
@@ -603,20 +603,20 @@ bool cpiLua::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 
 	if (conn && msg && msg->mStr.size()) {
 		if (conn->mpUser) {
-			char *args[] = {
-				(char*)conn->mpUser->mNick.c_str(),
-				(char*)msg->mStr.c_str(),
-				(char*)"1",
-				(char*)conn->AddrIP().c_str(),
+			const char *args[] = {
+				conn->mpUser->mNick.c_str(),
+				msg->mStr.c_str(),
+				"1",
+				conn->AddrIP().c_str(),
 				NULL
 			};
 
 			res = CallAll("VH_OnUnknownMsg", args, conn);
 		} else {
-			char *args[] = {
-				(char*)conn->AddrIP().c_str(),
-				(char*)msg->mStr.c_str(),
-				(char*)"0",
+			const char *args[] = {
+				conn->AddrIP().c_str(),
+				msg->mStr.c_str(),
+				"0",
 				NULL
 			};
 
@@ -634,19 +634,19 @@ bool cpiLua::OnUnparsedMsg(cConnDC *conn, cMessageDC *msg)
 
 	if (conn && msg && msg->mStr.size()) {
 		if (conn->mpUser) {
-			char *args[] = {
-				(char*)conn->mpUser->mNick.c_str(),
-				(char*)msg->mStr.c_str(),
-				(char*)"1",
+			const char *args[] = {
+				conn->mpUser->mNick.c_str(),
+				msg->mStr.c_str(),
+				"1",
 				NULL
 			};
 
 			res = CallAll("VH_OnUnparsedMsg", args, conn);
 		} else {
-			char *args[] = {
-				(char*)conn->AddrIP().c_str(),
-				(char*)msg->mStr.c_str(),
-				(char*)"0",
+			const char *args[] = {
+				conn->AddrIP().c_str(),
+				msg->mStr.c_str(),
+				"0",
 				NULL
 			};
 
@@ -661,10 +661,10 @@ bool cpiLua::OnUnparsedMsg(cConnDC *conn, cMessageDC *msg)
 bool cpiLua::OnOperatorKicks(cUser *op, cUser *user, string *why)
 {
 	if (op && user && why) {
-		char *args[] = {
-			(char*)op->mNick.c_str(),
-			(char*)user->mNick.c_str(),
-			(char*)why->c_str(),
+		const char *args[] = {
+			op->mNick.c_str(),
+			user->mNick.c_str(),
+			why->c_str(),
 			NULL
 		};
 
@@ -677,10 +677,10 @@ bool cpiLua::OnOperatorKicks(cUser *op, cUser *user, string *why)
 bool cpiLua::OnOperatorDrops(cUser *op, cUser *user, string *why)
 {
 	if (op && user && why) {
-		char *args[] = {
-			(char*)op->mNick.c_str(),
-			(char*)user->mNick.c_str(),
-			(char*)why->c_str(),
+		const char *args[] = {
+			op->mNick.c_str(),
+			user->mNick.c_str(),
+			why->c_str(),
 			NULL
 		};
 
@@ -695,9 +695,9 @@ bool cpiLua::OnOperatorCommand(cConnDC *conn, string *command)
 	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
 		if (mConsole.DoCommand(*command, conn)) return false;
 
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)command->c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			command->c_str(),
 			NULL
 		};
 
@@ -710,9 +710,9 @@ bool cpiLua::OnOperatorCommand(cConnDC *conn, string *command)
 bool cpiLua::OnUserCommand(cConnDC *conn, string *command)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)command->c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			command->c_str(),
 			NULL
 		};
 
@@ -727,11 +727,11 @@ bool cpiLua::OnHubCommand(cConnDC *conn, string *command, int op, int pm)
 	bool res = true;
 
 	if (conn && conn->mpUser && command) {
-		char *args[] = {
-			(char*)conn->mpUser->mNick.c_str(),
-			(char*)command->c_str(),
-			(char*)toString(op),
-			(char*)toString(pm),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			command->c_str(),
+			toString(op),
+			toString(pm),
 			NULL
 		};
 
@@ -746,9 +746,9 @@ bool cpiLua::OnHubCommand(cConnDC *conn, string *command, int op, int pm)
 bool cpiLua::OnValidateTag(cConnDC *conn, cDCTag *tag)
 {
 	if ((conn != NULL) && (conn->mpUser != NULL) && (tag != NULL)) {
-		char * args[] = {
-			(char *)conn->mpUser->mNick.c_str(),
-			(char *)tag->mTag.c_str(),
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			tag->mTag.c_str(),
 			NULL
 		};
 
@@ -762,16 +762,16 @@ bool cpiLua::OnUserLogin(cUser *user)
 {
 	if (user != NULL) {
 		if (user->mxConn != NULL) {
-			char * args[] = {
-				(char *)user->mNick.c_str(),
-				(char *)user->mxConn->AddrIP().c_str(),
+			const char *args[] = {
+				user->mNick.c_str(),
+				user->mxConn->AddrIP().c_str(),
 				NULL
 			};
 
 			return CallAll("VH_OnUserLogin", args, user->mxConn);
 		} else {
-			char * args[] = {
-				(char *)user->mNick.c_str(),
+			const char *args[] = {
+				user->mNick.c_str(),
 				NULL
 			};
 
@@ -786,16 +786,16 @@ bool cpiLua::OnUserLogout(cUser *user)
 {
 	if (user != NULL) {
 		if (user->mxConn != NULL) {
-			char * args[] = {
-				(char *)user->mNick.c_str(),
-				(char *)user->mxConn->AddrIP().c_str(),
+			const char *args[] = {
+				user->mNick.c_str(),
+				user->mxConn->AddrIP().c_str(),
 				NULL
 			};
 
 			return CallAll("VH_OnUserLogout", args, user->mxConn);
 		} else {
-			char * args[] = {
-				(char *)user->mNick.c_str(),
+			const char *args[] = {
+				user->mNick.c_str(),
 				NULL
 			};
 
@@ -811,8 +811,8 @@ bool cpiLua::OnTimer(__int64 msec)
 	std::stringstream s;
 	s << msec;
 
-	char *args[] = {
-		(char *)s.str().c_str(),
+	const char *args[] = {
+		s.str().c_str(),
 		NULL
 	};
 
@@ -825,10 +825,10 @@ bool cpiLua::OnNewReg(cUser *user, string mNick, int mClass)
 	bool res = true;
 
 	if (user) {
-		char *args[] = {
-			(char*)mNick.c_str(),
-			(char*)toString(mClass),
-			(char*)user->mNick.c_str(),
+		const char *args[] = {
+			mNick.c_str(),
+			toString(mClass),
+			user->mNick.c_str(),
 			NULL
 		};
 
@@ -844,10 +844,10 @@ bool cpiLua::OnDelReg(cUser *user, string mNick, int mClass)
 	bool res = true;
 
 	if (user) {
-		char *args[] = {
-			(char*)mNick.c_str(),
-			(char*)toString(mClass),
-			(char*)user->mNick.c_str(),
+		const char *args[] = {
+			mNick.c_str(),
+			toString(mClass),
+			user->mNick.c_str(),
 			NULL
 		};
 
@@ -863,11 +863,11 @@ bool cpiLua::OnUpdateClass(cUser *user, string mNick, int oldClass, int newClass
 	bool res = true;
 
 	if (user) {
-		char *args[] = {
-			(char*)mNick.c_str(),
-			(char*)toString(oldClass),
-			(char*)toString(newClass),
-			(char*)user->mNick.c_str(),
+		const char *args[] = {
+			mNick.c_str(),
+			toString(oldClass),
+			toString(newClass),
+			user->mNick.c_str(),
 			NULL
 		};
 
@@ -892,17 +892,17 @@ bool cpiLua::OnNewBan(cUser *user, cBan *ban)
 		if (ban->mRangeMax > 0)
 			cBanList::Num2Ip(ban->mRangeMax, ranmax);
 
-		char *args[] = {
-			(char*)ban->mIP.c_str(),
-			(char*)ban->mNick.c_str(),
-			(char*)ban->mHost.c_str(),
-			(char*)((ban->mShare > 0) ? longToString(ban->mShare) : ""),
-			(char*)ranmin.c_str(),
-			(char*)ranmax.c_str(),
-			(char*)toString(ban->mType),
-			(char*)longToString(ban->mDateEnd),
-			(char*)ban->mReason.c_str(),
-			(char*)ban->mNickOp.c_str(),
+		const char *args[] = {
+			ban->mIP.c_str(),
+			ban->mNick.c_str(),
+			ban->mHost.c_str(),
+			((ban->mShare > 0) ? longToString(ban->mShare) : ""),
+			ranmin.c_str(),
+			ranmax.c_str(),
+			toString(ban->mType),
+			longToString(ban->mDateEnd),
+			ban->mReason.c_str(),
+			ban->mNickOp.c_str(),
 			NULL
 		};
 
@@ -921,10 +921,10 @@ bool cpiLua::OnNewBan(cUser *user, cBan *ban)
 bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 {
 	if (user != NULL) {
-		char * args[] = {
-			(char *)nick.c_str(),
-			(char *)op.c_str(),
-			(char *)reason.c_str(),
+		const char *args[] = {
+			nick.c_str(),
+			op.c_str(),
+			reason.c_str(),
 			NULL
 		};
 
@@ -937,13 +937,13 @@ bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
 {
 	if (user && conf && var && val_new && val_old) {
-		char *args[] = {
-			(char*)user->mNick.c_str(),
-			(char*)conf->c_str(),
-			(char*)var->c_str(),
-			(char*)val_new->c_str(),
-			(char*)val_old->c_str(),
-			(char*)toString(val_type),
+		const char *args[] = {
+			user->mNick.c_str(),
+			conf->c_str(),
+			var->c_str(),
+			val_new->c_str(),
+			val_old->c_str(),
+			toString(val_type),
 			NULL
 		};
 
@@ -971,11 +971,11 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	if (cmd && data && plug && script) {
-		char *args[] = {
-			(char*)cmd->c_str(),
-			(char*)data->c_str(),
-			(char*)plug->c_str(),
-			(char*)script->c_str(),
+		const char *args[] = {
+			cmd->c_str(),
+			data->c_str(),
+			plug->c_str(),
+			script->c_str(),
 			NULL
 		};
 
@@ -988,11 +988,11 @@ bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *sc
 bool cpiLua::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
 {
 	if (cmd && data && recipient && sender && resp) {
-		char *args[] = {
-			(char*)cmd->c_str(),
-			(char*)data->c_str(),
-			(char*)recipient->c_str(),
-			(char*)sender->c_str(),
+		const char *args[] = {
+			cmd->c_str(),
+			data->c_str(),
+			recipient->c_str(),
+			sender->c_str(),
 			NULL
 		};
 
@@ -1007,12 +1007,12 @@ bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 	bool res = true;
 
 	if (conn && ref) {
-		char *args[] = {
-			(char*)conn->mMyNick.c_str(),
-			(char*)conn->AddrIP().c_str(),
-			(char*)toString(conn->AddrPort()),
-			(char*)toString(conn->GetServPort()),
-			(char*)ref->c_str(),
+		const char *args[] = {
+			conn->mMyNick.c_str(),
+			conn->AddrIP().c_str(),
+			toString(conn->AddrPort()),
+			toString(conn->GetServPort()),
+			ref->c_str(),
 			NULL
 		};
 
@@ -1027,9 +1027,9 @@ bool cpiLua::OnCtmToHub(cConnDC *conn, string *ref)
 bool cpiLua::OnOpChatMessage(string *nick, string *data)
 {
 	if (nick && data) {
-		char *args[] = {
-			(char*)nick->c_str(),
-			(char*)data->c_str(),
+		const char *args[] = {
+			nick->c_str(),
+			data->c_str(),
 			NULL
 		};
 
@@ -1044,11 +1044,11 @@ bool cpiLua::OnPublicBotMessage(string *nick, string *data, int min_class, int m
 	bool res = true;
 
 	if (nick && data) {
-		char *args[] = {
-			(char*)nick->c_str(),
-			(char*)data->c_str(),
-			(char*)toString(min_class),
-			(char*)toString(max_class),
+		const char *args[] = {
+			nick->c_str(),
+			data->c_str(),
+			toString(min_class),
+			toString(max_class),
 			NULL
 		};
 
@@ -1062,8 +1062,8 @@ bool cpiLua::OnPublicBotMessage(string *nick, string *data, int min_class, int m
 
 bool cpiLua::OnUnLoad(long code)
 {
-	char *args[] = {
-		(char*)longToString(code),
+	const char *args[] = {
+		longToString(code),
 		NULL
 	};
 

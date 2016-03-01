@@ -174,7 +174,7 @@ void cpiPython::OnLoad(cServerDC *server)
 
 	ostringstream o;
 	o << log_level;
-	const char *level = GetConfig("pi_python", "log_level", o.str().c_str());
+	char *level = GetConfig("pi_python", "log_level", o.str().c_str());
 	if (level && strlen(level) > 0) log_level = char2int(level[0]);
 	freee(level);
 
@@ -291,8 +291,8 @@ const char *cpiPython::GetName(const char *path)
 // $MyINFO $ALL <nick> <interest>$ $<speed\x01>$<e-mail>$<sharesize>$
 // $MyINFO $ALL nick <++ V:0.668,M:P,H:39/0/0,S:1>$ $DSL\x01$$74894830123$
 // at this point the tag has already been validated by the hub so we do only the simplest tests here
-int cpiPython::SplitMyINFO(const char *msg, const char **nick, const char **desc, 
-	const char **tag, const char **speed, const char **mail, const char **size)
+int cpiPython::SplitMyINFO(const char *msg, char **nick, char **desc, 
+	char **tag, char **speed, char **mail, char **size)
 {
 	const char *begin = "$MyINFO $ALL ";
 	int dollars[5] = { -1, -1, -1, -1, -1 };
@@ -342,7 +342,7 @@ int cpiPython::SplitMyINFO(const char *msg, const char **nick, const char **desc
 
 w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 {
-	char *query;
+	const char *query;
 	string q;
 	long limit;
 	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint || !mQuery) return NULL;
@@ -363,7 +363,6 @@ w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 		return lib_pack("lllp", (long)1, (long)0, (long)0, (void *)NULL);
 	}
 	int cols = mQuery->Cols();
-	char *nil = (char *)"NULL";
 	char **res = (char **)calloc(cols * rows, sizeof(char *));
 	if (!res) {
 		log1("PY: SQL   malloc failed\n");
@@ -381,120 +380,11 @@ w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 			return lib_pack("lllp", (long)0, (long)0, (long)0, (void *)NULL);
 		}
 		for (int i = 0; i < cols; i++)
-			res[(r * cols) + i] = strdup((row[i]) ? row[i] : nil);
+			res[(r * cols) + i] = strdup((row[i]) ? row[i] : "NULL");
 	}
 	mQuery->Clear();
 	return lib_pack("lllp", (long)1, (long)rows, (long)cols, (void *)res);
 }
-
-/*
-const char *cpiPython::GetConf(const char *conf, const char *var) // why is script_api version so bad? also here is bug with "config", server->mDBConf.config_name can have different name
-{
-	if (!conf || !var) {
-		log2("PY: GetConf   wrong parameters\n");
-		return NULL;
-	}
-	// first let's check hub's internal config:
-	if (!strcmp(conf, "config")) {
-		static string res, file(server->mDBConf.config_name);
-		cConfigItemBase *ci = NULL;
-		if (file == server->mDBConf.config_name) {
-			ci = server->mC[var];
-			if (ci) {
-				ci->ConvertTo(res);
-				log3("PY: GetConf   got result from mDBConf: %s\n", res.c_str());
-				return strdup(res.c_str());
-			}
-		}
-		return NULL;
-	}
-	// let's try searching the database directly:
-	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint) return NULL;
-	log3("PY: GetConf   file != 'config'... calling SQL\n");
-	string query = string() + "select val from SetupList where file='" + conf + "' and var='" + var + "'";
-	w_Targs *a = lib_pack("sl", query.c_str(), (long)1);
-	log3("PY: GetConf   calling SQL with params: %s\n", lib_packprint(a));
-	w_Targs *ret = SQL(-2, a);
-	freee(a);
-	if (!ret) return NULL;
-	long res, rows, cols;
-	char **list;
-	log3("PY: GetConf   SQL returned %s\n", lib_packprint(ret));
-	if (!lib_unpack(ret, "lllp", &res, &rows, &cols, (void **)&list)) {
-		log3("PY: GetConf   call to SQL function failed\n");
-		freee(ret);
-		return NULL;
-	}
-	freee(ret);
-	if (!res || !rows || !cols || !list || !list[0]) return NULL;
-	log3("PY: GetConf   returning value: %s\n", list[0]);
-	const char *result = list[0];
-	free(list);
-	return result;
-}
-*/
-
-/*
-bool cpiPython::SetConf(const char *conf, const char *var, const char *val) // why is script_api version so bad? also here is bug with "config", server->mDBConf.config_name can have different name
-{
-	if (!conf || !var || !val) {
-		log2("PY: SetConf: wrong parameters\n");
-		return false;
-	}
-	// first let's check hub's internal config:
-	if (!strcmp(conf, "config")) {
-		string file(server->mDBConf.config_name);
-		cConfigItemBase *ci = NULL;
-		if (file == server->mDBConf.config_name) {
-			ci = server->mC[var];
-			if (ci) {
-				ci->ConvertFrom(val);
-				log3("PY: SetConf   set the value directly in mDBConf to: %s\n", val);
-				return true;
-			}
-		}
-		return false;
-	}
-	// let's try searching the database directly:
-	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint) return false;
-	log3("PY: SetConf   file != 'config', file == '%s'\n", conf);
-	string query = string() + "delete from SetupList where file='" + conf + "' and var='" + var + "'";
-	w_Targs *a = lib_pack("sl", query.c_str(), (long)1);
-	log3("PY: SetConf   calling SQL with params: %s\n", lib_packprint(a));
-	w_Targs *ret = SQL(-2, a);
-	if (a) free(a);
-	long res, rows, cols;
-	char **list;
-	log3("PY: SetConf   SQL returned %s\n", lib_packprint(ret));
-	if (!lib_unpack(ret, "lllp", &res, &rows, &cols, (void **)&list)) {
-		log3("PY: SetConf   call to SQL function failed\n");
-		freee(ret);
-		return false;
-	}
-	freee(ret->args[3].p);
-	freee(ret);
-	if (!res) {
-		log2("requested config variable ( %s in %s ) does not exist\n", var, conf);
-	};
-
-	query = string("") + "insert into SetupList (file, var, val) values ('" + conf
-		+ "', '" + var + "', '" + val + "')";
-	a = lib_pack("sl", query.c_str(), (long)1);
-	log3("PY: SetConf   calling SQL with params: %s\n", lib_packprint(a));
-	ret = SQL(-2, a);
-	freee(a);
-	log3("PY: SetConf   SQL returned %s\n", lib_packprint(ret));
-	if (!lib_unpack(ret, "lllp", &res, &rows, &cols, (void **)&list)) {
-		log3("PY: SetConf   call to SQL function failed\n");
-		freee(ret);
-		return false;
-	}
-	freee(ret->args[3].p);
-	freee(ret);
-	if (!res) return false;
-	return true;
-}
-*/
 
 void cpiPython::LogLevel(int level)
 {
@@ -618,8 +508,8 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 		bool ret = true;
 		w_Targs *result;
 		long num;
-		char *nick = NULL;
-		char *message = NULL;
+		const char *nick = NULL;
+		const char *message = NULL;
 
 		if (Size()) {
 			tvPythonInterpreter::iterator it;
@@ -783,7 +673,7 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 	if (!online) return true;
 	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
 		const char *original = msg->mStr.c_str();
-		const char *n, *origdesc, *origtag, *origspeed, *origmail, *origsize;
+		char *n, *origdesc, *origtag, *origspeed, *origmail, *origsize;
 		const char *desc, *tag, *speed, *mail, *size;
 		const char *nick = conn->mpUser->mNick.c_str();
 		if (!SplitMyINFO(original, &n, &origdesc, &origtag, &origspeed, &origmail, &origsize)) {
@@ -1023,7 +913,7 @@ bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, stri
 	if (Size()) {
 		tvPythonInterpreter::iterator it;
 		for (it = mPython.begin(); it != mPython.end(); ++it) {
-			char *response;
+			const char *response;
 			bool should_call = (*it)->receive_all_script_queries;
 			if (!should_call) {
 				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
@@ -1190,7 +1080,7 @@ w_Targs *_SendToOpChat(int id, w_Targs *args)
 
 w_Targs *_SendToActive(int id, w_Targs *args)
 {
-	char *data;
+	const char *data;
 	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
 	string msg(data);
 	cpiPython::me->server->mActiveUsers.SendToAll(msg, false, true);
@@ -1199,7 +1089,7 @@ w_Targs *_SendToActive(int id, w_Targs *args)
 
 w_Targs *_SendToPassive(int id, w_Targs *args)
 {
-	char *data;
+	const char *data;
 	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
 	string msg(data);
 	cpiPython::me->server->mPassiveUsers.SendToAll(msg, false, true);
@@ -1208,7 +1098,7 @@ w_Targs *_SendToPassive(int id, w_Targs *args)
 
 w_Targs *_SendToActiveClass(int id, w_Targs *args)
 {
-	char *data;
+	const char *data;
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
 	string msg(data);
@@ -1218,7 +1108,7 @@ w_Targs *_SendToActiveClass(int id, w_Targs *args)
 
 w_Targs *_SendToPassiveClass(int id, w_Targs *args)
 {
-	char *data;
+	const char *data;
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
 	string msg(data);
@@ -1228,7 +1118,7 @@ w_Targs *_SendToPassiveClass(int id, w_Targs *args)
 
 w_Targs *_SendDataToUser(int id, w_Targs *args)
 {
-	char *data, *nick;
+	const char *data, *nick;
 	if (!cpiPython::lib_unpack(args, "ss", &data, &nick)) return NULL;
 	if (!data || !nick) return NULL;
 	string d = data;
@@ -1242,7 +1132,7 @@ w_Targs *_SendDataToUser(int id, w_Targs *args)
 
 w_Targs *_SendDataToAll(int id, w_Targs *args)
 {
-	char *data;
+	const char *data;
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
 	if (!data) return NULL;
@@ -1276,7 +1166,7 @@ w_Targs *_SendDataToAll(int id, w_Targs *args)
 
 w_Targs *_SendPMToAll(int id, w_Targs *args)
 {
-	char *data, *from;
+	const char *data, *from;
 	long min_class, max_class;
 	if (!cpiPython::lib_unpack(args, "ssll", &data, &from, &min_class, &max_class)) return NULL;
 	if (!data || !from) return NULL;
@@ -1289,7 +1179,7 @@ w_Targs *_SendPMToAll(int id, w_Targs *args)
 
 w_Targs *_CloseConnection(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	long nice;
 	if (!cpiPython::lib_unpack(args, "sl", &nick, &nice)) return NULL;
 	if (!nick) return NULL;
@@ -1304,12 +1194,12 @@ w_Targs *_CloseConnection(int id, w_Targs *args)
 
 w_Targs *_GetMyINFO(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (!u) return NULL;
-	const char *n, *desc, *tag, *speed, *mail, *size;
+	char *n, *desc, *tag, *speed, *mail, *size;
 	if (!cpiPython::me->SplitMyINFO(u->mMyINFO.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
 		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", u->mMyINFO.c_str());
 		return NULL;
@@ -1320,7 +1210,7 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 
 w_Targs *_SetMyINFO(int id, w_Targs *args)
 {
-	char *nick, *desc, *tag, *speed, *email, *size;
+	const char *nick, *desc, *tag, *speed, *email, *size;
 	if (!cpiPython::lib_unpack(args, "ssssss", &nick, &desc, &tag, &speed, &email, &size)) {
 		log1("PY SetMyINFO   wrong parameters\n");
 		return NULL;
@@ -1339,7 +1229,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 		log1("PY SetMyINFO   couldn't read user's current MyINFO\n");
 		return NULL;
 	}
-	const char *n, *origdesc, *origtag, *origspeed, *origmail, *origsize;
+	char *n, *origdesc, *origtag, *origspeed, *origmail, *origsize;
 	if (!cpiPython::me->SplitMyINFO(nfo.c_str(), &n, &origdesc, &origtag, &origspeed, &origmail, &origsize)) {
 		log1("PY: Call SetMyINFO   malformed myinfo message: %s\n", nfo.c_str());
 		return NULL;
@@ -1374,7 +1264,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 w_Targs *_GetUserClass(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	long uclass = -2;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
@@ -1400,7 +1290,7 @@ w_Targs *_GetBotList(int id, w_Targs *args)
 
 w_Targs *_GetUserHost(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	const char *host = "";
@@ -1414,7 +1304,7 @@ w_Targs *_GetUserHost(int id, w_Targs *args)
 
 w_Targs *_GetUserIP(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	const char *ip = "";
@@ -1425,7 +1315,7 @@ w_Targs *_GetUserIP(int id, w_Targs *args)
 
 w_Targs *_GetUserHubURL(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	const char *url = "";
@@ -1436,7 +1326,7 @@ w_Targs *_GetUserHubURL(int id, w_Targs *args)
 
 w_Targs *_GetUserExtJSON(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	const char *pars = "";
@@ -1447,7 +1337,7 @@ w_Targs *_GetUserExtJSON(int id, w_Targs *args)
 
 w_Targs *_GetUserCC(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
 	const char *cc = "";
@@ -1460,7 +1350,7 @@ w_Targs *_GetUserCC(int id, w_Targs *args)
 
 w_Targs *_GetIPCC(int id, w_Targs *args)
 {
-	char *ip;
+	const char *ip;
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string ccstr;
@@ -1471,7 +1361,7 @@ w_Targs *_GetIPCC(int id, w_Targs *args)
 
 w_Targs *_GetIPCN(int id, w_Targs *args)
 {
-	char *ip;
+	const char *ip;
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string cnstr;
@@ -1542,20 +1432,20 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 
 w_Targs *_AddRegUser(int id, w_Targs *args)
 {
-	char *nick, *password, *op;
+	const char *nick, *password, *op;
 	long uclass;
 	if (!cpiPython::lib_unpack(args, "slss", &nick, &uclass, &password, &op)) return NULL;
 	if (uclass < -1 || uclass == 0 || uclass > 5) return NULL;
 	if (!nick || !strlen(nick)) return NULL;
-	if (!password) password = (char *)"";
-	if (!op) op = (char *)"";
+	if (!password) password = "";
+	if (!op) op = "";
 	if (AddRegUser(nick, (int)uclass, password, op)) return w_ret1;
 	return NULL;
 }
 
 w_Targs *_DelRegUser(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick || !strlen(nick)) return NULL;
 	if (DelRegUser(nick)) return w_ret1;
@@ -1564,18 +1454,18 @@ w_Targs *_DelRegUser(int id, w_Targs *args)
 
 w_Targs *_Ban(int id, w_Targs *args)
 {
-	char *op, *nick, *reason;
+	const char *op, *nick, *reason;
 	long seconds, ban_type;
 	if (!cpiPython::lib_unpack(args, "sssll", &op, &nick, &reason, &seconds, &ban_type)) return NULL;
 	if (!op || !nick) return NULL;
-	if (!reason) reason = (char *)"";
+	if (!reason) reason = "";
 	if (Ban(nick, op, reason, (unsigned)seconds, (unsigned)ban_type)) return w_ret1;
 	return NULL;
 }
 
 w_Targs *_KickUser(int id, w_Targs *args)
 {
-	char *op, *nick, *reason, *address;
+	const char *op, *nick, *reason, *address;
 	if (!cpiPython::lib_unpack(args, "ssss", &op, &nick, &reason, &address)) { return NULL; }
 	if (!nick || !op || !reason) return NULL;
 	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(op);
@@ -1587,7 +1477,7 @@ w_Targs *_KickUser(int id, w_Targs *args)
 
 w_Targs* _ParseCommand(int id, w_Targs *args)
 {
-	char *nick, *cmd;
+	const char *nick, *cmd;
 	int pm;
 	if (!cpiPython::lib_unpack(args, "ssl", &nick, &cmd, &pm)) return NULL;
 	if (!nick || !cmd) return NULL;
@@ -1597,7 +1487,7 @@ w_Targs* _ParseCommand(int id, w_Targs *args)
 
 w_Targs* _ScriptCommand(int id, w_Targs *args)
 {
-	char *cmd, *data;
+	const char *cmd, *data;
 	if (!cpiPython::lib_unpack(args, "ss", &cmd, &data)) return NULL;
 	if (!cmd || !data) return NULL;
 	string plug("python"), s_cmd(cmd), s_data(data);
@@ -1608,12 +1498,12 @@ w_Targs* _ScriptCommand(int id, w_Targs *args)
 
 w_Targs* _ScriptQuery(int id, w_Targs *args)
 {
-	char *cmd, *data, *recipient = NULL;
+	const char *cmd, *data, *recipient = NULL;
 	long use_long_output;
 	ScriptResponses responses;
 	if (!cpiPython::lib_unpack(args, "sssl", &cmd, &data, &recipient, &use_long_output)) return NULL;
 	if (!cmd || !data) return NULL;
-	if (!recipient) recipient = (char *)"";
+	if (!recipient) recipient = "";
 	string s_cmd(cmd), s_data(data), s_recipient(recipient);
 	string s_sender(cpiPython::me->GetInterpreter(id)->mScriptName);
 	
@@ -1623,7 +1513,7 @@ w_Targs* _ScriptQuery(int id, w_Targs *args)
 		return cpiPython::lib_pack("lllp", (long)1, (long)0, (long)0, (void *)NULL);
 	int rows = responses.size();
 	int cols = (use_long_output ? 2 : 1);
-	char **res = (char **)calloc(cols * rows, sizeof(char *));
+	const char **res = (const char **)calloc(cols * rows, sizeof(char *));
 	if (!res) {
 		log1("PY: ScriptQuery   malloc failed\n");
 		return NULL;
@@ -1641,7 +1531,7 @@ w_Targs* _ScriptQuery(int id, w_Targs *args)
 
 w_Targs *_SetConfig(int id, w_Targs *args)
 {
-	char *conf, *var, *val;
+	const char *conf, *var, *val;
 	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &val)) return NULL;
 	if (!conf || !var || !val) return NULL;
 	if (SetConfig(conf, var, val)) w_ret1;
@@ -1650,7 +1540,7 @@ w_Targs *_SetConfig(int id, w_Targs *args)
 
 w_Targs *_GetConfig(int id, w_Targs *args)
 {
-	char *conf, *var, *def_val;
+	const char *conf, *var, *def_val;
 	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &def_val)) return NULL;
 	if (!conf || !var) return NULL;
 	const char *val = GetConfig(conf, var, def_val);
@@ -1673,7 +1563,7 @@ long is_robot_nick_bad(const char *nick)
 
 w_Targs *_IsRobotNickBad(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	long bad = (cpiPython::lib_unpack(args, "s", &nick) ? eBOT_OK : eBOT_API_ERROR);
 	if (!bad) bad = is_robot_nick_bad(nick);
 	return cpiPython::lib_pack("l", bad);
@@ -1681,7 +1571,7 @@ w_Targs *_IsRobotNickBad(int id, w_Targs *args)
 
 w_Targs *_AddRobot(int id, w_Targs *args)
 {
-	char *nick, *desc, *speed, *email, *share;
+	const char *nick, *desc, *speed, *email, *share;
 	long uclass;
 	if (!cpiPython::lib_unpack(args, "slssss", &nick, &uclass, &desc, &speed, &email, &share)) return NULL;
 	if (!nick || !desc || !speed || !email || !share) return NULL;
@@ -1714,7 +1604,7 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 
 w_Targs *_DelRobot(int id, w_Targs *args)
 {
-	char *nick;
+	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick || strlen(nick) == 0) return NULL;
 	cPluginRobot *robot = (cPluginRobot *)cpiPython::me->server->mUserList.GetUserByNick(nick);
@@ -1749,7 +1639,7 @@ w_Targs *_GetTotalShareSize(int id, w_Targs *args)
 w_Targs *_UserRestrictions(int id, w_Targs *args)
 {
 	long res = 0;
-	char *nick, *nochattime, *nopmtime, *nosearchtime, *noctmtime;
+	const char *nick, *nochattime, *nopmtime, *nosearchtime, *noctmtime;
 	if (!cpiPython::lib_unpack(args, "sssss", &nick, &nochattime, &nopmtime, &nosearchtime, &noctmtime))
 		return NULL;
 	if (!nick || strlen(nick) == 0) return NULL;
@@ -1810,7 +1700,7 @@ w_Targs *_UserRestrictions(int id, w_Targs *args)
 
 w_Targs *_Topic(int id, w_Targs *args)
 {
-	char *topic;
+	const char *topic;
 	if (!cpiPython::lib_unpack(args, "s", &topic)) return NULL;
 	if (topic && strlen(topic) < 1024) {
 		cpiPython::me->server->mC.hub_topic = topic;

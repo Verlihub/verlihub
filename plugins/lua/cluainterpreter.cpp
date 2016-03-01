@@ -42,7 +42,7 @@ cLuaInterpreter::cLuaInterpreter(string configname, string scriptname):
 
 cLuaInterpreter::~cLuaInterpreter()
 {
-	char *args[] = { NULL };
+	const char *args[] = { NULL };
 
 	if (mL) {
 		CallFunction("UnLoad", args);
@@ -146,7 +146,7 @@ bool cLuaInterpreter::Init()
 	}
 
 	lua_setglobal(mL, VH_TABLE_NAME);
-	int status = luaL_dofile(mL, (char*)mScriptName.c_str());
+	int status = luaL_dofile(mL, mScriptName.c_str());
 
 	if (status) {
 		const char *error = luaL_checkstring(mL, 1);
@@ -158,7 +158,7 @@ bool cLuaInterpreter::Init()
 	lua_setglobal(mL, "_PLUGINVERSION");
 	lua_pushstring(mL, HUB_VERSION_VERS);
 	lua_setglobal(mL, "_HUBVERSION");
-	lua_pushstring(mL, (char*)mScriptName.c_str());
+	lua_pushstring(mL, mScriptName.c_str());
 	lua_setglobal(mL, "_SCRIPTFILE");
 	const char *path = mScriptName.c_str();
 
@@ -169,17 +169,17 @@ bool cLuaInterpreter::Init()
 		}
 	}
 
-	lua_pushstring(mL, (char*)path); // these two globals are to be set by the script, but should have sane defaults
+	lua_pushstring(mL, path); // these two globals are to be set by the script, but should have sane defaults
 	lua_setglobal(mL, "_SCRIPTNAME");
-	lua_pushstring(mL, (char*)"0.0.0");
+	lua_pushstring(mL, "0.0.0");
 	lua_setglobal(mL, "_SCRIPTVERSION");
 	return true;
 }
 
 void cLuaInterpreter::Load()
 {
-	char *args[] = {
-		(char*)mScriptName.c_str(), // set first argument to script name, could be useful for path detection
+	const char *args[] = {
+		mScriptName.c_str(), // set first argument to script name, could be useful for path detection
 		NULL
 	};
 
@@ -237,7 +237,7 @@ void cLuaInterpreter::VHPushString(const char *name, const char *val, bool updat
 		lua_rawset(mL, pos);
 }
 
-bool cLuaInterpreter::CallFunction(const char *func, char *args[], cConnDC *conn)
+bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC *conn)
 {
 	ScriptResponses *responses = NULL;
 

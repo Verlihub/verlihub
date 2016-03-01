@@ -2639,12 +2639,13 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 	return -3;
 }
 
-const char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
+char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 {
-	if (def) def = strdup(def); // the caller will free non-null values returned by GetConfig!
+	char *ret = NULL;
+	if (def) ret = strdup(def); // the caller will free non-null values returned by GetConfig!
 
 	if (!conf || !var)
-		return def;
+		return ret;
 
 	string sconf(conf), val;
 	cConfigItemBase *ci = NULL;
@@ -2654,12 +2655,13 @@ const char* cServerDC::GetConfig(const char *conf, const char *var, const char *
 
 		if (ci) {
 			ci->ConvertTo(val);
+			if (ret) free(ret);
 			return strdup(val.c_str());
 		} else {
 			if (ErrLog(1))
 				LogStream() << "Undefined GetConfig variable: " << conf << "." << var << endl;
 
-			return def;
+			return ret;
 		}
 	}
 
@@ -2675,11 +2677,13 @@ const char* cServerDC::GetConfig(const char *conf, const char *var, const char *
 		delete ci;
 		ci = NULL;
 
-		if (load)
+		if (load) {
+			if (ret) free(ret);
 			return strdup(val.c_str());
+		}
 	}
 
-	return def;
+	return ret;
 }
 
 /*

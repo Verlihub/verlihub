@@ -35,10 +35,10 @@ public:
 	cPerlMulti();
 	virtual ~cPerlMulti();
 
-	int Parse(int argc, char*argv[]);
+	int Parse(int argc, const char *argv[]);
 
-	bool CallArgv(const char *Function, char * Args [] );
-	
+	bool CallArgv(const char *Function, const char *Args[]);
+
 	int Size() { return mPerl.size(); }
 
 	std::vector<cPerlInterpreter*> mPerl;

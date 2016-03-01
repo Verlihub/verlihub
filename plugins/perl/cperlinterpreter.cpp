@@ -68,22 +68,22 @@ void cPerlInterpreter::SetMyContext()
 }
 
 /** parse arguments like for a command line of perl */
-int cPerlInterpreter::Parse(int argc, char *argv[])
+int cPerlInterpreter::Parse(int argc, const char *argv[])
 {
 	//PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
-	int result = perl_parse(mPerl, xs_init, argc, argv, NULL);
+	int result = perl_parse(mPerl, xs_init, argc, (char **)argv, NULL);
 	PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 	mScriptName = argv[1];
 	if (!result)
 	{
-		char *args[] = { (char *)"Main", NULL };
+		const char *args[] = { "Main", NULL };
 		CallArgv(PERL_CALL, args);
 	}
 	return result;
 }
 
-bool cPerlInterpreter::CallArgv(const char *Function, char * Args [] )
+bool cPerlInterpreter::CallArgv(const char *Function, const char *Args[])
 {
 	//PerlInterpreter *my_perl = mPerl;
 	SetMyContext();
@@ -92,12 +92,12 @@ bool cPerlInterpreter::CallArgv(const char *Function, char * Args [] )
 	bool ret = true;
 	ENTER;
 	SAVETMPS;
-	n = call_argv(Function, G_EVAL|G_SCALAR , Args );
+	n = call_argv(Function, G_EVAL|G_SCALAR , (char **)Args);
 	SPAGAIN;
-	if(SvTRUE(ERRSV)) {
+	if (SvTRUE(ERRSV)) {
 	  STRLEN n_a;
 	  ReportPerlError(SvPV(ERRSV, n_a));
-	} else if(n==1) {
+	} else if (n == 1) {
 	  ret = POPi;
 	} else {
 	  vhErr(1) << "Call " << Function << ": expected 1 return value, but " << n << " returned" << endl;
@@ -107,12 +107,12 @@ bool cPerlInterpreter::CallArgv(const char *Function, char * Args [] )
 	return ret;
 }
 
-void cPerlInterpreter::ReportPerlError(char * error)
+void cPerlInterpreter::ReportPerlError(const char * error)
 {
 	string error2 = "[ Perl ERROR ] ";
 	error2.append(error);
 	cServerDC * server = cServerDC::sCurrentServer;
-	if(server) SendPMToAll( (char *) error2.c_str(), (char *) server->mC.hub_security.c_str(), 3, 10);
+	if(server) SendPMToAll(error2.c_str(), server->mC.hub_security.c_str(), 3, 10);
 }
 
 	}; // namespace nPerlPlugin

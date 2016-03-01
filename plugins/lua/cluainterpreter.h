@@ -48,7 +48,7 @@ public:
 
 	bool Init();
 	void ReportLuaError(const char*);
-	bool CallFunction(const char*, char *[], cConnDC *conn = NULL);
+	bool CallFunction(const char*, const char *[], cConnDC *conn = NULL);
 	void RegisterFunction(const char *func, int (*ptr)(lua_State*));
 	void VHPushString(const char *name, const char *val, bool update = false);
 	void Load();
@@ -57,8 +57,8 @@ public:
 	string mScriptName;
 
 	struct mScriptBot {
-		char *uNick;
-		char *uMyINFO;
+		const char *uNick;
+		const char *uMyINFO;
 		int uShare;
 		int uClass;
 	};
@@ -66,7 +66,7 @@ public:
 	typedef vector<mScriptBot *> tvBot;
 	tvBot botList;
 
-	void addBot(char *Nick, char *MyINFO, int Share, int Class) {
+	void addBot(const char *Nick, const char *MyINFO, int Share, int Class) {
 		bool add = true;
 
 		for (unsigned int i = 0; i < botList.size(); i++) {
@@ -86,7 +86,7 @@ public:
 		}
 	}
 
-	void editBot(char *Nick, char *MyINFO, int Share, int Class) {
+	void editBot(const char *Nick, const char *MyINFO, int Share, int Class) {
 		mScriptBot *bot = NULL;
 
 		for (unsigned int i = 0; i < botList.size(); i++) {
@@ -104,7 +104,7 @@ public:
 		}
 	}
 
-	void delBot(char *Nick) {
+	void delBot(const char *Nick) {
 		for (unsigned int i = 0; i < botList.size(); i++) {
 			if (strcmp(botList[i]->uNick, Nick) == 0) {
 				botList.erase(botList.begin() + i);

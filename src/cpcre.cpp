@@ -58,9 +58,9 @@ cPCRE::cPCRE(const string &pattern, unsigned int options, int coord):
 
 bool cPCRE::Compile(const char *pattern, unsigned int options)
 {
-	char *errptr;
+	const char *errptr;
 	int erroffset;
-	mPattern = pcre_compile(pattern, options, (const char **)&errptr, &erroffset, NULL);
+	mPattern = pcre_compile(pattern, options, &errptr, &erroffset, NULL);
 	return mPattern != NULL;
 }
 

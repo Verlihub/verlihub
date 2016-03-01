@@ -37,7 +37,7 @@ extern "C" {
 #define w_UR_SEARCH 0x0004
 #define w_UR_CTM 0x0008
 
-#define freee(x) if (x) free((void *)x)
+#define freee(x) if (x) free(x)
 
 // a string the user would not write
 #define W_NOSTRING = "SG083tcs0ODEgbns623OFfew"
@@ -149,7 +149,7 @@ enum {
 // MAX_CALLBACKS must be more than the number of elements in above enum
 const int W_MAX_CALLBACKS = 100;
 
-// possible return values, as follows: nothing, long, double, char*, void*, char**
+// possible return values, as follows: nothing, long, double, const char*, void*, const char**
 enum { w_ret_none, w_ret_int, w_ret_float, w_ret_char, w_ret_void, w_ret_tab };
 
 // the maximum number of values that can be returned inside w_Treturn
@@ -168,10 +168,10 @@ enum {
 typedef struct {
 	char type;
 	union {
-		long   l;
-		char  *s;
+		long l;
+		char *s;
 		double d;
-		void  *p;
+		void *p;
 	};
 } w_Telement;
 
@@ -185,14 +185,14 @@ typedef w_Targs *(*w_Tcallback)(int, w_Targs *);
 typedef struct {
 	int            id;
 	PyThreadState *state;
-	const char    *path;
-	const char    *name;
+	char          *path;
+	char          *name;
 	w_Tcallback   *callbacks;
 	char          *hooks;
-	const char    *botname;
-	const char    *opchatname;
+	char          *botname;
+	char          *opchatname;
 	bool           use_old_ontimer;
-	const char    *config_name;
+	char          *config_name;
 } w_TScript;
 
 // the following functions are all you need to use in the plugin that loads this wrapper
@@ -225,7 +225,7 @@ typedef int         (*w_TLoad)(w_Targs *);
 typedef int         (*w_TUnload)(int);
 typedef int         (*w_THasHook)(int, int);
 typedef w_Targs    *(*w_TCallHook)(int, int, w_Targs *);
-typedef char       *(*w_THookName)(int);
+typedef const char *(*w_THookName)(int);
 typedef const char *(*w_TCallName)(int callback);
 typedef w_Targs    *(*w_Tpack)(const char *, ...);
 typedef int         (*w_Tunpack)(w_Targs *, const char *, ...);
