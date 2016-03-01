@@ -8,9 +8,17 @@ compiler:
   - gcc
   - clang
 
+os:
+  - linux
+  - osx
+
 before_install:
-  - sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev
-  - sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev 
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install cmake gettext mariadb geoip lua libgcrypt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmysqlclient-dev libpcre++-dev libgeoip-dev libssl-dev; fi
+#  - sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev 
+#  - sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev 
 
 before_script:
   - mkdir build
