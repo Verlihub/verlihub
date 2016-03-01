@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: RoLex <webmaster@feardc.net>\n"
-"POT-Creation-Date: 2016-02-27 18:15+0100\n"
+"POT-Creation-Date: 2016-02-29 22:24+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -2296,7 +2296,7 @@ msgstr ""
 msgid "User was dropped: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2821
+#: ../src/cserverdc.cpp:2825
 msgid "DDoS detected, gathering attack information..."
 msgstr ""
 
@@ -2718,4 +2718,7 @@ msgstr ""
 
 #: ../src/tlistconsole.h:265
 msgid "Error in item data."
+msgstr ""
+
+msgid "Don't translate this test string."
 msgstr ""
