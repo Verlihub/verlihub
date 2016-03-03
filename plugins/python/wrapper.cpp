@@ -1754,10 +1754,17 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 						id, name, w_HookName(func));
 					Py_DECREF(val);
 					PyErr_Clear();
+				} else {
+					log("PY: [%d:%s] TypeError in %s\n", id, name, w_HookName(func));
+					PyErr_Display(exc, val, trace);
+					fflush(stdout);
 				}
+			} else {
+				log("PY: [%d:%s] Other error in %s\n", id, name, w_HookName(func));
+				PyErr_Display(exc, val, trace);
+				fflush(stdout);
 			}
-		}
-		if (PyErr_Occurred()) {
+		} else if (PyErr_Occurred()) {
 			log("PY: [%d:%s] Call (%s): failed\n", id, name, w_HookName(func));
 			PyErr_Print();
 			fflush(stdout);

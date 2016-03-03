@@ -229,13 +229,13 @@ bool cConsole::cfAddPythonScript::operator()()
 		return false;
 	}
 
+	GetPI()->AddData(ip);
 	if (ip->Init()) {
 		(*mOS) << autosprintf(_("Script is now loaded: #%d %s"), ip->id, scriptfile.c_str());
-		GetPI()->AddData(ip);
 		return true;
 	} else {
 		(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
-		delete ip;
+		GetPI()->RemoveByName(ip->mScriptName);
 		return false;
 	}
 }
@@ -292,13 +292,13 @@ bool cConsole::cfReloadPythonScript::operator()()
 		return false;
 	}
 
+	GetPI()->AddData(ip, position);
 	if (ip->Init()) {
 		(*mOS) << " " << autosprintf(_("Script is now loaded: #%d %s"), ip->id, scriptfile.c_str());
-		GetPI()->AddData(ip, position);
 		return true;
 	} else {
 		(*mOS) << " " << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
-		delete ip;
+		GetPI()->RemoveByName(ip->mScriptName);
 		return false;
 	}
 }
