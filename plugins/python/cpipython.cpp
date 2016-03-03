@@ -265,8 +265,8 @@ bool cpiPython::AutoLoad()
 		pathname = mScriptDir + filename;
 		cPythonInterpreter *ip = new cPythonInterpreter(pathname);
 		if (!ip) continue;
+		AddData(ip);
 		if (ip->Init()) {
-			AddData(ip);
 			if ((log_level < 1) && Log(1))
 				LogStream() << "Success loading and parsing Python script: " << filename << endl;
 			log1("PY: Autoload, success loading script: %s [%d]\n", filename.c_str(), ip->id);
@@ -274,7 +274,7 @@ bool cpiPython::AutoLoad()
 			if ((log_level < 1) && Log(1))
 				LogStream() << "Failed loading or parsing Python script: " << filename << endl;
 			log1("PY: Autoload, failed loading script: %s\n", filename.c_str());
-			delete ip;
+			RemoveByName(pathname);
 		}
 	}
 	return true;
@@ -921,6 +921,7 @@ bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, stri
 				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
 					should_call = true;
 			}
+			if (!should_call) continue;
 			if (!cmd->compare("_get_script_file")) {
 				resp->push_back(ScriptResponse((*it)->mScriptName, (*it)->mScriptName));
 				continue;
@@ -933,7 +934,6 @@ bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, stri
 				resp->push_back(ScriptResponse((*it)->version, (*it)->mScriptName));
 				continue;
 			}
-			if (!should_call) continue;
 			result = (*it)->CallFunction(func, args);
 			if (!result) continue;
 			if (lib_unpack(result, "s", &response)) {
