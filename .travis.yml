@@ -25,10 +25,10 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake -DDEFINE_DEBUG=ON ..
+  - cmake -DDEFINE_DEBUG=ON -DINSTALL_CMAKE_FILES=OFF ..
 
 script:
   - make
-  - make install
+  - sudo make install
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then vh_run_integration_test vh_test_xx vh_test_xx vh_test_xx; done
 
