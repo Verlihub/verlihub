@@ -30,5 +30,5 @@ before_script:
 script:
   - make
   - sudo make install
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then vh_run_integration_test vh_test_xx vh_test_xx vh_test_xx; done
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then vh_run_integration_test vh_test_xx vh_test_xx vh_test_xx; fi
 
