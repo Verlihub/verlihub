@@ -520,7 +520,7 @@ static PyObject *__SendPMToAll(PyObject *self, PyObject *args)
 
 static PyObject *__CloseConnection(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_CloseConnection, args, "s|l"));
+	return pybool(BasicCall(W_CloseConnection, args, "s|ll"));
 }
 
 static PyObject *__GetMyINFO(PyObject *self, PyObject *args)
@@ -913,7 +913,7 @@ static PyObject *__mc(PyObject *self, PyObject *args)
 
 static PyObject *__classmc(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_classmc, args, "sll"));
+	return pybool(BasicCall(W_classmc, args, "sll|s"));
 }
 
 static PyObject *__UserRestrictions(PyObject *self, PyObject *args, PyObject *keywds)
