@@ -158,6 +158,16 @@ public:
 
 };  // namespace nPythonPlugin
 
+inline bool EndsWithPipe(const char *data)
+{
+	return data && data[0] != 0 && data[strlen(data) - 1] == '|';
+}
+
+inline const char* PipeIfMissing(const char *data)
+{
+	return EndsWithPipe(data) ? "" : "|";
+}
+
 extern "C" w_Targs *_SendToOpChat      (int id, w_Targs *args);
 extern "C" w_Targs *_SendToActive      (int id, w_Targs *args);
 extern "C" w_Targs *_SendToPassive     (int id, w_Targs *args);

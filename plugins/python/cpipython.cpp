@@ -58,6 +58,8 @@ int           cpiPython::log_level     = 1;
 cServerDC    *cpiPython::server        = NULL;
 cpiPython    *cpiPython::me            = NULL;
 
+
+
 cpiPython::cpiPython() : mConsole(this), mQuery(NULL)
 {
 	mName = PYTHON_PI_IDENTIFIER;
@@ -1022,11 +1024,11 @@ w_Targs *_usermc(int id, w_Targs *args)
 	if (!msg) return NULL;
 	if (!mynick) mynick = cpiPython::botname.c_str();
 
-	string data = string() + "<" + mynick + "> " + msg + "|";
+	string data = string() + "<" + mynick + "> " + msg + PipeIfMissing(msg);
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 
 	if (u && u->mxConn) {
-		u->mxConn->Send(data, true);
+		u->mxConn->Send(data, false);
 		return w_ret1;
 	}
 	return NULL;
@@ -1061,10 +1063,10 @@ w_Targs *_pm(int id, w_Targs *args)
 	if (!from) from = cpiPython::botname.c_str();
 	if (!mynick) mynick = from;
 
-	string data = string() + "$To: " + nick + " From: " + from + " $<" + mynick + "> " + msg + "|";
+	string data = string() + "$To: " + nick + " From: " + from + " $<" + mynick + "> " + msg + PipeIfMissing(msg);
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
-		u->mxConn->Send(data, true);
+		u->mxConn->Send(data, false);
 		return w_ret1;
 	}
 	return NULL;
@@ -1082,8 +1084,8 @@ w_Targs *_SendToActive(int id, w_Targs *args)
 {
 	const char *data;
 	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
-	string msg(data);
-	cpiPython::me->server->mActiveUsers.SendToAll(msg, false, true);
+	string msg = string() + data + PipeIfMissing(data);
+	cpiPython::me->server->mActiveUsers.SendToAll(msg, false, false);
 	return w_ret1;
 }
 
@@ -1091,8 +1093,8 @@ w_Targs *_SendToPassive(int id, w_Targs *args)
 {
 	const char *data;
 	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
-	string msg(data);
-	cpiPython::me->server->mPassiveUsers.SendToAll(msg, false, true);
+	string msg = string() + data + PipeIfMissing(data);
+	cpiPython::me->server->mPassiveUsers.SendToAll(msg, false, false);
 	return w_ret1;
 }
 
@@ -1101,8 +1103,8 @@ w_Targs *_SendToActiveClass(int id, w_Targs *args)
 	const char *data;
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
-	string msg(data);
-	cpiPython::me->server->mActiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, true);
+	string msg = string() + data + PipeIfMissing(data);
+	cpiPython::me->server->mActiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, false);
 	return w_ret1;
 }
 
@@ -1111,8 +1113,8 @@ w_Targs *_SendToPassiveClass(int id, w_Targs *args)
 	const char *data;
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
-	string msg(data);
-	cpiPython::me->server->mPassiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, true);
+	string msg = string() + data + PipeIfMissing(data);
+	cpiPython::me->server->mPassiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, false);
 	return w_ret1;
 }
 
@@ -1121,10 +1123,10 @@ w_Targs *_SendDataToUser(int id, w_Targs *args)
 	const char *data, *nick;
 	if (!cpiPython::lib_unpack(args, "ss", &data, &nick)) return NULL;
 	if (!data || !nick) return NULL;
-	string d = data;
+	string msg = string() + data + PipeIfMissing(data);
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
-		u->mxConn->Send(d, true);
+		u->mxConn->Send(msg, false);
 		return w_ret1;
 	}
 	return NULL;
@@ -1136,7 +1138,7 @@ w_Targs *_SendDataToAll(int id, w_Targs *args)
 	long minclass, maxclass;
 	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
 	if (!data) return NULL;
-	string msg = data;
+	string msg = string() + data + PipeIfMissing(data);
 	// We didn't simply call cpiPython::me->server->SendToAll(msg, minclass, maxclass),
 	// because at the time of writing it was buggy: it didn't care about provided class range.
 
@@ -1157,7 +1159,7 @@ w_Targs *_SendDataToAll(int id, w_Targs *args)
 		u = cpiPython::me->server->mUserList.GetUserByNick(nick.c_str());
 		if (u && u->mxConn) {
 			if (u->mClass < minclass || u->mClass > maxclass) continue;
-			u->mxConn->Send(msg, true);
+			u->mxConn->Send(msg, false);
 			log4("PY: SendDataToAll   sending message to %s\n", nick.c_str());
 		}
 	}
@@ -1180,13 +1182,13 @@ w_Targs *_SendPMToAll(int id, w_Targs *args)
 w_Targs *_CloseConnection(int id, w_Targs *args)
 {
 	const char *nick;
-	long nice;
-	if (!cpiPython::lib_unpack(args, "sl", &nick, &nice)) return NULL;
+	long nice, reason;
+	if (!cpiPython::lib_unpack(args, "sll", &nick, &nice, &reason)) return NULL;
 	if (!nick) return NULL;
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
 		if (nice == 1) nice = 1000;
-		u->mxConn->CloseNice(nice, eCR_KICKED);
+		u->mxConn->CloseNice(nice, reason);
 		return w_ret1;
 	}
 	return NULL;
