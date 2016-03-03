@@ -199,6 +199,10 @@ IF(UNIX)
 	IF(NOT BASH_PATH)
 		MESSAGE(FATAL_ERROR "Bash shell not found. Please install Bourne Again SHell")
 	ENDIF(NOT BASH_PATH)
+	FIND_PROGRAM(PYTHON_PATH python PATHS /usr/bin /usr/local/bin)
+	IF(NOT PYTHON_PATH)
+		MESSAGE(WARNING "Python interpreter not found. You won't be able to run the integration test.")
+	ENDIF(NOT PYTHON_PATH)
 ENDIF(UNIX)
 
 # ----------------------------------------------------------------------------------------------------

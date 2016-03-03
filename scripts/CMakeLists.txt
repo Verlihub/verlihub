@@ -24,6 +24,7 @@ SET(SCRIPT_FILES
 	vh_multihub
 	vh_regimporter
 	vh_migration_0.9.8eto1.0
+	vh_run_integration_test
 )
 
 # Autotool variables that will be replaced
