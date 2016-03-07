@@ -146,7 +146,7 @@ public:
 	bool hublist_send_listhost;
 	// checking preferences
 	unsigned int classdif_reg;
-	unsigned int classdif_search;
+	//unsigned int classdif_search;
 	unsigned int classdif_download;
 	unsigned int classdif_pm;
 	unsigned int classdif_mcto;
@@ -309,6 +309,7 @@ public:
 	bool wrongpassword_report;
 	bool report_pass_reset;
 	int wrongauthip_report; // note: is class number, not bool
+	bool wrongip_message;
 	bool clone_detect_report;
 	unsigned long clone_det_tban_time;
 	bool nullchars_report;

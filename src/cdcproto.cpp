@@ -1935,6 +1935,11 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $ConnectToMe: " << addr << endl;
 
+		if (mS->mC.wrongip_message) {
+			os << autosprintf(_("Replacing wrong IP address specified in your connection request with real one: %s -> %s"), addr.c_str(), conn->mAddrIP.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
 		addr = conn->mAddrIP;
 	}
 
@@ -2139,6 +2144,11 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			if (conn->Log(3))
 				conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
+			if (mS->mC.wrongip_message) {
+				os << autosprintf(_("Replacing wrong IP address specified in your search request with real one: %s -> %s"), addr.c_str(), conn->mAddrIP.c_str());
+				mS->DCPublicHS(os.str(), conn);
+			}
+
 			saddr.append(conn->mAddrIP);
 		}
 
@@ -2146,6 +2156,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		saddr.append(StringFrom(iport));
 	}
 
+	os.str("");
 	unsigned int delay;
 
 	switch (conn->mpUser->mClass) { // prepare delay
