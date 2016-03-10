@@ -2412,7 +2412,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 			if (flags & eKI_CLOSE)
 				user->mxConn->CloseNice(1000, eCR_KICKED);
 		} else {
-			ostr << _("Your action was prevented by plugin.");
+			ostr << _("Your action was blocked by a plugin.");
 		}
 	}
 

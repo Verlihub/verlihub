@@ -1008,7 +1008,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	int theoclass = conn->GetTheoricalClass();
 
 	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive > -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
-		os << autosprintf(_("Passive user limit exceeded at %d online passive users, please become active to enter the hub."), mS->mPassiveUsers.Size());
+		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
 
 		if (conn->Log(2))
 			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
@@ -1697,7 +1697,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 		cTime diff = mS->mTime - conn->mpUser->mT.chat;
 
 		if (!mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // keep resetting timer when user dont read what we say
-			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you made %s."), mS->mC.int_chat_ms, diff.AsPeriod().AsString().c_str());
+			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you waited only %s."), mS->mC.int_chat_ms, diff.AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return 0;
 		}
@@ -1772,7 +1772,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!other || !other->mInList) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
+			os << autosprintf(_("You're trying to connect to an offline user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1781,7 +1781,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!other->mxConn) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+			os << autosprintf(_("You're trying to connect a bot: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1790,14 +1790,14 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (nick == conn->mpUser->mNick) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
-			mS->DCPublicHS(_("You're trying connect to yourself."), conn);
+			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
 		return -1;
 	}
 
 	if (conn->mpUser->mClass < mS->mC.min_class_use_hub) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), mS->mC.min_class_use_hub);
+			os << autosprintf(_("You can't download unless you are registered with class %d."), mS->mC.min_class_use_hub);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1824,7 +1824,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mShare < use_hub_share) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			os << autosprintf(_("You can't download unless you share %s."), convertByte(use_hub_share, false).c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1840,7 +1840,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from %s."), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1849,7 +1849,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from user because one of you is in LAN: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from %s because one of you is in a LAN."), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1971,7 +1971,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!other || !other->mInList) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You're trying connect to user that is not online: %s"), nick.c_str());
+			os << autosprintf(_("You're trying to connect to an offline user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1980,7 +1980,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (!other->mxConn || !other->mxConn->mpUser) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You're trying connect to user that is bot: %s"), nick.c_str());
+			os << autosprintf(_("You're trying to connect to a bot: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1989,14 +1989,14 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (nick == conn->mpUser->mNick) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
-			mS->DCPublicHS(_("You're trying connect to yourself."), conn);
+			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
 		return -2;
 	}
 
 	if (other->IsPassive && !(other->mxConn->mpUser->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from user because he is in passive mode: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from %s, who is also in passive mode."), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2005,7 +2005,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from user because your share is hidden: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from %s while your share is hidden, because you are passive."), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2014,7 +2014,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mClass < mS->mC.min_class_use_hub_passive) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't download unless you are registered with class: %d"), mS->mC.min_class_use_hub_passive);
+			os << autosprintf(_("You can't download unless you are registered with class %d."), mS->mC.min_class_use_hub_passive);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2041,7 +2041,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mShare < use_hub_share) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't download unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			os << autosprintf(_("You can't download unless you share %s."), convertByte(use_hub_share, false).c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2057,7 +2057,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from %s."), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2099,7 +2099,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		if (mS->Log(3))
 			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
 
-		os << _("Sorry, hub load is too high to process your search request, please try again later.");
+		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
@@ -2181,7 +2181,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			os << autosprintf(_("Don't search too often, you can do %d searches in %d seconds."), mS->mC.search_number, delay);
+			os << autosprintf(_("Don't search too often.")) << " "
+				<< autosprintf(ngettext("You can perform %d search", "You can perform %d searches", mS->mC.search_number), mS->mC.search_number) << " "
+				<< autosprintf(ngettext("in a period of %d second", "in a period of %d seconds", delay), delay) << ".";
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2203,7 +2205,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mClass < use_hub_class) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't search unless you are registered with class: %d"), use_hub_class);
+			os << autosprintf(_("You can't search unless you are registered with class %d."), use_hub_class);
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2230,7 +2232,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mShare < use_hub_share) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
-			os << autosprintf(_("You can't search unless you share: %s"), convertByte(use_hub_share, false).c_str());
+			os << autosprintf(_("You can't search unless you share %s."), convertByte(use_hub_share, false).c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2282,7 +2284,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator
-		os << autosprintf(_("Minimum search length is: %d"), mS->mC.min_search_chars);
+		os << autosprintf(_("Minimum search phrase length is %d characters."), mS->mC.min_search_chars);
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
@@ -2522,19 +2524,19 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
-		os << autosprintf(_("You're trying to redirect user that is not online: %s"), nick.c_str());
+		os << autosprintf(_("You're trying to redirect an offline user: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
 	if (!other->mxConn) {
-		os << autosprintf(_("You're trying to redirect user that is bot: %s"), nick.c_str());
+		os << autosprintf(_("You're trying to redirect a bot: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -2;
 	}
 
 	if ((other->mClass >= conn->mpUser->mClass) || (other->mProtectFrom >= conn->mpUser->mClass)) { // check protection
-		os << autosprintf(_("You're trying to redirect user that is protected: %s"), nick.c_str());
+		os << autosprintf(_("You're trying to redirect a protected user: %s"), nick.c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return -3;
 	}
@@ -2599,13 +2601,13 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if(other->mClass >= conn->mpUser->mClass || other->mProtectFrom >= conn->mpUser->mClass) {
-		os << _("You can't ban a protected user or with higher privilegies.");
+		os << _("You can't ban a user that is protected or has higher class.");
 		mS->DCPublicHS(os.str(),conn);
 		return -1;
 	}
 
 	if(!other->mxConn) {
-		os << _("You can't ban a robot.");
+		os << _("You can't ban a bot.");
 		mS->DCPublicHS(os.str(),conn);
 		return -1;
 	}
@@ -2648,11 +2650,11 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 	int n = mS->mBanList->DeleteAllBansBy(ip, nick , eBF_NICKIP);
 
 	if(n <= 0) {
-		os << autosprintf(_("No banned user found with ip %s."), msg->ChunkString(eCH_1_PARAM).c_str());
+		os << autosprintf(_("No banned user found with IP %s."), msg->ChunkString(eCH_1_PARAM).c_str());
 		mS->DCPublicHS(os.str().c_str(),conn);
 		return -1;
 	}
-	os << autosprintf(_("Removed %d bans."), n) << endl;
+	os << autosprintf(ngettext("Removed %d ban.", "Removed %d bans.", n), n) << endl;
 	mS->DCPublicHS(os.str().c_str(),conn);
 	return 0;
 }
@@ -2721,7 +2723,7 @@ int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 	string &topic = msg->ChunkString(eCH_1_PARAM);
 	mS->mC.hub_topic = topic;
 	ostringstream os;
-	os << autosprintf(_("Topis is set to: %s"), topic.c_str());
+	os << autosprintf(_("Topic is set to: %s"), topic.c_str());
 	mS->DCPublicHS(os.str(), conn);
 	return 0;
 }

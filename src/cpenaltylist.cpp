@@ -188,7 +188,7 @@ void cPenaltyList::ListAll(ostream &os)
 	MYSQL_ROW row = NULL;
 	bool sep;
 	sPenalty pen;
-	os << "\r\n\r\n\t" << _("Nick") << "\t\t" << _("Operator") << "\t\t" << _("Rights") << "\r\n";
+	os << "\r\n\r\n\t" << _("Nick") << "\t\t" << _("Operator") << "\t\t" << _("Rights and restrictions") << "\r\n";
 	os << "\t" << string(120, '-') << "\r\n";
 
 	for (unsigned int pos = 0; pos < tot; pos++) {
