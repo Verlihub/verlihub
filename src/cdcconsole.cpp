@@ -595,16 +595,16 @@ int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 
 	if (switchon) { // chat
 		if (!mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you will see public chat messages. To disable them use +nochat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are now visible. To disable them use +nochat command."), conn);
 			mOwner->mChatUsers.Add(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already see public chat messages. To disable them use +nochat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are already visible. To disable them use +nochat command."), conn);
 	} else { // nochat
 		if (mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you won't see public chat messages. To enable them use +chat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are now hidden. To enable them use +chat command."), conn);
 			mOwner->mChatUsers.Remove(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already don't see public chat messages. To enable them use +chat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are already hidden. To enable them use +chat command."), conn);
 	}
 
 	return 1;
