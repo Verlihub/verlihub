@@ -330,7 +330,7 @@ int cDCConsole::CmdGethost(istringstream &cmd_line, cConnDC *conn)
 				os << "\r\n [*] " << _("User") << ": " << user->mNick.c_str();
 				os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
 			} else
-				os << "\r\n [*] " << autosprintf(_("Unable to resolve hostname of user %s"), user->mNick.c_str());
+				os << "\r\n [*] " << autosprintf(_("Unable to resolve hostname of user: %s"), user->mNick.c_str());
 		} else
 			os << "\r\n [*] " << autosprintf(_("User not found: %s"), s.c_str());
 
@@ -595,16 +595,16 @@ int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 
 	if (switchon) { // chat
 		if (!mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you will see public chat. To disable it use +nochat command."), conn);
+			mOwner->DCPublicHS(_("Now you will see public chat messages. To disable them use +nochat command."), conn);
 			mOwner->mChatUsers.Add(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already see public chat. To disable it use +nochat command."), conn);
+			mOwner->DCPublicHS(_("You already see public chat messages. To disable them use +nochat command."), conn);
 	} else { // nochat
 		if (mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you won't see public chat. To enable it use +chat command."), conn);
+			mOwner->DCPublicHS(_("Now you won't see public chat messages. To enable them use +chat command."), conn);
 			mOwner->mChatUsers.Remove(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already don't see public chat. To enable it use +chat command."), conn);
+			mOwner->DCPublicHS(_("You already don't see public chat messages. To enable them use +chat command."), conn);
 	}
 
 	return 1;
@@ -1966,7 +1966,7 @@ bool cDCConsole::cfGag::operator()()
 		ret = mS->mPenList->AddPenalty(penalty);
 
 	if (!ret) {
-		(*mOS) << autosprintf(_("Error setting %s's rights or restrictions."), penalty.mNick.c_str());
+		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), penalty.mNick.c_str());
 		return false;
 	}
 

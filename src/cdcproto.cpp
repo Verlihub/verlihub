@@ -1840,7 +1840,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from %s."), nick.c_str());
+			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1849,7 +1849,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from %s because one of you is in a LAN."), nick.c_str());
+			os << autosprintf(_("You can't download from this user because one of you is in a LAN: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -1996,7 +1996,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (other->IsPassive && !(other->mxConn->mpUser->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from %s, who is also in passive mode."), nick.c_str());
+			os << autosprintf(_("You can't download from this user, because he is also in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2005,7 +2005,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from %s while your share is hidden, because you are passive."), nick.c_str());
+			os << autosprintf(_("You can't download from this user while your share is hidden, because you are in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2057,7 +2057,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from %s."), nick.c_str());
+			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
