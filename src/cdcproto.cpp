@@ -2284,7 +2284,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator
-		os << autosprintf(_("Minimum search length is %d characters."), mS->mC.min_search_chars);
+		os << autosprintf(ngettext("Minimum search length is %d character.", "Minimum search length is %d characters.", mS->mC.min_search_chars), mS->mC.min_search_chars);
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
