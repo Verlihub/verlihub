@@ -734,7 +734,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		}
 
 		if (pwd.size() < mS->mC.password_min_len) {
-			os << autosprintf(_("Minimum password length is %d characters, please retry."), mS->mC.password_min_len);
+			os << autosprintf(_("Minimum password length is %d characters. Please retry."), mS->mC.password_min_len);
 			mS->DCPrivateHS(os.str(), conn);
 			mS->DCPublicHS(os.str(), conn);
 			conn->mpUser->mSetPass = false;
@@ -1071,7 +1071,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		if ((share < min_share) || (max_share && (share > max_share))) {
 			if (share < min_share)
-				os << autosprintf(_("You share %s but minimum allowed is %s, %s for active users, %s for passive users."), convertByte(shareB, false).c_str(), convertByte(min_share * 1024 * 1024, false).c_str(), convertByte(min_share_a * 1024 * 1024, false).c_str(), convertByte(min_share_p * 1024 * 1024, false).c_str());
+				os << autosprintf(_("You share %s but minimum allowed is %s (%s for active users, %s for passive users)."), convertByte(shareB, false).c_str(), convertByte(min_share * 1024 * 1024, false).c_str(), convertByte(min_share_a * 1024 * 1024, false).c_str(), convertByte(min_share_p * 1024 * 1024, false).c_str());
 			else
 				os << autosprintf(_("You share %s but maximum allowed is %s."), convertByte(shareB, false).c_str(), convertByte(max_share * 1024 * 1024, false).c_str());
 
@@ -2284,7 +2284,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator
-		os << autosprintf(_("Minimum search phrase length is %d characters."), mS->mC.min_search_chars);
+		os << autosprintf(_("Minimum search length is %d characters."), mS->mC.min_search_chars);
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
 	}
@@ -2589,7 +2589,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 
 	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_NB_NICK));
 	if(!other) {
-		os << autosprintf(_("User %s not found."), msg->ChunkString(eCH_NB_NICK).c_str());
+		os << autosprintf(_("User not found: %s"), msg->ChunkString(eCH_NB_NICK).c_str());
 		mS->DCPublicHS(os.str(),conn);
 		return -1;
 	}
@@ -2613,9 +2613,9 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if(period)
-		os << autosprintf(_("You are being temporarily banned for %s because %s"), msg->ChunkString(eCH_NB_TIME).c_str(), msg->ChunkString(eCH_NB_REASON).c_str());
+		os << autosprintf(_("You are being temporarily banned for %s because: %s"), msg->ChunkString(eCH_NB_TIME).c_str(), msg->ChunkString(eCH_NB_REASON).c_str());
 	else
-		os << autosprintf(_("You are banned because %s"), msg->ChunkString(eCH_NB_REASON).c_str());
+		os << autosprintf(_("You are banned because: %s"), msg->ChunkString(eCH_NB_REASON).c_str());
 
 	mS->DCPrivateHS(os.str(), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
 	os.str(mS->mEmpty);
