@@ -2005,7 +2005,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from this user while your share is hidden, because you are in passive mode: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from this user while your share is hidden: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2181,9 +2181,20 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			os << autosprintf(_("Don't search too often.")) << " "
-				<< autosprintf(ngettext("You can perform %d search", "You can perform %d searches", mS->mC.search_number), mS->mC.search_number) << " "
-				<< autosprintf(ngettext("in a period of %d second", "in a period of %d seconds", delay), delay) << ".";
+			os << autosprintf(_("Don't search too often.")) << " ";
+
+			if (mS->mC.search_number == 1) {
+				if (delay == 1)
+					os << autosprintf("You can perform %d search in a period of %d second.", mS->mC.search_number, delay);
+				else
+					os << autosprintf("You can perform %d search in a period of %d seconds.", mS->mC.search_number, delay);
+			} else {
+				if (delay == 1)
+					os << autosprintf("You can perform %d searches in a period of %d second.", mS->mC.search_number, delay);
+				else
+					os << autosprintf("You can perform %d searches in a period of %d seconds.", mS->mC.search_number, delay);
+			}
+
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}

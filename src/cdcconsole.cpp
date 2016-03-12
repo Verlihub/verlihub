@@ -2398,7 +2398,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	}
 
 	if (mS->mC.classdif_reg > eUC_ADMIN) {
-		(*mOS) << autosprintf(_("Valid classdif_reg value must be between %d and %d. Please correct this first."), eUC_NORMUSER, eUC_ADMIN);
+		(*mOS) << autosprintf(_("classdif_reg value must be between %d and %d. Please correct this first."), eUC_NORMUSER, eUC_ADMIN);
 		return false;
 	}
 
