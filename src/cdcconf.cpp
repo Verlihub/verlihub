@@ -258,6 +258,13 @@ void cDCConf::AddVars()
 	Add("int_flood_all_rctm_limit", int_flood_all_rctm_limit, 200);
 	// end of section
 
+	// passive search and SR distributed flood protection
+	Add("passive_search_lifetime", passive_search_lifetime, 180);
+	Add("max_ongoing_passive_searches", max_ongoing_passive_searches, 200);
+	Add("search_result_lifetime", search_result_lifetime, 20);
+	Add("max_search_result_targets", max_search_result_targets, 40);
+	// end of section
+
 	// User control configuration
 	Add("classdif_reg", classdif_reg, 2);
 	Add("classdif_kick", classdif_kick, 0);

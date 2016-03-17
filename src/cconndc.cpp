@@ -165,10 +165,26 @@ int cConnDC::GetTheoricalClass()
 	return mRegInfo->mClass;
 }
 
+void cConnDC::RefreshSRTargets()
+{
+	long interval = Server()->mC.search_result_lifetime;  // max interval between SRs for same user
+	long timestamp = Server()->mTime.Sec();
+	map<string, long>::iterator it = currentSRTargets.begin();
+
+	// clearing information about old search results
+	for ( ; it != currentSRTargets.end(); ) {
+		if (it->second + interval < timestamp)
+			currentSRTargets.erase(it++);
+		else
+			++it;
+	}
+}
+
 int cConnDC::OnTimer(cTime &now)
 {
 	ostringstream os;
 	string omsg;
+	RefreshSRTargets();
 	// check the timeouts
 	int i;
 	for(i=0; i < eTO_MAXTO; i++) {
@@ -325,7 +341,7 @@ bool cConnDC::NeedsPassword()
 	protocol flood
 */
 
-bool cConnDC::CheckProtoFlood(const string &data, int type)
+bool cConnDC::CheckProtoFlood(const string &data, int type, unsigned int multiplier)
 {
 	if (!mxServer)
 		return false;
@@ -357,7 +373,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 
 		case ePF_SR:
 			period = serv->mC.int_flood_sr_period;
-			limit = serv->mC.int_flood_sr_limit;
+			limit = serv->mC.int_flood_sr_limit * multiplier;
 			action = serv->mC.proto_flood_sr_action;
 			break;
 

@@ -26,6 +26,7 @@
 #include <winsock2.h>
 #endif
 #include <fstream>
+#include <map>
 #include "cuser.h"
 #include "cmessagedc.h"
 #include "cconfigbase.h"
@@ -571,6 +572,14 @@ class cServerDC : public cAsyncSocketServer
 		cTime mProtoFloodAllTimes[nEnums::ePFA_LAST];
 		bool mProtoFloodAllLocks[nEnums::ePFA_LAST];
 		bool CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser = NULL);
+
+		// a map of nicks using passive search and timestamps of last search
+		map<string, long> currentPassiveSearches;
+		// a function to periodically clear entries in currentPassiveSearches
+		void RefreshPassiveSearches();
+		void GetPassiveSearchesInfo(ostream &os);
+		long passiveSearchCount;
+		long passiveSearchReplyCount;
 
 		// helper functions
 		char* SysLoadName();

@@ -2301,10 +2301,20 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (passive && mS->CheckProtoFloodAll(conn, ePFA_SEAR)) // protocol flood from all
-		return -1;
+	// Flood protection is now handled by checking mS->currentPassiveSearches.size() below.
+	// if (passive && mS->CheckProtoFloodAll(conn, ePFA_SEAR)) // protocol flood from all
+		// return -1;
 
- 	#ifndef WITHOUT_PLUGINS
+	if (passive && mS->currentPassiveSearches.size() >= mS->mC.max_ongoing_passive_searches) {
+		if (mS->Log(3)) {
+			mS->LogStream() << "Too many ongoing passive searches: " << mS->mC.max_ongoing_passive_searches << endl;
+		}
+		os << _("Sorry, the hub can't handle more passive search requests right now.");
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
 			return -2;
 	#endif
@@ -2313,6 +2323,8 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (passive) {
 		conn->mSRCounter = 0;
+		mS->passiveSearchCount++;
+		mS->currentPassiveSearches[conn->mpUser->mNick] = mS->mTime.Sec();
 	} else if (addr.size()) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
@@ -2361,8 +2373,21 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserNick(conn, from))
 		return -1;
 
-	if (conn->CheckProtoFlood(msg->mStr, ePF_SR)) // protocol flood
-		return -1;
+	long maxTargets = mS->mC.max_search_result_targets;
+	string &other_nick = msg->ChunkString(eCH_SR_TO);
+	long numTargets = conn->currentSRTargets.size();
+
+	if (numTargets >= maxTargets)
+		return -1;  // dropping SR, because the server has reached its capacity
+
+	if (mS->currentPassiveSearches.find(other_nick) != mS->currentPassiveSearches.end()) {
+		mS->passiveSearchReplyCount++;
+		conn->currentSRTargets[other_nick] = mS->mTime.Sec();
+	}
+
+	// adding 1 to numTargets to allow some amount of invalid SRs from buggy clients
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SR, numTargets + 1))
+		return -1; // protocol flood
 
 	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_SR_TO)); // find other user
 

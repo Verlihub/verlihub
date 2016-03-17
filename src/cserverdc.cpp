@@ -100,6 +100,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mUserList.mNickListCB = &mCallBacks.mNickListNicks;
 	mUserList.mInfoListCB = &mCallBacks.mNickListInfos;
 	mOpList.mNickListCB = &mCallBacks.mOpListNicks;
+	passiveSearchCount = 0;
+	passiveSearchReplyCount = 0;
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
@@ -1552,6 +1554,73 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 	return eVN_OK;
 }
 
+void cServerDC::RefreshPassiveSearches()
+{
+	// clearing information about old passive searches
+	// mC.passive_search_lifetime must be long enough for everyone to respond
+	map<string, long>::iterator it = currentPassiveSearches.begin();
+
+	for ( ; it != currentPassiveSearches.end(); ) {
+		if (it->second + (long)mC.passive_search_lifetime < mTime.Sec())
+			currentPassiveSearches.erase(it++);
+		else
+			++it;
+	}
+}
+
+void cServerDC::GetPassiveSearchesInfo(ostream &os)
+{
+	os << _("Search information") << ":\r\n\r\n";
+	os << " [*] Config: "
+		<< "int_search(" << mC.int_search << ") "
+		<< "int_search_pas(" << mC.int_search_pas << ") "
+		<< "passive_search_lifetime(" << mC.passive_search_lifetime << ") "
+		<< "max_ongoing_passive_searches(" << mC.max_ongoing_passive_searches << ") "
+		<< "search_result_lifetime(" << mC.search_result_lifetime << ") "
+		<< "max_search_result_targets(" << mC.max_search_result_targets << ") "
+		<< "int_flood_search_limit(" << mC.int_flood_search_limit << ") "
+		<< "int_flood_search_period(" << mC.int_flood_search_period << ") "
+		<< "proto_flood_search_action(" << mC.proto_flood_search_action << ") "
+		<< "int_flood_sr_limit(" << mC.int_flood_sr_limit << ") "
+		<< "int_flood_sr_period(" << mC.int_flood_sr_period << ") "
+		<< "proto_flood_sr_action(" << mC.proto_flood_sr_action << ") "
+		<< "\r\n";
+
+	os << " [*] Searches: " << mProtoCount[nEnums::eDC_SEARCH] << "\r\n";
+	os << " [*] Passive searches: " << mProtoCount[nEnums::eDC_SEARCH_PAS] << "\r\n";
+	os << " [*] Accepted passive searches: " << passiveSearchCount << "\r\n";
+	os << " [*] Search results: " << mProtoCount[nEnums::eDC_SR] << "\r\n";
+	os << " [*] Requested search results: " << passiveSearchReplyCount << "\r\n";
+	os << " [*] Current passive searches: " << currentPassiveSearches.size() << "\r\n";
+	os << " [*] Current passive searches [nick (age)]:";
+
+	map<string, long>::iterator it = currentPassiveSearches.begin();
+
+	for ( ; it != currentPassiveSearches.end(); ++it) {
+		os << " " << it->first << " (" << (mTime.Sec() - it->second) << ")";
+	}
+
+	os << "\r\n";
+	os << " [*] Current passive search results [sender (target age)]:";
+
+	cUserCollection::iterator uit = mActiveUsers.begin();
+
+	for ( ; uit != mActiveUsers.end(); ++uit) {
+		cUser *user = (cUser *)*uit;
+
+		if (!user || !user->mxConn)
+			continue;
+
+		map<string, long>::iterator it = user->mxConn->currentSRTargets.begin();
+
+		for ( ; it != user->mxConn->currentSRTargets.end(); ++it) {
+			os << " " << user->mNick << " (" << it->first << " " << (mTime.Sec() - it->second) << ")";
+		}
+	}
+
+	os << "\r\n";
+}
+
 int cServerDC::OnTimer(cTime &now)
 {
 	mHelloUsers.FlushCache();
@@ -1563,6 +1632,7 @@ int cServerDC::OnTimer(cTime &now)
 	mChatUsers.FlushCache();
 	mInProgresUsers.FlushCache();
 	mRobotList.FlushCache();
+	RefreshPassiveSearches();
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {

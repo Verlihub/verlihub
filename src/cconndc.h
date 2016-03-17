@@ -20,6 +20,7 @@
 
 #ifndef CCONNDC_H
 #define CCONNDC_H
+#include <map>
 #include "casyncconn.h"
 #include "creguserinfo.h"
 #include "ctimeout.h"
@@ -415,7 +416,11 @@ namespace nVerliHub {
 				unsigned int mProtoFloodCounts[nEnums::ePF_LAST];
 				cTime mProtoFloodTimes[nEnums::ePF_LAST];
 				cTime mProtoFloodReports[nEnums::ePF_LAST];
-				bool CheckProtoFlood(const string &data, int type);
+				bool CheckProtoFlood(const string &data, int type, unsigned int multiplier=1);
+
+				// to detect SR flood
+				map<string, long> currentSRTargets;
+				void RefreshSRTargets();
 
 				// hub url
 				string mHubURL;
