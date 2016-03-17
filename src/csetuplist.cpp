@@ -94,6 +94,34 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 	mQuery.Clear();
 }
 
+void cSetupList::FilterFiles(const string &var, ostream &os, const string &file)
+{
+	db_iterator it;
+	SelectFields(mQuery.OStream());
+	string mask_var(var), mask_file(file);
+	replace(mask_var.begin(), mask_var.end(), '*', '%');
+	mQuery.OStream() << " where `var` like '";
+	WriteStringConstant(mQuery.OStream(), mask_var, true);
+	mQuery.OStream() << "'";
+
+	if (file.size()) {
+		replace(mask_file.begin(), mask_file.end(), '*', '%');
+		mQuery.OStream() << " and `file` like '";
+		WriteStringConstant(mQuery.OStream(), mask_file, true);
+		mQuery.OStream() << "'";
+	}
+
+	mQuery.OStream() << " order by `file` asc, `var` asc";
+	string val;
+
+	for (it = db_begin(); it != db_end(); ++it) {
+		cDCProto::EscapeChars(mModel.mVarValue, val);
+		os << " [*] " << mModel.mFile + "." << mModel.mVarName << " = " << val << "\r\n";
+	}
+
+	mQuery.Clear();
+}
+
 void cSetupList::SaveFileTo(cConfigBaseBase *Config, const char *file)
 {
 	cConfigBaseBase::iterator it;

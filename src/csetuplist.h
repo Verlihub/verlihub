@@ -62,6 +62,7 @@ public:
 	void LoadFileTo(cConfigBaseBase *, const char *);
 	void SaveFileTo(cConfigBaseBase *, const char *);
 	void OutputFile(const string &, ostream &os);
+	void FilterFiles(const string &var, ostream &os, const string &file = "");
 	bool SaveItem(const char *InFile, cConfigItemBase *);
 	bool LoadItem(const char *FromFile, cConfigItemBase *);
 private:

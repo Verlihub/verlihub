@@ -69,7 +69,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
-	mCmdGetConfig(int(eCM_GETCONFIG),".(gc|getconfig) ?","(\\S+)?", &mFunGetConfig),
+	mCmdGetConfig(int(eCM_GETCONFIG), ".(gc|getconfig|getconf|gv|getvar) ?", "(\\S+)?", &mFunGetConfig),
 	mCmdClean(int(eCM_CLEAN),".clean(\\S+) ?", "(\\S+)?", &mFunClean),
 	mCmdRedirConnType(int(eCM_CONNTYPE),".(\\S+)conntype ?","(.*)$",&mFunRedirConnType),
 	mCmdRedirTrigger(int(eCM_TRIGGERS),".(\\S+)trigger ?","(.*)$",&mFunRedirTrigger),
@@ -382,7 +382,7 @@ int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 {
-	unsigned delay = 0;
+	int delay = 0;
 
 	if (cmd_line.good()) {
 		string delay_str;
@@ -396,30 +396,41 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 				ostringstream conv_err;
 				delay = mOwner->Str2Period(delay_str, conv_err);
 
-				if (!delay)
-					mOwner->DCPublicHS(conv_err.str(), conn);
+				if (!delay) {
+					if (delay_str == "-1")
+						delay = -1;
+					else
+						mOwner->DCPublicHS(conv_err.str(), conn);
+				}
 			}
 		}
 	}
 
 	if (conn->Log(1))
-		conn->LogStream() << "Stopping hub with code " << code << " and delay " << delay << endl;
+		conn->LogStream() << "Receiving quit command with code " << code << " and delay " << delay << endl;
 
 	ostringstream os;
 
 	if (code == 1) { // restart
-		if (delay)
+		if (delay == -1)
+			os << _("Please note, hub is no longer scheduled for restart.");
+		else if (delay)
 			os << autosprintf (_("Please note, hub has been scheduled to restart in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be restarted now.");
 	} else { // quit
-		if (delay)
+		if (delay == -1)
+			os << _("Please note, hub is no longer scheduled for stop.");
+		else if (delay)
 			os << autosprintf (_("Please note, hub has been scheduled to stop in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be stopped now.");
 	}
 
 	mOwner->DCPublicHSToAll(os.str(), (delay ? mOwner->mC.delayed_chat : false));
+
+	if (delay == -1)
+		code = 0;
 
 	if (code >= 0) {
 		mOwner->stop(code, delay);
@@ -429,35 +440,6 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 	}
 
 	return 1;
-}
-
-bool cDCConsole::cfGetConfig::operator()()
-{
-	if (mConn->mpUser->mClass < eUC_ADMIN) {
-		(*mOS) << _("You have no rights to do this.");
-		return false;
-	}
-
-	ostringstream os, lst;
-	string file;
-	cConfigBaseBase::tIVIt it;
-	GetParStr(1, file);
-
-	if (file.empty()) {
-		file = mS->mDBConf.config_name;
-
-		for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
-			lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << *(mS->mC.mhItems.GetByHash(*it)) << "\r\n";
-	} else
-		mS->mSetupList.OutputFile(file.c_str(), lst);
-
-	if (lst.str().empty())
-		os << autosprintf(_("Configuration file %s is empty."), file.c_str());
-	else
-		os << autosprintf(_("Configuration file %s"), file.c_str()) << ":\r\n\r\n" << lst.str();
-
-	mS->DCPrivateHS(os.str(), mConn);
-	return true;
 }
 
 int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
@@ -931,28 +913,28 @@ int cDCConsole::CmdHideMe(istringstream & cmd_line, cConnDC * conn)
 	return 1;
 }
 
-int cDCConsole::CmdUserLimit(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream ostr;
 	int minutes = 60, maximum = -1;
 	cmd_line >> maximum >> minutes;
 
-	if( maximum < 0 )
-	{
+	if (maximum < 0) {
 		ostr << _("Command usage: !userlimit <max_users> [<minutes>=60]");
 		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
 
-	// 60 steps at most
-	cInterpolExp *fn = new
-		cInterpolExp(mOwner->mC.max_users_total, maximum, (60*minutes) / mOwner->timer_serv_period ,(6*minutes) / mOwner->timer_serv_period);
-	mOwner->mTmpFunc.push_back((cTempFunctionBase *)fn);
+	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (6 * minutes) / mOwner->timer_serv_period); // 60 steps at most
 
-	ostr << autosprintf(_("Updating max_users variable to %d"), maximum) << " "
-		<< autosprintf(ngettext("for the duration of %d minute", "for the duration of %d minutes", minutes), minutes) << ".";
+	if (fn) {
+		mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
+		ostr << autosprintf(ngettext("Updating max_users variable to %d for the duration of %d minute.", "Updating max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
+	} else {
+		ostr << autosprintf(ngettext("Failed to update max_users variable to %d for the duration of %d minute.", "Failed to update max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
+	}
+
 	mOwner->DCPublicHS(ostr.str(), conn);
-
 	return 1;
 }
 
@@ -1767,6 +1749,84 @@ bool cDCConsole::cfTrigger::operator()()
 		break;
 	};
 		return result;
+}
+
+bool cDCConsole::cfGetConfig::operator()()
+{
+	if (!mConn || !mConn->mpUser)
+		return false;
+
+	if (mConn->mpUser->mClass < eUC_ADMIN) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
+	enum { eAC_GETCONF, eAC_GETVAR };
+
+	static const char *actionnames[] = {
+		"gc", "getconf", "getconfig",
+		"gv", "getvar"
+	};
+
+	static const int actionids[] = {
+		eAC_GETCONF, eAC_GETCONF, eAC_GETCONF,
+		eAC_GETVAR, eAC_GETVAR
+	};
+
+	string temp;
+	mIdRex->Extract(1, mIdStr, temp);
+	int act = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+
+	if (act < 0)
+		return false;
+
+	ostringstream os, lst;
+	temp.clear();
+	GetParStr(1, temp);
+
+	if (act == eAC_GETCONF) {
+		if (temp.empty()) {
+			temp = mS->mDBConf.config_name;
+			cConfigBaseBase::tIVIt it;
+
+			for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
+				lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << (*(mS->mC.mhItems.GetByHash(*it))) << "\r\n";
+		} else {
+			mS->mSetupList.OutputFile(temp.c_str(), lst);
+		}
+
+		if (lst.str().size()) {
+			os << autosprintf(_("Configuration file: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
+			mS->DCPrivateHS(os.str(), mConn);
+		} else {
+			os << autosprintf(_("Configuration file is empty: %s"), temp.c_str());
+			mS->DCPublicHS(os.str(), mConn);
+		}
+	} else if (act == eAC_GETVAR) {
+		if (temp.empty()) {
+			(*mOS) << _("Missing command parameters.");
+			return false;
+		}
+
+		string file/*(mS->mDBConf.config_name)*/, var(temp);
+		size_t pos = var.find('.'); // file.variable style
+
+		if (pos != string::npos) {
+			file = var.substr(0, pos);
+			var = var.substr(pos + 1);
+		}
+
+		mS->mSetupList.FilterFiles(var.c_str(), lst, file.c_str());
+
+		if (lst.str().size())
+			os << autosprintf(_("Configuration filter results: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
+		else
+			os << autosprintf(_("Configuration filter didn't return any results: %s"), temp.c_str());
+
+		mS->DCPublicHS(os.str(), mConn);
+	}
+
+	return true;
 }
 
 bool cDCConsole::cfSetVar::operator()()

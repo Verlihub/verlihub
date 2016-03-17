@@ -290,16 +290,16 @@ bool CloseConnection(const char *nick, long delay)
 	return true;
 }
 
-bool StopHub(int code, unsigned delay)
+bool StopHub(int code, int delay)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	if (!serv) {
+		cerr << "Server not found" << endl;
 		return false;
 	}
 
-	server->cAsyncSocketServer::stop(code, delay);
+	serv->cAsyncSocketServer::stop(code, delay);
 	return true;
 }
 

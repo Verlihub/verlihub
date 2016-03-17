@@ -35,7 +35,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 
 cUserBase::cUserBase():
-	cObj((const char *)"User"),
+	cObj((const char*)"User"),
 	mClass(eUC_NORMUSER),
 	mInList(false)
 {}
@@ -44,7 +44,7 @@ cUserBase::~cUserBase()
 {}
 
 cUserBase::cUserBase(const string &nick):
-	cObj((const char *)"User"),
+	cObj((const char*)"User"),
 	mNick(nick),
 	mClass(eUC_NORMUSER),
 	mInList(false)
@@ -63,6 +63,9 @@ bool cUserBase::HasFeature(unsigned feature)
 void cUserBase::Send(string &data, bool, bool)
 {}
 
+/*
+	constructor without nick, todo: i dont see it being used anywhere
+*/
 cUser::cUser():
 	mMyFlag(0),
 	mRights(0),
@@ -97,12 +100,16 @@ cUser::cUser():
 	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
 
-/** Constructor */
+/*
+	constructor with nick
+*/
 cUser::cUser(const string &nick):
 	cUserBase(nick),
 	mxConn(NULL),
 	mxServer(NULL),
 	mMyFlag(0),
+	mRCTMCount(0),
+	mRCTMLock(false),
 	mBanTime(0),
 	mShare(0),
 	mSearchNumber(0),

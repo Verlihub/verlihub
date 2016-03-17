@@ -465,15 +465,16 @@ bool cConfMySQL::UpdatePKVar(const char *field)
 	return UpdatePKVar(item);
 }
 
-void cConfMySQL::WriteStringConstant(ostream &os, const string &str)
+void cConfMySQL::WriteStringConstant(ostream &os, const string &str, bool like)
 {
-	string tmp;
-	// replace all \ by "\\"
-	// replace all " by \"
+	string tmp, escs("\\\"'`");
 	size_t pos = 0, lastpos = 0;
 	char c;
 
-	while ((str.npos != lastpos) && (str.npos != (pos = str.find_first_of("\\\"'`", lastpos)))) {
+	if (like) // note: "%" is not escaped
+		escs.append("_");
+
+	while ((str.npos != lastpos) && (str.npos != (pos = str.find_first_of(escs, lastpos)))) {
 		tmp.append(str, lastpos, pos - lastpos);
 		tmp.append("\\");
 		c = str[pos];

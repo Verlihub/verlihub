@@ -245,6 +245,10 @@ public:
 	unsigned int int_flood_all_mcto_limit;
 	unsigned long int_flood_all_to_period;
 	unsigned int int_flood_all_to_limit;
+	unsigned long int_flood_all_search_period;
+	unsigned int int_flood_all_search_limit;
+	unsigned long int_flood_all_rctm_period;
+	unsigned int int_flood_all_rctm_limit;
 	// end of section
 
 	unsigned long int_chat_ms;

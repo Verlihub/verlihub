@@ -450,10 +450,10 @@ int _StopHub(lua_State *L)
 	}
 
 	int code = (int)lua_tonumber(L, 2);
-	unsigned delay = 0;
+	int delay = 0;
 
 	if (args >= 2)
-		delay = (unsigned)lua_tonumber(L, 3);
+		delay = (int)lua_tonumber(L, 3);
 
 	if (!StopHub(code, delay)) {
 		luaerror(L, ERR_CALL);

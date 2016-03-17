@@ -138,7 +138,7 @@ public:
 	bool UpdatePK(nMySQL::cQuery &);
 	bool LoadPK();
 	bool SavePK(bool dup=false);
-	static void WriteStringConstant(ostream &os, const string &str);
+	static void WriteStringConstant(ostream &os, const string &str, bool like = false);
 	void TruncateTable();
 	void CreateTable();
 	template <class T> void AddCol(const char *colName, const char *colType, const char *colDefault, bool colNull, T &var)

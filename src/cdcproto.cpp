@@ -1510,26 +1510,34 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_PRIV)) // protocol flood
 		return -1;
 
-	if (mS->CheckProtoFloodAll(conn, msg, ePFA_PRIV)) // protocol flood from all
-		return -1;
-
+	ostringstream os;
 	string &to = msg->ChunkString(eCH_PM_TO);
 	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
 
-	if (!other) // todo: notify user
+	if (!other) {
+		os << autosprintf(_("You're trying to send private message to an offline user: %s"), to.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -2;
+	}
 
-	if (!other->mxConn && mS->mRobotList.ContainsNick(to)) { // parse for commands to bot
-		#ifndef WITHOUT_PLUGINS
-			if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
-				return 0;
-		#endif
+	if (!other->mxConn) {
+		if (mS->mRobotList.ContainsNick(to)) { // parse for commands to bot
+			#ifndef WITHOUT_PLUGINS
+				if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+					return 0;
+			#endif
 
-		cUserRobot *robot = (cUserRobot*)mS->mRobotList.GetUserBaseByNick(to);
+			cUserRobot *robot = (cUserRobot*)mS->mRobotList.GetUserBaseByNick(to);
 
-		if (robot) robot->ReceiveMsg(conn, msg);
+			if (robot)
+				robot->ReceiveMsg(conn, msg);
 
-		return 0;
+			return 0;
+		} else {
+			os << autosprintf(_("You're trying to send private message to a bot: %s"), to.c_str());
+			mS->DCPublicHS(os.str(), conn);
+			return -2;
+		}
 	}
 
 	string &text = msg->ChunkString(eCH_PM_MSG);
@@ -1542,8 +1550,6 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 
 		return -4;
 	}
-
-	ostringstream os;
 
 	if (conn->mpUser->mClass < mS->mC.private_class) {
 		os << _("Private chat is currently disabled for users with your class.");
@@ -1559,11 +1565,6 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
-			return 0;
-	#endif
-
 	cUser::tFloodHashType Hash = 0;
 	Hash = tHashArray<void*>::HashString(text);
 
@@ -1576,15 +1577,22 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 				conn->CloseNow();
 				return -5;
 			}
-		} else
+		} else {
 			conn->mpUser->mFloodCounters[eFC_PM] = 0;
+		}
 	}
 
 	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
 
-	if (other->mxConn) // send it
-		other->mxConn->Send(msg->mStr);
+	if (mS->CheckProtoFloodAll(conn, ePFA_PRIV, other)) // protocol flood from all
+		return -1;
 
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+			return 0;
+	#endif
+
+	other->mxConn->Send(msg->mStr); // send it
 	return 0;
 }
 
@@ -1605,19 +1613,32 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_MCTO)) // protocol flood
 		return -1;
 
-	if (mS->CheckProtoFloodAll(conn, msg, ePFA_MCTO)) // protocol flood from all
-		return -1;
-
+	ostringstream os;
 	string &to = msg->ChunkString(eCH_MCTO_TO);
 	cUser *other = mS->mUserList.GetUserByNick(to); // find other user
 
-	if (!other) // todo: notify user
+	if (!other) {
+		os << autosprintf(_("You're trying to send private message to an offline user: %s"), to.c_str());
+		mS->DCPublicHS(os.str(), conn);
 		return -2;
+	}
 
-	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) // todo: notify user
+	if (!other->mxConn) {
+		os << autosprintf(_("You're trying to send private message to a bot: %s"), to.c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	string &text = msg->ChunkString(eCH_MCTO_MSG);
+
+	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) {
+		mS->DCPrivateHS(_("You're not allowed to use private chat right now."), conn, &to);
+
+		if (mS->mC.notify_gag_chats)
+			mS->ReportUserToOpchat(conn, autosprintf(_("User tries to speak with gag in PM to %s: %s"), to.c_str(), text.c_str()));
+
 		return -4;
-
-	ostringstream os;
+	}
 
 	if (conn->mpUser->mClass < mS->mC.private_class) { // pm rules also apply on mcto, messages are also private
 		os << _("Private chat is currently disabled for users with your class.");
@@ -1633,7 +1654,6 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	string &text = msg->ChunkString(eCH_MCTO_MSG);
 	cUser::tFloodHashType Hash = 0;
 	Hash = tHashArray<void*>::HashString(text);
 
@@ -1646,29 +1666,29 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 				conn->CloseNow();
 				return -5;
 			}
-		} else
+		} else {
 			conn->mpUser->mFloodCounters[eFC_MCTO] = 0;
+		}
 	}
 
 	conn->mpUser->mFloodHashes[eFH_MCTO] = Hash;
+
+	if (mS->CheckProtoFloodAll(conn, ePFA_MCTO)) // protocol flood from all
+		return -1;
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMCTo.CallAll(conn, msg))
 			return 0;
 	#endif
 
-	if (other->mxConn) { // send it
-		string mcto;
+	string mcto;
 
-		if (other->mxConn->mFeatures & eSF_MCTO) { // send as is if supported by client
-			mcto = msg->mStr;
-		} else { // else convert to private main chat message
-			Create_Chat(mcto, conn->mpUser->mNick, text);
-		}
+	if (other->mxConn->mFeatures & eSF_MCTO) // send as is if supported by client
+		mcto = msg->mStr;
+	else // else convert to private main chat message
+		Create_Chat(mcto, conn->mpUser->mNick, text);
 
-		other->mxConn->Send(mcto, true);
-	}
-
+	other->mxConn->Send(mcto, true); // send it
 	return 0;
 }
 
@@ -1686,9 +1706,6 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if (conn->CheckProtoFlood(msg->mStr, ePF_CHAT)) // protocol flood
-		return -1;
-
-	if (mS->CheckProtoFloodAll(conn, msg, ePFA_CHAT)) // protocol flood from all
 		return -1;
 
 	ostringstream os;
@@ -1746,12 +1763,15 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
+	if (mS->CheckProtoFloodAll(conn, ePFA_CHAT)) // protocol flood from all
+		return -1;
+
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgChat.CallAll(conn, msg))
 			return 0;
 	#endif
 
-	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true); // finally send the message
+	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true); // send it
 	return 0;
 }
 
@@ -1978,7 +1998,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (!other->mxConn || !other->mxConn->mpUser) {
+	if (!other->mxConn) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You're trying to connect to a bot: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -1994,7 +2014,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (other->IsPassive && !(other->mxConn->mpUser->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
+	if (other->IsPassive && !(other->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user, because he is also in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2005,7 +2025,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You can't download from this user while your share is hidden: %s"), nick.c_str());
+			os << autosprintf(_("You can't download from this user while your share is hidden, because you are in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2064,6 +2084,9 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
+	if (mS->CheckProtoFloodAll(conn, ePFA_RCTM, other)) // protocol flood from all
+		return -1;
+
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgRevConnectToMe.CallAll(conn, msg))
 			return -2;
@@ -2104,6 +2127,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
+	string saddr(""), addr("");
 	bool passive = true;
 
 	switch (msg->mType) { // detect search mode once
@@ -2114,8 +2138,6 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		default:
 			break;
 	}
-
-	string saddr("");
 
 	if (passive) { // verify sender
 		string &nick = msg->ChunkString(eCH_PS_NICK);
@@ -2136,27 +2158,17 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		if (!mS->CheckPortNumber(iport))
 			return -1;
 
-		string &addr = msg->ChunkString(eCH_AS_IP);
+		addr = msg->ChunkString(eCH_AS_IP);
 
-		if (CheckIP(conn, addr)) {
+		if (CheckIP(conn, addr))
 			saddr.append(addr);
-		} else {
-			if (conn->Log(3))
-				conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
-
-			if (mS->mC.wrongip_message) {
-				os << autosprintf(_("Replacing wrong IP address specified in your search request with real one: %s -> %s"), addr.c_str(), conn->mAddrIP.c_str());
-				mS->DCPublicHS(os.str(), conn);
-			}
-
+		else
 			saddr.append(conn->mAddrIP);
-		}
 
 		saddr.append(":");
 		saddr.append(StringFrom(iport));
 	}
 
-	os.str("");
 	unsigned int delay;
 
 	switch (conn->mpUser->mClass) { // prepare delay
@@ -2181,20 +2193,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
+			string delay_str = cTime(delay, 0).AsPeriod().AsString();
 			os << autosprintf(_("Don't search too often.")) << " ";
-
-			if (mS->mC.search_number == 1) {
-				if (delay == 1)
-					os << autosprintf("You can perform %d search in a period of %d second.", mS->mC.search_number, delay);
-				else
-					os << autosprintf("You can perform %d search in a period of %d seconds.", mS->mC.search_number, delay);
-			} else {
-				if (delay == 1)
-					os << autosprintf("You can perform %d searches in a period of %d second.", mS->mC.search_number, delay);
-				else
-					os << autosprintf("You can perform %d searches in a period of %d seconds.", mS->mC.search_number, delay);
-			}
-
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2300,6 +2301,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (passive && mS->CheckProtoFloodAll(conn, ePFA_SEAR)) // protocol flood from all
+		return -1;
+
  	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
 			return -2;
@@ -2307,8 +2311,17 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	conn->mpUser->mSearchNumber++; // set counter last of all
 
-	if (passive)
+	if (passive) {
 		conn->mSRCounter = 0;
+	} else if (addr.size()) {
+		if (conn->Log(3))
+			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
+
+		if (mS->mC.wrongip_message) {
+			os << autosprintf(_("Replacing wrong IP address specified in your search request with real one: %s -> %s"), addr.c_str(), conn->mAddrIP.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+	}
 
 	string search;
 	Create_Search(search, saddr, lims, spat);
@@ -2488,7 +2501,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 		other = mS->mUserList.GetUserByNick(nick);
 
-		if (other && other->mxConn && other->mxConn->mpUser && other->mxConn->mpUser->mInList) {
+		if (other && other->mxConn && other->mInList) {
 			back.append(nick);
 			back.append(" ");
 			back.append(other->mxConn->AddrIP());

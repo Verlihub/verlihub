@@ -222,11 +222,11 @@ void cDCConf::AddVars()
 	Add("proto_flood_sr_action", proto_flood_sr_action, 3);
 
 	Add("int_flood_ctm_period", int_flood_ctm_period, 10);
-	Add("int_flood_ctm_limit", int_flood_ctm_limit, 200);
+	Add("int_flood_ctm_limit", int_flood_ctm_limit, 300);
 	Add("proto_flood_ctm_action", proto_flood_ctm_action, 3);
 
 	Add("int_flood_rctm_period", int_flood_rctm_period, 10);
-	Add("int_flood_rctm_limit", int_flood_rctm_limit, 200);
+	Add("int_flood_rctm_limit", int_flood_rctm_limit, 300);
 	Add("proto_flood_rctm_action", proto_flood_rctm_action, 3);
 
 	Add("int_flood_nicklist_period", int_flood_nicklist_period, 60);
@@ -252,6 +252,10 @@ void cDCConf::AddVars()
 	Add("int_flood_all_mcto_limit", int_flood_all_mcto_limit, 10);
 	Add("int_flood_all_to_period", int_flood_all_to_period, 15);
 	Add("int_flood_all_to_limit", int_flood_all_to_limit, 10);
+	Add("int_flood_all_search_period", int_flood_all_search_period, 10); // todo: still not sure about these numbers
+	Add("int_flood_all_search_limit", int_flood_all_search_limit, 400);
+	Add("int_flood_all_rctm_period", int_flood_all_rctm_period, 10);
+	Add("int_flood_all_rctm_limit", int_flood_all_rctm_limit, 200);
 	// end of section
 
 	// User control configuration

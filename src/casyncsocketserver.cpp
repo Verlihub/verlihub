@@ -134,9 +134,13 @@ int cAsyncSocketServer::run()
 	return mRunResult;
 }
 
-void cAsyncSocketServer::stop(int code, unsigned delay)
+void cAsyncSocketServer::stop(int code, int delay)
 {
-	mT.stop = (mTime + (int)delay);
+	if (delay == -1)
+		mT.stop = cTime(0, 0);
+	else
+		mT.stop = (mTime + (int)delay);
+
 	mRunResult = code;
 }
 
