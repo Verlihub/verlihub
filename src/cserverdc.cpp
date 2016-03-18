@@ -79,6 +79,13 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mHubSec(NULL),
 	mOpChat(NULL),
 	mExecPath(ExecPath),
+	mActiveSearchCount(0),
+	mPassiveSearchCount(0),
+	mPassiveSearchReplyCount(0),
+	mSentPassiveSearchReplyCount(0),
+	mDroppedActiveSearchCount(0),
+	mDroppedPassiveSearchCount(0),
+	mDroppedPassiveSearchReplyCount(0),
 	mSysLoad(eSL_NORMAL),
 	// mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
 	mUserList(true, true, true, NULL, NULL),
@@ -1552,6 +1559,99 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 	return eVN_OK;
 }
 
+void cServerDC::RefreshPassiveSearches()
+{
+	// clearing information about old passive searches
+	// mC.passive_search_lifetime must be long enough for everyone to respond
+	map<string, long>::iterator it = mCurrentPassiveSearches.begin();
+
+	for ( ; it != mCurrentPassiveSearches.end(); ) {
+		if (it->second + (long)mC.passive_search_lifetime < mTime.Sec())
+			mCurrentPassiveSearches.erase(it++);
+		else
+			++it;
+	}
+}
+
+void cServerDC::GetPassiveSearchInfo(ostream &os, bool full)
+{
+	os << _("Search information") << ":\r\n\r\n";
+
+	if (full) {
+		os << " [*] " << _("Configuration") << ": "
+			<< "int_search(" << mC.int_search << ") "
+			<< "int_search_pas(" << mC.int_search_pas << ") "
+			<< "max_ongoing_passive_searches(" << mC.max_ongoing_passive_searches << ") "
+			<< "passive_search_lifetime(" << mC.passive_search_lifetime << ") "
+			<< "max_search_result_targets(" << mC.max_search_result_targets << ") "
+			<< "search_result_lifetime(" << mC.search_result_lifetime << ") "
+			<< "int_flood_all_search_limit(" << mC.int_flood_all_search_limit << ") "
+			<< "int_flood_all_search_period(" << mC.int_flood_all_search_period << ") "
+			<< "int_flood_search_limit(" << mC.int_flood_search_limit << ") "
+			<< "int_flood_search_period(" << mC.int_flood_search_period << ") "
+			<< "proto_flood_search_action(" << mC.proto_flood_search_action << ") "
+			<< "int_flood_sr_limit(" << mC.int_flood_sr_limit << ") "
+			<< "int_flood_sr_period(" << mC.int_flood_sr_period << ") "
+			<< "proto_flood_sr_action(" << mC.proto_flood_sr_action << ") "
+			<< "\r\n";
+	}
+
+	os << " [*] " << _("Received search messages [active/passive/results]") << ": "
+		<< mProtoCount[nEnums::eDC_SEARCH] << " / "
+		<< mProtoCount[nEnums::eDC_SEARCH_PAS] << " / "
+		<< mProtoCount[nEnums::eDC_SR] << "\r\n";
+
+	os << " [*] " << _("Active searches [accepted/rejected/flood/all]") << ": "
+		<< mActiveSearchCount << " / "
+		<< (mProtoCount[nEnums::eDC_SEARCH] - mActiveSearchCount) << " / "
+		<< mDroppedActiveSearchCount << " / "
+		<< mProtoCount[nEnums::eDC_SEARCH] << "\r\n";
+
+	os << " [*] " << _("Passive searches [current/accepted/rejected/flood/all]") << ": "
+		<< mCurrentPassiveSearches.size() << " / "
+		<< mPassiveSearchCount << " / "
+		<< (mProtoCount[nEnums::eDC_SEARCH_PAS] - mPassiveSearchCount) << " / "
+		<< mDroppedPassiveSearchCount << " / "
+		<< mProtoCount[nEnums::eDC_SEARCH_PAS] << "\r\n";
+
+	os << " [*] " << _("Passive search results [sent/correct/rejected/flood/all]") << ": "
+		<< mSentPassiveSearchReplyCount << " / "
+		<< mPassiveSearchReplyCount << " / "
+		<< (mProtoCount[nEnums::eDC_SR] - mSentPassiveSearchReplyCount) << " / "
+		<< mDroppedPassiveSearchReplyCount << " / "
+		<< mProtoCount[nEnums::eDC_SR] << "\r\n";
+
+	if (full) {
+		os << " [*] " << _("Current passive searches [nick (age)]") << ":";
+
+		map<string, long>::iterator it = mCurrentPassiveSearches.begin();
+
+		for ( ; it != mCurrentPassiveSearches.end(); ++it) {
+			os << " " << it->first << " (" << (mTime.Sec() - it->second) << ")";
+		}
+
+		os << "\r\n";
+		os << " [*] " << _("Current passive search results [sender (target age)]") << ":";
+
+		cUserCollection::iterator uit = mActiveUsers.begin();
+
+		for ( ; uit != mActiveUsers.end(); ++uit) {
+			cUser *user = (cUser *)*uit;
+
+			if (!user || !user->mxConn)
+				continue;
+
+			map<string, long>::iterator it = user->mxConn->mCurrentSRTargets.begin();
+
+			for ( ; it != user->mxConn->mCurrentSRTargets.end(); ++it) {
+				os << " " << user->mNick << " (" << it->first << " " << (mTime.Sec() - it->second) << ")";
+			}
+		}
+
+		os << "\r\n";
+	}
+}
+
 int cServerDC::OnTimer(cTime &now)
 {
 	mHelloUsers.FlushCache();
@@ -1563,6 +1663,7 @@ int cServerDC::OnTimer(cTime &now)
 	mChatUsers.FlushCache();
 	mInProgresUsers.FlushCache();
 	mRobotList.FlushCache();
+	RefreshPassiveSearches();
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {
@@ -2054,7 +2155,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	return false;
 }
 
-bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
+bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser, bool doNotUpdate)
 {
 	if (!conn || !conn->mpUser || (conn->mpUser->mClass > mC.max_class_proto_flood) || (((type == ePFA_PRIV) || (type == ePFA_RCTM)) && !touser))
 		return false;
@@ -2090,12 +2191,20 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
 
 	if (type == ePFA_RCTM) { // rctm
 		if (!touser->mRCTMCount) {
+
+			if (doNotUpdate)
+				return false;
+
 			touser->mRCTMCount = 1;
 			touser->mRCTMTime = mTime;
 			touser->mRCTMLock = false;
 			return false;
 		}
 	} else if (!mProtoFloodAllCounts[type]) { // other
+
+		if (doNotUpdate)
+			return false;
+
 		mProtoFloodAllCounts[type] = 1;
 		mProtoFloodAllTimes[type] = mTime;
 		mProtoFloodAllLocks[type] = false;
@@ -2105,6 +2214,10 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
 	long dif = ((type == ePFA_RCTM) ? mTime.Sec() - touser->mRCTMTime.Sec() : mTime.Sec() - mProtoFloodAllTimes[type].Sec());
 
 	if ((dif < 0) || (dif > period)) {
+
+		if (doNotUpdate)
+			return false;
+
 		if (type == ePFA_RCTM) { // rctm
 			touser->mRCTMCount = 1;
 			touser->mRCTMTime = mTime;
@@ -2160,6 +2273,12 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
 
 	if (type == ePFA_RCTM) { // rctm
 		if (touser->mRCTMCount++ >= limit) {
+
+			if (doNotUpdate) {
+				touser->mRCTMCount--;
+				return true;
+			}
+
 			touser->mRCTMTime = mTime; // update time, protocol command to user will be locked until flood is going on
 
 			if (!touser->mRCTMLock) { // set lock if not already
@@ -2190,6 +2309,12 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
 			return true;
 		}
 	} else if (mProtoFloodAllCounts[type]++ >= limit) { // other
+
+		if (doNotUpdate) {
+			mProtoFloodAllCounts[type]--;
+			return true;
+		}
+
 		mProtoFloodAllTimes[type] = mTime; // update time, protocol command will be locked until flood is going on
 		string omsg;
 

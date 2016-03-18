@@ -35,7 +35,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 
 cUserBase::cUserBase():
-	cObj((const char*)"User"),
+	cObj((const char *)"User"),
 	mClass(eUC_NORMUSER),
 	mInList(false)
 {}
@@ -44,7 +44,7 @@ cUserBase::~cUserBase()
 {}
 
 cUserBase::cUserBase(const string &nick):
-	cObj((const char*)"User"),
+	cObj((const char *)"User"),
 	mNick(nick),
 	mClass(eUC_NORMUSER),
 	mInList(false)

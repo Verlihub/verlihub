@@ -185,6 +185,12 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 			if (cmdid == "unhidekick" || cmdid == "uhk") return CmdUnHideKick(cmd_line, conn);
 			if (cmdid == "commands" || cmdid == "cmds") return CmdCmds(cmd_line, conn);
 
+			if (cmdid == "searchinfo" || cmdid == "fullsearchinfo") {
+				mServer->GetPassiveSearchInfo(os, (cmdid == "fullsearchinfo"));
+				mOwner->DCPublicHS(os.str().c_str(), conn);
+				return 1;
+			}
+
 			try {
 				if (mCmdr.ParseAll(str, os, conn) >= 0) {
 					mOwner->DCPublicHS(os.str().c_str(), conn);
