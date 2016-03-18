@@ -169,12 +169,12 @@ void cConnDC::RefreshSRTargets()
 {
 	long interval = Server()->mC.search_result_lifetime;  // max interval between SRs for same user
 	long timestamp = Server()->mTime.Sec();
-	map<string, long>::iterator it = currentSRTargets.begin();
+	map<string, long>::iterator it = mCurrentSRTargets.begin();
 
 	// clearing information about old search results
-	for ( ; it != currentSRTargets.end(); ) {
+	for ( ; it != mCurrentSRTargets.end(); ) {
 		if (it->second + interval < timestamp)
-			currentSRTargets.erase(it++);
+			mCurrentSRTargets.erase(it++);
 		else
 			++it;
 	}

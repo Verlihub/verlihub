@@ -218,7 +218,7 @@ void cDCConf::AddVars()
 	Add("proto_flood_search_action", proto_flood_search_action, 3);
 
 	Add("int_flood_sr_period", int_flood_sr_period, 30);
-	Add("int_flood_sr_limit", int_flood_sr_limit, 500);
+	Add("int_flood_sr_limit", int_flood_sr_limit, 25);  // lower than 500, because now it's per target
 	Add("proto_flood_sr_action", proto_flood_sr_action, 3);
 
 	Add("int_flood_ctm_period", int_flood_ctm_period, 10);
@@ -259,9 +259,13 @@ void cDCConf::AddVars()
 	// end of section
 
 	// passive search and SR distributed flood protection
+	// the number of seconds to wait for search responses (keep it high or people will be kicked for SR flood)
 	Add("passive_search_lifetime", passive_search_lifetime, 180);
-	Add("max_ongoing_passive_searches", max_ongoing_passive_searches, 200);
+	// max number of passive searches that can run at any given moment (their duration is specified above)
+	Add("max_ongoing_passive_searches", max_ongoing_passive_searches, 500);
+	// how long to keep an SR target in mCurrentSRTargets cache (too long and new SRs will be dropped)
 	Add("search_result_lifetime", search_result_lifetime, 20);
+	// max number of entries in mCurrentSRTargets until we start dropping new SRs
 	Add("max_search_result_targets", max_search_result_targets, 40);
 	// end of section
 

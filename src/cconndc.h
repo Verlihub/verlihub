@@ -418,8 +418,8 @@ namespace nVerliHub {
 				cTime mProtoFloodReports[nEnums::ePF_LAST];
 				bool CheckProtoFlood(const string &data, int type, unsigned int multiplier=1);
 
-				// to detect SR flood
-				map<string, long> currentSRTargets;
+				// stores SR target nicks (too many entries means SR flood)
+				map<string, long> mCurrentSRTargets;
 				void RefreshSRTargets();
 
 				// hub url
