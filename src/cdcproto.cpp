@@ -2113,12 +2113,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
-		return -1;
-
 	bool passive = (msg->mType != eDC_SEARCH && msg->mType != eDC_MSEARCH);
 
-	if (mS->CheckProtoFloodAll(conn, ePFA_SEAR, NULL, true)) {
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH) || mS->CheckProtoFloodAll(conn, ePFA_SEAR, NULL, true)) {
 		// Save resources by aborting early if we already know that the server is being flooded.
 		if (passive) {
 			mS->mDroppedPassiveSearchCount++;
