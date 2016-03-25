@@ -2333,7 +2333,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		mS->mActiveSearchCount++;
 	}
 
-	if (!passive && addr.size()) {
+	if (!passive && (addr != conn->mAddrIP)) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
