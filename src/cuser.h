@@ -215,7 +215,7 @@ public:
 	sTimes mT;
 	typedef tHashArray<void*>::tHashType tFloodHashType;
 	tFloodHashType mFloodHashes[nEnums::eFH_LAST_FH];
-	unsigned int mFloodCounters[nEnums::eFC_LAST_FC];
+ 	unsigned int mFloodCounters[nEnums::eFC_LAST_FC];
 
 	// rctm data
 	unsigned int mRCTMCount;

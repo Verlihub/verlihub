@@ -2113,17 +2113,8 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	bool passive = (msg->mType != eDC_SEARCH && msg->mType != eDC_MSEARCH);
-
-	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH) || mS->CheckProtoFloodAll(conn, ePFA_SEAR, NULL, true)) {
-		// Save resources by aborting early if we already know that the server is being flooded.
-		if (passive) {
-			mS->mDroppedPassiveSearchCount++;
-		} else {
-			mS->mDroppedActiveSearchCount++;
-		}
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
 		return -1;
-	}
 
 	ostringstream os;
 
@@ -2137,6 +2128,16 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string saddr(""), addr("");
+	bool passive = true;
+
+	switch (msg->mType) { // detect search mode once
+		case eDC_SEARCH:
+		case eDC_MSEARCH:
+			passive = false;
+			break;
+		default:
+			break;
+	}
 
 	if (passive) { // verify sender
 		string &nick = msg->ChunkString(eCH_PS_NICK);
@@ -2300,25 +2301,10 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	// Flood protection for passive search is now handled by checking mS->mCurrentPassiveSearches.size(),
-	// so this is now used to protect against flood of any type of search commands
-	if (mS->CheckProtoFloodAll(conn, ePFA_SEAR)) {
-		if (passive) {
-			mS->mDroppedPassiveSearchCount++;
-		} else {
-			mS->mDroppedActiveSearchCount++;
-		}
+	if (passive && mS->CheckProtoFloodAll(conn, ePFA_SEAR)) // protocol flood from all
 		return -1;
-	}
 
-	if (passive && mS->mCurrentPassiveSearches.size() >= mS->mC.max_ongoing_passive_searches) {
-		mS->mDroppedPassiveSearchCount++;
-		os << _("Sorry, the hub can't handle more passive search requests right now.");
-		mS->DCPublicHS(os.str(), conn);
-		return -2;
-	}
-
-	#ifndef WITHOUT_PLUGINS
+ 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
 			return -2;
 	#endif
@@ -2327,13 +2313,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (passive) {
 		conn->mSRCounter = 0;
-		mS->mPassiveSearchCount++;
-		mS->mCurrentPassiveSearches[conn->mpUser->mNick] = mS->mTime.Sec();
-	} else {
-		mS->mActiveSearchCount++;
-	}
-
-	if (!passive && (addr != conn->mAddrIP)) {
+	} else if (addr != conn->mAddrIP) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
@@ -2381,23 +2361,8 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserNick(conn, from))
 		return -1;
 
-	long maxTargets = mS->mC.max_search_result_targets;
-	string &other_nick = msg->ChunkString(eCH_SR_TO);
-	long numTargets = conn->mCurrentSRTargets.size();
-
-	if (numTargets >= maxTargets)
-		return -1;  // dropping SR, because the server has reached its capacity
-
-	if (mS->mCurrentPassiveSearches.find(other_nick) != mS->mCurrentPassiveSearches.end()) {
-		mS->mPassiveSearchReplyCount++;
-		conn->mCurrentSRTargets[other_nick] = mS->mTime.Sec();
-	}
-
-	// adding 1 to numTargets to allow some amount of invalid SRs from buggy clients
-	if (conn->CheckProtoFlood(msg->mStr, ePF_SR, numTargets + 1)) {
-		mS->mDroppedPassiveSearchReplyCount++;
-		return -1; // protocol flood
-	}
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SR)) // protocol flood
+		return -1;
 
 	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_SR_TO)); // find other user
 
@@ -2411,10 +2376,8 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 			return -2;
 	#endif
 
-	if (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr)) { // send it
+	if (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr)) // send it
 		other->mxConn->Send(sr, true, !mS->mC.delayed_search); // part of search, must be delayed too
-		mS->mSentPassiveSearchReplyCount++;
-	}
 
 	return 0;
 }

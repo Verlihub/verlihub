@@ -251,12 +251,6 @@ public:
 	unsigned int int_flood_all_rctm_limit;
 	// end of section
 
-	// passive search and SR distributed flood protection
-	unsigned long passive_search_lifetime;
-	unsigned int max_ongoing_passive_searches;
-	unsigned long search_result_lifetime;
-	unsigned int max_search_result_targets;
-
 	unsigned long int_chat_ms;
 	unsigned int int_nicklist;
 	unsigned int int_myinfo;
