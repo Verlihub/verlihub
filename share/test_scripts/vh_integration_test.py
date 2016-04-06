@@ -202,7 +202,7 @@ def maybe_start_testing():
     hub_name = vh.GetConfig("config", "hub_name")
     if hub_name == special_hub_name:
         ver = vh.__version__
-        if ver[0] == 1 and ver[1] >= 2 and ver[2] > 3:
+        if ver[0] == 1 and (ver[1] > 2 or ver[1] == 2 and ver[2] > 3):
             tester.start_testing(my_test)
         else:
             print("ERROR: Cannot run VH Integration Test. Expected version <2.0.0 and >1.2.3, but got %s" % str(ver))
