@@ -37,6 +37,24 @@
 
 #define PYTHON_PI_IDENTIFIER "Python"
 
+#define w_ret0    cpiPython::lib_pack("l", (long)0)
+#define w_ret1    cpiPython::lib_pack("l", (long)1)
+#define w_retnone cpiPython::lib_pack("")
+
+// logging levels:
+// 0 - plugin critical errors, interpreter errors, bad call arguments
+// 1 - callback / hook logging - only their status
+// 2 - all function parameters and return values are printed
+// 3 - debugging info is printed
+#define log(...)                                  { printf( __VA_ARGS__ ); fflush(stdout); }
+#define log1(...) { if (cpiPython::log_level > 0) { printf( __VA_ARGS__ ); fflush(stdout); }; }
+#define log2(...) { if (cpiPython::log_level > 1) { printf( __VA_ARGS__ ); fflush(stdout); }; }
+#define log3(...) { if (cpiPython::log_level > 2) { printf( __VA_ARGS__ ); fflush(stdout); }; }
+#define log4(...) { if (cpiPython::log_level > 3) { printf( __VA_ARGS__ ); fflush(stdout); }; }
+#define log5(...) { if (cpiPython::log_level > 4) { printf( __VA_ARGS__ ); fflush(stdout); }; }
+
+#define dprintf(...) { printf("%s:%u: "__FILE__, __LINE__); printf( __VA_ARGS__ ); fflush(stdout); }
+
 using std::vector;
 namespace nVerliHub {
 namespace nPythonPlugin {
@@ -122,6 +140,22 @@ public:
 			mPython.insert(mPython.begin() + position, ip);
 	}
 
+	bool RemoveByName(const string &name)
+	{
+		tvPythonInterpreter::iterator it;
+		cPythonInterpreter *li;
+		for (it = mPython.begin(); it != mPython.end(); ++it) {
+			li = *it;
+			if (li == NULL || li->mScriptName.compare(name))
+				continue;
+			delete li;
+			mPython.erase(it);
+			return true;
+		}
+		log("PY: ERROR: Failed to remove interpreter for %s\n", name.c_str());
+		return false;
+	}
+
 	cPythonInterpreter *operator[](unsigned int i)
 	{
 		if (i > Size()) return NULL;
@@ -157,6 +191,16 @@ public:
 };
 
 };  // namespace nPythonPlugin
+
+inline bool EndsWithPipe(const char *data)
+{
+	return data && data[0] != 0 && data[strlen(data) - 1] == '|';
+}
+
+inline const char* PipeIfMissing(const char *data)
+{
+	return EndsWithPipe(data) ? "" : "|";
+}
 
 extern "C" w_Targs *_SendToOpChat      (int id, w_Targs *args);
 extern "C" w_Targs *_SendToActive      (int id, w_Targs *args);
@@ -211,23 +255,5 @@ extern "C" w_Targs *_name_and_version  (int id, w_Targs *args);
 extern "C" w_Targs *_StopHub           (int id, w_Targs *args);
 
 };  // namespace nVerliHub
-
-#define w_ret0    cpiPython::lib_pack("l", (long)0)
-#define w_ret1    cpiPython::lib_pack("l", (long)1)
-#define w_retnone cpiPython::lib_pack("")
-
-// logging levels:
-// 0 - plugin critical errors, interpreter errors, bad call arguments
-// 1 - callback / hook logging - only their status
-// 2 - all function parameters and return values are printed
-// 3 - debugging info is printed
-#define log(...)                                  { printf( __VA_ARGS__ ); fflush(stdout); }
-#define log1(...) { if (cpiPython::log_level > 0) { printf( __VA_ARGS__ ); fflush(stdout); }; }
-#define log2(...) { if (cpiPython::log_level > 1) { printf( __VA_ARGS__ ); fflush(stdout); }; }
-#define log3(...) { if (cpiPython::log_level > 2) { printf( __VA_ARGS__ ); fflush(stdout); }; }
-#define log4(...) { if (cpiPython::log_level > 3) { printf( __VA_ARGS__ ); fflush(stdout); }; }
-#define log5(...) { if (cpiPython::log_level > 4) { printf( __VA_ARGS__ ); fflush(stdout); }; }
-
-#define dprintf(...) { printf("%s:%u: "__FILE__, __LINE__); printf( __VA_ARGS__ ); fflush(stdout); }
 
 #endif

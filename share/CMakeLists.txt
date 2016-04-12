@@ -37,9 +37,15 @@ SET(CONFIG_FILES
 	config/rules
 )
 
+SET(TEST_SCRIPT_FILES
+	test_scripts/vh_event_log.py
+	test_scripts/vh_integration_test.py
+)
+
 SET(prefix ${CMAKE_INSTALL_PREFIX})
 SET(plugindir "${CMAKE_INSTALL_PREFIX}/${PLUGINDIR}")
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/sql/default_pi_plug.sql.in ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
 SET(SQL_FILES ${SQL_FILES}  ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
 INSTALL(FILES ${SQL_FILES} DESTINATION share/${PROJECT_NAME}/sql)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION share/${PROJECT_NAME}/config)
+INSTALL(FILES ${TEST_SCRIPT_FILES} DESTINATION share/${PROJECT_NAME}/test_scripts)

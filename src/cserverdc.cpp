@@ -2054,9 +2054,9 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	return false;
 }
 
-bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
+bool cServerDC::CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser)
 {
-	if (!conn || !conn->mpUser || (conn->mpUser->mClass > mC.max_class_proto_flood))
+	if (!conn || !conn->mpUser || (conn->mpUser->mClass > mC.max_class_proto_flood) || (((type == ePFA_PRIV) || (type == ePFA_RCTM)) && !touser))
 		return false;
 
 	long period = 0;
@@ -2075,53 +2075,121 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 			period = mC.int_flood_all_mcto_period;
 			limit = mC.int_flood_all_mcto_limit;
 			break;
+		case ePFA_SEAR:
+			period = mC.int_flood_all_search_period;
+			limit = mC.int_flood_all_search_limit;
+			break;
+		case ePFA_RCTM:
+			period = mC.int_flood_all_rctm_period;
+			limit = mC.int_flood_all_rctm_limit;
+			break;
 	}
 
 	if (!limit || !period)
 		return false;
 
-	if (!mProtoFloodAllCounts[type]) {
+	if (type == ePFA_RCTM) { // rctm
+		if (!touser->mRCTMCount) {
+			touser->mRCTMCount = 1;
+			touser->mRCTMTime = mTime;
+			touser->mRCTMLock = false;
+			return false;
+		}
+	} else if (!mProtoFloodAllCounts[type]) { // other
 		mProtoFloodAllCounts[type] = 1;
 		mProtoFloodAllTimes[type] = mTime;
 		mProtoFloodAllLocks[type] = false;
 		return false;
 	}
 
-	long dif = mTime.Sec() - mProtoFloodAllTimes[type].Sec();
+	long dif = ((type == ePFA_RCTM) ? mTime.Sec() - touser->mRCTMTime.Sec() : mTime.Sec() - mProtoFloodAllTimes[type].Sec());
 
 	if ((dif < 0) || (dif > period)) {
-		mProtoFloodAllCounts[type] = 1;
-		mProtoFloodAllTimes[type] = mTime;
+		if (type == ePFA_RCTM) { // rctm
+			touser->mRCTMCount = 1;
+			touser->mRCTMTime = mTime;
 
-		if (mProtoFloodAllLocks[type]) { // reset lock
-			string omsg = _("Protocol command has been unlocked after stopped flood from all");
-			omsg += ": ";
+			if (touser->mRCTMLock) { // reset lock
+				ostringstream os;
+				os << autosprintf(_("Protocol command has been unlocked after stopped flood to user %s from all"), touser->mNick.c_str());
+				os << ": RevConnectToMe";
 
-			switch (type) {
-				case ePFA_CHAT:
-					omsg += _("Chat");
-					break;
-				case ePFA_PRIV:
-					omsg += "To";
-					break;
-				case ePFA_MCTO:
-					omsg += "MCTo";
-					break;
+				if (conn->Log(1))
+					conn->LogStream() << os.str() << endl;
+
+				if (mC.proto_flood_report)
+					ReportUserToOpchat(conn, os.str());
+
+				touser->mRCTMLock = false;
 			}
+		} else { // other
+			mProtoFloodAllCounts[type] = 1;
+			mProtoFloodAllTimes[type] = mTime;
 
-			if (conn->Log(1))
-				conn->LogStream() << omsg << endl;
+			if (mProtoFloodAllLocks[type]) { // reset lock
+				string omsg = _("Protocol command has been unlocked after stopped flood from all");
+				omsg += ": ";
 
-			if (mC.proto_flood_report)
-				ReportUserToOpchat(conn, omsg);
+				switch (type) {
+					case ePFA_CHAT:
+						omsg += _("Chat");
+						break;
+					case ePFA_PRIV:
+						omsg += "To";
+						break;
+					case ePFA_MCTO:
+						omsg += "MCTo";
+						break;
+					case ePFA_SEAR:
+						omsg += "Search";
+						break;
+				}
 
-			mProtoFloodAllLocks[type] = false;
+				if (conn->Log(1))
+					conn->LogStream() << omsg << endl;
+
+				if (mC.proto_flood_report)
+					ReportUserToOpchat(conn, omsg);
+
+				mProtoFloodAllLocks[type] = false;
+			}
 		}
 
 		return false;
 	}
 
-	if (mProtoFloodAllCounts[type]++ >= limit) {
+	if (type == ePFA_RCTM) { // rctm
+		if (touser->mRCTMCount++ >= limit) {
+			touser->mRCTMTime = mTime; // update time, protocol command to user will be locked until flood is going on
+
+			if (!touser->mRCTMLock) { // set lock if not already
+				ostringstream os;
+				os << autosprintf(_("Protocol command has been locked due to detection of flood to user %s from all"), touser->mNick.c_str());
+				os << ": RevConnectToMe";
+				os << " [" << touser->mRCTMCount << ':' << dif << ':' << period << ']';
+
+				if (conn->Log(1))
+					conn->LogStream() << os.str() << endl;
+
+				if (mC.proto_flood_report)
+					ReportUserToOpchat(conn, os.str());
+
+				touser->mRCTMLock = true;
+			}
+
+			/*
+				todo
+					dont know if user should be notified every time
+					this commands is very frequent
+					maybe notification with delay
+					or notification only first time, add bool to user class
+					also there are other good and bad sides of showing this message
+					think really good about this one
+			*/
+
+			return true;
+		}
+	} else if (mProtoFloodAllCounts[type]++ >= limit) { // other
 		mProtoFloodAllTimes[type] = mTime; // update time, protocol command will be locked until flood is going on
 		string omsg;
 
@@ -2139,6 +2207,9 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 				case ePFA_MCTO:
 					omsg += "MCTo";
 					break;
+				case ePFA_SEAR:
+					omsg += "Search";
+					break;
 			}
 
 			ostringstream info;
@@ -2153,38 +2224,37 @@ bool cServerDC::CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type)
 			mProtoFloodAllLocks[type] = true;
 		}
 
-		omsg = _("Sorry, following protocol command is temporarily locked due to flood detection"); // notify user every time
-		omsg += ": ";
+		if (type == ePFA_SEAR) {
+			/*
+				todo
+					dont know if user should be notified every time
+					this commands is very frequent
+					maybe notification with delay
+					or notification only first time, add bool to user class
+					also there are other good and bad sides of showing this message
+					think really good about this one
+			*/
+		} else { // notify user every time
+			omsg = _("Sorry, following protocol command is temporarily locked due to flood detection");
+			omsg += ": ";
 
-		switch (type) {
-			case ePFA_CHAT:
-				omsg += _("Chat");
-				break;
-			case ePFA_PRIV:
-				omsg += "To";
-				break;
-			case ePFA_MCTO:
-				omsg += "MCTo";
-				break;
-		}
-
-		if (type == ePFA_PRIV) { // pm
-			string to_nick;
-			cUser *to_user = NULL;
-
-			if (msg && msg->mStr.size()) {
-				to_nick = msg->ChunkString(eCH_PM_TO);
-
-				if (to_nick.size())
-					to_user = mUserList.GetUserByNick(to_nick);
+			switch (type) {
+				case ePFA_CHAT:
+					omsg += _("Chat");
+					break;
+				case ePFA_PRIV:
+					omsg += "To";
+					break;
+				case ePFA_MCTO:
+					omsg += "MCTo";
+					break;
 			}
 
-			if (to_user)
-				DCPrivateHS(omsg, conn, &to_nick);
-			else
-				DCPrivateHS(omsg, conn);
-		} else // mc
-			DCPublicHS(omsg, conn);
+			if (type == ePFA_PRIV) // pm
+				DCPrivateHS(omsg, conn, &touser->mNick);
+			else // mc
+				DCPublicHS(omsg, conn);
+		}
 
 		return true;
 	}
@@ -2412,7 +2482,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 			if (flags & eKI_CLOSE)
 				user->mxConn->CloseNice(1000, eCR_KICKED);
 		} else {
-			ostr << _("Your action was prevented by plugin.");
+			ostr << _("Your action was blocked by a plugin.");
 		}
 	}
 

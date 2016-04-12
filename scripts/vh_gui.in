@@ -460,11 +460,20 @@ install() {
 		fi
 	fi
 	FOLDERS_OPTIONS=();
-	for i in `seq 1 $FCOUNT`; do
-		local IS_DEF="off";
-		if [ $i == "1" ]; then IS_DEF="on"; fi
-		FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);
-	done
+
+	if [ $(uname) != "OpenBSD" ]; then
+		for i in `seq 1 $FCOUNT`; do
+			local IS_DEF="off";
+			if [ $i == "1" ]; then IS_DEF="on"; fi
+			FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);
+		done
+	else
+		for i in `jot -p0 $FCOUNT 1`; do
+			local IS_DEF="off";
+			if [ $i == "1" ]; then IS_DEF="on"; fi
+			FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);
+		done
+	fi
 
 	# Select path where to put verlihub config file
 	IS_CHOOSEN_FOLDER_OK=false

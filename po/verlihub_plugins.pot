@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-29 22:24+0100\n"
+"Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
+"POT-Creation-Date: 2016-04-05 10:27+0200\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -255,13 +255,13 @@ msgid "Script stopped: %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:209 ../plugins/lua/cconsole.cpp:328
-#: ../plugins/python/cconsole.cpp:161
+#: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:211 ../plugins/lua/cconsole.cpp:330
-#: ../plugins/python/cconsole.cpp:163
+#: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr ""
@@ -282,12 +282,12 @@ msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:288 ../plugins/lua/cconsole.cpp:351
 #: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:219
-#: ../plugins/python/cconsole.cpp:237 ../plugins/python/cconsole.cpp:300
+#: ../plugins/python/cconsole.cpp:236 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:369 ../plugins/lua/cconsole.cpp:389
+#: ../plugins/lua/cconsole.cpp:369
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr ""
@@ -295,6 +295,11 @@ msgstr ""
 #: ../plugins/lua/cconsole.cpp:371
 #, c-format
 msgid "Current log level: %d"
+msgstr ""
+
+#: ../plugins/lua/cconsole.cpp:389 ../plugins/python/cconsole.cpp:320
+#, c-format
+msgid "Updated configuration %s.%s: %s -> %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:391
@@ -501,8 +506,8 @@ msgid "Last error: %s"
 msgstr ""
 
 #: ../plugins/python/cconsole.cpp:82 ../plugins/python/cconsole.cpp:129
-#: ../plugins/python/cconsole.cpp:171 ../plugins/python/cconsole.cpp:246
-#: ../plugins/python/cconsole.cpp:309
+#: ../plugins/python/cconsole.cpp:171 ../plugins/python/cconsole.cpp:245
+#: ../plugins/python/cconsole.cpp:308
 msgid "Python interpreter is not loaded."
 msgstr ""
 
@@ -515,43 +520,30 @@ msgstr ""
 msgid "Python scripts found in: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:153
+#: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
-msgid "Script stopped: #%d %s"
+msgid "Script #%d stopped: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:220
+#: ../plugins/python/cconsole.cpp:206
 #, c-format
-msgid "Script is already loaded: #%d %s"
+msgid ""
+"Number %d is out of range. Get the right number using !pyfiles command or "
+"specify the script path instead."
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:228 ../plugins/python/cconsole.cpp:291
+#: ../plugins/python/cconsole.cpp:219
+#, c-format
+msgid "Script #%d is already loaded: %s"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:227 ../plugins/python/cconsole.cpp:290
 msgid "Failed to allocate new Python interpreter."
 msgstr ""
 
 #: ../plugins/python/cconsole.cpp:233 ../plugins/python/cconsole.cpp:296
 #, c-format
-msgid "Script is now loaded: #%d %s"
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:274
-#, c-format
-msgid "Script stopped: #%d %s ... "
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:283
-#, c-format
-msgid "Script not stopped because it's not loaded: #%d ... "
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:285
-#, c-format
-msgid "Script not stopped because it's not loaded: %s ... "
-msgstr ""
-
-#: ../plugins/python/cconsole.cpp:321
-#, c-format
-msgid "Updated %s.%s from '%s' to '%s'."
+msgid "Script #%d is now loaded: %s"
 msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66
@@ -599,7 +591,4 @@ msgstr ""
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr ""
-
-msgid "Don't translate this test string."
 msgstr ""

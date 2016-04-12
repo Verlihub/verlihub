@@ -195,6 +195,19 @@ void cInfoServer::ProtocolInfo(ostream &os)
 
 	os << " [*] " << autosprintf(_("Total download: %s [%s]"), convertByte(mServer->mProtoTotal[0]).c_str(), convertByte(mServer->mDownloadZone.GetMean(mServer->mTime), true).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Total upload: %s [%s]"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
+
+	cUserCollection::iterator user_iter;
+	cAsyncConn *conn;
+	unsigned __int64 total_buf_up = 0;
+
+	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
+		conn = ((cUser*)(*user_iter))->mxConn;
+
+		if (conn)
+			total_buf_up += conn->GetBufferSize();
+	}
+
+	os << " [*] " << autosprintf(_("Upload buffers: %d [%s]"), mServer->mUserList.Size(), convertByte(total_buf_up).c_str()) << "\r\n";
 }
 
 void cInfoServer::SystemInfo(ostream &os)

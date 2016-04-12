@@ -215,6 +215,14 @@ namespace nVerliHub {
 					 return mBufEnd == mBufReadPos;
 				};
 
+				/*
+					returns buffer size
+				*/
+				size_t GetBufferSize()
+				{
+					 return mBufSend.size();
+				};
+
 				/**
 				* Reset the status of the line and the delimiter to default value (new line).
 				*/

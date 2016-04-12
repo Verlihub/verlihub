@@ -155,6 +155,8 @@ namespace nVerliHub {
 			ePFA_CHAT,
 			ePFA_PRIV,
 			ePFA_MCTO,
+			ePFA_SEAR,
+			ePFA_RCTM,
 			ePFA_LAST
 		} tProtoFloodAllItems;
 	}; // namespace nEnums
@@ -568,7 +570,7 @@ class cServerDC : public cAsyncSocketServer
 		unsigned int mProtoFloodAllCounts[nEnums::ePFA_LAST];
 		cTime mProtoFloodAllTimes[nEnums::ePFA_LAST];
 		bool mProtoFloodAllLocks[nEnums::ePFA_LAST];
-		bool CheckProtoFloodAll(cConnDC *conn, cMessageDC *msg, int type);
+		bool CheckProtoFloodAll(cConnDC *conn, int type, cUser *touser = NULL);
 
 		// helper functions
 		char* SysLoadName();

@@ -386,7 +386,7 @@ bool cConsole::cfErrLuaScript::operator()()
 		ss << eclass;
 		string newValue = ss.str();
 		GetPI()->SetErrClass(eclass);
-		(*mOS) << autosprintf(_("Updated configuration %s.%s from '%s' to '%s'."), "pi_lua", "err_class", oldValue.c_str(), newValue.c_str());
+		(*mOS) << autosprintf(_("Updated configuration %s.%s: %s -> %s"), "pi_lua", "err_class", oldValue.c_str(), newValue.c_str());
 	} else {
 		(*mOS) << autosprintf(_("Current error class: %d"), GetPI()->err_class);
 	}

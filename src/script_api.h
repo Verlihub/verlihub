@@ -43,7 +43,7 @@ namespace nVerliHub {
 	bool SendToChat(const char *nick, const char *text, int min_class = 0, int max_class = 10);
 	bool SendToOpChat(const char *data, const char *nick = NULL);
 	bool CloseConnection(const char *nick, long delay = 0);
-	bool StopHub(int code, unsigned delay);
+	bool StopHub(int code, int delay);
 	const char* GetUserCC(const char *nick);
 
 	#ifdef HAVE_LIBGEOIP

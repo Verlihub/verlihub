@@ -69,7 +69,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
-	mCmdGetConfig(int(eCM_GETCONFIG),".(gc|getconfig) ?","(\\S+)?", &mFunGetConfig),
+	mCmdGetConfig(int(eCM_GETCONFIG), ".(gc|getconfig|getconf|gv|getvar) ?", "(\\S+)?", &mFunGetConfig),
 	mCmdClean(int(eCM_CLEAN),".clean(\\S+) ?", "(\\S+)?", &mFunClean),
 	mCmdRedirConnType(int(eCM_CONNTYPE),".(\\S+)conntype ?","(.*)$",&mFunRedirConnType),
 	mCmdRedirTrigger(int(eCM_TRIGGERS),".(\\S+)trigger ?","(.*)$",&mFunRedirTrigger),
@@ -191,9 +191,9 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 					return 1;
 				}
 			} catch (const char *ex) {
-				if(Log(0)) LogStream() << "Exception in commands: " << ex << endl;
+				if(Log(0)) LogStream() << "Exception in command: " << ex << endl;
 			} catch (...) {
-				if(Log(0)) LogStream() << "Exception in commands." << endl;
+				if(Log(0)) LogStream() << "Exception in command." << endl;
 			}
 			break;
 		default:
@@ -305,7 +305,7 @@ int cDCConsole::CmdGetip(istringstream &cmd_line, cConnDC *conn)
 	if (c == 0)
 		o << _("Please specify one or more nicks separated by space.");
 	else
-		o << autosprintf(_("Showing %d results"), c) << ":" << os.str();
+		o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ":" << os.str();
 
 	mOwner->DCPublicHS(o.str().c_str(), conn);
 	return 1;
@@ -330,7 +330,7 @@ int cDCConsole::CmdGethost(istringstream &cmd_line, cConnDC *conn)
 				os << "\r\n [*] " << _("User") << ": " << user->mNick.c_str();
 				os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
 			} else
-				os << "\r\n [*] " << autosprintf(_("Unable to resolve users hostname: %s"), user->mNick.c_str());
+				os << "\r\n [*] " << autosprintf(_("Unable to resolve hostname of user: %s"), user->mNick.c_str());
 		} else
 			os << "\r\n [*] " << autosprintf(_("User not found: %s"), s.c_str());
 
@@ -340,7 +340,7 @@ int cDCConsole::CmdGethost(istringstream &cmd_line, cConnDC *conn)
 	if (c == 0)
 		o << _("Please specify one or more nicks separated by space.");
 	else
-		o << autosprintf(_("Showing %d results"), c) << ":" << os.str();
+		o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ":" << os.str();
 
 	mOwner->DCPublicHS(o.str().c_str(), conn);
 	return 1;
@@ -374,7 +374,7 @@ int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 	if (c == 0)
 		o << _("Please specify one or more nicks separated by space.");
 	else
-		o << autosprintf(_("Showing %d results"), c) << ":" << os.str();
+		o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ":" << os.str();
 
 	mOwner->DCPublicHS(o.str().c_str(), conn);
 	return 1;
@@ -382,7 +382,7 @@ int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 {
-	unsigned delay = 0;
+	int delay = 0;
 
 	if (cmd_line.good()) {
 		string delay_str;
@@ -396,30 +396,41 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 				ostringstream conv_err;
 				delay = mOwner->Str2Period(delay_str, conv_err);
 
-				if (!delay)
-					mOwner->DCPublicHS(conv_err.str(), conn);
+				if (!delay) {
+					if (delay_str == "-1")
+						delay = -1;
+					else
+						mOwner->DCPublicHS(conv_err.str(), conn);
+				}
 			}
 		}
 	}
 
 	if (conn->Log(1))
-		conn->LogStream() << "Stopping hub with code " << code << " and delay " << delay << endl;
+		conn->LogStream() << "Receiving quit command with code " << code << " and delay " << delay << endl;
 
 	ostringstream os;
 
 	if (code == 1) { // restart
-		if (delay)
+		if (delay == -1)
+			os << _("Please note, hub is no longer scheduled for restart.");
+		else if (delay)
 			os << autosprintf (_("Please note, hub has been scheduled to restart in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be restarted now.");
 	} else { // quit
-		if (delay)
+		if (delay == -1)
+			os << _("Please note, hub is no longer scheduled for stop.");
+		else if (delay)
 			os << autosprintf (_("Please note, hub has been scheduled to stop in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be stopped now.");
 	}
 
 	mOwner->DCPublicHSToAll(os.str(), (delay ? mOwner->mC.delayed_chat : false));
+
+	if (delay == -1)
+		code = 0;
 
 	if (code >= 0) {
 		mOwner->stop(code, delay);
@@ -429,35 +440,6 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 	}
 
 	return 1;
-}
-
-bool cDCConsole::cfGetConfig::operator()()
-{
-	if (mConn->mpUser->mClass < eUC_ADMIN) {
-		(*mOS) << _("You have no rights to do this.");
-		return false;
-	}
-
-	ostringstream os, lst;
-	string file;
-	cConfigBaseBase::tIVIt it;
-	GetParStr(1, file);
-
-	if (file.empty()) {
-		file = mS->mDBConf.config_name;
-
-		for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
-			lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << *(mS->mC.mhItems.GetByHash(*it)) << "\r\n";
-	} else
-		mS->mSetupList.OutputFile(file.c_str(), lst);
-
-	if (lst.str().empty())
-		os << autosprintf(_("Configuration file %s is empty."), file.c_str());
-	else
-		os << autosprintf(_("Configuration file %s"), file.c_str()) << ":\r\n\r\n" << lst.str();
-
-	mS->DCPrivateHS(os.str(), mConn);
-	return true;
 }
 
 int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
@@ -500,7 +482,7 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 
 	unsigned int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
 	TimeAfter.Get();
-	ostr << autosprintf(_("Message delivered to %d users in zones %s in %s."), count, cc_zone.c_str(), (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
+	ostr << autosprintf(ngettext("Message delivered to %d user in zones %s in %s.", "Message delivered to %d users in zones %s in %s.", count), count, cc_zone.c_str(), (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	mOwner->DCPublicHS(ostr.str(), conn);
 	return 1;
 }
@@ -595,16 +577,16 @@ int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 
 	if (switchon) { // chat
 		if (!mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you will see public chat messages, to disable use +nochat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are now visible. To hide them, write: +nochat"), conn);
 			mOwner->mChatUsers.Add(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already see public chat messages, to disable use +nochat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are already visible. To hide them, write: +nochat"), conn);
 	} else { // nochat
 		if (mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
-			mOwner->DCPublicHS(_("Now you won't see public chat messages, to restore use +chat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are now hidden. To show them, write: +chat"), conn);
 			mOwner->mChatUsers.Remove(conn->mpUser);
 		} else
-			mOwner->DCPublicHS(_("You already don't see public chat messages, to restore use +chat command."), conn);
+			mOwner->DCPublicHS(_("Public chat messages are already hidden. To show them, write: +chat"), conn);
 	}
 
 	return 1;
@@ -698,11 +680,11 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 	ostringstream os;
 	string regnick, prefix;
 	if (mOwner->mC.disable_regme_cmd) {
-		mOwner->DCPublicHS(_("This functionality is currently disabled."),conn);
+		mOwner->DCPublicHS(_("This functionality is currently disabled."), conn);
 		return 1;
 	}
 	if(mOwner->mC.autoreg_class > 3) {
-		mOwner->DCPublicHS(_("Registration failed, please contact an operator for more help."),conn);
+		mOwner->DCPublicHS(_("Registration failed. Please contact an operator for help."), conn);
 		return 1;
 	}
 	__int64 user_share, min_share;
@@ -752,7 +734,7 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 			if (!text.empty()) text = text.substr(1); // strip space
 
 			if (text.size() < mOwner->mC.password_min_len) {
-				os << autosprintf(_("Minimum password length is %d characters, please retry."), mOwner->mC.password_min_len);
+				os << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
 				mOwner->DCPublicHS(os.str(), conn);
 				return 1;
 			}
@@ -770,7 +752,7 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 				os << autosprintf(_("A new user has been registered with class %d"), mOwner->mC.autoreg_class);
 				mOwner->ReportUserToOpchat(conn, os.str(), false);
 				os.str(mOwner->mEmpty);
-				os << autosprintf(_("You are now registered with nick %s, please reconnect and login with your new password: %s"), regnick.c_str(), text.c_str());
+				os << autosprintf(_("You are now registered with nick %s. Please reconnect and login with your new password: %s"), regnick.c_str(), text.c_str());
 			} else {
 				os << _("An error occured while registering.");
 				mOwner->DCPublicHS(os.str(), conn);
@@ -814,7 +796,7 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 		topic = topic.substr(1);
 
 	if (topic.size() > 255) {
-		os << autosprintf(_("Topic must not exceed 255 characters, your topic is %d characters."), int(topic.size()));
+		os << autosprintf(_("Topic must not exceed 255 characters, but your topic has %d characters."), int(topic.size()));
 		mOwner->DCPublicHS(os.str(), conn);
 		return 1;
 	}
@@ -823,7 +805,7 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 	int res = mOwner->SetConfig(file.c_str(), var.c_str(), topic.c_str(), val_new, val_old, conn->mpUser);
 
 	if (res == 0) {
-		mOwner->DCPublicHS(_("Your action was prevented by plugin."), conn);
+		mOwner->DCPublicHS(_("Your action was blocked by a plugin."), conn);
 		return 1;
 	}
 
@@ -833,9 +815,9 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 		mOwner->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 
 		if (topic.size())
-			os << autosprintf(_("%s changed topic to: %s"), conn->mpUser->mNick.c_str(), topic.c_str());
+			os << autosprintf(_("%s changed the topic to: %s"), conn->mpUser->mNick.c_str(), topic.c_str());
 		else
-			os << autosprintf(_("%s removed topic."), conn->mpUser->mNick.c_str());
+			os << autosprintf(_("%s removed the topic."), conn->mpUser->mNick.c_str());
 
 		mOwner->DCPublicHSToAll(os.str(), mOwner->mC.delayed_chat);
 		return 1;
@@ -887,7 +869,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream & cmd_line, cConnDC * conn)
 		return 0;
 
 	if(!ui.mPwdChange) {
-		ostr << _("You are not allowed to change your password now, ask an operator.");
+		ostr << _("You are not allowed to change your password now. Ask an operator for help.");
 		mOwner->DCPrivateHS(ostr.str(),conn);
 		mOwner->DCPublicHS(ostr.str(),conn);
 		return 1;
@@ -895,7 +877,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream & cmd_line, cConnDC * conn)
 
 	cmd_line >> str >> crypt;
 	if(str.size() < mOwner->mC.password_min_len) {
-		ostr << autosprintf(_("Minimum password length is %d characters, please retry."), mOwner->mC.password_min_len);
+		ostr << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
 		mOwner->DCPrivateHS(ostr.str(),conn);
 		mOwner->DCPublicHS(ostr.str(),conn);
 		return 1;
@@ -920,39 +902,39 @@ int cDCConsole::CmdHideMe(istringstream & cmd_line, cConnDC * conn)
 	cmd_line >> cls;
 	ostringstream omsg;
 	if(cls < 0) {
-		omsg << _("Please use: !hideme <class> where <class> is the maximum class of users that may not see your actions.") << endl;
+		omsg << _("Please use: !hideme <class>, where <class> is the maximum class of users that may not see your kicks.") << endl;
 		mOwner->DCPublicHS(omsg.str(),conn);
 		return 1;
 	}
 	if(cls > conn->mpUser->mClass) cls = conn->mpUser->mClass;
 	conn->mpUser->mHideKicksForClass = cls;
-	omsg << autosprintf(_("Your command actions are now hidden from users with class below %d."),  cls);
+	omsg << autosprintf(_("Your kicks are now hidden from users with class %d and below."),  cls);
 	mOwner->DCPublicHS(omsg.str(),conn);
 	return 1;
 }
 
-int cDCConsole::CmdUserLimit(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream ostr;
 	int minutes = 60, maximum = -1;
 	cmd_line >> maximum >> minutes;
 
-	if( maximum < 0 )
-	{
-		ostr << _("Type !help for more information (usage !userlimit <max_users> [<minutes>=60])");
+	if (maximum < 0) {
+		ostr << _("Command usage: !userlimit <max_users> [<minutes>=60]");
 		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
 
-	// 60 steps at most
-	cInterpolExp *fn = new
-		cInterpolExp(mOwner->mC.max_users_total, maximum, (60*minutes) / mOwner->timer_serv_period ,(6*minutes) / mOwner->timer_serv_period);
-	mOwner->mTmpFunc.push_back((cTempFunctionBase *)fn);
+	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (6 * minutes) / mOwner->timer_serv_period); // 60 steps at most
 
-	ostr << "Starting to update max_users variable to: " << maximum
-		<< " (Duration: " << minutes << " minutes)";
+	if (fn) {
+		mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
+		ostr << autosprintf(ngettext("Updating max_users variable to %d for the duration of %d minute.", "Updating max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
+	} else {
+		ostr << autosprintf(ngettext("Failed to update max_users variable to %d for the duration of %d minute.", "Failed to update max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
+	}
+
 	mOwner->DCPublicHS(ostr.str(), conn);
-
 	return 1;
 }
 
@@ -965,10 +947,11 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 	string nick;
 	int new_class = 3, old_class = 0, op_class = conn->mpUser->mClass;
+	int max_allowed_class = (op_class > 5 ? 5 : op_class - 1);
 	cmd_line >> nick >> new_class;
 
-	if (nick.empty() || (new_class < 0) || (new_class > 5) || (new_class >= op_class)) {
-		os << _("Command usage") << ": !class <nick> [class=3] (" << autosprintf(_("maximum class is %d or %d"), 5, op_class) << ")";
+	if (nick.empty() || (new_class < 0) || (new_class > max_allowed_class)) {
+		os << _("Command usage: !class <nick> [class=3]") << " (" << autosprintf(_("maximum allowed class is %d"), max_allowed_class) << ")";
 		mOwner->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
@@ -1016,7 +999,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 				}
 			}
 		} else {
-			os << autosprintf(_("You have no rights to change class for user: %s"), nick.c_str());
+			os << autosprintf(_("You have no rights to change class for this user: %s"), nick.c_str());
 		}
 	} else {
 		os << autosprintf(_("User not found: %s"), nick.c_str());
@@ -1038,13 +1021,13 @@ int cDCConsole::CmdHideKick(istringstream &cmd_line, cConnDC *conn)
 		user = mOwner->mUserList.GetUserByNick(s);
 		if(user) {
 			if(user-> mxConn && user->mClass < conn->mpUser->mClass) {
-				os << autosprintf(_("Kicks of user %s are now hidden."), s.c_str());
+				os << autosprintf(_("Kicks of this user are now hidden: %s"), s.c_str());
 				user->mHideKick = true;
 			} else {
 				os << autosprintf(_("You have no rights to do this."));
 			}
 		} else {
-			os << autosprintf(_("User %s not found."), s.c_str());
+			os << autosprintf(_("User not found: %s"), s.c_str());
 		}
 	}
 	mOwner->DCPublicHS(os.str().c_str(),conn);
@@ -1064,13 +1047,13 @@ int cDCConsole::CmdUnHideKick(istringstream &cmd_line, cConnDC *conn)
 		user = mOwner->mUserList.GetUserByNick(s);
 		if(user) {
 			if(user-> mxConn && user->mClass < conn->mpUser->mClass) {
-				os << autosprintf(_("Kicks of user %s are now visible."), s.c_str());
+				os << autosprintf(_("Kicks of this user are now visible: %s"), s.c_str());
 				user->mHideKick = false;
 			} else {
 				os << _("You have no rights to do this.");
 			}
 		} else
-			os << autosprintf(_("User %s not found."), s.c_str());
+			os << autosprintf(_("User not found: %s"), s.c_str());
 	}
 	mOwner->DCPublicHS(os.str().c_str(),conn);
 	return 1;
@@ -1088,7 +1071,7 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 	cmd_line >> s >> nclass;
 
 	if(!s.size() || nclass < 0 || nclass > 5 || nclass >= mclass) {
-		os << _("Use !protect <nickname> <class>.") << " " << _("Please type !help for more info.") << endl
+		os << _("Use !protect <nickname> <class>.") << " "
 			<< autosprintf(_("Max class is %d"), mclass-1) << endl;
 		mOwner->DCPublicHS(os.str().c_str(),conn);
 		return 1;
@@ -1105,7 +1088,7 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 		} else
 			os << _("You have no rights to do this.") << endl;
 	} else {
-		os << autosprintf(_("User %s not found."), s.c_str()) << endl;
+		os << autosprintf(_("User not found: %s"), s.c_str()) << endl;
 	}
 	mOwner->DCPublicHS(os.str().c_str(),conn);
 	return 1;
@@ -1490,7 +1473,7 @@ bool cDCConsole::cfBan::operator()()
 
 				#ifndef WITHOUT_PLUGINS
 				if (!mS->mCallBacks.mOnUnBan.CallAll(mConn->mpUser, Who, mConn->mpUser->mNick, tmp)) {
-					(*mOS) << _("Your action was prevented by plugin.");
+					(*mOS) << _("Your action was blocked by a plugin.");
 					return false;
 				}
 				#endif
@@ -1597,7 +1580,7 @@ bool cDCConsole::cfBan::operator()()
 
 		#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnNewBan.CallAll(mConn->mpUser, &Ban)) {
-				(*mOS) << _("Your action was prevented by plugin.");
+				(*mOS) << _("Your action was blocked by a plugin.");
 				return false;
 			}
 		#endif
@@ -1768,6 +1751,84 @@ bool cDCConsole::cfTrigger::operator()()
 		return result;
 }
 
+bool cDCConsole::cfGetConfig::operator()()
+{
+	if (!mConn || !mConn->mpUser)
+		return false;
+
+	if (mConn->mpUser->mClass < eUC_ADMIN) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
+	enum { eAC_GETCONF, eAC_GETVAR };
+
+	static const char *actionnames[] = {
+		"gc", "getconf", "getconfig",
+		"gv", "getvar"
+	};
+
+	static const int actionids[] = {
+		eAC_GETCONF, eAC_GETCONF, eAC_GETCONF,
+		eAC_GETVAR, eAC_GETVAR
+	};
+
+	string temp;
+	mIdRex->Extract(1, mIdStr, temp);
+	int act = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+
+	if (act < 0)
+		return false;
+
+	ostringstream os, lst;
+	temp.clear();
+	GetParStr(1, temp);
+
+	if (act == eAC_GETCONF) {
+		if (temp.empty()) {
+			temp = mS->mDBConf.config_name;
+			cConfigBaseBase::tIVIt it;
+
+			for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
+				lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << (*(mS->mC.mhItems.GetByHash(*it))) << "\r\n";
+		} else {
+			mS->mSetupList.OutputFile(temp.c_str(), lst);
+		}
+
+		if (lst.str().size()) {
+			os << autosprintf(_("Configuration file: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
+			mS->DCPrivateHS(os.str(), mConn);
+		} else {
+			os << autosprintf(_("Configuration file is empty: %s"), temp.c_str());
+			mS->DCPublicHS(os.str(), mConn);
+		}
+	} else if (act == eAC_GETVAR) {
+		if (temp.empty()) {
+			(*mOS) << _("Missing command parameters.");
+			return false;
+		}
+
+		string file/*(mS->mDBConf.config_name)*/, var(temp);
+		size_t pos = var.find('.'); // file.variable style
+
+		if (pos != string::npos) {
+			file = var.substr(0, pos);
+			var = var.substr(pos + 1);
+		}
+
+		mS->mSetupList.FilterFiles(var.c_str(), lst, file.c_str());
+
+		if (lst.str().size())
+			os << autosprintf(_("Configuration filter results: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
+		else
+			os << autosprintf(_("Configuration filter didn't return any results: %s"), temp.c_str());
+
+		mS->DCPublicHS(os.str(), mConn);
+	}
+
+	return true;
+}
+
 bool cDCConsole::cfSetVar::operator()()
 {
 	if (!mConn || !mConn->mpUser)
@@ -1799,7 +1860,7 @@ bool cDCConsole::cfSetVar::operator()()
 			(*mOS) << autosprintf(_("Undefined configuration variable: %s.%s"), file.c_str(), var.c_str());
 			return true;
 		case 0:
-			(*mOS) << _("Your action was prevented by plugin.");
+			(*mOS) << _("Your action was blocked by a plugin.");
 			return true;
 		case 1:
 			(*mOS) << autosprintf(_("Updated configuration %s.%s: %s -> %s"), file.c_str(), var.c_str(), val_old.c_str(), val_new.c_str());
@@ -1811,7 +1872,7 @@ bool cDCConsole::cfSetVar::operator()()
 	struct rlimit userLimit;
 
 	if (!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total) // get maximum file descriptor number
-		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, consider running ulimit -n <max_users> and restart the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, int(userLimit.rlim_cur));
+		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, so consider running ulimit -n <max_users> and restarting the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, int(userLimit.rlim_cur));
 
 	return true;
 }
@@ -1965,7 +2026,7 @@ bool cDCConsole::cfGag::operator()()
 		ret = mS->mPenList->AddPenalty(penalty);
 
 	if (!ret) {
-		(*mOS) << autosprintf(_("Error setting right for: %s"), penalty.mNick.c_str());
+		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), penalty.mNick.c_str());
 		return false;
 	}
 
@@ -1974,9 +2035,9 @@ bool cDCConsole::cfGag::operator()()
 	switch (Action) {
 		case eAC_GAG:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting main chat right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting main chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
@@ -1985,9 +2046,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOPM:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting private chat right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting private chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
@@ -1996,9 +2057,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOCHATS:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting main and private chat rights for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting main and private chat rights for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr) {
 				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
@@ -2009,9 +2070,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NODL:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting download right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to download again: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting download right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true);
@@ -2020,9 +2081,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOSEARCH:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting search right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting search right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
@@ -2031,9 +2092,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOSHARE:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting hidden share right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting hidden share right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true);
@@ -2042,9 +2103,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_CANREG:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting registration right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting registration right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true);
@@ -2053,9 +2114,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_KVIP:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting kick right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting kick right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr)
 				usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true);
@@ -2064,9 +2125,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_OPCHAT:
 			if (isUn)
-				(*mOS) << autosprintf(_("Resetting operator chat right for: %s"), penalty.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), penalty.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Setting operator chat right for %s to: %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
 
 			if (usr) {
 				usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true);
@@ -2397,7 +2458,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	}
 
 	if (mS->mC.classdif_reg > eUC_ADMIN) {
-		(*mOS) << autosprintf(_("Valid classdif_reg value is between %d and %d, please correct this first."), eUC_NORMUSER, eUC_ADMIN);
+		(*mOS) << autosprintf(_("classdif_reg value must be between %d and %d. Please correct this first."), eUC_NORMUSER, eUC_ADMIN);
 		return false;
 	}
 
@@ -2419,7 +2480,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		int res = mS->mR->ShowUsers(this->mConn, lst, cls);
 
 		if (res != 0)
-			(*mOS) << autosprintf(_("Found %d registered users with class %d"), res, cls) << ":\r\n\r\n" << lst.str().c_str();
+			(*mOS) << autosprintf(ngettext("Found %d registered user with class %d", "Found %d registered users with class %d", res), res, cls) << ":\r\n\r\n" << lst.str().c_str();
 		else
 			(*mOS) << autosprintf(_("No registered users with class %d found."), cls);
 
@@ -2510,7 +2571,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		if (!RegFound && (Action != eAC_NEW))
 			(*mOS) << autosprintf(_("Registered user not found: %s"), nick.c_str());
 		else if (RegFound && (Action == eAC_NEW))
-			(*mOS) << autosprintf(_("%s is already registered."), nick.c_str());
+			(*mOS) << autosprintf(_("User is already registered: %s"), nick.c_str());
 		else
 			(*mOS) << _("You have no rights to do this.");
 
@@ -2527,13 +2588,13 @@ bool cDCConsole::cfRegUsr::operator()()
 	switch (Action) {
 		case eAC_NEW: // new
 			if (RegFound) {
-				*mOS << autosprintf(_("%s is already registered."), nick.c_str());
+				*mOS << autosprintf(_("User is already registered: %s"), nick.c_str());
 				return false;
 			}
 
 			#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnNewReg.CallAll(this->mConn->mpUser, nick, ParClass)) {
-				(*mOS) << _("Your action was prevented by plugin.");
+				(*mOS) << _("Your action was blocked by a plugin.");
 				return false;
 			}
 			#endif
@@ -2543,7 +2604,7 @@ bool cDCConsole::cfRegUsr::operator()()
 					ostr.str(mS->mEmpty);
 
 					if (!WithPass)
-						ostr << autosprintf(_("You have been registered with class %d, please set up your password with +passwd <password> command."), ParClass);
+						ostr << autosprintf(_("You have been registered with class %d. Please set your password by using the command: +passwd <password>"), ParClass);
 					else
 						ostr << autosprintf(_("You have been registered with class %d and following password: %s"), ParClass, pass.c_str());
 
@@ -2553,7 +2614,7 @@ bool cDCConsole::cfRegUsr::operator()()
 				}
 
 				if (!WithPass)
-					(*mOS) << autosprintf(_("%s has been registered with class %d, please tell him to set his password."), nick.c_str(), ParClass);
+					(*mOS) << autosprintf(_("%s has been registered with class %d. Please tell him to set his password."), nick.c_str(), ParClass);
 				else
 					(*mOS) << autosprintf(_("%s has been registered with class %d and password."), nick.c_str(), ParClass);
 			} else {
@@ -2566,7 +2627,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		case eAC_DEL: // delete
 			#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnDelReg.CallAll(this->mConn->mpUser, nick, ui.mClass)) {
-				(*mOS) << _("Your action was prevented by plugin.");
+				(*mOS) << _("Your action was blocked by a plugin.");
 				return false;
 			}
 			#endif
@@ -2599,7 +2660,7 @@ bool cDCConsole::cfRegUsr::operator()()
 			} else {
 				field = "pwd_change";
 				par = "1";
-				ostr << _("You can change your password now, use +passwd command followed by your new password.");
+				ostr << _("You can change your password now. Use the +passwd command followed by your new password.");
 			}
 
 			break;
@@ -2607,7 +2668,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		case eAC_CLASS: // class
 			#ifndef WITHOUT_PLUGINS
 				if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
-					(*mOS) << _("Your action was prevented by plugin.");
+					(*mOS) << _("Your action was blocked by a plugin.");
 					return false;
 				}
 			#endif
@@ -2666,12 +2727,12 @@ bool cDCConsole::cfRegUsr::operator()()
 			break;
 		case eAC_PROTECT: // protect
 			field = "class_protect";
-			ostr << autosprintf(_("You are protected by classes greater than %s."), par.c_str());
+			ostr << autosprintf(_("You are protected from being kicked by class %s and lower."), par.c_str());
 			if (user) user->mProtectFrom = ParClass;
 			break;
 		case eAC_HIDEKICK: // hidekick
 			field = "class_hidekick";
-			ostr << autosprintf(_("You kicks are hidden by classes greater than %s."), par.c_str());
+			ostr << autosprintf(_("You kicks are hidden from class %s and lower."), par.c_str());
 			break;
 		case eAC_SET: // set
 			break;
@@ -2703,10 +2764,10 @@ bool cDCConsole::cfRegUsr::operator()()
 				}
 			}
 
-			(*mOS) << autosprintf(_("Updated variable %s to value %s for user %s."), field.c_str(), par.c_str(), nick.c_str());
+			(*mOS) << autosprintf(_("Updated variable %s to value %s for user: %s"), field.c_str(), par.c_str(), nick.c_str());
 
 			if ((Action == eAC_PASS) && !WithPar && mS->mC.report_pass_reset)
-				mS->ReportUserToOpchat(mConn, autosprintf(_("Password reset for: %s"), nick.c_str()), false);
+				mS->ReportUserToOpchat(mConn, autosprintf(_("Password reset for user: %s"), nick.c_str()), false);
 
 			if (user && user->mxConn && ostr.str().size()) { // send both in pm and mc, so user see the message for sure
 				mS->DCPrivateHS(ostr.str(), user->mxConn);
@@ -2715,7 +2776,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 			return true;
 		} else {
-			(*mOS) << autosprintf(_("Error setting variable %s to value %s for user %s."), field.c_str(), par.c_str(), nick.c_str());
+			(*mOS) << autosprintf(_("Error setting variable %s to value %s for user: %s"), field.c_str(), par.c_str(), nick.c_str());
 			return false;
 		}
 	}
@@ -2827,7 +2888,7 @@ bool cDCConsole::cfBc::operator()()
 
 	int count = mS->SendToAllWithNickVars(start, end, MinClass, MaxClass);
 	TimeAfter.Get();
-	*mOS << autosprintf(_("Message delivered to %d users in %s."), count, (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
+	*mOS << autosprintf(ngettext("Message delivered to %d user in %s.", "Message delivered to %d users in %s.", count), count, (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	return true;
 }
 

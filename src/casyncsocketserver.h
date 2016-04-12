@@ -148,8 +148,11 @@ namespace nVerliHub {
 				 */
 				virtual int StartListening(int OverrideDefaultPort=0);
 
-				// set stop code and exit main loop using delay
-				void stop(int code, unsigned delay = 0);
+				/*
+					set stop code and exit main loop using delay
+					or reset stop code and delay
+				*/
+				void stop(int code, int delay = 0);
 
 				/**
 				 * Stop handling the given connection.

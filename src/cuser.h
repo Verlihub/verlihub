@@ -167,13 +167,13 @@ public:
 
 	public:
 	/* Pointer to the connection */
-	nSocket::cConnDC * mxConn;
+	nSocket::cConnDC *mxConn;
 	/* Pointer to the srever (this pointer must never be deleted) */
-	nSocket::cServerDC * mxServer;
+	nSocket::cServerDC *mxServer;
 	/* Email retrived from MyINFO */
 	string mEmail;
 	// client flag in myinfo
-	unsigned mMyFlag;
+	unsigned int mMyFlag;
 	/* True if user is in passive mode */
 	bool IsPassive;
 
@@ -216,6 +216,11 @@ public:
 	typedef tHashArray<void*>::tHashType tFloodHashType;
 	tFloodHashType mFloodHashes[nEnums::eFH_LAST_FH];
  	unsigned int mFloodCounters[nEnums::eFC_LAST_FC];
+
+	// rctm data
+	unsigned int mRCTMCount;
+	cTime mRCTMTime;
+	bool mRCTMLock;
 
 	/** 0 means perm ban, otherwiese in seconds */
 	long mBanTime;

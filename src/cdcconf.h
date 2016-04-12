@@ -146,7 +146,7 @@ public:
 	bool hublist_send_listhost;
 	// checking preferences
 	unsigned int classdif_reg;
-	unsigned int classdif_search;
+	//unsigned int classdif_search;
 	unsigned int classdif_download;
 	unsigned int classdif_pm;
 	unsigned int classdif_mcto;
@@ -245,6 +245,10 @@ public:
 	unsigned int int_flood_all_mcto_limit;
 	unsigned long int_flood_all_to_period;
 	unsigned int int_flood_all_to_limit;
+	unsigned long int_flood_all_search_period;
+	unsigned int int_flood_all_search_limit;
+	unsigned long int_flood_all_rctm_period;
+	unsigned int int_flood_all_rctm_limit;
 	// end of section
 
 	unsigned long int_chat_ms;
@@ -309,6 +313,7 @@ public:
 	bool wrongpassword_report;
 	bool report_pass_reset;
 	int wrongauthip_report; // note: is class number, not bool
+	bool wrongip_message;
 	bool clone_detect_report;
 	unsigned long clone_det_tban_time;
 	bool nullchars_report;
