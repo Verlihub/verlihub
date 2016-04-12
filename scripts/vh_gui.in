@@ -468,7 +468,7 @@ install() {
 			FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);
 		done
 	else
-		for i in `jot - 1 $FCOUNT`; do
+		for i in `jot -p0 $FCOUNT 1`; do
 			local IS_DEF="off";
 			if [ $i == "1" ]; then IS_DEF="on"; fi
 			FOLDERS_OPTIONS+=($i ${FOLDERS[$i]} $IS_DEF);

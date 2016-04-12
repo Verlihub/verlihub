@@ -794,7 +794,7 @@ function install()
 				echo_s "\t[$i] " $BOLD && echo ${FOLDERS[$i]}
 			done
 		else
-			for i in `jot - 1 $FCOUNT`; do
+			for i in `jot -p0 $FCOUNT 1`; do
 				echo_s "\t[$i] " $BOLD && echo ${FOLDERS[$i]}
 			done
 		fi
