@@ -29,7 +29,7 @@ if [ $(uname) = "FreeBSD" ]; then
     exit
 fi
 
-DIALOG=`whereis dialog | awk '{ print $2 }'`
+DIALOG=`which dialog`
 if [ -z "$DIALOG" ]; then
 	echo_s "-- "
 	echo_s "ERROR" $BOLD
