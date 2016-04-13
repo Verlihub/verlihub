@@ -22,13 +22,6 @@
 SCRIPT=$0
 source $(dirname $SCRIPT)/vh_lib
 
-if [ $(uname) = "FreeBSD" ]; then
-	echo_s "-- "
-	echo_s "ERROR" $BOLD
-	echo_s ": This script does not work with BSD, please do not use --gui or -g option.\n"
-    exit
-fi
-
 DIALOG=`which dialog`
 if [ -z "$DIALOG" ]; then
 	echo_s "-- "
