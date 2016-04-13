@@ -141,6 +141,22 @@ Find_Package(Gettext REQUIRED)
 Find_Package(Gettext-devel REQUIRED)
 Find_Package(Libintl REQUIRED)
 
+FIND_LIBRARY(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
+
+# Use cmake -DUSE_CUSTOM_AUTOSPRINTF=ON to use our own autosprintf
+OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
+IF(USE_CUSTOM_AUTOSPRINTF)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
+	SET(GETTEXT_ASPRINTF_LIBRARY "")
+	MESSAGE(STATUS "Using custom internal autosprintf implementation")
+ELSE(USE_CUSTOM_AUTOSPRINTF)
+	IF(GETTEXT_ASPRINTF_LIBRARY)
+		MESSAGE(STATUS "Found asprintf library: ${GETTEXT_ASPRINTF_LIBRARY}")
+	ELSE(GETTEXT_ASPRINTF_LIBRARY)
+		MESSAGE(FATAL_ERROR "Could NOT find asprintf library. Please install it or run cmake with the option -DUSE_CUSTOM_AUTOSPRINTF=ON")
+	ENDIF(GETTEXT_ASPRINTF_LIBRARY)
+ENDIF(USE_CUSTOM_AUTOSPRINTF)
+
 IF(HAVE_BSD)
 	#Find_Package(Iconv REQUIRED)
 	Find_Package(ExecInfo REQUIRED)
@@ -176,13 +192,6 @@ IF(NOT HAVE_GETOPT_H)
 ENDIF(NOT HAVE_GETOPT_H)
 
 #TODO: Fix creguserinfo.cpp for HAVE_LIBSSL and crypto stuff
-
-# Use cmake -DUSE_CUSTOM_AUTOSPRINTF=ON to use our own autosprintf
-OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
-IF(USE_CUSTOM_AUTOSPRINTF)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
-	MESSAGE(STATUS "Using custom internal autosprintf implementation")
-ENDIF(USE_CUSTOM_AUTOSPRINTF)
 
 # Use cmake -DDEFINE_DEBUG=ON to enable debug
 OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF)
