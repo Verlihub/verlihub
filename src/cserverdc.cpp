@@ -893,7 +893,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(cBanList::Ip2Num(conn->AddrIP()));
 
 		if (tban && (tban->mUntil > mTime.Sec())) {
-			os << autosprintf(_("You're still temporarily banned for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
+			os << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
 
 			switch (tban->mType) {
 				case eBT_PASSW:
@@ -1348,7 +1348,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 			cBanList::sTempBan *tban = mBanList->mTempNickBanlist.GetByHash(mBanList->mTempNickBanlist.HashLowerString(nick));
 
 			if (tban && (tban->mUntil > mTime.Sec())) {
-				errmsg << autosprintf(_("You're still temporarily banned for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
+				errmsg << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
 
 				switch (tban->mType) {
 					case eBT_RECON:
@@ -1420,18 +1420,17 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	}
 
 	cBan Ban(this);
-	bool banned = false;
+	unsigned int banned = 0;
 
 	if (conn->GetTheoricalClass() < mC.ban_bypass_class) { // use ban_bypass_class here
-		// here we cant check share ban because user hasnt sent $MyINFO yet
-		if (conn->GetTheoricalClass() == eUC_NORMUSER)
+		if (conn->GetTheoricalClass() == eUC_NORMUSER) // here we cant check share ban because user hasnt sent $MyINFO yet
 			banned = mBanList->TestBan(Ban, conn, nick, eBF_NICK | eBF_NICKIP | eBF_RANGE | eBF_HOST2 | eBF_HOST1 | eBF_HOST3 | eBF_HOSTR1 | eBF_PREFIX);
 		else // registered users avoid prefix ban check because we might actually ban a prefix for unregistered users, but let registered users to use it
 			banned = mBanList->TestBan(Ban, conn, nick, eBF_NICK | eBF_NICKIP | eBF_RANGE | eBF_HOST2 | eBF_HOST1 | eBF_HOST3 | eBF_HOSTR1);
 	}
 
 	if (banned) {
-		errmsg << _("You are banned from this hub") << ":\r\n";
+		errmsg << ((banned == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
 		Ban.DisplayUser(errmsg);
 		DCPublicHS(errmsg.str(), conn);
 
