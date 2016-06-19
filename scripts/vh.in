@@ -30,13 +30,13 @@ function _ask_admin_access()
 	do
 		echo_s "-- Please insert MySQL administrator information to create DB or account or grant permissions.\n"
 		MYSQL_ADMIN_USER=$(ask "Username" "root")
-		MYSQL_ADMIN_PASSWORD=$(ask "Password" "")
+		MYSQL_ADMIN_PASSWORD=$(ask "Password" "" "" "true")
 
 		echo_s "This is information about MySQL administrator:\n"
 		echo_s "\tUsername" $BOLD
 		echo_s ": $MYSQL_ADMIN_USER \n"
 		echo_s "\tPassword" $BOLD
-		echo_s ": $MYSQL_ADMIN_PASSWORD \n"
+		echo_s ": <hidden> \n"
 		yes_or_no "Do you want to continue with this information?" && ARE_ADMIN_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
 	done
 }
@@ -659,8 +659,9 @@ function install()
 		MYSQL_USER=$(get_db_user)
 		MYSQL_USER=$(ask "MySQL user to access to '$MYSQL_DB_NAME'" "$MYSQL_USER")
 		MYSQL_PASSWORD="" # $(get_db_pass)
-		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" "$MYSQL_PASSWORD")
+		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" "$MYSQL_PASSWORD" "" "true")
 		MYSQL_HOST=$(get_db_host)
+		echo ""
 		MYSQL_HOST=$(ask "MySQL hostname" "$MYSQL_HOST")
 		MYSQL_CHARSET="" # $(get_db_charset)
 		MYSQL_CHARSET=$(ask "MySQL charset (experts only, leave empty for default)" "$MYSQL_CHARSET" "true")
@@ -675,7 +676,7 @@ function install()
 		echo_s "\tUsername" $BOLD
 		echo_s ": $MYSQL_USER \n"
 		echo_s "\tPassword" $BOLD
-		echo_s ": $MYSQL_PASSWORD \n"
+		echo_s ": <hidden> \n"
 		echo_s "\tHostname" $BOLD
 		echo_s ": $MYSQL_HOST \n"
 		echo_s "\tCharset" $BOLD
@@ -922,7 +923,8 @@ function install()
 			PORT=4111
 		fi
 		VH_MASTER_NAME=$(ask "Master name" "[SU]$REALUSER")
-		VH_MASTER_PASSWORD=$(ask "Master password" "$TIMESTAMP")
+		VH_MASTER_PASSWORD=$(ask "Master password" "$TIMESTAMP" "" "true")
+		echo ""
 		VH_HUB_PORT=$(ask "Hub port" "$PORT")
 		VH_HUB_HOST=$(ask "Hub host" "$HOSTNAME")
 		VH_HUB_NAME=$(ask "Hub name" "hub of $REALUSER")
@@ -931,15 +933,16 @@ function install()
 		echo_s "\tMaster name" $BOLD
 		echo_s ": $VH_MASTER_NAME \n"
 		echo_s "\tMaster password" $BOLD
-		echo_s ": $VH_MASTER_PASSWORD \n"
+		echo_s ": <hidden> \n"
 		echo_s "\tHub name" $BOLD
 		echo_s ": $VH_HUB_NAME \n"
 		echo_s "\tHub address" $BOLD
 		echo_s ": dchub://$VH_HUB_HOST:$VH_HUB_PORT \n"
-		echo_s "\tPassword" $BOLD
-		echo_s ": $MYSQL_PASSWORD \n"
-		echo_s "\tHostname" $BOLD
-		echo_s ": $MYSQL_HOST \n"
+		# how did this information get here? these questions are about master account, no need to display earlier mysql answers here
+		#echo_s "\tPassword" $BOLD
+		#echo_s ": <hidden> \n"
+		#echo_s "\tHostname" $BOLD
+		#echo_s ": $MYSQL_HOST \n"
 		yes_or_no "Do you want to continue with this information?" && SETUP_INFO_OK=true || echo -e "Let's try again with configuration\n\n"
 	done
 
