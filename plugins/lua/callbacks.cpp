@@ -1625,13 +1625,6 @@ int _DelNickTempBan(lua_State *L)
 		return 2;
 	}
 
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		luaerror(L, ERR_SERV);
-		return 2;
-	}
-
 	if (!lua_isstring(L, 2)) {
 		luaerror(L, ERR_PARAM);
 		return 2;
@@ -1654,13 +1647,6 @@ int _DelIPTempBan(lua_State *L)
 		luaL_error(L, "Error calling VH:DelIPTempBan, expected 1 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
-		return 2;
-	}
-
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		luaerror(L, ERR_SERV);
 		return 2;
 	}
 
