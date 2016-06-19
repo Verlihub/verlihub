@@ -790,7 +790,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 				conn->LogStream() << omsg << endl;
 
 			mS->mR->LoginError(conn, conn->mpUser->mNick);
-			mS->ConnCloseMsg(conn, _("You've been temporarily prohibited from entering the hub due to incorrect password."), 1000, eCR_PASSWORD);
+			mS->ConnCloseMsg(conn, _("You've been temporarily banned due to incorrect password."), 1000, eCR_PASSWORD);
 			Create_BadPass(omsg); // must be sent after chat message
 			conn->Send(omsg, true);
 		} else {
