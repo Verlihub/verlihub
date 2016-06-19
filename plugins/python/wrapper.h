@@ -121,6 +121,8 @@ enum {
 	W_DelRegUser,
 	W_Ban,
 	W_KickUser,
+	W_DelNickTempBan,
+	W_DelIPTempBan,
 	W_ParseCommand,
 	W_ScriptCommand,
 	W_ScriptQuery,

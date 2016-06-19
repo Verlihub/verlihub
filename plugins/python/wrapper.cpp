@@ -762,6 +762,18 @@ static PyObject *__KickUser(PyObject *self, PyObject *args)
 	return pybool(BasicCall(W_KickUser, args, "sss|s"));
 }
 
+static PyObject* __DelNickTempBan(PyObject *self, PyObject *args)
+{
+	// arguments: nick
+	return pybool(BasicCall(W_DelNickTempBan, args, "s"));
+}
+
+static PyObject* __DelIPTempBan(PyObject *self, PyObject *args)
+{
+	// arguments: ip
+	return pybool(BasicCall(W_DelIPTempBan, args, "s"));
+}
+
 static PyObject* __ParseCommand(PyObject *self, PyObject *args)
 {
 	return pybool(BasicCall(W_ParseCommand, args, "ssl"));
@@ -1097,6 +1109,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"DelRegUser",         __DelRegUser,         METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
+	{"DelNickTempBan",     __DelNickTempBan,     METH_VARARGS},
+	{"DelIPTempBan",       __DelIPTempBan,       METH_VARARGS},
 	{"ParseCommand",       __ParseCommand,       METH_VARARGS},
 	{"ScriptCommand",      __ScriptCommand,      METH_VARARGS},
 	{"ScriptQuery",        __ScriptQuery,        METH_VARARGS},
@@ -1857,6 +1871,8 @@ const char *w_CallName(int callback)
 		case W_DelRegUser:           return "DelRegUser";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
+		case W_DelNickTempBan:       return "DelNickTempBan";
+		case W_DelIPTempBan:         return "DelIPTempBan";
 		case W_ParseCommand:         return "ParseCommand";
 		case W_ScriptCommand:        return "ScriptCommand";
 		case W_ScriptQuery:          return "ScriptQuery";
