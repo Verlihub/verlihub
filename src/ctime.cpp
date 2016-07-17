@@ -116,9 +116,15 @@ std::ostream & operator<< (std::ostream &os, const cTime &t)
 			else
 				os << ostr.str().substr(1); // strip space
 
-			break;
+				break;
+
 		default:
-			os << " " << autosprintf(ngettext("%ld sec", "%ld secs", t.tv_sec), t.tv_sec) << " " << autosprintf(ngettext("%ld usec", "%ld usecs", t.tv_usec), t.tv_usec);
+			#ifdef HAVE_OPENBSD
+				os << " " << autosprintf(ngettext("%lld sec", "%lld secs", t.tv_sec), t.tv_sec) << " " << autosprintf(ngettext("%lld usec", "%lld usecs", t.tv_usec), t.tv_usec);
+			#else
+				os << " " << autosprintf(ngettext("%ld sec", "%ld secs", t.tv_sec), t.tv_sec) << " " << autosprintf(ngettext("%ld usec", "%ld usecs", t.tv_usec), t.tv_usec);
+			#endif
+
 			break;
 	}
 
