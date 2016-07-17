@@ -808,11 +808,12 @@ bool cpiLua::OnUserLogout(cUser *user)
 
 bool cpiLua::OnTimer(__int64 msec)
 {
-	std::stringstream s;
-	s << msec;
+	std::stringstream ss;
+	ss << msec;
+	std::string s = ss.str();
 
 	const char *args[] = {
-		s.str().c_str(),
+		s.c_str(),
 		NULL
 	};
 

@@ -432,10 +432,11 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnUserLogout(cUser *user)
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnTimer(__int64 msec)
 {
-	std::stringstream s;
-	s << msec;
+	std::stringstream ss;
+	ss << msec;
+	std::string s = ss.str();
 	const char *args[] = { "VH_OnTimer",
-				s.str().c_str(),
+				s.c_str(),
 				NULL };
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
