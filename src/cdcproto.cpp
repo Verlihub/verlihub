@@ -1146,10 +1146,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
-		bool banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
+		unsigned int banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
 		if (banned && (theoclass <= eUC_REGUSER)) {
-			os << _("You are banned from this hub") << ":\r\n";
+			os << ((banned == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
 			Ban.DisplayUser(os);
 			mS->DCPublicHS(os.str(), conn);
 
@@ -2636,10 +2636,10 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if(period)
-		os << autosprintf(_("You are being temporarily banned for %s because: %s"), msg->ChunkString(eCH_NB_TIME).c_str(), msg->ChunkString(eCH_NB_REASON).c_str());
+	if (period)
+		os << autosprintf(_("You are temporarily prohibited from entering the hub for %s because: %s"), msg->ChunkString(eCH_NB_TIME).c_str(), msg->ChunkString(eCH_NB_REASON).c_str());
 	else
-		os << autosprintf(_("You are banned because: %s"), msg->ChunkString(eCH_NB_REASON).c_str());
+		os << autosprintf(_("You are permanently banned from the hub because: %s"), msg->ChunkString(eCH_NB_REASON).c_str());
 
 	mS->DCPrivateHS(os.str(), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
 	os.str(mS->mEmpty);

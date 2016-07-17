@@ -157,6 +157,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_DelRegUser]         = &_DelRegUser;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
+	callbacklist[W_DelNickTempBan]     = &_DelNickTempBan;
+	callbacklist[W_DelIPTempBan]       = &_DelIPTempBan;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
 	callbacklist[W_ScriptCommand]      = &_ScriptCommand;
 	callbacklist[W_ScriptQuery]        = &_ScriptQuery;
@@ -1475,6 +1477,38 @@ w_Targs *_KickUser(int id, w_Targs *args)
 	if (address && strlen(address)) user->mxConn->mCloseRedirect = address;
 	cpiPython::me->server->DCKickNick(NULL, user, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	return w_ret1;
+}
+
+w_Targs* _DelNickTempBan(int id, w_Targs *args)
+{
+	const char *nick;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
+	if (DeleteNickTempBan(nick))
+		return w_ret1;
+
+	return NULL;
+}
+
+w_Targs* _DelIPTempBan(int id, w_Targs *args)
+{
+	const char *ip;
+
+	if (!cpiPython::lib_unpack(args, "s", &ip))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	if (DeleteIPTempBan(ip))
+		return w_ret1;
+
+	return NULL;
 }
 
 w_Targs* _ParseCommand(int id, w_Targs *args)

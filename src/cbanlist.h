@@ -260,7 +260,7 @@ namespace nVerliHub {
 				 * @param mask The bit-mask for conditions.
 				 * @see tBanFlags
 				 */
-				bool TestBan(cBan &, nSocket::cConnDC *connection, const string &nickname, unsigned mask);
+				unsigned int TestBan(cBan &, nSocket::cConnDC *conn, const string &nick, unsigned mask);
 
 				/**
 				 * Remove ban entries and create new unban entries for each found ban.

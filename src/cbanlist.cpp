@@ -203,72 +203,71 @@ void cBanList::AddBan(cBan &ban)
 		SavePK(false);
 }
 
-bool cBanList::TestBan(cBan &ban, cConnDC *connection, const string &nick, unsigned mask)
+unsigned int cBanList::TestBan(cBan &ban, cConnDC *conn, const string &nick, unsigned mask)
 {
-	if (connection != NULL) {
-		time_t Now = cTime().Sec();
-		ostringstream query;
-		bool firstWhere = false;
-		string ip = connection->AddrIP();
-		SelectFields(query);
-		string host = connection->AddrHost();
-		query << " WHERE (";
+	if (!conn)
+		return 0;
 
-		if (mask & (eBF_NICKIP | eBF_IP)) { // ip, nick and both are done by this first one
-			AddTestCondition(query, ip, eBF_IP);
-			query << " OR ";
-			firstWhere = true;
-		}
+	time_t Now = cTime().Sec();
+	ostringstream query;
+	bool firstWhere = false;
+	string ip = conn->AddrIP();
+	SelectFields(query);
+	string host = conn->AddrHost();
+	query << " where (";
 
-		if (mask & (eBF_NICKIP | eBF_NICK))
-			AddTestCondition(query, nick, eBF_NICK);
-
-		if (mask & eBF_RANGE)
-			AddTestCondition(query << " OR ", ip, eBF_RANGE);
-
-		if (connection->mpUser && (mask & eBF_SHARE)) {
-			ostringstream os (ostringstream::out);
-			os << connection->mpUser->mShare;
-
-			if (firstWhere)
-				query << " OR ";
-
-			AddTestCondition(query, os.str(), eBF_SHARE); // fix or condition?
-		}
-
-		if (mask & eBF_HOST1)
-			AddTestCondition(query << " OR ", host, eBF_HOST1);
-
-		if (mask & eBF_HOST2)
-			AddTestCondition(query << " OR ", host, eBF_HOST2);
-
-		if (mask & eBF_HOST3)
-			AddTestCondition(query << " OR ", host, eBF_HOST3);
-
-		if (mask & eBF_HOSTR1)
-			AddTestCondition(query << " OR ", host, eBF_HOSTR1);
-
-		if (mask & eBF_PREFIX)
-			AddTestCondition(query << " OR ", nick, eBF_PREFIX);
-
-		query << ") AND ((date_limit >= " << Now << ") OR date_limit IS NULL OR (date_limit = 0)) ORDER BY date_limit DESC LIMIT 1";
-
-		if (StartQuery(query.str()) == -1)
-			return false;
-
-		SetBaseTo(&ban);
-		bool found = (Load() >= 0);
-		EndQuery();
-
-		if (found) {
-			ban.mLastHit = Now;
-			UpdatePK();
-		}
-
-		return found;
+	if (mask & (eBF_NICKIP | eBF_IP)) { // ip, nick and both are done by this first one
+		AddTestCondition(query, ip, eBF_IP);
+		query << " or ";
+		firstWhere = true;
 	}
 
-	return false;
+	if (mask & (eBF_NICKIP | eBF_NICK))
+		AddTestCondition(query, nick, eBF_NICK);
+
+	if (mask & eBF_RANGE)
+		AddTestCondition(query << " or ", ip, eBF_RANGE);
+
+	if (conn->mpUser && (mask & eBF_SHARE)) {
+		ostringstream os (ostringstream::out);
+		os << conn->mpUser->mShare;
+
+		if (firstWhere)
+			query << " or ";
+
+		AddTestCondition(query, os.str(), eBF_SHARE); // fix or condition?
+	}
+
+	if (mask & eBF_HOST1)
+		AddTestCondition(query << " or ", host, eBF_HOST1);
+
+	if (mask & eBF_HOST2)
+		AddTestCondition(query << " or ", host, eBF_HOST2);
+
+	if (mask & eBF_HOST3)
+		AddTestCondition(query << " or ", host, eBF_HOST3);
+
+	if (mask & eBF_HOSTR1)
+		AddTestCondition(query << " or ", host, eBF_HOSTR1);
+
+	if (mask & eBF_PREFIX)
+		AddTestCondition(query << " or ", nick, eBF_PREFIX);
+
+	query << ") and ((`date_limit` >= " << Now << ") or (`date_limit` is null) or (`date_limit` = 0)) order by `date_limit` desc limit 1";
+
+	if (StartQuery(query.str()) == -1)
+		return 0;
+
+	SetBaseTo(&ban);
+	unsigned int found = ((Load() >= 0) ? ((ban.mDateEnd) ? 1 : 2) : 0); // 0 = not banned, 1 = temporary ban, 2 = permanent ban
+	EndQuery();
+
+	if (found) {
+		ban.mLastHit = Now;
+		UpdatePK();
+	}
+
+	return found;
 }
 
 void cBanList::DelBan(cBan &Ban)

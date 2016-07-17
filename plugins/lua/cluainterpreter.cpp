@@ -113,6 +113,8 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("Ban", &_Ban);
 	RegisterFunction("KickUser", &_KickUser);
 	RegisterFunction("KickRedirUser", &_KickRedirUser);
+	RegisterFunction("DelNickTempBan", &_DelNickTempBan);
+	RegisterFunction("DelIPTempBan", &_DelIPTempBan);
 	RegisterFunction("ReportUser", &_ReportUser);
 	RegisterFunction("ParseCommand", &_ParseCommand);
 	RegisterFunction("SetConfig", &_SetConfig);

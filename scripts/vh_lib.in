@@ -321,14 +321,19 @@ function echo_s() # (message,color)
 } 
 
 # make question to user
-function ask() # question, default value, allow empty
+
+function ask() # <question> [default value] [allow empty] [is password]
 {
 	if [ "_$1" == "_" ]; then
 		exit;
 	fi
 
 	if [ "_$2" != "_" ]; then
-		read -p "$1 ($2): " VALUE
+		if [ "$4" == "true" ]; then
+			read -s -p "$1 ($2): " VALUE
+		else
+			read -p "$1 ($2): " VALUE
+		fi
 
 		if [ "_$VALUE" == "_" ]; then
 			VALUE=$2
@@ -338,7 +343,11 @@ function ask() # question, default value, allow empty
 
 		until $IS_ANSWER_NOT_EMPTY;
 		do
-			read -p "$1: " VALUE
+			if [ "$4" == "true" ]; then
+				read -s -p "$1: " VALUE
+			else
+				read -p "$1: " VALUE
+			fi
 
 			if [ "_$VALUE" != "_" ] || [ "$3" == "true" ]; then
 				IS_ANSWER_NOT_EMPTY=true

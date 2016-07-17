@@ -82,6 +82,8 @@ namespace nVerliHub {
 	int _Ban(lua_State *L);
 	int _KickUser(lua_State *L);
 	int _KickRedirUser(lua_State *L);
+	int _DelNickTempBan(lua_State *L);
+	int _DelIPTempBan(lua_State *L);
 	int _ReportUser(lua_State *L);
 	int _ParseCommand(lua_State *L);
 	int _SQLQuery(lua_State *L);

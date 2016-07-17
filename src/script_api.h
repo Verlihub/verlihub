@@ -56,8 +56,10 @@ namespace nVerliHub {
 	const char* GetUserHost(const char *nick);
 	const char* GetUserIP(const char *nick);
 	bool Ban(const char *, const string &, const string &, unsigned, unsigned);
-	bool ParseCommand(const char *nick, const char *cmd, int pm);
 	bool KickUser(const char *opnick, const char *nick, const char *reason);
+	bool DeleteNickTempBan(const char *nick);
+	bool DeleteIPTempBan(const char *ip);
+	bool ParseCommand(const char *nick, const char *cmd, int pm);
 	bool SetConfig(const char *conf, const char *var, const char *val);
 	char* GetConfig(const char *conf, const char *var, const char *def = NULL);
 	const char* GetVHCfgDir();

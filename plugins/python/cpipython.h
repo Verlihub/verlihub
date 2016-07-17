@@ -237,6 +237,8 @@ extern "C" w_Targs *_AddRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_DelRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
+extern "C" w_Targs *_DelNickTempBan    (int id, w_Targs *args);
+extern "C" w_Targs *_DelIPTempBan      (int id, w_Targs *args);
 extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
 extern "C" w_Targs *_ScriptCommand     (int id, w_Targs *args);
 extern "C" w_Targs *_ScriptQuery       (int id, w_Targs *args);

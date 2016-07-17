@@ -1616,6 +1616,56 @@ int _KickRedirUser(lua_State *L)
 	return 2;
 }
 
+int _DelNickTempBan(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:DelNickTempBan, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = lua_tostring(L, 2);
+
+	if (DeleteNickTempBan(nick.c_str()))
+		lua_pushboolean(L, 1);
+	else
+		lua_pushboolean(L, 0);
+
+	lua_pushnil(L);
+	return 2;
+}
+
+int _DelIPTempBan(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:DelIPTempBan, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string ip = lua_tostring(L, 2);
+
+	if (DeleteIPTempBan(ip.c_str()))
+		lua_pushboolean(L, 1);
+	else
+		lua_pushboolean(L, 0);
+
+	lua_pushnil(L);
+	return 2;
+}
+
 int _SetConfig(lua_State *L)
 {
 	if (lua_gettop(L) < 4) {

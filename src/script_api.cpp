@@ -430,6 +430,38 @@ bool Ban(const char *nick, const string &op, const string &reason, unsigned howl
 	return true;
 }
 
+bool DeleteNickTempBan(const char *nick)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	if (!serv->mBanList->IsNickTempBanned(nick))
+		return false;
+
+	serv->mBanList->DelNickTempBan(nick);
+	return true;
+}
+
+bool DeleteIPTempBan(const char *ip)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	if (!serv->mBanList->IsIPTempBanned(ip))
+		return false;
+
+	serv->mBanList->DelIPTempBan(ip);
+	return true;
+}
+
 bool ParseCommand(const char *nick, const char *cmd, int pm)
 {
 	cServerDC *serv = GetCurrentVerlihub();

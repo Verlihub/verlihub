@@ -5,9 +5,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-03-28 13:45+0200\n"
-"PO-Revision-Date: 2016-03-29 08:53+0000\n"
-"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"POT-Creation-Date: 2016-04-05 10:26+0200\n"
+"PO-Revision-Date: 2016-04-06 08:23+0000\n"
+"Last-Translator: chatonhub <chatonhubfrance@gmail.com>\n"
 "Language-Team: French (France) (http://www.transifex.com/feardc/verlihub-100/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
@@ -398,8 +398,8 @@ msgstr "S'il vous plaît spécifier un ou plusieurs pseudonyme séparés par des esp
 #, c-format
 msgid "Showing %d result"
 msgid_plural "Showing %d results"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Affichage des résultats %d"
+msgstr[1] "Affichage des resultats %d"
 
 #: ../src/cdcconsole.cpp:331 ../src/cdcconsole.cpp:367
 #: ../src/cdcconsole.cpp:1122
@@ -409,7 +409,7 @@ msgstr "Hôte"
 #: ../src/cdcconsole.cpp:333
 #, c-format
 msgid "Unable to resolve hostname of user: %s"
-msgstr ""
+msgstr "Impossible de resoudre le nom d hote utilisateur: %s"
 
 #: ../src/cdcconsole.cpp:365 ../src/cdcconsole.cpp:509
 msgid "Country"
@@ -421,7 +421,7 @@ msgstr "Ville"
 
 #: ../src/cdcconsole.cpp:416
 msgid "Please note, hub is no longer scheduled for restart."
-msgstr ""
+msgstr "S'il vous plaît noter , le salon est plus prévue pour le redémarrage."
 
 #: ../src/cdcconsole.cpp:418
 #, c-format
@@ -434,7 +434,7 @@ msgstr "Attention, le hub va redémarrer maintenant."
 
 #: ../src/cdcconsole.cpp:423
 msgid "Please note, hub is no longer scheduled for stop."
-msgstr ""
+msgstr "S'il vous plaît noter , le salon est plus prévue pour l'arrêt ."
 
 #: ../src/cdcconsole.cpp:425
 #, c-format
@@ -453,8 +453,8 @@ msgstr "Usage example: !ccbc :US:GB: <message>"
 #, c-format
 msgid "Message delivered to %d user in zones %s in %s."
 msgid_plural "Message delivered to %d users in zones %s in %s."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Message délivré à %d utilisateurs dans les zones %s en %s."
+msgstr[1] "Message délivré à %d utilisateurs dans les zones %s en %s."
 
 #: ../src/cdcconsole.cpp:494 ../src/cdcconsole.cpp:644
 #: ../src/cserverdc.cpp:1086
@@ -479,19 +479,19 @@ msgstr "Votre message n'a pas été envoyé , car il est égal à votre message précé
 
 #: ../src/cdcconsole.cpp:580
 msgid "Public chat messages are now visible. To hide them, write: +nochat"
-msgstr ""
+msgstr "Publics des messages de chat sont maintenant visibles . Pour les cacher , écrire : +nochat"
 
 #: ../src/cdcconsole.cpp:583
 msgid "Public chat messages are already visible. To hide them, write: +nochat"
-msgstr ""
+msgstr "Publics des messages de chat sont déjà visibles. Pour les cacher , écrire : +nochat"
 
 #: ../src/cdcconsole.cpp:586
 msgid "Public chat messages are now hidden. To show them, write: +chat"
-msgstr ""
+msgstr "Des messages de chat public sont désormais cachés. Pour les afficher , écrire : +chat"
 
 #: ../src/cdcconsole.cpp:589
 msgid "Public chat messages are already hidden. To show them, write: +chat"
-msgstr ""
+msgstr "Des messages de chat public sont déjà cachés. Pour les afficher , écrire : +chat"
 
 #: ../src/cdcconsole.cpp:602 ../src/cserverdc.cpp:2360
 #, c-format
@@ -624,7 +624,7 @@ msgstr "Cette fonctionnalité est actuellement désactivée."
 
 #: ../src/cdcconsole.cpp:687
 msgid "Registration failed. Please contact an operator for help."
-msgstr ""
+msgstr "Échec de l'enregistrement. S'il vous plaît contacter un opérateur de l'aide."
 
 #: ../src/cdcconsole.cpp:703
 #, c-format
@@ -643,7 +643,7 @@ msgstr "Vous êtes déjà inscrit."
 #: ../src/cdcconsole.cpp:737 ../src/cdcconsole.cpp:880 ../src/cdcproto.cpp:737
 #, c-format
 msgid "Minimum password length is %d characters. Please retry."
-msgstr ""
+msgstr "La longueur du mot de passe minimum est de %d caractères. S'il vous plaît réessayer."
 
 #: ../src/cdcconsole.cpp:752
 #, c-format
@@ -655,7 +655,7 @@ msgstr "Un nouvel utilisateur a été enregistré avec la classe %d"
 msgid ""
 "You are now registered with nick %s. Please reconnect and login with your "
 "new password: %s"
-msgstr ""
+msgstr "Vous êtes maintenant inscrit avec le pseudo %s, s'il vous plaît reconnecter vous avec votre nouveau mot de passe : %s"
 
 #: ../src/cdcconsole.cpp:757
 msgid "An error occured while registering."
@@ -682,29 +682,29 @@ msgstr "Vous avez pas le droit de changer le sujet."
 #, c-format
 msgid ""
 "Topic must not exceed 255 characters, but your topic has %d characters."
-msgstr ""
+msgstr "Votre sujet ne doit pas dépasser 255 caractères , votre sujet est %d caractères ."
 
 #: ../src/cdcconsole.cpp:808 ../src/cdcconsole.cpp:1476
 #: ../src/cdcconsole.cpp:1583 ../src/cdcconsole.cpp:1863
 #: ../src/cdcconsole.cpp:2597 ../src/cdcconsole.cpp:2630
 #: ../src/cdcconsole.cpp:2671 ../src/cserverdc.cpp:2485
 msgid "Your action was blocked by a plugin."
-msgstr ""
+msgstr "Votre action a été bloqué par un plugin."
 
 #: ../src/cdcconsole.cpp:818
 #, c-format
 msgid "%s changed the topic to: %s"
-msgstr ""
+msgstr "%s changer le sujet pour: %s"
 
 #: ../src/cdcconsole.cpp:820
 #, c-format
 msgid "%s removed the topic."
-msgstr ""
+msgstr "%s sujet enlevé."
 
 #: ../src/cdcconsole.cpp:872
 msgid ""
 "You are not allowed to change your password now. Ask an operator for help."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à changer votre mot de passe maintenant , demandez à un opérateur."
 
 #: ../src/cdcconsole.cpp:886 ../src/cdcconsole.cpp:2657
 #: ../src/cdcproto.cpp:745
@@ -719,16 +719,16 @@ msgstr "Le mot de passe a été mis à jour avec succès."
 msgid ""
 "Please use: !hideme <class>, where <class> is the maximum class of users "
 "that may not see your kicks."
-msgstr ""
+msgstr "Veuillez utiliser : hideme <class> où <class> est la classe maximale des utilisateurs qui ne pourront voir vos actions."
 
 #: ../src/cdcconsole.cpp:911
 #, c-format
 msgid "Your kicks are now hidden from users with class %d and below."
-msgstr ""
+msgstr "Vos kick sont maintenant cachés des utilisateurs avec la classe %d et au-dessous de cette classe."
 
 #: ../src/cdcconsole.cpp:923
 msgid "Command usage: !userlimit <max_users> [<minutes>=60]"
-msgstr ""
+msgstr "L utilisation de la commande : !userlimit <max_users> [<minutes>=60]"
 
 #: ../src/cdcconsole.cpp:932
 #, c-format
