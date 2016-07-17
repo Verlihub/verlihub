@@ -278,9 +278,9 @@ string StringFrom(__int64 const &ll)
 {
 	char buf[32];
 #ifdef _WIN32
-	sprintf(buf,"%I64d",ll);
+	snprintf(buf, sizeof(buf), "%I64d",ll);
 #else
-	sprintf(buf,"%lld",ll);
+	snprintf(buf, sizeof(buf),"%lld",ll);
 #endif
 	return buf;
 }

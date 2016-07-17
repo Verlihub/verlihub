@@ -166,17 +166,17 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak)); // peak total share
 
 		char tmf[3];
-		sprintf(tmf, "%02d", lt->tm_sec);
+		snprintf(tmf, sizeof(tmf), "%02d", lt->tm_sec);
 		ReplaceVarInString(buf, "ss", buf, tmf);
-		sprintf(tmf, "%02d", lt->tm_min);
+		snprintf(tmf, sizeof(tmf), "%02d", lt->tm_min);
 		ReplaceVarInString(buf, "mm", buf, tmf);
-		sprintf(tmf, "%02d", lt->tm_hour);
+		snprintf(tmf, sizeof(tmf), "%02d", lt->tm_hour);
 		ReplaceVarInString(buf, "HH", buf, tmf);
-		sprintf(tmf, "%02d", lt->tm_mday);
+		snprintf(tmf, sizeof(tmf), "%02d", lt->tm_mday);
 		ReplaceVarInString(buf, "DD", buf, tmf);
-		sprintf(tmf, "%02d", lt->tm_mon + 1);
+		snprintf(tmf, sizeof(tmf), "%02d", lt->tm_mon + 1);
 		ReplaceVarInString(buf, "MM", buf, tmf);
-		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year);
+		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year); // why 1900, not 2000 ? (Mike K)
 
 		#ifndef _WIN32
 			delete lt;

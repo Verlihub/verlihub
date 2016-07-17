@@ -63,6 +63,7 @@ cRegUserInfo::~cRegUserInfo()
 {}
 
 bool cRegUserInfo::PWVerify(const string &pass)
+// TODO: Rewrite, because mysql is not obliged to maintain encrypt
 {
 	if (!mPasswd.size() || !pass.size()) // check both password lengths
 		return false;
@@ -82,7 +83,7 @@ bool cRegUserInfo::PWVerify(const string &pass)
 			md5_buf[MD5_DIGEST_LENGTH] = 0;
 
 			for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
-				sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
+				snprintf(md5_hex + (i * 2), 3, "%02x", md5_buf[i]);
 			}
 
 			md5_hex[32] = 0;
@@ -128,6 +129,8 @@ string& cRegUserInfo::GetNick()
 }
 
 void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
+// TODO: Rewrite, because mysql is not obliged to maintain encrypt
+// TODO: Remove if possible copy-paste code (see cRegUserInfo::PWVerify())
 {
 	mPwdChange = !str.size();
 
@@ -152,7 +155,7 @@ void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
 				md5_buf[MD5_DIGEST_LENGTH] = 0;
 
 				for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
-					sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
+					snprintf(md5_hex + (i * 2), 3, "%02x", md5_buf[i]);
 				}
 
 				md5_hex[32] = 0;
