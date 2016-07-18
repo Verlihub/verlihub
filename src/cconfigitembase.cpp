@@ -60,14 +60,14 @@ void cConfigItemBasePChar	::ConvertFrom(const std::string &str)
 //
 
 void cConfigItemBaseBool	::ConvertTo(std::string &str){str = (this->Data())?"1":"0";}
-void cConfigItemBaseInt		::ConvertTo(std::string &str){sprintf(mBuf,"%d",this->Data()); str = mBuf;}
-void cConfigItemBaseUInt	::ConvertTo(std::string &str){sprintf(mBuf,"%u",this->Data()); str = mBuf;}
-void cConfigItemBaseLong	::ConvertTo(std::string &str){sprintf(mBuf,"%ld",this->Data()); str = mBuf;}
-void cConfigItemBaseInt64	::ConvertTo(std::string &str){sprintf(mBuf,"%lld",this->Data()); str = mBuf;}
-void cConfigItemBaseUInt64::ConvertTo(std::string &str) { sprintf(mBuf, "%llu", this->Data()); str = mBuf; }
-void cConfigItemBaseULong	::ConvertTo(std::string &str){sprintf(mBuf,"%lu",this->Data()); str = mBuf;}
-void cConfigItemBaseDouble	::ConvertTo(std::string &str){sprintf(mBuf,"%f",this->Data()); str = mBuf;}
-void cConfigItemBaseChar	::ConvertTo(std::string &str){sprintf(mBuf,"%c",this->Data()); str = mBuf;}
+void cConfigItemBaseInt		::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%d",this->Data()); str = mBuf;}
+void cConfigItemBaseUInt	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%u",this->Data()); str = mBuf;}
+void cConfigItemBaseLong	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%ld",this->Data()); str = mBuf;}
+void cConfigItemBaseInt64	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%lld",this->Data()); str = mBuf;}
+void cConfigItemBaseUInt64	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%llu",this->Data()); str = mBuf;}
+void cConfigItemBaseULong	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%lu",this->Data()); str = mBuf;}
+void cConfigItemBaseDouble	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%f",this->Data()); str = mBuf;}
+void cConfigItemBaseChar	::ConvertTo(std::string &str){snprintf(mBuf,sizeof(mBuf),"%c",this->Data()); str = mBuf;}
 void cConfigItemBaseString	::ConvertTo(std::string &str){str = this->Data();}
 void cConfigItemBasePChar	::ConvertTo(std::string &str){str = this->Data();}
 
