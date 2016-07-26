@@ -1386,16 +1386,15 @@ bool cDCConsole::cfBan::operator()()
 	};
 
 	enum {
-		BAN_PREFIX = 1,
+		BAN_PREFIX = 1, // mIdStr
 		BAN_TYPE = 2,
 		BAN_LENGTH = 4,
 		BAN_THIS = 6,
-		BAN_WHO = 1,
+		BAN_WHO = 1, // mParStr
 		BAN_REASON = 3
 	};
 
 	string tmp;
-	int Count = 0;
 	int BanAction = BAN_BAN;
 
 	if (mIdRex->PartFound(BAN_PREFIX)) {
@@ -1405,6 +1404,8 @@ bool cDCConsole::cfBan::operator()()
 		if (BanAction < 0)
 			return false;
 	}
+
+	int Count = 0;
 
 	if (BanAction == BAN_LIST) { // ban list
 		Count = 100;
@@ -1441,14 +1442,14 @@ bool cDCConsole::cfBan::operator()()
 	if (mIdRex->PartFound(BAN_THIS))
 		IsNick = (0 == mIdRex->Compare(BAN_TYPE, mIdStr, "nick"));
 
-	time_t BanTime = 0;
 	bool IsPerm = !mIdRex->PartFound(BAN_LENGTH);
+	time_t BanTime = 0;
 
 	if (!IsPerm) {
 		mIdRex->Extract(BAN_LENGTH, mIdStr, tmp);
 
 		if (tmp != "perm") {
-			BanTime = mS->Str2Period(tmp, (*mOS));
+			BanTime = mS->Str2Period(tmp, *mOS);
 
 			if (BanTime < 0) {
 				(*mOS) << _("Please provide a valid ban time.");
@@ -1464,23 +1465,26 @@ bool cDCConsole::cfBan::operator()()
 	string Who;
 	GetParStr(BAN_WHO, Who);
 	bool unban = (BanAction == BAN_UNBAN);
+	tmp.clear();
 
 	switch (BanAction) {
 		case BAN_UNBAN:
 		case BAN_INFO:
 			if (unban) {
-				if (!GetParStr(BAN_REASON, tmp)) tmp = _("No reason specified"); // default reason
+				if (!GetParStr(BAN_REASON, tmp)) // default reason
+					tmp = _("No reason specified");
 
 				#ifndef WITHOUT_PLUGINS
-				if (!mS->mCallBacks.mOnUnBan.CallAll(mConn->mpUser, Who, mConn->mpUser->mNick, tmp)) {
-					(*mOS) << _("Your action was blocked by a plugin.");
-					return false;
-				}
+					if (!mS->mCallBacks.mOnUnBan.CallAll(mConn->mpUser, Who, mConn->mpUser->mNick, tmp)) {
+						(*mOS) << _("Your action was blocked by a plugin.");
+						return false;
+					}
 				#endif
 
 				(*mOS) << _("Removed ban") << ":\r\n";
-			} else
+			} else {
 				(*mOS) << _("Ban information") << ":\r\n";
+			}
 
 			if (BanType == eBF_NICKIP) {
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, eBF_NICK, unban);
@@ -1500,116 +1504,128 @@ bool cDCConsole::cfBan::operator()()
 			} else if (BanType == eBF_NICK) {
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, eBF_NICK, unban);
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, eBF_NICKIP, unban);
-			} else
+			} else {
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, BanType, unban);
+			}
 
 			(*mOS) << "\r\n" << autosprintf(ngettext("%d ban found.", "%d bans found.", Count), Count);
-		break;
-	case BAN_BAN:
-		Ban.mNickOp = mConn->mpUser->mNick;
-		mParRex->Extract(BAN_REASON, mParStr, tmp);
+			break;
 
-		if (tmp.length() > 0)
-			Ban.mReason = tmp;
-		else
-			Ban.mReason = _("No reason specified"); // default reason, doesnt work when no reason is specified, bad regexp
+		case BAN_BAN:
+			Ban.mNickOp = mConn->mpUser->mNick;
+			mParRex->Extract(BAN_REASON, mParStr, tmp);
 
-		Ban.mDateStart = cTime().Sec();
+			if (tmp.size())
+				Ban.mReason = tmp;
+			else
+				Ban.mReason = _("No reason specified"); // default reason, doesnt work when no reason is specified, bad regexp
 
-		if (BanTime)
-			Ban.mDateEnd = Ban.mDateStart + BanTime;
-		else
-			Ban.mDateEnd = 0;
+			Ban.mDateStart = cTime().Sec();
 
-		Ban.mLastHit = 0;
-		Ban.SetType(BanType);
+			if (BanTime)
+				Ban.mDateEnd = Ban.mDateStart + BanTime;
+			else
+				Ban.mDateEnd = 0;
 
-		switch (BanType) {
-			case eBF_NICKIP:
-			case eBF_NICK:
-			case eBF_IP:
-				if (mS->mKickList->FindKick(Kick, Who, mConn->mpUser->mNick, 3000, true, true, IsNick))
-					mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
-				else {
-					if (BanType == eBF_NICKIP) BanType = eBF_IP;
-					mParRex->Extract(BAN_REASON, mParStr, Kick.mReason);
-					Kick.mOp = mConn->mpUser->mNick;
-					Kick.mTime = cTime().Sec();
+			Ban.mLastHit = 0;
+			Ban.SetType(BanType);
 
-					if (BanType == eBF_NICK)
-						Kick.mNick = Who;
-					else
-						Kick.mIP = Who;
+			switch (BanType) {
+				case eBF_NICKIP:
+				case eBF_NICK:
+				case eBF_IP:
+					if (mS->mKickList->FindKick(Kick, Who, mConn->mpUser->mNick, 3000, true, true, IsNick)) {
+						mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
+					} else {
+						if (BanType == eBF_NICKIP)
+							BanType = eBF_IP;
 
-					mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
+						mParRex->Extract(BAN_REASON, mParStr, Kick.mReason);
+						Kick.mOp = mConn->mpUser->mNick;
+						Kick.mTime = cTime().Sec();
+
+						if (BanType == eBF_NICK)
+							Kick.mNick = Who;
+						else
+							Kick.mIP = Who;
+
+						mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
+					}
+
+					break;
+
+				case eBF_HOST1:
+				case eBF_HOST2:
+				case eBF_HOST3:
+				case eBF_HOSTR1:
+					if (MyClass < (eUC_ADMIN - (BanType - eBF_HOST1))) {
+						(*mOS) << _("You have no rights to do this.");
+						return false;
+					}
+
+					Ban.mHost = Who;
+					Ban.mIP = Who;
+					break;
+
+				case eBF_RANGE:
+					if (!cDCConsole::GetIPRange(Who, Ban.mRangeMin, Ban.mRangeMax)) {
+						(*mOS) << autosprintf(_("Unknown range format: %s"), Who.c_str());
+						return false;
+					}
+
+					Ban.mIP = Who;
+					break;
+
+				case eBF_PREFIX:
+					Ban.mNick = Who;
+					break;
+
+				case eBF_SHARE:
+					{
+						istringstream is(Who);
+						__int64 share;
+						is >> share;
+						Ban.mShare = share;
+					}
+
+					break;
+
+				default:
+					break;
+			}
+
+			#ifndef WITHOUT_PLUGINS
+				if (!mS->mCallBacks.mOnNewBan.CallAll(mConn->mpUser, &Ban)) {
+					(*mOS) << _("Your action was blocked by a plugin.");
+					return false;
 				}
-			break;
-		case eBF_HOST1:
-		case eBF_HOST2:
-		case eBF_HOST3:
-		case eBF_HOSTR1:
-			if (MyClass < (eUC_ADMIN - (BanType - eBF_HOST1))) {
-				(*mOS) << _("You have no rights to do this.");
-				return false;
-			}
+			#endif
 
-			Ban.mHost = Who;
-			Ban.mIP = Who;
-			break;
-		case eBF_RANGE:
-			if (!cDCConsole::GetIPRange(Who, Ban.mRangeMin, Ban.mRangeMax)) {
-				(*mOS) << autosprintf(_("Unknown range format: %s"), Who.c_str());
-				return false;
-			}
+			if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // drop users if ban type is ip or range
+				cUserCollection::iterator i;
+				cConnDC *conn;
 
-			Ban.mIP = Who;
-			break;
-		case eBF_PREFIX:
-			Ban.mNick = Who;
-			break;
-		case eBF_SHARE:
-			{
-				istringstream is(Who);
-				__int64 share;
-				is >> share;
-				Ban.mShare = share;
-			}
-			break;
-		default: break;
-		}
+				for (i = mS->mUserList.begin(); i != mS->mUserList.end(); ++i) {
+					conn = ((cUser*)(*i))->mxConn;
 
-		#ifndef WITHOUT_PLUGINS
-			if (!mS->mCallBacks.mOnNewBan.CallAll(mConn->mpUser, &Ban)) {
-				(*mOS) << _("Your action was blocked by a plugin.");
-				return false;
-			}
-		#endif
+					if (conn) {
+						unsigned long ipnum = cBanList::Ip2Num(conn->AddrIP());
 
-		if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // drop users if ban type is ip or range
-			cUserCollection::iterator i;
-			cConnDC *conn;
-
-			for (i = mS->mUserList.begin(); i != mS->mUserList.end(); ++i) {
-				conn = ((cUser*)(*i))->mxConn;
-
-				if (conn) {
-					unsigned long ipnum = cBanList::Ip2Num(conn->AddrIP());
-
-					if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum)))
-						conn->CloseNow();
+						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum)))
+							conn->CloseNow();
+					}
 				}
+			} else if (Ban.mNick.size()) { // drop user if nick is specified
+				cUser *user = mS->mUserList.GetUserByNick(Ban.mNick);
+
+				if (user && user->mxConn)
+					user->mxConn->CloseNow();
 			}
-		} else if (Ban.mNick.size()) { // drop user if nick is specified
-			cUser *user = mS->mUserList.GetUserByNick(Ban.mNick);
 
-			if (user && user->mxConn)
-				user->mxConn->CloseNow();
-		}
-
-		mS->mBanList->AddBan(Ban);
-		(*mOS) << _("Added new ban") << ":\r\n";
-		Ban.DisplayComplete(*mOS);
-		break;
+			mS->mBanList->AddBan(Ban);
+			(*mOS) << _("Added new ban") << ":\r\n";
+			Ban.DisplayComplete(*mOS);
+			break;
 
 		default:
 			(*mOS) << _("This command is not implemented.");

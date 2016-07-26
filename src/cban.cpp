@@ -98,7 +98,7 @@ void cBan::DisplayUser(ostream &os)
 	if (mNick.size())
 		os << " [*] " << autosprintf(_("Nick: %s"), mNick.c_str()) << "\r\n";
 
-	if (mIP.size() && (mIP[0] != '_'))
+	if (!mRangeMin && mIP.size() && (mIP[0] != '_'))
 		os << " [*] " << autosprintf(_("IP: %s"), mIP.c_str()) << "\r\n";
 
 	string loaddr, hiaddr;
