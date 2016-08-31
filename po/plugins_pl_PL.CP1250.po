@@ -1,6 +1,6 @@
 # 
 # Translators:
-# Green Frog <the_frog@wp.pl>, 2016
+# frogged <the_frog@wp.pl>, 2016
 # hostpl <zbyszekslyz@hostpl.eu>, 2014-2015
 # hostpl <admin@hostpl.eu>, 2014
 # hostpl <zbyszekslyz@hostpl.eu>, 2016
@@ -9,16 +9,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-04-05 10:27+0200\n"
+"POT-Creation-Date: 2016-08-26 14:47+0200\n"
 "PO-Revision-Date: 2016-03-12 12:38+0000\n"
-"Last-Translator: Green Frog <the_frog@wp.pl>\n"
+"Last-Translator: frogged <the_frog@wp.pl>\n"
 "Language-Team: Polish (Poland) (http://www.transifex.com/feardc/verlihub-100/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -312,11 +312,11 @@ msgstr "Zaktualizowano konfiguracje %s.%s: Zmieniono '%s' na '%s'."
 msgid "Current error class: %d"
 msgstr "Aktualna klasa bledu: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
 msgstr "Blad Lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
 msgstr "Nieznany blad"
 

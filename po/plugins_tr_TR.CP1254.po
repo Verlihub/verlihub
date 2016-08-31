@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-04-05 10:27+0200\n"
+"POT-Creation-Date: 2016-08-26 14:47+0200\n"
 "PO-Revision-Date: 2016-03-13 17:14+0000\n"
 "Last-Translator: mauron\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/feardc/verlihub-100/language/tr_TR/)\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -309,11 +309,11 @@ msgstr "Yapýlandýrma güncellendi %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Güncel hata sýnýfý: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
 msgstr "Lua hatasý"
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
 

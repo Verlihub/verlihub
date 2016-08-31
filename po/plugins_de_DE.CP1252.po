@@ -1,20 +1,21 @@
 # 
 # Translators:
+# daniel dny <danny05_c00l@yahoo.com>, 2016
 # Ettore Atalan <atalanttore@googlemail.com>, 2014-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-04-05 10:27+0200\n"
-"PO-Revision-Date: 2016-05-06 22:45+0000\n"
-"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
+"POT-Creation-Date: 2016-08-26 14:47+0200\n"
+"PO-Revision-Date: 2016-08-29 18:48+0000\n"
+"Last-Translator: daniel dny <danny05_c00l@yahoo.com>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/feardc/verlihub-100/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -39,11 +40,11 @@ msgstr "Verbotene Wörter in %s: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "MC"
-msgstr ""
+msgstr "HC"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "PM"
-msgstr ""
+msgstr "PN"
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
@@ -73,11 +74,11 @@ msgstr "Trennen"
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr ""
+msgstr "Falscher Nichname oder Nichname momentan gebannt"
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
-msgstr ""
+msgstr "Verwendete einen anderen Nichname im Chat"
 
 #: ../plugins/iplog/ciplog.cpp:100
 msgid "kicked"
@@ -89,11 +90,11 @@ msgstr "Weitergeleitet"
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr ""
+msgstr "Hub verlassen"
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr ""
+msgstr "kritische Hub-Last"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
@@ -101,15 +102,15 @@ msgstr "Zeitüberschreitung"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "user did nothing for too long time"
-msgstr ""
+msgstr "Benutzer hat für zu lange Zeit nichts gemacht"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr ""
+msgstr "Hub voll"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
-msgstr ""
+msgstr "Freigabebegrenzung"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "no tag or not valid"
@@ -308,11 +309,11 @@ msgstr "Konfiguration aktualisiert %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Aktuelle Fehlerklasse: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
 msgstr "Lua-Fehler"
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
@@ -419,7 +420,7 @@ msgstr ""
 #: ../plugins/plugman/cconsole.cpp:145
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
-msgstr ""
+msgstr "Erweiterungsname darf maximal 10 Zeichen lang sein, bitte geben Sie einen anderen an."
 
 #: ../plugins/plugman/cconsole.cpp:150
 msgid "Please provide a valid path for the plugin."
@@ -469,7 +470,7 @@ msgstr "Fehler beim Laden des Skripts."
 
 #: ../plugins/plugman/cplugs.cpp:154
 msgid "Plugin needs to be recompiled."
-msgstr ""
+msgstr "Erweiterung muss neu kompiliert werden."
 
 #: ../plugins/plugman/cplugs.cpp:205
 #, c-format

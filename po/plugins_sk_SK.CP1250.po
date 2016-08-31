@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-04-05 10:27+0200\n"
+"POT-Creation-Date: 2016-08-26 14:47+0200\n"
 "PO-Revision-Date: 2016-03-12 11:06+0000\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Slovak (Slovakia) (http://www.transifex.com/feardc/verlihub-100/language/sk_SK/)\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: sk_SK\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -307,11 +307,11 @@ msgstr ""
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
 msgstr ""
 

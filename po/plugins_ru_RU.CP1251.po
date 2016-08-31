@@ -2,7 +2,7 @@
 # Translators:
 # Alexander Zenkov <webmaster@feardc.net>, 2014-2016
 # kosterinaleksey <kosterinaleksey@gmail.com>, 2012
-# Александр Шандала (KCAHDEP) <admin@kcahdep.org>, 2016
+# Александр «KCAHDEP» Шандала <admin@kcahdep.org>, 2016
 # MaxFox <maxfox@inbox.ru>, 2014
 # Stefano <netcelli@gmail.com>, 2011
 # Stefano <netcelli@gmail.com>, 2011
@@ -13,16 +13,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-04-05 10:27+0200\n"
+"POT-Creation-Date: 2016-08-26 14:47+0200\n"
 "PO-Revision-Date: 2016-04-14 12:18+0000\n"
-"Last-Translator: Александр Шандала (KCAHDEP) <admin@kcahdep.org>\n"
+"Last-Translator: Александр «KCAHDEP» Шандала <admin@kcahdep.org>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/feardc/verlihub-100/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru_RU\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 1.8.8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -316,11 +316,11 @@ msgstr "Обновлена переменная %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Данный класс для ошибок: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
 msgstr "Ошибка Lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
 msgstr "Неизвестная ошибка"
 
