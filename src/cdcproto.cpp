@@ -134,13 +134,14 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 	switch (msg->mType) {
 		case eDC_UNKNOWN: // this must be first
-			if (Log(1))
-				LogStream() << "Incoming unknown command: " << msg->mStr << endl;
+			if (msg->mStr.size()) {
+				if (Log(1)) // dont log pings
+					LogStream() << "Incoming unknown command: " << msg->mStr << endl;
 
-			if (msg->mStr.size())
 				mS->mProtoCount[eDC_UNKNOWN]++;
-			else
+			} else {
 				mS->mProtoCount[eDC_UNKNOWN + 1]++;
+			}
 
 			this->DCU_Unknown(msg, conn);
 			return 1;
