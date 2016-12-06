@@ -28,34 +28,9 @@ using namespace std;
 namespace nVerliHub {
 	namespace nTables {
 
-cDCConf::cDCConf(cServerDC &serv): mS(serv)
-{
-	/*
-	// lengths are completely wrong
-	max_length[eDC_KEY]=128;
-	max_length[eDC_VALIDATENICK]=64;
-	max_length[eDC_MYPASS]=64;
-	max_length[eDC_VERSION]=32;
-	max_length[eDC_GETNICKLIST]=16;
-	max_length[eDC_MYINFO]=128;
-	max_length[eDC_GETINFO] = 10+max_nick;
-	max_length[eDC_USERIP] = 11 + max_nick;
-	max_length[eDC_CONNECTTOME] = 32 * 2 * max_nick;
-	max_length[eDC_MCONNECTTOME] = 32 * 2 * max_nick;
-	max_length[eDC_RCONNECTTOME]=64;
-	max_length[eDC_TO]=2048;
-	max_length[eDC_MCTO] = 2048;
-	max_length[eDC_CHAT]=1024;
-	max_length[eDC_QUIT]=64;
-	max_length[eDC_OPFORCEMOVE]=512;
-	max_length[eDC_KICK]=64;
-	max_length[eDC_SEARCH_PAS]=256;
-	max_length[eDC_SEARCH]=256;
-	max_length[eDC_SR]=256;
-	max_length[eDC_MSEARCH]=256;
-	max_length[eDC_UNKNOWN]=8;
-	*/
-}
+cDCConf::cDCConf(cServerDC &serv):
+	mS(serv)
+{}
 
 cDCConf::~cDCConf()
 {}
@@ -163,9 +138,23 @@ void cDCConf::AddVars()
 	Add("ul_portion", ul_portion, 50);
 	// End nicklist configuration
 
-	// main chat configuration
+	// protocol commands length
 	Add("max_message_size", mS.mMaxLineLength, 10240ul);
-	Add("max_chat_msg", max_chat_msg, 256u);
+	Add("max_len_supports", max_len_supports, 512);
+	Add("max_len_version", max_len_version, 64);
+	Add("max_len_myinfo", max_len_myinfo, 512);
+	Add("max_len_in", max_len_in, 512);
+	Add("max_len_extjson", max_len_extjson, 1024);
+	Add("max_len_myhuburl", max_len_myhuburl, 128);
+	Add("max_len_search", max_len_search, 256);
+	Add("max_len_mynick", max_len_mynick, 128);
+	Add("max_len_lock", max_len_lock, 256);
+	// end of section
+
+	// chat configuration
+	Add("max_chat_msg", max_chat_msg, 256);
+	Add("max_pm_msg", max_pm_msg, 1024);
+	Add("max_mcto_msg", max_mcto_msg, 1024);
 	Add("max_chat_lines", max_chat_lines, 5);
 	Add("delayed_chat", delayed_chat, false);
 	Add("int_chat_ms", int_chat_ms, 1000ul);

@@ -301,6 +301,7 @@ protected:
 	bool CheckUserLogin(nSocket::cConnDC *conn, cMessageDC *msg, bool inlist = true);
 	bool CheckUserRights(nSocket::cConnDC *conn, cMessageDC *msg, bool cond);
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
+	bool CheckProtoLen(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
 	bool FindInSupports(const string &list, const string &flag);
 

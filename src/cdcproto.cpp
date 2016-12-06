@@ -352,6 +352,9 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (CheckProtoLen(conn, msg))
+		return -1;
+
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
@@ -364,7 +367,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		feature = mS->mEmpty;
 		is >> feature;
 
-		if (!feature.size())
+		if (feature.empty())
 			break;
 
 		if (feature == "OpPlus") {
@@ -831,6 +834,9 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (CheckProtoLen(conn, msg))
+		return -1;
+
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
@@ -871,6 +877,9 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
+
+	if (CheckProtoLen(conn, msg))
+		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
@@ -923,6 +932,9 @@ int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 {
 	if (CheckUserLogin(conn, msg, false))
+		return -1;
+
+	if (CheckProtoLen(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -1324,6 +1336,9 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (CheckProtoLen(conn, msg))
+		return -1;
+
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
@@ -1422,6 +1437,9 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
+
+	if (CheckProtoLen(conn, msg))
+		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
@@ -1583,6 +1601,13 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	}
 
 	conn->mpUser->mFloodHashes[eFH_PM] = Hash;
+	unsigned int count = text.size(); // check length
+
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && mS->mC.max_pm_msg && (count > mS->mC.max_pm_msg)) {
+		os << autosprintf(_("Your PM contains %d characters but maximum allowed is %d characters."), count, mS->mC.max_pm_msg);
+		mS->DCPrivateHS(os.str(), conn);
+		return -1;
+	}
 
 	if (mS->CheckProtoFloodAll(conn, ePFA_PRIV, other)) // protocol flood from all
 		return -1;
@@ -1672,6 +1697,13 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	}
 
 	conn->mpUser->mFloodHashes[eFH_MCTO] = Hash;
+	unsigned int count = text.size(); // check length
+
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && mS->mC.max_mcto_msg && (count > mS->mC.max_mcto_msg)) {
+		os << autosprintf(_("Your chat message contains %d characters but maximum allowed is %d characters."), count, mS->mC.max_mcto_msg);
+		mS->DCPublicHS(os.str(), conn);
+		return -1;
+	}
 
 	if (mS->CheckProtoFloodAll(conn, ePFA_MCTO)) // protocol flood from all
 		return -1;
@@ -2108,6 +2140,9 @@ int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
 int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 {
 	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	if (CheckProtoLen(conn, msg))
 		return -1;
 
 	if (CheckProtoSyntax(conn, msg))
@@ -2744,7 +2779,7 @@ int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &topic = msg->ChunkString(eCH_1_PARAM);
+	string &topic = msg->ChunkString(eCH_1_PARAM); // todo: check length
 	mS->mC.hub_topic = topic;
 	ostringstream os;
 	os << autosprintf(_("Topic is set to: %s"), topic.c_str());
@@ -2778,7 +2813,12 @@ int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
 	if (!mS->mC.detect_ctmtohub)
 		return this->DCU_Unknown(msg, conn);
 
-	if (!conn->mMyNick.empty()) {
+	if (conn->mMyNick.size()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (msg->mLen > mS->mC.max_len_mynick) {
 		conn->CloseNow();
 		return -1;
 	}
@@ -2805,6 +2845,11 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 		return this->DCU_Unknown(msg, conn);
 
 	if (conn->mMyNick.empty()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (msg->mLen > mS->mC.max_len_lock) {
 		conn->CloseNow();
 		return -1;
 	}
@@ -3065,6 +3110,107 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 
 	if (conn->Log(1))
 		conn->LogStream() << os.str() << endl;
+
+	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
+	return true;
+}
+
+bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
+{
+	unsigned int mlen = 0;
+
+	switch (msg->mType) {
+		case eDC_SUPPORTS:
+			mlen = mS->mC.max_len_supports;
+			break;
+
+		case eDC_VERSION:
+			mlen = mS->mC.max_len_version;
+			break;
+
+		case eDC_MYINFO:
+			mlen = mS->mC.max_len_myinfo;
+			break;
+
+		case eDC_IN:
+			mlen = mS->mC.max_len_in;
+			break;
+
+		case eDC_EXTJSON:
+			mlen = mS->mC.max_len_extjson;
+			break;
+
+		case eDC_MYHUBURL:
+			mlen = mS->mC.max_len_myhuburl;
+			break;
+
+		case eDC_SEARCH_PAS:
+		case eDC_SEARCH:
+		case eDC_MSEARCH_PAS:
+		case eDC_MSEARCH:
+			mlen = mS->mC.max_len_search;
+			break;
+
+		case eDCC_MYNICK:
+			mlen = mS->mC.max_len_mynick;
+			break;
+
+		case eDCC_LOCK:
+			mlen = mS->mC.max_len_lock;
+			break;
+	}
+
+	if (!mlen || (msg->mLen <= mlen))
+		return false;
+
+	string cmd;
+
+	switch (msg->mType) {
+		case eDC_SUPPORTS:
+			cmd = "Supports";
+			break;
+
+		case eDC_VERSION:
+			cmd = "Version";
+			break;
+
+		case eDC_MYINFO:
+			cmd = "MyINFO";
+			break;
+
+		case eDC_IN:
+			cmd = "IN";
+			break;
+
+		case eDC_EXTJSON:
+			cmd = "ExtJSON";
+			break;
+
+		case eDC_MYHUBURL:
+			cmd = "MyHubURL";
+			break;
+
+		case eDC_SEARCH_PAS:
+		case eDC_SEARCH:
+		case eDC_MSEARCH_PAS:
+		case eDC_MSEARCH:
+			cmd = "Search";
+			break;
+
+		case eDCC_MYNICK:
+			cmd = "MyNick";
+			break;
+
+		case eDCC_LOCK:
+			cmd = "Lock";
+			break;
+	}
+
+	ostringstream os;
+	os << autosprintf(_("Your client sent too long protocol command: %s"), cmd.c_str());
+
+	if (conn->Log(1))
+		conn->LogStream() << os.str() << " [" << msg->mLen << ":" << mlen << "]" << endl;
 
 	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 	return true;
