@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -214,7 +214,7 @@ protected:
 	static void Create_BotList(string &dest, const string &nick);
 	static void Create_Key(string &dest, const string &key);
 	static void Create_FailOver(string &dest, const string &addr);
-	static void Create_ForceMove(string &dest, const string &addr);
+	static void Create_ForceMove(string &dest, const string &addr, bool clear = true);
 	static void Create_HubTopic(string &dest, const string &topic);
 	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra);
 	static void Create_Search(string &dest, const string &addr, const string &lims, const string &spat);

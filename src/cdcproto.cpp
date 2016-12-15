@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -2615,8 +2615,8 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	string ofm;
 	os << autosprintf(_("You are being redirected to %s because: %s"), dest.c_str(), msg->ChunkString(eCH_FM_REASON).c_str());
 	Create_PM(ofm, conn->mpUser->mNick, nick, conn->mpUser->mNick, os.str());
-	ofm += "|$ForceMove "; // must be last, user might not get reason otherwise
-	ofm += dest;
+	ofm += "|";
+	Create_ForceMove(ofm, dest, false); // must be last, user might not get reason otherwise
 
 	other->mxConn->Send(ofm, true); // send it
 	other->mxConn->CloseNice(5000, eCR_FORCEMOVE); // close after a while, user might not get redirect otherwise
@@ -3591,9 +3591,11 @@ void cDCProto::Create_FailOver(string &dest, const string &addr)
 	dest.append(addr);
 }
 
-void cDCProto::Create_ForceMove(string &dest, const string &addr)
+void cDCProto::Create_ForceMove(string &dest, const string &addr, bool clear)
 {
-	dest.clear();
+	if (clear)
+		dest.clear();
+
 	dest.append("$ForceMove ");
 	dest.append(addr);
 }

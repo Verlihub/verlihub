@@ -1,340 +1,338 @@
 # 
 # Translators:
-# Marcel <future_dance@hotmail.com>, 2014-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
 "POT-Creation-Date: 2016-12-06 02:05+0100\n"
-"PO-Revision-Date: 2016-03-12 11:14+0000\n"
-"Last-Translator: Marcel <future_dance@hotmail.com>\n"
-"Language-Team: Dutch (Netherlands) (http://www.transifex.com/feardc/verlihub-100/language/nl_NL/)\n"
+"PO-Revision-Date: 2016-11-25 19:00+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/feardc/verlihub-100/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CP1252\n"
+"Content-Type: text/plain; charset=GB18030\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl_NL\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 1.8.11\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
-"X-Poedit-SourceCharset: CP1252\n"
+"X-Poedit-SourceCharset: GB18030\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Geef een lijst van chatrooms"
+msgstr ""
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "Geef een lijst van verboden uitdrukkingen"
+msgstr ""
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "Sorry de reguliere expressie die u verstrekt is niet geldig ."
+msgstr ""
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
 msgid "Forbidden words in %s: %s"
-msgstr "verboden woorden in  %s: %s"
+msgstr ""
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "MC"
-msgstr "MC"
+msgstr ""
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "PM"
-msgstr "PM"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:88
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "Laatste %d gebeurtenissen van nick %s:"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:90
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "Laatste %d gebeurtenissen van IP %s:"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "connect"
-msgstr "verbinden"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "login"
-msgstr "log in"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "logout"
-msgstr "log uit"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:95
 msgid "disconnect"
-msgstr "Verbinding verbroken"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:98
 msgid "bad nick or nick temporarily banned"
-msgstr "Slechte nick of nick tijdelijk verbannen"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:99
 msgid "used different nick in chat"
-msgstr "gebruikte verschillende nicks in de chat"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:100
 msgid "kicked"
-msgstr "gekikt"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "redirected"
-msgstr "geredirect"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:102
 msgid "exit from the hub"
-msgstr "verlaten van de hub"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:103
 msgid "critical hub load"
-msgstr "kritische hub belasting"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "timeout"
-msgstr "timeout"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "user did nothing for too long time"
-msgstr "gebruiker deed niks een lange tijd."
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "hub full"
-msgstr "De hub is vol."
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "share limit"
-msgstr "Deel limiet"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "no tag or not valid"
-msgstr "Geen tag of niet geldig"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "tag breaks hub rules"
-msgstr "tag breekt hub regels"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "wrong password"
-msgstr "Verkeerd paswoord"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "error in login sequence"
-msgstr "Fout in log in volgorde"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "syntax error in some messages"
-msgstr "syntax error in sommige berichten"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "invalid key"
-msgstr "ongeldige sleutel"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:156
 msgid "Date"
-msgstr "Datum"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "Action"
-msgstr "Actie"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:157
 msgid "Nickname"
-msgstr "Nicknaam"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:120
 msgid "Info"
-msgstr "Info"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:148
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Nick %s is de laaste tijd in de hub met het volgende IP"
+msgstr ""
 
 #: ../plugins/iplog/ciplog.cpp:150
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "IP %s is de laatste tijd in de hub met de volgende nicknamen"
+msgstr ""
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "Geef een lijst met ISPs"
+msgstr ""
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "Onbekend reeks formaat"
+msgstr ""
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Sorry de reguliere expressie voor nicknaam die u verstrekt is niet geldig ."
+msgstr ""
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "Sorry de reguliere expressie voor verbinding die u verstrekt is niet geldig ."
+msgstr ""
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Uw nick moet overeenkomen %[pattern]"
+msgstr ""
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "Uw type verbinding moet overeenkomen %[pattern]"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
-msgstr "U heeft geen rechten om dit te doen."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:93
 #, c-format
 msgid "Lua version: %s [%s]"
-msgstr "Lua versie: %s [%s]"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:94
 #, c-format
 msgid "Copyright: %s"
-msgstr "Copyright: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:95
 #, c-format
 msgid "Authors: %s"
-msgstr "Auteurs: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:106
 #, c-format
 msgid "Hub version: %s"
-msgstr "Hub versie: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:107
 #, c-format
 msgid "Loaded scripts: %d"
-msgstr "Geladen scripts: %d"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:108
 #, c-format
 msgid "Memory used: %s"
-msgstr "Gebruikt geheugen: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:114
 msgid "Loaded Lua scripts"
-msgstr "Geladen Lua scripts"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:158
 #: ../plugins/perl/cconsole.cpp:69 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:105
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:159
 #: ../plugins/perl/cconsole.cpp:70 ../plugins/python/cconsole.cpp:88
 #: ../plugins/python/cconsole.cpp:106
 msgid "Script"
-msgstr "Script"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:117
 msgid "Memory"
-msgstr "Geheugen"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:234
 #: ../plugins/python/cconsole.cpp:101 ../plugins/python/cconsole.cpp:190
 #, c-format
 msgid "Failed loading directory: %s"
-msgstr "Directory laden niet gelukt: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:157
 #, c-format
 msgid "Lua scripts found in: %s"
-msgstr "Lua scripts gevonden in: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:201 ../plugins/lua/cconsole.cpp:318
 #, c-format
 msgid "Script stopped: %s"
-msgstr "Script  gestopt: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:209 ../plugins/lua/cconsole.cpp:328
 #: ../plugins/python/cconsole.cpp:161 ../plugins/python/cconsole.cpp:282
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
-msgstr "Script niet gestopt omdat het niet is geladen: #%d"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:211 ../plugins/lua/cconsole.cpp:330
 #: ../plugins/python/cconsole.cpp:163 ../plugins/python/cconsole.cpp:284
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
-msgstr "Script niet gestopt omdat het niet is geladen: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:265
 #, c-format
 msgid "Script is already loaded: %s"
-msgstr "Script is al geladen: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:278 ../plugins/lua/cconsole.cpp:341
 msgid "Failed to allocate new Lua interpreter."
-msgstr "Lua vertaler niet gevonden."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:283 ../plugins/lua/cconsole.cpp:346
 #, c-format
 msgid "Script is now loaded: %s"
-msgstr "Script  is nu geladen: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:288 ../plugins/lua/cconsole.cpp:351
 #: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:219
 #: ../plugins/python/cconsole.cpp:236 ../plugins/python/cconsole.cpp:299
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
-msgstr "Script  niet gevonden of kan niet worden geparsed: %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:369
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr "Ge-update configuratie  %s.%s van '%s' naar '%s'."
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:371
 #, c-format
 msgid "Current log level: %d"
-msgstr "Huidige log level: %d"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:389 ../plugins/python/cconsole.cpp:320
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
-msgstr "Bijgewerkte configuratie %s.%s: %s -> %s"
+msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:391
 #, c-format
 msgid "Current error class: %d"
-msgstr "Huidige error class: %d"
+msgstr ""
 
 #: ../plugins/lua/cluainterpreter.cpp:202
 msgid "Lua error"
-msgstr "Lua fout"
+msgstr ""
 
 #: ../plugins/lua/cluainterpreter.cpp:208
 msgid "Unknown error"
-msgstr "Onbekende fout"
+msgstr ""
 
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Het bericht is verstuurd naar %s omdat hij online is."
+msgstr ""
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "Bericht opgeslagen."
+msgstr ""
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "U heeft %d berichten in uw box"
-msgstr[1] "U heeft U heeft %d berichten in uw box"
+msgstr[0] ""
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "U heeft geen berichten in uw box."
+msgstr ""
 
 #: ../plugins/messenger/cmsglist.cpp:229
 #, c-format
@@ -342,7 +340,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "Van: %s Aan: %s\n\nDatum: %s\n\nOnderwerp: %s\n"
+msgstr ""
 
 #: ../plugins/messenger/cmsglist.cpp:232
 #, c-format
@@ -352,7 +350,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "Van: %s Aan: %s\n\nDatum: %s\n\nOnderwerp: %s\n\n%s\n\n----\n"
+msgstr ""
 
 #: ../plugins/messenger/cmsglist.cpp:235
 #, c-format
@@ -360,237 +358,237 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#OFFLINE BERICHT# [%s]\n\nOnderwerp: %s -------------------------\n\n%s"
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:68
 msgid "Loaded Perl scripts"
-msgstr "Geladen Perl scripts"
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:112 ../plugins/perl/cconsole.cpp:201
 #, c-format
 msgid "Script %s stopped."
-msgstr "Script %s gestopt."
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:121 ../plugins/perl/cconsole.cpp:211
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Scripts #%s niet gestopt omdat deze niet actief zijn."
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:123
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Scripts %s niet gestopt omdat deze niet actief zijn."
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:150
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "Gefaald laden directory %s"
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:171
 #, c-format
 msgid "Script %s is already running."
-msgstr "Script %s is al online."
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:178 ../plugins/perl/cconsole.cpp:221
 #, c-format
 msgid "Script %s is now running."
-msgstr "Script %s is nu actief."
+msgstr ""
 
 #: ../plugins/perl/cconsole.cpp:213
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Script %s niet gestopt omdat het niet actief is."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
 msgid "%s version: %s"
-msgstr "%s versie: %s"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:42
 #, c-format
 msgid "%s executable: %s"
-msgstr "%s uitvoerbaar: %s"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:43
 #, c-format
 msgid "%s build time: %s"
-msgstr "%s bouw tijd: %s"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:145
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
-msgstr "Plugin naam moet maximaal 10 tekens lang zijn , geef dan een andere naam"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:150
 msgid "Please provide a valid path for the plugin."
-msgstr "Geef een geldig pad voor de plugin."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:182 ../plugins/plugman/cplugs.cpp:133
 msgid "Plugin loaded."
-msgstr "Plugin geladen"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:187 ../plugins/plugman/cconsole.cpp:210
 #: ../plugins/plugman/cconsole.cpp:233
 #, c-format
 msgid "Plugin not found: %s"
-msgstr "Plugin niet gevonden: %s"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:202
 msgid "Plugin unloaded."
-msgstr "Plugin unloaded."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:205
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr "Plugin niet unloaded, waarschijlijk omdat het niet loaded is."
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:225 ../plugins/plugman/cplugs.cpp:181
 msgid "Plugin reloaded."
-msgstr "Plugin actief"
+msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:228
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr "Plugin niet reloaded, waarschijnlijk omdat het niet loaded is."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:46
 msgid "Plugin not found."
-msgstr "Plugin niet gevonden."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:117
 msgid "Plugin does not support scripts."
-msgstr "Plugin ondersteunt geen scripts."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:123
 msgid "Script loaded."
-msgstr "Script geladen."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:125
 msgid "Error loading script."
-msgstr "Fout in geladen script."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:154
 msgid "Plugin needs to be recompiled."
-msgstr "Plugin moet worden gerecompiled."
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:205
 #, c-format
 msgid "Name: %s [%s] [%s]"
-msgstr "Naam: %s [%s] [%s]"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "On"
-msgstr "Aan"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Off"
-msgstr "Uit"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Automated"
-msgstr "Geautomatiseerde"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:205
 msgid "Manual"
-msgstr "Handmatig"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:206
 #, c-format
 msgid "Path: %s"
-msgstr "Path: %s"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Description: %s"
-msgstr "Beschrijving: %s"
+msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Last error: %s"
-msgstr "Laatste fout:%s"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:82 ../plugins/python/cconsole.cpp:129
 #: ../plugins/python/cconsole.cpp:171 ../plugins/python/cconsole.cpp:245
 #: ../plugins/python/cconsole.cpp:308
 msgid "Python interpreter is not loaded."
-msgstr "Python-interpreter is niet geladen."
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:86
 msgid "Loaded Python scripts"
-msgstr "Python scripts geladen"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:104
 #, c-format
 msgid "Python scripts found in: %s"
-msgstr "Python scripts gevonden in: %s"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:153 ../plugins/python/cconsole.cpp:273
 #, c-format
 msgid "Script #%d stopped: %s"
-msgstr "Script #%d gestopt: %s"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:206
 #, c-format
 msgid ""
 "Number %d is out of range. Get the right number using !pyfiles command or "
 "specify the script path instead."
-msgstr "Nummer%d valt buiten het bereik . Haal de juiste nummer gebruikt! Pyfiles opdracht of geef het script pad plaats ."
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:219
 #, c-format
 msgid "Script #%d is already loaded: %s"
-msgstr "Script #%d is al geladen: %s"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:227 ../plugins/python/cconsole.cpp:290
 msgid "Failed to allocate new Python interpreter."
-msgstr "Nagelaten om nieuwe Python-interpreter toewijzen"
+msgstr ""
 
 #: ../plugins/python/cconsole.cpp:233 ../plugins/python/cconsole.cpp:296
 #, c-format
 msgid "Script #%d is now loaded: %s"
-msgstr "Script #%d is nu geladen: %s"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
-msgstr "Vervangen woorden"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:69
 msgid "Word"
-msgstr "Woord"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Replace with"
-msgstr "Vervangen met"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "Aangetaste klasse"
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "Woord  '%s' bestaat niet."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Woord  '%s' verwijderd."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "Sorry de reguliere expressie die u verstrekt kan niet worden ontleed."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "Woord  '%s' bestaat al."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "Toegevoegd woord %s. Dit woord wordt gefilterd in de main chat voor gebruikers met klasse die kleiner is dan of gelijk aan %d."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Fout bij toevoegen woord '%s'."
+msgstr ""

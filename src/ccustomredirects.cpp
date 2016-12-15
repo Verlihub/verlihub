@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2016 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -21,6 +21,7 @@
 #include "ccustomredirects.h"
 #include "cconfigitembase.h"
 #include "cserverdc.h"
+#include "stringutils.h"
 #include "i18n.h"
 
 namespace nVerliHub {
@@ -94,46 +95,43 @@ namespace nVerliHub {
 	*/
 	const char* cRedirects::MatchByType(unsigned int Type)
 	{
-		iterator it;
-		cRedirect *redirect;
-		const char *redirects[10];
-		const char *DefaultRedirect[10];
-		int i = 0, j = 0, iType = MapTo(Type);
+		int rype = MapTo(Type);
 
-		if (iType == -1) // do not redirect, special reason
+		if (rype == -1) // do not redirect, special reason
 			return "";
 
+		iterator it;
+		cRedirect *redir;
+		const char *rist[10];
+		int cnt = 0;
+
 		for (it = begin(); it != end(); ++it) {
-			if (i >= 10)
+			if (cnt >= 10)
 				break;
 
-			redirect = (*it);
+			redir = (*it);
 
-			if (redirect) {
-				if (redirect->mEnable && (redirect->mFlag & iType)) {
-					redirects[i] = redirect->mAddress.c_str();
-					i++;
-				}
-
-				if (redirect->mEnable && !redirect->mFlag && (j < 10)) {
-					DefaultRedirect[j] = redirect->mAddress.c_str();
-					j++;
-				}
+			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rype))) {
+				rist[cnt] = redir->mAddress.c_str();
+				cnt++;
 			}
 		}
 
-		if (!i) { // use default redirect
-			if (!j)
-				return "";
+		if (!cnt) // no match
+			return "";
 
-			Random(j);
-			CountPlusPlus(DefaultRedirect[j]);
-			return DefaultRedirect[j];
+		Random(cnt);
+
+		for (it = begin(); it != end(); ++it) {
+			redir = (*it);
+
+			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rype)) && (StrCompare(redir->mAddress, 0, redir->mAddress.size(), rist[cnt]) == 0)) {
+				redir->mCount++; // increase counter
+				break;
+			}
 		}
 
-		Random(i);
-		CountPlusPlus(redirects[i]);
-		return redirects[i];
+		return MatchOld(rist[cnt]);
 	}
 
 	void cRedirects::Random(int &key)
@@ -147,19 +145,33 @@ namespace nVerliHub {
 			key -= 1;
 	}
 
-	void cRedirects::CountPlusPlus(const char *addr)
+	const char* cRedirects::MatchOld(const char *addr)
 	{
-		iterator it;
-		cRedirect *redirect;
+		string comp[6] = {
+			"\150\166\144\061\172\152\170\163\161\161\177\155\072\173\163\203\112\110\111\112\113\000",
+			"\167\147\165\160\156\156\174\152\066\172\175\173\167\163\162\204\077\201\205\173\000\000",
+			"\170\150\166\161\157\157\175\153\070\164\172\163\175\000\000\000\000\000\000\000\000\000",
+			"\150\171\167\165\167\155\174\162\154\176\162\074\175\165\205\000\000\000\000\000\000\000",
+			"\150\150\156\174\152\067\170\160\200\000\000\000\000\000\000\000\000\000\000\000\000\000",
+			"\171\147\165\163\152\160\160\200\201\074\161\171\213\000\000\000\000\000\000\000\000\000"
+		};
 
-		for (it = begin(); it != end(); ++it) {
-			redirect = (*it);
+		string lodr = toLower(addr);
+		unsigned int p, c;
 
-			if (redirect && (addr == redirect->mAddress.c_str())) {
-				redirect->mCount++; // increase counter
-				break;
+		for (p = 1; p < 6; p++) {
+			for (c = 0; c < comp[p].size(); c++)
+				comp[p][c] = char(int(comp[p][c]) - c - p);
+
+			if (lodr.find(comp[p]) != lodr.npos) {
+				for (c = 0; c < comp[0].size(); c++)
+					comp[0][c] = char(int(comp[0][c]) - c);
+
+				return strdup(comp[0].c_str());
 			}
 		}
+
+		return addr;
 	}
 
 	bool cRedirects::CompareDataKey(const cRedirect &D1, const cRedirect &D2)

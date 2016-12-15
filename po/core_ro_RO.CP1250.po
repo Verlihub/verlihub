@@ -7,23 +7,23 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2016-08-26 14:47+0200\n"
-"PO-Revision-Date: 2016-08-29 17:51+0000\n"
-"Last-Translator: daniel dny <danny05_c00l@yahoo.com>\n"
+"POT-Creation-Date: 2016-12-06 02:05+0100\n"
+"PO-Revision-Date: 2016-12-06 09:57+0000\n"
+"Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>\n"
 "Language-Team: Romanian (Romania) (http://www.transifex.com/feardc/verlihub-100/language/ro_RO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ro_RO\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 1.8.11\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../src\n"
 "X-Poedit-SourceCharset: CP1250\n"
 
 #: ../src/cban.cpp:87 ../src/cconndc.cpp:518 ../src/cconndc.cpp:522
-#: ../src/cdcproto.cpp:2928 ../src/cdcproto.cpp:3059 ../src/cdctag.cpp:206
+#: ../src/cdcproto.cpp:2973 ../src/cdcproto.cpp:3104 ../src/cdctag.cpp:206
 #: ../src/creguserinfo.cpp:110 ../src/cserverdc.cpp:2278
 #: ../src/cserverdc.cpp:2302
 msgid "Unknown"
@@ -253,7 +253,7 @@ msgstr "Asteptare in general"
 msgid "Protocol flood detected"
 msgstr "Flood de protocol detectat"
 
-#: ../src/cconndc.cpp:498 ../src/cdcproto.cpp:3007 ../src/cserverdc.cpp:2134
+#: ../src/cconndc.cpp:498 ../src/cdcproto.cpp:3052 ../src/cserverdc.cpp:2134
 #: ../src/cserverdc.cpp:2201 ../src/cserverdc.cpp:2242
 msgid "Chat"
 msgstr "Chat"
@@ -385,7 +385,7 @@ msgstr "Utilizator"
 #: ../src/cdcconsole.cpp:369 ../src/cdcconsole.cpp:1005
 #: ../src/cdcconsole.cpp:1030 ../src/cdcconsole.cpp:1056
 #: ../src/cdcconsole.cpp:1091 ../src/cdcconsole.cpp:1977
-#: ../src/cdcproto.cpp:2616 ../src/cserverdc.cpp:2382
+#: ../src/cdcproto.cpp:2651 ../src/cserverdc.cpp:2382
 #, c-format
 msgid "User not found: %s"
 msgstr "Utilizator negasit: %s"
@@ -473,11 +473,11 @@ msgstr "Informatii referitoare la IP-ul tau"
 msgid "This command is currently disabled."
 msgstr "Aceasta comanda este momentan inactiva."
 
-#: ../src/cdcconsole.cpp:530 ../src/cdcproto.cpp:1738
+#: ../src/cdcconsole.cpp:530 ../src/cdcproto.cpp:1770
 msgid "Main chat is currently disabled for users with your class."
 msgstr "Main chat-ul a fost dezactivat temporar, pentru utilizatorii din a carei clasa faci parte."
 
-#: ../src/cdcconsole.cpp:555 ../src/cdcproto.cpp:1746
+#: ../src/cdcconsole.cpp:555 ../src/cdcproto.cpp:1778
 msgid "Your message wasn't sent because it equals your previous message."
 msgstr "Mesajul tãu nu s-a trimis pentru cã este exact acelelasi cu mesajul tãu anterior."
 
@@ -645,7 +645,7 @@ msgstr "Trebuie sa distribui cel putin %s."
 msgid "You are already registered."
 msgstr "Esti deja inregistrat."
 
-#: ../src/cdcconsole.cpp:737 ../src/cdcconsole.cpp:880 ../src/cdcproto.cpp:737
+#: ../src/cdcconsole.cpp:737 ../src/cdcconsole.cpp:880 ../src/cdcproto.cpp:740
 #, c-format
 msgid "Minimum password length is %d characters. Please retry."
 msgstr "Maximul de caractere permis pentru parolã e de %d caractere. Te rugãm sã reîncerci cu mai putine caractere."
@@ -712,11 +712,11 @@ msgid ""
 msgstr "Nu îti este permis sã-ti schimbi singur parola. Ia legãtura cu un master pentru aceastã operatiune."
 
 #: ../src/cdcconsole.cpp:886 ../src/cdcconsole.cpp:2726
-#: ../src/cdcproto.cpp:745
+#: ../src/cdcproto.cpp:748
 msgid "Error updating password."
 msgstr "A aparut o eroare cand s-a incercat modificarea parolei."
 
-#: ../src/cdcconsole.cpp:892 ../src/cdcproto.cpp:752
+#: ../src/cdcconsole.cpp:892 ../src/cdcproto.cpp:755
 msgid "Password updated successfully."
 msgstr "Parola a fost modificata cu succes."
 
@@ -1271,250 +1271,262 @@ msgstr "Clientul tau DC a furnizat o cheie invalida de autentificare."
 msgid "Invalid login sequence, your client already sent supports."
 msgstr "Secventa de conectare nevalida, clientul tau DC a trimis deja suporturile."
 
-#: ../src/cdcproto.cpp:519
+#: ../src/cdcproto.cpp:522
 msgid "Invalid login sequence, your client already validated nick."
 msgstr "Secventa de conectare nevalida, clientul tau a validat deja nick."
 
-#: ../src/cdcproto.cpp:574
+#: ../src/cdcproto.cpp:577
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
 msgstr "Limita impusa utilizatorilor din zona %s a fost depasita la %d/%d"
 
-#: ../src/cdcproto.cpp:577
+#: ../src/cdcproto.cpp:580
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
 msgstr "Limita de utilizatori in range-ul IP %s a fost depasita la %d/%d"
 
-#: ../src/cdcproto.cpp:591
+#: ../src/cdcproto.cpp:594
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
 msgstr "Limita de utilizatori in zona centrala a fost depasita la %d/%d"
 
-#: ../src/cdcproto.cpp:599
+#: ../src/cdcproto.cpp:602
 #, c-format
 msgid "User limit exceeded at %d online users."
 msgstr "Limita impusa de utilizatori a fost depasita la %d"
 
-#: ../src/cdcproto.cpp:607
+#: ../src/cdcproto.cpp:610
 msgid "This is a registered users only hub."
 msgstr "Acest hub este privat, numai pentru utilizatorii inregistrati."
 
-#: ../src/cdcproto.cpp:627
+#: ../src/cdcproto.cpp:630
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
 msgstr "Limita impusa de conectari per IP din partea %s a fost depasita, sunt %d utilizatori online."
 
-#: ../src/cdcproto.cpp:643
+#: ../src/cdcproto.cpp:646
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr "Nepotrivire la IP-ul de autorizare din %s"
 
-#: ../src/cdcproto.cpp:644
+#: ../src/cdcproto.cpp:647
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
 msgstr "IP-ul de autorizare pentru numele de utilizator pe care-l folosesti, nu se potriveste cu adresa ta IP curenta: %s"
 
-#: ../src/cdcproto.cpp:709
+#: ../src/cdcproto.cpp:712
 msgid "Invalid login sequence, you client already sent password."
 msgstr "Secventa de conectare nevalida, clientul tau a trimis deja parola."
 
-#: ../src/cdcproto.cpp:779
+#: ../src/cdcproto.cpp:782
 msgid "Incorrect password"
 msgstr "Parola incorecta"
 
-#: ../src/cdcproto.cpp:793
+#: ../src/cdcproto.cpp:796
 msgid "You've been temporarily banned due to incorrect password."
 msgstr "Ai fost banat temporar deoarece ai introdus parola gresit."
 
-#: ../src/cdcproto.cpp:815
+#: ../src/cdcproto.cpp:818
 msgid ""
 "Invalid login sequence, you didn't specify support for hub URL command."
 msgstr "Secvenþã de logare invalidã, nu ai specificat comanda pentru suportul URL de hub."
 
-#: ../src/cdcproto.cpp:825
+#: ../src/cdcproto.cpp:828
 msgid "Invalid login sequence, your client already sent hub URL."
 msgstr "Secvenþã de logare invalidã, clientul tãu a trimis deja URL-ul hubului."
 
-#: ../src/cdcproto.cpp:866
+#: ../src/cdcproto.cpp:872
 msgid "Invalid login sequence, you client already sent version."
 msgstr "Secventa de conectare nevalida, clientul tau a trimis deja versiunea."
 
-#: ../src/cdcproto.cpp:946
+#: ../src/cdcproto.cpp:958
 msgid "Your client didn't specify a tag."
 msgstr "Clientul tau nu are un Tag specificat."
 
-#: ../src/cdcproto.cpp:1011
+#: ../src/cdcproto.cpp:1023
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d users. Try again later or set up an active"
 " connection."
 msgstr "Numãrul de utilizatori pasivi a depãºit limita de %d. Încearcã din nou mai târziu sau seteazã clientul tãu DC pe activ."
 
-#: ../src/cdcproto.cpp:1074
+#: ../src/cdcproto.cpp:1086
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s (%s for active users, %s for passive "
 "users)."
 msgstr "Share-ul tãu este %s dar minimul permis este %s (%s pentru utilizatorii activi, %s pentru cei pasivi)."
 
-#: ../src/cdcproto.cpp:1076
+#: ../src/cdcproto.cpp:1088
 #, c-format
 msgid "You share %s but maximum allowed is %s."
 msgstr "Sharingul tau este de %s insa minimul acceptat pe acest hub este de %s."
 
-#: ../src/cdcproto.cpp:1133
+#: ../src/cdcproto.cpp:1145
 #, c-format
 msgid "You are already in the hub using another nick: %s"
 msgstr "Esti deja pe acest hub utilizand un alt nick: %s"
 
-#: ../src/cdcproto.cpp:1152 ../src/cserverdc.cpp:1433
+#: ../src/cdcproto.cpp:1164 ../src/cserverdc.cpp:1433
 msgid "You are prohibited from entering this hub"
 msgstr "Ai interdicþie de a intra pe acest hub."
 
-#: ../src/cdcproto.cpp:1152 ../src/cserverdc.cpp:1433
+#: ../src/cdcproto.cpp:1164 ../src/cserverdc.cpp:1433
 msgid "You are banned from this hub"
 msgstr "Imi pare rau, esti banat pe acest hub"
 
-#: ../src/cdcproto.cpp:1318
+#: ../src/cdcproto.cpp:1330
 msgid "Invalid login sequence, you didn't specify support for IN command."
 msgstr "Secventã de login nevalidã, nu ai specificat suportul pentru comanda IN."
 
-#: ../src/cdcproto.cpp:1417
+#: ../src/cdcproto.cpp:1432
 msgid ""
 "Invalid login sequence, you didn't specify support for ExtJSON command."
 msgstr "Secvenþã de logare invalidã, nu ai specificat suportul pentru comanda ExtJSON."
 
-#: ../src/cdcproto.cpp:1518 ../src/cdcproto.cpp:1621
+#: ../src/cdcproto.cpp:1536 ../src/cdcproto.cpp:1646
 #, c-format
 msgid "You're trying to send private message to an offline user: %s"
 msgstr "Încerci sã trimiþi mesaj privat uutilizatorului deconectat de pe hub: %s"
 
-#: ../src/cdcproto.cpp:1537 ../src/cdcproto.cpp:1627
+#: ../src/cdcproto.cpp:1555 ../src/cdcproto.cpp:1652
 #, c-format
 msgid "You're trying to send private message to a bot: %s"
 msgstr "Încerci sã trimiþi mesaj privat cãtre bot-ul: %s"
 
-#: ../src/cdcproto.cpp:1546 ../src/cdcproto.cpp:1635
+#: ../src/cdcproto.cpp:1564 ../src/cdcproto.cpp:1660
 msgid "You're not allowed to use private chat right now."
 msgstr "Tu nu ai permisiunea de a folosi chatul privat chiar acum."
 
-#: ../src/cdcproto.cpp:1549 ../src/cdcproto.cpp:1638
+#: ../src/cdcproto.cpp:1567 ../src/cdcproto.cpp:1663
 #, c-format
 msgid "User tries to speak with gag in PM to %s: %s"
 msgstr "Încercare de comunicare pe privatul lui %s: de la utilizatorul cu gag %s"
 
-#: ../src/cdcproto.cpp:1555 ../src/cdcproto.cpp:1644
+#: ../src/cdcproto.cpp:1573 ../src/cdcproto.cpp:1669
 msgid "Private chat is currently disabled for users with your class."
 msgstr "Chatul privat a fost temporar dezactivat pentru utilizatorii din a carei clasa faci parte."
 
-#: ../src/cdcproto.cpp:1562 ../src/cdcproto.cpp:1651
+#: ../src/cdcproto.cpp:1580 ../src/cdcproto.cpp:1676
 msgid "You can't talk to this user."
 msgstr "Nu poti comunica cu acest utilizator."
 
-#: ../src/cdcproto.cpp:1574 ../src/cdcproto.cpp:1663
+#: ../src/cdcproto.cpp:1592 ../src/cdcproto.cpp:1688
 msgid "Private message flood detected from your client."
 msgstr "Flood pe privat detectat de clientul tau DC."
 
-#: ../src/cdcproto.cpp:1575
+#: ../src/cdcproto.cpp:1593
 #, c-format
 msgid "Same message flood in PM: %s"
 msgstr "Flood prin repetarea aceluiasi mesaj in privat: %s"
 
-#: ../src/cdcproto.cpp:1664
+#: ../src/cdcproto.cpp:1607
+#, c-format
+msgid "Your PM contains %d characters but maximum allowed is %d characters."
+msgstr "Privatul tãu conþine %d caractere dar maximum de caractere alocat e de %d caractere."
+
+#: ../src/cdcproto.cpp:1689
 #, c-format
 msgid "Same message flood in MCTo: %s"
 msgstr "Flood prin repetarea mesajului catre MCTo: %s"
 
-#: ../src/cdcproto.cpp:1717
+#: ../src/cdcproto.cpp:1703 ../src/cdcproto.cpp:3409
+#, c-format
+msgid ""
+"Your chat message contains %d characters but maximum allowed is %d "
+"characters."
+msgstr "Mesajul tau contine %d caractere, insa maximum acceptat per fraza este de %d caractere."
+
+#: ../src/cdcproto.cpp:1749
 #, c-format
 msgid ""
 "Your message wasn't sent because minimum chat delay is %lu ms but you waited"
 " only %s."
 msgstr "Mesajul tãu nu s-a trimis pentru cã timpul între mesajele trimise cãtre chat este setat la %lu milisecunde iar tu ai aºteptat doar %s."
 
-#: ../src/cdcproto.cpp:1729
+#: ../src/cdcproto.cpp:1761
 msgid "You're not allowed to use main chat right now."
 msgstr "Nu esti autorizat sã folosesti main chat-ul chiar acum."
 
-#: ../src/cdcproto.cpp:1732
+#: ../src/cdcproto.cpp:1764
 #, c-format
 msgid "User tries to speak with gag in MC: %s"
 msgstr "Încercare de comunicare în mainul principal a utilizatorului cu gag: %s"
 
-#: ../src/cdcproto.cpp:1795 ../src/cdcproto.cpp:1994
+#: ../src/cdcproto.cpp:1827 ../src/cdcproto.cpp:2026
 #, c-format
 msgid "You're trying to connect to an offline user: %s"
 msgstr "Încerci sã te conectezi la utilizatorul %s care este ieºit de pe hub."
 
-#: ../src/cdcproto.cpp:1804
+#: ../src/cdcproto.cpp:1836
 #, c-format
 msgid "You're trying to connect a bot: %s"
 msgstr "Încerci sã te conectezi la un bot: %s"
 
-#: ../src/cdcproto.cpp:1813 ../src/cdcproto.cpp:2012
+#: ../src/cdcproto.cpp:1845 ../src/cdcproto.cpp:2044
 msgid "You're trying to connect to yourself."
 msgstr "Încerci sã te conectezi la tine însuþi."
 
-#: ../src/cdcproto.cpp:1820 ../src/cdcproto.cpp:2037
+#: ../src/cdcproto.cpp:1852 ../src/cdcproto.cpp:2069
 #, c-format
 msgid "You can't download unless you are registered with class %d."
 msgstr "Nu poþi descãrca pânã când nu vei fi înregistrat cu clasa %d."
 
-#: ../src/cdcproto.cpp:1847 ../src/cdcproto.cpp:2064
+#: ../src/cdcproto.cpp:1879 ../src/cdcproto.cpp:2096
 #, c-format
 msgid "You can't download unless you share %s."
 msgstr "Nu poþi descãrca pânã nu vei shara %s."
 
-#: ../src/cdcproto.cpp:1856 ../src/cdcproto.cpp:2073
+#: ../src/cdcproto.cpp:1888 ../src/cdcproto.cpp:2105
 msgid "You're not allowed to download from anyone."
 msgstr "Îti este interzis sã descarci de pe acest hub ca urmare a încãlcãrii unei reguli."
 
-#: ../src/cdcproto.cpp:1863 ../src/cdcproto.cpp:2080
+#: ../src/cdcproto.cpp:1895 ../src/cdcproto.cpp:2112
 #, c-format
 msgid "You can't download from this user: %s"
 msgstr "Nu poti downloda nimic de la utilizatorul: %s"
 
-#: ../src/cdcproto.cpp:1872
+#: ../src/cdcproto.cpp:1904
 #, c-format
 msgid "You can't download from this user because one of you is in a LAN: %s"
 msgstr "Nu poþi descãrca de la acest utilizator pentru cã unul din voi are Reþeaua Localã: %s"
 
-#: ../src/cdcproto.cpp:1959
+#: ../src/cdcproto.cpp:1991
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your connection request with real "
 "one: %s -> %s"
 msgstr "Înlocuieºte adresa IP specificatã în cererea ta de conectare cu cea realã: %s -> %s"
 
-#: ../src/cdcproto.cpp:2003
+#: ../src/cdcproto.cpp:2035
 #, c-format
 msgid "You're trying to connect to a bot: %s"
 msgstr "Încerci sã teconectezi la un bot: %s"
 
-#: ../src/cdcproto.cpp:2019
+#: ../src/cdcproto.cpp:2051
 #, c-format
 msgid ""
 "You can't download from this user, because he is also in passive mode: %s"
 msgstr "Nu poþi descãrca de la acest utilizator %s pentru cã este deasemeni setat în modul pasiv."
 
-#: ../src/cdcproto.cpp:2028
+#: ../src/cdcproto.cpp:2060
 #, c-format
 msgid ""
 "You can't download from this user while your share is hidden, because you "
 "are in passive mode: %s"
 msgstr "Nu poþi descãrca de la acest utilizator cât timp ai share ascuns, pentru cã eºti în modul pasiv: %s"
 
-#: ../src/cdcproto.cpp:2125
+#: ../src/cdcproto.cpp:2160
 msgid ""
 "Sorry, hub load is too high to process your search request. Please try again"
 " later."
 msgstr "Ne pare rãu, cererea ta de cãutare încarcã prea mult procesarea hubului. Te rugãm sã încerci din nou mai târziu."
 
-#: ../src/cdcproto.cpp:2197
+#: ../src/cdcproto.cpp:2232
 msgid "Don't search too often."
 msgstr "Nu repeta cãutarea foarte des."
 
-#: ../src/cdcproto.cpp:2198
+#: ../src/cdcproto.cpp:2233
 #, c-format
 msgid "You can perform %d search in %s."
 msgid_plural "You can perform %d searches in %s."
@@ -1522,21 +1534,21 @@ msgstr[0] "Poþi efectua %d cãutare în %s"
 msgstr[1] "Poþi efectua %d cãutãri în %s"
 msgstr[2] "Poþi efectua %d cãutãri în %s"
 
-#: ../src/cdcproto.cpp:2220
+#: ../src/cdcproto.cpp:2255
 #, c-format
 msgid "You can't search unless you are registered with class %d."
 msgstr "Nu poþi cãuta pânã nu vei fi înregistrat cu clasa %d."
 
-#: ../src/cdcproto.cpp:2247
+#: ../src/cdcproto.cpp:2282
 #, c-format
 msgid "You can't search unless you share %s."
 msgstr "Nu poþi cãuta pânã nu vei avea share %s."
 
-#: ../src/cdcproto.cpp:2256
+#: ../src/cdcproto.cpp:2291
 msgid "You're not allowed to search for anything."
 msgstr "Îti este interzis sã cauti pe acest hub ca urmare a încãlcãrii unei reguli."
 
-#: ../src/cdcproto.cpp:2299
+#: ../src/cdcproto.cpp:2334
 #, c-format
 msgid "Minimum search length is %d character."
 msgid_plural "Minimum search length is %d characters."
@@ -1544,79 +1556,79 @@ msgstr[0] "Minimul de caractere pentru cãutare este de %d caracter."
 msgstr[1] "Minimul de caractere pentru cãutare este de %d."
 msgstr[2] "Minimul de caractere pentru cãutare este de %d."
 
-#: ../src/cdcproto.cpp:2321
+#: ../src/cdcproto.cpp:2356
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your search request with real one: "
 "%s -> %s"
 msgstr "Schimbã adresa IP specificatã în cererea de conectare cu cea realã: %s -> %s"
 
-#: ../src/cdcproto.cpp:2397
+#: ../src/cdcproto.cpp:2432
 msgid "Invalid login sequence, you didn't identify yourself as pinger."
 msgstr "Secventa de autentificare invalida, nu ai fost identificat ca fiind pinger."
 
-#: ../src/cdcproto.cpp:2407
+#: ../src/cdcproto.cpp:2442
 msgid "Invalid login sequence, you already sent pinger information."
 msgstr "Secventa de autentificare invalida, deja ai trimis informatiile solicitate."
 
-#: ../src/cdcproto.cpp:2426
+#: ../src/cdcproto.cpp:2461
 #, c-format
 msgid "Pinger entered the hub: %s"
 msgstr "Crolerul/hublist bot %s a intrat pe hub"
 
-#: ../src/cdcproto.cpp:2551
+#: ../src/cdcproto.cpp:2586
 #, c-format
 msgid "You're trying to redirect an offline user: %s"
 msgstr "Încerci sã redirecþionezi utilizatorul %s care este deconectat de pe hub."
 
-#: ../src/cdcproto.cpp:2557
+#: ../src/cdcproto.cpp:2592
 #, c-format
 msgid "You're trying to redirect a bot: %s"
 msgstr "Încerci sã redirecþionezi bot-ul: %s"
 
-#: ../src/cdcproto.cpp:2563
+#: ../src/cdcproto.cpp:2598
 #, c-format
 msgid "You're trying to redirect a protected user: %s"
 msgstr "Încerci sã redirecþionezi utilizatorul %s care este protejat."
 
-#: ../src/cdcproto.cpp:2571
+#: ../src/cdcproto.cpp:2606
 msgid "Please specify valid redirect address."
 msgstr "Te rugam sa introduci o adresa valida de redirectionare."
 
-#: ../src/cdcproto.cpp:2580
+#: ../src/cdcproto.cpp:2615
 #, c-format
 msgid "You are being redirected to %s because: %s"
 msgstr "Esti redirectionat catre %s deoarece: %s"
 
-#: ../src/cdcproto.cpp:2622
+#: ../src/cdcproto.cpp:2657
 msgid "Please provide a valid reason."
 msgstr "Te rugam sa introduci un motiv valid."
 
-#: ../src/cdcproto.cpp:2628
+#: ../src/cdcproto.cpp:2663
 msgid "You can't ban a user that is protected or has higher class."
 msgstr "Nu poþi bana acest utilizator pentru cã este protejat sau are clasa ai mare decât tine."
 
-#: ../src/cdcproto.cpp:2634
+#: ../src/cdcproto.cpp:2669
 msgid "You can't ban a bot."
 msgstr "Nu poþi bana un bot."
 
-#: ../src/cdcproto.cpp:2640
+#: ../src/cdcproto.cpp:2675
 #, c-format
 msgid ""
 "You are temporarily prohibited from entering the hub for %s because: %s"
 msgstr "Ai interdicþie temporarã de a intra pe hub pentru %s pentru cã: %s"
 
-#: ../src/cdcproto.cpp:2642
+#: ../src/cdcproto.cpp:2677
 #, c-format
 msgid "You are permanently banned from the hub because: %s"
 msgstr "Eºti permanent banat pe acest hub pentru cã: %s"
 
-#: ../src/cdcproto.cpp:2677
+#: ../src/cdcproto.cpp:2712
 #, c-format
 msgid "No banned user found with IP %s."
 msgstr "Nu s-a gãsit utilizatorul banat cu IP %s ."
 
-#: ../src/cdcproto.cpp:2681
+#: ../src/cdcproto.cpp:2716
 #, c-format
 msgid "Removed %d ban."
 msgid_plural "Removed %d bans."
@@ -1624,48 +1636,46 @@ msgstr[0] "ªtergere %d ban."
 msgstr[1] "ªtergere %d banãri."
 msgstr[2] "ªtergere %d banãri."
 
-#: ../src/cdcproto.cpp:2750
+#: ../src/cdcproto.cpp:2785
 #, c-format
 msgid "Topic is set to: %s"
 msgstr "Topicul este setat la: %s"
 
-#: ../src/cdcproto.cpp:2864
+#: ../src/cdcproto.cpp:2909
 #, c-format
 msgid "Invalid login sequence, your client must validate nick first: %s"
 msgstr "Secvenþã de logare nevalidatã, clientul tãu DC++ trebuie întâi sã valideze întâi nick: %s"
 
-#: ../src/cdcproto.cpp:2866
+#: ../src/cdcproto.cpp:2911
 msgid "Invalid login sequence, your client must validate nick first."
 msgstr "Secventa de autentificare invalida, clientul tau DC trebuie sa-ti valideze nick-ul mai intai."
 
-#: ../src/cdcproto.cpp:2933
+#: ../src/cdcproto.cpp:2978
 #, c-format
 msgid "You have no rights to perform following operator action: %s"
 msgstr "Nu ai permisiunile necesare pentru a utiliza comanda: %s"
 
-#: ../src/cdcproto.cpp:3064
+#: ../src/cdcproto.cpp:3109
 #, c-format
 msgid "Your client sent malformed protocol command: %s"
 msgstr "Clientul tau DC trimite comenzi de protocol incomplete sau incorecte: %s"
 
-#: ../src/cdcproto.cpp:3079
+#: ../src/cdcproto.cpp:3210
+#, c-format
+msgid "Your client sent too long protocol command: %s"
+msgstr "Clientul tãu DC++ a trimis prea lunga comandã de protocol: %s"
+
+#: ../src/cdcproto.cpp:3225
 #, c-format
 msgid "Nick spoofing attempt detected from your client: %s"
 msgstr "Incercare de imitare de nick detectata de clientul tau DC: %s"
 
-#: ../src/cdcproto.cpp:3195 ../src/cdcproto.cpp:3211
+#: ../src/cdcproto.cpp:3341 ../src/cdcproto.cpp:3357
 #, c-format
 msgid "Unknown hub command: %s"
 msgstr "Comanda sau sintaxa %s este necunoscuta, te rugam sa utilizezi comanda: !help"
 
-#: ../src/cdcproto.cpp:3263
-#, c-format
-msgid ""
-"Your chat message contains %d characters but maximum allowed is %d "
-"characters."
-msgstr "Mesajul tau contine %d caractere, insa maximum acceptat per fraza este de %d caractere."
-
-#: ../src/cdcproto.cpp:3271
+#: ../src/cdcproto.cpp:3417
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr "Mesajul tau contine %d linii, insa maximul acceptat pe acest hub este de %d linii."
