@@ -31,24 +31,26 @@ namespace nVerliHub {
 		class cServerDC;
 		class cConnDC;
 	};
+
 	class cDCConsole;
+
 	namespace nTables {
 
 		typedef nConfig::tMySQLMemoryList<cRedirect, nSocket::cServerDC> tRedirectsBase;
-		class cRedirects : public tRedirectsBase
+
+		class cRedirects: public tRedirectsBase
 		{
 			public:
 				cRedirects(nSocket::cServerDC *);
-				virtual ~cRedirects(){};
+				virtual ~cRedirects() {};
 				virtual void AddFields();
-				cRedirect * Find(const string &name); //@todo Trigger stuff
+				cRedirect* Find(const string &name);
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);
-				const char *MatchByType(unsigned int Type);
-				int MapTo(unsigned int Type);
+				char* MatchByType(unsigned int rype);
+				int MapTo(unsigned int rype);
 				void Random(int &key);
-				const char* MatchOld(const char *addr);
+				string mOldMap[6];
 		};
-
 
 		typedef nConfig::tListConsole<cRedirect, cRedirects, cDCConsole> tRedirectConsoleBase;
 
@@ -57,16 +59,15 @@ namespace nVerliHub {
 			public:
 				cRedirectConsole(cDCConsole *console);
 				virtual ~cRedirectConsole();
-				virtual const char * GetParamsRegex(int cmd);
-				virtual cRedirects *GetTheList();
-				virtual const char *CmdSuffix();
-				virtual const char *CmdPrefix();
+				virtual const char* GetParamsRegex(int cmd);
+				virtual cRedirects* GetTheList();
+				virtual const char* CmdSuffix();
+				virtual const char* CmdPrefix();
 				virtual void ListHead(ostream *os);
-				virtual bool IsConnAllowed(nSocket::cConnDC *conn,int cmd);
+				virtual bool IsConnAllowed(nSocket::cConnDC *conn, int cmd);
 				virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, cRedirect &data);
 				virtual void GetHelpForCommand(int cmd, ostream &os);
 				virtual void GetHelp(ostream &os);
-
 		};
 
 	}; // namespace nTables

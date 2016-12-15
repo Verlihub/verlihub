@@ -282,11 +282,12 @@ int cConnDC::OnCloseNice()
 		cDCProto::Create_ForceMove(omsg, this->mCloseRedirect);
 		Send(omsg, true);
 	} else if (mxServer) {
-		string address = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
+		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
 
-		if (address.size()) {
-			cDCProto::Create_ForceMove(omsg, address);
+		if (addr) {
+			cDCProto::Create_ForceMove(omsg, addr);
 			Send(omsg, true);
+			free(addr);
 		}
 	}
 

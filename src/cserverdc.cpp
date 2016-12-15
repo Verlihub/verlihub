@@ -125,7 +125,12 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mPenList = new cPenaltyList(mMySQL);
 	mKickList = new cKickList(mMySQL);
 	mZLib = new cZLib();
-	unsigned int i;
+	unsigned int i, j;
+
+	for (i = 0; i < 6; i++) {
+		for (j = 0; j < mCo->mRedirects->mOldMap[i].size(); j++)
+			mCo->mRedirects->mOldMap[i][j] = char(int(mCo->mRedirects->mOldMap[i][j]) - j - i);
+	}
 
 	for (i = 0; i <= USER_ZONES; i++)
 		mUserCount[i] = 0;
