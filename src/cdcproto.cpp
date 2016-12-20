@@ -3690,6 +3690,14 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 
 	ref = toLower(ref);
 
+	if (ref.size() > 2) { // use this instead
+		pos = ref.find("://");
+
+		if (pos != ref.npos)
+			ref.erase(0, pos + 3);
+	}
+
+	/*
 	while (ref.size() > 7) {
 		pos = ref.find("dchub://");
 
@@ -3752,6 +3760,25 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 		else
 			break;
 	}
+	*/
+
+	if (ref.size() > 0) { // use this instead
+		pos = ref.find('/');
+
+		if (pos != ref.npos)
+			ref.erase(pos);
+	}
+
+	/*
+	while (ref.size() > 0) {
+		pos = ref.find('/');
+
+		if (pos != ref.npos)
+			ref.erase(pos, 1);
+		else
+			break;
+	}
+	*/
 
 	while (ref.size() > 2) {
 		pos = ref.find("...");
@@ -3772,15 +3799,6 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 	}
 
 	while (ref.size() > 0) {
-		pos = ref.find('/');
-
-		if (pos != ref.npos)
-			ref.erase(pos, 1);
-		else
-			break;
-	}
-
-	while (ref.size() > 0) {
 		pos = ref.find(' ');
 
 		if (pos != ref.npos)
@@ -3790,7 +3808,7 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 	}
 
 	while (ref.size() > 0) {
-		pos = ref.find("\x9");
+		pos = ref.find("\t");
 
 		if (pos != ref.npos)
 			ref.erase(pos, 1);
@@ -3799,7 +3817,7 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 	}
 
 	while (ref.size() > 0) {
-		pos = ref.find("\x10");
+		pos = ref.find("\n");
 
 		if (pos != ref.npos)
 			ref.erase(pos, 1);
@@ -3808,7 +3826,7 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 	}
 
 	while (ref.size() > 0) {
-		pos = ref.find("\x13");
+		pos = ref.find("\r");
 
 		if (pos != ref.npos)
 			ref.erase(pos, 1);
