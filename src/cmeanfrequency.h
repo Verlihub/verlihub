@@ -77,7 +77,6 @@ template<class T, int max_size=20> class cMeanFrequency
 		cTime now;
 		mResolution = max_size;
 		SetPeriod(0.);
-		mResolution = max_size;
 		Reset(now);
 	}
 
