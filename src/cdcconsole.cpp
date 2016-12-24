@@ -612,12 +612,13 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
 	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru\r\n";
 	os << "\tVovochka, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
+	os << "\tMank, freedcpp at seznam dot cz\r\n";
 	os << "\t" << _("Not forgetting other people who didn't want to be listed here.") << "\r\n\r\n";
 	os << " " << _("Translators") << "\r\n\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
-	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN), Polish (Zorro, Krzychu), German (Ettore Atalan),\r\n";
+	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
-	os << "\tFrench (@tlantide), Dutch (Modswat)\r\n\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy)\r\n\r\n";
 	os << " " << _("Contributors") << "\r\n\r\n";
 	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
 	os << " " << _("Credits") << "\r\n\r\n";
