@@ -534,8 +534,11 @@ bool cServerDC::RemoveNick(cUser *User)
 	return true;
 }
 
-void cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string *script)
+bool cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
+	if (mScriptCommands.size() >= 1000) // hard limit to avoid loop locking
+		return false;
+
 	if (cmd && data && plug && script) {
 		sScriptCommand *item = new sScriptCommand;
 		item->mCommand = *cmd;
@@ -544,6 +547,8 @@ void cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string
 		item->mScript = *script;
 		mScriptCommands.push_back(item);
 	}
+
+	return true;
 }
 
 void cServerDC::SendScriptCommands()
@@ -552,15 +557,10 @@ void cServerDC::SendScriptCommands()
 		return;
 
 	tScriptCommands::iterator it;
-	unsigned int lim = 0;
 
 	for (it = mScriptCommands.begin(); it != mScriptCommands.end(); ++it) {
 		if (*it) {
-			if (lim < 1000) { // hard limit to avoid loop locking
-				mCallBacks.mOnScriptCommand.CallAll(&(*it)->mCommand, &(*it)->mData, &(*it)->mPlugin, &(*it)->mScript);
-				lim++;
-			}
-
+			mCallBacks.mOnScriptCommand.CallAll(&(*it)->mCommand, &(*it)->mData, &(*it)->mPlugin, &(*it)->mScript);
 			delete (*it);
 			(*it) = NULL;
 		}

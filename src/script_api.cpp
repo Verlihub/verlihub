@@ -666,8 +666,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
 		plug = "python" for python, "lua" for lua, "perl" for perl
 	*/
 
-	serv->AddScriptCommand(cmd, data, plug, script);
-	return true;
+	return serv->AddScriptCommand(cmd, data, plug, script);
 }
 
 bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses)

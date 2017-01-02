@@ -284,7 +284,7 @@ class cServerDC : public cAsyncSocketServer
 		typedef list<sScriptCommand*> tScriptCommands;
 		tScriptCommands mScriptCommands;
 
-		void AddScriptCommand(string *cmd, string *data, string *plug, string *script);
+		bool AddScriptCommand(string *cmd, string *data, string *plug, string *script);
 		void SendScriptCommands();
 
 		/*
