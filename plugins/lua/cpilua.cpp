@@ -96,6 +96,12 @@ void cpiLua::SetErrClass(int eclass)
 	this->err_class = eclass;
 }
 
+void cpiLua::ReportLuaError(const string &err)
+{
+	if (ErrLog(0))
+		LogStream() << err << endl;
+}
+
 void cpiLua::OnLoad(cServerDC *serv)
 {
 	cVHPlugin::OnLoad(serv);

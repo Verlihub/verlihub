@@ -210,6 +210,7 @@ void cLuaInterpreter::ReportLuaError(const char *error)
 			string start, end;
 			serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
 			serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
+			cpiLua::me->ReportLuaError(toall); // also write to err file
 		}
 	}
 }
