@@ -552,10 +552,15 @@ void cServerDC::SendScriptCommands()
 		return;
 
 	tScriptCommands::iterator it;
+	unsigned int lim = 0;
 
 	for (it = mScriptCommands.begin(); it != mScriptCommands.end(); ++it) {
 		if (*it) {
-			mCallBacks.mOnScriptCommand.CallAll(&(*it)->mCommand, &(*it)->mData, &(*it)->mPlugin, &(*it)->mScript);
+			if (lim < 1000) { // hard limit to avoid loop locking
+				mCallBacks.mOnScriptCommand.CallAll(&(*it)->mCommand, &(*it)->mData, &(*it)->mPlugin, &(*it)->mScript);
+				lim++;
+			}
+
 			delete (*it);
 			(*it) = NULL;
 		}

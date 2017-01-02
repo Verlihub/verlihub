@@ -281,7 +281,7 @@ class cServerDC : public cAsyncSocketServer
 			string mScript;
 		};
 
-		typedef vector<sScriptCommand*> tScriptCommands;
+		typedef list<sScriptCommand*> tScriptCommands;
 		tScriptCommands mScriptCommands;
 
 		void AddScriptCommand(string *cmd, string *data, string *plug, string *script);
@@ -667,7 +667,7 @@ class cServerDC : public cAsyncSocketServer
 			bool mUniq;
 		};
 
-		typedef vector<sCtmToHubItem*> tCtmToHubList;
+		typedef list<sCtmToHubItem*> tCtmToHubList;
 		tCtmToHubList mCtmToHubList;
 
 		struct sCtmToHubConf
