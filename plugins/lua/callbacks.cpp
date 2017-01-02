@@ -24,6 +24,7 @@
 #define ERR_LUA "Error getting Lua"
 #define ERR_PLUG "Error getting plugin"
 #define ERR_CLASS "Invalid class number"
+#define ERR_QUERY "Query is not ready"
 
 extern "C"
 {
@@ -2160,137 +2161,135 @@ int _IsBot(lua_State *L)
 
 int _SQLQuery(lua_State *L)
 {
-	if(lua_gettop(L) == 2) {
-		cServerDC *server = GetCurrentVerlihub();
-		if(server == NULL) {
-			luaerror(L, ERR_SERV);
-			return 2;
-		}
-
-		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
-		if(pi == NULL) {
-			luaerror(L, ERR_LUA);
-			return 2;
-		}
-
-		if (!pi->mQuery) {
-			luaerror(L, "mQuery is not ready");
-			return 2;
-		}
-
-		if(!lua_isstring(L, 2)) {
-		    luaerror(L, ERR_PARAM);
-		    return 2;
-		}
-		pi->mQuery->Clear();
-		pi->mQuery->OStream() << lua_tostring(L, 2);
-		pi->mQuery->Query();
-		int i = pi->mQuery->StoreResult();
-
-		lua_pushboolean(L, 1);
-		if(i > 0)
-			lua_pushnumber(L, i);
-		else
-			lua_pushnumber(L, 0);
-		return 2;
-	} else {
-		luaL_error(L, "Error calling VH:SQLQuery; expected 1 argument but got %d", lua_gettop(L) - 1);
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:SQLQuery, expected 1 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+
+	if (!plug) {
+		luaerror(L, ERR_LUA);
+		return 2;
+	}
+
+	if (!plug->mQuery) {
+		luaerror(L, ERR_QUERY);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+	    luaerror(L, ERR_PARAM);
+	    return 2;
+	}
+
+	plug->mQuery->Clear();
+	plug->mQuery->OStream() << lua_tostring(L, 2);
+	plug->mQuery->Query();
+	int res = plug->mQuery->StoreResult();
+	lua_pushboolean(L, 1);
+
+	if (res)
+		lua_pushnumber(L, res);
+	else
+		lua_pushnumber(L, 0);
+
+	return 2;
 }
 
 int _SQLFetch(lua_State *L)
 {
-	if(lua_gettop(L) == 2) {
-		cServerDC *server = GetCurrentVerlihub();
-		if(server == NULL) {
-			luaerror(L, ERR_SERV);
-			return 2;
-		}
-
-		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
-		if(pi == NULL) {
-			luaerror(L, ERR_LUA);
-			return 2;
-		}
-
-		if (!pi->mQuery) {
-			luaerror(L, "mQuery is not ready");
-			return 2;
-		}
-
-		if(!lua_isnumber(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		int r = (int)lua_tonumber(L, 2);
-
-		if(!pi->mQuery->GetResult()) {
-			//lua_pushboolean(L, 0);
-			luaerror(L, "No result");
-			return 2;
-		}
-
-		pi->mQuery->DataSeek(r);
-
-		MYSQL_ROW row;
-
-		if(!(row = pi->mQuery->Row()))
-		{
-			//lua_pushboolean(L, 0);
-			luaerror(L, "Error fetching row");
-			return 2;
-		}
-
-		lua_pushboolean(L, 1);
-
-		int j = 0;
-		while(j < pi->mQuery->Cols()) {
-			lua_pushstring(L, row[j]);
-			j++;
-		}
-		return j + 1;
-	} else {
-		luaL_error(L, "Error calling VH:SQLFetch; expected 1 argument but got %d", lua_gettop(L) - 1);
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:SQLFetch, expected 1 argument but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+
+	if (!plug) {
+		luaerror(L, ERR_LUA);
+		return 2;
+	}
+
+	if (!plug->mQuery) {
+		luaerror(L, ERR_QUERY);
+		return 2;
+	}
+
+	if (!lua_isnumber(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	int pos = (int)lua_tonumber(L, 2);
+
+	if (!plug->mQuery->GetResult()) {
+		luaerror(L, "No result");
+		return 2;
+	}
+
+	plug->mQuery->DataSeek(pos);
+	MYSQL_ROW row;
+
+	if (!(row = plug->mQuery->Row())) {
+		luaerror(L, "Error fetching row");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	pos = 0;
+
+	while (pos < plug->mQuery->Cols()) {
+		lua_pushstring(L, row[pos]);
+		pos++;
+	}
+
+	return pos + 1;
 }
 
 int _SQLFree(lua_State *L)
 {
-	if(lua_gettop(L) == 1) {
-		cServerDC *server = GetCurrentVerlihub();
-		if(server == NULL) {
-			luaerror(L, ERR_SERV);
-			return 2;
-		}
+	cServerDC *serv = GetCurrentVerlihub();
 
-		cpiLua *pi = (cpiLua *)server->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
-		if(pi == NULL)
-		{
-			luaerror(L, ERR_LUA);
-			return 2;
-		}
-
-		if (!pi->mQuery) {
-			luaerror(L, "mQuery is not ready");
-			return 2;
-		}
-
-		pi->mQuery->Clear();
-	} else {
-		luaL_error(L, "Error calling VH:SQLFree; expected 0 argument but got %d", lua_gettop(L) - 1);
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
+	if (!serv) {
+		luaerror(L, ERR_SERV);
 		return 2;
 	}
+
+	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+
+	if (!plug) {
+		luaerror(L, ERR_LUA);
+		return 2;
+	}
+
+	if (!plug->mQuery) {
+		luaerror(L, ERR_QUERY);
+		return 2;
+	}
+
+	plug->mQuery->Clear();
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _GetVHCfgDir(lua_State *L)

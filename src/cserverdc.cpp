@@ -534,11 +534,34 @@ bool cServerDC::RemoveNick(cUser *User)
 	return true;
 }
 
-void cServerDC::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
+void cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
-	#ifndef WITHOUT_PLUGINS
-		mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
-	#endif
+	if (cmd && data && plug && script) {
+		sScriptCommand *item = new sScriptCommand;
+		item->mCommand = *cmd;
+		item->mData = *data;
+		item->mPlugin = *plug;
+		item->mScript = *script;
+		mScriptCommands.push_back(item);
+	}
+}
+
+void cServerDC::SendScriptCommands()
+{
+	if (!mScriptCommands.size())
+		return;
+
+	tScriptCommands::iterator it;
+
+	for (it = mScriptCommands.begin(); it != mScriptCommands.end(); ++it) {
+		if (*it) {
+			mCallBacks.mOnScriptCommand.CallAll(&(*it)->mCommand, &(*it)->mData, &(*it)->mPlugin, &(*it)->mScript);
+			delete (*it);
+			(*it) = NULL;
+		}
+	}
+
+	mScriptCommands.clear();
 }
 
 void cServerDC::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses)
@@ -1682,6 +1705,8 @@ int cServerDC::OnTimer(cTime &now)
 	mCo->mTriggers->OnTimer(now.Sec());
 
 	#ifndef WITHOUT_PLUGINS
+		SendScriptCommands();
+
 		if (!mCallBacks.mOnTimer.CallAll(now.MiliSec()))
 			return false;
 	#endif
@@ -2603,8 +2628,8 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
-						string cmd_name = "_hub_security_change";
-						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &data, &data);
+						mail = "_hub_security_change";
+						AddScriptCommand(&mail, &val_new, &data, &data);
 					#endif
 
 				} else if (svar == "opchat_name") {
@@ -2644,8 +2669,8 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
-						string cmd_name = "_opchat_name_change";
-						mCallBacks.mOnScriptCommand.CallAll(&cmd_name, &val_new, &data, &data);
+						mail = "_opchat_name_change";
+						AddScriptCommand(&mail, &val_new, &data, &data);
 					#endif
 
 				} else if (svar == "hub_security_desc") {

@@ -271,9 +271,21 @@ class cServerDC : public cAsyncSocketServer
 		bool AddToList(cUser *usr);
 
 		/*
-			This method is a forwarder for ScriptAPI::OnScriptCommand
+			script command queue structures and functions
 		*/
-		void OnScriptCommand(string *cmd, string *data, string *plug, string *script);
+		struct sScriptCommand
+		{
+			string mCommand;
+			string mData;
+			string mPlugin;
+			string mScript;
+		};
+
+		typedef vector<sScriptCommand*> tScriptCommands;
+		tScriptCommands mScriptCommands;
+
+		void AddScriptCommand(string *cmd, string *data, string *plug, string *script);
+		void SendScriptCommands();
 
 		/*
 			This method is a forwarder for ScriptAPI::OnScriptQuery

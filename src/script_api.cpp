@@ -666,7 +666,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
 		plug = "python" for python, "lua" for lua, "perl" for perl
 	*/
 
-	serv->OnScriptCommand(cmd, data, plug, script);
+	serv->AddScriptCommand(cmd, data, plug, script);
 	return true;
 }
 
