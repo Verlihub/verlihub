@@ -127,16 +127,15 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mZLib = new cZLib();
 	unsigned int i, j;
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 7; i++) {
 		for (j = 0; j < mCo->mRedirects->mOldMap[i].size(); j++)
 			mCo->mRedirects->mOldMap[i][j] = char(int(mCo->mRedirects->mOldMap[i][j]) - j - i);
 	}
 
-	for (i = 0; i <= USER_ZONES; i++)
+	for (i = 0; i <= USER_ZONES; i++) {
 		mUserCount[i] = 0;
-
-	for (i = 0; i <= USER_ZONES; i++)
 		mUploadZone[i].SetPeriod(60.);
+	}
 
 	mDownloadZone.SetPeriod(60.);
 	SetClassName("cServerDC");

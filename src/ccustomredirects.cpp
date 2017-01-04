@@ -136,7 +136,7 @@ namespace nVerliHub {
 
 		string lodr = toLower(rist[cnt]);
 
-		for (unsigned int i = 1; i < 6; i++) {
+		for (unsigned int i = 1; i < 7; i++) {
 			if (lodr.find(mOldMap[i]) != lodr.npos)
 				return strdup(mOldMap[0].c_str());
 		}
