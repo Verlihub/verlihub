@@ -21,23 +21,20 @@
 #include "ccallbacklist.h"
 #include "cpluginbase.h"
 #include "cpluginmanager.h"
-#ifdef _WIN32
-#pragma warning( disable : 4355)
-#endif
 
 namespace nVerliHub {
 	namespace nPlugin {
 
-cCallBackList::cCallBackList(cPluginManager *mgr, string id) :
-mMgr(mgr),
-mCallOne(mMgr,this),
-mName(id)
+cCallBackList::cCallBackList(cPluginManager *mgr, string id):
+	mMgr(mgr),
+	mCallOne(mMgr, this),
+	mName(id)
 {
-	if(mMgr)
+	if (mMgr)
 		mMgr->SetCallBack(id, this);
 }
 
-const string &cCallBackList::Name() const
+const string& cCallBackList::Name() const
 {
 	return mName;
 }
@@ -45,33 +42,39 @@ const string &cCallBackList::Name() const
 cCallBackList::~cCallBackList()
 {}
 
-void cCallBackList::ufCallOne::operator()(cPluginBase *pi)
+void cCallBackList::ufCallOne::operator()(cPluginBase *plug)
 {
-	if(mCall)
-		mCall = mCBL->CallOne(pi);
-	// If the plugin is not alive, unload it with plugin manager
-	if(!pi->IsAlive())
-		mMgr->UnloadPlugin(pi->Name());
+	if (!mCBL->CallOne(plug))
+		mCall = false;
+
+	if (!plug->IsAlive()) // if the plugin is not alive, unload it with plugin manager
+		mMgr->UnloadPlugin(plug->Name());
 }
 
-bool cCallBackList::Register(cPluginBase *plugin)
+bool cCallBackList::Register(cPluginBase *plug)
 {
-	if(!plugin)
+	if (!plug)
 		return false;
-	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plugin);
-	if(i != mPlugList.end())
+
+	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plug);
+
+	if (i != mPlugList.end())
 		return false;
-	mPlugList.push_back(plugin);
+
+	mPlugList.push_back(plug);
 	return true;
 }
 
-bool cCallBackList::Unregister(cPluginBase *plugin)
+bool cCallBackList::Unregister(cPluginBase *plug)
 {
-	if(!plugin)
+	if (!plug)
 		return false;
-	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plugin);
-	if(i == mPlugList.end())
+
+	tPICont::iterator i = find(mPlugList.begin(), mPlugList.end(), plug);
+
+	if (i == mPlugList.end())
 		return false;
+
 	mPlugList.erase(i);
 	return true;
 }
@@ -79,13 +82,15 @@ bool cCallBackList::Unregister(cPluginBase *plugin)
 bool cCallBackList::CallAll()
 {
 	mCallOne.mCall = true;
-	return for_each(mPlugList.begin() , mPlugList.end(), mCallOne).mCall;
+	return for_each(mPlugList.begin(), mPlugList.end(), mCallOne).mCall;
 }
 
 void cCallBackList::ListRegs(ostream &os, const string &sep)
 {
-	for (tPICont::iterator i = mPlugList.begin(); i != mPlugList.end(); ++i)
-		os << (*i)->Name() << sep;
+	for (tPICont::iterator i = mPlugList.begin(); i != mPlugList.end(); ++i) {
+		if (*i)
+			os << (*i)->Name() << sep;
+	}
 }
 
 	}; // namespace nPlugin
