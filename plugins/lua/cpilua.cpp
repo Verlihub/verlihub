@@ -199,32 +199,40 @@ bool cpiLua::AutoLoad()
 		config = server->mDBConf.config_name;
 
 	struct dirent *dent = NULL;
+	vector<string> filenames;
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
 
-		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
-			pathname = mScriptDir + filename;
-			cLuaInterpreter *ip = new cLuaInterpreter(config, pathname);
-
-			if (ip) {
-				if (ip->Init()) {
-					AddData(ip);
-					ip->Load();
-
-					if (Log(1))
-						LogStream() << "Success loading and parsing Lua script: " << filename << endl;
-				} else {
-					if (Log(1))
-						LogStream() << "Failed loading or parsing Lua script: " << filename << endl;
-
-					delete ip;
-				}
-			}
-		}
+		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0))
+			filenames.push_back(filename);
 	}
 
 	closedir(dir);
+	sort(filenames.begin(), filenames.end());
+
+	for (size_t i = 0; i < filenames.size(); i++) {
+		filename = filenames[i];
+		pathname = mScriptDir + filename;
+		cLuaInterpreter *ip = new cLuaInterpreter(config, pathname);
+
+		if (!ip)
+			continue;
+
+		if (ip->Init()) {
+			AddData(ip);
+			ip->Load();
+
+			if (Log(1))
+				LogStream() << "Success loading and parsing Lua script: " << filename << endl;
+		} else {
+			if (Log(1))
+				LogStream() << "Failed loading or parsing Lua script: " << filename << endl;
+
+			delete ip;
+		}
+	}
+
 	return true;
 }
 

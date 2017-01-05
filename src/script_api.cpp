@@ -652,7 +652,7 @@ bool DelRegUser(const char *nick)
 	return serv->mR->DelReg(nick);
 }
 
-bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
+bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -666,7 +666,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script)
 		plug = "python" for python, "lua" for lua, "perl" for perl
 	*/
 
-	return serv->AddScriptCommand(cmd, data, plug, script);
+	return serv->AddScriptCommand(cmd, data, plug, script, inst);
 }
 
 bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses)

@@ -160,18 +160,21 @@ bool cConsole::cfFilesLuaScript::operator()()
 	(*mOS) << "\t" << string(40, '-') << "\r\n\r\n";
 	string filename;
 	struct dirent *dent = NULL;
-	int i = 0;
+	vector<string> filenames;
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
 
-		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
-			(*mOS) << "\t" << i << "\t" << filename << "\r\n";
-			i++;
-		}
+		if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0))
+			filenames.push_back(filename);
 	}
 
 	closedir(dir);
+	sort(filenames.begin(), filenames.end());
+
+	for (size_t i = 0; i < filenames.size(); i++)
+		(*mOS) << "\t" << i << "\t" << filenames[i] << "\r\n";
+
 	return true;
 }
 
@@ -189,14 +192,14 @@ bool cConsole::cfDelLuaScript::operator()()
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cLuaInterpreter *>::iterator it;
+	vector<cLuaInterpreter*>::iterator it;
 	cLuaInterpreter *li;
 	int i = 0;
 
 	for (it = GetPI()->mLua.begin(); it != GetPI()->mLua.end(); ++it, ++i) {
 		li = *it;
 
-		if ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if (li && ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			delete li;
@@ -217,17 +220,9 @@ bool cConsole::cfAddLuaScript::operator()()
 {
 	string scriptfile;
 	GetParStr(1, scriptfile);
-	bool number = false;
-	int num = 0;
 
 	if (GetPI()->IsNumber(scriptfile.c_str())) {
-		num = atoi(scriptfile.c_str());
-		number = true;
-	} else if (scriptfile.find_first_of('/') == string::npos) {
-		scriptfile = GetPI()->mScriptDir + scriptfile;
-	}
-
-	if (number) {
+		int num = atoi(scriptfile.c_str());
 		DIR *dir = opendir(GetPI()->mScriptDir.c_str());
 
 		if (!dir) {
@@ -237,31 +232,35 @@ bool cConsole::cfAddLuaScript::operator()()
 
 		string filename;
 		struct dirent *dent = NULL;
-		int i = 0;
+		vector<string> filenames;
 
 		while (NULL != (dent = readdir(dir))) {
 			filename = dent->d_name;
 
-			if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0)) {
-				if (i == num) {
-					scriptfile = GetPI()->mScriptDir + filename;
-					break;
-				}
-
-				i++;
-			}
+			if ((filename.size() > 4) && (StrCompare(filename, filename.size() - 4, 4, ".lua") == 0))
+				filenames.push_back(filename);
 		}
 
 		closedir(dir);
+		sort(filenames.begin(), filenames.end());
+
+		if ((num < 0) || (unsigned(num) >= filenames.size())) {
+			(*mOS) << autosprintf(_("Script number %d is out of range. Get the right number using !luafiles command or specify the script path instead."), num);
+			return false;
+		}
+
+		scriptfile = GetPI()->mScriptDir + filenames[num];
+	} else if (scriptfile.find_first_of('/') == string::npos) {
+		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cLuaInterpreter *>::iterator it;
+	vector<cLuaInterpreter*>::iterator it;
 	cLuaInterpreter *li;
 
 	for (it = GetPI()->mLua.begin(); it != GetPI()->mLua.end(); ++it) {
 		li = *it;
 
-		if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
+		if (li && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
 			(*mOS) << autosprintf(_("Script is already loaded: %s"), scriptfile.c_str());
 			return false;
 		}
@@ -305,7 +304,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cLuaInterpreter *>::iterator it;
+	vector<cLuaInterpreter*>::iterator it;
 	cLuaInterpreter *li;
 	bool found = false;
 	int i = 0;
@@ -313,7 +312,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 	for (it = GetPI()->mLua.begin(); it != GetPI()->mLua.end(); ++it, ++i) {
 		li = *it;
 
-		if ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if (li && ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			found = true;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			scriptfile = li->mScriptName;

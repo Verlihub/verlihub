@@ -781,7 +781,7 @@ static PyObject* __ParseCommand(PyObject *self, PyObject *args)
 
 static PyObject* __ScriptCommand(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_ScriptCommand, args, "ss"));
+	return pybool(BasicCall(W_ScriptCommand, args, "ss|l"));
 }
 
 static PyObject* __ScriptQuery(PyObject *self, PyObject *args)

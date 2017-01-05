@@ -2734,14 +2734,16 @@ int _SetTopic(lua_State *L)
 
 int _ScriptCommand(lua_State *L)
 {
-	if (lua_gettop(L) < 3) {
-		luaL_error(L, "Error calling VH:ScriptCommand, expected 2 arguments but got %d.", lua_gettop(L) - 1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:ScriptCommand, expected atleast 2 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
@@ -2756,8 +2758,12 @@ int _ScriptCommand(lua_State *L)
 	string cmd = lua_tostring(L, 2);
 	string data = lua_tostring(L, 3);
 	string plug("lua");
+	int inst = 0;
 
-	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName)) {
+	if (args >= 3)
+		inst = (int)lua_tonumber(L, 4);
+
+	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName, (inst > 0))) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}

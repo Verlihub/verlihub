@@ -241,44 +241,57 @@ bool cpiPython::AutoLoad()
 {
 	if ((log_level < 1) && Log(0))
 		LogStream() << "Opening directory: " << mScriptDir << endl;
+
 	log1("PY: Autoload, loading scripts from directory: %s\n", mScriptDir.c_str());
 
 	DIR *dir = opendir(mScriptDir.c_str());
+
 	if (!dir) {
 		if ((log_level < 1) && Log(1))
 			LogStream() << "Error opening directory" << endl;
+
 		log1("PY: Autoload, filed to open directory\n");
 		return false;
 	}
+
 	string filename, pathname;
 	struct dirent *dent = NULL;
 	vector<string> filenames;
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
+
 		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
 			filenames.push_back(filename);
 	}
+
 	closedir(dir);
 	sort(filenames.begin(), filenames.end());
 
 	for (size_t i = 0; i < filenames.size(); i++) {
-		const string &filename = filenames[i];
+		filename = filenames[i];
 		pathname = mScriptDir + filename;
 		cPythonInterpreter *ip = new cPythonInterpreter(pathname);
-		if (!ip) continue;
+
+		if (!ip)
+			continue;
+
 		AddData(ip);
+
 		if (ip->Init()) {
 			if ((log_level < 1) && Log(1))
 				LogStream() << "Success loading and parsing Python script: " << filename << endl;
+
 			log1("PY: Autoload, success loading script: %s [%d]\n", filename.c_str(), ip->id);
 		} else {
 			if ((log_level < 1) && Log(1))
 				LogStream() << "Failed loading or parsing Python script: " << filename << endl;
+
 			log1("PY: Autoload, failed loading script: %s\n", filename.c_str());
 			RemoveByName(pathname);
 		}
 	}
+
 	return true;
 }
 
@@ -1524,11 +1537,19 @@ w_Targs* _ParseCommand(int id, w_Targs *args)
 w_Targs* _ScriptCommand(int id, w_Targs *args)
 {
 	const char *cmd, *data;
-	if (!cpiPython::lib_unpack(args, "ss", &cmd, &data)) return NULL;
-	if (!cmd || !data) return NULL;
-	string plug("python"), s_cmd(cmd), s_data(data);
-	if (!ScriptCommand(&s_cmd, &s_data, &plug, &cpiPython::me->GetInterpreter(id)->mScriptName))
+	long inst = 0;
+
+	if (!cpiPython::lib_unpack(args, "ssl", &cmd, &data, &inst))
 		return NULL;
+
+	if (!cmd || !data)
+		return NULL;
+
+	string plug("python"), s_cmd(cmd), s_data(data);
+
+	if (!ScriptCommand(&s_cmd, &s_data, &plug, &cpiPython::me->GetInterpreter(id)->mScriptName, (inst > 0)))
+		return NULL;
+
 	return w_ret1;
 }
 

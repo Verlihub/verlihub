@@ -533,8 +533,13 @@ bool cServerDC::RemoveNick(cUser *User)
 	return true;
 }
 
-bool cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string *script)
+bool cServerDC::AddScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst)
 {
+	if (inst) { // todo: hard limit is not implemented here, how to do it best way?
+		mCallBacks.mOnScriptCommand.CallAll(cmd, data, plug, script);
+		return true;
+	}
+
 	if (mScriptCommands.size() >= 1000) // hard limit to avoid loop locking
 		return false;
 

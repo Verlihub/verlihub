@@ -97,10 +97,12 @@ bool cConsole::cfGetPythonScript::operator()()
 bool cConsole::cfFilesPythonScript::operator()()
 {
 	DIR *dir = opendir(GetPI()->mScriptDir.c_str());
+
 	if (!dir) {
 		(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
 		return false;
 	}
+
 	(*mOS) << autosprintf(_("Python scripts found in: %s"), GetPI()->mScriptDir.c_str()) << "\r\n\r\n";
 	(*mOS) << "\t" << _("ID");
 	(*mOS) << "\t" << _("Script") << "\r\n";
@@ -111,15 +113,17 @@ bool cConsole::cfFilesPythonScript::operator()()
 
 	while (NULL != (dent = readdir(dir))) {
 		filename = dent->d_name;
+
 		if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
 			filenames.push_back(filename);
 	}
+
+	closedir(dir);
 	sort(filenames.begin(), filenames.end());
 
 	for (size_t i = 0; i < filenames.size(); i++)
 		(*mOS) << "\t" << i << "\t" << filenames[i] << "\r\n";
 
-	closedir(dir);
 	return true;
 }
 
@@ -142,14 +146,13 @@ bool cConsole::cfDelPythonScript::operator()()
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cPythonInterpreter *>::iterator it;
+	vector<cPythonInterpreter*>::iterator it;
 	cPythonInterpreter *li;
 
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if ((number && (num == li->id))
-		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if (li && ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
 			delete li;
 			GetPI()->mPython.erase(it);
@@ -172,50 +175,49 @@ bool cConsole::cfAddPythonScript::operator()()
 		return false;
 	}
 
-	string scriptfile, filename;
+	string scriptfile;
 	GetParStr(1, scriptfile);
-	bool number = false;
-	int num = 0;
 
 	if (GetPI()->IsNumber(scriptfile.c_str())) {
-		num = atoi(scriptfile.c_str());
-		number = true;
-	} else if (scriptfile.find_first_of('/') == string::npos) {
-		scriptfile = GetPI()->mScriptDir + scriptfile;
-	}
-
-	if (number) {
+		int num = atoi(scriptfile.c_str());
 		DIR *dir = opendir(GetPI()->mScriptDir.c_str());
+
 		if (!dir) {
 			(*mOS) << autosprintf(_("Failed loading directory: %s"), GetPI()->mScriptDir.c_str());
 			return false;
 		}
+
 		string filename;
 		struct dirent *dent = NULL;
 		vector<string> filenames;
 
 		while (NULL != (dent = readdir(dir))) {
 			filename = dent->d_name;
+
 			if ((filename.size() > 3) && (StrCompare(filename, filename.size() - 3, 3, ".py") == 0))
 				filenames.push_back(filename);
 		}
+
 		closedir(dir);
 		sort(filenames.begin(), filenames.end());
 
-		if (num < 0 || (unsigned)num >= filenames.size()) {
-			(*mOS) << autosprintf(_("Number %d is out of range. Get the right number using !pyfiles command or specify the script path instead."), num);
+		if ((num < 0) || (unsigned(num) >= filenames.size())) {
+			(*mOS) << autosprintf(_("Script number %d is out of range. Get the right number using !pyfiles command or specify the script path instead."), num);
 			return false;
 		}
+
 		scriptfile = GetPI()->mScriptDir + filenames[num];
+	} else if (scriptfile.find_first_of('/') == string::npos) {
+		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cPythonInterpreter *>::iterator it;
+	vector<cPythonInterpreter*>::iterator it;
 	cPythonInterpreter *li;
 
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it) {
 		li = *it;
 
-		if (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0) {
+		if (li && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)) {
 			(*mOS) << autosprintf(_("Script #%d is already loaded: %s"), li->id, scriptfile.c_str());
 			return false;
 		}
@@ -229,6 +231,7 @@ bool cConsole::cfAddPythonScript::operator()()
 	}
 
 	GetPI()->AddData(ip);
+
 	if (ip->Init()) {
 		(*mOS) << autosprintf(_("Script #%d is now loaded: %s"), ip->id, scriptfile.c_str());
 		return true;
@@ -259,15 +262,14 @@ bool cConsole::cfReloadPythonScript::operator()()
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
-	vector<cPythonInterpreter *>::iterator it;
+	vector<cPythonInterpreter*>::iterator it;
 	cPythonInterpreter *li;
 	bool found = false;
 
 	for (it = GetPI()->mPython.begin(); it != GetPI()->mPython.end(); ++it, ++position) {
 		li = *it;
 
-		if ((number && (num == li->id))
-		|| (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0))) {
+		if (li && ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			found = true;
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
