@@ -647,6 +647,8 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << autosprintf(_("Address: %s"), mOwner->mC.hub_host.c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Status: %s"), mOwner->SysLoadName()) << "\r\n";
 	os << " [*] " << autosprintf(_("Users: %d"), mOwner->mUserCountTot) << "\r\n";
+	os << " [*] " << autosprintf(_("Active: %d"), mOwner->mActiveUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Passive: %d"), mOwner->mPassiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Bots: %d"), mOwner->mRobotList.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mOwner->mTotalShare).c_str()) << "\r\n\r\n";
 
