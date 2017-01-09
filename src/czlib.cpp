@@ -48,7 +48,7 @@ cZLib::~cZLib()
 		free(inBuf);
 }
 
-char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen)
+char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, unsigned int level)
 {
 	if (!buffer)
 		return NULL;
@@ -85,8 +85,14 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen)
 	strm.zalloc = Z_NULL; // allocate deflate state
 	strm.zfree = Z_NULL;
 	strm.data_type = Z_TEXT;
+	unsigned int comp_level = level;
 
-	if (deflateInit(&strm, Z_BEST_COMPRESSION) != Z_OK) { // initialize
+	if (comp_level < Z_BEST_SPEED)
+		comp_level = Z_BEST_SPEED;
+	else if (comp_level > Z_BEST_COMPRESSION)
+		comp_level = Z_BEST_COMPRESSION;
+
+	if (deflateInit(&strm, comp_level) != Z_OK) { // initialize
 		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}

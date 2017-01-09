@@ -269,6 +269,7 @@ public:
 	bool disable_usr_cmds;
 	bool disable_report_cmd;
 	bool disable_zlib;
+	unsigned int zlib_compress_level;
 	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
 	bool disable_extjson; // extjson

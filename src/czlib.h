@@ -70,7 +70,7 @@ namespace nUtils {
 			* @param outLen Length of compressed data.
 			* @return Pointer to compressed data.
 			*/
-			char* Compress(const char *buffer, size_t len, size_t &outLen);
+			char* Compress(const char *buffer, size_t len, size_t &outLen, unsigned int level);
 		private:
 			// in buffer
 			char *inBuf;

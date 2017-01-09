@@ -22,6 +22,7 @@
 #include "creguserinfo.h"
 #include "cdcconf.h"
 #include <string>
+#include <zlib.h>
 
 using namespace std;
 
@@ -338,6 +339,7 @@ void cDCConf::AddVars()
 	Add("drop_invalid_key", drop_invalid_key, false);
 	Add("delayed_ping", delayed_ping, 60);
 	Add("disable_zlib", disable_zlib, true);
+	Add("zlib_compress_level", zlib_compress_level, (unsigned int)Z_BEST_COMPRESSION);
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson

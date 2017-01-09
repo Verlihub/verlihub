@@ -750,7 +750,7 @@ int cAsyncConn::Write(const string &data, bool Flush)
 		if (serv && !serv->mC.disable_zlib && (send_size >= serv->mC.zlib_min_len)) { // only when enabled and minimum length is reached
 			if (send_buffer[send_size - 1] == '|') {
 				size_t zlib_size = 0;
-				zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size);
+				zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size, serv->mC.zlib_compress_level);
 
 				if (zlib_size && zlib_buffer) {
 					send_buffer = zlib_buffer;
