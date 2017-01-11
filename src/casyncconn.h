@@ -465,8 +465,11 @@ namespace nVerliHub {
 				 */
 				int Write(const string &data, bool Flush);
 
-				// zlib supports flag, used for compression
-				bool mZlibFlag;
+				/*
+					true if client supports zlib compression and compression is enabled by server
+					must be set only once on user login, can not be changed in real time
+				*/
+				bool mUseZLib;
 
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;

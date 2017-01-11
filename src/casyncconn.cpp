@@ -77,8 +77,8 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
-	mZlibFlag(false),
-	// mIterator(0),
+	mUseZLib(false),
+	//mIterator(0),
 	ok(desc > 0),
 	mWritable(true),
 	mSockDesc(desc),
@@ -132,8 +132,8 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 /** connect to given host (ip) on port */
 cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
-	mZlibFlag(false),
-	// mIterator(0),
+	mUseZLib(false),
+	//mIterator(0),
 	ok(false),
 	mWritable(true),
 
@@ -749,7 +749,7 @@ int cAsyncConn::Write(const string &data, bool Flush)
 
 	bool compressed = false;
 
-	if (mZlibFlag && serv && !serv->mC.disable_zlib && (send_size >= serv->mC.zlib_min_len)) { // compress data with zlib, only when flushing, otherwise we will destroy everything, only when enabled and minimum length is reached
+	if (mUseZLib && serv && (send_size >= serv->mC.zlib_min_len)) { // compress data with zlib, only when flushing, otherwise we will destroy everything, only when enabled and minimum length is reached
 		if (send_buffer[send_size - 1] == '|') {
 			size_t zlib_size = 0;
 			zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size, serv->mC.zlib_compress_level);
