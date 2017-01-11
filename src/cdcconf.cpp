@@ -293,8 +293,9 @@ void cDCConf::AddVars()
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
 	Add("send_crash_report", send_crash_report, true);
-	Add("ban_bypass_class", ban_bypass_class, (int)eUC_MASTER);
-	// End user control configuration
+	Add("ban_bypass_class", ban_bypass_class, int(eUC_MASTER));
+	Add("chatonly_bypass_class", chatonly_bypass_class, int(eUC_OPERATOR));
+	// end of section
 
 	// Advanced hub configuration and tweaks
 	Add("extended_welcome_message", extended_welcome_message, true);

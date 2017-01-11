@@ -202,34 +202,41 @@ bool nVerliHub::nPerlPlugin::nCallback::ScriptCommand(const char *_cmd, const ch
 
 bool nVerliHub::nPerlPlugin::nCallback::InUserSupports(const char *nick, const char *_flag) {
 	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv)
+		return false;
+
 	std::string flag = _flag;
 	int iflag = atoi(_flag);
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
-	if ((usr==NULL) || (usr->mxConn == NULL))
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn)
 		return false;
+
 	if (
-		((flag == "OpPlus") && (usr->mxConn->mFeatures & eSF_OPPLUS)) ||
-		((flag == "NoHello") && (usr->mxConn->mFeatures & eSF_NOHELLO)) ||
-		((flag == "NoGetINFO") && (usr->mxConn->mFeatures & eSF_NOGETINFO)) ||
-		((flag == "DHT0") && (usr->mxConn->mFeatures & eSF_DHT0)) ||
-		((flag == "QuickList") && (usr->mxConn->mFeatures & eSF_QUICKLIST)) ||
-		((flag == "BotINFO") && (usr->mxConn->mFeatures & eSF_BOTINFO)) ||
-		(((flag == "ZPipe0") || (flag == "ZPipe")) && (usr->mxConn->mFeatures & eSF_ZLIB)) ||
-		((flag == "ChatOnly") && (usr->mxConn->mFeatures & eSF_CHATONLY)) ||
-		((flag == "MCTo") && (usr->mxConn->mFeatures & eSF_MCTO)) ||
-		((flag == "UserCommand") && (usr->mxConn->mFeatures & eSF_USERCOMMAND)) ||
-		((flag == "BotList") && (usr->mxConn->mFeatures & eSF_BOTLIST)) ||
-		((flag == "HubTopic") && (usr->mxConn->mFeatures & eSF_HUBTOPIC)) ||
-		((flag == "UserIP2") && (usr->mxConn->mFeatures & eSF_USERIP2)) ||
-		((flag == "TTHSearch") && (usr->mxConn->mFeatures & eSF_TTHSEARCH)) ||
-		((flag == "Feed") && (usr->mxConn->mFeatures & eSF_FEED)) ||
-		((flag == "ClientID") && (usr->mxConn->mFeatures & eSF_CLIENTID)) ||
-		((flag == "IN") && (usr->mxConn->mFeatures & eSF_IN)) ||
-		((flag == "BanMsg") && (usr->mxConn->mFeatures & eSF_BANMSG)) ||
-		((flag == "TLS") && (usr->mxConn->mFeatures & eSF_TLS)) ||
-		(usr->mxConn->mFeatures & iflag)
+		((flag == "OpPlus") && (user->mxConn->mFeatures & eSF_OPPLUS)) ||
+		((flag == "NoHello") && (user->mxConn->mFeatures & eSF_NOHELLO)) ||
+		((flag == "NoGetINFO") && (user->mxConn->mFeatures & eSF_NOGETINFO)) ||
+		((flag == "DHT0") && (user->mxConn->mFeatures & eSF_DHT0)) ||
+		((flag == "QuickList") && (user->mxConn->mFeatures & eSF_QUICKLIST)) ||
+		((flag == "BotINFO") && (user->mxConn->mFeatures & eSF_BOTINFO)) ||
+		(((flag == "ZPipe0") || (flag == "ZPipe")) && (user->mxConn->mFeatures & eSF_ZLIB)) ||
+		((flag == "ChatOnly") && (user->mxConn->mFeatures & eSF_CHATONLY)) ||
+		((flag == "MCTo") && (user->mxConn->mFeatures & eSF_MCTO)) ||
+		((flag == "UserCommand") && (user->mxConn->mFeatures & eSF_USERCOMMAND)) ||
+		((flag == "BotList") && (user->mxConn->mFeatures & eSF_BOTLIST)) ||
+		((flag == "HubTopic") && (user->mxConn->mFeatures & eSF_HUBTOPIC)) ||
+		((flag == "UserIP2") && (user->mxConn->mFeatures & eSF_USERIP2)) ||
+		((flag == "TTHSearch") && (user->mxConn->mFeatures & eSF_TTHSEARCH)) ||
+		((flag == "Feed") && (user->mxConn->mFeatures & eSF_FEED)) ||
+		((flag == "TTHS") && (user->mxConn->mFeatures & eSF_TTHS)) ||
+		((flag == "IN") && (user->mxConn->mFeatures & eSF_IN)) ||
+		((flag == "BanMsg") && (user->mxConn->mFeatures & eSF_BANMSG)) ||
+		((flag == "TLS") && (user->mxConn->mFeatures & eSF_TLS)) ||
+		(user->mxConn->mFeatures & iflag)
 	)
 		return true;
+
 	return false;
 }
 

@@ -503,12 +503,13 @@ class cServerDC : public cAsyncSocketServer
 		/*
 			send conditional search request with filters to all users
 				conn: sender connection
-				data: search command
+				data: long search command
+				tths: short tth search command
 				passive: search mode flag
 				tth: tth search flag
 				return: send count
 		*/
-		unsigned int SearchToAll(cConnDC *conn, string &data, bool passive, bool tth);
+		unsigned int SearchToAll(cConnDC *conn, string &data, string &tths, bool passive, bool tth = true);
 
 		/*
 			ExtJSON collector

@@ -21,6 +21,7 @@
 #include "cpipython.h"
 #include "src/stringutils.h"
 #include "src/cbanlist.h"
+#include "src/cdcproto.h"
 #include "src/cserverdc.h"
 #include "src/tchashlistmap.h"
 #include "src/ctime.h"
@@ -667,10 +668,34 @@ bool cpiPython::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 
 bool cpiPython::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_AS_ALL).c_str());
+	if (conn && conn->mpUser && msg) {
+		string data;
+
+		switch (msg->mType) {
+			case eDC_SEARCH_PAS:
+				data = msg->ChunkString(eCH_PS_ALL);
+				break;
+
+			case eDC_SEARCH:
+				data = msg->ChunkString(eCH_AS_ALL);
+				break;
+
+			case eDC_TTHS:
+				cDCProto::Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH));
+				break;
+
+			case eDC_TTHS_PAS:
+				cDCProto::Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
+				break;
+
+			default:
+				return true;
+		}
+
+		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), data.c_str());
 		return CallAll(W_OnParsedMsgSearch, args);
 	}
+
 	return true;
 }
 

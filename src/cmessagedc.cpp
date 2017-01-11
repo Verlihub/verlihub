@@ -32,8 +32,10 @@ cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresponds to tDCMs
 	cProtoCommand(string("$ConnectToMe ")),
 	cProtoCommand(string("$RevConnectToMe ")),
 	cProtoCommand(string("$SR ")),
-	cProtoCommand(string("$Search Hub:")),
+	cProtoCommand(string("$Search Hub:")), // must be before active $Search
 	cProtoCommand(string("$Search ")),
+	cProtoCommand(string("$SA ")),
+	cProtoCommand(string("$SP ")),
 	cProtoCommand(string("$MyINFO ")),
 	cProtoCommand(string("$ExtJSON ")),
 	cProtoCommand(string("$Key ")),
@@ -206,6 +208,31 @@ bool cMessageDC::SplitChunks()
 				mError = true;
 
 			if (!ChunkIncLeft(eCH_AS_SEARCHLIMITS, 1)) // get back last question mark
+				mError = true;
+
+			break;
+
+		case eDC_TTHS:
+			/*
+				$SA <tth> <ip>:<port>
+				eCH_SA_ALL, eCH_SA_TTH, eCH_SA_ADDR, eCH_SA_IP, eCH_SA_PORT
+			*/
+
+			if (!SplitOnTwo(mKWSize, ' ', eCH_SA_TTH, eCH_SA_ADDR))
+				mError = true;
+
+			if (!SplitOnTwo(':', eCH_SA_ADDR, eCH_SA_IP, eCH_SA_PORT))
+				mError = true;
+
+			break;
+
+		case eDC_TTHS_PAS:
+			/*
+				$SP <tth> <nick>
+				eCH_SP_ALL, eCH_SP_TTH, eCH_SP_NICK
+			*/
+
+			if (!SplitOnTwo(mKWSize, ' ', eCH_SP_TTH, eCH_SP_NICK))
 				mError = true;
 
 			break;

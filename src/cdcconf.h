@@ -312,6 +312,7 @@ public:
 	bool send_pass_request;
 	bool send_crash_report;
 	int ban_bypass_class;
+	int chatonly_bypass_class;
 	bool use_reglist_cache;
 	bool use_penlist_cache;
 	bool chat_default_on;

@@ -765,7 +765,7 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 	return counter;
 }
 
-unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, bool tth)
+unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, bool passive, bool tth)
 {
 	cConnDC *other;
 	tCLIt i;
@@ -784,6 +784,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 			if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
 				continue;
 
+			if (other->mFeatures & eSF_CHATONLY) // dont send to user who is here only to chat
+				continue;
+
 			if (other->mpUser->mShare <= 0) // dont send to user without share
 				continue;
 
@@ -796,7 +799,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 			if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
 				continue;
 
-			other->Send(data, true, !mC.delayed_search);
+			other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
 			count++;
 		}
 	} else { // active search
@@ -810,6 +813,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 					continue;
 
 				if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
+					continue;
+
+				if (other->mFeatures & eSF_CHATONLY) // dont send to user who is here only to chat
 					continue;
 
 				if (other->mpUser->mShare <= 0) // dont send to user without share
@@ -827,7 +833,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 				if (lan != cDCProto::isLanIP(other->AddrIP())) // filter lan to wan and reverse
 					continue;
 
-				other->Send(data, true, !mC.delayed_search);
+				other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
 				count++;
 			}
 		} else { // dont filter lan requests
@@ -838,6 +844,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 					continue;
 
 				if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
+					continue;
+
+				if (other->mFeatures & eSF_CHATONLY) // dont send to user who is here only to chat
 					continue;
 
 				if (other->mpUser->mShare <= 0) // dont send to user without share
@@ -852,7 +861,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, bool passive, b
 				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
 					continue;
 
-				other->Send(data, true, !mC.delayed_search);
+				other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
 				count++;
 			}
 		}

@@ -1417,7 +1417,7 @@ int _InUserSupports(lua_State *L)
 
 	cServerDC *serv = GetCurrentVerlihub();
 
-	if (serv == NULL) {
+	if (!serv) {
 		luaerror(L, ERR_SERV);
 		return 2;
 	}
@@ -1429,45 +1429,45 @@ int _InUserSupports(lua_State *L)
 
 	string nick = lua_tostring(L, 2);
 	string flag = lua_tostring(L, 3);
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if ((usr == NULL) || (usr->mxConn == NULL)) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
 	if (
-	((flag == "OpPlus") && (usr->mxConn->mFeatures & eSF_OPPLUS)) ||
-	((flag == "NoHello") && (usr->mxConn->mFeatures & eSF_NOHELLO)) ||
-	((flag == "NoGetINFO") && (usr->mxConn->mFeatures & eSF_NOGETINFO)) ||
-	((flag == "DHT0") && (usr->mxConn->mFeatures & eSF_DHT0)) ||
-	((flag == "QuickList") && (usr->mxConn->mFeatures & eSF_QUICKLIST)) ||
-	((flag == "BotINFO") && (usr->mxConn->mFeatures & eSF_BOTINFO)) ||
-	(((flag == "ZPipe0") || (flag == "ZPipe")) && (usr->mxConn->mFeatures & eSF_ZLIB)) ||
-	((flag == "ChatOnly") && (usr->mxConn->mFeatures & eSF_CHATONLY)) ||
-	((flag == "MCTo") && (usr->mxConn->mFeatures & eSF_MCTO)) ||
-	((flag == "UserCommand") && (usr->mxConn->mFeatures & eSF_USERCOMMAND)) ||
-	((flag == "BotList") && (usr->mxConn->mFeatures & eSF_BOTLIST)) ||
-	((flag == "HubTopic") && (usr->mxConn->mFeatures & eSF_HUBTOPIC)) ||
-	((flag == "UserIP2") && (usr->mxConn->mFeatures & eSF_USERIP2)) ||
-	((flag == "TTHSearch") && (usr->mxConn->mFeatures & eSF_TTHSEARCH)) ||
-	((flag == "Feed") && (usr->mxConn->mFeatures & eSF_FEED)) ||
-	((flag == "ClientID") && (usr->mxConn->mFeatures & eSF_CLIENTID)) ||
-	((flag == "IN") && (usr->mxConn->mFeatures & eSF_IN)) ||
-	((flag == "BanMsg") && (usr->mxConn->mFeatures & eSF_BANMSG)) ||
-	((flag == "TLS") && (usr->mxConn->mFeatures & eSF_TLS)) ||
-	((flag == "FailOver") && (usr->mxConn->mFeatures & eSF_FAILOVER)) ||
-	((flag == "NickChange") && (usr->mxConn->mFeatures & eSF_NICKCHANGE)) ||
-	((flag == "ClientNick") && (usr->mxConn->mFeatures & eSF_CLIENTNICK)) ||
-	((flag == "FeaturedNetworks") && (usr->mxConn->mFeatures & eSF_FEATNET)) ||
-	((flag == "ZLine") && (usr->mxConn->mFeatures & eSF_ZLINE)) ||
-	((flag == "GetZBlock") && (usr->mxConn->mFeatures & eSF_GETZBLOCK)) ||
-	((flag == "ACTM") && (usr->mxConn->mFeatures & eSF_ACTM)) ||
-	((flag == "SaltPass") && (usr->mxConn->mFeatures & eSF_SALTPASS)) ||
-	((flag == "NickRule") && (usr->mxConn->mFeatures & eSF_NICKRULE)) ||
-	((flag == "HubURL") && (usr->mxConn->mFeatures & eSF_HUBURL)) ||
-	((flag == "ExtJSON2") && (usr->mxConn->mFeatures & eSF_EXTJSON2))
+		((flag == "OpPlus") && (user->mxConn->mFeatures & eSF_OPPLUS)) ||
+		((flag == "NoHello") && (user->mxConn->mFeatures & eSF_NOHELLO)) ||
+		((flag == "NoGetINFO") && (user->mxConn->mFeatures & eSF_NOGETINFO)) ||
+		((flag == "DHT0") && (user->mxConn->mFeatures & eSF_DHT0)) ||
+		((flag == "QuickList") && (user->mxConn->mFeatures & eSF_QUICKLIST)) ||
+		((flag == "BotINFO") && (user->mxConn->mFeatures & eSF_BOTINFO)) ||
+		(((flag == "ZPipe0") || (flag == "ZPipe")) && (user->mxConn->mFeatures & eSF_ZLIB)) ||
+		((flag == "ChatOnly") && (user->mxConn->mFeatures & eSF_CHATONLY)) ||
+		((flag == "MCTo") && (user->mxConn->mFeatures & eSF_MCTO)) ||
+		((flag == "UserCommand") && (user->mxConn->mFeatures & eSF_USERCOMMAND)) ||
+		((flag == "BotList") && (user->mxConn->mFeatures & eSF_BOTLIST)) ||
+		((flag == "HubTopic") && (user->mxConn->mFeatures & eSF_HUBTOPIC)) ||
+		((flag == "UserIP2") && (user->mxConn->mFeatures & eSF_USERIP2)) ||
+		((flag == "TTHSearch") && (user->mxConn->mFeatures & eSF_TTHSEARCH)) ||
+		((flag == "Feed") && (user->mxConn->mFeatures & eSF_FEED)) ||
+		((flag == "TTHS") && (user->mxConn->mFeatures & eSF_TTHS)) ||
+		((flag == "IN") && (user->mxConn->mFeatures & eSF_IN)) ||
+		((flag == "BanMsg") && (user->mxConn->mFeatures & eSF_BANMSG)) ||
+		((flag == "TLS") && (user->mxConn->mFeatures & eSF_TLS)) ||
+		((flag == "FailOver") && (user->mxConn->mFeatures & eSF_FAILOVER)) ||
+		((flag == "NickChange") && (user->mxConn->mFeatures & eSF_NICKCHANGE)) ||
+		((flag == "ClientNick") && (user->mxConn->mFeatures & eSF_CLIENTNICK)) ||
+		((flag == "FeaturedNetworks") && (user->mxConn->mFeatures & eSF_FEATNET)) ||
+		((flag == "ZLine") && (user->mxConn->mFeatures & eSF_ZLINE)) ||
+		((flag == "GetZBlock") && (user->mxConn->mFeatures & eSF_GETZBLOCK)) ||
+		((flag == "ACTM") && (user->mxConn->mFeatures & eSF_ACTM)) ||
+		((flag == "SaltPass") && (user->mxConn->mFeatures & eSF_SALTPASS)) ||
+		((flag == "NickRule") && (user->mxConn->mFeatures & eSF_NICKRULE)) ||
+		((flag == "HubURL") && (user->mxConn->mFeatures & eSF_HUBURL)) ||
+		((flag == "ExtJSON2") && (user->mxConn->mFeatures & eSF_EXTJSON2))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

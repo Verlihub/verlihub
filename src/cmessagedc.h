@@ -36,6 +36,8 @@ namespace nVerliHub {
 			eDC_SR,
 			eDC_SEARCH_PAS,
 			eDC_SEARCH,
+			eDC_TTHS,
+			eDC_TTHS_PAS,
 			eDC_MYINFO,
 			eDC_EXTJSON,
 			eDC_KEY,
@@ -104,6 +106,10 @@ namespace nVerliHub {
 		enum {eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN};
 		// passive search	 @dReiska:(query format:  <sizerestricted>?<isminimumsize>?<size>?<datatype>?<searchpattern> --> searchpattern is added here)
 		enum {eCH_PS_ALL, eCH_PS_NICK, eCH_PS_QUERY, eCH_PS_SEARCHLIMITS, eCH_PS_SEARCHPATTERN};
+		// short active tth search
+		enum { eCH_SA_ALL, eCH_SA_TTH, eCH_SA_ADDR, eCH_SA_IP, eCH_SA_PORT };
+		// short passive tth search
+		enum { eCH_SP_ALL, eCH_SP_TTH, eCH_SP_NICK };
 		// search result $SR <resultNick> <filepath>^E<filesize> <freeslots>/<totalslots>^E<hubname> (<hubhost>[:<hubport>])^E<searchingNick>
 		enum {eCH_SR_ALL, eCH_SR_FROM, eCH_SR_PATH, eCH_SR_SIZE, eCH_SR_SLOTS, eCH_SR_SL_FR, eCH_SR_SL_TO, eCH_SR_HUBINFO, eCH_SR_TO};
 		// $Ban nick$reason

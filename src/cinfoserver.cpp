@@ -150,6 +150,8 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << _("Protocol information") << ":\r\n\r\n";
 	os << " [*] &#36;Search: " << mServer->mProtoCount[nEnums::eDC_SEARCH] << "\r\n";
 	os << " [*] &#36;Search Hub: " << mServer->mProtoCount[nEnums::eDC_SEARCH_PAS] << "\r\n";
+	os << " [*] &#36;SA: " << mServer->mProtoCount[nEnums::eDC_TTHS] << "\r\n";
+	os << " [*] &#36;SP: " << mServer->mProtoCount[nEnums::eDC_TTHS_PAS] << "\r\n";
 	os << " [*] &#36;MultiSearch: " << mServer->mProtoCount[nEnums::eDC_MSEARCH] << "\r\n";
 	os << " [*] &#36;MultiSearch Hub: " << mServer->mProtoCount[nEnums::eDC_MSEARCH_PAS] << "\r\n";
 	os << " [*] &#36;SR: " << mServer->mProtoCount[nEnums::eDC_SR] << "\r\n";

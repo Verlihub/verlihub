@@ -21,6 +21,7 @@
 #include "cpilua.h"
 #include "src/stringutils.h"
 #include "src/cbanlist.h"
+#include "src/cdcproto.h"
 #include "src/cserverdc.h"
 #include "src/i18n.h"
 #include "src/script_api.h"
@@ -499,12 +500,35 @@ bool cpiLua::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 
 bool cpiLua::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
+		string data;
+
+		switch (msg->mType) {
+			case eDC_SEARCH_PAS:
+				data = msg->ChunkString(eCH_PS_ALL);
+				break;
+
+			case eDC_SEARCH:
+				data = msg->ChunkString(eCH_AS_ALL);
+				break;
+
+			case eDC_TTHS:
+				cDCProto::Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH));
+				break;
+
+			case eDC_TTHS_PAS:
+				cDCProto::Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
+				break;
+
+			default:
+				return true;
+		}
+
 		const char *args[] = {
 			conn->mpUser->mNick.c_str(),
-			msg->ChunkString(eCH_AS_ALL).c_str(),
+			data.c_str(),
 			NULL
-		}; // active: eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY; passive: eCH_PS_ALL, eCH_PS_NICK, eCH_PS_QUERY
+		};
 
 		return CallAll("VH_OnParsedMsgSearch", args, conn);
 	}

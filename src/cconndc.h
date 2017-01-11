@@ -121,7 +121,7 @@ namespace nVerliHub {
 			eSF_USERIP2 = 1 << 12,
 			eSF_TTHSEARCH = 1 << 13,
 			eSF_FEED = 1 << 14,
-			eSF_CLIENTID = 1 << 15,
+			eSF_TTHS = 1 << 15,
 			eSF_IN = 1 << 16,
 			eSF_BANMSG = 1 << 17,
 			eSF_TLS = 1 << 18,

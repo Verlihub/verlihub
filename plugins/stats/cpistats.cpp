@@ -81,19 +81,25 @@ bool cpiStats::OnTimer(__int64 msec)
 	return true;
 }
 
-bool cpiStats::OnParsedMsgSearch(cConnDC *, cMessageDC *msg)
+bool cpiStats::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 {
-	switch(msg->mType) {
+	switch (msg->mType) {
 		case eDC_MSEARCH:
 		case eDC_SEARCH:
+		case eDC_TTHS:
 			mFreqSearchA.Insert(cTime());
 			break;
+
 		case eDC_MSEARCH_PAS:
 		case eDC_SEARCH_PAS:
+		case eDC_TTHS_PAS:
 			mFreqSearchP.Insert(cTime());
 			break;
-		default:break;
+
+		default:
+			break;
 	}
+
 	return true;
 }
 

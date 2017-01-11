@@ -170,6 +170,14 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			this->DC_Search(msg, conn);
 			break;
 
+		case eDC_TTHS:
+			this->DC_SA(msg, conn);
+			break;
+
+		case eDC_TTHS_PAS:
+			this->DC_SP(msg, conn);
+			break;
+
 		case eDC_MYINFO:
 			this->DC_MyINFO(msg, conn);
 			break;
@@ -427,8 +435,14 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (feature == "Feed") {
 			conn->mFeatures |= eSF_FEED;
 
+		/*
 		} else if (feature == "ClientID") {
 			conn->mFeatures |= eSF_CLIENTID;
+		*/
+
+		} else if (feature == "TTHS") {
+			conn->mFeatures |= eSF_TTHS;
+			pars.append("TTHS ");
 
 		} else if (feature == "IN") {
 			conn->mFeatures |= eSF_IN;
@@ -1823,7 +1837,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
-	if (!other || !other->mInList) {
+	if (!other || !other->mInList) { // todo: maybe it is possible to detect if user is on the way logging out? then we can skip this message
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You're trying to connect to an offline user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -1903,6 +1917,15 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (mS->mC.filter_lan_requests && (isLanIP(conn->mAddrIP) != isLanIP(other->mxConn->mAddrIP))) { // filter lan to wan and reverse
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user because one of you is in a LAN: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -1;
+	}
+
+	if ((other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
+		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download from this user because he is in chat only mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
 		}
 
@@ -2117,6 +2140,15 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
+	if ((other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
+		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't download from this user because he is in chat only mode: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -1;
+	}
+
 	if (mS->CheckProtoFloodAll(conn, ePFA_RCTM, other)) // protocol flood from all
 		return -1;
 
@@ -2163,7 +2195,6 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	string saddr(""), addr("");
 	bool passive = true;
 
 	switch (msg->mType) { // detect search mode once
@@ -2171,12 +2202,15 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		case eDC_MSEARCH:
 			passive = false;
 			break;
+
 		default:
 			break;
 	}
 
+	string nick(""), saddr(""), addr("");
+
 	if (passive) { // verify sender
-		string &nick = msg->ChunkString(eCH_PS_NICK);
+		nick = msg->ChunkString(eCH_PS_NICK);
 
 		if (CheckUserNick(conn, nick))
 			return -1;
@@ -2211,17 +2245,21 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		case eUC_REGUSER:
 			delay = ((passive) ? mS->mC.int_search_reg_pas : mS->mC.int_search_reg);
 			break;
+
 		case eUC_VIPUSER:
 			delay = mS->mC.int_search_vip;
 			break;
+
 		case eUC_OPERATOR:
 		case eUC_CHEEF:
 		case eUC_ADMIN:
 			delay = mS->mC.int_search_op;
 			break;
+
 		case eUC_MASTER:
 			delay = 0;
 			break;
+
 		default:
 			delay = ((passive) ? mS->mC.int_search_pas : mS->mC.int_search);
 			break;
@@ -2266,12 +2304,15 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		case eUC_NORMUSER:
 			use_hub_share = mS->mC.min_share_use_hub;
 			break;
+
 		case eUC_REGUSER:
 			use_hub_share = mS->mC.min_share_use_hub_reg;
 			break;
+
 		case eUC_VIPUSER:
 			use_hub_share = mS->mC.min_share_use_hub_vip;
 			break;
+
 		default:
 			break;
 	}
@@ -2331,7 +2372,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	if ((conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator
+	if (!tth && (conn->mpUser->mClass < eUC_OPERATOR) && (spat.size() < mS->mC.min_search_chars)) { // check search length if not operator, only if not tth
 		os << autosprintf(ngettext("Minimum search length is %d character.", "Minimum search length is %d characters.", mS->mC.min_search_chars), mS->mC.min_search_chars);
 		mS->DCPublicHS(os.str(), conn);
 		return -1;
@@ -2359,28 +2400,376 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	string search;
+	string search, tths("");
 	Create_Search(search, saddr, lims, spat);
+
+	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 0, 8, "F?T?0?9?") == 0)) { // also create short version to send to modern clients, todo: work with "F?F?0?9?" too
+		spat = spat.substr(4);
+
+		if (passive)
+			Create_SP(tths, spat, nick);
+		else
+			Create_SA(tths, spat, saddr);
+	}
 
 	if (mS->mC.use_search_filter) { // send it using filter
 		/*
 			conditional and filtered search request
 			some users hide their share
 			some users dont share anything
+			some users are in chat only mode
 			pingers dont need to get any searches
 			users dont need to get their own searches
 			some users are in lan and others are in wan
 			some users dont support tth searches
 		*/
 
-		mS->SearchToAll(conn, search, passive, tth);
-	} else { // send it without filter, old search engine
+		mS->SearchToAll(conn, search, tths, passive, tth);
+	} else { // send it without filter, old search engine, note: short tth search command can not be used here
 		if (passive)
 			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search, true);
 		else
 			mS->mUserList.SendToAll(search, mS->mC.delayed_search, true);
 	}
 
+	return 0;
+}
+
+int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	ostringstream os;
+
+	if (!(conn->mFeatures & eSF_TTHS)) { // check support
+		os << _("Invalid login sequence, you didn't specify support for short TTH search command.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoLen(conn, msg))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
+		return -1;
+
+	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
+		if (mS->Log(3))
+			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
+
+		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	string &tth = msg->ChunkString(eCH_SA_TTH);
+
+	if (tth.size() != 39) // check tth size, todo: be more strict and disconnect user with message
+		return -1;
+
+	string &port = msg->ChunkString(eCH_SA_PORT);
+
+	if (port.empty() || (port.size() > 5))
+		return -1;
+
+	unsigned int iport = StringAsLL(port);
+
+	if (!mS->CheckPortNumber(iport))
+		return -1;
+
+	string saddr("");
+	string &addr = msg->ChunkString(eCH_SA_IP);
+
+	if (CheckIP(conn, addr))
+		saddr.append(addr);
+	else
+		saddr.append(conn->mAddrIP);
+
+	saddr.append(":");
+	saddr.append(StringFrom(iport));
+	unsigned int delay;
+
+	switch (conn->mpUser->mClass) { // prepare delay
+		case eUC_REGUSER:
+			delay = mS->mC.int_search_reg;
+			break;
+
+		case eUC_VIPUSER:
+			delay = mS->mC.int_search_vip;
+			break;
+
+		case eUC_OPERATOR:
+		case eUC_CHEEF:
+		case eUC_ADMIN:
+			delay = mS->mC.int_search_op;
+			break;
+
+		case eUC_MASTER:
+			delay = 0;
+			break;
+
+		default:
+			delay = mS->mC.int_search;
+			break;
+	}
+
+	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
+		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
+			string delay_str = cTime(delay, 0).AsPeriod().AsString();
+			os << autosprintf(_("Don't search too often.")) << " ";
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
+			mS->DCPublicHS(os.str(), conn);
+			return -1;
+		}
+	} else {
+		conn->mpUser->mSearchNumber = 0;
+	}
+
+	string search;
+	Create_Search(search, saddr, tth);
+
+	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
+		cUser::tFloodHashType Hash = 0; // check same message flood
+		Hash = tHashArray<void*>::HashString(search);
+
+		if (Hash && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH])) // silent filter, user might be using automatic search
+			return -4;
+
+		conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
+	}
+
+	if (conn->mpUser->mClass < mS->mC.min_class_use_hub) { // check use hub class
+		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
+			os << autosprintf(_("You can't search unless you are registered with class %d."), mS->mC.min_class_use_hub);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	unsigned __int64 use_hub_share = 0; // check use hub share
+
+	switch (conn->mpUser->mClass) {
+		case eUC_NORMUSER:
+			use_hub_share = mS->mC.min_share_use_hub;
+			break;
+
+		case eUC_REGUSER:
+			use_hub_share = mS->mC.min_share_use_hub_reg;
+			break;
+
+		case eUC_VIPUSER:
+			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+
+		default:
+			break;
+	}
+
+	use_hub_share = use_hub_share * 1024 * 1024;
+
+	if (conn->mpUser->mShare < use_hub_share) {
+		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
+			os << autosprintf(_("You can't search unless you share %s."), convertByte(use_hub_share).c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (!conn->mpUser->Can(eUR_SEARCH, mS->mTime.Sec(), 0)) { // check temporary right
+		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
+			mS->DCPublicHS(_("You're not allowed to search for anything."), conn);
+
+		return -4;
+	}
+
+ 	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
+			return -2;
+	#endif
+
+	conn->mpUser->mSearchNumber++; // set counter last of all
+
+	if (addr != conn->mAddrIP) {
+		if (conn->Log(3))
+			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
+
+		if (mS->mC.wrongip_message) {
+			os << autosprintf(_("Replacing wrong IP address specified in your search request with real one: %s -> %s"), addr.c_str(), conn->mAddrIP.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+	}
+
+	string tths;
+	Create_SA(tths, tth, saddr);
+	mS->SearchToAll(conn, search, tths, false); // can send it only using filter
+	return 0;
+}
+
+int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	ostringstream os;
+
+	if (!(conn->mFeatures & eSF_TTHS)) { // check support
+		os << _("Invalid login sequence, you didn't specify support for short TTH search command.");
+
+		if (conn->Log(1))
+			conn->LogStream() << os.str() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if (CheckProtoLen(conn, msg))
+		return -1;
+
+	if (CheckProtoSyntax(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
+		return -1;
+
+	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
+		if (mS->Log(3))
+			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
+
+		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
+		mS->DCPublicHS(os.str(), conn);
+		return -2;
+	}
+
+	string &tth = msg->ChunkString(eCH_SP_TTH);
+
+	if (tth.size() != 39) // check tth size, todo: be more strict and disconnect user with message
+		return -1;
+
+	string &nick = msg->ChunkString(eCH_SP_NICK);
+
+	if (CheckUserNick(conn, nick)) // verify sender
+		return -1;
+
+	unsigned int delay;
+
+	switch (conn->mpUser->mClass) { // prepare delay
+		case eUC_REGUSER:
+			delay = mS->mC.int_search_reg_pas;
+			break;
+
+		case eUC_VIPUSER:
+			delay = mS->mC.int_search_vip;
+			break;
+
+		case eUC_OPERATOR:
+		case eUC_CHEEF:
+		case eUC_ADMIN:
+			delay = mS->mC.int_search_op;
+			break;
+
+		case eUC_MASTER:
+			delay = 0;
+			break;
+
+		default:
+			delay = mS->mC.int_search_pas;
+			break;
+	}
+
+	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
+		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
+			string delay_str = cTime(delay, 0).AsPeriod().AsString();
+			os << autosprintf(_("Don't search too often.")) << " ";
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
+			mS->DCPublicHS(os.str(), conn);
+			return -1;
+		}
+	} else {
+		conn->mpUser->mSearchNumber = 0;
+	}
+
+	string search;
+	Create_Search(search, nick, tth, true);
+
+	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
+		cUser::tFloodHashType Hash = 0; // check same message flood
+		Hash = tHashArray<void*>::HashString(search);
+
+		if (Hash && (Hash == conn->mpUser->mFloodHashes[eFH_SEARCH])) // silent filter, user might be using automatic search
+			return -4;
+
+		conn->mpUser->mFloodHashes[eFH_SEARCH] = Hash;
+	}
+
+	if (conn->mpUser->mClass < mS->mC.min_class_use_hub_passive) { // check use hub class
+		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
+			os << autosprintf(_("You can't search unless you are registered with class %d."), mS->mC.min_class_use_hub_passive);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	unsigned __int64 use_hub_share = 0; // check use hub share
+
+	switch (conn->mpUser->mClass) {
+		case eUC_NORMUSER:
+			use_hub_share = mS->mC.min_share_use_hub;
+			break;
+
+		case eUC_REGUSER:
+			use_hub_share = mS->mC.min_share_use_hub_reg;
+			break;
+
+		case eUC_VIPUSER:
+			use_hub_share = mS->mC.min_share_use_hub_vip;
+			break;
+
+		default:
+			break;
+	}
+
+	use_hub_share = use_hub_share * 1024 * 1024;
+
+	if (conn->mpUser->mShare < use_hub_share) {
+		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_search, mS->mC.use_hub_msg_time))) { // check message delay
+			os << autosprintf(_("You can't search unless you share %s."), convertByte(use_hub_share).c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		return -4;
+	}
+
+	if (!conn->mpUser->Can(eUR_SEARCH, mS->mTime.Sec(), 0)) { // check temporary right
+		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
+			mS->DCPublicHS(_("You're not allowed to search for anything."), conn);
+
+		return -4;
+	}
+
+	if (mS->CheckProtoFloodAll(conn, ePFA_SEAR)) // protocol flood from all
+		return -1;
+
+ 	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgSearch.CallAll(conn, msg))
+			return -2;
+	#endif
+
+	conn->mpUser->mSearchNumber++; // set counter last of all
+	conn->mSRCounter = 0;
+	string tths;
+	Create_SP(tths, tth, nick);
+	mS->SearchToAll(conn, search, tths, true); // can send it only using filter
 	return 0;
 }
 
@@ -3013,6 +3402,14 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 			cmd = "Search";
 			break;
 
+		case eDC_TTHS:
+			cmd = "SA";
+			break;
+
+		case eDC_TTHS_PAS:
+			cmd = "SP";
+			break;
+
 		case eDC_MYINFO:
 			cmd = "MyINFO";
 			break;
@@ -3145,6 +3542,8 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 			mlen = mS->mC.max_len_myhuburl;
 			break;
 
+		case eDC_TTHS:
+		case eDC_TTHS_PAS:
 		case eDC_SEARCH_PAS:
 		case eDC_SEARCH:
 		case eDC_MSEARCH_PAS:
@@ -3189,6 +3588,14 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 
 		case eDC_MYHUBURL:
 			cmd = "MyHubURL";
+			break;
+
+		case eDC_TTHS:
+			cmd = "SA";
+			break;
+
+		case eDC_TTHS_PAS:
+			cmd = "SP";
 			break;
 
 		case eDC_SEARCH_PAS:
@@ -3620,6 +4027,37 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &lim
 	dest.append(" ");
 	dest.append(lims);
 	dest.append(spat);
+}
+
+void cDCProto::Create_Search(string &dest, const string &addr, const string &tth, bool pas)
+{
+	dest.clear();
+	dest.append("$Search ");
+
+	if (pas)
+		dest.append("Hub:");
+
+	dest.append(addr);
+	dest.append(" F?T?0?9?TTH:");
+	dest.append(tth);
+}
+
+void cDCProto::Create_SA(string &dest, const string &tth, const string &addr)
+{
+	dest.clear();
+	dest.append("$SA ");
+	dest.append(tth);
+	dest.append(" ");
+	dest.append(addr);
+}
+
+void cDCProto::Create_SP(string &dest, const string &tth, const string &nick)
+{
+	dest.clear();
+	dest.append("$SP ");
+	dest.append(tth);
+	dest.append(" ");
+	dest.append(nick);
 }
 
 void cDCProto::Create_UserIP(string &dest, const string &list)
