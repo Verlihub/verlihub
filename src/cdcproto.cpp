@@ -403,8 +403,11 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
 			conn->mFeatures |= eSF_ZLIB;
-			conn->mUseZLib = !mS->mC.disable_zlib;
-			pars.append("ZPipe0 ");
+
+			if (!mS->mC.disable_zlib) {
+				conn->mUseZLib = true;
+				pars.append("ZPipe0 ");
+			}
 
 		} else if (feature == "ChatOnly") {
 			conn->mFeatures |= eSF_CHATONLY;
