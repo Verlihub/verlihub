@@ -408,6 +408,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if (feature == "ChatOnly") {
 			conn->mFeatures |= eSF_CHATONLY;
+			pars.append("ChatOnly ");
 
 		} else if (feature == "MCTo") {
 			conn->mFeatures |= eSF_MCTO;
