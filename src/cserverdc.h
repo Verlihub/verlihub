@@ -813,6 +813,8 @@ public:
 
 	// protocol total download = 0 and upload = 1
 	unsigned __int64 mProtoTotal[2];
+	// saved upload data with zlib = 0 and tths = 1
+	unsigned __int64 mProtoSaved[2];
 
 	// Usercount of zones (CC and IP-range zones)
 	unsigned int mUserCount[USER_ZONES + 1];

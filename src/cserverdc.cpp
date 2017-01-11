@@ -213,6 +213,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	memset(mProtoCount, 0, sizeof(mProtoCount));
 	memset(mProtoTotal, 0, sizeof(mProtoTotal));
+	memset(mProtoSaved, 0, sizeof(mProtoSaved));
 	mUsersPeak = 0;
 
 	// protocol flood from all
@@ -770,6 +771,10 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 	cConnDC *other;
 	tCLIt i;
 	unsigned int count = 0;
+	size_t saved, len_data = data.size(), len_tths = tths.size();
+
+	if (len_tths)
+		saved = len_data - len_tths;
 
 	if (passive) { // passive search
 		for (i = mConnList.begin(); i != mConnList.end(); i++) {
@@ -799,7 +804,13 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 			if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
 				continue;
 
-			other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
+			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
+				mProtoSaved[1] += saved; // add saved upload with tths
+				other->Send(tths, true, !mC.delayed_search);
+			} else {
+				other->Send(data, true, !mC.delayed_search);
+			}
+
 			count++;
 		}
 	} else { // active search
@@ -833,7 +844,13 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (lan != cDCProto::isLanIP(other->AddrIP())) // filter lan to wan and reverse
 					continue;
 
-				other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
+				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
+					mProtoSaved[1] += saved; // add saved upload with tths
+					other->Send(tths, true, !mC.delayed_search);
+				} else {
+					other->Send(data, true, !mC.delayed_search);
+				}
+
 				count++;
 			}
 		} else { // dont filter lan requests
@@ -861,7 +878,13 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
 					continue;
 
-				other->Send(((tth && (other->mFeatures & eSF_TTHS) && tths.size()) ? tths : data), true, !mC.delayed_search);
+				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
+					mProtoSaved[1] += saved; // add saved upload with tths
+					other->Send(tths, true, !mC.delayed_search);
+				} else {
+					other->Send(data, true, !mC.delayed_search);
+				}
+
 				count++;
 			}
 		}

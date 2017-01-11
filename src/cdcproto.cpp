@@ -2404,7 +2404,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	string search, tths("");
 	Create_Search(search, saddr, lims, spat);
 
-	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 0, 8, "F?T?0?9?") == 0)) { // also create short version to send to modern clients, todo: work with "F?F?0?9?" too
+	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 3, 8, "?0?9?") == 0)) { // also create short version to send to modern clients
 		spat = spat.substr(4);
 
 		if (passive)
@@ -4039,7 +4039,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &tth
 		dest.append("Hub:");
 
 	dest.append(addr);
-	dest.append(" F?T?0?9?TTH:");
+	dest.append(" F?T?0?9?TTH:"); // note: taken from dc++ behaviour but nmdc specification says following: is_max_size is F if size_restricted is F
 	dest.append(tth);
 }
 

@@ -725,7 +725,7 @@ int cAsyncConn::Write(const string &data, bool Flush)
 	size_t send_size; // size of buffer
 	bool appended; // data is added to old buffer content
 
-	if (mBufSend.size() || !Flush) { // check if we have to append data to buffer or send it immediatly
+	if (mBufSend.size() || !Flush) { // check if we have to append data to buffer or send it immediately
 		mBufSend.append(data.data(), data.size());
 		send_buffer = mBufSend.data();
 		send_size = mBufSend.size();
@@ -742,41 +742,40 @@ int cAsyncConn::Write(const string &data, bool Flush)
 	if (!Flush) // we have appended data, so do not send now
 		return 0;
 
+	nVerliHub::cServerDC *serv = NULL;
+
+	if (mxServer)
+		serv = (nVerliHub::cServerDC*)mxServer;
+
 	bool compressed = false;
 
-	if (mZlibFlag && mxServer) { // compress data with zlib, only when flushing, otherwise we will destroy everything
-		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+	if (mZlibFlag && serv && !serv->mC.disable_zlib && (send_size >= serv->mC.zlib_min_len)) { // compress data with zlib, only when flushing, otherwise we will destroy everything, only when enabled and minimum length is reached
+		if (send_buffer[send_size - 1] == '|') {
+			size_t zlib_size = 0;
+			zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size, serv->mC.zlib_compress_level);
 
-		if (serv && !serv->mC.disable_zlib && (send_size >= serv->mC.zlib_min_len)) { // only when enabled and minimum length is reached
-			if (send_buffer[send_size - 1] == '|') {
-				size_t zlib_size = 0;
-				zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size, serv->mC.zlib_compress_level);
-
-				if (zlib_size && zlib_buffer) {
-					send_buffer = zlib_buffer;
-					send_size = zlib_size;
-					compressed = true;
-				} else if (Log(5)) {
-					if (zlib_size)
-						LogStream() << "Compressed ZLib data is larger, fall back" << endl;
-					else
-						LogStream() << "Failed compressing data with ZLib, fall back" << endl;
-				}
-			} else if (Log(1)) // client will fail to decompress when pipe is missing
-				LogStream() << "Missing ending pipe in compress data: " << send_buffer << endl;
+			if (zlib_size && zlib_buffer) {
+				serv->mProtoSaved[0] += send_size - zlib_size; // add saved upload with zlib, must be first
+				send_buffer = zlib_buffer;
+				send_size = zlib_size;
+				compressed = true;
+			} else if (Log(5)) {
+				if (zlib_size)
+					LogStream() << "Compressed ZLib data is larger, fall back" << endl;
+				else
+					LogStream() << "Failed compressing data with ZLib, fall back" << endl;
+			}
+		} else if (Log(1)) { // client will fail to decompress when pipe is missing
+			LogStream() << "Missing ending pipe in compress data: " << send_buffer << endl;
 		}
 	}
 
 	size_t size_sent = send_size; // make copy of send_size, because SendAll method will change it
 
 	if (SendAll(send_buffer, size_sent) == -1) { // send the data as much as possible
-		if (Log(6) && mxServer) {
-			nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-			if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open()) {
-				serv->mNetOutLog << "[" << AddrIP() << "] Error sending " << ((compressed) ? "compressed" : "plain") << " data: " << ((appended) ? mBufSend : data) << " (size: " << send_size << ", sent: " << size_sent << ")" << endl;
-				serv->mNetOutLog << "Error " << errno << ": " << strerror(errno) << endl;
-			}
+		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open()) {
+			serv->mNetOutLog << "[" << AddrIP() << "] Error sending " << ((compressed) ? "compressed" : "plain") << " data: " << ((appended) ? mBufSend : data) << " (size: " << send_size << ", sent: " << size_sent << ")" << endl;
+			serv->mNetOutLog << "Error " << errno << ": " << strerror(errno) << endl;
 		}
 
 		if ((errno != EAGAIN) && (errno != EINTR)) { // analyze the error
@@ -799,9 +798,8 @@ int cAsyncConn::Write(const string &data, bool Flush)
 				else
 					StrCutLeft(data, mBufSend, size_sent);
 			}
-		} else {
-			if (bool(mCloseAfter)) // close nice was called, we must close the connection even if the data cannot be transmitted
-				CloseNow();
+		} else if (bool(mCloseAfter)) { // close nice was called, we must close the connection even if the data cannot be transmitted
+			CloseNow();
 		}
 
 		if (mxServer && ok) { // buffer overfill protection, only on registered connections
@@ -811,8 +809,6 @@ int cAsyncConn::Write(const string &data, bool Flush)
 				mxServer->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
-					nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
 						serv->mNetOutLog << "Unblocking read operation on socket" << endl;
 
@@ -822,8 +818,6 @@ int cAsyncConn::Write(const string &data, bool Flush)
 				mxServer->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
-					nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
 						serv->mNetOutLog << "Blocking read operation on socket" << endl;
 
