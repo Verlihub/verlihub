@@ -261,14 +261,20 @@ int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
 
 void cConnDC::OnFlushDone()
 {
-	mBufSend.erase(0,mBufSend.size());
-	if(mNickListInProgress) {
+	mBufFlush.erase(0, GetFlushSize());
+	mBufSend.erase(0, GetBufferSize());
+
+	if (mNickListInProgress) {
 		SetLSFlag(eLS_NICKLST);
 		mNickListInProgress = false;
-		if(!ok || !mWritable) {
-			if(Log(2)) LogStream() << "Connection closed during nicklist" << endl;
+
+		if (!ok || !mWritable) {
+			if (Log(2))
+				LogStream() << "Connection closed during nick list send" << endl;
 		} else {
-			if(Log(2)) LogStream() << "Login after nicklist" << endl;
+			if (Log(2))
+				LogStream() << "Login after nick list send" << endl;
+
 			Server()->DoUserLogin(this);
 		}
 	}

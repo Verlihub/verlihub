@@ -77,7 +77,7 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
-	mUseZLib(false),
+	mZLibLevel(-2),
 	//mIterator(0),
 	ok(desc > 0),
 	mWritable(true),
@@ -132,7 +132,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 /** connect to given host (ip) on port */
 cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
-	mUseZLib(false),
+	mZLibLevel(-2),
 	//mIterator(0),
 	ok(false),
 	mWritable(true),
@@ -193,9 +193,9 @@ void cAsyncConn::Close()
 
 void cAsyncConn::Flush()
 {
-	string empty;
-	// Write the content of the buffer
-	if(mBufSend.length())
+	string empty("");
+
+	if (GetFlushSize() || GetBufferSize()) // write buffers
 		Write(empty, true);
 }
 
@@ -259,13 +259,14 @@ void cAsyncConn::CloseNice(int msec)
 {
 	OnCloseNice();
 	mWritable = false;
-	if(msec <= 0 || !mBufSend.size()) {
+
+	if ((msec <= 0) || (!GetFlushSize() && !GetBufferSize())) {
 		CloseNow();
 		return;
 	}
 
 	mCloseAfter.Get();
-	mCloseAfter += int(msec);
+	mCloseAfter += msec;
 }
 
 void cAsyncConn::CloseNow()
@@ -710,142 +711,142 @@ int cAsyncConn::OnTimer(cTime &now)
 void cAsyncConn::OnFlushDone()
 { }
 
-int cAsyncConn::Write(const string &data, bool Flush)
+int cAsyncConn::Write(const string &data, bool flush)
 {
-	if ((mBufSend.size() + data.size()) >= mMaxBuffer) { // append data to older data in buffer only if there is free space
+	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = data.size();
+	size_t calc_size = flush_size + buf_size + data_size;
+
+	if (calc_size > mMaxBuffer) { // disconnect user who is receiving too slow and his buffer is overfilled, we cant waste memory forever
 		if (Log(2))
-			LogStream() << "Buffer is too big, closing" << endl;
+			LogStream() << "Output buffer is too big, closing: " << flush_size << " + " << buf_size << " + " << data_size << " = " << calc_size << " of " << mMaxBuffer << endl;
 
 		CloseNow();
 		return -1;
 	}
 
-	Flush = (Flush || (mBufSend.size() > (mMaxBuffer >> 1)));
-	const char *send_buffer, *zlib_buffer; // pointer to buffers for data to send
-	size_t send_size; // size of buffer
-	bool appended; // data is added to old buffer content
-
-	if (mBufSend.size() || !Flush) { // check if we have to append data to buffer or send it immediately
-		mBufSend.append(data.data(), data.size());
-		send_buffer = mBufSend.data();
-		send_size = mBufSend.size();
-		appended = true;
-	} else {
-		send_buffer = data.data();
-		send_size = data.size();
-		appended = false;
+	if (data_size) { // we have something new to append
+		mBufFlush.append(data.data(), data_size);
+		flush_size += data_size;
 	}
 
-	if (!send_size) // check if there is anything to send
+	buf_size += flush_size;
+	flush = (flush || (buf_size > (mMaxBuffer >> 1))); // force flush if required
+
+	if (!buf_size || !flush) // nothing to send or send it later
 		return 0;
 
-	if (!Flush) // we have appended data, so do not send now
-		return 0;
-
+	const char *send_buf = mBufFlush.data(); // pointer to flush buffer
 	nVerliHub::cServerDC *serv = NULL;
 
 	if (mxServer)
 		serv = (nVerliHub::cServerDC*)mxServer;
+	else if (Log(5))
+		LogStream() << "Server not available for ZLib compression" << endl;
 
-	bool compressed = false;
+	if (flush_size) { // check if there is something to flush, else send old remaining data
+		if ((mZLibLevel > -2) && send_buf && serv && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
+			if (send_buf[flush_size - 1] == '|') {
+				calc_size = 0; // we dont use it anymore
+				int comp_err = 0;
+				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, mZLibLevel);
 
-	if (mUseZLib && serv && (send_size >= serv->mC.zlib_min_len)) { // compress data with zlib, only when flushing, otherwise we will destroy everything, only when enabled and minimum length is reached
-		if (send_buffer[send_size - 1] == '|') {
-			size_t zlib_size = 0;
-			zlib_buffer = serv->mZLib->Compress(send_buffer, send_size, zlib_size, serv->mC.zlib_compress_level);
+				if (calc_size && zlib_buf) { // compression successful
+					buf_size -= flush_size; // recalculate final send buffer size
+					buf_size += calc_size;
+					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
+					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
+				} else { // compression is larger than initial data or something failed
+					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
-			if (zlib_size && zlib_buffer) {
-				serv->mProtoSaved[0] += send_size - zlib_size; // add saved upload with zlib, must be first
-				send_buffer = zlib_buffer;
-				send_size = zlib_size;
-				compressed = true;
-			} else if (Log(5)) {
-				if (zlib_size)
-					LogStream() << "Compressed ZLib data is larger, fall back" << endl;
-				else
-					LogStream() << "Failed compressing data with ZLib, fall back" << endl;
+					if (Log(5)) {
+						if (calc_size)
+							LogStream() << "Compressed ZLib data is larger, fall back: " << calc_size << " vs " << flush_size << endl;
+						else
+							LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
+					}
+				}
+
+				mBufFlush.erase(0, flush_size); // clean up flush buffer in both cases
+				ShrinkStringToFit(mBufFlush);
+			} else if (Log(1)) { // client will fail to decompress when pipe is missing, this happens when we are flushing incomplete data, todo: not sure if wait or do something already here
+				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
 			}
-		} else if (Log(1)) { // client will fail to decompress when pipe is missing
-			LogStream() << "Missing ending pipe in compress data: " << send_buffer << endl;
+		} else { // compression is disabled or data too short for good result
+			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
+			mBufFlush.erase(0, flush_size); // clean up flush buffer
+			ShrinkStringToFit(mBufFlush);
 		}
 	}
 
-	size_t size_sent = send_size; // make copy of send_size, because SendAll method will change it
+	send_buf = mBufSend.data(); // pointer to send buffer
 
-	if (SendAll(send_buffer, size_sent) == -1) { // send the data as much as possible
-		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open()) {
-			serv->mNetOutLog << "[" << AddrIP() << "] Error sending " << ((compressed) ? "compressed" : "plain") << " data: " << ((appended) ? mBufSend : data) << " (size: " << send_size << ", sent: " << size_sent << ")" << endl;
-			serv->mNetOutLog << "Error " << errno << ": " << strerror(errno) << endl;
-		}
+	if (!send_buf)
+		return 0;
 
-		if ((errno != EAGAIN) && (errno != EINTR)) { // analyze the error
+	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
+
+	if (SendAll(send_buf, calc_size) == -1) { // try to send as much data as possible
+		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
+			serv->mNetOutLog << "[" << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << errno << "=" << strerror(errno) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
+
+		if ((errno != EAGAIN) && (errno != EINTR)) { // analyse the error if any
 			if (Log(2))
-				LogStream() << "Error during writing, closing" << endl;
+				LogStream() << "Error during writing, closing: " << errno << endl;
 
-			CloseNow(); // error during writing, remove the user
+			CloseNow();
 			return -1;
 		}
 
-		if (size_sent > 0) { // if something has been sent, but not all, update the buffer
+		if (calc_size > 0) { // some data was sent, update the buffer
 			mTimeLastIOAction.Get();
-
-			if (compressed) { // todo: for now we get rid of compressed unsent data, change that later
-				if (appended)
-					mBufSend.clear();
-			} else { // this is supposed to actually reduce the size of mBufSend, it does a copy so it is slower but memory usage is important thing
-				if (appended) // if we appended, assign the rest of string to the buffer
-					StrCutLeft(mBufSend, size_sent);
-				else
-					StrCutLeft(data, mBufSend, size_sent);
-			}
-		} else if (bool(mCloseAfter)) { // close nice was called, we must close the connection even if the data cannot be transmitted
+			StrCutLeft(mBufSend, calc_size); // this is supposed to actually reduce the size of buffer, it does a copy so it is slower but memory usage is important
+			buf_size -= calc_size;
+		} else if (bool(mCloseAfter)) { // we must close nice the connection
 			CloseNow();
 		}
 
 		if (mxServer && ok) { // buffer overfill protection, only on registered connections
 			mxServer->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			if (mBufSend.size() < MAX_SEND_UNBLOCK_SIZE) { // if buffer size is lower then UNBLOCK size, allow read operation on the connection
+			if (buf_size < MAX_SEND_UNBLOCK_SIZE) { // if buffer size is smaller than unblock size, allow read operation on the connection
 				mxServer->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Unblocking read operation on socket" << endl;
+						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << MAX_SEND_UNBLOCK_SIZE << endl;
 
-					LogStream() << "Unblock INPUT" << endl;
+					LogStream() << "Unblocking input: " << buf_size << " of " << MAX_SEND_UNBLOCK_SIZE << endl;
 				}
-			} else if (mBufSend.size() >= MAX_SEND_FILL_SIZE) { // if buffer is bigger than max send size, block read operation
+			} else if (buf_size >= MAX_SEND_FILL_SIZE) { // if buffer is bigger than maximum send size, block read operation
 				mxServer->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Blocking read operation on socket" << endl;
+						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << MAX_SEND_FILL_SIZE << endl;
 
-					LogStream() << "Block INPUT" << endl;
+					LogStream() << "Blocking input: " << buf_size << " of " << MAX_SEND_FILL_SIZE << endl;
 				}
 			}
 		}
-	} else { // all data has been sent
-		if (appended) // clear output buffer
-			mBufSend.erase(0, mBufSend.size());
-
+	} else { // all data was sent
+		mBufSend.erase(0, buf_size); // clean up send buffer
 		ShrinkStringToFit(mBufSend);
 
-		if (bool(mCloseAfter)) // close nice was called, close the connection
+		if (bool(mCloseAfter)) // close nice the connection
 			CloseNow();
 
-		if (mxServer && ok) { // unregister the connection for write operation
+		if (mxServer && ok) { // unregister connection for write operation
 			mxServer->mConnChooser.OptOut(this, eCC_OUTPUT);
 
 			if (Log(5))
-				LogStream() << "Block OUTPUT" << endl;
+				LogStream() << "Blocking output" << endl;
 		}
 
 		mTimeLastIOAction.Get();
-		OnFlushDone(); // report flush is done
+		OnFlushDone(); // report that flush is done
 	}
 
-	return size_sent;
+	return calc_size;
 }
 
 int cAsyncConn::OnCloseNice(void)

@@ -771,7 +771,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 	cConnDC *other;
 	tCLIt i;
 	unsigned int count = 0;
-	size_t saved, len_data = data.size(), len_tths = tths.size();
+	size_t saved = 0, len_data = data.size(), len_tths = tths.size();
 
 	if (len_tths)
 		saved = len_data - len_tths;

@@ -216,12 +216,17 @@ namespace nVerliHub {
 				};
 
 				/*
-					returns buffer size
+					returns buffer sizes
 				*/
 				size_t GetBufferSize()
 				{
-					 return mBufSend.size();
-				};
+					return mBufSend.size();
+				}
+
+				size_t GetFlushSize()
+				{
+					return mBufFlush.size();
+				}
 
 				/**
 				* Reset the status of the line and the delimiter to default value (new line).
@@ -463,13 +468,18 @@ namespace nVerliHub {
 				 * @param Flush True if the buffer must be flushed.
 				 * @return Number of sent bytes. Zero in case buffer is not flushed or negative number in case of errors.
 				 */
-				int Write(const string &data, bool Flush);
+				int Write(const string &data, bool flush);
 
 				/*
-					true if client supports zlib compression and compression is enabled by server
-					must be set only once on user login, can not be changed in real time
+					flag states that client supports zlib compression and it is enabled by server
+					must be set only once on user login, assume that it cant be changed in real time
+					-2 = disabled
+					-1 = Z_DEFAULT_COMPRESSION
+					0 = Z_NO_COMPRESSION
+					1 = Z_BEST_SPEED
+					9 = Z_BEST_COMPRESSION
 				*/
-				bool mUseZLib;
+				int mZLibLevel;
 
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;
@@ -511,9 +521,14 @@ namespace nVerliHub {
 				/// line per line by calling ReadLineLocal().
 				static char *msBuffer;
 
-				/// Buffer that contains the data to send.
-				/// If data are not sent immediately, they are store in this buffer
-				string mBufSend;
+				/*
+					buffers that contain outgoing protocol data to send
+					if data is not sent at once, rest is stored in send buffer
+					flush buffer is used to store data for compression on flush
+					we dont want to mix compressed and uncompressed buffers
+					else we are going to recompress already compressed unsent data
+				*/
+				string mBufSend, mBufFlush;
 
 				/// Line separator character.
 				/// Delimiter is used to split lines in the buffer and the default one is new line.

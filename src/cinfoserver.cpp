@@ -206,7 +206,7 @@ void cInfoServer::ProtocolInfo(ostream &os)
 		conn = ((cUser*)(*user_iter))->mxConn;
 
 		if (conn)
-			total_buf_up += conn->GetBufferSize();
+			total_buf_up += conn->GetFlushSize() + conn->GetBufferSize();
 	}
 
 	os << " [*] " << autosprintf(_("Upload buffers: %d [%s]"), mServer->mUserList.Size(), convertByte(total_buf_up).c_str()) << "\r\n";

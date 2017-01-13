@@ -18,8 +18,8 @@
 	of the GNU General Public License.
 */
 
-#include <zlib.h>
 #include "czlib.h"
+#include <zlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -28,7 +28,6 @@ namespace nVerliHub {
 	namespace nUtils {
 
 cZLib::cZLib():
-	//inBufPos(0),
 	inBufLen(ZLIB_BUFFER_SIZE),
 	inLastLen(0),
 	outBufLen(ZLIB_BUFFER_SIZE),
@@ -48,7 +47,7 @@ cZLib::~cZLib()
 		free(inBuf);
 }
 
-char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, unsigned int level)
+char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level)
 {
 	if (!buffer)
 		return NULL;
@@ -68,31 +67,26 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, unsigned i
 	}
 
 	z_stream strm;
-	memset((void*) &strm, '\0', sizeof(strm));
+	memset((void*)&strm, '\0', sizeof(strm));
 
 	if (inBufLen < len) // increase in buffer if not enough space
 		for (; inBufLen < len; inBufLen += ZLIB_BUFFER_SIZE);
 
-	char *new_buffer = (char*)realloc(inBuf, inBufLen);
+	char *new_buf = (char*)realloc(inBuf, inBufLen);
 
-	if (!new_buffer) { // todo: throw exception and log error
+	if (!new_buf) { // todo: throw exception and log error
 		free(inBuf);
 		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}
 
-	inBuf = new_buffer;
+	inBuf = new_buf;
 	strm.zalloc = Z_NULL; // allocate deflate state
 	strm.zfree = Z_NULL;
 	strm.data_type = Z_TEXT;
-	unsigned int comp_level = level;
+	err = deflateInit(&strm, level);
 
-	if (comp_level < Z_BEST_SPEED)
-		comp_level = Z_BEST_SPEED;
-	else if (comp_level > Z_BEST_COMPRESSION)
-		comp_level = Z_BEST_COMPRESSION;
-
-	if (deflateInit(&strm, comp_level) != Z_OK) { // initialize
+	if (err != Z_OK) { // initialize
 		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}
@@ -126,25 +120,6 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, unsigned i
 
 	return outBuf;
 }
-
-/*
-void cZLib::AppendData(const char *buffer, size_t len)
-{
-	if ((inBufLen - inBufPos) < len) // increase zlib buffer if not enough
-		for (; (inBufLen - inBufPos) < len; inBufLen += ZLIB_BUFFER_SIZE);
-
-	char *new_buffer = (char*)realloc(inBuf, inBufLen);
-
-	if (new_buffer == NULL) { // todo: throw exception and log error
-		free(inBuf);
-		return;
-	}
-
-	inBuf = new_buffer;
-	memcpy(inBuf + inBufPos, buffer, len);
-	inBufPos += len;
-}
-*/
 
 	}; // namespace nUtils
 }; // namespace nVerliHub

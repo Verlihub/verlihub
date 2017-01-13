@@ -27,9 +27,12 @@
 #include "cdctag.h"
 #include <string>
 #include <string.h>
+#include <zlib.h>
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include <stdio.h>
 #include "stringutils.h"
 #include "cdcconsole.h"
@@ -404,8 +407,12 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
 			conn->mFeatures |= eSF_ZLIB;
 
-			if (!mS->mC.disable_zlib) {
-				conn->mUseZLib = true;
+			if (!mS->mC.disable_zlib && (mS->mC.zlib_compress_level > -2)) {
+				if (mS->mC.zlib_compress_level > Z_BEST_COMPRESSION)
+					conn->mZLibLevel = Z_BEST_COMPRESSION;
+				else
+					conn->mZLibLevel = mS->mC.zlib_compress_level;
+
 				pars.append("ZPipe0 ");
 			}
 
@@ -457,6 +464,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if (feature == "TLS") {
 			conn->mFeatures |= eSF_TLS;
+			pars.append("TLS ");
 
 		} else if (feature == "FailOver") {
 			conn->mFeatures |= eSF_FAILOVER;
