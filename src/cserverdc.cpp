@@ -176,7 +176,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	nctmp="$PassiveList ";
 	mPassiveUsers.SetNickListStart(nctmp);
 
-	string speed("\x1"), mail(""), share("0"), val_new, val_old; // add the bots
+	string speed("\x1"), mail, share("0"), val_new, val_old; // add the bots
 	mHubSec = new cMainRobot((mC.hub_security.size() ? mC.hub_security : HUB_VERSION_NAME), this);
 	mHubSec->mClass = tUserCl(10);
 	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share);
@@ -1406,7 +1406,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		sRegInfo = new cRegUserInfo;
 	}
 
-	string more("");
+	string more;
 	tVAL_NICK vn = ValidateNick(conn, nick, more); // validate nick
 	stringstream errmsg;
 
@@ -1817,7 +1817,7 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	char pipe = '|';
 	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string curhost, lock(""), key(""), data("");
+	string curhost, lock, key, data;
 	size_t pos_space;
 	cAsyncConn *pHubList;
 
@@ -2643,7 +2643,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 			#endif
 
 			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc") || (svar == "cmd_start_op") || (svar == "cmd_start_user")) && (val_new != val_old)) { // take care of special hub configs in real time
-				string speed("\x1"), mail(""), share("0"), data;
+				string speed("\x1"), mail, share("0"), data;
 
 				if (svar == "hub_security") {
 					if (val_new.empty() || (val_new == mC.opchat_name)) { // dont allow empty or equal to opchat nick

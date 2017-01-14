@@ -329,7 +329,7 @@ bool LimitLines(const string &str, int max)
 
 string StrByteList(const string &data, const string &sep)
 {
-	string res("");
+	string res;
 
 	for (unsigned i = 0; i < data.size(); ++i) {
 		if (i > 0)

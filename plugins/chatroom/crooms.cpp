@@ -65,24 +65,22 @@ cRoom::~cRoom()
 
 void cRoom::OnLoad()
 {
-	string omsg;
-	string start(mNick);
+	string omsg, start(mNick), desc("Chatroom: "), speed("\x1"), mail, share("0");
 
-	string desc("ChatRoom: "),speed(/*"Hub\x9"*/" "), mail(""), share("0");
-	if(!mUsers) {
-		mUsers = new cUserCollection(true,false);
+	if (!mUsers) {
+		mUsers = new cUserCollection(true, false);
 		mUsers->SetNickListSeparator("\r\n");
 	}
-	if (mChatRoom == NULL) {
-		mChatRoom=new cXChatRoom(mNick, this);
+
+	if (!mChatRoom) {
+		mChatRoom = new cXChatRoom(mNick, this);
 		mChatRoom->mClass = tUserCl(10);
 		desc += mTopic;
-		nProtocol::cDCProto::Create_MyINFO(mChatRoom->mMyINFO, mNick,desc,speed,mail,share);
+		nProtocol::cDCProto::Create_MyINFO(mChatRoom->mMyINFO, mNick, desc, speed, mail, share);
 		mChatRoom->mMyINFO_basic = mChatRoom->mMyINFO;
-
 		mPlugin->AddRobot(mChatRoom);
-		omsg = "$Hello "; omsg+= mNick; omsg+= "|";
-		mServer->mUserList.SendToAll(omsg,true,false);
+		nProtocol::cDCProto::Create_Hello(omsg, mNick);
+		mServer->mUserList.SendToAll(omsg, mServer->mC.delayed_myinfo, true);
 	}
 }
 

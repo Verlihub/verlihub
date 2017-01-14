@@ -27,7 +27,6 @@
 #include "cdctag.h"
 #include <string>
 #include <string.h>
-#include <zlib.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -373,7 +372,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	string &supports = msg->ChunkString(eCH_1_PARAM);
 	conn->mSupportsText = supports; // save user supports in plain text format
 	istringstream is(supports);
-	string feature, omsg, pars("");
+	string feature, omsg, pars;
 
 	while (1) {
 		feature = mS->mEmpty;
@@ -406,15 +405,8 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
 			conn->mFeatures |= eSF_ZLIB;
-
-			if (!mS->mC.disable_zlib && (mS->mC.zlib_compress_level > -2)) {
-				if (mS->mC.zlib_compress_level > Z_BEST_COMPRESSION)
-					conn->mZLibLevel = Z_BEST_COMPRESSION;
-				else
-					conn->mZLibLevel = mS->mC.zlib_compress_level;
-
-				pars.append("ZPipe0 ");
-			}
+			conn->mZLibFlag = true;
+			pars.append("ZPipe "); // send even if disabled, we might want to turn it on any time, also we are no longer testing it
 
 		} else if (feature == "ChatOnly") {
 			conn->mFeatures |= eSF_CHATONLY;
@@ -975,7 +967,24 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_MYINFO)) // protocol flood
 		return -1;
 
-	if (conn->mConnType == NULL) // parse connection
+	/*
+		we already have myinfo and it is exactly same as last one
+		skip any further actions, why do something twice?
+		specially this hard operation of parsing myinfo
+
+		todo
+			but here we spend some extra memory, maybe use hash instead?
+			similar to same chat message hash
+	*/
+
+	if (conn->mpUser->mMyINFO_orig.size() && (StrCompare(conn->mpUser->mMyINFO_orig, 0, conn->mpUser->mMyINFO_orig.size(), msg->mStr) == 0)) {
+		if (conn->Log(2))
+			conn->LogStream() << "User sent same MyINFO: " << msg->mStr << endl;
+
+		return -1;
+	}
+
+	if (!conn->mConnType) // parse connection
 		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
 
 	ostringstream os;
@@ -996,9 +1005,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	bool TagValid = true;
 	int tag_result = 0;
 
-	if ((!mS->mC.tag_allow_none || (mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
+	if ((!mS->mC.tag_allow_none || (mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER))
 		TagValid = tag->ValidateTag(os, conn->mConnType, tag_result);
-	}
 
 	#ifndef WITHOUT_PLUGINS
 		TagValid = TagValid && mS->mCallBacks.mOnValidateTag.CallAll(conn, tag);
@@ -1181,8 +1189,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL); // set email, not sure where its used
-
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
 		unsigned int banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
@@ -1297,7 +1303,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (!mS->mC.show_email) // hide email
 		email = "";
 	else
-		email = conn->mpUser->mEmail;
+		email = msg->ChunkString(eCH_MI_MAIL);
 
 	if (conn->mpUser->mHideShare) // hide share
 		sShare = "0";
@@ -1311,6 +1317,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	else
 		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare);
 
+	conn->mpUser->mMyINFO_orig = msg->mStr; // also dont forget to set original myinfo
+
 	if (conn->mpUser->mInList) { // login or send to all
 		/*
 			send it to all only if
@@ -1319,10 +1327,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				send only the version that has changed only to those who want it
 		*/
 
-		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (myinfo_full != conn->mpUser->mMyINFO)) {
+		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), myinfo_full) != 0)) {
 			conn->mpUser->mMyINFO = myinfo_full;
 
-			if (myinfo_basic != conn->mpUser->mMyINFO_basic) {
+			if (StrCompare(conn->mpUser->mMyINFO_basic, 0, conn->mpUser->mMyINFO_basic.size(), myinfo_basic) != 0) {
 				conn->mpUser->mMyINFO_basic = myinfo_basic;
 				string send_info;
 				send_info = GetMyInfo(conn->mpUser, eUC_NORMUSER);
@@ -2219,7 +2227,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	string nick(""), saddr(""), addr("");
+	string nick, saddr, addr;
 
 	if (passive) { // verify sender
 		nick = msg->ChunkString(eCH_PS_NICK);
@@ -2412,7 +2420,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	string search, tths("");
+	string search, tths;
 	Create_Search(search, saddr, lims, spat);
 
 	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 3, 8, "?0?9?") == 0)) { // also create short version to send to modern clients
@@ -2497,7 +2505,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	if (!mS->CheckPortNumber(iport))
 		return -1;
 
-	string saddr("");
+	string saddr;
 	string &addr = msg->ChunkString(eCH_SA_IP);
 
 	if (CheckIP(conn, addr))
@@ -2924,7 +2932,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	cUser *other;
-	string back(""), nick, sep("$$"), omsg;
+	string back, nick, sep("$$"), omsg;
 	data.append(sep);
 	size_t pos = data.find(sep);
 

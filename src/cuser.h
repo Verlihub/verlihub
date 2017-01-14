@@ -123,12 +123,13 @@ public:
 public:
 	// users myinfo parts
 	string mNick;
-	string mDescStr;
+	/*
+	string mDescStr; // todo: dont define unless actually used
 	string mTagStr;
 	string mConnStr;
 	string mMailStr;
-	string mMyINFO;
-	string mMyINFO_basic;
+	*/
+	string mMyINFO, mMyINFO_basic;
 
 	// last extjson
 	string mExtJSON;
@@ -170,8 +171,8 @@ public:
 	nSocket::cConnDC *mxConn;
 	/* Pointer to the srever (this pointer must never be deleted) */
 	nSocket::cServerDC *mxServer;
-	/* Email retrived from MyINFO */
-	string mEmail;
+	// original myinfo, used to avoid doing same work twice
+	string mMyINFO_orig;
 	// client flag in myinfo
 	unsigned int mMyFlag;
 	/* True if user is in passive mode */

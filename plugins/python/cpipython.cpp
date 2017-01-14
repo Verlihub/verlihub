@@ -768,7 +768,6 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 						msg->Parse();
 						if (msg->SplitChunks())
 							log1("cpiPython::%s: failed to split new MyINFO into chunks\n", funcname);
-						conn->mpUser->mEmail = msg->ChunkString(eCH_MI_MAIL);
 					}
 					ret = true;  // we've changed myinfo so we want the hub to store it now
 				} else {

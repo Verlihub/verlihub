@@ -74,9 +74,10 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 
 	char *new_buf = (char*)realloc(inBuf, inBufLen);
 
-	if (!new_buf) { // todo: throw exception and log error
+	if (!new_buf) {
 		free(inBuf);
 		outLen = inLastLen = outLastLen = 0;
+		err = -90;
 		return NULL;
 	}
 
@@ -84,7 +85,14 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	strm.zalloc = Z_NULL; // allocate deflate state
 	strm.zfree = Z_NULL;
 	strm.data_type = Z_TEXT;
-	err = deflateInit(&strm, level);
+	int comp_level = level;
+
+	if (comp_level < Z_DEFAULT_COMPRESSION)
+		comp_level = Z_DEFAULT_COMPRESSION;
+	else if (comp_level > Z_BEST_COMPRESSION)
+		comp_level = Z_BEST_COMPRESSION;
+
+	err = deflateInit(&strm, comp_level);
 
 	if (err != Z_OK) { // initialize
 		outLen = inLastLen = outLastLen = 0;

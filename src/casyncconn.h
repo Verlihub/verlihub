@@ -470,16 +470,8 @@ namespace nVerliHub {
 				 */
 				int Write(const string &data, bool flush);
 
-				/*
-					flag states that client supports zlib compression and it is enabled by server
-					must be set only once on user login, assume that it cant be changed in real time
-					-2 = disabled
-					-1 = Z_DEFAULT_COMPRESSION
-					0 = Z_NO_COMPRESSION
-					1 = Z_BEST_SPEED
-					9 = Z_BEST_COMPRESSION
-				*/
-				int mZLibLevel;
+				// states that client supports zlib compression
+				bool mZLibFlag;
 
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;

@@ -387,7 +387,7 @@ int _SendToOpChat(lua_State *L)
 		return 2;
 	}
 
-	string nick("");
+	string nick;
 
 	if (args >= 2)
 		nick = lua_tostring(L, 3);

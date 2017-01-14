@@ -77,7 +77,7 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
-	mZLibLevel(-2),
+	mZLibFlag(false),
 	//mIterator(0),
 	ok(desc > 0),
 	mWritable(true),
@@ -132,7 +132,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 /** connect to given host (ip) on port */
 cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
-	mZLibLevel(-2),
+	mZLibFlag(false),
 	//mIterator(0),
 	ok(false),
 	mWritable(true),
@@ -193,7 +193,7 @@ void cAsyncConn::Close()
 
 void cAsyncConn::Flush()
 {
-	string empty("");
+	string empty;
 
 	if (GetFlushSize() || GetBufferSize()) // write buffers
 		Write(empty, true);
@@ -743,12 +743,12 @@ int cAsyncConn::Write(const string &data, bool flush)
 	else if (Log(5))
 		LogStream() << "Server not available for ZLib compression" << endl;
 
-	if (flush_size) { // check if there is something to flush, else send old remaining data
-		if ((mZLibLevel > -2) && send_buf && serv && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
+	if (flush_size && send_buf) { // check if there is something to flush, else send old remaining data
+		if (mZLibFlag && serv && !serv->mC.disable_zlib && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
 			if (send_buf[flush_size - 1] == '|') {
 				calc_size = 0; // we dont use it anymore
 				int comp_err = 0;
-				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, mZLibLevel);
+				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
 
 				if (calc_size && zlib_buf) { // compression successful
 					buf_size -= flush_size; // recalculate final send buffer size
@@ -759,10 +759,19 @@ int cAsyncConn::Write(const string &data, bool flush)
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
 					if (Log(5)) {
-						if (calc_size)
+						if (calc_size) {
 							LogStream() << "Compressed ZLib data is larger, fall back: " << calc_size << " vs " << flush_size << endl;
-						else
-							LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
+						} else {
+							switch (comp_err) {
+								case -90:
+									LogStream() << "Reallocation of ZLib buffer failed, fall back: " << comp_err << endl;
+									break;
+
+								default:
+									LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
+									break;
+							}
+						}
 					}
 				}
 
