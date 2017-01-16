@@ -404,23 +404,17 @@ void cDCConf::AddVars()
 	// End custom messages
 }
 
-/*!
-    \fn nDirectConnect::nTables::cDCConf::Load()
- */
 int cDCConf::Load()
 {
-	mS.mSetupList.LoadFileTo(this,mS.mDBConf.config_name.c_str());
-	hub_version = HUB_VERSION_VERS;
+	mS.mSetupList.LoadFileTo(this, mS.mDBConf.config_name.c_str());
 	return 0;
 }
 
-/*!
-    \fn nDirectConnect::nTables::cDCConf::Save()
- */
 int cDCConf::Save()
 {
-	hub_version = HUB_VERSION_VERS;
-	mS.mSetupList.SaveFileTo(this,mS.mDBConf.config_name.c_str());
+	string val_new, val_old;
+	mS.SetConfig(mS.mDBConf.config_name.c_str(), "hub_version", HUB_VERSION_VERS, val_new, val_old);
+	mS.mSetupList.SaveFileTo(this, mS.mDBConf.config_name.c_str());
 	return 0;
 }
 

@@ -18,6 +18,7 @@
 	of the GNU General Public License.
 */
 
+#define ERR_EMPT "Empty parameter"
 #define ERR_PARAM "Wrong parameters"
 #define ERR_CALL "Call error"
 #define ERR_SERV "Error getting server"
@@ -50,98 +51,142 @@ namespace nVerliHub {
 	using namespace nEnums;
 	using namespace nLuaPlugin;
 
-cServerDC * GetCurrentVerlihub()
+cServerDC* GetCurrentVerlihub()
 {
-	return (cServerDC *)cServerDC::sCurrentServer;
+	return (cServerDC*)cServerDC::sCurrentServer;
 }
 
 int _SendToUser(lua_State *L)
 {
-	string data, nick;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) == 3) {
-		if(!lua_isstring(L, 2))
-		{
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		data = lua_tostring(L, 2);
-		if(!lua_isstring(L, 3))
-		{
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		nick = lua_tostring(L, 3);
-		if(!SendDataToUser(data.c_str(), nick.c_str()))
-		{
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToUser; expected 2 arguments but got %d", lua_gettop(L) - 1);
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SendToUser, expected atleast 2 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2), nick = lua_tostring(L, 3);
+
+	if (data.empty() || nick.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	bool delay = false;
+
+	if (args >= 3)
+		delay = (int(lua_tonumber(L, 4)) > 0);
+
+	if (!SendDataToUser(data.c_str(), nick.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToClass(lua_State *L)
 {
-	string data;
-	int min_class, max_class;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) == 4) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		data = lua_tostring(L, 2);
-		if(!lua_isnumber(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		min_class = (int)lua_tonumber(L, 3);
-		if(!lua_isnumber(L, 4)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		max_class = (int)lua_tonumber(L, 4);
-		if(!SendToClass(data.c_str(), min_class, max_class)) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToClass; expected 3 arguments but got %d", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToClass, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3)) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	int min_class = eUC_NORMUSER;
+
+	if (args >= 2) {
+		min_class = int(lua_tonumber(L, 3));
+
+		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	int max_class = eUC_MASTER;
+
+	if (args >= 3) {
+		max_class = int(lua_tonumber(L, 4));
+
+		if ((max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	bool delay = false;
+
+	if (args >= 4)
+		delay = (int(lua_tonumber(L, 5)) > 0);
+
+	if (!SendToClass(data.c_str(), min_class, max_class, delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToAll(lua_State *L)
 {
-	string data;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) == 2) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		data = lua_tostring(L, 2);
-		if(!SendToAll(data.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToAll; expected 1 argument but got %d", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToAll, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	bool delay = false;
+
+	if (args >= 2)
+		delay = (int(lua_tonumber(L, 3)) > 0);
+
+	if (!SendToAll(data.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -149,179 +194,253 @@ int _SendToAll(lua_State *L)
 
 int _SendToActive(lua_State *L)
 {
-	if (lua_gettop(L) == 2) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
+	int args = lua_gettop(L) - 1;
 
-		string data = lua_tostring(L, 2);
-
-		if (!SendToActive(data.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToActive, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToActive, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	bool delay = false;
+
+	if (args >= 2)
+		delay = (int(lua_tonumber(L, 3)) > 0);
+
+	if (!SendToActive(data.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToActiveClass(lua_State *L)
 {
-	if (lua_gettop(L) == 4) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
+	int args = lua_gettop(L) - 1;
 
-		string data = lua_tostring(L, 2);
-
-		if (!lua_isnumber(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		int min_class = (int)lua_tonumber(L, 3);
-
-		if (!lua_isnumber(L, 4)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		int max_class = (int)lua_tonumber(L, 4);
-
-		if (!SendToActiveClass(data.c_str(), min_class, max_class)) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToActiveClass, expected 3 arguments but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToActiveClass, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3)) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	int min_class = eUC_NORMUSER;
+
+	if (args >= 2) {
+		min_class = int(lua_tonumber(L, 3));
+
+		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	int max_class = eUC_MASTER;
+
+	if (args >= 3) {
+		max_class = int(lua_tonumber(L, 4));
+
+		if ((max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	bool delay = false;
+
+	if (args >= 4)
+		delay = (int(lua_tonumber(L, 5)) > 0);
+
+	if (!SendToActiveClass(data.c_str(), min_class, max_class, delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToPassive(lua_State *L)
 {
-	if (lua_gettop(L) == 2) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
+	int args = lua_gettop(L) - 1;
 
-		string data = lua_tostring(L, 2);
-
-		if (!SendToPassive(data.c_str())) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToPassive, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToPassive, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	bool delay = false;
+
+	if (args >= 2)
+		delay = (int(lua_tonumber(L, 3)) > 0);
+
+	if (!SendToPassive(data.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToPassiveClass(lua_State *L)
 {
-	if (lua_gettop(L) == 4) {
-		if (!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
+	int args = lua_gettop(L) - 1;
 
-		string data = lua_tostring(L, 2);
-
-		if (!lua_isnumber(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		int min_class = (int)lua_tonumber(L, 3);
-
-		if (!lua_isnumber(L, 4)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-
-		int max_class = (int)lua_tonumber(L, 4);
-
-		if (!SendToPassiveClass(data.c_str(), min_class, max_class)) {
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	} else {
-		luaL_error(L, "Error calling VH:SendToPassiveClass, expected 3 arguments but got %d.", lua_gettop(L) - 1);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendToPassiveClass, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	if (!lua_isstring(L, 2) || ((args >= 2) && !lua_isnumber(L, 3)) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2);
+
+	if (data.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	int min_class = eUC_NORMUSER;
+
+	if (args >= 2) {
+		min_class = int(lua_tonumber(L, 3));
+
+		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	int max_class = eUC_MASTER;
+
+	if (args >= 3) {
+		max_class = int(lua_tonumber(L, 4));
+
+		if ((max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	bool delay = false;
+
+	if (args >= 4)
+		delay = (int(lua_tonumber(L, 5)) > 0);
+
+	if (!SendToPassiveClass(data.c_str(), min_class, max_class, delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendPMToAll(lua_State *L)
 {
-	string data, from;
-	int min_class = 0, max_class = 10;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) >= 2) {
-		if(!lua_isstring(L, 2)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		data = lua_tostring(L, 2);
-		if(!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		from = lua_tostring(L, 3);
-
-		if(lua_isnumber(L, 4)) {
-			min_class = (int) lua_tonumber(L, 4);
-		}
-
-		if(lua_isnumber(L, 5)) {
-			max_class = (int) lua_tonumber(L, 5);
-		}
-
-		/*
-		string start, end;
-		cServerDC *server = GetCurrentVerlihub();
-
-		if(server == NULL) {
-			luaerror(L, ERR_SERV);
-			return 2;
-		}
-
-		server->mP.Create_PMForBroadcast(start, end, from, from, data);
-		server->SendToAllWithNick(start, end, min_class, max_class);
-		*/
-
-		SendPMToAll(data.c_str(), from.c_str(), min_class, max_class);
-	} else {
-		luaL_error(L, "Error calling VH:SendPMToAll; expected at least 4 arguments but got %d", lua_gettop(L) - 1);
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SendPMToAll, expected atleast 2 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string data = lua_tostring(L, 2), from = lua_tostring(L, 3); // todo: make from nick optional, use hub security nick
+
+	if (data.empty() || from.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	int min_class = eUC_NORMUSER;
+
+	if (args >= 3) {
+		min_class = int(lua_tonumber(L, 4));
+
+		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	int max_class = eUC_MASTER;
+
+	if (args >= 4) {
+		max_class = int(lua_tonumber(L, 5));
+
+		if ((max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
+	}
+
+	if (!SendPMToAll(data.c_str(), from.c_str(), min_class, max_class)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _SendToChat(lua_State *L)
@@ -335,23 +454,28 @@ int _SendToChat(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 4) && (!lua_isnumber(L, 4) || !lua_isnumber(L, 5)))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
-	if ((args >= 4) && (!lua_isnumber(L, 4) || !lua_isnumber(L, 5))) {
-		luaerror(L, ERR_PARAM);
+	string nick = lua_tostring(L, 2), text = lua_tostring(L, 3);
+
+	if (nick.empty() || text.empty()) {
+		luaerror(L, ERR_EMPT);
 		return 2;
 	}
 
-	string nick = lua_tostring(L, 2);
-	string text = lua_tostring(L, 3);
-	int min_class = 0, max_class = 10;
+	int min_class = eUC_NORMUSER, max_class = eUC_MASTER;
 
 	if (args >= 4) {
-		min_class = (int)lua_tonumber(L, 4);
-		max_class = (int)lua_tonumber(L, 5);
+		min_class = int(lua_tonumber(L, 4));
+		max_class = int(lua_tonumber(L, 5));
+
+		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER)) || (max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
+			luaerror(L, ERR_CLASS);
+			return 2;
+		}
 	}
 
 	if (!SendToChat(nick.c_str(), text.c_str(), min_class, max_class)) {
@@ -383,7 +507,7 @@ int _SendToOpChat(lua_State *L)
 	string data = lua_tostring(L, 2);
 
 	if (data.empty()) {
-		luaerror(L, ERR_CALL);
+		luaerror(L, ERR_EMPT);
 		return 2;
 	}
 
@@ -2637,7 +2761,7 @@ int _AddRegUser(lua_State *L)
 	const string pass = lua_tostring(L, 3);
 	int uclass = (int)lua_tonumber(L, 4);
 
-	if ((uclass < eUC_PINGER) || (uclass == eUC_NORMUSER) || ((uclass > eUC_ADMIN) && (uclass < eUC_MASTER)) || (uclass > eUC_MASTER)) { // validate class number
+	if ((uclass < eUC_PINGER) || (uclass == eUC_NORMUSER) || ((uclass > eUC_ADMIN) && (uclass < eUC_MASTER)) || (uclass > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
@@ -2755,15 +2879,13 @@ int _ScriptCommand(lua_State *L)
 		return 2;
 	}
 
-	string cmd = lua_tostring(L, 2);
-	string data = lua_tostring(L, 3);
-	string plug("lua");
-	int inst = 0;
+	string cmd = lua_tostring(L, 2), data = lua_tostring(L, 3), plug("lua");
+	bool inst = false;
 
 	if (args >= 3)
-		inst = (int)lua_tonumber(L, 4);
+		inst = (int(lua_tonumber(L, 4)) > 0);
 
-	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName, (inst > 0))) {
+	if (!ScriptCommand(&cmd, &data, &plug, &li->mScriptName, inst)) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}

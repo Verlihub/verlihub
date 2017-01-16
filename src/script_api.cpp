@@ -55,41 +55,13 @@ cUser* GetUser(const char *nick)
 		return NULL;
 	}
 
-	cUser *usr = serv->mUserList.GetUserByNick(string(nick));
-	return usr; // user without connection, a bot, must be accepted as well
+	cUser *user = serv->mUserList.GetUserByNick(string(nick));
+	return user; // user without connection, a bot, must be returned as well, its up to the call to check for connection
 }
 
-bool SendDataToUser(const char *data, const char *nick)
+bool SendDataToUser(const char *data, const char *nick, bool delay)
 {
-	cUser *usr = GetUser(nick);
-
-	if (!usr || !usr->mxConn)
-		return false;
-
-	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	usr->mxConn->Send(omsg, CheckDataPipe(omsg), true);
-	return true;
-}
-
-bool KickUser(const char *opnick, const char *nick, const char *reason)
-{
-	if (!opnick || !nick || !reason)
-		return false;
-
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		cerr << "Server not found" << endl;
-		return false;
-	}
-
-	cUser *opuser = GetUser(opnick);
-
-	if (!opuser)
+	if (!data || !nick)
 		return false;
 
 	cUser *user = GetUser(nick);
@@ -97,33 +69,16 @@ bool KickUser(const char *opnick, const char *nick, const char *reason)
 	if (!user || !user->mxConn)
 		return false;
 
-	serv->DCKickNick(NULL, opuser, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
-	return true;
-}
-
-bool SendToClass(const char *data, int min_class, int max_class)
-{
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		cerr << "Server not found" << endl;
-		return false;
-	}
-
-	if (min_class > max_class)
-		return false;
-
 	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
+	user->mxConn->Send(omsg, CheckDataPipe(omsg), !delay);
 	return true;
 }
 
-bool SendToAll(const char *data)
+bool SendToClass(const char *data, int min_class, int max_class, bool delay)
 {
+	if (!data || (min_class > max_class))
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -132,16 +87,15 @@ bool SendToAll(const char *data)
 	}
 
 	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	serv->mUserList.SendToAll(omsg, false, CheckDataPipe(omsg));
+	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
 	return true;
 }
 
-bool SendToActive(const char *data)
+bool SendToAll(const char *data, bool delay)
 {
+	if (!data)
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -150,37 +104,15 @@ bool SendToActive(const char *data)
 	}
 
 	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	serv->mActiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
+	serv->mUserList.SendToAll(omsg, delay, CheckDataPipe(omsg));
 	return true;
 }
 
-bool SendToActiveClass(const char *data, int min_class, int max_class)
+bool SendToActive(const char *data, bool delay)
 {
-	cServerDC *serv = GetCurrentVerlihub();
-
-	if (!serv) {
-		cerr << "Server not found" << endl;
-		return false;
-	}
-
-	if (min_class > max_class)
+	if (!data)
 		return false;
 
-	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
-	return true;
-}
-
-bool SendToPassive(const char *data)
-{
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -189,16 +121,15 @@ bool SendToPassive(const char *data)
 	}
 
 	string omsg(data);
-
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
-
-	serv->mPassiveUsers.SendToAll(omsg, false, CheckDataPipe(omsg));
+	serv->mActiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg));
 	return true;
 }
 
-bool SendToPassiveClass(const char *data, int min_class, int max_class)
+bool SendToActiveClass(const char *data, int min_class, int max_class, bool delay)
 {
+	if (!data || (min_class > max_class))
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -206,20 +137,50 @@ bool SendToPassiveClass(const char *data, int min_class, int max_class)
 		return false;
 	}
 
-	if (min_class > max_class)
+	string omsg(data);
+	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
+	return true;
+}
+
+bool SendToPassive(const char *data, bool delay)
+{
+	if (!data)
 		return false;
 
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
 	string omsg(data);
+	serv->mPassiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg));
+	return true;
+}
 
-	//if ((omsg.find("$ConnectToMe") != string::npos) || (omsg.find("$RevConnectToMe") != string::npos))
-		//return false;
+bool SendToPassiveClass(const char *data, int min_class, int max_class, bool delay)
+{
+	if (!data || (min_class > max_class))
+		return false;
 
-	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, false, CheckDataPipe(omsg));
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	string omsg(data);
+	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
 	return true;
 }
 
 bool SendPMToAll(const char *data, const char *from, int min_class, int max_class)
 {
+	if (!data || !from || (min_class > max_class))
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {
@@ -235,7 +196,7 @@ bool SendPMToAll(const char *data, const char *from, int min_class, int max_clas
 
 bool SendToChat(const char *nick, const char *text, int min_class, int max_class)
 {
-	if (!nick || !text)
+	if (!nick || !text || (min_class > max_class))
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -269,6 +230,32 @@ bool SendToOpChat(const char *data, const char *nick)
 		user = GetUser(nick);
 
 	serv->mOpChat->SendPMToAll(data, (user ? user->mxConn : NULL), true, false);
+	return true;
+}
+
+bool KickUser(const char *opnick, const char *nick, const char *reason)
+{
+	if (!opnick || !nick || !reason)
+		return false;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	cUser *opuser = GetUser(opnick);
+
+	if (!opuser)
+		return false;
+
+	cUser *user = GetUser(nick);
+
+	if (!user || !user->mxConn)
+		return false;
+
+	serv->DCKickNick(NULL, opuser, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 	return true;
 }
 

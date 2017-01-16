@@ -87,9 +87,11 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	strm.data_type = Z_TEXT;
 	int comp_level = level;
 
-	if (comp_level < Z_DEFAULT_COMPRESSION)
+	if (comp_level < Z_DEFAULT_COMPRESSION) // -1
 		comp_level = Z_DEFAULT_COMPRESSION;
-	else if (comp_level > Z_BEST_COMPRESSION)
+	else if (comp_level < Z_BEST_SPEED) // 1
+		comp_level = Z_BEST_SPEED;
+	else if (comp_level > Z_BEST_COMPRESSION) // 9
 		comp_level = Z_BEST_COMPRESSION;
 
 	err = deflateInit(&strm, comp_level);

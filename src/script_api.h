@@ -32,14 +32,14 @@
 using namespace std;
 
 namespace nVerliHub {
-	bool SendDataToUser(const char *data, const char *nick);
-	bool SendToClass(const char *data, int min_class, int max_class);
-	bool SendToAll(const char *data);
-	bool SendToActive(const char *data);
-	bool SendToActiveClass(const char *data, int min_class, int max_class);
-	bool SendToPassive(const char *data);
-	bool SendToPassiveClass(const char *data, int min_class, int max_class);
-	bool SendPMToAll(const char *data, const char *from, int min_class, int max_class);
+	bool SendDataToUser(const char *data, const char *nick, bool delay = false);
+	bool SendToClass(const char *data, int min_class = 0, int max_class = 10, bool delay = false);
+	bool SendToAll(const char *data, bool delay = false);
+	bool SendToActive(const char *data, bool delay = false);
+	bool SendToActiveClass(const char *data, int min_class = 0, int max_class = 10, bool delay = false);
+	bool SendToPassive(const char *data, bool delay = false);
+	bool SendToPassiveClass(const char *data, int min_class = 0, int max_class = 10, bool delay = false);
+	bool SendPMToAll(const char *data, const char *from, int min_class = 0, int max_class = 10);
 	bool SendToChat(const char *nick, const char *text, int min_class = 0, int max_class = 10);
 	bool SendToOpChat(const char *data, const char *nick = NULL);
 	bool CloseConnection(const char *nick, long delay = 0);
