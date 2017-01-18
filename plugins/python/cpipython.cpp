@@ -1130,7 +1130,7 @@ w_Targs *_SendToActive(int id, w_Targs *args)
 	if (!data)
 		return NULL;
 
-	if (!SendToActive(data, (delay == 1)))
+	if (!SendToActive(data, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
@@ -1147,7 +1147,7 @@ w_Targs *_SendToPassive(int id, w_Targs *args)
 	if (!data)
 		return NULL;
 
-	if (!SendToPassive(data, (delay == 1)))
+	if (!SendToPassive(data, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
@@ -1164,7 +1164,7 @@ w_Targs *_SendToActiveClass(int id, w_Targs *args)
 	if (!data)
 		return NULL;
 
-	if (!SendToActiveClass(data, minclass, maxclass, (delay == 1)))
+	if (!SendToActiveClass(data, minclass, maxclass, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
@@ -1181,7 +1181,7 @@ w_Targs *_SendToPassiveClass(int id, w_Targs *args)
 	if (!data)
 		return NULL;
 
-	if (!SendToPassiveClass(data, minclass, maxclass, (delay == 1)))
+	if (!SendToPassiveClass(data, minclass, maxclass, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
@@ -1198,7 +1198,7 @@ w_Targs *_SendDataToUser(int id, w_Targs *args)
 	if (!data || !nick)
 		return NULL;
 
-	if (!SendDataToUser(data, nick, (delay == 1)))
+	if (!SendDataToUser(data, nick, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
@@ -1215,7 +1215,7 @@ w_Targs *_SendDataToAll(int id, w_Targs *args)
 	if (!data)
 		return NULL;
 
-	if (!SendToClass(data, minclass, maxclass, (delay == 1)))
+	if (!SendToClass(data, minclass, maxclass, (delay > 0)))
 		return NULL;
 
 	return w_ret1;
