@@ -967,23 +967,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_MYINFO)) // protocol flood
 		return -1;
 
-	/*
-		we already have myinfo and it is exactly same as last one
-		skip any further actions, why do something twice?
-		specially this hard operation of parsing myinfo
-
-		todo
-			but here we spend some extra memory, maybe use hash instead?
-			similar to same chat message hash
-	*/
-
-	if (conn->mpUser->mMyINFO_orig.size() && (StrCompare(conn->mpUser->mMyINFO_orig, 0, conn->mpUser->mMyINFO_orig.size(), msg->mStr) == 0)) {
-		if (conn->Log(2))
-			conn->LogStream() << "User sent same MyINFO: " << msg->mStr << endl;
-
-		return -1;
-	}
-
 	if (!conn->mConnType) // parse connection
 		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
 
@@ -1316,8 +1299,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		myinfo_full = myinfo_basic;
 	else
 		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare);
-
-	conn->mpUser->mMyINFO_orig = msg->mStr; // also dont forget to set original myinfo
 
 	if (conn->mpUser->mInList) { // login or send to all
 		/*

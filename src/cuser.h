@@ -171,8 +171,6 @@ public:
 	nSocket::cConnDC *mxConn;
 	/* Pointer to the srever (this pointer must never be deleted) */
 	nSocket::cServerDC *mxServer;
-	// original myinfo, used to avoid doing same work twice
-	string mMyINFO_orig;
 	// client flag in myinfo
 	unsigned int mMyFlag;
 	/* True if user is in passive mode */

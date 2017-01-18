@@ -485,32 +485,32 @@ static PyObject *__SendToOpChat(PyObject *self, PyObject *args)
 
 static PyObject *__SendToActive(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendToActive, args, "s"));
+	return pybool(BasicCall(W_SendToActive, args, "s|l"));
 }
 
 static PyObject *__SendToPassive(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendToPassive, args, "s"));
+	return pybool(BasicCall(W_SendToPassive, args, "s|l"));
 }
 
 static PyObject *__SendToActiveClass(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendToActiveClass, args, "sll"));
+	return pybool(BasicCall(W_SendToActiveClass, args, "sll|l"));
 }
 
 static PyObject *__SendToPassiveClass(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendToPassiveClass, args, "sll"));
+	return pybool(BasicCall(W_SendToPassiveClass, args, "sll|l"));
 }
 
-static PyObject *__SendDataToUser(PyObject *self, PyObject *args)
+static PyObject* __SendDataToUser(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendDataToUser, args, "ss"));
+	return pybool(BasicCall(W_SendDataToUser, args, "ss|l"));
 }
 
 static PyObject *__SendDataToAll(PyObject *self, PyObject *args)
 {
-	return pybool(BasicCall(W_SendDataToAll, args, "sll"));
+	return pybool(BasicCall(W_SendDataToAll, args, "sll|l"));
 }
 
 static PyObject *__SendPMToAll(PyObject *self, PyObject *args)

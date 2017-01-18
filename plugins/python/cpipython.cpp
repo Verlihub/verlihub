@@ -1122,86 +1122,102 @@ w_Targs *_SendToOpChat(int id, w_Targs *args)
 w_Targs *_SendToActive(int id, w_Targs *args)
 {
 	const char *data;
-	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	cpiPython::me->server->mActiveUsers.SendToAll(msg, false, false);
+	long delay = 0;
+
+	if (!cpiPython::lib_unpack(args, "sl", &data, &delay))
+		return NULL;
+
+	if (!data)
+		return NULL;
+
+	if (!SendToActive(data, (delay == 1)))
+		return NULL;
+
 	return w_ret1;
 }
 
 w_Targs *_SendToPassive(int id, w_Targs *args)
 {
 	const char *data;
-	if (!cpiPython::lib_unpack(args, "s", &data) || !data) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	cpiPython::me->server->mPassiveUsers.SendToAll(msg, false, false);
+	long delay = 0;
+
+	if (!cpiPython::lib_unpack(args, "sl", &data, &delay))
+		return NULL;
+
+	if (!data)
+		return NULL;
+
+	if (!SendToPassive(data, (delay == 1)))
+		return NULL;
+
 	return w_ret1;
 }
 
 w_Targs *_SendToActiveClass(int id, w_Targs *args)
 {
 	const char *data;
-	long minclass, maxclass;
-	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	cpiPython::me->server->mActiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, false);
+	long minclass = eUC_NORMUSER, maxclass = eUC_MASTER, delay = 0;
+
+	if (!cpiPython::lib_unpack(args, "slll", &data, &minclass, &maxclass, &delay))
+		return NULL;
+
+	if (!data)
+		return NULL;
+
+	if (!SendToActiveClass(data, minclass, maxclass, (delay == 1)))
+		return NULL;
+
 	return w_ret1;
 }
 
 w_Targs *_SendToPassiveClass(int id, w_Targs *args)
 {
 	const char *data;
-	long minclass, maxclass;
-	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass) || !data) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	cpiPython::me->server->mPassiveUsers.SendToAllWithClass(msg, minclass, maxclass, false, false);
+	long minclass = eUC_NORMUSER, maxclass = eUC_MASTER, delay = 0;
+
+	if (!cpiPython::lib_unpack(args, "slll", &data, &minclass, &maxclass, &delay))
+		return NULL;
+
+	if (!data)
+		return NULL;
+
+	if (!SendToPassiveClass(data, minclass, maxclass, (delay == 1)))
+		return NULL;
+
 	return w_ret1;
 }
 
 w_Targs *_SendDataToUser(int id, w_Targs *args)
 {
 	const char *data, *nick;
-	if (!cpiPython::lib_unpack(args, "ss", &data, &nick)) return NULL;
-	if (!data || !nick) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (u && u->mxConn) {
-		u->mxConn->Send(msg, false);
-		return w_ret1;
-	}
-	return NULL;
+	long delay = 0;
+
+	if (!cpiPython::lib_unpack(args, "ssl", &data, &nick, &delay))
+		return NULL;
+
+	if (!data || !nick)
+		return NULL;
+
+	if (!SendDataToUser(data, nick, (delay == 1)))
+		return NULL;
+
+	return w_ret1;
 }
 
 w_Targs *_SendDataToAll(int id, w_Targs *args)
 {
 	const char *data;
-	long minclass, maxclass;
-	if (!cpiPython::lib_unpack(args, "sll", &data, &minclass, &maxclass)) return NULL;
-	if (!data) return NULL;
-	string msg = string() + data + PipeIfMissing(data);
-	// We didn't simply call cpiPython::me->server->SendToAll(msg, minclass, maxclass),
-	// because at the time of writing it was buggy: it didn't care about provided class range.
+	long minclass = eUC_NORMUSER, maxclass = eUC_MASTER, delay = 0;
 
-	// nlist looks like this: "$NickList nick1$$nick2$$lastnick$$"
-	string nlist = cpiPython::me->server->mUserList.GetNickList();
-	string nick;
-	cUser *u;
-	log4("Py: SendDataToAll   got nicklist: %s\n", nlist.c_str());
-	if (nlist.length() < 13) return NULL;
-	size_t pos = 0, start = 10;
-	const char *separator = "$$";
-	while (start < nlist.length()) {
-		pos = nlist.find(separator, start);
-		if (pos == string::npos) break;
-		nick = nlist.substr(start, pos - start);
-		log4("Py: SendDataToAll   got nick: %s\n", nick.c_str());
-		start = pos + 2;
-		u = cpiPython::me->server->mUserList.GetUserByNick(nick.c_str());
-		if (u && u->mxConn) {
-			if (u->mClass < minclass || u->mClass > maxclass) continue;
-			u->mxConn->Send(msg, false);
-			log4("PY: SendDataToAll   sending message to %s\n", nick.c_str());
-		}
-	}
+	if (!cpiPython::lib_unpack(args, "slll", &data, &minclass, &maxclass, &delay))
+		return NULL;
+
+	if (!data)
+		return NULL;
+
+	if (!SendToClass(data, minclass, maxclass, (delay == 1)))
+		return NULL;
+
 	return w_ret1;
 }
 
