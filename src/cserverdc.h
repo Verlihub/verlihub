@@ -459,7 +459,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param cm Minimium class.
 		* @param CM Maximum class.
 		*/
-		void SendToAll(string &str, int cm,int cM);
+		void SendToAll(const string &str, int cm, int cM);
 
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range.

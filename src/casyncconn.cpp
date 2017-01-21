@@ -75,6 +75,7 @@ namespace nVerliHub {
 char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE + 1];
 unsigned long cAsyncConn::sSocketCounter = 0;
 
+// connection to hub
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
@@ -92,10 +93,17 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	mType(ct)
 {
 	mMaxBuffer = MAX_SEND_SIZE;
+
+	if (mxServer) {
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv)
+			mMaxBuffer = serv->mC.max_outbuf_size;
+	}
+
 	struct sockaddr saddr;
 	struct sockaddr_in *addr_in;
-	socklen_t addr_size;
-	addr_size = sizeof(saddr);
+	socklen_t addr_size = sizeof(saddr);
 	mIp = 0;
 	ClearLine();
 	mBufEnd = mBufReadPos = 0;
@@ -108,17 +116,17 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 			CloseNow();
 		}
 
-		addr_in = (struct sockaddr_in *)&saddr;
+		addr_in = (struct sockaddr_in*)&saddr;
 		mIp = addr_in->sin_addr.s_addr; // copy ip
 		mAddrIP = inet_ntoa(addr_in->sin_addr); // ip address
 
-		if(mxServer && mxServer->mUseDNS) // host name
+		if (mxServer && mxServer->mUseDNS) // host name
 			DNSLookup();
 
 		mAddrPort = ntohs(addr_in->sin_port); // port number
 
 		if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
-			addr_in = (struct sockaddr_in *)&saddr;
+			addr_in = (struct sockaddr_in*)&saddr;
 			mServAddr = inet_ntoa(addr_in->sin_addr);
 			mServPort = ntohs(addr_in->sin_port);
 		} else if (Log(2)) {
@@ -126,23 +134,20 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 		}
 	}
 
-	memset (&mCloseAfter, 0, sizeof(mCloseAfter));
+	memset(&mCloseAfter, 0, sizeof(mCloseAfter));
 }
 
-/** connect to given host (ip) on port */
+// connect to given host or ip on port
 cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
-	mZLibFlag(false),
 	//mIterator(0),
 	ok(false),
 	mWritable(true),
-
-	#if !defined _WIN32
-		mSockDesc(-1),
-	#else
-		mSockDesc(0),
-	#endif
-
+#if !defined _WIN32
+	mSockDesc(-1),
+#else
+	mSockDesc(0),
+#endif
 	mxServer(NULL),
 	mxMyFactory(NULL),
 	mxAcceptingFactory(NULL),
@@ -154,20 +159,21 @@ cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	mBufReadPos(0),
 	mCloseAfter(0, 0)
 {
-	mMaxBuffer=MAX_SEND_SIZE;
 	ClearLine();
-	if(udp) {
+
+	if (udp) {
 		mType = eCT_SERVERUDP;
 		SetupUDP(host, port);
+	} else {
+		Connect(host, port);
 	}
-	else
-		Connect(host,port);
 }
 
 cAsyncConn::~cAsyncConn()
 {
-	if(mpMsgParser)
+	if (mpMsgParser)
 		this->DeleteParser(mpMsgParser);
+
 	mpMsgParser = NULL;
 	this->Close();
 }
@@ -741,7 +747,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 	if (mxServer)
 		serv = (nVerliHub::cServerDC*)mxServer;
 	else if (Log(5))
-		LogStream() << "Server not available for ZLib compression" << endl;
+		LogStream() << "Server not available for write operations" << endl;
 
 	if (flush_size && send_buf) { // check if there is something to flush, else send old remaining data
 		if (mZLibFlag && serv && !serv->mC.disable_zlib && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
@@ -817,23 +823,23 @@ int cAsyncConn::Write(const string &data, bool flush)
 		if (mxServer && ok) { // buffer overfill protection, only on registered connections
 			mxServer->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			if (buf_size < MAX_SEND_UNBLOCK_SIZE) { // if buffer size is smaller than unblock size, allow read operation on the connection
+			if (buf_size < (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE)) { // if buffer size is smaller than unblock size, allow read operation on the connection
 				mxServer->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << MAX_SEND_UNBLOCK_SIZE << endl;
+						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
 
-					LogStream() << "Unblocking input: " << buf_size << " of " << MAX_SEND_UNBLOCK_SIZE << endl;
+					LogStream() << "Unblocking input: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
 				}
-			} else if (buf_size >= MAX_SEND_FILL_SIZE) { // if buffer is bigger than maximum send size, block read operation
+			} else if (buf_size >= (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE)) { // if buffer is bigger than maximum send size, block read operation
 				mxServer->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << MAX_SEND_FILL_SIZE << endl;
+						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE) << endl;
 
-					LogStream() << "Blocking input: " << buf_size << " of " << MAX_SEND_FILL_SIZE << endl;
+					LogStream() << "Blocking input: " << buf_size << " of " << (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE) << endl;
 				}
 			}
 		}

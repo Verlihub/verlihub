@@ -608,8 +608,9 @@ bool cServerDC::OnUnLoad(long code)
 	return true;
 }
 
-void cServerDC::SendToAll(string &data, int cm, int cM) // class range is ignored here
+void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here
 {
+	string str(data);
 	cConnDC *conn;
 	tCLIt i;
 
@@ -617,60 +618,51 @@ void cServerDC::SendToAll(string &data, int cm, int cM) // class range is ignore
 		conn = (cConnDC*)(*i);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList)
-			conn->Send(data, true);
+			conn->Send(str); // pipe is added by default for safety
 	}
 }
 
-int cServerDC::SendToAllWithNick(const string &start,const string &end, int cm,int cM)
+int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm, int cM)
 {
-	static string str;
-	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
-	for(i=mConnList.begin(); i!= mConnList.end(); i++) {
-		conn=(cConnDC *)(*i);
-		if(
-			conn &&
-			conn->ok &&
-			conn->mpUser &&
-			conn->mpUser->mInList &&
-			conn->mpUser->mClass >= cm &&
-			conn->mpUser->mClass <= cM
-			)
-		{
-			str=start + conn->mpUser->mNick + end + "|";
-			conn->Send(str, false);
-			counter ++;
-		}
-	}
-	return counter;
-}
-
-int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int cm, int cM)
-{
-	static string str;
-	string tend;
+	string str;
 	cConnDC *conn;
 	tCLIt i;
 	int counter = 0;
 
 	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC *)(*i);
+		conn = (cConnDC*)(*i);
 
-		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM) {
-			// replace variables
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
+			str = start + conn->mpUser->mNick + end;
+			conn->Send(str); // pipe is added by default for safety
+			counter++;
+		}
+	}
+
+	return counter;
+}
+
+int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int cm, int cM)
+{
+	string str, tend;
+	cConnDC *conn;
+	tCLIt i;
+	int counter = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC*)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tend = end;
-			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick);
+			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
 			ReplaceVarInString(tend, "CC", tend, conn->mCC);
 			ReplaceVarInString(tend, "CN", tend, conn->mCN);
 			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-
-			// finalize
-			str = start + conn->mpUser->mNick + tend + "|";
-			conn->Send(str, false);
+			str = start + conn->mpUser->mNick + tend; // finalize
+			conn->Send(str); // pipe is added by default for safety
 			counter++;
 		}
 	}
@@ -686,21 +678,18 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 	int counter = 0;
 
 	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC *)(*i);
+		conn = (cConnDC*)(*i);
 
-		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM) {
-			// replace variables
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tmsg = msg;
-			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick);
+			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
 			ReplaceVarInString(tmsg, "CC", tmsg, conn->mCC);
 			ReplaceVarInString(tmsg, "CN", tmsg, conn->mCN);
 			ReplaceVarInString(tmsg, "CITY", tmsg, conn->mCity);
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
-
-			// finalize
-			conn->Send(tmsg);
+			conn->Send(tmsg); // pipe is added by default for safety
 			counter++;
 		}
 	}
@@ -708,57 +697,47 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 	return counter;
 }
 
-int cServerDC::SendToAllWithNickCC(const string &start,const string &end, int cm,int cM, const string &cc_zone)
+int cServerDC::SendToAllWithNickCC(const string &start, const string &end, int cm, int cM, const string &cc_zone)
 {
-	static string str;
-	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
-	for(i=mConnList.begin(); i!= mConnList.end(); i++) {
-		conn=(cConnDC *)(*i);
-		if(
-			conn &&
-			conn->ok &&
-			conn->mpUser &&
-			conn->mpUser->mInList &&
-			conn->mpUser->mClass >= cm &&
-			conn->mpUser->mClass <= cM &&
-			cc_zone.npos != cc_zone.find(conn->mCC)
-			)
-		{
-			str=start + conn->mpUser->mNick + end + "|";
-			conn->Send(str, false);
-			counter++;
-		}
-	}
-	return counter;
-}
-
-int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone)
-{
-	static string str;
-	string tend;
+	string str;
 	cConnDC *conn;
 	tCLIt i;
 	int counter = 0;
 
 	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC *)(*i);
+		conn = (cConnDC*)(*i);
 
-		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && conn->mpUser->mClass >= cm && conn->mpUser->mClass <= cM && cc_zone.npos != cc_zone.find(conn->mCC)) {
-			// replace variables
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM) && (cc_zone.npos != cc_zone.find(conn->mCC))) {
+			str = start + conn->mpUser->mNick + end;
+			conn->Send(str); // pipe is added by default for safety
+			counter++;
+		}
+	}
+
+	return counter;
+}
+
+int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone)
+{
+	string str, tend;
+	cConnDC *conn;
+	tCLIt i;
+	int counter = 0;
+
+	for (i = mConnList.begin(); i != mConnList.end(); i++) {
+		conn = (cConnDC*)(*i);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM) && (cc_zone.npos != cc_zone.find(conn->mCC))) {
 			tend = end;
-			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick);
+			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
 			ReplaceVarInString(tend, "CC", tend, conn->mCC);
 			ReplaceVarInString(tend, "CN", tend, conn->mCN);
 			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-
-			// finalize
-			str = start + conn->mpUser->mNick + tend + "|";
-			conn->Send(str, false);
+			str = start + conn->mpUser->mNick + tend; // finalize
+			conn->Send(str); // pipe is added by default for safety
 			counter++;
 		}
 	}

@@ -140,6 +140,9 @@ void cDCConf::AddVars()
 	// End nicklist configuration
 
 	// protocol commands length
+	Add("max_outbuf_size", max_outbuf_size, 2097152ul);
+	Add("max_outfill_size", max_outfill_size, 1310720ul);
+	Add("max_unblock_size", max_unblock_size, 1835008ul);
 	Add("max_message_size", mS.mMaxLineLength, 10240ul);
 	Add("max_len_supports", max_len_supports, 512);
 	Add("max_len_version", max_len_version, 64);

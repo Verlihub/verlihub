@@ -64,6 +64,16 @@ namespace nUtils {
 			* @return Pointer to compressed data.
 			*/
 			char* Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level);
+
+			// get buffer sizes
+			size_t GetInBufLen()
+			{
+				return inBufLen;
+			}
+			size_t GetOutBufLen()
+			{
+				return outBufLen;
+			}
 		private:
 			// in buffer
 			char *inBuf;

@@ -23,9 +23,9 @@
 
 // buffer sizes
 #define MAX_MESS_SIZE			524288		// 0,50 mb, maximum size of read buffer
-#define MAX_SEND_SIZE			2097152		// 2,00 mb, maximum size of user output buffer
-#define MAX_SEND_FILL_SIZE		1310720		// 1,25 mb, on this level incoming data is blocked
-#define MAX_SEND_UNBLOCK_SIZE	1835008		// 1,75 mb, under this level its unblocked again
+#define MAX_SEND_SIZE			2097152		// 2,00 mb, maximum size of user output buffer, is now configurable with max_outbuf_size
+#define MAX_SEND_FILL_SIZE		1310720		// 1,25 mb, on this level incoming data is blocked, is now configurable with max_outfill_size
+#define MAX_SEND_UNBLOCK_SIZE	1835008		// 1,75 mb, under this level its unblocked again, is now configurable with max_unblock_size
 
 #include "cobj.h"
 #include "ctime.h"
