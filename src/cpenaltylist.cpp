@@ -53,7 +53,7 @@ cPenaltyList::~cPenaltyList()
 
 void cPenaltyList::Cleanup()
 {
-	cTime Now = cTime().Sec();
+	long Now = cTime().Sec();
 	cQuery query(mMySQL);
 	query.OStream() << "delete from `" << mMySQLTable.mName << "` where `since` < " << (Now - (3600 * 24 * 7)); // and `st_chat` != 0 and `st_search` != 0 and `st_ctm` != 0 and `st_pm` != 0 and `st_kick` != 0 and `st_share0` != 0 and `st_opchat` != 0 and `st_reg` != 0
 	query.Query();

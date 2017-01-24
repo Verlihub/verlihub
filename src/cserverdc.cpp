@@ -411,7 +411,9 @@ bool cServerDC::AddRobot(cUserRobot *robot)
 		mRobotList.Add(robot);
 		robot->mxServer = this;
 		return true;
-	} else return false;
+	}
+
+	return false;
 }
 
 bool cServerDC::DelRobot(cUserRobot *robot)
@@ -419,7 +421,9 @@ bool cServerDC::DelRobot(cUserRobot *robot)
 	if (this->RemoveNick(robot)) {
 		mRobotList.Remove(robot);
 		return true;
-	} else return false;
+	}
+
+	return false;
 }
 
 bool cServerDC::AddToList(cUser *usr)
@@ -483,23 +487,20 @@ bool cServerDC::RemoveNick(cUser *User)
 {
 	tUserHash Hash = mUserList.Nick2Hash(User->mNick);
 
-	if(mUserList.ContainsHash(Hash)) {
+	if (mUserList.ContainsHash(Hash)) {
 		#ifndef WITHOUT_PLUGINS
-		if (User->mxConn && User->mxConn->GetLSFlag(eLS_LOGIN_DONE) && User->mInList) mCallBacks.mOnUserLogout.CallAll(User);
+			if (User->mxConn && User->mxConn->GetLSFlag(eLS_LOGIN_DONE) && User->mInList)
+				mCallBacks.mOnUserLogout.CallAll(User);
 		#endif
-                // make sure that the user we want to remove is the correct one!
-                cUser *other = mUserList.GetUserByNick(User->mNick);
-		if(!User->mxConn) {
-			//cout << "Removing robot user" << endl;
+
+		cUser *other = mUserList.GetUserByNick(User->mNick);
+
+		if (!User->mxConn)
 			mUserList.RemoveByHash(Hash);
-		} else if(other && other->mxConn && User->mxConn && other->mxConn == User->mxConn) {
-            		//cout << "Leave: " << User->mNick << " count = " << mUserList.size() << endl;
+		else if (other && other->mxConn && User->mxConn && (other->mxConn == User->mxConn)) // make sure that the user we want to remove is the correct one
 			mUserList.RemoveByHash(Hash);
-		} else {
-			// this may cause problems when user is robot with 0 connection
-			//cout << "NOT found the correct user!, skip removing: " << User->mNick << endl;
-	                return false;
-		}
+		else
+			return false;
 	}
 
 	if (mOpList.ContainsHash(Hash))

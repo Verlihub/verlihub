@@ -975,6 +975,8 @@ bool cpiLua::OnUnBan(cUser *user, string nick, string op, string reason)
 
 bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
 {
+	bool res = true;
+
 	if (user && conf && var && val_new && val_old) {
 		const char *args[] = {
 			user->mNick.c_str(),
@@ -986,7 +988,7 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 			NULL
 		};
 
-		bool res = CallAll("VH_OnSetConfig", args, user->mxConn);
+		res = CallAll("VH_OnSetConfig", args, user->mxConn);
 
 		if (res && server && !strcmp(conf->c_str(), server->mDBConf.config_name.c_str()) && (!strcmp(var->c_str(), "hub_security") || !strcmp(var->c_str(), "opchat_name")) && Size()) {
 			tvLuaInterpreter::iterator it;
@@ -1001,10 +1003,10 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 			}
 		}
 
-		return res;
+		delete [] args[5];
 	}
 
-	return true;
+	return res;
 }
 
 bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *script)

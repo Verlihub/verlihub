@@ -28,19 +28,29 @@ using namespace std;
 namespace nVerliHub {
 	namespace nUtils {
 
-		cPCRE::cPCRE(int offsetResultSize) :
+cPCRE::cPCRE(int offsetResultSize):
+	mPattern(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(offsetResultSize)
 {
 	Clear();
 }
 
-cPCRE::~cPCRE(){
-	if(mOffsetResults) delete [] mOffsetResults;
+cPCRE::~cPCRE()
+{
+	if (mPattern)
+		pcre_free(mPattern);
+
+	mPattern = NULL;
+
+	if (mOffsetResults)
+		delete [] mOffsetResults;
+
 	mOffsetResults = NULL;
 }
 
-cPCRE::cPCRE(const char *pattern, unsigned int options, int offsetResultSize) :
+cPCRE::cPCRE(const char *pattern, unsigned int options, int offsetResultSize):
+	mPattern(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(offsetResultSize)
 {
@@ -49,6 +59,7 @@ cPCRE::cPCRE(const char *pattern, unsigned int options, int offsetResultSize) :
 }
 
 cPCRE::cPCRE(const string &pattern, unsigned int options, int coord):
+	mPattern(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(coord)
 {
@@ -66,10 +77,14 @@ bool cPCRE::Compile(const char *pattern, unsigned int options)
 
 void cPCRE::Clear()
 {
+	if (mPattern)
+		pcre_free(mPattern);
+
 	mPattern = NULL;
 	mResult = 0;
-	if(!mOffsetResults)
-		mOffsetResults = new int[3*mOffsetResultSize];
+
+	if (!mOffsetResults)
+		mOffsetResults = new int[3 * mOffsetResultSize];
 }
 
 int cPCRE::Exec(const string &subject)
@@ -80,10 +95,11 @@ int cPCRE::Exec(const string &subject)
 
 int cPCRE::Compare(int index, const string &text, const char *text2)
 {
-	if(!this->PartFound(index))
+	if (!this->PartFound(index))
 		return -1;
-	int start = mOffsetResults[index<<1];
-	return StrCompare(text, start, mOffsetResults[(index<<1)+1]-start,text2);
+
+	int start = mOffsetResults[index << 1];
+	return StrCompare(text, start, mOffsetResults[(index << 1) + 1] - start, text2);
 }
 
 int cPCRE::Compare(int index, const string &text, const string &text2)
@@ -98,29 +114,34 @@ int cPCRE::Compare(const string &name, const string &text, const string &text2)
 
 void cPCRE::Extract(int index, const string &src, string &dst)
 {
-	if(!this->PartFound(index))
+	if (!this->PartFound(index))
 		return;
-	int start = mOffsetResults[index<<1];
-	dst.assign(src, start, mOffsetResults[(index<<1)+1]-start);
+
+	int start = mOffsetResults[index << 1];
+	dst.assign(src, start, mOffsetResults[(index << 1) + 1] - start);
 }
 
 bool cPCRE::PartFound(int index)
 {
-	if((index < 0)|| (index >= mResult)) return false;
+	if ((index < 0) || (index >= mResult))
+		return false;
 
-	return mOffsetResults[index<<1] >= 0;
+	return mOffsetResults[index << 1] >= 0;
 }
 
 void cPCRE::Replace(int index, string &subject, const string &replace)
 {
-	if(!this->PartFound(index)) return;
-	int start = mOffsetResults[index<<1];
-	subject.replace(start, mOffsetResults[(index<<1)+1]-start, replace);
+	if (!this->PartFound(index))
+		return;
+
+	int start = mOffsetResults[index << 1];
+	subject.replace(start, mOffsetResults[(index << 1) + 1] - start, replace);
 }
 
 int cPCRE::GeStringNumber(const string &substring)
 {
 	return pcre_get_stringnumber(this->mPattern, substring.c_str());
 }
+
 	}; // namespace nUtils
 }; // namespace nVerliHub
