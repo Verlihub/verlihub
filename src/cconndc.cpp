@@ -60,9 +60,10 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 
 cConnDC::~cConnDC()
 {
-	if(mRegInfo)
+	if (mRegInfo) {
 		delete mRegInfo;
-	mRegInfo = NULL;
+		mRegInfo = NULL;
+	}
 }
 
 bool cConnDC::SetUser(cUser *usr)
@@ -262,7 +263,9 @@ int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
 void cConnDC::OnFlushDone()
 {
 	mBufFlush.erase(0, GetFlushSize());
+	ShrinkStringToFit(mBufFlush);
 	mBufSend.erase(0, GetBufferSize());
+	ShrinkStringToFit(mBufSend);
 
 	if (mNickListInProgress) {
 		SetLSFlag(eLS_NICKLST);
