@@ -46,9 +46,9 @@ public:
 	cPluginManager(const string &dir);
 	~cPluginManager();
 	bool LoadAll();
-	//void UnLoadAll();
-	bool LoadPlugin(const string &);
-	bool UnloadPlugin(const string &name);
+	void UnLoadAll();
+	bool LoadPlugin(const string &name);
+	bool UnloadPlugin(const string &name, bool remove = true);
 	bool ReloadPlugin(const string &name);
 	bool SetCallBack(string id, cCallBackList*);
 	bool RegisterCallBack(string id, cPluginBase *pi);

@@ -233,60 +233,97 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
-	/*
-		todo: crash
+	this->OnUnLoad(0);
 
-	try { // unload all plugins
-		mPluginManager.UnLoadAll();
+	try { // unload all plugins, todo: still broken, must be fixed
+		//mPluginManager.UnLoadAll();
 	} catch (...) {
 		if (ErrLog(1))
 			LogStream() << "Plugin unload error" << endl;
 	}
-	*/
 
-	this->OnUnLoad(0);
 	CtmToHubClearList(); // ctm2hub
 
 	if (mNetOutLog && mNetOutLog.is_open())
 		mNetOutLog.close();
 
-	// remove all users
-	cUserCollection::iterator it;
-	cUser *user;
-	for (it=mUserList.begin(); it != mUserList.end();) {
-		user = (cUser*)*it;
-		++it;
-		if (user->mxConn) {
-			delConnection(user->mxConn);
-		} else {
-			this->RemoveNick(user);
-		}
+	if (mHubSec) { // remove main bots
+		delete mHubSec;
+		mHubSec = NULL;
 	}
 
-	// destruct the lists of pointers
-	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); i++ )
-		if(*i)
+	if (mOpChat) {
+		delete mOpChat;
+		mOpChat = NULL;
+	}
+
+	cUserCollection::iterator it; // remove all users
+	cUser *user;
+
+	for (it = mUserList.begin(); it != mUserList.end();) {
+		user = (cUser*)(*it);
+		++it;
+
+		if (!user)
+			continue;
+
+		if (user->mxConn)
+			delConnection(user->mxConn);
+		else
+			this->RemoveNick(user);
+	}
+
+	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); i++) { // destruct the lists of pointers
+		if (*i)
 			delete *i;
+	}
+
 	close();
-	if (mFactory) delete mFactory;
-	mFactory = NULL;
-	if (mConnTypes) delete mConnTypes;
-	mConnTypes = NULL;
-	if (mR) delete mR;
-	mR= NULL;
-	if (mBanList) delete mBanList;
-	mBanList = NULL;
-	if (mUnBanList) delete mUnBanList;
-	mUnBanList = NULL;
-	if (mPenList) delete mPenList;
-	mPenList = NULL;
-	if (mKickList) delete mKickList;
-	mKickList = NULL;
-	if (mCo) delete mCo;
-	mCo = NULL;
-	if(mZLib)
+
+	if (mFactory) {
+		delete mFactory;
+		mFactory = NULL;
+	}
+
+	if (mConnTypes) {
+		delete mConnTypes;
+		mConnTypes = NULL;
+	}
+
+	if (mR) {
+		delete mR;
+		mR= NULL;
+	}
+
+	if (mBanList) {
+		delete mBanList;
+		mBanList = NULL;
+	}
+
+	if (mUnBanList) {
+		delete mUnBanList;
+		mUnBanList = NULL;
+	}
+
+	if (mPenList) {
+		delete mPenList;
+		mPenList = NULL;
+	}
+
+	if (mKickList) {
+		delete mKickList;
+		mKickList = NULL;
+	}
+
+	if (mCo) {
+		delete mCo;
+		mCo = NULL;
+	}
+
+	if (mZLib) {
 		delete mZLib;
-	mZLib = NULL;
+		mZLib = NULL;
+	}
 }
 
 int cServerDC::StartListening(int OverrideDefaultPort)

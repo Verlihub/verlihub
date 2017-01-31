@@ -72,7 +72,8 @@ string toUpper(const string &str)
 
 void ShrinkStringToFit(string &str)
 {
-	std::string(str.data(), str.size()).swap(str);
+	if (str.size())
+		std::string(str.data(), str.size()).swap(str);
 }
 
 void StrCutLeft(string &str, size_t cut)

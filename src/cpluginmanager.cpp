@@ -75,19 +75,29 @@ bool cPluginManager::LoadAll()
 	return true;
 }
 
-/*
-	todo: crash
-
 void cPluginManager::UnLoadAll()
 {
+	vector<string> plugs;
 	tPlugins::iterator it;
 
 	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
-		if (*it)
-			this->UnloadPlugin((*it)->mPlugin->Name());
+		if (*it) {
+			plugs.push_back((*it)->mPlugin->Name());
+			this->UnloadPlugin((*it)->mPlugin->Name(), false);
+		}
+	}
+
+	if (plugs.size()) {
+		for (unsigned int i = 0; i < plugs.size(); i++) {
+			if (!mPlugins.RemoveByHash(mPlugins.Key2Hash(plugs[i]))) {
+				if (ErrLog(2))
+					LogStream() << "Can't unload plugin: " << plugs[i] << endl;
+			}
+		}
+
+		plugs.clear();
 	}
 }
-*/
 
 bool cPluginManager::LoadPlugin(const string &file)
 {
@@ -120,18 +130,29 @@ bool cPluginManager::LoadPlugin(const string &file)
 	return true;
 }
 
-bool cPluginManager::UnloadPlugin(const string &name)
+bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 {
 	cPluginLoader *plugin = mPlugins.GetByHash(mPlugins.Key2Hash(name));
-	if(!plugin || !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
-		if(ErrLog(2))
-			LogStream() << "Can't unload plugin name: '" << name << "'" << endl;
+
+	if (!plugin) {
+		if (ErrLog(2))
+			LogStream() << "Plugin not found for unload: " << name << endl;
+
+		return false;
+	}
+
+	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
+		if (ErrLog(2))
+			LogStream() << "Can't unload plugin: " << name << endl;
+
 		return false;
 	}
 
 	tCBList::iterator it;
-	for(it=mCallBacks.begin();it!=mCallBacks.end(); ++it)
+
+	for (it = mCallBacks.begin(); it != mCallBacks.end(); ++it)
 		(*it)->Unregister(plugin->mPlugin);
+
 	delete plugin;
 	return true;
 }

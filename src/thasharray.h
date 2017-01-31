@@ -664,25 +664,33 @@ namespace nVerliHub {
 					}
 				}
 
-				/**
-				 * Resize the container to the given size.
-				 * @param newSize The new size of the container.
-				 * @return Always 0.
-				 */
+				/*
+					resize the container to the given size
+					newSize - the new size of the container
+					return - always 0
+				*/
 				int Resize(int newSize)
 				{
 					tData *NewData = new tData(newSize);
 					tData *OldData = this->mData;
-					// Copy and recalculate all old data
-					iterator it;
-					it = this->begin();
+					iterator it = this->begin();
 					mIsResizing = true;
 					this->mData = NewData;
-					while(!it.IsEnd()) {
+
+					while (!it.IsEnd()) { // copy and recalculate all old data
 						this->AddWithHash(it.mItem->mData, it.mItem->mHash);
 						++it;
 					}
-					// Delete old container
+
+					sItem *Item = NULL; // delete old container and all its items
+
+					for (unsigned it = 0; it < OldData->Capacity(); it++) {
+						Item = OldData->Get(it);
+
+						if (Item)
+							delete Item;
+					}
+
 					delete OldData;
 					mIsResizing = false;
 					return 0;
