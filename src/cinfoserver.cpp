@@ -21,14 +21,17 @@
 #include "cinfoserver.h"
 #include "stringutils.h"
 #include "cserverdc.h"
+
 #if defined HAVE_LINUX
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/times.h>
+#include <sys/vtimes.h>
 #endif
-//#include <algorithm>
+
 #include "i18n.h"
 
 namespace nVerliHub {
@@ -37,9 +40,36 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nEnums;
 
+	// cpu usage values
+	static clock_t last_cpu, last_sys_cpu, last_user_cpu;
+	static int num_cpu;
+
 cInfoServer::cInfoServer()
 {
 	mServer = NULL;
+	num_cpu = 0; // get number of cpu cores if we have linux
+
+	#if defined HAVE_LINUX
+		struct tms time_sample;
+		last_cpu = times(&time_sample);
+		last_sys_cpu = time_sample.tms_stime;
+		last_user_cpu = time_sample.tms_utime;
+		FILE *file = fopen("/proc/cpuinfo", "r");
+
+		if (file) {
+			char line[128];
+
+			while (fgets(line, 128, file)) {
+				if (strncmp(line, "processor", 9) == 0)
+					num_cpu++;
+			}
+
+			fclose(file);
+
+			if (num_cpu == 0) // we dont want to divide by zero
+				num_cpu = 1;
+		}
+	#endif
 }
 
 void cInfoServer::PortInfo(ostream &os)
@@ -239,19 +269,82 @@ void cInfoServer::SystemInfo(ostream &os)
 		os << " [*] " << autosprintf(_("Load averages: %.2f %.2f %.2f"), (serverInfo.loads[0] / 65536.0), (serverInfo.loads[1] / 65536.0), (serverInfo.loads[2] / 65536.0)) << "\r\n";
 		os << " [*] " << autosprintf(_("Total processes: %d"), serverInfo.procs) << "\r\n\r\n";
 
+		__int64 size_val;
+
 		#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
 			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
 			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
 		#else
-			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(serverInfo.totalram)).c_str()) << "\r\n";
-			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(serverInfo.freeram)).c_str()) << "\r\n";
+			size_val = (__int64)serverInfo.totalram;
+			size_val *= serverInfo.mem_unit;
+			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
+
+			size_val = (__int64)serverInfo.freeram;
+			size_val *= serverInfo.mem_unit;
+			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
 		#endif
 
-		os << " [*] " << autosprintf(_("Shared RAM: %s"), convertByte((__int64)(serverInfo.sharedram)).c_str()) << "\r\n";
-		os << " [*] " << autosprintf(_("RAM in buffers: %s"), convertByte((__int64)(serverInfo.bufferram)).c_str()) << "\r\n\r\n";
+		size_val = (__int64)serverInfo.sharedram;
+		size_val *= serverInfo.mem_unit;
+		os << " [*] " << autosprintf(_("Shared RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
 
-		os << " [*] " << autosprintf(_("Total swap: %s"), convertByte((__int64)(serverInfo.totalswap)).c_str()) << "\r\n";
-		os << " [*] " << autosprintf(_("Free swap: %s"), convertByte((__int64)(serverInfo.freeswap)).c_str()) << "\r\n";
+		size_val = (__int64)serverInfo.bufferram;
+		size_val *= serverInfo.mem_unit;
+		os << " [*] " << autosprintf(_("RAM in buffers: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
+
+		size_val = (__int64)serverInfo.totalswap;
+		size_val *= serverInfo.mem_unit;
+		os << " [*] " << autosprintf(_("Total swap: %s"), convertByte(size_val).c_str()) << "\r\n";
+
+		size_val = (__int64)serverInfo.freeswap;
+		size_val *= serverInfo.mem_unit;
+		os << " [*] " << autosprintf(_("Free swap: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
+
+		int size_vm = 0, size_res = 0; // self memory sizes and cpu usage
+		double perc_cpu;
+		FILE *file = fopen("/proc/self/status", "r");
+
+		if (file) {
+			int found = 0;
+			char line[128];
+
+			while (fgets(line, 128, file) != NULL) {
+				if (strncmp(line, "VmSize:", 7) == 0) { // virtual memory
+					size_vm = ParseMemSizeLine(line);
+					found += 1;
+				} else if (strncmp(line, "VmRSS:", 6) == 0) { // resident memory
+					size_res = ParseMemSizeLine(line);
+					found += 1;
+				}
+
+				if (found >= 2)
+					break;
+			}
+
+			fclose(file);
+		}
+
+		struct tms time_sample;
+		clock_t now = times(&time_sample);
+
+		if ((now <= last_cpu) || (time_sample.tms_stime < last_sys_cpu) || (time_sample.tms_utime < last_user_cpu)) { // overflow detection
+			perc_cpu = .0;
+		} else { // calculate cpu usage
+			perc_cpu = (time_sample.tms_stime - last_sys_cpu) + (time_sample.tms_utime - last_user_cpu);
+			perc_cpu /= (now - last_cpu);
+			perc_cpu /= num_cpu;
+			perc_cpu *= 100;
+		}
+
+		last_cpu = now;
+		last_sys_cpu = time_sample.tms_stime;
+		last_user_cpu = time_sample.tms_utime;
+
+		os << " [*] " << autosprintf(_("Virtual RAM usage: %s"), convertByte(size_vm * 1024).c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Resident RAM usage: %s"), convertByte(size_res * 1024).c_str()) << "\r\n\r\n";
+
+		os << " [*] " << autosprintf(_("CPU cores: %d"), num_cpu) << "\r\n";
+		os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n";
 
 		/*
 		struct rusage resourceUsage;
@@ -260,6 +353,19 @@ void cInfoServer::SystemInfo(ostream &os)
 	#else
 		os << _("System information not available.");
 	#endif
+}
+
+int cInfoServer::ParseMemSizeLine(char *line)
+{
+	int len = strlen(line);
+	const char* pos = line;
+
+	while (((*pos) < '0') || ((*pos) > '9'))
+		pos++;
+
+	line[len - 3] = '\0';
+	len = atoi(pos);
+	return len;
 }
 
 void cInfoServer::SetServer(cServerDC *Server)

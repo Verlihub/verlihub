@@ -98,6 +98,9 @@ class cInfoServer: public nConfig::cConfigBase
 
 		typedef vector<sHubURLInfoItem*> tHubURLInfoList;
 		tHubURLInfoList mHubURLInfoList;
+
+		// helper functions
+		int ParseMemSizeLine(char *line);
 };
 
 }; // namespace nVerliHub
