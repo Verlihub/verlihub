@@ -332,7 +332,7 @@ void cInfoServer::SystemInfo(ostream &os)
 		} else { // calculate cpu usage
 			perc_cpu = (time_sample.tms_stime - last_sys_cpu) + (time_sample.tms_utime - last_user_cpu);
 			perc_cpu /= (now - last_cpu);
-			perc_cpu /= num_cpu;
+			//perc_cpu /= num_cpu; // we are single threaded, show only one core
 			perc_cpu *= 100;
 		}
 
