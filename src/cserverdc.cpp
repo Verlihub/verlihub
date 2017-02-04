@@ -247,16 +247,6 @@ cServerDC::~cServerDC()
 	if (mNetOutLog && mNetOutLog.is_open())
 		mNetOutLog.close();
 
-	if (mHubSec) { // remove main bots
-		delete mHubSec;
-		mHubSec = NULL;
-	}
-
-	if (mOpChat) {
-		delete mOpChat;
-		mOpChat = NULL;
-	}
-
 	cUserCollection::iterator it; // remove all users
 	cUser *user;
 
@@ -279,6 +269,16 @@ cServerDC::~cServerDC()
 	}
 
 	close();
+
+	if (mHubSec) { // remove main bots
+		delete mHubSec;
+		mHubSec = NULL;
+	}
+
+	if (mOpChat) {
+		delete mOpChat;
+		mOpChat = NULL;
+	}
 
 	if (mFactory) {
 		delete mFactory;

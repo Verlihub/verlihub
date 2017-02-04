@@ -36,6 +36,7 @@ namespace std {
 #include <string>
 #include <functional>
 #include "thasharray.h"
+#include "stringutils.h"
 
 using std::string;
 using std::unary_function;
@@ -149,10 +150,13 @@ public:
 		ufDoNickList(string &List):mList(List){}
 		virtual ~ufDoNickList(){};
 
-		virtual void Clear() {
-			mList.erase(0,mList.size());
+		virtual void Clear()
+		{
+			mList.erase(0, mList.size());
+			ShrinkStringToFit(mList);
 			mList.append(mStart.data(), mStart.size());
 		}
+
 		virtual void operator() (cUserBase *usr){ AppendList(mList, usr);};
 		virtual void AppendList(string &List, cUserBase *User);
 
@@ -171,11 +175,15 @@ public:
 		ufDoINFOList(string &List, string &CompleteList):ufDoNickList(List),mListComplete(CompleteList),mComplete(false){mSep="|";}
 		virtual ~ufDoINFOList(){};
 		virtual void AppendList(string &List, cUserBase *User);
-		virtual void Clear() {
+
+		virtual void Clear()
+		{
 			ufDoNickList::Clear();
-			mListComplete.erase(0,mListComplete.size());
+			mListComplete.erase(0, mListComplete.size());
+			ShrinkStringToFit(mListComplete);
 			mListComplete.append(mStart.data(), mStart.size());
 		}
+
 		virtual void operator() (cUserBase *usr){
 			mComplete=true;
 			AppendList(mListComplete, usr);
@@ -185,7 +193,7 @@ public:
 	};
 
 private:
-	//string mSendAllCache;
+	string mSendAllCache;
 	string mNickList;
 	string mINFOList;
 	string mINFOListComplete;
@@ -228,16 +236,16 @@ public:
 			return NULL;
 	}
 
-	bool   ContainsKey (const string &Key ){ return ContainsHash(Key2Hash(Key)); }
+	bool   ContainsKey(const string &Key ){ return ContainsHash(Key2Hash(Key)); }
 	bool   ContainsNick(const string &Nick){ return ContainsHash(Nick2Hash(Nick)); }
 
-	bool   AddWithKey (cUserBase *User, const string &Key ){ return AddWithHash(User, Key2Hash(Key));}
-	bool   AddWithNick(cUserBase *User, const string &Nick){ return AddWithHash(User, Nick2Hash(Nick)); }
-	bool   Add        (cUserBase *User                    );
+	bool   AddWithKey(cUserBase *User, const string &Key) { return AddWithHash(User, Key2Hash(Key)); }
+	bool   AddWithNick(cUserBase *User, const string &Nick) { return AddWithHash(User, Nick2Hash(Nick)); }
+	bool   Add(cUserBase *User);
 
-	bool   RemoveByKey (const string &Key ){ return RemoveByHash(Key2Hash(Key)); }
-	bool   RemoveByNick(const string &Nick){ return RemoveByHash(Nick2Hash(Nick));}
-	bool   Remove      (cUserBase *User       );
+	bool   RemoveByKey(const string &Key) { return RemoveByHash(Key2Hash(Key)); }
+	bool   RemoveByNick(const string &Nick) { return RemoveByHash(Nick2Hash(Nick)); }
+	bool   Remove(cUserBase *User);
 
 	void SendToAll(string &Data, bool UseCache = false, bool AddPipe = true);
 	void SendToAllWithNick(string &Start, string &End);
