@@ -60,6 +60,11 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 
 cConnDC::~cConnDC()
 {
+	mBufFlush.erase(0, GetFlushSize());
+	ShrinkStringToFit(mBufFlush);
+	mBufSend.erase(0, GetBufferSize());
+	ShrinkStringToFit(mBufSend);
+
 	if (mRegInfo) {
 		delete mRegInfo;
 		mRegInfo = NULL;
