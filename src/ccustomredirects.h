@@ -49,7 +49,7 @@ namespace nVerliHub {
 				char* MatchByType(unsigned int rype);
 				int MapTo(unsigned int rype);
 				void Random(int &key);
-				string mOldMap[7];
+				string mOldMap[2];
 		};
 
 		typedef nConfig::tListConsole<cRedirect, cRedirects, cDCConsole> tRedirectConsoleBase;
