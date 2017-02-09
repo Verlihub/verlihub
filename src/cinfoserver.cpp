@@ -269,35 +269,35 @@ void cInfoServer::SystemInfo(ostream &os)
 		os << " [*] " << autosprintf(_("Load averages: %.2f %.2f %.2f"), (serverInfo.loads[0] / 65536.0), (serverInfo.loads[1] / 65536.0), (serverInfo.loads[2] / 65536.0)) << "\r\n";
 		os << " [*] " << autosprintf(_("Total processes: %d"), serverInfo.procs) << "\r\n\r\n";
 
-		__int64 size_val;
+		unsigned __int64 size_val;
 
 		#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
 			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
 			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
 		#else
-			size_val = (__int64)serverInfo.totalram;
-			size_val *= serverInfo.mem_unit;
+			size_val = (unsigned __int64)serverInfo.totalram;
+			size_val *= (unsigned __int64)serverInfo.mem_unit;
 			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
 
-			size_val = (__int64)serverInfo.freeram;
-			size_val *= serverInfo.mem_unit;
+			size_val = (unsigned __int64)serverInfo.freeram;
+			size_val *= (unsigned __int64)serverInfo.mem_unit;
 			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
 		#endif
 
-		size_val = (__int64)serverInfo.sharedram;
-		size_val *= serverInfo.mem_unit;
+		size_val = (unsigned __int64)serverInfo.sharedram;
+		size_val *= (unsigned __int64)serverInfo.mem_unit;
 		os << " [*] " << autosprintf(_("Shared RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
 
-		size_val = (__int64)serverInfo.bufferram;
-		size_val *= serverInfo.mem_unit;
+		size_val = (unsigned __int64)serverInfo.bufferram;
+		size_val *= (unsigned __int64)serverInfo.mem_unit;
 		os << " [*] " << autosprintf(_("RAM in buffers: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
 
-		size_val = (__int64)serverInfo.totalswap;
-		size_val *= serverInfo.mem_unit;
+		size_val = (unsigned __int64)serverInfo.totalswap;
+		size_val *= (unsigned __int64)serverInfo.mem_unit;
 		os << " [*] " << autosprintf(_("Total swap: %s"), convertByte(size_val).c_str()) << "\r\n";
 
-		size_val = (__int64)serverInfo.freeswap;
-		size_val *= serverInfo.mem_unit;
+		size_val = (unsigned __int64)serverInfo.freeswap;
+		size_val *= (unsigned __int64)serverInfo.mem_unit;
 		os << " [*] " << autosprintf(_("Free swap: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
 
 		int size_vm = 0, size_res = 0; // self memory sizes and cpu usage
