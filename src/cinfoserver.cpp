@@ -271,10 +271,10 @@ void cInfoServer::SystemInfo(ostream &os)
 
 		unsigned __int64 size_val;
 
-		#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
+		/*#if defined (_SC_PHYS_PAGES) && defined (_SC_AVPHYS_PAGES) && defined (_SC_PAGESIZE)
 			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte((__int64)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
 			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte((__int64)(sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE))).c_str()) << "\r\n";
-		#else
+		#else*/
 			size_val = (unsigned __int64)serverInfo.totalram;
 			size_val *= (unsigned __int64)serverInfo.mem_unit;
 			os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
@@ -282,7 +282,7 @@ void cInfoServer::SystemInfo(ostream &os)
 			size_val = (unsigned __int64)serverInfo.freeram;
 			size_val *= (unsigned __int64)serverInfo.mem_unit;
 			os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte(size_val).c_str()) << "\r\n";
-		#endif
+		//#endif
 
 		size_val = (unsigned __int64)serverInfo.sharedram;
 		size_val *= (unsigned __int64)serverInfo.mem_unit;
