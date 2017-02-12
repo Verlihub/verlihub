@@ -3,7 +3,7 @@
  Here you can put text that will be displayed to users upon entering the hub.
  Change it to suit your needs or use file trigger definition to store your MOTD.
 
- Welcome to Verlihub 1.0.2.0
+ Welcome to Verlihub 1.0.3.0
 
  +rules		- Hub rules
  +faq		- Frequently asked questions
@@ -12,6 +12,6 @@
  Some useful links for hub owner:
 
  [*] Website: https://github.com/verlihub/
- [*] Ledokol: http://ledo.feardc.net/
+ [*] Ledokol: https://ledo.feardc.net/
  [*] Support: dchub://hub.verlihub.net:7777/
- [*] Hublist: http://te-home.net/?do=hublist
+ [*] Hublist: https://te-home.net/?do=hublist
