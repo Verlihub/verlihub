@@ -230,8 +230,6 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 cServerDC::~cServerDC()
 {
-	StopAccept(); // do not accept new connections anymore
-
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 

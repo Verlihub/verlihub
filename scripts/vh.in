@@ -46,7 +46,7 @@ help_me()
 	echo_s "$SCRIPT\n" $BOLD
 	echo "This is a utility script for Verlihub, usage:"
 	echo
-	echo_s "  -i, --install" $RED && echo -e "\t\t\t\tConfigure Verlihub for a new hub"
+	echo_s "  -i, --install" $RED && echo -e "\t[sleep_time] \t\tConfigure Verlihub for a new hub"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
 	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
 	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
@@ -628,14 +628,24 @@ function autoload() # params
 	exit 0;
 }
 
-# Install verlihub with CLI
-function install()
+# install verlihub with cli
+function install() # [sleep_time]
 {
-	# Clear shell
-	clear
+	local SLEEP_TIME=30 # prepare sleep time or use default
 
-	# Print introduction
-	REALUSER="$USER"
+	if [ "_$1" != "_" ]; then # we have sleep time parameter
+		local RE="^[0-9]+$" # number regular expression
+
+		if [[ "$1" =~ $RE ]]; then # check if we got a number
+			if [ "$1" -gt $SLEEP_TIME ]; then # minimum is default value
+				SLEEP_TIME="$1"
+			fi
+		fi
+	fi
+
+	clear # clear shell
+
+	REALUSER="$USER" # print introduction
 	echo_s "Hello "
 	echo_s "$REALUSER,\n" $BOLD
 	echo_s "let's start with the configuration of database access. If you have some problems with configuration you can: \n"
@@ -882,7 +892,7 @@ function install()
 
 	echo_s "\n-- Config file has been successfully written in '$CONFIG'.\n" $RED_BOLD
 	echo "-- Now they will be created other directories and files."
-	echo "-- Copy files and accessing to MySQL server; this could take some times..."
+	echo "-- Copying files and accessing MySQL server, this will take $SLEEP_TIME seconds, please wait."
 	# Import other files from verlihub directory
 	cp $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
@@ -903,7 +913,7 @@ function install()
 
 	# Create tables
 	set_path $CHOOSEN_FOLDER > /dev/null 2>&1;
-	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL; then
+	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL $SLEEP_TIME; then
 		echo_s "-- ERROR: cannot create verlihub's tables in the database, cannot continue with the installation. Please check '$CHOOSEN_FOLDER/install_log' file for more info and run installation again\n" $RED
 		exit 1;
 	fi
@@ -971,7 +981,7 @@ function install()
 
 # Check selected option
 case "_$1" in
-	"_-i"|"_--install")	install;;
+	"_-i"|"_--install")	shift; install $1;;
 	"_-r"|"_--run")		shift; run_hub $@;;
 	"_-s"|"_--stop")	shift; kill_hub $@;;
 	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;

@@ -199,18 +199,8 @@ namespace nVerliHub {
 				nUtils::cMeanFrequency<unsigned ,21> mFrequency;
 
 		protected:
-			// indicates if the main loop is running and we are accepting new connections
-			bool mbRun, mbAccept;
-
-			void RevertAccept()
-			{
-				mbAccept = !mbAccept;
-			}
-
-			void StopAccept()
-			{
-				mbAccept = false;
-			}
+			/// Indicate if the main loop is running.
+			bool mbRun;
 
 			/// List of connections that the server is handling.
 			/// The list contains pointers to cAsyncConn instance.

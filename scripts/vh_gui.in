@@ -555,7 +555,7 @@ install() {
 
 	# Create tables
 	set_path $CHOOSEN_FOLDER > /dev/null 2>&1;
-	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL; then
+	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL 30; then
 		$DIALOG --title "ERROR" --msgbox "ERROR: cannot create verlihub's tables in the database, cannot continue with the installation. Please check '$CHOOSEN_FOLDER/install_log' file for more info and run installation again." 8 70
 		$DIALOG --title ="ERROR" --textbox "$CHOOSEN_FOLDER/install_log" 30 80
 		_quit;

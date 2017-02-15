@@ -280,7 +280,7 @@ function _mysql_export_socket()
 	fi
 }
 
-function _create_mysql_tables() # get_socket
+function _create_mysql_tables() # get_socket, sleep_time
 {
 	_is_table_exists "reglist" "SetupList" && return 0
 	if $1 ; then
@@ -292,7 +292,7 @@ function _create_mysql_tables() # get_socket
 	
 	$BINDIR/verlihub 2&>$VERLIHUB_CFG/install_log &
 	PID=$!
-	sleep 30
+	sleep $2
 	kill -9 $PID &>/dev/null
 	_is_table_exists "reglist" "SetupList" || return 1
 	return 0

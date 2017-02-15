@@ -170,15 +170,6 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 				mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn);
 				return 1;
 			}
-
-			/*
-			if (cmdid == "connblock") {
-				mOwner->DCPublicHS((mOwner->mbAccept) ? _("New connections are no longer being accepted.") : _("New connections are now being accepted again."), conn);
-				mOwner->RevertAccept();
-				return 1;
-			}
-			*/
-
 		case eUC_ADMIN:
 			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
 			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);
