@@ -49,6 +49,7 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	mUseDNS(0),
 	mFrequency(mTime, 90.0, 20),
 	mbRun(false),
+	mbAccept(false),
 	mFactory(NULL),
 	mRunResult(0),
 	mNowTreating(NULL)
@@ -104,6 +105,7 @@ int cAsyncSocketServer::run()
 {
 	mT.stop = cTime(0, 0);
 	mbRun = true;
+	mbAccept = true;
 	cTime now;
 
 	vhLog(1) << "Main loop start" << endl;
@@ -319,68 +321,73 @@ int cAsyncSocketServer::OnTimer(cTime &now)
 
 void cAsyncSocketServer::TimeStep()
 {
-	cTime tmout(0,1000l);
-	{
-		int n = mConnChooser.Choose(tmout);
-		if(!n) {
-			#if ! defined _WIN32
+	cTime tmout(0, 1000l);
+	int n = mConnChooser.Choose(tmout);
+
+	if (!n) {
+		#if !defined _WIN32
 			::usleep(50);
-			#else
+		#else
 			::Sleep(0);
-			#endif
-			return;
-		}
+		#endif
+
+		return;
 	}
 
-#if !USE_SELECT
-	cConnChoose::iterator it;
-#else
-	cConnSelect::iterator it;
-#endif
+	#if !USE_SELECT
+		cConnChoose::iterator it;
+	#else
+		cConnSelect::iterator it;
+	#endif
+
 	cConnChoose::sChooseRes res;
-	for(it = mConnChooser.begin(); it != mConnChooser.end(); ) {
+
+	for (it = mConnChooser.begin(); it != mConnChooser.end();) {
 		res = (*it);
 		++it;
-		mNowTreating = (cAsyncConn* )res.mConn;
+		mNowTreating = (cAsyncConn*)res.mConn;
 		cAsyncConn *conn = mNowTreating;
 		int activity = res.mRevent;
 		bool &OK = conn->ok;
 
-		if(!mNowTreating)
+		if (!mNowTreating)
 			continue;
-		// Some connections may have been disabled during this loop so skip them
-		if(OK && (activity & eCC_INPUT) && conn->GetType() == eCT_LISTEN) {
-			// Cccept incoming connection
-			int i=0;
-			cAsyncConn *new_conn;
-			do {
 
-				new_conn = conn->Accept();
+		if (OK && (activity & eCC_INPUT) && (conn->GetType() == eCT_LISTEN)) { // some connections may have been disabled during this loop so skip them
+			if (mbAccept) {
+				int i = 0;
+				cAsyncConn *new_conn;
 
-				if(new_conn) addConnection(new_conn);
-				i++;
-			} while(new_conn && i <= 101);
-#ifdef _WIN32
-			vhLog(1) << "num connections" << mConnChooser.mConnList.size() << endl;
-#endif
+				do { // accept incoming connection
+					new_conn = conn->Accept();
 
+					if (new_conn)
+						addConnection(new_conn);
+
+					i++;
+				} while (new_conn && (i <= 101));
+
+				#ifdef _WIN32
+					vhLog(1) << "Number of connections: " << mConnChooser.mConnList.size() << endl;
+				#endif
+			} else { // sorry, we are not accepting
+				vhLog(1) << "Sorry, we are not accepting new connections: " << conn->mSockDesc << endl;
+				OK = false;
+			}
 		}
-		if(OK && (activity & eCC_INPUT)  &&
-			((conn->GetType() == eCT_CLIENT) || (conn->GetType() == eCT_CLIENTUDP)))
-			// Data to be read or data in buffer
-		{
-			if(input(conn) <= 0)
-				OK=false;
+
+		if (OK && (activity & eCC_INPUT) && ((conn->GetType() == eCT_CLIENT) || (conn->GetType() == eCT_CLIENTUDP))) {
+			if (input(conn) <= 0) // data to be read or data in buffer
+				OK = false;
 		}
-		if(OK && (activity & eCC_OUTPUT)) {
-			// NOTE: in sockbuf::write is a bug, missing buf increment, it will block until whole buffer is sent
+
+		if (OK && (activity & eCC_OUTPUT)) // note: in sockbuf::write is a bug, missing buf increment, it will block until whole buffer is sent
 			output(conn);
-		}
-		mNowTreating = NULL;
-		if(!OK || (activity & (eCC_ERROR | eCC_CLOSE))) {
 
+		mNowTreating = NULL;
+
+		if (!OK || (activity & (eCC_ERROR | eCC_CLOSE)))
 			delConnection(conn);
-		}
 	}
 }
 
