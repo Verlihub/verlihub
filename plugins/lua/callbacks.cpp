@@ -1584,12 +1584,12 @@ int _InUserSupports(lua_State *L)
 		((flag == "FailOver") && (user->mxConn->mFeatures & eSF_FAILOVER)) ||
 		((flag == "NickChange") && (user->mxConn->mFeatures & eSF_NICKCHANGE)) ||
 		((flag == "ClientNick") && (user->mxConn->mFeatures & eSF_CLIENTNICK)) ||
-		((flag == "FeaturedNetworks") && (user->mxConn->mFeatures & eSF_FEATNET)) ||
 		((flag == "ZLine") && (user->mxConn->mFeatures & eSF_ZLINE)) ||
 		((flag == "GetZBlock") && (user->mxConn->mFeatures & eSF_GETZBLOCK)) ||
 		((flag == "ACTM") && (user->mxConn->mFeatures & eSF_ACTM)) ||
 		((flag == "SaltPass") && (user->mxConn->mFeatures & eSF_SALTPASS)) ||
 		((flag == "NickRule") && (user->mxConn->mFeatures & eSF_NICKRULE)) ||
+		((flag == "SearchRule") && (user->mxConn->mFeatures & eSF_SEARRULE)) ||
 		((flag == "HubURL") && (user->mxConn->mFeatures & eSF_HUBURL)) ||
 		((flag == "ExtJSON2") && (user->mxConn->mFeatures & eSF_EXTJSON2))
 	) {

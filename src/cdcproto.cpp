@@ -468,9 +468,6 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (feature == "ClientNick") {
 			conn->mFeatures |= eSF_CLIENTNICK;
 
-		} else if (feature == "FeaturedNetworks") {
-			conn->mFeatures |= eSF_FEATNET;
-
 		} else if (feature == "ZLine") {
 			conn->mFeatures |= eSF_ZLINE;
 
@@ -486,6 +483,10 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (feature == "NickRule") {
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
+
+		} else if (feature == "SearchRule") {
+			conn->mFeatures |= eSF_SEARRULE;
+			pars.append("SearchRule ");
 
 		} else if (feature == "HubURL") {
 			conn->mFeatures |= eSF_HUBURL;
@@ -1036,6 +1037,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	int theoclass = conn->GetTheoricalClass();
+	string omsg;
 
 	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive > -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
@@ -1044,7 +1046,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
-		string omsg;
 		Create_HubIsFull(omsg); // must be sent after chat message
 		conn->Send(omsg, true);
 		delete tag;
@@ -1071,9 +1072,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		__int64 max_share = mS->mC.max_share;
 		__int64 min_share_p, min_share_a;
 
-		if (theoclass == eUC_PINGER)
+		if (theoclass == eUC_PINGER) {
 			min_share = 0;
-		else {
+		} else {
 			if (theoclass >= eUC_REGUSER) {
 				min_share = mS->mC.min_share_reg;
 				max_share = mS->mC.max_share_reg;
@@ -1228,6 +1229,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (mS->mC.show_desc_len >= 0) // hide description
 		desc.assign(desc, 0, mS->mC.show_desc_len);
 
+	string temp;
+
 	if (mS->mC.desc_insert_mode) { // description insert mode
 		if (mS->mC.desc_insert_vars.empty()) { // insert mode only
 			switch (tag->mClientMode) {
@@ -1245,30 +1248,32 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 					break;
 			}
 		} else { // insert custom variables
-			string desc_prefix = mS->mC.desc_insert_vars;
-
-			ReplaceVarInString(desc_prefix, "CC", desc_prefix, conn->mCC);
-			ReplaceVarInString(desc_prefix, "CN", desc_prefix, conn->mCN);
-			ReplaceVarInString(desc_prefix, "CITY", desc_prefix, conn->mCity);
-			ReplaceVarInString(desc_prefix, "CLASS", desc_prefix, conn->mpUser->mClass);
-			ReplaceVarInString(desc_prefix, "CLASSNAME", desc_prefix, mS->UserClassName(conn->mpUser->mClass));
+			temp = mS->mC.desc_insert_vars;
+			ReplaceVarInString(temp, "CC", temp, conn->mCC);
+			ReplaceVarInString(temp, "CN", temp, conn->mCN);
+			ReplaceVarInString(temp, "CITY", temp, conn->mCity);
+			ReplaceVarInString(temp, "CLASS", temp, conn->mpUser->mClass);
+			ReplaceVarInString(temp, "CLASSNAME", temp, mS->UserClassName(conn->mpUser->mClass));
 
 			switch (tag->mClientMode) {
 				case eCM_ACTIVE:
-					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "A");
+					ReplaceVarInString(temp, "MODE", temp, "A");
 					break;
+
 				case eCM_PASSIVE:
-					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "P");
+					ReplaceVarInString(temp, "MODE", temp, "P");
 					break;
+
 				case eCM_SOCK5:
-					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "5");
+					ReplaceVarInString(temp, "MODE", temp, "5");
 					break;
+
 				default: // eCM_OTHER, eCM_NOTAG
-					ReplaceVarInString(desc_prefix, "MODE", desc_prefix, "?");
+					ReplaceVarInString(temp, "MODE", temp, "?");
 					break;
 			}
 
-			desc = desc_prefix + desc;
+			desc = temp + desc;
 		}
 	}
 
@@ -1326,6 +1331,102 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
 		conn->mpUser->mMyINFO_basic = myinfo_basic;
 		conn->SetLSFlag(eLS_MYINFO);
+
+		if (conn->mFeatures & eSF_SEARRULE) { // send search rule command
+			temp.clear();
+			temp.append("Min ");
+			temp.append(StringFrom(mS->mC.min_search_chars));
+			temp.append("$$Max ");
+			temp.append(StringFrom(mS->mC.max_len_search));
+			temp.append("$$Num ");
+			temp.append(StringFrom(mS->mC.search_number));
+			temp.append("$$Int ");
+
+			if ((conn->mpUser->mClass >= int(eUC_NORMUSER)) && (conn->mpUser->mClass >= mS->mC.min_class_use_hub)) {
+				switch (conn->mpUser->mClass) {
+					case eUC_REGUSER:
+						temp.append(StringFrom(mS->mC.int_search_reg));
+						break;
+
+					case eUC_VIPUSER:
+						temp.append(StringFrom(mS->mC.int_search_vip));
+						break;
+
+					case eUC_OPERATOR:
+					case eUC_CHEEF:
+					case eUC_ADMIN:
+						temp.append(StringFrom(mS->mC.int_search_op));
+						break;
+
+					case eUC_MASTER:
+						temp.append("0");
+						break;
+
+					default:
+						temp.append(StringFrom(mS->mC.int_search));
+						break;
+				}
+			} else {
+				temp.append("-1");
+			}
+
+			temp.append("$$IntPas ");
+
+			if ((conn->mpUser->mClass >= int(eUC_NORMUSER)) && (conn->mpUser->mClass >= mS->mC.min_class_use_hub_passive)) {
+				switch (conn->mpUser->mClass) {
+					case eUC_REGUSER:
+						temp.append(StringFrom(mS->mC.int_search_reg_pas));
+						break;
+
+					case eUC_VIPUSER:
+						temp.append(StringFrom(mS->mC.int_search_vip));
+						break;
+
+					case eUC_OPERATOR:
+					case eUC_CHEEF:
+					case eUC_ADMIN:
+						temp.append(StringFrom(mS->mC.int_search_op));
+						break;
+
+					case eUC_MASTER:
+						temp.append("0");
+						break;
+
+					default:
+						temp.append(StringFrom(mS->mC.int_search_pas));
+						break;
+				}
+			} else {
+				temp.append("-1");
+			}
+
+			unsigned __int64 use_share = 0;
+
+			switch (conn->mpUser->mClass) {
+				case eUC_NORMUSER:
+					use_share = mS->mC.min_share_use_hub;
+					break;
+
+				case eUC_REGUSER:
+					use_share = mS->mC.min_share_use_hub_reg;
+					break;
+
+				case eUC_VIPUSER:
+					use_share = mS->mC.min_share_use_hub_vip;
+					break;
+
+				default:
+					break;
+			}
+
+			if (use_share > 0) { // todo: mS->mC.min_share_factor_passive
+				temp.append("$$Share ");
+				temp.append(StringFrom(use_share * 1024 * 1024));
+			}
+
+			Create_SearchRule(omsg, temp);
+			conn->Send(omsg, true);
+		}
 
 		if (!mS->BeginUserLogin(conn)) // if all right, add user to userlist, if not yet there
 			return -1;
@@ -4103,6 +4204,13 @@ void cDCProto::Create_NickRule(string &dest, const string &rules)
 {
 	dest.clear();
 	dest.append("$NickRule ");
+	dest.append(rules);
+}
+
+void cDCProto::Create_SearchRule(string &dest, const string &rules)
+{
+	dest.clear();
+	dest.append("$SearchRule ");
 	dest.append(rules);
 }
 

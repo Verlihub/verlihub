@@ -130,7 +130,7 @@ namespace nVerliHub {
 			eSF_FAILOVER = 1 << 21,
 			eSF_NICKCHANGE = 1 << 22,
 			eSF_CLIENTNICK = 1 << 23,
-			eSF_FEATNET = 1 << 24,
+			eSF_SEARRULE = 1 << 24,
 			eSF_ZLINE = 1 << 25,
 			eSF_GETZBLOCK = 1 << 26,
 			eSF_ACTM = 1 << 27,
