@@ -392,7 +392,9 @@ install() {
 	if ! $ACCOUNT_EXISTS ; then 
 		$DIALOG --title "MySQL settings" --msgbox "The MySQL account '$MYSQL_USER' can not be accessed, it will be created now" 7 50
 		_ask_admin_access
-		$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'"
+		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
+		$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'"
+
 		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ;	then
 			$DIALOG --title "MySQL settings" --msgbox "The MySQL account cannot be created. Fix the problem and run the setup again." 8 50
 			_quit;
@@ -417,7 +419,10 @@ install() {
 	if [ "_$MYSQL_ADMIN_USER"  == "_" -o "_$MYSQL_ADMIN_PASSWORD"  == "_" ]; then
 		_ask_admin_access
 	fi
-	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -p"$MYSQL_ADMIN_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'"
+
+	export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
+	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'"
+
 	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; 
 	then
 		$DIALOG --title "MySQL settings" --msgbox "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again." 8 50
