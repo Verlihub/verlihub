@@ -864,40 +864,49 @@ int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
 	return 1;
 }
 
-int cDCConsole::CmdRegMyPasswd(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 {
-	string str;
-	int crypt = 0;
-	ostringstream ostr;
-	cRegUserInfo ui;
-
-	if(!mOwner->mR->FindRegInfo(ui,conn->mpUser->mNick))
+	if (!conn || !conn->mpUser)
 		return 0;
 
-	if(!ui.mPwdChange) {
+	cRegUserInfo ui;
+
+	if (!mOwner->mR->FindRegInfo(ui, conn->mpUser->mNick))
+		return 0;
+
+	ostringstream ostr;
+	string str;
+
+	if (mOwner->mC.max_class_self_repass && (conn->mpUser->mClass >= mOwner->mC.max_class_self_repass))
+		ui.mPwdChange = true;
+
+	if (!ui.mPwdChange) {
 		ostr << _("You are not allowed to change your password now. Ask an operator for help.");
-		mOwner->DCPrivateHS(ostr.str(),conn);
-		mOwner->DCPublicHS(ostr.str(),conn);
+		mOwner->DCPrivateHS(ostr.str(), conn);
+		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
 
+	int crypt = 0;
 	cmd_line >> str >> crypt;
-	if(str.size() < mOwner->mC.password_min_len) {
+
+	if (str.size() < mOwner->mC.password_min_len) {
 		ostr << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
-		mOwner->DCPrivateHS(ostr.str(),conn);
-		mOwner->DCPublicHS(ostr.str(),conn);
+		mOwner->DCPrivateHS(ostr.str(), conn);
+		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
-	if(!mOwner->mR->ChangePwd(conn->mpUser->mNick, str,crypt)) {
+
+	if (!mOwner->mR->ChangePwd(conn->mpUser->mNick, str, crypt)) {
 		ostr << _("Error updating password.");
-		mOwner->DCPrivateHS(ostr.str(),conn);
-		mOwner->DCPublicHS(ostr.str(),conn);
+		mOwner->DCPrivateHS(ostr.str(), conn);
+		mOwner->DCPublicHS(ostr.str(), conn);
 		return 1;
 	}
 
 	ostr << _("Password updated successfully.");
-	mOwner->DCPrivateHS(ostr.str(),conn);
-	mOwner->DCPublicHS(ostr.str(),conn);
+	mOwner->DCPrivateHS(ostr.str(), conn);
+	mOwner->DCPublicHS(ostr.str(), conn);
 	conn->ClearTimeOut(eTO_SETPASS);
 	return 1;
 }

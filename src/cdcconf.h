@@ -172,6 +172,7 @@ public:
 	int min_class_redir;
 	int max_class_int_login;
 	int max_class_check_clone;
+	unsigned int max_class_self_repass;
 	bool allow_same_user;
 	int max_class_same_user;
 	bool hide_all_kicks;
