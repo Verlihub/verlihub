@@ -210,9 +210,11 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 	return 0;
 }
 
-int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
+int cDCConsole::UsrCommand(const string &str, cConnDC *conn)
 {
-	if (!conn || !conn->mpUser) return 0;
+	if (!conn || !conn->mpUser)
+		return 0;
+
 	istringstream cmd_line(str);
 	ostringstream os;
 	string cmd;
@@ -233,21 +235,36 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 		case eUC_OPERATOR:
 		case eUC_VIPUSER:
 		case eUC_REGUSER:
-			if (cmdid == "kick") return CmdKick(cmd_line, conn);
+			if (cmdid == "kick")
+				return CmdKick(cmd_line, conn);
+
 		case eUC_NORMUSER:
-			if (cmdid == "passwd" || cmdid == "password") return CmdRegMyPasswd(cmd_line, conn);
-			if (cmdid == "help") return CmdHelp(cmd_line, conn);
-			if (cmdid == "myinfo") return CmdMyInfo(cmd_line, conn);
-			if (cmdid == "myip") return CmdMyIp(cmd_line, conn);
+			if ((cmdid == "passwd") || (cmdid == "password"))
+				return CmdRegMyPasswd(cmd_line, conn);
+
+			if (cmdid == "help")
+				return CmdHelp(cmd_line, conn);
+
+			if (cmdid == "myinfo")
+				return CmdMyInfo(cmd_line, conn);
+
+			if (cmdid == "myip")
+				return CmdMyIp(cmd_line, conn);
 
 			if (cmdid == "me")
 				return CmdMe(cmd_line, conn);
 
-			if (cmdid == "regme") return CmdRegMe(cmd_line, conn);
-			if (cmdid == "chat") return CmdChat(cmd_line, conn, true);
-			if (cmdid == "nochat") return CmdChat(cmd_line, conn, false);
-			if (cmdid == "info") return CmdUInfo(cmd_line, conn);
-			if (cmdid == "release" || cmdid == "verlihub" || cmdid == "vh") return CmdRInfo(cmd_line, conn);
+			if ((cmdid == "regme") || (cmdid == "unregme"))
+				return CmdRegMe(cmd_line, conn, (cmdid == "unregme"));
+
+			if ((cmdid == "chat") || (cmdid == "nochat"))
+				return CmdChat(cmd_line, conn, (cmdid == "chat"));
+
+			if (cmdid == "info")
+				return CmdUInfo(cmd_line, conn);
+
+			if ((cmdid == "release") || (cmdid == "verlihub") || (cmdid == "vh"))
+				return CmdRInfo(cmd_line, conn);
 
 			if (mUserCmdr.ParseAll(str, os, conn) >= 0) {
 				mOwner->DCPublicHS(os.str().c_str(), conn);
@@ -255,6 +272,7 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 			}
 
 			break;
+
 		case eUC_PINGER:
 			if ((cmdid == "report") && (mUserCmdr.ParseAll(str, os, conn) >= 0)) {
 				mOwner->DCPublicHS(os.str().c_str(), conn);
@@ -262,9 +280,9 @@ int cDCConsole::UsrCommand(const string &str, cConnDC * conn)
 			}
 
 			break;
+
 		default:
 			return 0;
-			break;
 	}
 
 	if (mTriggers->DoCommand(conn, cmd, cmd_line, *mOwner))
@@ -681,65 +699,106 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	return 1;
 }
 
-int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 {
-	ostringstream os;
-	string regnick, prefix;
+	if (!conn || !conn->mpUser)
+		return 0;
+
 	if (mOwner->mC.disable_regme_cmd) {
 		mOwner->DCPublicHS(_("This functionality is currently disabled."), conn);
 		return 1;
 	}
-	if(mOwner->mC.autoreg_class > 3) {
+
+	if (mOwner->mC.autoreg_class > eUC_OPERATOR) { // low class operators can also be autoregistered
 		mOwner->DCPublicHS(_("Registration failed. Please contact an operator for help."), conn);
 		return 1;
 	}
-	__int64 user_share, min_share;
 
-	if(mOwner->mC.autoreg_class >= 0) {
-		if(!conn->mpUser) {
+	cRegUserInfo ui;
+	bool found = mOwner->mR->FindRegInfo(ui, conn->mpUser->mNick);
+
+	if (found && !unreg) {
+		mOwner->DCPublicHS(_("You are already registered."), conn);
+		return 1;
+	} else if (!found && unreg) {
+		mOwner->DCPublicHS(_("You are not registered yet."), conn);
+		return 1;
+	}
+
+	string pass;
+	ostringstream os;
+
+	if (mOwner->mC.autoreg_class > 0) { // automatic registration is enabled
+		if (unreg) { // user wants to unregister
+			if (ui.mClass > mOwner->mC.autoreg_class) {
+				mOwner->DCPublicHS(_("You are not allowed to unregister yourself."), conn);
+				return 1;
+			}
+
+			/*
+				plugin should compare both nicks to see if user is unregistering himself which equals automatic unregistration
+				plugin should also send message back to user if action is discarded because hub will not send anything
+			*/
+
+			#ifndef WITHOUT_PLUGINS
+				if (!mOwner->mCallBacks.mOnDelReg.CallAll(conn->mpUser, conn->mpUser->mNick, ui.mClass))
+					return 1;
+			#endif
+
+			if (mOwner->mR->DelReg(conn->mpUser->mNick)) {
+				mOwner->DCPublicHS(_("You are now unregistered. Please reconnect."), conn);
+				return 1;
+			}
+
+			mOwner->DCPublicHS(_("An error occured while unregistering."), conn);
 			return 0;
 		}
 
-		// reg user's online nick
-		regnick = conn->mpUser->mNick;
-		prefix= mOwner->mC.nick_prefix_autoreg;
-		ReplaceVarInString(prefix,"CC",prefix, conn->mCC);
+		string prefix = mOwner->mC.nick_prefix_autoreg;
 
-		if( prefix.size() && StrCompare(regnick,0,prefix.size(),prefix) !=0 ) {
-			os << autosprintf(_("Your nick must start with: %s"), prefix.c_str());
-			mOwner->DCPublicHS(os.str(),conn);
+		if (prefix.size()) {
+			ReplaceVarInString(prefix, "CC", prefix, conn->mCC);
+
+			if (StrCompare(conn->mpUser->mNick, 0, prefix.size(), prefix) != 0) {
+				os << autosprintf(_("Your nick must start with: %s"), prefix.c_str());
+				mOwner->DCPublicHS(os.str(), conn);
+				return 1;
+			}
+		}
+
+		__int64 min_share;
+
+		switch (mOwner->mC.autoreg_class) {
+			case eUC_OPERATOR:
+				min_share = mOwner->mC.min_share_ops;
+				break;
+
+			case eUC_VIPUSER:
+				min_share = mOwner->mC.min_share_vip;
+				break;
+
+			default:
+				min_share = mOwner->mC.min_share_reg;
+				break;
+		}
+
+		__int64 user_share = conn->mpUser->mShare / (1024 * 1024);
+
+		if (user_share < min_share) {
+			os << autosprintf(_("You need to share at least %s."), convertByte(min_share * 1024).c_str());
+			mOwner->DCPublicHS(os.str(), conn);
 			return 1;
 		}
 
-		user_share = conn->mpUser->mShare / (1024*1024);
-		min_share = mOwner->mC.min_share_reg;
-		if(mOwner->mC.autoreg_class == 2)
-			min_share = mOwner->mC.min_share_vip;
-		if(mOwner->mC.autoreg_class >= 3)
-			min_share = mOwner->mC.min_share_ops;
-
-		if(user_share < min_share) {
-			os << autosprintf(_("You need to share at least %s."), convertByte(min_share*1024, false).c_str());
-			mOwner->DCPublicHS(os.str(),conn);
-			return 1;
-		}
-
-		cUser *user = mServer->mUserList.GetUserByNick(regnick);
-		cRegUserInfo ui;
-		bool RegFound = mOwner->mR->FindRegInfo(ui, regnick);
-
-		if (RegFound) {
-			os << _("You are already registered.");
-			mOwner->DCPublicHS(os.str(),conn);
-			return 1;
-		}
+		cUser *user = mServer->mUserList.GetUserByNick(conn->mpUser->mNick);
 
 		if (user && user->mxConn) {
-			string text;
-			getline(cmd_line, text);
-			if (!text.empty()) text = text.substr(1); // strip space
+			getline(cmd_line, pass);
 
-			if (text.size() < mOwner->mC.password_min_len) {
+			if (pass.size())
+				pass = pass.substr(1); // strip space
+
+			if (pass.size() < mOwner->mC.password_min_len) {
 				os << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
 				mOwner->DCPublicHS(os.str(), conn);
 				return 1;
@@ -750,38 +809,44 @@ int cDCConsole::CmdRegMe(istringstream & cmd_line, cConnDC * conn)
 					plugin should compare both nicks to see if user is registering himself which equals automatic registration
 					plugin should also send message back to user if action is discarded because hub will not send anything
 				*/
-				if (!mOwner->mCallBacks.mOnNewReg.CallAll(conn->mpUser, regnick, mOwner->mC.autoreg_class))
+
+				if (!mOwner->mCallBacks.mOnNewReg.CallAll(conn->mpUser, conn->mpUser->mNick, mOwner->mC.autoreg_class))
 					return 1;
 			#endif
 
-			if (mOwner->mR->AddRegUser(regnick, NULL, mOwner->mC.autoreg_class, text.c_str())) {
+			if (mOwner->mR->AddRegUser(conn->mpUser->mNick, NULL, mOwner->mC.autoreg_class, pass.c_str())) {
 				os << autosprintf(_("A new user has been registered with class %d"), mOwner->mC.autoreg_class);
 				mOwner->ReportUserToOpchat(conn, os.str(), false);
-				os.str(mOwner->mEmpty);
-				os << autosprintf(_("You are now registered with nick %s. Please reconnect and login with your new password: %s"), regnick.c_str(), text.c_str());
-			} else {
-				os << _("An error occured while registering.");
+				os.str("");
+				os << autosprintf(_("You are now registered with nick %s. Please reconnect and login with your new password: %s"), conn->mpUser->mNick.c_str(), pass.c_str());
 				mOwner->DCPublicHS(os.str(), conn);
-				return false;
+				return 1;
 			}
 		}
 
-		mOwner->DCPublicHS(os.str(), conn);
-		return 1;
-	} else {
-		string text;
-		getline(cmd_line, text);
-		if (!text.empty()) text = text.substr(1); // strip space
+		mOwner->DCPublicHS(_("An error occured while registering."), conn);
+		return 0;
+	}
 
-		if (!text.empty())
-			os << autosprintf(_("Registration request with password: %s"), text.c_str());
-		else
-			os << _("Registration request without password");
-
-		mOwner->ReportUserToOpchat(conn, os.str(), mOwner->mC.dest_regme_chat);
+	if (unreg) { // manual registration, user wants to unregister
+		mOwner->ReportUserToOpchat(conn, _("Unregistration request"), mOwner->mC.dest_regme_chat);
 		mOwner->DCPublicHS(_("Thank you, your request has been sent to operators."), conn);
 		return 1;
 	}
+
+	getline(cmd_line, pass);
+
+	if (pass.size())
+		pass = pass.substr(1); // strip space
+
+	if (pass.size())
+		os << autosprintf(_("Registration request with password: %s"), pass.c_str());
+	else
+		os << _("Registration request without password");
+
+	mOwner->ReportUserToOpchat(conn, os.str(), mOwner->mC.dest_regme_chat);
+	mOwner->DCPublicHS(_("Thank you, your request has been sent to operators."), conn);
+	return 1;
 }
 
 int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)

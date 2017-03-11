@@ -194,14 +194,16 @@ public:
 	*/
 	int CmdMe(istringstream & cmd_line, nSocket::cConnDC * conn);
 
-	/**
-	* Handle +regme <password> hub command.
-	* This command sends a report to OpChat in order to ask registration to Hub Operator or register an user automatically if autoreg_class config variable is set properly.
-	* @param cmd_line The stream that contains the password.
-	* @param conn Pointer to user's connection which to send the result message.
-	* @return 0 if an error occured or 1 otherwise.
+	/*
+	* handle +regme <password> and +unregme hub commands
+	* command sends a report to operator chat in order to ask for registration or registers a user automatically if autoreg_class config is set properly
+	* also allows user to delete his own account if found
+	* cmd_line - parameter stream that contains password
+	* conn - pointer to user connection to send the result message
+	* unreg - user wans to delete his account
+	* return - 0 if an error occured or 1 otherwise
 	*/
-	int CmdRegMe(istringstream & cmd_line, nSocket::cConnDC * conn);
+	int CmdRegMe(istringstream &cmd_line, nSocket::cConnDC *conn, bool unreg = false);
 
 	/**
 	* Handle +kick <user> <reason>.
