@@ -1939,11 +1939,33 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
-	if (!other || !other->mInList) { // todo: maybe it is possible to detect if user is on the way logging out? then we can skip this message
+	if (!other || !other->mInList) {
+		/*
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("You're trying to connect to an offline user: %s"), nick.c_str());
-			mS->DCPublicHS(os.str(), conn);
+
+			todo
+				this ban check works only with protocol flood action 3 for rctm commands
+				other actions and regular disconnects right after request are not detectable
+				we need a proper way of detecting if user sent rctm request right before he left the hub
+				can we take back last protocol messages from user who is receiving them?
+
+			if (mS->mC.int_flood_rctm_period && mS->mC.int_flood_rctm_limit && (mS->mC.proto_flood_rctm_action >= 3) && mS->mC.proto_flood_tban_time) {
+				cBan ban(mS);
+
+				if (mS->mBanList->TestBan(ban, NULL, nick, eBF_NICK)) {
+					os << _("Protocol flood detected") << ": " << "RevConnectToMe";
+
+					if (StrCompare(os.str(), 0, os.str().size(), ban.mReason) != 0) {
+						os.str("");
+						*//*
+						os << autosprintf(_("You're trying to connect to an offline user: %s"), nick.c_str());
+						mS->DCPublicHS(os.str(), conn);
+						*//*
+					}
+				}
+			}
 		}
+		*/
 
 		return -1;
 	}
