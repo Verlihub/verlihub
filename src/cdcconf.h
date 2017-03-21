@@ -139,6 +139,7 @@ public:
 	int opchat_class;
 	string cmd_start_op;
 	string cmd_start_user;
+	bool unknown_cmd_chat;
 	bool dest_report_chat;
 	bool dest_regme_chat;
 	bool dest_drop_chat;

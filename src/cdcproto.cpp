@@ -3870,6 +3870,9 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 		#endif
 		{
 			if (!mS->mCo->OpCommand(text, conn) && !mS->mCo->UsrCommand(text, conn)) {
+				if (mS->mC.unknown_cmd_chat)
+					return 0;
+
 				omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
 				mS->DCPublicHS(omsg.str(), conn);
 			}
@@ -3886,6 +3889,9 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 		#endif
 		{
 			if (!mS->mCo->UsrCommand(text, conn)) {
+				if (mS->mC.unknown_cmd_chat)
+					return 0;
+
 				omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
 				mS->DCPublicHS(omsg.str(), conn);
 			}
