@@ -1,0 +1,54 @@
+[*] Cheef with class 4:
+
+ [*] Registration:
+
+	!regnew <nick> [class=1] [password]		- Register new user
+	!regpass <nick> [password]			- Set or reset password
+	!regclass <nick> <class>			- Set account class
+	!regdel <nick>				- Remove account
+	!reginfo <nick>				- Account information
+	!reglist [class=1]				- List accounts
+
+	!regenable <nick>				- Enable account
+	!regdisable <nick>				- Disable account
+	!regprotect <nick> <class>			- Protect user from class
+	!reghidekick <nick> <class>			- Hide kick messages from class
+
+	!regset <nick> <variable> [value]		- Set account variable
+
+	Following variables can be used:
+
+		hide_keys <1/0>			- Hide operator key
+		hide_kick <1/0>			- Hide kick messages
+		hide_share <1/0>			- Hide share size
+		hide_ctmmsg <1/0>		- Hide connection request messages
+		pwd_crypt <0/1/2>		- Password encryption method: 0 = none, 1 = encrypt, 2 = MD5
+		auth_ip [ip]			- Authorization IP address
+		alternate_ip [ip]			- Alternative IP address
+		reg_op [nick]			- Account owner nick
+		email [note]			- Email address
+		note_op [note]			- Operator note
+		note_usr [note]			- User note
+
+ [*] Broadcasting:
+
+	!broadcast <message>			- Broadcast message to all users
+	!guests <message>			- Broadcast to guests with class 0
+	!regs <message>				- Broadcast to registered users with class 1
+	!vips <message>				- Broadcast to VIPs with class 2
+	!ops <message>				- Broadcast to operators with class 3
+	!cheefs <message>			- Broadcast to cheefs with class 4
+	!admins <message>			- Broadcast to administrators with class 5
+	!masters <message>			- Broadcast to masters with class 10
+
+	!ccbroadcast <:C1:C2:> <message>		- Broadcast to users with country codes
+
+ [*] Temporary:
+
+	!class <nick> <class>			- Change user class
+	!protect <nick> <class>			- Protect user from class
+
+ [*] Links:
+
+	https://github.com/verlihub/verlihub/wiki 	- User manual
+	dchub://hub.verlihub.net:7777 		- Support hub

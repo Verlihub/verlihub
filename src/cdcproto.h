@@ -205,7 +205,7 @@ protected:
 
 	// protocol creation helper functions, note, they all clear destination buffer before appending new data
 	static void Create_Chat(string &dest, const string &nick, const string &text);
-	static void Create_HubName(string &dest, const string &name, const string &topic);
+	static void Create_HubName(string &dest, const string &name, const string &topic = "");
 	static void Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share);
 	static void Create_PM(string &dest, const string &from, const string &to, const string &sign, const string &text);
 	static void Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text);

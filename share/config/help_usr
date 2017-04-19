@@ -1,15 +1,27 @@
+[*] Regular user with class 0:
 
-You may use these commands in the hub (in alphabetical order):
+ [*] Information:
 
-+chat			Active main chat for you
-+faq                    Displays a list of helpful links if you are having trouble
-+info			Show information about the hub
-+me                     Replaces +me with your nick, and then sends a message to main chat
-+motd                   Displays the Message of the Day (MOTD)
-+myinfo                 Shows you information about yourself
-+myip                   Shows you your IP address
-+nochat			Disable main chat for you
-+regme                  Send a message to all OPs, asking them to register your nick
-+release		Show information about VerliHub development team
-+report <user> <reason> Report a user to opchat for breaking the rules
-+rules                  Displays a listing of the hub rules
+	+rules					- Hub rules
+	+motd					- Message of the day
+	+faq					- Frequently asked questions
+
+	+info					- General information
+	+myinfo					- Your information
+	+myip					- Your IP address
+
+	+release					- Verlihub information
+
+ [*] Registration:
+
+	+regme [password]				- Register your nick
+
+ [*] Main chat:
+
+	+chat					- Enable main chat
+	+nochat					- Disable main chat
+	+me <message>				- Speak from third person
+
+ [*] Moderation:
+
+	+report <nick> [reason]			- Report user to operators

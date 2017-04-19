@@ -36,10 +36,11 @@ namespace nVerliHub {
   @param[in] server A pointer to cServerDC object
   */
 
-cTriggers::cTriggers( cServerDC *server ) :
+cTriggers::cTriggers(cServerDC *server):
 	tMySQLMemoryList<cTrigger, cServerDC>(server->mMySQL, server, "file_trigger")
 {
 	SetClassName("nDC::cTriggers");
+	SetSelectOrder("`min_class` desc, `max_class` desc"); // set load order
 }
 
   /**

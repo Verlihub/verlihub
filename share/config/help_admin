@@ -1,56 +1,137 @@
+[*] Administrator with class 5:
 
-ADMIN (class 5)
+ [*] Configuration:
 
-!addconntype <connection_type> <params>  Add the <connection_type> with their restrictions
+	!getconf [config]				- Configuration list
+	!getvar [config.]<mask>			- Find variable
+	!set [config.]<variable> [value]		- Set configuration
 
-!addplug <params>               Register new plugin
+	!userlimit <limit> [minutes=60]		- Temporarily change user limit
+	!reload					- Reload cache lists
 
-!addtag <name> <params>         Adds a rule for the client
+ [*] Redirects:
 
-!addtrigger <trigger> <params>  Adds a new trigger
+	!addredirect <address> [parameters]		- Add redirect
+	!modredirect <address> <parameters>	- Modify redirect
 
-!cleanbanlist                   Truncate ban table
+	Following parameters can be used:
 
-!cleankicklist                  Truncate kick table
+		-f [flags]				- Flags
+		-e [1/0]				- Enabled
 
-!cleantemprights                Truncate temp rights table
+	!delredirect <address>			- Remove redirect
+	!lstredirect				- List redirects
+	!hredirect					- Supported redirect flags
 
-!cleanunbanlist                 Truncate unban table
+ [*] Triggers:
 
-!delconntype <connection_type>  Remove specified <connection_type>
+	!addtrigger <trigger> <parameters>		- Add trigger
+	!modtrigger <trigger> <parameters>		- Modify trigger
 
-!delplug <nick>                 Unregisters the plugin
+	Following parameters can be used:
 
-!deltag <name>                  Remove a client
+		-d <"definition">			- Definition
+		-h ["description"]			- Description
+		-f [flags]				- Flags
+		-n [nick]				- Nick
+		-c [min_class]			- Minimum class
+		-C [max_class]			- Maximum class
+		-t [time]				- Time
 
-!deltrigger <trigger>           Remove a trigger
+		Following definition variables can be used:
 
-!htag                           Shows help
+			%[CFG]			- Configuration path
 
-!htrigger                       Show an help and available trigger flags
+		Following time units can be used:
 
-!lstconntype                    Shows the current connection type and their restrictions
+			#s			- Seconds
+			#m			- Minutes
+			#h			- Hours
+			#d			- Days
+			#w			- Weeks
+			#M			- Months
+			#y			- Years
 
-!lstplug                        List the registered plugins
+	!deltrigger <trigger>			- Remove trigger
+	!lsttrigger					- List triggers
+	!htrigger					- Supported trigger flags and variables
 
-!lsttag                         Lists available clients
-  
-!lsttrigger                     Lists available triggers
+ [*] Clients:
 
-!modconntype <conn_type> <params>   Update the <connection_type> with their restrictions
+	!addclient <"client"> <parameters>		- Add client
+	!modclient <"client"> <parameters>		- Modify client
 
-!modtrigger <trigger> <params>      Change a trigger
+	Following parameters can be used:
 
-!offplug <nick>                 Turns the plugin off
+		-t <"id">				- ID
+		-v [min_version]			- Minimum version
+		-V [max_version]			- Maximum version
+		-e [1/0]				- Enabled
+		-b [1/0]				- Banned
 
-!onplug <nick>                  Turns the plugin on
+	!delclient <"client">				- Remove client
+	!lstclient					- List clients
+	!hclient					- More about clients
 
-!regset <nickname> hide_keys <0/1>  Hide key operator for the given nickname. 1 to hide, 0 to show
+ [*] Connection types:
 
-!regset <nickname> hide_share <0/1> Hide share of the given nickname. 1 to hide, 0 to show
+	!addconntype <connection> [parameters]	- Add connection type
+	!modconntype <connection> <parameters>	- Modify connection type
 
-!regset <nickname> note_op <message>  Add a note for the registered user in the database
+	Following parameters can be used:
 
-!replug <nick>                  Reloads the plugin, turning it off then on
+		-d ["description"]			- Description
+		-s [min_slots]			- Minimum slots
+		-S [max_slots]			- Maximum slots
+		-l [min_upload]			- Minimum upload limit
+		-ls [min_ratio]			- Minimum upload limit per slot
 
-!proto<action>_<target> <data>	Send protocol command to users
+	!delconntype <connection>			- Remove connection type
+	!lstconntype				- List connection types
+	!hconntype				- More about connection types
+
+ [*] Plugins:
+
+	!addplug <plugin> <parameters>		- Add plugin
+	!modplug <plugin> <parameters>		- Modify plugin
+
+	Following parameters can be used:
+
+		-p <"path">			- Path
+		-d ["description"]			- Description
+		-a [1/0]				- Load on start
+
+	!delplug <plugin>				- Remove plugin
+	!lstplug					- List plugins
+
+	!onplug <plugin>				- Load plugin
+	!replug <plugin>				- Reload plugin
+	!offplug <plugin>				- Unload plugin
+
+	!pluglist					- Loaded plugins
+
+ [*] Raw commands:
+
+	!proto<target>_<action> [user] <data>	- Send raw command
+
+	Following targets can be used:
+
+		all				- All users
+		hello				- Hello users
+		active				- Active users
+		passive				- Passive users
+		user				- Specific user
+
+	Following actions can be used:
+
+		name				- Hub name
+		hello				- User login
+		quit				- User logout
+		redir				- Redirect
+		pm				- Private message
+		chat				- Main chat
+
+ [*] Links:
+
+	https://github.com/verlihub/verlihub/wiki 	- User manual
+	dchub://hub.verlihub.net:7777 		- Support hub

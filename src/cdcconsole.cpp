@@ -61,7 +61,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+) (.*)", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
 	mCmdRegUsr(int(eCM_REG),".r(eg)?(n(ew)?(user)?|del(ete)?|pass(wd)?|(en|dis)able|(set)?class|(protect|hidekick)(class)?|set|=|info|list|lst) ", "(\\S+)( (((\\S+) )?(.*)))?", &mFunRegUsr),
-	mCmdRaw(int(eCM_RAW),".proto(\\S+)_(\\S+) ","(.*)", &mFunRaw),
+	mCmdRaw(int(eCM_RAW), ".proto(\\S+)_(\\S+) ", "((\\S+) )?(.+)", &mFunRaw),
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK), ".(kick|drop) ", "(\\S+)( (.*)$)?", &mFunKick, eUR_KICK),
@@ -1216,114 +1216,154 @@ bool cDCConsole::cfReport::operator()()
 
 bool cDCConsole::cfRaw::operator()()
 {
-	if (!mConn || !mConn->mpUser) return false;
+	if (!mConn || !mConn->mpUser)
+		return false;
 
 	if (mConn->mpUser->mClass < eUC_ADMIN) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-	enum {eRW_ALL, eRW_USR, eRW_HELLO, eRW_PASSIVE, eRW_ACTIVE};
-	static const char *actionnames[] = {"all", "user", "usr", "hello", "hel", "passive", "pas", "active", "act"};
-	static const int actionids[] = {eRW_ALL, eRW_USR, eRW_USR, eRW_HELLO, eRW_HELLO, eRW_PASSIVE, eRW_PASSIVE, eRW_ACTIVE, eRW_ACTIVE};
-	enum {eRC_HUBNAME, eRC_HELLO, eRC_QUIT, eRC_REDIR, eRC_PM, eRC_CHAT};
-	static const char *cmdnames[] = {"hubname", "name", "hello", "quit", "redir", "move", "pm", "chat", "mc"};
-	static const int cmdids[] = {eRC_HUBNAME, eRC_HUBNAME, eRC_HELLO, eRC_QUIT, eRC_REDIR, eRC_REDIR, eRC_PM, eRC_CHAT, eRC_CHAT};
+	enum {
+		eRW_ALL,
+		eRW_USR,
+		eRW_HELLO,
+		eRW_PASSIVE,
+		eRW_ACTIVE
+	};
 
-	int CmdID = -1;
-	string tmp;
-	mIdRex->Extract(1, mIdStr, tmp);
-	const int Action = this->StringToIntFromList(tmp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
-	if (Action < 0) return false;
-	mIdRex->Extract(2, mIdStr, tmp);
-	CmdID = this->StringToIntFromList(tmp, cmdnames, cmdids, sizeof(cmdnames) / sizeof(char*));
-	if (CmdID < 0) return false;
-	string theCommand, endOfCommand;
-	string param, nick;
-	GetParStr(1, param);
-	bool WithNick = false;
+	static const char *actionnames[] = {
+		"all",
+		"user", "usr",
+		"hello", "hel",
+		"passive", "pas",
+		"active", "act"
+	};
 
-	switch (CmdID) {
+	static const int actionids[] = {
+		eRW_ALL,
+		eRW_USR, eRW_USR,
+		eRW_HELLO, eRW_HELLO,
+		eRW_PASSIVE, eRW_PASSIVE,
+		eRW_ACTIVE, eRW_ACTIVE
+	};
+
+	enum {
+		eRC_HUBNAME,
+		eRC_HELLO,
+		eRC_QUIT,
+		eRC_REDIR,
+		eRC_PM,
+		eRC_CHAT
+	};
+
+	static const char *cmdnames[] = {
+		"hubname", "name",
+		"hello",
+		"quit",
+		"redir", "move",
+		"pm",
+		"chat", "mc"
+	};
+
+	static const int cmdids[] = {
+		eRC_HUBNAME, eRC_HUBNAME,
+		eRC_HELLO,
+		eRC_QUIT,
+		eRC_REDIR, eRC_REDIR,
+		eRC_PM,
+		eRC_CHAT, eRC_CHAT
+	};
+
+	string par;
+	mIdRex->Extract(1, mIdStr, par);
+	int act = this->StringToIntFromList(par, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+
+	if (act < 0)
+		return false;
+
+	mIdRex->Extract(2, mIdStr, par);
+	int id = this->StringToIntFromList(par, cmdnames, cmdids, sizeof(cmdnames) / sizeof(char*));
+
+	if (id < 0)
+		return false;
+
+	string nick;
+
+	if (act == eRW_USR) { // get nick
+		if (mParRex->PartFound(2)) {
+			GetParStr(2, nick);
+		} else {
+			(*mOS) << _("Missing command parameters.");
+			return true;
+		}
+	}
+
+	string cmd, end;
+	GetParStr(3, par);
+
+	switch (id) {
 		case eRC_HUBNAME:
-			cDCProto::Create_HubName(theCommand, "", "");
+			cDCProto::Create_HubName(cmd, par); // topic is included in param
 			break;
+
 		case eRC_HELLO:
-			cDCProto::Create_Hello(theCommand, "");
+			cDCProto::Create_Hello(cmd, par);
 			break;
+
 		case eRC_QUIT:
-			cDCProto::Create_Quit(theCommand, "");
+			cDCProto::Create_Quit(cmd, par);
 			break;
+
 		case eRC_REDIR:
-			cDCProto::Create_ForceMove(theCommand, "");
+			cDCProto::Create_ForceMove(cmd, par);
 			break;
+
 		case eRC_PM:
-			mS->mP.Create_PMForBroadcast(theCommand, endOfCommand, mS->mC.hub_security, mConn->mpUser->mNick, param);
-			WithNick = true;
+			cDCProto::Create_PMForBroadcast(cmd, end, mS->mC.hub_security, mConn->mpUser->mNick, par);
 			break;
+
 		case eRC_CHAT:
-			cDCProto::Create_Chat(theCommand, mConn->mpUser->mNick, "");
+			cDCProto::Create_Chat(cmd, mConn->mpUser->mNick, par);
 			break;
+
 		default:
 			return false;
 	}
 
-	if (!WithNick) {
-		theCommand += param;
-		theCommand += "|";
-	}
+	cUser *user = NULL;
 
-	cUser *target_usr = NULL;
-
-	switch (Action) {
+	switch (act) {
 		case eRW_ALL:
-			if (!WithNick)
-				mS->mUserList.SendToAll(theCommand);
-			else
-				mS->mUserList.SendToAllWithNick(theCommand, endOfCommand);
-
-			break;
-
 		case eRW_HELLO:
-			if (!WithNick)
-				mS->mHelloUsers.SendToAll(theCommand);
-			else
-				mS->mHelloUsers.SendToAllWithNick(theCommand, endOfCommand);
-
-			break;
-
 		case eRW_PASSIVE:
-			if (!WithNick)
-				mS->mPassiveUsers.SendToAll(theCommand);
-			else
-				mS->mPassiveUsers.SendToAllWithNick(theCommand, endOfCommand);
-
-			break;
-
 		case eRW_ACTIVE:
-			if (!WithNick)
-				mS->mActiveUsers.SendToAll(theCommand);
+			if (id == eRC_PM)
+				mS->mUserList.SendToAllWithNick(cmd, end); // pipe is added by default
 			else
-				mS->mActiveUsers.SendToAllWithNick(theCommand, endOfCommand);
+				mS->mUserList.SendToAll(cmd); // pipe is added by default
 
 			break;
 
 		case eRW_USR:
-			target_usr = mS->mUserList.GetUserByNick(nick);
+			user = mS->mUserList.GetUserByNick(nick);
 
-			if (target_usr && target_usr->mxConn) {
-				if (WithNick) {
-					theCommand += nick;
-					theCommand += endOfCommand;
+			if (user && user->mxConn) {
+				if (id == eRC_PM) {
+					cmd += nick;
+					cmd += end;
 				}
 
-				target_usr->mxConn->Send(theCommand);
+				user->mxConn->Send(cmd, true); // add pipe
+			} else {
+				(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
+				return true;
 			}
 
 			break;
 
 		default:
 			return false;
-			break;
 	}
 
 	(*mOS) << _("Protocol command successfully sent.");

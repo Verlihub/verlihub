@@ -1,10 +1,72 @@
+[*] Master with class 10:
 
-MASTER (class 10)
+ [*] Hublist registration:
 
-!core_dump              Crash the hub so that stack trace can be examineted by debugger program like GDB
+	!hublist					- Register on hublists
 
-!gdb_hash               Quit the hub and dump the content of the user list
+ [*] Restarting:
 
-!restart                Restart the hub
+	!restart [time]				- Restart hub
+	!quit [time]				- Stop hub
 
-!quit                   Close the hub
+	Following time units can be used:
+
+		#s				- Seconds
+		#m				- Minutes
+		#h				- Hours
+		#d				- Days
+		#w				- Weeks
+		#M				- Months
+		#y				- Years
+
+ [*] Debugging:
+
+	!dbg_hash				- Stop hub and dump user list
+	!core_dump				- Crash hub and dump stack trace for GDB
+
+ [*] Command line:
+
+	vh -i [sleep]				- Install new hub
+	vh -u <nick> <class> <password> [config]	- Register new user
+	vh -g					- Update GeoIP databases
+
+	vh -r [config]				- Start hub
+	vh -q [config]				- Restart hub
+	vh -s [config]				- Stop hub
+	vh -t [config]				- Hub status
+
+	vh -a <action> -d [config]			- Load plugins on start
+
+	Following actions can be used:
+
+		-l				- List plugins
+		-n				- Enable loading
+		-f				- Disable loading
+
+	vh -R [config]				- Reload cache lists
+	vh -c [config]				- Clean up tables
+	vh -b <path> [config]			- Backup database
+	vh -w <file> [config]			- Restore backup
+
+	vh -h					- List commands
+	vh -v					- Verlihub version
+
+	[*] Multiple hubs:
+
+		vh_multihub -a			- Add new hub
+		vh_multihub -d [id]			- Remove hub
+		vh_multihub -l			- List hubs
+
+		vh_multihub -r [id]			- Start hub
+		vh_multihub -q [id]			- Restart hub
+		vh_multihub -s [id]			- Stop hub
+
+		vh_multihub -R [id]			- Reload cache lists
+
+		vh_multihub -h			- List commands
+		vh_multihub -v			- Velihub version
+
+ [*] Links:
+
+	https://github.com/verlihub/verlihub/wiki 	- User manual
+	dchub://hub.verlihub.net:7777 		- Support hub

@@ -1,17 +1,12 @@
+MOTD:
 
+ Welcome to Verlihub
 
- Here you can put text that will be displayed to users upon entering the hub.
- Change it to suit your needs or use file trigger definition to store your MOTD.
+	+help		- Available commands
 
- Welcome to Verlihub 1.0.3.0
+ Useful links for hub owner:
 
- +rules		- Hub rules
- +faq		- Frequently asked questions
- +help		- Available to you commands
-
- Some useful links for hub owner:
-
- [*] Website: https://github.com/verlihub/
- [*] Ledokol: https://ledo.feardc.net/
- [*] Support: dchub://hub.verlihub.net:7777/
- [*] Hublist: https://te-home.net/?do=hublist
+	[*] Website: https://github.com/verlihub/
+	[*] Ledokol: https://ledo.feardc.net/
+	[*] Support: dchub://hub.verlihub.net:7777
+	[*] Hublist: https://te-home.net/?do=hublist

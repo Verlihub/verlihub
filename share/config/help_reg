@@ -1,4 +1,6 @@
+[*] Registered user with class 1:
 
-REGISTERED USERS (class 1)
+ [*] Registration:
 
-+passwd		Set your password
+	+passwd <password>			- Set or change your password
+	+unregme				- Unregister your nick
