@@ -1456,17 +1456,25 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					if (mC.nick_chars.size())
 						errmsg << " " << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
 
-					cDCProto::Create_BadNick(extra, "Char", StrByteList(more));
+					if (conn->mFeatures & eSF_NICKRULE)
+						cDCProto::Create_BadNick(extra, "Char", StrByteList(more));
+
 					break;
 
 				case eVN_SHORT:
 					errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
-					cDCProto::Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
+
+					if (conn->mFeatures & eSF_NICKRULE)
+						cDCProto::Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
+
 					break;
 
 				case eVN_LONG:
 					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
-					cDCProto::Create_BadNick(extra, "Max", StringFrom(mC.max_nick));
+
+					if (conn->mFeatures & eSF_NICKRULE)
+						cDCProto::Create_BadNick(extra, "Max", StringFrom(mC.max_nick));
+
 					break;
 
 				case eVN_USED:
@@ -1476,12 +1484,18 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 				case eVN_PREFIX:
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
-					cDCProto::Create_BadNick(extra, "Pref", mC.nick_prefix);
+
+					if (conn->mFeatures & eSF_NICKRULE)
+						cDCProto::Create_BadNick(extra, "Pref", mC.nick_prefix);
+
 					break;
 
 				case eVN_NOT_REGED_OP:
 					errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
-					cDCProto::Create_BadNick(extra, "Pref");
+
+					if (conn->mFeatures & eSF_NICKRULE)
+						cDCProto::Create_BadNick(extra, "Pref");
+
 					break;
 
 				default:
