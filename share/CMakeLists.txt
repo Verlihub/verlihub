@@ -26,6 +26,8 @@ SET(SQL_FILES
 
 SET(CONFIG_FILES
 	config/faq
+	config/motd
+	config/rules
 	config/help_admin
 	config/help_cheef
 	config/help_master
@@ -33,8 +35,13 @@ SET(CONFIG_FILES
 	config/help_reg
 	config/help_usr
 	config/help_vip
-	config/motd
-	config/rules
+	config/ru/help_admin
+	config/ru/help_cheef
+	config/ru/help_master
+	config/ru/help_op
+	config/ru/help_reg
+	config/ru/help_usr
+	config/ru/help_vip
 )
 
 SET(TEST_SCRIPT_FILES
