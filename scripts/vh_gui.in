@@ -541,7 +541,7 @@ install() {
 
 	$DIALOG --infobox "Copy files and accessing to MySQL server; this could take some times..." 5 45
 	# Import other files from verlihub directory
-	cp $DATADIR/config/* $CHOOSEN_FOLDER
+	cp -R $DATADIR/config/* $CHOOSEN_FOLDER
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
         ln -sf $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
