@@ -1,9 +1,9 @@
 Travis build status
 ==============
 
-[![Build Status](https://travis-ci.org/Verlihub/verlihub.svg?branch=master)](https://travis-ci.org/Verlihub/verlihub)
+[![Build status](https://travis-ci.org/Verlihub/verlihub.svg?branch=master)](https://travis-ci.org/Verlihub/verlihub)
 
-Verlihub 1.0.2.0
+Verlihub 1.0.3.x
 ==============
 
 Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating systems that provides useful high level functions such as:
@@ -23,9 +23,10 @@ Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating 
 Links
 ==============
 
-  * Website: http://github.com/verlihub/
-  * Wiki: http://github.com/verlihub/verlihub/wiki
-  * Crash Server: http://crash.verlihub.net/
-  * Translate: http://transifex.com/projects/p/verlihub-100/
-  * Ledokol: http://ledo.feardc.net/
+  * Website: https://github.com/verlihub/
+  * Wiki: https://github.com/verlihub/verlihub/wiki
+  * Crash Server: https://crash.verlihub.net/
+  * Translate: https://transifex.com/projects/p/verlihub-100/
+  * Ledokol: https://ledo.feardc.net/
   * Support hub: dchub://hub.verlihub.net:7777/
+  * Hublist: https://te-home.net/?do=hublist
