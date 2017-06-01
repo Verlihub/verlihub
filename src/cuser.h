@@ -267,7 +267,7 @@ public:
 
 	public:
 	//long ShareEnthropy(const string &sharesize);
-	void DisplayInfo(ostream &os, int DisplClass);
+	void DisplayInfo(ostream &os);
 	void DisplayRightsInfo(ostream &os, bool head = false);
 
 	/*!

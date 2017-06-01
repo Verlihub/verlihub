@@ -1609,7 +1609,7 @@ int _Ban(lua_State *L)
 	unsigned howlong;
 	int bantype;
 
-	if(lua_gettop(L) == 6)
+	if(lua_gettop(L) == 6) // todo: add operator and user notes
 	{
 		if(!lua_isstring(L, 2)) {
 			luaerror(L, ERR_PARAM);
@@ -1653,50 +1653,49 @@ int _Ban(lua_State *L)
 
 int _KickUser(lua_State *L)
 {
-	string nick, op, data;
+	int args = lua_gettop(L) - 1;
 
-	if(lua_gettop(L) == 4)
-	{
-		if(!lua_isstring(L, 2))
-		{
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		op = lua_tostring(L, 2);
-		if(!lua_isstring(L, 3))
-		{
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		nick = lua_tostring(L, 3);
-		if(!lua_isstring(L, 4))
-		{
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		data = lua_tostring(L, 4);
-		if(!KickUser(op.c_str(), nick.c_str(), data.c_str()))
-		{
-			//lua_pushboolean(L, 0);
-			luaerror(L, ERR_CALL);
-			return 2;
-		}
-	}
-	else
-	{
-		luaL_error(L, "Error calling VH:KickUser; expected 3 argument but got %d", lua_gettop(L) - 1);
+	if (args < 3) {
+		luaL_error(L, "Error calling VH:KickUser, expected atleast 3 arguments but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) ||!lua_isstring(L, 4) || ((args >= 4) && !lua_isstring(L, 5)) || ((args >= 5) && !lua_isstring(L, 6))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string oper = lua_tostring(L, 2), nick = lua_tostring(L, 3), why = lua_tostring(L, 4), note_op, note_usr;
+
+	if (nick.empty() || oper.empty()) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	if (args >= 4)
+		note_op = lua_tostring(L, 5);
+
+	if (args >= 5)
+		note_usr = lua_tostring(L, 6);
+
+	if (!KickUser(oper.c_str(), nick.c_str(), why.c_str(), (note_op.size() ? note_op.c_str() : NULL), (note_usr.size() ? note_usr.c_str() : NULL))) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
-	return 1;
+	lua_pushnil(L);
+	return 2;
 }
 
 int _KickRedirUser(lua_State *L)
 {
-	if (lua_gettop(L) < 3) {
-		luaL_error(L, "Error calling VH:KickRedirUser, expected 4 arguments but got %d.", lua_gettop(L) - 1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 4) {
+		luaL_error(L, "Error calling VH:KickRedirUser, expected atleast 4 arguments but got %d.", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -1709,15 +1708,24 @@ int _KickRedirUser(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || !lua_isstring(L, 5)) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || !lua_isstring(L, 5) || ((args >= 5) && !lua_isstring(L, 6)) || ((args >= 6) && !lua_isstring(L, 7))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
-	string niop = lua_tostring(L, 2);
-	string nius = lua_tostring(L, 3);
-	string reas = lua_tostring(L, 4);
-	string addr = lua_tostring(L, 5);
+	string niop = lua_tostring(L, 2), nius = lua_tostring(L, 3), why = lua_tostring(L, 4), addr = lua_tostring(L, 5), note_op, note_usr;
+
+	if (niop.empty() || nius.empty() || addr.empty()) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	if (args >= 5)
+		note_op = lua_tostring(L, 6);
+
+	if (args >= 6)
+		note_usr = lua_tostring(L, 7);
+
 	cUser *oper = serv->mUserList.GetUserByNick(niop);
 
 	if (!oper) {
@@ -1735,7 +1743,7 @@ int _KickRedirUser(lua_State *L)
 	}
 
 	user->mxConn->mCloseRedirect = addr; // set redirect
-	serv->DCKickNick(NULL, oper, nius, reas, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN)); // kick user
+	serv->DCKickNick(NULL, oper, nius, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), note_op, note_usr); // kick user
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;

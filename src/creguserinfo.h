@@ -116,8 +116,12 @@ class cRegUserInfo
 		bool mPwdChange;
 		/** account enabled */
 		bool mEnabled;
+
+		// additional notes
 		string mNoteOp;
 		string mNoteUsr;
+
+		// email
 		string mEmail;
 };
 	}; // nTables

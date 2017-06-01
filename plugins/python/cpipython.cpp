@@ -1513,7 +1513,7 @@ w_Targs *_Ban(int id, w_Targs *args)
 {
 	const char *op, *nick, *reason;
 	long seconds, ban_type;
-	if (!cpiPython::lib_unpack(args, "sssll", &op, &nick, &reason, &seconds, &ban_type)) return NULL;
+	if (!cpiPython::lib_unpack(args, "sssll", &op, &nick, &reason, &seconds, &ban_type)) return NULL; // todo: add operator and user notes
 	if (!op || !nick) return NULL;
 	if (!reason) reason = "";
 	if (Ban(nick, op, reason, (unsigned)seconds, (unsigned)ban_type)) return w_ret1;
@@ -1522,13 +1522,23 @@ w_Targs *_Ban(int id, w_Targs *args)
 
 w_Targs *_KickUser(int id, w_Targs *args)
 {
-	const char *op, *nick, *reason, *address;
-	if (!cpiPython::lib_unpack(args, "ssss", &op, &nick, &reason, &address)) { return NULL; }
-	if (!nick || !op || !reason) return NULL;
+	const char *op, *nick, *why, *addr, *note_op, *note_usr;
+
+	if (!cpiPython::lib_unpack(args, "ssssss", &op, &nick, &why, &addr, &note_op, &note_usr))
+		return NULL;
+
+	if (!nick || !op)
+		return NULL;
+
 	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(op);
-	if (!user) return NULL;
-	if (address && strlen(address)) user->mxConn->mCloseRedirect = address;
-	cpiPython::me->server->DCKickNick(NULL, user, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
+
+	if (!user)
+		return NULL;
+
+	if (addr && strlen(addr))
+		user->mxConn->mCloseRedirect = addr;
+
+	cpiPython::me->server->DCKickNick(NULL, user, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), note_op, note_usr);
 	return w_ret1;
 }
 

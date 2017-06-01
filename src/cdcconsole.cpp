@@ -508,16 +508,14 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 	return 1;
 }
 
-int cDCConsole::CmdMyInfo(istringstream & cmd_line, cConnDC * conn)
+int cDCConsole::CmdMyInfo(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream os;
-	string omsg;
 	os << _("Your information") << ":\r\n";
-	conn->mpUser->DisplayInfo(os, eUC_OPERATOR);
+	conn->mpUser->DisplayInfo(os);
 	os << "\r\n";
 	conn->mpUser->DisplayRightsInfo(os);
-	omsg = os.str();
-	mOwner->DCPublicHS(omsg, conn);
+	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
 

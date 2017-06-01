@@ -155,6 +155,10 @@ namespace nVerliHub {
 				/// Ban reason.
 				string mReason;
 
+				// additional notes
+				string mNoteOp;
+				string mNoteUsr;
+
 				/// How ban should be displayed to output stream.
 				int mDisplayType;
 

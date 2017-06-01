@@ -128,6 +128,9 @@ void cBan::DisplayUser(ostream &os)
 	}
 
 	os << "\r\n";
+
+	if (mNoteUsr.size())
+		os << " [*] " << autosprintf(_("User note: %s"), mNoteUsr.c_str()) << "\r\n";
 }
 
 void cUnBan::DisplayUser(ostream &os)
@@ -139,6 +142,10 @@ void cUnBan::DisplayUser(ostream &os)
 void cBan::DisplayComplete(ostream &os)
 {
 	DisplayUser(os);
+
+	if (mNoteOp.size())
+		os << " [*] " << autosprintf(_("Operator note: %s"), mNoteOp.c_str()) << "\r\n";
+
 	os << " [*] " << autosprintf(_("Type: %s"), this->GetBanType()) << "\r\n";
 
 	if (mNickOp.size())

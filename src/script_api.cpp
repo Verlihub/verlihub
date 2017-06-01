@@ -233,9 +233,9 @@ bool SendToOpChat(const char *data, const char *nick)
 	return true;
 }
 
-bool KickUser(const char *opnick, const char *nick, const char *reason)
+bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op, const char *note_usr)
 {
-	if (!opnick || !nick || !reason)
+	if (!oper || !nick)
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -245,7 +245,7 @@ bool KickUser(const char *opnick, const char *nick, const char *reason)
 		return false;
 	}
 
-	cUser *opuser = GetUser(opnick);
+	cUser *opuser = GetUser(oper);
 
 	if (!opuser)
 		return false;
@@ -255,7 +255,7 @@ bool KickUser(const char *opnick, const char *nick, const char *reason)
 	if (!user || !user->mxConn)
 		return false;
 
-	serv->DCKickNick(NULL, opuser, nick, reason, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
+	serv->DCKickNick(NULL, opuser, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), (note_op ? note_op : ""), (note_usr ? note_usr : ""));
 	return true;
 }
 

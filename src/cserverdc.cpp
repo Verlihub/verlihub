@@ -1170,7 +1170,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	if (mC.send_user_info) {
 		os.str("");
 		os << _("Your information") << ":\r\n";
-		conn->mpUser->DisplayInfo(os, eUC_OPERATOR);
+		conn->mpUser->DisplayInfo(os);
 		DCPublicHS(os.str(), conn);
 	}
 
@@ -2472,7 +2472,7 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 	}
 }
 
-void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags)
+void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op, const string &note_usr)
 {
 	if (!op || nick.empty() || (op->mNick == nick))
 		return;
@@ -2552,6 +2552,13 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 				mKickList->AddKick(user->mxConn, op->mNick, (new_why.size() ? &new_why : NULL), mC.tban_kick, kick);
 				cBan ban(this);
+
+				if (note_op.size()) // notes
+					ban.mNoteOp = note_op;
+
+				if (note_usr.size())
+					ban.mNoteUsr = note_usr;
+
 				mBanList->NewBan(ban, kick, (user->mToBan ? user->mBanTime : mC.tban_kick), eBF_NICKIP);
 
 				if (ban.mDateEnd) {

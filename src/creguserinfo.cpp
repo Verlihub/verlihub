@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <openssl/md5.h>
 #include "creguserinfo.h"
+#include "cuser.h"
 #include "ctime.h"
 #include "i18n.h"
 
@@ -42,9 +43,9 @@ namespace nVerliHub {
 
 cRegUserInfo::cRegUserInfo():
 	mPWCrypt(eCRYPT_NONE),
-	mClass(0),
-	mClassProtect(0),
-	mClassHideKick(0),
+	mClass(eUC_NORMUSER),
+	mClassProtect(eUC_NORMUSER),
+	mClassHideKick(eUC_NORMUSER),
 	mHideKick(false),
 	mHideKeys(false),
 	mHideShare(false),
@@ -119,6 +120,11 @@ ostream& operator << (ostream &os, cRegUserInfo &ui)
 	os << " [*] " << autosprintf(_("Hide messages: %s"), (ui.mHideCtmMsg ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Authorization IP: %s"), (ui.mAuthIP.size() ? ui.mAuthIP.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Alternate IP: %s"), (ui.mAlternateIP.size() ? ui.mAlternateIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("User note: %s"), (ui.mNoteUsr.size() ? ui.mNoteUsr.c_str() : _("Not set"))) << "\r\n";
+
+	if (ui.mClass >= eUC_OPERATOR)
+		os << " [*] " << autosprintf(_("Operator note: %s"), (ui.mNoteOp.size() ? ui.mNoteOp.c_str() : _("Not set"))) << "\r\n";
+
 	return os;
 }
 

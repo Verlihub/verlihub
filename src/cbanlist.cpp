@@ -50,6 +50,8 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("last_hit", "int(11)", "", true, mModel.mLastHit);
 	AddCol("nick_op", "varchar(64)", "", true, mModel.mNickOp);
 	AddCol("reason", "text", "", true, mModel.mReason);
+	AddCol("note_op", "text", "", true, mModel.mNoteOp);
+	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
 	mMySQLTable.mExtra = "UNIQUE (ip,nick), ";
 	mMySQLTable.mExtra += "INDEX nick_index (nick), ";

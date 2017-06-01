@@ -340,7 +340,7 @@ class cServerDC : public cAsyncSocketServer
 		/*
 			kick user and perform different actions based of flags
 		*/
-		void DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags);
+		void DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op = "", const string &note_usr = "");
 
 		/*
 			Send a private message to user from other user or hub security.

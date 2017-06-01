@@ -758,8 +758,8 @@ static PyObject *__Ban(PyObject *self, PyObject *args)
 
 static PyObject *__KickUser(PyObject *self, PyObject *args)
 {
-	// Arguments: op, nick, reason, optional: redirect_address
-	return pybool(BasicCall(W_KickUser, args, "sss|s"));
+	// arguments: op, nick, why, optional: addr, note_op, note_usr
+	return pybool(BasicCall(W_KickUser, args, "sss|sss"));
 }
 
 static PyObject* __DelNickTempBan(PyObject *self, PyObject *args)

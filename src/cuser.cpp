@@ -234,7 +234,7 @@ long cUser::ShareEnthropy(const string &sharesize)
 }
 */
 
-void cUser::DisplayInfo(ostream &os, int DisplClass)
+void cUser::DisplayInfo(ostream &os)
 {
 	if (!this->mxConn)
 		return;
@@ -244,13 +244,10 @@ void cUser::DisplayInfo(ostream &os, int DisplClass)
 	if (this->mClass != this->mxConn->GetTheoricalClass())
 		os << " [*] " << autosprintf(_("Default class: %d"), this->mxConn->GetTheoricalClass()) << "\r\n";
 
-	if (DisplClass >= eUC_CHEEF)
-		os << " [*] " << autosprintf(_("In list: %s"), (this->mInList ? _("Yes") : _("No"))) << "\r\n";
+	//os << " [*] " << autosprintf(_("In list: %s"), (this->mInList ? _("Yes") : _("No"))) << "\r\n"; // user who is not in list cant use +myinfo command
+	os << " [*] " << autosprintf(_("IP: %s"), this->mxConn->AddrIP().c_str()) << "\r\n";
 
-	if (DisplClass >= eUC_OPERATOR)
-		os << " [*] " << autosprintf(_("IP: %s"), this->mxConn->AddrIP().c_str()) << "\r\n";
-
-	if ((DisplClass >= eUC_OPERATOR) && this->mxConn->AddrHost().size())
+	if (this->mxConn->AddrHost().size())
 		os << " [*] " << autosprintf(_("Host: %s"), this->mxConn->AddrHost().c_str()) << "\r\n";
 
 	if (this->mxConn->mCC.size())
