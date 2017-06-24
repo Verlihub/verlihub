@@ -54,8 +54,8 @@ public:
 	int ShowUsers(cConnDC *op, ostringstream &os, int cls);
 	/** add registered user */
 	bool AddRegUser(const string &nick, nSocket::cConnDC *op, int cl, const char *password = NULL);
-	/** No descriptions */
-	bool ChangePwd(const string &nick, const string &pwd,int);
+	// set user password
+	bool ChangePwd(const string &nick, const string &pwd, cConnDC *conn = NULL);
 	/** No descriptions */
 	bool SetVar(const string &nick, string &field, string &value);
 	/** log that user logged in */

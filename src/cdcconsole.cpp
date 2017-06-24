@@ -950,8 +950,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	int crypt = 0;
-	cmd_line >> str >> crypt;
+	cmd_line >> str;
 
 	if (str.size() < mOwner->mC.password_min_len) {
 		ostr << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
@@ -960,7 +959,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	if (!mOwner->mR->ChangePwd(conn->mpUser->mNick, str, crypt)) {
+	if (!mOwner->mR->ChangePwd(conn->mpUser->mNick, str, conn)) {
 		ostr << _("Error updating password.");
 		mOwner->DCPrivateHS(ostr.str(), conn);
 		mOwner->DCPublicHS(ostr.str(), conn);
@@ -2834,13 +2833,9 @@ bool cDCConsole::cfRegUsr::operator()()
 
 		case eAC_PASS:
 			if (WithPar) {
-				#ifndef _WIN32
-				if (mS->mR->ChangePwd(nick, par, 1))
-				#else
-				if (mS->mR->ChangePwd(nick, par, 0))
-				#endif
+				if (mS->mR->ChangePwd(nick, par)) {
 					(*mOS) << _("Password updated.");
-				else {
+				} else {
 					(*mOS) << _("Error updating password.");
 					return false;
 				}

@@ -764,7 +764,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			return 0;
 		}
 
-		if (!mS->mR->ChangePwd(conn->mpUser->mNick, pwd, 0)) {
+		if (!mS->mR->ChangePwd(conn->mpUser->mNick, pwd, conn)) {
 			os << _("Error updating password.");
 			mS->DCPrivateHS(os.str(), conn);
 			mS->DCPublicHS(os.str(), conn);

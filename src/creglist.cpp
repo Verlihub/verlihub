@@ -157,11 +157,19 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int cl, const char *p
 
 
 /** No descriptions */
-bool cRegList::ChangePwd(const string &nick, const string &pwd, int crypt)
+bool cRegList::ChangePwd(const string &nick, const string &pwd, cConnDC *conn)
 {
-	if(!FindRegInfo(mModel, nick))
+	if (!FindRegInfo(mModel, nick))
 		return false;
+
 	mModel.SetPass(pwd, (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
+
+	if (conn) { // update last login date
+		mModel.mLoginLast = cTime().Sec();
+		mModel.mLoginIP = conn->AddrIP();
+		mModel.mLoginCount++;
+	}
+
 	return UpdatePK();
 }
 
