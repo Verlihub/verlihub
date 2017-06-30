@@ -1464,8 +1464,12 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 				case eVN_SHORT:
 					errmsg << autosprintf(_("Your nick is too short, minimum allowed length is %d characters."), mC.min_nick);
 
-					if (conn->mFeatures & eSF_NICKRULE)
-						cDCProto::Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
+					if (conn->mFeatures & eSF_NICKRULE) {
+						if (mC.min_nick > 255)
+							cDCProto::Create_BadNick(extra, "Min", "255");
+						else
+							cDCProto::Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
+					}
 
 					break;
 

@@ -513,7 +513,12 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	if (conn->mFeatures & eSF_NICKRULE) { // send nick rule command
 		pars.clear();
 		pars.append("Min ");
-		pars.append(StringFrom(mS->mC.min_nick));
+
+		if (mS->mC.min_nick > 255)
+			pars.append("255");
+		else
+			pars.append(StringFrom(mS->mC.min_nick));
+
 		pars.append("$$Max ");
 		pars.append(StringFrom(mS->mC.max_nick));
 		pars.append("$$Char ");
