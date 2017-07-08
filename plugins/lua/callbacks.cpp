@@ -826,6 +826,45 @@ int _GetIPCity(lua_State *L)
 	return 2;
 }
 
+int _GetIPASN(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:GetIPASN, expected atleast 1 argument but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || ((args > 1) && !lua_isstring(L, 3))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string ip = lua_tostring(L, 2), db, asn;
+
+	if (args > 1)
+		db = lua_tostring(L, 3);
+
+	if (serv->sGeoIP.GetASN(asn, ip, db)) {
+		lua_pushboolean(L, 1);
+		lua_pushstring(L, asn.c_str());
+	} else {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+	}
+
+	return 2;
+}
+
 int _GetUserGeoIP(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {

@@ -152,6 +152,7 @@ void cpiPython::OnLoad(cServerDC *server)
 #ifdef HAVE_LIBGEOIP
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
+	callbacklist[W_GetIPASN]           = &_GetIPASN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 #endif
 	callbacklist[W_AddRegUser]         = &_AddRegUser;
@@ -1425,6 +1426,28 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 	cpiPython::me->server->sGeoIP.GetCN(ip, cnstr);
 	const char *cn = cnstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cn));
+}
+
+w_Targs *_GetIPASN(int id, w_Targs *args)
+{
+	const char *ip, *db;
+
+	if (!cpiPython::lib_unpack(args, "ss", &ip, &db))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	if (!db)
+		db = "";
+
+	string s_ip(ip), s_db(db), asn_name;
+
+	if (!cpiPython::me->server->sGeoIP.GetASN(asn_name, s_ip, s_db))
+		return NULL;
+
+	const char *asn = asn_name.c_str();
+	return cpiPython::lib_pack("s", strdup(asn));
 }
 
 w_Targs *_GetGeoIP(int id, w_Targs *args)

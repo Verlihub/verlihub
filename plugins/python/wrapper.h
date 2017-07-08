@@ -112,6 +112,7 @@ enum {
 #ifdef HAVE_LIBGEOIP
 	W_GetIPCC,
 	W_GetIPCN,
+	W_GetIPASN,
 	W_GetGeoIP,
 #endif
 	W_GetNickList,

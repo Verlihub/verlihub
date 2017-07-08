@@ -95,6 +95,15 @@ namespace nVerliHub {
 					return = True if record was found, false otherwise.
 				*/
 				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, float &geo_lat, float &geo_lon, int &geo_met, int &geo_area, const string &host, const string &db = "");
+
+				/*
+					return geoip asn information
+					host = host or ip address
+					db = alternative database
+					asn_name = string to store asn
+					return = true if found, false otherwise
+				*/
+				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
 				#ifdef HAVE_LIBGEOIP
 				// pointer to geoip country instance
@@ -103,17 +112,24 @@ namespace nVerliHub {
 				// pointer to geoip city instance
 				GeoIP *mGICI;
 
+				// pointer to geoip asn instance
+				GeoIP *mGIAS;
+
 				// country database initialization function
 				GeoIP *TryCountryDB(int flags);
 
 				// city database initialization function
 				GeoIP *TryCityDB(int flags);
+
+				// asn database initialization function
+				GeoIP *TryASNDB(int flags);
 				#endif
 
 				// helper functions
 				bool FileExists(const char *name);
 				static unsigned long IPToNum(const string &ip);
 		};
+
 	}; // namespace nUtils
 }; // namespace nVerliHub
 

@@ -715,6 +715,19 @@ static PyObject *__GetIPCN(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *__GetIPASN(PyObject *self, PyObject *args)
+{
+	char *res;
+
+	if (Call(W_GetIPASN, args, "s|s", "s", &res)) {
+		PyObject *p = Py_BuildValue("s", res);
+		freee(res);
+		return p;
+	}
+
+	Py_RETURN_NONE;
+}
+
 static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
 {
 	double geo_lat, geo_lon;
@@ -1103,6 +1116,7 @@ static PyMethodDef w_vh_methods[] = {
 #ifdef HAVE_LIBGEOIP
 	{"GetIPCC",            __GetIPCC,            METH_VARARGS},
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
+	{"GetIPASN",           __GetIPASN,           METH_VARARGS},
 	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
 #endif
 	{"AddRegUser",         __AddRegUser,         METH_VARARGS},
@@ -1862,6 +1876,7 @@ const char *w_CallName(int callback)
 #ifdef HAVE_LIBGEOIP
 		case W_GetIPCC:              return "GetIPCC";
 		case W_GetIPCN:              return "GetIPCN";
+		case W_GetIPASN:             return "GetIPASN";
 		case W_GetGeoIP:             return "GetGeoIP";
 #endif
 		case W_GetNickList:          return "GetNickList";

@@ -51,6 +51,7 @@ namespace nVerliHub {
 		int _GetIPCC(lua_State *L);
 		int _GetIPCN(lua_State *L);
 		int _GetIPCity(lua_State *L);
+		int _GetIPASN(lua_State *L);
 		int _GetUserGeoIP(lua_State *L);
 		int _GetHostGeoIP(lua_State *L);
 	#endif

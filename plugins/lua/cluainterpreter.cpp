@@ -81,6 +81,7 @@ bool cLuaInterpreter::Init()
 		RegisterFunction("GetIPCC", &_GetIPCC);
 		RegisterFunction("GetIPCN", &_GetIPCN);
 		RegisterFunction("GetIPCity", &_GetIPCity);
+		RegisterFunction("GetIPASN", &_GetIPASN);
 		RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
 		RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
 	#endif

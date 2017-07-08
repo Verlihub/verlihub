@@ -34,7 +34,8 @@ namespace nVerliHub {
 cGeoIP::cGeoIP():
 	cObj("cGeoIP"),
 	mGICO(TryCountryDB(GEOIP_STANDARD)),
-	mGICI(TryCityDB(GEOIP_STANDARD))
+	mGICI(TryCityDB(GEOIP_STANDARD)),
+	mGIAS(TryASNDB(GEOIP_STANDARD))
 {}
 
 cGeoIP::~cGeoIP()
@@ -44,6 +45,9 @@ cGeoIP::~cGeoIP()
 
 	if (mGICI)
 		GeoIP_delete(mGICI);
+
+	if (mGIAS)
+		GeoIP_delete(mGIAS);
 }
 #endif
 
@@ -131,7 +135,7 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 #ifdef HAVE_LIBGEOIP
 	GeoIP *gi;
 
-	if (!db.empty() && FileExists(db.c_str())) {
+	if (db.size() && FileExists(db.c_str())) {
 		gi = GeoIP_open(db.c_str(), GEOIP_STANDARD);
 
 		if (gi)
@@ -208,7 +212,7 @@ bool cGeoIP::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, 
 #ifdef HAVE_LIBGEOIP
 	GeoIP *gi;
 
-	if (!db.empty() && FileExists(db.c_str())) {
+	if (db.size() && FileExists(db.c_str())) {
 		gi = GeoIP_open(db.c_str(), GEOIP_STANDARD);
 
 		if (gi)
@@ -276,6 +280,58 @@ bool cGeoIP::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, 
 	return res;
 }
 
+bool cGeoIP::GetASN(string &asn_name, const string &host, const string &db)
+{
+	if (host.substr(0, 4) == "127.") {
+		asn_name = "Local Network";
+		return true;
+	}
+
+	unsigned long sip = IPToNum(host);
+
+	if (sip >= 167772160UL && sip <= 184549375UL) {
+		asn_name = "Private Network";
+		return true;
+	}
+
+	if (sip >= 2886729728UL && sip <= 2887778303UL) {
+		asn_name = "Private Network";
+		return true;
+	}
+
+	if (sip >= 3232235520UL && sip <= 3232301055UL) {
+		asn_name = "Private Network";
+		return true;
+	}
+
+	bool res = false, own = false;
+
+#ifdef HAVE_LIBGEOIP
+	GeoIP *gi;
+
+	if (db.size() && FileExists(db.c_str())) {
+		gi = GeoIP_open(db.c_str(), GEOIP_STANDARD);
+
+		if (gi)
+			own = true;
+	}
+
+	if (own ? gi : mGIAS) {
+		const char *asn = GeoIP_name_by_name(own ? gi : mGIAS, host.c_str());
+
+		if (asn) {
+			asn_name = asn;
+			res = true;
+		}
+
+		if (own)
+			GeoIP_delete(gi);
+	}
+#endif
+
+	return res;
+}
+
 #ifdef HAVE_LIBGEOIP
 GeoIP *cGeoIP::TryCountryDB(int flags)
 {
@@ -283,7 +339,7 @@ GeoIP *cGeoIP::TryCountryDB(int flags)
 	mGICO = GeoIP_new(flags);
 
 	if (!mGICO)
-		vhLog(1) << "Database not detected: Maxmind GeoIP Country" << endl;
+		vhLog(1) << "Database not detected: MaxMind GeoIP Country" << endl;
 
 	return mGICO;
 }
@@ -304,7 +360,7 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 			if (dir) {
 				string lite = dir;
 
-				if (!lite.empty()) {
+				if (lite.size()) {
 					lite += "/GeoLiteCity.dat";
 
 					if (FileExists(lite.c_str()))
@@ -341,10 +397,50 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 		mGICI = GeoIP_open("./GeoIPCity.dat", flags);
 
 	if (!mGICI)
-		vhLog(1) << "Database not detected: Maxmind GeoIP City" << endl;
+		vhLog(1) << "Database not detected: MaxMind GeoIP City" << endl;
 
 	return mGICI;
 }
+
+GeoIP *cGeoIP::TryASNDB(int flags)
+{
+	if (GeoIP_db_avail(GEOIP_ASNUM_EDITION))
+		mGIAS = GeoIP_open_type(GEOIP_ASNUM_EDITION, flags);
+
+	if (!mGIAS) {
+		char *path = GeoIPDBFileName[GEOIP_COUNTRY_EDITION];
+
+		if (path) {
+			char *dir = dirname(path);
+
+			if (dir) {
+				string temp = dir;
+
+				if (temp.size()) {
+					temp += "/GeoIPASNum.dat";
+
+					if (FileExists(temp.c_str()))
+						mGIAS = GeoIP_open(temp.c_str(), flags);
+				}
+			}
+		}
+	}
+
+	if (!mGIAS && FileExists("/usr/share/GeoIP/GeoIPASNum.dat"))
+		mGIAS = GeoIP_open("/usr/share/GeoIP/GeoIPASNum.dat", flags);
+
+	if (!mGIAS && FileExists("/usr/local/share/GeoIP/GeoIPASNum.dat"))
+		mGIAS = GeoIP_open("/usr/local/share/GeoIP/GeoIPASNum.dat", flags);
+
+	if (!mGIAS && FileExists("./GeoIPASNum.dat"))
+		mGIAS = GeoIP_open("./GeoIPASNum.dat", flags);
+
+	if (!mGIAS)
+		vhLog(1) << "Database not detected: MaxMind GeoIP ASN" << endl;
+
+	return mGIAS;
+}
+
 #endif
 
 bool cGeoIP::FileExists(const char *name)
