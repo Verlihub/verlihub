@@ -900,8 +900,10 @@ int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
 	if (!conn || !conn->mpUser)
 		return 0;
 
-	if (!conn->mpUser->Can(eUR_KICK, mOwner->mTime.Sec())) // todo: notify user about missing kick right
+	if (!conn->mpUser->Can(eUR_KICK, mOwner->mTime.Sec())) {
+		mOwner->DCPublicHS(_("You have no rights to kick anyone."), conn);
 		return 1;
+	}
 
 	ostringstream os;
 	string temp, nick, why;
