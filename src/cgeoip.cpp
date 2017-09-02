@@ -443,6 +443,15 @@ GeoIP *cGeoIP::TryASNDB(int flags)
 
 #endif
 
+void cGeoIP::ReloadAll()
+{
+	#ifdef HAVE_LIBGEOIP
+		mGICO = TryCountryDB(GEOIP_CHECK_CACHE);
+		mGICI = TryCityDB(GEOIP_CHECK_CACHE);
+		mGIAS = TryASNDB(GEOIP_CHECK_CACHE);
+	#endif
+}
+
 bool cGeoIP::FileExists(const char *name)
 {
 	return access(name, 0) != -1;

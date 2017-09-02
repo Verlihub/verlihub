@@ -47,6 +47,9 @@ namespace nVerliHub {
 				// class destructor
 				~cGeoIP();
 
+				// executed on reload
+				void ReloadAll();
+
 				/*
 					Return country code for the given hostname.
 					host = The hostname.

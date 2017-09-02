@@ -3063,6 +3063,8 @@ void cServerDC::Reload()
 
 	if (mC.use_penlist_cache)
 		mPenList->UpdateCache();
+
+	this->sGeoIP.ReloadAll(); // update geoip
 }
 
 	}; // namespace nServer

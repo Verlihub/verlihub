@@ -1176,7 +1176,7 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 int cDCConsole::CmdReload(istringstream &cmd_line, cConnDC *conn)
 {
 	mOwner->Reload();
-	mOwner->DCPublicHS(_("Done reloading all lists."), conn);
+	mOwner->DCPublicHS(_("Done reloading all lists and databases."), conn);
 	return 1;
 }
 
