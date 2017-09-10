@@ -645,10 +645,9 @@ class cServerDC : public cAsyncSocketServer
 		// List of bots
 		cUserCollection mRobotList;
 
-#ifdef HAVE_LIBGEOIP
-		// GeoIp object for country code support
-		static cGeoIP sGeoIP;
-#endif
+		#ifdef HAVE_LIBGEOIP
+			static cGeoIP sGeoIP; // geoip object
+		#endif
 
 		// prevent stack trace on core dump
 		static bool mStackTrace;

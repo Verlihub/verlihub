@@ -109,23 +109,13 @@ namespace nVerliHub {
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
 				#ifdef HAVE_LIBGEOIP
-				// pointer to geoip country instance
-				GeoIP *mGICO;
+				GeoIP *mGICO = NULL; // pointer to geoip country instance
+				GeoIP *mGICI = NULL; // pointer to geoip city instance
+				GeoIP *mGIAS = NULL; // pointer to geoip asn instance
 
-				// pointer to geoip city instance
-				GeoIP *mGICI;
-
-				// pointer to geoip asn instance
-				GeoIP *mGIAS;
-
-				// country database initialization function
-				GeoIP *TryCountryDB(int flags);
-
-				// city database initialization function
-				GeoIP *TryCityDB(int flags);
-
-				// asn database initialization function
-				GeoIP *TryASNDB(int flags);
+				GeoIP *TryCountryDB(int flags); // country database initialization function
+				GeoIP *TryCityDB(int flags); // city database initialization function
+				GeoIP *TryASNDB(int flags); // asn database initialization function
 				#endif
 
 				// helper functions

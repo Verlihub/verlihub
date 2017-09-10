@@ -40,14 +40,20 @@ cGeoIP::cGeoIP():
 
 cGeoIP::~cGeoIP()
 {
-	if (mGICO)
+	if (mGICO) {
 		GeoIP_delete(mGICO);
+		mGICO = NULL;
+	}
 
-	if (mGICI)
+	if (mGICI) {
 		GeoIP_delete(mGICI);
+		mGICI = NULL;
+	}
 
-	if (mGIAS)
+	if (mGIAS) {
 		GeoIP_delete(mGIAS);
+		mGIAS = NULL;
+	}
 }
 #endif
 
@@ -333,25 +339,26 @@ bool cGeoIP::GetASN(string &asn_name, const string &host, const string &db)
 }
 
 #ifdef HAVE_LIBGEOIP
-GeoIP *cGeoIP::TryCountryDB(int flags)
+GeoIP *cGeoIP::TryCountryDB(int flags) // todo: try more directories
 {
-	// todo: try more directories
-	mGICO = GeoIP_new(flags);
+	GeoIP *gi = GeoIP_new(flags);
 
-	if (!mGICO)
+	if (!gi)
 		vhLog(1) << "Database not detected: MaxMind GeoIP Country" << endl;
 
-	return mGICO;
+	return gi;
 }
 
 GeoIP *cGeoIP::TryCityDB(int flags)
 {
-	if (GeoIP_db_avail(GEOIP_CITY_EDITION_REV1))
-		mGICI = GeoIP_open_type(GEOIP_CITY_EDITION_REV1, flags);
-	else if (GeoIP_db_avail(GEOIP_CITY_EDITION_REV0))
-		mGICI = GeoIP_open_type(GEOIP_CITY_EDITION_REV0, flags);
+	GeoIP *gi = NULL;
 
-	if (!mGICI) {
+	if (GeoIP_db_avail(GEOIP_CITY_EDITION_REV1))
+		gi = GeoIP_open_type(GEOIP_CITY_EDITION_REV1, flags);
+	else if (GeoIP_db_avail(GEOIP_CITY_EDITION_REV0))
+		gi = GeoIP_open_type(GEOIP_CITY_EDITION_REV0, flags);
+
+	if (!gi) {
 		char *path = GeoIPDBFileName[GEOIP_COUNTRY_EDITION];
 
 		if (path) {
@@ -364,50 +371,52 @@ GeoIP *cGeoIP::TryCityDB(int flags)
 					lite += "/GeoLiteCity.dat";
 
 					if (FileExists(lite.c_str()))
-						mGICI = GeoIP_open(lite.c_str(), flags);
+						gi = GeoIP_open(lite.c_str(), flags);
 
-					if (!mGICI) {
+					if (!gi) {
 						string full = dir;
 						full += "/GeoIPCity.dat";
 
 						if (FileExists(full.c_str()))
-							mGICI = GeoIP_open(full.c_str(), flags);
+							gi = GeoIP_open(full.c_str(), flags);
 					}
 				}
 			}
 		}
 	}
 
-	if (!mGICI && FileExists("/usr/share/GeoIP/GeoLiteCity.dat"))
-		mGICI = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", flags);
+	if (!gi && FileExists("/usr/share/GeoIP/GeoLiteCity.dat"))
+		gi = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", flags);
 
-	if (!mGICI && FileExists("/usr/share/GeoIP/GeoIPCity.dat"))
-		mGICI = GeoIP_open("/usr/share/GeoIP/GeoIPCity.dat", flags);
+	if (!gi && FileExists("/usr/share/GeoIP/GeoIPCity.dat"))
+		gi = GeoIP_open("/usr/share/GeoIP/GeoIPCity.dat", flags);
 
-	if (!mGICI && FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat"))
-		mGICI = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", flags);
+	if (!gi && FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat"))
+		gi = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", flags);
 
-	if (!mGICI && FileExists("/usr/local/share/GeoIP/GeoIPCity.dat"))
-		mGICI = GeoIP_open("/usr/local/share/GeoIP/GeoIPCity.dat", flags);
+	if (!gi && FileExists("/usr/local/share/GeoIP/GeoIPCity.dat"))
+		gi = GeoIP_open("/usr/local/share/GeoIP/GeoIPCity.dat", flags);
 
-	if (!mGICI && FileExists("./GeoLiteCity.dat"))
-		mGICI = GeoIP_open("./GeoLiteCity.dat", flags);
+	if (!gi && FileExists("./GeoLiteCity.dat"))
+		gi = GeoIP_open("./GeoLiteCity.dat", flags);
 
-	if (!mGICI && FileExists("./GeoIPCity.dat"))
-		mGICI = GeoIP_open("./GeoIPCity.dat", flags);
+	if (!gi && FileExists("./GeoIPCity.dat"))
+		gi = GeoIP_open("./GeoIPCity.dat", flags);
 
-	if (!mGICI)
+	if (!gi)
 		vhLog(1) << "Database not detected: MaxMind GeoIP City" << endl;
 
-	return mGICI;
+	return gi;
 }
 
 GeoIP *cGeoIP::TryASNDB(int flags)
 {
-	if (GeoIP_db_avail(GEOIP_ASNUM_EDITION))
-		mGIAS = GeoIP_open_type(GEOIP_ASNUM_EDITION, flags);
+	GeoIP *gi = NULL;
 
-	if (!mGIAS) {
+	if (GeoIP_db_avail(GEOIP_ASNUM_EDITION))
+		gi = GeoIP_open_type(GEOIP_ASNUM_EDITION, flags);
+
+	if (!gi) {
 		char *path = GeoIPDBFileName[GEOIP_COUNTRY_EDITION];
 
 		if (path) {
@@ -420,36 +429,55 @@ GeoIP *cGeoIP::TryASNDB(int flags)
 					temp += "/GeoIPASNum.dat";
 
 					if (FileExists(temp.c_str()))
-						mGIAS = GeoIP_open(temp.c_str(), flags);
+						gi = GeoIP_open(temp.c_str(), flags);
 				}
 			}
 		}
 	}
 
-	if (!mGIAS && FileExists("/usr/share/GeoIP/GeoIPASNum.dat"))
-		mGIAS = GeoIP_open("/usr/share/GeoIP/GeoIPASNum.dat", flags);
+	if (!gi && FileExists("/usr/share/GeoIP/GeoIPASNum.dat"))
+		gi = GeoIP_open("/usr/share/GeoIP/GeoIPASNum.dat", flags);
 
-	if (!mGIAS && FileExists("/usr/local/share/GeoIP/GeoIPASNum.dat"))
-		mGIAS = GeoIP_open("/usr/local/share/GeoIP/GeoIPASNum.dat", flags);
+	if (!gi && FileExists("/usr/local/share/GeoIP/GeoIPASNum.dat"))
+		gi = GeoIP_open("/usr/local/share/GeoIP/GeoIPASNum.dat", flags);
 
-	if (!mGIAS && FileExists("./GeoIPASNum.dat"))
-		mGIAS = GeoIP_open("./GeoIPASNum.dat", flags);
+	if (!gi && FileExists("./GeoIPASNum.dat"))
+		gi = GeoIP_open("./GeoIPASNum.dat", flags);
 
-	if (!mGIAS)
+	if (!gi)
 		vhLog(1) << "Database not detected: MaxMind GeoIP ASN" << endl;
 
-	return mGIAS;
+	return gi;
 }
 
 #endif
 
-void cGeoIP::ReloadAll()
+void cGeoIP::ReloadAll() // todo: make it work
 {
+	/*
 	#ifdef HAVE_LIBGEOIP
-		mGICO = TryCountryDB(GEOIP_CHECK_CACHE);
-		mGICI = TryCityDB(GEOIP_CHECK_CACHE);
-		mGIAS = TryASNDB(GEOIP_CHECK_CACHE);
+		//if (mGICO) {
+			//GeoIP_delete(mGICO);
+			//mGICO = NULL;
+		//}
+
+		mGICO = TryCountryDB(GEOIP_CHECK_CACHE); // GEOIP_STANDARD
+
+		//if (mGICI) {
+			//GeoIP_delete(mGICI);
+			//mGICI = NULL;
+		//}
+
+		mGICI = TryCityDB(GEOIP_CHECK_CACHE); // GEOIP_STANDARD
+
+		//if (mGIAS) {
+			//GeoIP_delete(mGIAS);
+			//mGIAS = NULL;
+		//}
+
+		mGIAS = TryASNDB(GEOIP_CHECK_CACHE); // GEOIP_STANDARD
 	#endif
+	*/
 }
 
 bool cGeoIP::FileExists(const char *name)
