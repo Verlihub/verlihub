@@ -136,9 +136,9 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 	}
 
 	string city = "--";
-
+	bool res = false;
 #ifdef HAVE_LIBGEOIP
-	bool res = false, own = false;
+	bool own = false;
 	GeoIP *gi;
 
 	if (db.size() && FileExists(db.c_str())) {
