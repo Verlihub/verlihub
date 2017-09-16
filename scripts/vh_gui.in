@@ -161,7 +161,7 @@ function run_hub() # restart
 
 	# Check if hub is already running
 	if _is_hub_running $CONFIG_DIR ; then
-		$DIALOG --title "$TITLE" --msgbox "Hub is already running with PID $PID_RESULT. To stop it use vh --stop --gui'" 8 53
+		$DIALOG --title "$TITLE" --msgbox "Hub is already running with PID $PID_RESULT. To stop it use vh_gui --stop'" 8 53
 		_quit;
 	fi
 	$DIALOG --infobox "Starting hub with config folder '$CONFIG_DIR'. This could take some times" 5 45

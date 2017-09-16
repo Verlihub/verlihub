@@ -135,10 +135,10 @@ bool cGeoIP::GetCity(string &geo_city, const string &host, const string &db)
 		return true;
 	}
 
-	bool res = false, own = false;
 	string city = "--";
 
 #ifdef HAVE_LIBGEOIP
+	bool res = false, own = false;
 	GeoIP *gi;
 
 	if (db.size() && FileExists(db.c_str())) {

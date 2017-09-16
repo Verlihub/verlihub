@@ -71,6 +71,8 @@ cUser::cUser():
 	mRights(0),
 	mBanTime(0),
 	mToBan(false),
+	mRCTMCount(0),
+	mRCTMLock(false),
 	mShare(0),
 	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,
