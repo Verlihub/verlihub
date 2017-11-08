@@ -2825,23 +2825,26 @@ bool cDCConsole::cfRegUsr::operator()()
 				ostr << ui;
 				(*mOS) << autosprintf(_("%s has been unregistered, user information"), nick.c_str()) << ":\r\n" << ostr.str();
 
-				if (mS->mOpchatList.ContainsNick(user->mNick)) // no need to reconnect for class to take effect, opchat list
-					mS->mOpchatList.Remove(user);
+				if (user && user->mxConn) { // no need to reconnect for class to take effect
+					if (mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
+						mS->mOpchatList.Remove(user);
 
-				if (!ui.mHideKeys) { // oplist
-					if (mS->mOpList.ContainsNick(user->mNick))
-						mS->mOpList.Remove(user);
+					if (!ui.mHideKeys) { // oplist
+						if (mS->mOpList.ContainsNick(user->mNick))
+							mS->mOpList.Remove(user);
 
-					mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-					mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-					mS->mInProgresUsers.SendToAll(msg, false, true);
-					mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-					mS->mHelloUsers.SendToAll(msg, false, true);
-					mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
-					mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
+						mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+						mS->mHelloUsers.SendToAll(msg, false, true);
+						mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+						mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+					}
+
+					user->mClass = eUC_NORMUSER;
 				}
 
-				user->mClass = eUC_NORMUSER;
 				return true;
 			} else {
 				ostr << ui;
