@@ -640,7 +640,7 @@ bool cpiLua::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 	bool res = true;
 
 	if (conn && msg && msg->mStr.size()) {
-		if (conn->mpUser->mInList) { // only after login
+		if (conn->mpUser && conn->mpUser->mInList) { // only after login
 			const char *args[] = {
 				conn->mpUser->mNick.c_str(),
 				msg->mStr.c_str(),
