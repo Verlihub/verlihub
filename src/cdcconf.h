@@ -313,6 +313,7 @@ public:
 	bool show_speed;
 	bool send_user_ip;
 	int user_ip_class;
+	int oplist_class;
 	bool send_user_info;
 	bool send_pass_request;
 	bool send_crash_report;

@@ -93,6 +93,7 @@ class cRegUserInfo
 		int mClassHideKick;
 		bool mHideKick;
 		bool mHideKeys;
+		bool mShowKeys;
 		bool mHideShare;
 		bool mHideCtmMsg;
 		long mRegDate;

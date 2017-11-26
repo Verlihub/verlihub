@@ -19,6 +19,7 @@
 	Following variables can be used:
 
 		hide_keys <1/0>			- Hide operator key
+		show_keys <1/0>			- Show operator key
 		hide_kick <1/0>			- Hide kick messages
 		hide_share <1/0>			- Hide share size
 		hide_ctmmsg <1/0>		- Hide connection request messages

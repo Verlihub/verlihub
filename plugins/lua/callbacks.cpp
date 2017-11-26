@@ -2047,7 +2047,7 @@ int _RegBot(lua_State *L)
 	serv->mUserList.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true); // send myinfo
 	serv->mInProgresUsers.SendToAll(robot->mMyINFO, serv->mC.delayed_myinfo, true);
 
-	if (robot->mClass >= eUC_OPERATOR) { // send short oplist
+	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist
 		serv->mP.Create_OpList(msg, robot->mNick);
 		serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
 		serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
@@ -2158,8 +2158,6 @@ int _EditBot(lua_State *L)
 	}
 
 	if (robot->mClass != iclass) { // different class
-		string msg;
-
 		if ((robot->mClass < serv->mC.opchat_class) && (iclass >= serv->mC.opchat_class)) { // add to opchat list
 			if (!serv->mOpchatList.ContainsNick(nick))
 				serv->mOpchatList.Add(robot);
@@ -2168,22 +2166,24 @@ int _EditBot(lua_State *L)
 				serv->mOpchatList.Remove(robot);
 		}
 
-		if ((robot->mClass < eUC_OPERATOR) && (iclass >= eUC_OPERATOR)) { // changing from user to op
-			if (!serv->mOpList.ContainsNick(nick)) // add to oplist
+		string msg;
+
+		if ((robot->mClass < serv->mC.oplist_class) && (iclass >= serv->mC.oplist_class)) { // changing from user to op
+			if (!serv->mOpList.ContainsNick(nick)) { // add to oplist
 				serv->mOpList.Add(robot);
-
-			serv->mP.Create_OpList(msg, robot->mNick); // send short oplist to users
-			serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-			serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
-		} else if ((robot->mClass >= eUC_OPERATOR) && (iclass < eUC_OPERATOR)) { // changing from op to user
-			if (serv->mOpList.ContainsNick(nick)) // remove from oplist
+				serv->mP.Create_OpList(msg, robot->mNick); // send short oplist to users
+				serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+			}
+		} else if ((robot->mClass >= serv->mC.oplist_class) && (iclass < serv->mC.oplist_class)) { // changing from op to user
+			if (serv->mOpList.ContainsNick(nick)) { // remove from oplist
 				serv->mOpList.Remove(robot);
-
-			serv->mP.Create_Quit(msg, robot->mNick); // send quit to users
-			serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-			serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
-			serv->mP.Create_Hello(msg, robot->mNick); // send hello
-			serv->mHelloUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				serv->mP.Create_Quit(msg, robot->mNick); // send quit to users
+				serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				serv->mP.Create_Hello(msg, robot->mNick); // send hello
+				serv->mHelloUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+			}
 		}
 
 		robot->mClass = (tUserCl)iclass; // set new class

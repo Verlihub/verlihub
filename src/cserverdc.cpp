@@ -463,59 +463,55 @@ bool cServerDC::DelRobot(cUserRobot *robot)
 	return false;
 }
 
-bool cServerDC::AddToList(cUser *usr)
+bool cServerDC::AddToList(cUser *user)
 {
-	if (!usr) {
+	if (!user) {
 		if (ErrLog(1))
 			LogStream() << "Adding a NULL user to userlist" << endl;
 
 		return false;
 	}
 
-	if (usr->mInList) {
+	if (user->mInList) {
 		if (ErrLog(2))
 			LogStream() << "User is already in userlist" << endl;
 
 		return false;
 	}
 
-	tUserHash Hash = mUserList.Nick2Hash(usr->mNick);
+	tUserHash Hash = mUserList.Nick2Hash(user->mNick);
 
-	if (!mUserList.AddWithHash(usr, Hash)) {
+	if (!mUserList.AddWithHash(user, Hash)) {
 		if (ErrLog(2))
-			LogStream() << "Adding twice user with same hash: " << usr->mNick << endl;
+			LogStream() << "Adding twice user with same hash: " << user->mNick << endl;
 
-		usr->mInList = false;
+		user->mInList = false;
 		return false;
 	}
 
-	usr->mInList = true;
+	user->mInList = true;
 
-	if (usr->IsPassive)
-		mPassiveUsers.AddWithHash(usr, Hash);
+	if (user->IsPassive)
+		mPassiveUsers.AddWithHash(user, Hash);
 	else
-		mActiveUsers.AddWithHash(usr, Hash);
+		mActiveUsers.AddWithHash(user, Hash);
 
-	if ((usr->mClass >= eUC_OPERATOR) && !(usr->mxConn && usr->mxConn->mRegInfo && usr->mxConn->mRegInfo->mHideKeys))
-		mOpList.AddWithHash(usr, Hash);
+	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys))
+		mOpList.AddWithHash(user, Hash);
 
-	if (usr->Can(eUR_OPCHAT, mTime.Sec()))
-		mOpchatList.AddWithHash(usr, Hash);
+	if (user->Can(eUR_OPCHAT, mTime.Sec()))
+		mOpchatList.AddWithHash(user, Hash);
 
-	if (usr->mxConn && !(usr->mxConn->mFeatures & eSF_NOHELLO))
-		mHelloUsers.AddWithHash(usr, Hash);
+	if (user->mxConn && !(user->mxConn->mFeatures & eSF_NOHELLO))
+		mHelloUsers.AddWithHash(user, Hash);
 
-	if ((usr->mClass >= eUC_OPERATOR) || mC.chat_default_on) {
-		mChatUsers.AddWithHash(usr, Hash);
-	} else if (usr->mxConn) {
-		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), usr->mxConn);
-	}
+	if ((user->mClass >= eUC_OPERATOR) || mC.chat_default_on)
+		mChatUsers.AddWithHash(user, Hash);
+	else if (user->mxConn)
+		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
 
-	if (usr->mxConn && usr->mxConn->Log(3))
-		usr->mxConn->LogStream() << "Adding at the end of nicklist" << endl;
-
-	if (usr->mxConn && usr->mxConn->Log(3))
-		usr->mxConn->LogStream() << "Becomes in list" << endl;
+	if (user->mxConn && user->mxConn->Log(3))
+		user->mxConn->LogStream() << "Adding at the end of nicklist, becomes in list" << endl;
 
 	return true;
 }
@@ -1299,7 +1295,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // use cache, so this can be after user is added
 	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
-	if ((user->mClass >= eUC_OPERATOR) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
+	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(msg, user->mNick);
 		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
 		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);

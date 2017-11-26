@@ -54,6 +54,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server): cConfMySQL(mysql)
 	AddCol("class_hidekick", "int(2)", "0", true, mModel.mClassHideKick);
 	AddCol("hide_kick", "tinyint(1)", "0", true, mModel.mHideKick);
 	AddCol("hide_keys", "tinyint(1)", "0", true, mModel.mHideKeys);
+	AddCol("show_keys", "tinyint(1)", "0", true, mModel.mShowKeys);
 	AddCol("hide_share", "tinyint(1)", "0", true, mModel.mHideShare);
 	AddCol("hide_ctmmsg", "tinyint(1)", "0", true, mModel.mHideCtmMsg);
 	AddCol("reg_date", "int(11)", "", true, mModel.mRegDate);

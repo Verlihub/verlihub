@@ -864,10 +864,11 @@ bool cpiPython::OnCtmToHub(cConnDC *conn, string *ref)
 
 bool cpiPython::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && conn->mpUser->mInList && msg && msg->mStr.size()) { // only after login
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
 		return CallAll(W_OnUnknownMsg, args);
 	}
+
 	return true;
 }
 
@@ -1703,13 +1704,22 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 {
 	const char *nick, *desc, *speed, *email, *share;
 	long uclass;
-	if (!cpiPython::lib_unpack(args, "slssss", &nick, &uclass, &desc, &speed, &email, &share)) return NULL;
-	if (!nick || !desc || !speed || !email || !share) return NULL;
-	if (is_robot_nick_bad(nick)) return NULL;
-	if (uclass < -1 || (uclass > 5 && uclass != 10)) uclass = 0;
+
+	if (!cpiPython::lib_unpack(args, "slssss", &nick, &uclass, &desc, &speed, &email, &share))
+		return NULL;
+
+	if (!nick || !desc || !speed || !email || !share)
+		return NULL;
+
+	if (is_robot_nick_bad(nick))
+		return NULL;
+
+	if (uclass < -1 || (uclass > 5 && uclass != 10))
+		uclass = 0;
 
 	cPluginRobot *robot = cpiPython::me->NewRobot(nick, uclass);
-	if (robot != NULL) {
+
+	if (robot) {
 		cServerDC *server = cpiPython::me->server;
 		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
 		robot->mMyINFO_basic = robot->mMyINFO;
@@ -1720,15 +1730,17 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 		server->mUserList.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
 		server->mInProgresUsers.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
 
-		if (robot->mClass >= eUC_OPERATOR) {
+		if (robot->mClass >= server->mC.oplist_class) {
 			server->mP.Create_OpList(msg, robot->mNick);
 			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
 			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
 		}
+
 		server->mP.Create_BotList(msg, robot->mNick);
 		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
 		return w_ret1;
 	}
+
 	return NULL;
 }
 

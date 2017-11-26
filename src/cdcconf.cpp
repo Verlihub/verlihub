@@ -53,7 +53,7 @@ void cDCConf::AddVars()
 	Add("hub_security_desc", hub_security_desc, string("Hub security"));
 	Add("opchat_name", opchat_name, string("OpChat"));
 	Add("opchat_desc", opchat_desc, string("Operator chat"));
-	Add("opchat_class", opchat_class, (int)eUC_OPERATOR);
+	Add("opchat_class", opchat_class, int(eUC_OPERATOR));
 	Add("hub_host", hub_host, string(""));
 	Add("hub_failover_hosts", hub_failover_hosts, string(""));
 	Add("listen_ip",mS.mAddr,string("0.0.0.0"));
@@ -293,7 +293,8 @@ void cDCConf::AddVars()
 	Add("nullchars_report", nullchars_report, true);
 	Add("botinfo_report", botinfo_report, false);
 	Add("send_user_ip", send_user_ip, false);
-	Add("user_ip_class", user_ip_class, (int)eUC_OPERATOR);
+	Add("user_ip_class", user_ip_class, int(eUC_OPERATOR));
+	Add("oplist_class", oplist_class, int(eUC_OPERATOR));
 	Add("send_user_info", send_user_info, true);
 	Add("send_pass_request", send_pass_request, true);
 	Add("send_crash_report", send_crash_report, true);

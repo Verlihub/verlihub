@@ -1025,12 +1025,12 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 {
 	ostringstream os;
 	string nick;
-	int new_class = 3, old_class = 0, op_class = conn->mpUser->mClass;
-	int max_allowed_class = (op_class > 5 ? 5 : op_class - 1);
+	int new_class = eUC_OPERATOR, old_class = eUC_NORMUSER, op_class = conn->mpUser->mClass;
+	int max_allowed_class = (op_class > eUC_ADMIN ? eUC_ADMIN : op_class - eUC_REGUSER);
 	cmd_line >> nick >> new_class;
 
-	if (nick.empty() || (new_class < 0) || (new_class > max_allowed_class)) {
-		os << _("Command usage: !class <nick> [class=3]") << " (" << autosprintf(_("maximum allowed class is %d"), max_allowed_class) << ")";
+	if (nick.empty() || (new_class < eUC_NORMUSER) || (new_class > max_allowed_class)) {
+		os << autosprintf(_("Command usage: !class <nick> [class=%d]"), eUC_OPERATOR) << " (" << autosprintf(_("maximum allowed class is %d"), max_allowed_class) << ")";
 		mOwner->DCPublicHS(os.str().c_str(), conn);
 		return 1;
 	}
@@ -1047,6 +1047,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 			if ((old_class < mOwner->mC.opchat_class) && (new_class >= mOwner->mC.opchat_class)) { // opchat list
 				if (!mOwner->mOpchatList.ContainsNick(user->mNick))
 					mOwner->mOpchatList.Add(user);
+
 			} else if ((old_class >= mOwner->mC.opchat_class) && (new_class < mOwner->mC.opchat_class)) {
 				if (mOwner->mOpchatList.ContainsNick(user->mNick))
 					mOwner->mOpchatList.Remove(user);
@@ -1054,27 +1055,26 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 
 			string msg;
 
-			if ((old_class < eUC_OPERATOR) && (new_class >= eUC_OPERATOR)) { // oplist
-				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
-					mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
-					mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-					mOwner->mInProgresUsers.SendToAll(msg, false, true);
-
-					if (!mOwner->mOpList.ContainsNick(user->mNick))
+			if (user->mxConn->mRegInfo) {
+				if ((old_class < mOwner->mC.oplist_class) && (new_class >= mOwner->mC.oplist_class)) { // oplist
+					if (!user->mxConn->mRegInfo->mHideKeys && !mOwner->mOpList.ContainsNick(user->mNick)) {
 						mOwner->mOpList.Add(user);
-				}
-			} else if ((old_class >= eUC_OPERATOR) && (new_class < eUC_OPERATOR)) {
-				if (!(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) {
-					if (mOwner->mOpList.ContainsNick(user->mNick))
-						mOwner->mOpList.Remove(user);
+						mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
+						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mOwner->mInProgresUsers.SendToAll(msg, false, true);
+					}
 
-					mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
-					mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-					mOwner->mInProgresUsers.SendToAll(msg, false, true);
-					mOwner->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-					mOwner->mHelloUsers.SendToAll(msg, false, true);
-					mOwner->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
-					mOwner->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+				} else if ((old_class >= mOwner->mC.oplist_class) && (new_class < mOwner->mC.oplist_class)) {
+					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsNick(user->mNick)) {
+						mOwner->mOpList.Remove(user);
+						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
+						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mOwner->mInProgresUsers.SendToAll(msg, false, true);
+						mOwner->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+						mOwner->mHelloUsers.SendToAll(msg, false, true);
+						mOwner->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+						mOwner->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+					}
 				}
 			}
 		} else {
@@ -2815,13 +2815,13 @@ bool cDCConsole::cfRegUsr::operator()()
 
 		case eAC_DEL:
 			#ifndef WITHOUT_PLUGINS
-				if (!mS->mCallBacks.mOnDelReg.CallAll(this->mConn->mpUser, nick, ui.mClass)) {
+				if (RegFound && !mS->mCallBacks.mOnDelReg.CallAll(this->mConn->mpUser, nick, ui.mClass)) {
 					(*mOS) << _("Your action was blocked by a plugin.");
 					return false;
 				}
 			#endif
 
-			if (mS->mR->DelReg(nick)) {
+			if (RegFound && mS->mR->DelReg(nick)) {
 				ostr << ui;
 				(*mOS) << autosprintf(_("%s has been unregistered, user information"), nick.c_str()) << ":\r\n" << ostr.str();
 
@@ -2829,10 +2829,8 @@ bool cDCConsole::cfRegUsr::operator()()
 					if (mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
 						mS->mOpchatList.Remove(user);
 
-					if (!ui.mHideKeys) { // oplist
-						if (mS->mOpList.ContainsNick(user->mNick))
-							mS->mOpList.Remove(user);
-
+					if (mS->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
+						mS->mOpList.Remove(user);
 						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
 						mS->mInProgresUsers.SendToAll(msg, false, true);
@@ -2843,6 +2841,11 @@ bool cDCConsole::cfRegUsr::operator()()
 					}
 
 					user->mClass = eUC_NORMUSER;
+
+					if (user->mHideShare) { // recalculate total share
+						user->mHideShare = false;
+						mS->mTotalShare += user->mShare;
+					}
 				}
 
 				return true;
@@ -2872,7 +2875,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 		case eAC_CLASS:
 			#ifndef WITHOUT_PLUGINS
-				if (!mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
+				if (RegFound && !mS->mCallBacks.mOnUpdateClass.CallAll(this->mConn->mpUser, nick, ui.mClass, ParClass)) {
 					(*mOS) << _("Your action was blocked by a plugin.");
 					return false;
 				}
@@ -2882,32 +2885,32 @@ bool cDCConsole::cfRegUsr::operator()()
 				if ((user->mClass < mS->mC.opchat_class) && (ParClass >= mS->mC.opchat_class)) { // opchat list
 					if (!mS->mOpchatList.ContainsNick(user->mNick))
 						mS->mOpchatList.Add(user);
+
 				} else if ((user->mClass >= mS->mC.opchat_class) && (ParClass < mS->mC.opchat_class)) {
 					if (mS->mOpchatList.ContainsNick(user->mNick))
 						mS->mOpchatList.Remove(user);
 				}
 
-				if ((user->mClass < eUC_OPERATOR) && (ParClass >= eUC_OPERATOR)) { // oplist
-					if (RegFound && !ui.mHideKeys) {
-						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true);
-
-						if (!mS->mOpList.ContainsNick(user->mNick))
+				if (RegFound) {
+					if ((user->mClass < mS->mC.oplist_class) && (ParClass >= mS->mC.oplist_class)) { // oplist
+						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Add(user);
-					}
-				} else if ((user->mClass >= eUC_OPERATOR) && (ParClass < eUC_OPERATOR)) {
-					if (RegFound && !ui.mHideKeys) {
-						if (mS->mOpList.ContainsNick(user->mNick))
-							mS->mOpList.Remove(user);
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+						}
 
-						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true);
-						mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-						mS->mHelloUsers.SendToAll(msg, false, true);
-						mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
-						mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+					} else if ((user->mClass >= mS->mC.oplist_class) && (ParClass < mS->mC.oplist_class)) {
+						if (!ui.mHideKeys && mS->mOpList.ContainsNick(user->mNick)) {
+							mS->mOpList.Remove(user);
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+							mS->mHelloUsers.SendToAll(msg, false, true);
+							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+						}
 					}
 				}
 
@@ -2950,7 +2953,9 @@ bool cDCConsole::cfRegUsr::operator()()
 			break;
 
 		case eAC_INFO:
-			(*mOS) << autosprintf(_("%s registration information"), ui.GetNick().c_str()) << ":\r\n" << ui;
+			if (RegFound)
+				(*mOS) << autosprintf(_("%s registration information"), ui.GetNick().c_str()) << ":\r\n" << ui;
+
 			break;
 
 		default:
@@ -2961,19 +2966,78 @@ bool cDCConsole::cfRegUsr::operator()()
 
 	if ((WithPar && (Action >= eAC_ENABLE) && (Action <= eAC_SET)) || ((Action == eAC_PASS) && !WithPar)) {
 		if (mS->mR->SetVar(nick, field, par)) {
-			if ((field == "hide_share") && user && user->mxConn) { // change hidden share flag on the fly, also update total share
-				if (user->mHideShare && (par == "0")) {
-					user->mHideShare = false;
-					mS->mTotalShare += user->mShare;
+			if (user && user->mxConn && RegFound) { // we are working with online user
+				if (field == "hide_share") { // change hidden share flag on the fly, also update total share
+					if (user->mHideShare && (par == "0")) { // setting to 0
+						user->mHideShare = false;
+						mS->mTotalShare += user->mShare;
 
-					if (ostr.str().empty())
-						ostr << _("Your share is now visible.");
-				} else if (!user->mHideShare && (par != "0")) { // it appears that only 0 means false, anything else means true
-					user->mHideShare = true;
-					mS->mTotalShare -= user->mShare;
+						if (ostr.str().empty())
+							ostr << _("Your share is now visible.");
 
-					if (ostr.str().empty())
-						ostr << _("Your share is now hidden.");
+					} else if (!user->mHideShare && (par != "0")) { // setting to 0, it appears that only 0 means false, anything else means true
+						user->mHideShare = true;
+						mS->mTotalShare -= user->mShare;
+
+						if (ostr.str().empty())
+							ostr << _("Your share is now hidden.");
+					}
+
+				} else if (field == "hide_keys") { // hide operator key, mHideKeys always overrides mShowKeys and oplist_class has last position
+					if (ui.mHideKeys && (par == "0")) { // setting to 0
+						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && !mS->mOpList.ContainsNick(user->mNick)) {
+							mS->mOpList.Add(user);
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+
+							if (ostr.str().empty())
+								ostr << _("Your operator key is now visible.");
+						}
+
+					} else if (!ui.mHideKeys && (par != "0")) { // setting to 1
+						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && mS->mOpList.ContainsNick(user->mNick)) {
+							mS->mOpList.Remove(user);
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+							mS->mHelloUsers.SendToAll(msg, false, true);
+							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+							if (ostr.str().empty())
+								ostr << _("Your operator key is now hidden.");
+						}
+					}
+
+				} else if (field == "show_keys") { // show operator key, mHideKeys always overrides mShowKeys and oplist_class has last position
+					if (!ui.mShowKeys && (par != "0")) { // setting to 1
+						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
+							mS->mOpList.Add(user);
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+
+							if (ostr.str().empty())
+								ostr << _("Your operator key is now visible.");
+						}
+
+					} else if (ui.mShowKeys && (par == "0")) { // setting to 0
+						if (!ui.mHideKeys && (user->mClass < mS->mC.oplist_class) && mS->mOpList.ContainsNick(user->mNick)) {
+							mS->mOpList.Remove(user);
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
+							mS->mHelloUsers.SendToAll(msg, false, true);
+							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+							if (ostr.str().empty())
+								ostr << _("Your operator key is now hidden.");
+						}
+					}
 				}
 			}
 

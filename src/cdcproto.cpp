@@ -3425,7 +3425,7 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 	}
 
 	if (pref.size())
-		rsn << autosprintf(_("Invalid login sequence, your client must validate nick first: %s"), pref.c_str());
+		rsn << autosprintf(_("Invalid login sequence, your client must validate nick first: %s"), ((msg->mType == eDC_CHAT) ? _("Chat") : pref.c_str()));
 	else
 		rsn << _("Invalid login sequence, your client must validate nick first.");
 

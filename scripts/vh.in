@@ -26,18 +26,17 @@ source $(dirname $SCRIPT)/vh_lib
 function _ask_admin_access()
 {
 	ARE_ADMIN_DB_INFO_OK=false
-	until $ARE_ADMIN_DB_INFO_OK;
-	do
-		echo_s "-- Please insert MySQL administrator information to create DB or account or grant permissions.\n"
+
+	until $ARE_ADMIN_DB_INFO_OK; do
+		echo_s "Please enter MySQL administrator credentials to create database, account or grant permissions.\n\n"
 		MYSQL_ADMIN_USER=$(ask "Username" "root")
 		MYSQL_ADMIN_PASSWORD=$(ask "Password" "" "" "true")
-
-		echo_s "This is information about MySQL administrator:\n"
+		echo_s "\n\nHere is information you specified about your MySQL administrator:\n\n"
 		echo_s "\tUsername" $BOLD
-		echo_s ": $MYSQL_ADMIN_USER \n"
+		echo_s ": $MYSQL_ADMIN_USER\n"
 		echo_s "\tPassword" $BOLD
-		echo_s ": <hidden> \n"
-		yes_or_no "Do you want to continue with this information?" && ARE_ADMIN_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
+		echo_s ": <hidden>\n\n"
+		yes_or_no "Do you want to continue with this information?" && ARE_ADMIN_DB_INFO_OK=true || echo -e "Let's do it again.\n"
 	done
 }
 
@@ -665,12 +664,12 @@ function autoload() # params
 	exit 0;
 }
 
-# install verlihub with cli
+# install verlihub using command line
 function install() # [sleep_time]
 {
-	local SLEEP_TIME=30 # prepare sleep time or use default
+	local SLEEP_TIME=30 # prepare default sleep time
 
-	if [ "_$1" != "_" ]; then # we have sleep time parameter
+	if [ "_$1" != "_" ]; then # we have parameter
 		local RE="^[0-9]+$" # number regular expression
 
 		if [[ "$1" =~ $RE ]]; then # check if we got a number
@@ -682,243 +681,276 @@ function install() # [sleep_time]
 
 	clear # clear shell
 
-	REALUSER="$USER" # print introduction
+	# print introduction
 	echo_s "Hello "
-	echo_s "$REALUSER,\n" $BOLD
-	echo_s "let's start with the configuration of database access. If you have some problems with configuration you can: \n"
-	echo_s "\t*" $BOLD
-	echo_s " Follow the official documentation: https://github.com/verlihub/verlihub/wiki/\n"
-	echo_s "\t*" $BOLD
-	echo_s " Seek support on VAZ: dchub://hub.verlihub.net:7777/\n"
+	echo_s "$USER" $BOLD
+	echo_s " and welcome to Verlihub installation wizard."
+	echo_s " To exit this wizard, press "
+	echo_s "CTRL+C" $BOLD
+	echo_s " at any time."
+	echo_s " Let's begin with configuration of MySQL database access."
+	echo_s " If you have any problems during configuration, please refer to following resources:\n\n"
+	echo_s " * Follow our official manual: "
+	echo_s "https://github.com/verlihub/verlihub/wiki/" $BOLD
+	echo_s "\n * Seek help on our support hub: "
+	echo_s "dchub://hub.verlihub.net:7777/" $BOLD
+	echo_s "\n * Check out official MySQL manual: "
+	echo_s "https://dev.mysql.com/doc/refman/5.7/en/" $BOLD
+	echo_s "\n\n[*] MySQL information:\n\n" $BOLD
+	echo_s "Please enter MySQL information below for the hub being installed."
+	echo_s " If account or database don't exist, they will be created later in process using administrator credentials.\n\n"
 
-	# Get MySQL information
-	echo_s "\n[*] MySQL settings\n" $RED_BOLD
-	echo_s "-- Please insert MySQL server setting below for the hub. \n"
-	echo_s "   If the account/DB does not exist it will be created later in this setup. \n"
-
-	set_path $VERLIHUB_CFG > /dev/null 2>&1;
-
+	# get mysql information
+	set_path $VERLIHUB_CFG > /dev/null 2>&1 # this is used by get_db_* functions
 	ARE_DB_INFO_OK=false
-	until $ARE_DB_INFO_OK;
-	do
+
+	until $ARE_DB_INFO_OK; do
 		MYSQL_DB_NAME=$(get_db_name)
 		MYSQL_DB_NAME=$(ask "Choose database name" "$MYSQL_DB_NAME")
 		MYSQL_USER=$(get_db_user)
-		MYSQL_USER=$(ask "MySQL user to access to '$MYSQL_DB_NAME'" "$MYSQL_USER")
+		MYSQL_USER=$(ask "MySQL user to access '$MYSQL_DB_NAME'" "$MYSQL_USER")
 		MYSQL_PASSWORD="" # $(get_db_pass)
 		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" "$MYSQL_PASSWORD" "" "true")
 		MYSQL_HOST=$(get_db_host)
 		echo ""
 		MYSQL_HOST=$(ask "MySQL hostname" "$MYSQL_HOST")
 		MYSQL_CHARSET="" # $(get_db_charset)
-		MYSQL_CHARSET=$(ask "MySQL charset (experts only, leave empty for default)" "$MYSQL_CHARSET" "true")
+		MYSQL_CHARSET=$(ask "MySQL charset, experts only, leave empty for default" "$MYSQL_CHARSET" "true")
 		VH_HUB_LOCALE="" # $(get_hub_locale)
-		VH_HUB_LOCALE=$(ask "Hub locale (experts only, leave empty for default)" "$VH_HUB_LOCALE" "true")
+		VH_HUB_LOCALE=$(ask "Hub locale, experts only, leave empty for default" "$VH_HUB_LOCALE" "true")
 		VH_HUB_ENCODING="" # $(get_hub_encoding)
-		VH_HUB_ENCODING=$(ask "Hub encoding (experts only, leave empty for default)" "$VH_HUB_ENCODING" "true")
+		VH_HUB_ENCODING=$(ask "Hub encoding, experts only, leave empty for default" "$VH_HUB_ENCODING" "true")
 
-		echo_s "This is information about your MySQL server and the hub:\n"
+		echo_s "\nHere is information you specified about your MySQL server:\n\n"
 		echo_s "\tDatabase" $BOLD
-		echo_s ": $MYSQL_DB_NAME \n"
+		echo_s ": $MYSQL_DB_NAME\n"
 		echo_s "\tUsername" $BOLD
-		echo_s ": $MYSQL_USER \n"
+		echo_s ": $MYSQL_USER\n"
 		echo_s "\tPassword" $BOLD
-		echo_s ": <hidden> \n"
+		echo_s ": <hidden>\n"
 		echo_s "\tHostname" $BOLD
-		echo_s ": $MYSQL_HOST \n"
+		echo_s ": $MYSQL_HOST\n"
 		echo_s "\tCharset" $BOLD
-		echo_s ": $MYSQL_CHARSET \n"
+		echo_s ": $MYSQL_CHARSET\n"
 		echo_s "\tHub locale" $BOLD
-		echo_s ": $VH_HUB_LOCALE \n"
+		echo_s ": $VH_HUB_LOCALE\n"
 		echo_s "\tHub encoding" $BOLD
-		echo_s ": $VH_HUB_ENCODING \n"
+		echo_s ": $VH_HUB_ENCODING\n\n"
 
-		yes_or_no "Do you want to continue with this information?" && ARE_DB_INFO_OK=true || echo -e "Let's do it again\n\n"
+		yes_or_no "Do you want to continue with this information?" && ARE_DB_INFO_OK=true || echo -e "Let's do it again.\n"
 	done
 
-	# Ask user the IP addrress of current server to allow access for MySQL server
+	# correct mysql host
 	IS_MYSQL_HOST_LOCAL=false
 	[ $MYSQL_HOST = "localhost" ] && IS_MYSQL_HOST_LOCAL=true
 	[ $MYSQL_HOST = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
+
 	if ! $IS_MYSQL_HOST_LOCAL ; then
-		echo_s "-- You are going to use a database on an external server. Please provide the IP address of this current server \n"
+		echo_s "\nYou are going to use database on external server, please enter IP address of current server.\n\n"
 		IS_MYSQL_HOST_OK=false
-		until $IS_MYSQL_HOST_OK;
-		do
-			CURRENT_ADDRESS=$(ask "Address")
-	
+
+		until $IS_MYSQL_HOST_OK; do
+			CURRENT_ADDRESS=$(ask "IP address")
+
 			if [ "_$CURRENT_ADDRESS" = "_" ]; then
-				echo_s "You enter a empty value please retry with configuration\n"
+				echo_s "\nYou have entered empty value, let's do it again.\n"
 			else
-				IS_MYSQL_HOST_OK=true				
+				IS_MYSQL_HOST_OK=true
 			fi
 		done
 	else
 		CURRENT_ADDRESS="localhost"
-	fi;
+	fi
 
-	# Test if account exists
-	echo_s "\n-- Checking MySQL account $MYSQL_USER@$MYSQL_HOST; this could take some times...\n" $RED_BOLD
-	_does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" && ACCOUNT_EXISTS=true || ACCOUNT_EXISTS=false
+	# install mysql account
+	echo_s "\nChecking for MySQL account "
+	echo_s "$MYSQL_USER@$MYSQL_HOST" $BOLD
+	echo_s ", please wait.\n\n"
 
-	if ! $ACCOUNT_EXISTS ; then 
-		echo_s "-- The MySQL account '$MYSQL_USER' can not be accessed, it will be created now\n"
+	if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ; then # create account
+		echo_s "MySQL account "
+		echo_s "$MYSQL_USER@$MYSQL_HOST" $BOLD
+		echo_s " does't exist, it will be created now using administrator credentials.\n"
+
 		_ask_admin_access
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'" &> /dev/null
+		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'" &> /dev/null
 
-		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ;
-		then
-			echo_s "-- The MySQL account cannot be created. Fix the problem and run the setup again\n"
-			exit 1;
+		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ; then # check again
+			echo_s "\nMySQL account " $RED_BOLD
+			echo_s "$MYSQL_USER@$MYSQL_HOST" $BOLD
+			echo_s " failed to create, please do this manually and run installation again.\n" $RED_BOLD
+			exit 1
+		else
+			echo_s "\nMySQL account " $GREEN_BOLD
+			echo_s "$MYSQL_USER@$MYSQL_HOST" $BOLD
+			echo_s " has been created.\n" $GREEN_BOLD
 		fi
 	else
-		echo_s "-- The MySQL account '$MYSQL_USER' has been found\n"
+		echo_s "MySQL account " $GREEN_BOLD
+		echo_s "$MYSQL_USER@$MYSQL_HOST" $BOLD
+		echo_s " has been found.\n" $GREEN_BOLD
 	fi
 
-	# Test if database exists
-	echo_s "\n-- Checking MySQL database $MYSQL_DB_NAME; this could take some times...\n" $RED_BOLD
-	_does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" && DB_EXISTS=true || DB_EXISTS=false
-	# Create database
-	if ! $DB_EXISTS ; then 
-		echo_s "-- The MySQL database '$MYSQL_DB_NAME' does not exist, it will be created now\n"
-		if [ "_$MYSQL_ADMIN_USER"  = "_" -o "_$MYSQL_ADMIN_PASSWORD"  = "_" ]; then
+	# install mysql database
+	echo_s "\nChecking for MySQL database "
+	echo_s "$MYSQL_DB_NAME" $BOLD
+	echo_s ", please wait.\n\n"
+
+	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; then # create database
+		echo_s "MySQL database "
+		echo_s "$MYSQL_DB_NAME" $BOLD
+		echo_s " does't exist, it will be created now using administrator credentials.\n"
+
+		if [ "_$MYSQL_ADMIN_USER" = "_" -o "_$MYSQL_ADMIN_PASSWORD" = "_" ]; then
 			_ask_admin_access
 		fi
+
+		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
+		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to '$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
+
+		if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; then # check again
+			echo_s "\nMySQL database " $RED_BOLD
+			echo_s "$MYSQL_DB_NAME" $BOLD
+			echo_s " failed to create, please do this manually and run installation again.\n" $RED_BOLD
+			exit 1
+		else
+			echo_s "\nMySQL database " $GREEN_BOLD
+			echo_s "$MYSQL_DB_NAME" $BOLD
+			echo_s " has been created and permissions granted.\n" $GREEN_BOLD
+		fi
 	else
-		echo_s "-- The MySQL database '$MYSQL_DB_NAME' has been found\n"
+		echo_s "MySQL database " $GREEN_BOLD
+		echo_s "$MYSQL_DB_NAME" $BOLD
+		echo_s " has been found, assuming that permissions are already granted.\n" $GREEN_BOLD
 	fi
 
-	# Create/grant permissions (check if admin account has been specify)
-	if [ "_$MYSQL_ADMIN_USER"  = "_" -o "_$MYSQL_ADMIN_PASSWORD"  = "_" ]; then
-		_ask_admin_access
-	fi
-
-	export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to '$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
-
-	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ;
-	then
-		echo_s "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again\n"
-		exit 1;
-	fi	
-
-	# Select path where to put verlihub config file
+	# copy verlihub files
 	IS_CHOOSEN_FOLDER_OK=false
-
-	declare -A FOLDERS;
-	FCOUNT=0;
+	declare -A FOLDERS
+	FCOUNT=0
 	IS_VH_CFG_NEEDS_CHOWN=false
 	VH_USER_DIR=""
 
 	if [ $EUID -eq 0 ]; then
-		FCOUNT=$(expr $FCOUNT + 1);
-		FOLDERS[$FCOUNT]="/etc/verlihub";
-		FCOUNT=$(expr $FCOUNT + 1);
-		FOLDERS[$FCOUNT]="$PREFIX/etc/verlihub";
-		GETENT=$(which getent);
+		FCOUNT=$(expr $FCOUNT + 1)
+		FOLDERS[$FCOUNT]="/etc/verlihub"
+		FCOUNT=$(expr $FCOUNT + 1)
+		FOLDERS[$FCOUNT]="$PREFIX/etc/verlihub"
+		GETENT=$(which getent)
+
 		if [ -n $GETENT ]; then
-			VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}');
+			VH_USER_DIR=$($GETENT passwd verlihub | awk -F: '{print $6}')
+
 			if [ -n "$VH_USER_DIR" ]; then
 				IS_VH_CFG_NEEDS_CHOWN=true
-				FCOUNT=$(expr $FCOUNT + 1);
-				FOLDERS[$FCOUNT]="$VH_USER_DIR";
+				FCOUNT=$(expr $FCOUNT + 1)
+				FOLDERS[$FCOUNT]="$VH_USER_DIR"
 			fi
 		fi
 	else
-		echo_s "\nRun vh --install as " $BLUE_BOLD;
-		echo_s "root" $RED_BOLD;
-		echo_s " to perfom system-wide setup" $BLUE_BOLD;
-		echo "";
-		FCOUNT=$(expr $FCOUNT + 1);
-		FOLDERS[$FCOUNT]="$HOME/.config/verlihub";
+		echo_s "\nPlease run installation as administrator to perform system wide setup.\n" $BLUE
+		FCOUNT=$(expr $FCOUNT + 1)
+		FOLDERS[$FCOUNT]="$HOME/.config/verlihub"
+
 		if [ -d "$HOME/.verlihub" ]; then
-			FCOUNT=$(expr $FCOUNT + 1);
-			FOLDERS[$FCOUNT]="$HOME/.verlihub";
+			FCOUNT=$(expr $FCOUNT + 1)
+			FOLDERS[$FCOUNT]="$HOME/.verlihub"
 		fi
 	fi
 
-	until $IS_CHOOSEN_FOLDER_OK;
-	do
-		echo_s "\n-- You need to choose a place for the configuration files\n" $RED_BOLD;
+	until $IS_CHOOSEN_FOLDER_OK; do
+		echo_s "\nPlease choose a place for configuration files:\n\n"
 
 		if [ $(uname) != "OpenBSD" ]; then
 			for i in `seq 1 $FCOUNT`; do
-				echo_s "\t[$i] " $BOLD && echo ${FOLDERS[$i]}
+				echo_s "\t[$i] " $BOLD
+				echo ${FOLDERS[$i]}
 			done
 		else
 			for i in `jot -p0 $FCOUNT 1`; do
-				echo_s "\t[$i] " $BOLD && echo ${FOLDERS[$i]}
+				echo_s "\t[$i] " $BOLD
+				echo ${FOLDERS[$i]}
 			done
 		fi
 
-		echo_s "\t[9] " $BOLD && echo "Other, choose path where put config file"
-
+		echo_s "\t[9] " $BOLD
+		echo_s "Other, choose path where to put configuration file.\n\n"
 		local VALIDATE=false
-		until $VALIDATE
-		do	
+
+		until $VALIDATE; do
 			local CHOOSEN_FOLDER=$(ask "Select number")
+
 			if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ] || [ "$CHOOSEN_FOLDER" == "9" ]; then
 				VALIDATE=true
 			else
-				echo_s "-- Insert a valid number from the list\n" $RED
+				echo_s "\nPlease enter a valid number from the list.\n\n" $RED_BOLD
 			fi
 		done
 
-		# Get selected folder
-		if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ]; then
-			CHOOSEN_FOLDER="${FOLDERS[$CHOOSEN_FOLDER]}";
+		if [ -n "${FOLDERS[$CHOOSEN_FOLDER]}" ]; then # get selected folder
+			CHOOSEN_FOLDER="${FOLDERS[$CHOOSEN_FOLDER]}"
 		elif [ "$CHOOSEN_FOLDER" == "9" ]; then
-			CHOOSEN_FOLDER=$(ask "Type complete path");
+			CHOOSEN_FOLDER=$(ask "Type complete path")
 		fi
 
 		CHOOSEN_FOLDER_NOT_EXISTS=false
+
 		if [ -d $CHOOSEN_FOLDER ]; then
-			echo -n "-- The folder '$CHOOSEN_FOLDER' already exists (existing configuration will be backup). "
-			ANSWER=$(ask "Do you want to continue? Otherwise choose 'N' to select another folder [y/N]") 
+			echo_s "\nConfiguration folder "
+			echo_s "$CHOOSEN_FOLDER" $BOLD
+			echo_s " already exists and will be backed up now.\n\n"
+			ANSWER=$(ask "Do you want to continue? Choose no to select another folder. [y/N]")
+
 			if [ $ANSWER = 'y' ]; then
 				IS_CHOOSEN_FOLDER_OK=true
-			else	
-				echo -e "Ok, let's try again.\n\n"
+			else
+				echo -e "Let's do it again.\n"
 			fi
 		else
-			ANSWER=$(ask "-- The config folder '$CHOOSEN_FOLDER' does not exist and will be created. Do you want to continue? [y/N]");
+			echo_s "\nConfiguration folder "
+			echo_s "$CHOOSEN_FOLDER" $BOLD
+			echo_s " doesn't exist and will be created now.\n\n"
+			ANSWER=$(ask "Do you want to continue? Choose no to select another folder. [y/N]")
+
 			if [ $ANSWER = 'y' ]; then
 				IS_CHOOSEN_FOLDER_OK=true
 				CHOOSEN_FOLDER_NOT_EXISTS=true
-			else	
-				echo -e "Ok, let's try again.\n\n"
+			else
+				echo -e "Let's do it again.\n"
 			fi
 		fi
 
-		# Check if user has permissions to create/edit directory
-		if $IS_CHOOSEN_FOLDER_OK ; 
-		then
+		if $IS_CHOOSEN_FOLDER_OK ; then # check folder permissions
 			if mkdir -p $CHOOSEN_FOLDER/_test_dir > /dev/null 2>&1 ; then
-				rm -rf $CHOOSEN_FOLDER/_test_dir > /dev/null 2>&1 ;
+				rm -rf $CHOOSEN_FOLDER/_test_dir > /dev/null 2>&1
 			else
-				echo "-- You don't have the permission to write in '$CHOOSEN_FOLDER'. Please select another folder or fix the problem and restart this setup again."  && IS_CHOOSEN_FOLDER_OK=false 
+				echo_s "\nYou don't have permission to write to " $RED_BOLD
+				echo_s "$CHOOSEN_FOLDER" $BOLD
+				echo_s ", please select another folder, do this manually and run installation again or run installation as system administrator.\n" $RED_BOLD
+				IS_CHOOSEN_FOLDER_OK=false
 			fi
-		fi	
+		fi
 	done
 
-	# Set file name
-	CONFIG="${CHOOSEN_FOLDER}/dbconfig"
-	# Creating directory if it does not exist
-	if $CHOOSEN_FOLDER_NOT_EXISTS ; then
+	CONFIG="${CHOOSEN_FOLDER}/dbconfig" # set file name
+
+	# create directory if it does not exist
+	if $CHOOSEN_FOLDER_NOT_EXISTS; then
 		mkdir -p $CHOOSEN_FOLDER
 	else
-		# Make backup of existing configuration
-		if [ -e $CONFIG ]; then
+		if [ -e $CONFIG ]; then # make backup
 			BACKUP_DIR=$HOME
 			BACKUP_NAME="vh_install_$TIMESTAMP.tar.gz"
 			tar czf $BACKUP_DIR/$BACKUP_NAME $CHOOSEN_FOLDER > /dev/null 2>&1
 			rm -rf $CHOOSEN_FOLDER/* > /dev/null 2>&1
-			echo "-- The original configuration has been moved to $BACKUP_DIR/$BACKUP_NAME"
+			echo_s "\nOld configuration has been moved to " $GREEN_BOLD
+			echo_s "$BACKUP_DIR/$BACKUP_NAME" $BOLD
+			echo_s "." $GREEN_BOLD
 		fi
 	fi
 
-	# Print information for MySQL access
+	# write to configuration file
 	echo "db_host = $MYSQL_HOST" > $CONFIG
 	echo "db_data = $MYSQL_DB_NAME" >> $CONFIG
 	echo "db_user = $MYSQL_USER" >> $CONFIG
@@ -932,76 +964,87 @@ function install() # [sleep_time]
 		echo "locale = $VH_HUB_LOCALE" >> $CONFIG
 	fi
 
-	echo_s "\n-- Config file has been successfully written in '$CONFIG'.\n" $RED_BOLD
-	echo "-- Now they will be created other directories and files."
-	echo "-- Copying files and accessing MySQL server, this will take $SLEEP_TIME seconds, please wait."
-	# Import other files from verlihub directory
-	cp -R $DATADIR/config/* $CHOOSEN_FOLDER
+	echo_s "\nConfiguration file has been successfully written to " $GREEN_BOLD
+	echo_s "$CONFIG" $BOLD
+	echo_s ".\n\n" $GREEN_BOLD
+
+	echo_s "Copying files and accessing MySQL server, this will take up to "
+	echo_s "$SLEEP_TIME" $BOLD
+	echo_s " seconds.\n"
+
+	cp -R $DATADIR/config/* $CHOOSEN_FOLDER # copy other files
 	mkdir -p $CHOOSEN_FOLDER/plugins
 	mkdir -p $CHOOSEN_FOLDER/scripts
-        ln -sf $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
+	ln -sf $PLUGINDIR/libplug_pi.so $CHOOSEN_FOLDER/plugins
 
 	if $IS_VH_CFG_NEEDS_CHOWN && [ "$CHOOSEN_FOLDER" == "$VH_USER_DIR" ]; then
-		chown -R verlihub "$CHOOSEN_FOLDER";
-		chmod 0750 "$CHOOSEN_FOLDER";
+		chown -R verlihub "$CHOOSEN_FOLDER"
+		chmod 0750 "$CHOOSEN_FOLDER"
 	fi
 
-	# Check if file has been created correctly
-	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false
+	[ -f $CONFIG ] && CONFIG_EXISTS=true || CONFIG_EXISTS=false # check if file has been created correctly
+
 	if ! $CONFIG_EXISTS ; then
-		echo_s "Your installation is NOT completed.\nInstallation was not unable to create config folder or file. Please check permission on '$CHOOSEN_FOLDER'\n" $RED
-		exit 1;
+		echo_s "Installation is not complete, it failed to create configuration folder or file, please check write permission on " $RED_BOLD
+		echo_s "$CHOOSEN_FOLDER" $BOLD
+		echo_s ".\n" $RED_BOLD
+		exit 1
 	fi
 
-	# Create tables
-	set_path $CHOOSEN_FOLDER > /dev/null 2>&1;
+	# create tables
+	set_path $CHOOSEN_FOLDER > /dev/null 2>&1
+
 	if ! _create_mysql_tables $IS_MYSQL_HOST_LOCAL $SLEEP_TIME; then
-		echo_s "-- ERROR: cannot create verlihub's tables in the database, cannot continue with the installation. Please check '$CHOOSEN_FOLDER/install_log' file for more info and run installation again\n" $RED
-		exit 1;
+		echo_s "Failed to create Verlihub database tables, please check " $RED_BOLD
+		echo_s "$CHOOSEN_FOLDER/install_log" $BOLD
+		echo_s " for more information and run installation again.\n" $RED_BOLD
+		exit 1
 	fi
-	# Create admin user and hub info
-	echo_s "\n-- Installation has been completed. Now you can add master account\n" $RED_BOLD
 
-	# Configure hub and account
-	echo_s "\n[*] Hub settings\n" $RED_BOLD
-	echo_s "-- Choose information about master account and hub (don't use any special characters, you'll be able to use them later) \n"
+	# create administrator user
+	echo_s "\nInstallation is complete, now you can add master account and enter some basic settings.\n\n" $GREEN_BOLD
+	echo_s "[*] Hub settings:\n\n" $BOLD
+	echo_s "Choose master account and other hub information, don't use any special characters here, you'll be able to use them later.\n\n"
 	SETUP_INFO_OK=false
-	until $SETUP_INFO_OK; do
 
+	until $SETUP_INFO_OK; do
 		HOSTNAME=`hostname`
-		if [ $REALUSER = "root" ]; then
+
+		if [ $USER = "root" ]; then
 			PORT=411
 		else
 			PORT=4111
 		fi
-		VH_MASTER_NAME=$(ask "Master name" "[SU]$REALUSER")
+
+		VH_MASTER_NAME=$(ask "Master nick" "[SU]$USER")
 		VH_MASTER_PASSWORD=$(ask "Master password" "$TIMESTAMP" "" "true")
 		echo ""
 		VH_HUB_PORT=$(ask "Hub port" "$PORT")
 		VH_HUB_HOST=$(ask "Hub host" "$HOSTNAME")
-		VH_HUB_NAME=$(ask "Hub name" "hub of $REALUSER")
+		VH_HUB_NAME=$(ask "Hub name" "Hub of $USER")
 
-		echo_s "Is this info correct?\n"
-		echo_s "\tMaster name" $BOLD
-		echo_s ": $VH_MASTER_NAME \n"
+		echo_s "\nIs this information correct?\n\n"
+		echo_s "\tMaster nick" $BOLD
+		echo_s ": $VH_MASTER_NAME\n"
 		echo_s "\tMaster password" $BOLD
-		echo_s ": <hidden> \n"
+		echo_s ": <hidden>\n"
 		echo_s "\tHub name" $BOLD
-		echo_s ": $VH_HUB_NAME \n"
+		echo_s ": $VH_HUB_NAME\n"
 		echo_s "\tHub address" $BOLD
-		echo_s ": dchub://$VH_HUB_HOST:$VH_HUB_PORT \n"
-		# how did this information get here? these questions are about master account, no need to display earlier mysql answers here
-		#echo_s "\tPassword" $BOLD
-		#echo_s ": <hidden> \n"
-		#echo_s "\tHostname" $BOLD
-		#echo_s ": $MYSQL_HOST \n"
-		yes_or_no "Do you want to continue with this information?" && SETUP_INFO_OK=true || echo -e "Let's try again with configuration\n\n"
+		echo_s ": dchub://$VH_HUB_HOST:$VH_HUB_PORT\n\n"
+		yes_or_no "Do you want to continue with this information?" && SETUP_INFO_OK=true || echo -e "Let's try again.\n"
 	done
 
-	# Save info to DB
-	echo "-- Creating settings; this could take some times..."
+	# write to database
+	echo_s "\nPlease wait while creating settings.\n"
 	_mysql_update "hub_name" $VH_HUB_NAME
-	_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
+
+	if [ "$VH_HUB_PORT" = "411" ]; then
+		_mysql_update "hub_host" "$VH_HUB_HOST"
+	else
+		_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
+	fi
+
 	_mysql_update "listen_port" $VH_HUB_PORT
 
 	if [ "_$VH_HUB_ENCODING" != "_" ]; then
@@ -1009,16 +1052,24 @@ function install() # [sleep_time]
 	fi
 
 	if ! _register $VH_MASTER_NAME "10" $VH_MASTER_PASSWORD "plain" ; then
-		echo_s "-- A error occured with registering user '$VH_MASTER_NAME'. Please do it manually\n" $RED_BOLD
+		echo_s "\nFailed to create master account " $RED_BOLD
+		echo_s "$VH_MASTER_NAME" $BOLD
+		echo_s ", please do it manually after installation.\n" $RED_BOLD
 	fi
+
 	if ! _mysql_import $DATADIR/sql/default_reglist.sql > /dev/null 2>&1 ; then
-		echo_s "-- A error occured with file importing '$DATADIR/sql/default_reglist.sql'\n" $RED_BOLD
-		exit 1;
+		echo_s "\nFailed to import " $RED_BOLD
+		echo_s "$DATADIR/sql/default_reglist.sql" $BOLD
+		echo_s ", please do it manually after installation.\n" $RED_BOLD
 	fi
 
-	echo "-- The hub is configured successfully. Now you can start the hub using vh --run command."
-
-	exit 0;
+	echo_s "\nYour hub has been installed and configured successfully, please use " $GREEN_BOLD
+	echo_s "vh --help" $BOLD
+	echo_s " command for further instructions.\n\n" $GREEN_BOLD
+	
+	echo_s "For any other questions please get in contact with us using our official support hub: "
+	echo_s "dchub://hub.verlihub.net:7777/\n" $BOLD
+	exit 0
 }
 
 # Check selected option
