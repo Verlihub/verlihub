@@ -2942,15 +2942,15 @@ void cServerDC::DoStackTrace()
 	}
 
 	ostringstream http_req;
-	http_req << "POST /vhcs.php HTTP/1.1\n";
-	http_req << "Host: " << CRASH_SERV_ADDR << "\n";
-	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "\n";
-	http_req << "Content-Type: text/plain\n";
-	http_req << "Content-Length: " << bt.str().size() << "\n";
-	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\n"; // remove new lines, they will break our request
-	http_req << "Hub-Info-Address: " << mAddr << ':' << mPort << "\n";
-	http_req << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\n"; // uptime in seconds
-	http_req << "Hub-Info-Users: " << mUserCountTot << "\n\n"; // end of headers
+	http_req << "POST /vhcs.php HTTP/1.1\r\n";
+	http_req << "Host: " << CRASH_SERV_ADDR << "\r\n";
+	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "\r\n";
+	http_req << "Content-Type: text/plain\r\n";
+	http_req << "Content-Length: " << bt.str().size() << "\r\n";
+	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\r\n"; // remove new lines, they will break our request
+	http_req << "Hub-Info-Address: " << mAddr << ':' << mPort << "\r\n";
+	http_req << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\r\n"; // uptime in seconds
+	http_req << "Hub-Info-Users: " << mUserCountTot << "\r\n\r\n"; // end of headers
 	http_req << bt.str(); // content itself
 	http->Write(http_req.str(), true);
 
