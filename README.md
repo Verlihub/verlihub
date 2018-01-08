@@ -3,7 +3,7 @@ Travis build status
 
 [![Build status](https://travis-ci.org/Verlihub/verlihub.svg?branch=master)](https://travis-ci.org/Verlihub/verlihub)
 
-Verlihub 1.0.3.x
+Verlihub 1.1.0.x
 ==============
 
 Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating systems that provides useful high level functions such as:
