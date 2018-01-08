@@ -23,32 +23,47 @@
 
 #include "cobj.h"
 #include <string>
+#include <ostream>
 #include <maxminddb.h>
 
 using std::string;
 
 namespace nVerliHub {
+	namespace nSocket {
+		class cServerDC;
+	};
+
 	namespace nUtils {
+
 		class cMaxMindDB: public cObj
 		{
 			public:
-				cMaxMindDB();
+				cMaxMindDB(nSocket::cServerDC *mS);
 				~cMaxMindDB();
+
 				void ReloadAll();
+				void ShowInfo(ostream &os);
+
 				bool GetCC(const string &host, string &cc);
 				bool GetCN(const string &host, string &cn);
 				bool GetCity(string &geo_city, const string &host, const string &db = "");
 				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db = "");
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
+				nSocket::cServerDC *mServ;
+
 				MMDB_s *mDBCO;
 				MMDB_s *mDBCI;
 				MMDB_s *mDBAS;
+
 				MMDB_s *TryCountryDB(unsigned int flags);
 				MMDB_s *TryCityDB(unsigned int flags);
 				MMDB_s *TryASNDB(unsigned int flags);
+
 				bool FileExists(const char *name);
+				unsigned long FileSize(const char *name);
 		};
+
 	};
 };
 

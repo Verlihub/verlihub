@@ -1409,7 +1409,7 @@ w_Targs *_GetIPCC(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string ccstr;
-	cpiPython::me->server->sMaxMindDB.GetCC(ip, ccstr);
+	cpiPython::me->server->mMaxMindDB->GetCC(ip, ccstr);
 	const char *cc = ccstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cc));
 }
@@ -1420,7 +1420,7 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string cnstr;
-	cpiPython::me->server->sMaxMindDB.GetCN(ip, cnstr);
+	cpiPython::me->server->mMaxMindDB->GetCN(ip, cnstr);
 	const char *cn = cnstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cn));
 }
@@ -1440,7 +1440,7 @@ w_Targs *_GetIPASN(int id, w_Targs *args)
 
 	string s_ip(ip), s_db(db), asn_name;
 
-	if (!cpiPython::me->server->sMaxMindDB.GetASN(asn_name, s_ip, s_db))
+	if (!cpiPython::me->server->mMaxMindDB->GetASN(asn_name, s_ip, s_db))
 		return NULL;
 
 	const char *asn = asn_name.c_str();
@@ -1467,7 +1467,7 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 	double geo_lat, geo_lon;
 	unsigned short geo_met, geo_area;
 
-	if (!cpiPython::me->server->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat,geo_lon, geo_met, geo_area, s_ip, s_db))
+	if (!cpiPython::me->server->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat,geo_lon, geo_met, geo_area, s_ip, s_db))
 		return NULL;
 
 	if (geo_cont == "AF")

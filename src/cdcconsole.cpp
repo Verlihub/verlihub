@@ -65,7 +65,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK), ".(kick|drop) ", "(\\S+)( (.*)$)?", &mFunKick, eUR_KICK),
-	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|mmdb|geoip)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
@@ -1769,7 +1769,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_SERVER,
 		eINFO_PORT,
 		eINFO_HUBURL,
-		eINFO_PROTOCOL
+		eINFO_PROTOCOL,
+		eINFO_MMDB
 	};
 
 	static const char *infonames[] = {
@@ -1777,7 +1778,8 @@ bool cDCConsole::cfInfo::operator()()
 		"serv", "server", "sys", "system", "os",
 		"port",
 		"url", "huburl",
-		"prot", "proto", "protocol"
+		"prot", "proto", "protocol",
+		"mmdb", "geoip"
 	};
 
 	static const int infoids[] = {
@@ -1785,7 +1787,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_SERVER, eINFO_SERVER, eINFO_SERVER, eINFO_SERVER, eINFO_SERVER,
 		eINFO_PORT,
 		eINFO_HUBURL, eINFO_HUBURL,
-		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL
+		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL,
+		eINFO_MMDB, eINFO_MMDB
 	};
 
 	string tmp;
@@ -1801,6 +1804,9 @@ bool cDCConsole::cfInfo::operator()()
 			break;
 		case eINFO_HUBURL:
 			mInfoServer.HubURLInfo(*mOS);
+			break;
+		case eINFO_MMDB:
+			mS->mMaxMindDB->ShowInfo(*mOS);
 			break;
 		case eINFO_PROTOCOL:
 			mInfoServer.ProtocolInfo(*mOS);

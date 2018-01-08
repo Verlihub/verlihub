@@ -725,6 +725,8 @@ function install() # [sleep_time]
 		VH_HUB_LOCALE=$(ask "Hub locale, experts only, leave empty for default" "$VH_HUB_LOCALE" "true")
 		VH_HUB_ENCODING="" # $(get_hub_encoding)
 		VH_HUB_ENCODING=$(ask "Hub encoding, experts only, leave empty for default" "$VH_HUB_ENCODING" "true")
+		VH_HUB_MMDBPATH="" # $(get_mmdb_path)
+		VH_HUB_MMDBPATH=$(ask "MaxMindDB path, experts only, leave empty for default" "$VH_HUB_MMDBPATH" "true")
 
 		echo_s "\nHere is information you specified about your MySQL server:\n\n"
 		echo_s "\tDatabase" $BOLD
@@ -740,7 +742,9 @@ function install() # [sleep_time]
 		echo_s "\tHub locale" $BOLD
 		echo_s ": $VH_HUB_LOCALE\n"
 		echo_s "\tHub encoding" $BOLD
-		echo_s ": $VH_HUB_ENCODING\n\n"
+		echo_s ": $VH_HUB_ENCODING\n"
+		echo_s "\tMaxMindDB path" $BOLD
+		echo_s ": $VH_HUB_MMDBPATH\n\n"
 
 		yes_or_no "Do you want to continue with this information?" && ARE_DB_INFO_OK=true || echo -e "Let's do it again.\n"
 	done
@@ -967,6 +971,10 @@ function install() # [sleep_time]
 
 	if [ "_$VH_HUB_LOCALE" != "_" ]; then
 		echo "locale = $VH_HUB_LOCALE" >> $CONFIG
+	fi
+
+	if [ "_$VH_HUB_MMDBPATH" != "_" ]; then
+		echo "mmdb_path = $VH_HUB_MMDBPATH" >> $CONFIG
 	fi
 
 	echo_s "\nConfiguration file has been successfully written to " $GREEN_BOLD

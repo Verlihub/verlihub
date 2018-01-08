@@ -310,7 +310,7 @@ string GetIPCC(const char *ip)
 
 	string cc;
 
-	if (serv->sMaxMindDB.GetCC(ip, cc))
+	if (serv->mMaxMindDB->GetCC(ip, cc))
 		return cc;
 
 	return "";
@@ -330,7 +330,7 @@ string GetIPCN(const char *ip)
 
 	string cn;
 
-	if (serv->sMaxMindDB.GetCN(ip, cn))
+	if (serv->mMaxMindDB->GetCN(ip, cn))
 		return cn;
 
 	return "";

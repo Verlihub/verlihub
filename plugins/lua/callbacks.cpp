@@ -814,7 +814,7 @@ int _GetIPCity(lua_State *L)
 	string ip = lua_tostring(L, 2);
 	string city;
 
-	if (serv->sMaxMindDB.GetCity(city, ip, db)) {
+	if (serv->mMaxMindDB->GetCity(city, ip, db)) {
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, city.c_str());
 	} else {
@@ -853,7 +853,7 @@ int _GetIPASN(lua_State *L)
 	if (args > 1)
 		db = lua_tostring(L, 3);
 
-	if (serv->sMaxMindDB.GetASN(asn, ip, db)) {
+	if (serv->mMaxMindDB->GetASN(asn, ip, db)) {
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, asn.c_str());
 	} else {
@@ -908,7 +908,7 @@ int _GetUserGeoIP(lua_State *L)
 	double geo_lat, geo_lon;
 	unsigned short geo_met, geo_area;
 
-	if (serv->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, usr->mxConn->AddrIP(), db)) {
+	if (serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, usr->mxConn->AddrIP(), db)) {
 		lua_pushboolean(L, 1);
 		lua_newtable(L);
 		int x = lua_gettop(L);
@@ -1107,7 +1107,7 @@ int _GetHostGeoIP(lua_State *L)
 	double geo_lat, geo_lon;
 	unsigned short geo_met, geo_area;
 
-	if (serv->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
+	if (serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
 		lua_pushboolean(L, 1);
 		lua_newtable(L);
 		int x = lua_gettop(L);
