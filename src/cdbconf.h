@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,21 +20,18 @@
 
 #ifndef NCONFIGCDBCONF_H
 #define NCONFIGCDBCONF_H
+
 #include "cconfigfile.h"
 
 namespace nVerliHub {
 	namespace nConfig {
-/**
-config of the database
 
-@author Daniel Muller
-*/
 class cDBConf: public cConfigFile
 {
 public:
 	cDBConf(const string &);
-
 	~cDBConf();
+
 	string db_host;
 	string db_user;
 	string db_pass;
@@ -42,9 +39,9 @@ public:
 	string db_charset;
 	string config_name;
 	string locale;
+	string mmdb_path;
 	//bool allow_exec;
 	//bool allow_exec_mod;
-
 };
 
 	}; // namespace nConfig

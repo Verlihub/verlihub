@@ -48,6 +48,11 @@
 #define BAD_NICK_CHARS_OWN "<>"
 #define DEFAULT_COMMAND_TRIGS "+!/"
 
+#define CRASH_SERV_ADDR "crash.verlihub.net"
+#define CRASH_SERV_PORT 80
+
+#define DEFAULT_HUB_ENCODING "CP1252"
+
 using namespace std;
 
 namespace nVerliHub {
@@ -231,6 +236,7 @@ class cServerDC : public cAsyncSocketServer
 		cConnTypes *mConnTypes;
 		// ZLib compression class
 		cZLib *mZLib;
+		cMaxMindDB *mMaxMindDB; // maxminddb class
 		// Process name
 		string mExecPath;
 
@@ -640,7 +646,6 @@ class cServerDC : public cAsyncSocketServer
 		cUserCollection mChatUsers;
 		// List of bots
 		cUserCollection mRobotList;
-		static cMaxMindDB sMaxMindDB; // maxminddb object
 		// prevent stack trace on core dump
 		static bool mStackTrace;
 

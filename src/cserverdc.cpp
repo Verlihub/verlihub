@@ -21,6 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include "cserverdc.h"
 #include "cinterpolexp.h"
 #include "cconndc.h"
@@ -45,17 +46,13 @@
 #include "ctriggers.h"
 #include "i18n.h"
 
-#define CRASH_SERV_ADDR "crash.verlihub.net"
-#define CRASH_SERV_PORT 80
-
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
 	using namespace nThread;
 	using namespace nTables;
 	namespace nSocket {
-		cServerDC * cServerDC::sCurrentServer = NULL;
-		cMaxMindDB cServerDC::sMaxMindDB;
+		cServerDC* cServerDC::sCurrentServer = NULL;
 		bool cServerDC::mStackTrace = true;
 
 cServerDC::cServerDC(string CfgBase, const string &ExecPath):
@@ -121,6 +118,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mPenList = new cPenaltyList(mMySQL);
 	mKickList = new cKickList(mMySQL);
 	mZLib = new cZLib();
+	mMaxMindDB = new cMaxMindDB(this);
+
 	unsigned int i, j;
 
 	for (i = 0; i < 2; i++) {
@@ -319,6 +318,11 @@ cServerDC::~cServerDC()
 	if (mZLib) {
 		delete mZLib;
 		mZLib = NULL;
+	}
+
+	if (mMaxMindDB) {
+		delete mMaxMindDB;
+		mMaxMindDB = NULL;
 	}
 }
 
@@ -3056,7 +3060,7 @@ void cServerDC::Reload()
 	if (mC.use_penlist_cache)
 		mPenList->UpdateCache();
 
-	this->sMaxMindDB.ReloadAll(); // reload maxminddb
+	this->mMaxMindDB->ReloadAll(); // reload maxminddb
 }
 
 	}; // namespace nServer

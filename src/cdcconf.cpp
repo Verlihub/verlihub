@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -45,7 +45,7 @@ void cDCConf::AddVars()
 	Add("hub_category",hub_category,string(""));
 	Add("hub_icon_url", hub_icon_url, string(""));
 	Add("hub_logo_url", hub_logo_url, string(""));
-	Add("hub_encoding", hub_encoding, string("CP1252"));
+	Add("hub_encoding", hub_encoding, DEFAULT_HUB_ENCODING);
 	Add("hub_owner",hub_owner,string(""));
 	Add("hub_version", hub_version, HUB_VERSION_VERS);
 	Add("hub_version_special",hub_version_special,string(""));

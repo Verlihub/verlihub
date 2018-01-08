@@ -601,7 +601,7 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 	conn = new cConnDC(sd, mServer);
 	conn->mxMyFactory = this;
 
-	if (mServer->sMaxMindDB.GetCC(conn->AddrIP(), conn->mCC) && mServer->mC.cc_zone[0].size()) {
+	if (mServer->mMaxMindDB->GetCC(conn->AddrIP(), conn->mCC) && mServer->mC.cc_zone[0].size()) {
 		for (int i = 0; i < 3; i ++) {
 			if ((conn->mCC == mServer->mC.cc_zone[i]) || (mServer->mC.cc_zone[i].find(conn->mCC) != mServer->mC.cc_zone[i].npos)) {
 				conn->mGeoZone = i + 1;
@@ -610,8 +610,8 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 		}
 	}
 
-	mServer->sMaxMindDB.GetCN(conn->AddrIP(), conn->mCN); // get country name
-	mServer->sMaxMindDB.GetCity(conn->mCity, conn->AddrIP()); // get city name
+	mServer->mMaxMindDB->GetCN(conn->AddrIP(), conn->mCN); // get country name
+	mServer->mMaxMindDB->GetCity(conn->mCity, conn->AddrIP()); // get city name
 	long IPConn, IPMin, IPMax;
 	IPConn = cBanList::Ip2Num(conn->AddrIP());
 	if(mServer->mC.ip_zone4_min.size()) {
