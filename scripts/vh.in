@@ -1,7 +1,7 @@
 #!@BASH_PATH@
 
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -51,7 +51,7 @@ help_me()
 	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
 	echo_s "  -s, --stop" $RED && echo -e "\t[path_to_dbconfig] \tStop the hub from the given dbconfig path"
 	echo_s "  -t, --status" $RED && echo -e "\t[path_to_dbconfig] \tCheck if hub is running or not"
-	echo_s "  -g, --geoip" $RED && echo -e "\t\t\t\tUpdate all GeoIP databases"
+	echo_s "  -g, --geoip" $RED && echo -e "\t\t\t\tUpdate all free MaxMind databases"
 	echo_s "  -a, --autoload" $RED && echo -e "\t\t\tLoad plugin automatically when start the hub"
 		echo_s "\t-l, --list" $BLUE && echo -e "\t\t\t\tShow list of available plugins"
 		echo_s "\t-n, --on" $BLUE && echo -e "\t\t\t\tRun plugin automatically with hub"
@@ -412,121 +412,126 @@ function reg_importer() # options
 	esac;
 }
 
-# update geoip databases
-function update_geoip()
+# update free maxmind databases
+function update_mmdb() # [mmdb_path]
 {
-	if [ $(uname) != "FreeBSD" ]; then
-		GEOIP_PATH="/usr/share/GeoIP/"
-	else
-		GEOIP_PATH="/usr/local/share/GeoIP"
-	fi
-
 	if [ $UID -ne 0 ]; then
-		echo_s "-- You can only run this option with root account\n" $RED
+		echo_s "You can only run this command using administrator account.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# check if gzip is installed
-	DUMP=`whereis gzip | awk '{ print $2 }'`
+	TEST=`whereis wget | awk '{ print $2 }'` # check if wget is installed
 
-	if [ -z "$DUMP" ]; then
-		echo_s "-- This command requires gzip, please install it and try again\n" $RED
+	if [ -z "$TEST" ]; then
+		echo_s "This command requires WGet, please install it and try again.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# check if directory exists
-	if [ ! -d $GEOIP_PATH ]; then
-		echo_s "-- Can't find '$GEOIP_PATH'. If you installed GeoIP with another prefix, you should update it manually\n" $RED
+	TEST=`whereis tar | awk '{ print $2 }'` # check if tar is installed
+
+	if [ -z "$TEST" ]; then
+		echo_s "This command requires TAR, please install it and try again.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# maxmind links
-	local ADDRESS="http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz"
-	local ADDRESS2="http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz"
-	local ADDRESS3="http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz"
+	if [ "_$1" != "_" ]; then # we have path parameter
+		MMDB_PATH="$1"
+	elif [ $(uname) != "FreeBSD" ]; then # use linux default
+		MMDB_PATH="/usr/share/GeoIP/"
+	else # use freebsd default
+		MMDB_PATH="/usr/local/share/GeoIP"
+	fi
 
-	# country database, download tarball
-	echo "-- Downloading GeoIP country database from MaxMind server"
-	wget $ADDRESS > /dev/null 2>&1
+	if [ ! -d $MMDB_PATH ]; then # check if directory exists
+		echo_s "Error accessing database directory: $MMDB_PATH\n" $RED_BOLD
+		exit 1
+	fi
+
+	echo_s "Processing MaxMind Country database.\n" $BOLD # process country database
+	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to download GeoIP country database tarball using wget\n" $RED
+		echo_s "Error downloading MaxMind Country database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# decompress the file
-	gzip -d GeoIP.dat.gz
+	tar --wildcards --no-same-owner -xzf "GeoLite2-Country.tar.gz" "GeoLite2-Country_*/GeoLite2-Country.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to decompress GeoIP country database tarball using gzip\n" $RED
-		rm -f GeoIP.dat.gz
+		echo_s "Error decompressing MaxMind Country database.\n" $RED_BOLD
+		rm -f "GeoLite2-Country.tar.gz"
 		exit 1
 	fi
 
-	# move the file
-	mv -f GeoIP.dat "$GEOIP_PATH/GeoIP.dat"
+	mv -f GeoLite2-Country_*/GeoLite2-Country.mmdb "$MMDB_PATH/GeoLite2-Country.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to move GeoIP country database file\n" $RED
-		rm -f GeoIP.dat
+		echo_s "Error moving MaxMind Country database.\n" $RED_BOLD
+		rm -fr GeoLite2-Country_*
+		rm -f "GeoLite2-Country.tar.gz"
 		exit 1
 	fi
 
-	# city database, download tarball
-	echo "-- Download GeoIP city database from MaxMind server"
-	wget $ADDRESS2 > /dev/null 2>&1
+	rm -fr GeoLite2-Country_*
+	rm -f "GeoLite2-Country.tar.gz"
+
+	echo_s "Processing MaxMind City database.\n" $BOLD # process city database
+	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to download GeoIP city database tarball using wget\n" $RED
+		echo_s "Error downloading MaxMind City database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# decompress the file
-	gzip -d GeoLiteCity.dat.gz
+	tar --wildcards --no-same-owner -xzf "GeoLite2-City.tar.gz" "GeoLite2-City_*/GeoLite2-City.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to decompress GeoIP city database tarball using gzip\n" $RED
-		rm -f GeoLiteCity.dat.gz
+		echo_s "Error decompressing MaxMind City database.\n" $RED_BOLD
+		rm -f "GeoLite2-City.tar.gz"
 		exit 1
 	fi
 
-	# move the file
-	mv -f GeoLiteCity.dat "$GEOIP_PATH/GeoLiteCity.dat"
+	mv -f GeoLite2-City_*/GeoLite2-City.mmdb "$MMDB_PATH/GeoLite2-City.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to move GeoIP city database file\n" $RED
-		rm -f GeoLiteCity.dat
+		echo_s "Error moving MaxMind City database.\n" $RED_BOLD
+		rm -fr GeoLite2-City_*
+		rm -f "GeoLite2-City.tar.gz"
 		exit 1
 	fi
 
-	# asn database, download tarball
-	echo "-- Download GeoIP ASN database from MaxMind server"
-	wget $ADDRESS3 > /dev/null 2>&1
+	rm -fr GeoLite2-City_*
+	rm -f "GeoLite2-City.tar.gz"
+
+	echo_s "Processing MaxMind ASN database.\n" $BOLD # process asn database
+	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to download GeoIP ASN database tarball using wget\n" $RED
+		echo_s "Error downloading MaxMind ASN database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	# decompress the file
-	gzip -d GeoIPASNum.dat.gz
+	tar --wildcards --no-same-owner -xzf "GeoLite2-ASN.tar.gz" "GeoLite2-ASN_*/GeoLite2-ASN.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to decompress GeoIP ASN database tarball using gzip\n" $RED
-		rm -f GeoIPASNum.dat.gz
+		echo_s "Error decompressing MaxMind ASN database.\n" $RED_BOLD
+		rm -f "GeoLite2-ASN.tar.gz"
 		exit 1
 	fi
 
-	# move the file
-	mv -f GeoIPASNum.dat "$GEOIP_PATH/GeoIPASNum.dat"
+	mv -f GeoLite2-ASN_*/GeoLite2-ASN.mmdb "$MMDB_PATH/GeoLite2-ASN.mmdb"
 
 	if [ $? -ne 0 ]; then
-		echo_s "-- Error occurred while trying to move GeoIP ASN database file\n" $RED
-		rm -f GeoIPASNum.dat
+		echo_s "Error moving MaxMind ASN database.\n" $RED_BOLD
+		rm -fr GeoLite2-ASN_*
+		rm -f "GeoLite2-ASN.tar.gz"
 		exit 1
 	fi
 
-	echo "-- Done updating all GeoIP databases, please restart your hubs in order to take effect"
+	rm -fr GeoLite2-ASN_*
+	rm -f "GeoLite2-ASN.tar.gz"
+
+	echo_s "Done updating all free MaxMind databases, please use !reload command in your hubs.\n" $GREEN_BOLD # finish
 	exit 0
 }
 
@@ -1080,7 +1085,7 @@ case "_$1" in
 	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;
 	"_-R"|"_--reload")	shift; reload_hub $@;;
 	"_-t"|"_--status")	shift; hub_status $1;;
-	"_-g"|"_--geoip")	shift; update_geoip $1;;
+	"_-g"|"_--geoip")	shift; update_mmdb $1;;
 	"_-a"|"_--autoload")shift; autoload $@;;
 	"_-u"|"_--adduser") shift; add_user $@;;
 	#"_-m"|"_--regimporter")	shift; reg_importer $@;;

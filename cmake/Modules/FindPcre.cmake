@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -16,33 +16,25 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# - Find PCRE
-# Find the PCRE includes and client library
-# This module defines
-#  PCRE_INCLUDE_DIRS, where to find mysql.h
-#  PCRE_LIBRARIES, the libraries needed to use GeoIP.
-#  PCRE_FOUND, If false, do not try to use GeoIP.
-
 IF(PCRE_INCLUDE_DIR AND PCRE_LIBRARIES)
-	# Already in cache, be silent
 	SET(PCRE_FIND_QUIETLY TRUE)
 ENDIF(PCRE_INCLUDE_DIR AND PCRE_LIBRARIES)
 
 FIND_PATH(PCRE_INCLUDE_DIR pcre.h
-	/usr/include/
-	/usr/local/include/
+	/usr/include
+	/usr/local/include
 )
 
 FIND_LIBRARY(PCRE_PCRE_LIBRARY NAMES pcre
 	PATHS
-	/usr/lib
-	/usr/local/lib
+		/usr/lib
+		/usr/local/lib
 )
 
 FIND_LIBRARY(PCRE_PCREPOSIX_LIBRARY NAMES pcreposix
 	PATHS
-	/usr/lib
-	/usr/local/lib
+		/usr/lib
+		/usr/local/lib
 )
 
 set(PCRE_LIBRARIES ${PCRE_PCRE_LIBRARY} ${PCRE_PCREPOSIX_LIBRARY} CACHE STRING "The libraries needed to use PCRE")
@@ -53,11 +45,11 @@ ENDIF(PCRE_INCLUDE_DIR AND PCRE_LIBRARIES)
 
 IF(PCRE_FOUND)
 	IF(NOT Pcre_FIND_QUIETLY)
-		MESSAGE(STATUS "Found PCRE: ${PCRE_INCLUDE_DIR}, ${PCRE_LIBRARIES}")
+		MESSAGE(STATUS "[ OK ] Found PCRE: ${PCRE_INCLUDE_DIR}, ${PCRE_LIBRARIES}")
 	ENDIF(NOT Pcre_FIND_QUIETLY)
 ELSE(PCRE_FOUND)
 	IF(Pcre_FIND_REQUIRED)
-		MESSAGE(FATAL_ERROR "Could NOT find PCRE")
+		MESSAGE(FATAL_ERROR "[ ER ] PCRE headers or libraries not found, please install them via your package manager or compile from source: https://ftp.pcre.org/pub/pcre/")
 	ENDIF(Pcre_FIND_REQUIRED)
 ENDIF(PCRE_FOUND)
 

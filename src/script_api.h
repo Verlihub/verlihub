@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -45,12 +45,8 @@ namespace nVerliHub {
 	bool CloseConnection(const char *nick, long delay = 0);
 	bool StopHub(int code, int delay);
 	const char* GetUserCC(const char *nick);
-
-	#ifdef HAVE_LIBGEOIP
-		string GetIPCC(const char *ip);
-		string GetIPCN(const char *ip);
-	#endif
-
+	string GetIPCC(const char *ip);
+	string GetIPCN(const char *ip);
 	const char* GetMyINFO(const char *nick);
 	int GetUserClass(const char *nick);
 	const char* GetUserHost(const char *nick);

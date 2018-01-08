@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -19,9 +19,6 @@
 */
 
 #include "cconndc.h"
-#ifdef HAVE_LIBGEOIP
-#include "cgeoip.h"
-#endif
 #include "creglist.h"
 #include "creguserinfo.h"
 #include "cbanlist.h"
@@ -603,22 +600,18 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 
 	conn = new cConnDC(sd, mServer);
 	conn->mxMyFactory = this;
-#ifdef HAVE_LIBGEOIP
-	if (
-		mServer->sGeoIP.GetCC(conn->AddrIP(),conn->mCC) &&
-		mServer->mC.cc_zone[0].size()
-	){
-		for (int i = 0; i < 3; i ++)  {
-			if((conn->mCC == mServer->mC.cc_zone[i]) || (mServer->mC.cc_zone[i].find(conn->mCC) != mServer->mC.cc_zone[i].npos)) {
-				conn->mGeoZone = i+1;
+
+	if (mServer->sMaxMindDB.GetCC(conn->AddrIP(), conn->mCC) && mServer->mC.cc_zone[0].size()) {
+		for (int i = 0; i < 3; i ++) {
+			if ((conn->mCC == mServer->mC.cc_zone[i]) || (mServer->mC.cc_zone[i].find(conn->mCC) != mServer->mC.cc_zone[i].npos)) {
+				conn->mGeoZone = i + 1;
 				break;
 			}
 		}
 	}
 
-	mServer->sGeoIP.GetCN(conn->AddrIP(), conn->mCN); // get country name
-	mServer->sGeoIP.GetCity(conn->mCity, conn->AddrIP()); // get city name
-#endif
+	mServer->sMaxMindDB.GetCN(conn->AddrIP(), conn->mCN); // get country name
+	mServer->sMaxMindDB.GetCity(conn->mCity, conn->AddrIP()); // get city name
 	long IPConn, IPMin, IPMax;
 	IPConn = cBanList::Ip2Num(conn->AddrIP());
 	if(mServer->mC.ip_zone4_min.size()) {

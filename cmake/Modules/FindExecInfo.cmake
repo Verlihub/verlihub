@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -15,8 +15,6 @@
 #
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
-
-# Module for finding ExecInfo library on BSD
 
 IF(EXECINFO_LIBRARY)
 	SET(EXECINFO_FOUND TRUE)

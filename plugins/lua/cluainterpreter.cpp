@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -76,16 +76,12 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserCC", &_GetUserCC);
 	RegisterFunction("GetUserCN", &_GetUserCN);
 	RegisterFunction("GetUserCity", &_GetUserCity);
-
-	#ifdef HAVE_LIBGEOIP
-		RegisterFunction("GetIPCC", &_GetIPCC);
-		RegisterFunction("GetIPCN", &_GetIPCN);
-		RegisterFunction("GetIPCity", &_GetIPCity);
-		RegisterFunction("GetIPASN", &_GetIPASN);
-		RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
-		RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
-	#endif
-
+	RegisterFunction("GetIPCC", &_GetIPCC);
+	RegisterFunction("GetIPCN", &_GetIPCN);
+	RegisterFunction("GetIPCity", &_GetIPCity);
+	RegisterFunction("GetIPASN", &_GetIPASN);
+	RegisterFunction("GetUserGeoIP", &_GetUserGeoIP);
+	RegisterFunction("GetHostGeoIP", &_GetHostGeoIP);
 	RegisterFunction("GetMyINFO", &_GetMyINFO);
 	RegisterFunction("GetUpTime", &_GetUpTime);
 	RegisterFunction("GetServFreq", &_GetServFreq);

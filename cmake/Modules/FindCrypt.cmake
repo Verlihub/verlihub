@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -16,38 +16,36 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# - Find libcrypt
-# Find libcrypt that is provided by GNU C Library
-# This module defines
-#  CRYPT_LIBRARIES, the libraries needed to use Crypt.
-#  CRYPT_FOUND, If false, do not try to use Crypt.
-
 IF(CRYPT_LIBRARIES)
 	SET(CRYPT_FOUND TRUE)
 ELSE(CRYPT_LIBRARIES)
 	IF(HAVE_OPENBSD)
-		find_library(CRYPT_LIBRARIES NAMES gcrypt PATHS
-			/usr/lib
-			/usr/local/lib
+		find_library(CRYPT_LIBRARIES NAMES gcrypt
+			PATHS
+				/usr/lib
+				/usr/local/lib
 		)
 	ELSEIF(HAVE_APPLE)
-		find_library(CRYPT_LIBRARIES NAMES gcrypt PATHS
-			/usr/local/lib
-			/usr/local/lib/libgcrypt/lib
-			/usr/lib
+		find_library(CRYPT_LIBRARIES NAMES gcrypt
+			PATHS
+				/usr/lib
+				/usr/local/lib
+				/usr/local/lib/libgcrypt/lib
 		)
 	ELSE()
-		find_library(CRYPT_LIBRARIES NAMES crypt PATHS
-			/usr/lib
-			/usr/local/lib
+		find_library(CRYPT_LIBRARIES NAMES crypt
+			PATHS
+				/usr/lib
+				/usr/local/lib
 		)
 	ENDIF()
 
 	IF(CRYPT_LIBRARIES)
 		SET(CRYPT_FOUND TRUE)
-		MESSAGE(STATUS "Found Crypt: ${CRYPT_LIBRARIES}")
+		MESSAGE(STATUS "[ OK ] Found Crypt: ${CRYPT_LIBRARIES}")
 	ELSE(CRYPT_LIBRARIES)
 		SET(CRYPT_FOUND FALSE)
+		MESSAGE(FATAL_ERROR "[ ER ] Crypt ? not found, please install ? via your package manager or compile from source: ?")
 	ENDIF(CRYPT_LIBRARIES)
 	
 	mark_as_advanced(CRYPT_LIBRARIES)

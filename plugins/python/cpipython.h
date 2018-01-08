@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -226,14 +226,10 @@ extern "C" w_Targs *_GetUserIP         (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHubURL     (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);
-
-#ifdef HAVE_LIBGEOIP
 extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPASN          (int id, w_Targs *args);
 extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
-#endif
-
 extern "C" w_Targs *_AddRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_DelRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);

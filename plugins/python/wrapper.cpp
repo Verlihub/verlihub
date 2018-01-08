@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -691,8 +691,6 @@ static PyObject *__GetUserCC(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-#ifdef HAVE_LIBGEOIP
-
 static PyObject *__GetIPCC(PyObject *self, PyObject *args)
 {
 	char *res;
@@ -731,26 +729,28 @@ static PyObject *__GetIPASN(PyObject *self, PyObject *args)
 static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
 {
 	double geo_lat, geo_lon;
-	long geo_met, geo_area;
+	unsigned short geo_met, geo_area;
 	const char *s0, *s1, *s2, *s3;
 	vector<string> *data = NULL;
 
-	if (Call(W_GetGeoIP, args, "s|s", "sdsdslslp", &s0, &geo_lat, &s1, &geo_lon, &s2, &geo_met,
-			&s3, &geo_area, &data)) {
+	if (Call(W_GetGeoIP, args, "s|s", "sdsdslslp", &s0, &geo_lat, &s1, &geo_lon, &s2, &geo_met, &s3, &geo_area, &data)) { // todo: geo_lat and geo_lon are double but packed as signed long
 		PyObject *p = Py_BuildValue("{sdsdslsl}", s0, geo_lat, s1, geo_lon, s2, geo_met, s3, geo_area);
-		if (!p || !data) Py_RETURN_NONE;
+
+		if (!p || !data)
+			Py_RETURN_NONE;
+
 		for (size_t i = 0; i < data->size() / 2; i++) {
 			const char *key = (*data)[2 * i].c_str();
 			PyObject *val = Py_BuildValue("s", (*data)[2 * i + 1].c_str());
 			PyDict_SetItemString(p, key, val);
 		}
+
 		delete data;
 		return p;
 	}
+
 	Py_RETURN_NONE;
 }
-
-#endif
 
 static PyObject *__AddRegUser(PyObject *self, PyObject *args)
 {
@@ -1113,12 +1113,10 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserHubURL",      __GetUserHubURL,      METH_VARARGS},
 	{"GetUserExtJSON",     __GetUserExtJSON,     METH_VARARGS},
 	{"GetUserCC",          __GetUserCC,          METH_VARARGS},
-#ifdef HAVE_LIBGEOIP
 	{"GetIPCC",            __GetIPCC,            METH_VARARGS},
 	{"GetIPCN",            __GetIPCN,            METH_VARARGS},
 	{"GetIPASN",           __GetIPASN,           METH_VARARGS},
 	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
-#endif
 	{"AddRegUser",         __AddRegUser,         METH_VARARGS},
 	{"DelRegUser",         __DelRegUser,         METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
@@ -1873,12 +1871,10 @@ const char *w_CallName(int callback)
 		case W_GetUserHubURL:        return "GetUserHubURL";
 		case W_GetUserExtJSON:       return "GetUserExtJSON";
 		case W_GetUserCC:            return "GetUserCC";
-#ifdef HAVE_LIBGEOIP
 		case W_GetIPCC:              return "GetIPCC";
 		case W_GetIPCN:              return "GetIPCN";
 		case W_GetIPASN:             return "GetIPASN";
 		case W_GetGeoIP:             return "GetGeoIP";
-#endif
 		case W_GetNickList:          return "GetNickList";
 		case W_GetOpList:            return "GetOpList";
 		case W_GetBotList:           return "GetBotList";

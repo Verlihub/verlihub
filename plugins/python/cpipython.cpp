@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -149,12 +149,10 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
 	callbacklist[W_GetUserExtJSON]     = &_GetUserExtJSON;
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
-#ifdef HAVE_LIBGEOIP
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
 	callbacklist[W_GetIPASN]           = &_GetIPASN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
-#endif
 	callbacklist[W_AddRegUser]         = &_AddRegUser;
 	callbacklist[W_DelRegUser]         = &_DelRegUser;
 	callbacklist[W_Ban]                = &_Ban;
@@ -1405,15 +1403,13 @@ w_Targs *_GetUserCC(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cc));
 }
 
-#ifdef HAVE_LIBGEOIP
-
 w_Targs *_GetIPCC(int id, w_Targs *args)
 {
 	const char *ip;
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string ccstr;
-	cpiPython::me->server->sGeoIP.GetCC(ip, ccstr);
+	cpiPython::me->server->sMaxMindDB.GetCC(ip, ccstr);
 	const char *cc = ccstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cc));
 }
@@ -1424,7 +1420,7 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
 	if (!ip) return NULL;
 	string cnstr;
-	cpiPython::me->server->sGeoIP.GetCN(ip, cnstr);
+	cpiPython::me->server->sMaxMindDB.GetCN(ip, cnstr);
 	const char *cn = cnstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cn));
 }
@@ -1444,7 +1440,7 @@ w_Targs *_GetIPASN(int id, w_Targs *args)
 
 	string s_ip(ip), s_db(db), asn_name;
 
-	if (!cpiPython::me->server->sGeoIP.GetASN(asn_name, s_ip, s_db))
+	if (!cpiPython::me->server->sMaxMindDB.GetASN(asn_name, s_ip, s_db))
 		return NULL;
 
 	const char *asn = asn_name.c_str();
@@ -1454,28 +1450,40 @@ w_Targs *_GetIPASN(int id, w_Targs *args)
 w_Targs *_GetGeoIP(int id, w_Targs *args)
 {
 	const char *ip, *db;
-	if (!cpiPython::lib_unpack(args, "ss", &ip, &db)) return NULL;
-	if (!ip) return NULL;
-	if (!db) db = "";
+
+	if (!cpiPython::lib_unpack(args, "ss", &ip, &db))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	if (!db)
+		db = "";
+
 	string s_ip(ip);
 	string s_db(db);
 	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name;
 	string geo_tz, geo_cont, geo_city, geo_post, cont;
-	float geo_lat, geo_lon;
-	int geo_met, geo_area;
+	double geo_lat, geo_lon;
+	unsigned short geo_met, geo_area;
 
-	if (!cpiPython::me->server->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc,
-			geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post,
-			geo_lat, geo_lon, geo_met, geo_area, s_ip, s_db))
+	if (!cpiPython::me->server->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat,geo_lon, geo_met, geo_area, s_ip, s_db))
 		return NULL;
 
-	if (geo_cont == "AF") cont = "Africa";
-	else if (geo_cont == "AS") cont = "Asia";
-	else if (geo_cont == "EU") cont = "Europe";
-	else if (geo_cont == "NA") cont = "North America";
-	else if (geo_cont == "SA") cont = "South America";
-	else if (geo_cont == "OC") cont = "Oceania";
-	else if (geo_cont == "AN") cont = "Antarctica";
+	if (geo_cont == "AF")
+		cont = "Africa";
+	else if (geo_cont == "AS")
+		cont = "Asia";
+	else if (geo_cont == "EU")
+		cont = "Europe";
+	else if (geo_cont == "NA")
+		cont = "North America";
+	else if (geo_cont == "SA")
+		cont = "South America";
+	else if (geo_cont == "OC")
+		cont = "Oceania";
+	else if (geo_cont == "AN")
+		cont = "Antarctica";
 
 	vector<string> *data = new vector<string>();
 	data->push_back("host");
@@ -1505,11 +1513,8 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 	data->push_back("postal_code");
 	data->push_back(geo_post);
 
-	return cpiPython::lib_pack("sdsdslslp", "latitude", geo_lat, "longitude", geo_lon,
-		"metro_code", geo_met, "area_code", geo_area, (void*)data);
+	return cpiPython::lib_pack("sdsdslslp", "latitude", geo_lat, "longitude", geo_lon, "metro_code", geo_met, "area_code", geo_area, (void*)data); // todo: geo_lat and geo_lon are double but packed as signed long
 }
-
-#endif
 
 w_Targs *_AddRegUser(int id, w_Targs *args)
 {

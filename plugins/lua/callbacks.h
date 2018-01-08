@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -46,16 +46,12 @@ namespace nVerliHub {
 	int _GetUserCC(lua_State *L);
 	int _GetUserCN(lua_State *L);
 	int _GetUserCity(lua_State *L);
-
-	#ifdef HAVE_LIBGEOIP
-		int _GetIPCC(lua_State *L);
-		int _GetIPCN(lua_State *L);
-		int _GetIPCity(lua_State *L);
-		int _GetIPASN(lua_State *L);
-		int _GetUserGeoIP(lua_State *L);
-		int _GetHostGeoIP(lua_State *L);
-	#endif
-
+	int _GetIPCC(lua_State *L);
+	int _GetIPCN(lua_State *L);
+	int _GetIPCity(lua_State *L);
+	int _GetIPASN(lua_State *L);
+	int _GetUserGeoIP(lua_State *L);
+	int _GetHostGeoIP(lua_State *L);
 	int _GetVHCfgDir(lua_State *L);
 	int _GetUpTime(lua_State *L);
 	int _GetServFreq(lua_State *L);

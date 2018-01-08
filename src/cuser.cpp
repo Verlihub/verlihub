@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -69,10 +69,10 @@ void cUserBase::Send(string &data, bool, bool)
 cUser::cUser():
 	mMyFlag(0),
 	mRights(0),
-	mBanTime(0),
-	mToBan(false),
 	mRCTMCount(0),
 	mRCTMLock(false),
+	mBanTime(0),
+	mToBan(false),
 	mShare(0),
 	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,

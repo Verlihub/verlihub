@@ -1,7 +1,7 @@
 #!@BASH_PATH@
 
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -634,7 +634,7 @@ case "_$1" in
 	"_-q"|"_--restart")	kill_hub "restart"; run_hub "restart";;
 	"_-R"|"_--reload")	reload_hub;;
 	"_-t"|"_--status")	hub_status;;
-# 	"_-g"|"_--geoip")	shift; update_geoip $1;;
+# 	"_-g"|"_--geoip")	shift; update_mmdb $1;;
 # 	"_-a"|"_--autoload")shift; autoload $@;;
 # 	"_-u"|"_--adduser") shift; add_user $@;;
 # 	"_-b"|"_--backup")	shift; backup $1 $2;;

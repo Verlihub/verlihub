@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -55,11 +55,7 @@ namespace nVerliHub {
 	using namespace nTables;
 	namespace nSocket {
 		cServerDC * cServerDC::sCurrentServer = NULL;
-
-		#ifdef HAVE_LIBGEOIP
-			cGeoIP cServerDC::sGeoIP;
-		#endif
-
+		cMaxMindDB cServerDC::sMaxMindDB;
 		bool cServerDC::mStackTrace = true;
 
 cServerDC::cServerDC(string CfgBase, const string &ExecPath):
@@ -3060,7 +3056,7 @@ void cServerDC::Reload()
 	if (mC.use_penlist_cache)
 		mPenList->UpdateCache();
 
-	this->sGeoIP.ReloadAll(); // update geoip
+	this->sMaxMindDB.ReloadAll(); // reload maxminddb
 }
 
 	}; // namespace nServer

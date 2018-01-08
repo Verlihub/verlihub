@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -190,12 +190,12 @@ namespace nVerliHub {
 				/**
 				 * Create a new connection for the given socket.
 				 * This method will also assign a protocol handler to
-				 * the cAsyncConn instance, assign a country zone if GeoIP
-				 * is installed and increment the number of the user in the hub.
+				 * the cAsyncConn instance, assign a country zone
+				 * and increment the number of the users in the hub.
 				 * @param sd Socket identifier of the connection.
 				 * @return A new connection object that is an instance of cAsyncConn class.
 				 */
-				virtual cAsyncConn * CreateConn(tSocket sd=0);
+				virtual cAsyncConn* CreateConn(tSocket sd = 0);
 
 				/**
 				 * Delete a connection.

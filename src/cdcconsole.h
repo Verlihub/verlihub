@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -304,7 +304,7 @@ public:
 	int CmdTopic(istringstream & cmd_line, nSocket::cConnDC * conn);
 
 	static cPCRE mIPRangeRex;
-	static bool GetIPRange(const string &range, unsigned long &from, unsigned long &to);
+	static bool GetIPRange(const string &rang, unsigned long &frdr, unsigned long &todr);
 
 	typedef cDCCommand::sDCCmdFunc cfDCCmdBase;
 	typedef cDCCommand cDCCmdBase;

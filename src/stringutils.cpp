@@ -32,6 +32,12 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
+#include <errno.h>
+#include <iconv.h>
+
+#ifndef ICONV_CONST
+#define ICONV_CONST
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -255,7 +261,7 @@ string convertByte(__int64 byte, bool UnitSec)
 			lByte /= 1024;
 	}
 
-	ostringstream os (ostringstream::out);
+	ostringstream os(ostringstream::out);
 	os.precision(2);
 	os << fixed << lByte << " ";
 
@@ -274,25 +280,28 @@ string convertByte(__int64 byte, bool UnitSec)
 	return os.str();
 }
 
-string StringFrom(__int64 const &ll)
+string StringFrom(__int64 const &val)
 {
 	char buf[32];
-#ifdef _WIN32
-	sprintf(buf,"%I64d",ll);
-#else
-	sprintf(buf,"%lld",ll);
-#endif
+
+	#ifdef _WIN32
+		sprintf(buf, "%I64d", val);
+	#else
+		sprintf(buf, "%lld", val);
+	#endif
+
 	return buf;
 }
+
 __int64 StringAsLL(const string &str)
 {
-#ifdef _WIN32
-	__int64 result;
-	sscanf(str.c_str(),"%I64d",&result);
-	return result;
-#else
-	return strtoll(str.c_str(),NULL,10);
-#endif
+	#ifdef _WIN32
+		__int64 result;
+		sscanf(str.c_str(), "%I64d", &result);
+		return result;
+	#else
+		return strtoll(str.c_str(), NULL, 10);
+	#endif
 }
 
 unsigned int CountLines(const string &str)
@@ -339,6 +348,52 @@ string StrByteList(const string &data, const string &sep)
 	}
 
 	return res;
+}
+
+const string &FromUTF8(const string &data, string &back, const string &chse)
+{
+	size_t in_left = data.length();
+
+	if (data.empty() || (in_left == 0) || (chse == "UTF-8"))
+		return data;
+
+	iconv_t inst = iconv_open(chse.c_str(), "UTF-8//TRANSLIT");
+
+	if (inst == ((iconv_t) - 1))
+		return data;
+
+	size_t len = in_left * 2;
+	size_t out_left = len;
+	back.resize(len);
+	const char *in_buf = data.data();
+	char *out_buf = (char*)back.data();
+
+	while (in_left > 0) {
+		if (iconv(inst, (ICONV_CONST char**)&in_buf, &in_left, &out_buf, &out_left) == ((size_t) - 1)) {
+			size_t used = out_buf - back.data();
+
+			if (errno == E2BIG) {
+				len *= 2;
+				back.resize(len);
+				out_buf = (char*)back.data() + used;
+				out_left = len - used;
+			} else if (errno == EILSEQ) {
+				++in_buf;
+				--in_left;
+				back[used] = '_';
+			} else {
+				back.replace(used, in_left, string(in_left, '_'));
+				in_left = 0;
+			}
+		}
+	}
+
+	iconv_close(inst);
+
+	if (out_left > 0)
+		back.resize(len - out_left);
+
+	return back;
 }
 
 	}; // namespace nUtils

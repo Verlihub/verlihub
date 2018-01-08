@@ -1,1 +1,8 @@
+[*] Confirmed:
 
+	?
+
+[*] Unconfirmed:
+
+	fix creguserinfo.cpp for HAVE_LIBSSL and crypto stuff
+	?

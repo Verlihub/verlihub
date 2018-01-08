@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -724,7 +724,6 @@ int _GetUserCity(lua_State *L)
 	return 2;
 }
 
-#ifdef HAVE_LIBGEOIP
 int _GetIPCC(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -815,7 +814,7 @@ int _GetIPCity(lua_State *L)
 	string ip = lua_tostring(L, 2);
 	string city;
 
-	if (serv->sGeoIP.GetCity(city, ip, db)) {
+	if (serv->sMaxMindDB.GetCity(city, ip, db)) {
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, city.c_str());
 	} else {
@@ -854,7 +853,7 @@ int _GetIPASN(lua_State *L)
 	if (args > 1)
 		db = lua_tostring(L, 3);
 
-	if (serv->sGeoIP.GetASN(asn, ip, db)) {
+	if (serv->sMaxMindDB.GetASN(asn, ip, db)) {
 		lua_pushboolean(L, 1);
 		lua_pushstring(L, asn.c_str());
 	} else {
@@ -906,10 +905,10 @@ int _GetUserGeoIP(lua_State *L)
 	}
 
 	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
-	float geo_lat, geo_lon;
-	int geo_met, geo_area;
+	double geo_lat, geo_lon;
+	unsigned short geo_met, geo_area;
 
-	if (serv->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, usr->mxConn->AddrIP(), db)) {
+	if (serv->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, usr->mxConn->AddrIP(), db)) {
 		lua_pushboolean(L, 1);
 		lua_newtable(L);
 		int x = lua_gettop(L);
@@ -985,19 +984,19 @@ int _GetUserGeoIP(lua_State *L)
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "latitude");
-		lua_pushnumber(L, (float)geo_lat);
+		lua_pushnumber(L, (double)geo_lat);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "longitude");
-		lua_pushnumber(L, (float)geo_lon);
+		lua_pushnumber(L, (double)geo_lon);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "metro_code");
-		lua_pushnumber(L, (int)geo_met);
+		lua_pushnumber(L, (unsigned short)geo_met);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "area_code");
-		lua_pushnumber(L, (int)geo_area);
+		lua_pushnumber(L, (unsigned short)geo_area);
 		lua_rawset(L, x);
 	} else {
 		lua_pushboolean(L, 0);
@@ -1105,10 +1104,10 @@ int _GetHostGeoIP(lua_State *L)
 	}
 
 	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
-	float geo_lat, geo_lon;
-	int geo_met, geo_area;
+	double geo_lat, geo_lon;
+	unsigned short geo_met, geo_area;
 
-	if (serv->sGeoIP.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
+	if (serv->sMaxMindDB.GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
 		lua_pushboolean(L, 1);
 		lua_newtable(L);
 		int x = lua_gettop(L);
@@ -1184,19 +1183,19 @@ int _GetHostGeoIP(lua_State *L)
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "latitude");
-		lua_pushnumber(L, (float)geo_lat);
+		lua_pushnumber(L, (double)geo_lat);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "longitude");
-		lua_pushnumber(L, (float)geo_lon);
+		lua_pushnumber(L, (double)geo_lon);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "metro_code");
-		lua_pushnumber(L, (int)geo_met);
+		lua_pushnumber(L, (unsigned short)geo_met);
 		lua_rawset(L, x);
 
 		lua_pushliteral(L, "area_code");
-		lua_pushnumber(L, (int)geo_area);
+		lua_pushnumber(L, (unsigned short)geo_area);
 		lua_rawset(L, x);
 	} else {
 		lua_pushboolean(L, 0);
@@ -1270,7 +1269,6 @@ int _GetHostGeoIP(lua_State *L)
 
 	return 2;
 }
-#endif
 
 int _GetNickList(lua_State *L)
 {

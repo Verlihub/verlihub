@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -17,19 +17,19 @@
 #	of the GNU General Public License.
 
 SET(PERLSCRIPT_VERSION_MAJOR 1)
-SET(PERLSCRIPT_VERSION_MINOR 2)
+SET(PERLSCRIPT_VERSION_MINOR 3)
 SET(PERLSCRIPT_VERSION_PATCH 0)
 SET(PERLSCRIPT_VERSION_TWEAK 0)
 SET(PERLSCRIPT_VERSION "${PERLSCRIPT_VERSION_MAJOR}.${PERLSCRIPT_VERSION_MINOR}.${PERLSCRIPT_VERSION_PATCH}.${PERLSCRIPT_VERSION_TWEAK}")
 
 ADD_SUBDIRECTORY(vh)
-
 FIND_PACKAGE(Perl)
+
 IF(PERL_FOUND)
   SET(PERL ${PERL_EXECUTABLE})
 ENDIF(PERL_FOUND)
-Find_Package(PerlLibs)
 
+Find_Package(PerlLibs)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_DEFINITIONS(-g -DPERLSCRIPT_VERSION="${PERLSCRIPT_VERSION}" `${PERL} -MExtUtils::Embed -e ccopts`)
 

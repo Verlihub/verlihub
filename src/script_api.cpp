@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,10 +20,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
-
-#ifdef HAVE_LIBGEOIP
-#include "cgeoip.h"
 #endif
 
 #include <iostream>
@@ -300,8 +296,6 @@ const char* GetUserCC(const char *nick)
 	return NULL;
 }
 
-#ifdef HAVE_LIBGEOIP
-
 string GetIPCC(const char *ip)
 {
 	if (!ip)
@@ -316,7 +310,7 @@ string GetIPCC(const char *ip)
 
 	string cc;
 
-	if (serv->sGeoIP.GetCC(ip, cc))
+	if (serv->sMaxMindDB.GetCC(ip, cc))
 		return cc;
 
 	return "";
@@ -336,13 +330,11 @@ string GetIPCN(const char *ip)
 
 	string cn;
 
-	if (serv->sGeoIP.GetCN(ip, cn))
+	if (serv->sMaxMindDB.GetCN(ip, cn))
 		return cn;
 
 	return "";
 }
-
-#endif
 
 const char *GetMyINFO(const char *nick)
 {

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -942,7 +942,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 	ostringstream ostr;
 	string str;
 
-	if (mOwner->mC.max_class_self_repass && (conn->mpUser->mClass >= mOwner->mC.max_class_self_repass))
+	if (mOwner->mC.max_class_self_repass && (conn->mpUser->mClass >= int(mOwner->mC.max_class_self_repass)))
 		ui.mPwdChange = true;
 
 	if (!ui.mPwdChange) {
@@ -3169,42 +3169,45 @@ bool cDCConsole::cfBc::operator()()
 	return true;
 }
 
-bool cDCConsole::GetIPRange(const string &range, unsigned long &from, unsigned long &to)
+bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned long &todr)
 {
-	//"^(\\d+\\.\\d+\\.\\d+\\.\\d+)((\\/(\\d+))|(\\.\\.|-)(\\d+\\.\\d+\\.\\d+\\.\\d+))?$"
-	enum {R_IP1 = 1, R_RANGE = 2, R_BITS=4, R_DOTS = 5, R_IP2 = 6};
-	if(!mIPRangeRex.Exec(range))
+	// "^(\\d+\\.\\d+\\.\\d+\\.\\d+)((\\/(\\d+))|(\\.\\.|-)(\\d+\\.\\d+\\.\\d+\\.\\d+))?$"
+
+	enum {
+		R_IP1 = 1,
+		R_RANGE = 2,
+		R_BITS = 4,
+		R_DOTS = 5,
+		R_IP2 = 6
+	};
+
+	if (!mIPRangeRex.Exec(rang))
 		return false;
-	string tmp;
-	// easy : from..to
-	if(mIPRangeRex.PartFound(R_RANGE)) {
-		if(mIPRangeRex.PartFound(R_DOTS)) {
-			mIPRangeRex.Extract(R_IP1, range, tmp);
-			from = cBanList::Ip2Num(tmp);
-			mIPRangeRex.Extract(R_IP2, range, tmp);
-			to = cBanList::Ip2Num(tmp);
-			return true;
-		// the more complicated 1.2.3.4/16 style mask
-		} else {
-			mIPRangeRex.Extract(0, range, tmp);
-			from = cBanList::Ip2Num(tmp);
-			int i = tmp.find_first_of("/\\");
-			istringstream is(tmp.substr(i+1));
-			unsigned long mask = from;
-			is >> i;
-			unsigned long addr1 = mask & (0xFFFFFFFF << (32-i));
-			unsigned long addr2 = addr1 + (0xFFFFFFFF >> i);
-			from = addr1;
-			to   = addr2;
-			return true;
+
+	string temp;
+
+	if (mIPRangeRex.PartFound(R_RANGE)) { // <from>-<to>
+		if (mIPRangeRex.PartFound(R_DOTS)) {
+			mIPRangeRex.Extract(R_IP1, rang, temp);
+			frdr = cBanList::Ip2Num(temp);
+			mIPRangeRex.Extract(R_IP2, rang, temp);
+			todr = cBanList::Ip2Num(temp);
+		} else { // <addr>/<mask>
+			mIPRangeRex.Extract(0, rang, temp);
+			frdr = cBanList::Ip2Num(temp);
+			int pos = temp.find_first_of("/\\");
+			istringstream is(temp.substr(pos + 1));
+			is >> pos;
+			frdr = frdr & (0xFFFFFFFF << (32 - pos));
+			todr = frdr + (0xFFFFFFFF >> pos);
 		}
-	} else {
-		mIPRangeRex.Extract(R_IP1, range, tmp);
-		from = cBanList::Ip2Num(tmp);
-		to = from;
-		return true;
+	} else { // <addr>
+		mIPRangeRex.Extract(R_IP1, rang, temp);
+		frdr = cBanList::Ip2Num(temp);
+		todr = frdr;
 	}
-	return false;
+
+	return true;
 }
 
 }; // namespace nVerliHub
