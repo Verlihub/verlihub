@@ -54,7 +54,7 @@ __int64 StringAsLL(const string &);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");
-const string &FromUTF8(const string &data, string &back, const string &chse);
+const string &FromUTF8(const string &data, string &back, const string &tset, const string &fset = "UTF-8//TRANSLIT");
 
 	}; // namespace nUtils
 }; // namespace nVerliHub

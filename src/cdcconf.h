@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -278,6 +278,7 @@ public:
 	unsigned int zlib_min_len;
 	bool detect_ctmtohub; // ctm2hub
 	bool disable_extjson; // extjson
+	string mmdb_names_lang; // mmdb
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;
