@@ -47,6 +47,7 @@ namespace nVerliHub {
 				bool GetCC(const string &host, string &cc);
 				bool GetCN(const string &host, string &cn);
 				bool GetCity(string &geo_city, const string &host, const string &db = "");
+				bool GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db = ""); // optimized function used on user login, gets all 3 values from 1 lookup
 				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db = "");
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
