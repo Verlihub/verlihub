@@ -595,13 +595,14 @@ cDCConnFactory::cDCConnFactory(cServerDC *server):
 cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 {
 	cConnDC *conn;
-	if(!mServer)
+
+	if (!mServer)
 		return NULL;
 
 	conn = new cConnDC(sd, mServer);
 	conn->mxMyFactory = this;
 
-	if (mServer->mMaxMindDB->GetCC(conn->AddrIP(), conn->mCC) && mServer->mC.cc_zone[0].size()) {
+	if (mServer->mMaxMindDB->GetCCC(conn->mCC, conn->mCN, conn->mCity, conn->AddrIP()) && conn->mCC.size() && mServer->mC.cc_zone[0].size()) { // get all geo data in one call
 		for (int i = 0; i < 3; i ++) {
 			if ((conn->mCC == mServer->mC.cc_zone[i]) || (mServer->mC.cc_zone[i].find(conn->mCC) != mServer->mC.cc_zone[i].npos)) {
 				conn->mGeoZone = i + 1;
@@ -610,30 +611,35 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 		}
 	}
 
-	mServer->mMaxMindDB->GetCN(conn->AddrIP(), conn->mCN); // get country name
-	mServer->mMaxMindDB->GetCity(conn->mCity, conn->AddrIP()); // get city name
 	long IPConn, IPMin, IPMax;
 	IPConn = cBanList::Ip2Num(conn->AddrIP());
-	if(mServer->mC.ip_zone4_min.size()) {
+
+	if (mServer->mC.ip_zone4_min.size()) {
 		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone4_min);
 		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone4_max);
-		if((IPMin <= IPConn) && (IPMax >= IPConn))
+
+		if ((IPMin <= IPConn) && (IPMax >= IPConn))
 			conn->mGeoZone = 4;
 	}
-	if(mServer->mC.ip_zone5_min.size()) {
+
+	if (mServer->mC.ip_zone5_min.size()) {
 		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone5_min);
 		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone5_max);
-		if((IPMin <= IPConn) && (IPMax >= IPConn))
+
+		if ((IPMin <= IPConn) && (IPMax >= IPConn))
 			conn->mGeoZone = 5;
 	}
-	if(mServer->mC.ip_zone6_min.size()) {
+
+	if (mServer->mC.ip_zone6_min.size()) {
 		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone6_min);
 		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone6_max);
-		if((IPMin <= IPConn) && (IPMax >= IPConn))
+
+		if ((IPMin <= IPConn) && (IPMax >= IPConn))
 			conn->mGeoZone = 6;
 	}
+
 	conn->mxProtocol = mProtocol;
-	return (cAsyncConn*) conn;
+	return (cAsyncConn*)conn;
 }
 
 void cDCConnFactory::DeleteConn(cAsyncConn * &connection)

@@ -194,6 +194,78 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 	return res;
 }
 
+bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db)
+{
+	if (host.substr(0, 4) == "127.") {
+		geo_cc = "L1";
+		geo_cn = "Local Network";
+		geo_ci = "Local Network";
+		return true;
+	}
+
+	unsigned long sip = cBanList::Ip2Num(host);
+
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
+		geo_cc = "P1";
+		geo_cn = "Private Network";
+		geo_ci = "Private Network";
+		return true;
+	}
+
+	string cc = "--", cn = "--", ci = "--";
+	bool res = false, ok = false;
+	MMDB_s *mmdb = NULL;
+
+	if (db.size() && FileExists(db.c_str())) {
+		mmdb = (MMDB_s*)malloc(sizeof(MMDB_s));
+
+		if (mmdb)
+			ok = MMDB_open(db.c_str(), MMDB_MODE_MMAP, mmdb) == MMDB_SUCCESS;
+	}
+
+	if ((ok && mmdb) || mDBCI || mDBCO) { // important database order: custom, city, country
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : (mDBCI ? mDBCI : mDBCO)), host.c_str(), &gai_err, &mmdb_err);
+
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string conv, back;
+			MMDB_entry_data_s ent;
+
+			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+				conv.assign((const char*)ent.utf8_string, ent.data_size);
+				cc = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
+			}
+
+			if (((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				conv.assign((const char*)ent.utf8_string, ent.data_size);
+				back.clear();
+				cn = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
+			}
+
+			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				conv.assign((const char*)ent.utf8_string, ent.data_size);
+				back.clear();
+				ci = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
+			}
+		}
+	}
+
+	if (mmdb) {
+		if (ok)
+			MMDB_close(mmdb);
+
+		free(mmdb);
+	}
+
+	geo_cc = cc;
+	geo_cn = cn;
+	geo_ci = ci;
+	return res;
+}
+
 bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db)
 {
 	if (host.substr(0, 4) == "127.") {
