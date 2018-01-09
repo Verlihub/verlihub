@@ -350,14 +350,14 @@ string StrByteList(const string &data, const string &sep)
 	return res;
 }
 
-const string &FromUTF8(const string &data, string &back, const string &chse)
+const string &FromUTF8(const string &data, string &back, const string &tset, const string &fset)
 {
 	size_t in_left = data.length();
 
-	if (data.empty() || (in_left == 0) || (chse == "UTF-8"))
+	if (data.empty() || (in_left == 0) || (fset == tset))
 		return data;
 
-	iconv_t inst = iconv_open(chse.c_str(), "UTF-8//TRANSLIT");
+	iconv_t inst = iconv_open(tset.c_str(), fset.c_str()); // UTF-8//TRANSLIT//IGNORE
 
 	if (inst == ((iconv_t) - 1))
 		return data;

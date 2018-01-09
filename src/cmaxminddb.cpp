@@ -129,7 +129,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
 			MMDB_entry_data_s ent;
 
-			if ((MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english country name
+			if ((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english country name
 				string conv, back;
 				conv.assign((const char*)ent.utf8_string, ent.data_size);
 				name = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
@@ -174,7 +174,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
 			MMDB_entry_data_s ent;
 
-			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english city name
+			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english city name
 				string conv, back;
 				conv.assign((const char*)ent.utf8_string, ent.data_size);
 				city = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
@@ -274,7 +274,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english country name
+			if ((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english country name
 				conv.assign((const char*)ent.utf8_string, ent.data_size);
 				back.clear();
 				geo_cn = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
@@ -288,7 +288,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "names", "en", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english region name
+			if ((MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english region name
 				conv.assign((const char*)ent.utf8_string, ent.data_size);
 				back.clear();
 				geo_reg_name = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
@@ -309,7 +309,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english city name
+			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // english city name
 				conv.assign((const char*)ent.utf8_string, ent.data_size);
 				back.clear();
 				geo_city = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
