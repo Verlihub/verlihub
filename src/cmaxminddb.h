@@ -25,6 +25,7 @@
 #include <string>
 #include <ostream>
 #include <maxminddb.h>
+#include <unicode/translit.h>
 
 using std::string;
 
@@ -52,6 +53,7 @@ namespace nVerliHub {
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
 				nSocket::cServerDC *mServ;
+				Transliterator *mTran;
 
 				MMDB_s *mDBCO;
 				MMDB_s *mDBCI;
@@ -61,7 +63,10 @@ namespace nVerliHub {
 				MMDB_s *TryCityDB(unsigned int flags);
 				MMDB_s *TryASNDB(unsigned int flags);
 
+				const string &FromUTF8(const string &data, string &back, const string &tset/*, const string &fset = "UTF-8"*/);
+				const string &TranUTF8(const string &data, string &back);
 				const string &WorkUTF8(const char *udat, unsigned int ulen, string &back, const string &tset);
+
 				bool FileExists(const char *name);
 				unsigned long FileSize(const char *name);
 		};
