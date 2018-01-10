@@ -33,11 +33,17 @@
 #include <algorithm>
 #include <ctype.h>
 #include <errno.h>
-#include <iconv.h>
+//#include <iconv.h>
+#include <unicode/utypes.h>
+#include <unicode/unistr.h>
+#include <unicode/translit.h>
+#include <unicode/ucnv.h>
 
+/*
 #ifndef ICONV_CONST
 #define ICONV_CONST
 #endif
+*/
 
 #ifdef _WIN32
 #include <windows.h>
@@ -350,8 +356,9 @@ string StrByteList(const string &data, const string &sep)
 	return res;
 }
 
-const string &FromUTF8(const string &data, string &back, const string &tset, const string &fset)
+const string &FromUTF8(const string &data, string &back, const string &tset/*, const string &fset*/)
 {
+	/*
 	size_t in_left = data.length();
 
 	if (data.empty() || (in_left == 0) || (fset == tset))
@@ -393,6 +400,47 @@ const string &FromUTF8(const string &data, string &back, const string &tset, con
 	if (out_left > 0)
 		back.resize(len - out_left);
 
+	return back;
+	*/
+
+	unsigned int len = data.length();
+	UnicodeString inda = UnicodeString::fromUTF8(StringPiece(data));
+	char targ[len];
+	UErrorCode ok = U_ZERO_ERROR;
+	UConverter *conv = ucnv_open(tset.c_str(), &ok);
+
+	if (U_FAILURE(ok)) {
+		if (conv)
+			ucnv_close(conv);
+
+		return data;
+	}
+
+	len = ucnv_fromUChars(conv, targ, len, inda.getBuffer(), -1, &ok);
+
+	if (U_FAILURE(ok)) {
+		if (conv)
+			ucnv_close(conv);
+
+		return data;
+	}
+
+	ucnv_close(conv);
+	back.assign(targ, 0, len);
+	return back;
+}
+
+const string &TranUTF8(const string &data, string &back)
+{
+	UnicodeString inda = UnicodeString::fromUTF8(StringPiece(data));
+	UErrorCode ok = U_ZERO_ERROR;
+	Transliterator *conv = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok);
+
+	if (U_FAILURE(ok))
+		return data;
+
+	conv->transliterate(inda);
+	inda.toUTF8String(back);
 	return back;
 }
 

@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <unicode/uvernum.h>
 
 using namespace std;
 
@@ -90,12 +91,11 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 		MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back;
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				string conv, back;
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				code = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
 			}
 		}
@@ -127,12 +127,16 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			MMDB_entry_data_s ent;
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
-				string conv, back;
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				name = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				name = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
 			}
 		}
@@ -172,12 +176,14 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBCI), host.c_str(), &gai_err, &mmdb_err);
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			MMDB_entry_data_s ent;
 
-			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
-				string conv, back;
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				city = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				city = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
 			}
 		}
@@ -228,26 +234,29 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : (mDBCI ? mDBCI : mDBCO)), host.c_str(), &gai_err, &mmdb_err);
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-			string conv, back;
+			string back, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				cc = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				cn = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				cn = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				ci = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				ci = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 		}
@@ -326,7 +335,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
 			unsigned long ran_lo = sip, ran_hi = sip; // ip range
-			string conv, back = host;
+			string back = host, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			back += "/";
 			back += StringFrom(dat.netmask - (ok ? mmdb->ipv4_start_node.netmask : mDBCI->ipv4_start_node.netmask));
 
@@ -339,59 +348,54 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_cc = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				geo_cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				geo_ccc = geo_cc; // todo: country_code3 no longer supported, get rid of it
 				res = true;
 			}
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_cn = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				geo_cn = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "iso_code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // region code
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_reg_code = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				geo_reg_code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // region name
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_reg_name = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // region name
+				geo_reg_name = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "location", "time_zone", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // time zone
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_tz = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				geo_tz = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "continent", "code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // continent code
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_cont = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				geo_cont = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
-			if ((MMDB_get_value(&dat.entry, &ent, "city", "names", (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en"), NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_city = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				geo_city = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "postal", "code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // postal code
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				back.clear();
-				geo_post = FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				geo_post = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				res = true;
 			}
 
@@ -476,6 +480,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 					MMDB_free_entry_data_list(ent);
 			*/
 
+			string back;
 			MMDB_entry_data_s ent;
 
 			if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_number", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UINT32) && (ent.uint32 > 0)) { // asn number
@@ -488,9 +493,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 				if (asn_name.size())
 					asn_name += " ";
 
-				string conv, back;
-				conv.assign((const char*)ent.utf8_string, ent.data_size);
-				asn_name += FromUTF8(conv, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				asn_name += WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
 			}
 		}
@@ -692,6 +695,15 @@ void cMaxMindDB::ReloadAll()
 	mDBAS = TryASNDB(MMDB_MODE_MMAP);
 }
 
+const string &cMaxMindDB::WorkUTF8(const char *udat, unsigned int ulen, string &back, const string &tset)
+{
+	back.clear();
+	string conv = string(udat, ulen);
+	string temp = TranUTF8(conv, back);
+	back = FromUTF8(temp, conv, tset);
+	return back;
+}
+
 bool cMaxMindDB::FileExists(const char *name)
 {
 	return access(name, 0) != -1;
@@ -710,7 +722,8 @@ unsigned long cMaxMindDB::FileSize(const char *name)
 void cMaxMindDB::ShowInfo(ostream &os)
 {
 	os << _("MaxMindDB information") << ":\r\n\r\n"; // general
-	os << " [*] " << autosprintf(_("Library version: %s"), MMDB_lib_version()) << "\r\n";
+	os << " [*] " << autosprintf(_("MaxMindDB version: %s"), MMDB_lib_version()) << "\r\n";
+	os << " [*] " << autosprintf(_("ICU version: %d.%d.%d"), U_ICU_VERSION_MAJOR_NUM, U_ICU_VERSION_MINOR_NUM, U_ICU_VERSION_PATCHLEVEL_NUM) << "\r\n";
 	os << " [*] " << autosprintf(_("Database path: %s"), (mServ->mDBConf.mmdb_path.size() ? mServ->mDBConf.mmdb_path.c_str() : _("Not set"))) << "\r\n\r\n";
 
 	os << " " << _("Country database") << ":\r\n\r\n"; // country
