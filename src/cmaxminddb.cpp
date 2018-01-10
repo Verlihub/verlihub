@@ -29,13 +29,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include <unicode/uclean.h>
 #include <unicode/unistr.h>
 #include <unicode/ucnv.h>
+#include <unicode/utypes.h>
 #include <unicode/uvernum.h>
 
 /*
+#include <errno.h>
 #include <iconv.h>
 #ifndef ICONV_CONST
 #define ICONV_CONST
@@ -58,8 +59,10 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	UErrorCode ok = U_ZERO_ERROR;
 	mTran = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok);
 
-	if (U_FAILURE(ok))
+	if (U_FAILURE(ok)) {
+		vhLog(0) << "Failed to create ICU transliterator, transliteration will be disabled: " << u_errorName(ok) << endl;
 		mTran = NULL;
+	}
 
 	mDBCO = TryCountryDB(MMDB_MODE_MMAP);
 	mDBCI = TryCityDB(MMDB_MODE_MMAP);
