@@ -53,6 +53,7 @@
 			#y			- Years
 
 	!deltrigger <trigger>			- Remove trigger
+	!triggerget <trigger>			- Show trigger definition
 	!lsttrigger					- List triggers
 	!htrigger					- Supported trigger flags and variables
 

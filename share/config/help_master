@@ -28,7 +28,7 @@
 
 	vh -i [sleep]				- Install new hub
 	vh -u <nick> <class> <password> [config]	- Register new user
-	vh -g					- Update free MaxMind databases
+	vh -g [config]				- Update free MaxMind databases
 
 	vh -r [config]				- Start hub
 	vh -q [config]				- Restart hub
