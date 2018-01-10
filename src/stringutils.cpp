@@ -32,18 +32,6 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
-#include <errno.h>
-//#include <iconv.h>
-#include <unicode/utypes.h>
-#include <unicode/unistr.h>
-#include <unicode/translit.h>
-#include <unicode/ucnv.h>
-
-/*
-#ifndef ICONV_CONST
-#define ICONV_CONST
-#endif
-*/
 
 #ifdef _WIN32
 #include <windows.h>
@@ -354,94 +342,6 @@ string StrByteList(const string &data, const string &sep)
 	}
 
 	return res;
-}
-
-const string &FromUTF8(const string &data, string &back, const string &tset/*, const string &fset*/)
-{
-	/*
-	size_t in_left = data.length();
-
-	if (data.empty() || (in_left == 0) || (fset == tset))
-		return data;
-
-	iconv_t inst = iconv_open(tset.c_str(), fset.c_str()); // UTF-8//TRANSLIT//IGNORE
-
-	if (inst == ((iconv_t) - 1))
-		return data;
-
-	size_t len = in_left * 2;
-	size_t out_left = len;
-	back.resize(len);
-	const char *in_buf = data.data();
-	char *out_buf = (char*)back.data();
-
-	while (in_left > 0) {
-		if (iconv(inst, (ICONV_CONST char**)&in_buf, &in_left, &out_buf, &out_left) == ((size_t) - 1)) {
-			size_t used = out_buf - back.data();
-
-			if (errno == E2BIG) {
-				len *= 2;
-				back.resize(len);
-				out_buf = (char*)back.data() + used;
-				out_left = len - used;
-			} else if (errno == EILSEQ) {
-				++in_buf;
-				--in_left;
-				back[used] = '_';
-			} else {
-				back.replace(used, in_left, string(in_left, '_'));
-				in_left = 0;
-			}
-		}
-	}
-
-	iconv_close(inst);
-
-	if (out_left > 0)
-		back.resize(len - out_left);
-
-	return back;
-	*/
-
-	unsigned int len = data.length();
-	UnicodeString inda = UnicodeString::fromUTF8(StringPiece(data));
-	char targ[len];
-	UErrorCode ok = U_ZERO_ERROR;
-	UConverter *conv = ucnv_open(tset.c_str(), &ok);
-
-	if (U_FAILURE(ok)) {
-		if (conv)
-			ucnv_close(conv);
-
-		return data;
-	}
-
-	len = ucnv_fromUChars(conv, targ, len, inda.getBuffer(), -1, &ok);
-
-	if (U_FAILURE(ok)) {
-		if (conv)
-			ucnv_close(conv);
-
-		return data;
-	}
-
-	ucnv_close(conv);
-	back.assign(targ, 0, len);
-	return back;
-}
-
-const string &TranUTF8(const string &data, string &back)
-{
-	UnicodeString inda = UnicodeString::fromUTF8(StringPiece(data));
-	UErrorCode ok = U_ZERO_ERROR;
-	Transliterator *conv = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok);
-
-	if (U_FAILURE(ok))
-		return data;
-
-	conv->transliterate(inda);
-	inda.toUTF8String(back);
-	return back;
 }
 
 	}; // namespace nUtils
