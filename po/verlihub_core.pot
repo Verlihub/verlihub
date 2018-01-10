@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-01-08 17:18+0100\n"
+"POT-Creation-Date: 2018-01-10 04:21+0100\n"
 "PO-Revision-Date: 2016-03-11 20:28+0100\n"
 "Last-Translator: Frog <the_frog@wp.pl>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -85,8 +85,8 @@ msgstr ""
 msgid "Operator note: %s"
 msgstr ""
 
-#: ../src/cban.cpp:149 ../src/cmaxminddb.cpp:648 ../src/cmaxminddb.cpp:662
-#: ../src/cmaxminddb.cpp:676
+#: ../src/cban.cpp:149 ../src/cmaxminddb.cpp:733 ../src/cmaxminddb.cpp:747
+#: ../src/cmaxminddb.cpp:761
 #, c-format
 msgid "Type: %s"
 msgstr ""
@@ -563,7 +563,7 @@ msgstr ""
 #: ../src/cinfoserver.cpp:384 ../src/cinfoserver.cpp:385
 #: ../src/cinfoserver.cpp:386 ../src/cinfoserver.cpp:404
 #: ../src/cinfoserver.cpp:417 ../src/cinfoserver.cpp:428
-#: ../src/cinfoserver.cpp:439 ../src/cmaxminddb.cpp:642
+#: ../src/cinfoserver.cpp:439 ../src/cmaxminddb.cpp:727
 #: ../src/creguserinfo.cpp:112 ../src/creguserinfo.cpp:113
 #: ../src/creguserinfo.cpp:114 ../src/creguserinfo.cpp:123
 #: ../src/creguserinfo.cpp:124 ../src/creguserinfo.cpp:125
@@ -576,8 +576,8 @@ msgstr ""
 msgid "Address: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:659 ../src/cmaxminddb.cpp:645
-#: ../src/cmaxminddb.cpp:659 ../src/cmaxminddb.cpp:673
+#: ../src/cdcconsole.cpp:659 ../src/cmaxminddb.cpp:730
+#: ../src/cmaxminddb.cpp:744 ../src/cmaxminddb.cpp:758
 #: ../src/cserverdc.cpp:2465
 #, c-format
 msgid "Status: %s"
@@ -2065,69 +2065,74 @@ msgstr ""
 msgid "Other users: %d of %d [%s]"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:640
+#: ../src/cmaxminddb.cpp:724
 msgid "MaxMindDB information"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:641
+#: ../src/cmaxminddb.cpp:725
 #, c-format
-msgid "Library version: %s"
+msgid "MaxMindDB version: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:642
+#: ../src/cmaxminddb.cpp:726
+#, c-format
+msgid "ICU version: %d.%d.%d"
+msgstr ""
+
+#: ../src/cmaxminddb.cpp:727
 #, c-format
 msgid "Database path: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:644
+#: ../src/cmaxminddb.cpp:729
 msgid "Country database"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:645 ../src/cmaxminddb.cpp:659
-#: ../src/cmaxminddb.cpp:673
+#: ../src/cmaxminddb.cpp:730 ../src/cmaxminddb.cpp:744
+#: ../src/cmaxminddb.cpp:758
 msgid "Loaded"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:645 ../src/cmaxminddb.cpp:659
-#: ../src/cmaxminddb.cpp:673
+#: ../src/cmaxminddb.cpp:730 ../src/cmaxminddb.cpp:744
+#: ../src/cmaxminddb.cpp:758
 msgid "Not loaded"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:649 ../src/cmaxminddb.cpp:663
-#: ../src/cmaxminddb.cpp:677
+#: ../src/cmaxminddb.cpp:734 ../src/cmaxminddb.cpp:748
+#: ../src/cmaxminddb.cpp:762
 #, c-format
 msgid "Binary version: %d.%d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:650 ../src/cmaxminddb.cpp:664
-#: ../src/cmaxminddb.cpp:678
+#: ../src/cmaxminddb.cpp:735 ../src/cmaxminddb.cpp:749
+#: ../src/cmaxminddb.cpp:763
 #, c-format
 msgid "Build time: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:651 ../src/cmaxminddb.cpp:665
-#: ../src/cmaxminddb.cpp:679
+#: ../src/cmaxminddb.cpp:736 ../src/cmaxminddb.cpp:750
+#: ../src/cmaxminddb.cpp:764
 #, c-format
 msgid "Node count: %d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:652 ../src/cmaxminddb.cpp:666
-#: ../src/cmaxminddb.cpp:680
+#: ../src/cmaxminddb.cpp:737 ../src/cmaxminddb.cpp:751
+#: ../src/cmaxminddb.cpp:765
 #, c-format
 msgid "File name: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:655 ../src/cmaxminddb.cpp:669
-#: ../src/cmaxminddb.cpp:683
+#: ../src/cmaxminddb.cpp:740 ../src/cmaxminddb.cpp:754
+#: ../src/cmaxminddb.cpp:768
 #, c-format
 msgid "File size: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:658
+#: ../src/cmaxminddb.cpp:743
 msgid "City database"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:672
+#: ../src/cmaxminddb.cpp:757
 msgid "ASN database"
 msgstr ""
 
@@ -2843,75 +2848,75 @@ msgstr ""
 msgid "Plugin %s %s cannot load script '%s'."
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "B"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "KB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "MB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "GB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "TB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "PB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "EB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "ZB"
 msgstr ""
 
-#: ../src/stringutils.cpp:252
+#: ../src/stringutils.cpp:258
 msgid "YB"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "B/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "KB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "MB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "GB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "TB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "PB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "EB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "ZB/s"
 msgstr ""
 
-#: ../src/stringutils.cpp:253
+#: ../src/stringutils.cpp:259
 msgid "YB/s"
 msgstr ""
 

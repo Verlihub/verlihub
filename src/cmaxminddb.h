@@ -61,6 +61,7 @@ namespace nVerliHub {
 				MMDB_s *TryCityDB(unsigned int flags);
 				MMDB_s *TryASNDB(unsigned int flags);
 
+				const string &WorkUTF8(const char *udat, unsigned int ulen, string &back, const string &tset);
 				bool FileExists(const char *name);
 				unsigned long FileSize(const char *name);
 		};
