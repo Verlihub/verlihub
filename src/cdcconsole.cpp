@@ -58,7 +58,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mUserCmdr(this),
  	mCmdBan(int(eCM_BAN), ".(del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
 	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
-	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+) (.*)", &mFunTrigger),
+	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+)( (.*))?", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
 	mCmdRegUsr(int(eCM_REG),".r(eg)?(n(ew)?(user)?|del(ete)?|pass(wd)?|(en|dis)able|(set)?class|(protect|hidekick)(class)?|set|=|info|list|lst) ", "(\\S+)( (((\\S+) )?(.*)))?", &mFunRegUsr),
 	mCmdRaw(int(eCM_RAW), ".proto(\\S+)_(\\S+) ", "((\\S+) )?(.+)", &mFunRaw),
@@ -1827,69 +1827,105 @@ bool cDCConsole::cfInfo::operator()()
 
 bool cDCConsole::cfTrigger::operator()()
 {
-	string ntrigger;
-	string text, cmd;
-
 	if (mConn->mpUser->mClass < eUC_MASTER) {
 		(*mOS) << _("You have no rights to do this.");
 		return false;
 	}
 
-   	mIdRex->Extract(2,mIdStr,cmd);
-	enum {eAC_ADD, eAC_DEL, eAC_EDIT, eAC_DEF, eAC_FLAGS};
-	static const char *actionnames[]={"new","add","del","edit","def", "setflags"};
-	static const int actionids[]={eAC_ADD, eAC_ADD, eAC_DEL, eAC_EDIT, eAC_DEF, eAC_FLAGS};
-	int Action = this->StringToIntFromList(cmd, actionnames, actionids, sizeof(actionnames)/sizeof(char*));
-	if (Action < 0) return false;
+	string cmd;
+   	mIdRex->Extract(2, mIdStr, cmd);
 
-	mParRex->Extract(1,mParStr,ntrigger);
-	mParRex->Extract(2,mParStr,text);
-	int i;
-	int flags = 0;
-	istringstream is(text);
-	bool result = false;
-	cTrigger *tr;
+	enum {
+		eAC_ADD,
+		eAC_DEL,
+		eAC_EDIT,
+		eAC_GET,
+		eAC_FLAGS
+	};
 
-	switch(Action)
-	{
-	case eAC_ADD:
-		tr = new cTrigger;
-		tr->mCommand = ntrigger;
-		tr->mDefinition = text;
-		break;
+	static const char *acna[] = {
+		"new", "add",
+		"del",
+		"edit",
+		"get",
+		"setflags"
+	};
+
+	static const int acid[] = {
+		eAC_ADD, eAC_ADD,
+		eAC_DEL,
+		eAC_EDIT,
+		eAC_GET,
+		eAC_FLAGS
+	};
+
+	int act = this->StringToIntFromList(cmd, acna, acid, sizeof(acna) / sizeof(char*));
+
+	if (act < 0)
+		return false;
+
+	string trig/*, text*/;
+	mParRex->Extract(1, mParStr, trig);
+	//mParRex->Extract(3, mParStr, text);
+	int i/*, flags = 0*/;
+	//istringstream is(text);
+	bool res = false;
+	//cTrigger *tr;
+
+	switch (act) {
+		/*
+		case eAC_ADD:
+			tr = new cTrigger;
+			tr->mCommand = trig;
+			tr->mDefinition = text;
+			break;
 
 		case eAC_EDIT:
-		for( i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i )
-		{
-			if( ntrigger == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand )
-			{
-				mS->SaveFile(((*((cDCConsole*)mCo)->mTriggers)[i])->mDefinition,text);
-				result = true;
-				break;
-			}
-		}
-		break;
-	case eAC_FLAGS:
-		flags = -1;
-		is >> flags;
-		if (flags >= 0) {
-			for( i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i )
-			{
-				if( ntrigger == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand )
-				{
-				(*((cDCConsole*)mCo)->mTriggers)[i]->mFlags = flags;
-				((cDCConsole*)mCo)->mTriggers->SaveData(i);
-				result = true;
-				break;
+			for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
+				if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
+					mS->SaveFile(((*((cDCConsole*)mCo)->mTriggers)[i])->mDefinition, text);
+					res = true;
+					break;
 				}
 			}
-		}
 
-		break;
-	default: (*mOS) << _("This command is not implemented.");
-		break;
-	};
-		return result;
+			break;
+
+		case eAC_FLAGS:
+			flags = -1;
+			is >> flags;
+
+			if (flags >= 0) {
+				for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
+					if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
+						(*((cDCConsole*)mCo)->mTriggers)[i]->mFlags = flags;
+						((cDCConsole*)mCo)->mTriggers->SaveData(i);
+						res = true;
+						break;
+					}
+				}
+			}
+
+			break;
+		*/
+
+		case eAC_GET:
+			for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
+				if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
+					(*mOS) << autosprintf(_("Trigger definition: %s"), trig.c_str()) << "\r\n\r\n" << ((*((cDCConsole*)mCo)->mTriggers)[i])->mDefinition << "\r\n";
+					return true;
+				}
+			}
+
+			(*mOS) << autosprintf(_("Trigger not found: %s"), trig.c_str());
+			break;
+
+		default:
+			(*mOS) << _("This command is not implemented.");
+			break;
+	}
+
+	return res;
 }
 
 bool cDCConsole::cfGetConfig::operator()()
