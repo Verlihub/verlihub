@@ -122,6 +122,7 @@
 	!protinfo					- Protocol information
 	!portinfo					- Port information
 	!urlinfo					- URL information
+	!mmdbinfo					- MaxMindDB information
 
  [*] Chatrooms:
 
