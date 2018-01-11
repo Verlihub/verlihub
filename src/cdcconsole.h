@@ -212,7 +212,7 @@ public:
 	* @param conn Pointer to user's connection which to send the result message.
 	* @return Always 1.
 	*/
-	int CmdKick(istringstream & cmd_line, nSocket::cConnDC * conn);
+	//int CmdKick(istringstream & cmd_line, nSocket::cConnDC * conn);
 
 	/**
 	* Handle +chat and +nochat hub command.

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -52,7 +52,7 @@ namespace nVerliHub {
 		cDCCommand();
 		virtual ~cDCCommand(){};
 
-		long mActionType;
+		//long mActionType;
 
 		class sDCCmdFunc : public nCmdr::cCommand::sCmdFunc
 		{
@@ -71,10 +71,11 @@ namespace nVerliHub {
 			virtual bool operator() (nUtils::cPCRE &idrex, nUtils::cPCRE &parrex, ostream &os, void *extra);
 		};
 
-		cDCCommand(int ID, const char *IdRegex, const char *ParRegex, sDCCmdFunc *CmdFunc, long Action = -1);
+		cDCCommand(int ID, const char *IdRegex, const char *ParRegex, sDCCmdFunc *CmdFunc/*, long Action = -1*/);
 		virtual void Init(void *co);
 		virtual void Init(int ID, const char *IdRegex, const char *, sCmdFunc*);
 	};
+
 }; // namespace nVerliHub
 
 #endif

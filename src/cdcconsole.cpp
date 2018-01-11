@@ -64,7 +64,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdRaw(int(eCM_RAW), ".proto(\\S+)_(\\S+) ", "((\\S+) )?(.+)", &mFunRaw),
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
-	mCmdKick(int(eCM_KICK), ".(kick|drop) ", "(\\S+)( (.*)$)?", &mFunKick, eUR_KICK),
+	mCmdKick(int(eCM_KICK), ".(kick|drop|vipgag|vipungag) ", "(\\S+)( (.*)$)?", &mFunKick), // eUR_KICK
 	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|mmdb|geoip)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
@@ -119,6 +119,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mCmdr.Add(&mCmdGetConfig);
 	mCmdr.Add(&mCmdClean);
 	mCmdr.InitAll(this);
+	mUserCmdr.Add(&mCmdKick); // vip kicks
 	mUserCmdr.Add(&mCmdReport);
 	mUserCmdr.InitAll(this);
 }
@@ -235,8 +236,10 @@ int cDCConsole::UsrCommand(const string &str, cConnDC *conn)
 		case eUC_OPERATOR:
 		case eUC_VIPUSER:
 		case eUC_REGUSER:
+			/*
 			if (cmdid == "kick")
 				return CmdKick(cmd_line, conn);
+			*/
 
 		case eUC_NORMUSER:
 			if ((cmdid == "passwd") || (cmdid == "password"))
@@ -895,6 +898,7 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 	return 0;
 }
 
+/*
 int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
 {
 	if (!conn || !conn->mpUser)
@@ -928,6 +932,7 @@ int cDCConsole::CmdKick(istringstream &cmd_line, cConnDC *conn)
 
 	return 1;
 }
+*/
 
 int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 {
@@ -1379,12 +1384,13 @@ bool cDCConsole::cfClean::operator()()
 		return false;
 	}
 
-	static const char *cleanames[] = {
+	static const char *clna[] = {
 		"banlist",
 		"tempbans",
 		"unbanlist",
 		"kicklist",
-		"temprights"
+		"temprights",
+		"allban"
 	};
 
 	enum {
@@ -1392,51 +1398,67 @@ bool cDCConsole::cfClean::operator()()
 		CLEAN_TBAN,
 		CLEAN_UNBAN,
 		CLEAN_KICK,
-		CLEAN_TRIGHTS
+		CLEAN_TRIGHTS,
+		CLEAN_ALLBAN
 	};
 
-	static const int cleanids[] = {
+	static const int clid[] = {
 		CLEAN_BAN,
 		CLEAN_TBAN,
 		CLEAN_UNBAN,
 		CLEAN_KICK,
-		CLEAN_TRIGHTS
+		CLEAN_TRIGHTS,
+		CLEAN_ALLBAN
 	};
 
-	string tmp;
-	int CleanType = eBF_NICKIP;
+	string temp;
+	int act = eBF_NICKIP;
 
 	if (mIdRex->PartFound(1)) {
-		mIdRex->Extract(1, mIdStr, tmp);
-		CleanType = this->StringToIntFromList(tmp, cleanames, cleanids, sizeof(cleanames) / sizeof(char*));
+		mIdRex->Extract(1, mIdStr, temp);
+		act = this->StringToIntFromList(temp, clna, clid, sizeof(clna) / sizeof(char*));
 
-		if (CleanType < 0)
+		if (act < 0)
 			return false;
 	}
 
-	switch (CleanType) {
+	switch (act) {
 		case CLEAN_BAN:
 			mS->mBanList->TruncateTable();
 			(*mOS) << _("Ban list has been cleaned.");
 			break;
+
 		case CLEAN_TBAN:
 			mS->mBanList->RemoveOldShortTempBans(0);
 			(*mOS) << _("Temporary ban list has been cleaned.");
 			break;
+
 		case CLEAN_UNBAN:
 			mS->mUnBanList->TruncateTable();
 			(*mOS) << _("Unban list has been cleaned.");
 			break;
+
 		case CLEAN_KICK:
 		  	mS->mKickList->TruncateTable();
 			(*mOS) << _("Kick list has been cleaned.");
 			break;
+
 		case CLEAN_TRIGHTS:
 			mS->mPenList->TruncateTable();
 			mS->mPenList->ReloadCache();
 
 			(*mOS) << _("Temporary rights list has been cleaned.");
 			break;
+
+		case CLEAN_ALLBAN:
+			mS->mBanList->TruncateTable();
+			mS->mBanList->RemoveOldShortTempBans(0);
+			mS->mUnBanList->TruncateTable();
+			mS->mKickList->TruncateTable();
+
+			(*mOS) << _("Ban, unban, kick and temporary ban lists has been cleaned.");
+			break;
+
 		default:
 			(*mOS) << _("This command is not implemented.");
 			return false;
@@ -2073,7 +2095,7 @@ bool cDCConsole::cfGag::operator()()
 		eAC_LIST
 	};
 
-	static const char *actionnames[] = {
+	static const char *actionnames[] = { // todo: there are no such rights as drop and tban, flags exist though
 		"gag", "nochat",
 		"nopm",
 		"nochats",
@@ -2103,9 +2125,9 @@ bool cDCConsole::cfGag::operator()()
 
 	string temp;
 	mIdRex->Extract(2, mIdStr, temp);
-	int Action = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+	int act = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
 
-	if (Action < 0)
+	if (act < 0)
 		return false;
 
 	if (mConn->mpUser->mClass < eUC_OPERATOR) {
@@ -2113,7 +2135,7 @@ bool cDCConsole::cfGag::operator()()
 		return false;
 	}
 
-	if (Action == eAC_LIST) {
+	if (act == eAC_LIST) {
 		ostringstream os;
 		mS->mPenList->ListAll(os);
 		mS->DCPrivateHS(os.str(), mConn);
@@ -2127,9 +2149,10 @@ bool cDCConsole::cfGag::operator()()
 
 	string nick;
 	mParRex->Extract(1, mParStr, nick);
+	cUser *user = NULL;
 
-	if (Action == eAC_NOINFO) {
-		cUser *user = mS->mUserList.GetUserByNick(nick);
+	if (act == eAC_NOINFO) {
+		user = mS->mUserList.GetUserByNick(nick);
 
 		if (user && user->mxConn) {
 			user->DisplayRightsInfo((*mOS), true);
@@ -2140,180 +2163,182 @@ bool cDCConsole::cfGag::operator()()
 		}
 	}
 
-	unsigned long period = 24 * 3600 * 7;
-	unsigned long Now = 1;
-	bool isUn = mIdRex->PartFound(1);
+	unsigned long per = 24 * 3600 * 7;
+	unsigned long now = 1;
+	bool isun = mIdRex->PartFound(1);
 
 	if (mParRex->PartFound(3)) {
 		mParRex->Extract(3, mParStr, temp);
-		period = mS->Str2Period(temp, (*mOS));
+		per = mS->Str2Period(temp, (*mOS));
 
-		if (!period)
+		if (!per)
 			return false;
 	}
 
-	cPenaltyList::sPenalty penalty;
+	cPenaltyList::sPenalty pen;
 
-	if (!mS->mPenList->LoadTo(penalty, nick))
-		penalty.mNick = nick;
+	if (!mS->mPenList->LoadTo(pen, nick))
+		pen.mNick = nick;
 
-	penalty.mOpNick = mConn->mpUser->mNick;
+	pen.mOpNick = mConn->mpUser->mNick;
 
-	if (!isUn)
-		Now = cTime().Sec() + period;
+	if (!isun)
+		now = cTime().Sec() + per;
 
-	switch (Action) {
+	switch (act) {
 		case eAC_GAG:
-			penalty.mStartChat = Now;
+			pen.mStartChat = now;
 			break;
+
 		case eAC_NOPM:
-			penalty.mStartPM = Now;
+			pen.mStartPM = now;
 			break;
+
 		case eAC_NOCHATS:
-			penalty.mStartChat = Now;
-			penalty.mStartPM = Now;
+			pen.mStartChat = now;
+			pen.mStartPM = now;
 			break;
+
 		case eAC_NODL:
-			penalty.mStartCTM = Now;
+			pen.mStartCTM = now;
 			break;
+
 		case eAC_NOSEARCH:
-			penalty.mStartSearch = Now;
+			pen.mStartSearch = now;
 			break;
+
 		case eAC_KVIP:
-			penalty.mStopKick = Now;
+			pen.mStopKick = now;
 			break;
+
 		case eAC_OPCHAT:
-			penalty.mStopOpchat = Now;
+			pen.mStopOpchat = now;
 			break;
+
 		case eAC_NOSHARE:
-			penalty.mStopShare0 = Now;
+			pen.mStopShare0 = now;
 			break;
+
 		case eAC_CANREG:
-			penalty.mStopReg = Now;
+			pen.mStopReg = now;
 			break;
+
 		default:
 			return false;
 	}
 
-	bool ret = false;
-
-	if (isUn)
-		ret = mS->mPenList->RemPenalty(penalty);
-	else
-		ret = mS->mPenList->AddPenalty(penalty);
-
-	if (!ret) {
-		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), penalty.mNick.c_str());
+	if (isun ? !mS->mPenList->RemPenalty(pen) : !mS->mPenList->AddPenalty(pen)) {
+		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), pen.mNick.c_str());
 		return false;
 	}
 
-	cUser *usr = mS->mUserList.GetUserByNick(nick);
+	user = mS->mUserList.GetUserByNick(nick);
 
-	switch (Action) {
+	switch (act) {
 		case eAC_GAG:
-			if (isUn)
-				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
+			if (user)
+				user->SetRight(eUR_CHAT, pen.mStartChat, isun, true);
 
 			break;
 
 		case eAC_NOPM:
-			if (isUn)
-				(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
+			if (user)
+				user->SetRight(eUR_PM, pen.mStartPM, isun, true);
 
 			break;
 
 		case eAC_NOCHATS:
-			if (isUn)
-				(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr) {
-				usr->SetRight(eUR_CHAT, penalty.mStartChat, isUn, true);
-				usr->SetRight(eUR_PM, penalty.mStartPM, isUn, true);
+			if (user) {
+				user->SetRight(eUR_CHAT, pen.mStartChat, isun, true);
+				user->SetRight(eUR_PM, pen.mStartPM, isun, true);
 			}
 
 			break;
 
 		case eAC_NODL:
-			if (isUn)
-				(*mOS) << autosprintf(_("Allowing user to download again: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Allowing user to download again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_CTM, penalty.mStartCTM, isUn, true);
+			if (user)
+				user->SetRight(eUR_CTM, pen.mStartCTM, isun, true);
 
 			break;
 
 		case eAC_NOSEARCH:
-			if (isUn)
-				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_SEARCH, penalty.mStartSearch, isUn, true);
+			if (user)
+				user->SetRight(eUR_SEARCH, pen.mStartSearch, isun, true);
 
 			break;
 
 		case eAC_NOSHARE:
-			if (isUn)
-				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_NOSHARE, penalty.mStopShare0, isUn, true);
+			if (user)
+				user->SetRight(eUR_NOSHARE, pen.mStopShare0, isun, true);
 
 			break;
 
 		case eAC_CANREG:
-			if (isUn)
-				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_REG, penalty.mStopReg, isUn, true);
+			if (user)
+				user->SetRight(eUR_REG, pen.mStopReg, isun, true);
 
 			break;
 
 		case eAC_KVIP:
-			if (isUn)
-				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr)
-				usr->SetRight(eUR_KICK, penalty.mStopKick, isUn, true);
+			if (user)
+				user->SetRight(eUR_KICK, pen.mStopKick, isun, true);
 
 			break;
 
 		case eAC_OPCHAT:
-			if (isUn)
-				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), penalty.mNick.c_str());
+			if (isun)
+				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), penalty.mNick.c_str(), cTime(period, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
 
-			if (usr) {
-				usr->SetRight(eUR_OPCHAT, penalty.mStopOpchat, isUn, true);
-				cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(usr->mNick); // add or remove user in operator chat
+			if (user) {
+				user->SetRight(eUR_OPCHAT, pen.mStopOpchat, isun, true);
+				cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(user->mNick); // add or remove user in operator chat
 
-				if (isUn && mS->mOpchatList.ContainsHash(Hash))
+				if (isun && mS->mOpchatList.ContainsHash(Hash))
 					mS->mOpchatList.RemoveByHash(Hash);
-				else if (!isUn && !mS->mOpchatList.ContainsHash(Hash))
-					mS->mOpchatList.AddWithHash(usr, Hash);
+				else if (!isun && !mS->mOpchatList.ContainsHash(Hash))
+					mS->mOpchatList.AddWithHash(user, Hash);
 			}
 
 			break;
@@ -2321,6 +2346,9 @@ bool cDCConsole::cfGag::operator()()
 		default:
 			return false;
 	}
+
+	if (user) // apply directly
+		user->ApplyRights(pen);
 
 	return true;
 }
@@ -2483,29 +2511,35 @@ bool cDCConsole::cfKick::operator()()
 
 	enum {
 		eAC_KICK,
-		eAC_DROP
+		eAC_DROP,
+		eAC_GAG,
+		eAC_UNGAG
 	};
 
 	static const char *actionnames[] = {
 		"kick",
-		"drop"
+		"drop",
+		"vipgag",
+		"vipungag"
 	};
 
 	static const int actionids[] = {
 		eAC_KICK,
-		eAC_DROP
+		eAC_DROP,
+		eAC_GAG,
+		eAC_UNGAG
 	};
 
-	if (mConn->mpUser->mClass < eUC_VIPUSER) {
-		(*mOS) << _("You have no rights to do this.");
+	if ((mConn->mpUser->mClass < eUC_VIPUSER) || !mConn->mpUser->Can(eUR_KICK, mS->mTime.Sec())) {
+		(*mOS) << _("You have no rights to kick anyone.");
 		return false;
 	}
 
 	string temp;
 	mIdRex->Extract(1, mIdStr, temp);
-	int Action = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
+	int act = this->StringToIntFromList(temp, actionnames, actionids, sizeof(actionnames) / sizeof(char*));
 
-	if (Action < 0)
+	if (act < 0)
 		return false;
 
 	string nick;
@@ -2519,13 +2553,45 @@ bool cDCConsole::cfKick::operator()()
 			temp = temp.substr(1);
 	}
 
-	switch (Action) {
-		case eAC_KICK:
+	cPenaltyList::sPenalty pen;
+	cUser *user = NULL;
+
+	switch (act) {
+		case eAC_KICK: // kick
 			mS->DCKickNick(mOS, mConn->mpUser, nick, temp, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN));
 			break;
-		case eAC_DROP:
+
+		case eAC_DROP: // drop
 			mS->DCKickNick(mOS, mConn->mpUser, nick, temp, (eKI_CLOSE | eKI_PM | eKI_DROP));
 			break;
+
+		case eAC_GAG: // gag
+		case eAC_UNGAG:
+			if (!mS->mPenList->LoadTo(pen, nick))
+				pen.mNick = nick;
+
+			pen.mOpNick = mConn->mpUser->mNick;
+			pen.mStartChat = (unsigned long)((act == eAC_GAG) ? cTime().Sec() + mS->mC.tban_kick : 1);
+
+			if ((act == eAC_GAG) ? !mS->mPenList->AddPenalty(pen) : !mS->mPenList->RemPenalty(pen)) {
+				(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), pen.mNick.c_str());
+				return false;
+			}
+
+			if (act == eAC_GAG)
+				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str());
+			else
+				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
+
+			user = mS->mUserList.GetUserByNick(nick);
+
+			if (user) {
+				user->SetRight(eUR_CHAT, pen.mStartChat, (act == eAC_UNGAG), true);
+				user->ApplyRights(pen);
+			}
+
+			break;
+
 		default:
 			(*mOS) << _("This command is not implemented.");
 			return false;
