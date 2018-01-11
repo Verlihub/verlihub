@@ -56,6 +56,7 @@
 		!cleanbanlist			- Clean ban list
 		!cleanunbanlist			- Clean unban list
 		!cleantempbans			- Clean temorary ban list
+		!cleanallban			- Clean kick, ban, unban and temorary ban lists
 
  [*] Rights:
 

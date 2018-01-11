@@ -2,4 +2,8 @@
 
  [*] Moderation:
 
+	+vipgag <nick>					- Mute user in main chat
+	+vipungag <nick>				- Unmute user in main chat
+
+	+drop <nick> [reason]			- Drop user
 	+kick <nick> [reason]			- Kick user
