@@ -53,18 +53,18 @@
 
 	[*] Multiple hubs:
 
-		vh_multihub -a			- Add new hub
-		vh_multihub -d [id]			- Remove hub
-		vh_multihub -l			- List hubs
+		vhm -a					- Add new hub
+		vhm -d [id]					- Remove hub
+		vhm -l					- List hubs
 
-		vh_multihub -r [id]			- Start hub
-		vh_multihub -q [id]			- Restart hub
-		vh_multihub -s [id]			- Stop hub
+		vhm -r [id]					- Start hub
+		vhm -q [id]					- Restart hub
+		vhm -s [id]					- Stop hub
 
-		vh_multihub -R [id]			- Reload cache lists
+		vhm -R [id]					- Reload cache lists
 
-		vh_multihub -h			- List commands
-		vh_multihub -v			- Velihub version
+		vhm -h					- List commands
+		vhm -v					- Velihub version
 
  [*] Links:
 
