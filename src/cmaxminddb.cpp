@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <unicode/uclean.h>
 #include <unicode/unistr.h>
@@ -36,7 +37,6 @@
 #include <unicode/uvernum.h>
 
 /*
-#include <errno.h>
 #include <iconv.h>
 #ifndef ICONV_CONST
 #define ICONV_CONST
@@ -814,7 +814,12 @@ const string &cMaxMindDB::WorkUTF8(const char *udat, unsigned int ulen, string &
 
 bool cMaxMindDB::FileExists(const char *name)
 {
-	return access(name, 0) != -1;
+	bool res = access(name, F_OK) != -1;
+
+	if (!res)
+		vhLog(3) << "Failed accessing file: " << strerror(errno) << endl;
+
+	return res;
 }
 
 unsigned long cMaxMindDB::FileSize(const char *name)
