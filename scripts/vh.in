@@ -46,6 +46,7 @@ help_me()
 	echo "This is a utility script for Verlihub, usage:"
 	echo
 	echo_s "  -i, --install" $RED && echo -e "\t[sleep_time] \t\tConfigure Verlihub for a new hub"
+	echo_s "  -uh, --uphelp" $RED && echo -e "\t[path_to_dbconfig] \tUpdate help files of hub at specified dbconfig path"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
 	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
 	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
@@ -1085,9 +1086,29 @@ function install() # [sleep_time]
 	exit 0
 }
 
-# Check selected option
-case "_$1" in
+# update hub help files
+function uphelp() # [path_to_dbconfig]
+{
+	if ! set_path $1 ; then # check config directory
+		exit 1
+	fi
+
+	cp -R $DATADIR/config/help_* $CONFIG_DIR # copy files
+	cp -R $DATADIR/config/ru/help_* $CONFIG_DIR/ru # todo: add more languages
+
+	#if $IS_VH_CFG_NEEDS_CHOWN && [ "$CONFIG_DIR" == "$VH_USER_DIR" ]; then
+	#	chown -R verlihub "$CONFIG_DIR"
+	#	chmod 0750 "$CONFIG_DIR"
+	#fi
+
+	echo_s "Help file update is complete for hub: " $GREEN_BOLD
+	echo_s "$CONFIG_DIR\n" $BOLD
+	exit 0
+}
+
+case "_$1" in # available options
 	"_-i"|"_--install")	shift; install $1;;
+	"_-uh"|"_--uphelp")	shift; uphelp $1;;
 	"_-r"|"_--run")		shift; run_hub $@;;
 	"_-s"|"_--stop")	shift; kill_hub $@;;
 	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;

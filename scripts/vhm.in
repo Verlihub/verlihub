@@ -1,7 +1,7 @@
 #!@BASH_PATH@
 
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -23,7 +23,7 @@ SCRIPT=$0
 source $(dirname $SCRIPT)/vh_lib
 
 if [ $UID -ne 0 ]; then
-	echo_s "-- You can only run μ-Verlihub with root account\n" $RED
+	echo_s "-- You can run vhm only with root account.\n" $RED
 	exit 0;
 fi
 
@@ -211,8 +211,27 @@ function help_me()
 	echo_s "  -s, --stop" $RED && echo -e "\t[ID]\t\tStop a single hub or all hubs togheter"
 	echo_s "  -q, --restart" $RED && echo -e "\t[ID]\t\tRestart a single hub or all hubs togheter"
 	echo_s "  -R, --reload" $RED && echo -e "\t[ID]\t\tForce hub to reload it's configuration and caches"
+	echo_s "  -uh, --uphelp" $RED && echo -e "\t\t\tUpdate help files of all hubs"
 	echo_s "  -v, --version" $RED && echo -e "\t\t\tPrint version information"
 	echo_s "  -h, --help" $RED && echo -e "\t\t\tShow this help"
+}
+
+function uphelp() # update help files of all hubs
+{
+	local HUBS=0
+
+	while read LINE
+	do
+		HUBS=$(($HUBS+1))
+		local VERLIHUB_PATH="$(echo $LINE | cut -d: -f1)"
+		local PROCESS_OWNER="$(echo $LINE | cut -d: -f3)"
+		su -c "$BINDIR/vh --uphelp $VERLIHUB_PATH" $PROCESS_OWNER
+	done < $DEFAULT_NAME
+
+	echo_s "Help file update done for " $GREEN_BOLD
+	echo_s "$HUBS" $BOLD
+	echo_s " hubs.\n" $GREEN_BOLD
+	exit 0
 }
 
 function version()
@@ -378,6 +397,7 @@ case "_$1" in
 	"_-s"|"_--stop")	shift; action 2 $*;;
 	"_-q"|"_--restart")	shift; action 3 $*;;
 	"_-R"|"_--reload")	shift; action 4 $*;;
+	"_-uh"|"_--uphelp")	uphelp;;
 	"_-a"|"_--add")		shift; add $*;;
 	"_-d"|"_--del")		shift; del $*;;
 	*)					echo_s "Unknown option $1, try $SCRIPT --help\n" $RED; exit;;

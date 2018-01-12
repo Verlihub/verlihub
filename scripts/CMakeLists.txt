@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -21,7 +21,7 @@ SET(SCRIPT_FILES
 	vh_lib
 	vh_gui
 	vh
-	vh_multihub
+	vhm
 	vh_regimporter
 	vh_migration_0.9.8eto1.0
 	vh_run_integration_test
