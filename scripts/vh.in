@@ -1162,11 +1162,21 @@ function modport() # <path_to_dbconfig> <main> [extra]
 			if [[ "$PORT" =~ $RE ]]; then # check if we got a number
 				if [ "$PORT" -gt 0 ]; then # check range
 					if [ "$PORT" -lt 65536 ]; then
-						if [ "_$EXTRA" != "_" ]; then
-							EXTRA+=" "
-						fi
+						if [ "$PORT" != "$MAIN" ]; then
+							if [ "${EXTRA/$PORT}" = "$EXTRA" ]; then
+								if [ "_$EXTRA" != "_" ]; then
+									EXTRA+=" "
+								fi
 
-						EXTRA+="$PORT"
+								EXTRA+="$PORT"
+							else
+								echo_s "Extra ports must not repeat eachother.\n" $RED_BOLD
+								exit 1
+							fi
+						else
+							echo_s "Extra ports must not contain main port.\n" $RED_BOLD
+							exit 1
+						fi
 					else
 						echo_s "Port must be lower than " $RED_BOLD
 						echo_s "65536" $BOLD
