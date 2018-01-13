@@ -47,6 +47,7 @@ help_me()
 	echo
 	echo_s "  -i, --install" $RED && echo -e "\t[sleep_time] \t\tConfigure Verlihub for a new hub"
 	echo_s "  -uh, --uphelp" $RED && echo -e "\t[path_to_dbconfig] \tUpdate help files of hub at specified dbconfig path"
+	echo_s "  -mp, --modport" $RED && echo -e "\t<path_to_dbconfig> <main> [extra] \tModify hub ports"
 	echo_s "  -r, --run" $RED && echo -e "\t[path_to_dbconfig] \tRun the hub from the given dbconfig path"
 	echo_s "  -q, --restart" $RED && echo -e "\t[path_to_dbconfig] \tRestart the hub from the given dbconfig path"
 	echo_s "  -R, --reload" $RED && echo -e "\t[path_to_dbconfig] \tForce hub to reload it's configuration and caches"
@@ -1096,19 +1097,121 @@ function uphelp() # [path_to_dbconfig]
 	cp -R $DATADIR/config/help_* $CONFIG_DIR # copy files
 	cp -R $DATADIR/config/ru/help_* $CONFIG_DIR/ru # todo: add more languages
 
-	#if $IS_VH_CFG_NEEDS_CHOWN && [ "$CONFIG_DIR" == "$VH_USER_DIR" ]; then
-	#	chown -R verlihub "$CONFIG_DIR"
-	#	chmod 0750 "$CONFIG_DIR"
-	#fi
-
 	echo_s "Help file update is complete for hub: " $GREEN_BOLD
 	echo_s "$CONFIG_DIR\n" $BOLD
+	exit 0
+}
+
+# modify hub ports
+function modport() # <path_to_dbconfig> <main> [extra]
+{
+	if [ "_$1" = "_" ]; then # check config directory
+		echo_s "Specify configuration path parameter.\n" $RED_BOLD
+		exit 1
+	else
+		if [ ! -d "$1" ] || [ ! -f "$1/dbconfig" ]; then
+			echo_s "Invalid configuration path specified: " $RED_BOLD
+			echo_s "$1\n" $BOLD
+			exit 1
+		fi
+	fi
+
+	MAIN=""
+	echo_s "Checking main port.\n" $BOLD
+
+	if [ "_$2" = "_" ]; then # check main port
+		echo_s "Specify main port parameter.\n" $RED_BOLD
+		exit 1
+	else
+		local RE="^[0-9]+$" # number regular expression
+
+		if [[ "$2" =~ $RE ]]; then # check if we got a number
+			if [ "$2" -gt 0 ]; then # check range
+				if [ "$2" -lt 65536 ]; then
+					MAIN="$2"
+				else
+					echo_s "Port must be lower than " $RED_BOLD
+					echo_s "65536" $BOLD
+					echo_s ".\n" $RED_BOLD
+					exit 1
+				fi
+			else
+				echo_s "Port must be greater than " $RED_BOLD
+				echo_s "0" $BOLD
+				echo_s ".\n" $RED_BOLD
+				exit 1
+			fi
+		else
+			echo_s "Port must be a number between " $RED_BOLD
+			echo_s "0" $BOLD
+			echo_s " and " $RED_BOLD
+			echo_s "65536" $BOLD
+			echo_s ".\n" $RED_BOLD
+			exit 1
+		fi
+	fi
+
+	echo_s "Main port passed all checks.\n" $GREEN_BOLD
+	EXTRA=""
+
+	if [ "_$3" != "_" ]; then # check extra ports
+		local RE="^[0-9]+$" # number regular expression
+		echo_s "Checking extra ports.\n" $BOLD
+
+		for PORT in "${@:3}" ; do
+			if [[ "$PORT" =~ $RE ]]; then # check if we got a number
+				if [ "$PORT" -gt 0 ]; then # check range
+					if [ "$PORT" -lt 65536 ]; then
+						if [ "_$EXTRA" != "_" ]; then
+							EXTRA+=" "
+						fi
+
+						EXTRA+="$PORT"
+					else
+						echo_s "Port must be lower than " $RED_BOLD
+						echo_s "65536" $BOLD
+						echo_s ".\n" $RED_BOLD
+						exit 1
+					fi
+				else
+					echo_s "Port must be greater than " $RED_BOLD
+					echo_s "0" $BOLD
+					echo_s ".\n" $RED_BOLD
+					exit 1
+				fi
+			else
+				echo_s "Port must be a number between " $RED_BOLD
+				echo_s "0" $BOLD
+				echo_s " and " $RED_BOLD
+				echo_s "65536" $BOLD
+				echo_s ".\n" $RED_BOLD
+				exit 1
+			fi
+		done
+	fi
+
+	export VERLIHUB_CFG="$1"
+	_mysql_update "listen_port" "$MAIN"
+	_mysql_update "extra_listen_ports" "$EXTRA"
+
+	if [ "_$EXTRA" = "_" ]; then
+		EXTRA="[not specified]"
+	fi
+
+	echo_s "Extra ports passed all checks.\n" $GREEN_BOLD
+	echo_s "\nHub ports succesfully modified for hub: " $GREEN_BOLD
+	echo_s "$CONFIG_DIR\n\n\tlisten_port" $BOLD
+	echo_s " = "
+	echo_s "$MAIN\n\textra_listen_ports" $BOLD
+	echo_s " = "
+	echo_s "$EXTRA\n\n" $BOLD
 	exit 0
 }
 
 case "_$1" in # available options
 	"_-i"|"_--install")	shift; install $1;;
 	"_-uh"|"_--uphelp")	shift; uphelp $1;;
+	"_-mp"|"_--modport") shift; modport $@;;
 	"_-r"|"_--run")		shift; run_hub $@;;
 	"_-s"|"_--stop")	shift; kill_hub $@;;
 	"_-q"|"_--restart")	shift; kill_hub $1; run_hub "$1" "restart";;

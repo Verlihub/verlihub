@@ -27,6 +27,8 @@
  [*] Command line:
 
 	vh -i [sleep]				- Install new hub
+	vh -uh [config]				- Update help files
+	vh -mp <config> <main> [extra]	- Modify hub ports
 	vh -u <nick> <class> <password> [config]	- Register new user
 	vh -g [config]				- Update free MaxMind databases
 
@@ -62,9 +64,10 @@
 		vhm -s [id]					- Stop hub
 
 		vhm -R [id]					- Reload cache lists
+		vhm -uh						- Update help files
 
 		vhm -h					- List commands
-		vhm -v					- Velihub version
+		vhm -v					- Verlihub version
 
  [*] Links:
 
