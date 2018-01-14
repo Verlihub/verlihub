@@ -94,6 +94,11 @@ cMaxMindDB::~cMaxMindDB()
 
 bool cMaxMindDB::GetCC(const string &host, string &cc)
 {
+	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
+		cc = mLastCC;
+		return true;
+	}
+
 	if (host.substr(0, 4) == "127.") {
 		cc = "L1";
 		return true;
@@ -114,15 +119,19 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 		MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-			string back;
+			//string back;
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				//code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				code.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				res = true;
 			}
 		}
 	}
+
+	mLastIP = host;
+	mLastCC = code;
 
 	cc = code;
 	return res;
@@ -130,6 +139,11 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 bool cMaxMindDB::GetCN(const string &host, string &cn)
 {
+	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
+		cn = mLastCN;
+		return true;
+	}
+
 	if (host.substr(0, 4) == "127.") {
 		cn = "Local Network";
 		return true;
@@ -165,12 +179,20 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		}
 	}
 
+	mLastIP = host;
+	mLastCN = name;
+
 	cn = name;
 	return res;
 }
 
 bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 {
+	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
+		geo_city = mLastCI;
+		return true;
+	}
+
 	if (host.substr(0, 4) == "127.") {
 		geo_city = "Local Network";
 		return true;
@@ -219,12 +241,22 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		free(mmdb);
 	}
 
+	mLastIP = host;
+	mLastCI = city;
+
 	geo_city = city;
 	return res;
 }
 
 bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db)
 {
+	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
+		geo_cc = mLastCC;
+		geo_cn = mLastCN;
+		geo_ci = mLastCI;
+		return true;
+	}
+
 	if (host.substr(0, 4) == "127.") {
 		geo_cc = "L1";
 		geo_cn = "Local Network";
@@ -261,7 +293,8 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				res = true;
 			}
 
@@ -291,6 +324,11 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 
 		free(mmdb);
 	}
+
+	mLastIP = host;
+	mLastCC = cc;
+	mLastCN = cn;
+	mLastCI = ci;
 
 	geo_cc = cc;
 	geo_cn = cn;
@@ -371,7 +409,8 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			MMDB_entry_data_s ent;
 
 			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-				geo_cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//geo_cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				geo_cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				geo_ccc = geo_cc; // todo: country_code3 no longer supported, get rid of it
 				res = true;
 			}
@@ -387,7 +426,8 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "subdivisions", "0", "iso_code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // region code
-				geo_reg_code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//geo_reg_code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				geo_reg_code.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // region code should be using latin letters only, same as ascii
 				res = true;
 			}
 
@@ -400,12 +440,14 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "location", "time_zone", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // time zone
-				geo_tz = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//geo_tz = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				geo_tz.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // time zone should be using latin letters only, same as ascii
 				res = true;
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "continent", "code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // continent code
-				geo_cont = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//geo_cont = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				geo_cont.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // continent code should be using latin letters only, same as ascii
 				res = true;
 			}
 
@@ -418,7 +460,8 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			}
 
 			if ((MMDB_get_value(&dat.entry, &ent, "postal", "code", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // postal code
-				geo_post = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				//geo_post = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				geo_post.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // postal code should be using latin letters only, same as ascii
 				res = true;
 			}
 

@@ -55,6 +55,11 @@ namespace nVerliHub {
 				nSocket::cServerDC *mServ;
 				Transliterator *mTran;
 
+				string mLastIP;
+				string mLastCC;
+				string mLastCN;
+				string mLastCI;
+
 				MMDB_s *mDBCO;
 				MMDB_s *mDBCI;
 				MMDB_s *mDBAS;

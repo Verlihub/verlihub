@@ -2772,10 +2772,89 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						return 0;
 					}
 				}
+
+			} else if (((svar == "listen_port") || (svar == "extra_listen_ports")) && (val_new != val_old)) { // take care of listen ports
+				unsigned int port, extra;
+				char *data = NULL;
+
+				if (svar == "listen_port") { // main port
+					if (val_new.empty()) { // dont allow empty
+						ci->ConvertFrom(val_old);
+						return 0;
+					}
+
+					port = StringAsLL(val_new);
+
+					if (!CheckPortNumber(port)) { // out of range
+						ci->ConvertFrom(val_old);
+						return 0;
+					}
+
+					data = GetConfig(mDBConf.config_name.c_str(), "extra_listen_ports", "");
+
+					if (data) {
+						sconf = string(data);
+
+						if (sconf.size()) {
+							istringstream is(sconf);
+
+							while (1) {
+								sconf.clear();
+								is >> sconf;
+
+								if (sconf.empty())
+									break;
+
+								extra = StringAsLL(sconf);
+
+								if (CheckPortNumber(extra) && (port == extra)) { // found in extra ports
+									ci->ConvertFrom(val_old);
+									free(data);
+									return 0;
+								}
+							}
+						}
+					}
+
+				} else if ((svar == "extra_listen_ports") && val_new.size()) { // extra ports
+					data = GetConfig(mDBConf.config_name.c_str(), "listen_port", "");
+
+					if (data) {
+						sconf = string(data);
+
+						if (sconf.size()) {
+							port = StringAsLL(sconf);
+
+							if (CheckPortNumber(port)) {
+								istringstream is(val_new);
+
+								while (1) {
+									sconf.clear();
+									is >> sconf;
+
+									if (sconf.empty())
+										break;
+
+									extra = StringAsLL(sconf);
+
+									if (CheckPortNumber(extra) && (extra == port)) { // found in main port
+										ci->ConvertFrom(val_old);
+										free(data);
+										return 0;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (data)
+					free(data);
 			}
 
 			mSetupList.SaveItem(conf, ci);
 			return 1;
+
 		} else {
 			#ifndef WITHOUT_PLUGINS
 			if (mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, -1))
@@ -2820,7 +2899,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 {
 	char *ret = NULL;
-	if (def) ret = strdup(def); // the caller will free non-null values returned by GetConfig!
+
+	if (def)
+		ret = strdup(def); // caller must free non null values returned by getconfig
 
 	if (!conf || !var)
 		return ret;
