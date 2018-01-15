@@ -279,6 +279,7 @@ public:
 	bool detect_ctmtohub; // ctm2hub
 	bool disable_extjson; // extjson
 	string mmdb_names_lang; // mmdb
+	unsigned int mmdb_conv_depth;
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;

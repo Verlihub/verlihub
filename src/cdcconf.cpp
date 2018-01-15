@@ -351,6 +351,7 @@ void cDCConf::AddVars()
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
 	Add("mmdb_names_lang", mmdb_names_lang, string("")); // maxminddb names language, empty means english
+	Add("mmdb_conv_depth", mmdb_conv_depth, 2); // conversion depth, 0 = do nothing, 1 = utf8 to hub_encoding conversion, 2 = transliteration
 
 	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};
 	double to_default[] = { 60. , 30., 600., 40., 30., 300. };

@@ -60,6 +60,9 @@ namespace nVerliHub {
 				string mLastCN;
 				string mLastCI;
 
+				unsigned long mTotReqs;
+				unsigned long mTotReps;
+
 				MMDB_s *mDBCO;
 				MMDB_s *mDBCI;
 				MMDB_s *mDBAS;

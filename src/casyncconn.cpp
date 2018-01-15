@@ -938,7 +938,7 @@ string cAsyncConn::IPAsString(unsigned long addr)
 	in.s_addr = addr;
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, (const void*) &in, ip, INET_ADDRSTRLEN);
-	return string(ip, 0, INET_ADDRSTRLEN);
+	return string(ip, INET_ADDRSTRLEN);
 }
 */
 
