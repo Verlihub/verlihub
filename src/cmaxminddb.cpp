@@ -52,6 +52,8 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	cObj("cMaxMindDB"),
 	mServ(mS),
 	mTran(NULL),
+	mTotReqs(0),
+	mTotReps(0),
 	mDBCO(NULL),
 	mDBCI(NULL),
 	mDBAS(NULL)
@@ -96,6 +98,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 {
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		cc = mLastCC;
+		mTotReps++;
 		return true;
 	}
 
@@ -128,6 +131,8 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 				res = true;
 			}
 		}
+
+		mTotReqs++;
 	}
 
 	mLastIP = host;
@@ -141,6 +146,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 {
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		cn = mLastCN;
+		mTotReps++;
 		return true;
 	}
 
@@ -177,6 +183,8 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 				res = true;
 			}
 		}
+
+		mTotReqs++;
 	}
 
 	mLastIP = host;
@@ -190,6 +198,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 {
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		geo_city = mLastCI;
+		mTotReps++;
 		return true;
 	}
 
@@ -232,6 +241,8 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 				res = true;
 			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -254,6 +265,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		geo_cc = mLastCC;
 		geo_cn = mLastCN;
 		geo_ci = mLastCI;
+		mTotReps++;
 		return true;
 	}
 
@@ -316,6 +328,8 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 				res = true;
 			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -483,6 +497,8 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			geo_area = 0; // todo: area_code no longer supported, get rid of it
 			geo_host = host;
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -563,6 +579,8 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 				res = true;
 			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -848,10 +866,16 @@ const string &cMaxMindDB::TranUTF8(const string &data, string &back)
 
 const string &cMaxMindDB::WorkUTF8(const char *udat, unsigned int ulen, string &back, const string &tset)
 {
-	back.clear();
 	string conv = string(udat, ulen);
-	string temp = TranUTF8(conv, back);
-	back = FromUTF8(temp, conv, tset);
+
+	if (mServ->mC.mmdb_conv_depth == 0) { // do nothing
+		back = conv;
+		return back;
+	}
+
+	back.clear();
+	string temp = (mServ->mC.mmdb_conv_depth >= 2) ? TranUTF8(conv, back) : conv; // transliteration
+	back = FromUTF8(temp, conv, tset); // utf8 to tset conversion
 	return back;
 }
 
@@ -880,7 +904,9 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	os << _("MaxMindDB information") << ":\r\n\r\n"; // general
 	os << " [*] " << autosprintf(_("MaxMindDB version: %s"), MMDB_lib_version()) << "\r\n";
 	os << " [*] " << autosprintf(_("ICU version: %d.%d.%d"), U_ICU_VERSION_MAJOR_NUM, U_ICU_VERSION_MINOR_NUM, U_ICU_VERSION_PATCHLEVEL_NUM) << "\r\n";
-	os << " [*] " << autosprintf(_("Database path: %s"), (mServ->mDBConf.mmdb_path.size() ? mServ->mDBConf.mmdb_path.c_str() : _("Not set"))) << "\r\n\r\n";
+	os << " [*] " << autosprintf(_("Database path: %s"), (mServ->mDBConf.mmdb_path.size() ? mServ->mDBConf.mmdb_path.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Total requests: %lu"), mTotReqs) << "\r\n";
+	os << " [*] " << autosprintf(_("Repeated requests: %lu"), mTotReps) << "\r\n\r\n";
 
 	os << " " << _("Country database") << ":\r\n\r\n"; // country
 	os << " [*] " << autosprintf(_("Status: %s"), (mDBCO ? _("Loaded") : _("Not loaded"))) << "\r\n";
