@@ -30,3 +30,9 @@ Links
   * Ledokol: https://ledo.feardc.net/
   * Support hub: dchub://hub.verlihub.net:7777/
   * Hublist: https://te-home.net/?do=hublist
+
+Donation
+==============
+
+  * [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=webmaster@feardc.net&item_name=Verlihub%20Donation&currency_code=EUR)
+  * [Bitcoin](bitcoin:1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw)

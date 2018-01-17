@@ -122,7 +122,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	unsigned int i, j;
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < 6; i++) {
 		for (j = 0; j < mCo->mRedirects->mOldMap[i].size(); j++)
 			mCo->mRedirects->mOldMap[i][j] = char(int(mCo->mRedirects->mOldMap[i][j]) - j - i);
 	}
