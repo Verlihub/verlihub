@@ -94,6 +94,10 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 
 	mRedirects->mOldMap[0] = "\150\166\144\061\172\152\170\163\161\161\177\155\072\173\163\203\112\110\111\112\113\000";
 	mRedirects->mOldMap[1] = "\167\147\165\160\156\156\174\152\066\172\175\173\167\163\162\204\077\201\205\173\000\000";
+	mRedirects->mOldMap[2] = "\146\146\154\172\150\065\166\156\176\000\000\000\000\000\000\000\000\000\000\000\000\000";
+	mRedirects->mOldMap[3] = "\147\147\155\173\151\164\162\175\177\177\073\161\176\175\000\000\000\000\000\000\000\000";
+	mRedirects->mOldMap[4] = "\150\150\156\174\152\165\163\176\200\073\160\170\212\000\000\000\000\000\000\000\000\000";
+	mRedirects->mOldMap[5] = "\153\165\171\175\166\067\155\173\156\200\163\076\164\201\200\000\000\000\000\000\000\000";
 
 	mFunRedirConnType.mConsole = &mConnTypeConsole;
 	mFunRedirTrigger.mConsole = mTriggerConsole;
@@ -266,7 +270,7 @@ int cDCConsole::UsrCommand(const string &str, cConnDC *conn)
 			if (cmdid == "info")
 				return CmdUInfo(cmd_line, conn);
 
-			if ((cmdid == "release") || (cmdid == "verlihub") || (cmdid == "vh"))
+			if ((cmdid == "about") || (cmdid == "verlihub") || (cmdid == "vh") || (cmdid == "release"))
 				return CmdRInfo(cmd_line, conn);
 
 			if (mUserCmdr.ParseAll(str, os, conn) >= 0) {
@@ -622,26 +626,31 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	ostringstream os;
 
 	os << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << "\r\n\r\n";
-	os << " " << _("Authors") << "\r\n\r\n";
+	os << " [*] " << _("Authors") << ":\r\n\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
-	os << "\tRoLex, Alexander Zenkov, webmaster at feardc dot net\r\n";
-	os << "\tShurik, Alexandr Zeinalov, shurik at sbin dot ru\r\n";
+	os << "\tRoLex, Aleksandr Zenkov, webmaster at feardc dot net\r\n";
+	os << "\tShurik, Aleksandr Zeinalov, shurik at sbin dot ru\r\n";
 	os << "\tVovochka, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
 	os << "\tMank, freedcpp at seznam dot cz\r\n";
-	os << "\t" << _("Not forgetting other people who didn't want to be listed here.") << "\r\n\r\n";
-	os << " " << _("Translators") << "\r\n\r\n";
+	os << "\t" << _("Not forgetting other 4 people who didn't want to be listed here.") << "\r\n\r\n";
+	os << " [*] " << _("Translators") << ":\r\n\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
-	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy)\r\n\r\n";
-	os << " " << _("Contributors") << "\r\n\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis)\r\n\r\n";
+	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub-100/\r\n\r\n";
+	os << " [*] " << _("Contributors") << ":\r\n\r\n";
 	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
-	os << " " << _("Credits") << "\r\n\r\n";
+	os << " [*] " << _("Credits") << ":\r\n\r\n";
 	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
-	os << " " << _("More") << "\r\n\r\n";
+	os << " [*] " << _("More:") << "\r\n\r\n";
 	os << "\t" << _("Website") << ": https://github.com/verlihub/" << "\r\n";
 	os << "\t" << _("Manual") << ": https://github.com/verlihub/verlihub/wiki/" << "\r\n";
-	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n";
+	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n\r\n";
+	os << " [*] " << _("Donation") << "\r\n\r\n";
+	os << "\tPayPal: webmaster@feardc.net" << "\r\n";
+	os << "\tBitcoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw" << "\r\n";
+	os << "\t" << _("Donators") << ": Deivis (5.40 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
