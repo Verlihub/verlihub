@@ -24,9 +24,9 @@ Links
 ==============
 
   * Website: https://github.com/verlihub/
-  * Wiki: https://github.com/verlihub/verlihub/wiki
+  * Wiki: https://github.com/verlihub/verlihub/wiki/
   * Crash Server: https://crash.verlihub.net/
-  * Translate: https://transifex.com/projects/p/verlihub-100/
+  * Translate: https://transifex.com/feardc/verlihub-100/
   * Ledokol: https://ledo.feardc.net/
   * Support hub: dchub://hub.verlihub.net:7777/
   * Hublist: https://te-home.net/?do=hublist
