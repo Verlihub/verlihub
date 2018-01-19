@@ -643,14 +643,14 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
 	os << " [*] " << _("Credits") << ":\r\n\r\n";
 	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
-	os << " [*] " << _("More:") << "\r\n\r\n";
-	os << "\t" << _("Website") << ": https://github.com/verlihub/" << "\r\n";
-	os << "\t" << _("Manual") << ": https://github.com/verlihub/verlihub/wiki/" << "\r\n";
+	os << " [*] " << _("More") << ":\r\n\r\n";
+	os << "\t" << _("Website") << ": https://github.com/verlihub/\r\n";
+	os << "\t" << _("Wiki") << ": https://github.com/verlihub/verlihub/wiki/\r\n";
 	os << "\t" << _("Support hub") << ": dchub://hub.verlihub.net:7777/\r\n\r\n";
-	os << " [*] " << _("Donation") << "\r\n\r\n";
-	os << "\tPayPal: webmaster@feardc.net" << "\r\n";
-	os << "\tBitcoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw" << "\r\n";
-	os << "\t" << _("Donators") << ": Deivis (5.40 EUR)\r\n";
+	os << " [*] " << _("Donation") << ":\r\n\r\n";
+	os << "\tPayPal: https://paypal.me/feardc/\r\n";
+	os << "\tBitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw\r\n";
+	os << "\t" << _("Donators") << ": Deivis (75 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;

@@ -59,7 +59,7 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	mDBAS(NULL)
 {
 	UErrorCode ok = U_ZERO_ERROR;
-	mTran = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok);
+	mTran = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok); // Any-Latin; Latin-ASCII; Title
 
 	if (U_FAILURE(ok)) {
 		vhLog(0) << "Failed to create ICU transliterator, transliteration will be disabled: " << u_errorName(ok) << endl;
@@ -125,7 +125,10 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 			//string back;
 			MMDB_entry_data_s ent;
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
 				//code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				code.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				res = true;
@@ -304,7 +307,10 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 			string back, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			MMDB_entry_data_s ent;
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
 				//cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				res = true;
@@ -422,7 +428,10 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 			MMDB_entry_data_s ent;
 
-			if (((MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) || (MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
 				//geo_cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
 				geo_cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
 				geo_ccc = geo_cc; // todo: country_code3 no longer supported, get rid of it
@@ -905,6 +914,8 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	os << " [*] " << autosprintf(_("MaxMindDB version: %s"), MMDB_lib_version()) << "\r\n";
 	os << " [*] " << autosprintf(_("ICU version: %d.%d.%d"), U_ICU_VERSION_MAJOR_NUM, U_ICU_VERSION_MINOR_NUM, U_ICU_VERSION_PATCHLEVEL_NUM) << "\r\n";
 	os << " [*] " << autosprintf(_("Database path: %s"), (mServ->mDBConf.mmdb_path.size() ? mServ->mDBConf.mmdb_path.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Names language: %s"), (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en")) << "\r\n";
+	os << " [*] " << autosprintf(_("Hub encoding: %s"), (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding.c_str() : DEFAULT_HUB_ENCODING)) << "\r\n";
 	os << " [*] " << autosprintf(_("Total requests: %lu"), mTotReqs) << "\r\n";
 	os << " [*] " << autosprintf(_("Repeated requests: %lu"), mTotReps) << "\r\n\r\n";
 
