@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-01-17 15:48+0100\n"
+"POT-Creation-Date: 2018-01-19 16:32+0100\n"
 "PO-Revision-Date: 2016-03-11 20:28+0100\n"
 "Last-Translator: Frog <the_frog@wp.pl>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.0.6\n"
 "X-Poedit-SearchPath-0: ../src\n"
 
 #: ../src/cban.cpp:87 ../src/cconndc.cpp:525 ../src/cconndc.cpp:529
@@ -85,8 +85,8 @@ msgstr ""
 msgid "Operator note: %s"
 msgstr ""
 
-#: ../src/cban.cpp:149 ../src/cmaxminddb.cpp:915 ../src/cmaxminddb.cpp:929
-#: ../src/cmaxminddb.cpp:943
+#: ../src/cban.cpp:149 ../src/cmaxminddb.cpp:926 ../src/cmaxminddb.cpp:940
+#: ../src/cmaxminddb.cpp:954
 #, c-format
 msgid "Type: %s"
 msgstr ""
@@ -539,7 +539,7 @@ msgid "We would like to thank everyone in our support hub for their input and va
 msgstr ""
 
 #: ../src/cdcconsole.cpp:646
-msgid "More:"
+msgid "More"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:647
@@ -547,7 +547,7 @@ msgid "Website"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:648
-msgid "Manual"
+msgid "Wiki"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:649
@@ -575,7 +575,7 @@ msgstr ""
 #: ../src/cinfoserver.cpp:384 ../src/cinfoserver.cpp:385
 #: ../src/cinfoserver.cpp:386 ../src/cinfoserver.cpp:404
 #: ../src/cinfoserver.cpp:417 ../src/cinfoserver.cpp:428
-#: ../src/cinfoserver.cpp:439 ../src/cmaxminddb.cpp:907
+#: ../src/cinfoserver.cpp:439 ../src/cmaxminddb.cpp:916
 #: ../src/creguserinfo.cpp:112 ../src/creguserinfo.cpp:113
 #: ../src/creguserinfo.cpp:114 ../src/creguserinfo.cpp:123
 #: ../src/creguserinfo.cpp:124 ../src/creguserinfo.cpp:125
@@ -588,8 +588,8 @@ msgstr ""
 msgid "Address: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:671 ../src/cmaxminddb.cpp:912
-#: ../src/cmaxminddb.cpp:926 ../src/cmaxminddb.cpp:940
+#: ../src/cdcconsole.cpp:671 ../src/cmaxminddb.cpp:923
+#: ../src/cmaxminddb.cpp:937 ../src/cmaxminddb.cpp:951
 #: ../src/cserverdc.cpp:2465
 #, c-format
 msgid "Status: %s"
@@ -2091,84 +2091,94 @@ msgstr ""
 msgid "Other users: %d of %d [%s]"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:904
+#: ../src/cmaxminddb.cpp:913
 msgid "MaxMindDB information"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:905
+#: ../src/cmaxminddb.cpp:914
 #, c-format
 msgid "MaxMindDB version: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:906
+#: ../src/cmaxminddb.cpp:915
 #, c-format
 msgid "ICU version: %d.%d.%d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:907
+#: ../src/cmaxminddb.cpp:916
 #, c-format
 msgid "Database path: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:908
+#: ../src/cmaxminddb.cpp:917
+#, c-format
+msgid "Names language: %s"
+msgstr ""
+
+#: ../src/cmaxminddb.cpp:918
+#, c-format
+msgid "Hub encoding: %s"
+msgstr ""
+
+#: ../src/cmaxminddb.cpp:919
 #, c-format
 msgid "Total requests: %lu"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:909
+#: ../src/cmaxminddb.cpp:920
 #, c-format
 msgid "Repeated requests: %lu"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:911
+#: ../src/cmaxminddb.cpp:922
 msgid "Country database"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:912 ../src/cmaxminddb.cpp:926
-#: ../src/cmaxminddb.cpp:940
+#: ../src/cmaxminddb.cpp:923 ../src/cmaxminddb.cpp:937
+#: ../src/cmaxminddb.cpp:951
 msgid "Loaded"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:912 ../src/cmaxminddb.cpp:926
-#: ../src/cmaxminddb.cpp:940
+#: ../src/cmaxminddb.cpp:923 ../src/cmaxminddb.cpp:937
+#: ../src/cmaxminddb.cpp:951
 msgid "Not loaded"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:916 ../src/cmaxminddb.cpp:930
-#: ../src/cmaxminddb.cpp:944
+#: ../src/cmaxminddb.cpp:927 ../src/cmaxminddb.cpp:941
+#: ../src/cmaxminddb.cpp:955
 #, c-format
 msgid "Binary version: %d.%d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:917 ../src/cmaxminddb.cpp:931
-#: ../src/cmaxminddb.cpp:945
+#: ../src/cmaxminddb.cpp:928 ../src/cmaxminddb.cpp:942
+#: ../src/cmaxminddb.cpp:956
 #, c-format
 msgid "Build time: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:918 ../src/cmaxminddb.cpp:932
-#: ../src/cmaxminddb.cpp:946
+#: ../src/cmaxminddb.cpp:929 ../src/cmaxminddb.cpp:943
+#: ../src/cmaxminddb.cpp:957
 #, c-format
 msgid "Node count: %d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:919 ../src/cmaxminddb.cpp:933
-#: ../src/cmaxminddb.cpp:947
+#: ../src/cmaxminddb.cpp:930 ../src/cmaxminddb.cpp:944
+#: ../src/cmaxminddb.cpp:958
 #, c-format
 msgid "File name: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:922 ../src/cmaxminddb.cpp:936
-#: ../src/cmaxminddb.cpp:950
+#: ../src/cmaxminddb.cpp:933 ../src/cmaxminddb.cpp:947
+#: ../src/cmaxminddb.cpp:961
 #, c-format
 msgid "File size: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:925
+#: ../src/cmaxminddb.cpp:936
 msgid "City database"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:939
+#: ../src/cmaxminddb.cpp:950
 msgid "ASN database"
 msgstr ""
 

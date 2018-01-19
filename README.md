@@ -34,5 +34,5 @@ Links
 Donation
 ==============
 
-  * PayPal: [webmaster@feardc.net](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=webmaster@feardc.net&item_name=Verlihub%20Donation&currency_code=EUR)
-  * Bitcoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw
+  * PayPal: [webmaster@feardc.net](https://paypal.me/feardc/)
+  * BitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw
