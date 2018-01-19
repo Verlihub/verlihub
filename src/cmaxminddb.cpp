@@ -32,7 +32,6 @@
 #include <sys/stat.h>
 #include <unicode/uclean.h>
 #include <unicode/unistr.h>
-#include <unicode/ucnv.h>
 #include <unicode/utypes.h>
 #include <unicode/uvernum.h>
 
@@ -52,27 +51,48 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	cObj("cMaxMindDB"),
 	mServ(mS),
 	mTran(NULL),
+	mConv(NULL),
+	mCharSet(DEFAULT_HUB_ENCODING),
 	mTotReqs(0),
 	mTotReps(0),
 	mDBCO(NULL),
 	mDBCI(NULL),
 	mDBAS(NULL)
 {
-	UErrorCode ok = U_ZERO_ERROR;
+	UErrorCode ok = U_ZERO_ERROR; // load transliterator
 	mTran = Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, ok); // Any-Latin; Latin-ASCII; Title
 
 	if (U_FAILURE(ok)) {
 		vhLog(0) << "Failed to create ICU transliterator, transliteration will be disabled: " << u_errorName(ok) << endl;
+		u_cleanup();
 		mTran = NULL;
 	}
 
-	mDBCO = TryCountryDB(MMDB_MODE_MMAP);
+	if (mServ && mServ->mC.hub_encoding.size())
+		mCharSet = mServ->mC.hub_encoding;
+
+	ok = U_ZERO_ERROR; // load converter
+	mConv = ucnv_open(mCharSet.c_str(), &ok);
+
+	if (U_FAILURE(ok)) {
+		vhLog(0) << "Failed to create ICU converter, conversion will be disabled: " << u_errorName(ok) << endl;
+
+		if (mConv)
+			ucnv_close(mConv);
+
+		mConv = NULL;
+	}
+
+	mDBCO = TryCountryDB(MMDB_MODE_MMAP); // load databases
 	mDBCI = TryCityDB(MMDB_MODE_MMAP);
 	mDBAS = TryASNDB(MMDB_MODE_MMAP);
 }
 
 cMaxMindDB::~cMaxMindDB()
 {
+	if (mConv)
+		ucnv_close(mConv);
+
 	u_cleanup();
 
 	if (mDBCO) {
@@ -835,29 +855,37 @@ const string &cMaxMindDB::FromUTF8(const string &data, string &back, const strin
 	return back;
 	*/
 
+	if (!mConv)
+		return data;
+
+	UErrorCode ok = U_ZERO_ERROR;
+
+	if (mCharSet != tset) {
+		vhLog(0) << "Recreating ICU converter due to changed character set: " << mCharSet << " > " << tset << endl;
+		mCharSet = tset;
+		ucnv_close(mConv);
+		mConv = ucnv_open(mCharSet.c_str(), &ok);
+
+		if (U_FAILURE(ok)) {
+			vhLog(0) << "Failed to create ICU converter, conversion will be disabled: " << u_errorName(ok) << endl;
+
+			if (mConv)
+				ucnv_close(mConv);
+
+			mConv = NULL;
+			return data;
+		}
+	}
+
 	unsigned int len = data.length();
 	UnicodeString inda = UnicodeString::fromUTF8(StringPiece(data));
 	char targ[len];
-	UErrorCode ok = U_ZERO_ERROR;
-	UConverter *conv = ucnv_open(tset.c_str(), &ok);
+	ok = U_ZERO_ERROR;
+	len = ucnv_fromUChars(mConv, targ, len, inda.getBuffer(), -1, &ok);
 
-	if (U_FAILURE(ok)) {
-		if (conv)
-			ucnv_close(conv);
-
+	if (U_FAILURE(ok))
 		return data;
-	}
 
-	len = ucnv_fromUChars(conv, targ, len, inda.getBuffer(), -1, &ok);
-
-	if (U_FAILURE(ok)) {
-		if (conv)
-			ucnv_close(conv);
-
-		return data;
-	}
-
-	ucnv_close(conv);
 	back.assign(targ, 0, len);
 	return back;
 }

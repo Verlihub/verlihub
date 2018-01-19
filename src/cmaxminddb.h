@@ -26,6 +26,7 @@
 #include <ostream>
 #include <maxminddb.h>
 #include <unicode/translit.h>
+#include <unicode/ucnv.h>
 
 using std::string;
 
@@ -53,7 +54,10 @@ namespace nVerliHub {
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
 				nSocket::cServerDC *mServ;
+
 				Transliterator *mTran;
+				UConverter *mConv;
+				string mCharSet;
 
 				string mLastIP;
 				string mLastCC;
