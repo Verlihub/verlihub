@@ -1404,6 +1404,26 @@ int cServerDC::SaveFile(const string &file, const string &text)
 	return 1;
 }
 
+bool cServerDC::SetUserRegInfo(cConnDC *conn, const string &nick)
+{
+	if (!conn || nick.empty())
+		return false;
+
+	if (conn->mRegInfo) {
+		delete conn->mRegInfo;
+		conn->mRegInfo = NULL;
+	}
+
+	static cRegUserInfo *sRegInfo = new cRegUserInfo;
+
+	if (mR->FindRegInfo(*sRegInfo, nick)) {
+		conn->mRegInfo = sRegInfo;
+		sRegInfo = new cRegUserInfo;
+	}
+
+	return true;
+}
+
 int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 {
 	closeReason = eCR_INVALID_USER; // default close reason
@@ -1412,11 +1432,14 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		return 0;
 
 	bool close = false;
-	static cRegUserInfo *sRegInfo = new cRegUserInfo;
+	//static cRegUserInfo *sRegInfo = new cRegUserInfo;
 
-	if ((nick.size() < (mC.max_nick * 2)) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo) {
+	if (/*(*/nick.size() < (mC.max_nick * 2)/*) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo*/) {
+		/*
 		conn->mRegInfo = sRegInfo;
 		sRegInfo = new cRegUserInfo;
+		*/
+		SetUserRegInfo(conn, nick);
 	}
 
 	string more;

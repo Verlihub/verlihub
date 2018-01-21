@@ -1,8 +1,8 @@
 [*] Confirmed:
 
-	?
+	On start resolve hublist.te-home.net domain and update auth_ip field for registered user TEPinger
 
 [*] Unconfirmed:
 
-	fix creguserinfo.cpp for HAVE_LIBSSL and crypto stuff
+	Fix creguserinfo.cpp for HAVE_LIBSSL and crypto stuff
 	?

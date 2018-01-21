@@ -123,41 +123,37 @@ int cRegList::ShowUsers(cConnDC *op, ostringstream &os, int cls)
 	return 0;
 }
 
-/** add registered user */
-bool cRegList::AddRegUser(const string &nick, cConnDC *op, int cl, const char *password)
+bool cRegList::AddRegUser(const string &nick, cConnDC *op, int clas, const char *pass)
 {
 	cRegUserInfo ui;
 
-	if(FindRegInfo(ui, nick))
-		return false;
-	// Do not register opchat or hub security
-	if(toLower(nick) == toLower(mS->mC.opchat_name) || toLower(nick) == toLower(mS->mC.hub_security))
+	if (FindRegInfo(ui, nick))
 		return false;
 
-	ui.mNick = nick;//@todo nick2dbkey
-	if ((cl>=1 && cl<=5) || cl==10 || cl==-1)
-		ui.mClass = cl;
+	if ((toLower(nick) == toLower(mS->mC.opchat_name)) || (toLower(nick) == toLower(mS->mC.hub_security))) // dont register operator chat and hub security
+		return false;
+
+	ui.mNick = nick; // todo: nick2dbkey
+
+	if (((clas >= eUC_REGUSER) && (clas <= eUC_ADMIN)) || (clas == eUC_MASTER) || (clas == eUC_PINGER))
+		ui.mClass = clas;
 	else
-		ui.mClass = 1;
+		ui.mClass = eUC_REGUSER;
+
 	ui.mRegDate = cTime().Sec();
 	ui.mRegOp = (op && op->mpUser) ? op->mpUser->mNick : string("hub-security");
+	ui.SetPass((pass ? string(pass) : string()), cRegUserInfo::tCryptMethods(mS->mC.default_password_encryption));
 
-	if(password)
-		ui.SetPass(string(password), (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
-	else
-		ui.SetPass(string(), (cRegUserInfo::tCryptMethods)mS->mC.default_password_encryption);
-
-	if(cl < 0)
+	if (clas < eUC_NORMUSER) // pingers dont have password
 		ui.mPwdChange = false;
-	if(mCache.IsLoaded())
-		mCache.Add(nick);//@todo nick2dbkey
+
+	if (mCache.IsLoaded())
+		mCache.Add(nick); // todo: nick2dbkey
 
 	SetBaseTo(&ui);
 	return SavePK();
 }
 
-
-/** No descriptions */
 bool cRegList::ChangePwd(const string &nick, const string &pwd, cConnDC *conn)
 {
 	if (!FindRegInfo(mModel, nick))

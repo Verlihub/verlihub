@@ -22,13 +22,13 @@
 #include <config.h>
 #endif
 
-#include <iostream>
 #include <cserverdc.h>
 #include <cban.h>
 #include <cbanlist.h>
 #include <creglist.h>
 #include "script_api.h"
 #include "cconfigitembase.h"
+#include "i18n.h"
 
 using namespace std;
 
@@ -584,9 +584,9 @@ bool GetTempRights(const char *nick,  map<string,int> &rights)
 	return true;
 }
 
-bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op)
+bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 {
-	if (!nick || (uclass == eUC_MASTER))
+	if (!nick || (clas == eUC_MASTER))
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -597,15 +597,40 @@ bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op)
 	}
 
 	cConnDC *conn = NULL;
+	cUser *user = NULL;
 
 	if (strlen(op)) {
-		cUser *user = GetUser(op);
+		user = GetUser(op);
 
 		if (user && user->mxConn)
 			conn = user->mxConn;
 	}
 
-	return serv->mR->AddRegUser(nick, conn, uclass, (strlen(pass) ? pass : NULL));
+	bool res = serv->mR->AddRegUser(nick, conn, clas, (strlen(pass) ? pass : NULL));
+	user = GetUser(nick);
+
+	if (res && user && user->mxConn) { // no need to reconnect for class to take effect
+		ostringstream ostr;
+		string data;
+		ostr << autosprintf(_("You have been registered with class %d. Please set your password by using following command: +passwd <password>"), clas); // todo: use password request here aswell, send_pass_request
+		serv->DCPrivateHS(ostr.str(), user->mxConn);
+		serv->DCPublicHS(ostr.str(), user->mxConn);
+
+		if ((clas >= serv->mC.opchat_class) && !serv->mOpchatList.ContainsNick(user->mNick)) // opchat list
+			serv->mOpchatList.Add(user);
+
+		if ((clas >= serv->mC.oplist_class) && !serv->mOpList.ContainsNick(user->mNick)) { // oplist
+			serv->mOpList.Add(user);
+			serv->mP.Create_OpList(data, user->mNick); // send short oplist
+			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+			serv->mInProgresUsers.SendToAll(data, false, true);
+		}
+
+		user->mClass = tUserCl(clas);
+		serv->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
+	}
+
+	return res;
 }
 
 bool DelRegUser(const char *nick)
@@ -628,7 +653,106 @@ bool DelRegUser(const char *nick)
 	if (ui.mClass == eUC_MASTER)
 		return false;
 
-	return serv->mR->DelReg(nick);
+	bool res = serv->mR->DelReg(nick);
+	cUser *user = GetUser(nick);
+
+	if (res && user && user->mxConn) { // no need to reconnect for class to take effect
+		string data;
+		serv->DCPrivateHS(_("You have been unregistered."), user->mxConn);
+		serv->DCPublicHS(_("You have been unregistered."), user->mxConn);
+
+		if (serv->mOpchatList.ContainsNick(user->mNick)) // opchat list
+			serv->mOpchatList.Remove(user);
+
+		if (serv->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
+			serv->mOpList.Remove(user);
+			serv->mP.Create_Quit(data, user->mNick); // send quit to all
+			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+			serv->mInProgresUsers.SendToAll(data, false, true);
+			serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
+			serv->mHelloUsers.SendToAll(data, false, true);
+			serv->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+			serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+		}
+
+		user->mClass = eUC_NORMUSER;
+
+		if (user->mHideShare) { // recalculate total share
+			user->mHideShare = false;
+			serv->mTotalShare += user->mShare;
+		}
+
+		serv->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
+	}
+
+	return res;
+}
+
+bool SetRegClass(const char *nick, int clas)
+{
+	if (!nick || (clas < eUC_REGUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+		return false;
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return false;
+	}
+
+	cRegUserInfo ui;
+
+	if (!serv->mR->FindRegInfo(ui, nick))
+		return false;
+
+	if (ui.mClass == clas) // no need to set same class
+		return false;
+
+	cUser *user = GetUser(nick);
+
+	if (user && user->mxConn) { // no need to reconnect for class to take effect
+		ostringstream ostr;
+		string data;
+		ostr << autosprintf(_("Your class has been changed to %d."), clas);
+		serv->DCPrivateHS(ostr.str(), user->mxConn);
+		serv->DCPublicHS(ostr.str(), user->mxConn);
+
+		if ((user->mClass < serv->mC.opchat_class) && (clas >= serv->mC.opchat_class)) { // opchat list
+			if (!serv->mOpchatList.ContainsNick(user->mNick))
+				serv->mOpchatList.Add(user);
+
+		} else if ((user->mClass >= serv->mC.opchat_class) && (clas < serv->mC.opchat_class)) {
+			if (serv->mOpchatList.ContainsNick(user->mNick))
+				serv->mOpchatList.Remove(user);
+		}
+
+		if ((user->mClass < serv->mC.oplist_class) && (clas >= serv->mC.oplist_class)) { // oplist
+			if (!ui.mHideKeys && !serv->mOpList.ContainsNick(user->mNick)) {
+				serv->mOpList.Add(user);
+				serv->mP.Create_OpList(data, user->mNick); // send short oplist
+				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				serv->mInProgresUsers.SendToAll(data, false, true);
+			}
+
+		} else if ((user->mClass >= serv->mC.oplist_class) && (clas < serv->mC.oplist_class)) {
+			if (!ui.mHideKeys && serv->mOpList.ContainsNick(user->mNick)) {
+				serv->mOpList.Remove(user);
+				serv->mP.Create_Quit(data, user->mNick); // send quit to all
+				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				serv->mInProgresUsers.SendToAll(data, false, true);
+				serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
+				serv->mHelloUsers.SendToAll(data, false, true);
+				serv->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
+				serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+			}
+		}
+
+		user->mClass = tUserCl(clas);
+		serv->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
+	}
+
+	string svar("class"), sval(StringFrom(clas));
+	return serv->mR->SetVar(nick, svar, sval);
 }
 
 bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst)

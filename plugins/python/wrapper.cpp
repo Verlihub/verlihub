@@ -763,6 +763,11 @@ static PyObject *__DelRegUser(PyObject *self, PyObject *args)
 	return pybool(BasicCall(W_DelRegUser, args, "s"));
 }
 
+static PyObject *__SetRegClass(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_SetRegClass, args, "sl"));
+}
+
 static PyObject *__Ban(PyObject *self, PyObject *args)
 {
 	// Arguments: op, nick, reason, seconds, ban_type
@@ -1119,6 +1124,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetGeoIP",           __GetGeoIP,           METH_VARARGS},
 	{"AddRegUser",         __AddRegUser,         METH_VARARGS},
 	{"DelRegUser",         __DelRegUser,         METH_VARARGS},
+	{"SetRegClass",        __SetRegClass,        METH_VARARGS},
 	{"Ban",                __Ban,                METH_VARARGS},
 	{"KickUser",           __KickUser,           METH_VARARGS},
 	{"DelNickTempBan",     __DelNickTempBan,     METH_VARARGS},
@@ -1880,6 +1886,7 @@ const char *w_CallName(int callback)
 		case W_GetBotList:           return "GetBotList";
 		case W_AddRegUser:           return "AddRegUser";
 		case W_DelRegUser:           return "DelRegUser";
+		case W_SetRegClass:          return "SetRegClass";
 		case W_Ban:                  return "Ban";
 		case W_KickUser:             return "KickUser";
 		case W_DelNickTempBan:       return "DelNickTempBan";

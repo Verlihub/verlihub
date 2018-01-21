@@ -553,6 +553,7 @@ class cServerDC : public cAsyncSocketServer
 		* @return Zero if an error occurs or one otherwise.
 		*/
 		int ValidateUser(cConnDC *conn, const string &nick, int &closeReason);
+		bool SetUserRegInfo(cConnDC *conn, const string &nick); // reload user registration information in real time
 
 		/**
 		* Return the list of the users that belongs to a country.

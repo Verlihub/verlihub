@@ -62,6 +62,7 @@ namespace nVerliHub {
 	bool GetTempRights(const char *nick, map<string,int> &rights);
 	bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op);
 	bool DelRegUser(const char *nick);
+	bool SetRegClass(const char *nick, int clas);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst = false);
 	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);

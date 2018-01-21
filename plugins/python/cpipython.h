@@ -232,6 +232,7 @@ extern "C" w_Targs *_GetIPASN          (int id, w_Targs *args);
 extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
 extern "C" w_Targs *_AddRegUser        (int id, w_Targs *args);
 extern "C" w_Targs *_DelRegUser        (int id, w_Targs *args);
+extern "C" w_Targs *_SetRegClass       (int id, w_Targs *args);
 extern "C" w_Targs *_Ban               (int id, w_Targs *args);
 extern "C" w_Targs *_KickUser          (int id, w_Targs *args);
 extern "C" w_Targs *_DelNickTempBan    (int id, w_Targs *args);
