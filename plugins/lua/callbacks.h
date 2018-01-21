@@ -95,6 +95,7 @@ namespace nVerliHub {
 	int _IsChatUser(lua_State *L);
 	int _AddRegUser(lua_State *L);
 	int _DelRegUser(lua_State *L);
+	int _SetRegClass(lua_State *L);
 	int _GetTopic(lua_State *L);
 	int _SetTopic(lua_State *L);
 	int _ScriptCommand(lua_State *L);

@@ -2803,10 +2803,16 @@ int _AddRegUser(lua_State *L)
 	}
 
 	const string nick = lua_tostring(L, 2);
-	const string pass = lua_tostring(L, 3);
-	int uclass = (int)lua_tonumber(L, 4);
 
-	if ((uclass < eUC_PINGER) || (uclass == eUC_NORMUSER) || ((uclass > eUC_ADMIN) && (uclass < eUC_MASTER)) || (uclass > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
+	if (nick.empty()) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string pass = lua_tostring(L, 3); // can be empty
+	int clas = int(lua_tonumber(L, 4));
+
+	if ((clas < eUC_PINGER) || (clas == eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
@@ -2816,7 +2822,7 @@ int _AddRegUser(lua_State *L)
 	if (args >= 4)
 		op = lua_tostring(L, 5);
 
-	if (AddRegUser(nick.c_str(), uclass, pass.c_str(), op.c_str()))
+	if (AddRegUser(nick.c_str(), clas, pass.c_str(), op.c_str()))
 		lua_pushboolean(L, 1);
 	else
 		lua_pushboolean(L, 0);
@@ -2841,7 +2847,51 @@ int _DelRegUser(lua_State *L)
 
 	const string nick = lua_tostring(L, 2);
 
+	if (nick.empty()) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
 	if (DelRegUser(nick.c_str()))
+		lua_pushboolean(L, 1);
+	else
+		lua_pushboolean(L, 0);
+
+	lua_pushnil(L);
+	return 2;
+}
+
+int _SetRegClass(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SetRegClass, expected 2 argument but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isnumber(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = lua_tostring(L, 2);
+
+	if (nick.empty()) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	int clas = int(lua_tonumber(L, 3));
+
+	if ((clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
+		luaerror(L, ERR_CLASS);
+		return 2;
+	}
+
+	if (SetRegClass(nick.c_str(), clas))
 		lua_pushboolean(L, 1);
 	else
 		lua_pushboolean(L, 0);

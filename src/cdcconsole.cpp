@@ -2902,27 +2902,36 @@ bool cDCConsole::cfRegUsr::operator()()
 				}
 			#endif
 
-			if (mS->mR->AddRegUser(nick, mConn, ParClass, (WithPass ? pass.c_str() : NULL))) {
+			if (mS->mR->AddRegUser(nick, mConn, ParClass, (WithPass ? pass.c_str() : NULL))) { // no need to reconnect for class to take effect
 				if (user && user->mxConn) {
 					ostr.str("");
 
-					if (!WithPass)
-						ostr << autosprintf(_("You have been registered with class %d. Please set your password by using following command: +passwd <password>"), ParClass);
-					else
+					if (WithPass)
 						ostr << autosprintf(_("You have been registered with class %d and following password: %s"), ParClass, pass.c_str());
+					else
+						ostr << autosprintf(_("You have been registered with class %d. Please set your password by using following command: +passwd <password>"), ParClass); // todo: use password request here aswell, send_pass_request
 
 					mS->DCPrivateHS(ostr.str(), user->mxConn);
-					/*
-						todo
-							use password request here aswell, send_pass_request
-							no reconnect required
-					*/
+					mS->DCPublicHS(ostr.str(), user->mxConn);
+
+					if ((ParClass >= mS->mC.opchat_class) && !mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
+						mS->mOpchatList.Add(user);
+
+					if ((ParClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsNick(user->mNick)) { // oplist
+						mS->mOpList.Add(user);
+						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
+					}
+
+					user->mClass = tUserCl(ParClass);
+					mS->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
 				}
 
-				if (!WithPass)
-					(*mOS) << autosprintf(_("%s has been registered with class %d. Please tell him to set his password."), nick.c_str(), ParClass);
-				else
+				if (WithPass)
 					(*mOS) << autosprintf(_("%s has been registered with class %d and password."), nick.c_str(), ParClass);
+				else
+					(*mOS) << autosprintf(_("%s has been registered with class %d. Please tell him to set his password."), nick.c_str(), ParClass);
 			} else {
 				(*mOS) << _("Error adding new user.");
 				return false;
@@ -2938,11 +2947,15 @@ bool cDCConsole::cfRegUsr::operator()()
 				}
 			#endif
 
+			ostr << ui;
+
 			if (RegFound && mS->mR->DelReg(nick)) {
-				ostr << ui;
 				(*mOS) << autosprintf(_("%s has been unregistered, user information"), nick.c_str()) << ":\r\n" << ostr.str();
 
 				if (user && user->mxConn) { // no need to reconnect for class to take effect
+					mS->DCPrivateHS(_("You have been unregistered."), user->mxConn);
+					mS->DCPublicHS(_("You have been unregistered."), user->mxConn);
+
 					if (mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
 						mS->mOpchatList.Remove(user);
 
@@ -2963,11 +2976,12 @@ bool cDCConsole::cfRegUsr::operator()()
 						user->mHideShare = false;
 						mS->mTotalShare += user->mShare;
 					}
+
+					mS->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
 				}
 
 				return true;
 			} else {
-				ostr << ui;
 				(*mOS) << autosprintf(_("Error unregistering %s, user information"), nick.c_str()) << ":\r\n" << ostr.str();
 				return false;
 			}
@@ -3031,11 +3045,11 @@ bool cDCConsole::cfRegUsr::operator()()
 					}
 				}
 
-				user->mClass = (tUserCl)ParClass;
+				user->mClass = tUserCl(ParClass);
 			}
 
 			field = "class";
-			ostr << autosprintf(_("Your class has been changed to %s."), par.c_str());
+			ostr << autosprintf(_("Your class has been changed to %d."), ParClass);
 			break;
 
 		case eAC_ENABLE:
@@ -3163,9 +3177,13 @@ bool cDCConsole::cfRegUsr::operator()()
 			if ((Action == eAC_PASS) && !WithPar && mS->mC.report_pass_reset)
 				mS->ReportUserToOpchat(mConn, autosprintf(_("Password reset for user: %s"), nick.c_str()), false);
 
-			if (user && user->mxConn && ostr.str().size()) { // send both in pm and mc, so user see the message for sure
-				mS->DCPrivateHS(ostr.str(), user->mxConn);
-				mS->DCPublicHS(ostr.str(), user->mxConn);
+			if (user && user->mxConn) { // send both in pm and mc, so user see the message for sure
+				mS->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
+
+				if (ostr.str().size()) {
+					mS->DCPrivateHS(ostr.str(), user->mxConn);
+					mS->DCPublicHS(ostr.str(), user->mxConn);
+				}
 			}
 
 			return true;

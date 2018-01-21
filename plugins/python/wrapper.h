@@ -118,6 +118,7 @@ enum {
 	W_GetBotList,
 	W_AddRegUser,
 	W_DelRegUser,
+	W_SetRegClass,
 	W_Ban,
 	W_KickUser,
 	W_DelNickTempBan,

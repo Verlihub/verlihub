@@ -98,6 +98,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("IsChatUser", &_IsChatUser);
 	RegisterFunction("AddRegUser", &_AddRegUser);
 	RegisterFunction("DelRegUser", &_DelRegUser);
+	RegisterFunction("SetRegClass", &_SetRegClass);
 	RegisterFunction("GetUserClass", &_GetUserClass);
 	RegisterFunction("GetUserHost", &_GetUserHost);
 	RegisterFunction("GetUserIP", &_GetUserIP);

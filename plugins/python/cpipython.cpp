@@ -155,6 +155,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 	callbacklist[W_AddRegUser]         = &_AddRegUser;
 	callbacklist[W_DelRegUser]         = &_DelRegUser;
+	callbacklist[W_SetRegClass]        = &_SetRegClass;
 	callbacklist[W_Ban]                = &_Ban;
 	callbacklist[W_KickUser]           = &_KickUser;
 	callbacklist[W_DelNickTempBan]     = &_DelNickTempBan;
@@ -1518,23 +1519,57 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 
 w_Targs *_AddRegUser(int id, w_Targs *args)
 {
-	const char *nick, *password, *op;
-	long uclass;
-	if (!cpiPython::lib_unpack(args, "slss", &nick, &uclass, &password, &op)) return NULL;
-	if (uclass < -1 || uclass == 0 || uclass > 5) return NULL;
-	if (!nick || !strlen(nick)) return NULL;
-	if (!password) password = "";
-	if (!op) op = "";
-	if (AddRegUser(nick, (int)uclass, password, op)) return w_ret1;
+	const char *nick, *pass, *op;
+	long clas;
+
+	if (!cpiPython::lib_unpack(args, "slss", &nick, &clas, &pass, &op))
+		return NULL;
+
+	if (!nick || !strlen(nick) || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+		return NULL;
+
+	if (!pass)
+		pass = "";
+
+	if (!op)
+		op = "";
+
+	if (AddRegUser(nick, int(clas), pass, op))
+		return w_ret1;
+
 	return NULL;
 }
 
 w_Targs *_DelRegUser(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick || !strlen(nick)) return NULL;
-	if (DelRegUser(nick)) return w_ret1;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick || !strlen(nick))
+		return NULL;
+
+	if (DelRegUser(nick))
+		return w_ret1;
+
+	return NULL;
+}
+
+w_Targs *_SetRegClass(int id, w_Targs *args)
+{
+	const char *nick;
+	long clas;
+
+	if (!cpiPython::lib_unpack(args, "sl", &nick, &clas))
+		return NULL;
+
+	if (!nick || !strlen(nick) || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+		return NULL;
+
+	if (SetRegClass(nick, clas))
+		return w_ret1;
+
 	return NULL;
 }
 
