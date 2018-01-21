@@ -735,7 +735,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 		return 1;
 	}
 
-	string pass;
+	string pass, data;
 	ostringstream os;
 
 	if (mOwner->mC.autoreg_class > 0) { // automatic registration is enabled
@@ -755,92 +755,125 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 					return 1;
 			#endif
 
-			if (mOwner->mR->DelReg(conn->mpUser->mNick)) {
-				mOwner->DCPublicHS(_("You are now unregistered. Please reconnect."), conn);
-				return 1;
-			}
+			if (mOwner->mR->DelReg(conn->mpUser->mNick)) { // no need to reconnect for class to take effect
+				mOwner->DCPrivateHS(_("You have been unregistered."), conn);
+				mOwner->DCPublicHS(_("You have been unregistered."), conn);
 
-			mOwner->DCPublicHS(_("An error occured while unregistering."), conn);
-			return 0;
+				if (mOwner->mOpchatList.ContainsNick(conn->mpUser->mNick)) // opchat list
+					mOwner->mOpchatList.Remove(conn->mpUser);
+
+				if (mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist, only if user is there
+					mOwner->mOpList.Remove(conn->mpUser);
+					mOwner->mP.Create_Quit(data, conn->mpUser->mNick); // send quit to all
+					mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+					mOwner->mInProgresUsers.SendToAll(data, false, true);
+					mOwner->mP.Create_Hello(data, conn->mpUser->mNick); // send hello to hello users
+					mOwner->mHelloUsers.SendToAll(data, false, true);
+					mOwner->mUserList.SendToAll(conn->mpUser->mMyINFO, false, true); // send myinfo to all
+					mOwner->mInProgresUsers.SendToAll(conn->mpUser->mMyINFO, false, true); // todo: no cache, why?
+				}
+
+				conn->mpUser->mClass = eUC_NORMUSER;
+
+				if (conn->mpUser->mHideShare) { // recalculate total share
+					conn->mpUser->mHideShare = false;
+					mOwner->mTotalShare += conn->mpUser->mShare;
+				}
+
+				mOwner->SetUserRegInfo(conn, conn->mpUser->mNick); // update registration information in real time aswell
+				mOwner->ReportUserToOpchat(conn, _("User has been unregistered"), false);
+				return 1;
+			} else {
+				mOwner->DCPublicHS(_("An error occured while unregistering."), conn);
+				return 0;
+			}
 		}
 
-		string prefix = mOwner->mC.nick_prefix_autoreg;
+		string pref = mOwner->mC.nick_prefix_autoreg;
 
-		if (prefix.size()) {
-			ReplaceVarInString(prefix, "CC", prefix, conn->mCC);
+		if (pref.size()) {
+			ReplaceVarInString(pref, "CC", pref, conn->mCC);
 
-			if (StrCompare(conn->mpUser->mNick, 0, prefix.size(), prefix) != 0) {
-				os << autosprintf(_("Your nick must start with: %s"), prefix.c_str());
+			if (StrCompare(conn->mpUser->mNick, 0, pref.size(), pref) != 0) {
+				os << autosprintf(_("Your nick must start with: %s"), pref.c_str());
 				mOwner->DCPublicHS(os.str(), conn);
 				return 1;
 			}
 		}
 
-		__int64 min_share;
+		__int64 mish, ussh = conn->mpUser->mShare / (1024 * 1024);
 
 		switch (mOwner->mC.autoreg_class) {
 			case eUC_OPERATOR:
-				min_share = mOwner->mC.min_share_ops;
+				mish = mOwner->mC.min_share_ops;
 				break;
 
 			case eUC_VIPUSER:
-				min_share = mOwner->mC.min_share_vip;
+				mish = mOwner->mC.min_share_vip;
 				break;
 
 			default:
-				min_share = mOwner->mC.min_share_reg;
+				mish = mOwner->mC.min_share_reg;
 				break;
 		}
 
-		__int64 user_share = conn->mpUser->mShare / (1024 * 1024);
-
-		if (user_share < min_share) {
-			os << autosprintf(_("You need to share at least %s."), convertByte(min_share * 1024).c_str());
+		if (ussh < mish) {
+			os << autosprintf(_("You need to share at least: %s"), convertByte(mish * 1024).c_str());
 			mOwner->DCPublicHS(os.str(), conn);
 			return 1;
 		}
 
-		cUser *user = mServer->mUserList.GetUserByNick(conn->mpUser->mNick);
+		getline(cmd_line, pass);
 
-		if (user && user->mxConn) {
-			getline(cmd_line, pass);
+		if (pass.size())
+			pass = pass.substr(1); // strip space
 
-			if (pass.size())
-				pass = pass.substr(1); // strip space
-
-			if (pass.size() < mOwner->mC.password_min_len) {
-				os << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
-				mOwner->DCPublicHS(os.str(), conn);
-				return 1;
-			}
-
-			#ifndef WITHOUT_PLUGINS
-				/*
-					plugin should compare both nicks to see if user is registering himself which equals automatic registration
-					plugin should also send message back to user if action is discarded because hub will not send anything
-				*/
-
-				if (!mOwner->mCallBacks.mOnNewReg.CallAll(conn->mpUser, conn->mpUser->mNick, mOwner->mC.autoreg_class))
-					return 1;
-			#endif
-
-			if (mOwner->mR->AddRegUser(conn->mpUser->mNick, NULL, mOwner->mC.autoreg_class, pass.c_str())) {
-				os << autosprintf(_("A new user has been registered with class %d"), mOwner->mC.autoreg_class);
-				mOwner->ReportUserToOpchat(conn, os.str(), false);
-				os.str("");
-				os << autosprintf(_("You are now registered with nick %s. Please reconnect and login with your new password: %s"), conn->mpUser->mNick.c_str(), pass.c_str());
-				mOwner->DCPublicHS(os.str(), conn);
-				return 1;
-			}
+		if (pass.size() < mOwner->mC.password_min_len) {
+			os << autosprintf(_("Minimum password length is %d characters. Please retry."), mOwner->mC.password_min_len);
+			mOwner->DCPublicHS(os.str(), conn);
+			return 1;
 		}
 
-		mOwner->DCPublicHS(_("An error occured while registering."), conn);
-		return 0;
+		#ifndef WITHOUT_PLUGINS
+			/*
+				plugin should compare both nicks to see if user is registering himself which equals automatic registration
+				plugin should also send message back to user if action is discarded because hub will not send anything
+			*/
+
+			if (!mOwner->mCallBacks.mOnNewReg.CallAll(conn->mpUser, conn->mpUser->mNick, mOwner->mC.autoreg_class))
+				return 1;
+		#endif
+
+		if (mOwner->mR->AddRegUser(conn->mpUser->mNick, NULL, mOwner->mC.autoreg_class, pass.c_str())) { // no need to reconnect for class to take effect
+			os << autosprintf(_("You have been registered with class %d and following password: %s"), mOwner->mC.autoreg_class, pass.c_str());
+			mOwner->DCPrivateHS(os.str(), conn);
+			mOwner->DCPublicHS(os.str(), conn);
+
+			if ((mOwner->mC.autoreg_class >= mOwner->mC.opchat_class) && !mOwner->mOpchatList.ContainsNick(conn->mpUser->mNick)) // opchat list
+				mOwner->mOpchatList.Add(conn->mpUser);
+
+			if ((mOwner->mC.autoreg_class >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist
+				mOwner->mOpList.Add(conn->mpUser);
+				mOwner->mP.Create_OpList(data, conn->mpUser->mNick); // send short oplist
+				mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				mOwner->mInProgresUsers.SendToAll(data, false, true);
+			}
+
+			conn->mpUser->mClass = tUserCl(mOwner->mC.autoreg_class);
+			mOwner->SetUserRegInfo(conn, conn->mpUser->mNick); // update registration information in real time aswell
+			os.str("");
+			os << autosprintf(_("New user has been registered with class %d"), mOwner->mC.autoreg_class);
+			mOwner->ReportUserToOpchat(conn, os.str(), false);
+			return 1;
+		} else {
+			mOwner->DCPublicHS(_("An error occured while registering."), conn);
+			return 0;
+		}
 	}
 
 	if (unreg) { // manual registration, user wants to unregister
 		mOwner->ReportUserToOpchat(conn, _("Unregistration request"), mOwner->mC.dest_regme_chat);
-		mOwner->DCPublicHS(_("Thank you, your request has been sent to operators."), conn);
+		mOwner->DCPublicHS(_("Thank you, your unregistration request has been sent to operators. Please await an answer."), conn);
 		return 1;
 	}
 
@@ -849,13 +882,13 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 	if (pass.size())
 		pass = pass.substr(1); // strip space
 
-	if (pass.size())
+	if (pass.size()) // todo: make password_min_len usable here?
 		os << autosprintf(_("Registration request with password: %s"), pass.c_str());
 	else
 		os << _("Registration request without password");
 
 	mOwner->ReportUserToOpchat(conn, os.str(), mOwner->mC.dest_regme_chat);
-	mOwner->DCPublicHS(_("Thank you, your request has been sent to operators."), conn);
+	mOwner->DCPublicHS(_("Thank you, your registration request has been sent to operators. Please await an answer."), conn);
 	return 1;
 }
 
