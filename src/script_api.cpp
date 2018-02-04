@@ -22,10 +22,11 @@
 #include <config.h>
 #endif
 
-#include <cserverdc.h>
-#include <cban.h>
-#include <cbanlist.h>
-#include <creglist.h>
+#include "cserverdc.h"
+#include "cban.h"
+#include "cbanlist.h"
+#include "creglist.h"
+#include "cusercollection.h"
 #include "script_api.h"
 #include "cconfigitembase.h"
 #include "i18n.h"
@@ -673,6 +674,14 @@ bool DelRegUser(const char *nick)
 			serv->mHelloUsers.SendToAll(data, false, true);
 			serv->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 			serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+			if (serv->mC.send_user_ip) { // send userip to operators
+				data.clear();
+				cCompositeUserCollection::ufDoIpList DoUserIP(data);
+				DoUserIP.Clear();
+				DoUserIP(user);
+				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
+			}
 		}
 
 		user->mClass = eUC_NORMUSER;
@@ -744,6 +753,14 @@ bool SetRegClass(const char *nick, int clas)
 				serv->mHelloUsers.SendToAll(data, false, true);
 				serv->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 				serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+				if (serv->mC.send_user_ip) { // send userip to operators
+					data.clear();
+					cCompositeUserCollection::ufDoIpList DoUserIP(data);
+					DoUserIP.Clear();
+					DoUserIP(user);
+					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
+				}
 			}
 		}
 
