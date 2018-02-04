@@ -771,6 +771,14 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 					mOwner->mHelloUsers.SendToAll(data, false, true);
 					mOwner->mUserList.SendToAll(conn->mpUser->mMyINFO, false, true); // send myinfo to all
 					mOwner->mInProgresUsers.SendToAll(conn->mpUser->mMyINFO, false, true); // todo: no cache, why?
+
+					if (mOwner->mC.send_user_ip) { // send userip to operators
+						data.clear();
+						cCompositeUserCollection::ufDoIpList DoUserIP(data);
+						DoUserIP.Clear();
+						DoUserIP(conn->mpUser);
+						mOwner->mUserList.SendToAllWithClassFeature(data, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
+					}
 				}
 
 				conn->mpUser->mClass = eUC_NORMUSER;
@@ -1121,6 +1129,14 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 						mOwner->mHelloUsers.SendToAll(msg, false, true);
 						mOwner->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 						mOwner->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+						if (mOwner->mC.send_user_ip) { // send userip to operators
+							msg.clear();
+							cCompositeUserCollection::ufDoIpList DoUserIP(msg);
+							DoUserIP.Clear();
+							DoUserIP(user);
+							mOwner->mUserList.SendToAllWithClassFeature(msg, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
+						}
 					}
 				}
 			}
@@ -3001,6 +3017,14 @@ bool cDCConsole::cfRegUsr::operator()()
 						mS->mHelloUsers.SendToAll(msg, false, true);
 						mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 						mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+						if (mS->mC.send_user_ip) { // send userip to operators
+							msg.clear();
+							cCompositeUserCollection::ufDoIpList DoUserIP(msg);
+							DoUserIP.Clear();
+							DoUserIP(user);
+							mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
+						}
 					}
 
 					user->mClass = eUC_NORMUSER;
@@ -3074,6 +3098,14 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mHelloUsers.SendToAll(msg, false, true);
 							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+							if (mS->mC.send_user_ip) { // send userip to operators
+								msg.clear();
+								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
+								DoUserIP.Clear();
+								DoUserIP(user);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
+							}
 						}
 					}
 				}
@@ -3170,6 +3202,14 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
 
+							if (mS->mC.send_user_ip) { // send userip to operators
+								msg.clear();
+								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
+								DoUserIP.Clear();
+								DoUserIP(user);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
+							}
+
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now hidden.");
 						}
@@ -3197,6 +3237,14 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mHelloUsers.SendToAll(msg, false, true);
 							mS->mUserList.SendToAll(user->mMyINFO, false, true); // send myinfo to all
 							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true); // todo: no cache, why?
+
+							if (mS->mC.send_user_ip) { // send userip to operators
+								msg.clear();
+								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
+								DoUserIP.Clear();
+								DoUserIP(user);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
+							}
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now hidden.");
