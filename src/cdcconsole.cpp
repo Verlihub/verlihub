@@ -2589,7 +2589,7 @@ bool cDCConsole::cfKick::operator()()
 	};
 
 	if ((mConn->mpUser->mClass < eUC_VIPUSER) || !mConn->mpUser->Can(eUR_KICK, mS->mTime.Sec())) {
-		(*mOS) << _("You have no rights to kick anyone.");
+		(*mOS) << _("You have no rights to gag, drop or kick anyone.");
 		return false;
 	}
 
@@ -2601,8 +2601,20 @@ bool cDCConsole::cfKick::operator()()
 		return false;
 
 	string nick;
-	temp.clear();
 	mParRex->Extract(1, mParStr, nick);
+	cUser *user = mS->mUserList.GetUserByNick(nick);
+
+	if (act <= eAC_DROP) { // drop or kick
+		if (!user || !user->mxConn) {
+			(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
+			return false;
+		} else if ((user->mClass + int(mS->mC.classdif_kick)) > mConn->mpUser->mClass) {
+			(*mOS) << autosprintf(_("You have no rights to drop or kick user: %s"), nick.c_str());
+			return false;
+		}
+	}
+
+	temp.clear();
 
 	if (mParRex->PartFound(2)) {
 		mParRex->Extract(2, mParStr, temp);
@@ -2612,7 +2624,6 @@ bool cDCConsole::cfKick::operator()()
 	}
 
 	cPenaltyList::sPenalty pen;
-	cUser *user = NULL;
 
 	switch (act) {
 		case eAC_KICK: // kick
@@ -2641,9 +2652,7 @@ bool cDCConsole::cfKick::operator()()
 			else
 				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
 
-			user = mS->mUserList.GetUserByNick(nick);
-
-			if (user) {
+			if (user && user->mxConn) {
 				user->SetRight(eUR_CHAT, pen.mStartChat, (act == eAC_UNGAG), true);
 				user->ApplyRights(pen);
 			}
