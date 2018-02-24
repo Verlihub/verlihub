@@ -450,7 +450,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if (!mProtoFloodCounts[type]) {
 		mProtoFloodCounts[type] = 1;
 		mProtoFloodTimes[type] = serv->mTime;
-		mProtoFloodReports[type] = cTime(serv->mTime.Sec() - (signed)serv->mC.proto_flood_report_time);
+		mProtoFloodReports[type] = serv->mTime; // cTime(serv->mTime.Sec() - signed(serv->mC.proto_flood_report_time))
 		return false;
 	}
 
@@ -547,7 +547,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	to_feed << " [" << mProtoFloodCounts[type] << ':' << dif << ':' << period << ']';
 	dif = serv->mTime.Sec() - mProtoFloodReports[type].Sec(); // report if enabled and not too often
 
-	if ((dif < 0) || (dif >= (signed)serv->mC.proto_flood_report_time)) {
+	if ((dif < 0) || (dif >= signed(serv->mC.proto_flood_report_time))) {
 		mProtoFloodReports[type] = serv->mTime;
 
 		if (serv->mC.proto_flood_report)
