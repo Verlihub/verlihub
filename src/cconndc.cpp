@@ -450,7 +450,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if (!mProtoFloodCounts[type]) {
 		mProtoFloodCounts[type] = 1;
 		mProtoFloodTimes[type] = serv->mTime;
-		mProtoFloodReports[type] = serv->mTime; // cTime(serv->mTime.Sec() - signed(serv->mC.proto_flood_report_time))
+		mProtoFloodReports[type] = cTime(serv->mTime.Sec() - signed(serv->mC.proto_flood_report_time));
 		return false;
 	}
 
@@ -550,7 +550,14 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	if ((dif < 0) || (dif >= signed(serv->mC.proto_flood_report_time))) {
 		mProtoFloodReports[type] = serv->mTime;
 
-		if (serv->mC.proto_flood_report)
+		if (serv->mC.proto_flood_report && (
+			serv->mC.proto_flood_report_locked ||
+			((type == ePF_CHAT) && !serv->mProtoFloodAllLocks[ePFA_CHAT]) ||
+			((type == ePF_PRIV) && !serv->mProtoFloodAllLocks[ePFA_PRIV]) ||
+			((type == ePF_MCTO) && !serv->mProtoFloodAllLocks[ePFA_MCTO]) ||
+			((type == ePF_SEARCH) && !serv->mProtoFloodAllLocks[ePFA_SEAR]) ||
+			((type == ePF_RCTM) && !serv->mProtoFloodAllLocks[ePFA_RCTM])
+		))
 			serv->ReportUserToOpchat(this, to_feed.str());
 
 		if (Log(1))
