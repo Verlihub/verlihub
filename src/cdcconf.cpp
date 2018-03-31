@@ -309,7 +309,7 @@ void cDCConf::AddVars()
 	Add("int_myinfo", int_myinfo, 60);
 	Add("int_nicklist", int_nicklist, 60);
 	Add("int_login",int_login, 60);
-	Add("max_class_int_login", max_class_int_login, (int)eUC_OPERATOR);
+	Add("max_class_int_login", max_class_int_login, int(eUC_OPERATOR));
 	Add("max_class_check_clone", max_class_check_clone, -1); // -1 means disabled
 	Add("max_class_self_repass", max_class_self_repass, 0); // 0 means disabled
 	Add("clone_det_tban_time", clone_det_tban_time, 1800); // 30 minutes
@@ -320,8 +320,9 @@ void cDCConf::AddVars()
 	Add("report_dns_lookup", report_dns_lookup, false);
 	Add("report_user_country", report_user_country, true);
 	Add("hide_all_kicks", hide_all_kicks, true);
+	Add("notify_kicks_to_all", notify_kicks_to_all, -1); // -1 means disabled, higher values are minimum class
 	Add("allow_same_user", allow_same_user, true);
-	Add("max_class_same_user", max_class_same_user, (int)eUC_NORMUSER);
+	Add("max_class_same_user", max_class_same_user, int(eUC_NORMUSER));
 
 	/*
 		hide following messages

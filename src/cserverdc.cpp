@@ -2500,7 +2500,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 	if (!op || nick.empty() || (op->mNick == nick))
 		return;
 
-	ostringstream ostr;
+	ostringstream ostr, toall;
 	cUser *user = mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn) {
@@ -2586,9 +2586,24 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 				if (ban.mDateEnd) {
 					cTime age(ban.mDateEnd - cTime().Sec(), 0);
-					ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());
+
+					if (mC.notify_kicks_to_all == -1) {
+						ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());
+					} else { // message to all
+						if (new_why.size())
+							toall << autosprintf(_("%s was kicked and banned for %s by %s with reason: %s"), nick.c_str(), age.AsPeriod().AsString().c_str(), op->mNick.c_str(), new_why.c_str());
+						else
+							toall << autosprintf(_("%s was kicked and banned for %s by %s without reason."), nick.c_str(), age.AsPeriod().AsString().c_str(), op->mNick.c_str());
+					}
 				} else {
-					ostr << autosprintf(_("User was kicked and banned permanently: %s"), nick.c_str());
+					if (mC.notify_kicks_to_all == -1) {
+						ostr << autosprintf(_("User was kicked and banned permanently: %s"), nick.c_str());
+					} else { // message to all
+						if (new_why.size())
+							toall << autosprintf(_("%s was kicked and banned permanently by %s with reason: %s"), nick.c_str(), op->mNick.c_str(), new_why.c_str());
+						else
+							toall << autosprintf(_("%s was kicked and banned permanently by %s without reason."), nick.c_str(), op->mNick.c_str());
+					}
 				}
 
 				mBanList->AddBan(ban);
@@ -2596,18 +2611,27 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 				if (user->mxConn->Log(2))
 					user->mxConn->LogStream() << "Dropped by " << op->mNick << " because: " << new_why << endl;
 
-				if (new_why.size())
-					os << autosprintf(_("%s dropped user with reason: %s"), op->mNick.c_str(), new_why.c_str());
-				else
-					os << autosprintf(_("%s dropped user without reason"), op->mNick.c_str());
+				if (mC.notify_kicks_to_all == -1) {
+					if (new_why.size())
+						os << autosprintf(_("%s dropped user with reason: %s"), op->mNick.c_str(), new_why.c_str());
+					else
+						os << autosprintf(_("%s dropped user without reason"), op->mNick.c_str());
 
-				ReportUserToOpchat(user->mxConn, os.str(), mC.dest_drop_chat);
+					ReportUserToOpchat(user->mxConn, os.str(), mC.dest_drop_chat);
+				} else { // message to all
+					if (new_why.size())
+						toall << autosprintf(_("%s was dropped by %s with reason: %s"), nick.c_str(), op->mNick.c_str(), new_why.c_str());
+					else
+						toall << autosprintf(_("%s was dropped by %s without reason."), nick.c_str(), op->mNick.c_str());
+				}
 
 				if ((flags & eKI_PM) && new_why.size())
 					DCPrivateHS(autosprintf(_("You have been dropped because: %s"), new_why.c_str()), user->mxConn, &op->mNick, &op->mNick);
 
 				mKickList->AddKick(user->mxConn, op->mNick, (new_why.size() ? &new_why : NULL), mC.tban_kick, kick, true);
-				ostr << autosprintf(_("User was dropped: %s"), nick.c_str());
+
+				if (mC.notify_kicks_to_all == -1)
+					ostr << autosprintf(_("User was dropped: %s"), nick.c_str());
 			}
 
 			if (flags & eKI_CLOSE)
@@ -2623,6 +2647,9 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 		else if (op->mxConn)
 			DCPublicHS(ostr.str(), op->mxConn);
 	}
+
+	if ((mC.notify_kicks_to_all > -1) && toall.str().size()) // message to all
+		DCPublicToAll(mC.hub_security, toall.str(), mC.notify_kicks_to_all, int(eUC_MASTER), mC.delayed_chat);
 }
 
 string cServerDC::EraseNewLines(const string &src)
