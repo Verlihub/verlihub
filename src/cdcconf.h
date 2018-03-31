@@ -177,6 +177,7 @@ public:
 	bool allow_same_user;
 	int max_class_same_user;
 	bool hide_all_kicks;
+	int notify_kicks_to_all;
 	bool optimize_userlist;
 	bool use_search_filter;
 	bool filter_lan_requests;

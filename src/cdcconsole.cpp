@@ -1803,22 +1803,61 @@ bool cDCConsole::cfBan::operator()()
 			if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // drop users if ban type is ip or range
 				cUserCollection::iterator i;
 				cConnDC *conn;
+				ostringstream toall;
 
 				for (i = mS->mUserList.begin(); i != mS->mUserList.end(); ++i) {
 					conn = ((cUser*)(*i))->mxConn;
 
-					if (conn) {
+					if (conn && conn->mpUser) {
 						unsigned long ipnum = cBanList::Ip2Num(conn->AddrIP());
 
-						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum)))
-							conn->CloseNow();
+						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum))) {
+							if (mS->mC.notify_kicks_to_all > -1) { // message to all
+								toall.str("");
+
+								if (BanTime) {
+									if (tmp.size())
+										toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), conn->mpUser->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+									else
+										toall << autosprintf(_("%s was banned for %s by %s without reason."), conn->mpUser->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
+								} else {
+									if (tmp.size())
+										toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), conn->mpUser->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+									else
+										toall << autosprintf(_("%s was banned permanently by %s without reason."), conn->mpUser->mNick.c_str(), Ban.mNickOp.c_str());
+								}
+
+								mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+							}
+
+							conn->CloseNow(); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+						}
 					}
 				}
 			} else if (Ban.mNick.size()) { // drop user if nick is specified
 				cUser *user = mS->mUserList.GetUserByNick(Ban.mNick);
 
-				if (user && user->mxConn)
-					user->mxConn->CloseNow();
+				if (user && user->mxConn) {
+					if (mS->mC.notify_kicks_to_all > -1) { // message to all
+						ostringstream toall;
+
+						if (BanTime) {
+							if (tmp.size())
+								toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), user->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+							else
+								toall << autosprintf(_("%s was banned for %s by %s without reason."), user->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
+						} else {
+							if (tmp.size())
+								toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), user->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+							else
+								toall << autosprintf(_("%s was banned permanently by %s without reason."), user->mNick.c_str(), Ban.mNickOp.c_str());
+						}
+
+						mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+					}
+
+					user->mxConn->CloseNow(); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+				}
 			}
 
 			mS->mBanList->AddBan(Ban);
@@ -2294,34 +2333,75 @@ bool cDCConsole::cfGag::operator()()
 
 	switch (act) {
 		case eAC_GAG:
-			if (isun)
-				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
-			else
-				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
+				if (isun)
+					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
+				else
+					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			}
 
-			if (user)
+			if (user) {
+				if (mS->mC.notify_kicks_to_all > -1) { // message to all
+					ostringstream toall;
+
+					if (isun)
+						toall << autosprintf(_("%s was allowed to use main chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+					else
+						toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+
+					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+				}
+
 				user->SetRight(eUR_CHAT, pen.mStartChat, isun, true);
+			}
 
 			break;
 
 		case eAC_NOPM:
-			if (isun)
-				(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), pen.mNick.c_str());
-			else
-				(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
+				if (isun)
+					(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), pen.mNick.c_str());
+				else
+					(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			}
 
-			if (user)
+			if (user) {
+				if (mS->mC.notify_kicks_to_all > -1) { // message to all
+					ostringstream toall;
+
+					if (isun)
+						toall << autosprintf(_("%s was allowed to use private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+					else
+						toall << autosprintf(_("%s was restricted from using private chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+
+					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+				}
+
 				user->SetRight(eUR_PM, pen.mStartPM, isun, true);
+			}
 
 			break;
 
 		case eAC_NOCHATS:
-			if (isun)
-				(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), pen.mNick.c_str());
-			else
-				(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
+				if (isun)
+					(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), pen.mNick.c_str());
+				else
+					(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+			}
 
 			if (user) {
+				if (mS->mC.notify_kicks_to_all > -1) { // message to all
+					ostringstream toall;
+
+					if (isun)
+						toall << autosprintf(_("%s was allowed to use main and private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+					else
+						toall << autosprintf(_("%s was restricted from using main and private chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+
+					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+				}
+
 				user->SetRight(eUR_CHAT, pen.mStartChat, isun, true);
 				user->SetRight(eUR_PM, pen.mStartPM, isun, true);
 			}
@@ -2647,12 +2727,32 @@ bool cDCConsole::cfKick::operator()()
 				return false;
 			}
 
-			if (act == eAC_GAG)
-				(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str());
-			else
-				(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
+			if ((mS->mC.notify_kicks_to_all == -1) || !user || !user->mxConn) {
+				if (act == eAC_GAG)
+					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str());
+				else
+					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
+			}
 
 			if (user && user->mxConn) {
+				if (mS->mC.notify_kicks_to_all > -1) { // message to all
+					ostringstream toall;
+
+					if (act == eAC_GAG) {
+						if (temp.size()) // with reason
+							toall << autosprintf(_("%s was restricted from using main chat for %s by %s with reason: %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str(), temp.c_str());
+						else
+							toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+					} else {
+						if (temp.size()) // with reason
+							toall << autosprintf(_("%s was allowed to use main chat again by %s with reason: %s"), pen.mNick.c_str(), pen.mOpNick.c_str(), temp.c_str());
+						else
+							toall << autosprintf(_("%s was allowed to use main chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+					}
+
+					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+				}
+
 				user->SetRight(eUR_CHAT, pen.mStartChat, (act == eAC_UNGAG), true);
 				user->ApplyRights(pen);
 			}
