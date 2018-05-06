@@ -2683,15 +2683,42 @@ bool cDCConsole::cfKick::operator()()
 	string nick;
 	mParRex->Extract(1, mParStr, nick);
 	cUser *user = mS->mUserList.GetUserByNick(nick);
+	cRegUserInfo ui;
 
-	if (act <= eAC_DROP) { // drop or kick
-		if (!user || !user->mxConn) {
-			(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
-			return false;
-		} else if ((user->mClass + int(mS->mC.classdif_kick)) > mConn->mpUser->mClass) {
-			(*mOS) << autosprintf(_("You have no rights to drop or kick user: %s"), nick.c_str());
-			return false;
-		}
+	switch (act) {
+		case eAC_KICK: // kick and drop
+		case eAC_DROP:
+			if (!user || !user->mxConn) {
+				(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
+				return false;
+			} else if ((user->mClass + int(mS->mC.classdif_kick)) > mConn->mpUser->mClass) {
+				(*mOS) << autosprintf(_("You have no rights to drop or kick user: %s"), nick.c_str());
+				return false;
+			}
+
+			break;
+
+		case eAC_GAG: // gag
+		case eAC_UNGAG:
+			if (user && !user->mxConn) { // is bot
+				(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
+				return false;
+			} else if (user && user->mxConn) { // user online
+				if ((user->mClass + int(mS->mC.classdif_kick)) > mConn->mpUser->mClass) {
+					(*mOS) << autosprintf(_("You have no rights to gag user: %s"), nick.c_str());
+					return false;
+				}
+			} else if (mS->mR->FindRegInfo(ui, nick)) { // user offline, reg found
+				if ((ui.mClass + int(mS->mC.classdif_kick)) > mConn->mpUser->mClass) {
+					(*mOS) << autosprintf(_("You have no rights to gag user: %s"), nick.c_str());
+					return false;
+				}
+			} else if (int(eUC_NORMUSER + mS->mC.classdif_kick) > mConn->mpUser->mClass) { // offline nick
+				(*mOS) << autosprintf(_("You have no rights to gag nick: %s"), nick.c_str());
+				return false;
+			}
+
+			break;
 	}
 
 	temp.clear();
