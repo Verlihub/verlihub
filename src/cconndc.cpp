@@ -601,12 +601,18 @@ cDCConnFactory::cDCConnFactory(cServerDC *server):
 
 cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 {
-	cConnDC *conn;
-
 	if (!mServer)
 		return NULL;
 
-	conn = new cConnDC(sd, mServer);
+	cConnDC *conn = new cConnDC(sd, mServer);
+
+	if (!conn) {
+		if (mServer->Log(0))
+			mServer->LogStream() << "Failed to create new connection" << endl;
+
+		return NULL;
+	}
+
 	conn->mxMyFactory = this;
 
 	if (mServer->mMaxMindDB->GetCCC(conn->mCC, conn->mCN, conn->mCity, conn->AddrIP()) && conn->mCC.size() && mServer->mC.cc_zone[0].size()) { // get all geo data in one call
