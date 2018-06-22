@@ -313,6 +313,7 @@ public:
 	int show_tags; // 0 - no at all, 1 - only to ops, 2 - show to everyone
 	int show_desc_len; // cut first x bytes of description, -1 means disabled
 	int autoreg_class; // todo: change to unsigned
+	int autounreg_class;
 	bool show_email;
 	bool show_speed;
 	bool send_user_ip;

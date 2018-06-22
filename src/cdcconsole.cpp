@@ -735,16 +735,10 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 		return 1;
 	}
 
-	string pass, data;
-	ostringstream os;
+	string data;
 
-	if (mOwner->mC.autoreg_class > 0) { // automatic registration is enabled
-		if (unreg) { // user wants to unregister
-			if (ui.mClass > mOwner->mC.autoreg_class) {
-				mOwner->DCPublicHS(_("You are not allowed to unregister yourself."), conn);
-				return 1;
-			}
-
+	if (unreg) { // user wants to unregister
+		if ((mOwner->mC.autounreg_class > 0) && (ui.mClass <= mOwner->mC.autounreg_class)) { // automatic unregistration is enabled
 			/*
 				plugin should compare both nicks to see if user is unregistering himself which equals automatic unregistration
 				plugin should also send message back to user if action is discarded because hub will not send anything
@@ -795,8 +789,18 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 				mOwner->DCPublicHS(_("An error occured while unregistering."), conn);
 				return 0;
 			}
+		} else { // disabled or user dont apply, send message to operators instead
+			//mOwner->DCPublicHS(_("You are not allowed to unregister yourself."), conn);
+			mOwner->ReportUserToOpchat(conn, _("Unregistration request"), mOwner->mC.dest_regme_chat);
+			mOwner->DCPublicHS(_("Thank you, your unregistration request has been sent to operators. Please await an answer."), conn);
+			return 1;
 		}
+	}
 
+	string pass;
+	ostringstream os;
+
+	if (mOwner->mC.autoreg_class > 0) { // automatic registration is enabled
 		string pref = mOwner->mC.nick_prefix_autoreg;
 
 		if (pref.size()) {
@@ -877,12 +881,6 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 			mOwner->DCPublicHS(_("An error occured while registering."), conn);
 			return 0;
 		}
-	}
-
-	if (unreg) { // manual registration, user wants to unregister
-		mOwner->ReportUserToOpchat(conn, _("Unregistration request"), mOwner->mC.dest_regme_chat);
-		mOwner->DCPublicHS(_("Thank you, your unregistration request has been sent to operators. Please await an answer."), conn);
-		return 1;
 	}
 
 	getline(cmd_line, pass);

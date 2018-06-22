@@ -134,6 +134,7 @@ void cDCConf::AddVars()
 	Add("nick_prefix_cc", nick_prefix_cc, false);
 	Add("nick_prefix_autoreg",nick_prefix_autoreg,string(""));
 	Add("autoreg_class", autoreg_class, 0);
+	Add("autounreg_class", autounreg_class, 0);
 	Add("nicklist_on_login", nicklist_on_login, true);
 	Add("optimize_userlist", optimize_userlist, false);
 	Add("ul_portion", ul_portion, 50);
