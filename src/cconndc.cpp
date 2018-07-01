@@ -552,6 +552,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 
 		if (serv->mC.proto_flood_report && (
 			serv->mC.proto_flood_report_locked ||
+			((type != ePF_CHAT) && (type != ePF_PRIV) && (type != ePF_MCTO) && (type != ePF_SEARCH) && (type != ePF_RCTM)) || // not lockable types
 			((type == ePF_CHAT) && !serv->mProtoFloodAllLocks[ePFA_CHAT]) ||
 			((type == ePF_PRIV) && !serv->mProtoFloodAllLocks[ePFA_PRIV]) ||
 			((type == ePF_MCTO) && !serv->mProtoFloodAllLocks[ePFA_MCTO]) ||
