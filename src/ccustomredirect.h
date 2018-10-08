@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -77,16 +77,16 @@ namespace nVerliHub {
 				*/
 				friend ostream &operator << (ostream &, cRedirect &);
 
-				// The flag to determinate the kind of the redirect
+				// redirect flags
 				int mFlag;
-
 				// redirect counter
 				int mCount;
-
-				// The target
+				// redirect hours
+				int mStart;
+				int mStop;
+				// redirect address
 				string mAddress;
-
-				// Enable or disable redirect
+				// redirect status
 				int mEnable;
 		};
 
