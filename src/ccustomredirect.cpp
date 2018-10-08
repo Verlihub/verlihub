@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -30,6 +30,8 @@ namespace nVerliHub {
 			mEnable = 1;
 			mFlag = 0;
 			mCount = 0;
+			mStart = 0;
+			mStop = 0;
 		}
 
 		cRedirect::~cRedirect()
@@ -40,6 +42,24 @@ namespace nVerliHub {
 			int flag = tr.mFlag;
 			string temp;
 			os << "\t" << tr.mCount;
+			os << "\t";
+
+			if (tr.mStart <= 9)
+				os << "0";
+
+			os << tr.mStart << ":00";
+			os << "\t";
+
+			if (tr.mStop <= 9)
+				os << "0";
+
+			os << tr.mStop << ":";
+
+			if (tr.mStart == tr.mStop)
+				os << "00";
+			else
+				os << "59";
+
 			os << "\t" << tr.mAddress;
 
 			if (tr.mAddress.size() <= 8)

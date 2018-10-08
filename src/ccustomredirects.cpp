@@ -39,6 +39,8 @@ namespace nVerliHub {
 		AddCol("address", "varchar(125)", "", false, mModel.mAddress);
 		AddPrimaryKey("address");
 		AddCol("flag", "smallint(5)", "", false, mModel.mFlag);
+		AddCol("start", "tinyint(2)", "", false, mModel.mStart);
+		AddCol("stop", "tinyint(2)", "", false, mModel.mStop);
 		AddCol("enable", "tinyint(1)", "1", true, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
@@ -104,6 +106,15 @@ namespace nVerliHub {
 		cRedirect *redir;
 		const char *rist[10];
 		int cnt = 0;
+		time_t curr_time;
+		time(&curr_time);
+
+		#ifdef _WIN32
+			struct tm *lt = localtime(&curr_time); // todo: do we really need reentrant version?
+		#else
+			struct tm *lt = new tm();
+			localtime_r(&curr_time, lt);
+		#endif
 
 		for (it = begin(); it != end(); ++it) {
 			if (cnt >= 10)
@@ -112,8 +123,10 @@ namespace nVerliHub {
 			redir = (*it);
 
 			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rmap))) {
-				rist[cnt] = redir->mAddress.c_str();
-				cnt++;
+				if ((redir->mStart == redir->mStop) || ((int (lt->tm_hour) >= redir->mStart) && (int (lt->tm_hour) <= redir->mStop))) { // redirect hours
+					rist[cnt] = redir->mAddress.c_str();
+					cnt++;
+				}
 			}
 		}
 
@@ -182,6 +195,8 @@ namespace nVerliHub {
 			case eLC_MOD:
 				help_str = "!(add|mod)redirect <url>"
 					"[ -f <flags>]"
+					"[ -a <start>]"
+					"[ -z <stop>]"
 					"[ -e <1/0>]";
 
 				break;
@@ -230,6 +245,8 @@ namespace nVerliHub {
 			case eLC_MOD:
 				return "^(\\S+)("
 						"( -f ?(\\d+))?|"
+						"( -a ?(\\d+))?|"
+						"( -z ?(\\d+))?|"
 						"( -e ?(1|0))?|"
 						")*\\s*$";
 
@@ -248,11 +265,15 @@ namespace nVerliHub {
    			eADD_ADDRESS,
 			eADD_CHOICE,
    			eADD_FLAGp, eADD_FLAG,
+			eADD_STARTp, eADD_START,
+			eADD_STOPp, eADD_STOP,
 			eADD_ENABLEp, eADD_ENABLE
 		};
 
 		cmd->GetParStr(eADD_ADDRESS, data.mAddress);
 		cmd->GetParInt(eADD_FLAG, data.mFlag);
+		cmd->GetParInt(eADD_START, data.mStart);
+		cmd->GetParInt(eADD_STOP, data.mStop);
 		cmd->GetParInt(eADD_ENABLE, data.mEnable);
 		return true;
 	}
@@ -268,6 +289,8 @@ namespace nVerliHub {
 	void cRedirectConsole::ListHead(ostream *os)
 	{
 		(*os) << "\r\n\r\n\t" << _("Hits");
+		(*os) << "\t" << _("Start");
+		(*os) << "\t" << _("Stop");
 		(*os) << "\t" << _("URL");
 		(*os) << "\t\t\t\t" << _("Status");
 		(*os) << "\t" << _("Type");
