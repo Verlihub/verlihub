@@ -172,7 +172,7 @@ public:
 	int min_class_bc_vips;
 	int min_class_redir;
 	int max_class_int_login;
-	int max_class_check_clone;
+	unsigned int max_class_check_clone;
 	unsigned int max_class_self_repass;
 	bool allow_same_user;
 	int max_class_same_user;
@@ -338,6 +338,7 @@ public:
 	int wrongauthip_report; // note: is class number, not bool
 	bool wrongip_message;
 	bool clone_detect_report;
+	unsigned int clone_detect_count;
 	unsigned long clone_det_tban_time;
 	bool nullchars_report;
 	bool botinfo_report;

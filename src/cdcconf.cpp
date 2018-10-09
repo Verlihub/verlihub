@@ -291,6 +291,7 @@ void cDCConf::AddVars()
 	Add("report_pass_reset", report_pass_reset, false);
 	Add("wrongauthip_report", wrongauthip_report, 1);
 	Add("wrongip_message", wrongip_message, false);
+	Add("clone_detect_count", clone_detect_count, 0); // 0 means disabled
 	Add("clone_detect_report", clone_detect_report, true);
 	Add("nullchars_report", nullchars_report, true);
 	Add("botinfo_report", botinfo_report, false);
@@ -311,7 +312,7 @@ void cDCConf::AddVars()
 	Add("int_nicklist", int_nicklist, 60);
 	Add("int_login",int_login, 60);
 	Add("max_class_int_login", max_class_int_login, int(eUC_OPERATOR));
-	Add("max_class_check_clone", max_class_check_clone, -1); // -1 means disabled
+	Add("max_class_check_clone", max_class_check_clone, 1);
 	Add("max_class_self_repass", max_class_self_repass, 0); // 0 means disabled
 	Add("clone_det_tban_time", clone_det_tban_time, 1800); // 30 minutes
 	Add("tban_kick", tban_kick, 300);
