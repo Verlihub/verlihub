@@ -2136,42 +2136,47 @@ unsigned int cServerDC::CntConnIP(const string &ip)
 
 bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 {
-	if ((mC.max_class_check_clone < 0) || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > mC.max_class_check_clone))
+	if (!mC.clone_detect_count || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > int (mC.max_class_check_clone)))
 		return false;
 
 	cUserCollection::iterator i;
 	cConnDC *other;
+	unsigned int count = 0;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
 		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
-			ostringstream os;
+			count++;
 
-			if (mC.clone_detect_report || mC.clone_det_tban_time)
-				os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
+			if (count >= mC.clone_detect_count) { // number of clones
+				ostringstream os;
 
-			if (mC.clone_detect_report)
-				ReportUserToOpchat(conn, os.str());
+				if (mC.clone_detect_report || mC.clone_det_tban_time)
+					os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
 
-			if (mC.clone_det_tban_time) { // add temporary nick ban
-				mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
-				/*
-				cBan ccban(this);
-				cKick cckick;
-				cckick.mOp = mC.hub_security;
-				//cckick.mIP = conn->AddrIP(); // dont set ip, we dont want to ban first user
-				//cckick.mShare = conn->mpUser->mShare; // dont set share
-				cckick.mNick = conn->mpUser->mNick;
-				cckick.mTime = mTime.Sec();
-				cckick.mReason = os.str();
-				mBanList->NewBan(ccban, cckick, mC.clone_det_tban_time, eBF_NICK);
-				mBanList->AddBan(ccban);
-				*/
+				if (mC.clone_detect_report)
+					ReportUserToOpchat(conn, os.str());
+
+				if (mC.clone_det_tban_time) { // add temporary nick ban
+					mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
+					/*
+					cBan ccban(this);
+					cKick cckick;
+					cckick.mOp = mC.hub_security;
+					//cckick.mIP = conn->AddrIP(); // dont set ip, we dont want to ban first user
+					//cckick.mShare = conn->mpUser->mShare; // dont set share
+					cckick.mNick = conn->mpUser->mNick;
+					cckick.mTime = mTime.Sec();
+					cckick.mReason = os.str();
+					mBanList->NewBan(ccban, cckick, mC.clone_det_tban_time, eBF_NICK);
+					mBanList->AddBan(ccban);
+					*/
+				}
+
+				clone = other->mpUser->mNick; // uses last nick
+				return true;
 			}
-
-			clone = other->mpUser->mNick;
-			return true;
 		}
 	}
 
