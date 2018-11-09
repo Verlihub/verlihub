@@ -25,6 +25,7 @@
 #include "cserverdc.h"
 #include "cinterpolexp.h"
 #include "cconndc.h"
+#include "chttpconn.h"
 #include "creglist.h"
 #include "cbanlist.h"
 #include "ckicklist.h"
@@ -1869,24 +1870,19 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 		min_share = mC.min_share_use_hub;
 
 	char pipe = '|';
+	size_t pos;
 	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string curhost, lock, key, data;
-	size_t pos_space;
-	cAsyncConn *pHubList;
-
-	if (reply.size())
-		to_user << _("Hublist registration results") << ":\r\n\r\n";
+	string curhost, lock, key;
+	cHTTPConn *pHubList;
+	to_user << _("Hublist registration results") << ":\r\n\r\n";
 
 	while (curhost = "", is >> curhost, curhost.size() > 0) {
-		if (reply.size())
-			to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
+		to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
+		pHubList = new cHTTPConn(curhost, port); // connect
 
-		pHubList = new cAsyncConn(curhost, port); // connect
-
-		if (!pHubList || !pHubList->ok) {
-			if (reply.size())
-				to_user << _("Error connecting") << "\r\n";
+		if (!pHubList || !pHubList->mGood) {
+			to_user << _("Connection error") << "\r\n";
 
 			if (pHubList) {
 				pHubList->Close();
@@ -1897,48 +1893,52 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 			continue;
 		}
 
-		to_serv.str("");
-		to_serv.clear();
-		lock.erase();
-		key.erase();
-		pHubList->SetLineToRead(&lock, pipe, 256);
-		pHubList->ReadAll();
-		pHubList->ReadLineLocal();
+		if (pHubList->Read() > 0) {
+			lock.clear();
 
-		if (lock.size() > 6) {
-			pos_space = lock.find(' ', 6);
+			if (pHubList->GetBuf(lock) > 0) {
+				if (lock.find(pipe) != lock.npos) {
+					key.clear();
 
-			if (pos_space != lock.npos)
-				pos_space -= 6;
+					if (lock.size() > 6) {
+						pos = lock.find(' ', 6);
 
-			lock = lock.substr(6, pos_space);
-			cDCProto::Lock2Key(lock, key);
-		}
+						if (pos != lock.npos)
+							pos -= 6;
 
-		cDCProto::Create_Key(data, key);
-		to_serv << data << pipe; // create registration data
-		to_serv << mC.hub_name << pipe;
-		to_serv << mC.hub_host << pipe;
+						lock = lock.substr(6, pos);
+						cDCProto::Lock2Key(lock, key);
+					}
 
-		if (mC.hublist_send_minshare)
-			to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
+					cDCProto::Create_Key(lock, key);
+					to_serv.str("");
+					to_serv.clear();
+					to_serv << lock << pipe; // create registration data
+					to_serv << mC.hub_name << pipe;
+					to_serv << mC.hub_host << pipe;
 
-		to_serv << mC.hub_desc << pipe;
-		to_serv << mUserList.Size() << pipe;
-		to_serv << mTotalShare << pipe;
+					if (mC.hublist_send_minshare)
+						to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
 
-		if (mC.hublist_send_listhost) // hublist host with port
-			to_serv << curhost << ':' << StringFrom(port) << pipe;
+					to_serv << mC.hub_desc << pipe;
+					to_serv << mUserList.Size() << pipe;
+					to_serv << mTotalShare << pipe;
 
-		pHubList->Write(to_serv.str(), true); // send it
+					if (mC.hublist_send_listhost) // hublist host with port
+						to_serv << curhost << ':' << StringFrom(port) << pipe;
 
-		if (reply.size()) {
-			if (pHubList->ok)
-				to_user << _("Done");
-			else
-				to_user << _("Error sending");
-
-			to_user << "\r\n";
+					if ((pHubList->Write(to_serv.str()) > 0) && pHubList->mGood) // send it
+						to_user << _("Registration done");
+					else
+						to_user << _("Send error");
+				} else {
+					to_user << _("Protocol error") << "\r\n";
+				}
+			} else {
+				to_user << _("Read error") << "\r\n";
+			}
+		} else {
+			to_user << _("Read error") << "\r\n";
 		}
 
 		pHubList->Close();
@@ -2136,7 +2136,7 @@ unsigned int cServerDC::CntConnIP(const string &ip)
 
 bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 {
-	if (!mC.clone_detect_count || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > int (mC.max_class_check_clone)))
+	if (!mC.clone_detect_count || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > int(mC.max_class_check_clone)))
 		return false;
 
 	cUserCollection::iterator i;
@@ -2146,7 +2146,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
-		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= mC.max_class_check_clone) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
 			count++;
 
 			if (count >= mC.clone_detect_count) { // number of clones
@@ -3063,10 +3063,10 @@ void cServerDC::DoStackTrace()
 	if (!mC.send_crash_report)
 		return;
 
-	cAsyncConn *http = new cAsyncConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
+	cHTTPConn *http = new cHTTPConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
 
-	if (!http || !http->ok) {
-		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace to developers" << endl;
+	if (!http || !http->mGood) {
+		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 
 		if (http) {
 			http->Close();
@@ -3077,23 +3077,16 @@ void cServerDC::DoStackTrace()
 		return;
 	}
 
-	ostringstream http_req;
-	http_req << "POST /vhcs.php HTTP/1.1\r\n";
-	http_req << "Host: " << CRASH_SERV_ADDR << "\r\n";
-	http_req << "User-Agent: " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "\r\n";
-	http_req << "Content-Type: text/plain\r\n";
-	http_req << "Content-Length: " << bt.str().size() << "\r\n";
-	http_req << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\r\n"; // remove new lines, they will break our request
-	http_req << "Hub-Info-Address: " << mAddr << ':' << mPort << "\r\n";
-	http_req << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\r\n"; // uptime in seconds
-	http_req << "Hub-Info-Users: " << mUserCountTot << "\r\n\r\n"; // end of headers
-	http_req << bt.str(); // content itself
-	http->Write(http_req.str(), true);
+	ostringstream head;
+	head << "Hub-Info-Host: " << EraseNewLines(mC.hub_host) << "\r\n"; // remove new lines, they will break our request
+	head << "Hub-Info-Address: " << mAddr << ':' << mPort << "\r\n";
+	head << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\r\n"; // uptime in seconds
+	head << "Hub-Info-Users: " << mUserCountTot << "\r\n";
 
-	if (http->ok) {
+	if (http->Request("POST", "/vhcs.php", head.str(), bt.str()) && http->mGood) {
 		vhErr(0) << "Successfully sent stack backtrace to crash server" << endl;
 	} else {
-		vhErr(0) << "Failed sending to crash server, please send above stack backtrace to developers" << endl;
+		vhErr(0) << "Failed sending to crash server, please post above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 	}
 
 	http->Close();
