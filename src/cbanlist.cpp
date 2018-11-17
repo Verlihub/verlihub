@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -303,15 +303,25 @@ void cBanList::DelBan(cBan &Ban)
 
 int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 {
-	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName << " WHERE ";
-	if(mask & eBF_IP)
-		mQuery.OStream() << " ip = '" << ip << "'";
-	if(mask & (eBF_IP | eBF_NICK))
-		mQuery.OStream() << " AND";
-	if(mask & eBF_NICK)
-		mQuery.OStream() << " nick = '" << nick << "'";
+	if (mask & (eBF_IP | eBF_NICK)) {
+		mQuery.OStream() << "delete from " << mMySQLTable.mName << " where";
 
-	return mQuery.Query();
+		if (mask & eBF_IP) {
+			mQuery.OStream() << " `ip` = '";
+			cConfMySQL::WriteStringConstant(mQuery.OStream(), ip);
+			mQuery.OStream() << "'";
+		}
+
+		if (mask & eBF_NICK) {
+			mQuery.OStream() << " and `nick` = '";
+			cConfMySQL::WriteStringConstant(mQuery.OStream(), nick);
+			mQuery.OStream() << "'";
+		}
+
+		return mQuery.Query();
+	}
+
+	return 0;
 }
 
 void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
