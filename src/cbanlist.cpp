@@ -303,25 +303,24 @@ void cBanList::DelBan(cBan &Ban)
 
 int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 {
-	if (mask & (eBF_IP | eBF_NICK)) {
-		mQuery.OStream() << "delete from " << mMySQLTable.mName << " where";
+	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where";
 
-		if (mask & eBF_IP) {
-			mQuery.OStream() << " `ip` = '";
-			cConfMySQL::WriteStringConstant(mQuery.OStream(), ip);
-			mQuery.OStream() << "'";
-		}
-
-		if (mask & eBF_NICK) {
-			mQuery.OStream() << " and `nick` = '";
-			cConfMySQL::WriteStringConstant(mQuery.OStream(), nick);
-			mQuery.OStream() << "'";
-		}
-
-		return mQuery.Query();
+	if (mask & eBF_IP) {
+		mQuery.OStream() << " `ip` = '";
+		cConfMySQL::WriteStringConstant(mQuery.OStream(), ip);
+		mQuery.OStream() << "'";
 	}
 
-	return 0;
+	if (mask & (eBF_IP | eBF_NICK))
+		mQuery.OStream() << " and";
+
+	if (mask & eBF_NICK) {
+		mQuery.OStream() << " `nick` = '";
+		cConfMySQL::WriteStringConstant(mQuery.OStream(), nick);
+		mQuery.OStream() << "'";
+	}
+
+	return mQuery.Query();
 }
 
 void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
