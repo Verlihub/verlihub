@@ -1396,21 +1396,35 @@ w_Targs *_GetUserExtJSON(int id, w_Targs *args)
 w_Targs *_GetUserCC(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
 	const char *cc = "";
-	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (u && u->mxConn) cc = u->mxConn->mCC.c_str();
+	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
+	if (user && user->mxConn) {
+		string geo = user->mxConn->GetGeoCC();
+		cc = geo.c_str();
+	}
+
 	return cpiPython::lib_pack("s", strdup(cc));
 }
 
 w_Targs *_GetIPCC(int id, w_Targs *args)
 {
 	const char *ip;
-	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
-	if (!ip) return NULL;
-	string ccstr;
-	cpiPython::me->server->mMaxMindDB->GetCC(ip, ccstr);
+
+	if (!cpiPython::lib_unpack(args, "s", &ip))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	string ccstr = GetIPCC(ip); // use script api, it has new optimizations
 	const char *cc = ccstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cc));
 }
@@ -1418,13 +1432,19 @@ w_Targs *_GetIPCC(int id, w_Targs *args)
 w_Targs *_GetIPCN(int id, w_Targs *args)
 {
 	const char *ip;
-	if (!cpiPython::lib_unpack(args, "s", &ip)) return NULL;
-	if (!ip) return NULL;
-	string cnstr;
-	cpiPython::me->server->mMaxMindDB->GetCN(ip, cnstr);
+
+	if (!cpiPython::lib_unpack(args, "s", &ip))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	string cnstr = GetIPCN(ip); // use script api, it has new optimizations
 	const char *cn = cnstr.c_str();
 	return cpiPython::lib_pack("s", strdup(cn));
 }
+
+// todo: add GetIPCity call
 
 w_Targs *_GetIPASN(int id, w_Targs *args)
 {

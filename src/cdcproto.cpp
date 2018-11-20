@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -569,15 +569,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	string omsg;
-
-	// User limit
-	unsigned int limit = mS->mC.max_users_total;
+	conn->SetGeoZone(); // must be called first
+	unsigned int limit = mS->mC.max_users_total; // user limits
 	unsigned int limit_cc = mS->mC.max_users[conn->mGeoZone];
 	unsigned int limit_extra = 0;
 
-	// Calculate user limits
-	if (conn->GetTheoricalClass() == eUC_PINGER)
+	if (conn->GetTheoricalClass() == eUC_PINGER) // calculate user limits
 		limit_extra += mS->mC.max_extra_pings;
 	else if (conn->GetTheoricalClass() == eUC_REGUSER)
 		limit_extra += mS->mC.max_extra_regs;
@@ -592,9 +589,9 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 	limit += limit_extra;
 	limit_cc += limit_extra;
+	string omsg;
 
-	// check the max_users limit
-	if ((conn->GetTheoricalClass() < eUC_OPERATOR) && ((mS->mUserCountTot >= limit) || (mS->mUserCount[conn->mGeoZone] >= limit_cc))) {
+	if ((conn->GetTheoricalClass() < eUC_OPERATOR) && ((mS->mUserCountTot >= limit) || (mS->mUserCount[conn->mGeoZone] >= limit_cc))) { // check the max_users limit
 		if (mS->mUserCount[conn->mGeoZone] >= limit_cc) {
 			string zonestr, zonedat;
 
@@ -623,8 +620,9 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 				os << autosprintf(zonestr.c_str(), mS->mUserCount[conn->mGeoZone], mS->mUserCountTot);
 			else
 				os << autosprintf(zonestr.c_str(), zonedat.c_str(), mS->mUserCount[conn->mGeoZone], mS->mUserCountTot);
-		} else
+		} else {
 			os << autosprintf(_("User limit exceeded at %d online users."), mS->mUserCountTot);
+		}
 
 		if (mS->mC.max_users_total == 0) {
 			os << " ";
@@ -636,12 +634,13 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 
 		if (conn->Log(2))
-			conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << conn->mCC << endl;
+			conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << conn->GetGeoCC() << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message
 		conn->Send(omsg, true);
 		return -1;
+
 	} else {
 		conn->SetLSFlag(eLS_ALLOWED);
 		mS->mUserCountTot++;
@@ -665,10 +664,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		conn->Send(omsg, true);
 	}
 
-	// check authorization ip
-	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) {
+	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) { // check authorization ip
 		mS->mR->LoginError(conn, nick); // important
-		if (conn->GetTheoricalClass() >= mS->mC.wrongauthip_report) mS->ReportUserToOpchat(conn, autosprintf(_("Authorization IP mismatch from %s"), nick.c_str()));
+
+		if (conn->GetTheoricalClass() >= mS->mC.wrongauthip_report)
+			mS->ReportUserToOpchat(conn, autosprintf(_("Authorization IP mismatch from %s"), nick.c_str()));
+
 		os << autosprintf(_("Authorization IP for this account doesn't match your IP address: %s"), conn->mAddrIP.c_str());
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
@@ -690,7 +691,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	try {
 		cUser *NewUser = new cUser(nick);
 
-		if(!conn->SetUser(NewUser)) {
+		if (!conn->SetUser(NewUser)) {
 			conn->CloseNow();
 			return -1;
 		}
@@ -702,13 +703,14 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 			}
 		#endif
 
-	} catch(...) {
-		if(mS->ErrLog(2))
+	} catch (...) {
+		if (mS->ErrLog(2))
 			mS->LogStream() << "Unhandled exception in cServerDC::DC_ValidateNick" << endl;
-		omsg = "Sorry :(";
-		if(conn->Log(2))
-			conn->LogStream() << "Fatal error calling SetUser; closing..." << endl;
-		mS->ConnCloseMsg(conn,omsg,1000);
+
+		if (conn->Log(2))
+			conn->LogStream() << "Fatal error calling SetUser, closing" << endl;
+
+		mS->ConnCloseMsg(conn, _("Undefined error occurred."), 1000);
 		return -1;
 	}
 
@@ -716,11 +718,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		if (conn->mRegInfo && (conn->mRegInfo->mClass == eUC_PINGER)) {
 			conn->mpUser->Register();
 			mS->mR->Login(conn, nick);
-		} else if (conn->mFeatures & eSF_BOTINFO)
+		} else if (conn->mFeatures & eSF_BOTINFO) {
 			conn->mpUser->mClass = eUC_PINGER;
+		}
 	}
 
-	conn->SetLSFlag(eLS_VALNICK|eLS_NICKLST); // set NICKLST because user may want to skip getting userlist
+	conn->SetLSFlag(eLS_VALNICK | eLS_NICKLST); // set eLS_NICKLST because user may want to skip getting userlist
 	conn->ClearTimeOut(eTO_VALNICK);
 	conn->SetTimeOut(eTO_MYINFO, mS->mC.timeout_length[eTO_MYINFO], mS->mTime);
 	return 0;
@@ -1253,10 +1256,24 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 					break;
 			}
 		} else { // insert custom variables
+			string geo;
 			temp = mS->mC.desc_insert_vars;
-			ReplaceVarInString(temp, "CC", temp, conn->mCC);
-			ReplaceVarInString(temp, "CN", temp, conn->mCN);
-			ReplaceVarInString(temp, "CITY", temp, conn->mCity);
+
+			if (temp.find("%[CC]") != temp.npos) { // only if found
+				geo = conn->GetGeoCC(); // country code
+				ReplaceVarInString(temp, "CC", temp, geo);
+			}
+
+			if (temp.find("%[CN]") != temp.npos) { // only if found
+				geo = conn->GetGeoCN(); // country name
+				ReplaceVarInString(temp, "CN", temp, geo);
+			}
+
+			if (temp.find("%[CITY]") != temp.npos) { // only if found
+				geo = conn->GetGeoCI(); // city name
+				ReplaceVarInString(temp, "CITY", temp, geo);
+			}
+
 			ReplaceVarInString(temp, "CLASS", temp, conn->mpUser->mClass);
 			ReplaceVarInString(temp, "CLASSNAME", temp, mS->UserClassName(conn->mpUser->mClass));
 

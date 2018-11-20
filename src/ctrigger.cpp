@@ -73,7 +73,7 @@ cTrigger::~cTrigger(){}
 
 int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bool timer)
 {
-	bool timeTrigger = timer && conn == NULL;
+	bool timeTrigger = timer && conn;
 	int uclass = 0;
 
 	if (!timeTrigger) { // check if it has been triggered by timeout, if not, check the connection and the user rights
@@ -90,7 +90,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	}
 
 	string buf, filename, sender;
-	string par1, end1, parall;
+	string par1, end1, parall, geo;
 
 	if (cmd_line.str().size() > mCommand.size()) {
 		parall.assign(cmd_line.str(), mCommand.size() + 1, string::npos);
@@ -113,8 +113,10 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	} else {
 		ReplaceVarInString(mDefinition, "CFG", filename, server.mConfigBaseDir);
 
-		if (!timeTrigger)
-			ReplaceVarInString(filename, "CC", filename, conn->mCC);
+		if (!timeTrigger && (filename.find("%[CC]") != filename.npos)) { // only if found
+			geo = conn->GetGeoCC(); // country code
+			ReplaceVarInString(filename, "CC", filename, geo);
+		}
 
 		if (!LoadFileInString(filename, buf))
 			return 0;
@@ -138,9 +140,21 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "END1", buf, end1);
 
 		if (!timeTrigger) {
-			ReplaceVarInString(buf, "CC", buf, conn->mCC);
-			ReplaceVarInString(buf, "CN", buf, conn->mCN);
-			ReplaceVarInString(buf, "CITY", buf, conn->mCity);
+			if (buf.find("%[CC]") != buf.npos) { // only if found
+				geo = conn->GetGeoCC(); // country code
+				ReplaceVarInString(buf, "CC", buf, geo);
+			}
+
+			if (buf.find("%[CN]") != buf.npos) { // only if found
+				geo = conn->GetGeoCN(); // country name
+				ReplaceVarInString(buf, "CN", buf, geo);
+			}
+
+			if (buf.find("%[CITY]") != buf.npos) { // only if found
+				geo = conn->GetGeoCI(); // city name
+				ReplaceVarInString(buf, "CITY", buf, geo);
+			}
+
 			ReplaceVarInString(buf, "IP", buf, conn->AddrIP());
 			ReplaceVarInString(buf, "HOST", buf, conn->AddrHost());
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);

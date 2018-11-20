@@ -29,28 +29,26 @@
 namespace nVerliHub {
 	using namespace nTables;
 	using namespace nEnums;
+
 	namespace nSocket {
+
 cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	cAsyncConn(sd, server)
 {
 	mpUser = NULL;
 	SetClassName("ConnDC");
 	mLogStatus = 0;
-	memset(&mTO,0, sizeof(mTO));
+	memset(&mTO, 0, sizeof(mTO));
 	mFeatures = 0;
 	mSendNickList = false;
 	mNickListInProgress = false;
 	mConnType = NULL;
 	mCloseReason = 0;
-	// Set default login timeout
-	SetTimeOut(eTO_LOGIN, Server()->mC.timeout_length[eTO_LOGIN], server->mTime);
-	// Default zone
-	mGeoZone = 0;
+	SetTimeOut(eTO_LOGIN, Server()->mC.timeout_length[eTO_LOGIN], server->mTime); // default login timeout
+	mGeoZone = -1;
 	mRegInfo = NULL;
 	mSRCounter = 0;
-
-	// protocol flood
-	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts));
+	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts)); // protocol flood
 	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
 	memset(mProtoFloodReports, 0, sizeof(mProtoFloodReports));
 }
@@ -104,6 +102,7 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 	mTimeLastAttempt.Get();
 
 	if (ret > 0) { // calculate upload bandwidth in real time
+		SetGeoZone(); // must be called first
 		//Server()->mUploadZone[mGeoZone].Dump();
 		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, ret);
 		//Server()->mUploadZone[mGeoZone].Dump();
@@ -118,16 +117,20 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 
 int cConnDC::StrLog(ostream & ostr, int level)
 {
-	if(cObj::StrLog(ostr,level))
-	{
-		LogStream()   << "(" << mAddrIP ;//<< ":" << mAddrPort;
-		if(mAddrHost.length())
+	if (cObj::StrLog(ostr, level)) {
+		LogStream() << "(" << mAddrIP; // << ":" << mAddrPort;
+
+		if (mAddrHost.size())
 			LogStream() << " " << mAddrHost;
-		LogStream()   << ") ";
-		if(mpUser)
+
+		LogStream() << ") ";
+
+		if (mpUser)
 			LogStream() << "[ " << mpUser->mNick << " ] ";
+
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -615,43 +618,6 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 	}
 
 	conn->mxMyFactory = this;
-
-	if (mServer->mMaxMindDB->GetCCC(conn->mCC, conn->mCN, conn->mCity, conn->AddrIP()) && conn->mCC.size() && mServer->mC.cc_zone[0].size()) { // get all geo data in one call
-		for (int i = 0; i < 3; i ++) {
-			if ((conn->mCC == mServer->mC.cc_zone[i]) || (mServer->mC.cc_zone[i].find(conn->mCC) != mServer->mC.cc_zone[i].npos)) {
-				conn->mGeoZone = i + 1;
-				break;
-			}
-		}
-	}
-
-	long IPConn, IPMin, IPMax;
-	IPConn = cBanList::Ip2Num(conn->AddrIP());
-
-	if (mServer->mC.ip_zone4_min.size()) {
-		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone4_min);
-		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone4_max);
-
-		if ((IPMin <= IPConn) && (IPMax >= IPConn))
-			conn->mGeoZone = 4;
-	}
-
-	if (mServer->mC.ip_zone5_min.size()) {
-		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone5_min);
-		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone5_max);
-
-		if ((IPMin <= IPConn) && (IPMax >= IPConn))
-			conn->mGeoZone = 5;
-	}
-
-	if (mServer->mC.ip_zone6_min.size()) {
-		IPMin = cBanList::Ip2Num(mServer->mC.ip_zone6_min);
-		IPMax = cBanList::Ip2Num(mServer->mC.ip_zone6_max);
-
-		if ((IPMin <= IPConn) && (IPMax >= IPConn))
-			conn->mGeoZone = 6;
-	}
-
 	conn->mxProtocol = mProtocol;
 	return (cAsyncConn*)conn;
 }
@@ -667,6 +633,7 @@ void cDCConnFactory::DeleteConn(cAsyncConn * &connection)
 		#endif
 
 		if (conn->GetLSFlag(eLS_ALLOWED)) {
+			conn->SetGeoZone(); // must be called first
 			mServer->mUserCountTot--;
 			mServer->mUserCount[conn->mGeoZone]--;
 
@@ -686,6 +653,108 @@ void cDCConnFactory::DeleteConn(cAsyncConn * &connection)
 	}
 
 	cConnFactory::DeleteConn(connection);
+}
+
+string cConnDC::GetGeoCC()
+{
+	if (mCC.empty() && mxServer) { // if not set
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv)
+			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+	}
+
+	return mCC;
+}
+
+string cConnDC::GetGeoCN()
+{
+	if (mCN.empty() && mxServer) { // if not set
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv)
+			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+	}
+
+	return mCN;
+}
+
+string cConnDC::GetGeoCI()
+{
+	if (mCity.empty() && mxServer) { // if not set
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv)
+			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+	}
+
+	return mCity;
+}
+
+void cConnDC::SetGeoZone()
+{
+	if (mGeoZone > -1) // already set
+		return;
+
+	if (!mxServer) {
+		mGeoZone = 0;
+		return;
+	}
+
+	nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+	if (!serv) {
+		mGeoZone = 0;
+		return;
+	}
+
+	string cc;
+
+	for (unsigned int pos = 0; pos < 3; pos++) {
+		if (serv->mC.cc_zone[pos].size()) { // only if enabled
+			if (cc.empty())
+				cc = GetGeoCC();
+
+			if ((cc == serv->mC.cc_zone[pos]) || (serv->mC.cc_zone[pos].find(cc) != serv->mC.cc_zone[pos].npos)) {
+				mGeoZone = pos + 1;
+				return;
+			}
+		}
+	}
+
+	long inum = cBanList::Ip2Num(AddrIP()), imin, imax;
+
+	if (serv->mC.ip_zone4_min.size() && serv->mC.ip_zone4_max.size()) {
+		imin = cBanList::Ip2Num(serv->mC.ip_zone4_min);
+		imax = cBanList::Ip2Num(serv->mC.ip_zone4_max);
+
+		if ((imin <= inum) && (imax >= inum)) {
+			mGeoZone = 4;
+			return;
+		}
+	}
+
+	if (serv->mC.ip_zone5_min.size() && serv->mC.ip_zone5_max.size()) {
+		imin = cBanList::Ip2Num(serv->mC.ip_zone5_min);
+		imax = cBanList::Ip2Num(serv->mC.ip_zone5_max);
+
+		if ((imin <= inum) && (imax >= inum)) {
+			mGeoZone = 5;
+			return;
+		}
+	}
+
+	if (serv->mC.ip_zone6_min.size() && serv->mC.ip_zone6_max.size()) {
+		imin = cBanList::Ip2Num(serv->mC.ip_zone6_min);
+		imax = cBanList::Ip2Num(serv->mC.ip_zone6_max);
+
+		if ((imin <= inum) && (imax >= inum)) {
+			mGeoZone = 6;
+			return;
+		}
+	}
+
+	mGeoZone = 0; // default zone
 }
 
 	}; // namespace nSocket

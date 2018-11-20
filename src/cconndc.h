@@ -393,16 +393,10 @@ namespace nVerliHub {
 				/// that represents the type of connection.
 				cConnType *mConnType;
 
-				/// The country code of the connection.
-				string mCC;
-
-				// country name of connection
-				string mCN;
-
-				// city name of connection
-				string mCity;
-
-				/// Geographic zone according to country code.
+				string GetGeoCC(); // country code
+				string GetGeoCN(); // country name
+				string GetGeoCI(); // city name
+				void SetGeoZone(); // country code zone
 				int mGeoZone;
 
 				/// Reason of why connection was closed.
@@ -458,12 +452,17 @@ namespace nVerliHub {
 			/// Ping handler.
 			sTimes mT;
 
+			string mCC; // country code
+			string mCN; // country name
+			string mCity; // city name
+
 			/// Search result counter.
 			/// @todo Is still used? If yes we have to move it somewhere
 			/// outside this class.
 			unsigned int mSRCounter;
 		};
 		/// @}
+
 	}; // namespace nSocket
 }; // namespace nVerliHub
 

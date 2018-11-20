@@ -47,6 +47,7 @@ namespace nVerliHub {
 	const char* GetUserCC(const char *nick);
 	string GetIPCC(const char *ip);
 	string GetIPCN(const char *ip);
+	string GetIPCity(const char *ip, const char *db = NULL);
 	const char* GetMyINFO(const char *nick);
 	int GetUserClass(const char *nick);
 	const char* GetUserHost(const char *nick);

@@ -376,35 +376,47 @@ int cDCConsole::CmdGethost(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 {
-	ostringstream os, o;
-	string s;
+	ostringstream os, out;
+	string nick, cc, cn, ci;
 	cUser *user;
-	int c = 0;
+	unsigned int tot = 0;
 
 	while (cmd_line.good()) {
-		cmd_line >> s;
-		if (cmd_line.fail()) break;
-		user = mOwner->mUserList.GetUserByNick(s);
+		cmd_line >> nick;
+
+		if (cmd_line.fail())
+			break;
+
+		user = mOwner->mUserList.GetUserByNick(nick);
 
 		if (user && user->mxConn) {
-			if (!mOwner->mUseDNS) user->mxConn->DNSLookup();
+			cc = user->mxConn->GetGeoCC();
+			cn = user->mxConn->GetGeoCN();
+			ci = user->mxConn->GetGeoCI();
+
+			if (!mOwner->mUseDNS)
+				user->mxConn->DNSLookup();
+
 			os << "\r\n [*] " << _("User") << ": " << user->mNick.c_str();
 			os << " ][ " << _("IP") << ": " << user->mxConn->AddrIP().c_str();
-			os << " ][ " << _("Country") << ": " << user->mxConn->mCC.c_str() << "=" << user->mxConn->mCN.c_str();
-			os << " ][ " << _("City") << ": " << user->mxConn->mCity.c_str();
-			if (!user->mxConn->AddrHost().empty()) os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
-		} else
-			os << "\r\n [*] " << autosprintf(_("User not found: %s"), s.c_str());
+			os << " ][ " << _("Country") << ": " << cc.c_str() << "=" << cn.c_str();
+			os << " ][ " << _("City") << ": " << ci.c_str();
 
-		c++;
+			if (!user->mxConn->AddrHost().empty())
+				os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
+		} else {
+			os << "\r\n [*] " << autosprintf(_("User not found: %s"), nick.c_str());
+		}
+
+		tot++;
 	}
 
-	if (c == 0)
-		o << _("Please specify one or more nicks separated by space.");
+	if (tot == 0)
+		out << _("Please specify one or more nicks separated by space.");
 	else
-		o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ":" << os.str();
+		out << autosprintf(ngettext("Showing %d result", "Showing %d results", tot), tot) << ":" << os.str();
 
-	mOwner->DCPublicHS(o.str().c_str(), conn);
+	mOwner->DCPublicHS(out.str().c_str(), conn);
 	return 1;
 }
 
@@ -528,14 +540,16 @@ int cDCConsole::CmdMyInfo(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 {
+	if (!conn)
+		return 0;
+
 	ostringstream os;
-	string omsg;
+	string cc = conn->GetGeoCC(), cn = conn->GetGeoCN(), ci = conn->GetGeoCI();
 	os << _("Your IP information") << ":\r\n\r\n";
 	os << " [*] " << _("IP") << ": " << conn->AddrIP().c_str() << "\r\n";
-	os << " [*] " << _("Country") << ": " << conn->mCC.c_str() << "=" << conn->mCN.c_str() << "\r\n";
-	os << " [*] " << _("City") << ": " << conn->mCity.c_str() << "\r\n";
-	omsg = os.str();
-	mOwner->DCPublicHS(omsg, conn);
+	os << " [*] " << _("Country") << ": " << cc.c_str() << "=" << cn.c_str() << "\r\n";
+	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
+	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
 
@@ -803,7 +817,10 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 		string pref = mOwner->mC.nick_prefix_autoreg;
 
 		if (pref.size()) {
-			ReplaceVarInString(pref, "CC", pref, conn->mCC);
+			if (pref.find("%[CC]") != pref.npos) { // only if found
+				data = conn->GetGeoCC();
+				ReplaceVarInString(pref, "CC", pref, data);
+			}
 
 			if (StrCompare(conn->mpUser->mNick, 0, pref.size(), pref) != 0) {
 				os << autosprintf(_("Your nick must start with: %s"), pref.c_str());

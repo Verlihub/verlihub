@@ -252,11 +252,13 @@ void cUser::DisplayInfo(ostream &os)
 	if (this->mxConn->AddrHost().size())
 		os << " [*] " << autosprintf(_("Host: %s"), this->mxConn->AddrHost().c_str()) << "\r\n";
 
-	if (this->mxConn->mCC.size())
-		os << " [*] " << autosprintf(_("Country: %s=%s"), this->mxConn->mCC.c_str(), this->mxConn->mCN.c_str()) << "\r\n";
+	string cc = this->mxConn->GetGeoCC(), cn = this->mxConn->GetGeoCN(), ci = this->mxConn->GetGeoCI();
 
-	if (this->mxConn->mCity.size())
-		os << " [*] " << autosprintf(_("City: %s"), this->mxConn->mCity.c_str()) << "\r\n";
+	if (cc.size() && (cc != "--"))
+		os << " [*] " << autosprintf(_("Country: %s=%s"), cc.c_str(), cn.c_str()) << "\r\n";
+
+	if (ci.size() && (ci != "--"))
+		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));
