@@ -119,11 +119,13 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		cc = mLastCC;
 		mTotReps++;
+		vhLog(3) << "[GetCC] Using last IP: " << mLastIP << " = " << mLastCC << endl;
 		return true;
 	}
 
 	if (host.substr(0, 4) == "127.") {
 		cc = "L1";
+		vhLog(3) << "[GetCC] Got local IP: " << host << endl;
 		return true;
 	}
 
@@ -131,6 +133,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		cc = "P1";
+		vhLog(3) << "[GetCC] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -160,7 +163,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 	mLastIP = host;
 	mLastCC = code;
-
+	vhLog(3) << "[GetCC] Result for IP: " << host << " = " << code << endl;
 	cc = code;
 	return res;
 }
@@ -170,11 +173,13 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		cn = mLastCN;
 		mTotReps++;
+		vhLog(3) << "[GetCN] Using last IP: " << mLastIP << " = " << mLastCN << endl;
 		return true;
 	}
 
 	if (host.substr(0, 4) == "127.") {
 		cn = "Local Network";
+		vhLog(3) << "[GetCN] Got local IP: " << host << endl;
 		return true;
 	}
 
@@ -182,6 +187,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		cn = "Private Network";
+		vhLog(3) << "[GetCN] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -212,7 +218,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 
 	mLastIP = host;
 	mLastCN = name;
-
+	vhLog(3) << "[GetCN] Result for IP: " << host << " = " << name << endl;
 	cn = name;
 	return res;
 }
@@ -222,11 +228,13 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0)) { // no need to look up same address as last time
 		geo_city = mLastCI;
 		mTotReps++;
+		vhLog(3) << "[GetCity] Using last IP: " << mLastIP << " = " << mLastCI << endl;
 		return true;
 	}
 
 	if (host.substr(0, 4) == "127.") {
 		geo_city = "Local Network";
+		vhLog(3) << "[GetCity] Got local IP: " << host << endl;
 		return true;
 	}
 
@@ -234,6 +242,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		geo_city = "Private Network";
+		vhLog(3) << "[GetCity] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -277,7 +286,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 
 	mLastIP = host;
 	mLastCI = city;
-
+	vhLog(3) << "[GetCity] Result for IP: " << host << " = " << city << endl;
 	geo_city = city;
 	return res;
 }
@@ -289,6 +298,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		geo_cn = mLastCN;
 		geo_ci = mLastCI;
 		mTotReps++;
+		vhLog(3) << "[GetCCC] Using last IP: " << mLastIP << " = " << mLastCC << " + " << mLastCN << " + " << mLastCI << endl;
 		return true;
 	}
 
@@ -296,6 +306,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		geo_cc = "L1";
 		geo_cn = "Local Network";
 		geo_ci = "Local Network";
+		vhLog(3) << "[GetCCC] Got local IP: " << host << endl;
 		return true;
 	}
 
@@ -305,6 +316,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		geo_cc = "P1";
 		geo_cn = "Private Network";
 		geo_ci = "Private Network";
+		vhLog(3) << "[GetCCC] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -369,7 +381,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 	mLastCC = cc;
 	mLastCN = cn;
 	mLastCI = ci;
-
+	vhLog(3) << "[GetCCC] Result for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
 	geo_cc = cc;
 	geo_cn = cn;
 	geo_ci = ci;
@@ -385,6 +397,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		geo_cn = "Local Network";
 		geo_city = "Local Network";
 		geo_host = host;
+		vhLog(3) << "[GetGeoIP] Got local IP: " << host << endl;
 		return true;
 	}
 
@@ -397,6 +410,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		geo_cn = "Private Network";
 		geo_city = "Private Network";
 		geo_host = host;
+		vhLog(3) << "[GetGeoIP] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -407,6 +421,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		geo_cn = "Private Network";
 		geo_city = "Private Network";
 		geo_host = host;
+		vhLog(3) << "[GetGeoIP] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -417,6 +432,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		geo_cn = "Private Network";
 		geo_city = "Private Network";
 		geo_host = host;
+		vhLog(3) << "[GetGeoIP] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -525,6 +541,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 			geo_area = 0; // todo: area_code no longer supported, get rid of it
 			geo_host = host;
+			vhLog(3) << "[GetGeoIP] Result for IP: " << host << " = " << geo_cc << " + " << geo_cn << " + " << geo_city << endl;
 		}
 
 		mTotReqs++;
@@ -544,23 +561,15 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 {
 	if (host.substr(0, 4) == "127.") {
 		asn_name = "Local Network";
+		vhLog(3) << "[GetASN] Got local IP: " << host << endl;
 		return true;
 	}
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
-	if (sip >= 167772160UL && sip <= 184549375UL) {
+	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		asn_name = "Private Network";
-		return true;
-	}
-
-	if (sip >= 2886729728UL && sip <= 2887778303UL) {
-		asn_name = "Private Network";
-		return true;
-	}
-
-	if (sip >= 3232235520UL && sip <= 3232301055UL) {
-		asn_name = "Private Network";
+		vhLog(3) << "[GetASN] Got private IP: " << host << endl;
 		return true;
 	}
 
@@ -607,6 +616,8 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 				asn_name += WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
 			}
+
+			vhLog(3) << "[GetASN] Result for IP: " << host << " = " << asn_name << endl;
 		}
 
 		mTotReqs++;

@@ -641,16 +641,17 @@ int _GetUserCC(lua_State *L)
 	}
 
 	string nick = lua_tostring(L, 2);
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!usr || !usr->mxConn) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	nick = user->mxConn->GetGeoCC(); // country code
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, usr->mxConn->mCC.c_str());
+	lua_pushstring(L, nick.c_str());
 	return 2;
 }
 
@@ -676,16 +677,17 @@ int _GetUserCN(lua_State *L)
 	}
 
 	string nick = lua_tostring(L, 2);
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!usr || !usr->mxConn) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	nick = user->mxConn->GetGeoCN(); // country name
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, usr->mxConn->mCN.c_str());
+	lua_pushstring(L, nick.c_str());
 	return 2;
 }
 
@@ -711,16 +713,17 @@ int _GetUserCity(lua_State *L)
 	}
 
 	string nick = lua_tostring(L, 2);
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!usr || !usr->mxConn) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
+	nick = user->mxConn->GetGeoCI(); // city name
 	lua_pushboolean(L, 1);
-	lua_pushstring(L, usr->mxConn->mCity.c_str());
+	lua_pushstring(L, nick.c_str());
 	return 2;
 }
 
@@ -807,16 +810,17 @@ int _GetIPCity(lua_State *L)
 		if (!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
-		} else
+		} else {
 			db = lua_tostring(L, 3);
+		}
 	}
 
 	string ip = lua_tostring(L, 2);
-	string city;
+	const string ci = GetIPCity(ip.c_str(), db.c_str()); // use script api, it has new optimizations
 
-	if (serv->mMaxMindDB->GetCity(city, ip, db)) {
+	if (ci.size()) {
 		lua_pushboolean(L, 1);
-		lua_pushstring(L, city.c_str());
+		lua_pushstring(L, ci.c_str());
 	} else {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);

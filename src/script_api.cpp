@@ -19,7 +19,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
 
 #include "cserverdc.h"
@@ -291,8 +291,10 @@ const char* GetUserCC(const char *nick)
 {
 	cUser *user = GetUser(nick);
 
-	if (user && user->mxConn)
-		return user->mxConn->mCC.c_str();
+	if (user && user->mxConn) {
+		string cc = user->mxConn->GetGeoCC();
+		return cc.c_str();
+	}
 
 	return NULL;
 }
@@ -309,9 +311,15 @@ string GetIPCC(const char *ip)
 		return "";
 	}
 
-	string cc;
+	string cc(ip);
+	cConnDC *conn = serv->GetConnByIP(cc); // look in connection list first, script ususally call this for connected but not yet logged in users
 
-	if (serv->mMaxMindDB->GetCC(ip, cc))
+	if (conn) {
+		cc = conn->GetGeoCC(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
+		return cc;
+	}
+
+	if (serv->mMaxMindDB->GetCC(ip, cc)) // else perform mmdb lookup
 		return cc;
 
 	return "";
@@ -329,10 +337,42 @@ string GetIPCN(const char *ip)
 		return "";
 	}
 
-	string cn;
+	string cn(ip);
+	cConnDC *conn = serv->GetConnByIP(cn); // look in connection list first, script ususally call this for connected but not yet logged in users
 
-	if (serv->mMaxMindDB->GetCN(ip, cn))
+	if (conn) {
+		cn = conn->GetGeoCN(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
 		return cn;
+	}
+
+	if (serv->mMaxMindDB->GetCN(ip, cn)) // else perform mmdb lookup
+		return cn;
+
+	return "";
+}
+
+string GetIPCity(const char *ip, const char *db)
+{
+	if (!ip)
+		return "";
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Server not found" << endl;
+		return "";
+	}
+
+	string ci(ip);
+	cConnDC *conn = serv->GetConnByIP(ci); // look in connection list first, script ususally call this for connected but not yet logged in users
+
+	if (conn) {
+		ci = conn->GetGeoCI(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
+		return ci;
+	}
+
+	if (serv->mMaxMindDB->GetCity(ci, ip, db)) // else perform mmdb lookup
+		return ci;
 
 	return "";
 }

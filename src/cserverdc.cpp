@@ -643,6 +643,21 @@ bool cServerDC::OnUnLoad(long code)
 	return true;
 }
 
+cConnDC* cServerDC::GetConnByIP(const string &ip)
+{
+	cConnDC *conn;
+	tCLIt pos;
+
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
+
+		if (conn && conn->ok && (conn->AddrIP() == ip))
+			return conn;
+	}
+
+	return NULL;
+}
+
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here
 {
 	string str(data);
@@ -679,105 +694,150 @@ int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm,
 
 int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int cm, int cM)
 {
-	string str, tend;
+	string temp, tend;
 	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
+	tCLIt pos;
+	int tot = 0;
 
-	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC*)(*i);
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tend = end;
 			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
-			ReplaceVarInString(tend, "CC", tend, conn->mCC);
-			ReplaceVarInString(tend, "CN", tend, conn->mCN);
-			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
+
+			if (tend.find("%[CC]") != tend.npos) { // only if found
+				temp = conn->GetGeoCC(); // country code
+				ReplaceVarInString(tend, "CC", tend, temp);
+			}
+
+			if (tend.find("%[CN]") != tend.npos) { // only if found
+				temp = conn->GetGeoCN(); // country name
+				ReplaceVarInString(tend, "CN", tend, temp);
+			}
+
+			if (tend.find("%[CITY]") != tend.npos) { // only if found
+				temp = conn->GetGeoCI(); // city name
+				ReplaceVarInString(tend, "CITY", tend, temp);
+			}
+
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-			str = start + conn->mpUser->mNick + tend; // finalize
-			conn->Send(str); // pipe is added by default for safety
-			counter++;
+			temp = start + conn->mpUser->mNick + tend; // finalize
+			conn->Send(temp); // pipe is added by default for safety
+			tot++;
 		}
 	}
 
-	return counter;
+	return tot;
 }
 
 int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 {
-	string tmsg;
+	string temp, tmsg;
 	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
+	tCLIt pos;
+	int tot = 0;
 
-	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC*)(*i);
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tmsg = msg;
 			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
-			ReplaceVarInString(tmsg, "CC", tmsg, conn->mCC);
-			ReplaceVarInString(tmsg, "CN", tmsg, conn->mCN);
-			ReplaceVarInString(tmsg, "CITY", tmsg, conn->mCity);
+
+			if (tmsg.find("%[CC]") != tmsg.npos) { // only if found
+				temp = conn->GetGeoCC(); // country code
+				ReplaceVarInString(tmsg, "CC", tmsg, temp);
+			}
+
+			if (tmsg.find("%[CN]") != tmsg.npos) { // only if found
+				temp = conn->GetGeoCN(); // country name
+				ReplaceVarInString(tmsg, "CN", tmsg, temp);
+			}
+
+			if (tmsg.find("%[CITY]") != tmsg.npos) { // only if found
+				temp = conn->GetGeoCI(); // city name
+				ReplaceVarInString(tmsg, "CITY", tmsg, temp);
+			}
+
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
 			conn->Send(tmsg); // pipe is added by default for safety
-			counter++;
+			tot++;
 		}
 	}
 
-	return counter;
+	return tot;
 }
 
 int cServerDC::SendToAllWithNickCC(const string &start, const string &end, int cm, int cM, const string &cc_zone)
 {
 	string str;
 	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
+	tCLIt pos;
+	int tot = 0;
 
-	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC*)(*i);
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
 
-		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM) && (cc_zone.npos != cc_zone.find(conn->mCC))) {
-			str = start + conn->mpUser->mNick + end;
-			conn->Send(str); // pipe is added by default for safety
-			counter++;
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
+			str = conn->GetGeoCC();
+
+			if (cc_zone.find(str) != cc_zone.npos) {
+				str = start + conn->mpUser->mNick + end;
+				conn->Send(str); // pipe is added by default for safety
+				tot++;
+			}
 		}
 	}
 
-	return counter;
+	return tot;
 }
 
 int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone)
 {
 	string str, tend;
 	cConnDC *conn;
-	tCLIt i;
-	int counter = 0;
+	tCLIt pos;
+	int tot = 0;
 
-	for (i = mConnList.begin(); i != mConnList.end(); i++) {
-		conn = (cConnDC*)(*i);
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
 
-		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM) && (cc_zone.npos != cc_zone.find(conn->mCC))) {
-			tend = end;
-			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
-			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
-			ReplaceVarInString(tend, "CC", tend, conn->mCC);
-			ReplaceVarInString(tend, "CN", tend, conn->mCN);
-			ReplaceVarInString(tend, "CITY", tend, conn->mCity);
-			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
-			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-			str = start + conn->mpUser->mNick + tend; // finalize
-			conn->Send(str); // pipe is added by default for safety
-			counter++;
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
+			str = conn->GetGeoCC(); // country code
+
+			if (cc_zone.find(str) != cc_zone.npos) {
+				tend = end;
+				ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
+				ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
+
+				if (tend.find("%[CC]") != tend.npos) // only if found
+					ReplaceVarInString(tend, "CC", tend, str);
+
+				if (tend.find("%[CN]") != tend.npos) { // only if found
+					str = conn->GetGeoCN(); // country name
+					ReplaceVarInString(tend, "CN", tend, str);
+				}
+
+				if (tend.find("%[CITY]") != tend.npos) { // only if found
+					str = conn->GetGeoCI(); // city name
+					ReplaceVarInString(tend, "CITY", tend, str);
+				}
+
+				ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
+				ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
+				str = start + conn->mpUser->mNick + tend; // finalize
+				conn->Send(str); // pipe is added by default for safety
+				tot++;
+			}
 		}
 	}
 
-	return counter;
+	return tot;
 }
 
 unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, bool passive, bool tth)
@@ -1182,11 +1242,25 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	#endif
 
 	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) {
+		string geo;
 		omsg.clear();
-		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick);
-		ReplaceVarInString(omsg, "CC", omsg, conn->mCC);
-		ReplaceVarInString(omsg, "CN", omsg, conn->mCN);
-		ReplaceVarInString(omsg, "CITY", omsg, conn->mCity);
+		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
+
+		if (omsg.find("%[CC]") != omsg.npos) { // only if found
+			geo = conn->GetGeoCC(); // country code
+			ReplaceVarInString(omsg, "CC", omsg, geo);
+		}
+
+		if (omsg.find("%[CN]") != omsg.npos) { // only if found
+			geo = conn->GetGeoCN(); // country name
+			ReplaceVarInString(omsg, "CN", omsg, geo);
+		}
+
+		if (omsg.find("%[CITY]") != omsg.npos) { // only if found
+			geo = conn->GetGeoCI(); // city name
+			ReplaceVarInString(omsg, "CITY", omsg, geo);
+		}
+
 		DCPublicHSToAll(omsg, mC.delayed_chat);
 	}
 }
@@ -1564,14 +1638,16 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		return 0;
 	}
 
-	if (mC.nick_prefix_cc && conn->mCC.size() && (conn->mCC != "--")) {
-		string Prefix("[");
-		Prefix += conn->mCC;
-		Prefix += "]";
+	if (mC.nick_prefix_cc) {
+		more = conn->GetGeoCC();
 
-		if (StrCompare(nick, 0, 4, Prefix) != 0) {
-			errmsg << autosprintf(_("Please use following nick prefix: %s"), Prefix.c_str());
-			close = conn->GetTheoricalClass() < eUC_REGUSER;
+		if (more.size() && (more != "--")) {
+			more = "[" + more + "]";
+
+			if (StrCompare(nick, 0, 4, more) != 0) {
+				errmsg << autosprintf(_("Please use following nick prefix: %s"), more.c_str());
+				close = conn->GetTheoricalClass() < eUC_REGUSER;
+			}
 		}
 	}
 
@@ -1996,48 +2072,54 @@ int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 
 unsigned int cServerDC::WhoCC(const string &cc, string &dest, const string &sep)
 {
-	cUserCollection::iterator i;
-	unsigned int cnt = 0;
+	cUserCollection::iterator pos;
+	unsigned int tot = 0;
 	cConnDC *conn;
+	string geo;
 
-	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
-		conn = ((cUser*)(*i))->mxConn;
-
-		if (conn && (conn->mCC == cc)) {
-			dest += sep;
-			dest += (*i)->mNick;
-			cnt++;
-		}
-	}
-
-	return cnt;
-}
-
-unsigned int cServerDC::WhoCity(const string &city, string &dest, const string &sep)
-{
-	cUserCollection::iterator i;
-	unsigned int cnt = 0;
-	cConnDC *conn;
-	string low;
-
-	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
-		conn = ((cUser*)(*i))->mxConn;
+	for (pos = mUserList.begin(); pos != mUserList.end(); ++pos) {
+		conn = ((cUser*)(*pos))->mxConn;
 
 		if (conn) {
-			low = toLower(conn->mCity);
+			geo = conn->GetGeoCC();
 
-			if (low.find(city) != string::npos) {
+			if (geo == cc) {
 				dest += sep;
-				dest += (*i)->mNick;
-				dest += " [";
-				dest += conn->mCity;
-				dest += "]";
-				cnt++;
+				dest += (*pos)->mNick;
+				tot++;
 			}
 		}
 	}
 
-	return cnt;
+	return tot;
+}
+
+unsigned int cServerDC::WhoCity(const string &city, string &dest, const string &sep)
+{
+	cUserCollection::iterator pos;
+	unsigned int tot = 0;
+	cConnDC *conn;
+	string low, ci;
+
+	for (pos = mUserList.begin(); pos != mUserList.end(); ++pos) {
+		conn = ((cUser*)(*pos))->mxConn;
+
+		if (conn) {
+			ci = conn->GetGeoCI();
+			low = toLower(ci);
+
+			if (low.find(city) != low.npos) {
+				dest += sep;
+				dest += (*pos)->mNick;
+				dest += " [";
+				dest += ci;
+				dest += "]";
+				tot++;
+			}
+		}
+	}
+
+	return tot;
 }
 
 unsigned int cServerDC::WhoHubPort(unsigned int port, string &dest, const string &sep)
@@ -2452,10 +2534,15 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 	if (conn->mpUser) // nick
 		os << " ][ " << autosprintf(_("Nick: %s"), conn->mpUser->mNick.c_str());
 
-	os << " ][ " << autosprintf(_("IP: %s"), conn->AddrIP().c_str()); // ip
+	os << " ][ " << autosprintf(_("IP: %s"), conn->AddrIP().c_str()); // address
+	string temp;
 
-	if (mC.report_user_country && conn->mCC.size() && (conn->mCC != "--")) // country code
-		os << "." << conn->mCC;
+	if (mC.report_user_country) { // country code
+		temp = conn->GetGeoCC();
+
+		if (temp.size() && (temp != "--"))
+			os << "." << temp;
+	}
 
 	if (!mUseDNS && mC.report_dns_lookup)
 		conn->DNSLookup();
@@ -2463,12 +2550,11 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 	if (conn->AddrHost().size()) // host
 		os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
 
-	if (!ToMain && this->mOpChat) {
-		this->mOpChat->SendPMToAll(os.str(), NULL);
+	if (!ToMain && mOpChat) {
+		mOpChat->SendPMToAll(os.str(), NULL);
 	} else {
-		string ChatMsg;
-		cDCProto::Create_Chat(ChatMsg, mC.opchat_name, os.str());
-		this->mOpchatList.SendToAll(ChatMsg, false, true);
+		cDCProto::Create_Chat(temp, mC.opchat_name, os.str());
+		mOpchatList.SendToAll(temp, false, true);
 	}
 }
 
@@ -3121,7 +3207,7 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 	sCtmToHubItem *item = new sCtmToHubItem;
 	//item->mNick = conn->mMyNick; // todo: make use of these
 	//item->mIP = conn->AddrIP();
-	//item->mCC = conn->mCC;
+	//item->mCC = conn->mCC; // todo: conn->getGeoCC()
 	//item->mPort = conn->AddrPort();
 	//item->mServ = conn->GetServPort();
 	item->mRef = ref;

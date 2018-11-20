@@ -453,6 +453,9 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int SaveFile(const string &file, const string &text);
 
+		// get connection by ip
+		cConnDC* GetConnByIP(const string &ip);
+
 		/**
 		* Send data to all users that are in userlist.
 		*
