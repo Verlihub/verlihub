@@ -64,13 +64,7 @@ namespace nVerliHub {
 				UConverter *mConv;
 				string mCharSet;
 
-				string mLastIP;
-				string mLastCC;
-				string mLastCN;
-				string mLastCI;
-
 				unsigned long mTotReqs;
-				unsigned long mTotReps;
 				unsigned long mTotCacs;
 
 				MMDB_s *mDBCO;
