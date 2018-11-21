@@ -1822,7 +1822,10 @@ int cServerDC::OnTimer(cTime &now)
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
 	}
 
-	if (mC.detect_ctmtohub && ((this->mTime.Sec() - mCtmToHubConf.mTime.Sec()) >= 60)) { // ctm2hub
+	if (mC.mmdb_cache && mC.mmdb_cache_mins && ((mTime.Sec() - mMaxMindDB->mClean.Sec()) >= 60)) // clean mmdb cache every minute
+		mMaxMindDB->MMDBCacheClean(); // do not confuse with MMDBCacheClear
+
+	if (mC.detect_ctmtohub && ((mTime.Sec() - mCtmToHubConf.mTime.Sec()) >= 60)) { // ctm2hub
 		unsigned long total = mCtmToHubList.size();
 
 		if (total) {

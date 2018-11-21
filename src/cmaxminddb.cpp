@@ -87,6 +87,9 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	mDBCO = TryCountryDB(MMDB_MODE_MMAP); // load databases
 	mDBCI = TryCityDB(MMDB_MODE_MMAP);
 	mDBAS = TryASNDB(MMDB_MODE_MMAP);
+
+	if (mServ) // delay first clean
+		mClean = mServ->mTime;
 }
 
 cMaxMindDB::~cMaxMindDB()
@@ -1114,32 +1117,24 @@ void cMaxMindDB::MMDBCacheSet(const string &ip, const string &cc, const string &
 
 	if (mMMDBCacheList.size()) {
 		for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
-			if (*it) {
-				if (!stop && (ip == (*it)->mIP)) { // update if exists
-					if (cc.size() && (cc != (*it)->mCC)) // country code
-						(*it)->mCC = cc;
+			if ((*it) && (ip == (*it)->mIP)) { // update if exists
+				if (cc.size() && (cc != (*it)->mCC)) // country code
+					(*it)->mCC = cc;
 
-					if (cn.size() && (cn != (*it)->mCN)) // country name
-						(*it)->mCN = cn;
+				if (cn.size() && (cn != (*it)->mCN)) // country name
+					(*it)->mCN = cn;
 
-					if (ci.size() && (ci != (*it)->mCI)) // city name
-						(*it)->mCI = ci;
+				if (ci.size() && (ci != (*it)->mCI)) // city name
+					(*it)->mCI = ci;
 
-					if (as.size() && (as != (*it)->mAS)) // asn
-						(*it)->mAS = as;
+				if (as.size() && (as != (*it)->mAS)) // asn
+					(*it)->mAS = as;
 
-					(*it)->mLT = mServ->mTime; // lookup time
-					stop = true;
-
-				} else if (mServ->mC.mmdb_cache_mins && ((mServ->mTime.Sec() - (*it)->mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60))) { // remove outdated if enabled
-					delete (*it);
-					(*it) = NULL;
-				}
+				(*it)->mLT = mServ->mTime; // lookup time
+				stop = true;
+				break;
 			}
 		}
-
-		if (mServ->mC.mmdb_cache_mins)
-			mMMDBCacheList.remove(NULL); // remove deleted items
 	}
 
 	if (stop)
@@ -1159,6 +1154,7 @@ void cMaxMindDB::MMDBCacheSet(const string &ip, const string &cc, const string &
 	if (as.size()) // asn
 		item->mAS = as;
 
+	item->mIP = ip; // ip address
 	item->mLT = mServ->mTime; // lookup time
 	mMMDBCacheList.push_back(item);
 }
@@ -1181,9 +1177,31 @@ bool cMaxMindDB::MMDBCacheGet(const string &ip, string &cc, string &cn, string &
 	return false;
 }
 
+void cMaxMindDB::MMDBCacheClean()
+{
+	if (!mServ->mC.mmdb_cache_mins || mMMDBCacheList.empty()) // nothing to clean
+		return;
+
+	unsigned int del = 0;
+
+	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
+		if ((*it) && ((mServ->mTime.Sec() - (*it)->mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60))) { // delete outdated items
+			delete (*it);
+			(*it) = NULL;
+			del++;
+		}
+	}
+
+	mMMDBCacheList.remove(NULL); // remove deleted items
+	mClean = mServ->mTime; // update timer
+	vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
+}
+
 void cMaxMindDB::MMDBCacheClear()
 {
-	if (mMMDBCacheList.empty()) // nothing to clear
+	unsigned int del = mMMDBCacheList.size();
+
+	if (!del) // nothing to clear
 		return;
 
 	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
@@ -1194,6 +1212,7 @@ void cMaxMindDB::MMDBCacheClear()
 	}
 
 	mMMDBCacheList.clear();
+	vhLog(3) << "Cached items cleared: " << del << endl;
 }
 
 	};

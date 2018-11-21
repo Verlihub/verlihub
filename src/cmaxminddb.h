@@ -45,6 +45,9 @@ namespace nVerliHub {
 				cMaxMindDB(nSocket::cServerDC *mS);
 				~cMaxMindDB();
 
+				cTime mClean; // cache clean timer
+				void MMDBCacheClean(); // cache clean function
+
 				void ReloadAll();
 				void ShowInfo(ostream &os);
 
