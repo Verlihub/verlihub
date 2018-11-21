@@ -143,8 +143,6 @@ sub RunTests {
   Say "    MyINFO: ".vh::GetMyINFO("testtesttest");
   Div;
   Say "Test user functions";
-  Say "  vh::GetUserCC($opnick) result:";
-  Say "    ".vh::GetUserCC($opnick);
   Say "  vh::GetUserIP($opnick) result:";
   my $ip = vh::GetUserIP($opnick);
   Say "    ".$ip;

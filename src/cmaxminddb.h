@@ -22,8 +22,10 @@
 #define NUTILSCMAXMINDDB_H
 
 #include "cobj.h"
+#include "ctime.h"
 #include <string>
 #include <ostream>
+#include <list>
 #include <maxminddb.h>
 #include <unicode/translit.h>
 #include <unicode/ucnv.h>
@@ -66,6 +68,7 @@ namespace nVerliHub {
 
 				unsigned long mTotReqs;
 				unsigned long mTotReps;
+				unsigned long mTotCacs;
 
 				MMDB_s *mDBCO;
 				MMDB_s *mDBCI;
@@ -81,6 +84,23 @@ namespace nVerliHub {
 
 				bool FileExists(const char *name);
 				unsigned long FileSize(const char *name);
+
+				struct sMMDBCache // mmdb cache
+				{
+					string mIP; // ip address
+					string mCC; // country code
+					string mCN; // contry name
+					string mCI; // city name
+					string mAS; // asn
+					cTime mLT; // lookup time
+				};
+
+				typedef list<sMMDBCache*> tMMDBCacheList;
+				tMMDBCacheList mMMDBCacheList;
+
+				void MMDBCacheSet(const string &ip, const string &cc, const string &cn, const string &ci, const string &as);
+				bool MMDBCacheGet(const string &ip, string &cc, string &cn, string &ci, string &as);
+				void MMDBCacheClear();
 		};
 
 	};
