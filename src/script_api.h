@@ -44,7 +44,6 @@ namespace nVerliHub {
 	bool SendToOpChat(const char *data, const char *nick = NULL);
 	bool CloseConnection(const char *nick, long delay = 0);
 	bool StopHub(int code, int delay);
-	const char* GetUserCC(const char *nick);
 	string GetIPCC(const char *ip);
 	string GetIPCN(const char *ip);
 	string GetIPCity(const char *ip, const char *db = NULL);

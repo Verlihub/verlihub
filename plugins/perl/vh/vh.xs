@@ -66,10 +66,6 @@ CloseConnection(nick)
 	const char *nick
 
 const char *
-GetUserCC(nick)
-	const char *nick
-
-const char *
 GetMyINFO(nick)
 	const char *nick
 

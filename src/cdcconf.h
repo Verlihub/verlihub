@@ -282,6 +282,8 @@ public:
 	bool disable_extjson; // extjson
 	string mmdb_names_lang; // mmdb
 	unsigned int mmdb_conv_depth;
+	bool mmdb_cache;
+	unsigned int mmdb_cache_mins;
 	int plugin_mod_class;
 	int topic_mod_class;
 	int mainchat_class;

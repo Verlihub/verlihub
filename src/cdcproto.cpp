@@ -633,11 +633,13 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 				os << _("This is a registered users only hub.");
 		}
 
-		if (conn->Log(2)) // this is because GetGeoCC also writes logs
+		if (conn->Log(2)) { // this is because GetGeoCC also writes logs
+			conn->LogStream() << "Hub is full, see results on next line" << endl;
 			omsg = conn->GetGeoCC();
+		}
 
 		if (conn->Log(2))
-			conn->LogStream() << "Hub is full: " << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << omsg << endl;
+			conn->LogStream() << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << omsg << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message

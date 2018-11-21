@@ -287,18 +287,6 @@ bool StopHub(int code, int delay)
 	return true;
 }
 
-const char* GetUserCC(const char *nick)
-{
-	cUser *user = GetUser(nick);
-
-	if (user && user->mxConn) {
-		string cc = user->mxConn->GetGeoCC();
-		return cc.c_str();
-	}
-
-	return NULL;
-}
-
 string GetIPCC(const char *ip)
 {
 	if (!ip)
