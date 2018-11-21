@@ -54,7 +54,6 @@ cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	mConv(NULL),
 	mCharSet(DEFAULT_HUB_ENCODING),
 	mTotReqs(0),
-	mTotReps(0),
 	mTotCacs(0),
 	mDBCO(NULL),
 	mDBCI(NULL),
@@ -123,13 +122,6 @@ cMaxMindDB::~cMaxMindDB()
 
 bool cMaxMindDB::GetCC(const string &host, string &cc)
 {
-	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0) && mLastCC.size()) { // no need to look up same address as last time
-		cc = mLastCC;
-		mTotReps++;
-		vhLog(3) << "[GetCC] Using last IP: " << mLastIP << " = " << mLastCC << endl;
-		return true;
-	}
-
 	if (host.substr(0, 4) == "127.") {
 		cc = "L1";
 		vhLog(3) << "[GetCC] Got local IP: " << host << endl;
@@ -144,49 +136,47 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 		return true;
 	}
 
-	bool res = false;
-	string code = "--";
+	if (mServ->mC.mmdb_cache) { // mmdb cache
+		string ca_cc, ca_cn, ca_ci, ca_as;
 
-	if (mDBCO) {
-		string t1, t2, t3, t4;
-
-		if (mServ->mC.mmdb_cache && MMDBCacheGet(host, t1, t2, t3, t4) && t1.size()) { // mmdb cache
-			code = t1;
-			res = true;
+		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size()) {
+			vhLog(3) << "[GetCC] Cache for IP: " << host << " = " << ca_cc << endl;
 			mTotCacs++;
-			vhLog(3) << "[GetCC] Cache for IP: " << host << " = " << code << endl;
-
-		} else { // lookup
-			int gai_err, mmdb_err;
-			MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
-
-			if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-				//string back;
-				MMDB_entry_data_s ent;
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
-					(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-					//code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
-					code.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
-					res = true;
-				}
-
-				if (res) {
-					if (mServ->mC.mmdb_cache)
-						MMDBCacheSet(host, code, "", "", "");
-
-					vhLog(3) << "[GetCC] Result for IP: " << host << " = " << code << endl;
-				}
-			}
-
-			mTotReqs++;
+			cc = ca_cc;
+			return true;
 		}
 	}
 
-	mLastIP = host;
-	mLastCC = code;
+	bool res = false;
+	string code = "--";
+
+	if (mDBCO) { // lookup
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
+
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			//string back;
+			MMDB_entry_data_s ent;
+
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+				//code = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				code.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
+				res = true;
+			}
+
+			if (res) {
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, code, "", "", "");
+
+				vhLog(3) << "[GetCC] Result for IP: " << host << " = " << code << endl;
+			}
+		}
+
+		mTotReqs++;
+	}
 
 	cc = code;
 	return res;
@@ -194,13 +184,6 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 bool cMaxMindDB::GetCN(const string &host, string &cn)
 {
-	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0) && mLastCN.size()) { // no need to look up same address as last time
-		cn = mLastCN;
-		mTotReps++;
-		vhLog(3) << "[GetCN] Using last IP: " << mLastIP << " = " << mLastCN << endl;
-		return true;
-	}
-
 	if (host.substr(0, 4) == "127.") {
 		cn = "Local Network";
 		vhLog(3) << "[GetCN] Got local IP: " << host << endl;
@@ -215,50 +198,48 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		return true;
 	}
 
-	bool res = false;
-	string name = "--";
+	if (mServ->mC.mmdb_cache) { // mmdb cache
+		string ca_cc, ca_cn, ca_ci, ca_as;
 
-	if (mDBCO) {
-		string t1, t2, t3, t4;
-
-		if (mServ->mC.mmdb_cache && MMDBCacheGet(host, t1, t2, t3, t4) && t2.size()) { // mmdb cache
-			name = t2;
-			res = true;
+		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cn.size()) {
+			vhLog(3) << "[GetCN] Cache for IP: " << host << " = " << ca_cn << endl;
 			mTotCacs++;
-			vhLog(3) << "[GetCN] Cache for IP: " << host << " = " << name << endl;
-
-		} else { // lookup
-			int gai_err, mmdb_err;
-			MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
-
-			if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-				string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
-				MMDB_entry_data_s ent;
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
-					(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
-					name = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
-					res = true;
-				}
-
-				if (res) {
-					if (mServ->mC.mmdb_cache)
-						MMDBCacheSet(host, "", name, "", "");
-
-					vhLog(3) << "[GetCN] Result for IP: " << host << " = " << name << endl;
-				}
-			}
-
-			mTotReqs++;
+			cn = ca_cn;
+			return true;
 		}
 	}
 
-	mLastIP = host;
-	mLastCN = name;
+	bool res = false;
+	string name = "--";
+
+	if (mDBCO) { // lookup
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string(mDBCO, host.c_str(), &gai_err, &mmdb_err);
+
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
+			MMDB_entry_data_s ent;
+
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				name = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
+			}
+
+			if (res) {
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, "", name, "", "");
+
+				vhLog(3) << "[GetCN] Result for IP: " << host << " = " << name << endl;
+			}
+		}
+
+		mTotReqs++;
+	}
 
 	cn = name;
 	return res;
@@ -266,13 +247,6 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 
 bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 {
-	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0) && mLastCI.size()) { // no need to look up same address as last time
-		geo_city = mLastCI;
-		mTotReps++;
-		vhLog(3) << "[GetCity] Using last IP: " << mLastIP << " = " << mLastCI << endl;
-		return true;
-	}
-
 	if (host.substr(0, 4) == "127.") {
 		geo_city = "Local Network";
 		vhLog(3) << "[GetCity] Got local IP: " << host << endl;
@@ -287,6 +261,17 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		return true;
 	}
 
+	if (mServ->mC.mmdb_cache) { // mmdb cache
+		string ca_cc, ca_cn, ca_ci, ca_as;
+
+		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_ci.size()) {
+			vhLog(3) << "[GetCity] Cache for IP: " << host << " = " << ca_ci << endl;
+			mTotCacs++;
+			geo_city = ca_ci;
+			return true;
+		}
+	}
+
 	bool res = false, ok = false;
 	MMDB_s *mmdb = NULL;
 
@@ -299,41 +284,31 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 
 	string city = "--";
 
-	if ((ok && mmdb) || mDBCI) {
-		string t1, t2, t3, t4;
+	if ((ok && mmdb) || mDBCI) { // lookup
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBCI), host.c_str(), &gai_err, &mmdb_err);
 
-		if (mServ->mC.mmdb_cache && MMDBCacheGet(host, t1, t2, t3, t4) && t3.size()) { // mmdb cache
-			city = t3;
-			res = true;
-			mTotCacs++;
-			vhLog(3) << "[GetCity] Cache for IP: " << host << " = " << city << endl;
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
+			MMDB_entry_data_s ent;
 
-		} else { // lookup
-			int gai_err, mmdb_err;
-			MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBCI), host.c_str(), &gai_err, &mmdb_err);
-
-			if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-				string back, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
-				MMDB_entry_data_s ent;
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
-					city = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
-					res = true;
-				}
-
-				if (res) {
-					if (mServ->mC.mmdb_cache)
-						MMDBCacheSet(host, "", "", city, "");
-
-					vhLog(3) << "[GetCity] Result for IP: " << host << " = " << city << endl;
-				}
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				city = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
 			}
 
-			mTotReqs++;
+			if (res) {
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, "", "", city, "");
+
+				vhLog(3) << "[GetCity] Result for IP: " << host << " = " << city << endl;
+			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -343,24 +318,12 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		free(mmdb);
 	}
 
-	mLastIP = host;
-	mLastCI = city;
-
 	geo_city = city;
 	return res;
 }
 
 bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db)
 {
-	if (mLastIP.size() && (StrCompare(host, 0, host.size(), mLastIP) == 0) && mLastCC.size() && mLastCN.size() && mLastCI.size()) { // no need to look up same address as last time
-		geo_cc = mLastCC;
-		geo_cn = mLastCN;
-		geo_ci = mLastCI;
-		mTotReps++;
-		vhLog(3) << "[GetCCC] Using last IP: " << mLastIP << " = " << mLastCC << " + " << mLastCN << " + " << mLastCI << endl;
-		return true;
-	}
-
 	if (host.substr(0, 4) == "127.") {
 		geo_cc = "L1";
 		geo_cn = "Local Network";
@@ -379,6 +342,19 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		return true;
 	}
 
+	if (mServ->mC.mmdb_cache) { // mmdb cache
+		string ca_cc, ca_cn, ca_ci, ca_as;
+
+		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size() && ca_cn.size() && ca_ci.size()) {
+			vhLog(3) << "[GetCCC] Cache for IP: " << host << " = " << ca_cc << " + " << ca_cn << " + " << ca_ci << endl;
+			mTotCacs++;
+			geo_cc = ca_cc;
+			geo_cn = ca_cn;
+			geo_ci = ca_ci;
+			return true;
+		}
+	}
+
 	bool res = false, ok = false;
 	MMDB_s *mmdb = NULL;
 
@@ -391,68 +367,50 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 
 	string cc = "--", cn = "--", ci = "--";
 
-	if ((ok && mmdb) || mDBCI || mDBCO) { // important database order: custom, city, country
-		string t1, t2, t3, t4;
+	if ((ok && mmdb) || mDBCI || mDBCO) { // lookup, important database order: custom, city, country
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : (mDBCI ? mDBCI : mDBCO)), host.c_str(), &gai_err, &mmdb_err);
 
-		if (mServ->mC.mmdb_cache && MMDBCacheGet(host, t1, t2, t3, t4) && (t1.size() || t2.size() || t3.size())) { // mmdb cache
-			if (t1.size())
-				cc = t1;
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			string back, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
+			MMDB_entry_data_s ent;
 
-			if (t2.size())
-				cn = t2;
-
-			if (t3.size())
-				ci = t3;
-
-			res = true;
-			mTotCacs++;
-			vhLog(3) << "[GetCCC] Cache for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
-
-		} else { // lookup
-			int gai_err, mmdb_err;
-			MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : (mDBCI ? mDBCI : mDBCO)), host.c_str(), &gai_err, &mmdb_err);
-
-			if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-				string back, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
-				MMDB_entry_data_s ent;
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
-					(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
-					//cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
-					cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
-					res = true;
-				}
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
-					(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
-					cn = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
-					res = true;
-				}
-
-				if ((
-					(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
-					((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
-				) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
-					ci = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
-					res = true;
-				}
-
-				if (res) {
-					if (mServ->mC.mmdb_cache)
-						MMDBCacheSet(host, cc, cn, ci, "");
-
-					vhLog(3) << "[GetCCC] Result for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
-				}
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "iso_code", NULL) == MMDB_SUCCESS) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "iso_code", NULL) == MMDB_SUCCESS)
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country code
+				//cc = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				cc.assign((const char*)ent.utf8_string, 0, (unsigned int)ent.data_size); // country code should be using latin letters only, same as ascii
+				res = true;
 			}
 
-			mTotReqs++;
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "country", "names", "en", NULL) == MMDB_SUCCESS)) ||
+				(MMDB_get_value(&dat.entry, &ent, "registered_country", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "registered_country", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // country name
+				cn = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				res = true;
+			}
+
+			if ((
+				(MMDB_get_value(&dat.entry, &ent, "city", "names", lang.c_str(), NULL) == MMDB_SUCCESS) ||
+				((lang != "en") && (MMDB_get_value(&dat.entry, &ent, "city", "names", "en", NULL) == MMDB_SUCCESS))
+			) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // city name
+				ci = WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, tset);
+				res = true;
+			}
+
+			if (res) {
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, cc, cn, ci, "");
+
+				vhLog(3) << "[GetCCC] Result for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
+			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -461,11 +419,6 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 
 		free(mmdb);
 	}
-
-	mLastIP = host;
-	mLastCC = cc;
-	mLastCN = cn;
-	mLastCI = ci;
 
 	geo_cc = cc;
 	geo_cn = cn;
@@ -531,7 +484,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			ok = MMDB_open(db.c_str(), MMDB_MODE_MMAP, mmdb) == MMDB_SUCCESS;
 	}
 
-	if ((ok && mmdb) || mDBCI) { // cache not used
+	if ((ok && mmdb) || mDBCI) { // cache not used for get
 		int gai_err, mmdb_err;
 		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBCI), host.c_str(), &gai_err, &mmdb_err);
 
@@ -626,7 +579,13 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 			geo_area = 0; // todo: area_code no longer supported, get rid of it
 			geo_host = host;
-			vhLog(3) << "[GetGeoIP] Result for IP: " << host << " = " << geo_cc << " + " << geo_cn << " + " << geo_city << endl; // not full list
+
+			if (res) { // cache used for set
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, geo_cc, geo_cn, geo_city, "");
+
+				vhLog(3) << "[GetGeoIP] Result for IP: " << host << " = " << geo_cc << " + " << geo_cn << " + " << geo_city << endl; // not full list
+			}
 		}
 
 		mTotReqs++;
@@ -642,7 +601,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 	return res;
 }
 
-bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db) // last cache not used
+bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 {
 	if (host.substr(0, 4) == "127.") {
 		asn_name = "Local Network";
@@ -658,6 +617,17 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db) 
 		return true;
 	}
 
+	if (mServ->mC.mmdb_cache) { // mmdb cache
+		string ca_cc, ca_cn, ca_ci, ca_as;
+
+		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_as.size()) {
+			vhLog(3) << "[GetASN] Cache for IP: " << host << " = " << ca_as << endl;
+			mTotCacs++;
+			asn_name = ca_as;
+			return true;
+		}
+	}
+
 	bool res = false, ok = false;
 	MMDB_s *mmdb = NULL;
 
@@ -668,59 +638,49 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db) 
 			ok = MMDB_open(db.c_str(), MMDB_MODE_MMAP, mmdb) == MMDB_SUCCESS;
 	}
 
-	if ((ok && mmdb) || mDBAS) {
-		string t1, t2, t3, t4;
+	if ((ok && mmdb) || mDBAS) { // lookup
+		int gai_err, mmdb_err;
+		MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBAS), host.c_str(), &gai_err, &mmdb_err);
 
-		if (mServ->mC.mmdb_cache && MMDBCacheGet(host, t1, t2, t3, t4) && t4.size()) { // mmdb cache
-			asn_name = t4;
-			res = true;
-			mTotCacs++;
-			vhLog(3) << "[GetASN] Cache for IP: " << host << " = " << asn_name << endl;
+		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
+			/*
+				MMDB_entry_data_list_s *ent = NULL;
 
-		} else { // lookup
-			int gai_err, mmdb_err;
-			MMDB_lookup_result_s dat = MMDB_lookup_string((ok ? mmdb : mDBAS), host.c_str(), &gai_err, &mmdb_err);
-
-			if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
-				/*
-					MMDB_entry_data_list_s *ent = NULL;
-
-					if (MMDB_get_entry_data_list(&dat.entry, &ent) == MMDB_SUCCESS) {
-						if (ent)
-							MMDB_dump_entry_data_list(stdout, ent, 2);
-					}
-
+				if (MMDB_get_entry_data_list(&dat.entry, &ent) == MMDB_SUCCESS) {
 					if (ent)
-						MMDB_free_entry_data_list(ent);
-				*/
-
-				string back;
-				MMDB_entry_data_s ent;
-
-				if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_number", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UINT32) && (ent.uint32 > 0)) { // asn number
-					asn_name = "AS";
-					asn_name += StringFrom((unsigned int)ent.uint32);
-					res = true;
+						MMDB_dump_entry_data_list(stdout, ent, 2);
 				}
 
-				if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_organization", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // asn organization
-					if (asn_name.size())
-						asn_name += " ";
+				if (ent)
+					MMDB_free_entry_data_list(ent);
+			*/
 
-					asn_name += WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
-					res = true;
-				}
+			string back;
+			MMDB_entry_data_s ent;
 
-				if (res) {
-					if (mServ->mC.mmdb_cache)
-						MMDBCacheSet(host, "", "", "", asn_name);
-
-					vhLog(3) << "[GetASN] Result for IP: " << host << " = " << asn_name << endl;
-				}
+			if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_number", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UINT32) && (ent.uint32 > 0)) { // asn number
+				asn_name = "AS";
+				asn_name += StringFrom((unsigned int)ent.uint32);
+				res = true;
 			}
 
-			mTotReqs++;
+			if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_organization", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // asn organization
+				if (asn_name.size())
+					asn_name += " ";
+
+				asn_name += WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
+				res = true;
+			}
+
+			if (res) {
+				if (mServ->mC.mmdb_cache)
+					MMDBCacheSet(host, "", "", "", asn_name);
+
+				vhLog(3) << "[GetASN] Result for IP: " << host << " = " << asn_name << endl;
+			}
 		}
+
+		mTotReqs++;
 	}
 
 	if (mmdb) {
@@ -897,6 +857,8 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 
 void cMaxMindDB::ReloadAll()
 {
+	MMDBCacheClear();
+
 	if (mDBCO) {
 		MMDB_close(mDBCO);
 		free(mDBCO);
@@ -1056,7 +1018,6 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Names language: %s"), (mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang.c_str() : "en")) << "\r\n";
 	os << " [*] " << autosprintf(_("Hub encoding: %s"), (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding.c_str() : DEFAULT_HUB_ENCODING)) << "\r\n";
 	os << " [*] " << autosprintf(_("Total requests: %lu"), mTotReqs) << "\r\n";
-	os << " [*] " << autosprintf(_("Repeated requests: %lu"), mTotReps) << "\r\n";
 
 	if (mServ->mC.mmdb_cache) {
 		os << " [*] " << autosprintf(_("Cached requests: %lu"), mTotCacs) << "\r\n";
@@ -1064,7 +1025,6 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	}
 
 	os << "\r\n";
-
 	os << " " << _("Country database") << ":\r\n\r\n"; // country
 	os << " [*] " << autosprintf(_("Status: %s"), (mDBCO ? _("Loaded") : _("Not loaded"))) << "\r\n";
 
