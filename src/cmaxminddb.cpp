@@ -130,6 +130,12 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		cc = "E1";
+		vhLog(3) << "[GetCC] Got erroneous IP: " << host << endl;
+		return false;
+	}
+
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		cc = "P1";
 		vhLog(3) << "[GetCC] Got private IP: " << host << endl;
@@ -139,7 +145,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 	if (mServ->mC.mmdb_cache) { // mmdb cache
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
-		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size()) {
+		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size()) {
 			vhLog(3) << "[GetCC] Cache for IP: " << host << " = " << ca_cc << endl;
 			mTotCacs++;
 			cc = ca_cc;
@@ -169,7 +175,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 
 			if (res) {
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, code, "", "", "");
+					MMDBCacheSet(sip, code, "", "", "");
 
 				vhLog(3) << "[GetCC] Result for IP: " << host << " = " << code << endl;
 			}
@@ -192,6 +198,12 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		cn = "Invalid IP";
+		vhLog(3) << "[GetCN] Got erroneous IP: " << host << endl;
+		return false;
+	}
+
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		cn = "Private Network";
 		vhLog(3) << "[GetCN] Got private IP: " << host << endl;
@@ -201,7 +213,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 	if (mServ->mC.mmdb_cache) { // mmdb cache
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
-		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cn.size()) {
+		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_cn.size()) {
 			vhLog(3) << "[GetCN] Cache for IP: " << host << " = " << ca_cn << endl;
 			mTotCacs++;
 			cn = ca_cn;
@@ -232,7 +244,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 
 			if (res) {
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, "", name, "", "");
+					MMDBCacheSet(sip, "", name, "", "");
 
 				vhLog(3) << "[GetCN] Result for IP: " << host << " = " << name << endl;
 			}
@@ -255,6 +267,12 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		geo_city = "Invalid IP";
+		vhLog(3) << "[GetCity] Got erroneous IP: " << host << endl;
+		return false;
+	}
+
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		geo_city = "Private Network";
 		vhLog(3) << "[GetCity] Got private IP: " << host << endl;
@@ -264,7 +282,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 	if (mServ->mC.mmdb_cache) { // mmdb cache
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
-		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_ci.size()) {
+		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_ci.size()) {
 			vhLog(3) << "[GetCity] Cache for IP: " << host << " = " << ca_ci << endl;
 			mTotCacs++;
 			geo_city = ca_ci;
@@ -302,7 +320,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 
 			if (res) {
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, "", "", city, "");
+					MMDBCacheSet(sip, "", "", city, "");
 
 				vhLog(3) << "[GetCity] Result for IP: " << host << " = " << city << endl;
 			}
@@ -334,6 +352,14 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		geo_cc = "E1";
+		geo_cn = "Invalid IP";
+		geo_ci = "Invalid IP";
+		vhLog(3) << "[GetCCC] Got erroneous IP: " << host << endl;
+		return false;
+	}
+
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		geo_cc = "P1";
 		geo_cn = "Private Network";
@@ -345,7 +371,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 	if (mServ->mC.mmdb_cache) { // mmdb cache
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
-		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size() && ca_cn.size() && ca_ci.size()) {
+		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size() && ca_cn.size() && ca_ci.size()) {
 			vhLog(3) << "[GetCCC] Cache for IP: " << host << " = " << ca_cc << " + " << ca_cn << " + " << ca_ci << endl;
 			mTotCacs++;
 			geo_cc = ca_cc;
@@ -404,7 +430,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 
 			if (res) {
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, cc, cn, ci, "");
+					MMDBCacheSet(sip, cc, cn, ci, "");
 
 				vhLog(3) << "[GetCCC] Result for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
 			}
@@ -440,6 +466,17 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 	}
 
 	unsigned long sip = cBanList::Ip2Num(host);
+
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		geo_ran_lo = "0.0.0.0";
+		geo_ran_hi = "255.255.255.255";
+		geo_cc = "E1";
+		geo_cn = "Invalid IP";
+		geo_city = "Invalid IP";
+		geo_host = host;
+		vhLog(3) << "[GetGeoIP] Got erroneous IP: " << host << endl;
+		return false;
+	}
 
 	if (sip >= 167772160UL && sip <= 184549375UL) {
 		geo_ran_lo = "10.0.0.0";
@@ -582,7 +619,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 			if (res) { // cache used for set
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, geo_cc, geo_cn, geo_city, "");
+					MMDBCacheSet(sip, geo_cc, geo_cn, geo_city, "");
 
 				vhLog(3) << "[GetGeoIP] Result for IP: " << host << " = " << geo_cc << " + " << geo_cn << " + " << geo_city << endl; // not full list
 			}
@@ -611,6 +648,12 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 
 	unsigned long sip = cBanList::Ip2Num(host);
 
+	if ((sip == 0UL) || (sip > 4294967295UL)) {
+		asn_name = "Invalid IP";
+		vhLog(3) << "[GetASN] Got erroneous IP: " << host << endl;
+		return false;
+	}
+
 	if ((sip >= 167772160UL && sip <= 184549375UL) || (sip >= 2886729728UL && sip <= 2887778303UL) || (sip >= 3232235520UL && sip <= 3232301055UL)) {
 		asn_name = "Private Network";
 		vhLog(3) << "[GetASN] Got private IP: " << host << endl;
@@ -620,7 +663,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 	if (mServ->mC.mmdb_cache) { // mmdb cache
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
-		if (MMDBCacheGet(host, ca_cc, ca_cn, ca_ci, ca_as) && ca_as.size()) {
+		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_as.size()) {
 			vhLog(3) << "[GetASN] Cache for IP: " << host << " = " << ca_as << endl;
 			mTotCacs++;
 			asn_name = ca_as;
@@ -674,7 +717,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 
 			if (res) {
 				if (mServ->mC.mmdb_cache)
-					MMDBCacheSet(host, "", "", "", asn_name);
+					MMDBCacheSet(sip, "", "", "", asn_name);
 
 				vhLog(3) << "[GetASN] Result for IP: " << host << " = " << asn_name << endl;
 			}
@@ -1068,9 +1111,9 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	}
 }
 
-void cMaxMindDB::MMDBCacheSet(const string &ip, const string &cc, const string &cn, const string &ci, const string &as)
+void cMaxMindDB::MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as)
 {
-	if (ip.empty() || (cc.empty() && cn.empty() && ci.empty() && as.empty())) // nothing to set
+	if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
 		return;
 
 	bool stop = false;
@@ -1119,9 +1162,9 @@ void cMaxMindDB::MMDBCacheSet(const string &ip, const string &cc, const string &
 	mMMDBCacheList.push_back(item);
 }
 
-bool cMaxMindDB::MMDBCacheGet(const string &ip, string &cc, string &cn, string &ci, string &as)
+bool cMaxMindDB::MMDBCacheGet(const unsigned int ip, string &cc, string &cn, string &ci, string &as)
 {
-	if (ip.empty() || mMMDBCacheList.empty()) // nothing to get
+	if (mMMDBCacheList.empty()) // nothing to get
 		return false;
 
 	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {

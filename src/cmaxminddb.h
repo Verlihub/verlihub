@@ -84,7 +84,7 @@ namespace nVerliHub {
 
 				struct sMMDBCache // mmdb cache
 				{
-					string mIP; // ip address
+					unsigned int mIP; // ip address
 					string mCC; // country code
 					string mCN; // contry name
 					string mCI; // city name
@@ -92,11 +92,11 @@ namespace nVerliHub {
 					cTime mLT; // lookup time
 				};
 
-				typedef list<sMMDBCache*> tMMDBCacheList;
+				typedef list<sMMDBCache*> tMMDBCacheList; // todo: map<unsigned int, sMMDBCache>
 				tMMDBCacheList mMMDBCacheList;
 
-				void MMDBCacheSet(const string &ip, const string &cc, const string &cn, const string &ci, const string &as);
-				bool MMDBCacheGet(const string &ip, string &cc, string &cn, string &ci, string &as);
+				void MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as);
+				bool MMDBCacheGet(const unsigned int ip, string &cc, string &cn, string &ci, string &as);
 				void MMDBCacheClear();
 		};
 
