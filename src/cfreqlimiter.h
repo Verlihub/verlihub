@@ -42,11 +42,11 @@ namespace nVerliHub {
 class cFreqLimiter
 {
 public:
-	cFreqLimiter(double min_f, double period, long max_cnt, const cTime & now):
+	cFreqLimiter(double min_f, double period, long max_cnt, const cTimePrint & now):
 		mTmOut(min_f,0,now),
 		mFreq(now,period,5),
 		mMaxCnt(max_cnt)
-	{};
+	{}
 
 	void SetParams(double min_f, double period, long max_cnt)
 	{
@@ -55,8 +55,8 @@ public:
 		mMaxCnt = max_cnt;
 	}
 
-	cFreqLimiter();
-	virtual ~cFreqLimiter();
+	cFreqLimiter() {}
+	virtual ~cFreqLimiter() {}
 
 	/** to mesure min delay */
 	cTimeOut mTmOut;
@@ -66,7 +66,7 @@ public:
 	long mMaxCnt;
 
 	/** return 0 if ok, -1 if short delay, -3 if high frequency */
-	virtual int Check(const cTime &now)
+	virtual int Check(const cTimePrint &now)
 	{
 		int r = mTmOut.Check(now,1);
 		if(r) return r;
