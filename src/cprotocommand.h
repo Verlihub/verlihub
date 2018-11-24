@@ -39,7 +39,7 @@ class cProtoCommand
 	public:
 		// constructor and destructor
 		cProtoCommand();
-		cProtoCommand(string cmd);
+		cProtoCommand(const string& cmd);
 		virtual ~cProtoCommand();
 		// test if str is of this command
 		bool AreYou(const string &str);

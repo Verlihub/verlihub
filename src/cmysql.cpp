@@ -75,7 +75,7 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 	return true;
 }
 
-void cMySQL::Error(int level, string text)
+void cMySQL::Error(int level, const string& text)
 {
 	if (ErrLog(level))
 		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;

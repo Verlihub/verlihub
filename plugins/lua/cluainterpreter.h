@@ -43,7 +43,7 @@ namespace nVerliHub {
 class cLuaInterpreter
 {
 public:
-	cLuaInterpreter(string, string);
+	cLuaInterpreter(const string&, const string&);
 	~cLuaInterpreter();
 
 	bool Init();

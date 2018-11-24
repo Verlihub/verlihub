@@ -32,7 +32,7 @@ cProtoCommand::cProtoCommand()
 {
 }
 
-cProtoCommand::cProtoCommand(string cmd):
+cProtoCommand::cProtoCommand(const string& cmd):
 	mCmd(cmd)
 {
 	mBaseLength = mCmd.length();

@@ -267,7 +267,7 @@ int cConfMySQL::StartQuery(cQuery &Query)
 }
 
 /** return -1 on error, otherwinse number of results */
-int cConfMySQL::StartQuery(string query)
+int cConfMySQL::StartQuery(const string& query)
 {
 	mQuery.OStream() << query;
 	return StartQuery();

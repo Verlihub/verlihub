@@ -120,7 +120,7 @@ public:
 	virtual int Load(nMySQL::cQuery &);
 	virtual int Save();
 	/** do mysql query */
-	int StartQuery(string query);
+	int StartQuery(const string& query);
 	int StartQuery();
 	int StartQuery(nMySQL::cQuery &);
 	int EndQuery();
@@ -162,7 +162,7 @@ protected: // Protected attributes
 	unsigned mCols;
 	nMySQL::cMySQLTable mMySQLTable;
 
-	/// UF to make equations and lists of values or fiel names
+	/// UF to make equations and lists of values or field names
 	struct ufEqual
 	{
 		ostream &mOS;
@@ -170,7 +170,7 @@ protected: // Protected attributes
 		bool start;
 		bool mDoField, mDoValue;
 		bool mIsAffect;
-		ufEqual (ostream &os, string joint, bool DoF = true, bool DoV = true, bool IsAff = true):
+		ufEqual (ostream &os, const string& joint, bool DoF = true, bool DoV = true, bool IsAff = true):
 			mOS(os), mJoint(joint), start(true),
 			mDoField(DoF), mDoValue(DoV), mIsAffect(IsAff) {};
 		ufEqual (ufEqual const &eq):
