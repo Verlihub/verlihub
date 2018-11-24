@@ -36,6 +36,7 @@ cPlug::cPlug():
 	mReloadNext(false),
 	mUnloadNext(false),
 	mLoadTime(0),
+	mMakeTime(0),
 	mOwner(NULL)
 {}
 
