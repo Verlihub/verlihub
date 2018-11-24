@@ -33,7 +33,7 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nLuaPlugin {
 
-cLuaInterpreter::cLuaInterpreter(string configname, string scriptname):
+cLuaInterpreter::cLuaInterpreter(const string& configname, const string& scriptname):
 	mConfigName(configname),
 	mScriptName(scriptname)
 {
