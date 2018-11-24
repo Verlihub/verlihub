@@ -50,7 +50,7 @@ public:
 	    * @param owner An instance of the object that owns DataType.
 	    * @param tablename The name of the table where to store data.
 	*/
-	tMySQLMemoryList(nMySQL::cMySQL &mysql, OwnerType *owner, string tablename) :
+	tMySQLMemoryList(nMySQL::cMySQL &mysql, OwnerType *owner, const string& tablename) :
 		cConfMySQL(mysql), mOwner(owner)
 	{
 		mMySQLTable.mName = tablename;
