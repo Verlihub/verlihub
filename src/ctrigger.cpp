@@ -123,7 +123,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	}
 
 	if (mFlags & eTF_VARS) {
-		cTime theTime(server.mTime);
+		cTimePrint theTime(server.mTime);
 		time_t curr_time;
 		time(&curr_time);
 
@@ -258,7 +258,7 @@ ostream &operator << (ostream &os, cTrigger &tr)
 	os << "\t" << tr.mMinClass << " - " << tr.mMaxClass << "\t";
 
 	if (tr.mSeconds) {
-		cTime timeout = cTime(tr.mSeconds);
+		cTimePrint timeout = cTimePrint(tr.mSeconds);
 		os << timeout.AsPeriod();
 	} else {
 		os << _("No");
