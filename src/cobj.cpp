@@ -37,7 +37,7 @@ namespace nVerliHub {
 	bool cObj::msUseSyslog = 0;
 	string cObj::msSyslogIdent = "verlihub";
 #endif
-	int cObj::msCounterObj = 0;
+	unsigned int cObj::msCounterObj = 0;
 	const string cObj::mEmpty;
 	using nUtils::cTimePrint;
 /** with name constructor */

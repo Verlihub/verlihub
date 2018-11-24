@@ -81,11 +81,12 @@ class cObj
 		/** a string stream variable to log */
 		ostream *mToLog;
 		static const string mEmpty;
-		static int GetCount(){ return msCounterObj;}
-
+		static unsigned int GetCount() {return msCounterObj;}
+		
 	private:
 		/** object counter */
-		static int msCounterObj;
+		static unsigned int msCounterObj;
+
 };
 } // namespace nVerliHub
 #endif
