@@ -1113,71 +1113,74 @@ void cMaxMindDB::ShowInfo(ostream &os)
 
 void cMaxMindDB::MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as)
 {
-    if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
-	return;
+	if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
+		return;
 
-    sMMDBCache& it = mMMDBCacheList[ip];
-    if (cc.size()) // country code
-	it.mCC = cc;
+	sMMDBCache &it = mMMDBCacheList[ip];
 
-    if (cn.size()) // country name
-	it.mCN = cn;
+	if (cc.size()) // country code
+		it.mCC = cc;
 
-    if (ci.size()) // city name
-	it.mCI = ci;
+	if (cn.size()) // country name
+		it.mCN = cn;
 
-    if (as.size()) // asn
-	it.mAS = as;
+	if (ci.size()) // city name
+		it.mCI = ci;
 
-    it.mLT = mServ->mTime; // lookup time
+	if (as.size()) // asn
+		it.mAS = as;
+
+	it.mLT = mServ->mTime; // lookup time
 }
 
 bool cMaxMindDB::MMDBCacheGet(const unsigned int ip, string &cc, string &cn, string &ci, string &as)
 {
-    if (mMMDBCacheList.empty()) // nothing to get
+	if (mMMDBCacheList.empty()) // nothing to get
+		return false;
+
+	tMMDBCacheList::const_iterator it = mMMDBCacheList.find(ip);
+
+	if (it != mMMDBCacheList.end()) {
+		cc = it->second.mCC;
+		cn = it->second.mCN;
+		ci = it->second.mCI;
+		as = it->second.mAS;
+		return true;
+	}
+
 	return false;
-    tMMDBCacheList::const_iterator it = mMMDBCacheList.find(ip);
-    if(it != mMMDBCacheList.end()) {
-	    cc = it->second.mCC;
-	    cn = it->second.mCN;
-	    ci = it->second.mCI;
-	    as = it->second.mAS;
-	    return true;
-    }
-    return false;
 }
 
 void cMaxMindDB::MMDBCacheClean()
 {
-    if (!mServ->mC.mmdb_cache_mins || mMMDBCacheList.empty()) // nothing to clean
-	return;
+	if (!mServ->mC.mmdb_cache_mins || mMMDBCacheList.empty()) // nothing to clean
+		return;
 
-    unsigned int del = 0;
+	unsigned int del = 0;
 
-    for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end();) {
-	if ((mServ->mTime.Sec() - it->second.mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60)) { // delete outdated items
-	    mMMDBCacheList.erase(it++);
-	    del++;
+	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end();) {
+		if ((mServ->mTime.Sec() - it->second.mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60)) { // delete outdated items
+			mMMDBCacheList.erase(it++);
+			del++;
+		} else {
+			++it;
+		}
 	}
-	else
-	{
-	  ++it;
-	}
-    }
 
-    mClean = mServ->mTime; // update timer
-    vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
+	mClean = mServ->mTime; // update timer
+	vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
 }
 
 void cMaxMindDB::MMDBCacheClear()
 {
-    const unsigned int del = mMMDBCacheList.size();
+	const unsigned int del = mMMDBCacheList.size();
 
-    if (!del) // nothing to clear
-	return;
-    mMMDBCacheList.clear();
-    vhLog(3) << "Cached items cleared: " << del << endl;
+	if (!del) // nothing to clear
+		return;
+
+	mMMDBCacheList.clear();
+	vhLog(3) << "Cached items cleared: " << del << endl;
 }
 
-    };
+	};
 };

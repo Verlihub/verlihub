@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -75,9 +75,9 @@ bool cPenaltyList::AddPenalty(sPenalty &penal)
 	SetBaseTo(&mModel);
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
-	bool keep = false;
+	bool keep = false, save = true;
 
-	if (LoadPK()) {
+	if (LoadPK()) { // existing user
 		if (penal.mStartChat > mModel.mStartChat)
 			mModel.mStartChat = penal.mStartChat;
 
@@ -103,20 +103,22 @@ bool cPenaltyList::AddPenalty(sPenalty &penal)
 			mModel.mStopOpchat = penal.mStopOpchat;
 
 		keep = mModel.ToKeepIt();
-	} else {
+		save = false;
+
+	} else { // new user
 		SetBaseTo(&penal);
 		keep = penal.ToKeepIt();
 
-		if (keep && mCache.IsLoaded())
+		if (keep && mCache.IsLoaded()) // add to cache
 			mCache.Add(penal.mNick);
 	}
 
-	DeletePK();
-
 	if (keep)
-		return SavePK(false);
+		return (save ? SavePK() : UpdatePK());
 	else
-		return false;
+		DeletePK();
+
+	return true;
 }
 
 bool cPenaltyList::RemPenalty(sPenalty &penal)
@@ -125,9 +127,9 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
 	cTime Now = cTime().Sec();
-	bool keep = false;
+	bool keep = false, save = true;
 
-	if (LoadPK()) {
+	if (LoadPK()) { // existing user
 		if (penal.mStartChat < Now)
 			mModel.mStartChat = 1;
 		else
@@ -167,12 +169,14 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 			mModel.mStopOpchat = 1;
 		else
 			keep = true;
+
+		save = false;
 	}
 
-	DeletePK();
-
 	if (keep)
-		return SavePK();
+		return (save ? SavePK() : UpdatePK());
+	else
+		DeletePK();
 
 	return true;
 }

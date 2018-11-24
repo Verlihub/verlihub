@@ -91,7 +91,7 @@ namespace nVerliHub {
 					cTime mLT; // lookup time
 				};
 
-				typedef std::map<unsigned int, sMMDBCache> tMMDBCacheList;
+				typedef std::map<unsigned int, sMMDBCache> tMMDBCacheList; // ip address is key
 				tMMDBCacheList mMMDBCacheList;
 
 				void MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as);

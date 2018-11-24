@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -34,7 +34,7 @@ a Utility to interpolate a value of a "cConfig' variable between two time events
 class cInterpolExp : public cTempFunctionBase, cObj
 {
 public:
-	cInterpolExp(unsigned int &var, long toval, int skip, int togo);
+	cInterpolExp(unsigned int &var, long toval, int togo, int skip);
 	~cInterpolExp();
 
 	/** the function to call at every time step
