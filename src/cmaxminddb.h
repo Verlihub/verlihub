@@ -25,7 +25,7 @@
 #include "ctime.h"
 #include <string>
 #include <ostream>
-#include <list>
+#include <map>
 #include <maxminddb.h>
 #include <unicode/translit.h>
 #include <unicode/ucnv.h>
@@ -84,7 +84,6 @@ namespace nVerliHub {
 
 				struct sMMDBCache // mmdb cache
 				{
-					unsigned int mIP; // ip address
 					string mCC; // country code
 					string mCN; // contry name
 					string mCI; // city name
@@ -92,7 +91,7 @@ namespace nVerliHub {
 					cTime mLT; // lookup time
 				};
 
-				typedef list<sMMDBCache*> tMMDBCacheList; // todo: map<unsigned int, sMMDBCache>
+				typedef std::map<unsigned int, sMMDBCache> tMMDBCacheList;
 				tMMDBCacheList mMMDBCacheList;
 
 				void MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as);
