@@ -233,8 +233,6 @@ public:
 	unsigned __int64 mShare;
 	/** the list of nicks queued to send either as to nicklist or myinfo. */
 	string mQueueUL;
-	/** ip, that user has for downloads ises in connect to me */
-	string mIP4DL;
 	/** chat discrimination */
 	long mGag;
 	long mNoPM;
