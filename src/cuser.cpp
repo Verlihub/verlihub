@@ -33,18 +33,9 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nUtils;
 	using namespace nEnums;
-
-cUserBase::cUserBase():
-	cObj((const char*)"User"),
-	mClass(eUC_NORMUSER),
-	mInList(false)
-{}
-
-cUserBase::~cUserBase()
-{}
-
+	
 cUserBase::cUserBase(const string &nick):
-	cObj((const char*)"User"),
+	cObj("UserBase"),
 	mNick(nick),
 	mClass(eUC_NORMUSER),
 	mInList(false)
@@ -61,50 +52,9 @@ bool cUserBase::HasFeature(unsigned feature)
 }
 
 void cUserBase::Send(string &data, bool, bool)
-{}
-
-/*
-	constructor without nick, todo: i dont see it being used anywhere
-*/
-cUser::cUser():
-	mMyFlag(0),
-	mRights(0),
-	mRCTMCount(0),
-	mRCTMLock(false),
-	mBanTime(0),
-	mToBan(false),
-	mShare(0),
-	mSearchNumber(0),
-	mHideKicksForClass(eUC_NORMUSER)//,
-	//mVisibleClassMin(eUC_NORMUSER),
-	//mOpClassMin(eUC_NORMUSER)
 {
-	mxConn = NULL;
-	mxServer = NULL;
-	SetRight(eUR_CHAT, 0, true);
-	SetRight(eUR_PM, 0, true);
-	SetRight(eUR_SEARCH, 0, true);
-	SetRight(eUR_CTM, 0, true);
-	SetRight(eUR_KICK, 0, false);
-	SetRight(eUR_REG, 0, false);
-	SetRight(eUR_OPCHAT, 0, false);
-	SetRight(eUR_DROP, 0, false);
-	SetRight(eUR_TBAN, 0, false);
-	SetRight(eUR_PBAN, 0, false);
-	SetRight(eUR_NOSHARE, 0, false);
-	mProtectFrom = 0;
-	mHideKick = false;
-	mHideShare = false;
-	mHideCtmMsg = false;
-	mSetPass = false;
-	IsPassive = true;
-	memset(mFloodHashes, 0, sizeof(mFloodHashes));
-	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
 
-/*
-	constructor with nick
-*/
 cUser::cUser(const string &nick):
 	cUserBase(nick),
 	mxConn(NULL),
@@ -139,12 +89,10 @@ cUser::cUser(const string &nick):
 	mHideShare = false;
 	mHideCtmMsg = false;
 	mSetPass = false;
+	IsPassive = true;
 	memset(mFloodHashes, 0, sizeof(mFloodHashes));
 	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
-
-cUser::~cUser()
-{}
 
 bool cUser::CanSend()
 {
