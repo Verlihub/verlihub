@@ -114,9 +114,8 @@ using namespace nTables;
 class cUserBase: public cObj
 {
 public:
-	cUserBase();
-	cUserBase(const string &nick);
-	virtual ~cUserBase();
+	cUserBase(const string &nick = string());
+	virtual ~cUserBase() {}
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
@@ -152,10 +151,8 @@ using nProtocol::cMessageDC;
 class cUser : public cUserBase
 {
 public:
-	cUser();
-	/** constructor with a nickname */
-	cUser(const string &nick);
-	virtual ~cUser();
+	cUser(const string &nick = string());
+	virtual ~cUser() {}
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush=true);
