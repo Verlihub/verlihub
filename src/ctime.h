@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -93,16 +93,17 @@ class cTime : public timeval
 
 };
 
-class cTimePrint : public cTime
+class cTimePrint: public cTime
 {
 public:
 	cTimePrint():mPrintType(0){}
 	cTimePrint(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000);mPrintType=0;}
 	cTimePrint(long sec, long usec=0){tv_sec=sec; tv_usec=usec;mPrintType=0;}
-	cTimePrint(const cTime& t) {*this = t; mPrintType=0;}
+	cTimePrint(const cTime& t) {timeval& t_val = *this;t_val = t; mPrintType=0;}
 
 private:
 	mutable int mPrintType;
+
 public:
 	cTimePrint operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTimePrint(cTime(sec,usec).Normalize());}
 	const cTimePrint & AsDate() const { mPrintType=1; return *this;}
@@ -111,6 +112,7 @@ public:
 	std::string AsString() const;
 	friend std::ostream & operator<< (std::ostream &os, const cTimePrint &t);
 };
+
 	}; // namespace nUtils
 }; // namespace nVerliHub
 #endif

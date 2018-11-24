@@ -1074,7 +1074,7 @@ int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (6 * minutes) / mOwner->timer_serv_period); // 60 steps at most
+	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (60 * minutes) / mOwner->timer_serv_period); // 60 steps at most
 
 	if (fn) {
 		mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
