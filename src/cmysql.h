@@ -56,7 +56,7 @@ class cMySQL: public cObj
 		}
 
 		public:
-			void Error(int level, string text);
+			void Error(int level, const string& text);
 
 	private:
 		string mDBName;

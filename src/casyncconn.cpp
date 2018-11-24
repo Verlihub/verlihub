@@ -828,7 +828,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
+						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << serv->mC.max_unblock_size << endl;
 
 					LogStream() << "Unblocking input: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
 				}
@@ -837,7 +837,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE) << endl;
+						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << serv->mC.max_outfill_size << endl;
 
 					LogStream() << "Blocking input: " << buf_size << " of " << (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE) << endl;
 				}

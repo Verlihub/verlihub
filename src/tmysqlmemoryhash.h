@@ -44,7 +44,7 @@ protected:
 	tDataHashArray mDataHash;
 
 public:
-	tMySQLMemoryHash(nMySQL::cMySQL& mysql, OwnerType* owner, string tablename):
+	tMySQLMemoryHash(nMySQL::cMySQL& mysql, OwnerType* owner, const string& tablename):
 		tMySQLMemoryList<DataType, OwnerType> (mysql, owner, tablename)
 	{}
 
