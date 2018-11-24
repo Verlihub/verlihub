@@ -1113,110 +1113,71 @@ void cMaxMindDB::ShowInfo(ostream &os)
 
 void cMaxMindDB::MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as)
 {
-	if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
-		return;
+    if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
+	return;
 
-	bool stop = false;
+    sMMDBCache& it = mMMDBCacheList[ip];
+    if (cc.size()) // country code
+	it.mCC = cc;
 
-	if (mMMDBCacheList.size()) {
-		for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
-			if ((*it) && (ip == (*it)->mIP)) { // update if exists
-				if (cc.size() && (cc != (*it)->mCC)) // country code
-					(*it)->mCC = cc;
+    if (cn.size()) // country name
+	it.mCN = cn;
 
-				if (cn.size() && (cn != (*it)->mCN)) // country name
-					(*it)->mCN = cn;
+    if (ci.size()) // city name
+	it.mCI = ci;
 
-				if (ci.size() && (ci != (*it)->mCI)) // city name
-					(*it)->mCI = ci;
+    if (as.size()) // asn
+	it.mAS = as;
 
-				if (as.size() && (as != (*it)->mAS)) // asn
-					(*it)->mAS = as;
-
-				(*it)->mLT = mServ->mTime; // lookup time
-				stop = true;
-				break;
-			}
-		}
-	}
-
-	if (stop)
-		return;
-
-	sMMDBCache *item = new sMMDBCache;
-
-	if (cc.size()) // country code
-		item->mCC = cc;
-
-	if (cn.size()) // country name
-		item->mCN = cn;
-
-	if (ci.size()) // city name
-		item->mCI = ci;
-
-	if (as.size()) // asn
-		item->mAS = as;
-
-	item->mIP = ip; // ip address
-	item->mLT = mServ->mTime; // lookup time
-	mMMDBCacheList.push_back(item);
+    it.mLT = mServ->mTime; // lookup time
 }
 
 bool cMaxMindDB::MMDBCacheGet(const unsigned int ip, string &cc, string &cn, string &ci, string &as)
 {
-	if (mMMDBCacheList.empty()) // nothing to get
-		return false;
-
-	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
-		if ((*it) && (ip == (*it)->mIP)) { // got match
-			cc = (*it)->mCC;
-			cn = (*it)->mCN;
-			ci = (*it)->mCI;
-			as = (*it)->mAS;
-			return true;
-		}
-	}
-
+    if (mMMDBCacheList.empty()) // nothing to get
 	return false;
+    tMMDBCacheList::const_iterator it = mMMDBCacheList.find(ip);
+    if(it != mMMDBCacheList.end()) {
+	    cc = it->second.mCC;
+	    cn = it->second.mCN;
+	    ci = it->second.mCI;
+	    as = it->second.mAS;
+	    return true;
+    }
+    return false;
 }
 
 void cMaxMindDB::MMDBCacheClean()
 {
-	if (!mServ->mC.mmdb_cache_mins || mMMDBCacheList.empty()) // nothing to clean
-		return;
+    if (!mServ->mC.mmdb_cache_mins || mMMDBCacheList.empty()) // nothing to clean
+	return;
 
-	unsigned int del = 0;
+    unsigned int del = 0;
 
-	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
-		if ((*it) && ((mServ->mTime.Sec() - (*it)->mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60))) { // delete outdated items
-			delete (*it);
-			(*it) = NULL;
-			del++;
-		}
+    for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end();) {
+	if ((mServ->mTime.Sec() - it->second.mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60)) { // delete outdated items
+	    mMMDBCacheList.erase(it++);
+	    del++;
 	}
+	else
+	{
+	  ++it;
+	}
+    }
 
-	mMMDBCacheList.remove(NULL); // remove deleted items
-	mClean = mServ->mTime; // update timer
-	vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
+    mClean = mServ->mTime; // update timer
+    vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
 }
 
 void cMaxMindDB::MMDBCacheClear()
 {
-	unsigned int del = mMMDBCacheList.size();
+    const unsigned int del = mMMDBCacheList.size();
 
-	if (!del) // nothing to clear
-		return;
-
-	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end(); ++it) {
-		if (*it) {
-			delete (*it);
-			(*it) = NULL;
-		}
-	}
-
-	mMMDBCacheList.clear();
-	vhLog(3) << "Cached items cleared: " << del << endl;
+    if (!del) // nothing to clear
+	return;
+    mMMDBCacheList.clear();
+    vhLog(3) << "Cached items cleared: " << del << endl;
 }
 
-	};
+    };
 };
