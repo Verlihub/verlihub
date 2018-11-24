@@ -53,7 +53,7 @@
 #define log4(...) { if (cpiPython::log_level > 3) { printf( __VA_ARGS__ ); fflush(stdout); }; }
 #define log5(...) { if (cpiPython::log_level > 4) { printf( __VA_ARGS__ ); fflush(stdout); }; }
 
-#define dprintf(...) { printf("%s:%u: "__FILE__, __LINE__); printf( __VA_ARGS__ ); fflush(stdout); }
+#define dprintf(...) { printf("%s:%u: " __FILE__, __LINE__); printf( __VA_ARGS__ ); fflush(stdout); }
 
 using std::vector;
 namespace nVerliHub {
