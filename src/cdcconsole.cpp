@@ -455,14 +455,14 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 		if (delay == -1)
 			os << _("Please note, hub is no longer scheduled for restart.");
 		else if (delay)
-			os << autosprintf (_("Please note, hub has been scheduled to restart in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
+			os << autosprintf (_("Please note, hub has been scheduled to restart in: %s"), cTimePrint((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be restarted now.");
 	} else { // quit
 		if (delay == -1)
 			os << _("Please note, hub is no longer scheduled for stop.");
 		else if (delay)
-			os << autosprintf (_("Please note, hub has been scheduled to stop in: %s"), cTime((long)delay, 0).AsPeriod().AsString().c_str());
+			os << autosprintf (_("Please note, hub has been scheduled to stop in: %s"), cTimePrint((long)delay, 0).AsPeriod().AsString().c_str());
 		else
 			os << _("Please note, hub will be stopped now.");
 	}
@@ -515,14 +515,15 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 
 	cc_zone = toUpper(cc_zone);
 	mOwner->mP.Create_PMForBroadcast(start, end, mOwner->mC.hub_security, mOwner->mC.hub_security, str); // conn->mpUser->mNick
-	cTime TimeBefore, TimeAfter;
+	cTimePrint TimeBefore, TimeAfter;
 
 	if (mOwner->LastBCNick != "disable")
 		mOwner->LastBCNick = conn->mpUser->mNick;
 
 	unsigned int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
 	TimeAfter.Get();
-	ostr << autosprintf(ngettext("Message delivered to %d user in zones %s in %s.", "Message delivered to %d users in zones %s in %s.", count), count, cc_zone.c_str(), (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
+	ostr << autosprintf(ngettext("Message delivered to %d user in zones %s in %s.", "Message delivered to %d users in zones %s in %s.", count),
+	     count, cc_zone.c_str(), cTimePrint(TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	mOwner->DCPublicHS(ostr.str(), conn);
 	return 1;
 }
@@ -1733,7 +1734,7 @@ bool cDCConsole::cfBan::operator()()
 			else
 				Ban.mReason = _("No reason specified"); // default reason, doesnt work when no reason is specified, bad regexp
 
-			Ban.mDateStart = cTime().Sec();
+			Ban.mDateStart = cTimePrint().Sec();
 
 			if (BanTime)
 				Ban.mDateEnd = Ban.mDateStart + BanTime;
@@ -1755,7 +1756,7 @@ bool cDCConsole::cfBan::operator()()
 
 						mParRex->Extract(BAN_REASON, mParStr, Kick.mReason);
 						Kick.mOp = mConn->mpUser->mNick;
-						Kick.mTime = cTime().Sec();
+						Kick.mTime = cTimePrint().Sec();
 
 						if (BanType == eBF_NICK)
 							Kick.mNick = Who;
@@ -1831,9 +1832,9 @@ bool cDCConsole::cfBan::operator()()
 
 								if (BanTime) {
 									if (tmp.size())
-										toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), conn->mpUser->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+										toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), conn->mpUser->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
 									else
-										toall << autosprintf(_("%s was banned for %s by %s without reason."), conn->mpUser->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
+										toall << autosprintf(_("%s was banned for %s by %s without reason."), conn->mpUser->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
 								} else {
 									if (tmp.size())
 										toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), conn->mpUser->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
@@ -1857,9 +1858,9 @@ bool cDCConsole::cfBan::operator()()
 
 						if (BanTime) {
 							if (tmp.size())
-								toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), user->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
+								toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), user->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
 							else
-								toall << autosprintf(_("%s was banned for %s by %s without reason."), user->mNick.c_str(), cTime(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
+								toall << autosprintf(_("%s was banned for %s by %s without reason."), user->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
 						} else {
 							if (tmp.size())
 								toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), user->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
@@ -2294,7 +2295,7 @@ bool cDCConsole::cfGag::operator()()
 	pen.mOpNick = mConn->mpUser->mNick;
 
 	if (!isun)
-		now = cTime().Sec() + per;
+		now = cTimePrint().Sec() + per;
 
 	switch (act) {
 		case eAC_GAG:
@@ -2351,7 +2352,7 @@ bool cDCConsole::cfGag::operator()()
 				if (isun)
 					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2361,7 +2362,7 @@ bool cDCConsole::cfGag::operator()()
 					if (isun)
 						toall << autosprintf(_("%s was allowed to use main chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2376,7 +2377,7 @@ bool cDCConsole::cfGag::operator()()
 				if (isun)
 					(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), pen.mNick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2386,7 +2387,7 @@ bool cDCConsole::cfGag::operator()()
 					if (isun)
 						toall << autosprintf(_("%s was allowed to use private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using private chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using private chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2401,7 +2402,7 @@ bool cDCConsole::cfGag::operator()()
 				if (isun)
 					(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), pen.mNick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2411,7 +2412,7 @@ bool cDCConsole::cfGag::operator()()
 					if (isun)
 						toall << autosprintf(_("%s was allowed to use main and private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using main and private chat for %s by %s without reason."), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using main and private chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2426,7 +2427,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Allowing user to download again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_CTM, pen.mStartCTM, isun, true);
@@ -2437,7 +2438,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_SEARCH, pen.mStartSearch, isun, true);
@@ -2448,7 +2449,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_NOSHARE, pen.mStopShare0, isun, true);
@@ -2459,7 +2460,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_REG, pen.mStopReg, isun, true);
@@ -2470,7 +2471,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_KICK, pen.mStopKick, isun, true);
@@ -2481,7 +2482,7 @@ bool cDCConsole::cfGag::operator()()
 			if (isun)
 				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), pen.mNick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), pen.mNick.c_str(), cTime(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user) {
 				user->SetRight(eUR_OPCHAT, pen.mStopOpchat, isun, true);
@@ -2761,7 +2762,7 @@ bool cDCConsole::cfKick::operator()()
 				pen.mNick = nick;
 
 			pen.mOpNick = mConn->mpUser->mNick;
-			pen.mStartChat = (unsigned long)((act == eAC_GAG) ? cTime().Sec() + mS->mC.tban_kick : 1);
+			pen.mStartChat = (unsigned long)((act == eAC_GAG) ? cTimePrint().Sec() + mS->mC.tban_kick : 1);
 
 			if ((act == eAC_GAG) ? !mS->mPenList->AddPenalty(pen) : !mS->mPenList->RemPenalty(pen)) {
 				(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), pen.mNick.c_str());
@@ -2770,7 +2771,7 @@ bool cDCConsole::cfKick::operator()()
 
 			if ((mS->mC.notify_kicks_to_all == -1) || !user || !user->mxConn) {
 				if (act == eAC_GAG)
-					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTimePrint(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str());
 				else
 					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
 			}
@@ -2781,9 +2782,9 @@ bool cDCConsole::cfKick::operator()()
 
 					if (act == eAC_GAG) {
 						if (temp.size()) // with reason
-							toall << autosprintf(_("%s was restricted from using main chat for %s by %s with reason: %s"), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str(), temp.c_str());
+							toall << autosprintf(_("%s was restricted from using main chat for %s by %s with reason: %s"), pen.mNick.c_str(), cTimePrint(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str(), temp.c_str());
 						else
-							toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTime(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+							toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(mS->mC.tban_kick, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 					} else {
 						if (temp.size()) // with reason
 							toall << autosprintf(_("%s was allowed to use main chat again by %s with reason: %s"), pen.mNick.c_str(), pen.mOpNick.c_str(), temp.c_str());
@@ -3524,14 +3525,15 @@ bool cDCConsole::cfBc::operator()()
 
 	string start, end;
 	mS->mP.Create_PMForBroadcast(start, end, mS->mC.hub_security, mS->mC.hub_security, message); // this->mConn->mpUser->mNick
-	cTime TimeBefore, TimeAfter;
+	cTimePrint TimeBefore, TimeAfter;
 
 	if (mS->LastBCNick != "disable")
 		mS->LastBCNick = mConn->mpUser->mNick;
 
 	int count = mS->SendToAllWithNickVars(start, end, MinClass, MaxClass);
 	TimeAfter.Get();
-	*mOS << autosprintf(ngettext("Message delivered to %d user in %s.", "Message delivered to %d users in %s.", count), count, (TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
+	*mOS << autosprintf(ngettext("Message delivered to %d user in %s.", "Message delivered to %d users in %s.", count),
+	     count, cTimePrint(TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	return true;
 }
 

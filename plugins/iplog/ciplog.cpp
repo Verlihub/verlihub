@@ -123,7 +123,7 @@ void cIPLog::GetHistory(const string &who, bool isNick, int limit, ostream &os)
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " << "\t" << cTime(mModel.mDate,0).AsDate();
+		os << " " << "\t" << cTimePrint(mModel.mDate,0).AsDate();
 		os << "\t";
 		if(mModel.mType < 4)
 			os << Actions[mModel.mType];
@@ -160,7 +160,7 @@ void cIPLog::GetLastLogin(const string &who, bool isNick, int limit, ostream &os
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " << "\t" << cTime(mModel.mDate,0).AsDate();
+		os << " " << "\t" << cTimePrint(mModel.mDate,0).AsDate();
 		os << (isNick ? ip : mModel.mNick) << endl;
 	}
 

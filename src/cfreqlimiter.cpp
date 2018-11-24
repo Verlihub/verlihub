@@ -23,12 +23,5 @@
 namespace nVerliHub {
 	namespace nUtils {
 
-cFreqLimiter::cFreqLimiter()
-{
-}
-
-cFreqLimiter::~cFreqLimiter()
-{
-}
 	}; // namespace nUtils
 }; // namespace nVerliHub

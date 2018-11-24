@@ -41,16 +41,14 @@ class cTime : public timeval
 {
 	public:
 	~cTime();
-	cTime():mPrintType(0){Get();mPrintType = 0;}
-	cTime(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000); mPrintType = 0;}
-	cTime(long sec, long usec=0){tv_sec=sec; tv_usec=usec; mPrintType = 0;}
-	cTime(const cTime &t){tv_sec=t.tv_sec; tv_usec=t.tv_usec; mPrintType = 0;}
+	cTime(){Get();}
+	cTime(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000);}
+	cTime(long sec, long usec=0){tv_sec=sec; tv_usec=usec;}
 	int operator> (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec > t.tv_usec);}
 	int operator>= (const cTime &t) const { if(tv_sec > t.tv_sec) return 1; if(tv_sec < t.tv_sec) return 0; return (tv_usec >= t.tv_usec);}
 	int operator< (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec < t.tv_usec);}
 	int operator<= (const cTime &t) const { if(tv_sec < t.tv_sec) return 1; if(tv_sec > t.tv_sec) return 0; return (tv_usec <= t.tv_usec);}
 	int operator== (const cTime &t) const { return ((tv_usec == t.tv_usec) && (tv_sec == t.tv_sec));}
-	cTime & operator= (const cTime &t) { tv_usec = t.tv_usec; tv_sec = t.tv_sec; mPrintType = t.mPrintType; return *this; }
 	cTime & Get(){gettimeofday(this,NULL);return *this;}
 	cTime   operator- (const cTime &t) const {long sec = tv_sec-t.tv_sec; long usec=tv_usec-t.tv_usec; return cTime(sec,usec).Normalize();}
 	cTime   operator+ (const cTime &t) const {long sec = tv_sec+t.tv_sec; long usec=tv_usec+t.tv_usec; return cTime(sec,usec).Normalize();}
@@ -69,7 +67,7 @@ class cTime : public timeval
 	operator double(){ return double(tv_sec)+double(tv_usec)/1000000.;}
 	operator long() const { return long(tv_sec)*1000000+long(tv_usec);}
 	operator bool() const { return !(!tv_sec && !tv_usec);}
-	int operator! () { return !tv_sec && !tv_usec;}
+	int operator! () const { return !tv_sec && !tv_usec;}
 	long Sec() const { return tv_sec; }
 	__int64 MiliSec() { return (__int64)(tv_sec)*1000+(__int64)(tv_usec)/1000; }
 
@@ -93,16 +91,26 @@ class cTime : public timeval
 		return *this;
 	};
 
-	std::string AsString() const;
-	friend std::ostream & operator<< (std::ostream &os, const cTime &t);
+};
+
+class cTimePrint : public cTime
+{
+public:
+	cTimePrint():mPrintType(0){}
+	cTimePrint(double sec){tv_sec=(long)sec; tv_usec=long((sec-tv_sec)*1000000);mPrintType=0;}
+	cTimePrint(long sec, long usec=0){tv_sec=sec; tv_usec=usec;mPrintType=0;}
+	cTimePrint(const cTime& t) {*this = t; mPrintType=0;}
+
 private:
 	mutable int mPrintType;
 public:
-	const cTime & AsDate() const { mPrintType=1; return *this;}
-	const cTime & AsPeriod() const { mPrintType=2; return *this;}
-
+	cTimePrint operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTimePrint(cTime(sec,usec).Normalize());}
+	const cTimePrint & AsDate() const { mPrintType=1; return *this;}
+	const cTimePrint & AsPeriod() const { mPrintType=2; return *this;}
+	operator cTime() {return *this;}
+	std::string AsString() const;
+	friend std::ostream & operator<< (std::ostream &os, const cTimePrint &t);
 };
-
 	}; // namespace nUtils
 }; // namespace nVerliHub
 #endif

@@ -38,14 +38,14 @@ cTime::~cTime()
 {
 }
 
-string cTime::AsString() const
+string cTimePrint::AsString() const
 {
 	ostringstream os;
 	os << (*this);
 	return os.str();
 }
 
-std::ostream & operator<< (std::ostream &os, const cTime &t)
+std::ostream & operator<< (std::ostream &os, const cTimePrint &t)
 {
 	#ifdef _WIN32
 		static char *buf;
