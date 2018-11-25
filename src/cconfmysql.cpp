@@ -38,11 +38,11 @@ cMySQLColumn::~cMySQLColumn()
 void cMySQLColumn::AppendDesc(ostream &os) const
 {
 	string isNull;
-	mNull ? isNull = "" : isNull = " NOT NULL";
+	mNull ? isNull = "" : isNull = " not null";
 	os << mName << " " << mType << isNull;
 
 	if (mDefault.size()) {
-		os << " DEFAULT '";
+		os << " default '";
 		cConfMySQL::WriteStringConstant(os, mDefault);
 		os << "'";
 	}
@@ -71,7 +71,7 @@ bool cMySQLTable::GetCollation()
 {
 	int i = 0, n;
 	MYSQL_ROW row;
-	mQuery.OStream() << "SELECT TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_NAME='" << mName << "' AND TABLE_SCHEMA='" << mQuery.getMySQL().GetDBName() << "'";
+	mQuery.OStream() << "select table_collation from information_schema.tables where table_name = '" << mName << "' and table_schema = '" << mQuery.getMySQL().GetDBName() << "'";
 
 	if (mQuery.Query() <= 0) {
 		mQuery.Clear();
@@ -95,7 +95,7 @@ bool cMySQLTable::GetDescription(const string &tableName)
 	int i = 0, n;
 	MYSQL_ROW row;
 	mName = tableName;
-	mQuery.OStream() << "SHOW COLUMNS FROM " << tableName;
+	mQuery.OStream() << "show columns from " << tableName;
 
 	if (mQuery.Query() <= 0) {
 		mQuery.Clear();
@@ -132,7 +132,7 @@ bool cMySQLTable::CreateTable()
 {
 	vector<cMySQLColumn>::iterator it;
 	bool IsFirstCol = true;
-	mQuery.OStream() << "CREATE TABLE IF NOT EXISTS " << mName << " ("; // try to create first
+	mQuery.OStream() << "create table if not exists " << mName << " ("; // try to create first
 
 	for (it = mColumns.begin(); it != mColumns.end(); ++it) {
 		mQuery.OStream() << (IsFirstCol ? "" : ", ");
@@ -143,7 +143,7 @@ bool cMySQLTable::CreateTable()
 	if (mExtra.size())
 		mQuery.OStream() << ", " << mExtra;
 
-	mQuery.OStream() << ") CHARACTER SET " << DEFAULT_CHARSET << " COLLATE " << DEFAULT_COLLATION;
+	mQuery.OStream() << ") character set " << DEFAULT_CHARSET << " collate " << DEFAULT_COLLATION;
 	mQuery.Query();
 	mQuery.Clear();
 	return true;
@@ -151,7 +151,7 @@ bool cMySQLTable::CreateTable()
 
 void cMySQLTable::TruncateTable()
 {
-	mQuery.OStream() << "TRUNCATE TABLE " << mName;
+	mQuery.OStream() << "truncate table " << mName;
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -176,7 +176,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 			if (Log(1))
 				LogStream() << "Altering table " << mName << (NeedAdd ? " add column " : " modify column") << it->mName << " with type: " << it->mType << endl;
 
-			mQuery.OStream() << "ALTER TABLE " << mName << (NeedAdd ? " ADD COLUMN " : " MODIFY COLUMN ");
+			mQuery.OStream() << "alter table " << mName << " " << (NeedAdd ? "add" : "modify") << " column ";
 			it->AppendDesc(mQuery.OStream());
 			mQuery.Query();
 			mQuery.Clear();
@@ -187,7 +187,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 		if (Log(1))
 			LogStream() << "Altering table " << mName << ", setting character set to " << DEFAULT_CHARSET << " and collation to " << DEFAULT_COLLATION << endl;
 
-		mQuery.OStream() << "ALTER TABLE " << mName << " CHARACTER SET " << DEFAULT_CHARSET << " COLLATE " << DEFAULT_COLLATION;
+		mQuery.OStream() << "alter table " << mName << " character set " << DEFAULT_CHARSET << " collate " << DEFAULT_COLLATION;
 		mQuery.Query();
 		mQuery.Clear();
 	}
@@ -296,9 +296,9 @@ void cConfMySQL::AddPrimaryKey(const char *key)
 
 void cConfMySQL::WherePKey(ostream &os)
 {
-	os << " WHERE (";
-	AllPKFields(os, true, true, false, string(" AND "));
-	os << " )";
+	os << " where (";
+	AllPKFields(os, true, true, false, string(" and "));
+	os << ")";
 }
 
 void cConfMySQL::AllFields(ostream &os, bool DoF, bool DoV, bool IsAff, string joint)
@@ -313,14 +313,14 @@ void cConfMySQL::AllPKFields(ostream &os, bool DoF, bool DoV, bool IsAff, string
 
 void cConfMySQL::SelectFields(ostream &os)
 {
-	os << "SELECT ";
+	os << "select ";
 	AllFields(os, true, false, false, string(", "));
-	os << " FROM " << mMySQLTable.mName << " ";
+	os << " from " << mMySQLTable.mName << " ";
 }
 
 void cConfMySQL::UpdateFields(ostream &os)
 {
-	os << "UPDATE " << mMySQLTable.mName << " SET ";
+	os << "update " << mMySQLTable.mName << " set ";
 	AllFields(mQuery.OStream(), true, true, true, string(", "));
 }
 
@@ -340,14 +340,14 @@ bool cConfMySQL::LoadPK()
 
 bool cConfMySQL::SavePK(bool dup)
 {
-	mQuery.OStream() << "INSERT IGNORE INTO " << mMySQLTable.mName << " (";
+	mQuery.OStream() << "insert" << (dup ? "" : " ignore") << " into " << mMySQLTable.mName << " (";
 	AllFields(mQuery.OStream(), true, false, false, string(", "));
-	mQuery.OStream() << ") VALUES (";
+	mQuery.OStream() << ") values (";
 	AllFields(mQuery.OStream(), false, true, true, string(", "));
 	mQuery.OStream() << ")";
 
 	if (dup) {
-		mQuery.OStream() << " ON DUPLICATE SET ";
+		mQuery.OStream() << " on duplicate key update ";
 		AllFields(mQuery.OStream(), true, true, true, string(", "));
 	}
 
@@ -359,7 +359,7 @@ bool cConfMySQL::SavePK(bool dup)
 void cConfMySQL::DeletePK()
 {
 	mQuery.Clear();
-	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName << " ";
+	mQuery.OStream() << "delete from " << mMySQLTable.mName << " ";
 	WherePKey(mQuery.OStream());
 	mQuery.Query();
 	mQuery.Clear();
@@ -400,7 +400,7 @@ ostream &cConfigItemMySQLPChar::WriteToStream (ostream& os)
 		cConfMySQL::WriteStringConstant(os, this->Data());
 		os << '"';
 	} else
-		os << " NULL ";
+		os << " null ";
 
 	return os;
 }
@@ -412,7 +412,7 @@ ostream &cConfigItemMySQLString::WriteToStream (ostream& os)
 		cConfMySQL::WriteStringConstant(os, this->Data());
 		os << '"';
 	} else
-		os << " NULL ";
+		os << " null ";
 
 	return os;
 }
@@ -433,7 +433,7 @@ bool cConfMySQL::UpdatePKVar(const char* var_name, string &new_val)
 
 bool cConfMySQL::UpdatePKVar(cConfigItemBase *item)
 {
-	mQuery.OStream() << "UPDATE " << mMySQLTable.mName << " SET ";
+	mQuery.OStream() << "update " << mMySQLTable.mName << " set ";
 	ufEqual(mQuery.OStream(), string(", "), true, true, true)(item);
 	WherePKey(mQuery.OStream());
 	bool ret = mQuery.Query();
@@ -504,13 +504,13 @@ void cConfMySQL::ufEqual::operator()(cConfigItemBase* item)
 
 		if (mDoField) {
 			if (IsNull && !mIsAffect)
-				mOS << " IS ";
+				mOS << " is ";
 			else
 				mOS << " = ";
 		}
 
 		if (IsNull)
-			mOS << "NULL ";
+			mOS << "null ";
 		else
 			item->WriteToStream(mOS);
 	}

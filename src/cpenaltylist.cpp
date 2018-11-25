@@ -18,18 +18,21 @@
 	of the GNU General Public License.
 */
 
+#include "cserverdc.h"
 #include "cpenaltylist.h"
 #include "cquery.h"
 #include "i18n.h"
-#include <sys/time.h>
 
 namespace nVerliHub {
 	using namespace nMySQL;
+	using namespace nSocket;
+
 	namespace nTables {
 
-cPenaltyList::cPenaltyList(cMySQL &mysql):
+cPenaltyList::cPenaltyList(cMySQL &mysql, cServerDC *serv):
 	cConfMySQL(mysql),
-	mCache(mysql, "temp_rights", "nick")
+	mCache(mysql, "temp_rights", "nick"),
+	mServ(serv)
 {
 	mMySQLTable.mName = "temp_rights";
 	AddCol("nick", "varchar(128) primary key", "", false, mModel.mNick);
@@ -53,20 +56,20 @@ cPenaltyList::~cPenaltyList()
 
 void cPenaltyList::Cleanup()
 {
-	long Now = cTime().Sec(); // Now -= (60 * 60 * 24 * 7);
+	cTime now = mServ->mTime.Sec(); // Now -= (60 * 60 * 24 * 7);
 	cQuery query(mMySQL);
-	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`st_chat` < " << Now << ") and (`st_search` < " << Now << ") and (`st_ctm` < " << Now << ") and (`st_pm` < " << Now << ") and (`st_kick` < " << Now << ") and (`st_share0` < " << Now << ") and (`st_reg` < " << Now << ") and (`st_opchat` < " << Now << ")";
+	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`st_chat` < " << now << ") and (`st_search` < " << now << ") and (`st_ctm` < " << now << ") and (`st_pm` < " << now << ") and (`st_kick` < " << now << ") and (`st_share0` < " << now << ") and (`st_reg` < " << now << ") and (`st_opchat` < " << now << ")";
 	query.Query();
 	query.Clear();
 }
 
-bool cPenaltyList::LoadTo(sPenalty &pen, const string &Nick)
+bool cPenaltyList::LoadTo(sPenalty &pen, const string &nick)
 {
-	if (mCache.IsLoaded() && !mCache.Find(Nick))
+	if (mServ->mC.use_penlist_cache && (!mCache.IsLoaded() || !mCache.Find(nick))) // table can be empty aswell
 		return false;
 
 	SetBaseTo(&pen);
-	pen.mNick = Nick;
+	pen.mNick = nick;
 	return LoadPK();
 }
 
@@ -75,7 +78,7 @@ bool cPenaltyList::AddPenalty(sPenalty &penal)
 	SetBaseTo(&mModel);
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
-	bool keep = false, save = true;
+	bool keep = false;
 
 	if (LoadPK()) { // existing user
 		if (penal.mStartChat > mModel.mStartChat)
@@ -103,20 +106,22 @@ bool cPenaltyList::AddPenalty(sPenalty &penal)
 			mModel.mStopOpchat = penal.mStopOpchat;
 
 		keep = mModel.ToKeepIt();
-		save = false;
 
 	} else { // new user
 		SetBaseTo(&penal);
 		keep = penal.ToKeepIt();
 
-		if (keep && mCache.IsLoaded()) // add to cache
-			mCache.Add(penal.mNick);
+		if (keep && mServ->mC.use_penlist_cache) // add to cache
+			mCache.Add(penal.mNick); // todo: nick2dbkey
 	}
 
 	if (keep)
-		return (save ? SavePK() : UpdatePK());
-	else
-		DeletePK();
+		return SavePK(true);
+
+	DeletePK();
+
+	if (mServ->mC.use_penlist_cache)
+		ReloadCache();
 
 	return true;
 }
@@ -126,57 +131,58 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 	SetBaseTo(&mModel);
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
-	cTime Now = cTime().Sec();
-	bool keep = false, save = true;
+	cTime now = mServ->mTime.Sec();
+	bool keep = false;
 
 	if (LoadPK()) { // existing user
-		if (penal.mStartChat < Now)
+		if (penal.mStartChat < now)
 			mModel.mStartChat = 1;
 		else
 			keep = true;
 
-		if (penal.mStartCTM < Now)
+		if (penal.mStartCTM < now)
 			mModel.mStartCTM = 1;
 		else
 			keep = true;
 
-		if (penal.mStartPM < Now)
+		if (penal.mStartPM < now)
 			mModel.mStartPM = 1;
 		else
 			keep = true;
 
-		if (penal.mStartSearch < Now)
+		if (penal.mStartSearch < now)
 			mModel.mStartSearch = 1;
 		else
 			keep = true;
 
-		if (penal.mStopKick < Now)
+		if (penal.mStopKick < now)
 			mModel.mStopKick = 1;
 		else
 			keep = true;
 
-		if (penal.mStopShare0 < Now)
+		if (penal.mStopShare0 < now)
 			mModel.mStopShare0 = 1;
 		else
 			keep = true;
 
-		if (penal.mStopReg < Now)
+		if (penal.mStopReg < now)
 			mModel.mStopReg = 1;
 		else
 			keep = true;
 
-		if (penal.mStopOpchat < Now)
+		if (penal.mStopOpchat < now)
 			mModel.mStopOpchat = 1;
 		else
 			keep = true;
-
-		save = false;
 	}
 
 	if (keep)
-		return (save ? SavePK() : UpdatePK());
-	else
-		DeletePK();
+		return SavePK(true);
+
+	DeletePK();
+
+	if (mServ->mC.use_penlist_cache)
+		ReloadCache();
 
 	return true;
 }
@@ -187,7 +193,7 @@ void cPenaltyList::ListAll(ostream &os)
 	query.OStream() << "select `nick` from `" << mMySQLTable.mName << "`";
 	query.Query();
 	unsigned int tot = query.StoreResult();
-	cTime now = cTime().Sec();
+	cTime now = mServ->mTime.Sec();
 	long dif;
 	MYSQL_ROW row = NULL;
 	bool sep;

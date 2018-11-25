@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -34,13 +34,14 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nMySQL;
 	using namespace nUtils;
+
 	namespace nTables {
 
-
-cRegList::cRegList(cMySQL &mysql, cServerDC *server): cConfMySQL(mysql)
-	,mCache(mysql,"reglist", "nick", "reg_date"), mS (server)
+cRegList::cRegList(cMySQL &mysql, cServerDC *server):
+	cConfMySQL(mysql),
+	mCache(mysql, "reglist", "nick", "reg_date"),
+	mS(server)
 {
-	//cTime now;
 	SetClassName("nDC::cRegList");
 	mMySQLTable.mName="reglist";
 	ostringstream nickDomain;
@@ -84,15 +85,13 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server): cConfMySQL(mysql)
 cRegList::~cRegList(){
 }
 
-/** find nick in reglist
-if not foud return 0
-else return 1 and fill in the reuserinfo parameter */
 bool cRegList::FindRegInfo(cRegUserInfo &ui, const string &nick)
 {
-	if(mCache.IsLoaded() && !mCache.Find(nick))
-		return false;//@todo nick2dbkey
+	if (mS->mC.use_reglist_cache && (!mCache.IsLoaded() || !mCache.Find(nick))) // table can be empty aswell
+		return false;
+
 	SetBaseTo(&ui);
-	ui.mNick = nick;//@todo nick2dbkey
+	ui.mNick = nick; // todo: nick2dbkey
 	return LoadPK();
 }
 
@@ -147,7 +146,7 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int clas, const char 
 	if (clas < eUC_NORMUSER) // pingers dont have password
 		ui.mPwdChange = false;
 
-	if (mCache.IsLoaded())
+	if (mS->mC.use_reglist_cache) // add to cache
 		mCache.Add(nick); // todo: nick2dbkey
 
 	SetBaseTo(&ui);
@@ -213,8 +212,14 @@ bool cRegList::LoginError(cConnDC *conn, const string &nick)
  */
 bool cRegList::DelReg(const string &nick)
 {
-	if(!FindRegInfo(mModel, nick)) return false;
+	if (!FindRegInfo(mModel, nick))
+		return false;
+
 	DeletePK();
+
+	if (mS->mC.use_reglist_cache)
+		ReloadCache();
+
 	return true;
 }
 
