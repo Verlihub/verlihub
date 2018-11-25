@@ -2339,8 +2339,8 @@ bool cDCConsole::cfGag::operator()()
 			return false;
 	}
 
-	if (isun ? !mS->mPenList->RemPenalty(pen) : !mS->mPenList->AddPenalty(pen)) {
-		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), pen.mNick.c_str());
+	if (!(isun ? mS->mPenList->RemPenalty(pen) : mS->mPenList->AddPenalty(pen))) {
+		(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), nick.c_str());
 		return false;
 	}
 
@@ -2350,9 +2350,9 @@ bool cDCConsole::cfGag::operator()()
 		case eAC_GAG:
 			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
 				if (isun)
-					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), pen.mNick.c_str());
+					(*mOS) << autosprintf(_("Allowing user to use main chat again: %s"), nick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using main chat: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2360,9 +2360,9 @@ bool cDCConsole::cfGag::operator()()
 					ostringstream toall;
 
 					if (isun)
-						toall << autosprintf(_("%s was allowed to use main chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was allowed to use main chat again by %s without reason."), nick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using main chat for %s by %s without reason."), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2375,9 +2375,9 @@ bool cDCConsole::cfGag::operator()()
 		case eAC_NOPM:
 			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
 				if (isun)
-					(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), pen.mNick.c_str());
+					(*mOS) << autosprintf(_("Allowing user to use private chat again: %s"), nick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using private chat: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2385,9 +2385,9 @@ bool cDCConsole::cfGag::operator()()
 					ostringstream toall;
 
 					if (isun)
-						toall << autosprintf(_("%s was allowed to use private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was allowed to use private chat again by %s without reason."), nick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using private chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using private chat for %s by %s without reason."), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2400,9 +2400,9 @@ bool cDCConsole::cfGag::operator()()
 		case eAC_NOCHATS:
 			if ((mS->mC.notify_kicks_to_all == -1) || !user) {
 				if (isun)
-					(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), pen.mNick.c_str());
+					(*mOS) << autosprintf(_("Allowing user to use main and private chat again: %s"), nick.c_str());
 				else
-					(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+					(*mOS) << autosprintf(_("Restricting user from using main and private chat: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 			}
 
 			if (user) {
@@ -2410,9 +2410,9 @@ bool cDCConsole::cfGag::operator()()
 					ostringstream toall;
 
 					if (isun)
-						toall << autosprintf(_("%s was allowed to use main and private chat again by %s without reason."), pen.mNick.c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was allowed to use main and private chat again by %s without reason."), nick.c_str(), pen.mOpNick.c_str());
 					else
-						toall << autosprintf(_("%s was restricted from using main and private chat for %s by %s without reason."), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
+						toall << autosprintf(_("%s was restricted from using main and private chat for %s by %s without reason."), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str(), pen.mOpNick.c_str());
 
 					mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 				}
@@ -2425,9 +2425,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NODL:
 			if (isun)
-				(*mOS) << autosprintf(_("Allowing user to download again: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to download again: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from downloading: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_CTM, pen.mStartCTM, isun, true);
@@ -2436,9 +2436,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOSEARCH:
 			if (isun)
-				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Allowing user to use search again: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Restricting user from using search: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_SEARCH, pen.mStartSearch, isun, true);
@@ -2447,9 +2447,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_NOSHARE:
 			if (isun)
-				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to hide share: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to hide share: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_NOSHARE, pen.mStopShare0, isun, true);
@@ -2458,9 +2458,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_CANREG:
 			if (isun)
-				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to register others: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to register others: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_REG, pen.mStopReg, isun, true);
@@ -2469,9 +2469,9 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_KVIP:
 			if (isun)
-				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to kick others: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to kick others: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user)
 				user->SetRight(eUR_KICK, pen.mStopKick, isun, true);
@@ -2480,18 +2480,18 @@ bool cDCConsole::cfGag::operator()()
 
 		case eAC_OPCHAT:
 			if (isun)
-				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), pen.mNick.c_str());
+				(*mOS) << autosprintf(_("Taking away the right to use operator chat: %s"), nick.c_str());
 			else
-				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), pen.mNick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
+				(*mOS) << autosprintf(_("Giving user the right to use operator chat: %s for %s"), nick.c_str(), cTimePrint(per, 0).AsPeriod().AsString().c_str());
 
 			if (user) {
 				user->SetRight(eUR_OPCHAT, pen.mStopOpchat, isun, true);
-				cUserCollection::tHashType Hash = mS->mUserList.Nick2Hash(user->mNick); // add or remove user in operator chat
+				cUserCollection::tHashType hash = mS->mUserList.Nick2Hash(nick); // add or remove user in operator chat
 
-				if (isun && mS->mOpchatList.ContainsHash(Hash))
-					mS->mOpchatList.RemoveByHash(Hash);
-				else if (!isun && !mS->mOpchatList.ContainsHash(Hash))
-					mS->mOpchatList.AddWithHash(user, Hash);
+				if (isun && mS->mOpchatList.ContainsHash(hash))
+					mS->mOpchatList.RemoveByHash(hash);
+				else if (!isun && !mS->mOpchatList.ContainsHash(hash))
+					mS->mOpchatList.AddWithHash(user, hash);
 			}
 
 			break;

@@ -28,9 +28,14 @@
 using std::string;
 
 namespace nVerliHub {
-	using nUtils::cTime;
 	using nConfig::cConfMySQL;
+
+	namespace nSocket {
+		class cServerDC;
+	};
+
 	using namespace nUtils;
+
 	namespace nTables {
 
 /*
@@ -58,8 +63,8 @@ class cPenaltyList: public cConfMySQL
 
 			sPenalty()
 			{
-				long Now = cTime().Sec();
-				mSince = Now;
+				long now = cTime().Sec();
+				mSince = now;
 				mStartChat = 1;
 				mStartSearch = 1;
 				mStartCTM = 1;
@@ -72,40 +77,40 @@ class cPenaltyList: public cConfMySQL
 
 			bool ToKeepIt()
 			{
-				cTime Now = cTime().Sec();
+				cTime now = cTime().Sec();
 
-				if (mStartChat > Now)
+				if (mStartChat > now)
 					return true;
 
-				if (mStartSearch > Now)
+				if (mStartSearch > now)
 					return true;
 
-				if (mStartCTM > Now)
+				if (mStartCTM > now)
 					return true;
 
-				if (mStartPM > Now)
+				if (mStartPM > now)
 					return true;
 
-				if (mStopKick > Now)
+				if (mStopKick > now)
 					return true;
 
-				if (mStopShare0 > Now)
+				if (mStopShare0 > now)
 					return true;
 
-				if (mStopReg > Now)
+				if (mStopReg > now)
 					return true;
 
-				if (mStopOpchat > Now)
+				if (mStopOpchat > now)
 					return true;
 
 				return false;
 			}
 		};
 
-		cPenaltyList(nMySQL::cMySQL &mysql);
+		cPenaltyList(nMySQL::cMySQL &mysql, nSocket::cServerDC *);
 		~cPenaltyList();
 		void Cleanup(void);
-		bool LoadTo(sPenalty &, const string &Nick);
+		bool LoadTo(sPenalty &, const string &nick);
 		bool AddPenalty(sPenalty &);
 		bool RemPenalty(sPenalty &);
 		void ListAll(ostream &os);
@@ -123,6 +128,7 @@ class cPenaltyList: public cConfMySQL
 
 		nConfig::tCache<string> mCache;
 	protected:
+		nSocket::cServerDC *mServ;
 		sPenalty mModel;
 };
 

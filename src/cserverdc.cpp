@@ -116,7 +116,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mR = new cRegList(mMySQL, this);
 	mBanList = new cBanList(this);
 	mUnBanList = new cUnBanList(this);
-	mPenList = new cPenaltyList(mMySQL);
+	mPenList = new cPenaltyList(mMySQL, this);
 	mKickList = new cKickList(mMySQL);
 	mZLib = new cZLib();
 	mMaxMindDB = new cMaxMindDB(this);

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -27,6 +27,7 @@
 namespace nVerliHub {
 	namespace nConfig {
 		using namespace nUtils;
+
 		/// @addtogroup Core
 		/// @{
 		/**
@@ -134,6 +135,7 @@ namespace nVerliHub {
 				 */
 				bool IsLoaded()
 				{
+					mIsLoaded = (mHashTab.Size() > 0);
 					return mIsLoaded;
 				}
 
@@ -178,7 +180,7 @@ namespace nVerliHub {
 
 					SelectFields(mQuery.OStream());
 					if(mDateName)
-						mQuery.OStream() << " WHERE " << mDateName << " > " << mLastUpdate.Sec();
+						mQuery.OStream() << " where " << mDateName << " > " << mLastUpdate.Sec();
 					for(db_iterator it = db_begin(); it != db_end(); ++it) {
 						if(!Find(mCurIdx))
 							Add(mCurIdx);
