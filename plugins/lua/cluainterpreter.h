@@ -32,7 +32,7 @@ extern "C"
 #include <cstring>
 #include <string>
 #include <iostream>
-#include <vector>
+#include <list>
 
 #define VH_TABLE_NAME "VH"
 
@@ -63,57 +63,64 @@ public:
 		int uClass;
 	};
 
-	typedef vector<mScriptBot *> tvBot;
+	typedef list<mScriptBot*> tvBot;
 	tvBot botList;
 
-	void addBot(const char *Nick, const char *MyINFO, int Share, int Class) {
-		bool add = true;
+	void addBot(const char *nick, const char *info, int shar, int clas) {
+		if (botList.size()) {
+			tvBot::iterator it;
 
-		for (unsigned int i = 0; i < botList.size(); i++) {
-			if (strcmp(botList[i]->uNick, Nick) == 0) {
-				add = false;
-				break;
+			for (it = botList.begin(); it != botList.end(); ++it) {
+				if ((*it) && (strcmp((*it)->uNick, nick) == 0))
+					return;
 			}
 		}
 
-		if (add) {
-			mScriptBot *item = new mScriptBot;
-			item->uNick = Nick;
-			item->uMyINFO = MyINFO;
-			item->uShare = Share;
-			item->uClass = Class;
-			botList.push_back(item);
+		mScriptBot *item = new mScriptBot;
+		item->uNick = nick;
+		item->uMyINFO = info;
+		item->uShare = shar;
+		item->uClass = clas;
+		botList.push_back(item);
+	}
+
+	void editBot(const char *nick, const char *info, int shar, int clas) {
+		if (botList.empty())
+			return;
+
+		tvBot::iterator it;
+
+		for (it = botList.begin(); it != botList.end(); ++it) {
+			if ((*it) && (strcmp((*it)->uNick, nick) == 0)) {
+				(*it)->uMyINFO = info;
+				(*it)->uShare = shar;
+				(*it)->uClass = clas;
+				break;
+			}
 		}
 	}
 
-	void editBot(const char *Nick, const char *MyINFO, int Share, int Class) {
-		mScriptBot *bot = NULL;
+	void delBot(const char *nick) {
+		if (botList.empty())
+			return;
 
-		for (unsigned int i = 0; i < botList.size(); i++) {
-			if (strcmp(botList[i]->uNick, Nick) == 0) {
-				bot = botList[i];
+		tvBot::iterator it;
+
+		for (it = botList.begin(); it != botList.end(); ++it) {
+			if ((*it) && (strcmp((*it)->uNick, nick) == 0)) {
+				delete (*it);
+				(*it) = NULL;
 				break;
 			}
 		}
 
-		if (bot) {
-			// dont need to set nick
-			bot->uMyINFO = MyINFO;
-			bot->uShare = Share;
-			bot->uClass = Class;
-		}
-	}
-
-	void delBot(const char *Nick) {
-		for (unsigned int i = 0; i < botList.size(); i++) {
-			if (strcmp(botList[i]->uNick, Nick) == 0) {
-				botList.erase(botList.begin() + i);
-				break;
-			}
-		}
+		botList.remove(NULL);
 	}
 
 	void clean() {
+		if (botList.empty())
+			return;
+
 		tvBot::iterator it;
 
 		for (it = botList.begin(); it != botList.end(); ++it) {
