@@ -1907,10 +1907,7 @@ int _GetLuaBots(lua_State *L)
 		li = cpiLua::me->mLua[pos];
 
 		if (li && li->mScriptName.size()) {
-			cLuaInterpreter::tvBot::iterator it;
-
-			for (it = li->botList.begin(); it != li->botList.end(); ++it) {
-				if ((*it) && (*it)->uNick && (*it)->uMyINFO) {
+			for (cLuaInterpreter::tvBot::iterator it = li->botList.begin(); it != li->botList.end(); ++it) {
 					lua_pushnumber(L, ++key);
 					lua_newtable(L);
 					int dep = lua_gettop(L);
@@ -1918,19 +1915,18 @@ int _GetLuaBots(lua_State *L)
 					lua_pushstring(L, li->mScriptName.c_str());
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "sNick");
-					lua_pushstring (L, (*it)->uNick);
+					lua_pushstring (L, it->first);
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "sMyINFO");
-					lua_pushstring(L, (*it)->uMyINFO);
+					lua_pushstring(L, it->second.uMyINFO);
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "iShare");
-					lua_pushnumber(L, int((*it)->uShare));
+					lua_pushnumber(L, it->second.uShare);
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "iClass");
-					lua_pushnumber(L, int((*it)->uClass));
+					lua_pushnumber(L, it->second.uClass);
 					lua_rawset(L, dep);
 					lua_rawset(L, top);
-				}
 			}
 		}
 	}
