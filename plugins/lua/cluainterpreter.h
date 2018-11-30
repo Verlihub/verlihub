@@ -32,7 +32,7 @@ extern "C"
 #include <cstring>
 #include <string>
 #include <iostream>
-#include <list>
+#include <map>
 
 #define VH_TABLE_NAME "VH"
 
@@ -57,79 +57,36 @@ public:
 	string mScriptName;
 
 	struct mScriptBot {
-		const char *uNick;
-		const char *uMyINFO;
+		string uMyINFO;
 		int uShare;
 		int uClass;
 	};
 
-	typedef list<mScriptBot*> tvBot;
+	typedef map<string,mScriptBot> tvBot;
 	tvBot botList;
 
 	void addBot(const char *nick, const char *info, int shar, int clas) {
-		if (botList.size()) {
-			tvBot::iterator it;
-
-			for (it = botList.begin(); it != botList.end(); ++it) {
-				if ((*it) && (strcmp((*it)->uNick, nick) == 0))
-					return;
-			}
-		}
-
-		mScriptBot *item = new mScriptBot;
-		item->uNick = nick;
-		item->uMyINFO = info;
-		item->uShare = shar;
-		item->uClass = clas;
-		botList.push_back(item);
+	        mScriptBot& item = botList[nick];
+		item.uMyINFO = info;
+		item.uShare = shar;
+		item.uClass = clas;
 	}
 
 	void editBot(const char *nick, const char *info, int shar, int clas) {
-		if (botList.empty())
-			return;
-
-		tvBot::iterator it;
-
-		for (it = botList.begin(); it != botList.end(); ++it) {
-			if ((*it) && (strcmp((*it)->uNick, nick) == 0)) {
-				(*it)->uMyINFO = info;
-				(*it)->uShare = shar;
-				(*it)->uClass = clas;
-				break;
-			}
+		tvBot::iterator it= botList.find(nick);
+		if(it != botList.end())
+		{
+			it->second.uMyINFO = info;
+			it->second.uShare = shar;
+			it->second.uClass = clas;
 		}
 	}
-
+	
 	void delBot(const char *nick) {
-		if (botList.empty())
-			return;
-
-		tvBot::iterator it;
-
-		for (it = botList.begin(); it != botList.end(); ++it) {
-			if ((*it) && (strcmp((*it)->uNick, nick) == 0)) {
-				delete (*it);
-				(*it) = NULL;
-				break;
-			}
-		}
-
-		botList.remove(NULL);
+		botList.erase(nick);	
 	}
 
 	void clean() {
-		if (botList.empty())
-			return;
-
-		tvBot::iterator it;
-
-		for (it = botList.begin(); it != botList.end(); ++it) {
-			if (*it) {
-				delete (*it);
-				(*it) = NULL;
-			}
-		}
-
 		botList.clear();
 	}
 
