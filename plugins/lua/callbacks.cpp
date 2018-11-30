@@ -1915,10 +1915,10 @@ int _GetLuaBots(lua_State *L)
 					lua_pushstring(L, li->mScriptName.c_str());
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "sNick");
-					lua_pushstring (L, it->first);
+					lua_pushstring (L, it->first.c_str());
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "sMyINFO");
-					lua_pushstring(L, it->second.uMyINFO);
+					lua_pushstring(L, it->second.uMyINFO.c_str());
 					lua_rawset(L, dep);
 					lua_pushliteral(L, "iShare");
 					lua_pushnumber(L, it->second.uShare);
