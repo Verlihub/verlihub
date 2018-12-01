@@ -23,9 +23,9 @@
 
 extern "C"
 {
-    #include "lua.h"
-    #include "lualib.h"
-    #include "lauxlib.h"
+	#include "lua.h"
+	#include "lualib.h"
+	#include "lauxlib.h"
 }
 
 #include "src/cconndc.h"
@@ -37,6 +37,7 @@ extern "C"
 #define VH_TABLE_NAME "VH"
 
 using namespace std;
+
 namespace nVerliHub {
 	namespace nLuaPlugin {
 
@@ -56,37 +57,42 @@ public:
 	string mConfigName;
 	string mScriptName;
 
-	struct mScriptBot {
+	struct mScriptBot
+	{
 		string uMyINFO;
 		int uShare;
 		int uClass;
 	};
 
-	typedef map<string,mScriptBot> tvBot;
+	typedef map<string, mScriptBot> tvBot;
 	tvBot botList;
 
-	void addBot(const char *nick, const char *info, int shar, int clas) {
-	        mScriptBot& item = botList[nick];
+	void addBot(const char *nick, const char *info, int shar, int clas)
+	{
+		mScriptBot &item = botList[nick];
 		item.uMyINFO = info;
 		item.uShare = shar;
 		item.uClass = clas;
 	}
 
-	void editBot(const char *nick, const char *info, int shar, int clas) {
-		tvBot::iterator it= botList.find(nick);
-		if(it != botList.end())
-		{
+	void editBot(const char *nick, const char *info, int shar, int clas)
+	{
+		tvBot::iterator it = botList.find(nick);
+
+		if (it != botList.end()) {
 			it->second.uMyINFO = info;
 			it->second.uShare = shar;
 			it->second.uClass = clas;
 		}
 	}
-	
-	void delBot(const char *nick) {
-		botList.erase(nick);	
+
+	void delBot(const char *nick)
+	{
+		botList.erase(nick);
 	}
 
-	void clean() {
+	void clean()
+	{
 		botList.clear();
 	}
 
