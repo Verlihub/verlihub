@@ -750,7 +750,7 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
 
 			const size_t find_CC = tmsg.find("%[C");
-			if(find_CC != tend.npos ) {
+			if(find_CC != tmsg.npos ) {
 			if (tmsg.find("%[CC]",find_CC) != tmsg.npos) { // only if found
 				temp = conn->GetGeoCC(); // country code
 				ReplaceVarInString(tmsg, "CC", tmsg, temp);
