@@ -706,22 +706,23 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 			tend = end;
 			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
-
-			if (tend.find("%[CC]") != tend.npos) { // only if found
+			const size_t find_CC = tend.find("%[C");
+			if(find_CC != tend.npos ) {
+			if (tend.find("%[CC]",find_CC) != tend.npos) { // only if found
 				temp = conn->GetGeoCC(); // country code
 				ReplaceVarInString(tend, "CC", tend, temp);
 			}
 
-			if (tend.find("%[CN]") != tend.npos) { // only if found
+			if (tend.find("%[CN]",find_CC) != tend.npos) { // only if found
 				temp = conn->GetGeoCN(); // country name
 				ReplaceVarInString(tend, "CN", tend, temp);
 			}
 
-			if (tend.find("%[CITY]") != tend.npos) { // only if found
+			if (tend.find("%[CITY]",find_CC) != tend.npos) { // only if found
 				temp = conn->GetGeoCI(); // city name
 				ReplaceVarInString(tend, "CITY", tend, temp);
 			}
-
+			}
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
 			temp = start + conn->mpUser->mNick + tend; // finalize
@@ -748,21 +749,23 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
 
-			if (tmsg.find("%[CC]") != tmsg.npos) { // only if found
+			const size_t find_CC = tend.find("%[C");
+			if(find_CC != tend.npos ) {
+			if (tmsg.find("%[CC]",find_CC) != tmsg.npos) { // only if found
 				temp = conn->GetGeoCC(); // country code
 				ReplaceVarInString(tmsg, "CC", tmsg, temp);
 			}
-
-			if (tmsg.find("%[CN]") != tmsg.npos) { // only if found
+			
+			if (tmsg.find("%[CN]",find_CC) != tmsg.npos) { // only if found
 				temp = conn->GetGeoCN(); // country name
 				ReplaceVarInString(tmsg, "CN", tmsg, temp);
 			}
 
-			if (tmsg.find("%[CITY]") != tmsg.npos) { // only if found
+			if (tmsg.find("%[CITY],find_CC") != tmsg.npos) { // only if found
 				temp = conn->GetGeoCI(); // city name
 				ReplaceVarInString(tmsg, "CITY", tmsg, temp);
 			}
-
+			}
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
 			conn->Send(tmsg); // pipe is added by default for safety
@@ -815,19 +818,21 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 				ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 				ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
 
-				if (tend.find("%[CC]") != tend.npos) // only if found
+				const size_t find_CC = tend.find("%[C");
+				if(find_CC != tend.npos ) {
+				if (tend.find("%[CC]",find_CC) != tend.npos) // only if found
 					ReplaceVarInString(tend, "CC", tend, str);
 
-				if (tend.find("%[CN]") != tend.npos) { // only if found
+				if (tend.find("%[CN]",find_CC) != tend.npos) { // only if found
 					str = conn->GetGeoCN(); // country name
 					ReplaceVarInString(tend, "CN", tend, str);
 				}
 
-				if (tend.find("%[CITY]") != tend.npos) { // only if found
+				if (tend.find("%[CITY]",find_CC) != tend.npos) { // only if found
 					str = conn->GetGeoCI(); // city name
 					ReplaceVarInString(tend, "CITY", tend, str);
 				}
-
+				}				
 				ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 				ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
 				str = start + conn->mpUser->mNick + tend; // finalize
@@ -1245,22 +1250,24 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		string geo;
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
-
-		if (omsg.find("%[CC]") != omsg.npos) { // only if found
+		
+		const size_t find_CC = tend.find("%[C");
+		if(find_CC != tend.npos ) {
+		if (omsg.find("%[CC]",find_CC) != omsg.npos) { // only if found
 			geo = conn->GetGeoCC(); // country code
 			ReplaceVarInString(omsg, "CC", omsg, geo);
 		}
 
-		if (omsg.find("%[CN]") != omsg.npos) { // only if found
+		if (omsg.find("%[CN]",find_CC) != omsg.npos) { // only if found
 			geo = conn->GetGeoCN(); // country name
 			ReplaceVarInString(omsg, "CN", omsg, geo);
 		}
 
-		if (omsg.find("%[CITY]") != omsg.npos) { // only if found
+		if (omsg.find("%[CITY]",find_CC) != omsg.npos) { // only if found
 			geo = conn->GetGeoCI(); // city name
 			ReplaceVarInString(omsg, "CITY", omsg, geo);
 		}
-
+		}
 		DCPublicHSToAll(omsg, mC.delayed_chat);
 	}
 
