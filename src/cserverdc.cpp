@@ -887,10 +887,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 			count++;
 		}
+
 	} else { // active search
 		if (mC.filter_lan_requests) { // filter lan requests
-			bool lan = cDCProto::isLanIP(conn->AddrIP());
-
 			for (i = mConnList.begin(); i != mConnList.end(); i++) {
 				other = (cConnDC*)(*i);
 
@@ -915,7 +914,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
 					continue;
 
-				if (lan != cDCProto::isLanIP(other->AddrIP())) // filter lan to wan and reverse
+				if (conn->mpUser->mIsLan != other->mpUser->mIsLan) // filter lan to wan and reverse
 					continue;
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -927,6 +926,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				count++;
 			}
+
 		} else { // dont filter lan requests
 			for (i = mConnList.begin(); i != mConnList.end(); i++) {
 				other = (cConnDC*)(*i);
@@ -1263,6 +1263,8 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 		DCPublicHSToAll(omsg, mC.delayed_chat);
 	}
+
+	conn->mpUser->mIsLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip
 }
 
 void cServerDC::DoUserLogin(cConnDC *conn)

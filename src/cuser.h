@@ -170,8 +170,8 @@ public:
 	nSocket::cServerDC *mxServer;
 	// client flag in myinfo
 	unsigned int mMyFlag;
-	/* True if user is in passive mode */
-	bool IsPassive;
+	bool IsPassive; // user is in passive mode
+	bool mIsLan; // user has lan ip
 
 	/* Rights of the user */
 	unsigned long mRights;

@@ -52,8 +52,7 @@ bool cUserBase::HasFeature(unsigned feature)
 }
 
 void cUserBase::Send(string &data, bool, bool)
-{
-}
+{}
 
 cUser::cUser(const string &nick):
 	cUserBase(nick),
@@ -70,7 +69,6 @@ cUser::cUser(const string &nick):
 	//mOpClassMin(eUC_NORMUSER)
 {
 	SetClassName("cUser");
-	IsPassive = true;
 	mRights = 0;
 	mToBan = false;
 	SetRight(eUR_CHAT, 0, true);
@@ -90,6 +88,7 @@ cUser::cUser(const string &nick):
 	mHideCtmMsg = false;
 	mSetPass = false;
 	IsPassive = true;
+	mIsLan = false;
 	memset(mFloodHashes, 0, sizeof(mFloodHashes));
 	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }
