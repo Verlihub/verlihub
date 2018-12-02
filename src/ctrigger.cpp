@@ -140,26 +140,29 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "END1", buf, end1);
 
 		if (!timeTrigger) {
-			if (buf.find("%[CC]") != buf.npos) { // only if found
-				geo = conn->GetGeoCC(); // country code
-				ReplaceVarInString(buf, "CC", buf, geo);
-			}
+			ReplaceVarInString(buf, "CLASS", buf, uclass);
+			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(uclass)));
 
-			if (buf.find("%[CN]") != buf.npos) { // only if found
-				geo = conn->GetGeoCN(); // country name
-				ReplaceVarInString(buf, "CN", buf, geo);
-			}
+			if (buf.find("%[C") != buf.npos) { // only if found
+				if (buf.find("%[CC]") != buf.npos) {
+					geo = conn->GetGeoCC(); // country code
+					ReplaceVarInString(buf, "CC", buf, geo);
+				}
 
-			if (buf.find("%[CITY]") != buf.npos) { // only if found
-				geo = conn->GetGeoCI(); // city name
-				ReplaceVarInString(buf, "CITY", buf, geo);
+				if (buf.find("%[CN]") != buf.npos) {
+					geo = conn->GetGeoCN(); // country name
+					ReplaceVarInString(buf, "CN", buf, geo);
+				}
+
+				if (buf.find("%[CITY]") != buf.npos) {
+					geo = conn->GetGeoCI(); // city name
+					ReplaceVarInString(buf, "CITY", buf, geo);
+				}
 			}
 
 			ReplaceVarInString(buf, "IP", buf, conn->AddrIP());
 			ReplaceVarInString(buf, "HOST", buf, conn->AddrHost());
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);
-			ReplaceVarInString(buf, "CLASS", buf, uclass);
-			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(uclass)));
 			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare));
 			ReplaceVarInString(buf, "SHARE_EXACT", buf, (__int64)conn->mpUser->mShare); // exact share size
 		}
@@ -178,7 +181,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 
 		char tmf[3];
 		sprintf(tmf, "%02d", lt->tm_sec);
-		ReplaceVarInString(buf, "ss", buf, tmf);
+		ReplaceVarInString(buf, "ss", buf, tmf); // todo: why not %[SS] ?
 		sprintf(tmf, "%02d", lt->tm_min);
 		ReplaceVarInString(buf, "mm", buf, tmf);
 		sprintf(tmf, "%02d", lt->tm_hour);
