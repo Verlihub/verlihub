@@ -328,10 +328,10 @@ int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if (mS->mC.drop_invalid_key) {
-		string key;
+		string key, par = msg->ChunkString(eCH_1_PARAM);
 		Lock2Key(conn->mLock, key);
 
-		if (key != msg->ChunkString(eCH_1_PARAM)) {
+		if (StrCompare(key, 0, par.size(), par) != 0) {
 			os << _("Your client provided invalid key in response to lock.");
 
 			if (conn->Log(1))
@@ -381,118 +381,118 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		if (feature.empty())
 			break;
 
-		if (feature == "OpPlus") {
+		if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "OpPlus") == 0)) {
 			conn->mFeatures |= eSF_OPPLUS;
 			pars.append("OpPlus ");
 
-		} else if (feature == "NoHello") {
+		} else if ((feature.size() == 7) && (StrCompare(feature, 0, 7, "NoHello") == 0)) {
 			conn->mFeatures |= eSF_NOHELLO;
 			pars.append("NoHello ");
 
-		} else if (feature == "NoGetINFO") {
+		} else if ((feature.size() == 9) && (StrCompare(feature, 0, 9, "NoGetINFO") == 0)) {
 			conn->mFeatures |= eSF_NOGETINFO;
 			pars.append("NoGetINFO ");
 
-		} else if (feature == "DHT0") {
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "DHT0") == 0)) {
 			conn->mFeatures |= eSF_DHT0;
 
-		} else if (feature == "QuickList") {
+		} else if ((feature.size() == 9) && (StrCompare(feature, 0, 9, "QuickList") == 0)) {
 			conn->mFeatures |= eSF_QUICKLIST;
 
-		} else if (feature == "BotINFO") {
+		} else if ((feature.size() == 7) && (StrCompare(feature, 0, 7, "BotINFO") == 0)) {
 			conn->mFeatures |= eSF_BOTINFO;
 			pars.append("HubINFO ");
 
-		} else if ((feature == "ZPipe0") || (feature == "ZPipe")) {
+		} else if (((feature.size() == 6) && (StrCompare(feature, 0, 6, "ZPipe0") == 0)) || ((feature.size() == 5) && (StrCompare(feature, 0, 5, "ZPipe") == 0))) {
 			conn->mFeatures |= eSF_ZLIB;
 			conn->mZLibFlag = true;
 			pars.append("ZPipe "); // send even if disabled, we might want to turn it on any time, also we are no longer testing it
 
-		} else if (feature == "ChatOnly") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "ChatOnly") == 0)) {
 			conn->mFeatures |= eSF_CHATONLY;
 			pars.append("ChatOnly ");
 
-		} else if (feature == "MCTo") {
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "MCTo") == 0)) {
 			conn->mFeatures |= eSF_MCTO;
 			pars.append("MCTo ");
 
-		} else if (feature == "UserCommand") {
+		} else if ((feature.size() == 11) && (StrCompare(feature, 0, 11, "UserCommand") == 0)) {
 			conn->mFeatures |= eSF_USERCOMMAND;
 
-		} else if (feature == "BotList") {
+		} else if ((feature.size() == 7) && (StrCompare(feature, 0, 7, "BotList") == 0)) {
 			conn->mFeatures |= eSF_BOTLIST;
 			pars.append("BotList ");
 
-		} else if (feature == "HubTopic") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "HubTopic") == 0)) {
 			conn->mFeatures |= eSF_HUBTOPIC;
 			pars.append("HubTopic ");
 
-		} else if (feature == "UserIP2") {
+		} else if ((feature.size() == 7) && (StrCompare(feature, 0, 7, "UserIP2") == 0)) {
 			conn->mFeatures |= eSF_USERIP2;
 			pars.append("UserIP2 ");
 
-		} else if (feature == "TTHSearch") {
+		} else if ((feature.size() == 9) && (StrCompare(feature, 0, 9, "TTHSearch") == 0)) {
 			conn->mFeatures |= eSF_TTHSEARCH;
 			pars.append("TTHSearch ");
 
-		} else if (feature == "Feed") {
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "Feed") == 0)) {
 			conn->mFeatures |= eSF_FEED;
 
 		/*
-		} else if (feature == "ClientID") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "ClientID") == 0)) {
 			conn->mFeatures |= eSF_CLIENTID;
 		*/
 
-		} else if (feature == "TTHS") {
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "TTHS") == 0)) {
 			conn->mFeatures |= eSF_TTHS;
 			pars.append("TTHS ");
 
-		} else if (feature == "IN") {
+		} else if ((feature.size() == 2) && (StrCompare(feature, 0, 2, "IN") == 0)) {
 			conn->mFeatures |= eSF_IN;
 			//pars.append("IN "); // todo
 
-		} else if (feature == "BanMsg") {
+		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "BanMsg") == 0)) {
 			conn->mFeatures |= eSF_BANMSG;
 
-		} else if (feature == "TLS") {
+		} else if ((feature.size() == 3) && (StrCompare(feature, 0, 3, "TLS") == 0)) {
 			conn->mFeatures |= eSF_TLS;
 			pars.append("TLS ");
 
-		} else if (feature == "FailOver") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "FailOver") == 0)) {
 			conn->mFeatures |= eSF_FAILOVER;
 			pars.append("FailOver ");
 
-		} else if (feature == "NickChange") {
+		} else if ((feature.size() == 10) && (StrCompare(feature, 0, 10, "NickChange") == 0)) {
 			conn->mFeatures |= eSF_NICKCHANGE;
 
-		} else if (feature == "ClientNick") {
+		} else if ((feature.size() == 10) && (StrCompare(feature, 0, 10, "ClientNick") == 0)) {
 			conn->mFeatures |= eSF_CLIENTNICK;
 
-		} else if (feature == "ZLine") {
+		} else if ((feature.size() == 5) && (StrCompare(feature, 0, 5, "ZLine") == 0)) {
 			conn->mFeatures |= eSF_ZLINE;
 
-		} else if (feature == "GetZBlock") {
+		} else if ((feature.size() == 9) && (StrCompare(feature, 0, 9, "GetZBlock") == 0)) {
 			conn->mFeatures |= eSF_GETZBLOCK;
 
-		} else if (feature == "ACTM") {
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "ACTM") == 0)) {
 			conn->mFeatures |= eSF_ACTM;
 
-		} else if (feature == "SaltPass") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "SaltPass") == 0)) {
 			conn->mFeatures |= eSF_SALTPASS;
 
-		} else if (feature == "NickRule") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "NickRule") == 0)) {
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
 
-		} else if (feature == "SearchRule") {
+		} else if ((feature.size() == 10) && (StrCompare(feature, 0, 10, "SearchRule") == 0)) {
 			conn->mFeatures |= eSF_SEARRULE;
 			pars.append("SearchRule ");
 
-		} else if (feature == "HubURL") {
+		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "HubURL") == 0)) {
 			conn->mFeatures |= eSF_HUBURL;
 			pars.append("HubURL ");
 
-		} else if (feature == "ExtJSON2") {
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "ExtJSON2") == 0)) {
 			conn->mFeatures |= eSF_EXTJSON2;
 
 			if (!mS->mC.disable_extjson)
@@ -669,7 +669,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		conn->Send(omsg, true);
 	}
 
-	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) { // check authorization ip
+	if (conn->mRegInfo && conn->mRegInfo->mAuthIP.size() && (StrCompare(conn->mRegInfo->mAuthIP, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0)) { // check authorization ip
 		mS->mR->LoginError(conn, nick); // important
 
 		if (conn->GetTheoricalClass() >= mS->mC.wrongauthip_report)
@@ -1604,7 +1604,7 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		if (mS->mCallBacks.mOnParsedMsgExtJSON.CallAll(conn, msg))
 		#endif
 		{
-			if (msg->mStr != conn->mpUser->mExtJSON) {
+			if (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0) {
 				mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
 				mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
 				conn->mpUser->mExtJSON = msg->mStr;
@@ -2009,7 +2009,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (nick == conn->mpUser->mNick) {
+	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
@@ -2217,7 +2217,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (nick == conn->mpUser->mNick) {
+	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
@@ -2544,7 +2544,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (passive) {
 		conn->mSRCounter = 0;
-	} else if (addr != conn->mAddrIP) {
+	} else if (StrCompare(addr, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
@@ -2557,7 +2557,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	string search, tths;
 	Create_Search(search, saddr, lims, spat);
 
-	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 3, 8, "?0?9?") == 0)) { // also create short version to send to modern clients
+	if (mS->mC.use_search_filter && tth && (StrCompare(lims, 3, 8, "?0?9?") == 0)) { // also create short version to send to modern clients, note: limits length is checked above
 		spat = spat.substr(4);
 
 		if (passive)
@@ -2753,7 +2753,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 
 	conn->mpUser->mSearchNumber++; // set counter last of all
 
-	if (addr != conn->mAddrIP) {
+	if (StrCompare(addr, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
@@ -3780,7 +3780,7 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 
 bool cDCProto::CheckUserNick(cConnDC *conn, const string &nick)
 {
-	if (conn->mpUser->mNick == nick)
+	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0)
 		return false;
 
 	ostringstream os;
@@ -3808,7 +3808,7 @@ bool cDCProto::FindInSupports(const string &list, const string &flag)
 		if (item.empty())
 			break;
 
-		if (item == flag)
+		if (StrCompare(item, 0, flag.size(), flag) == 0)
 			return true;
 	}
 
@@ -3935,13 +3935,11 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 
 bool cDCProto::CheckIP(cConnDC *conn, string &ip)
 {
-	if (conn->mAddrIP == ip) {
+	if (StrCompare(ip, 0, conn->mAddrIP.size(), conn->mAddrIP) == 0)
 		return true;
-	}
 
-	if (conn->mRegInfo && (conn->mRegInfo->mAlternateIP == ip)) {
+	if (conn->mRegInfo && conn->mRegInfo->mAlternateIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mAlternateIP.size(), conn->mRegInfo->mAlternateIP) == 0))
 		return true;
-	}
 
 	return false;
 }
