@@ -651,7 +651,7 @@ cConnDC* cServerDC::GetConnByIP(const string &ip)
 	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
 		conn = (cConnDC*)(*pos);
 
-		if (conn && conn->ok && (conn->AddrIP() == ip))
+		if (conn && conn->ok && (StrCompare(ip, 0, conn->AddrIP().size(), conn->AddrIP()) == 0))
 			return conn;
 	}
 
@@ -881,7 +881,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 			if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 				continue;
 
-			if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+			if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
 				continue;
 
 			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -917,7 +917,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 					continue;
 
-				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+				if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
 					continue;
 
 				if (conn->mpUser->mIsLan != other->mpUser->mIsLan) // filter lan to wan and reverse
@@ -955,7 +955,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 					continue;
 
-				if (other->mpUser->mNick == conn->mpUser->mNick) // dont send to self
+				if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
 					continue;
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -989,7 +989,7 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 		if (!(other->mFeatures & eSF_EXTJSON2)) // only those who support this
 			continue;
 
-		if (conn && conn->mpUser && (conn->mpUser->mNick == other->mpUser->mNick)) // skip self
+		if (conn && conn->mpUser && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0)) // skip self
 			continue;
 
 		if (other->mpUser->mExtJSON.empty()) // only those who actually have something
@@ -1088,16 +1088,16 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 	string userkey;
 	mUserList.Nick2Key(conn->mpUser->mNick, userkey);
 
-	if (mUserList.ContainsKey(userkey)) {
+	if (mUserList.ContainsKey(userkey)) { // same nick
 		cUser *olduser = mUserList.GetUserByKey(userkey);
 		bool sameuser = false;
-		string omsg;
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
-
-		if (!sameuser && olduser && olduser->mxConn && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO_basic == olduser->mMyINFO_basic))
+		else if (olduser && olduser->mxConn && (conn->GetSockAddress() == olduser->mxConn->GetSockAddress()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO_basic, 0, olduser->mMyINFO_basic.size(), olduser->mMyINFO_basic) == 0))
 			sameuser = true;
+
+		string omsg;
 
 		if (sameuser && !mC.allow_same_user && (conn->mpUser->mClass <= mC.max_class_same_user)) { // dont allow same users
 			omsg = _("You're already logged in with same nick and IP address.");
@@ -1125,6 +1125,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 				conn->CloseNow();
 				return false;
 			}
+
 		} else {
 			omsg = _("Your nick is already taken by another user.");
 			DCPublicHS(omsg, conn);
@@ -1652,7 +1653,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 	if (mC.nick_prefix_cc) {
 		more = conn->GetGeoCC();
 
-		if (more.size() && (more != "--")) {
+		if ((more.size() == 2) && (more != "--")) {
 			more = "[" + more + "]";
 
 			if (StrCompare(nick, 0, 4, more) != 0) {
@@ -1751,7 +1752,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 		if (mUserList.ContainsKey(userkey)) {
 			cUser *olduser = mUserList.GetUserByKey(userkey);
 
-			if (olduser && olduser->mxConn && (conn->AddrIP() != olduser->mxConn->AddrIP())) // make sure its not same user
+			if (olduser && olduser->mxConn && (conn->GetSockAddress() != olduser->mxConn->GetSockAddress())) // make sure its not same user
 				return eVN_USED;
 		}
 	}
@@ -2242,7 +2243,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
-		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNick != conn->mpUser->mNick) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->AddrIP() == conn->AddrIP())) {
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) != 0) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->GetSockAddress() == conn->GetSockAddress())) {
 			count++;
 
 			if (count >= mC.clone_detect_count) { // number of clones
