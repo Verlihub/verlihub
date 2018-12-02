@@ -1251,8 +1251,8 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
 		
-		const size_t find_CC = tend.find("%[C");
-		if(find_CC != tend.npos ) {
+		const size_t find_CC = omsg.find("%[C");
+		if(find_CC != omsg.npos ) {
 		if (omsg.find("%[CC]",find_CC) != omsg.npos) { // only if found
 			geo = conn->GetGeoCC(); // country code
 			ReplaceVarInString(omsg, "CC", omsg, geo);
