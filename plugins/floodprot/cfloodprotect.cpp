@@ -98,7 +98,7 @@ bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 {
 	if (!conn) return true;
 
-	if (conn && conn->mpUser && conn->mpUser->mClass >= eUC_OPERATOR) return true;
+	if (conn->mpUser && conn->mpUser->mClass >= eUC_OPERATOR) return true;
 
 	unsigned long Hash = cBanList::Ip2Num(conn->AddrIP());
 
