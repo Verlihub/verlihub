@@ -722,7 +722,7 @@ void cConnDC::SetGeoZone()
 		}
 	}
 
-	unsigned long inum = IP2Num(), imin, imax;
+	long inum = cBanList::Ip2Num(AddrIP()), imin, imax;
 
 	if (serv->mC.ip_zone4_min.size() && serv->mC.ip_zone4_max.size()) {
 		imin = cBanList::Ip2Num(serv->mC.ip_zone4_min);

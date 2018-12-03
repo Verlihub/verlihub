@@ -1265,22 +1265,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			temp = mS->mC.desc_insert_vars;
 			ReplaceVarInString(temp, "CLASS", temp, conn->mpUser->mClass);
 			ReplaceVarInString(temp, "CLASSNAME", temp, mS->UserClassName(conn->mpUser->mClass));
-			const size_t pos = temp.find("%[C");
 
-			if (pos != temp.npos) { // only if found
+			if (temp.find("%[C") != temp.npos) { // only if found
 				string geo;
 
-				if (temp.find("%[CC]", pos) != temp.npos) {
+				if (temp.find("%[CC]") != temp.npos) {
 					geo = conn->GetGeoCC(); // country code
 					ReplaceVarInString(temp, "CC", temp, geo);
 				}
 
-				if (temp.find("%[CN]", pos) != temp.npos) {
+				if (temp.find("%[CN]") != temp.npos) {
 					geo = conn->GetGeoCN(); // country name
 					ReplaceVarInString(temp, "CN", temp, geo);
 				}
 
-				if (temp.find("%[CITY]", pos) != temp.npos) {
+				if (temp.find("%[CITY]") != temp.npos) {
 					geo = conn->GetGeoCI(); // city name
 					ReplaceVarInString(temp, "CITY", temp, geo);
 				}
@@ -3945,7 +3944,7 @@ bool cDCProto::CheckIP(cConnDC *conn, string &ip)
 	return false;
 }
 
-bool cDCProto::isLanIP(const string &ip)
+bool cDCProto::isLanIP(const string& ip)
 {
 	if (ip.substr(0, 4) == "127.")
 		return true;
