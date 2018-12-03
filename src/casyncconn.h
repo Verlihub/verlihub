@@ -185,6 +185,11 @@ namespace nVerliHub {
 					return mAddrIP;
 				}
 
+				unsigned long IP2Num() const // numerical ip address
+				{
+					return mIP;
+				}
+
 				/**
 				 * Return the port.
 				 * @return The port.
@@ -213,7 +218,7 @@ namespace nVerliHub {
 				bool BufferEmpty()
 				{
 					 return mBufEnd == mBufReadPos;
-				};
+				}
 
 				/*
 					returns buffer sizes
@@ -537,7 +542,7 @@ namespace nVerliHub {
 				string mAddrIP;
 
 				/// Integer that represents the numeric value of the IP address of the connection.
-				unsigned long mIp;
+				unsigned long mIP;
 
 				/// Port of the connection.
 				unsigned int mAddrPort;
