@@ -191,7 +191,7 @@ namespace nVerliHub {
 				 */
 				unsigned long Ip2Num() const
 				{
-					return mIP;
+					return mIp;
 				}
 
 				/**
