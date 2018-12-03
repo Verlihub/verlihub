@@ -104,7 +104,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	struct sockaddr saddr;
 	struct sockaddr_in *addr_in;
 	socklen_t addr_size = sizeof(saddr);
-	mIp = 0;
+	mIP = 0;
 	ClearLine();
 	mBufEnd = mBufReadPos = 0;
 
@@ -117,7 +117,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 		}
 
 		addr_in = (struct sockaddr_in*)&saddr;
-		mIp = addr_in->sin_addr.s_addr; // copy ip
+		mIP = addr_in->sin_addr.s_addr; // copy ip
 		mAddrIP = inet_ntoa(addr_in->sin_addr); // ip address
 
 		if (mxServer && mxServer->mUseDNS) // host name
@@ -900,7 +900,7 @@ bool cAsyncConn::DNSLookup()
 	struct hostent *hp;
 	if(mAddrHost.size())
 	    	return true;
-	if((hp=gethostbyaddr((char *)&mIp,sizeof(mIp),AF_INET)))
+	if((hp=gethostbyaddr((char *)&mIP,sizeof(mIP),AF_INET)))
 		mAddrHost = hp->h_name;
 	return (hp != NULL);
 }

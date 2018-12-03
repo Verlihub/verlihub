@@ -696,29 +696,31 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 {
 	string temp, tend;
 	cConnDC *conn;
-	tCLIt pos;
+	tCLIt it;
 	int tot = 0;
+	size_t pos;
 
-	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
-		conn = (cConnDC*)(*pos);
+	for (it = mConnList.begin(); it != mConnList.end(); it++) {
+		conn = (cConnDC*)(*it);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tend = end;
 			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
+			pos = tend.find("%[C");
 
-			if (tend.find("%[C") != tend.npos) { // only if found
-				if (tend.find("%[CC]") != tend.npos) {
+			if (pos != tend.npos) { // only if found
+				if (tend.find("%[CC]", pos) != tend.npos) {
 					temp = conn->GetGeoCC(); // country code
 					ReplaceVarInString(tend, "CC", tend, temp);
 				}
 
-				if (tend.find("%[CN]") != tend.npos) {
+				if (tend.find("%[CN]", pos) != tend.npos) {
 					temp = conn->GetGeoCN(); // country name
 					ReplaceVarInString(tend, "CN", tend, temp);
 				}
 
-				if (tend.find("%[CITY]") != tend.npos) {
+				if (tend.find("%[CITY]", pos) != tend.npos) {
 					temp = conn->GetGeoCI(); // city name
 					ReplaceVarInString(tend, "CITY", tend, temp);
 				}
@@ -739,29 +741,31 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 {
 	string temp, tmsg;
 	cConnDC *conn;
-	tCLIt pos;
+	tCLIt it;
 	int tot = 0;
+	size_t pos;
 
-	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
-		conn = (cConnDC*)(*pos);
+	for (it = mConnList.begin(); it != mConnList.end(); it++) {
+		conn = (cConnDC*)(*it);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			tmsg = msg;
 			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick); // replace variables
 			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
+			pos = tmsg.find("%[C");
 
-			if (tmsg.find("%[C") != tmsg.npos) { // only if found
-				if (tmsg.find("%[CC]") != tmsg.npos) {
+			if (pos != tmsg.npos) { // only if found
+				if (tmsg.find("%[CC]", pos) != tmsg.npos) {
 					temp = conn->GetGeoCC(); // country code
 					ReplaceVarInString(tmsg, "CC", tmsg, temp);
 				}
 
-				if (tmsg.find("%[CN]") != tmsg.npos) {
+				if (tmsg.find("%[CN]", pos) != tmsg.npos) {
 					temp = conn->GetGeoCN(); // country name
 					ReplaceVarInString(tmsg, "CN", tmsg, temp);
 				}
 
-				if (tmsg.find("%[CITY]") != tmsg.npos) {
+				if (tmsg.find("%[CITY]", pos) != tmsg.npos) {
 					temp = conn->GetGeoCI(); // city name
 					ReplaceVarInString(tmsg, "CITY", tmsg, temp);
 				}
@@ -805,11 +809,12 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 {
 	string str, tend;
 	cConnDC *conn;
-	tCLIt pos;
+	tCLIt it;
 	int tot = 0;
+	size_t pos;
 
-	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
-		conn = (cConnDC*)(*pos);
+	for (it = mConnList.begin(); it != mConnList.end(); it++) {
+		conn = (cConnDC*)(*it);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
 			str = conn->GetGeoCC(); // country code
@@ -818,17 +823,18 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 				tend = end;
 				ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
 				ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
+				pos = tend.find("%[C");
 
-				if (tend.find("%[C") != tend.npos) { // only if found
-					if (tend.find("%[CC]") != tend.npos)
+				if (pos != tend.npos) { // only if found
+					if (tend.find("%[CC]", pos) != tend.npos)
 						ReplaceVarInString(tend, "CC", tend, str);
 
-					if (tend.find("%[CN]") != tend.npos) {
+					if (tend.find("%[CN]", pos) != tend.npos) {
 						str = conn->GetGeoCN(); // country name
 						ReplaceVarInString(tend, "CN", tend, str);
 					}
 
-					if (tend.find("%[CITY]") != tend.npos) {
+					if (tend.find("%[CITY]", pos) != tend.npos) {
 						str = conn->GetGeoCI(); // city name
 						ReplaceVarInString(tend, "CITY", tend, str);
 					}
@@ -1039,7 +1045,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	}
 
 	if (mBanList->IsIPTempBanned(conn->AddrIP())) { // check temporary ip ban
-		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(cBanList::Ip2Num(conn->AddrIP()));
+		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(conn->IP2Num());
 
 		if (tban && (tban->mUntil > mTime.Sec())) {
 			os << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTimePrint(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
@@ -1094,7 +1100,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
-		else if (olduser && olduser->mxConn && (conn->GetSockAddress() == olduser->mxConn->GetSockAddress()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO_basic, 0, olduser->mMyINFO_basic.size(), olduser->mMyINFO_basic) == 0))
+		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO_basic, 0, olduser->mMyINFO_basic.size(), olduser->mMyINFO_basic) == 0))
 			sameuser = true;
 
 		string omsg;
@@ -1251,21 +1257,22 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) {
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
+		const size_t pos = omsg.find("%[C");
 
-		if (omsg.find("%[C") != omsg.npos) { // only if found
+		if (pos != omsg.npos) { // only if found
 			string geo;
 
-			if (omsg.find("%[CC]") != omsg.npos) {
+			if (omsg.find("%[CC]", pos) != omsg.npos) {
 				geo = conn->GetGeoCC(); // country code
 				ReplaceVarInString(omsg, "CC", omsg, geo);
 			}
 
-			if (omsg.find("%[CN]") != omsg.npos) {
+			if (omsg.find("%[CN]", pos) != omsg.npos) {
 				geo = conn->GetGeoCN(); // country name
 				ReplaceVarInString(omsg, "CN", omsg, geo);
 			}
 
-			if (omsg.find("%[CITY]") != omsg.npos) {
+			if (omsg.find("%[CITY]", pos) != omsg.npos) {
 				geo = conn->GetGeoCI(); // city name
 				ReplaceVarInString(omsg, "CITY", omsg, geo);
 			}
@@ -1752,7 +1759,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 		if (mUserList.ContainsKey(userkey)) {
 			cUser *olduser = mUserList.GetUserByKey(userkey);
 
-			if (olduser && olduser->mxConn && (conn->GetSockAddress() != olduser->mxConn->GetSockAddress())) // make sure its not same user
+			if (olduser && olduser->mxConn && (conn->IP2Num() != olduser->mxConn->IP2Num())) // make sure its not same user
 				return eVN_USED;
 		}
 	}
@@ -2188,12 +2195,13 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 	cUserCollection::iterator i;
 	unsigned int cnt = 0;
 	cConnDC *conn;
+	unsigned long num;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
 		conn = ((cUser*)(*i))->mxConn;
 
 		if (conn) {
-			const unsigned long num = conn->Ip2Num();
+			num = conn->IP2Num();
 
 			if (exact && (ip_min == num)) {
 				dest += sep;
@@ -2243,7 +2251,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
-		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) != 0) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->GetSockAddress() == conn->GetSockAddress())) {
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) != 0) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->IP2Num() == conn->IP2Num())) {
 			count++;
 
 			if (count >= mC.clone_detect_count) { // number of clones

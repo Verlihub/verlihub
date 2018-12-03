@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -64,10 +64,9 @@ cFloodprotect::~cFloodprotect()
 
 bool cFloodprotect::CleanUp(int secs)
 {
-	// cleanup if expired
-	cTime now;
+	cTime now; // cleanup if expired
 	unsigned long Hash;
-	sUserInfo * userinfo = 0;
+	sUserInfo *userinfo = NULL;
 	tUIIt it, it2;
 
 	for(it = mUserInfo.begin(); it != mUserInfo.end();)
@@ -79,13 +78,13 @@ bool cFloodprotect::CleanUp(int secs)
 			if((*it)->mLastAction.Sec() + secs < now.Sec())
     			{
 				// clean up after ?? sec inactivity
-				Hash = cBanList::Ip2Num((*it)->mIP);
+				Hash = cBanList::Ip2Num((*it)->mIP); // todo: (*it)->conn->IP2Num()
 				userinfo = mUserInfo.GetByHash(Hash);
 				mUserInfo.RemoveByHash(Hash);
 				if(userinfo)
 				{
 					delete userinfo;
-					userinfo=0;
+					userinfo = NULL;
 				}
 			}
 		}
@@ -94,13 +93,15 @@ bool cFloodprotect::CleanUp(int secs)
 	return true;
 }
 
-bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
+bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 {
-	if (!conn) return true;
+	if (!conn)
+		return true;
 
-	if (conn->mpUser && conn->mpUser->mClass >= eUC_OPERATOR) return true;
+	if (conn->mpUser && (conn->mpUser->mClass >= eUC_OPERATOR))
+		return true;
 
-	const unsigned long Hash = conn->Ip2Num();
+	const unsigned long Hash = conn->IP2Num();
 
 	if (mUserInfo.ContainsHash(Hash))
 	{
@@ -202,20 +203,20 @@ bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 
 int cFloodprotect::KickAll(cConnDC *conn)
 {
-	int cnt=0;
-	cConnDC * tempConn = 0;
+	if (!conn)
+		return 0;
+
+	int cnt = 0;
+	cConnDC *tempConn = 0;
 	cUserCollection::iterator it;
-
-	if(!conn) return 0;
-
-	const unsigned long ip = conn->Ip2Num();
+	const unsigned long ip = conn->IP2Num();
 
 	for(it=mS->mUserList.begin(); it!=mS->mUserList.end(); ++it)
 	{
 		tempConn = (static_cast<cUser *>(*it))->mxConn;
 		if(tempConn)
 		{
-			if(ip == tempConn->Ip2Num())
+			if(ip == tempConn->IP2Num())
 			{
 				if(tempConn->mpUser)
 				{
@@ -236,11 +237,10 @@ int cFloodprotect::KickAll(cConnDC *conn)
 
 bool cFloodprotect::AddConn(cConnDC *conn, short difference)
 {
-	// maybe special users, anyway, return true is safe
-	if (!conn) return true;
+	if (!conn) // maybe special users, anyway, return true is safe
+		return true;
 
-	// best hash for ip is itself
-	const unsigned long Hash = conn->Ip2Num();
+	const unsigned long Hash = conn->IP2Num(); // best hash for ip is itself
 	short int Count =  mConnCounter.GetByHash(Hash);
 
 	Count += difference;
