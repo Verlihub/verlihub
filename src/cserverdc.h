@@ -454,7 +454,7 @@ class cServerDC : public cAsyncSocketServer
 		int SaveFile(const string &file, const string &text);
 
 		// get connection by ip
-		cConnDC* GetConnByIP(const string &ip);
+		cConnDC* GetConnByIP(const unsigned long ip);
 
 		/**
 		* Send data to all users that are in userlist.
@@ -580,7 +580,7 @@ class cServerDC : public cAsyncSocketServer
 		unsigned int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact = true);
 
 		// return number of users with class <= 1 with specific ip address
-		unsigned int CntConnIP(const string &ip);
+		unsigned int CntConnIP(const unsigned long ip);
 
 		// clone detection
 		bool CheckUserClone(cConnDC *conn, string &clone);

@@ -643,7 +643,7 @@ bool cServerDC::OnUnLoad(long code)
 	return true;
 }
 
-cConnDC* cServerDC::GetConnByIP(const string &ip)
+cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 {
 	cConnDC *conn;
 	tCLIt pos;
@@ -651,7 +651,7 @@ cConnDC* cServerDC::GetConnByIP(const string &ip)
 	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
 		conn = (cConnDC*)(*pos);
 
-		if (conn && conn->ok && (StrCompare(ip, 0, conn->AddrIP().size(), conn->AddrIP()) == 0))
+		if (conn && conn->ok && (ip == conn->IP2Num()))
 			return conn;
 	}
 
@@ -2221,22 +2221,22 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 	return cnt;
 }
 
-unsigned int cServerDC::CntConnIP(const string &ip)
+unsigned int cServerDC::CntConnIP(const unsigned long ip)
 {
-	cUserCollection::iterator i;
-	unsigned int cnt = 0;
+	cUserCollection::iterator it;
+	unsigned int tot = 0;
 	cConnDC *conn;
 
-	for (i = mUserList.begin(); i != mUserList.end(); ++i) {
-		conn = ((cUser*)(*i))->mxConn;
+	for (it = mUserList.begin(); it != mUserList.end(); ++it) {
+		conn = ((cUser*)(*it))->mxConn;
 
-		if (conn) {
-			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->AddrIP() == ip))
-				cnt++;
+		if (conn && conn->ok) {
+			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->IP2Num() == ip))
+				tot++;
 		}
 	}
 
-	return cnt;
+	return tot;
 }
 
 bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)

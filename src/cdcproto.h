@@ -356,7 +356,7 @@ protected:
 	void Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic);
 	static void UnEscapeChars(const string &, string &, bool WithDCN = false);
 	static void UnEscapeChars(const string &, char *, unsigned int &len, bool WithDCN = false);
-	static bool CheckIP(nSocket::cConnDC * conn, string &ip);
+	static bool CheckIP(nSocket::cConnDC *conn, const string &ip);
 
 	// Message kick regex
 	nUtils::cPCRE mKickChatPattern;
