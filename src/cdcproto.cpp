@@ -29,7 +29,7 @@
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
 
 #include <stdio.h>
@@ -44,6 +44,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	using namespace nSocket;
 	using namespace nSocket;
+
 	namespace nProtocol {
 
 cDCProto::cDCProto(cServerDC *serv):mS(serv)
@@ -62,7 +63,8 @@ cMessageParser *cDCProto::CreateParser()
 
 void cDCProto::DeleteParser(cMessageParser *OldParser)
 {
-	if (OldParser != NULL) delete OldParser;
+	if (OldParser != NULL)
+		delete OldParser;
 }
 
 int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
@@ -369,7 +371,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &supports = msg->ChunkString(eCH_1_PARAM);
+	const string &supports = msg->ChunkString(eCH_1_PARAM);
 	conn->mSupportsText = supports; // save user supports in plain text format
 	istringstream is(supports);
 	string feature, omsg, pars;
@@ -556,10 +558,9 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_1_PARAM);
+	const string &nick = msg->ChunkString(eCH_1_PARAM);
 
-	// Log new user
-	if(conn->Log(3))
+	if (conn->Log(3)) // log new user
 		conn->LogStream() << "User " << nick << " tries to login" << endl;
 
 	int closeReason; // check if nick is valid or close the connection
@@ -653,10 +654,10 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER)) { // user limit from single ip
-		unsigned int cnt = mS->CntConnIP(conn->mAddrIP);
+		const unsigned int tot = mS->CntConnIP(conn->IP2Num());
 
-		if (cnt >= mS->mC.max_users_from_ip) {
-			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), cnt);
+		if (tot >= mS->mC.max_users_from_ip) {
+			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), tot);
 			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 			Create_HubIsFull(omsg); // must be sent after chat message
 			conn->Send(omsg, true);
@@ -761,7 +762,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	string &pwd = msg->ChunkString(eCH_1_PARAM);
+	const string &pwd = msg->ChunkString(eCH_1_PARAM);
 
 	if (conn->mpUser->mSetPass) { // set password request
 		if (!conn->mRegInfo || !conn->mRegInfo->mPwdChange) {
@@ -873,7 +874,7 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &url = msg->ChunkString(eCH_1_PARAM);
+	const string &url = msg->ChunkString(eCH_1_PARAM);
 	ParseReferer(url, conn->mHubURL, false);
 
 	/*
@@ -924,7 +925,7 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	string &version = msg->ChunkString(eCH_1_PARAM);
+	const string &version = msg->ChunkString(eCH_1_PARAM);
 
 	if (conn->Log(5))
 		conn->LogStream() << "NMDC version:" << version << endl;
@@ -973,7 +974,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_MI_NICK);
+	const string &nick = msg->ChunkString(eCH_MI_NICK);
 
 	if (CheckUserNick(conn, nick))
 		return -1;
@@ -1490,7 +1491,7 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_IN_NICK);
+	const string &nick = msg->ChunkString(eCH_IN_NICK);
 
 	if (CheckUserNick(conn, nick))
 		return -1;
@@ -1592,7 +1593,7 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_EJ_NICK);
+	const string &nick = msg->ChunkString(eCH_EJ_NICK);
 
 	if (CheckUserNick(conn, nick))
 		return -1;
@@ -1624,7 +1625,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_GI_NICK);
+	const string &nick = msg->ChunkString(eCH_GI_NICK);
 
 	if (CheckUserNick(conn, nick))
 		return -1;
@@ -1633,7 +1634,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	string omsg;
-	string &other = msg->ChunkString(eCH_GI_OTHER); // find other user
+	const string &other = msg->ChunkString(eCH_GI_OTHER); // find other user
 	cUser *user = mS->mUserList.GetUserByNick(other);
 
 	if (!user) {
@@ -1667,8 +1668,8 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &from = msg->ChunkString(eCH_PM_FROM);
-	string &nick = msg->ChunkString(eCH_PM_NICK);
+	const string &from = msg->ChunkString(eCH_PM_FROM);
+	const string &nick = msg->ChunkString(eCH_PM_NICK);
 
 	if (CheckUserNick(conn, from) || CheckUserNick(conn, nick))
 		return -1;
@@ -1777,8 +1778,8 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &from = msg->ChunkString(eCH_MCTO_FROM);
-	string &nick = msg->ChunkString(eCH_MCTO_NICK);
+	const string &from = msg->ChunkString(eCH_MCTO_FROM);
+	const string &nick = msg->ChunkString(eCH_MCTO_NICK);
 
 	if (CheckUserNick(conn, from) || CheckUserNick(conn, nick))
 		return -1;
@@ -1802,7 +1803,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	string &text = msg->ChunkString(eCH_MCTO_MSG);
+	const string &text = msg->ChunkString(eCH_MCTO_MSG);
 
 	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) {
 		mS->DCPrivateHS(_("You're not allowed to use private chat right now."), conn, &to);
@@ -1880,7 +1881,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_CH_NICK);
+	const string &nick = msg->ChunkString(eCH_CH_NICK);
 
 	if (CheckUserNick(conn, nick))
 		return -1;
@@ -1967,7 +1968,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	ostringstream os;
-	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
+	const string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
@@ -2188,7 +2189,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &mynick = msg->ChunkString(eCH_RC_NICK);
+	const string &mynick = msg->ChunkString(eCH_RC_NICK);
 
 	if (CheckUserNick(conn, mynick))
 		return -1;
@@ -2197,7 +2198,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	ostringstream os;
-	string &nick = msg->ChunkString(eCH_RC_OTHER); // find other user
+	const string &nick = msg->ChunkString(eCH_RC_OTHER); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
@@ -2373,7 +2374,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		saddr.append("Hub:");
 		saddr.append(nick);
 	} else {
-		string &port = msg->ChunkString(eCH_AS_PORT);
+		const string &port = msg->ChunkString(eCH_AS_PORT);
 
 		if (port.empty() || (port.size() > 5))
 			return -1;
@@ -2625,12 +2626,12 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	string &tth = msg->ChunkString(eCH_SA_TTH);
+	const string &tth = msg->ChunkString(eCH_SA_TTH);
 
 	if (tth.size() != 39) // check tth size, todo: be more strict and disconnect user with message
 		return -1;
 
-	string &port = msg->ChunkString(eCH_SA_PORT);
+	const string &port = msg->ChunkString(eCH_SA_PORT);
 
 	if (port.empty() || (port.size() > 5))
 		return -1;
@@ -2641,7 +2642,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	string saddr;
-	string &addr = msg->ChunkString(eCH_SA_IP);
+	const string &addr = msg->ChunkString(eCH_SA_IP);
 
 	if (CheckIP(conn, addr))
 		saddr.append(addr);
@@ -2805,12 +2806,12 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	string &tth = msg->ChunkString(eCH_SP_TTH);
+	const string &tth = msg->ChunkString(eCH_SP_TTH);
 
 	if (tth.size() != 39) // check tth size, todo: be more strict and disconnect user with message
 		return -1;
 
-	string &nick = msg->ChunkString(eCH_SP_NICK);
+	const string &nick = msg->ChunkString(eCH_SP_NICK);
 
 	if (CheckUserNick(conn, nick)) // verify sender
 		return -1;
@@ -2936,7 +2937,7 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &from = msg->ChunkString(eCH_SR_FROM);
+	const string &from = msg->ChunkString(eCH_SR_FROM);
 
 	if (CheckUserNick(conn, from))
 		return -1;
@@ -3124,7 +3125,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	ostringstream os;
-	string &nick = msg->ChunkString(eCH_FM_NICK); // find other user
+	const string &nick = msg->ChunkString(eCH_FM_NICK); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
 
 	if (!other || !other->mInList) {
@@ -3145,7 +3146,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 		return -3;
 	}
 
-	string &dest = msg->ChunkString(eCH_FM_DEST);
+	const string &dest = msg->ChunkString(eCH_FM_DEST);
 
 	if (dest.empty()) { // check address
 		os << _("Please specify valid redirect address.");
@@ -3183,7 +3184,7 @@ int cDCProto::DCO_TempBan(cMessageDC *msg, cConnDC *conn)
 	// todo: i think ban is not supported here, user will get bad syntax
 	long period = 0;
 	// calculate time
-	if(msg->ChunkString(eCH_NB_TIME).size()) {
+	if (msg->ChunkString(eCH_NB_TIME).size()) {
 		period = mS->Str2Period(msg->ChunkString(eCH_NB_TIME),os);
 		if(!period) {
 			mS->DCPublicHS(os.str(),conn);
@@ -3286,7 +3287,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &ip = msg->ChunkString(eCH_1_PARAM);
+	const string &ip = msg->ChunkString(eCH_1_PARAM);
 	string nicklist("$UsersWithIP "), sep("$$");
 	nicklist += ip;
 	nicklist += "$";
@@ -3324,7 +3325,7 @@ int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	string &topic = msg->ChunkString(eCH_1_PARAM); // todo: check length
+	const string &topic = msg->ChunkString(eCH_1_PARAM); // todo: check length
 	mS->mC.hub_topic = topic;
 	ostringstream os;
 	os << autosprintf(_("Topic is set to: %s"), topic.c_str());
@@ -3373,7 +3374,7 @@ int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	string &nick = msg->ChunkString(eCH_1_PARAM);
+	const string &nick = msg->ChunkString(eCH_1_PARAM);
 
 	if (nick.empty()) {
 		conn->CloseNow();
@@ -3404,7 +3405,7 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	string &lock = msg->ChunkString(eCH_1_PARAM);
+	const string &lock = msg->ChunkString(eCH_1_PARAM);
 
 	if (lock.empty()) {
 		conn->CloseNow();
@@ -3934,7 +3935,7 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 	return 0;
 }
 
-bool cDCProto::CheckIP(cConnDC *conn, string &ip)
+bool cDCProto::CheckIP(cConnDC *conn, const string &ip)
 {
 	if (StrCompare(ip, 0, conn->mAddrIP.size(), conn->mAddrIP) == 0)
 		return true;

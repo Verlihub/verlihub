@@ -299,10 +299,11 @@ string GetIPCC(const char *ip)
 		return "";
 	}
 
-	string cc(ip);
-	cConnDC *conn = serv->GetConnByIP(cc); // look in connection list first, script ususally call this for connected but not yet logged in users
+	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
+	string cc;
 
-	if (conn) {
+	if (conn && conn->ok) {
 		cc = conn->GetGeoCC(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
 		return cc;
 	}
@@ -325,10 +326,11 @@ string GetIPCN(const char *ip)
 		return "";
 	}
 
-	string cn(ip);
-	cConnDC *conn = serv->GetConnByIP(cn); // look in connection list first, script ususally call this for connected but not yet logged in users
+	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
+	string cn;
 
-	if (conn) {
+	if (conn && conn->ok) {
 		cn = conn->GetGeoCN(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
 		return cn;
 	}
@@ -351,10 +353,11 @@ string GetIPCity(const char *ip, const char *db)
 		return "";
 	}
 
-	string ci(ip);
-	cConnDC *conn = serv->GetConnByIP(ci); // look in connection list first, script ususally call this for connected but not yet logged in users
+	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
+	string ci;
 
-	if (conn) {
+	if (conn && conn->ok) {
 		ci = conn->GetGeoCI(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
 		return ci;
 	}
