@@ -524,7 +524,7 @@ void cBanList::AddNickTempBan(const string &nick, long until, const string &reas
 
 void cBanList::AddIPTempBan(const string &ip, long until, const string &reason, unsigned bantype)
 {
-	const unsigned long hash = Ip2Num(ip);
+	unsigned long hash = Ip2Num(ip);
 	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
 
 	if (tban) {
@@ -564,7 +564,7 @@ void cBanList::DelNickTempBan(const string &nick)
 
 void cBanList::DelIPTempBan(const string &ip)
 {
-	const unsigned long hash = Ip2Num(ip);
+	unsigned long hash = Ip2Num(ip);
 	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
 
 	if (tban) {

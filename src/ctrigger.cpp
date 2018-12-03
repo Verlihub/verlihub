@@ -142,20 +142,19 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		if (!timeTrigger) {
 			ReplaceVarInString(buf, "CLASS", buf, uclass);
 			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(uclass)));
-			const size_t pos = buf.find("%[C");
 
-			if (pos != buf.npos) { // only if found
-				if (buf.find("%[CC]", pos) != buf.npos) {
+			if (buf.find("%[C") != buf.npos) { // only if found
+				if (buf.find("%[CC]") != buf.npos) {
 					geo = conn->GetGeoCC(); // country code
 					ReplaceVarInString(buf, "CC", buf, geo);
 				}
 
-				if (buf.find("%[CN]", pos) != buf.npos) {
+				if (buf.find("%[CN]") != buf.npos) {
 					geo = conn->GetGeoCN(); // country name
 					ReplaceVarInString(buf, "CN", buf, geo);
 				}
 
-				if (buf.find("%[CITY]", pos) != buf.npos) {
+				if (buf.find("%[CITY]") != buf.npos) {
 					geo = conn->GetGeoCI(); // city name
 					ReplaceVarInString(buf, "CITY", buf, geo);
 				}
