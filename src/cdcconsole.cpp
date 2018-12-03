@@ -1824,7 +1824,7 @@ bool cDCConsole::cfBan::operator()()
 					conn = ((cUser*)(*i))->mxConn;
 
 					if (conn && conn->mpUser) {
-						unsigned long ipnum = cBanList::Ip2Num(conn->AddrIP());
+						const unsigned long ipnum = conn->Ip2Num();
 
 						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum))) {
 							if (mS->mC.notify_kicks_to_all > -1) { // message to all

@@ -2193,7 +2193,7 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 		conn = ((cUser*)(*i))->mxConn;
 
 		if (conn) {
-			unsigned long num = cBanList::Ip2Num(conn->AddrIP());
+			const unsigned long num = conn->Ip2Num();
 
 			if (exact && (ip_min == num)) {
 				dest += sep;
