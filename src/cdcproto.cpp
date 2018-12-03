@@ -1265,21 +1265,22 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			temp = mS->mC.desc_insert_vars;
 			ReplaceVarInString(temp, "CLASS", temp, conn->mpUser->mClass);
 			ReplaceVarInString(temp, "CLASSNAME", temp, mS->UserClassName(conn->mpUser->mClass));
+			const size_t pos = temp.find("%[C");
 
-			if (temp.find("%[C") != temp.npos) { // only if found
+			if (pos != temp.npos) { // only if found
 				string geo;
 
-				if (temp.find("%[CC]") != temp.npos) {
+				if (temp.find("%[CC]", pos) != temp.npos) {
 					geo = conn->GetGeoCC(); // country code
 					ReplaceVarInString(temp, "CC", temp, geo);
 				}
 
-				if (temp.find("%[CN]") != temp.npos) {
+				if (temp.find("%[CN]", pos) != temp.npos) {
 					geo = conn->GetGeoCN(); // country name
 					ReplaceVarInString(temp, "CN", temp, geo);
 				}
 
-				if (temp.find("%[CITY]") != temp.npos) {
+				if (temp.find("%[CITY]", pos) != temp.npos) {
 					geo = conn->GetGeoCI(); // city name
 					ReplaceVarInString(temp, "CITY", temp, geo);
 				}
@@ -3289,7 +3290,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	string nicklist("$UsersWithIP "), sep("$$");
 	nicklist += ip;
 	nicklist += "$";
-	unsigned long num = cBanList::Ip2Num(ip);
+	const unsigned long num = cBanList::Ip2Num(ip);
 	mS->WhoIP(num, num, nicklist, sep, true);
 	conn->Send(nicklist);
 	return 0;
@@ -3944,12 +3945,12 @@ bool cDCProto::CheckIP(cConnDC *conn, string &ip)
 	return false;
 }
 
-bool cDCProto::isLanIP(string ip)
+bool cDCProto::isLanIP(const string &ip)
 {
 	if (ip.substr(0, 4) == "127.")
 		return true;
 
-	unsigned long lip = cBanList::Ip2Num(ip);
+	const unsigned long lip = cBanList::Ip2Num(ip);
 
 	if ((lip >= 167772160UL && lip <= 184549375UL) || (lip >= 2886729728UL && lip <= 2887778303UL) || (lip >= 3232235520UL && lip <= 3232301055UL))
 		return true;
