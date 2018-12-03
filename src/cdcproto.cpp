@@ -3289,7 +3289,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	string nicklist("$UsersWithIP "), sep("$$");
 	nicklist += ip;
 	nicklist += "$";
-	unsigned long num = cBanList::Ip2Num(ip);
+	const unsigned long num = cBanList::Ip2Num(ip);
 	mS->WhoIP(num, num, nicklist, sep, true);
 	conn->Send(nicklist);
 	return 0;
@@ -3944,12 +3944,12 @@ bool cDCProto::CheckIP(cConnDC *conn, string &ip)
 	return false;
 }
 
-bool cDCProto::isLanIP(string ip)
+bool cDCProto::isLanIP(const string& ip)
 {
 	if (ip.substr(0, 4) == "127.")
 		return true;
 
-	unsigned long lip = cBanList::Ip2Num(ip);
+	const unsigned long lip = cBanList::Ip2Num(ip);
 
 	if ((lip >= 167772160UL && lip <= 184549375UL) || (lip >= 2886729728UL && lip <= 2887778303UL) || (lip >= 3232235520UL && lip <= 3232301055UL))
 		return true;

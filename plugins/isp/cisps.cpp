@@ -193,7 +193,7 @@ void cISPs::OnLoadData(cISP &Data)
 
 cISP * cISPs::FindISP(const string &ip, const string &cc)
 {
-	unsigned long ipnum = cBanList::Ip2Num(ip);
+	const unsigned long ipnum = cBanList::Ip2Num(ip);
 	iterator it;
 	cISP *isp4all = NULL;
        	cISP *CurISP  = NULL;
