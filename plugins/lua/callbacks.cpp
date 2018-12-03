@@ -1603,36 +1603,36 @@ int _InUserSupports(lua_State *L)
 	}
 
 	if (
-		((flag == "OpPlus") && (user->mxConn->mFeatures & eSF_OPPLUS)) ||
-		((flag == "NoHello") && (user->mxConn->mFeatures & eSF_NOHELLO)) ||
-		((flag == "NoGetINFO") && (user->mxConn->mFeatures & eSF_NOGETINFO)) ||
-		((flag == "DHT0") && (user->mxConn->mFeatures & eSF_DHT0)) ||
-		((flag == "QuickList") && (user->mxConn->mFeatures & eSF_QUICKLIST)) ||
-		((flag == "BotINFO") && (user->mxConn->mFeatures & eSF_BOTINFO)) ||
-		(((flag == "ZPipe0") || (flag == "ZPipe")) && (user->mxConn->mFeatures & eSF_ZLIB)) ||
-		((flag == "ChatOnly") && (user->mxConn->mFeatures & eSF_CHATONLY)) ||
-		((flag == "MCTo") && (user->mxConn->mFeatures & eSF_MCTO)) ||
-		((flag == "UserCommand") && (user->mxConn->mFeatures & eSF_USERCOMMAND)) ||
-		((flag == "BotList") && (user->mxConn->mFeatures & eSF_BOTLIST)) ||
-		((flag == "HubTopic") && (user->mxConn->mFeatures & eSF_HUBTOPIC)) ||
-		((flag == "UserIP2") && (user->mxConn->mFeatures & eSF_USERIP2)) ||
-		((flag == "TTHSearch") && (user->mxConn->mFeatures & eSF_TTHSEARCH)) ||
-		((flag == "Feed") && (user->mxConn->mFeatures & eSF_FEED)) ||
-		((flag == "TTHS") && (user->mxConn->mFeatures & eSF_TTHS)) ||
-		((flag == "IN") && (user->mxConn->mFeatures & eSF_IN)) ||
-		((flag == "BanMsg") && (user->mxConn->mFeatures & eSF_BANMSG)) ||
-		((flag == "TLS") && (user->mxConn->mFeatures & eSF_TLS)) ||
-		((flag == "FailOver") && (user->mxConn->mFeatures & eSF_FAILOVER)) ||
-		((flag == "NickChange") && (user->mxConn->mFeatures & eSF_NICKCHANGE)) ||
-		((flag == "ClientNick") && (user->mxConn->mFeatures & eSF_CLIENTNICK)) ||
-		((flag == "ZLine") && (user->mxConn->mFeatures & eSF_ZLINE)) ||
-		((flag == "GetZBlock") && (user->mxConn->mFeatures & eSF_GETZBLOCK)) ||
-		((flag == "ACTM") && (user->mxConn->mFeatures & eSF_ACTM)) ||
-		((flag == "SaltPass") && (user->mxConn->mFeatures & eSF_SALTPASS)) ||
-		((flag == "NickRule") && (user->mxConn->mFeatures & eSF_NICKRULE)) ||
-		((flag == "SearchRule") && (user->mxConn->mFeatures & eSF_SEARRULE)) ||
-		((flag == "HubURL") && (user->mxConn->mFeatures & eSF_HUBURL)) ||
-		((flag == "ExtJSON2") && (user->mxConn->mFeatures & eSF_EXTJSON2))
+		((flag.size() == 6) && (StrCompare(flag, 0, 6, "OpPlus") == 0) && (user->mxConn->mFeatures & eSF_OPPLUS)) ||
+		((flag.size() == 7) && (StrCompare(flag, 0, 7, "NoHello") == 0) && (user->mxConn->mFeatures & eSF_NOHELLO)) ||
+		((flag.size() == 9) && (StrCompare(flag, 0, 9, "NoGetINFO") == 0) && (user->mxConn->mFeatures & eSF_NOGETINFO)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "DHT0") == 0) && (user->mxConn->mFeatures & eSF_DHT0)) ||
+		((flag.size() == 9) && (StrCompare(flag, 0, 9, "QuickList") == 0) && (user->mxConn->mFeatures & eSF_QUICKLIST)) ||
+		((flag.size() == 7) && (StrCompare(flag, 0, 7, "BotINFO") == 0) && (user->mxConn->mFeatures & eSF_BOTINFO)) ||
+		((((flag.size() == 6) && (StrCompare(flag, 0, 6, "ZPipe0") == 0)) || ((flag.size() == 5) && (StrCompare(flag, 0, 5, "ZPipe") == 0))) && (user->mxConn->mFeatures & eSF_ZLIB)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "ChatOnly") == 0) && (user->mxConn->mFeatures & eSF_CHATONLY)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "MCTo") == 0) && (user->mxConn->mFeatures & eSF_MCTO)) ||
+		((flag.size() == 11) && (StrCompare(flag, 0, 11, "UserCommand") == 0) && (user->mxConn->mFeatures & eSF_USERCOMMAND)) ||
+		((flag.size() == 7) && (StrCompare(flag, 0, 7, "BotList") == 0) && (user->mxConn->mFeatures & eSF_BOTLIST)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "HubTopic") == 0) && (user->mxConn->mFeatures & eSF_HUBTOPIC)) ||
+		((flag.size() == 7) && (StrCompare(flag, 0, 7, "UserIP2") == 0) && (user->mxConn->mFeatures & eSF_USERIP2)) ||
+		((flag.size() == 9) && (StrCompare(flag, 0, 9, "TTHSearch") == 0) && (user->mxConn->mFeatures & eSF_TTHSEARCH)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "Feed") == 0) && (user->mxConn->mFeatures & eSF_FEED)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "TTHS") == 0) && (user->mxConn->mFeatures & eSF_TTHS)) ||
+		((flag.size() == 2) && (StrCompare(flag, 0, 2, "IN") == 0) && (user->mxConn->mFeatures & eSF_IN)) ||
+		((flag.size() == 6) && (StrCompare(flag, 0, 6, "BanMsg") == 0) && (user->mxConn->mFeatures & eSF_BANMSG)) ||
+		((flag.size() == 3) && (StrCompare(flag, 0, 3, "TLS") == 0) && (user->mxConn->mFeatures & eSF_TLS)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "FailOver") == 0) && (user->mxConn->mFeatures & eSF_FAILOVER)) ||
+		((flag.size() == 10) && (StrCompare(flag, 0, 10, "NickChange") == 0) && (user->mxConn->mFeatures & eSF_NICKCHANGE)) ||
+		((flag.size() == 10) && (StrCompare(flag, 0, 10, "ClientNick") == 0) && (user->mxConn->mFeatures & eSF_CLIENTNICK)) ||
+		((flag.size() == 5) && (StrCompare(flag, 0, 5, "ZLine") == 0) && (user->mxConn->mFeatures & eSF_ZLINE)) ||
+		((flag.size() == 9) && (StrCompare(flag, 0, 9, "GetZBlock") == 0) && (user->mxConn->mFeatures & eSF_GETZBLOCK)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "ACTM") == 0) && (user->mxConn->mFeatures & eSF_ACTM)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "SaltPass") == 0) && (user->mxConn->mFeatures & eSF_SALTPASS)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "NickRule") == 0) && (user->mxConn->mFeatures & eSF_NICKRULE)) ||
+		((flag.size() == 10) && (StrCompare(flag, 0, 10, "SearchRule") == 0) && (user->mxConn->mFeatures & eSF_SEARRULE)) ||
+		((flag.size() == 6) && (StrCompare(flag, 0, 6, "HubURL") == 0) && (user->mxConn->mFeatures & eSF_HUBURL)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "ExtJSON2") == 0) && (user->mxConn->mFeatures & eSF_EXTJSON2))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);
