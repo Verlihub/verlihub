@@ -186,6 +186,15 @@ namespace nVerliHub {
 				}
 
 				/**
+				 * Return the Ip2Num address.
+				 * @return The Ip2Num address.
+				 */
+				unsigned long Ip2Num() const
+				{
+					return mIP;
+				}
+
+				/**
 				 * Return the port.
 				 * @return The port.
 				 */
@@ -213,7 +222,7 @@ namespace nVerliHub {
 				bool BufferEmpty()
 				{
 					 return mBufEnd == mBufReadPos;
-				};
+				}
 
 				/*
 					returns buffer sizes
