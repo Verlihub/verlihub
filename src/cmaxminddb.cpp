@@ -128,7 +128,7 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		cc = "E1";
@@ -196,7 +196,7 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		cn = "Invalid IP";
@@ -265,7 +265,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		geo_city = "Invalid IP";
@@ -350,7 +350,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		geo_cc = "E1";
@@ -465,7 +465,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		geo_ran_lo = "0.0.0.0";
@@ -646,7 +646,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 		return true;
 	}
 
-	unsigned long sip = cBanList::Ip2Num(host);
+	const unsigned long sip = cBanList::Ip2Num(host);
 
 	if ((sip == 0UL) || (sip > 4294967295UL)) {
 		asn_name = "Invalid IP";

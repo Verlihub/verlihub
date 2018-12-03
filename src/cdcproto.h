@@ -335,7 +335,7 @@ protected:
 	* @param ip IP address (DOT-notation).
 	* @return True if the IP belongs to private network or false otherwise.
 	*/
-	static bool isLanIP(string);
+	static bool isLanIP(const string& ip);
 
 	/**
 	* Calculate the key from the given lock.

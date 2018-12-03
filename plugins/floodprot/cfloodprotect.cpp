@@ -100,7 +100,7 @@ bool cFloodprotect::CheckFlood(cConnDC * conn, tFloodType ft)
 
 	if (conn && conn->mpUser && conn->mpUser->mClass >= eUC_OPERATOR) return true;
 
-	unsigned long Hash = cBanList::Ip2Num(conn->AddrIP());
+	const unsigned long Hash = conn->Ip2Num();
 
 	if (mUserInfo.ContainsHash(Hash))
 	{
@@ -208,14 +208,14 @@ int cFloodprotect::KickAll(cConnDC *conn)
 
 	if(!conn) return 0;
 
-	unsigned long ip = cBanList::Ip2Num(conn->AddrIP());
+	const unsigned long ip = conn->Ip2Num();
 
 	for(it=mS->mUserList.begin(); it!=mS->mUserList.end(); ++it)
 	{
 		tempConn = (static_cast<cUser *>(*it))->mxConn;
 		if(tempConn)
 		{
-			if(ip == cBanList::Ip2Num(tempConn->AddrIP()))
+			if(ip == tempConn->Ip2Num())
 			{
 				if(tempConn->mpUser)
 				{
@@ -240,7 +240,7 @@ bool cFloodprotect::AddConn(cConnDC *conn, short difference)
 	if (!conn) return true;
 
 	// best hash for ip is itself
-	unsigned long Hash = cBanList::Ip2Num(conn->AddrIP());
+	const unsigned long Hash = conn->Ip2Num();
 	short int Count =  mConnCounter.GetByHash(Hash);
 
 	Count += difference;
