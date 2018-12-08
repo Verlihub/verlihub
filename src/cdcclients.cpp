@@ -143,7 +143,7 @@ namespace nVerliHub {
 
 	cDCTag* cDCClients::ParseTag(const string &desc)
 	{
-		string str, ver("0");;
+		string str, ver("0");
 		cDCTag *tag = new cDCTag(mServer);
 
 		/*
