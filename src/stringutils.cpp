@@ -72,7 +72,7 @@ string toUpper(const string &str)
 
 void ShrinkStringToFit(string &str)
 {
-	if(str.capacity())
+	if(str.capacity() != str.size())
 	{
 		std::string(str.data(), str.size()).swap(str);
 	}
