@@ -46,7 +46,7 @@ cProtoCommand::~cProtoCommand()
 	test if str is of this command
 */
 
-bool cProtoCommand::AreYou(const string &str)
+bool cProtoCommand::AreYou(const string &str) const
 {
 	return (0 == StrCompare(str, 0, mBaseLength, mCmd));
 }
