@@ -27,7 +27,7 @@ namespace nVerliHub {
 	using namespace nEnums;
 	namespace nProtocol {
 
-cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresponds to tDCMsg enumeration in .h file
+const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresponds to tDCMsg enumeration in .h file
 {
 	cProtoCommand(string("$ConnectToMe ")),
 	cProtoCommand(string("$RevConnectToMe ")),

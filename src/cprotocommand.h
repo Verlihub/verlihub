@@ -42,7 +42,7 @@ class cProtoCommand
 		cProtoCommand(const string& cmd);
 		virtual ~cProtoCommand();
 		// test if str is of this command
-		bool AreYou(const string &str);
+		bool AreYou(const string &str) const;
 	public:
 		// the command keyword
 		string mCmd;
