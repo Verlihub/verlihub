@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -22,7 +22,7 @@
 #include "i18n.h"
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
 
 #include <iostream>
@@ -34,13 +34,13 @@
 #include <ctype.h>
 
 #ifdef _WIN32
-#include <windows.h>
+	#include <windows.h>
 #else
-#include <unistd.h>
+	#include <unistd.h>
 #endif
 
 #ifdef HAVE_BSD
-#include <sys/syslimits.h>
+	#include <sys/syslimits.h>
 #endif
 
 namespace nVerliHub {
@@ -72,10 +72,8 @@ string toUpper(const string &str)
 
 void ShrinkStringToFit(string &str)
 {
-	if(str.capacity() != str.size())
-	{
+	if (str.capacity() != str.size())
 		std::string(str.data(), str.size()).swap(str);
-	}
 }
 
 void StrCutLeft(string &str, size_t cut)

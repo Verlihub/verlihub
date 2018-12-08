@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -23,8 +23,10 @@
 #include <iostream>
 
 using namespace std;
+
 namespace nVerliHub {
 	using namespace nEnums;
+
 	namespace nProtocol {
 
 const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresponds to tDCMsg enumeration in .h file
@@ -32,7 +34,7 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand(string("$ConnectToMe ")),
 	cProtoCommand(string("$RevConnectToMe ")),
 	cProtoCommand(string("$SR ")),
-	cProtoCommand(string("$Search Hub:")), // must be before active $Search
+	cProtoCommand(string("$Search Hub:")), // note: must be before active $Search
 	cProtoCommand(string("$Search ")),
 	cProtoCommand(string("$SA ")),
 	cProtoCommand(string("$SP ")),
@@ -46,7 +48,6 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand(string("$MyHubURL ")),
 	cProtoCommand(string("$MyPass ")),
 	cProtoCommand(string("$To: ")),
-	cProtoCommand(string("<")),
 	cProtoCommand(string("$BotINFO ")),
 	cProtoCommand(string("$GetINFO ")),
 	cProtoCommand(string("$UserIP ")),
@@ -66,7 +67,8 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand(string("$SetTopic ")),
 	cProtoCommand(string("$MyNick ")),
 	cProtoCommand(string("$Lock ")),
-	cProtoCommand(string("$IN "))
+	cProtoCommand(string("$IN ")),
+	cProtoCommand(string("<")) // note: must always be last
 };
 
 cMessageDC::cMessageDC():
@@ -86,7 +88,21 @@ cMessageDC::~cMessageDC()
 
 int cMessageDC::Parse()
 {
-	for (unsigned int i = 0; i < eDC_UNKNOWN; i++) {
+	if (mStr.empty()) { // ping
+		mType = eDC_UNKNOWN;
+		mKWSize = 0;
+		mLen = 0;
+		return eDC_UNKNOWN;
+	}
+
+	if (mStr[0] == '<') { // chat
+		mType = eDC_CHAT;
+		mKWSize = sDC_Commands[eDC_UNKNOWN - 1].mBaseLength;
+		mLen = mStr.size();
+		return eDC_CHAT;
+	}
+
+	for (unsigned int i = 0; i < eDC_CHAT; i++) { // other commands, note: here we dont check for eDC_UNKNOWN and eDC_CHAT anymore
 		if (sDC_Commands[i].AreYou(mStr)) {
 			mType = tDCMsg(i);
 			mKWSize = sDC_Commands[i].mBaseLength;
@@ -104,6 +120,7 @@ int cMessageDC::Parse()
 /*
 	splits message into parts and stores them in the chunk set mChunks
 */
+
 bool cMessageDC::SplitChunks()
 {
  	SetChunk(0, 0, mStr.length()); // the zeroth chunk is everywhere the same

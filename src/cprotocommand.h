@@ -25,7 +25,7 @@
 using namespace std;
 
 namespace nVerliHub {
-namespace nProtocol {
+	namespace nProtocol {
 
 /*
 	brief DC protocol command
@@ -50,7 +50,7 @@ class cProtoCommand
 		size_t mBaseLength;
 };
 
-}; // namespace nProtocol
+	}; // namespace nProtocol
 }; // namespace nVerliHub
 
 #endif
