@@ -185,17 +185,19 @@ protected: // Protected attributes
 	*/
 	struct ufLoad
 	{
-		string mEmpty;
 		MYSQL_ROW mRow;
 		int i;
-		ufLoad(MYSQL_ROW row):mRow(row),i(0){}
+		ufLoad(const MYSQL_ROW& row):mRow(row),i(0){}
 
 		void operator()(cConfigItemBase* item)
 		{
 			if(mRow[i])
 				item->ConvertFrom(mRow[i]);
 			else
-				item->ConvertFrom(mEmpty);
+			{
+				string lEmpty;
+				item->ConvertFrom(lEmpty);
+			}
 			i++;
 		}
 	};
