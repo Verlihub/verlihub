@@ -187,17 +187,21 @@ protected: // Protected attributes
 	{
 		MYSQL_ROW mRow;
 		int i;
-		ufLoad(const MYSQL_ROW& row):mRow(row),i(0){}
 
-		void operator()(cConfigItemBase* item)
+		ufLoad(const MYSQL_ROW &row):
+			mRow(row),
+			i(0)
+		{}
+
+		void operator()(cConfigItemBase *item)
 		{
-			if(mRow[i])
+			if (mRow[i]) {
 				item->ConvertFrom(mRow[i]);
-			else
-			{
-				string lEmpty;
-				item->ConvertFrom(lEmpty);
+			} else {
+				string mEmpty;
+				item->ConvertFrom(mEmpty);
 			}
+
 			i++;
 		}
 	};

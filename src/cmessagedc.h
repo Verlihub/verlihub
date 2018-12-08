@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -48,7 +48,6 @@ namespace nVerliHub {
 			eDC_MYHUBURL,
 			eDC_MYPASS,
 			eDC_TO,
-			eDC_CHAT,
 			eDCB_BOTINFO,
 			eDC_GETINFO,
 			eDCO_USERIP,
@@ -69,6 +68,7 @@ namespace nVerliHub {
 			eDCC_MYNICK,
 			eDCC_LOCK,
 			eDC_IN,
+			eDC_CHAT, // note: must always be before unknown
 			eDC_UNKNOWN
 		} tDCMsg;
 

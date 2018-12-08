@@ -19,18 +19,19 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include "cprotocommand.h"
 #include "stringutils.h"
 
 namespace nVerliHub {
-using namespace nUtils;
-namespace nProtocol {
+	using namespace nUtils;
+
+	namespace nProtocol {
 
 cProtoCommand::cProtoCommand()
-{
-}
+{}
 
 cProtoCommand::cProtoCommand(const string& cmd):
 	mCmd(cmd)
@@ -39,8 +40,7 @@ cProtoCommand::cProtoCommand(const string& cmd):
 }
 
 cProtoCommand::~cProtoCommand()
-{
-}
+{}
 
 /*
 	test if str is of this command
@@ -48,8 +48,11 @@ cProtoCommand::~cProtoCommand()
 
 bool cProtoCommand::AreYou(const string &str) const
 {
-	return (0 == StrCompare(str, 0, mBaseLength, mCmd));
+	if (str.size())
+		return (0 == StrCompare(str, 0, mBaseLength, mCmd));
+
+	return false;
 }
 
-}; // namespace nProtocol
+	}; // namespace nProtocol
 }; // namespace nVerliHub

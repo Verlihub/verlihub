@@ -485,6 +485,14 @@ void cBanList::List(ostream &os, int count)
 
 unsigned long cBanList::Ip2Num(const string &ip)
 {
+	unsigned long a = 0, b = 0, c = 0, d = 0;
+
+	if (sscanf(ip.c_str(), "%lu.%lu.%lu.%lu", &a, &b, &c, &d) == 4)
+		return (a << 24) + (b << 16) + (c << 8) + d;
+
+	return 0;
+
+	/*
 	int i;
 	char c;
 	istringstream is(ip);
@@ -494,6 +502,7 @@ unsigned long cBanList::Ip2Num(const string &ip)
 	is >> i >> c; mask += i & 0xFF; mask <<= 8;
 	is >> i     ; mask += i & 0xFF;
 	return mask;
+	*/
 }
 
 void cBanList::Num2Ip(unsigned long mask, string &ip)
