@@ -76,41 +76,41 @@ std::ostream & operator<< (std::ostream &os, const cTimePrint &t)
 			rest %= (24 * 3600 * 7);
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld week", "%ld weeks", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld week", "%ld weeks", n), n);
 
 			n = rest / (24 * 3600);
 			rest %= (24 * 3600);
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld day", "%ld days", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld day", "%ld days", n), n);
 
 			n = rest / 3600;
 			rest %= 3600;
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld hour", "%ld hours", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld hour", "%ld hours", n), n);
 
 			n = rest / 60;
 			rest %= 60;
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld min", "%ld mins", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld min", "%ld mins", n), n);
 
 			n = rest;
 			rest = 0;
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld sec", "%ld secs", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld sec", "%ld secs", n), n);
 
 			n = (int)t.tv_usec / 1000;
 
 			if ((n > 0) && (++i <= 2))
-				ostr << " " << autosprintf(ngettext("%ld msec", "%ld msecs", n), n);
+				ostr << ' ' << autosprintf(ngettext("%ld msec", "%ld msecs", n), n);
 
 			//n = (int)t.tv_usec % 1000;
 
 			//if ((n > 0) && (++i <= 2))
-				//ostr << " " << autosprintf(ngettext("%ld usec", "%ld usecs", n), n);
+				//ostr << ' ' << autosprintf(ngettext("%ld usec", "%ld usecs", n), n);
 
 			if (ostr.str().empty())
 				os << autosprintf(_("%d msecs"), 0); // _("%d usecs")
@@ -121,12 +121,12 @@ std::ostream & operator<< (std::ostream &os, const cTimePrint &t)
 
 		default:
 			#ifdef HAVE_OPENBSD
-				os << " " << autosprintf(ngettext("%lld sec", "%lld secs", t.tv_sec), t.tv_sec);
+				os << ' ' << autosprintf(ngettext("%lld sec", "%lld secs", t.tv_sec), t.tv_sec);
 			#else
-				os << " " << autosprintf(ngettext("%ld sec", "%ld secs", t.tv_sec), t.tv_sec);
+				os << ' ' << autosprintf(ngettext("%ld sec", "%ld secs", t.tv_sec), t.tv_sec);
 			#endif
 
-			os << " " << autosprintf(ngettext("%ld usec", "%ld usecs", t.tv_usec), t.tv_usec);
+			os << ' ' << autosprintf(ngettext("%ld usec", "%ld usecs", t.tv_usec), t.tv_usec);
 			break;
 	}
 

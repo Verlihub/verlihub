@@ -750,16 +750,16 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 						// $MyINFO $ALL nick <++ V:0.668,M:P,H:39/0/0,S:1>$ $DSL$$74894830123$
 						string newinfo = "$MyINFO $ALL ";
 						newinfo += nick;
-						newinfo += " ";
+						newinfo += ' ';
 						newinfo += (desc) ? desc : origdesc;
 						newinfo += (tag) ? tag : origtag;
 						newinfo += "$ $";
 						newinfo += (speed) ? speed : origspeed;
-						newinfo += "$";
+						newinfo += '$';
 						newinfo += (mail) ? mail : origmail;
-						newinfo += "$";
+						newinfo += '$';
 						newinfo += (size) ? size : origsize;
-						newinfo += "$";
+						newinfo += '$';
 						log3("myinfo: [ %s ] will become: [ %s ]\n", original, newinfo.c_str());
 
 						msg->ReInit();
@@ -1064,7 +1064,7 @@ w_Targs *_usermc(int id, w_Targs *args)
 	if (!msg) return NULL;
 	if (!mynick) mynick = cpiPython::botname.c_str();
 
-	string data = string() + "<" + mynick + "> " + msg + PipeIfMissing(msg);
+	string data = string() + '<' + mynick + "> " + msg + PipeIfMissing(msg);
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 
 	if (u && u->mxConn) {
@@ -1295,16 +1295,16 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 	string newinfo = "$MyINFO $ALL ";
 	newinfo += n;
-	newinfo += " ";
+	newinfo += ' ';
 	newinfo += (desc) ? desc : origdesc;
 	newinfo += (tag) ? tag : origtag;
 	newinfo += "$ $";
 	newinfo += (speed) ? speed : origspeed;
-	newinfo += "$";
+	newinfo += '$';
 	newinfo += (email) ? email : origmail;
-	newinfo += "$";
+	newinfo += '$';
 	newinfo += (size) ? size : origsize;
-	newinfo += "$";
+	newinfo += '$';
 	log3("PY SetMyINFO   myinfo: %s  --->  %s\n", nfo.c_str(), newinfo.c_str());
 
 	freee(n);
@@ -1316,7 +1316,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 	u->mMyINFO = newinfo;
 	u->mMyINFO_basic = newinfo;
-	cpiPython::me->server->mUserList.SendToAll(newinfo, true, true);
+	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true, cpiPython::me->server->mC.buffer_noswap);
 	return w_ret1;
 }
 
@@ -1786,18 +1786,18 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 
 		string msg;
 		server->mP.Create_Hello(msg, robot->mNick);
-		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
-		server->mUserList.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
-		server->mInProgresUsers.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true);
+		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+		server->mUserList.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+		server->mInProgresUsers.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
 
 		if (robot->mClass >= server->mC.oplist_class) {
 			server->mP.Create_OpList(msg, robot->mNick);
-			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
-			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
+			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
 		}
 
 		server->mP.Create_BotList(msg, robot->mNick);
-		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
+		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
 		return w_ret1;
 	}
 
@@ -1909,7 +1909,7 @@ w_Targs *_Topic(int id, w_Targs *args)
 		string msg, sTopic;
 		sTopic = topic;
 		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic);
-		cpiPython::me->server->mUserList.SendToAll(msg, eUC_NORMUSER, eUC_MASTER);
+		cpiPython::me->server->mUserList.SendToAll(msg, true, true, cpiPython::me->server->mC.buffer_noswap);
 	}
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mC.hub_topic.c_str()));
 }

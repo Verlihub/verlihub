@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -113,7 +113,7 @@ bool cKickList::FindKick(cKick &dest, const string &nick, const string &op, unsi
 	os << " and `reason` is " << (why ? "not " : "") << "null and `is_drop` = " << drop;
 
 	if (op.size())
-		os << " and `op` = '" << op << "'";
+		os << " and `op` = '" << op << '\'';
 
 	os << " order by `time` desc limit 1";
 	bool found = false;

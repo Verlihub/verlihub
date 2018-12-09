@@ -117,10 +117,10 @@ ostream& operator << (ostream &os, const cISP &isp)
 	os	<< "Conn type: " << tmp << "\r\n"
 		<< "Err Message: " << isp.mPatternMessage << "\r\n"
 		<< "Min/Max share [guest,reg,vip,op]: ["
-			<< isp.mMinShare[0] << "/" << isp.mMaxShare[0] << ","
-			<< isp.mMinShare[1] << "/" << isp.mMaxShare[1] << ","
-			<< isp.mMinShare[2] << "/" << isp.mMaxShare[2] << ","
-			<< isp.mMinShare[3] << "/" << isp.mMaxShare[3] << "]\r\n";
+			<< isp.mMinShare[0] << '/' << isp.mMaxShare[0] << ','
+			<< isp.mMinShare[1] << '/' << isp.mMaxShare[1] << ','
+			<< isp.mMinShare[2] << '/' << isp.mMaxShare[2] << ','
+			<< isp.mMinShare[3] << '/' << isp.mMaxShare[3] << "]\r\n";
 
 	return os;
 }
@@ -187,7 +187,7 @@ void cISPs::OnLoadData(cISP &Data)
 {
 	Data.mPI = this->mOwner;
 	Data.OnLoad();
-	//for(int i=0; i < Size(); i++)cout << GetDataAtOrder(i)->mIPMin << " ";
+	//for(int i=0; i < Size(); i++)cout << GetDataAtOrder(i)->mIPMin << ' ';
 	//cout << endl;
 }
 

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -566,7 +566,7 @@ namespace nVerliHub {
 					for(unsigned i=0;i < mData->mCapacity; ++i) {
 						if(mData->mData[i] != NULL) {
 							cumulative = 0;
-							os << "Bucket #" << i << " [Cumulative NULL elements = " << cumulative << " Total = " << ((sItem*)mData->mData[i])->Size() << "]" << endl;
+							os << "Bucket #" << i << " [Cumulative NULL elements = " << cumulative << " Total = " << ((sItem*)mData->mData[i])->Size() << ']' << endl;
 						} else {
 							cumulative++;
 						}

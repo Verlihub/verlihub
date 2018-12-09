@@ -88,18 +88,22 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 		return 0;
 
 	if (AddPipe)
-		data.append("|");
+		data.append(1, '|');
 
 	size_t len = data.size();
 
-	if ((len > 1) && Log(5))
-		LogStream() << "OUT [" << len << "]: " << data.substr(0, 100) << endl;
+	if (len > 1) { // write only if we really got anything excluding pipe
+		if (Log(5))
+			LogStream() << "OUT [" << len << "]: " << data.substr(0, 100) << endl;
 
-	if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
-		Server()->mNetOutLog << len << ": " << data.substr(0, 100) << endl;
+		if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
+			Server()->mNetOutLog << len << ": " << data.substr(0, 100) << endl;
+	}
 
 	int ret = Write(data, Flush);
-	mTimeLastAttempt.Get();
+
+	if ((Server()->mTime.Sec() - mTimeLastAttempt.Sec()) >= 2) // delay 2 seconds
+		mTimeLastAttempt.Get();
 
 	if (ret > 0) { // calculate upload bandwidth in real time
 		SetGeoZone(); // must be called first
@@ -118,10 +122,10 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 int cConnDC::StrLog(ostream & ostr, int level)
 {
 	if (cObj::StrLog(ostr, level)) {
-		LogStream() << "(" << mAddrIP; // << ":" << mAddrPort;
+		LogStream() << '(' << mAddrIP; // << ':' << mAddrPort;
 
 		if (mAddrHost.size())
-			LogStream() << " " << mAddrHost;
+			LogStream() << ' ' << mAddrHost;
 
 		LogStream() << ") ";
 
@@ -176,7 +180,7 @@ int cConnDC::OnTimer(cTime &now)
 		if(!CheckTimeOut(tTimeOut(i), now)) {
 			os << autosprintf(_("Operation timeout: %s"), this->GetTimeOutType(tTimeOut(i)));
 			if(Log(2))
-				LogStream() << "Operation timeout (" << tTimeOut(i) << ")" << endl;
+				LogStream() << "Operation timeout (" << tTimeOut(i) << ')' << endl;
 			Server()->ConnCloseMsg(this,os.str(),6000, eCR_TIMEOUT);
 			break;
 		}
@@ -263,9 +267,12 @@ int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
 void cConnDC::OnFlushDone()
 {
 	mBufFlush.erase(0, GetFlushSize());
-	ShrinkStringToFit(mBufFlush);
 	mBufSend.erase(0, GetBufferSize());
-	ShrinkStringToFit(mBufSend);
+
+	if (!Server()->mC.buffer_noswap) {
+		ShrinkStringToFit(mBufFlush);
+		ShrinkStringToFit(mBufSend);
+	}
 
 	if (mNickListInProgress) {
 		SetLSFlag(eLS_NICKLST);

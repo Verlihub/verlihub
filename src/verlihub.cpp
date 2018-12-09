@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 				break;
 			case 's':
 #ifdef ENABLE_SYSLOG
-				cObj::msSyslogIdent += "-";
+				cObj::msSyslogIdent += '-';
 				cObj::msSyslogIdent += optarg;
 #else
 				MAIN_LOG_NOTICE << "Logging to syslog is disabled at compile time" << endl;

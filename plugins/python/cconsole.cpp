@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -289,16 +289,16 @@ bool cConsole::cfReloadPythonScript::operator()()
 	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
 
 	if (!ip) {
-		(*mOS) << " " << _("Failed to allocate new Python interpreter.");
+		(*mOS) << ' ' << _("Failed to allocate new Python interpreter.");
 		return false;
 	}
 
 	GetPI()->AddData(ip, position);
 	if (ip->Init()) {
-		(*mOS) << " " << autosprintf(_("Script #%d is now loaded: %s"), ip->id, scriptfile.c_str());
+		(*mOS) << ' ' << autosprintf(_("Script #%d is now loaded: %s"), ip->id, scriptfile.c_str());
 		return true;
 	} else {
-		(*mOS) << " " << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
+		(*mOS) << ' ' << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		GetPI()->RemoveByName(ip->mScriptName);
 		return false;
 	}

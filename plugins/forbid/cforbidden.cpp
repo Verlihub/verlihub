@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -86,7 +86,7 @@ ostream &operator<<(ostream &os, cForbiddenWorker &fw)
 {
 	string word;
 	cDCProto::EscapeChars(fw.mWord, word);
-	os << word << " -f " << fw.mCheckMask << " -C " << fw.mAfClass << " -r \"" << fw.mReason << "\"";
+	os << word << " -f " << fw.mCheckMask << " -C " << fw.mAfClass << " -r \"" << fw.mReason << '"';
 	return os;
 }
 

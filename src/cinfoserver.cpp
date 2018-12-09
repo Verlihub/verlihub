@@ -410,7 +410,7 @@ void cInfoServer::Output(ostream &os, int Class)
 				temp = mServer->mC.ip_zone4_min;
 
 				if (mServer->mC.ip_zone4_max.size()) {
-					temp += "-";
+					temp += '-';
 					temp += mServer->mC.ip_zone4_max;
 				}
 			} else {
@@ -421,7 +421,7 @@ void cInfoServer::Output(ostream &os, int Class)
 				temp = mServer->mC.ip_zone5_min;
 
 				if (mServer->mC.ip_zone5_max.size()) {
-					temp += "-";
+					temp += '-';
 					temp += mServer->mC.ip_zone5_max;
 				}
 			} else {
@@ -432,7 +432,7 @@ void cInfoServer::Output(ostream &os, int Class)
 				temp = mServer->mC.ip_zone6_min;
 
 				if (mServer->mC.ip_zone6_max.size()) {
-					temp += "-";
+					temp += '-';
 					temp += mServer->mC.ip_zone6_max;
 				}
 			} else {

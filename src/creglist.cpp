@@ -47,7 +47,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	ostringstream nickDomain;
 	nickDomain << "varchar(";
 	nickDomain << mS->mC.max_nick;
-	nickDomain << ")";
+	nickDomain << ')';
 	AddCol("nick", nickDomain.str().c_str(), "", false, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("class", "int(2)", "1", true, mModel.mClass);
@@ -110,8 +110,8 @@ int cRegList::ShowUsers(cConnDC *op, ostringstream &os, int cls)
 		for (int i = 0; i < n; i++) {
 			row = mQuery.Row();
 			usr = mS->mUserList.GetUserByNick(row[0]);
-			os << " " << row[0];
-			if (usr && usr->mxConn) os << " [" << toUpper(_("On")) << "]";
+			os << ' ' << row[0];
+			if (usr && usr->mxConn) os << " [" << toUpper(_("On")) << ']';
 			os << "\r\n";
 		}
 

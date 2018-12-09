@@ -63,8 +63,8 @@ template<class T, int max_size=20> class cMeanFrequency
 	void Dump(void)
 	{
 		cout << "mOverPeriod: " << mOverPeriod.AsPeriod()
-			<< " mStart, mEnd: " << mStart.AsDate() << " " << mEnd.AsDate()
-			<< " mPart, mPeriodPart " << mPart.AsDate() << " " << mPeriodPart.AsPeriod()
+			<< " mStart, mEnd: " << mStart.AsDate() << ' ' << mEnd.AsDate()
+			<< " mPart, mPeriodPart " << mPart.AsDate() << ' ' << mPeriodPart.AsPeriod()
 			<< " mResolution:" << mResolution
 			<< " mCounts[" ;
 		for (int i = 0; i < max_size; i++) cout << mCounts[i] << ", ";

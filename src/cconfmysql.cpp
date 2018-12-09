@@ -39,12 +39,12 @@ void cMySQLColumn::AppendDesc(ostream &os) const
 {
 	string isNull;
 	mNull ? isNull = "" : isNull = " not null";
-	os << mName << " " << mType << isNull;
+	os << mName << ' ' << mType << isNull;
 
 	if (mDefault.size()) {
 		os << " default '";
 		cConfMySQL::WriteStringConstant(os, mDefault);
-		os << "'";
+		os << '\'';
 	}
 }
 
@@ -71,7 +71,7 @@ bool cMySQLTable::GetCollation()
 {
 	int i = 0, n;
 	MYSQL_ROW row;
-	mQuery.OStream() << "select table_collation from information_schema.tables where table_name = '" << mName << "' and table_schema = '" << mQuery.getMySQL().GetDBName() << "'";
+	mQuery.OStream() << "select table_collation from information_schema.tables where table_name = '" << mName << "' and table_schema = '" << mQuery.getMySQL().GetDBName() << '\'';
 
 	if (mQuery.Query() <= 0) {
 		mQuery.Clear();
@@ -176,7 +176,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 			if (Log(1))
 				LogStream() << "Altering table " << mName << (NeedAdd ? " add column " : " modify column") << it->mName << " with type: " << it->mType << endl;
 
-			mQuery.OStream() << "alter table " << mName << " " << (NeedAdd ? "add" : "modify") << " column ";
+			mQuery.OStream() << "alter table " << mName << ' ' << (NeedAdd ? "add" : "modify") << " column ";
 			it->AppendDesc(mQuery.OStream());
 			mQuery.Query();
 			mQuery.Clear();
@@ -298,7 +298,7 @@ void cConfMySQL::WherePKey(ostream &os)
 {
 	os << " where (";
 	AllPKFields(os, true, true, false, string(" and "));
-	os << ")";
+	os << ')';
 }
 
 void cConfMySQL::AllFields(ostream &os, bool DoF, bool DoV, bool IsAff, string joint)
@@ -315,7 +315,7 @@ void cConfMySQL::SelectFields(ostream &os)
 {
 	os << "select ";
 	AllFields(os, true, false, false, string(", "));
-	os << " from " << mMySQLTable.mName << " ";
+	os << " from " << mMySQLTable.mName << ' ';
 }
 
 void cConfMySQL::UpdateFields(ostream &os)
@@ -344,7 +344,7 @@ bool cConfMySQL::SavePK(bool dup)
 	AllFields(mQuery.OStream(), true, false, false, string(", "));
 	mQuery.OStream() << ") values (";
 	AllFields(mQuery.OStream(), false, true, true, string(", "));
-	mQuery.OStream() << ")";
+	mQuery.OStream() << ')';
 
 	if (dup) {
 		mQuery.OStream() << " on duplicate key update ";
@@ -359,7 +359,7 @@ bool cConfMySQL::SavePK(bool dup)
 void cConfMySQL::DeletePK()
 {
 	mQuery.Clear();
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " ";
+	mQuery.OStream() << "delete from " << mMySQLTable.mName << ' ';
 	WherePKey(mQuery.OStream());
 	mQuery.Query();
 	mQuery.Clear();
@@ -471,8 +471,8 @@ void cConfMySQL::WriteStringConstant(ostream &os, const string &str, bool like)
 	size_t pos = 0, lastpos = 0;
 	char c;
 
-	if (like) // note: "%" is not escaped
-		escs.append("_");
+	if (like) // note: % is not escaped
+		escs.append(1, '_');
 
 	while ((str.npos != lastpos) && (str.npos != (pos = str.find_first_of(escs, lastpos)))) {
 		tmp.append(str, lastpos, pos - lastpos);

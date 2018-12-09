@@ -528,7 +528,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
 			unsigned long ran_lo = sip, ran_hi = sip; // ip range
 			string back = host, tset(mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
-			back += "/";
+			back += '/';
 			back += StringFrom(dat.netmask - (ok ? mmdb->ipv4_start_node.netmask : mDBCI->ipv4_start_node.netmask));
 
 			if (cDCConsole::GetIPRange(back, ran_lo, ran_hi)) {
@@ -709,7 +709,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 
 			if ((MMDB_get_value(&dat.entry, &ent, "autonomous_system_organization", NULL) == MMDB_SUCCESS) && ent.has_data && (ent.type == MMDB_DATA_TYPE_UTF8_STRING) && (ent.data_size > 0)) { // asn organization
 				if (asn_name.size())
-					asn_name += " ";
+					asn_name += ' ';
 
 				asn_name += WorkUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, back, (mServ->mC.hub_encoding.size() ? mServ->mC.hub_encoding : DEFAULT_HUB_ENCODING));
 				res = true;
@@ -1068,7 +1068,7 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	}
 
 	os << "\r\n";
-	os << " " << _("Country database") << ":\r\n\r\n"; // country
+	os << ' ' << _("Country database") << ":\r\n\r\n"; // country
 	os << " [*] " << autosprintf(_("Status: %s"), (mDBCO ? _("Loaded") : _("Not loaded"))) << "\r\n";
 
 	if (mDBCO) {

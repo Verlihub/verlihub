@@ -308,7 +308,7 @@ int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 	if (mask & eBF_IP) {
 		mQuery.OStream() << " `ip` = '";
 		cConfMySQL::WriteStringConstant(mQuery.OStream(), ip);
-		mQuery.OStream() << "'";
+		mQuery.OStream() << '\'';
 	}
 
 	if (mask & (eBF_IP | eBF_NICK))
@@ -317,7 +317,7 @@ int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 	if (mask & eBF_NICK) {
 		mQuery.OStream() << " `nick` = '";
 		cConfMySQL::WriteStringConstant(mQuery.OStream(), nick);
-		mQuery.OStream() << "'";
+		mQuery.OStream() << '\'';
 	}
 
 	return mQuery.Query();
@@ -509,9 +509,9 @@ void cBanList::Num2Ip(unsigned long mask, string &ip)
 {
 	ostringstream os;
 	unsigned char *i = (unsigned char *)&mask;
-	os << int(i[3]) << ".";
-	os << int(i[2]) << ".";
-	os << int(i[1]) << ".";
+	os << int(i[3]) << '.';
+	os << int(i[2]) << '.';
+	os << int(i[1]) << '.';
 	os << int(i[0]);
 	ip = os.str();
 }

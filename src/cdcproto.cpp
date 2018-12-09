@@ -604,13 +604,13 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 				switch (conn->mGeoZone) {
 					case 4:
-						zonedat = mS->mC.ip_zone4_min + "-" + mS->mC.ip_zone4_max;
+						zonedat = mS->mC.ip_zone4_min + '-' + mS->mC.ip_zone4_max;
 					break;
 					case 5:
-						zonedat = mS->mC.ip_zone5_min + "-" + mS->mC.ip_zone5_max;
+						zonedat = mS->mC.ip_zone5_min + '-' + mS->mC.ip_zone5_max;
 					break;
 					case 6:
-						zonedat = mS->mC.ip_zone6_min + "-" + mS->mC.ip_zone6_max;
+						zonedat = mS->mC.ip_zone6_min + '-' + mS->mC.ip_zone6_max;
 					break;
 				}
 			} else { // main zone
@@ -626,7 +626,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 
 		if (mS->mC.max_users_total == 0) {
-			os << " ";
+			os << ' ';
 
 			if (!mS->mC.hubfull_message.empty())
 				os << mS->mC.hubfull_message;
@@ -640,7 +640,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 
 		if (conn->Log(2))
-			conn->LogStream() << mS->mUserCountTot << "/" << limit << " :: " << mS->mUserCount[conn->mGeoZone] << "/" << limit_cc << " :: " << omsg << endl;
+			conn->LogStream() << mS->mUserCountTot << '/' << limit << " :: " << mS->mUserCount[conn->mGeoZone] << '/' << limit_cc << " :: " << omsg << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message
@@ -1289,19 +1289,19 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 			switch (tag->mClientMode) {
 				case eCM_ACTIVE:
-					ReplaceVarInString(temp, "MODE", temp, "A");
+					ReplaceVarInString(temp, "MODE", temp, 'A');
 					break;
 
 				case eCM_PASSIVE:
-					ReplaceVarInString(temp, "MODE", temp, "P");
+					ReplaceVarInString(temp, "MODE", temp, 'P');
 					break;
 
 				case eCM_SOCK5:
-					ReplaceVarInString(temp, "MODE", temp, "5");
+					ReplaceVarInString(temp, "MODE", temp, '5');
 					break;
 
 				default: // eCM_OTHER, eCM_NOTAG
-					ReplaceVarInString(temp, "MODE", temp, "?");
+					ReplaceVarInString(temp, "MODE", temp, '?');
 					break;
 			}
 
@@ -1352,12 +1352,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				conn->mpUser->mMyINFO_basic = myinfo_basic;
 				string send_info;
 				send_info = GetMyInfo(conn->mpUser, eUC_NORMUSER);
-				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true);
-				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true);
+				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
+				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
 			}
 
 			if (mS->mC.show_tags >= 1)
-				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
+				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
@@ -1391,7 +1391,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 						break;
 
 					case eUC_MASTER:
-						temp.append("0");
+						temp.append(1, '0');
 						break;
 
 					default:
@@ -1421,7 +1421,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 						break;
 
 					case eUC_MASTER:
-						temp.append("0");
+						temp.append(1, '0');
 						break;
 
 					default:
@@ -1607,8 +1607,8 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		#endif
 		{
 			if (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0) {
-				mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
-				mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+				mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
+				mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
 				conn->mpUser->mExtJSON = msg->mStr;
 			}
 		}
@@ -1651,7 +1651,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (mS->mC.optimize_userlist) { // eULO_GETINFO = true
 		conn->mpUser->mQueueUL.append(other);
-		conn->mpUser->mQueueUL.append("|");
+		conn->mpUser->mQueueUL.append(1, '|');
 	} else if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
 		omsg = GetMyInfo(user, conn->mpUser->mClass);
 		conn->Send(omsg, true, false);
@@ -1952,7 +1952,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 			return 0;
 	#endif
 
-	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true); // send it
+	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true, mS->mC.buffer_noswap); // send it
 	return 0;
 }
 
@@ -2391,7 +2391,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		else
 			saddr.append(conn->mAddrIP);
 
-		saddr.append(":");
+		saddr.append(1, ':');
 		saddr.append(StringFrom(iport));
 	}
 
@@ -2424,7 +2424,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
 			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
-			os << autosprintf(_("Don't search too often.")) << " ";
+			os << autosprintf(_("Don't search too often.")) << ' ';
 			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
@@ -2583,9 +2583,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		mS->SearchToAll(conn, search, tths, passive, tth);
 	} else { // send it without filter, old search engine, note: short tth search command can not be used here
 		if (passive)
-			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search, true);
+			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search, true, mS->mC.buffer_noswap);
 		else
-			mS->mUserList.SendToAll(search, mS->mC.delayed_search, true);
+			mS->mUserList.SendToAll(search, mS->mC.delayed_search, true, mS->mC.buffer_noswap);
 	}
 
 	return 0;
@@ -2649,7 +2649,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	else
 		saddr.append(conn->mAddrIP);
 
-	saddr.append(":");
+	saddr.append(1, ':');
 	saddr.append(StringFrom(iport));
 	unsigned int delay;
 
@@ -2680,7 +2680,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
 			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
-			os << autosprintf(_("Don't search too often.")) << " ";
+			os << autosprintf(_("Don't search too often.")) << ' ';
 			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
@@ -2845,7 +2845,7 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
 			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
-			os << autosprintf(_("Don't search too often.")) << " ";
+			os << autosprintf(_("Don't search too often.")) << ' ';
 			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
@@ -3036,7 +3036,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << StringFrom((unsigned __int64)(1024 * 1024) * minshare) << sep;
 	os << ((ConnType) ? ConnType->mTagMinSlots : 0) << sep;
 	os << mS->mC.tag_max_hubs << sep;
-	os << HUB_VERSION_NAME << " " << HUB_VERSION_VERS << sep;
+	os << HUB_VERSION_NAME << ' ' << HUB_VERSION_VERS << sep;
 	os << mS->mC.hub_owner << sep;
 	os << mS->mC.hub_category << sep;
 	os << mS->mC.hub_encoding;
@@ -3084,7 +3084,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 		if (other && other->mxConn && other->mInList) {
 			back.append(nick);
-			back.append(" ");
+			back.append(1, ' ');
 			back.append(other->mxConn->AddrIP());
 			back.append(sep);
 		}
@@ -3160,7 +3160,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	string ofm;
 	os << autosprintf(_("You are being redirected to %s because: %s"), dest.c_str(), msg->ChunkString(eCH_FM_REASON).c_str());
 	Create_PM(ofm, conn->mpUser->mNick, nick, conn->mpUser->mNick, os.str());
-	ofm += "|";
+	ofm += '|';
 	Create_ForceMove(ofm, dest, false); // must be last, user might not get reason otherwise
 
 	other->mxConn->Send(ofm, true); // send it
@@ -3290,7 +3290,7 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	const string &ip = msg->ChunkString(eCH_1_PARAM);
 	string nicklist("$UsersWithIP "), sep("$$");
 	nicklist += ip;
-	nicklist += "$";
+	nicklist += '$';
 	const unsigned long num = cBanList::Ip2Num(ip);
 	mS->WhoIP(num, num, nicklist, sep, true);
 	conn->Send(nicklist);
@@ -3774,7 +3774,7 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 	os << autosprintf(_("Your client sent too long protocol command: %s"), cmd.c_str());
 
 	if (conn->Log(1))
-		conn->LogStream() << os.str() << " [" << msg->mLen << ":" << mlen << "]" << endl;
+		conn->LogStream() << os.str() << " [" << msg->mLen << ':' << mlen << ']' << endl;
 
 	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 	return true;
@@ -4014,21 +4014,21 @@ void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &des
 	dest.clear();
 	dest.append("$MyINFO $ALL ");
 	dest.append(nick);
-	dest.append(" ");
+	dest.append(1, ' ');
 	dest.append(desc);
 	dest.append("$ $");
 	dest.append(speed);
-	dest.append("$");
+	dest.append(1, '$');
 	dest.append(mail);
-	dest.append("$");
+	dest.append(1, '$');
 	dest.append(share);
-	dest.append("$");
+	dest.append(1, '$');
 }
 
 void cDCProto::Create_Chat(string &dest, const string &nick, const string &text)
 {
 	dest.clear();
-	dest.append("<");
+	dest.append(1, '<');
 	dest.append(nick);
 	dest.append("> ");
 	dest.append(text);
@@ -4115,7 +4115,7 @@ void cDCProto::Create_BadNick(string &dest, const string &id, const string &par)
 	dest.append(id);
 
 	if (par.size()) {
-		dest.append(" ");
+		dest.append(1, ' ');
 		dest.append(par);
 	}
 }
@@ -4172,9 +4172,9 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 	dest.clear();
 	dest.append("$ConnectToMe ");
 	dest.append(nick);
-	dest.append(" ");
+	dest.append(1, ' ');
 	dest.append(addr);
-	dest.append(":");
+	dest.append(1, ':');
 	dest.append(port);
 	dest.append(extra);
 }
@@ -4184,7 +4184,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &lim
 	dest.clear();
 	dest.append("$Search ");
 	dest.append(addr);
-	dest.append(" ");
+	dest.append(1, ' ');
 	dest.append(lims);
 	dest.append(spat);
 }
@@ -4207,7 +4207,7 @@ void cDCProto::Create_SA(string &dest, const string &tth, const string &addr)
 	dest.clear();
 	dest.append("$SA ");
 	dest.append(tth);
-	dest.append(" ");
+	dest.append(1, ' ');
 	dest.append(addr);
 }
 
@@ -4216,7 +4216,7 @@ void cDCProto::Create_SP(string &dest, const string &tth, const string &nick)
 	dest.clear();
 	dest.append("$SP ");
 	dest.append(tth);
-	dest.append(" ");
+	dest.append(1, ' ');
 	dest.append(nick);
 }
 
@@ -4458,14 +4458,14 @@ void cDCProto::UnEscapeChars(const string &src, string &dst, bool WithDCN)
 	size_t pos = dst.find("&#36;");
 
 	while (pos != dst.npos) {
-		dst.replace(pos, 5, "$");
+		dst.replace(pos, 5, 1, '$');
 		pos = dst.find("&#36;", pos);
 	}
 
 	pos = dst.find("&#124;");
 
 	while (pos != dst.npos) {
-		dst.replace(pos, 6, "|");
+		dst.replace(pos, 6, 1, '|');
 		pos = dst.find("&#124;", pos);
 	}
 }
@@ -4524,7 +4524,7 @@ void cDCProto::EscapeChars(const string &src, string &dst, bool WithDCN)
 		os.str("");
 
 		if (!WithDCN)
-			os << "&#" << unsigned(dst[pos]) << ";";
+			os << "&#" << unsigned(dst[pos]) << ';';
 		else
 			os << "/%DCN" << unsigned(dst[pos]) << "%/";
 
@@ -4554,7 +4554,7 @@ void cDCProto::EscapeChars(const char *buf, int len, string &dest, bool WithDCN)
 				os.str("");
 
 				if (!WithDCN) {
-					os << "&#" << unsigned(c) << ";";
+					os << "&#" << unsigned(c) << ';';
 				} else {
 					if (c < 10)
 						olen = 7;

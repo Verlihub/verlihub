@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -141,14 +141,14 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 
 	if ((mServer->mC.tag_min_hs_ratio > 0) && (ratio < mServer->mC.tag_min_hs_ratio)) {
 		os << autosprintf(_("Your slots per hub ratio %.2f is too low, minimum is %.2f."), ratio, mServer->mC.tag_min_hs_ratio);
-		os << " " << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_min_hs_ratio)), mTotHubs);
+		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_min_hs_ratio)), mTotHubs);
 		code = eTC_MIN_HS_RATIO;
 		return false;
 	}
 
 	if ((mServer->mC.tag_max_hs_ratio > 0) && (ratio > mServer->mC.tag_max_hs_ratio)) {
 		os << autosprintf(_("Your slots per hub ratio %.2f is too high, maximum is %.2f."), ratio, mServer->mC.tag_max_hs_ratio);
-		os << " " << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_max_hs_ratio)), mTotHubs);
+		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_max_hs_ratio)), mTotHubs);
 		code = eTC_MAX_HS_RATIO;
 		return false;
 	}
@@ -175,7 +175,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 	}
 
 	if ((minVersion >= 0) && ((double)mClientVersion < minVersion)) {
-		os << _("Your client version is too old, please upgrade it.") << " ";
+		os << _("Your client version is too old, please upgrade it.") << ' ';
 
 		if (client)
 			os << autosprintf(_("Minimum allowed version number for client %s is: %.4f"), client->mName.c_str(), minVersion);
@@ -187,7 +187,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 	}
 
 	if ((maxVersion >= 0) && ((double)mClientVersion > maxVersion)) {
-		os << _("Your client version is too recent, please downgrade it.") << " ";
+		os << _("Your client version is too recent, please downgrade it.") << ' ';
 
 		if (client)
 			os << autosprintf(_("Maximum allowed version number for client %s is: %.4f"), client->mName.c_str(), maxVersion);
@@ -203,7 +203,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 
 ostream &operator << (ostream &os, cDCTag &tag)
 {
-	os << "[::] " << _("Client") << ": " << (tag.client ? tag.client->mName : _("Unknown")) << " " << tag.mClientVersion << "\r\n";
+	os << "[::] " << _("Client") << ": " << (tag.client ? tag.client->mName : _("Unknown")) << ' ' << tag.mClientVersion << "\r\n";
 	os << "[::] " << _("Mode") << ": ";
 
 	if (tag.mClientMode == eCM_ACTIVE)

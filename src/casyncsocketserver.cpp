@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -418,7 +418,7 @@ cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPo
 	if(ListenSock != NULL) {
 		if(ListenSock->ListenOnPort(OnPort,mAddr.c_str(), UDP)< 0) {
 			if(Log(0)) {
-				LogStream() << "Cannot listen on " << mAddr << ":" << OnPort << (UDP ? " UDP":" TCP") << endl;
+				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (UDP ? " UDP":" TCP") << endl;
 				LogStream() << "Please make sure the port is open and not already used by another process" << endl;
 			}
 			throw "Can't listen";
@@ -428,7 +428,7 @@ cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPo
 		this->mConnChooser.cConnChoose::OptIn(
 			(cConnBase *)ListenSock,
 			tChEvent(eCC_INPUT|eCC_ERROR));
-		if(Log(0)) LogStream() << "Listening for connections on " << mAddr << ":" << OnPort << (UDP?" UDP":" TCP") << endl;
+		if(Log(0)) LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (UDP?" UDP":" TCP") << endl;
 		return ListenSock;
 	}
 	return NULL;

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -109,7 +109,7 @@ bool cConsole::cfDelPerlScript::operator()()
 		if ((number && num == i) || (!number && StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0)) {
 			found = true;
 			scriptfile = pi->mScriptName;
-			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
 			delete pi;
 			GetPI()->mPerl.mPerl.erase(it);
 			break;
@@ -118,9 +118,9 @@ bool cConsole::cfDelPerlScript::operator()()
 
 	if(!found) {
 		if(number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << ' ';
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s not stopped because it is not running."), scriptfile.c_str()) << ' ';
 		return false;
 	}
 	return true;
@@ -147,7 +147,7 @@ bool cConsole::cfAddPerlScript::operator()()
 		DIR *dir = opendir(pathname.c_str());
 		int i = 0;
 		if(!dir) {
-			(*mOS) << autosprintf(_("Failed loading directory %s."), pathname.c_str()) << " ";
+			(*mOS) << autosprintf(_("Failed loading directory %s."), pathname.c_str()) << ' ';
 			return false;
 		}
 		struct dirent *dent = NULL;
@@ -157,7 +157,7 @@ bool cConsole::cfAddPerlScript::operator()()
 			filename = dent->d_name;
 			if((filename.size() > 4) && (StrCompare(filename,filename.size()-3,3,".pl")==0)) {
 				if(i == num)
-					scriptfile = pathname + "/" + filename;
+					scriptfile = pathname + '/' + filename;
 				i++;
 			}
 
@@ -168,14 +168,14 @@ bool cConsole::cfAddPerlScript::operator()()
 	for(it = GetPI()->mPerl.mPerl.begin(); it != GetPI()->mPerl.mPerl.end(); ++it) {
 		pi = *it;
 		if (StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0) {
-			(*mOS) << autosprintf(_("Script %s is already running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s is already running."), scriptfile.c_str()) << ' ';
 			return false;
 		}
 	}
 	if(GetPI()->mPerl.Parse(2, argv))
 		(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 	else
-		(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
+		(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << ' ';
 	return true;
 }
 
@@ -198,7 +198,7 @@ bool cConsole::cfReloadPerlScript::operator()()
 		pi = *it;
 		if ((number && num == i) || (!number && StrCompare(pi->mScriptName,0,pi->mScriptName.size(),scriptfile)==0)) {
 			found = true;
-			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
 			scriptfile = pi->mScriptName;
 			delete pi;
 			GetPI()->mPerl.mPerl.erase(it);
@@ -208,9 +208,9 @@ bool cConsole::cfReloadPerlScript::operator()()
 
 	if(!found) {
 		if(number)
-			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script #%s not stopped because it is not running."), scriptfile.c_str()) << ' ';
 		else
-			(*mOS) << autosprintf(_("Script %s not stopped  because it is not running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s not stopped  because it is not running."), scriptfile.c_str()) << ' ';
 		return false;
 	} else {
 		const char *argv[] = { "", scriptfile.c_str(), NULL };
@@ -218,7 +218,7 @@ bool cConsole::cfReloadPerlScript::operator()()
 		if(GetPI()->mPerl.Parse(2, argv))
 			(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		else
-			(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << " ";
+			(*mOS) << autosprintf(_("Script %s is now running."), scriptfile.c_str()) << ' ';
 		return true;
 	}
 }

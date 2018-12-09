@@ -45,15 +45,15 @@ namespace nVerliHub {
 			os << "\t";
 
 			if (tr.mStart <= 9)
-				os << "0";
+				os << '0';
 
 			os << tr.mStart << ":00";
 			os << "\t";
 
 			if (tr.mStop <= 9)
-				os << "0";
+				os << '0';
 
-			os << tr.mStop << ":";
+			os << tr.mStop << ':';
 
 			if (tr.mStart == tr.mStop)
 				os << "00";
