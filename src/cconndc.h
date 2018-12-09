@@ -160,7 +160,6 @@ namespace nVerliHub {
 
 	using namespace nEnums;
 
-	class cDCBanRecord;
 	namespace nSocket {
 
 		/// @addtogroup Core

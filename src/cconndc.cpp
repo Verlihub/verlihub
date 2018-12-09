@@ -173,7 +173,6 @@ int cConnDC::GetTheoricalClass()
 int cConnDC::OnTimer(cTime &now)
 {
 	ostringstream os;
-	string omsg;
 	// check the timeouts
 	int i;
 	for(i=0; i < eTO_MAXTO; i++) {
@@ -196,8 +195,8 @@ int cConnDC::OnTimer(cTime &now)
 	ten_min_ago = ten_min_ago - 600;
 
 	if (Server()->MinDelay(mT.ping, Server()->mC.delayed_ping) && mpUser && mpUser->mInList && (mpUser->mT.login < ten_min_ago)) {
-		omsg = "";
-		Send(omsg, true);
+		string omsg("|");
+		Send(omsg, false);
 	}
 
 	// upload line optimisation  - upload userlist slowlier
@@ -268,11 +267,8 @@ void cConnDC::OnFlushDone()
 {
 	mBufFlush.erase(0, GetFlushSize());
 	mBufSend.erase(0, GetBufferSize());
-
-	if (!Server()->mC.buffer_noswap) {
-		ShrinkStringToFit(mBufFlush);
-		ShrinkStringToFit(mBufSend);
-	}
+	ShrinkStringToFit(mBufFlush);
+	ShrinkStringToFit(mBufSend);
 
 	if (mNickListInProgress) {
 		SetLSFlag(eLS_NICKLST);

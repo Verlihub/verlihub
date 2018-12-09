@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -61,25 +61,27 @@ bool cpiFloodprot::RegisterAll()
 
 bool cpiFloodprot::OnNewConn(cConnDC *conn)
 {
-	if(!mFloodprotect->AddConn(conn, 1))
-	{
-		string omsg("Sorry, the limit of connections with your ip has been exceeded.");
-		conn->Send(omsg,true);
+	if (!mFloodprotect->AddConn(conn, 1)) {
+		string omsg("Sorry, the limit of connections from your IP has been exceeded.");
+		omsg.reserve(omsg.size() + 1);
+		conn->Send(omsg, true);
 		conn->CloseNice(500); // not sure if this is needed
 		return false;
 	}
+
 	return true;
 }
 
 bool cpiFloodprot::OnUserLogin(cUser *user)
 {
-	if(!mFloodprotect->AddConn(user->mxConn, 1))
-	{
-		string omsg("Sorry, the limit of unregistered connections with your ip has been exceeded.");
-		user->mxConn->Send(omsg,true);
+	if (!mFloodprotect->AddConn(user->mxConn, 1)) {
+		string omsg("Sorry, the limit of unregistered connections form your IP has been exceeded.");
+		omsg.reserve(omsg.size() + 1);
+		user->mxConn->Send(omsg, true);
 		user->mxConn->CloseNice(500); // not sure if this is needed
 		return false;
 	}
+
 	return true;
 }
 

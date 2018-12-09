@@ -122,6 +122,7 @@ void cMsgList::DeliverOnline(cUser *dest, sMessage &msg)
 	ostringstream os;
 	os << msg.AsOnline();
 	cDCProto::Create_PM(omsg, msg.mSender, dest->mNick, msg.mSender, os.str());
+	omsg.reserve(omsg.size() + 1);
 	dest->mxConn->Send(omsg, true);
 }
 
@@ -208,6 +209,7 @@ int cMsgList::DeliverModelToUser(cUser *dest)
 		omsg += mModel.mSender;
 	}
 
+	omsg.reserve(omsg.size() + 1);
 	dest->mxConn->Send(omsg, true);
 	return 0;
 }

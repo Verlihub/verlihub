@@ -509,6 +509,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	#endif
 	{
 		Create_Supports(omsg, pars); // send our supports based on client supports
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -534,6 +535,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		}
 
 		Create_NickRule(omsg, pars);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -644,6 +646,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 		return -1;
 
@@ -660,6 +663,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), tot);
 			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 			Create_HubIsFull(omsg); // must be sent after chat message
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 			return -1;
 		}
@@ -667,6 +671,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 	if (mS->mC.hub_name.size()) { // send hub name without topic
 		Create_HubName(omsg, mS->mC.hub_name, "");
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -683,6 +688,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->NeedsPassword()) {
 		Create_GetPass(omsg);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	} else {
 		mS->DCHello(nick, conn);
@@ -690,6 +696,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 
 		if (conn->mFeatures & eSF_HUBURL) { // send hub url command
 			Create_GetHubURL(omsg);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
 	}
@@ -804,13 +811,16 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 		if (conn->mFeatures & eSF_HUBURL) { // send hub url command
 			Create_GetHubURL(omsg);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
 
 		if (conn->mpUser->mClass >= eUC_OPERATOR) { // operators get $LogedIn
 			Create_LogedIn(omsg, conn->mpUser->mNick);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
+
 	} else { // wrong password
 		if (conn->mRegInfo && (conn->mRegInfo->getClass() > 0)) { // user is regged
 			omsg = _("Incorrect password");
@@ -829,6 +839,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			mS->mR->LoginError(conn, conn->mpUser->mNick);
 			mS->ConnCloseMsg(conn, _("You've been temporarily banned due to incorrect password."), 1000, eCR_PASSWORD);
 			Create_BadPass(omsg); // must be sent after chat message
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		} else {
 			if (conn->Log(3))
@@ -1061,6 +1072,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 		delete tag;
 		tag = NULL;
@@ -1352,12 +1364,15 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				conn->mpUser->mMyINFO_basic = myinfo_basic;
 				string send_info;
 				send_info = GetMyInfo(conn->mpUser, eUC_NORMUSER);
-				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
-				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
+				send_info.reserve(send_info.size() + 1);
+				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true);
+				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true);
 			}
 
-			if (mS->mC.show_tags >= 1)
-				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
+			if (mS->mC.show_tags >= 1) {
+				myinfo_full.reserve(myinfo_full.size() + 1);
+				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
+			}
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO = myinfo_full; // keep it
@@ -1457,6 +1472,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 
 			Create_SearchRule(omsg, temp);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
 
@@ -1607,9 +1623,12 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		#endif
 		{
 			if (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0) {
-				mS->mUserList.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
-				mS->mInProgresUsers.SendToAllWithFeature(msg->mStr, eSF_EXTJSON2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap);
-				conn->mpUser->mExtJSON = msg->mStr;
+				string _str;
+				_str.reserve(msg->mStr.size() + 1);
+				_str = msg->mStr;
+				mS->mUserList.SendToAllWithFeature(_str, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+				mS->mInProgresUsers.SendToAllWithFeature(_str, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+				conn->mpUser->mExtJSON = _str;
 			}
 		}
 	}
@@ -1640,6 +1659,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 	if (!user) {
 		if ((other != mS->mC.hub_security) && (other != mS->mC.opchat_name)) {
 			Create_Quit(omsg, other);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
 
@@ -1654,6 +1674,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		conn->mpUser->mQueueUL.append(1, '|');
 	} else if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
 		omsg = GetMyInfo(user, conn->mpUser->mClass);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true, false);
 	}
 
@@ -1766,7 +1787,10 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 			return 0;
 	#endif
 
-	other->mxConn->Send(msg->mStr); // send it
+	string _str;
+	_str.reserve(msg->mStr.size() + 1);
+	_str = msg->mStr;
+	other->mxConn->Send(_str, true); // send it
 	return 0;
 }
 
@@ -1869,6 +1893,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	else // else convert to private main chat message
 		Create_Chat(mcto, conn->mpUser->mNick, text);
 
+	mcto.reserve(mcto.size() + 1);
 	other->mxConn->Send(mcto, true); // send it
 	return 0;
 }
@@ -1952,7 +1977,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 			return 0;
 	#endif
 
-	mS->mChatUsers.SendToAll(msg->mStr, mS->mC.delayed_chat, true, mS->mC.buffer_noswap); // send it
+	string _str;
+	_str.reserve(msg->mStr.size() + 1);
+	_str = msg->mStr;
+	mS->mChatUsers.SendToAll(_str, mS->mC.delayed_chat, true); // send it
 	return 0;
 }
 
@@ -2177,6 +2205,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	string ctm;
 	Create_ConnectToMe(ctm, nick, addr, StringFrom(iport), extra);
+	ctm.reserve(ctm.size() + 1);
 	other->mxConn->Send(ctm, true); // send it
 	return 0;
 }
@@ -2313,7 +2342,10 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 			return -2;
 	#endif
 
-	other->mxConn->Send(msg->mStr, true); // send it
+	string _str;
+	_str.reserve(msg->mStr.size() + 1);
+	_str = msg->mStr;
+	other->mxConn->Send(_str, true); // send it
 	return 0;
 }
 
@@ -2582,10 +2614,12 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 		mS->SearchToAll(conn, search, tths, passive, tth);
 	} else { // send it without filter, old search engine, note: short tth search command can not be used here
+		search.reserve(search.size() + 1);
+
 		if (passive)
-			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search, true, mS->mC.buffer_noswap);
+			mS->mActiveUsers.SendToAll(search, mS->mC.delayed_search, true);
 		else
-			mS->mUserList.SendToAll(search, mS->mC.delayed_search, true, mS->mC.buffer_noswap);
+			mS->mUserList.SendToAll(search, mS->mC.delayed_search, true);
 	}
 
 	return 0;
@@ -2957,8 +2991,10 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 			return -2;
 	#endif
 
-	if (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr)) // send it
+	if (!mS->mC.max_passive_sr || (other->mxConn->mSRCounter++ < mS->mC.max_passive_sr)) { // send it
+		sr.reserve(sr.size() + 1);
 		other->mxConn->Send(sr, true, !mS->mC.delayed_search); // part of search, must be delayed too
+	}
 
 	return 0;
 }
@@ -3041,7 +3077,9 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << mS->mC.hub_category << sep;
 	os << mS->mC.hub_encoding;
 
-	string info = os.str();
+	string info;
+	info.reserve(os.str().size() + 1);
+	info = os.str();
 	conn->Send(info, true, false);
 	conn->SetLSFlag(eLS_BOTINFO);
 	return 0;
@@ -3092,6 +3130,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 	if (back.size()) {
 		Create_UserIP(omsg, back);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -3162,7 +3201,7 @@ int cDCProto::DCO_OpForceMove(cMessageDC *msg, cConnDC *conn)
 	Create_PM(ofm, conn->mpUser->mNick, nick, conn->mpUser->mNick, os.str());
 	ofm += '|';
 	Create_ForceMove(ofm, dest, false); // must be last, user might not get reason otherwise
-
+	ofm.reserve(ofm.size() + 1);
 	other->mxConn->Send(ofm, true); // send it
 	other->mxConn->CloseNice(5000, eCR_FORCEMOVE); // close after a while, user might not get redirect otherwise
 	return 0;
@@ -3293,7 +3332,8 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	nicklist += '$';
 	const unsigned long num = cBanList::Ip2Num(ip);
 	mS->WhoIP(num, num, nicklist, sep, true);
-	conn->Send(nicklist);
+	nicklist.reserve(nicklist.size() + 1);
+	conn->Send(nicklist, true);
 	return 0;
 }
 
@@ -3308,6 +3348,7 @@ int cDCProto::DCO_GetTopic(cMessageDC *msg, cConnDC *conn)
 	if (mS->mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) {
 		string topic;
 		Create_HubTopic(topic, mS->mC.hub_topic);
+		topic.reserve(topic.size() + 1);
 		conn->Send(topic, true);
 	}
 
@@ -3821,6 +3862,7 @@ int cDCProto::NickList(cConnDC *conn)
 {
 	try {
 		bool complete_infolist = false;
+		string _str;
 
 		if (mS->mC.show_tags >= 2) // 2 = show to all
 			complete_infolist = true;
@@ -3838,43 +3880,61 @@ int cDCProto::NickList(cConnDC *conn)
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			conn->Send(mS->mUserList.GetInfoList(complete_infolist), true);
+			_str = mS->mUserList.GetInfoList(complete_infolist);
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
 		} else if (conn->mFeatures & eSF_NOGETINFO) {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			conn->Send(mS->mUserList.GetNickList(), true);
-			conn->Send(mS->mUserList.GetInfoList(complete_infolist), true);
+			_str = mS->mUserList.GetNickList();
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
+
+			_str = mS->mUserList.GetInfoList(complete_infolist);
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
 		} else {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending Nicklist" << endl;
 
-			conn->Send(mS->mUserList.GetNickList(), true);
+			_str = mS->mUserList.GetNickList();
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
 		}
 
-		if (mS->mOpList.Size()) // send $OpList
-			conn->Send(mS->mOpList.GetNickList(), true);
+		if (mS->mOpList.Size()) { // send $OpList
+			_str = mS->mOpList.GetNickList();
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
+		}
 
-		if (mS->mRobotList.Size() && (conn->mFeatures & eSF_BOTLIST)) // send $BotList
-			conn->Send(mS->mRobotList.GetNickList(), true);
+		if (mS->mRobotList.Size() && (conn->mFeatures & eSF_BOTLIST)) { // send $BotList
+			_str = mS->mRobotList.GetNickList();
+			_str.reserve(_str.size() + 1);
+			conn->Send(_str, true);
+		}
 
 		if (mS->mC.send_user_ip && conn->mpUser && (conn->mFeatures & eSF_USERIP2)) { // send $UserIP
 			if (conn->mpUser->mClass >= mS->mC.user_ip_class) { // full list
-				conn->Send(mS->mUserList.GetIPList(), true);
+				_str = mS->mUserList.GetIPList();
+				_str.reserve(_str.size() + 1);
+				conn->Send(_str, true);
 			} else { // own ip only
-				string omsg;
-				cCompositeUserCollection::ufDoIpList DoUserIP(omsg);
+				_str.clear();
+				cCompositeUserCollection::ufDoIpList DoUserIP(_str);
 				DoUserIP.Clear();
 				DoUserIP(conn->mpUser);
-				conn->Send(omsg, true);
+				_str.reserve(_str.size() + 1);
+				conn->Send(_str, true);
 			}
 		}
 
 		if (!mS->mC.disable_extjson && (conn->mFeatures & eSF_EXTJSON2)) { // extjson
-			string omsg;
+			_str.clear();
 
-			if (mS->CollectExtJSON(omsg, conn))
-				conn->Send(omsg, false); // no pipe, its already added by collector
+			if (mS->CollectExtJSON(_str, conn))
+				conn->Send(_str, false); // no pipe, its already added by collector
 		}
 	} catch (...) {
 		if (conn->ErrLog(2))

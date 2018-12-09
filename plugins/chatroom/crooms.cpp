@@ -80,7 +80,8 @@ void cRoom::OnLoad()
 		mChatRoom->mMyINFO_basic = mChatRoom->mMyINFO;
 		mPlugin->AddRobot(mChatRoom);
 		nProtocol::cDCProto::Create_Hello(omsg, mNick);
-		mServer->mUserList.SendToAll(omsg, mServer->mC.delayed_myinfo, true, mServer->mC.buffer_noswap);
+		omsg.reserve(omsg.size() + 1);
+		mServer->mUserList.SendToAll(omsg, mServer->mC.delayed_myinfo, true);
 	}
 }
 

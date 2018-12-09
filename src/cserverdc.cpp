@@ -400,6 +400,7 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 		if (txt.size()) {
 			string msg;
 			mP.Create_Chat(msg, from, txt);
+			msg.reserve(msg.size() + 1);
 			conn->Send(msg, true);
 		}
 
@@ -413,11 +414,12 @@ int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_clas
 {
 	string msg, nick(from), data(txt);
 	mP.Create_Chat(msg, from, txt);
+	msg.reserve(msg.size() + 1);
 
 	if ((min_class != eUC_NORMUSER) || (max_class != eUC_MASTER))
-		mUserList.SendToAllWithClass(msg, min_class, max_class, delay, true, mC.buffer_noswap);
+		mUserList.SendToAllWithClass(msg, min_class, max_class, delay, true);
 	else
-		mUserList.SendToAll(msg, delay, true, mC.buffer_noswap);
+		mUserList.SendToAll(msg, delay, true);
 
 	this->OnPublicBotMessage(&nick, &data, min_class, max_class); // todo: make it discardable if needed
 	return 1;
@@ -432,7 +434,8 @@ void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 {
 	string msg, nick(mC.hub_security), data(text);
 	mP.Create_Chat(msg, nick, text);
-	mUserList.SendToAll(msg, delay, true, mC.buffer_noswap);
+	msg.reserve(msg.size() + 1);
+	mUserList.SendToAll(msg, delay, true);
 	this->OnPublicBotMessage(&nick, &data, (int)eUC_NORMUSER, (int)eUC_MASTER); // todo: make it discardable if needed
 }
 
@@ -440,6 +443,7 @@ int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, stri
 {
 	string msg;
 	mP.Create_PM(msg, ((from != NULL) ? (*from) : (mC.hub_security)), conn->mpUser->mNick, ((nick != NULL) ? (*nick) : (mC.hub_security)), text);
+	msg.reserve(msg.size() + 1);
 	return conn->Send(msg, true);
 }
 
@@ -562,8 +566,9 @@ bool cServerDC::RemoveNick(cUser *User)
 		User->mInList = false;
 		string omsg;
 		cDCProto::Create_Quit(omsg, User->mNick);
-		mUserList.SendToAll(omsg, mC.delayed_myinfo, true, mC.buffer_noswap); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
-		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo, true, mC.buffer_noswap);
+		omsg.reserve(omsg.size() + 1);
+		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
+		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo, true);
 	}
 
 	return true;
@@ -660,7 +665,9 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here
 {
-	string str(data);
+	string str;
+	str.reserve(data.size() + 1);
+	str = data;
 	cConnDC *conn;
 	tCLIt i;
 
@@ -668,7 +675,7 @@ void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class ran
 		conn = (cConnDC*)(*i);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList)
-			conn->Send(str); // pipe is added by default for safety
+			conn->Send(str, true); // pipe is added by default for safety
 	}
 }
 
@@ -683,8 +690,9 @@ int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm,
 		conn = (cConnDC*)(*i);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
+			str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
 			str = start + conn->mpUser->mNick + end;
-			conn->Send(str); // pipe is added by default for safety
+			conn->Send(str, true); // pipe is added by default for safety
 			counter++;
 		}
 	}
@@ -728,8 +736,9 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
+			temp.reserve(start.size() + conn->mpUser->mNick.size() + tend.size() + 1);
 			temp = start + conn->mpUser->mNick + tend; // finalize
-			conn->Send(temp); // pipe is added by default for safety
+			conn->Send(temp, true); // pipe is added by default for safety
 			tot++;
 		}
 	}
@@ -773,7 +782,8 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
-			conn->Send(tmsg); // pipe is added by default for safety
+			tmsg.reserve(tmsg.size() + 1);
+			conn->Send(tmsg, true); // pipe is added by default for safety
 			tot++;
 		}
 	}
@@ -795,8 +805,9 @@ int cServerDC::SendToAllWithNickCC(const string &start, const string &end, int c
 			str = conn->GetGeoCC();
 
 			if (cc_zone.find(str) != cc_zone.npos) {
+				str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
 				str = start + conn->mpUser->mNick + end;
-				conn->Send(str); // pipe is added by default for safety
+				conn->Send(str, true); // pipe is added by default for safety
 				tot++;
 			}
 		}
@@ -842,8 +853,9 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 
 				ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 				ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
+				str.reserve(start.size() + conn->mpUser->mNick.size() + tend.size() + 1);
 				str = start + conn->mpUser->mNick + tend; // finalize
-				conn->Send(str); // pipe is added by default for safety
+				conn->Send(str, true); // pipe is added by default for safety
 				tot++;
 			}
 		}
@@ -858,6 +870,11 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 	tCLIt i;
 	unsigned int count = 0;
 	size_t saved = 0, len_data = data.size(), len_tths = tths.size();
+	string _tths, _data;
+	_tths.reserve(tths.size() + 1);
+	_data.reserve(data.size() + 1);
+	_tths = tths;
+	_data = data;
 
 	if (len_tths)
 		saved = len_data - len_tths;
@@ -892,9 +909,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 				mProtoSaved[1] += saved; // add saved upload with tths
-				other->Send(tths, true, !mC.delayed_search);
+				other->Send(_tths, true, !mC.delayed_search);
 			} else {
-				other->Send(data, true, !mC.delayed_search);
+				other->Send(_data, true, !mC.delayed_search);
 			}
 
 			count++;
@@ -931,9 +948,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
-					other->Send(tths, true, !mC.delayed_search);
+					other->Send(_tths, true, !mC.delayed_search);
 				} else {
-					other->Send(data, true, !mC.delayed_search);
+					other->Send(_data, true, !mC.delayed_search);
 				}
 
 				count++;
@@ -966,9 +983,9 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
-					other->Send(tths, true, !mC.delayed_search);
+					other->Send(_tths, true, !mC.delayed_search);
 				} else {
-					other->Send(data, true, !mC.delayed_search);
+					other->Send(_data, true, !mC.delayed_search);
 				}
 
 				count++;
@@ -1027,13 +1044,8 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->mLock += StringFrom(rand() % 10);
 	conn->mLock += StringFrom(rand() % 10);
 
-	string omsg("$Lock ");
-	omsg += conn->mLock;
-	omsg += " Pk=";
-	omsg += HUB_VERSION_NAME;
-	omsg += ' ';
-	omsg += HUB_VERSION_VERS;
-
+	string omsg("$Lock " + conn->mLock + " Pk=" + HUB_VERSION_NAME + ' ' + HUB_VERSION_VERS);
+	omsg.reserve(omsg.size() + 1);
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
 	ostringstream os;
@@ -1109,6 +1121,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 			omsg = _("You're already logged in with same nick and IP address.");
 			DCPublicHS(omsg, conn);
 			cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_SELF);
 			return false;
@@ -1136,6 +1149,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 			omsg = _("Your nick is already taken by another user.");
 			DCPublicHS(omsg, conn);
 			cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_BADNICK);
 			return false;
@@ -1174,6 +1188,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 					omsg = _("Your nick is already taken by another user.");
 					DCPublicHS(omsg, conn);
 					cDCProto::Create_ValidateDenide(omsg, conn->mpUser->mNick);
+					omsg.reserve(omsg.size() + 1);
 					conn->Send(omsg, true);
 				}
 
@@ -1226,6 +1241,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		if (mC.send_pass_request) {
 			conn->mpUser->mSetPass = true;
 			cDCProto::Create_GetPass(omsg);
+			omsg.reserve(omsg.size() + 1);
 			conn->Send(omsg, true);
 		}
 
@@ -1234,6 +1250,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 	if (mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) { // send the hub topic
 		cDCProto::Create_HubTopic(omsg, mC.hub_topic);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -1319,11 +1336,13 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 
 	if (mC.hub_name.size() && mC.hub_topic.size()) { // send hub name with topic
 		cDCProto::Create_HubName(omsg, mC.hub_name, mC.hub_topic);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
 	if ((conn->mFeatures & eSF_FAILOVER) && mC.hub_failover_hosts.size()) { // send failover hosts if not empty and client supports it
 		cDCProto::Create_FailOver(omsg, mC.hub_failover_hosts);
+		omsg.reserve(omsg.size() + 1);
 		conn->Send(omsg, true);
 	}
 
@@ -1383,24 +1402,28 @@ bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string msg;
 	mP.Create_Hello(msg, user->mNick); // send hello
-	mHelloUsers.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap);
+	msg.reserve(msg.size() + 1);
+	mHelloUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
 	msg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
-	mUserList.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap); // use cache, so this can be after user is added
-	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap);
+	msg.reserve(msg.size() + 1);
+	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // use cache, so this can be after user is added
+	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(msg, user->mNick);
-		mUserList.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap);
-		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap);
+		msg.reserve(msg.size() + 1);
+		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
+		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
 	}
 
 	if (mC.send_user_ip) { // send userip to operators
-		string UserIP;
-		cCompositeUserCollection::ufDoIpList DoUserIP(UserIP);
+		msg.clear();
+		cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 		DoUserIP.Clear();
 		DoUserIP(user);
-		mUserList.SendToAllWithClassFeature(UserIP, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true, mC.buffer_noswap); // must be delayed too
+		msg.reserve(msg.size() + 1);
+		mUserList.SendToAllWithClassFeature(msg, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
 	/*
@@ -1412,15 +1435,16 @@ bool cServerDC::ShowUserToAll(cUser *user)
 
 	if (!mC.delayed_login) {
 		user->mInList = false;
-		mUserList.FlushCache(mC.buffer_noswap);
-		mInProgresUsers.FlushCache(mC.buffer_noswap);
+		mUserList.FlushCache();
+		mInProgresUsers.FlushCache();
 		user->mInList = true;
 	}
 
 	if (mC.show_tags == 1) { // patch eventually for ops
 		msg = mP.GetMyInfo(user, eUC_OPERATOR);
-		mUserList.SendToAllWithClass(msg, eUC_OPERATOR, eUC_MASTER, mC.delayed_myinfo, true, mC.buffer_noswap); // must send after mUserList, cached mUserList will be flushed after and will override this one
-		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true, mC.buffer_noswap); // send later, better more people see tags, then some ops not
+		msg.reserve(msg.size() + 1);
+		mUserList.SendToAllWithClass(msg, eUC_OPERATOR, eUC_MASTER, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
+		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not
 	}
 
 	return true;
@@ -1436,10 +1460,14 @@ int cServerDC::DCHello(const string &nick, cConnDC *conn, string *info)
 {
 	string msg;
 	mP.Create_Hello(msg, nick);
+	msg.reserve(msg.size() + 1);
 	conn->Send(msg, true);
 
-	if (info)
-		conn->Send(*info, true);
+	if (info) {
+		msg = (*info);
+		msg.reserve(msg.size() + 1);
+		conn->Send(msg, true);
+	}
 
 	return 0;
 }
@@ -1626,8 +1654,10 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		if (vn != eVN_OK) {
 			DCPublicHS(errmsg.str(), conn);
 
-			if (extra.size())
+			if (extra.size()) {
+				extra.reserve(extra.size() + 1);
 				conn->Send(extra, true);
+			}
 
 			if (conn->Log(2))
 				conn->LogStream() << errmsg.str() << endl;
@@ -1772,15 +1802,15 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 
 int cServerDC::OnTimer(cTime &now)
 {
-	mHelloUsers.FlushCache(mC.buffer_noswap);
-	mUserList.FlushCache(mC.buffer_noswap);
-	mOpList.FlushCache(mC.buffer_noswap);
-	mOpchatList.FlushCache(mC.buffer_noswap);
-	mActiveUsers.FlushCache(mC.buffer_noswap);
-	mPassiveUsers.FlushCache(mC.buffer_noswap);
-	mChatUsers.FlushCache(mC.buffer_noswap);
-	mInProgresUsers.FlushCache(mC.buffer_noswap);
-	mRobotList.FlushCache(mC.buffer_noswap);
+	mHelloUsers.FlushCache();
+	mUserList.FlushCache();
+	mOpList.FlushCache();
+	mOpchatList.FlushCache();
+	mActiveUsers.FlushCache();
+	mPassiveUsers.FlushCache();
+	mChatUsers.FlushCache();
+	mInProgresUsers.FlushCache();
+	mRobotList.FlushCache();
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {
@@ -2577,7 +2607,8 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 		mOpChat->SendPMToAll(os.str(), NULL);
 	} else {
 		cDCProto::Create_Chat(temp, mC.opchat_name, os.str());
-		mOpchatList.SendToAll(temp, false, true, mC.buffer_noswap);
+		temp.reserve(temp.size() + 1);
+		mOpchatList.SendToAll(temp, false, true);
 	}
 }
 
@@ -2858,16 +2889,25 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share);
 					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 					AddRobot((cMainRobot*)mHubSec);
+
 					mP.Create_Hello(data, mHubSec->mNick); // send hello
-					mHelloUsers.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
-					mUserList.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap); // send myinfo
-					mInProgresUsers.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap);
+					data.reserve(data.size() + 1);
+					mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
+
+					data.reserve(mHubSec->mMyINFO.size() + 1);
+					data = mHubSec->mMyINFO;
+					mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
+					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+
 					mP.Create_OpList(data, mHubSec->mNick); // send short oplist
-					mUserList.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
-					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
+					data.reserve(data.size() + 1);
+					mUserList.SendToAll(data, mC.delayed_myinfo, true);
+					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+
 					mP.Create_BotList(data, mHubSec->mNick); // send short botlist
-					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true, mC.buffer_noswap);
-					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true, mC.buffer_noswap);
+					data.reserve(data.size() + 1);
+					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
@@ -2895,16 +2935,25 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share);
 						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						AddRobot((cMainRobot*)mOpChat);
+
 						mP.Create_Hello(data, mOpChat->mNick); // send hello
-						mHelloUsers.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
-						mUserList.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap); // send myinfo
-						mInProgresUsers.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap);
+						data.reserve(data.size() + 1);
+						mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
+
+						data.reserve(mOpChat->mMyINFO.size() + 1);
+						data = mOpChat->mMyINFO;
+						mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
+						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+
 						mP.Create_OpList(data, mOpChat->mNick); // send short oplist
-						mUserList.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
-						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true, mC.buffer_noswap);
+						data.reserve(data.size() + 1);
+						mUserList.SendToAll(data, mC.delayed_myinfo, true);
+						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+
 						mP.Create_BotList(data, mOpChat->mNick); // send short botlist
-						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true, mC.buffer_noswap);
-						mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true, mC.buffer_noswap);
+						data.reserve(data.size() + 1);
+						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+						mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 					} else if (mOpChat) {
 						delete mOpChat;
 						mOpChat = NULL;
@@ -2919,15 +2968,19 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				} else if (svar == "hub_security_desc") {
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share);
 					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
-					mUserList.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap); // send myinfo
-					mInProgresUsers.SendToAll(mHubSec->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap);
+					data.reserve(mHubSec->mMyINFO.size() + 1);
+					data = mHubSec->mMyINFO;
+					mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
+					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share);
 						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
-						mUserList.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap); // send myinfo
-						mInProgresUsers.SendToAll(mOpChat->mMyINFO, mC.delayed_myinfo, true, mC.buffer_noswap);
+						data.reserve(mHubSec->mMyINFO.size() + 1);
+						data = mOpChat->mMyINFO;
+						mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
+						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
 					}
 
 				} else if ((svar == "cmd_start_op") || (svar == "cmd_start_user")) {

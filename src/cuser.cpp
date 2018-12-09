@@ -546,13 +546,14 @@ void cUser::ApplyRights(cPenaltyList::sPenalty &pen)
 
 bool cUserRobot::SendPMTo(cConnDC *conn, const string &msg)
 {
-	if (conn && conn->mpUser)
-	{
+	if (conn && conn->mpUser) {
 		string pm;
 		cDCProto::Create_PM(pm, mNick,conn->mpUser->mNick, mNick, msg);
+		pm.reserve(pm.size() + 1);
 		conn->Send(pm, true);
 		return true;
 	}
+
 	return false;
 }
 

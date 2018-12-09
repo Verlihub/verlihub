@@ -782,18 +782,14 @@ int cAsyncConn::Write(const string &data, bool flush)
 				}
 
 				mBufFlush.erase(0, flush_size); // clean up flush buffer in both cases
-
-				if (!serv->mC.buffer_noswap)
-					ShrinkStringToFit(mBufFlush);
+				ShrinkStringToFit(mBufFlush);
 			} else if (Log(1)) { // client will fail to decompress when pipe is missing, this happens when we are flushing incomplete data, todo: not sure if wait or do something already here
 				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
 			}
 		} else { // compression is disabled or data too short for good result
 			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 			mBufFlush.erase(0, flush_size); // clean up flush buffer
-
-			if (serv && !serv->mC.buffer_noswap)
-				ShrinkStringToFit(mBufFlush);
+			ShrinkStringToFit(mBufFlush);
 		}
 	}
 
@@ -849,9 +845,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 		}
 	} else { // all data was sent
 		mBufSend.erase(0, buf_size); // clean up send buffer
-
-		if (serv && !serv->mC.buffer_noswap)
-			ShrinkStringToFit(mBufSend);
+		ShrinkStringToFit(mBufSend);
 
 		if (bool(mCloseAfter)) // close nice the connection
 			CloseNow();

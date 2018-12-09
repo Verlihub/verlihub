@@ -145,7 +145,6 @@ void cDCConf::AddVars()
 	Add("max_outfill_size", max_outfill_size, 1310720ul);
 	Add("max_unblock_size", max_unblock_size, 1835008ul);
 	Add("max_message_size", mS.mMaxLineLength, 10240ul);
-	Add("buffer_noswap", buffer_noswap, false); // will use more ram but less cpu
 	Add("max_len_supports", max_len_supports, 512);
 	Add("max_len_version", max_len_version, 64);
 	Add("max_len_myinfo", max_len_myinfo, 512);

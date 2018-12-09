@@ -67,7 +67,12 @@ bool SendDataToUser(const char *data, const char *nick, bool delay)
 		return false;
 
 	string omsg(data);
-	user->mxConn->Send(omsg, CheckDataPipe(omsg), !delay);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	user->mxConn->Send(omsg, pipe, !delay);
 	return true;
 }
 
@@ -84,7 +89,12 @@ bool SendToClass(const char *data, int min_class, int max_class, bool delay)
 	}
 
 	string omsg(data);
-	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
 
@@ -101,7 +111,12 @@ bool SendToAll(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	serv->mUserList.SendToAll(omsg, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mUserList.SendToAll(omsg, delay, pipe);
 	return true;
 }
 
@@ -118,7 +133,12 @@ bool SendToActive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	serv->mActiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mActiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
 }
 
@@ -135,7 +155,12 @@ bool SendToActiveClass(const char *data, int min_class, int max_class, bool dela
 	}
 
 	string omsg(data);
-	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
 
@@ -152,7 +177,12 @@ bool SendToPassive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	serv->mPassiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mPassiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
 }
 
@@ -169,7 +199,12 @@ bool SendToPassiveClass(const char *data, int min_class, int max_class, bool del
 	}
 
 	string omsg(data);
-	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg), serv->mC.buffer_noswap);
+	bool pipe = CheckDataPipe(omsg);
+
+	if (pipe)
+		omsg.reserve(omsg.size() + 1);
+
+	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
 
@@ -205,7 +240,8 @@ bool SendToChat(const char *nick, const char *text, int min_class, int max_class
 
 	string omsg;
 	serv->mP.Create_Chat(omsg, nick, text);
-	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true, serv->mC.buffer_noswap);
+	omsg.reserve(omsg.size() + 1);
+	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true);
 	return true;
 }
 
@@ -653,9 +689,11 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 
 		if ((clas >= serv->mC.oplist_class) && !serv->mOpList.ContainsNick(user->mNick)) { // oplist
 			serv->mOpList.Add(user);
+
 			serv->mP.Create_OpList(data, user->mNick); // send short oplist
-			serv->mUserList.SendToAll(data, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
-			serv->mInProgresUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
+			data.reserve(data.size() + 1);
+			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+			serv->mInProgresUsers.SendToAll(data, false, true);
 		}
 
 		user->mClass = tUserCl(clas);
@@ -698,20 +736,28 @@ bool DelRegUser(const char *nick)
 
 		if (serv->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
 			serv->mOpList.Remove(user);
+
 			serv->mP.Create_Quit(data, user->mNick); // send quit to all
-			serv->mUserList.SendToAll(data, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
-			serv->mInProgresUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
+			data.reserve(data.size() + 1);
+			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+			serv->mInProgresUsers.SendToAll(data, false, true);
+
 			serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
-			serv->mHelloUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
-			serv->mUserList.SendToAll(user->mMyINFO, false, true, serv->mC.buffer_noswap); // send myinfo to all
-			serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
+			data.reserve(data.size() + 1);
+			serv->mHelloUsers.SendToAll(data, false, true);
+
+			data.reserve(user->mMyINFO.size() + 1);
+			data = user->mMyINFO;
+			serv->mUserList.SendToAll(data, false, true); // send myinfo to all
+			serv->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
 
 			if (serv->mC.send_user_ip) { // send userip to operators
 				data.clear();
 				cCompositeUserCollection::ufDoIpList DoUserIP(data);
 				DoUserIP.Clear();
 				DoUserIP(user);
-				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true, serv->mC.buffer_noswap); // must be delayed too
+				data.reserve(data.size() + 1);
+				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 			}
 		}
 
@@ -769,28 +815,38 @@ bool SetRegClass(const char *nick, int clas)
 		if ((user->mClass < serv->mC.oplist_class) && (clas >= serv->mC.oplist_class)) { // oplist
 			if (!ui.mHideKeys && !serv->mOpList.ContainsNick(user->mNick)) {
 				serv->mOpList.Add(user);
+
 				serv->mP.Create_OpList(data, user->mNick); // send short oplist
-				serv->mUserList.SendToAll(data, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
-				serv->mInProgresUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
+				data.reserve(data.size() + 1);
+				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				serv->mInProgresUsers.SendToAll(data, false, true);
 			}
 
 		} else if ((user->mClass >= serv->mC.oplist_class) && (clas < serv->mC.oplist_class)) {
 			if (!ui.mHideKeys && serv->mOpList.ContainsNick(user->mNick)) {
 				serv->mOpList.Remove(user);
+
 				serv->mP.Create_Quit(data, user->mNick); // send quit to all
-				serv->mUserList.SendToAll(data, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
-				serv->mInProgresUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
+				data.reserve(data.size() + 1);
+				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				serv->mInProgresUsers.SendToAll(data, false, true);
+
 				serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
-				serv->mHelloUsers.SendToAll(data, false, true, serv->mC.buffer_noswap);
-				serv->mUserList.SendToAll(user->mMyINFO, false, true, serv->mC.buffer_noswap); // send myinfo to all
-				serv->mInProgresUsers.SendToAll(user->mMyINFO, false, true, serv->mC.buffer_noswap); // todo: no cache, why?
+				data.reserve(data.size() + 1);
+				serv->mHelloUsers.SendToAll(data, false, true);
+
+				data.reserve(user->mMyINFO.size() + 1);
+				data = user->mMyINFO;
+				serv->mUserList.SendToAll(data, false, true); // send myinfo to all
+				serv->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
 
 				if (serv->mC.send_user_ip) { // send userip to operators
 					data.clear();
 					cCompositeUserCollection::ufDoIpList DoUserIP(data);
 					DoUserIP.Clear();
 					DoUserIP(user);
-					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true, serv->mC.buffer_noswap); // must be delayed too
+					data.reserve(data.size() + 1);
+					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 				}
 			}
 		}
