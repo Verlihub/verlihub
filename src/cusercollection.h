@@ -247,12 +247,12 @@ public:
 	bool   RemoveByNick(const string &Nick) { return RemoveByHash(Nick2Hash(Nick)); }
 	bool   Remove(cUserBase *User);
 
-	void SendToAll(string &Data, bool UseCache, bool AddPipe, bool noswap);
+	void SendToAll(string &Data, bool UseCache, bool AddPipe);
 	void SendToAllWithNick(string &Start, string &End);
-	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe, bool noswap);
-	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe, bool noswap);
-	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe, bool noswap);
-	void FlushCache(bool noswap);
+	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe);
+	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe);
+	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe);
+	void FlushCache();
 	void FlushForUser(cUserBase *User);
 
 	virtual void OnAdd(cUserBase *User)

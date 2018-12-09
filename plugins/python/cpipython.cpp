@@ -1293,7 +1293,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 		return NULL;
 	}
 
-	string newinfo = "$MyINFO $ALL ";
+	string newinfo("$MyINFO $ALL ");
 	newinfo += n;
 	newinfo += ' ';
 	newinfo += (desc) ? desc : origdesc;
@@ -1316,7 +1316,8 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 	u->mMyINFO = newinfo;
 	u->mMyINFO_basic = newinfo;
-	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true, cpiPython::me->server->mC.buffer_noswap);
+	newinfo.reserve(newinfo.size() + 1);
+	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true);
 	return w_ret1;
 }
 
@@ -1786,18 +1787,24 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 
 		string msg;
 		server->mP.Create_Hello(msg, robot->mNick);
-		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
-		server->mUserList.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
-		server->mInProgresUsers.SendToAll(robot->mMyINFO, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+		msg.reserve(msg.size() + 1);
+		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
+
+		msg.reserve(robot->mMyINFO.size() + 1);
+		msg = robot->mMyINFO;
+		server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
+		server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
 
 		if (robot->mClass >= server->mC.oplist_class) {
 			server->mP.Create_OpList(msg, robot->mNick);
-			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
-			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+			msg.reserve(msg.size() + 1);
+			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
+			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
 		}
 
 		server->mP.Create_BotList(msg, robot->mNick);
-		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
+		msg.reserve(msg.size() + 1);
+		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
 		return w_ret1;
 	}
 
@@ -1909,7 +1916,8 @@ w_Targs *_Topic(int id, w_Targs *args)
 		string msg, sTopic;
 		sTopic = topic;
 		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic);
-		cpiPython::me->server->mUserList.SendToAll(msg, true, true, cpiPython::me->server->mC.buffer_noswap);
+		msg.reserve(msg.size() + 1);
+		cpiPython::me->server->mUserList.SendToAll(msg, true, true);
 	}
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mC.hub_topic.c_str()));
 }

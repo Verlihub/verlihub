@@ -603,11 +603,9 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 
 	temp.clear(); // create and send message
-	temp.append("** ");
-	temp.append(conn->mpUser->mNick);
-	temp.append(1, ' ');
-	temp.append(text);
-	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true, mOwner->mC.buffer_noswap);
+	temp = "** " + conn->mpUser->mNick + ' ' + text;
+	temp.reserve(temp.size() + 1);
+	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
 
@@ -772,20 +770,28 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 
 				if (mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist, only if user is there
 					mOwner->mOpList.Remove(conn->mpUser);
+
 					mOwner->mP.Create_Quit(data, conn->mpUser->mNick); // send quit to all
-					mOwner->mUserList.SendToAll(data, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
-					mOwner->mInProgresUsers.SendToAll(data, false, true, mOwner->mC.buffer_noswap);
+					data.reserve(data.size() + 1);
+					mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+					mOwner->mInProgresUsers.SendToAll(data, false, true);
+
 					mOwner->mP.Create_Hello(data, conn->mpUser->mNick); // send hello to hello users
-					mOwner->mHelloUsers.SendToAll(data, false, true, mOwner->mC.buffer_noswap);
-					mOwner->mUserList.SendToAll(conn->mpUser->mMyINFO, false, true, mOwner->mC.buffer_noswap); // send myinfo to all
-					mOwner->mInProgresUsers.SendToAll(conn->mpUser->mMyINFO, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
+					data.reserve(data.size() + 1);
+					mOwner->mHelloUsers.SendToAll(data, false, true);
+
+					data.reserve(conn->mpUser->mMyINFO.size() + 1);
+					data = conn->mpUser->mMyINFO;
+					mOwner->mUserList.SendToAll(data, false, true); // send myinfo to all
+					mOwner->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
 
 					if (mOwner->mC.send_user_ip) { // send userip to operators
 						data.clear();
 						cCompositeUserCollection::ufDoIpList DoUserIP(data);
 						DoUserIP.Clear();
 						DoUserIP(conn->mpUser);
-						mOwner->mUserList.SendToAllWithClassFeature(data, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true, mOwner->mC.buffer_noswap); // must be delayed too
+						data.reserve(data.size() + 1);
+						mOwner->mUserList.SendToAllWithClassFeature(data, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
 					}
 				}
 
@@ -883,9 +889,11 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 
 			if ((mOwner->mC.autoreg_class >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist
 				mOwner->mOpList.Add(conn->mpUser);
+
 				mOwner->mP.Create_OpList(data, conn->mpUser->mNick); // send short oplist
-				mOwner->mUserList.SendToAll(data, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
-				mOwner->mInProgresUsers.SendToAll(data, false, true, mOwner->mC.buffer_noswap);
+				data.reserve(data.size() + 1);
+				mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
+				mOwner->mInProgresUsers.SendToAll(data, false, true);
 			}
 
 			conn->mpUser->mClass = tUserCl(mOwner->mC.autoreg_class);
@@ -1129,28 +1137,38 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 				if ((old_class < mOwner->mC.oplist_class) && (new_class >= mOwner->mC.oplist_class)) { // oplist
 					if (!user->mxConn->mRegInfo->mHideKeys && !mOwner->mOpList.ContainsNick(user->mNick)) {
 						mOwner->mOpList.Add(user);
+
 						mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
-						mOwner->mUserList.SendToAll(msg, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
-						mOwner->mInProgresUsers.SendToAll(msg, false, true, mOwner->mC.buffer_noswap);
+						msg.reserve(msg.size() + 1);
+						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mOwner->mInProgresUsers.SendToAll(msg, false, true);
 					}
 
 				} else if ((old_class >= mOwner->mC.oplist_class) && (new_class < mOwner->mC.oplist_class)) {
 					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsNick(user->mNick)) {
 						mOwner->mOpList.Remove(user);
+
 						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
-						mOwner->mUserList.SendToAll(msg, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
-						mOwner->mInProgresUsers.SendToAll(msg, false, true, mOwner->mC.buffer_noswap);
+						msg.reserve(msg.size() + 1);
+						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mOwner->mInProgresUsers.SendToAll(msg, false, true);
+
 						mOwner->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-						mOwner->mHelloUsers.SendToAll(msg, false, true, mOwner->mC.buffer_noswap);
-						mOwner->mUserList.SendToAll(user->mMyINFO, false, true, mOwner->mC.buffer_noswap); // send myinfo to all
-						mOwner->mInProgresUsers.SendToAll(user->mMyINFO, false, true, mOwner->mC.buffer_noswap); // todo: no cache, why?
+						msg.reserve(msg.size() + 1);
+						mOwner->mHelloUsers.SendToAll(msg, false, true);
+
+						msg.reserve(user->mMyINFO.size() + 1);
+						msg = user->mMyINFO;
+						mOwner->mUserList.SendToAll(msg, false, true); // send myinfo to all
+						mOwner->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
 
 						if (mOwner->mC.send_user_ip) { // send userip to operators
 							msg.clear();
 							cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 							DoUserIP.Clear();
 							DoUserIP(user);
-							mOwner->mUserList.SendToAllWithClassFeature(msg, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true, mOwner->mC.buffer_noswap); // must be delayed too
+							msg.reserve(msg.size() + 1);
+							mOwner->mUserList.SendToAllWithClassFeature(msg, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
 						}
 					}
 				}
@@ -1414,10 +1432,12 @@ bool cDCConsole::cfRaw::operator()()
 		case eRW_HELLO:
 		case eRW_PASSIVE:
 		case eRW_ACTIVE:
-			if (id == eRC_PM)
+			if (id == eRC_PM) {
 				mS->mUserList.SendToAllWithNick(cmd, end);
-			else
-				mS->mUserList.SendToAll(cmd, false, true, mS->mC.buffer_noswap);
+			} else {
+				cmd.reserve(cmd.size() + 1);
+				mS->mUserList.SendToAll(cmd, false, true);
+			}
 
 			break;
 
@@ -1430,6 +1450,7 @@ bool cDCConsole::cfRaw::operator()()
 					cmd += end;
 				}
 
+				cmd.reserve(cmd.size() + 1);
 				user->mxConn->Send(cmd, true); // add pipe
 			} else {
 				(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
@@ -3119,9 +3140,11 @@ bool cDCConsole::cfRegUsr::operator()()
 
 					if ((ParClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsNick(user->mNick)) { // oplist
 						mS->mOpList.Add(user);
+
 						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-						mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+						msg.reserve(msg.size() + 1);
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
 					}
 
 					user->mClass = tUserCl(ParClass);
@@ -3161,20 +3184,28 @@ bool cDCConsole::cfRegUsr::operator()()
 
 					if (mS->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
 						mS->mOpList.Remove(user);
+
 						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-						mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+						msg.reserve(msg.size() + 1);
+						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->mInProgresUsers.SendToAll(msg, false, true);
+
 						mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-						mS->mHelloUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
-						mS->mUserList.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // send myinfo to all
-						mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
+						msg.reserve(msg.size() + 1);
+						mS->mHelloUsers.SendToAll(msg, false, true);
+
+						msg.reserve(user->mMyINFO.size() + 1);
+						msg = user->mMyINFO;
+						mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
+						mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
 
 						if (mS->mC.send_user_ip) { // send userip to operators
 							msg.clear();
 							cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 							DoUserIP.Clear();
 							DoUserIP(user);
-							mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap); // must be delayed too
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 						}
 					}
 
@@ -3234,28 +3265,38 @@ bool cDCConsole::cfRegUsr::operator()()
 					if ((user->mClass < mS->mC.oplist_class) && (ParClass >= mS->mC.oplist_class)) { // oplist
 						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Add(user);
+
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
 						}
 
 					} else if ((user->mClass >= mS->mC.oplist_class) && (ParClass < mS->mC.oplist_class)) {
 						if (!ui.mHideKeys && mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Remove(user);
+
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+
 							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							mS->mHelloUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
-							mS->mUserList.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
+							msg.reserve(msg.size() + 1);
+							mS->mHelloUsers.SendToAll(msg, false, true);
+
+							msg.reserve(user->mMyINFO.size() + 1);
+							msg = user->mMyINFO;
+							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();
 								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 								DoUserIP.Clear();
 								DoUserIP(user);
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap); // must be delayed too
+								msg.reserve(msg.size() + 1);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 						}
 					}
@@ -3334,9 +3375,11 @@ bool cDCConsole::cfRegUsr::operator()()
 					if (ui.mHideKeys && (par == "0")) { // setting to 0
 						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && !mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Add(user);
+
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
@@ -3345,20 +3388,28 @@ bool cDCConsole::cfRegUsr::operator()()
 					} else if (!ui.mHideKeys && (par != "0")) { // setting to 1
 						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Remove(user);
+
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+
 							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							mS->mHelloUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
-							mS->mUserList.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
+							msg.reserve(msg.size() + 1);
+							mS->mHelloUsers.SendToAll(msg, false, true);
+
+							msg.reserve(user->mMyINFO.size() + 1);
+							msg = user->mMyINFO;
+							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();
 								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 								DoUserIP.Clear();
 								DoUserIP(user);
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap); // must be delayed too
+								msg.reserve(msg.size() + 1);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 
 							if (ostr.str().empty())
@@ -3370,9 +3421,11 @@ bool cDCConsole::cfRegUsr::operator()()
 					if (!ui.mShowKeys && (par != "0")) { // setting to 1
 						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Add(user);
+
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
@@ -3381,20 +3434,28 @@ bool cDCConsole::cfRegUsr::operator()()
 					} else if (ui.mShowKeys && (par == "0")) { // setting to 0
 						if (!ui.mHideKeys && (user->mClass < mS->mC.oplist_class) && mS->mOpList.ContainsNick(user->mNick)) {
 							mS->mOpList.Remove(user);
+
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							mS->mUserList.SendToAll(msg, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
+							msg.reserve(msg.size() + 1);
+							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->mInProgresUsers.SendToAll(msg, false, true);
+
 							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							mS->mHelloUsers.SendToAll(msg, false, true, mS->mC.buffer_noswap);
-							mS->mUserList.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(user->mMyINFO, false, true, mS->mC.buffer_noswap); // todo: no cache, why?
+							msg.reserve(msg.size() + 1);
+							mS->mHelloUsers.SendToAll(msg, false, true);
+
+							msg.reserve(user->mMyINFO.size() + 1);
+							msg = user->mMyINFO;
+							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
+							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();
 								cCompositeUserCollection::ufDoIpList DoUserIP(msg);
 								DoUserIP.Clear();
 								DoUserIP(user);
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true, mS->mC.buffer_noswap); // must be delayed too
+								msg.reserve(msg.size() + 1);
+								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 
 							if (ostr.str().empty())

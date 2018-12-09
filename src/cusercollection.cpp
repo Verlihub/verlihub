@@ -31,34 +31,35 @@ namespace nVerliHub {
 void cUserCollection::ufSend::operator()(cUserBase *User)
 {
 	if (User && User->CanSend())
-		User->Send(mData, false, !flush);
+		User->Send(mData, false, !flush); // no pipe
 }
 
 void cUserCollection::ufSendWithNick::operator()(cUserBase *User)
 {
 	if (User && User->CanSend()) {
-		User->Send(mDataStart, false, false);
-		User->Send(User->mNick, false, false);
-		User->Send(mDataEnd, true, true); // always flushes
+		string _str;
+		_str.reserve(mDataStart.size() + User->mNick.size() + mDataEnd.size() + 1);
+		_str = mDataStart + User->mNick + mDataEnd;
+		User->Send(_str, true, true); // always flushes
 	}
 }
 
 void cUserCollection::ufSendWithClass::operator()(cUserBase *User)
 {
 	if (User && User->CanSend() && (User->mClass <= max_class) && (User->mClass >= min_class))
-		User->Send(mData, false, !flush);
+		User->Send(mData, false, !flush); // no pipe
 }
 
 void cUserCollection::ufSendWithFeature::operator()(cUserBase *User)
 {
 	if (User && User->CanSend() && User->HasFeature(feature))
-		User->Send(mData, false, !flush);
+		User->Send(mData, false, !flush); // no pipe
 }
 
 void cUserCollection::ufSendWithClassFeature::operator()(cUserBase *User)
 {
 	if (User && User->CanSend() && (User->mClass <= max_class) && (User->mClass >= min_class) && User->HasFeature(feature))
-		User->Send(mData, false, !flush);
+		User->Send(mData, false, !flush); // no pipe
 }
 
 void cUserCollection::ufDoNickList::AppendList(string &List, cUserBase *User)
@@ -165,7 +166,7 @@ string &cCompositeUserCollection::GetIPList()
 	return mIpList;
 }
 
-void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe, bool noswap)
+void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append(1, '|');
@@ -181,9 +182,7 @@ void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe, bool 
 		LogStream() << "Stop SendToAll" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-
-	if (!noswap)
-		ShrinkStringToFit(mSendAllCache);
+	ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
@@ -194,7 +193,7 @@ void cUserCollection::SendToAllWithNick(string &Start, string &End)
 	for_each(this->begin(), this->end(), ufSendWithNick(Start, End));
 }
 
-void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe, bool noswap)
+void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append(1, '|');
@@ -210,15 +209,13 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 		LogStream() << "Stop SendToAllWithClass" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-
-	if (!noswap)
-		ShrinkStringToFit(mSendAllCache);
+	ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe, bool noswap)
+void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append(1, '|');
@@ -234,15 +231,13 @@ void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool 
 		LogStream() << "Stop SendToAllWithFeature" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-
-	if (!noswap)
-		ShrinkStringToFit(mSendAllCache);
+	ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe, bool noswap)
+void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe)
 {
 	if (AddPipe)
 		Data.append(1, '|');
@@ -258,9 +253,7 @@ void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int
 		LogStream() << "Stop SendToAllWithClassFeature" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-
-	if (!noswap)
-		ShrinkStringToFit(mSendAllCache);
+	ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
@@ -271,9 +264,9 @@ void cUserCollection::FlushForUser(cUserBase *User)
 	ufSend(mSendAllCache, false).operator()(User); // mSendAllCache is empty here, thats what we want
 }
 
-void cUserCollection::FlushCache(bool noswap)
+void cUserCollection::FlushCache()
 {
-	SendToAll(mSendAllCache, false, false, noswap); // mSendAllCache is empty here, thats what we want
+	SendToAll(mSendAllCache, false, false); // mSendAllCache is empty here, thats what we want
 }
 
 int cUserCollection::StrLog(ostream & ostr, int level)

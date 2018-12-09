@@ -99,7 +99,6 @@ public:
 	unsigned long max_outbuf_size;
 	unsigned long max_outfill_size;
 	unsigned long max_unblock_size;
-	bool buffer_noswap;
 	unsigned int max_len_supports;
 	unsigned int max_len_version;
 	unsigned int max_len_myinfo;
