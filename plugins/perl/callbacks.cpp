@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -127,11 +127,11 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, con
 		//pi->mPerl.addBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
 		string omsg = "$Hello ";
 		omsg+= robot->mNick;
-		server->mHelloUsers.SendToAll(omsg, server->mC.delayed_myinfo, true);
+		server->mHelloUsers.SendToAll(omsg, server->mC.delayed_myinfo, true, server->mC.buffer_noswap);
 		omsg = server->mP.GetMyInfo(robot, eUC_NORMUSER);
-		server->mUserList.SendToAll(omsg, true, true);
+		server->mUserList.SendToAll(omsg, true, true, server->mC.buffer_noswap);
 		if(uclass >= 3)
-			server->mUserList.SendToAll(server->mOpList.GetNickList(), true);
+			server->mUserList.SendToAll(server->mOpList.GetNickList(), true, true, server->mC.buffer_noswap);
 	} else {
 	    // error: "Error adding bot; it may already exist"
 	    return false;
@@ -151,9 +151,9 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, co
 		robot->mMyINFO_basic = robot->mMyINFO;
 		//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
 		string omsg = server->mP.GetMyInfo(robot, eUC_NORMUSER);
-		server->mUserList.SendToAll(omsg, false, true);
+		server->mUserList.SendToAll(omsg, false, true, server->mC.buffer_noswap);
 		if(uclass >= 3)
-			server->mUserList.SendToAll(server->mOpList.GetNickList(), true);
+			server->mUserList.SendToAll(server->mOpList.GetNickList(), true, true, server->mC.buffer_noswap);
 	} else {
 		// error: "???"
 		return false;

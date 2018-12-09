@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -50,7 +50,7 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 	db_iterator it;
 	cConfigItemBase *item = NULL;
 	SelectFields(mQuery.OStream());
-	mQuery.OStream() << " where `file` = '" << file << "'";
+	mQuery.OStream() << " where `file` = '" << file << '\'';
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		item = (*Config)[mModel.mVarName];
@@ -76,7 +76,7 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 	if (file == "plugins")
 		mQuery.OStream() << " where `file` like 'pi_%'";
 	else
-		mQuery.OStream() << " where `file` = '" << file << "'";
+		mQuery.OStream() << " where `file` = '" << file << '\'';
 
 	mQuery.OStream() << " order by `var` asc";
 	string val;
@@ -86,7 +86,7 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 		string varName = mModel.mVarName;
 
 		if (file == "plugins")
-			varName = mModel.mFile + "." + varName;
+			varName = mModel.mFile + '.' + varName;
 
 		os << " [*] " << varName << " = " << val << "\r\n";
 	}
@@ -102,13 +102,13 @@ void cSetupList::FilterFiles(const string &var, ostream &os, const string &file)
 	replace(mask_var.begin(), mask_var.end(), '*', '%');
 	mQuery.OStream() << " where `var` like '";
 	WriteStringConstant(mQuery.OStream(), mask_var, true);
-	mQuery.OStream() << "'";
+	mQuery.OStream() << '\'';
 
 	if (file.size()) {
 		replace(mask_file.begin(), mask_file.end(), '*', '%');
 		mQuery.OStream() << " and `file` like '";
 		WriteStringConstant(mQuery.OStream(), mask_file, true);
-		mQuery.OStream() << "'";
+		mQuery.OStream() << '\'';
 	}
 
 	mQuery.OStream() << " order by `file` asc, `var` asc";
@@ -116,7 +116,7 @@ void cSetupList::FilterFiles(const string &var, ostream &os, const string &file)
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		cDCProto::EscapeChars(mModel.mVarValue, val);
-		os << " [*] " << mModel.mFile + "." << mModel.mVarName << " = " << val << "\r\n";
+		os << " [*] " << mModel.mFile + '.' << mModel.mVarName << " = " << val << "\r\n";
 	}
 
 	mQuery.Clear();

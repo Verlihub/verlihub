@@ -58,7 +58,7 @@ void cPenaltyList::Cleanup()
 {
 	cTime now = mServ->mTime.Sec(); // Now -= (60 * 60 * 24 * 7);
 	cQuery query(mMySQL);
-	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`st_chat` < " << now << ") and (`st_search` < " << now << ") and (`st_ctm` < " << now << ") and (`st_pm` < " << now << ") and (`st_kick` < " << now << ") and (`st_share0` < " << now << ") and (`st_reg` < " << now << ") and (`st_opchat` < " << now << ")";
+	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`st_chat` < " << now << ") and (`st_search` < " << now << ") and (`st_ctm` < " << now << ") and (`st_pm` < " << now << ") and (`st_kick` < " << now << ") and (`st_share0` < " << now << ") and (`st_reg` < " << now << ") and (`st_opchat` < " << now << ')';
 	query.Query();
 	query.Clear();
 }
@@ -190,7 +190,7 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 void cPenaltyList::ListAll(ostream &os)
 {
 	cQuery query(mMySQL);
-	query.OStream() << "select `nick` from `" << mMySQLTable.mName << "`";
+	query.OStream() << "select `nick` from `" << mMySQLTable.mName << '`';
 	query.Query();
 	unsigned int tot = query.StoreResult();
 	cTime now = mServ->mTime.Sec();

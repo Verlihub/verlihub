@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -69,12 +69,12 @@ bool cConsole::cfGetReplacer::operator ( )()
 	(*mOS) << "\t" << _("Word");
 	(*mOS) << "\t" << _("Replace with");
 	(*mOS) << _("Affected class") << "\n";
-	(*mOS) << " " << string(20+20+15,'-') << "\r\n";
+	(*mOS) << ' ' << string(20+20+15,'-') << "\r\n";
 	for(int i = 0; i < GetPI()->mReplacer->Size(); i++) {
 		fw = (*GetPI()->mReplacer)[i];
 		cDCProto::EscapeChars(fw->mWord, word);
 		cDCProto::EscapeChars(fw->mRepWord, rep_word);
-		(*mOS) << " " << "\t" << word.c_str();
+		(*mOS) << ' ' << "\t" << word.c_str();
 		(*mOS) << "\t" << rep_word.c_str();
 		(*mOS) << fw->mAfClass << "\r\n";
 	}
@@ -95,7 +95,7 @@ bool cConsole::cfDelReplacer::operator ( )()
 			isInList = true;
 
 	if(!isInList) {
-		(*mOS) << autosprintf(_("Word '%s' does not exist."), word_backup.c_str()) << " ";
+		(*mOS) << autosprintf(_("Word '%s' does not exist."), word_backup.c_str()) << ' ';
 		return false;
 	}
 
@@ -103,7 +103,7 @@ bool cConsole::cfDelReplacer::operator ( )()
 	FWord.mWord = word;
 
 	GetPI()->mReplacer->DelReplacer(FWord);
-	(*mOS) << autosprintf(_("Word '%s' deleted."), word_backup.c_str()) << " ";
+	(*mOS) << autosprintf(_("Word '%s' deleted."), word_backup.c_str()) << ' ';
 
 	GetPI()->mReplacer->LoadAll();
 	return true;
@@ -126,13 +126,13 @@ bool cConsole::cfAddReplacer::operator ( )()
 	cPCRE TestRE;
 	cDCProto::UnEscapeChars(word_backup, word);
 	if(!TestRE.Compile(word.data(), 0)) {
-		(*mOS) << _("Sorry the regular expression you provided cannot be parsed.") << " ";
+		(*mOS) << _("Sorry the regular expression you provided cannot be parsed.") << ' ';
 		return false;
 	}
 
 	for(int i = 0; i < GetPI()->mReplacer->Size(); i++) {
 		if((*GetPI()->mReplacer)[i]->mWord == word) {
-			(*mOS) << autosprintf(_("Word '%s' already exists."), word.c_str()) << " ";
+			(*mOS) << autosprintf(_("Word '%s' already exists."), word.c_str()) << ' ';
 			return false;
 		}
 	}
@@ -141,9 +141,9 @@ bool cConsole::cfAddReplacer::operator ( )()
 	FWord.mRepWord = rep_word;
 
 	if(GetPI()->mReplacer->AddReplacer(FWord))
-		(*mOS) << autosprintf(_("Added word %s. This word will be filtered in public chat for users with class that is less than or equal to %d."), word_backup.c_str(), FWord.mAfClass) << " ";
+		(*mOS) << autosprintf(_("Added word %s. This word will be filtered in public chat for users with class that is less than or equal to %d."), word_backup.c_str(), FWord.mAfClass) << ' ';
 	else
-	    (*mOS) << autosprintf(_("Error adding word '%s'."), word_backup.c_str()) << " ";
+	    (*mOS) << autosprintf(_("Error adding word '%s'."), word_backup.c_str()) << ' ';
 
 	GetPI()->mReplacer->LoadAll();
 

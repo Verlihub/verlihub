@@ -1035,7 +1035,7 @@ static PyObject *__encode(PyObject *self, PyObject *args)
 			case '`':
 			case '|':
 			case '~':
-				dest << "&#" << unsigned(data[i]) << ";";
+				dest << "&#" << unsigned(data[i]) << ';';
 				break;
 			default:
 				dest << data[i];

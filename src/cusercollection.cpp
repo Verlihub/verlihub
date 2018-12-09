@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -19,10 +19,11 @@
 */
 
 #include <algorithm>
-using namespace std;
 #include "cuser.h"
 #include "cusercollection.h"
 #include "cvhpluginmgr.h"
+
+using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -80,7 +81,7 @@ void cCompositeUserCollection::ufDoIpList::AppendList(string &List, cUserBase *U
 	cUser *user = static_cast<cUser *>(User);
 	if (user->mxConn) {
 		List.append(user->mNick);
-		List.append(" ");
+		List.append(1, ' ');
 		List.append(user->mxConn->AddrIP());
 		List.append(mSep);
 	}
@@ -164,10 +165,10 @@ string &cCompositeUserCollection::GetIPList()
 	return mIpList;
 }
 
-void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe, bool noswap)
 {
 	if (AddPipe)
-		Data.append("|");
+		Data.append(1, '|');
 
 	mSendAllCache.append(Data.data(), Data.size());
 
@@ -180,7 +181,9 @@ void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
 		LogStream() << "Stop SendToAll" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-	ShrinkStringToFit(mSendAllCache);
+
+	if (!noswap)
+		ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
@@ -191,10 +194,10 @@ void cUserCollection::SendToAllWithNick(string &Start, string &End)
 	for_each(this->begin(), this->end(), ufSendWithNick(Start, End));
 }
 
-void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe, bool noswap)
 {
 	if (AddPipe)
-		Data.append("|");
+		Data.append(1, '|');
 
 	mSendAllCache.append(Data.data(), Data.size());
 
@@ -207,16 +210,18 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 		LogStream() << "Stop SendToAllWithClass" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-	ShrinkStringToFit(mSendAllCache);
+
+	if (!noswap)
+		ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe, bool noswap)
 {
 	if (AddPipe)
-		Data.append("|");
+		Data.append(1, '|');
 
 	mSendAllCache.append(Data.data(), Data.size());
 
@@ -229,16 +234,18 @@ void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool 
 		LogStream() << "Stop SendToAllWithFeature" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-	ShrinkStringToFit(mSendAllCache);
+
+	if (!noswap)
+		ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe, bool noswap)
 {
 	if (AddPipe)
-		Data.append("|");
+		Data.append(1, '|');
 
 	mSendAllCache.append(Data.data(), Data.size());
 
@@ -251,7 +258,9 @@ void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int
 		LogStream() << "Stop SendToAllWithClassFeature" << endl;
 
 	mSendAllCache.erase(0, mSendAllCache.size());
-	ShrinkStringToFit(mSendAllCache);
+
+	if (!noswap)
+		ShrinkStringToFit(mSendAllCache);
 
 	if (AddPipe)
 		Data.erase(Data.size() - 1, 1);
@@ -262,16 +271,16 @@ void cUserCollection::FlushForUser(cUserBase *User)
 	ufSend(mSendAllCache, false).operator()(User); // mSendAllCache is empty here, thats what we want
 }
 
-void cUserCollection::FlushCache()
+void cUserCollection::FlushCache(bool noswap)
 {
-	SendToAll(mSendAllCache, false, false); // mSendAllCache is empty here, thats what we want
+	SendToAll(mSendAllCache, false, false, noswap); // mSendAllCache is empty here, thats what we want
 }
 
 int cUserCollection::StrLog(ostream & ostr, int level)
 {
 	if(cObj::StrLog(ostr,level)) {
-		LogStream() << "(" << mNickListMaker.mStart ;
-		LogStream() << ") "<< "[ " << Size() /* << "/" << mUserList.size()*/ << " ] ";
+		LogStream() << '(' << mNickListMaker.mStart ;
+		LogStream() << ") "<< "[ " << Size() /* << '/' << mUserList.size()*/ << " ] ";
 		return 1;
 	}
 	return 0;

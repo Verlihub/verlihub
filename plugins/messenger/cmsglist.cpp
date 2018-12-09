@@ -46,7 +46,7 @@ void cMsgList::CleanUp()
 {
 	mQuery.Clear();
 	mQuery.OStream() << "DELETE FROM " << mMySQLTable.mName <<
-		" WHERE (date_expires > date_sent) AND (date_expires < " << mServer->mTime.Sec() << ")";
+		" WHERE (date_expires > date_sent) AND (date_expires < " << mServer->mTime.Sec() << ')';
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -81,7 +81,7 @@ int cMsgList::CountMessages(const string &nick, bool sender)
 	mQuery.Clear();
 	mQuery.OStream() << "SELECT COUNT(body) FROM " << this->mMySQLTable.mName << " WHERE " << (sender ? "sender" : "receiver") << "='";
 	WriteStringConstant(mQuery.OStream(), nick );
-	mQuery.OStream() << "'";
+	mQuery.OStream() << '\'';
 	mQuery.Query();
 	int n = 0;
 	MYSQL_ROW row;
@@ -105,7 +105,7 @@ int cMsgList::PrintSubjects(ostream &os, const string &nick, bool IsSender)
 	SelectFields(mQuery.OStream());
 	mQuery.OStream() << "WHERE "  << (IsSender ? "sender" : "receiver") << "='";
 	WriteStringConstant(mQuery.OStream(), nick );
-	mQuery.OStream() << "'";
+	mQuery.OStream() << '\'';
 	db_iterator it;
 	SetBaseTo(&mModel);
 	for(it = db_begin(); it != db_end(); ++it) {
@@ -135,7 +135,7 @@ int cMsgList::DeliverMessagesForUser(cUser *dest)
 	SelectFields(mQuery.OStream());
 	mQuery.OStream() << "WHERE "  << "receiver" << "='" ;
 	WriteStringConstant(mQuery.OStream(),dest->mNick);
-	mQuery.OStream()<< "'";
+	mQuery.OStream()<< '\'';
 
 	SetBaseTo(&mModel);
 
@@ -196,7 +196,7 @@ int cMsgList::DeliverModelToUser(cUser *dest)
 	if (SenderOffline) {
 		omsg += "$Hello ";
 		omsg += mModel.mSender;
-		omsg += "|";
+		omsg += '|';
 	}
 
 	os << mModel.AsDelivery();

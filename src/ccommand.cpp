@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -109,10 +109,10 @@ int cCommand::sCmdFunc::StringToIntFromList(const string &str, const char *strin
 	}
 
 	if (theInt == -1) {
-		(*mOS) << autosprintf(_("Command suffix %s is not implemented, known suffixes are"), str.c_str()) << ":";
+		(*mOS) << autosprintf(_("Command suffix %s is not implemented, known suffixes are"), str.c_str()) << ':';
 
 		for (i = 0; i < item_count; i++)
-			(*mOS) << " " << stringlist[i];
+			(*mOS) << ' ' << stringlist[i];
 	}
 
 	return theInt;

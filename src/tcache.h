@@ -187,7 +187,7 @@ namespace nVerliHub {
 						n++;
 					}
 					if(n && Log(0))
-						LogStream() << "Updated cache for table " << mMySQLTable.mName << " [Total items: " << mHashTab.Size() << " | New items: " << n << "]" << endl;
+						LogStream() << "Updated cache for table " << mMySQLTable.mName << " [Total items: " << mHashTab.Size() << " | New items: " << n << ']' << endl;
 					mQuery.Clear();
 					mLastUpdate.Get();
 					return n;

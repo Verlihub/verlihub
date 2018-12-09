@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -337,17 +337,17 @@ bool cConsole::cfReloadLuaScript::operator()()
 	cLuaInterpreter *ip = new cLuaInterpreter(config, scriptfile);
 
 	if (!ip) {
-		(*mOS) << " " << _("Failed to allocate new Lua interpreter.");
+		(*mOS) << ' ' << _("Failed to allocate new Lua interpreter.");
 		return false;
 	}
 
 	if (ip->Init()) {
-		(*mOS) << " " << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
+		(*mOS) << ' ' << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
 		GetPI()->AddData(ip);
 		ip->Load();
 		return true;
 	} else {
-		(*mOS) << " " << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
+		(*mOS) << ' ' << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		delete ip;
 		return false;
 	}

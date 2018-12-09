@@ -73,7 +73,7 @@ void cIPLog::MakeSearchQuery(const string &who, bool isNick, int action, int lim
 	mQuery.OStream() << (isNick ? "WHERE nick='" : "WHERE ip=");
 	if(isNick) {
 		WriteStringConstant(mQuery.OStream(),who);
-		mQuery.OStream() << "'";
+		mQuery.OStream() << '\'';
 	} else
 		mQuery.OStream() << cBanList::Ip2Num(who);
 	if(action>= 0)
@@ -118,12 +118,12 @@ void cIPLog::GetHistory(const string &who, bool isNick, int limit, ostream &os)
 	os << "\t" << _("Action");
 	os << "\t" << (isNick ? "IP" : _("Nickname"));
 	os << _("Info") << "\n";
-	os << " " << string(70,'-') << endl;
+	os << ' ' << string(70,'-') << endl;
 
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " << "\t" << cTimePrint(mModel.mDate,0).AsDate();
+		os << ' ' << "\t" << cTimePrint(mModel.mDate,0).AsDate();
 		os << "\t";
 		if(mModel.mType < 4)
 			os << Actions[mModel.mType];
@@ -155,12 +155,12 @@ void cIPLog::GetLastLogin(const string &who, bool isNick, int limit, ostream &os
 	os << "\n ";
 	os << "\t" << _("Date");
 	os << (isNick ? "IP" : toUpper(_("Nickname"))) << "\n";
-	os << " " << string(60, '-') << endl;
+	os << ' ' << string(60, '-') << endl;
 
 	db_iterator it;
 	for(it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << " " << "\t" << cTimePrint(mModel.mDate,0).AsDate();
+		os << ' ' << "\t" << cTimePrint(mModel.mDate,0).AsDate();
 		os << (isNick ? ip : mModel.mNick) << endl;
 	}
 

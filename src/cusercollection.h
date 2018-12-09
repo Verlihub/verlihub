@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -247,12 +247,12 @@ public:
 	bool   RemoveByNick(const string &Nick) { return RemoveByHash(Nick2Hash(Nick)); }
 	bool   Remove(cUserBase *User);
 
-	void SendToAll(string &Data, bool UseCache = false, bool AddPipe = true);
+	void SendToAll(string &Data, bool UseCache, bool AddPipe, bool noswap);
 	void SendToAllWithNick(string &Start, string &End);
-	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache = false, bool AddPipe = true);
-	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache = false, bool AddPipe = true);
-	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache = false, bool AddPipe = true);
-	void FlushCache();
+	void SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe, bool noswap);
+	void SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe, bool noswap);
+	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe, bool noswap);
+	void FlushCache(bool noswap);
 	void FlushForUser(cUserBase *User);
 
 	virtual void OnAdd(cUserBase *User)

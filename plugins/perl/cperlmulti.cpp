@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -55,7 +55,7 @@ bool cPerlMulti::CallArgv(const char *Function, const char *Args[]) {
 		mIntStack.push_back(*i);
 		s++;
 		bool ret = (*i)->CallArgv(Function, Args);
-		//std::cerr << "Call " << Function << " " << Args[0] << " " << " on script " << (*i)->mScriptName << " returns " << ret << std::endl;
+		//std::cerr << "Call " << Function << ' ' << Args[0] << ' ' << " on script " << (*i)->mScriptName << " returns " << ret << std::endl;
 		mScriptStack.pop_back();
 		mIntStack.pop_back();
 		// Restore previous context for vh::ScriptCommand
