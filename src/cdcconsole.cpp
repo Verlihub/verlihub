@@ -602,8 +602,8 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length and other conditions
 		return 1;
 
+	temp.reserve(3 + conn->mpUser->mNick.size() + 1 + text.size() + 1);
 	temp = "** " + conn->mpUser->mNick + ' ' + text; // create and send message
-	temp.reserve(temp.size() + 1);
 	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
