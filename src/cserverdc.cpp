@@ -663,7 +663,7 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	return NULL;
 }
 
-void cServerDC::SendToAllProgresUsers(const string &msg, bool reserve /*= true*/)
+void cServerDC::SendToAllProgresUsers(string &msg, bool reserve /*= true*/)
 {
 	if(reserve)
 		msg.reserve(msg.size() + 1);
