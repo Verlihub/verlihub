@@ -2045,14 +2045,11 @@ int _RegBot(lua_State *L)
 	robot->mMyINFO_basic = robot->mMyINFO;
 	msg.reserve(robot->mMyINFO.size() + 1);
 	msg = robot->mMyINFO;
-	serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true); // send myinfo
-	serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+	serv->SendToAll(msg, false);
 
 	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist
 		serv->mP.Create_OpList(msg, robot->mNick);
-		msg.reserve(msg.size() + 1);
-		serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-		serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+		SendToAll(msg);
 	}
 
 	serv->mP.Create_BotList(msg, robot->mNick); // send short botlist
@@ -2176,9 +2173,7 @@ int _EditBot(lua_State *L)
 				serv->mOpList.Add(robot);
 
 				serv->mP.Create_OpList(msg, robot->mNick); // send short oplist to users
-				msg.reserve(msg.size() + 1);
-				serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-				serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				SendToAll(msg);
 			}
 
 		} else if ((robot->mClass >= serv->mC.oplist_class) && (iclass < serv->mC.oplist_class)) { // changing from op to user
@@ -2186,9 +2181,7 @@ int _EditBot(lua_State *L)
 				serv->mOpList.Remove(robot);
 
 				serv->mP.Create_Quit(msg, robot->mNick); // send quit to users
-				msg.reserve(msg.size() + 1);
-				serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true);
-				serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+				SendToAll(msg);
 
 				serv->mP.Create_Hello(msg, robot->mNick); // send hello
 				msg.reserve(msg.size() + 1);
@@ -2204,8 +2197,7 @@ int _EditBot(lua_State *L)
 	robot->mMyINFO_basic = robot->mMyINFO;
 	msg.reserve(robot->mMyINFO.size() + 1);
 	msg = robot->mMyINFO;
-	serv->mUserList.SendToAll(msg, serv->mC.delayed_myinfo, true); // send new myinfo
-	serv->mInProgresUsers.SendToAll(msg, serv->mC.delayed_myinfo, true);
+	serv->SendToAll(msg, false);
 
 	li->editBot(nick.c_str(), robot->mMyINFO.c_str(), (int)ishare, (int)iclass); // edit in lua bots
 	lua_pushboolean(L, 1);
