@@ -66,7 +66,7 @@ namespace nVerliHub {
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst = false);
 	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);
-	bool CheckDataPipe(const string &data);
+	bool CheckDataPipe(string &data);
 
 	extern "C"
 	{

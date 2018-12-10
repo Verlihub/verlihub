@@ -67,10 +67,7 @@ bool SendDataToUser(const char *data, const char *nick, bool delay)
 		return false;
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	user->mxConn->Send(omsg, pipe, !delay);
 	return true;
@@ -89,10 +86,7 @@ bool SendToClass(const char *data, int min_class, int max_class, bool delay)
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
@@ -111,10 +105,7 @@ bool SendToAll(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mUserList.SendToAll(omsg, delay, pipe);
 	return true;
@@ -133,10 +124,7 @@ bool SendToActive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mActiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
@@ -155,10 +143,7 @@ bool SendToActiveClass(const char *data, int min_class, int max_class, bool dela
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
@@ -177,10 +162,7 @@ bool SendToPassive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mPassiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
@@ -199,10 +181,7 @@ bool SendToPassiveClass(const char *data, int min_class, int max_class, bool del
 	}
 
 	string omsg(data);
-	bool pipe = CheckDataPipe(omsg);
-
-	if (pipe)
-		omsg.reserve(omsg.size() + 1);
+	const bool pipe = CheckDataPipe(omsg);
 
 	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
@@ -922,12 +901,15 @@ int CheckBotNick(const string &nick)
 	return 1;
 }
 
-bool CheckDataPipe(const string &data)
+bool CheckDataPipe(string &data)
 {
 	if (data.size() && (data[data.size() - 1] == '|'))
 		return false;
 	else
+	{
+		data.reserve(data.size() + 1);
 		return true;
+	}
 }
 
 extern "C" {
