@@ -661,11 +661,11 @@ void cServerDC::MyINFOToUsers(string &data, bool reserve/* = true*/, bool botlis
 		data.reserve(data.size() + 1);
 
 	if (botlist) {
-		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, reserve);
-		mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, reserve);
+		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+		mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 	} else {
-		mUserList.SendToAll(data, mC.delayed_myinfo, reserve);
-		mInProgresUsers.SendToAll(data, mC.delayed_myinfo, reserve);
+		mUserList.SendToAll(data, mC.delayed_myinfo, true);
+		mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
 	}
 }
 
