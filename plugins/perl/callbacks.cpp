@@ -124,18 +124,13 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, con
 		robot->mMyINFO_basic = robot->mMyINFO;
 		//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
 		string omsg;
-		server->mP.Create_Hello(omsg, robot->mNick);
-		omsg.reserve(omsg.size() + 1);
-		server->mHelloUsers.SendToAll(omsg, server->mC.delayed_myinfo, true);
 
 		omsg = server->mP.GetMyInfo(robot, eUC_NORMUSER);
-		omsg.reserve(omsg.size() + 1);
-		server->mUserList.SendToAll(omsg, true, true);
+		server->MyINFOToUsers(omsg);
 
 		if (uclass >= 3) {
 			omsg = server->mOpList.GetNickList();
-			omsg.reserve(omsg.size() + 1);
-			server->mUserList.SendToAll(omsg, true, true);
+			server->MyINFOToUsers(omsg);
 		}
 	} else {
 	    // error: "Error adding bot; it may already exist"
@@ -156,13 +151,11 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, co
 		robot->mMyINFO_basic = robot->mMyINFO;
 		//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
 		string omsg(server->mP.GetMyInfo(robot, eUC_NORMUSER));
-		omsg.reserve(omsg.size() + 1);
-		server->mUserList.SendToAll(omsg, false, true);
+		server->MyINFOToUsers(omsg);
 
 		if (uclass >= 3) {
 			omsg = server->mOpList.GetNickList();
-			omsg.reserve(omsg.size() + 1);
-			server->mUserList.SendToAll(omsg, true, true);
+			server->MyINFOToUsers(omsg);
 		}
 	} else {
 		// error: "???"

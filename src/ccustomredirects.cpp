@@ -108,12 +108,12 @@ namespace nVerliHub {
 		int cnt = 0;
 		time_t curr_time;
 		time(&curr_time);
-
 		struct tm *lt;
+
 		#ifdef _WIN32
 			lt = localtime(&curr_time); // todo: do we really need reentrant version?
 		#else
-		struct tm lt_obj;
+			struct tm lt_obj;
 			lt = &lt_obj;
 			localtime_r(&curr_time, lt);
 		#endif

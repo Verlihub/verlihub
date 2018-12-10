@@ -199,38 +199,39 @@ int cConnDC::OnTimer(cTime &now)
 		Send(omsg, false);
 	}
 
-	// upload line optimisation  - upload userlist slowlier
-	if(mpUser && mpUser->mQueueUL.size()) {
-		unsigned long pos = 0,ppos=0;
+	if (mpUser && mpUser->mQueueUL.size()) { // upload line optimization
+		unsigned long pos = 0, ppos = 0;
 		string buf, nick;
 		cUser *other;
 
-		for(unsigned int i = 0; i < Server()->mC.ul_portion; i++) {
-			pos=mpUser->mQueueUL.find_first_of('|',ppos);
-			if(pos == mpUser->mQueueUL.npos) break;
+		for (unsigned int i = 0; i < Server()->mC.ul_portion; i++) {
+			pos = mpUser->mQueueUL.find_first_of('|', ppos);
 
-			nick = mpUser->mQueueUL.substr(ppos, pos-ppos);
+			if (pos == mpUser->mQueueUL.npos)
+				break;
+
+			nick = mpUser->mQueueUL.substr(ppos, pos - ppos);
 			other = Server()->mUserList.GetUserByNick(nick);
-			ppos=pos+1;
+			ppos = pos + 1;
 
-			// check if user found
-			if(!other) {
-				if ((nick != Server()->mC.hub_security) && (nick != Server()->mC.opchat_name)) {
+			if (!other) { // check if user found
+				if ((nick != Server()->mC.hub_security) && (nick != Server()->mC.opchat_name))
 					cDCProto::Create_Quit(buf, nick);
-				}
 			} else {
 				buf.clear(); // only if nothing was added before
 				buf.append(Server()->mP.GetMyInfo(other, mpUser->mClass));
 			}
 		}
 
-		if (buf.size())
+		if (buf.size()) {
+			buf.reserve(buf.size() + 1);
 			Send(buf, true);
+		}
 
-		if(pos != mpUser->mQueueUL.npos)
+		if (pos != mpUser->mQueueUL.npos)
 			pos++;
-		// I can spare some RAM here by copying it to intermediate buffer and back
-		mpUser->mQueueUL.erase(0,pos);
+
+		mpUser->mQueueUL.erase(0, pos); // spare some memory
 		mpUser->mQueueUL.reserve(0);
 	}
 
@@ -294,6 +295,7 @@ int cConnDC::OnCloseNice()
 		cDCProto::Create_ForceMove(omsg, this->mCloseRedirect);
 		omsg.reserve(omsg.size() + 1);
 		Send(omsg, true);
+
 	} else if (mxServer) {
 		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
 

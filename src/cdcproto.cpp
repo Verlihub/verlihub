@@ -1364,12 +1364,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				conn->mpUser->mMyINFO_basic = myinfo_basic;
 				string send_info;
 				send_info = GetMyInfo(conn->mpUser, eUC_NORMUSER);
-				send_info.reserve(send_info.size() + 1);
-				mS->mUserList.SendToAll(send_info, mS->mC.delayed_myinfo, true);
-				mS->mInProgresUsers.SendToAll(send_info, mS->mC.delayed_myinfo, true);
+				mS->MyINFOToUsers(send_info);
 			}
 
-			if (mS->mC.show_tags >= 1) {
+			if (mS->mC.show_tags >= 1) { // operators get full myinfo
 				myinfo_full.reserve(myinfo_full.size() + 1);
 				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
 			}

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-11-19 23:17+0100\n"
+"POT-Creation-Date: 2018-12-10 22:06+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -342,7 +342,7 @@ msgstr[1] ""
 msgid "You have no new message in your box."
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:229
+#: ../plugins/messenger/cmsglist.cpp:214
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -350,7 +350,7 @@ msgid ""
 "Subject: %s\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:232
+#: ../plugins/messenger/cmsglist.cpp:217
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -360,7 +360,7 @@ msgid ""
 "----\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:235
+#: ../plugins/messenger/cmsglist.cpp:220
 #, c-format
 msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
@@ -430,7 +430,7 @@ msgstr ""
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:182 ../plugins/plugman/cplugs.cpp:133
+#: ../plugins/plugman/cconsole.cpp:182 ../plugins/plugman/cplugs.cpp:134
 msgid "Plugin loaded."
 msgstr ""
 
@@ -448,7 +448,7 @@ msgstr ""
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:225 ../plugins/plugman/cplugs.cpp:181
+#: ../plugins/plugman/cconsole.cpp:225 ../plugins/plugman/cplugs.cpp:182
 msgid "Plugin reloaded."
 msgstr ""
 
@@ -456,58 +456,58 @@ msgstr ""
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:46
+#: ../plugins/plugman/cplugs.cpp:47
 msgid "Plugin not found."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:117
+#: ../plugins/plugman/cplugs.cpp:118
 msgid "Plugin does not support scripts."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:123
+#: ../plugins/plugman/cplugs.cpp:124
 msgid "Script loaded."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:125
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Error loading script."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:154
+#: ../plugins/plugman/cplugs.cpp:155
 msgid "Plugin needs to be recompiled."
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-#, c-format
-msgid "Name: %s [%s] [%s]"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "On"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Off"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Automated"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Manual"
 msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:206
 #, c-format
+msgid "Name: %s [%s] [%s]"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "On"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Off"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Automated"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Manual"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:207
+#, c-format
 msgid "Path: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:209
+#: ../plugins/plugman/cplugs.cpp:210
 #, c-format
 msgid "Description: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:212
+#: ../plugins/plugman/cplugs.cpp:213
 #, c-format
 msgid "Last error: %s"
 msgstr ""
