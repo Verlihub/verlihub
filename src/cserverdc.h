@@ -505,6 +505,8 @@ class cServerDC : public cAsyncSocketServer
 
 		int SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone);
 
+		void SendToAll(string &msg, bool reserve = true);
+		
 		/*
 			send conditional search request with filters to all users
 				conn: sender connection
