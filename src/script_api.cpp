@@ -68,7 +68,6 @@ bool SendDataToUser(const char *data, const char *nick, bool delay)
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	user->mxConn->Send(omsg, pipe, !delay);
 	return true;
 }
@@ -87,7 +86,6 @@ bool SendToClass(const char *data, int min_class, int max_class, bool delay)
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
@@ -106,7 +104,6 @@ bool SendToAll(const char *data, bool delay)
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mUserList.SendToAll(omsg, delay, pipe);
 	return true;
 }
@@ -125,7 +122,6 @@ bool SendToActive(const char *data, bool delay)
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mActiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
 }
@@ -144,7 +140,6 @@ bool SendToActiveClass(const char *data, int min_class, int max_class, bool dela
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
@@ -163,7 +158,6 @@ bool SendToPassive(const char *data, bool delay)
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mPassiveUsers.SendToAll(omsg, delay, pipe);
 	return true;
 }
@@ -182,7 +176,6 @@ bool SendToPassiveClass(const char *data, int min_class, int max_class, bool del
 
 	string omsg(data);
 	const bool pipe = CheckDataPipe(omsg);
-
 	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
 	return true;
 }
@@ -670,9 +663,7 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 			serv->mOpList.Add(user);
 
 			serv->mP.Create_OpList(data, user->mNick); // send short oplist
-			data.reserve(data.size() + 1);
-			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-			serv->mInProgresUsers.SendToAll(data, false, true);
+			serv->MyINFOToUsers(data);
 		}
 
 		user->mClass = tUserCl(clas);
@@ -717,18 +708,11 @@ bool DelRegUser(const char *nick)
 			serv->mOpList.Remove(user);
 
 			serv->mP.Create_Quit(data, user->mNick); // send quit to all
-			data.reserve(data.size() + 1);
-			serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-			serv->mInProgresUsers.SendToAll(data, false, true);
+			serv->MyINFOToUsers(data);
 
-			serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
-			data.reserve(data.size() + 1);
-			serv->mHelloUsers.SendToAll(data, false, true);
-
-			data.reserve(user->mMyINFO.size() + 1);
+			data.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 			data = user->mMyINFO;
-			serv->mUserList.SendToAll(data, false, true); // send myinfo to all
-			serv->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
+			serv->MyINFOToUsers(data, false);
 
 			if (serv->mC.send_user_ip) { // send userip to operators
 				data.clear();
@@ -796,9 +780,7 @@ bool SetRegClass(const char *nick, int clas)
 				serv->mOpList.Add(user);
 
 				serv->mP.Create_OpList(data, user->mNick); // send short oplist
-				data.reserve(data.size() + 1);
-				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-				serv->mInProgresUsers.SendToAll(data, false, true);
+				serv->MyINFOToUsers(data);
 			}
 
 		} else if ((user->mClass >= serv->mC.oplist_class) && (clas < serv->mC.oplist_class)) {
@@ -806,18 +788,11 @@ bool SetRegClass(const char *nick, int clas)
 				serv->mOpList.Remove(user);
 
 				serv->mP.Create_Quit(data, user->mNick); // send quit to all
-				data.reserve(data.size() + 1);
-				serv->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-				serv->mInProgresUsers.SendToAll(data, false, true);
+				serv->MyINFOToUsers(data);
 
-				serv->mP.Create_Hello(data, user->mNick); // send hello to hello users
-				data.reserve(data.size() + 1);
-				serv->mHelloUsers.SendToAll(data, false, true);
-
-				data.reserve(user->mMyINFO.size() + 1);
+				data.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 				data = user->mMyINFO;
-				serv->mUserList.SendToAll(data, false, true); // send myinfo to all
-				serv->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
+				serv->MyINFOToUsers(data, false);
 
 				if (serv->mC.send_user_ip) { // send userip to operators
 					data.clear();
@@ -905,11 +880,9 @@ bool CheckDataPipe(string &data)
 {
 	if (data.size() && (data[data.size() - 1] == '|'))
 		return false;
-	else
-	{
-		data.reserve(data.size() + 1);
-		return true;
-	}
+
+	data.reserve(data.size() + 1);
+	return true;
 }
 
 extern "C" {

@@ -1316,8 +1316,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 	u->mMyINFO = newinfo;
 	u->mMyINFO_basic = newinfo;
-	newinfo.reserve(newinfo.size() + 1);
-	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true);
+	cpiPython::me->server->MyINFOToUsers(newinfo);
 	return w_ret1;
 }
 
@@ -1786,25 +1785,18 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 		robot->mMyINFO_basic = robot->mMyINFO;
 
 		string msg;
-		server->mP.Create_Hello(msg, robot->mNick);
-		msg.reserve(msg.size() + 1);
-		server->mHelloUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
 
 		msg.reserve(robot->mMyINFO.size() + 1);
 		msg = robot->mMyINFO;
-		server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
-		server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
+		server->MyINFOToUsers(msg, false);
 
 		if (robot->mClass >= server->mC.oplist_class) {
 			server->mP.Create_OpList(msg, robot->mNick);
-			msg.reserve(msg.size() + 1);
-			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
-			server->mInProgresUsers.SendToAll(msg, server->mC.delayed_myinfo, true);
+			server->MyINFOToUsers(msg);
 		}
 
 		server->mP.Create_BotList(msg, robot->mNick);
-		msg.reserve(msg.size() + 1);
-		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
+		server->MyINFOToUsers(msg, true, true);
 		return w_ret1;
 	}
 

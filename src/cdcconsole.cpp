@@ -602,8 +602,8 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length and other conditions
 		return 1;
 
-	temp.reserve(3 + conn->mpUser->mNick.size() + 1 + text.size() + 1);
-	temp = "** " + conn->mpUser->mNick + ' ' + text; // create and send message
+	temp.reserve(3 + conn->mpUser->mNick.size() + 1 + text.size() + 1); // create and send message
+	temp = "** " + conn->mpUser->mNick + ' ' + text;
 	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
@@ -771,18 +771,11 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 					mOwner->mOpList.Remove(conn->mpUser);
 
 					mOwner->mP.Create_Quit(data, conn->mpUser->mNick); // send quit to all
-					data.reserve(data.size() + 1);
-					mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-					mOwner->mInProgresUsers.SendToAll(data, false, true);
+					mOwner->MyINFOToUsers(data);
 
-					mOwner->mP.Create_Hello(data, conn->mpUser->mNick); // send hello to hello users
-					data.reserve(data.size() + 1);
-					mOwner->mHelloUsers.SendToAll(data, false, true);
-
-					data.reserve(conn->mpUser->mMyINFO.size() + 1);
+					data.reserve(conn->mpUser->mMyINFO.size() + 1); // send myinfo to all
 					data = conn->mpUser->mMyINFO;
-					mOwner->mUserList.SendToAll(data, false, true); // send myinfo to all
-					mOwner->mInProgresUsers.SendToAll(data, false, true); // todo: no cache, why?
+					mOwner->MyINFOToUsers(data, false);
 
 					if (mOwner->mC.send_user_ip) { // send userip to operators
 						data.clear();
@@ -890,9 +883,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 				mOwner->mOpList.Add(conn->mpUser);
 
 				mOwner->mP.Create_OpList(data, conn->mpUser->mNick); // send short oplist
-				data.reserve(data.size() + 1);
-				mOwner->mUserList.SendToAll(data, false, true); // todo: no cache, why?
-				mOwner->mInProgresUsers.SendToAll(data, false, true);
+				mOwner->MyINFOToUsers(data);
 			}
 
 			conn->mpUser->mClass = tUserCl(mOwner->mC.autoreg_class);
@@ -1138,9 +1129,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 						mOwner->mOpList.Add(user);
 
 						mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
-						msg.reserve(msg.size() + 1);
-						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mOwner->mInProgresUsers.SendToAll(msg, false, true);
+						mOwner->MyINFOToUsers(msg);
 					}
 
 				} else if ((old_class >= mOwner->mC.oplist_class) && (new_class < mOwner->mC.oplist_class)) {
@@ -1148,18 +1137,11 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 						mOwner->mOpList.Remove(user);
 
 						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
-						msg.reserve(msg.size() + 1);
-						mOwner->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mOwner->mInProgresUsers.SendToAll(msg, false, true);
+						mOwner->MyINFOToUsers(msg);
 
-						mOwner->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-						msg.reserve(msg.size() + 1);
-						mOwner->mHelloUsers.SendToAll(msg, false, true);
-
-						msg.reserve(user->mMyINFO.size() + 1);
+						msg.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 						msg = user->mMyINFO;
-						mOwner->mUserList.SendToAll(msg, false, true); // send myinfo to all
-						mOwner->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
+						mOwner->MyINFOToUsers(msg, false);
 
 						if (mOwner->mC.send_user_ip) { // send userip to operators
 							msg.clear();
@@ -1320,7 +1302,6 @@ bool cDCConsole::cfRaw::operator()()
 	enum {
 		eRW_ALL,
 		eRW_USR,
-		eRW_HELLO,
 		eRW_PASSIVE,
 		eRW_ACTIVE
 	};
@@ -1328,7 +1309,6 @@ bool cDCConsole::cfRaw::operator()()
 	static const char *actionnames[] = {
 		"all",
 		"user", "usr",
-		"hello", "hel",
 		"passive", "pas",
 		"active", "act"
 	};
@@ -1336,14 +1316,12 @@ bool cDCConsole::cfRaw::operator()()
 	static const int actionids[] = {
 		eRW_ALL,
 		eRW_USR, eRW_USR,
-		eRW_HELLO, eRW_HELLO,
 		eRW_PASSIVE, eRW_PASSIVE,
 		eRW_ACTIVE, eRW_ACTIVE
 	};
 
 	enum {
 		eRC_HUBNAME,
-		eRC_HELLO,
 		eRC_QUIT,
 		eRC_REDIR,
 		eRC_PM,
@@ -1352,7 +1330,6 @@ bool cDCConsole::cfRaw::operator()()
 
 	static const char *cmdnames[] = {
 		"hubname", "name",
-		"hello",
 		"quit",
 		"redir", "move",
 		"pm",
@@ -1361,7 +1338,6 @@ bool cDCConsole::cfRaw::operator()()
 
 	static const int cmdids[] = {
 		eRC_HUBNAME, eRC_HUBNAME,
-		eRC_HELLO,
 		eRC_QUIT,
 		eRC_REDIR, eRC_REDIR,
 		eRC_PM,
@@ -1400,10 +1376,6 @@ bool cDCConsole::cfRaw::operator()()
 			cDCProto::Create_HubName(cmd, par); // topic is included in param
 			break;
 
-		case eRC_HELLO:
-			cDCProto::Create_Hello(cmd, par);
-			break;
-
 		case eRC_QUIT:
 			cDCProto::Create_Quit(cmd, par);
 			break;
@@ -1428,7 +1400,6 @@ bool cDCConsole::cfRaw::operator()()
 
 	switch (act) {
 		case eRW_ALL:
-		case eRW_HELLO:
 		case eRW_PASSIVE:
 		case eRW_ACTIVE:
 			if (id == eRC_PM) {
@@ -3141,9 +3112,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						mS->mOpList.Add(user);
 
 						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-						msg.reserve(msg.size() + 1);
-						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true);
+						mS->MyINFOToUsers(msg);
 					}
 
 					user->mClass = tUserCl(ParClass);
@@ -3185,18 +3154,11 @@ bool cDCConsole::cfRegUsr::operator()()
 						mS->mOpList.Remove(user);
 
 						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-						msg.reserve(msg.size() + 1);
-						mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-						mS->mInProgresUsers.SendToAll(msg, false, true);
+						mS->MyINFOToUsers(msg);
 
-						mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-						msg.reserve(msg.size() + 1);
-						mS->mHelloUsers.SendToAll(msg, false, true);
-
-						msg.reserve(user->mMyINFO.size() + 1);
+						msg.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 						msg = user->mMyINFO;
-						mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
-						mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
+						mS->MyINFOToUsers(msg, false);
 
 						if (mS->mC.send_user_ip) { // send userip to operators
 							msg.clear();
@@ -3266,9 +3228,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Add(user);
 
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 						}
 
 					} else if ((user->mClass >= mS->mC.oplist_class) && (ParClass < mS->mC.oplist_class)) {
@@ -3276,18 +3236,11 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Remove(user);
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 
-							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							msg.reserve(msg.size() + 1);
-							mS->mHelloUsers.SendToAll(msg, false, true);
-
-							msg.reserve(user->mMyINFO.size() + 1);
+							msg.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->MyINFOToUsers(msg, false);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();
@@ -3376,9 +3329,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Add(user);
 
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
@@ -3389,18 +3340,11 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Remove(user);
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 
-							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							msg.reserve(msg.size() + 1);
-							mS->mHelloUsers.SendToAll(msg, false, true);
-
-							msg.reserve(user->mMyINFO.size() + 1);
+							msg.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->MyINFOToUsers(msg, false);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();
@@ -3422,9 +3366,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Add(user);
 
 							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
@@ -3435,18 +3377,11 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mOpList.Remove(user);
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
-							msg.reserve(msg.size() + 1);
-							mS->mUserList.SendToAll(msg, false, true); // todo: no cache, why?
-							mS->mInProgresUsers.SendToAll(msg, false, true);
+							mS->MyINFOToUsers(msg);
 
-							mS->mP.Create_Hello(msg, user->mNick); // send hello to hello users
-							msg.reserve(msg.size() + 1);
-							mS->mHelloUsers.SendToAll(msg, false, true);
-
-							msg.reserve(user->mMyINFO.size() + 1);
+							msg.reserve(user->mMyINFO.size() + 1); // send myinfo to all
 							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, false, true); // send myinfo to all
-							mS->mInProgresUsers.SendToAll(msg, false, true); // todo: no cache, why?
+							mS->MyINFOToUsers(msg, false);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								msg.clear();

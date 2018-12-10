@@ -466,6 +466,9 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		void SendToAll(const string &str, int cm, int cM);
 
+		// send myinfo data to all users, this could be myinfo, oplist, botlist, quit, etc
+		void MyINFOToUsers(string &data, bool reserve = true, bool botlist = false);
+
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range.
 		*
@@ -505,8 +508,6 @@ class cServerDC : public cAsyncSocketServer
 
 		int SendToAllWithNickCCVars(const string &start, const string &end, int cm, int cM, const string &cc_zone);
 
-		void SendToAllProgresUsers(string &msg, bool reserve = true);
-		
 		/*
 			send conditional search request with filters to all users
 				conn: sender connection
@@ -527,7 +528,6 @@ class cServerDC : public cAsyncSocketServer
 		* Notify all users of a new user.
 		*
 		* The following operations are done in order:
-		* 1. Send $Hello to hello users.
 		* 2. Send MyInfo to all.
 		* 3. Update OpList if the user is an operator.
 		* @param user The new user.
@@ -646,8 +646,6 @@ class cServerDC : public cAsyncSocketServer
 		cUserCollection mActiveUsers;
 		// List of passive users
 		cUserCollection mPassiveUsers;
-		// List of hello users
-		cUserCollection mHelloUsers;
 		// List of users allowed to talk
 		cUserCollection mChatUsers;
 		// List of bots
@@ -738,7 +736,7 @@ protected: // Protected methods
 	* @param conn User connection.
 	* @param info Extra information.
 	*/
-	int DCHello(const string & nick, cConnDC * conn, string *info=NULL);
+	int DCHello(const string &nick, cConnDC *conn, string *info = NULL);
 
 	/**
 	* This methos is called when user is going to be added to userlist.

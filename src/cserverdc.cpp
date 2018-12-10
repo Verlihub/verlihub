@@ -507,9 +507,6 @@ bool cServerDC::AddToList(cUser *user)
 	if (user->Can(eUR_OPCHAT, mTime.Sec()))
 		mOpchatList.AddWithHash(user, Hash);
 
-	if (user->mxConn && !(user->mxConn->mFeatures & eSF_NOHELLO))
-		mHelloUsers.AddWithHash(user, Hash);
-
 	if ((user->mClass >= eUC_OPERATOR) || mC.chat_default_on)
 		mChatUsers.AddWithHash(user, Hash);
 	else if (user->mxConn)
@@ -553,9 +550,6 @@ bool cServerDC::RemoveNick(cUser *User)
 	if (mPassiveUsers.ContainsHash(Hash))
 		mPassiveUsers.RemoveByHash(Hash);
 
-	if (mHelloUsers.ContainsHash(Hash))
-		mHelloUsers.RemoveByHash(Hash);
-
 	if (mChatUsers.ContainsHash(Hash))
 		mChatUsers.RemoveByHash(Hash);
 
@@ -566,9 +560,7 @@ bool cServerDC::RemoveNick(cUser *User)
 		User->mInList = false;
 		string omsg;
 		cDCProto::Create_Quit(omsg, User->mNick);
-		omsg.reserve(omsg.size() + 1);
-		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
-		mInProgresUsers.SendToAll(omsg, mC.delayed_myinfo, true);
+		MyINFOToUsers(omsg); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 	}
 
 	return true;
@@ -663,12 +655,18 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	return NULL;
 }
 
-void cServerDC::SendToAllProgresUsers(string &msg, bool reserve /*= true*/)
+void cServerDC::MyINFOToUsers(string &data, bool reserve/* = true*/, bool botlist/* = false*/)
 {
-	if(reserve)
-		msg.reserve(msg.size() + 1);
-	mUserList.SendToAll(msg, mC.delayed_myinfo, true);
-	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
+	if (reserve) // we do this because pipe will be added in next calls, to avoid memory reallocation
+		data.reserve(data.size() + 1);
+
+	if (botlist) {
+		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, reserve);
+		mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, reserve);
+	} else {
+		mUserList.SendToAll(data, mC.delayed_myinfo, reserve);
+		mInProgresUsers.SendToAll(data, mC.delayed_myinfo, reserve);
+	}
 }
 
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here
@@ -1409,20 +1407,13 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string msg;
-	mP.Create_Hello(msg, user->mNick); // send hello
-	msg.reserve(msg.size() + 1);
-	mHelloUsers.SendToAll(msg, mC.delayed_myinfo, true);
 
-	msg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress, hello users in progress are ignored, they are obsolete btw
-	msg.reserve(msg.size() + 1);
-	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // use cache, so this can be after user is added
-	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
+	msg = mP.GetMyInfo(user, eUC_NORMUSER); // all users get myinfo, even those in progress
+	MyINFOToUsers(msg); // use cache, so this can be after user is added
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(msg, user->mNick);
-		msg.reserve(msg.size() + 1);
-		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
-		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
+		MyINFOToUsers(msg);
 	}
 
 	if (mC.send_user_ip) { // send userip to operators
@@ -1810,7 +1801,6 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 
 int cServerDC::OnTimer(cTime &now)
 {
-	mHelloUsers.FlushCache();
 	mUserList.FlushCache();
 	mOpList.FlushCache();
 	mOpchatList.FlushCache();
@@ -1923,7 +1913,6 @@ int cServerDC::OnTimer(cTime &now)
 	}
 
 	mUserList.AutoResize();
-	mHelloUsers.AutoResize();
 	mActiveUsers.AutoResize();
 	mPassiveUsers.AutoResize();
 	mChatUsers.AutoResize();
@@ -2898,24 +2887,15 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 					AddRobot((cMainRobot*)mHubSec);
 
-					mP.Create_Hello(data, mHubSec->mNick); // send hello
-					data.reserve(data.size() + 1);
-					mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
-
-					data.reserve(mHubSec->mMyINFO.size() + 1);
+					data.reserve(mHubSec->mMyINFO.size() + 1); // send myinfo
 					data = mHubSec->mMyINFO;
-					mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
-					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+					MyINFOToUsers(data, false);
 
 					mP.Create_OpList(data, mHubSec->mNick); // send short oplist
-					data.reserve(data.size() + 1);
-					mUserList.SendToAll(data, mC.delayed_myinfo, true);
-					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+					MyINFOToUsers(data);
 
 					mP.Create_BotList(data, mHubSec->mNick); // send short botlist
-					data.reserve(data.size() + 1);
-					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
-					mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+					MyINFOToUsers(data, true, true);
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
@@ -2944,24 +2924,15 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						AddRobot((cMainRobot*)mOpChat);
 
-						mP.Create_Hello(data, mOpChat->mNick); // send hello
-						data.reserve(data.size() + 1);
-						mHelloUsers.SendToAll(data, mC.delayed_myinfo, true);
-
-						data.reserve(mOpChat->mMyINFO.size() + 1);
+						data.reserve(mOpChat->mMyINFO.size() + 1); // send myinfo
 						data = mOpChat->mMyINFO;
-						mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
-						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+						MyINFOToUsers(data, false);
 
 						mP.Create_OpList(data, mOpChat->mNick); // send short oplist
-						data.reserve(data.size() + 1);
-						mUserList.SendToAll(data, mC.delayed_myinfo, true);
-						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+						MyINFOToUsers(data);
 
 						mP.Create_BotList(data, mOpChat->mNick); // send short botlist
-						data.reserve(data.size() + 1);
-						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
-						mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+						MyINFOToUsers(data, true, true);
 					} else if (mOpChat) {
 						delete mOpChat;
 						mOpChat = NULL;
@@ -2974,21 +2945,19 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					#endif
 
 				} else if (svar == "hub_security_desc") {
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share);
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share); // send myinfo
 					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 					data.reserve(mHubSec->mMyINFO.size() + 1);
 					data = mHubSec->mMyINFO;
-					mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
-					mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+					MyINFOToUsers(data, false);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share);
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share); // send myinfo
 						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						data.reserve(mHubSec->mMyINFO.size() + 1);
 						data = mOpChat->mMyINFO;
-						mUserList.SendToAll(data, mC.delayed_myinfo, true); // send myinfo
-						mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
+						MyINFOToUsers(data, false);
 					}
 
 				} else if ((svar == "cmd_start_op") || (svar == "cmd_start_user")) {

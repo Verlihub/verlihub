@@ -65,7 +65,7 @@ cRoom::~cRoom()
 
 void cRoom::OnLoad()
 {
-	string omsg, start(mNick), desc("Chatroom: "), speed("\x1"), mail, share("0");
+	string desc("Chatroom: "), speed("\x1"), mail, share("0");
 
 	if (!mUsers) {
 		mUsers = new cUserCollection(true, false);
@@ -79,9 +79,6 @@ void cRoom::OnLoad()
 		nProtocol::cDCProto::Create_MyINFO(mChatRoom->mMyINFO, mNick, desc, speed, mail, share);
 		mChatRoom->mMyINFO_basic = mChatRoom->mMyINFO;
 		mPlugin->AddRobot(mChatRoom);
-		nProtocol::cDCProto::Create_Hello(omsg, mNick);
-		omsg.reserve(omsg.size() + 1);
-		mServer->mUserList.SendToAll(omsg, mServer->mC.delayed_myinfo, true);
 	}
 }
 

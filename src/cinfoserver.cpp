@@ -388,7 +388,6 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << autosprintf(_("Users: %d of %d"), mServer->mUserCountTot, mServer->mC.max_users_total) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mServer->mTotalShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list: %d"), mServer->mUserList.Size()) << "\r\n";
-	os << " [*] " << autosprintf(_("Hello users: %d"), mServer->mHelloUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Progress users: %d"), mServer->mInProgresUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Active users: %d"), mServer->mActiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive users: %d"), mServer->mPassiveUsers.Size()) << "\r\n";

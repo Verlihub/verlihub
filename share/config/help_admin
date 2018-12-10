@@ -118,7 +118,6 @@
 	Following targets can be used:
 
 		all				- All users
-		hello				- Hello users
 		active				- Active users
 		passive				- Passive users
 		user				- Specific user
@@ -126,7 +125,6 @@
 	Following actions can be used:
 
 		name				- Hub name
-		hello				- User login
 		quit				- User logout
 		redir				- Redirect
 		pm				- Private message

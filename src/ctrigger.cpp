@@ -123,20 +123,6 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	}
 
 	if (mFlags & eTF_VARS) {
-		cTimePrint theTime(server.mTime);
-		time_t curr_time;
-		time(&curr_time);
-
-		struct tm *lt;
-		#ifdef _WIN32
-			lt = localtime(&curr_time); // todo: do we really need reentrant version?
-		#else
-			struct tm lt_obj;
-			lt = &lt_obj;
-			localtime_r(&curr_time, lt);
-		#endif
-
-		theTime -= server.mStartTime;
 		ReplaceVarInString(buf, "PARALL", buf, parall);
 		ReplaceVarInString(buf, "PAR1", buf, par1);
 		ReplaceVarInString(buf, "END1", buf, end1);
@@ -174,13 +160,29 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "USERS_ACTIVE", buf, (int)server.mActiveUsers.Size());
 		ReplaceVarInString(buf, "USERS_PASSIVE", buf, (int)server.mPassiveUsers.Size());
 		ReplaceVarInString(buf, "USERSPEAK", buf, (int)server.mUsersPeak);
+
+		cTimePrint theTime(server.mTime); // uptime
+		theTime -= server.mStartTime;
 		ReplaceVarInString(buf, "UPTIME", buf, theTime.AsPeriod().AsString());
+
 		ReplaceVarInString(buf, "VERSION", buf, HUB_VERSION_VERS);
 		ReplaceVarInString(buf, "HUBNAME", buf, server.mC.hub_name);
 		ReplaceVarInString(buf, "HUBTOPIC", buf, server.mC.hub_topic);
 		ReplaceVarInString(buf, "HUBDESC", buf, server.mC.hub_desc);
 		ReplaceVarInString(buf, "TOTAL_SHARE", buf, convertByte(server.mTotalShare));
 		ReplaceVarInString(buf, "SHAREPEAK", buf, convertByte(server.mTotalSharePeak)); // peak total share
+
+		time_t curr_time; // current time
+		time(&curr_time);
+		struct tm *lt;
+
+		#ifdef _WIN32
+			lt = localtime(&curr_time); // todo: do we really need reentrant version?
+		#else
+			struct tm lt_obj;
+			lt = &lt_obj;
+			localtime_r(&curr_time, lt);
+		#endif
 
 		char tmf[3];
 		sprintf(tmf, "%02d", lt->tm_sec);
@@ -194,7 +196,6 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		sprintf(tmf, "%02d", lt->tm_mon + 1);
 		ReplaceVarInString(buf, "MM", buf, tmf);
 		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year);
-		
 	}
 
 	if (mFlags & eTF_SENDTOALL) { // to all
