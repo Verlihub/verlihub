@@ -194,10 +194,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		sprintf(tmf, "%02d", lt->tm_mon + 1);
 		ReplaceVarInString(buf, "MM", buf, tmf);
 		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year);
-
-		#ifndef _WIN32
-			delete lt;
-		#endif
+		
 	}
 
 	if (mFlags & eTF_SENDTOALL) { // to all

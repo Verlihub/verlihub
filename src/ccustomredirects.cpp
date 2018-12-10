@@ -121,7 +121,7 @@ namespace nVerliHub {
 		for (it = begin(); it != end(); ++it) {
 			if (cnt >= 10)
 				break;
-				
+
 			redir = (*it);
 
 			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rmap))) {
