@@ -663,6 +663,14 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	return NULL;
 }
 
+void cServerDC::SendToAllProgresUsers(string &msg, bool reserve /*= true*/)
+{
+	if(reserve)
+		msg.reserve(msg.size() + 1);
+	mUserList.SendToAll(msg, mC.delayed_myinfo, true);
+	mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true);
+}
+
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here
 {
 	string str;
