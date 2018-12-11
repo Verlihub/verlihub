@@ -376,6 +376,28 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	istringstream is(supports);
 	string feature, omsg, pars;
 
+	pars.reserve(
+		/*OpPlus */7 +
+		/*NoHello */8 +
+		/*NoGetINFO */10 +
+		/*HubINFO */8 +
+		/*ZPipe */6 +
+		/*ChatOnly */9 +
+		/*MCTo */5 +
+		/*BotList */8 +
+		/*HubTopic */9 +
+		/*UserIP2 */8 +
+		/*TTHSearch */10 +
+		/*TTHS */5 +
+		// /*IN */3 + // todo
+		/*TLS */4 +
+		/*FailOver */9 +
+		/*NickRule */9 +
+		/*SearchRule */11 +
+		/*HubURL */7 +
+		/*ExtJSON2 */9
+	);
+
 	while (1) {
 		feature = mS->mEmpty;
 		is >> feature;
@@ -1668,6 +1690,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		return 0;
 
 	if (mS->mC.optimize_userlist) { // eULO_GETINFO = true
+		conn->mpUser->mQueueUL.reserve(conn->mpUser->mQueueUL.size() + other.size() + 1);
 		conn->mpUser->mQueueUL.append(other);
 		conn->mpUser->mQueueUL.append(1, '|');
 	} else if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
@@ -3119,6 +3142,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 		other = mS->mUserList.GetUserByNick(nick);
 
 		if (other && other->mxConn && other->mInList) {
+			back.reserve(back.size() + nick.size() + 1 + other->mxConn->AddrIP().size() + sep.size());
 			back.append(nick);
 			back.append(1, ' ');
 			back.append(other->mxConn->AddrIP());
@@ -4056,6 +4080,7 @@ const string &cDCProto::GetMyInfo(cUserBase *User, int ForClass)
 		return User->mMyINFO_basic;
 }
 
+/*
 void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic)
 {
 	if (dest[dest.size() - 1] == '|')
@@ -4066,10 +4091,12 @@ void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const strin
 	else
 		dest.append(MyINFO);
 }
+*/
 
 void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share)
 {
 	dest.clear();
+	dest.reserve(13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1);
 	dest.append("$MyINFO $ALL ");
 	dest.append(nick);
 	dest.append(1, ' ');
@@ -4086,6 +4113,7 @@ void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &des
 void cDCProto::Create_Chat(string &dest, const string &nick, const string &text)
 {
 	dest.clear();
+	dest.reserve(1 + nick.size() + 2 + text.size());
 	dest.append(1, '<');
 	dest.append(nick);
 	dest.append("> ");
@@ -4095,6 +4123,7 @@ void cDCProto::Create_Chat(string &dest, const string &nick, const string &text)
 void cDCProto::Create_PM(string &dest,const string &from, const string &to, const string &sign, const string &text)
 {
 	dest.clear();
+	dest.reserve(5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size());
 	dest.append("$To: ");
 	dest.append(to);
 	dest.append(" From: ");
@@ -4109,7 +4138,9 @@ void cDCProto::Create_PM(string &dest,const string &from, const string &to, cons
 void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text)
 {
 	start.clear();
+	start.reserve(5);
 	end.clear();
+	end.reserve(7 + from.size() + 3 + sign.size() + 2 + text.size());
 	start.append("$To: ");
 	end.append(" From: ");
 	end.append(from);
@@ -4122,6 +4153,12 @@ void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &f
 void cDCProto::Create_HubName(string &dest, const string &name, const string &topic)
 {
 	dest.clear();
+
+	if (topic.size())
+		dest.reserve(9 + name.size() + 3 + topic.size());
+	else
+		dest.reserve(9 + name.size());
+
 	dest.append("$HubName ");
 	dest.append(name);
 
@@ -4134,6 +4171,7 @@ void cDCProto::Create_HubName(string &dest, const string &name, const string &to
 void cDCProto::Create_HubTopic(string &dest, const string &topic)
 {
 	dest.clear();
+	dest.reserve(10 + topic.size());
 	dest.append("$HubTopic ");
 	dest.append(topic);
 }
@@ -4141,6 +4179,7 @@ void cDCProto::Create_HubTopic(string &dest, const string &topic)
 void cDCProto::Create_Quit(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(6 + nick.size());
 	dest.append("$Quit ");
 	dest.append(nick);
 }
@@ -4148,6 +4187,7 @@ void cDCProto::Create_Quit(string &dest, const string &nick)
 void cDCProto::Create_Hello(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(7 + nick.size());
 	dest.append("$Hello ");
 	dest.append(nick);
 }
@@ -4155,6 +4195,7 @@ void cDCProto::Create_Hello(string &dest, const string &nick)
 void cDCProto::Create_LogedIn(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(9 + nick.size());
 	dest.append("$LogedIn ");
 	dest.append(nick);
 }
@@ -4162,6 +4203,7 @@ void cDCProto::Create_LogedIn(string &dest, const string &nick)
 void cDCProto::Create_ValidateDenide(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(16 + nick.size());
 	dest.append("$ValidateDenide ");
 	dest.append(nick);
 }
@@ -4169,6 +4211,12 @@ void cDCProto::Create_ValidateDenide(string &dest, const string &nick)
 void cDCProto::Create_BadNick(string &dest, const string &id, const string &par)
 {
 	dest.clear();
+
+	if (par.size())
+		dest.reserve(9 + id.size() + 1 + par.size());
+	else
+		dest.reserve(9 + id.size());
+
 	dest.append("$BadNick ");
 	dest.append(id);
 
@@ -4181,6 +4229,7 @@ void cDCProto::Create_BadNick(string &dest, const string &id, const string &par)
 void cDCProto::Create_NickList(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(10 + nick.size() + 2);
 	dest.append("$NickList ");
 	dest.append(nick);
 	dest.append("$$");
@@ -4189,6 +4238,7 @@ void cDCProto::Create_NickList(string &dest, const string &nick)
 void cDCProto::Create_OpList(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(8 + nick.size() + 2);
 	dest.append("$OpList ");
 	dest.append(nick);
 	dest.append("$$");
@@ -4197,6 +4247,7 @@ void cDCProto::Create_OpList(string &dest, const string &nick)
 void cDCProto::Create_BotList(string &dest, const string &nick)
 {
 	dest.clear();
+	dest.reserve(9 + nick.size() + 2);
 	dest.append("$BotList ");
 	dest.append(nick);
 	dest.append("$$");
@@ -4205,6 +4256,7 @@ void cDCProto::Create_BotList(string &dest, const string &nick)
 void cDCProto::Create_Key(string &dest, const string &key)
 {
 	dest.clear();
+	dest.reserve(5 + key.size());
 	dest.append("$Key ");
 	dest.append(key);
 }
@@ -4212,14 +4264,19 @@ void cDCProto::Create_Key(string &dest, const string &key)
 void cDCProto::Create_FailOver(string &dest, const string &addr)
 {
 	dest.clear();
+	dest.reserve(10 + addr.size());
 	dest.append("$FailOver ");
 	dest.append(addr);
 }
 
 void cDCProto::Create_ForceMove(string &dest, const string &addr, bool clear)
 {
-	if (clear)
+	if (clear) {
 		dest.clear();
+		dest.reserve(11 + addr.size());
+	} else {
+		dest.reserve(dest.size() + 11 + addr.size());
+	}
 
 	dest.append("$ForceMove ");
 	dest.append(addr);
@@ -4228,6 +4285,7 @@ void cDCProto::Create_ForceMove(string &dest, const string &addr, bool clear)
 void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra)
 {
 	dest.clear();
+	dest.reserve(13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size());
 	dest.append("$ConnectToMe ");
 	dest.append(nick);
 	dest.append(1, ' ');
@@ -4240,6 +4298,7 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 void cDCProto::Create_Search(string &dest, const string &addr, const string &lims, const string &spat)
 {
 	dest.clear();
+	dest.reserve(8 + addr.size() + 1 + lims.size() + spat.size());
 	dest.append("$Search ");
 	dest.append(addr);
 	dest.append(1, ' ');
@@ -4250,6 +4309,12 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &lim
 void cDCProto::Create_Search(string &dest, const string &addr, const string &tth, bool pas)
 {
 	dest.clear();
+
+	if (pas)
+		dest.reserve(8 + 4 + addr.size() + 13 + tth.size());
+	else
+		dest.reserve(8 + addr.size() + 13 + tth.size());
+
 	dest.append("$Search ");
 
 	if (pas)
@@ -4263,6 +4328,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &tth
 void cDCProto::Create_SA(string &dest, const string &tth, const string &addr)
 {
 	dest.clear();
+	dest.reserve(4 + tth.size() + 1 + addr.size());
 	dest.append("$SA ");
 	dest.append(tth);
 	dest.append(1, ' ');
@@ -4272,6 +4338,7 @@ void cDCProto::Create_SA(string &dest, const string &tth, const string &addr)
 void cDCProto::Create_SP(string &dest, const string &tth, const string &nick)
 {
 	dest.clear();
+	dest.reserve(4 + tth.size() + 1 + nick.size());
 	dest.append("$SP ");
 	dest.append(tth);
 	dest.append(1, ' ');
@@ -4281,6 +4348,7 @@ void cDCProto::Create_SP(string &dest, const string &tth, const string &nick)
 void cDCProto::Create_UserIP(string &dest, const string &list)
 {
 	dest.clear();
+	dest.reserve(8 + list.size());
 	dest.append("$UserIP ");
 	dest.append(list);
 }
@@ -4288,30 +4356,35 @@ void cDCProto::Create_UserIP(string &dest, const string &list)
 void cDCProto::Create_GetPass(string &dest)
 {
 	dest.clear();
+	dest.reserve(8);
 	dest.append("$GetPass");
 }
 
 void cDCProto::Create_BadPass(string &dest)
 {
 	dest.clear();
+	dest.reserve(8);
 	dest.append("$BadPass");
 }
 
 void cDCProto::Create_GetHubURL(string &dest)
 {
 	dest.clear();
+	dest.reserve(10);
 	dest.append("$GetHubURL");
 }
 
 void cDCProto::Create_HubIsFull(string &dest)
 {
 	dest.clear();
+	dest.reserve(10);
 	dest.append("$HubIsFull");
 }
 
 void cDCProto::Create_Supports(string &dest, const string &flags)
 {
 	dest.clear();
+	dest.reserve(10 + flags.size());
 	dest.append("$Supports ");
 	dest.append(flags);
 }
@@ -4319,6 +4392,7 @@ void cDCProto::Create_Supports(string &dest, const string &flags)
 void cDCProto::Create_NickRule(string &dest, const string &rules)
 {
 	dest.clear();
+	dest.reserve(10 + rules.size());
 	dest.append("$NickRule ");
 	dest.append(rules);
 }
@@ -4326,6 +4400,7 @@ void cDCProto::Create_NickRule(string &dest, const string &rules)
 void cDCProto::Create_SearchRule(string &dest, const string &rules)
 {
 	dest.clear();
+	dest.reserve(12 + rules.size());
 	dest.append("$SearchRule ");
 	dest.append(rules);
 }
