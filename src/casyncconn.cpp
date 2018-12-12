@@ -19,7 +19,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
 
 #include <ostream>
@@ -27,24 +27,26 @@
 #include "cserverdc.h"
 
 #if defined _WIN32
-#  include <Winsock2.h>
-#  define ECONNRESET WSAECONNRESET
-#  define ETIMEDOUT WSAETIMEDOUT
-#  define EHOSTUNREACH WSAEHOSTUNREACH
-#  define socklen_t int
-#  define sockoptval_t char
+	#include <Winsock2.h>
+	#define ECONNRESET WSAECONNRESET
+	#define ETIMEDOUT WSAETIMEDOUT
+	#define EHOSTUNREACH WSAEHOSTUNREACH
+	#define socklen_t int
+	#define sockoptval_t char
 #endif
 
 #if HAVE_ERRNO_H
 	#include <errno.h>
 #endif
+
 #include "casyncconn.h"
 #include "cprotocol.h"
+
 #if !defined _WIN32
 	#include <arpa/inet.h>
-	#include <netinet/in.h>        /* for sockaddr_in */
-	#include <sys/socket.h>        /* for AF_INET */
-	#include <netdb.h>             /* for gethostbyaddr */
+	#include <netinet/in.h> /* for sockaddr_in */
+	#include <sys/socket.h> /* for AF_INET */
+	#include <netdb.h> /* for gethostbyaddr */
 #endif
 
 #include <unistd.h>
@@ -70,13 +72,13 @@ using namespace std;
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
+
 	namespace nSocket {
 
 char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE + 1];
 unsigned long cAsyncConn::sSocketCounter = 0;
 
-// connection to hub
-cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
+cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connection to hub
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
 	//mIterator(0),
@@ -207,38 +209,43 @@ void cAsyncConn::Flush()
 
 int cAsyncConn::ReadLineLocal()
 {
-	if(!mxLine)
+	if (!mxLine)
 		throw "ReadLine with null line pointer";
-	char *pos,*buf;
+
+	char *pos, *buf;
 	buf = msBuffer + mBufReadPos;
 	int len;
 	len = mBufEnd - mBufReadPos;
 
-	if(NULL == (pos = (char*)memchr(buf, mSeparator,len))) {
-		if(mxLine->size()+len > mLineSizeMax) {
+	if (NULL == (pos = (char*)memchr(buf, mSeparator, len))) {
+		if (mxLine->size() + len > mLineSizeMax) {
 			CloseNow();
 			return 0;
 		}
-		mxLine->append((char*)buf,len);
+
+		mxLine->reserve(len);
+		mxLine->append((char*)buf, len);
 		mBufEnd = 0;
 		mBufReadPos = 0;
 		return len;
 	}
+
 	len = pos - buf;
-
-	mxLine->append((char*)buf,len);
-	mBufReadPos += len+1;
+	mxLine->reserve(len);
+	mxLine->append((char*)buf, len);
+	mBufReadPos += len + 1;
 	meLineStatus = AC_LS_LINE_DONE;
-
-	return len+1;
+	return len + 1;
 }
 
-void cAsyncConn::SetLineToRead(string *strp,char delim, int max)
+void cAsyncConn::SetLineToRead(string *strp, char delim, int max)
 {
-	if(LineStatus() != AC_LS_NO_LINE)
+	if (LineStatus() != AC_LS_NO_LINE)
 		throw "cAsyncConn::SetLineToRead - precondition not ok";
-	if(!strp)
+
+	if (!strp)
 		throw "cAsyncConn::SetLineToRead - precondition not ok - null string pointer";
+
 	meLineStatus = AC_LS_PARTLY;
 	mLineSize = 0;
 	mLineSizeMax = max;
@@ -256,7 +263,7 @@ void cAsyncConn::ClearLine()
 }
 
 
-string * cAsyncConn::GetLine()
+string* cAsyncConn::GetLine()
 {
 	return mxLine;
 }
@@ -715,7 +722,7 @@ int cAsyncConn::OnTimer(cTime &now)
 }
 
 void cAsyncConn::OnFlushDone()
-{ }
+{}
 
 int cAsyncConn::Write(const string &data, bool flush)
 {
@@ -731,6 +738,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 	}
 
 	if (data_size) { // we have something new to append
+		mBufFlush.reserve(mBufFlush.size() + data_size);
 		mBufFlush.append(data.data(), data_size);
 		flush_size += data_size;
 	}
@@ -759,9 +767,11 @@ int cAsyncConn::Write(const string &data, bool flush)
 				if (calc_size && zlib_buf) { // compression successful
 					buf_size -= flush_size; // recalculate final send buffer size
 					buf_size += calc_size;
+					mBufSend.reserve(mBufSend.size() + calc_size);
 					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
 					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
 				} else { // compression is larger than initial data or something failed
+					mBufSend.reserve(mBufSend.size() + flush_size);
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
 					if (Log(5)) {
@@ -787,6 +797,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
 			}
 		} else { // compression is disabled or data too short for good result
+			mBufSend.reserve(mBufSend.size() + flush_size);
 			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 			mBufFlush.erase(0, flush_size); // clean up flush buffer
 			ShrinkStringToFit(mBufFlush);
