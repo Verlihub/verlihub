@@ -231,17 +231,19 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	cUserCollection::iterator user_iter;
 	cAsyncConn *conn;
 	unsigned __int64 total_buf_up = 0, total_cap_up = 0;
+	unsigned int bufs = 0;
 
 	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
 		conn = ((cUser*)(*user_iter))->mxConn;
 
-		if (conn) {
+		if (conn && conn->ok) {
 			total_buf_up += conn->GetFlushSize() + conn->GetBufferSize();
 			total_cap_up += conn->GetFlushCapacity() + conn->GetBufferCapacity();
+			bufs++;
 		}
 	}
 
-	os << " [*] " << autosprintf(_("Upload buffers: %d [ %s / %s ]"), mServer->mUserList.Size(), convertByte(total_buf_up).c_str(), convertByte(total_cap_up).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Upload buffers: %d [ %s / %s ]"), bufs, convertByte(total_buf_up).c_str(), convertByte(total_cap_up).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with zLib: %s"), convertByte(mServer->mProtoSaved[0]).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
 	os << "\r\n";
