@@ -378,7 +378,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	istringstream is(supports);
 	string feature, omsg, pars;
 
-	pars.reserve( // all mossible support flags, todo: update list when new added
+	pars.reserve( // all possible support flags, todo: update list when new added
 		/*OpPlus */7 +
 		/*NoHello */8 +
 		/*NoGetINFO */10 +
