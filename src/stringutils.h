@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -24,7 +24,7 @@
 #include <string>
 
 #if (!defined _WIN32) && (!defined __int64)
-	#define __int64 long long
+#define __int64  long long
 #endif
 
 using namespace std;
@@ -54,14 +54,13 @@ __int64 StringAsLL(const string &);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");
-
-inline void AppendReservePlusPipe(string &dest, string &data, const bool pipe)
+inline void AppendReserve(string& dest,string &src, const bool pipe)
 {
-	if (pipe)
-		data.append(1, '|');
-
-	dest.reserve(dest.size() + data.size());
-	dest.append(data);
+	if (pipe) // is reserved earlier
+		src.append(1, '|');
+	
+	dest.reserve(dest.size() + src.size());
+	dest.append(src);
 }
 
 	}; // namespace nUtils

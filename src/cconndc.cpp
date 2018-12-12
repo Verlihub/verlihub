@@ -231,8 +231,8 @@ int cConnDC::OnTimer(cTime &now)
 		if (pos != mpUser->mQueueUL.npos)
 			pos++;
 
-		mpUser->mQueueUL.clear(); // spare some memory
-		ShrinkStringToFit(mpUser->mQueueUL);
+		mpUser->mQueueUL.erase(0, pos); // spare some memory
+		mpUser->mQueueUL.reserve(0);
 	}
 
 	return 0;
