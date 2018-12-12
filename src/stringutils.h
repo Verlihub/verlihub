@@ -54,6 +54,14 @@ __int64 StringAsLL(const string &);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");
+inline void AppendReserve(string& dest,string &src, const bool pipe)
+{
+	if (pipe) // is reserved earlier
+		src.append(1, '|');
+	
+	dest.reserve(dest.size() + src.size());
+	dest.append(src);
+}
 
 	}; // namespace nUtils
 }; // namespace nVerliHub
