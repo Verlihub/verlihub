@@ -348,8 +348,6 @@ int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 	conn->ClearTimeOut(eTO_KEY);
 	conn->SetTimeOut(eTO_VALNICK, mS->mC.timeout_length[eTO_VALNICK], mS->mTime);
 	conn->mT.key.Get();
-	conn->mLock.clear(); // not needed anymore
-	ShrinkStringToFit(conn->mLock);
 	return 0;
 }
 
@@ -378,7 +376,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	istringstream is(supports);
 	string feature, omsg, pars;
 
-	pars.reserve( // all mossible support flags, todo: update list when new added
+	pars.reserve(
 		/*OpPlus */7 +
 		/*NoHello */8 +
 		/*NoGetINFO */10 +

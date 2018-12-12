@@ -225,23 +225,21 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
 		total_up += mServer->mUploadZone[zone].GetMean(mServer->mTime);
 
-	os << " [*] " << autosprintf(_("Total download: %s [ %s ]"), convertByte(mServer->mProtoTotal[0]).c_str(), convertByte(mServer->mDownloadZone.GetMean(mServer->mTime), true).c_str()) << "\r\n";
-	os << " [*] " << autosprintf(_("Total upload: %s [ %s ]"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Total download: %s [%s]"), convertByte(mServer->mProtoTotal[0]).c_str(), convertByte(mServer->mDownloadZone.GetMean(mServer->mTime), true).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Total upload: %s [%s]"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
 
 	cUserCollection::iterator user_iter;
 	cAsyncConn *conn;
-	unsigned __int64 total_buf_up = 0, total_cap_up = 0;
+	unsigned __int64 total_buf_up = 0;
 
 	for (user_iter = mServer->mUserList.begin(); user_iter != mServer->mUserList.end(); ++user_iter) {
 		conn = ((cUser*)(*user_iter))->mxConn;
 
-		if (conn) {
+		if (conn)
 			total_buf_up += conn->GetFlushSize() + conn->GetBufferSize();
-			total_cap_up += conn->GetFlushCapacity() + conn->GetBufferCapacity();
-		}
 	}
 
-	os << " [*] " << autosprintf(_("Upload buffers: %d [ %s / %s ]"), mServer->mUserList.Size(), convertByte(total_buf_up).c_str(), convertByte(total_cap_up).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Upload buffers: %d [%s]"), mServer->mUserList.Size(), convertByte(total_buf_up).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with zLib: %s"), convertByte(mServer->mProtoSaved[0]).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
 	os << "\r\n";
