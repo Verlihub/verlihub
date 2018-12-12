@@ -31,13 +31,16 @@
 #include "ctime.h"
 #include "cconnbase.h"
 #include "cprotocol.h"
+
 #ifndef _WIN32
-#include <netinet/in.h>
+	#include <netinet/in.h>
 #endif
+
 #include <string>
 #include <list>
 
 using namespace std;
+
 namespace nVerliHub {
 	namespace nEnums {
 
@@ -228,9 +231,19 @@ namespace nVerliHub {
 					return mBufSend.size();
 				}
 
+				size_t GetBufferCapacity()
+				{
+					return mBufSend.capacity();
+				}
+
 				size_t GetFlushSize()
 				{
 					return mBufFlush.size();
+				}
+
+				size_t GetFlushCapacity()
+				{
+					return mBufFlush.capacity();
 				}
 
 				/**
