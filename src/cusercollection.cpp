@@ -175,11 +175,7 @@ string &cCompositeUserCollection::GetIPList()
 
 void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
 {
-	if (AddPipe) // is reserved earlier
-		Data.append(1, '|');
-
-	mSendAllCache.reserve(mSendAllCache.size() + Data.size());
-	mSendAllCache.append(Data.data(), Data.size());
+	AppendReserve(mSendAllCache,Data,AddPipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAll" << endl;
@@ -203,11 +199,7 @@ void cUserCollection::SendToAllWithNick(string &Start, string &End)
 
 void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe)
 {
-	if (AddPipe) // is reserved earlier
-		Data.append(1, '|');
-
-	mSendAllCache.reserve(mSendAllCache.size() + Data.size());
-	mSendAllCache.append(Data.data(), Data.size());
+	AppendReserve(mSendAllCache,Data,AddPipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithClass" << endl;
@@ -226,11 +218,7 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 
 void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
 {
-	if (AddPipe) // is reserved earlier
-		Data.append(1, '|');
-
-	mSendAllCache.reserve(mSendAllCache.size() + Data.size());
-	mSendAllCache.append(Data.data(), Data.size());
+	AppendReserve(mSendAllCache,Data,AddPipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithFeature" << endl;
@@ -249,11 +237,7 @@ void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool 
 
 void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe)
 {
-	if (AddPipe) // is reserved earlier
-		Data.append(1, '|');
-
-	mSendAllCache.reserve(mSendAllCache.size() + Data.size());
-	mSendAllCache.append(Data.data(), Data.size());
+	AppendReserve(mSendAllCache,Data,AddPipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithClassFeature" << endl;
