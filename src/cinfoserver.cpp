@@ -249,6 +249,7 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Size of input zLib buffer: %s"), convertByte(mServer->mZLib->GetInBufLen()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Size of output zLib buffer: %s"), convertByte(mServer->mZLib->GetOutBufLen()).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Compress level zLib: %d"), mServer->mC.zlib_compress_level) << "\r\n";
 }
 
 void cInfoServer::SystemInfo(ostream &os)
