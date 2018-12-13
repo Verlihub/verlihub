@@ -244,7 +244,7 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	}
 
 	os << " [*] " << autosprintf(_("Upload buffers: %d [ %s / %s ]"), bufs, convertByte(total_buf_up).c_str(), convertByte(total_cap_up).c_str()) << "\r\n";
-	os << " [*] " << autosprintf(_("Upload saved with zLib: %s"), convertByte(mServer->mProtoSaved[0]).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Upload saved with zLib: %s [ %d ]"), convertByte(mServer->mProtoSaved[0]).c_str(), mServer->mC.zlib_compress_level) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Size of input zLib buffer: %s"), convertByte(mServer->mZLib->GetInBufLen()).c_str()) << "\r\n";
