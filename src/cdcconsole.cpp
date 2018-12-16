@@ -775,7 +775,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 					mOwner->MyINFOToUsers(data);
 
 					if (mOwner->mC.send_user_ip) { // send userip to operators
-						mOwner->mP.Create_UserIP(data, conn->AddrIP(), true, true); // reserve for pipe
+						mOwner->mP.Create_UserIP(data, conn->mpUser->mNick, conn->AddrIP(), true); // reserve for pipe
 						mOwner->mUserList.SendToAllWithClassFeature(data, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
 					}
 				}
@@ -1139,7 +1139,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 						mOwner->MyINFOToUsers(msg);
 
 						if (mOwner->mC.send_user_ip) { // send userip to operators
-							mOwner->mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+							mOwner->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 							mOwner->mUserList.SendToAllWithClassFeature(msg, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
 						}
 					}
@@ -3152,7 +3152,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						mS->MyINFOToUsers(msg);
 
 						if (mS->mC.send_user_ip) { // send userip to operators
-							mS->mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+							mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 							mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 						}
 					}
@@ -3232,7 +3232,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->MyINFOToUsers(msg);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 						}
@@ -3334,7 +3334,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->MyINFOToUsers(msg);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 
@@ -3369,7 +3369,7 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->MyINFOToUsers(msg);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
 							}
 

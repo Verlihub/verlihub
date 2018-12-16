@@ -1433,7 +1433,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	}
 
 	if (mC.send_user_ip && user->mxConn) { // send userip to operators
-		mP.Create_UserIP(msg, user->mxConn->AddrIP(), true, true); // reserve for pipe
+		mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 		mUserList.SendToAllWithClassFeature(msg, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
