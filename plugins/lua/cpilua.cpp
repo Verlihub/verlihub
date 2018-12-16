@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -513,11 +513,11 @@ bool cpiLua::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 				break;
 
 			case eDC_TTHS:
-				cDCProto::Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH));
+				server->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false, false); // dont reserve for pipe, we are not sending this
 				break;
 
 			case eDC_TTHS_PAS:
-				cDCProto::Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
+				server->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true, false); // dont reserve for pipe, we are not sending this
 				break;
 
 			default:

@@ -681,11 +681,11 @@ bool cpiPython::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 				break;
 
 			case eDC_TTHS:
-				cDCProto::Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH));
+				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false, false); // dont reserve for pipe, we are not sending this
 				break;
 
 			case eDC_TTHS_PAS:
-				cDCProto::Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
+				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true, false); // dont reserve for pipe, we are not sending this
 				break;
 
 			default:
@@ -1226,10 +1226,15 @@ w_Targs *_SendPMToAll(int id, w_Targs *args)
 {
 	const char *data, *from;
 	long min_class, max_class;
-	if (!cpiPython::lib_unpack(args, "ssll", &data, &from, &min_class, &max_class)) return NULL;
-	if (!data || !from) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "ssll", &data, &from, &min_class, &max_class))
+		return NULL;
+
+	if (!data || !from)
+		return NULL;
+
 	string start, end;
-	cpiPython::me->server->mP.Create_PMForBroadcast(start, end, from, from, data);
+	cpiPython::me->server->mP.Create_PMForBroadcast(start, end, from, from, data, false); // dont reserve for pipe, buffer is copied before sending
 	cpiPython::me->server->SendToAllWithNick(start, end, min_class, max_class);
 	cpiPython::me->server->LastBCNick = from;
 	return w_ret1;
@@ -1314,8 +1319,16 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 	freee(origmail);
 	freee(origsize);
 
+	if (u->mMyINFO.capacity() < newinfo.size())
+		u->mMyINFO.reserve(newinfo.size());
+
 	u->mMyINFO = newinfo;
+
+	if (u->mMyINFO_basic.capacity() < newinfo.size())
+		u->mMyINFO_basic.reserve(newinfo.size());
+
 	u->mMyINFO_basic = newinfo;
+	newinfo.reserve(newinfo.size() + 1); // reserve for pipe
 	cpiPython::me->server->MyINFOToUsers(newinfo);
 	return w_ret1;
 }
@@ -1333,17 +1346,23 @@ w_Targs *_GetUserClass(int id, w_Targs *args)
 
 w_Targs *_GetNickList(int id, w_Targs *args)
 {
-	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mUserList.GetNickList().c_str()));
+	string list;
+	cpiPython::me->server->mUserList.GetNickList(list, false);
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
-	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mOpList.GetNickList().c_str()));
+	string list;
+	cpiPython::me->server->mOpList.GetNickList(list, false);
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
-	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mRobotList.GetNickList().c_str()));
+	string list;
+	cpiPython::me->server->mRobotList.GetNickList(list, false);
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetUserHost(int id, w_Targs *args)
@@ -1781,22 +1800,21 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 
 	if (robot) {
 		cServerDC *server = cpiPython::me->server;
-		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
+		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
+		robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
 		robot->mMyINFO_basic = robot->mMyINFO;
-
 		string msg;
-
-		msg.reserve(robot->mMyINFO.size() + 1);
+		msg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 		msg = robot->mMyINFO;
-		server->MyINFOToUsers(msg, false);
+		server->MyINFOToUsers(msg);
 
 		if (robot->mClass >= server->mC.oplist_class) {
-			server->mP.Create_OpList(msg, robot->mNick);
+			server->mP.Create_OpList(msg, robot->mNick, true); // reserve for pipe
 			server->MyINFOToUsers(msg);
 		}
 
-		server->mP.Create_BotList(msg, robot->mNick);
-		server->MyINFOToUsers(msg, true, true);
+		server->mP.Create_BotList(msg, robot->mNick, true); // reserve for pipe
+		server->MyINFOToUsers(msg, true);
 		return w_ret1;
 	}
 
@@ -1902,15 +1920,17 @@ w_Targs *_UserRestrictions(int id, w_Targs *args)
 w_Targs *_Topic(int id, w_Targs *args)
 {
 	const char *topic;
-	if (!cpiPython::lib_unpack(args, "s", &topic)) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &topic))
+		return NULL;
+
 	if (topic && strlen(topic) < 1024) {
 		cpiPython::me->server->mC.hub_topic = topic;
-		string msg, sTopic;
-		sTopic = topic;
-		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic);
-		msg.reserve(msg.size() + 1);
+		string msg, sTopic(topic);
+		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic, true); // reserve for pipe
 		cpiPython::me->server->mUserList.SendToAll(msg, true, true);
 	}
+
 	return cpiPython::lib_pack("s", strdup(cpiPython::me->server->mC.hub_topic.c_str()));
 }
 

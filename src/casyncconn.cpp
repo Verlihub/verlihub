@@ -737,8 +737,15 @@ int cAsyncConn::Write(const string &data, bool flush)
 		return -1;
 	}
 
+	nVerliHub::cServerDC *serv = NULL;
+
+	if (mxServer)
+		serv = (nVerliHub::cServerDC*)mxServer;
+	else if (Log(5))
+		LogStream() << "Server not available for write operations" << endl;
+
 	if (data_size) { // we have something new to append
-		mBufFlush.reserve(mBufFlush.size() + data_size);
+		mBufFlush.reserve(mBufFlush.size() + data_size); // always reserve because we are adding new data
 		mBufFlush.append(data.data(), data_size);
 		flush_size += data_size;
 	}
@@ -750,12 +757,6 @@ int cAsyncConn::Write(const string &data, bool flush)
 		return 0;
 
 	const char *send_buf = mBufFlush.data(); // pointer to flush buffer
-	nVerliHub::cServerDC *serv = NULL;
-
-	if (mxServer)
-		serv = (nVerliHub::cServerDC*)mxServer;
-	else if (Log(5))
-		LogStream() << "Server not available for write operations" << endl;
 
 	if (flush_size && send_buf) { // check if there is something to flush, else send old remaining data
 		if (mZLibFlag && serv && !serv->mC.disable_zlib && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
@@ -767,11 +768,11 @@ int cAsyncConn::Write(const string &data, bool flush)
 				if (calc_size && zlib_buf) { // compression successful
 					buf_size -= flush_size; // recalculate final send buffer size
 					buf_size += calc_size;
-					mBufSend.reserve(mBufSend.size() + calc_size);
+					mBufSend.reserve(mBufSend.size() + calc_size); // always reserve because we are adding new data
 					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
 					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
 				} else { // compression is larger than initial data or something failed
-					mBufSend.reserve(mBufSend.size() + flush_size);
+					mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
 					if (Log(5)) {
@@ -797,7 +798,7 @@ int cAsyncConn::Write(const string &data, bool flush)
 				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
 			}
 		} else { // compression is disabled or data too short for good result
-			mBufSend.reserve(mBufSend.size() + flush_size);
+			mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
 			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 			mBufFlush.erase(0, flush_size); // clean up flush buffer
 			ShrinkStringToFit(mBufFlush);

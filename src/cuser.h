@@ -20,6 +20,7 @@
 
 #ifndef CUSER_H
 #define CUSER_H
+
 #include <string>
 #include "cobj.h"
 #include "cconndc.h"
@@ -28,8 +29,10 @@
 #include "ctime.h"
 
 using namespace std;
+
 namespace nVerliHub {
 	namespace nEnums {
+
 		/** several types of users with some differences .. for later
 			everyone is allowed to create no more then he is -1
 		*/
@@ -228,8 +231,6 @@ public:
 	//nEnums::tUserCl mOpClassMin;
 	/** User share */
 	unsigned __int64 mShare;
-	/** the list of nicks queued to send either as to nicklist or myinfo. */
-	string mQueueUL;
 	/** chat discrimination */
 	long mGag;
 	long mNoPM;

@@ -77,7 +77,7 @@ bool cConnDC::SetUser(cUser *usr)
 	}
 	mpUser = usr;
 	mpUser->mxConn = this;
-	mpUser->mxServer = (cServerDC *) mxServer;
+	mpUser->mxServer = (cServerDC*)mxServer;
 	if(Log(3)) LogStream() << "User " << usr->mNick << " connected ... " << endl;
 	return true;
 }
@@ -173,66 +173,37 @@ int cConnDC::GetTheoricalClass()
 int cConnDC::OnTimer(cTime &now)
 {
 	ostringstream os;
-	// check the timeouts
 	int i;
-	for(i=0; i < eTO_MAXTO; i++) {
-		if(!CheckTimeOut(tTimeOut(i), now)) {
+
+	for (i = 0; i < eTO_MAXTO; i++) { // check the timeouts
+		if (!CheckTimeOut(tTimeOut(i), now)) {
 			os << autosprintf(_("Operation timeout: %s"), this->GetTimeOutType(tTimeOut(i)));
-			if(Log(2))
+
+			if (Log(2))
 				LogStream() << "Operation timeout (" << tTimeOut(i) << ')' << endl;
-			Server()->ConnCloseMsg(this,os.str(),6000, eCR_TIMEOUT);
+
+			Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TIMEOUT);
 			break;
 		}
 	}
+
 	if (mTimeLastIOAction.Sec() < (mTimeLastAttempt.Sec() - 270)) {
 		os << _("General timeout");
-		if(Log(2))
-			LogStream() << "Any action timeout.." << endl;
-		Server()->ConnCloseMsg(this,os.str(),6000, eCR_TO_ANYACTION);
+
+		if (Log(2))
+			LogStream() << "Any action timeout" << endl;
+
+		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
 	}
 
 	cTime ten_min_ago; // check frozen users, send to every user, every minute an empty message
 	ten_min_ago = ten_min_ago - 600;
 
 	if (Server()->MinDelay(mT.ping, Server()->mC.delayed_ping) && mpUser && mpUser->mInList && (mpUser->mT.login < ten_min_ago)) {
-		string omsg("|");
+		string omsg;
+		omsg.reserve(1);
+		omsg.append(1, '|');
 		Send(omsg, false);
-	}
-
-	if (mpUser && mpUser->mQueueUL.size()) { // upload line optimization
-		unsigned long pos = 0, ppos = 0;
-		string buf, nick;
-		cUser *other;
-
-		for (unsigned int i = 0; i < Server()->mC.ul_portion; i++) {
-			pos = mpUser->mQueueUL.find_first_of('|', ppos);
-
-			if (pos == mpUser->mQueueUL.npos)
-				break;
-
-			nick = mpUser->mQueueUL.substr(ppos, pos - ppos);
-			other = Server()->mUserList.GetUserByNick(nick);
-			ppos = pos + 1;
-
-			if (!other) { // check if user found
-				if ((nick != Server()->mC.hub_security) && (nick != Server()->mC.opchat_name))
-					cDCProto::Create_Quit(buf, nick);
-			} else {
-				buf.clear(); // only if nothing was added before
-				buf.append(Server()->mP.GetMyInfo(other, mpUser->mClass));
-			}
-		}
-
-		if (buf.size()) {
-			buf.reserve(buf.size() + 1);
-			Send(buf, true);
-		}
-
-		if (pos != mpUser->mQueueUL.npos)
-			pos++;
-
-		mpUser->mQueueUL.clear(); // spare some memory
-		ShrinkStringToFit(mpUser->mQueueUL);
 	}
 
 	return 0;
@@ -292,16 +263,14 @@ int cConnDC::OnCloseNice()
 	string omsg;
 
 	if (this->mCloseRedirect.size()) {
-		cDCProto::Create_ForceMove(omsg, this->mCloseRedirect);
-		omsg.reserve(omsg.size() + 1);
+		Server()->mP.Create_ForceMove(omsg, this->mCloseRedirect, true, true); // reserve for pipe
 		Send(omsg, true);
 
 	} else if (mxServer) {
 		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
 
 		if (addr) {
-			cDCProto::Create_ForceMove(omsg, addr);
-			omsg.reserve(omsg.size() + 1);
+			Server()->mP.Create_ForceMove(omsg, addr, true, true); // reserve for pipe
 			Send(omsg, true);
 			free(addr);
 		}

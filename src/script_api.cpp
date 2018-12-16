@@ -193,7 +193,7 @@ bool SendPMToAll(const char *data, const char *from, int min_class, int max_clas
 	}
 
 	string start, end;
-	serv->mP.Create_PMForBroadcast(start, end, from, from, data);
+	serv->mP.Create_PMForBroadcast(start, end, from, from, data, false); // dont reserve for pipe, buffer is copied before sending
 	serv->SendToAllWithNick(start, end, min_class, max_class);
 	return true;
 }
@@ -211,8 +211,7 @@ bool SendToChat(const char *nick, const char *text, int min_class, int max_class
 	}
 
 	string omsg;
-	serv->mP.Create_Chat(omsg, nick, text);
-	omsg.reserve(omsg.size() + 1);
+	serv->mP.Create_Chat(omsg, nick, text, true); // reserve for pipe
 	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true);
 	return true;
 }
@@ -555,13 +554,17 @@ unsigned __int64 GetTotalShareSize()
 	return server->mTotalShare;
 }
 
-const char *__GetNickList()
+const char* __GetNickList()
 {
 	cServerDC *server = GetCurrentVerlihub();
-	if(server)
-	{
-		return server->mUserList.GetNickList().c_str();
-	} else return "";
+
+	if (server) {
+		string list;
+		server->mUserList.GetNickList(list, false);
+		return strdup(list.c_str());
+	}
+
+	return "";
 }
 
 const char * GetVHCfgDir()
@@ -662,7 +665,7 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 		if ((clas >= serv->mC.oplist_class) && !serv->mOpList.ContainsNick(user->mNick)) { // oplist
 			serv->mOpList.Add(user);
 
-			serv->mP.Create_OpList(data, user->mNick); // send short oplist
+			serv->mP.Create_OpList(data, user->mNick, true); // send short oplist, reserve for pipe
 			serv->MyINFOToUsers(data);
 		}
 
@@ -707,19 +710,17 @@ bool DelRegUser(const char *nick)
 		if (serv->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
 			serv->mOpList.Remove(user);
 
-			serv->mP.Create_Quit(data, user->mNick); // send quit to all
+			serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
 			serv->MyINFOToUsers(data);
 
-			data.reserve(user->mMyINFO.size() + 1); // send myinfo to all
+			if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
+				data.reserve(user->mMyINFO.size() + 1);
+
 			data = user->mMyINFO;
-			serv->MyINFOToUsers(data, false);
+			serv->MyINFOToUsers(data);
 
 			if (serv->mC.send_user_ip) { // send userip to operators
-				data.clear();
-				cCompositeUserCollection::ufDoIpList DoUserIP(data);
-				DoUserIP.Clear();
-				DoUserIP(user);
-				data.reserve(data.size() + 1);
+				serv->mP.Create_UserIP(data, user->mxConn->AddrIP(), true, true); // reserve for pipe
 				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 			}
 		}
@@ -779,7 +780,7 @@ bool SetRegClass(const char *nick, int clas)
 			if (!ui.mHideKeys && !serv->mOpList.ContainsNick(user->mNick)) {
 				serv->mOpList.Add(user);
 
-				serv->mP.Create_OpList(data, user->mNick); // send short oplist
+				serv->mP.Create_OpList(data, user->mNick, true); // send short oplist, reserve for pipe
 				serv->MyINFOToUsers(data);
 			}
 
@@ -787,19 +788,17 @@ bool SetRegClass(const char *nick, int clas)
 			if (!ui.mHideKeys && serv->mOpList.ContainsNick(user->mNick)) {
 				serv->mOpList.Remove(user);
 
-				serv->mP.Create_Quit(data, user->mNick); // send quit to all
+				serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
 				serv->MyINFOToUsers(data);
 
-				data.reserve(user->mMyINFO.size() + 1); // send myinfo to all
+				if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
+					data.reserve(user->mMyINFO.size() + 1);
+
 				data = user->mMyINFO;
-				serv->MyINFOToUsers(data, false);
+				serv->MyINFOToUsers(data);
 
 				if (serv->mC.send_user_ip) { // send userip to operators
-					data.clear();
-					cCompositeUserCollection::ufDoIpList DoUserIP(data);
-					DoUserIP.Clear();
-					DoUserIP(user);
-					data.reserve(data.size() + 1);
+					serv->mP.Create_UserIP(data, user->mxConn->AddrIP(), true, true); // reserve for pipe
 					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 				}
 			}
@@ -881,7 +880,9 @@ bool CheckDataPipe(string &data)
 	if (data.size() && (data[data.size() - 1] == '|'))
 		return false;
 
-	data.reserve(data.size() + 1);
+	if (data.capacity() < (data.size() + 1)) // reserve for pipe
+		data.reserve(data.size() + 1);
+
 	return true;
 }
 
@@ -890,7 +891,8 @@ extern "C" {
 	{
 		return __GetUsersCount();
 	}
-	const char *GetNickList()
+
+	const char* GetNickList()
 	{
 		return __GetNickList();
 	}

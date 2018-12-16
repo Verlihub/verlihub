@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,21 +29,64 @@ using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;
+
 	namespace nConfig {
 
-//// ConvertFrom
+/*
+	ConvertFrom
+*/
 
-void cConfigItemBaseBool	::ConvertFrom(const std::string &str){*this = (0!=atoi(str.c_str()));}
-void cConfigItemBaseInt		::ConvertFrom(const std::string &str){*this = atoi(str.c_str());}
-void cConfigItemBaseUInt	::ConvertFrom(const std::string &str){*this = atol(str.c_str());}
-void cConfigItemBaseLong	::ConvertFrom(const std::string &str){*this = atol(str.c_str());}
-void cConfigItemBaseInt64	::ConvertFrom(const std::string &str){*this = StringAsLL(str);}
-void cConfigItemBaseUInt64::ConvertFrom(const std::string &str) { (*this) = StringAsLL(str); }
-void cConfigItemBaseULong	::ConvertFrom(const std::string &str){*this = strtoul(str.c_str(),NULL,10);}
-void cConfigItemBaseDouble	::ConvertFrom(const std::string &str){*this = atof(str.c_str());}
-void cConfigItemBaseChar	::ConvertFrom(const std::string &str){*this = *str.c_str();}
-void cConfigItemBaseString	::ConvertFrom(const std::string &str){*this = str;}
-void cConfigItemBasePChar	::ConvertFrom(const std::string &str)
+void cConfigItemBaseBool::ConvertFrom(const std::string &str)
+{
+	*this = (0 != atoi(str.c_str()));
+}
+
+void cConfigItemBaseInt::ConvertFrom(const std::string &str)
+{
+	*this = atoi(str.c_str());
+}
+
+void cConfigItemBaseUInt::ConvertFrom(const std::string &str)
+{
+	*this = atol(str.c_str());
+}
+
+void cConfigItemBaseLong::ConvertFrom(const std::string &str)
+{
+	*this = atol(str.c_str());
+}
+
+void cConfigItemBaseInt64::ConvertFrom(const std::string &str)
+{
+	*this = StringAsLL(str);
+}
+
+void cConfigItemBaseUInt64::ConvertFrom(const std::string &str)
+{
+	*this = StringAsLL(str);
+}
+
+void cConfigItemBaseULong::ConvertFrom(const std::string &str)
+{
+	*this = strtoul(str.c_str(), NULL, 10);
+}
+
+void cConfigItemBaseDouble::ConvertFrom(const std::string &str)
+{
+	*this = atof(str.c_str());
+}
+
+void cConfigItemBaseChar::ConvertFrom(const std::string &str)
+{
+	*this = *str.c_str(); // is this safe?
+}
+
+void cConfigItemBaseString::ConvertFrom(const std::string &str)
+{
+	*this = str;
+}
+
+void cConfigItemBasePChar::ConvertFrom(const std::string &str)
 {
 	char *data = this->Data();
 
@@ -55,21 +98,74 @@ void cConfigItemBasePChar	::ConvertFrom(const std::string &str)
 	*this = data;
 }
 
-//
-//// ConvertTo
-//
+/*
+	ConvertTo
+*/
 
-void cConfigItemBaseBool	::ConvertTo(std::string &str){str = (this->Data())?"1":"0";}
-void cConfigItemBaseInt		::ConvertTo(std::string &str){sprintf(mBuf,"%d",this->Data()); str = mBuf;}
-void cConfigItemBaseUInt	::ConvertTo(std::string &str){sprintf(mBuf,"%u",this->Data()); str = mBuf;}
-void cConfigItemBaseLong	::ConvertTo(std::string &str){sprintf(mBuf,"%ld",this->Data()); str = mBuf;}
-void cConfigItemBaseInt64	::ConvertTo(std::string &str){sprintf(mBuf,"%lld",this->Data()); str = mBuf;}
-void cConfigItemBaseUInt64::ConvertTo(std::string &str) { sprintf(mBuf, "%llu", this->Data()); str = mBuf; }
-void cConfigItemBaseULong	::ConvertTo(std::string &str){sprintf(mBuf,"%lu",this->Data()); str = mBuf;}
-void cConfigItemBaseDouble	::ConvertTo(std::string &str){sprintf(mBuf,"%f",this->Data()); str = mBuf;}
-void cConfigItemBaseChar	::ConvertTo(std::string &str){sprintf(mBuf,"%c",this->Data()); str = mBuf;}
-void cConfigItemBaseString	::ConvertTo(std::string &str){str = this->Data();}
-void cConfigItemBasePChar	::ConvertTo(std::string &str){str = this->Data();}
+void cConfigItemBaseBool::ConvertTo(std::string &str)
+{
+	str.reserve(1);
+	str = ((this->Data()) ? "1" : "0");
+}
+
+void cConfigItemBaseInt::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%d", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseUInt::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%u", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseLong::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%ld", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseInt64::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%lld", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseUInt64::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%llu", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseULong::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%lu", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseDouble::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%f", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseChar::ConvertTo(std::string &str)
+{
+	sprintf(mBuf, "%c", this->Data());
+	str = mBuf;
+}
+
+void cConfigItemBaseString::ConvertTo(std::string &str)
+{
+	str.reserve(this->Data().size());
+	str = this->Data();
+}
+
+void cConfigItemBasePChar::ConvertTo(std::string &str)
+{
+	str = this->Data();
+}
 
 //
 //// ReadFromStream

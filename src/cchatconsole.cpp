@@ -179,7 +179,8 @@ bool cChatConsole::cfMembers::operator()()
 	if (!mConn || !mConn->mpUser)
 		return false;
 
-	string NickList = GetTheList()->GetNickList();
+	string NickList;
+	GetTheList()->GetNickList(NickList, false);
 	(*mOS) << _("Chatroom members") << ":\r\n\r\n" << NickList;
 	return true;
 }

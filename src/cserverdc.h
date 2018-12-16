@@ -113,12 +113,6 @@ namespace nVerliHub {
 
 		enum
 		{
-			eULO_NONE = 0,
-			eULO_GETINFO = 1 // optimize_userlist = true
-		};
-
-		enum
-		{
 			eCR_DEFAULT = 0,  // default value, means not closed or unknown reason
 			eCR_INVALID_USER, // bad nick, banned nick, ip or whatever
 			eCR_KICKED, // user was kicked
@@ -467,7 +461,7 @@ class cServerDC : public cAsyncSocketServer
 		void SendToAll(const string &str, int cm, int cM);
 
 		// send myinfo data to all users, this could be myinfo, oplist, botlist, quit, etc
-		void MyINFOToUsers(string &data, bool reserve = true, bool botlist = false);
+		void MyINFOToUsers(string &data, bool botlist = false);
 
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range.
@@ -726,17 +720,7 @@ protected: // Protected methods
 	* @param to_msec Micro-seconds to wait before disconnecting (default 4000).
 	* @param Reason The reason used for redirect.
 	*/
-	void ConnCloseMsg(cConnDC *conn, const string &msg, int to_msec=4000, int Reason = eCR_DEFAULT);
-
-	/**
-	* Send hello message to the user. Example: $Hello foobar.
-	* Extra information can be sent after hello message by passing
-	* a pointer to a string containing the message.
-	* @param nick The nickname of the user.
-	* @param conn User connection.
-	* @param info Extra information.
-	*/
-	int DCHello(const string &nick, cConnDC *conn, string *info = NULL);
+	void ConnCloseMsg(cConnDC *conn, const string &msg, int to_msec = 4000, int Reason = eCR_DEFAULT);
 
 	/**
 	* This methos is called when user is going to be added to userlist.
@@ -874,9 +858,9 @@ private:
 			mOnUserLogout  (mgr, "VH_OnUserLogout",   &cVHPlugin::OnUserLogout ),
 			mOnValidateTag(mgr, "VH_OnValidateTag", &cVHPlugin::OnValidateTag),
 			mOnTimer(mgr, "VH_OnTimer", &cVHPlugin::OnTimer),
-			mNickListNicks( mgr, "VH_OnCreateUserNickList", &cVHPlugin::OnCreateUserNickList),
-			mNickListInfos( mgr, "VH_OnCreateUserInfoList", &cVHPlugin::OnCreateUserInfoList),
-			mOpListNicks( mgr, "VH_OnCreateOpList", &cVHPlugin::OnCreateOpList),
+			//mNickListNicks( mgr, "VH_OnCreateUserNickList", &cVHPlugin::OnCreateUserNickList),
+			//mNickListInfos( mgr, "VH_OnCreateUserInfoList", &cVHPlugin::OnCreateUserInfoList),
+			//mOpListNicks( mgr, "VH_OnCreateOpList", &cVHPlugin::OnCreateOpList),
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
 			mOnDelReg(mgr, "VH_OnDelReg", &cVHPlugin::OnDelReg),
 			mOnUpdateClass(mgr, "VH_OnUpdateClass", &cVHPlugin::OnUpdateClass),
@@ -923,9 +907,9 @@ private:
 		cVHCBL_User mOnUserLogout;
 		cVHCBL_ConnTag mOnValidateTag;
 		cVHCBL_int64 mOnTimer;
-		cVHCBL_String mNickListNicks;
-		cVHCBL_String mNickListInfos;
-		cVHCBL_String mOpListNicks;
+		//cVHCBL_String mNickListNicks;
+		//cVHCBL_String mNickListInfos;
+		//cVHCBL_String mOpListNicks;
 		cVHCBL_UsrStrInt mOnNewReg;
 		cVHCBL_UsrStrInt mOnDelReg;
 		cVHCBL_UsrStrIntInt mOnUpdateClass;

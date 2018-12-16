@@ -45,7 +45,7 @@ namespace nVerliHub {
 				 * Class constructor
 				 * @param initialSize Initial size of the hash container.
 				 */
-				tUniqueHashArray(unsigned initialSize=1024);
+				tUniqueHashArray(unsigned initialSize=1024); // todo: why so big size? can we make it smaller?
 
 				/**
 				 * Class destructor.
@@ -515,7 +515,7 @@ namespace nVerliHub {
 				 * Autoresize the container.
 				 * A complete resizing can be automatically triggered when the load factor exceeds some threshold.
 				 */
-				void AutoResize()
+				void AutoResize() // todo: why double capacity? can we make it smaller?
 				{
 					if((this->mSize > this->mData->mCapacity * 2 ) || ((this->mSize * 2 + 1) < this->mData->mCapacity)) {
 						if(Log(3))
