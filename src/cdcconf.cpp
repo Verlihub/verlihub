@@ -136,8 +136,6 @@ void cDCConf::AddVars()
 	Add("autoreg_class", autoreg_class, 0);
 	Add("autounreg_class", autounreg_class, 0);
 	Add("nicklist_on_login", nicklist_on_login, true);
-	Add("optimize_userlist", optimize_userlist, false);
-	Add("ul_portion", ul_portion, 50);
 	// End nicklist configuration
 
 	// protocol commands length
@@ -359,15 +357,22 @@ void cDCConf::AddVars()
 	Add("mmdb_cache", mmdb_cache, true);
 	Add("mmdb_cache_mins", mmdb_cache_mins, 60); // 0 = never delete
 
-	static const char *to_names[] = { "key", "nick", "login", "myinfo", "flush", "setpass"};
-	double to_default[] = { 60. , 30., 600., 40., 30., 300. };
+	static const char *to_names[] = {
+		"key", "nick", "login", "myinfo", "flush", "setpass"
+	};
+
+	double to_default[] = {
+		60., 30., 600., 40., 30., 300.
+	};
+
 	string s_varname;
-	for(int i = 0; i < 6; i ++) {
+
+	for (int i = 0; i < 6; i++) {
 		s_varname = "timeout_";
 		s_varname += to_names[i];
 		Add(s_varname, timeout_length[i], to_default[i]);
 	}
-	// End advanced hub configuration and tweaks
+	// end advanced hub configuration and tweaks
 
 	 // Tag configuration
 	Add("show_tags", show_tags, 2);

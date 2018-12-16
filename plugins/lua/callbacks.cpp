@@ -1294,19 +1294,24 @@ int _GetNickList(lua_State *L)
 
 int _GetOPList(lua_State *L)
 {
-	const char *oplist;
 	int result = 1;
-	if(lua_gettop(L) == 1) {
+
+	if (lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
-		if(server) {
-			oplist = server->mOpList.GetNickList().c_str();
-			if(strlen(oplist) < 1) result = 0;
+
+		if (server) {
+			string oplist;
+			server->mOpList.GetNickList(oplist, false);
+
+			if (oplist.empty())
+				result = 0;
+
 			lua_pushboolean(L, result);
-			lua_pushstring(L, oplist);
+			lua_pushstring(L, oplist.c_str());
 			return 2;
 		} else {
-				luaerror(L, ERR_SERV);
-				return 2;
+			luaerror(L, ERR_SERV);
+			return 2;
 		}
 	} else {
 		luaL_error(L, "Error calling VH:GetOPList; expected 0 argument but got %d", lua_gettop(L) - 1);
@@ -1318,15 +1323,20 @@ int _GetOPList(lua_State *L)
 
 int _GetBotList(lua_State *L)
 {
-	const char *botlist;
 	int result = 1;
-	if(lua_gettop(L) == 1) {
+
+	if (lua_gettop(L) == 1) {
 		cServerDC *server = GetCurrentVerlihub();
-		if(server) {
-			botlist = server->mRobotList.GetNickList().c_str();
-			if(strlen(botlist) < 1) result = 0;
+
+		if (server) {
+			string botlist;
+			server->mRobotList.GetNickList(botlist, false);
+
+			if (botlist.empty())
+				result = 0;
+
 			lua_pushboolean(L, result);
-			lua_pushstring(L, botlist);
+			lua_pushstring(L, botlist.c_str());
 			return 2;
 		} else {
 			luaerror(L, ERR_SERV);
@@ -2035,21 +2045,21 @@ int _RegBot(lua_State *L)
 		share = IntToStr(ishare);
 	}
 
-	string data;
-
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share); // send myinfo
+	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send myinfo, dont reserve for pipe, we are not sending this
+	robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
 	robot->mMyINFO_basic = robot->mMyINFO;
-	data.reserve(robot->mMyINFO.size() + 1);
+	string data;
+	data.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	data = robot->mMyINFO;
-	serv->MyINFOToUsers(data, false);
+	serv->MyINFOToUsers(data);
 
-	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist
-		serv->mP.Create_OpList(data, nick);
+	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist, reserve for pipe
+		serv->mP.Create_OpList(data, nick, true);
 		serv->MyINFOToUsers(data);
 	}
 
-	serv->mP.Create_BotList(data, nick); // send short botlist
-	serv->MyINFOToUsers(data, true, true);
+	serv->mP.Create_BotList(data, nick, true); // send short botlist, reserve for pipe
+	serv->MyINFOToUsers(data, true);
 
 	li->addBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // add to lua bots
 	lua_pushboolean(L, 1);
@@ -2167,7 +2177,7 @@ int _EditBot(lua_State *L)
 			if (!serv->mOpList.ContainsNick(nick)) { // add to oplist
 				serv->mOpList.Add(robot);
 
-				serv->mP.Create_OpList(data, nick); // send short oplist
+				serv->mP.Create_OpList(data, nick, true); // send short oplist, reserve for pipe
 				serv->MyINFOToUsers(data);
 			}
 
@@ -2175,22 +2185,29 @@ int _EditBot(lua_State *L)
 			if (serv->mOpList.ContainsNick(nick)) { // remove from oplist
 				serv->mOpList.Remove(robot);
 
-				serv->mP.Create_Quit(data, nick); // send quit
+				serv->mP.Create_Quit(data, nick, true); // send quit, reserve for pipe
 				serv->MyINFOToUsers(data);
 
-				serv->mP.Create_BotList(data, nick); // send short botlist after quit
-				serv->MyINFOToUsers(data, true, true);
+				serv->mP.Create_BotList(data, nick, true); // send short botlist after quit, reserve for pipe
+				serv->MyINFOToUsers(data, true);
 			}
 		}
 
 		robot->mClass = (tUserCl)iclass; // set new class
 	}
 
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share); // send new myinfo after quit
+	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
+
+	if (robot->mMyINFO_basic.capacity() < robot->mMyINFO.size())
+		robot->mMyINFO_basic.reserve(robot->mMyINFO.size());
+
 	robot->mMyINFO_basic = robot->mMyINFO;
-	data.reserve(robot->mMyINFO.size() + 1);
+
+	if (data.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
+		data.reserve(robot->mMyINFO.size() + 1);
+
 	data = robot->mMyINFO;
-	serv->MyINFOToUsers(data, false);
+	serv->MyINFOToUsers(data);
 
 	li->editBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // edit in lua bots
 	lua_pushboolean(L, 1);
@@ -2942,7 +2959,7 @@ int _SetTopic(lua_State *L)
 
 	string topic = lua_tostring(L, 2);
 	string omsg;
-	cDCProto::Create_HubName(omsg, serv->mC.hub_name, topic);
+	serv->mP.Create_HubName(omsg, serv->mC.hub_name, topic, false); // dont reserve for pipe, buffer is copied before adding pipe
 	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 	SetConfig(li->mConfigName.c_str(), "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);

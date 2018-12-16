@@ -22,7 +22,7 @@
 #define SCRIPT_API_H
 
 #ifndef _WIN32
-#define __int64 long long
+	#define __int64 long long
 #endif
 
 #include <map>

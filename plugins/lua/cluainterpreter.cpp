@@ -193,24 +193,26 @@ void cLuaInterpreter::Load()
 
 void cLuaInterpreter::ReportLuaError(const char *error)
 {
-	if (cpiLua::me && (cpiLua::me->log_level > 0)) {
-		cServerDC *serv = cServerDC::sCurrentServer;
+	if (!cpiLua::me || (cpiLua::me->log_level == 0))
+		return;
 
-		if (serv) {
-			string toall = _("Lua error");
-			toall.append(": ");
+	cServerDC *serv = cServerDC::sCurrentServer;
 
-			if (error)
-				toall.append(error);
-			else
-				toall.append(_("Unknown error"));
+	if (!serv)
+		return;
 
-			string start, end;
-			serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
-			serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
-			cpiLua::me->ReportLuaError(toall); // also write to err file
-		}
-	}
+	string toall(_("Lua error"));
+	toall.append(": ");
+
+	if (error)
+		toall.append(error);
+	else
+		toall.append(_("Unknown error"));
+
+	string start, end;
+	serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall, false); // dont reserve for pipe, buffer is copied before adding pipe
+	serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
+	cpiLua::me->ReportLuaError(toall); // also write to err file
 }
 
 void cLuaInterpreter::RegisterFunction(const char *func, int (*ptr)(lua_State*))

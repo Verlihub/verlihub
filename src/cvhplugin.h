@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -419,9 +419,9 @@ public:
 	/// robot events
 	virtual bool RobotOnPM( cPluginRobot *, cMessageDC *, nSocket::cConnDC *){ return true;};
 	// nick list extension
-	virtual bool OnCreateUserNickList (string *NickList) {return true;};
-	virtual bool OnCreateUserInfoList (string *InfoList) {return true;};
-	virtual bool OnCreateOpList (string *OpList) {return true;};
+	//virtual bool OnCreateUserNickList (string *NickList) {return true;};
+	//virtual bool OnCreateUserInfoList (string *InfoList) {return true;};
+	//virtual bool OnCreateOpList (string *OpList) {return true;};
 
 	/*
 	* Event handler function that is called when an operator wants to delete a registered user.

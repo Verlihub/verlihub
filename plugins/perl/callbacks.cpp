@@ -104,63 +104,84 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetHubSecAlias() {
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
 	cServerDC *server = GetCurrentVerlihub();
-	return server->mOpList.GetNickList().c_str();
+	string list;
+	server->mOpList.GetNickList(list, false);
+	return strdup(list.c_str());
 }
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 	cServerDC *server = GetCurrentVerlihub();
-	return server->mRobotList.GetNickList().c_str();
+	string list;
+	server->mRobotList.GetNickList(list, false);
+	return strdup(list.c_str());
 }
 
 
 bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share)
 {
 	cServerDC *server = GetCurrentVerlihub();
+
+	if (!server)
+		return false;
+
 	cpiPerl *pi = GetPI();
+
+	if (!pi)
+		return false;
+
 	cPluginRobot *robot = pi->NewRobot(nick, uclass);
 
-	if (robot != NULL) {
-		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
-		robot->mMyINFO_basic = robot->mMyINFO;
-		//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
-		string omsg;
-
-		omsg = server->mP.GetMyInfo(robot, eUC_NORMUSER);
-		server->MyINFOToUsers(omsg);
-
-		if (uclass >= 3) {
-			omsg = server->mOpList.GetNickList();
-			server->MyINFOToUsers(omsg);
-		}
-	} else {
-	    // error: "Error adding bot; it may already exist"
+	if (!robot) {
+		// error: "Error adding bot; it may already exist"
 	    return false;
 	}
+
+	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
+	robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
+	robot->mMyINFO_basic = robot->mMyINFO;
+	//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
+	string omsg;
+	server->mP.GetMyInfo(robot, eUC_NORMUSER, omsg, true); // reserve for pipe
+	server->MyINFOToUsers(omsg);
+
+	if (uclass >= 3) {
+		server->mOpList.GetNickList(omsg, true); // reserve for pipe
+		server->MyINFOToUsers(omsg);
+	}
+
 	return true;
 }
 
 bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share)
 {
 	cServerDC *server = GetCurrentVerlihub();
-	//cpiPerl *pi = GetPI();
-	cUserRobot *robot = (cUserRobot*) server->mRobotList.GetUserBaseByNick(nick);
 
-	if (robot != NULL) {
-		//Clear myinfo
-		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share);
-		robot->mMyINFO_basic = robot->mMyINFO;
-		//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
-		string omsg(server->mP.GetMyInfo(robot, eUC_NORMUSER));
-		server->MyINFOToUsers(omsg);
+	if (!server)
+		return false;
 
-		if (uclass >= 3) {
-			omsg = server->mOpList.GetNickList();
-			server->MyINFOToUsers(omsg);
-		}
-	} else {
+	cUserRobot *robot = (cUserRobot*)server->mRobotList.GetUserBaseByNick(nick);
+
+	if (!robot) {
 		// error: "???"
 		return false;
 	}
+
+	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
+
+	if (robot->mMyINFO_basic.capacity() < robot->mMyINFO.size())
+		robot->mMyINFO_basic.reserve(robot->mMyINFO.size());
+
+	robot->mMyINFO_basic = robot->mMyINFO;
+	//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
+	string omsg;
+	server->mP.GetMyInfo(robot, eUC_NORMUSER, omsg, true); // reserve for pipe
+	server->MyINFOToUsers(omsg);
+
+	if (uclass >= 3) {
+		server->mOpList.GetNickList(omsg, true); // reserve for pipe
+		server->MyINFOToUsers(omsg);
+	}
+
 	return true;
 }
 
@@ -189,7 +210,7 @@ bool nVerliHub::nPerlPlugin::nCallback::SetTopic(const char *_topic) {
 	std::string topic = _topic;
 	std::string message;
 	SetConfig("config", "hub_topic", _topic);
-	cDCProto::Create_HubName(message, server->mC.hub_name, topic);
+	server->mP.Create_HubName(message, server->mC.hub_name, topic, false); // dont reserve for pipe, buffer is copied before sending
 	server->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
 	return true;
 }

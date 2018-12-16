@@ -201,7 +201,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 	if (mFlags & eTF_SENDTOALL) { // to all
 		if (mFlags & eTF_SENDPM) { // pm
 			string start, end;
-			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf);
+			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
 
 			if (mFlags & eTF_VARS) { // use vars
 				server.SendToAllWithNickVars(start, end, this->mMinClass, this->mMaxClass);
@@ -211,7 +211,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		} else { // mc
 			if (mFlags & eTF_VARS) { // use vars
 				string msg;
-				server.mP.Create_Chat(msg, sender, buf);
+				server.mP.Create_Chat(msg, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
 				server.SendToAllNoNickVars(msg, this->mMinClass, this->mMaxClass);
 				server.OnPublicBotMessage(&sender, &buf, this->mMinClass, this->mMaxClass); // todo: make it discardable if needed
 			} else { // no vars

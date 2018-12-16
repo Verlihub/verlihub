@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -19,17 +19,22 @@
 */
 
 #include "cconnpoll.h"
+
 #if !USE_SELECT
+
 #if HAVE_UNISTD_H
-#include <unistd.h>
+	#include <unistd.h>
 #endif
 
 namespace nVerliHub {
 	using namespace nEnums;
+
 	namespace nSocket {
-cConnPoll::cConnPoll() : mBlockSize(1024)
+
+cConnPoll::cConnPoll():
+	mBlockSize(1024) // todo: what is this?
 {
-	mFDs.reserve(20480);
+	mFDs.reserve(20480); // todo: what is this? really need that big reserve?
 }
 
 cConnPoll::~cConnPoll()
@@ -165,4 +170,5 @@ bool cConnPoll::AddConn(cConnBase *conn)
 	}; // namepsace nSocket
 
 }; // namespace nVerliHub
+
 #endif

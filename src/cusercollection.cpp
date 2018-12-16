@@ -38,7 +38,7 @@ void cUserCollection::ufSendWithNick::operator()(cUserBase *User)
 {
 	if (User && User->CanSend()) {
 		string _str;
-		_str.reserve(mDataStart.size() + User->mNick.size() + mDataEnd.size() + 1);
+		_str.reserve(mDataStart.size() + User->mNick.size() + mDataEnd.size() + 1); // first use, reserve for pipe
 		_str = mDataStart + User->mNick + mDataEnd;
 		User->Send(_str, true, true); // always flushes
 	}
@@ -62,43 +62,10 @@ void cUserCollection::ufSendWithClassFeature::operator()(cUserBase *User)
 		User->Send(mData, false, !flush); // no pipe
 }
 
-void cUserCollection::ufDoNickList::AppendList(string &List, cUserBase *User)
-{
-	List.reserve(List.size() + User->mNick.size() + mSep.size());
-	List.append(User->mNick);
-	List.append(mSep);
-}
-
-void cUserCollection::ufDoINFOList::AppendList(string &List, cUserBase *User)
-{
-	if (mComplete) {
-		List.reserve(List.size() + User->mMyINFO.size() + mSep.size());
-		List.append(User->mMyINFO);
-	} else {
-		List.reserve(List.size() + User->mMyINFO_basic.size() + mSep.size());
-		List.append(User->mMyINFO_basic);
-	}
-
-	List.append(mSep);
-}
-
-void cCompositeUserCollection::ufDoIpList::AppendList(string &List, cUserBase *User)
-{
-	cUser *user = static_cast<cUser*>(User);
-
-	if (user->mxConn) {
-		List.reserve(List.size() + user->mNick.size() + 1 + user->mxConn->AddrIP().size() + mSep.size());
-		List.append(user->mNick);
-		List.append(1, ' ');
-		List.append(user->mxConn->AddrIP());
-		List.append(mSep);
-	}
-}
-
-cUserCollection::cUserCollection(bool KeepNickList, bool KeepInfoList) :
-	tHashArray< cUserBase* > (512),
+cUserCollection::cUserCollection(bool KeepNickList, bool KeepInfoList):
+	tHashArray<cUserBase*>(512), // todo: why so large array for small hubs? can we make it smaller? how is it extended?
 	mNickListMaker(mNickList),
-	mINFOListMaker(mINFOList,mINFOListComplete),
+	mInfoListMaker(mInfoList, mInfoListComplete),
 	mKeepNickList(KeepNickList),
 	mKeepInfoList(KeepInfoList),
 	mRemakeNextNickList(true),
@@ -107,8 +74,8 @@ cUserCollection::cUserCollection(bool KeepNickList, bool KeepInfoList) :
 	SetClassName("cUsrColl");
 }
 
-cUserCollection::~cUserCollection() {}
-
+cUserCollection::~cUserCollection()
+{}
 
 void cUserCollection::Nick2Key(const string &Nick, string &Key)
 {
@@ -124,63 +91,112 @@ void cUserCollection::Nick2Hash(const string &Nick, tHashType &Hash)
 	//Hash = Key2HashLower(Nick);
 }
 
+void cUserCollection::ufDoNickList::AppendList(string &list, cUserBase *user)
+{
+	list.reserve(list.size() + user->mNick.size() + mSep.size()); // always reserve because we are adding new data every time
+	list.append(user->mNick);
+	list.append(mSep);
+}
+
+void cUserCollection::ufDoInfoList::AppendList(string &list, cUserBase *user)
+{
+	if (mComplete) {
+		list.reserve(list.size() + user->mMyINFO.size() + mSep.size()); // always reserve because we are adding new data every time
+		list.append(user->mMyINFO);
+	} else {
+		list.reserve(list.size() + user->mMyINFO_basic.size() + mSep.size()); // always reserve because we are adding new data every time
+		list.append(user->mMyINFO_basic);
+	}
+
+	list.append(mSep);
+}
+
+void cCompositeUserCollection::ufDoIPList::AppendList(string &list, cUserBase *user)
+{
+	cUser *point = static_cast<cUser*>(user);
+
+	if (point->mxConn) {
+		list.reserve(list.size() + point->mNick.size() + 1 + point->mxConn->AddrIP().size() + mSep.size()); // always reserve because we are adding new data every time
+		list.append(point->mNick);
+		list.append(1, ' ');
+		list.append(point->mxConn->AddrIP());
+		list.append(mSep);
+	}
+}
+
 bool cUserCollection::Add(cUserBase *User)
 {
-	if(User)
+	if (User)
 		return AddWithHash(User, Nick2Hash(User->mNick));
-	else
-		return false;
+
+	return false;
 }
 
-bool  cUserCollection::Remove(cUserBase *User)
+bool cUserCollection::Remove(cUserBase *User)
 {
-	if(User)
+	if (User)
 		return RemoveByHash(Nick2Hash(User->mNick));
-	else
-		return false;
+
+	return false;
 }
 
-string &cUserCollection::GetNickList()
+void cUserCollection::GetNickList(string &dest, const bool pipe)
 {
-	if(mRemakeNextNickList && mKeepNickList) {
+	if (mRemakeNextNickList && mKeepNickList) {
 		mNickListMaker.Clear();
-		for_each(begin(),end(),mNickListMaker);
+		for_each(begin(), end(), mNickListMaker);
 		mRemakeNextNickList = false;
 	}
-	return mNickList;
+
+	if (dest.capacity() < (mNickList.size() + (pipe ? 1 : 0)))
+		dest.reserve((mNickList.size() + (pipe ? 1 : 0)));
+
+	dest = mNickList;
 }
 
-string &cUserCollection::GetInfoList(bool complete)
+void cUserCollection::GetInfoList(string &dest, const bool pipe, const bool complete)
 {
-	if(mRemakeNextInfoList && mKeepInfoList) {
-		mINFOListMaker.Clear();
-		for_each(begin(),end(),mINFOListMaker);
+	if (mRemakeNextInfoList && mKeepInfoList) {
+		mInfoListMaker.Clear();
+		for_each(begin(), end(), mInfoListMaker);
 		mRemakeNextInfoList = false;
 	}
-	if(complete)
-		return mINFOListComplete;
-	else
-		return mINFOList;
+
+	if (complete) {
+		if (dest.capacity() < (mInfoListComplete.size() + (pipe ? 1 : 0)))
+			dest.reserve((mInfoListComplete.size() + (pipe ? 1 : 0)));
+
+		dest = mInfoListComplete;
+	} else {
+		if (dest.capacity() < (mInfoList.size() + (pipe ? 1 : 0)))
+			dest.reserve((mInfoList.size() + (pipe ? 1 : 0)));
+
+		dest = mInfoList;
+	}
 }
 
-string &cCompositeUserCollection::GetIPList()
+void cCompositeUserCollection::GetIPList(string &dest, const bool pipe)
 {
-	if(mRemakeNextIPList && mKeepIPList) {
-		mIpListMaker.Clear();
-		for_each(begin(),end(),mIpListMaker);
+	if (mRemakeNextIPList && mKeepIPList) {
+		mIPListMaker.Clear();
+		for_each(begin(), end(), mIPListMaker);
 		mRemakeNextIPList = false;
 	}
-	return mIpList;
+
+	if (dest.capacity() < (mIPList.size() + (pipe ? 1 : 0)))
+		dest.reserve((mIPList.size() + (pipe ? 1 : 0)));
+
+	dest = mIPList;
 }
 
-void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAll(string &Data, bool cache, bool pipe)
 {
-	AppendReservePlusPipe(mSendAllCache, Data, AddPipe);
+	AppendReservePlusPipe(mSendAllCache, Data, pipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAll" << endl;
 
-	for_each(this->begin(), this->end(), ufSend(mSendAllCache, UseCache));
+	for_each(this->begin(), this->end(), ufSend(mSendAllCache, cache));
 
 	if (Log(4))
 		LogStream() << "Stop SendToAll" << endl;
@@ -188,7 +204,7 @@ void cUserCollection::SendToAll(string &Data, bool UseCache, bool AddPipe)
 	mSendAllCache.erase(0, mSendAllCache.size());
 	ShrinkStringToFit(mSendAllCache);
 
-	if (AddPipe)
+	if (pipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
@@ -197,14 +213,14 @@ void cUserCollection::SendToAllWithNick(string &Start, string &End)
 	for_each(this->begin(), this->end(), ufSendWithNick(Start, End));
 }
 
-void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_class, bool cache, bool pipe)
 {
-	AppendReservePlusPipe(mSendAllCache, Data, AddPipe);
+	AppendReservePlusPipe(mSendAllCache, Data, pipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithClass" << endl;
 
-	for_each(this->begin(), this->end(), ufSendWithClass(mSendAllCache, min_class, max_class, UseCache));
+	for_each(this->begin(), this->end(), ufSendWithClass(mSendAllCache, min_class, max_class, cache));
 
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithClass" << endl;
@@ -212,18 +228,18 @@ void cUserCollection::SendToAllWithClass(string &Data, int min_class, int max_cl
 	mSendAllCache.erase(0, mSendAllCache.size());
 	ShrinkStringToFit(mSendAllCache);
 
-	if (AddPipe)
+	if (pipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool cache, bool pipe)
 {
-	AppendReservePlusPipe(mSendAllCache, Data, AddPipe);
+	AppendReservePlusPipe(mSendAllCache, Data, pipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithFeature" << endl;
 
-	for_each(this->begin(), this->end(), ufSendWithFeature(mSendAllCache, feature, UseCache));
+	for_each(this->begin(), this->end(), ufSendWithFeature(mSendAllCache, feature, cache));
 
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithFeature" << endl;
@@ -231,18 +247,18 @@ void cUserCollection::SendToAllWithFeature(string &Data, unsigned feature, bool 
 	mSendAllCache.erase(0, mSendAllCache.size());
 	ShrinkStringToFit(mSendAllCache);
 
-	if (AddPipe)
+	if (pipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool UseCache, bool AddPipe)
+void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool cache, bool pipe)
 {
-	AppendReservePlusPipe(mSendAllCache, Data, AddPipe);
+	AppendReservePlusPipe(mSendAllCache, Data, pipe);
 
 	if (Log(4))
 		LogStream() << "Start SendToAllWithClassFeature" << endl;
 
-	for_each(this->begin(), this->end(), ufSendWithClassFeature(mSendAllCache, min_class, max_class, feature, UseCache));
+	for_each(this->begin(), this->end(), ufSendWithClassFeature(mSendAllCache, min_class, max_class, feature, cache));
 
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithClassFeature" << endl;
@@ -250,7 +266,7 @@ void cUserCollection::SendToAllWithClassFeature(string &Data, int min_class, int
 	mSendAllCache.erase(0, mSendAllCache.size());
 	ShrinkStringToFit(mSendAllCache);
 
-	if (AddPipe)
+	if (pipe)
 		Data.erase(Data.size() - 1, 1);
 }
 
@@ -264,53 +280,58 @@ void cUserCollection::FlushCache()
 	SendToAll(mSendAllCache, false, false); // mSendAllCache is empty here, thats what we want
 }
 
-int cUserCollection::StrLog(ostream & ostr, int level)
+int cUserCollection::StrLog(ostream &ostr, int level)
 {
-	if(cObj::StrLog(ostr,level)) {
-		LogStream() << '(' << mNickListMaker.mStart ;
-		LogStream() << ") "<< "[ " << Size() /* << '/' << mUserList.size()*/ << " ] ";
+	if (cObj::StrLog(ostr, level)) {
+		LogStream() << '(' << mNickListMaker.mStart << ") " << "[ " << Size() /* << '/' << mUserList.size()*/ << " ] ";
 		return 1;
 	}
+
 	return 0;
 }
 
-cCompositeUserCollection::cCompositeUserCollection(bool keepNicks, bool keepInfos, bool keepips, cVHCBL_String* nlcb, cVHCBL_String *ilcb)
-	: cUserCollection(keepNicks,keepInfos),
+cCompositeUserCollection::cCompositeUserCollection(bool keepNicks, bool keepInfos, bool keepips/*, cVHCBL_String* nlcb, cVHCBL_String *ilcb*/):
+	cUserCollection(keepNicks, keepInfos),
 	mKeepIPList(keepips),
-	mIpListMaker(mIpList),
-	mInfoListCB(ilcb),
-	mNickListCB(nlcb),
-	mRemakeNextIPList(true)
-{};
+	//mInfoListCB(ilcb),
+	//mNickListCB(nlcb),
+	mRemakeNextIPList(true),
+	mIPListMaker(mIPList)
+{}
 
-cCompositeUserCollection::~cCompositeUserCollection() {}
+cCompositeUserCollection::~cCompositeUserCollection()
+{}
 
-string &cCompositeUserCollection::GetNickList()
+void cCompositeUserCollection::GetNickList(string &dest, const bool pipe)
 {
-	if(mKeepNickList)
-	{
-		mCompositeNickList = cUserCollection::GetNickList();
-#ifndef WITHOUT_PLUGINS
-		if (mNickListCB) {
+	if (mKeepNickList) {
+		cUserCollection::GetNickList(mCompositeNickList, pipe);
+
+/*
+	#ifndef WITHOUT_PLUGINS
+		if (mNickListCB)
 			mNickListCB->CallAll(&mCompositeNickList);
-		}
-#endif
+	#endif
+*/
 	}
-	return mCompositeNickList;
+
+	dest = mCompositeNickList;
 }
 
-string &cCompositeUserCollection::GetInfoList(bool complete)
+void cCompositeUserCollection::GetInfoList(string &dest, const bool pipe, const bool complete)
 {
-	if(mKeepInfoList)
-	{
-		mCompositeInfoList = cUserCollection::GetInfoList(complete);
-#ifndef WITHOUT_PLUGINS
-		if (mInfoListCB) {
+	if (mKeepInfoList) {
+		cUserCollection::GetInfoList(mCompositeInfoList, pipe, complete);
+
+/*
+	#ifndef WITHOUT_PLUGINS
+		if (mInfoListCB)
 			mInfoListCB->CallAll(&mCompositeInfoList);
-		}
-#endif
+	#endif
+*/
 	}
-	return mCompositeInfoList;
+
+	dest = mCompositeInfoList;
 }
 
 };

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -24,6 +24,7 @@
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
+
 	namespace nProtocol {
 
 cProtocol::cProtocol():
@@ -72,7 +73,7 @@ void cMessageParser::ReInit()
 	mError = false;
 	mModified = false;
 	mStr.resize(0);
-	mStr.reserve(512);
+	mStr.reserve(512); // todo: do we really need this big reserve? some commands are alot smaller
 	mType = eMSG_UNPARSED;
 	mKWSize = 0;
 }

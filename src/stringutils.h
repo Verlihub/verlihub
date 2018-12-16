@@ -57,7 +57,7 @@ string StrByteList(const string &data, const string &sep = " ");
 
 inline void AppendReservePlusPipe(string &dest, string &data, const bool pipe)
 {
-	if (pipe)
+	if (pipe) // must always be already reserved for pipe
 		data.append(1, '|');
 
 	dest.reserve(dest.size() + data.size());
