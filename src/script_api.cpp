@@ -720,7 +720,7 @@ bool DelRegUser(const char *nick)
 			serv->MyINFOToUsers(data);
 
 			if (serv->mC.send_user_ip) { // send userip to operators
-				serv->mP.Create_UserIP(data, user->mxConn->AddrIP(), true, true); // reserve for pipe
+				serv->mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 			}
 		}
@@ -798,7 +798,7 @@ bool SetRegClass(const char *nick, int clas)
 				serv->MyINFOToUsers(data);
 
 				if (serv->mC.send_user_ip) { // send userip to operators
-					serv->mP.Create_UserIP(data, user->mxConn->AddrIP(), true, true); // reserve for pipe
+					serv->mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 				}
 			}

@@ -232,7 +232,8 @@ protected:
 	static void Create_Search(string &dest, const string &addr, const string &tth, const bool pas, const bool pipe);
 	static void Create_SA(string &dest, const string &tth, const string &addr, const bool pipe);
 	static void Create_SP(string &dest, const string &tth, const string &nick, const bool pipe);
-	static void Create_UserIP(string &dest, const string &list, const bool sep, const bool pipe);
+	static void Create_UserIP(string &dest, const string &list, const bool pipe);
+	static void Create_UserIP(string &dest, const string &nick, const string &addr, const bool pipe);
 	static void Create_GetPass(string &dest, const bool pipe);
 	static void Create_BadPass(string &dest, const bool pipe);
 	static void Create_GetHubURL(string &dest, const bool pipe);

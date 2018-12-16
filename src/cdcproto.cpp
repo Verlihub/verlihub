@@ -3150,7 +3150,7 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (back.size()) {
-		Create_UserIP(omsg, back, false, true); // list is sent, no separator needed, reserve for pipe
+		Create_UserIP(omsg, back, true); // list is sent, no separator needed, reserve for pipe
 		conn->Send(omsg, true);
 	}
 
@@ -3934,7 +3934,7 @@ int cDCProto::NickList(cConnDC *conn)
 				conn->Send(_str, true);
 
 			} else { // own ip only
-				mS->mP.Create_UserIP(_str, conn->AddrIP(), true, true); // reserve for pipe
+				mS->mP.Create_UserIP(_str, conn->mpUser->mNick, conn->AddrIP(), true); // reserve for pipe
 				conn->Send(_str, true);
 			}
 		}
@@ -4459,24 +4459,31 @@ void cDCProto::Create_SP(string &dest, const string &tth, const string &nick, co
 	dest.append(nick);
 }
 
-void cDCProto::Create_UserIP(string &dest, const string &list, const bool sep, const bool pipe)
+void cDCProto::Create_UserIP(string &dest, const string &list, const bool pipe)
 {
 	if (dest.size())
 		dest.clear();
 
-	if (sep) {
-		if (dest.capacity() < (8 + list.size() + 2 + (pipe ? 1 : 0)))
-			dest.reserve(8 + list.size() + 2 + (pipe ? 1 : 0));
-	} else {
-		if (dest.capacity() < (8 + list.size() + (pipe ? 1 : 0)))
-			dest.reserve(8 + list.size() + (pipe ? 1 : 0));
-	}
+	if (dest.capacity() < (8 + list.size() + (pipe ? 1 : 0)))
+		dest.reserve(8 + list.size() + (pipe ? 1 : 0));
 
 	dest.append("$UserIP ");
 	dest.append(list);
+}
 
-	if (sep)
-		dest.append("$$");
+void cDCProto::Create_UserIP(string &dest, const string &nick, const string &addr, const bool pipe)
+{
+	if (dest.size())
+		dest.clear();
+
+	if (dest.capacity() < (8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0)))
+		dest.reserve(8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0));
+
+	dest.append("$UserIP ");
+	dest.append(nick);
+	dest.append(1, ' ');
+	dest.append(addr);
+	dest.append("$$");
 }
 
 void cDCProto::Create_GetPass(string &dest, const bool pipe)
