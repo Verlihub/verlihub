@@ -1385,14 +1385,19 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 					conn->mpUser->mMyINFO_basic.reserve(myinfo_basic.size());
 
 				conn->mpUser->mMyINFO_basic = myinfo_basic;
-				string send_info;
-				GetMyInfo(conn->mpUser, eUC_NORMUSER, send_info, true); // reserve for pipe
-				mS->MyINFOToUsers(send_info);
-			}
 
-			if (mS->mC.show_tags >= 1) { // operators get full myinfo
-				myinfo_full.reserve(myinfo_full.size() + 1); // reserve for pipe
-				mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
+				if (mS->mC.show_tags >= 1) { // operators get full myinfo, others get short myinfo
+					myinfo_full.reserve(myinfo_full.size() + 1); // reserve for pipe
+					mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
+					mS->mInProgresUsers.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
+					myinfo_basic.reserve(myinfo_basic.size() + 1); // reserve for pipe
+					mS->mUserList.SendToAllWithClass(myinfo_basic, eUC_PINGER, eUC_VIPUSER, mS->mC.delayed_myinfo, true);
+					mS->mInProgresUsers.SendToAllWithClass(myinfo_basic, eUC_PINGER, eUC_VIPUSER, mS->mC.delayed_myinfo, true);
+				} else { // all get same myinfo
+					string send_info;
+					GetMyInfo(conn->mpUser, eUC_NORMUSER, send_info, true); // reserve for pipe
+					mS->MyINFOToUsers(send_info);
+				}
 			}
 		}
 	} else { // user logs in for the first time
