@@ -106,14 +106,16 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
 	server->mOpList.GetNickList(list, false);
-	return strdup(list.c_str());
+	const char *ol = list.c_str();
+	return strdup(ol);
 }
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
 	server->mRobotList.GetNickList(list, false);
-	return strdup(list.c_str());
+	const char *bl = list.c_str();
+	return strdup(bl);
 }
 
 
