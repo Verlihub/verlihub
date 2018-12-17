@@ -169,12 +169,30 @@ GetUsersCount()
 
 const char *
 GetNickList()
+PPCODE:
+	const char *nl = GetNickList();
+	if (!nl)
+		XSRETURN_UNDEF;
+	XPUSHs(sv_2mortal(newSVpv(nl, strlen(nl))));
+	free((void*)nl);
 
 const char *
 GetOPList()
+PPCODE:
+	const char *ol = GetOPList();
+	if (!ol)
+		XSRETURN_UNDEF;
+	XPUSHs(sv_2mortal(newSVpv(ol, strlen(ol))));
+	free((void*)ol);
 
 const char *
 GetBotList()
+PPCODE:
+	const char *bl = GetBotList();
+	if (!bl)
+		XSRETURN_UNDEF;
+	XPUSHs(sv_2mortal(newSVpv(bl, strlen(bl))));
+	free((void*)bl);
 
 double
 GetTotalShareSize()

@@ -1348,21 +1348,24 @@ w_Targs *_GetNickList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mUserList.GetNickList(list, false);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	const char *nl = list.c_str();
+	return cpiPython::lib_pack("s", strdup(nl));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mOpList.GetNickList(list, false);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	const char *ol = list.c_str();
+	return cpiPython::lib_pack("s", strdup(ol));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mRobotList.GetNickList(list, false);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	const char *bl = list.c_str();
+	return cpiPython::lib_pack("s", strdup(bl));
 }
 
 w_Targs *_GetUserHost(int id, w_Targs *args)

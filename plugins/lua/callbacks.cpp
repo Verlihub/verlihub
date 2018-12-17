@@ -1276,13 +1276,20 @@ int _GetHostGeoIP(lua_State *L)
 
 int _GetNickList(lua_State *L)
 {
-	const char *nicklist;
 	int result = 1;
-	if(lua_gettop(L) == 1) {
-		nicklist = GetNickList();
-		if(strlen(nicklist) < 1) result = 0;
+
+	if (lua_gettop(L) == 1) {
+		const char *nicklist = GetNickList();
+
+		if (!nicklist || (strlen(nicklist) == 0))
+			result = 0;
+
 		lua_pushboolean(L, result);
 		lua_pushstring(L, nicklist);
+
+		if (nicklist)
+			free((void*)nicklist);
+
 		return 2;
 	} else {
 		luaL_error(L, "Error calling VH:GetNickList; expected 0 argument but got %d", lua_gettop(L) - 1);
