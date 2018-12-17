@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,9 +20,11 @@
 
 #ifndef NDIRECTCONNECTINFOSERVER_H
 #define NDIRECTCONNECTINFOSERVER_H
+
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include "cconfigbase.h"
 #include <ostream>
 
@@ -45,6 +47,7 @@ class cInfoServer: public nConfig::cConfigBase
 		~cInfoServer();
 		void PortInfo(ostream &os);
 		void ProtocolInfo(ostream &os);
+		void BufferInfo(ostream &os);
 		void HubURLInfo(ostream &os);
 		void SystemInfo(ostream &os);
 		void SetServer(nSocket::cServerDC *Server);

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-12-12 22:55+0100\n"
+"POT-Creation-Date: 2018-12-17 20:53+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -314,11 +314,11 @@ msgstr ""
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:204
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:210
 msgid "Unknown error"
 msgstr ""
 
@@ -342,7 +342,7 @@ msgstr[1] ""
 msgid "You have no new message in your box."
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:214
+#: ../plugins/messenger/cmsglist.cpp:212
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -350,7 +350,7 @@ msgid ""
 "Subject: %s\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:217
+#: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -360,7 +360,7 @@ msgid ""
 "----\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:220
+#: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
 msgid ""
 "#OFFLINE MESSAGE# [%s]\n"

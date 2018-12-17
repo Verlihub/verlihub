@@ -130,6 +130,16 @@
 		pm				- Private message
 		chat				- Main chat
 
+ [*] Hub information:
+
+	!hubinfo					- Hub information
+	!sysinfo					- System information
+	!protinfo					- Protocol information
+	!bufinfo					- Buffer information
+	!portinfo					- Port information
+	!urlinfo					- URL information
+	!mmdbinfo					- MaxMindDB information
+
  [*] Links:
 
 	https://github.com/verlihub/verlihub/wiki 	- User manual

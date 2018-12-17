@@ -329,6 +329,47 @@ public:
 		mRemakeNextNickList = mKeepNickList;
 		mRemakeNextInfoList = mKeepInfoList;
 	}
+
+	size_t GetCacheSize()
+	{
+		return mSendAllCache.size();
+	}
+
+	size_t GetCacheCapacity()
+	{
+		return mSendAllCache.capacity();
+	}
+
+	size_t GetNickListSize()
+	{
+		return mNickList.size();
+	}
+
+	size_t GetNickListCapacity()
+	{
+		return mNickList.capacity();
+	}
+
+	size_t GetInfoListSize()
+	{
+		return mInfoList.size();
+	}
+
+	size_t GetInfoListCapacity()
+	{
+		return mInfoList.capacity();
+	}
+
+	size_t GetInfoListCompleteSize()
+	{
+		return mInfoListComplete.size();
+	}
+
+	size_t GetInfoListCompleteCapacity()
+	{
+		return mInfoListComplete.capacity();
+	}
+
 };
 
 class cCompositeUserCollection: public cUserCollection
@@ -391,6 +432,36 @@ public:
 	}
 
 	virtual void GetIPList(string &dest, const bool pipe);
+
+	size_t GetIPListSize()
+	{
+		return mIPList.size();
+	}
+
+	size_t GetIPListCapacity()
+	{
+		return mIPList.capacity();
+	}
+
+	size_t GetCompositeNickListSize()
+	{
+		return mCompositeNickList.size();
+	}
+
+	size_t GetCompositeNickListCapacity()
+	{
+		return mCompositeNickList.capacity();
+	}
+
+	size_t GetCompositeInfoListSize()
+	{
+		return mCompositeInfoList.size();
+	}
+
+	size_t GetCompositeInfoListCapacity()
+	{
+		return mCompositeInfoList.capacity();
+	}
 
 protected:
 	bool mKeepIPList;

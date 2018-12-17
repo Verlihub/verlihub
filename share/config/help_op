@@ -118,13 +118,6 @@
 
 	!topic [topic]				- Set or reset topic
 
-	!hubinfo					- Hub information
-	!sysinfo					- System information
-	!protinfo					- Protocol information
-	!portinfo					- Port information
-	!urlinfo					- URL information
-	!mmdbinfo					- MaxMindDB information
-
  [*] Chatrooms:
 
 	+invite <nick>				- Add user
