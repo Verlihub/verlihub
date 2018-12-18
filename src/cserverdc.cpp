@@ -75,16 +75,13 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mOpChat(NULL),
 	mExecPath(ExecPath),
 	mSysLoad(eSL_NORMAL),
-	//mUserList(true, true, true, &mCallBacks.mNickListNicks, &mCallBacks.mNickListInfos),
-	mUserList(true, true, true/*, NULL, NULL*/),
-	mInProgresUsers(false, false),
-	//mOpList(true, false, false, &mCallBacks.mOpListNicks, NULL),
-	mOpList(true, false, false/*, NULL, NULL*/),
-	mOpchatList(true, false),
-	mActiveUsers(false, false),
-	mPassiveUsers(false, false),
-	mChatUsers(false, false),
-	mRobotList(true, false),
+	mUserList(true, true, true),
+	mOpList(true, false, false),
+	mOpchatList(true, false, false),
+	mActiveUsers(false, false, false),
+	mPassiveUsers(false, false, false),
+	mChatUsers(false, false, false),
+	mRobotList(true, false, false),
 	mUserCountTot(0),
 	mTotalShare(0),
 	mTotalSharePeak(0),
@@ -95,12 +92,6 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mCallBacks(&mPluginManager)
 {
 	sCurrentServer = this; // static pointer to current server, can be used anywhere
-
-	/*
-	mUserList.mNickListCB = &mCallBacks.mNickListNicks;
-	mUserList.mInfoListCB = &mCallBacks.mNickListInfos;
-	mOpList.mNickListCB = &mCallBacks.mOpListNicks;
-	*/
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
@@ -162,29 +153,18 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	if (mC.use_penlist_cache)
 		mPenList->ReloadCache();
 
-	string nctmp; // setup userlists
-	nctmp="$NickList ";
-	mUserList.SetNickListStart(nctmp);
-	nctmp="$OpList ";
-	mOpList.SetNickListStart(nctmp);
-	nctmp="$BotList ";
-	mRobotList.SetNickListStart(nctmp);
-	nctmp="$$";
-	mUserList.SetNickListSeparator(nctmp);
-	mOpList.SetNickListSeparator(nctmp);
-	mRobotList.SetNickListSeparator(nctmp);
+	mUserList.SetNickListStart("$NickList "); // setup userlists
+	mOpList.SetNickListStart("$OpList ");
+	mRobotList.SetNickListStart("$BotList ");
+	mUserList.SetNickListSeparator("$$");
+	mOpList.SetNickListSeparator("$$");
+	mRobotList.SetNickListSeparator("$$");
 	mOpchatList.SetNickListSeparator("\r\n");
-	nctmp="$ActiveList ";
-	mActiveUsers.SetNickListStart(nctmp);
-	nctmp="$PassiveList ";
-	mPassiveUsers.SetNickListStart(nctmp);
 
 	string speed("\x1"), mail, share("0"), val_new, val_old; // add the bots
 	mHubSec = new cMainRobot((mC.hub_security.size() ? mC.hub_security : HUB_VERSION_NAME), this);
 	mHubSec->mClass = tUserCl(10);
 	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-	mHubSec->mMyINFO_basic.reserve(mHubSec->mMyINFO.size()); // first use
-	mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 	AddRobot((cMainRobot*)mHubSec);
 
 	if (mC.hub_security.empty())
@@ -196,8 +176,6 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 		mOpChat = new cOpChat(mC.opchat_name, this);
 		mOpChat->mClass = tUserCl(10);
 		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-		mOpChat->mMyINFO_basic.reserve(mOpChat->mMyINFO.size()); // first use
-		mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 		AddRobot((cMainRobot*)mOpChat);
 	}
 
@@ -566,9 +544,6 @@ bool cServerDC::RemoveNick(cUser *User)
 	if (mChatUsers.ContainsHash(Hash))
 		mChatUsers.RemoveByHash(Hash);
 
-	if (mInProgresUsers.ContainsHash(Hash))
-		mInProgresUsers.RemoveByHash(Hash);
-
 	if (User->mInList) {
 		User->mInList = false;
 		string omsg;
@@ -670,13 +645,10 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 
 void cServerDC::MyINFOToUsers(string &data, bool botlist/* = false*/)
 {
-	if (botlist) { // all must be already reserved for pipe
+	if (botlist) // all must be already reserved for pipe
 		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
-		mInProgresUsers.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
-	} else {
+	else
 		mUserList.SendToAll(data, mC.delayed_myinfo, true);
-		mInProgresUsers.SendToAll(data, mC.delayed_myinfo, true);
-	}
 }
 
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here, bug?
@@ -1142,7 +1114,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
-		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO_basic, 0, olduser->mMyINFO_basic.size(), olduser->mMyINFO_basic) == 0))
+		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO, 0, olduser->mMyINFO.size(), olduser->mMyINFO) == 0))
 			sameuser = true;
 
 		string omsg;
@@ -1201,7 +1173,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 				if (conn->mpUser->mClass >= eUC_REGUSER)
 					sameuser = true;
 
-				if (!sameuser && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO_basic == olduser->mMyINFO_basic))
+				if (!sameuser && (conn->AddrIP() == olduser->mxConn->AddrIP()) && (conn->mpUser->mShare == olduser->mShare) && (conn->mpUser->mMyINFO == olduser->mMyINFO))
 					sameuser = true;
 
 				if (sameuser) {
@@ -1336,14 +1308,6 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		return;
 	}
 
-	//if (!VerifyUniqueNick(conn)) // this is already done somewhere else
-		//return;
-
-	if (mInProgresUsers.ContainsNick(conn->mpUser->mNick)) { // he is not anymore in progress
-		mInProgresUsers.FlushForUser(conn->mpUser);
-		mInProgresUsers.Remove(conn->mpUser);
-	}
-
 	if (mC.int_login && (conn->GetTheoricalClass() <= mC.max_class_int_login)) // login flood detection
 		mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.int_login, _("Reconnecting too fast"), eBT_RECON);
 
@@ -1382,39 +1346,22 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 
 bool cServerDC::BeginUserLogin(cConnDC *conn)
 {
-	unsigned int WantedMask;
+	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) {
+		conn->CloseNow();
+		return false;
+	}
 
-	if (mC.delayed_login)
-	 	WantedMask = eLS_LOGIN_DONE - eLS_NICKLST;
-	else
-		WantedMask = eLS_LOGIN_DONE;
+	if (conn->Log(2))
+		conn->LogStream() << "Begin login" << endl;
 
-	if (WantedMask == conn->GetLSFlag(WantedMask)) {
-		if (conn->Log(2))
-			conn->LogStream() << "Begin login" << endl;
+	if (VerifyUniqueNick(conn)) { // check if nick is unique
+		DoUserLogin(conn);
 
-		if (VerifyUniqueNick(conn)) { // check if nick is unique
-			if (!mC.delayed_login) {
-				DoUserLogin(conn);
-			} else {
-				mInProgresUsers.Add(conn->mpUser);
-			}
-
-			if (conn->mSendNickList) { // this may not send all data at once
-				mP.NickList(conn); // this will set mNickListInProgress
-				conn->mSendNickList = false;
-				return true; // return here since we dont know that the list was sent or not
-				// OnFlushDone() will do the login after the NickList is flushed
-			}
-
-			if (!conn->mpUser->mInList) {
-				DoUserLogin(conn);
-			}
-		} else {
-			return false;
+		if (conn->mSendNickList) { // this may not send all data at once
+			mP.NickList(conn); // this will set mNickListInProgress
+			conn->mSendNickList = false;
 		}
 	} else {
-		conn->CloseNow();
 		return false;
 	}
 
@@ -1424,8 +1371,9 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string msg;
-	mP.GetMyInfo(user, eUC_NORMUSER, msg, true); // all users get myinfo, even those in progress, reserve for pipe
-	MyINFOToUsers(msg); // use cache, so this can be after user is added
+	msg.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
+	msg = user->mMyINFO;
+	MyINFOToUsers(msg); // all users get myinfo, use cache, so this can be after user is added
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(msg, user->mNick, true); // reserve for pipe
@@ -1437,26 +1385,9 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		mUserList.SendToAllWithClassFeature(msg, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
-	/*
-		send it to all but to him
-		but why? maybe he would be doubled in some shit clients?
-		anyway delayed_login will show why is it
-		the order of flush of this before the full myinfo for ops
-	*/
-
-	if (!mC.delayed_login) {
-		user->mInList = false;
-		mUserList.FlushCache();
-		mInProgresUsers.FlushCache();
-		user->mInList = true;
-	}
-
-	if (mC.show_tags == 1) { // patch eventually for ops
-		mP.GetMyInfo(user, eUC_OPERATOR, msg, true); // reserve for pipe
-		mUserList.SendToAllWithClass(msg, eUC_OPERATOR, eUC_MASTER, mC.delayed_myinfo, true); // must send after mUserList, cached mUserList will be flushed after and will override this one
-		mInProgresUsers.SendToAll(msg, mC.delayed_myinfo, true); // send later, better more people see tags, then some ops not
-	}
-
+	user->mInList = false;
+	mUserList.FlushCache();
+	user->mInList = true;
 	return true;
 }
 
@@ -1800,7 +1731,6 @@ int cServerDC::OnTimer(cTime &now)
 	mActiveUsers.FlushCache();
 	mPassiveUsers.FlushCache();
 	mChatUsers.FlushCache();
-	mInProgresUsers.FlushCache();
 	mRobotList.FlushCache();
 	mSysLoad = eSL_NORMAL;
 
@@ -1911,7 +1841,6 @@ int cServerDC::OnTimer(cTime &now)
 	mChatUsers.AutoResize();
 	mOpList.AutoResize();
 	mOpchatList.AutoResize();
-	mInProgresUsers.AutoResize();
 	mRobotList.AutoResize();
 
 	mBanList->mTempNickBanlist.AutoResize();
@@ -2878,11 +2807,6 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					DelRobot((cMainRobot*)mHubSec);
 					mHubSec->mNick = val_new;
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-
-					if (mHubSec->mMyINFO_basic.capacity() < mHubSec->mMyINFO.size())
-						mHubSec->mMyINFO_basic.reserve(mHubSec->mMyINFO.size());
-
-					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 					AddRobot((cMainRobot*)mHubSec);
 					data.reserve(mHubSec->mMyINFO.size() + 1); // send myinfo, first use
 					data = mHubSec->mMyINFO;
@@ -2918,11 +2842,6 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						}
 
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-
-						if (mOpChat->mMyINFO_basic.capacity() < mOpChat->mMyINFO.size())
-							mOpChat->mMyINFO_basic.reserve(mOpChat->mMyINFO.size());
-
-						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						AddRobot((cMainRobot*)mOpChat);
 						data.reserve(mOpChat->mMyINFO.size() + 1); // send myinfo, first use
 						data = mOpChat->mMyINFO;
@@ -2946,11 +2865,6 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 				} else if (svar == "hub_security_desc") {
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
-
-					if (mHubSec->mMyINFO_basic.capacity() < mHubSec->mMyINFO.size())
-						mHubSec->mMyINFO_basic.reserve(mHubSec->mMyINFO.size());
-
-					mHubSec->mMyINFO_basic = mHubSec->mMyINFO;
 					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 					data = mHubSec->mMyINFO;
 					MyINFOToUsers(data);
@@ -2958,11 +2872,6 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
-
-						if (mOpChat->mMyINFO_basic.capacity() < mOpChat->mMyINFO.size())
-							mOpChat->mMyINFO_basic.reserve(mOpChat->mMyINFO.size());
-
-						mOpChat->mMyINFO_basic = mOpChat->mMyINFO;
 						data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 						data = mOpChat->mMyINFO;
 						MyINFOToUsers(data);

@@ -106,16 +106,14 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
 	server->mOpList.GetNickList(list, false);
-	const char *ol = list.c_str();
-	return strdup(ol);
+	return strdup(list.c_str());
 }
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
 	server->mRobotList.GetNickList(list, false);
-	const char *bl = list.c_str();
-	return strdup(bl);
+	return strdup(list.c_str());
 }
 
 
@@ -139,11 +137,9 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, con
 	}
 
 	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-	robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
-	robot->mMyINFO_basic = robot->mMyINFO;
 	//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
 	string omsg;
-	server->mP.GetMyInfo(robot, eUC_NORMUSER, omsg, true); // reserve for pipe
+	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	server->MyINFOToUsers(omsg);
 
 	if (uclass >= 3) {
@@ -169,14 +165,9 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, co
 	}
 
 	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-
-	if (robot->mMyINFO_basic.capacity() < robot->mMyINFO.size())
-		robot->mMyINFO_basic.reserve(robot->mMyINFO.size());
-
-	robot->mMyINFO_basic = robot->mMyINFO;
 	//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
 	string omsg;
-	server->mP.GetMyInfo(robot, eUC_NORMUSER, omsg, true); // reserve for pipe
+	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	server->MyINFOToUsers(omsg);
 
 	if (uclass >= 3) {

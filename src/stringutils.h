@@ -22,6 +22,7 @@
 #define STRINGUTILS_H
 
 #include <string>
+#include <cstring>
 
 #if (!defined _WIN32) && (!defined __int64)
 	#define __int64 long long
@@ -51,6 +52,7 @@ void ReplaceVarInString(const string &src,const string &var,string &dest, __int6
 string convertByte(__int64 byte, bool UnitSec = false);
 string StringFrom(__int64 const &val);
 __int64 StringAsLL(const string &);
+bool IsNumber(const char *num);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");

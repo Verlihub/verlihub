@@ -30,7 +30,7 @@ namespace nVerliHub {
 	namespace nPlugin {
 
 cVHPlugin::cVHPlugin():
-	mRobots(false, false)
+	mRobots(false, false, false)
 {
 	mServer = 0;
 	mUserDataTable = NULL;

@@ -415,16 +415,6 @@ void cpiPython::LogLevel(int level)
 	if (lib_loglevel) lib_loglevel(log_level);
 }
 
-bool cpiPython::IsNumber(const char *s)
-{
-	if (!s || !strlen(s)) return false;
-
-	for (unsigned int i = 0; i < strlen(s); i++) {
-		if (!isdigit(s[i])) return false;
-	}
-	return true;
-}
-
 int cpiPython::char2int(char c)
 {
 	switch (c) {
@@ -1323,11 +1313,6 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 		u->mMyINFO.reserve(newinfo.size());
 
 	u->mMyINFO = newinfo;
-
-	if (u->mMyINFO_basic.capacity() < newinfo.size())
-		u->mMyINFO_basic.reserve(newinfo.size());
-
-	u->mMyINFO_basic = newinfo;
 	newinfo.reserve(newinfo.size() + 1); // reserve for pipe
 	cpiPython::me->server->MyINFOToUsers(newinfo);
 	return w_ret1;
@@ -1348,24 +1333,21 @@ w_Targs *_GetNickList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mUserList.GetNickList(list, false);
-	const char *nl = list.c_str();
-	return cpiPython::lib_pack("s", strdup(nl));
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mOpList.GetNickList(list, false);
-	const char *ol = list.c_str();
-	return cpiPython::lib_pack("s", strdup(ol));
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mRobotList.GetNickList(list, false);
-	const char *bl = list.c_str();
-	return cpiPython::lib_pack("s", strdup(bl));
+	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetUserHost(int id, w_Targs *args)
@@ -1447,8 +1429,7 @@ w_Targs *_GetIPCC(int id, w_Targs *args)
 		return NULL;
 
 	string ccstr = GetIPCC(ip); // use script api, it has new optimizations
-	const char *cc = ccstr.c_str();
-	return cpiPython::lib_pack("s", strdup(cc));
+	return cpiPython::lib_pack("s", strdup(ccstr.c_str()));
 }
 
 w_Targs *_GetIPCN(int id, w_Targs *args)
@@ -1462,8 +1443,7 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 		return NULL;
 
 	string cnstr = GetIPCN(ip); // use script api, it has new optimizations
-	const char *cn = cnstr.c_str();
-	return cpiPython::lib_pack("s", strdup(cn));
+	return cpiPython::lib_pack("s", strdup(cnstr.c_str()));
 }
 
 // todo: add GetIPCity call
@@ -1486,8 +1466,7 @@ w_Targs *_GetIPASN(int id, w_Targs *args)
 	if (!cpiPython::me->server->mMaxMindDB->GetASN(asn_name, s_ip, s_db))
 		return NULL;
 
-	const char *asn = asn_name.c_str();
-	return cpiPython::lib_pack("s", strdup(asn));
+	return cpiPython::lib_pack("s", strdup(asn_name.c_str()));
 }
 
 w_Targs *_GetGeoIP(int id, w_Targs *args)
@@ -1804,8 +1783,6 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 	if (robot) {
 		cServerDC *server = cpiPython::me->server;
 		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-		robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
-		robot->mMyINFO_basic = robot->mMyINFO;
 		string msg;
 		msg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 		msg = robot->mMyINFO;

@@ -114,8 +114,6 @@ public:
 	unsigned int max_chat_lines;
 	unsigned int max_flood_counter_pm;
 	unsigned int max_flood_counter_mcto;
-	bool nicklist_on_login;
-	bool delayed_login;
 	bool delayed_search;
 	bool delayed_myinfo; // implies also delayed quit
 	bool drop_invalid_key;
@@ -310,7 +308,7 @@ public:
 	double tag_min_version;
 	double tag_max_version;
 	string cc_zone[3];
-	int show_tags; // 0 - no at all, 1 - only to ops, 2 - show to everyone
+	bool show_tags;
 	int show_desc_len; // cut first x bytes of description, -1 means disabled
 	int autoreg_class; // todo: change to unsigned
 	int autounreg_class;

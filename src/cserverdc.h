@@ -627,23 +627,14 @@ class cServerDC : public cAsyncSocketServer
 		tTmpFunc mTmpFunc;
 
 		typedef cUserCollection::tHashType tUserHash;
-		// Userlist of all user
-		cCompositeUserCollection mUserList;
-		// Userlist of users not logged in yet
-		cUserCollection mInProgresUsers;
+		cUserCollection mUserList; // online users
+		cUserCollection mOpList; // operator list
+		cUserCollection mOpchatList; // operator chat users
+		cUserCollection mActiveUsers; // active users
+		cUserCollection mPassiveUsers; // passive users
+		cUserCollection mChatUsers; // users who receive main chat
+		cUserCollection mRobotList; // bot list
 
-		// Oplist
-		cCompositeUserCollection mOpList;
-		// List of users in opchat
-		cUserCollection mOpchatList;
-		// List of active users
-		cUserCollection mActiveUsers;
-		// List of passive users
-		cUserCollection mPassiveUsers;
-		// List of users allowed to talk
-		cUserCollection mChatUsers;
-		// List of bots
-		cUserCollection mRobotList;
 		// prevent stack trace on core dump
 		static bool mStackTrace;
 
@@ -858,9 +849,6 @@ private:
 			mOnUserLogout  (mgr, "VH_OnUserLogout",   &cVHPlugin::OnUserLogout ),
 			mOnValidateTag(mgr, "VH_OnValidateTag", &cVHPlugin::OnValidateTag),
 			mOnTimer(mgr, "VH_OnTimer", &cVHPlugin::OnTimer),
-			//mNickListNicks( mgr, "VH_OnCreateUserNickList", &cVHPlugin::OnCreateUserNickList),
-			//mNickListInfos( mgr, "VH_OnCreateUserInfoList", &cVHPlugin::OnCreateUserInfoList),
-			//mOpListNicks( mgr, "VH_OnCreateOpList", &cVHPlugin::OnCreateOpList),
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
 			mOnDelReg(mgr, "VH_OnDelReg", &cVHPlugin::OnDelReg),
 			mOnUpdateClass(mgr, "VH_OnUpdateClass", &cVHPlugin::OnUpdateClass),
@@ -907,9 +895,6 @@ private:
 		cVHCBL_User mOnUserLogout;
 		cVHCBL_ConnTag mOnValidateTag;
 		cVHCBL_int64 mOnTimer;
-		//cVHCBL_String mNickListNicks;
-		//cVHCBL_String mNickListInfos;
-		//cVHCBL_String mOpListNicks;
 		cVHCBL_UsrStrInt mOnNewReg;
 		cVHCBL_UsrStrInt mOnDelReg;
 		cVHCBL_UsrStrIntInt mOnUpdateClass;

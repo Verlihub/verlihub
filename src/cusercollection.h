@@ -47,115 +47,100 @@ namespace nVerliHub {
 	class cUser;
 	class cUserBase;
 
-namespace nPlugin {
-	template <class Type1> class tVHCBL_1Type;
-	typedef tVHCBL_1Type<string> cVHCBL_String;
-};
-
-using namespace nPlugin;
-
-/**
-a structure that allows to insert and remove users, to quickly iterate and hold common sendall buffer, provides also number of sendall functions
-
-supports: quick iterating with (restrained) constant time increment (see std::slist) , logaritmic finding, adding, removing, testing for existence.... (see std::hash_map)
-
-@author Daniel Muller
+/*
+	a structure that allows to insert and remove users, to quickly iterate and hold common sendall buffer, provides also number of sendall functions
+	supports: quick iterating with (restrained) constant time increment (see std::slist) , logaritmic finding, adding, removing, testing for existence.... (see std::hash_map)
+	@author Daniel Muller
 */
 
 class cUserCollection: public tHashArray<cUserBase*>
 {
 public:
-	// unary function for sending data to all users
-	struct ufSend: public unary_function<void, iterator>
+	struct ufSend: public unary_function<void, iterator> // unary function for sending data to all users
 	{
 		string &mData;
-		bool flush;
+		bool mCache;
 
-		ufSend(string &Data, bool _flush):
-			mData(Data)
-		{
-			flush = _flush;
-		};
+		ufSend(string &data, const bool cache):
+			mData(data),
+			mCache(cache)
+		{}
 
-		void operator()(cUserBase *User);
+		void operator()(cUserBase *user);
 	};
 
-	// unary function for sending DataS + Nick + DataE to all users
-	struct ufSendWithNick: public unary_function<void, iterator>
+	struct ufSendWithNick: public unary_function<void, iterator> // unary function for sending data start + nick + data end to all users
 	{
 		string &mDataStart, &mDataEnd;
 
-		ufSendWithNick(string &DataS, string &DataE):
-			mDataStart(DataS),
-			mDataEnd(DataE)
-		{
-			// always flushes
-		};
-
-		void operator()(cUserBase *User);
-	};
-
-	// unary function for sending data to all users by class range
-	struct ufSendWithClass: public unary_function<void, iterator>
-	{
-		string &mData;
-		int min_class, max_class;
-		bool flush;
-
-		ufSendWithClass(string &Data, int _min_class, int _max_class, bool _flush):
-			mData(Data)
-		{
-			min_class = _min_class;
-			max_class = _max_class;
-			flush = _flush;
-		};
-
-		void operator()(cUserBase *User);
-	};
-
-	// unary function for sending data to all users by feature in supports
-	struct ufSendWithFeature: public unary_function<void, iterator>
-	{
-		string &mData;
-		unsigned feature;
-		bool flush;
-
-		ufSendWithFeature(string &Data, unsigned _feature, bool _flush):
-			mData(Data)
-		{
-			feature = _feature;
-			flush = _flush;
-		};
-
-		void operator()(cUserBase *User);
-	};
-
-	// unary function for sending data to all users by class range and feature in supports
-	struct ufSendWithClassFeature: public unary_function<void, iterator>
-	{
-		string &mData;
-		int min_class, max_class;
-		unsigned feature;
-		bool flush;
-
-		ufSendWithClassFeature(string &Data, int _min_class, int _max_class, unsigned _feature, bool _flush):
-			mData(Data)
-		{
-			min_class = _min_class;
-			max_class = _max_class;
-			feature = _feature;
-			flush = _flush;
-		};
-
-		void operator()(cUserBase *User);
-	};
-
-	// unary function that constructs a nick list
-	struct ufDoNickList: public unary_function<void, iterator>
-	{
-		ufDoNickList(string &List):
-			mList(List)
+		ufSendWithNick(string &data_s, string &data_e): // always flushes
+			mDataStart(data_s),
+			mDataEnd(data_e)
 		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithClass: public unary_function<void, iterator> // unary function for sending data to all users by class range
+	{
+		string &mData;
+		int mMinClass, mMaxClass;
+		bool mCache;
+
+		ufSendWithClass(string &data, const int min_class, const int max_class, const bool cache):
+			mData(data),
+			mMinClass(min_class),
+			mMaxClass(max_class),
+			mCache(cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithFeature: public unary_function<void, iterator> // unary function for sending data to all users by feature in supports
+	{
+		string &mData;
+		unsigned mFeature;
+		bool mCache;
+
+		ufSendWithFeature(string &data, const unsigned feature, const bool cache):
+			mData(data),
+			mFeature(feature),
+			mCache(cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithClassFeature: public unary_function<void, iterator> // unary function for sending data to all users by class range and feature in supports
+	{
+		string &mData;
+		int mMinClass, mMaxClass;
+		unsigned mFeature;
+		bool mCache;
+
+		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache):
+			mData(data),
+			mMinClass(min_class),
+			mMaxClass(max_class),
+			mFeature(feature),
+			mCache(cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufDoNickList: public unary_function<void, iterator> // unary function that constructs nick list
+	{
+		string &mList;
+		string mStart;
+		string mSep;
+
+		ufDoNickList(string &list):
+			mList(list)
+		{
+			//mSep = "$$";
+		}
 
 		virtual ~ufDoNickList()
 		{}
@@ -164,7 +149,11 @@ public:
 		{
 			mList.erase(0, mList.size());
 			ShrinkStringToFit(mList);
-			mList.append(mStart.data(), mStart.size());
+
+			if (mStart.size()) {
+				mList.reserve(mStart.size());
+				mList.append(mStart);
+			}
 		}
 
 		virtual void AppendList(string &list, cUserBase *user);
@@ -173,44 +162,37 @@ public:
 		{
 			AppendList(mList, user);
 		}
-
-		string mStart;
-		string mSep;
-		string &mList;
 	};
 
-	// unary function that constructs a myinfo list
-	struct ufDoInfoList: ufDoNickList
+	struct ufDoInfoList: ufDoNickList // unary function that constructs myinfo list
 	{
-		string &mListComplete;
-		bool mComplete;
-
-		ufDoInfoList(string &List, string &CompleteList):
-			ufDoNickList(List),
-			mListComplete(CompleteList),
-			mComplete(false)
+		ufDoInfoList(string &list):
+			ufDoNickList(list)
 		{
 			mSep = "|";
-		}
-
-		virtual ~ufDoInfoList()
-		{}
-
-		virtual void Clear()
-		{
-			ufDoNickList::Clear();
-			mListComplete.erase(0, mListComplete.size());
-			ShrinkStringToFit(mListComplete);
-			mListComplete.append(mStart.data(), mStart.size());
 		}
 
 		virtual void AppendList(string &list, cUserBase *user);
 
 		virtual void operator()(cUserBase *user)
 		{
-			mComplete = true;
-			AppendList(mListComplete, user);
-			mComplete = false;
+			AppendList(mList, user);
+		}
+	};
+
+	struct ufDoIPList: ufDoNickList // unary function that constructs ip list
+	{
+		ufDoIPList(string &list):
+			ufDoNickList(list)
+		{
+			mSep = "$$";
+			mStart = "$UserIP ";
+		}
+
+		virtual void AppendList(string &list, cUserBase *user);
+
+		virtual void operator()(cUserBase *user)
+		{
 			AppendList(mList, user);
 		}
 	};
@@ -219,115 +201,138 @@ private:
 	string mSendAllCache;
 	string mNickList;
 	string mInfoList;
-	string mInfoListComplete;
+	string mIPList;
 	ufDoNickList mNickListMaker;
 	ufDoInfoList mInfoListMaker;
+	ufDoIPList mIPListMaker;
 
 protected:
 	bool mKeepNickList;
 	bool mKeepInfoList;
+	bool mKeepIPList;
 	bool mRemakeNextNickList;
 	bool mRemakeNextInfoList;
+	bool mRemakeNextIPList;
 
 public:
-	cUserCollection(bool KeepNickList, bool KeepInfoList);
+	cUserCollection(const bool keep_nick, const bool keep_info, const bool keep_ip);
 	virtual ~cUserCollection();
+	virtual int StrLog(ostream &os, const int level);
 
-	virtual int StrLog(ostream &ostr, int level);
-
-	void SetNickListStart(const string &Start)
+	void SetNickListStart(const string &start)
 	{
-		mNickListMaker.mStart = Start;
+		mNickListMaker.mStart = start;
 	}
 
-	void SetNickListSeparator(const string &Separator)
+	void SetNickListSeparator(const string &sep)
 	{
-		mNickListMaker.mSep = Separator;
+		mNickListMaker.mSep = sep;
 	}
 
 	virtual void GetNickList(string &dest, const bool pipe);
-	virtual void GetInfoList(string &dest, const bool pipe, const bool complete);
-	void Nick2Hash(const string &Nick, tHashType &Hash);
+	virtual void GetInfoList(string &dest, const bool pipe);
+	virtual void GetIPList(string &dest, const bool pipe);
+	void Nick2Hash(const string &nick, tHashType &hash);
 
-	tHashType Nick2Hash(const string &Nick) {
-		string Key;
-		Nick2Key(Nick, Key);
-		return Key2Hash(Key); // Key2HashLower(Nick)
+	tHashType Nick2Hash(const string &nick) {
+		string key;
+		Nick2Key(nick, key);
+		return Key2Hash(key); //Key2HashLower(nick)
 	}
 
-	void Nick2Key(const string &Nick, string &Key);
+	void Nick2Key(const string &nick, string &key);
 
-	cUserBase* GetUserBaseByKey(const string &Key)
+	cUserBase* GetUserBaseByKey(const string &key)
 	{
-		if (Key.size())
-			return GetByHash(Key2Hash(Key));
+		if (key.size())
+			return GetByHash(Key2Hash(key));
 
 		return NULL;
 	}
 
-	cUserBase* GetUserBaseByNick(const string &Nick)
+	cUser* GetUserByKey(const string &key)
 	{
-		if (Nick.size())
-			return GetByHash(Nick2Hash(Nick));
+		if (key.size())
+			return (cUser*)GetByHash(Key2Hash(key));
 
 		return NULL;
 	}
 
-	bool ContainsKey(const string &Key)
+	cUserBase* GetUserBaseByNick(const string &nick)
 	{
-		return ContainsHash(Key2Hash(Key));
+		if (nick.size())
+			return GetByHash(Nick2Hash(nick));
+
+		return NULL;
 	}
 
-	bool ContainsNick(const string &Nick)
+	cUser* GetUserByNick(const string &nick)
 	{
-		return ContainsHash(Nick2Hash(Nick));
+		if (nick.size())
+			return (cUser*)GetByHash(Nick2Hash(nick));
+
+		return NULL;
 	}
 
-	bool AddWithKey(cUserBase *User, const string &Key)
+	bool ContainsKey(const string &key)
 	{
-		return AddWithHash(User, Key2Hash(Key));
+		return ContainsHash(Key2Hash(key));
 	}
 
-	bool AddWithNick(cUserBase *User, const string &Nick)
+	bool ContainsNick(const string &nick)
 	{
-		return AddWithHash(User, Nick2Hash(Nick));
+		return ContainsHash(Nick2Hash(nick));
 	}
 
-	bool Add(cUserBase *User);
-
-	bool RemoveByKey(const string &Key)
+	bool AddWithKey(cUserBase *user, const string &key)
 	{
-		return RemoveByHash(Key2Hash(Key));
+		return AddWithHash(user, Key2Hash(key));
 	}
 
-	bool RemoveByNick(const string &Nick)
+	bool AddWithNick(cUserBase *user, const string &nick)
 	{
-		return RemoveByHash(Nick2Hash(Nick));
+		return AddWithHash(user, Nick2Hash(nick));
 	}
 
-	bool Remove(cUserBase *User);
+	bool Add(cUserBase *user);
 
-	void SendToAll(string &Data, bool cache, bool pipe);
-	void SendToAllWithNick(string &Start, string &End);
-	void SendToAllWithClass(string &Data, int min_class, int max_class, bool cache, bool pipe);
-	void SendToAllWithFeature(string &Data, unsigned feature, bool cache, bool pipe);
-	void SendToAllWithClassFeature(string &Data, int min_class, int max_class, unsigned feature, bool cache, bool pipe);
+	bool RemoveByKey(const string &key)
+	{
+		return RemoveByHash(Key2Hash(key));
+	}
+
+	bool RemoveByNick(const string &nick)
+	{
+		return RemoveByHash(Nick2Hash(nick));
+	}
+
+	bool Remove(cUserBase *user);
+
+	void SendToAll(string &Data, const bool cache, const bool pipe);
+	void SendToAllWithNick(string &start, string &end);
+	void SendToAllWithClass(string &data, const int min_class, const int max_class, const bool cache, const bool pipe);
+	void SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe);
+	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe);
 	void FlushCache();
-	void FlushForUser(cUserBase *User);
+	void FlushForUser(cUserBase *user);
 
-	virtual void OnAdd(cUserBase *User)
+	virtual void OnAdd(cUserBase *user)
 	{
 		if (!mRemakeNextNickList && mKeepNickList)
-			mNickListMaker(User);
+			mNickListMaker(user);
 
 		if (!mRemakeNextInfoList && mKeepInfoList)
-			mInfoListMaker(User);
+			mInfoListMaker(user);
+
+		if (!mRemakeNextIPList && mKeepIPList)
+			mIPListMaker(user);
 	}
 
-	virtual void OnRemove(cUserBase *)
+	virtual void OnRemove(cUserBase *user)
 	{
 		mRemakeNextNickList = mKeepNickList;
 		mRemakeNextInfoList = mKeepInfoList;
+		mRemakeNextIPList = mKeepIPList;
 	}
 
 	size_t GetCacheSize()
@@ -360,79 +365,6 @@ public:
 		return mInfoList.capacity();
 	}
 
-	size_t GetInfoListCompleteSize()
-	{
-		return mInfoListComplete.size();
-	}
-
-	size_t GetInfoListCompleteCapacity()
-	{
-		return mInfoListComplete.capacity();
-	}
-
-};
-
-class cCompositeUserCollection: public cUserCollection
-{
-public:
-	cCompositeUserCollection(bool keepNicks, bool keepInfos, bool keepips/*, cVHCBL_String* nlcb, cVHCBL_String *ilcb*/);
-	virtual ~cCompositeUserCollection();
-	virtual void GetNickList(string &dest, const bool pipe);
-	virtual void GetInfoList(string &dest, const bool pipe, const bool complete);
-
-	// unary function that constructs a ip list
-	struct ufDoIPList: cUserCollection::ufDoNickList
-	{
-		ufDoIPList(string &List):
-			ufDoNickList(List)
-		{
-			mSep = "$$";
-			mStart = "$UserIP ";
-		}
-
-		virtual ~ufDoIPList()
-		{}
-
-		virtual void AppendList(string &list, cUserBase *user);
-
-		virtual void operator()(cUserBase *user)
-		{
-			AppendList(mList, user);
-		}
-	};
-
-	virtual void OnAdd(cUserBase *User)
-	{
-		cUserCollection::OnAdd(User);
-
-		if (!mRemakeNextIPList && mKeepIPList)
-			mIPListMaker(User);
-	}
-
-	virtual void OnRemove(cUserBase *user)
-	{
-		cUserCollection::OnRemove(user);
-		mRemakeNextIPList = mKeepIPList;
-	}
-
-	cUser* GetUserByKey(const string &Key)
-	{
-		if (Key.size())
-			return (cUser*)GetByHash(Key2Hash(Key));
-
-		return NULL;
-	}
-
-	cUser* GetUserByNick(const string &Nick)
-	{
-		if (Nick.size())
-			return (cUser*)GetByHash(Nick2Hash(Nick));
-
-		return NULL;
-	}
-
-	virtual void GetIPList(string &dest, const bool pipe);
-
 	size_t GetIPListSize()
 	{
 		return mIPList.size();
@@ -442,38 +374,6 @@ public:
 	{
 		return mIPList.capacity();
 	}
-
-	size_t GetCompositeNickListSize()
-	{
-		return mCompositeNickList.size();
-	}
-
-	size_t GetCompositeNickListCapacity()
-	{
-		return mCompositeNickList.capacity();
-	}
-
-	size_t GetCompositeInfoListSize()
-	{
-		return mCompositeInfoList.size();
-	}
-
-	size_t GetCompositeInfoListCapacity()
-	{
-		return mCompositeInfoList.capacity();
-	}
-
-protected:
-	bool mKeepIPList;
-	//cVHCBL_String *mInfoListCB;
-	//cVHCBL_String *mNickListCB;
-	bool mRemakeNextIPList;
-
-private:
-	string mCompositeNickList;
-	string mCompositeInfoList;
-	string mIPList;
-	ufDoIPList mIPListMaker;
 };
 
 }; // namespace nVerliHub

@@ -68,19 +68,6 @@ cpiLua::~cpiLua()
 	this->Empty();
 }
 
-bool cpiLua::IsNumber(const char *num)
-{
-	if (!num || !strlen(num))
-		return false;
-
-	for (unsigned int i = 0; i < strlen(num); i++) {
-		if (!isdigit(num[i]))
-			return false;
-	}
-
-	return true;
-}
-
 void cpiLua::SetLogLevel(int level)
 {
 	ostringstream val;

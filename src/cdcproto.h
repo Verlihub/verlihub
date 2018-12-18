@@ -359,8 +359,6 @@ protected:
 	*/
 	cConnType *ParseSpeed(const string &speed);
 
-	void GetMyInfo(cUserBase *User, int ForClass, string &dest, const bool pipe);
-	//void Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic);
 	static void UnEscapeChars(const string &, string &, bool WithDCN = false);
 	static void UnEscapeChars(const string &, char *, unsigned int &len, bool WithDCN = false);
 	static bool CheckIP(nSocket::cConnDC *conn, const string &ip);

@@ -95,7 +95,6 @@ public:
 	void SetLogLevel(int level);
 	void SetErrClass(int eclass);
 	void ReportLuaError(const string &err);
-	bool IsNumber(const char *num);
 
 	void Empty()
 	{
