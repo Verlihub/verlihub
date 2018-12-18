@@ -68,7 +68,7 @@ void cRoom::OnLoad()
 	string desc("Chatroom"), speed("\x1"), mail, share("0");
 
 	if (!mUsers) {
-		mUsers = new cUserCollection(true, false);
+		mUsers = new cUserCollection(true, false, false);
 		mUsers->SetNickListSeparator("\r\n");
 	}
 
@@ -85,8 +85,6 @@ void cRoom::OnLoad()
 		}
 
 		mServer->mP.Create_MyINFO(mChatRoom->mMyINFO, mNick, desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-		mChatRoom->mMyINFO_basic.reserve(mChatRoom->mMyINFO.size()); // first use
-		mChatRoom->mMyINFO_basic = mChatRoom->mMyINFO;
 		mPlugin->AddRobot(mChatRoom);
 	}
 }

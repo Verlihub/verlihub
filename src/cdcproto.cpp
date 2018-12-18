@@ -970,18 +970,9 @@ int cDCProto::DC_GetNickList(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_NICKLIST)) // protocol flood
 		return -1;
 
-	if (!conn->GetLSFlag(eLS_MYINFO) && mS->mC.nicklist_on_login) {
-		if (mS->mC.delayed_login) {
-			int LSFlag = conn->GetLSFlag(eLS_LOGIN_DONE);
-
-			if (LSFlag & eLS_NICKLST)
-				LSFlag -= eLS_NICKLST;
-
-			conn->ReSetLSFlag(LSFlag);
-		}
-
+	if (!conn->GetLSFlag(eLS_MYINFO)) {
 		conn->mSendNickList = true;
-		return 0;
+		return 1;
 	}
 
 	if ((conn->mpUser->mClass < eUC_OPERATOR) && !mS->MinDelay(conn->mpUser->mT.nicklist, mS->mC.int_nicklist))
@@ -1009,47 +1000,49 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_MYINFO)) // protocol flood
 		return -1;
 
-	if (!conn->mConnType) // parse connection
-		conn->mConnType = ParseSpeed(msg->ChunkString(eCH_MI_SPEED));
-
+	string myinfo_desc = msg->ChunkString(eCH_MI_DESC);
+	cDCTag *dc_tag = mS->mCo->mDCClients->ParseTag(myinfo_desc);
 	ostringstream os;
-	cDCTag *tag = mS->mCo->mDCClients->ParseTag(msg->ChunkString(eCH_MI_DESC)); // check tag
 
-	if (!mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc < 0) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) {
+	if (!mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc < 0) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) { // check for empty tag if required
 		os << _("Your client didn't specify a tag.");
 
 		if (conn->Log(2))
 			conn->LogStream() << os.str() << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_NONE);
-		delete tag;
-		tag = NULL;
+		delete dc_tag;
+		dc_tag = NULL;
 		return -1;
 	}
 
-	bool TagValid = true;
+	bool tag_valid = true;
 	int tag_result = 0;
+	string myinfo_speed = msg->ChunkString(eCH_MI_SPEED);
 
-	if ((!mS->mC.tag_allow_none || (mS->mC.tag_allow_none && (mS->mCo->mDCClients->mPositionInDesc >= 0))) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER))
-		TagValid = tag->ValidateTag(os, conn->mConnType, tag_result);
+	if (!conn->mConnType) // parse connection, it will be used below
+		conn->mConnType = ParseSpeed(myinfo_speed);
+
+	if ((!mS->mC.tag_allow_none || (mS->mCo->mDCClients->mPositionInDesc >= 0)) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) // validate tag
+		tag_valid = dc_tag->ValidateTag(os, conn->mConnType, tag_result);
 
 	#ifndef WITHOUT_PLUGINS
-		TagValid = TagValid && mS->mCallBacks.mOnValidateTag.CallAll(conn, tag);
+		tag_valid = tag_valid && mS->mCallBacks.mOnValidateTag.CallAll(conn, dc_tag);
 	#endif
 
-	if (!TagValid) {
+	if (!tag_valid) {
 		if (conn->Log(2))
-			conn->LogStream() << "Invalid tag with result " << tag_result << ": " << tag << endl;
+			conn->LogStream() << "Invalid tag with result " << tag_result << ": " << dc_tag << endl;
 
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_TAG_INVALID);
-		delete tag;
-		tag = NULL;
+		delete dc_tag;
+		dc_tag = NULL;
 		return -1;
 	}
 
-	bool WasPassive = conn->mpUser->IsPassive; // user might have changed his mode
+	bool was_passive = conn->mpUser->IsPassive; // user might have changed his mode
 
-	switch (tag->mClientMode) {
+	switch (dc_tag->mClientMode) {
 		case eCM_NOTAG:
 		case eCM_PASSIVE:
 		case eCM_SOCK5:
@@ -1061,8 +1054,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (conn->mpUser->mInList && (WasPassive != conn->mpUser->IsPassive)) { // change user mode if differs and not first time
-		if (WasPassive) {
+	if (conn->mpUser->mInList && (was_passive != conn->mpUser->IsPassive)) { // change user mode if differs and not first time
+		if (was_passive) {
 			if (mS->mPassiveUsers.ContainsNick(conn->mpUser->mNick))
 				mS->mPassiveUsers.RemoveByNick(conn->mpUser->mNick);
 
@@ -1077,10 +1070,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	int theoclass = conn->GetTheoricalClass();
 	string omsg;
 
-	if (conn->mpUser->IsPassive && (mS->mC.max_users_passive > -1) && (theoclass < eUC_OPERATOR) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
+	if (conn->mpUser->IsPassive && (conn->mpUser->mClass != eUC_PINGER) && (conn->mpUser->mClass < eUC_OPERATOR) && (mS->mC.max_users_passive > -1) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
 
 		if (conn->Log(2))
@@ -1089,44 +1081,39 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg, true); // must be sent after chat message, reserve for pipe
 		conn->Send(omsg, true);
-		delete tag;
-		tag = NULL;
+		delete dc_tag;
+		dc_tag = NULL;
 		return -1;
 	}
 
-	string &str_share = msg->ChunkString(eCH_MI_SIZE); // check share conditions
+	string myinfo_share = msg->ChunkString(eCH_MI_SIZE); // check share conditions
 
-	if (str_share.size() > 18) { // share is too big
-		conn->CloseNow(); // todo: notify user
-		delete tag;
-		tag = NULL;
-		return -1;
-	} else if (str_share.empty() || (str_share[0] == '-')) // missing or negative share
-		str_share = "0";
+	if ((myinfo_share.size() > 18) || !IsNumber(myinfo_share.c_str()))
+		myinfo_share = "0";
 
-	__int64 share = 0, shareB = 0;
-	shareB = StringAsLL(str_share);
-	share = shareB / (1024 * 1024);
+	__int64 share_check = 0, share_byte = 0;
+	share_byte = StringAsLL(myinfo_share);
+	share_check = share_byte / (1024 * 1024);
 
-	if (theoclass <= eUC_OPERATOR) { // calculate minimum and maximum
+	if (conn->mpUser->mClass <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
 		__int64 max_share = mS->mC.max_share;
 		__int64 min_share_p, min_share_a;
 
-		if (theoclass == eUC_PINGER) {
+		if (conn->mpUser->mClass == eUC_PINGER) {
 			min_share = 0;
 		} else {
-			if (theoclass >= eUC_REGUSER) {
+			if (conn->mpUser->mClass >= eUC_REGUSER) {
 				min_share = mS->mC.min_share_reg;
 				max_share = mS->mC.max_share_reg;
 			}
 
-			if (theoclass >= eUC_VIPUSER) {
+			if (conn->mpUser->mClass >= eUC_VIPUSER) {
 				min_share = mS->mC.min_share_vip;
 				max_share = mS->mC.max_share_vip;
 			}
 
-			if (theoclass >= eUC_OPERATOR) {
+			if (conn->mpUser->mClass >= eUC_OPERATOR) {
 				min_share = mS->mC.min_share_ops;
 				max_share = mS->mC.max_share_ops;
 			}
@@ -1141,33 +1128,33 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		//if (conn->mpUser->Can(eUR_NOSHARE, mS->mTime.Sec()))
 			//min_share = 0;
 
-		if ((share < min_share) || (max_share && (share > max_share))) {
-			if (share < min_share)
-				os << autosprintf(_("You share %s but minimum allowed is %s (%s for active users, %s for passive users)."), convertByte(shareB, false).c_str(), convertByte(min_share * 1024 * 1024, false).c_str(), convertByte(min_share_a * 1024 * 1024, false).c_str(), convertByte(min_share_p * 1024 * 1024, false).c_str());
+		if ((share_check < min_share) || (max_share && (share_check > max_share))) {
+			if (share_check < min_share)
+				os << autosprintf(_("You share %s but minimum allowed is %s (%s for active users, %s for passive users)."), convertByte(share_byte, false).c_str(), convertByte(min_share * 1024 * 1024, false).c_str(), convertByte(min_share_a * 1024 * 1024, false).c_str(), convertByte(min_share_p * 1024 * 1024, false).c_str());
 			else
-				os << autosprintf(_("You share %s but maximum allowed is %s."), convertByte(shareB, false).c_str(), convertByte(max_share * 1024 * 1024, false).c_str());
+				os << autosprintf(_("You share %s but maximum allowed is %s."), convertByte(share_byte, false).c_str(), convertByte(max_share * 1024 * 1024, false).c_str());
 
 			if (conn->Log(2))
 				conn->LogStream() << "Share limit" << endl;
 
 			mS->ConnCloseMsg(conn, os.str(), 4000, eCR_SHARE_LIMIT);
-			delete tag;
-			tag = NULL;
+			delete dc_tag;
+			dc_tag = NULL;
 			return -1;
 		}
 
-		if (theoclass <= eUC_VIPUSER) { // second share limit that disables search and download
+		if (conn->mpUser->mClass <= eUC_VIPUSER) { // second share limit that disables search and download
 			__int64 temp_min_share = 0; // todo: rename to min_share_use_hub_guest
 
-			switch (theoclass) {
-				case eUC_NORMUSER:
-					temp_min_share = mS->mC.min_share_use_hub;
-					break;
+			switch (conn->mpUser->mClass) {
 				case eUC_REGUSER:
 					temp_min_share = mS->mC.min_share_use_hub_reg;
 					break;
 				case eUC_VIPUSER:
 					temp_min_share = mS->mC.min_share_use_hub_vip;
+					break;
+				default: // eUC_NORMUSER
+					temp_min_share = mS->mC.min_share_use_hub;
 					break;
 			}
 
@@ -1175,7 +1162,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				if (conn->mpUser->IsPassive)
 					temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
 
-				if (share < temp_min_share) {
+				if (share_check < temp_min_share) {
 					conn->mpUser->SetRight(eUR_SEARCH, 0);
 					conn->mpUser->SetRight(eUR_CTM, 0);
 				}
@@ -1184,19 +1171,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
 
-		if (theoclass < use_hub_class) {
+		if (conn->mpUser->mClass < use_hub_class) {
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
 	}
 
-	if (!conn->mpUser->mHideShare) // only if not hidden
+	if (!conn->mpUser->mHideShare) // minus old share, only if not hidden
 		mS->mTotalShare -= conn->mpUser->mShare;
 
-	conn->mpUser->mShare = shareB;
+	conn->mpUser->mShare = share_byte;
 
-	if (!conn->mpUser->mHideShare) // update total share
-		mS->mTotalShare += conn->mpUser->mShare;
+	if (conn->mpUser->mHideShare) // update total share
+		myinfo_share = "0";
+	else
+		mS->mTotalShare += share_byte;
 
 	if (!conn->mpUser->mInList) { // detect clone using ip and share, only when user logs in
 		string clone;
@@ -1208,8 +1197,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				conn->LogStream() << os.str() << endl;
 
 			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
-			delete tag;
-			tag = NULL;
+			delete dc_tag;
+			dc_tag = NULL;
 			return -1;
 		}
 	}
@@ -1218,7 +1207,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		cBan Ban(mS);
 		unsigned int banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
-		if (banned && (theoclass <= eUC_REGUSER)) {
+		if (banned && (conn->mpUser->mClass <= eUC_REGUSER)) {
 			os << ((banned == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
 			Ban.DisplayUser(os);
 			mS->DCPublicHS(os.str(), conn);
@@ -1227,16 +1216,16 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				conn->LogStream() << "Kicked user due to ban detection" << endl;
 
 			conn->CloseNice(1000, eCR_KICKED);
-			delete tag;
-			tag = NULL;
+			delete dc_tag;
+			dc_tag = NULL;
 			return -1;
 		}
 
 		#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnFirstMyINFO.CallAll(conn, msg)) {
 				conn->CloseNice(1000, eCR_KICKED);
-				delete tag;
-				tag = NULL;
+				delete dc_tag;
+				dc_tag = NULL;
 				return -2;
 			}
 		#endif
@@ -1244,8 +1233,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyINFO.CallAll(conn, msg)) {
-			delete tag;
-			tag = NULL;
+			delete dc_tag;
+			dc_tag = NULL;
 			return -2;
 		}
 	#endif
@@ -1256,36 +1245,35 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (msg->mModified && msg->SplitChunks() && conn->Log(2)) // plugin has modified message, return here?
 		conn->LogStream() << "MyINFO syntax error after plugin modification" << endl;
 
-	string myinfo_full, myinfo_basic, desctag, desc, sTag, speed, email, sShare; // $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
-	desctag = msg->ChunkString(eCH_MI_DESC);
+	string temp, myinfo, myinfo_tag, myinfo_email; // $MyINFO $ALL <nick> <description><tag>$ $<speed><status>$<email>$<share>$
 
-	if (!desctag.empty()) {
-		mS->mCo->mDCClients->ParsePos(desctag); // get new tag position in case its changed
-		desc.assign(desctag, 0, mS->mCo->mDCClients->mPositionInDesc);
+	if (myinfo_desc.size()) {
+		temp = myinfo_desc;
+		mS->mCo->mDCClients->ParsePos(temp); // get new tag position in case its changed
 
-		if (mS->mCo->mDCClients->mPositionInDesc >= 0)
-			sTag.assign(desctag, mS->mCo->mDCClients->mPositionInDesc, -1);
+		if (mS->mC.show_desc_len >= 0) // hide description
+			myinfo_desc.assign(temp, 0, mS->mC.show_desc_len);
+		else
+			myinfo_desc.assign(temp, 0, mS->mCo->mDCClients->mPositionInDesc);
+
+		if (mS->mC.show_tags && mS->mCo->mDCClients->mPositionInDesc >= 0)
+			myinfo_tag.assign(temp, mS->mCo->mDCClients->mPositionInDesc, -1);
 	}
-
-	if (mS->mC.show_desc_len >= 0) // hide description
-		desc.assign(desc, 0, mS->mC.show_desc_len);
-
-	string temp;
 
 	if (mS->mC.desc_insert_mode) { // description insert mode
 		if (mS->mC.desc_insert_vars.empty()) { // insert mode only
-			switch (tag->mClientMode) {
+			switch (dc_tag->mClientMode) {
 				case eCM_ACTIVE:
-					desc = "[A]" + desc;
+					myinfo_desc = "[A]" + myinfo_desc;
 					break;
 				case eCM_PASSIVE:
-					desc = "[P]" + desc;
+					myinfo_desc = "[P]" + myinfo_desc;
 					break;
 				case eCM_SOCK5:
-					desc = "[5]" + desc;
+					myinfo_desc = "[5]" + myinfo_desc;
 					break;
 				default: // eCM_OTHER, eCM_NOTAG
-					desc = "[?]" + desc;
+					myinfo_desc = "[?]" + myinfo_desc;
 					break;
 			}
 
@@ -1314,7 +1302,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				}
 			}
 
-			switch (tag->mClientMode) {
+			switch (dc_tag->mClientMode) {
 				case eCM_ACTIVE:
 					ReplaceVarInString(temp, "MODE", temp, 'A');
 					break;
@@ -1332,39 +1320,28 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 					break;
 			}
 
-			desc = temp + desc;
+			myinfo_desc = temp + myinfo_desc;
 		}
 	}
 
-	delete tag; // tag is no longer used
-	tag = NULL;
-	speed = msg->ChunkString(eCH_MI_SPEED);
+	delete dc_tag; // dc tag is no longer used
+	dc_tag = NULL;
+	myinfo_speed = msg->ChunkString(eCH_MI_SPEED);
 
-	if (speed.size()) {
-		conn->mpUser->mMyFlag = speed[speed.size() - 1];
+	if (myinfo_speed.size()) {
+		conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1];
 
 		if (!mS->mC.show_speed) // hide speed but keep status byte
-			speed.assign(speed, speed.size() - 1, -1);
-	}
-
-	if (!mS->mC.show_email) // hide email
-		email = "";
-	else
-		email = msg->ChunkString(eCH_MI_MAIL);
-
-	if (conn->mpUser->mHideShare) // hide share
-		sShare = "0";
-	else
-		sShare = str_share;
-
-	Create_MyINFO(myinfo_basic, nick, desc, speed, email, sShare, false); // dont reserve for pipe, we are not sending this
-
-	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.show_tags < 3)) { // ops have hidden myinfo
-		myinfo_full.reserve(myinfo_basic.size()); // first use
-		myinfo_full = myinfo_basic;
+			myinfo_speed.assign(myinfo_speed, myinfo_speed.size() - 1, -1);
 	} else {
-		Create_MyINFO(myinfo_full, nick, desc + sTag, speed, email, sShare, false); // dont reserve for pipe, we are not sending this
+		myinfo_speed = "\x1";
+		conn->mpUser->mMyFlag = myinfo_speed[0];
 	}
+
+	if (mS->mC.show_email) // hide email
+		myinfo_email = msg->ChunkString(eCH_MI_MAIL);
+
+	Create_MyINFO(myinfo, nick, myinfo_desc + myinfo_tag, myinfo_speed, myinfo_email, myinfo_share, false); // dont reserve for pipe, we are not sending this
 
 	if (conn->mpUser->mInList) { // login or send to all
 		/*
@@ -1374,37 +1351,17 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				send only the version that has changed only to those who want it
 		*/
 
-		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), myinfo_full) != 0)) {
-			if (conn->mpUser->mMyINFO.capacity() < myinfo_full.size())
-				conn->mpUser->mMyINFO.reserve(myinfo_full.size());
+		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), myinfo) != 0)) {
+			if (conn->mpUser->mMyINFO.capacity() < myinfo.size())
+				conn->mpUser->mMyINFO.reserve(myinfo.size());
 
-			conn->mpUser->mMyINFO = myinfo_full;
-
-			if (StrCompare(conn->mpUser->mMyINFO_basic, 0, conn->mpUser->mMyINFO_basic.size(), myinfo_basic) != 0) {
-				if (conn->mpUser->mMyINFO_basic.capacity() < myinfo_basic.size())
-					conn->mpUser->mMyINFO_basic.reserve(myinfo_basic.size());
-
-				conn->mpUser->mMyINFO_basic = myinfo_basic;
-
-				if (mS->mC.show_tags >= 1) { // operators get full myinfo, others get short myinfo
-					myinfo_full.reserve(myinfo_full.size() + 1); // reserve for pipe
-					mS->mUserList.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
-					mS->mInProgresUsers.SendToAllWithClass(myinfo_full, eUC_OPERATOR, eUC_MASTER, mS->mC.delayed_myinfo, true);
-					myinfo_basic.reserve(myinfo_basic.size() + 1); // reserve for pipe
-					mS->mUserList.SendToAllWithClass(myinfo_basic, eUC_PINGER, eUC_VIPUSER, mS->mC.delayed_myinfo, true);
-					mS->mInProgresUsers.SendToAllWithClass(myinfo_basic, eUC_PINGER, eUC_VIPUSER, mS->mC.delayed_myinfo, true);
-				} else { // all get same myinfo
-					string send_info;
-					GetMyInfo(conn->mpUser, eUC_NORMUSER, send_info, true); // reserve for pipe
-					mS->MyINFOToUsers(send_info);
-				}
-			}
+			conn->mpUser->mMyINFO = myinfo;
+			myinfo.reserve(myinfo.size() + 1); // reserve for pipe
+			mS->MyINFOToUsers(myinfo);
 		}
 	} else { // user logs in for the first time
-		conn->mpUser->mMyINFO.reserve(myinfo_full.size()); // first use
-		conn->mpUser->mMyINFO_basic.reserve(myinfo_basic.size());
-		conn->mpUser->mMyINFO = myinfo_full; // keep myinfo
-		conn->mpUser->mMyINFO_basic = myinfo_basic;
+		conn->mpUser->mMyINFO.reserve(myinfo.size()); // first use
+		conn->mpUser->mMyINFO = myinfo;
 		conn->SetLSFlag(eLS_MYINFO);
 
 		if (conn->mFeatures & eSF_SEARRULE) { // send search rule command
@@ -1654,7 +1611,6 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 				_str.reserve(msg->mStr.size() + 1); // first use, reserve for pipe
 				_str = msg->mStr;
 				mS->mUserList.SendToAllWithFeature(_str, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
-				mS->mInProgresUsers.SendToAllWithFeature(_str, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
 				conn->mpUser->mExtJSON.reserve(msg->mStr.size());
 				conn->mpUser->mExtJSON = msg->mStr;
 			}
@@ -1697,7 +1653,10 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		return 0;
 
 	if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
-		GetMyInfo(user, conn->mpUser->mClass, omsg, true); // reserve for pipe
+		if (omsg.capacity() < (user->mMyINFO.size() + 1))
+			omsg.reserve(user->mMyINFO.size() + 1); // reserve for pipe
+
+		omsg = user->mMyINFO;
 		conn->Send(omsg, true, false); // must be flushed, else user can wait for data forever
 	}
 
@@ -3504,7 +3463,7 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 	if (!conn)
 		return true;
 
-	if (conn->mpUser && (!inlist || conn->mpUser->mInList/* || (mS->mC.delayed_login && mS->mInProgresUsers.ContainsNick(conn->mpUser->mNick))*/))
+	if (conn->mpUser && (!inlist || conn->mpUser->mInList))
 		return false;
 
 	ostringstream rsn;
@@ -3886,17 +3845,7 @@ bool cDCProto::FindInSupports(const string &list, const string &flag)
 int cDCProto::NickList(cConnDC *conn)
 {
 	try {
-		bool complete_infolist = false;
 		string _str;
-
-		if (mS->mC.show_tags >= 2) // 2 = show to all
-			complete_infolist = true;
-
-		if (conn->mpUser && (conn->mpUser->mClass >= eUC_OPERATOR))
-			complete_infolist = true;
-
-		if (mS->mC.show_tags == 0) // 0 = hide to all
-			complete_infolist = false;
 
 		if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE)
 			conn->mNickListInProgress = true;
@@ -3905,16 +3854,18 @@ int cDCProto::NickList(cConnDC *conn)
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			mS->mUserList.GetInfoList(_str, true, complete_infolist); // reserve for pipe
-			conn->Send(_str, true);
+			mS->mUserList.GetInfoList(_str, true); // reserve for pipe
+			conn->Send(_str, false); // pipe was already added by list generator
+
 		} else if (conn->mFeatures & eSF_NOGETINFO) {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
 			mS->mUserList.GetNickList(_str, true); // reserve for pipe
 			conn->Send(_str, true);
-			mS->mUserList.GetInfoList(_str, true, complete_infolist); // reserve for pipe
-			conn->Send(_str, true);
+			mS->mUserList.GetInfoList(_str, true); // reserve for pipe
+			conn->Send(_str, false); // pipe was already added by list generator
+
 		} else {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending Nicklist" << endl;
@@ -4063,34 +4014,6 @@ bool cDCProto::CheckChatMsg(const string &text, cConnDC *conn)
 
 	return true;
 }
-
-void cDCProto::GetMyInfo(cUserBase *User, int ForClass, string &dest, const bool pipe)
-{
-	if (mS->mC.show_tags + (int(ForClass >= eUC_OPERATOR) >= 2)) {
-		if (dest.capacity() < (User->mMyINFO.size() + (pipe ? 1 : 0)))
-			dest.reserve(User->mMyINFO.size() + (pipe ? 1 : 0));
-
-		dest = User->mMyINFO;
-	} else {
-		if (dest.capacity() < (User->mMyINFO_basic.size() + (pipe ? 1 : 0)))
-			dest.reserve(User->mMyINFO_basic.size() + (pipe ? 1 : 0));
-
-		dest = User->mMyINFO_basic;
-	}
-}
-
-/*
-void cDCProto::Append_MyInfoList(string &dest, const string &MyINFO, const string &MyINFO_basic, bool DoBasic)
-{
-	if (dest[dest.size() - 1] == '|')
-		dest.resize(dest.size() - 1);
-
-	if (DoBasic)
-		dest.append(MyINFO_basic);
-	else
-		dest.append(MyINFO);
-}
-*/
 
 void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share, const bool pipe)
 {

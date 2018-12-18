@@ -2053,8 +2053,6 @@ int _RegBot(lua_State *L)
 	}
 
 	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send myinfo, dont reserve for pipe, we are not sending this
-	robot->mMyINFO_basic.reserve(robot->mMyINFO.size()); // first use
-	robot->mMyINFO_basic = robot->mMyINFO;
 	string data;
 	data.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	data = robot->mMyINFO;
@@ -2204,11 +2202,6 @@ int _EditBot(lua_State *L)
 	}
 
 	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
-
-	if (robot->mMyINFO_basic.capacity() < robot->mMyINFO.size())
-		robot->mMyINFO_basic.reserve(robot->mMyINFO.size());
-
-	robot->mMyINFO_basic = robot->mMyINFO;
 
 	if (data.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
 		data.reserve(robot->mMyINFO.size() + 1);

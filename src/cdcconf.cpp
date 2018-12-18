@@ -135,7 +135,6 @@ void cDCConf::AddVars()
 	Add("nick_prefix_autoreg",nick_prefix_autoreg,string(""));
 	Add("autoreg_class", autoreg_class, 0);
 	Add("autounreg_class", autounreg_class, 0);
-	Add("nicklist_on_login", nicklist_on_login, true);
 	// End nicklist configuration
 
 	// protocol commands length
@@ -343,7 +342,6 @@ void cDCConf::AddVars()
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache", use_reglist_cache, true);
 	Add("use_penlist_cache", use_penlist_cache, true);
-	Add("delayed_login", delayed_login, false);
 	Add("delayed_myinfo", delayed_myinfo, true);
 	Add("drop_invalid_key", drop_invalid_key, false);
 	Add("delayed_ping", delayed_ping, 60);
@@ -375,7 +373,7 @@ void cDCConf::AddVars()
 	// end advanced hub configuration and tweaks
 
 	 // Tag configuration
-	Add("show_tags", show_tags, 2);
+	Add("show_tags", show_tags, true);
 	Add("tag_allow_none", tag_allow_none, true);
 	Add("tag_allow_unknown", tag_allow_unknown, true);
 	Add("tag_allow_passive", tag_allow_passive, true);

@@ -139,7 +139,7 @@ bool cConsole::cfDelPythonScript::operator()()
 	bool number = false;
 	int num = 0;
 
-	if (GetPI()->IsNumber(scriptfile.c_str())) {
+	if (IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
 		number = true;
 	} else if (scriptfile.find_first_of('/') == string::npos) {
@@ -178,7 +178,7 @@ bool cConsole::cfAddPythonScript::operator()()
 	string scriptfile;
 	GetParStr(1, scriptfile);
 
-	if (GetPI()->IsNumber(scriptfile.c_str())) {
+	if (IsNumber(scriptfile.c_str())) {
 		int num = atoi(scriptfile.c_str());
 		DIR *dir = opendir(GetPI()->mScriptDir.c_str());
 
@@ -255,7 +255,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 	int num = 0;
 	int position = 0;
 
-	if (GetPI()->IsNumber(scriptfile.c_str())) {
+	if (IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
 		number = true;
 	} else if (scriptfile.find_first_of('/') == string::npos) {

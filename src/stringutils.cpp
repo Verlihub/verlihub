@@ -299,6 +299,19 @@ __int64 StringAsLL(const string &str)
 	#endif
 }
 
+bool IsNumber(const char *num)
+{
+	if (!num || !strlen(num))
+		return false;
+
+	for (unsigned int pos = 0; pos < strlen(num); pos++) {
+		if (!isdigit(num[pos]))
+			return false;
+	}
+
+	return true;
+}
+
 unsigned int CountLines(const string &str)
 {
 	unsigned int lines = 1;

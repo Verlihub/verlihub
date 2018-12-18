@@ -32,19 +32,6 @@ namespace nVerliHub {
 	using namespace nUtils;
 	namespace nPerlPlugin {
 
-static bool IsNumber(const char* s)
-{
-	if (!s || !strlen(s))
-		return false;
-
-	for (unsigned int i = 0; i < strlen(s); i++) {
-		if (!isdigit(s[i]))
-			return false;
-	}
-
-	return true;
-}
-
 cConsole::cConsole(cpiPerl *perl):
 	mPerl(perl),
 	mCmdPerlScriptGet(0,"!perllist", "", &mcfPerlScriptGet),

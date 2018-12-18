@@ -75,7 +75,7 @@ namespace nVerliHub {
 			// myhuburl
 			eLS_MYHUBURL = 1 << 9,
 			// sum of some flags above, means the login procedure is complete
-			eLS_LOGIN_DONE = eLS_KEYOK | eLS_VALNICK | eLS_PASSWD | eLS_VERSION | eLS_MYINFO | eLS_ALLOWED | eLS_NICKLST | eLS_SUPPORTS
+			eLS_LOGIN_DONE = eLS_KEYOK | eLS_VALNICK | eLS_PASSWD | eLS_VERSION | eLS_MYINFO | eLS_ALLOWED | eLS_SUPPORTS // note: eLS_NICKLST not required anymore
 		} tLogStatus;
 
 		/**

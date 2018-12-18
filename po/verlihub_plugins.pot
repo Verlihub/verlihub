@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-12-17 20:53+0100\n"
+"POT-Creation-Date: 2018-12-18 21:59+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -223,13 +223,13 @@ msgid "Loaded Lua scripts"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:158
-#: ../plugins/perl/cconsole.cpp:69 ../plugins/python/cconsole.cpp:87
+#: ../plugins/perl/cconsole.cpp:56 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:159
-#: ../plugins/perl/cconsole.cpp:70 ../plugins/python/cconsole.cpp:88
+#: ../plugins/perl/cconsole.cpp:57 ../plugins/python/cconsole.cpp:88
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr ""
@@ -288,7 +288,7 @@ msgid "Script is now loaded: %s"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:350
-#: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:219
+#: ../plugins/perl/cconsole.cpp:163 ../plugins/perl/cconsole.cpp:206
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:301
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
@@ -368,41 +368,41 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:68
+#: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:112 ../plugins/perl/cconsole.cpp:201
+#: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:188
 #, c-format
 msgid "Script %s stopped."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:121 ../plugins/perl/cconsole.cpp:211
+#: ../plugins/perl/cconsole.cpp:108 ../plugins/perl/cconsole.cpp:198
 #, c-format
 msgid "Script #%s not stopped because it is not running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:123
+#: ../plugins/perl/cconsole.cpp:110
 #, c-format
 msgid "Script %s not stopped because it is not running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:150
+#: ../plugins/perl/cconsole.cpp:137
 #, c-format
 msgid "Failed loading directory %s."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:171
+#: ../plugins/perl/cconsole.cpp:158
 #, c-format
 msgid "Script %s is already running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:178 ../plugins/perl/cconsole.cpp:221
+#: ../plugins/perl/cconsole.cpp:165 ../plugins/perl/cconsole.cpp:208
 #, c-format
 msgid "Script %s is now running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:213
+#: ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script %s not stopped  because it is not running."
 msgstr ""

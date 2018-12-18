@@ -561,8 +561,7 @@ const char* __GetNickList()
 	if (server) {
 		string list;
 		server->mUserList.GetNickList(list, false);
-		const char *nl = list.c_str();
-		return strdup(nl);
+		return strdup(list.c_str());
 	}
 
 	return "";

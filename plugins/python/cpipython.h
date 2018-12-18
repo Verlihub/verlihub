@@ -116,7 +116,6 @@ public:
 		char **speed, char **mail, char **size);
 	w_Targs *SQL(int id, w_Targs *args);
 	void LogLevel(int);
-	bool IsNumber(const char *s);
 	int char2int(char c);
 	cPythonInterpreter *GetInterpreter(int id);
 	bool CallAll(int func, w_Targs *args);

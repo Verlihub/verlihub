@@ -131,7 +131,7 @@ public:
 	string mConnStr;
 	string mMailStr;
 	*/
-	string mMyINFO, mMyINFO_basic;
+	string mMyINFO;
 
 	// last extjson
 	string mExtJSON;
