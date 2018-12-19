@@ -460,9 +460,6 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		void SendToAll(const string &str, int cm, int cM);
 
-		// send myinfo data to all users, this could be myinfo, oplist, botlist, quit, etc
-		void MyINFOToUsers(string &data, bool botlist = false);
-
 		/**
 		* Send data to all users that are in userlist and belongs to the specified class range.
 		*
@@ -596,16 +593,12 @@ class cServerDC : public cAsyncSocketServer
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
 		char* GetConfig(const char *conf, const char *var, const char *def);
 
-		// The buffer that holds data to send to all
-		string mSendAllBuf;
 		// Static pointer to this class
 		static cServerDC *sCurrentServer;
 		// System load indicator
 		nEnums::tSysLoad mSysLoad;
 		// Last op that used the broadcast function
 		string LastBCNick;
-		// String containing all myinfos in a row
-		string mNickInfoString;
 		// Network output log
 		ofstream mNetOutLog;
 		// Hublist registration thread

@@ -441,9 +441,8 @@ int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, stri
 bool cServerDC::AddRobot(cUserRobot *robot)
 {
 	if (AddToList(robot)) {
-		mRobotList.Add(robot);
 		robot->mxServer = this;
-		return true;
+		return mRobotList.AddWithHash(robot, robot->mNickHash);
 	}
 
 	return false;
@@ -451,10 +450,8 @@ bool cServerDC::AddRobot(cUserRobot *robot)
 
 bool cServerDC::DelRobot(cUserRobot *robot)
 {
-	if (this->RemoveNick(robot)) {
-		mRobotList.Remove(robot);
-		return true;
-	}
+	if (this->RemoveNick(robot))
+		return mRobotList.RemoveByHash(robot->mNickHash);
 
 	return false;
 }
@@ -475,9 +472,7 @@ bool cServerDC::AddToList(cUser *user)
 		return false;
 	}
 
-	tUserHash Hash = mUserList.Nick2Hash(user->mNick);
-
-	if (!mUserList.AddWithHash(user, Hash)) {
+	if (!mUserList.AddWithHash(user, user->mNickHash)) {
 		if (ErrLog(2))
 			LogStream() << "Adding twice user with same hash: " << user->mNick << endl;
 
@@ -488,18 +483,18 @@ bool cServerDC::AddToList(cUser *user)
 	user->mInList = true;
 
 	if (user->IsPassive)
-		mPassiveUsers.AddWithHash(user, Hash);
+		mPassiveUsers.AddWithHash(user, user->mNickHash);
 	else
-		mActiveUsers.AddWithHash(user, Hash);
+		mActiveUsers.AddWithHash(user, user->mNickHash);
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys))
-		mOpList.AddWithHash(user, Hash);
+		mOpList.AddWithHash(user, user->mNickHash);
 
 	if (user->Can(eUR_OPCHAT, mTime.Sec()))
-		mOpchatList.AddWithHash(user, Hash);
+		mOpchatList.AddWithHash(user, user->mNickHash);
 
 	if ((user->mClass >= eUC_OPERATOR) || mC.chat_default_on)
-		mChatUsers.AddWithHash(user, Hash);
+		mChatUsers.AddWithHash(user, user->mNickHash);
 	else if (user->mxConn)
 		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
 
@@ -511,44 +506,42 @@ bool cServerDC::AddToList(cUser *user)
 
 bool cServerDC::RemoveNick(cUser *User)
 {
-	tUserHash Hash = mUserList.Nick2Hash(User->mNick);
-
-	if (mUserList.ContainsHash(Hash)) {
+	if (mUserList.ContainsHash(User->mNickHash)) {
 		#ifndef WITHOUT_PLUGINS
 			if (User->mxConn && User->mxConn->GetLSFlag(eLS_LOGIN_DONE) && User->mInList)
 				mCallBacks.mOnUserLogout.CallAll(User);
 		#endif
 
-		cUser *other = mUserList.GetUserByNick(User->mNick);
+		cUser *other = mUserList.GetUserByHash(User->mNickHash);
 
 		if (!User->mxConn)
-			mUserList.RemoveByHash(Hash);
+			mUserList.RemoveByHash(User->mNickHash);
 		else if (other && other->mxConn && User->mxConn && (other->mxConn == User->mxConn)) // make sure that the user we want to remove is the correct one
-			mUserList.RemoveByHash(Hash);
+			mUserList.RemoveByHash(User->mNickHash);
 		else
 			return false;
 	}
 
-	if (mOpList.ContainsHash(Hash))
-		mOpList.RemoveByHash(Hash);
+	if (mOpList.ContainsHash(User->mNickHash))
+		mOpList.RemoveByHash(User->mNickHash);
 
-	if (mOpchatList.ContainsHash(Hash))
-		mOpchatList.RemoveByHash(Hash);
+	if (mOpchatList.ContainsHash(User->mNickHash))
+		mOpchatList.RemoveByHash(User->mNickHash);
 
-	if (mActiveUsers.ContainsHash(Hash))
-		mActiveUsers.RemoveByHash(Hash);
+	if (mActiveUsers.ContainsHash(User->mNickHash))
+		mActiveUsers.RemoveByHash(User->mNickHash);
 
-	if (mPassiveUsers.ContainsHash(Hash))
-		mPassiveUsers.RemoveByHash(Hash);
+	if (mPassiveUsers.ContainsHash(User->mNickHash))
+		mPassiveUsers.RemoveByHash(User->mNickHash);
 
-	if (mChatUsers.ContainsHash(Hash))
-		mChatUsers.RemoveByHash(Hash);
+	if (mChatUsers.ContainsHash(User->mNickHash))
+		mChatUsers.RemoveByHash(User->mNickHash);
 
 	if (User->mInList) {
 		User->mInList = false;
 		string omsg;
 		mP.Create_Quit(omsg, User->mNick, true); // reserve for pipe
-		MyINFOToUsers(omsg); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
+		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 	}
 
 	return true;
@@ -641,14 +634,6 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	}
 
 	return NULL;
-}
-
-void cServerDC::MyINFOToUsers(string &data, bool botlist/* = false*/)
-{
-	if (botlist) // all must be already reserved for pipe
-		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
-	else
-		mUserList.SendToAll(data, mC.delayed_myinfo, true);
 }
 
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here, bug?
@@ -905,7 +890,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 			if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 				continue;
 
-			if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
+			if (other->mpUser->mNickHash == conn->mpUser->mNickHash) // dont send to self
 				continue;
 
 			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -941,7 +926,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 					continue;
 
-				if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
+				if (other->mpUser->mNickHash == conn->mpUser->mNickHash) // dont send to self
 					continue;
 
 				if (conn->mpUser->mIsLan != other->mpUser->mIsLan) // filter lan to wan and reverse
@@ -979,7 +964,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mClass < eUC_NORMUSER) // dont send to pinger
 					continue;
 
-				if (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) // dont send to self
+				if (other->mpUser->mNickHash == conn->mpUser->mNickHash) // dont send to self
 					continue;
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -1013,7 +998,7 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 		if (!(other->mFeatures & eSF_EXTJSON2)) // only those who support this
 			continue;
 
-		if (conn && conn->mpUser && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0)) // skip self
+		if (conn && conn->mpUser && (other->mpUser->mNickHash == conn->mpUser->mNickHash)) // skip self
 			continue;
 
 		if (other->mpUser->mExtJSON.empty()) // only those who actually have something
@@ -1105,11 +1090,8 @@ void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 
 bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 {
-	string userkey;
-	mUserList.Nick2Key(conn->mpUser->mNick, userkey);
-
-	if (mUserList.ContainsKey(userkey)) { // same nick
-		cUser *olduser = mUserList.GetUserByKey(userkey);
+	if (mUserList.ContainsHash(conn->mpUser->mNickHash)) { // same nick hash
+		cUser *olduser = mUserList.GetUserByHash(conn->mpUser->mNickHash);
 		bool sameuser = false;
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
@@ -1373,11 +1355,11 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	string msg;
 	msg.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
 	msg = user->mMyINFO;
-	MyINFOToUsers(msg); // all users get myinfo, use cache, so this can be after user is added
+	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(msg, user->mNick, true); // reserve for pipe
-		MyINFOToUsers(msg);
+		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
 	}
 
 	if (mC.send_user_ip && user->mxConn) { // send userip to operators
@@ -2202,7 +2184,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
-		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (StrCompare(other->mpUser->mNick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) != 0) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->IP2Num() == conn->IP2Num())) {
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mShare && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->mpUser->mShare == conn->mpUser->mShare) && (other->IP2Num() == conn->IP2Num())) {
 			count++;
 
 			if (count >= mC.clone_detect_count) { // number of clones
@@ -2562,7 +2544,7 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 
 void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op, const string &note_usr)
 {
-	if (!op || nick.empty() || (op->mNick == nick))
+	if (!op || nick.empty() || (op->mNick == nick)) // todo: possible to use user pointer instead of nick string here? then we can use mNickHash
 		return;
 
 	ostringstream ostr, toall;
@@ -2810,13 +2792,13 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					AddRobot((cMainRobot*)mHubSec);
 					data.reserve(mHubSec->mMyINFO.size() + 1); // send myinfo, first use
 					data = mHubSec->mMyINFO;
-					MyINFOToUsers(data);
+					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 					mP.Create_OpList(data, mHubSec->mNick, true); // send short oplist, reserve for pipe
-					MyINFOToUsers(data);
+					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 					mP.Create_BotList(data, mHubSec->mNick, true); // send short botlist, reserve for pipe
-					MyINFOToUsers(data, true);
+					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
@@ -2845,13 +2827,13 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						AddRobot((cMainRobot*)mOpChat);
 						data.reserve(mOpChat->mMyINFO.size() + 1); // send myinfo, first use
 						data = mOpChat->mMyINFO;
-						MyINFOToUsers(data);
+						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 						mP.Create_OpList(data, mOpChat->mNick, true); // send short oplist, reserve for pipe
-						MyINFOToUsers(data);
+						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 						mP.Create_BotList(data, mOpChat->mNick, true); // send short botlist, reserve for pipe
-						MyINFOToUsers(data, true);
+						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 					} else if (mOpChat) {
 						delete mOpChat;
 						mOpChat = NULL;
@@ -2867,14 +2849,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
 					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 					data = mHubSec->mMyINFO;
-					MyINFOToUsers(data);
+					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
 						data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 						data = mOpChat->mMyINFO;
-						MyINFOToUsers(data);
+						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 					}
 
 				} else if ((svar == "cmd_start_op") || (svar == "cmd_start_user")) {

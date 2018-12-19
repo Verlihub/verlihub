@@ -140,7 +140,7 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int clas, const char 
 		ui.mClass = eUC_REGUSER;
 
 	ui.mRegDate = cTime().Sec();
-	ui.mRegOp = (op && op->mpUser) ? op->mpUser->mNick : string("hub-security");
+	ui.mRegOp = (op && op->mpUser) ? op->mpUser->mNick : mS->mC.hub_security;
 	ui.SetPass((pass ? string(pass) : string()), cRegUserInfo::tCryptMethods(mS->mC.default_password_encryption));
 
 	if (clas < eUC_NORMUSER) // pingers dont have password

@@ -33,13 +33,21 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nUtils;
 	using namespace nEnums;
-	
+
+cServerDC* GetServer()
+{
+	return (cServerDC*)cServerDC::sCurrentServer;
+}
+
 cUserBase::cUserBase(const string &nick):
 	cObj("UserBase"),
 	mNick(nick),
+	mNickHash(0),
 	mClass(eUC_NORMUSER),
 	mInList(false)
-{}
+{
+	mNickHash = GetServer()->mUserList.Nick2Hash(nick);
+}
 
 bool cUserBase::CanSend()
 {
@@ -605,7 +613,7 @@ void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug, bo
 bool cChatRoom::ReceiveMsg(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && conn->mpUser->mInList && mCol && msg && (msg->mType == eDC_TO)) {
-		bool InList = mCol->ContainsNick(conn->mpUser->mNick);
+		bool InList = mCol->ContainsHash(conn->mpUser->mNickHash);
 
 		if (InList || IsUserAllowed(conn->mpUser)) {
 			if (!InList) // auto join

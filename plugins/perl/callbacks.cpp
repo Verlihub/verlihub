@@ -140,11 +140,11 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, con
 	//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
 	string omsg;
 	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-	server->MyINFOToUsers(omsg);
+	server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
 
 	if (uclass >= 3) {
 		server->mOpList.GetNickList(omsg, true); // reserve for pipe
-		server->MyINFOToUsers(omsg);
+		server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
 	}
 
 	return true;
@@ -168,11 +168,11 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, co
 	//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
 	string omsg;
 	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-	server->MyINFOToUsers(omsg);
+	server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
 
 	if (uclass >= 3) {
 		server->mOpList.GetNickList(omsg, true); // reserve for pipe
-		server->MyINFOToUsers(omsg);
+		server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
 	}
 
 	return true;

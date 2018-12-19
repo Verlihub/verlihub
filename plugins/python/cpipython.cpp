@@ -1314,7 +1314,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 
 	u->mMyINFO = newinfo;
 	newinfo.reserve(newinfo.size() + 1); // reserve for pipe
-	cpiPython::me->server->MyINFOToUsers(newinfo);
+	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true);
 	return w_ret1;
 }
 
@@ -1786,15 +1786,15 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 		string msg;
 		msg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 		msg = robot->mMyINFO;
-		server->MyINFOToUsers(msg);
+		server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
 
 		if (robot->mClass >= server->mC.oplist_class) {
 			server->mP.Create_OpList(msg, robot->mNick, true); // reserve for pipe
-			server->MyINFOToUsers(msg);
+			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
 		}
 
 		server->mP.Create_BotList(msg, robot->mNick, true); // reserve for pipe
-		server->MyINFOToUsers(msg, true);
+		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
 		return w_ret1;
 	}
 
