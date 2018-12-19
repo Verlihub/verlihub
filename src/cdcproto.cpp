@@ -1020,6 +1020,9 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	int tag_result = 0;
 	string myinfo_speed = msg->ChunkString(eCH_MI_SPEED);
 
+	if (myinfo_speed.empty())
+		myinfo_speed = "\x1";
+
 	if (!conn->mConnType) // parse connection, it will be used below
 		conn->mConnType = ParseSpeed(myinfo_speed);
 
@@ -1326,17 +1329,10 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	delete dc_tag; // dc tag is no longer used
 	dc_tag = NULL;
-	myinfo_speed = msg->ChunkString(eCH_MI_SPEED);
+	conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1];
 
-	if (myinfo_speed.size()) {
-		conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1];
-
-		if (!mS->mC.show_speed) // hide speed but keep status byte
-			myinfo_speed.assign(myinfo_speed, myinfo_speed.size() - 1, -1);
-	} else {
-		myinfo_speed = "\x1";
-		conn->mpUser->mMyFlag = myinfo_speed[0];
-	}
+	if (!mS->mC.show_speed && (myinfo_speed.size() > 1)) // hide speed but keep status byte
+		myinfo_speed.assign(myinfo_speed, myinfo_speed.size() - 1, -1);
 
 	if (mS->mC.show_email) // hide email
 		myinfo_email = msg->ChunkString(eCH_MI_MAIL);
@@ -4497,8 +4493,12 @@ void cDCProto::Create_SearchRule(string &dest, const string &rules, const bool p
 cConnType* cDCProto::ParseSpeed(const string &uspeed)
 {
 	string speed;
-	speed.reserve(uspeed.size() - 1);
-	speed.assign(uspeed, 0, uspeed.size() - 1);
+
+	if (uspeed.size() > 1) {
+		speed.reserve(uspeed.size() - 1);
+		speed.assign(uspeed, 0, uspeed.size() - 1);
+	}
+
 	return mS->mConnTypes->FindConnType(speed);
 }
 
