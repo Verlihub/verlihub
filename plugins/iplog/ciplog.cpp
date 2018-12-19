@@ -120,21 +120,25 @@ void cIPLog::GetHistory(const string &who, bool isNick, int limit, ostream &os)
 	os << _("Info") << "\n";
 	os << ' ' << string(70,'-') << endl;
 
-	db_iterator it;
-	for(it = db_begin(); it != db_end(); ++it) {
+	for (db_iterator it = db_begin(); it != db_end(); ++it) {
 		cBanList::Num2Ip(mModel.mIP, ip);
-		os << ' ' << "\t" << cTimePrint(mModel.mDate,0).AsDate();
+		os << ' ' << "\t" << cTimePrint(mModel.mDate, 0).AsDate();
 		os << "\t";
-		if(mModel.mType < 4)
+
+		if (mModel.mType < 4)
 			os << Actions[mModel.mType];
 		else
 			os << mModel.mType;
-		os << "\t" << (isNick ? ip : mModel.mNick.substr(0,14));
-		if(mModel.mInfo < 16) {
-			if(Infos[mModel.mInfo][0] != '\0')
+
+		os << "\t" << (isNick ? ip : mModel.mNick.substr(0, 14));
+
+		if (mModel.mInfo < 16) {
+			if (Infos[mModel.mInfo] && (Infos[mModel.mInfo][0] != '\0'))
 				os << Infos[mModel.mInfo];
-		} else
+		} else {
 			os << mModel.mInfo;
+		}
+
 		os << endl;
 	}
 

@@ -944,7 +944,7 @@ bool cAsyncConn::DNSResolveReverse(const string &ip, string &host)
 }
 
 /*
-string cAsyncConn::IPAsString(unsigned long addr)
+string cAsyncConn::IPAsString(unsigned long addr) // todo: pavel talked about this, use it instead of IP2Num?
 {
 	struct in_addr in;
 	in.s_addr = addr;

@@ -596,18 +596,20 @@ int _GetMyINFO(lua_State *L)
 	const char *myinfo;
 	int result = 1;
 
-	if(lua_gettop(L) == 2) {
-		if(!lua_isstring(L, 2)) {
+	if (lua_gettop(L) == 2) {
+		if (!lua_isstring(L, 2)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
+
 		nick = lua_tostring(L, 2);
 		myinfo = GetMyINFO(nick.c_str());
-		if(strlen(myinfo) < 1)
-		{
+
+		if (!myinfo || myinfo[0] == '\0') {
 			result = 0;
 			myinfo = "User not found";
 		}
+
 		lua_pushboolean(L, result);
 		lua_pushstring(L, myinfo);
 		return 2;

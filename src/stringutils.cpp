@@ -301,7 +301,7 @@ __int64 StringAsLL(const string &str)
 
 bool IsNumber(const char *num)
 {
-	if (!num || num[0] == '\0')
+	if (!num || (num[0] == '\0'))
 		return false;
 
 	for (unsigned int pos = 0; num[pos]; pos++) {

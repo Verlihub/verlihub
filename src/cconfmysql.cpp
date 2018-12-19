@@ -51,9 +51,9 @@ void cMySQLColumn::AppendDesc(ostream &os) const
 void cMySQLColumn::ReadFromRow(const MYSQL_ROW &row)
 {
 	mName = row[0] ? row[0] : ""; // just for sure
-	mType = row[1] ? row[1] : ""; // just for sure
+	mType = row[1] ? row[1] : "";
 	mDefault = row[4] ? row[4] : "";
-	mNull = ((row[2] != NULL) && row[2][0] != '\0');
+	mNull = ((row[2] != NULL) && (row[2][0] != '\0'));
 }
 
 bool cMySQLColumn::operator!=(const cMySQLColumn &col) const
