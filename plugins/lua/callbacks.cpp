@@ -1281,7 +1281,7 @@ int _GetNickList(lua_State *L)
 	if (lua_gettop(L) == 1) {
 		const char *nicklist = GetNickList();
 
-		if (!nicklist || (strlen(nicklist) == 0))
+		if (!nicklist || nicklist[0] == '\0')
 			result = 0;
 
 		lua_pushboolean(L, result);
