@@ -649,7 +649,7 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 			conn = user->mxConn;
 	}
 
-	bool res = serv->mR->AddRegUser(nick, conn, clas, (pass[0] != '\0') ? pass : NULL));
+	bool res = serv->mR->AddRegUser(nick, conn, clas, (pass[0] != '\0') ? pass : NULL);
 	user = GetUser(nick);
 
 	if (res && user && user->mxConn) { // no need to reconnect for class to take effect
