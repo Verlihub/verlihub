@@ -246,9 +246,11 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 
 	if (!strcmp(func, "VH_OnScriptQuery")) {
 		const char *recipient = args[2];
-		if (strlen(recipient) && strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
+
+		if (recipient && (recipient[0] != '\0') && strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
 			return true;
-		responses = (ScriptResponses *)conn;
+
+		responses = (ScriptResponses*)conn;
 		conn = NULL;
 	}
 
@@ -368,22 +370,36 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 			const char *sender = mScriptName.c_str();
 			bool to_pop = false;
 
-			if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
-			if (!answer || !strlen(answer)) {
+			if (lua_isstring(mL, -1))
+				answer = lua_tostring(mL, -1);
+
+			if ((!answer || (answer[0] == '\0')) && command && (command[0] != '\0')) {
 				if (!strcmp(command, "_get_script_file")) {
 					answer = mScriptName.c_str();
+
 				} else if (!strcmp(command, "_get_script_version")) {
 					lua_getglobal(mL, "_SCRIPTVERSION");
-					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
+
+					if (lua_isstring(mL, -1))
+						answer = lua_tostring(mL, -1);
+
 					to_pop = true;
+
 				} else if (!strcmp(command, "_get_script_name")) {
 					lua_getglobal(mL, "_SCRIPTNAME");
-					if (lua_isstring(mL, -1)) answer = lua_tostring(mL, -1);
+
+					if (lua_isstring(mL, -1))
+						answer = lua_tostring(mL, -1);
+
 					to_pop = true;
 				}
 			}
-			if (answer) responses->push_back(ScriptResponse(answer, sender));
-			if (to_pop) lua_pop(mL, 1);
+
+			if (answer && (answer[0] != '\0'))
+				responses->push_back(ScriptResponse(answer, sender));
+
+			if (to_pop)
+				lua_pop(mL, 1);
 		}
 
 		lua_pop(mL, 1);

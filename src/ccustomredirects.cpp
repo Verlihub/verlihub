@@ -137,7 +137,7 @@ namespace nVerliHub {
 
 		Random(cnt);
 
-		if (!strlen(rist[cnt]))
+		if (!rist[cnt] || (rist[cnt][0] == '\0'))
 			return NULL;
 
 		for (it = begin(); it != end(); ++it) {

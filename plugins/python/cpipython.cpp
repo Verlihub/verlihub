@@ -180,7 +180,10 @@ void cpiPython::OnLoad(cServerDC *server)
 	ostringstream o;
 	o << log_level;
 	char *level = GetConfig("pi_python", "log_level", o.str().c_str());
-	if (level && strlen(level) > 0) log_level = char2int(level[0]);
+
+	if (level && (level[0] != '\0'))
+		log_level = char2int(level[0]);
+
 	freee(level);
 
 	if (!lib_begin(callbacklist)) {
@@ -298,10 +301,13 @@ bool cpiPython::AutoLoad()
 
 const char *cpiPython::GetName(const char *path)
 {
-	if (!path || !strlen(path)) return NULL;
+	if (!path || (path[0] == '\0'))
+		return NULL;
+
 	for (int i = strlen(path) - 1; i >= 0; i--)
 		if (path[i] == '/' || path[i] == '\\')
 			return &path[i + 1];
+
 	return path;
 }
 
@@ -1546,7 +1552,7 @@ w_Targs *_AddRegUser(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "slss", &nick, &clas, &pass, &op))
 		return NULL;
 
-	if (!nick || !strlen(nick) || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+	if (!nick || (nick[0] == '\0') || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
 		return NULL;
 
 	if (!pass)
@@ -1568,7 +1574,7 @@ w_Targs *_DelRegUser(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "s", &nick))
 		return NULL;
 
-	if (!nick || !strlen(nick))
+	if (!nick || (nick[0] == '\0'))
 		return NULL;
 
 	if (DelRegUser(nick))
@@ -1585,7 +1591,7 @@ w_Targs *_SetRegClass(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "sl", &nick, &clas))
 		return NULL;
 
-	if (!nick || !strlen(nick) || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+	if (!nick || (nick[0] == '\0') || (clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
 		return NULL;
 
 	if (SetRegClass(nick, clas))
@@ -1620,7 +1626,7 @@ w_Targs *_KickUser(int id, w_Targs *args)
 	if (!user)
 		return NULL;
 
-	if (addr && strlen(addr))
+	if (addr && (addr[0] != '\0'))
 		user->mxConn->mCloseRedirect = addr;
 
 	cpiPython::me->server->DCKickNick(NULL, user, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), note_op, note_usr);
@@ -1743,7 +1749,9 @@ w_Targs *_GetConfig(int id, w_Targs *args)
 long is_robot_nick_bad(const char *nick)
 {
 	// Returns: 0 = OK, 1 = already exists, 2 = empty, 3 = bad character, 4 = reserved nick.
-	if (!nick || !strlen(nick)) return eBOT_WITHOUT_NICK;
+	if (!nick || (nick[0] == '\0'))
+		return eBOT_WITHOUT_NICK;
+
 	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
 	if (s_nick.find_first_of(badchars) != s_nick.npos) return eBOT_BAD_CHARS;
 	cServerDC *server = cpiPython::me->server;
@@ -1804,11 +1812,19 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 w_Targs *_DelRobot(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick || strlen(nick) == 0) return NULL;
-	cPluginRobot *robot = (cPluginRobot *)cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (robot)
-		if (cpiPython::me->DelRobot(robot)) return w_ret1;
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick || (nick[0] == '\0'))
+		return NULL;
+
+	cPluginRobot *robot = (cPluginRobot*)cpiPython::me->server->mUserList.GetUserByNick(nick);
+
+	if (robot) {
+		if (cpiPython::me->DelRobot(robot))
+			return w_ret1;
+	}
+
 	return NULL;
 }
 
@@ -1839,9 +1855,13 @@ w_Targs *_UserRestrictions(int id, w_Targs *args)
 {
 	long res = 0;
 	const char *nick, *nochattime, *nopmtime, *nosearchtime, *noctmtime;
+
 	if (!cpiPython::lib_unpack(args, "sssss", &nick, &nochattime, &nopmtime, &nosearchtime, &noctmtime))
 		return NULL;
-	if (!nick || strlen(nick) == 0) return NULL;
+
+	if (!nick || (nick[0] == '\0'))
+		return NULL;
+
 	string chat = (nochattime) ? nochattime : "";
 	string pm = (nopmtime) ? nopmtime : "";
 	string search = (nosearchtime) ? nosearchtime : "";
@@ -1904,7 +1924,7 @@ w_Targs *_Topic(int id, w_Targs *args)
 	if (!cpiPython::lib_unpack(args, "s", &topic))
 		return NULL;
 
-	if (topic && strlen(topic) < 1024) {
+	if (topic && (strlen(topic) < 1024)) {
 		cpiPython::me->server->mC.hub_topic = topic;
 		string msg, sTopic(topic);
 		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic, true); // reserve for pipe
@@ -1918,12 +1938,23 @@ w_Targs *_name_and_version(int id, w_Targs *args)
 {
 	const char *name, *version;
 	cPythonInterpreter *py = cpiPython::me->GetInterpreter(id);
-	if (!py) return NULL;
-	if (!cpiPython::lib_unpack(args, "ss", &name, &version)) return NULL;
-	if (!name || !strlen(name)) name = py->name.c_str();
-	else py->name = name;
-	if (!version || !strlen(version)) version = py->version.c_str();
-	else py->version = version;
+
+	if (!py)
+		return NULL;
+
+	if (!cpiPython::lib_unpack(args, "ss", &name, &version))
+		return NULL;
+
+	if (!name || (name[0] == '\0'))
+		name = py->name.c_str();
+	else
+		py->name = name;
+
+	if (!version || (version[0] == '\0'))
+		version = py->version.c_str();
+	else
+		py->version = version;
+
 	return cpiPython::lib_pack("ss", strdup(name), strdup(version));
 }
 

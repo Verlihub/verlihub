@@ -636,6 +636,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("Authors") << ":\r\n\r\n";
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Aleksandr Zenkov, webmaster at feardc dot net\r\n";
+	os << "\tFlylinkDC-dev, Pavel Pimenov, pavel dot pimenov at gmail dot com\r\n";
 	os << "\tShurik, Aleksandr Zeinalov, shurik at sbin dot ru\r\n";
 	os << "\tVovochka, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
 	os << "\t" << _("Not forgetting other 4 people who didn't want to be listed here.") << "\r\n\r\n";

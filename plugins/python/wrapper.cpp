@@ -49,18 +49,29 @@ void w_LogLevel(int level) { log_level = level; }
 // Function is similar to Python's [_start:_end] slice
 char *w_SubStr(const char *s, int _start, int _end)
 {
-	int start = _start, end = _end, len, len2;
+	int start = _start, end = _end, len = strlen(s), len2;
 	char *s2;
-	len = strlen(s);
-	if (start < 0) start = 0;
-	if (start >= len) return strdup("");
-	if (end < 0) end = len + end;
-	if (end == 0) end = len;  // Different than in Python: here [0:0] will return the whole string
-	if (end <= start) return strdup("");
-	if (end > len) end = len;
+
+	if (start < 0)
+		start = 0;
+
+	if (start >= len)
+		return strdup("");
+
+	if (end < 0)
+		end = len + end;
+
+	if (end == 0) // Different than in Python: here [0:0] will return the whole string
+		end = len;
+
+	if (end <= start)
+		return strdup("");
+
+	if (end > len)
+		end = len;
 
 	len2 = end - start;
-	s2 = (char *)malloc(len2 + 1);
+	s2 = (char*)malloc(len2 + 1);
 	s2[len2] = 0;
 	s2 = strncpy(s2, &s[start], len2);
 	return s2;
@@ -68,29 +79,42 @@ char *w_SubStr(const char *s, int _start, int _end)
 
 int w_IdentStr(const char *s1, const char *s2, int n)
 {
-	int len1, len2, i;
-	len1 = strlen(s1);
-	len2 = strlen(s2);
-	if (n > 0 && n < len1) len1 = n;
-	if (n > 0 && n < len2) len2 = n;
-	if (len1 != len2) return 0;
-	for (i = 0; i < len1; i++)
-		if (s1[i] != s2[i]) return 0;
+	int len1 = strlen(s1), len2 = strlen(s2);
+
+	if (n > 0 && n < len1)
+		len1 = n;
+
+	if (n > 0 && n < len2)
+		len2 = n;
+
+	if (len1 != len2)
+		return 0;
+
+	for (int i = 0; i < len1; i++) {
+		if (s1[i] != s2[i])
+			return 0;
+	}
+
 	return 1;
 }
 
 int w_FindStr(const char *s, const char *key, int start)
 {
-	if (start < 0) start = 0;
-	int len, len1, len2, i;
-	len1 = strlen(key);
-	len = strlen(s);
-	if (len1 > len || len1 == 0 || len == 0) return -1;
+	if (start < 0)
+		start = 0;
+
+	int len = strlen(s), len1 = strlen(key), len2;
+
+	if ((len1 > len) || (len1 == 0) || (len == 0))
+		return -1;
+
 	len2 = len - len1 + 1;
-	for (i = start; i < len2; i++)
-		if (s[i] == key[1]) {
-			if (w_IdentStr(&s[i], key, len1)) return i;
-		}
+
+	for (int i = start; i < len2; i++) {
+		if ((s[i] == key[1]) && (w_IdentStr(&s[i], key, len1)))
+			return i;
+	}
+
 	return -1;
 }
 
@@ -111,7 +135,9 @@ w_TScript *w_Python = NULL;
 w_Targs *w_vapack(const char *format, va_list ap)
 {
 	w_Targs *a;
-	for (unsigned int i = 0; i < strlen(format); i++)
+	unsigned int flen = strlen(format);
+
+	for (unsigned int i = 0; i < flen; i++) {
 		switch (format[i]) {
 			case 'l':
 			case 's':
@@ -122,10 +148,16 @@ w_Targs *w_vapack(const char *format, va_list ap)
 				log1("PY: pack: format string supports 'lsdp' and not '%c'\n", format[i]);
 				return NULL;
 		}
-	a = (w_Targs *)calloc(strlen(format) + 1, sizeof(w_Telement));
-	if (!a) return NULL;
+	}
+
+	a = (w_Targs*)calloc(flen + 1, sizeof(w_Telement));
+
+	if (!a)
+		return NULL;
+
 	a->format = format;
-	for (unsigned int i = 0; i < strlen(format); i++)
+
+	for (unsigned int i = 0; i < flen; i++) {
 		switch (format[i]) {
 			case 'l':
 				a->args[i].type = 'l';
@@ -133,7 +165,7 @@ w_Targs *w_vapack(const char *format, va_list ap)
 				break;
 			case 's':
 				a->args[i].type = 's';
-				a->args[i].s = va_arg(ap, char *);
+				a->args[i].s = va_arg(ap, char*);
 				break;
 			case 'd':
 				a->args[i].type = 'd';
@@ -141,10 +173,14 @@ w_Targs *w_vapack(const char *format, va_list ap)
 				break;
 			case 'p':
 				a->args[i].type = 'p';
-				a->args[i].p = va_arg(ap, void *);
+				a->args[i].p = va_arg(ap, void*);
 				break;
 		}
-	if (log_level > 5) log("PY: pack   format: %s\n", w_packprint(a));
+	}
+
+	if (log_level > 5)
+		log("PY: pack   format: %s\n", w_packprint(a));
+
 	return a;
 }
 
@@ -155,9 +191,15 @@ int w_vaunpack(w_Targs *a, const char *format, va_list ap)
 	double *d;
 	void **p;
 
-	if (!a || !a->format) return 0;
-	if (strcmp(format, a->format) != 0) return 0;
-	for (unsigned int i = 0; i < strlen(format); i++) {
+	if (!a || !a->format)
+		return 0;
+
+	if (strcmp(format, a->format) != 0)
+		return 0;
+
+	unsigned int flen = strlen(format);
+
+	for (unsigned int i = 0; i < flen; i++) {
 		switch (format[i]) {
 			case 'l':
 			case 's':
@@ -168,32 +210,37 @@ int w_vaunpack(w_Targs *a, const char *format, va_list ap)
 				log1("PY: unpack: format string supports 'lsdp' and not '%c'\n", format[i]);
 				return 0;
 		}
+
 		if (format[i] != a->args[i].type) {
 			log1("PY: unpack: format string and stored argument types don't match!\n");
 			return 0;
 		}
 	}
+
 	a->format = format;
-	for (unsigned int i = 0; i < strlen(format); i++)
+
+	for (unsigned int i = 0; i < flen; i++) {
 		switch (format[i]) {
 			case 'l':
-				l = va_arg(ap, long *);
+				l = va_arg(ap, long*);
 				*l = a->args[i].l;
 				break;
 			case 's':
-				s = va_arg(ap, char **);
+				s = va_arg(ap, char**);
 				*s = a->args[i].s;
 				break;
 			case 'd':
-				d = va_arg(ap, double *);
+				d = va_arg(ap, double*);
 				*d = a->args[i].d;
 				break;
 			case 'p':
-				p = va_arg(ap, void **);
+				p = va_arg(ap, void**);
 				*p = a->args[i].p;
 				break;
 		}
-	return 1;  // success
+	}
+
+	return 1; // success
 }
 
 w_Targs *w_pack(const char *format, ...)
@@ -219,11 +266,17 @@ int w_unpack(w_Targs *a, const char *format, ...)
 const char *w_packprint(w_Targs *a)
 {
 	static string o;
-	if (!a || !a->format) return "(null)";
+
+	if (!a || !a->format)
+		return "(null)";
+
 	o = string() + a->format + " ( ";
-	char *buf = (char *)calloc(410, sizeof(char));
+	char *buf = (char*)calloc(410, sizeof(char));
+
 	for (unsigned int i = 0; i < strlen(a->format); i++) {
-		if (i > 0) o += ", ";
+		if (i > 0)
+			o += ", ";
+
 		switch (a->format[i]) {
 			case 'l':
 				snprintf(buf, 400, "l:%ld", a->args[i].l);
@@ -245,6 +298,7 @@ const char *w_packprint(w_Targs *a)
 				o += "invalid";
 		}
 	}
+
 	free(buf);
 	o += " )";
 	return o.c_str();
@@ -252,9 +306,19 @@ const char *w_packprint(w_Targs *a)
 
 const char *GetName(const char *path)
 {
-	if (!path || !strlen(path)) return NULL;
-	for (int i = strlen(path) - 1; i >= 0; i--)
-		if (path[i] == '/' || path[i] == '\\') return &path[i + 1];
+	if (!path)
+		return NULL;
+
+	unsigned int plen = strlen(path);
+
+	if (!plen)
+		return NULL;
+
+	for (int i = plen - 1; i >= 0; i--) {
+		if ((path[i] == '/') || (path[i] == '\\'))
+			return &path[i + 1];
+	}
+
 	return path;
 }
 
@@ -295,77 +359,102 @@ int GetID()
 
 int Call(int func, PyObject *args, const char *in_format, const char *out_format, ...)
 {
-	if (func < 0 || func >= W_MAX_CALLBACKS || !args || !in_format || !out_format) return 0;
-	if (!w_Python->callbacks[func]) return 0;
+	if ((func < 0) || (func >= W_MAX_CALLBACKS) || !args || !in_format || !out_format)
+		return 0;
+
+	if (!w_Python->callbacks[func])
+		return 0;
+
 	long id = GetID();
+
 	if (id < 0) {
 		log("PY: Call %s: Couldn't get interpreter ID! Aborting call.\n", w_CallName(func));
 		return 0;
 	}
+
 	const char *name = w_Scripts[id]->name;
+
 	if (!PyTuple_CheckExact(args)) {
 		log1("PY: [%ld:%s] Call %s: args is not a python tuple!\n", id, name, w_CallName(func));
 		return 0;
 	}
-	char *pack_format = (char *)calloc(strlen(in_format) + 5, sizeof(char));
+
+	int in_len = strlen(in_format);
+	char *pack_format = (char*)calloc(in_len + 5, sizeof(char));
+
 	if (!pack_format) {
 		log("PY: [%ld:%s] Call %s: malloc failed!\n", id, name, w_CallName(func));
 		return 0;
 	}
+
 	int required = -1;
-	int in_len = strlen(in_format);
+
 	for (int pos = 0, pos2 = 0, end = 0; pos < in_len && end < 1; pos++) {
-		log5("PY: [%ld:%s] Call %s: scanning arguments: pos:%d, pos2:%d, char:%c\n", id, name,
-			w_CallName(func), pos, pos2, in_format[pos]);
+		log5("PY: [%ld:%s] Call %s: scanning arguments: pos:%d, pos2:%d, char:%c\n", id, name, w_CallName(func), pos, pos2, in_format[pos]);
+
 		switch (in_format[pos]) {
-			case 'l': pack_format[pos2++] = 'l'; break;
+			case 'l':
+				pack_format[pos2++] = 'l';
+				break;
 			case 'z':
-			case 's': pack_format[pos2++] = 's'; break;
-			case 'd': pack_format[pos2++] = 'd'; break;
-			case '0': pack_format[pos2++] = 'p'; break;
+			case 's':
+				pack_format[pos2++] = 's';
+				break;
+			case 'd':
+				pack_format[pos2++] = 'd';
+				break;
+			case '0':
+				pack_format[pos2++] = 'p';
+				break;
 			case ':':
-			case ';': end = 1; break;
+			case ';':
+				end = 1;
+				break;
 			case '|':
 				if (required > -1) {
-					log1("PY: [%ld:%s] Call %s: 2 pipe chars found inside the format string\n",
-						id, name, w_CallName(func));
+					log1("PY: [%ld:%s] Call %s: 2 pipe chars found inside the format string\n", id, name, w_CallName(func));
 					free(pack_format);
 					return 0;
 				}
+
 				required = pos;
 				break;
 			default:
-				log1("PY: [%ld:%s] Call %s: unsupported format character: '%c'\n",
-					id, name, w_CallName(func), in_format[pos]);
+				log1("PY: [%ld:%s] Call %s: unsupported format character: '%c'\n", id, name, w_CallName(func), in_format[pos]);
 				free(pack_format);
 				return 0;
 		}
 	}
+
 	int len = strlen(pack_format);
-	if (required < 0) required = len;
+
+	if (required < 0)
+		required = len;
 
 	int tlen = PyTuple_Size(args);
+
 	if (tlen < required) {
-		log1("PY: [%ld:%s] Call %s: too few arguments: need %d but got %d\n",
-			id, name, w_CallName(func), required, tlen);
+		log1("PY: [%ld:%s] Call %s: too few arguments: need %d but got %d\n", id, name, w_CallName(func), required, tlen);
 		PyErr_SetString(PyExc_TypeError, "too few arguments");
 		free(pack_format);
 		return 0;
 	}
+
 	if (tlen > len) {
-		log1("PY: [%ld:%s] Call %s: too many arguments: need min %d, max %d but got %d\n",
-			id, name, w_CallName(func), required, len, tlen);
+		log1("PY: [%ld:%s] Call %s: too many arguments: need min %d, max %d but got %d\n", id, name, w_CallName(func), required, len, tlen);
 		PyErr_SetString(PyExc_TypeError, "too many arguments");
 		free(pack_format);
 		return 0;
 	}
 
-	w_Targs *a = (w_Targs *)calloc(len + 1, sizeof(w_Telement));
+	w_Targs *a = (w_Targs*)calloc(len + 1, sizeof(w_Telement));
+
 	if (!a) {
 		log("PY: [%ld:%s] Call %s: malloc failed!\n", id, name, w_CallName(func));
 		free(pack_format);
 		return 0;
 	}
+
 	a->format = pack_format;
 
 	for (int i = 0; i < len; ++i) {
@@ -388,60 +477,70 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 					a->args[i].p = NULL;
 					break;
 			}
+
 			continue;
 		}
+
 		PyObject *p = PyTuple_GetItem(args, i);
+
 		if (!p) {
 			log1("PY: [%ld:%s] Call %s: failed to read argument %d\n", id, name, w_CallName(func), i + 1);
 			free(pack_format);
 			free(a);
 			return 0;
 		}
+
 		switch (pack_format[i]) {
 			case 'l':
 				a->args[i].type = 'l';
+
 				if (!PyInt_Check(p)) {
-					log1("PY: [%ld:%s] Call %s: argument %d was not an int object\n",
-						id, name, w_CallName(func), i + 1);
+					log1("PY: [%ld:%s] Call %s: argument %d was not an int object\n", id, name, w_CallName(func), i + 1);
 					free(pack_format);
 					free(a);
 					return 0;
 				}
+
 				a->args[i].l = PyInt_AsLong(p);
 				break;
 			case 's':
 				a->args[i].type = 's';
+
 				if (p == Py_None) {
 					a->args[i].s = NULL;
 					break;
 				}
+
 				if (!PyString_Check(p)) {
-					log1("PY: [%ld:%s] Call %s: argument %d was not a string object\n",
-						id, name, w_CallName(func), i + 1);
+					log1("PY: [%ld:%s] Call %s: argument %d was not a string object\n", id, name, w_CallName(func), i + 1);
 					free(pack_format);
 					free(a);
 					return 0;
 				}
+
 				a->args[i].s = PyString_AsString(p);
 				break;
 			case 'd':
 				a->args[i].type = 'd';
+
 				if (!PyFloat_Check(p)) {
-					log1("PY: [%ld:%s] Call %s: argument %d was not a float object\n",
-						id, name, w_CallName(func), i + 1);
+					log1("PY: [%ld:%s] Call %s: argument %d was not a float object\n", id, name, w_CallName(func), i + 1);
 					free(pack_format);
 					free(a);
 					return 0;
 				}
+
 				a->args[i].d = PyFloat_AsDouble(p);
 				break;
 			case 'p':
 				a->args[i].type = 'p';
+
 				if (p == Py_None) {
 					a->args[i].p = NULL;
 					break;
 				}
-				a->args[i].p = (void *)p;
+
+				a->args[i].p = (void*)p;
 				break;
 		}
 	}
@@ -458,7 +557,9 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 	PyEval_AcquireThread(state);
 
 	log2("PY: [%ld:%s] Call %s return values: %s\n", id, name, w_CallName(func), w_packprint(res));
-	if (!res) return 0;
+
+	if (!res)
+		return 0;
 
 	va_list ap;
 	va_start(ap, out_format);
@@ -466,7 +567,10 @@ int Call(int func, PyObject *args, const char *in_format, const char *out_format
 	va_end(ap);
 
 	free(res);
-	if (i) return 1;
+
+	if (i)
+		return 1;
+
 	return 0;
 }
 
@@ -587,23 +691,39 @@ static PyObject *__GetRawBotList(PyObject *self, PyObject *args)
 static PyObject *split_nick_list(const char *rawlist, const char *prefix)
 {
 	// rawlist looks like "$NickList nick1$$nick2$$lastnick$$"; here prefix is "$NickList "
-	if (!rawlist || !prefix || !strlen(rawlist) || !strlen(prefix)) Py_RETURN_NONE;
-	int i;
+	if (!rawlist)
+		Py_RETURN_NONE;
+
 	int len = strlen(rawlist);
+
+	if (!len || !prefix)
+		Py_RETURN_NONE;
+
 	int prefix_len = strlen(prefix);
+
+	if (!prefix_len)
+		Py_RETURN_NONE;
+
 	int pos = prefix_len;
-	if (len <= prefix_len + 2 || !w_IdentStr(rawlist, prefix, prefix_len))
+
+	if ((len <= (prefix_len + 2)) || !w_IdentStr(rawlist, prefix, prefix_len))
 		Py_RETURN_NONE;
 
 	PyObject *lst = PyList_New(0);
+	int i;
+
 	while (1) {
 		i = w_FindStr(rawlist, "$$", pos);
-		if (i < 0) break;
+
+		if (i < 0)
+			break;
+
 		char *element = w_SubStr(rawlist, pos, i);
 		PyList_Append(lst, Py_BuildValue("s", element));
 		free(element);
 		pos = i + 2;
 	}
+
 	return lst;
 }
 
@@ -1457,7 +1577,7 @@ bool _update_settings(w_TScript *script, const char *cmd, const char *data, cons
 	if (!script || !cmd || !data || !plug || !path) return false;
 	int id = script->id;
 	const char *name = script->name;
-	if (!strlen(plug) && !strlen(path)) {
+	if (!strlen(plug) && !strlen(path)) { // todo: here is a bug? if plug or path is null above then we never get here
 		int to_change = 0;
 		if (!strcmp(cmd, "_hub_security_change") && strcmp(data, script->botname))
 			to_change = 1;

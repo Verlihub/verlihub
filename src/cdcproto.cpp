@@ -80,7 +80,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			tMsgAct action = mS->Filter(tDCMsg(msg->mType), conn);
 	*/
 
-	size_t msg_strlen = strlen(msg->mStr.data());
+	size_t msg_strlen = strlen(msg->mStr.data()); // note: we use strlen here because it might contain null character
 
 	if (msg_strlen < msg->mLen) { // look for null character, message is already parsed by this moment
 		if (msg->mType == eDCC_LOCK) { // bug is some clients that send null character in referer
