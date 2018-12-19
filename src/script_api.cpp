@@ -230,7 +230,7 @@ bool SendToOpChat(const char *data, const char *nick)
 
 	cUser *user = NULL;
 
-	if (nick && strlen(nick))
+	if (nick && nick[0] != '\0')
 		user = GetUser(nick);
 
 	serv->mOpChat->SendPMToAll(data, (user ? user->mxConn : NULL), true, false);
@@ -642,14 +642,14 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 	cConnDC *conn = NULL;
 	cUser *user = NULL;
 
-	if (strlen(op)) {
+	if (op[0] != '\0') {
 		user = GetUser(op);
 
 		if (user && user->mxConn)
 			conn = user->mxConn;
 	}
 
-	bool res = serv->mR->AddRegUser(nick, conn, clas, (strlen(pass) ? pass : NULL));
+	bool res = serv->mR->AddRegUser(nick, conn, clas, (pass[0] != '\0') ? pass : NULL);
 	user = GetUser(nick);
 
 	if (res && user && user->mxConn) { // no need to reconnect for class to take effect

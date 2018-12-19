@@ -53,7 +53,7 @@ void cMySQLColumn::ReadFromRow(const MYSQL_ROW &row)
 	mName = row[0] ? row[0] : ""; // just for sure
 	mType = row[1] ? row[1] : ""; // just for sure
 	mDefault = row[4] ? row[4] : "";
-	mNull = ((row[2] != NULL) && strlen(row[2]));
+	mNull = ((row[2] != NULL) && row[2][0] != '\0');
 }
 
 bool cMySQLColumn::operator!=(const cMySQLColumn &col) const
