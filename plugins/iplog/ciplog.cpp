@@ -131,7 +131,7 @@ void cIPLog::GetHistory(const string &who, bool isNick, int limit, ostream &os)
 			os << mModel.mType;
 		os << "\t" << (isNick ? ip : mModel.mNick.substr(0,14));
 		if(mModel.mInfo < 16) {
-			if(strlen(Infos[mModel.mInfo]) > 0)
+			if(Infos[mModel.mInfo][0] != '\0')
 				os << Infos[mModel.mInfo];
 		} else
 			os << mModel.mInfo;

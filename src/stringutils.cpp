@@ -301,10 +301,10 @@ __int64 StringAsLL(const string &str)
 
 bool IsNumber(const char *num)
 {
-	if (!num || !strlen(num))
+	if (!num || num[0] == '\0')
 		return false;
 
-	for (unsigned int pos = 0; pos < strlen(num); pos++) {
+	for (unsigned int pos = 0; num[pos]; pos++) {
 		if (!isdigit(num[pos]))
 			return false;
 	}
