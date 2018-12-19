@@ -1056,17 +1056,17 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mInList && (was_passive != conn->mpUser->IsPassive)) { // change user mode if differs and not first time
 		if (was_passive) {
-			if (mS->mPassiveUsers.ContainsNick(conn->mpUser->mNick))
-				mS->mPassiveUsers.RemoveByNick(conn->mpUser->mNick);
+			if (mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mPassiveUsers.RemoveByHash(conn->mpUser->mNickHash);
 
-			if (!mS->mActiveUsers.ContainsNick(conn->mpUser->mNick))
-				mS->mActiveUsers.AddWithNick(conn->mpUser, conn->mpUser->mNick);
+			if (!mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mActiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 		} else {
-			if (mS->mActiveUsers.ContainsNick(conn->mpUser->mNick))
-				mS->mActiveUsers.RemoveByNick(conn->mpUser->mNick);
+			if (mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mActiveUsers.RemoveByHash(conn->mpUser->mNickHash);
 
-			if (!mS->mPassiveUsers.ContainsNick(conn->mpUser->mNick))
-				mS->mPassiveUsers.AddWithNick(conn->mpUser, conn->mpUser->mNick);
+			if (!mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mPassiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 		}
 	}
 
@@ -1357,7 +1357,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 			conn->mpUser->mMyINFO = myinfo;
 			myinfo.reserve(myinfo.size() + 1); // reserve for pipe
-			mS->MyINFOToUsers(myinfo);
+			mS->mUserList.SendToAll(myinfo, mS->mC.delayed_myinfo, true);
 		}
 	} else { // user logs in for the first time
 		conn->mpUser->mMyINFO.reserve(myinfo.size()); // first use
@@ -2022,7 +2022,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) {
+	if (mS->mUserList.Nick2Hash(nick) == conn->mpUser->mNickHash) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
@@ -2230,7 +2230,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0) {
+	if (mS->mUserList.Nick2Hash(nick) == conn->mpUser->mNickHash) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
 
@@ -3807,7 +3807,7 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 
 bool cDCProto::CheckUserNick(cConnDC *conn, const string &nick)
 {
-	if (StrCompare(nick, 0, conn->mpUser->mNick.size(), conn->mpUser->mNick) == 0)
+	if (mS->mUserList.Nick2Hash(nick) == conn->mpUser->mNickHash)
 		return false;
 
 	ostringstream os;

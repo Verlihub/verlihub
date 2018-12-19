@@ -125,6 +125,11 @@ public:
 public:
 	// users myinfo parts
 	string mNick;
+
+	// store user nick hash and use it as much as possible instead of nick
+	typedef unsigned long tHashType;
+	tHashType mNickHash;
+
 	/*
 	string mDescStr; // todo: dont define unless actually used
 	string mTagStr;
@@ -151,14 +156,18 @@ using nProtocol::cMessageDC;
 /**Any type of dc user, contains info abou the connected users
   *@author Daniel Muller
   */
-class cUser : public cUserBase
+class cUser: public cUserBase
 {
 public:
 	cUser(const string &nick = string());
-	virtual ~cUser() {}
+
+	virtual ~cUser()
+	{}
+
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
-	virtual void Send(string &data, bool pipe, bool flush=true);
+	virtual void Send(string &data, bool pipe, bool flush = true);
+
 	/** check for the right to ... */
 	inline int HaveRightTo(unsigned int mask){ return mRights & mask; }
 	/** return tru if user needs a password and the password is correct */
@@ -171,6 +180,7 @@ public:
 	nSocket::cConnDC *mxConn;
 	/* Pointer to the srever (this pointer must never be deleted) */
 	nSocket::cServerDC *mxServer;
+
 	// client flag in myinfo
 	unsigned int mMyFlag;
 	bool IsPassive; // user is in passive mode
@@ -275,20 +285,29 @@ public:
 	void ApplyRights(cPenaltyList::sPenalty &pen);
 };
 
-class cUserCollection;
-class cChatConsole;
-
-class cUserRobot : public cUser
+class cUserRobot: public cUser
 {
 public:
-	cUserRobot(nSocket::cServerDC *server = NULL){mxServer = server;};
-	virtual ~cUserRobot(){};
-	/** constructor with a nickname */
-	cUserRobot(const string &nick, nSocket::cServerDC *server = NULL):cUser(nick){mxServer = server;};
+	cUserRobot(nSocket::cServerDC *serv = NULL)
+	{
+		mxServer = serv;
+	}
+
+	virtual ~cUserRobot()
+	{}
+
+	cUserRobot(const string &nick, nSocket::cServerDC *serv = NULL):
+		cUser(nick)
+	{
+		mxServer = serv;
+	}
 
 	virtual bool ReceiveMsg(nSocket::cConnDC *conn, cMessageDC *msg) = 0;
 	bool SendPMTo(nSocket::cConnDC *conn, const string &msg);
 };
+
+class cUserCollection;
+class cChatConsole;
 
 class cChatRoom : public cUserRobot
 {

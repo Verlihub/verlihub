@@ -139,7 +139,10 @@ public:
 		ufDoNickList(string &list):
 			mList(list)
 		{
-			//mSep = "$$";
+			/*
+			mSep.reserve(2);
+			mSep = "$$";
+			*/
 		}
 
 		virtual ~ufDoNickList()
@@ -169,6 +172,7 @@ public:
 		ufDoInfoList(string &list):
 			ufDoNickList(list)
 		{
+			mSep.reserve(1);
 			mSep = "|";
 		}
 
@@ -185,6 +189,8 @@ public:
 		ufDoIPList(string &list):
 			ufDoNickList(list)
 		{
+			mSep.reserve(2);
+			mStart.reserve(8);
 			mSep = "$$";
 			mStart = "$UserIP ";
 		}
@@ -221,11 +227,13 @@ public:
 
 	void SetNickListStart(const string &start)
 	{
+		mNickListMaker.mStart.reserve(start.size());
 		mNickListMaker.mStart = start;
 	}
 
 	void SetNickListSeparator(const string &sep)
 	{
+		mNickListMaker.mSep.reserve(sep.size());
 		mNickListMaker.mSep = sep;
 	}
 
@@ -234,7 +242,8 @@ public:
 	virtual void GetIPList(string &dest, const bool pipe);
 	void Nick2Hash(const string &nick, tHashType &hash);
 
-	tHashType Nick2Hash(const string &nick) {
+	tHashType Nick2Hash(const string &nick)
+	{
 		string key;
 		Nick2Key(nick, key);
 		return Key2Hash(key); //Key2HashLower(nick)
@@ -258,12 +267,22 @@ public:
 		return NULL;
 	}
 
+	cUser* GetUserByHash(const tHashType &hash)
+	{
+		return (cUser*)GetByHash(hash);
+	}
+
 	cUserBase* GetUserBaseByNick(const string &nick)
 	{
 		if (nick.size())
 			return GetByHash(Nick2Hash(nick));
 
 		return NULL;
+	}
+
+	cUserBase* GetUserBaseByHash(const tHashType &hash)
+	{
+		return GetByHash(hash);
 	}
 
 	cUser* GetUserByNick(const string &nick)

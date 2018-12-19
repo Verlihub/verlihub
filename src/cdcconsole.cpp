@@ -609,15 +609,15 @@ int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 	if (!conn->mpUser) return 0;
 
 	if (switchon) { // chat
-		if (!mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
+		if (!mOwner->mChatUsers.ContainsHash(conn->mpUser->mNickHash)) {
 			mOwner->DCPublicHS(_("Public chat messages are now visible. To hide them, write: +nochat"), conn);
-			mOwner->mChatUsers.Add(conn->mpUser);
+			mOwner->mChatUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 		} else
 			mOwner->DCPublicHS(_("Public chat messages are already visible. To hide them, write: +nochat"), conn);
 	} else { // nochat
-		if (mOwner->mChatUsers.ContainsNick(conn->mpUser->mNick)) {
+		if (mOwner->mChatUsers.ContainsHash(conn->mpUser->mNickHash)) {
 			mOwner->DCPublicHS(_("Public chat messages are now hidden. To show them, write: +chat"), conn);
-			mOwner->mChatUsers.Remove(conn->mpUser);
+			mOwner->mChatUsers.RemoveByHash(conn->mpUser->mNickHash);
 		} else
 			mOwner->DCPublicHS(_("Public chat messages are already hidden. To show them, write: +chat"), conn);
 	}
@@ -759,20 +759,20 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 				mOwner->DCPrivateHS(_("You have been unregistered."), conn);
 				mOwner->DCPublicHS(_("You have been unregistered."), conn);
 
-				if (mOwner->mOpchatList.ContainsNick(conn->mpUser->mNick)) // opchat list
-					mOwner->mOpchatList.Remove(conn->mpUser);
+				if (mOwner->mOpchatList.ContainsHash(conn->mpUser->mNickHash)) // opchat list
+					mOwner->mOpchatList.RemoveByHash(conn->mpUser->mNickHash);
 
-				if (mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist, only if user is there
-					mOwner->mOpList.Remove(conn->mpUser);
+				if (mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist, only if user is there
+					mOwner->mOpList.RemoveByHash(conn->mpUser->mNickHash);
 
 					mOwner->mP.Create_Quit(data, conn->mpUser->mNick, true); // send quit to all, reserve for pipe
-					mOwner->MyINFOToUsers(data);
+					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
 
 					if (data.capacity() < (conn->mpUser->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 						data.reserve(conn->mpUser->mMyINFO.size() + 1);
 
 					data = conn->mpUser->mMyINFO;
-					mOwner->MyINFOToUsers(data);
+					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
 
 					if (mOwner->mC.send_user_ip) { // send userip to operators
 						mOwner->mP.Create_UserIP(data, conn->mpUser->mNick, conn->AddrIP(), true); // reserve for pipe
@@ -869,14 +869,14 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 			mOwner->DCPrivateHS(os.str(), conn);
 			mOwner->DCPublicHS(os.str(), conn);
 
-			if ((mOwner->mC.autoreg_class >= mOwner->mC.opchat_class) && !mOwner->mOpchatList.ContainsNick(conn->mpUser->mNick)) // opchat list
-				mOwner->mOpchatList.Add(conn->mpUser);
+			if ((mOwner->mC.autoreg_class >= mOwner->mC.opchat_class) && !mOwner->mOpchatList.ContainsHash(conn->mpUser->mNickHash)) // opchat list
+				mOwner->mOpchatList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 
-			if ((mOwner->mC.autoreg_class >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsNick(conn->mpUser->mNick)) { // oplist
-				mOwner->mOpList.Add(conn->mpUser);
+			if ((mOwner->mC.autoreg_class >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist
+				mOwner->mOpList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 
 				mOwner->mP.Create_OpList(data, conn->mpUser->mNick, true); // send short oplist, reserve for pipe
-				mOwner->MyINFOToUsers(data);
+				mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
 			}
 
 			conn->mpUser->mClass = tUserCl(mOwner->mC.autoreg_class);
@@ -1106,37 +1106,37 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 			user->mClass = (tUserCl)new_class;
 
 			if ((old_class < mOwner->mC.opchat_class) && (new_class >= mOwner->mC.opchat_class)) { // opchat list
-				if (!mOwner->mOpchatList.ContainsNick(user->mNick))
-					mOwner->mOpchatList.Add(user);
+				if (!mOwner->mOpchatList.ContainsHash(user->mNickHash))
+					mOwner->mOpchatList.AddWithHash(user, user->mNickHash);
 
 			} else if ((old_class >= mOwner->mC.opchat_class) && (new_class < mOwner->mC.opchat_class)) {
-				if (mOwner->mOpchatList.ContainsNick(user->mNick))
-					mOwner->mOpchatList.Remove(user);
+				if (mOwner->mOpchatList.ContainsHash(user->mNickHash))
+					mOwner->mOpchatList.RemoveByHash(user->mNickHash);
 			}
 
 			string msg;
 
 			if (user->mxConn->mRegInfo) {
 				if ((old_class < mOwner->mC.oplist_class) && (new_class >= mOwner->mC.oplist_class)) { // oplist
-					if (!user->mxConn->mRegInfo->mHideKeys && !mOwner->mOpList.ContainsNick(user->mNick)) {
-						mOwner->mOpList.Add(user);
+					if (!user->mxConn->mRegInfo->mHideKeys && !mOwner->mOpList.ContainsHash(user->mNickHash)) {
+						mOwner->mOpList.AddWithHash(user, user->mNickHash);
 
 						mOwner->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
-						mOwner->MyINFOToUsers(msg);
+						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
 					}
 
 				} else if ((old_class >= mOwner->mC.oplist_class) && (new_class < mOwner->mC.oplist_class)) {
-					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsNick(user->mNick)) {
-						mOwner->mOpList.Remove(user);
+					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsHash(user->mNickHash)) {
+						mOwner->mOpList.RemoveByHash(user->mNickHash);
 
 						mOwner->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
-						mOwner->MyINFOToUsers(msg);
+						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
 
 						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 							msg.reserve(user->mMyINFO.size() + 1);
 
 						msg = user->mMyINFO;
-						mOwner->MyINFOToUsers(msg);
+						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
 
 						if (mOwner->mC.send_user_ip) { // send userip to operators
 							mOwner->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
@@ -3100,14 +3100,14 @@ bool cDCConsole::cfRegUsr::operator()()
 					mS->DCPrivateHS(ostr.str(), user->mxConn);
 					mS->DCPublicHS(ostr.str(), user->mxConn);
 
-					if ((ParClass >= mS->mC.opchat_class) && !mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
-						mS->mOpchatList.Add(user);
+					if ((ParClass >= mS->mC.opchat_class) && !mS->mOpchatList.ContainsHash(user->mNickHash)) // opchat list
+						mS->mOpchatList.AddWithHash(user, user->mNickHash);
 
-					if ((ParClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsNick(user->mNick)) { // oplist
-						mS->mOpList.Add(user);
+					if ((ParClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsHash(user->mNickHash)) { // oplist
+						mS->mOpList.AddWithHash(user, user->mNickHash);
 
 						mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
-						mS->MyINFOToUsers(msg);
+						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 					}
 
 					user->mClass = tUserCl(ParClass);
@@ -3142,20 +3142,20 @@ bool cDCConsole::cfRegUsr::operator()()
 					mS->DCPrivateHS(_("You have been unregistered."), user->mxConn);
 					mS->DCPublicHS(_("You have been unregistered."), user->mxConn);
 
-					if (mS->mOpchatList.ContainsNick(user->mNick)) // opchat list
-						mS->mOpchatList.Remove(user);
+					if (mS->mOpchatList.ContainsHash(user->mNickHash)) // opchat list
+						mS->mOpchatList.RemoveByHash(user->mNickHash);
 
-					if (mS->mOpList.ContainsNick(user->mNick)) { // oplist, only if user is there
-						mS->mOpList.Remove(user);
+					if (mS->mOpList.ContainsHash(user->mNickHash)) { // oplist, only if user is there
+						mS->mOpList.RemoveByHash(user->mNickHash);
 
 						mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
-						mS->MyINFOToUsers(msg);
+						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all
 							msg.reserve(user->mMyINFO.size() + 1);
 
 						msg = user->mMyINFO;
-						mS->MyINFOToUsers(msg);
+						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 						if (mS->mC.send_user_ip) { // send userip to operators
 							mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
@@ -3207,35 +3207,35 @@ bool cDCConsole::cfRegUsr::operator()()
 
 			if (user && user->mxConn) { // no need to reconnect for class to take effect
 				if ((user->mClass < mS->mC.opchat_class) && (ParClass >= mS->mC.opchat_class)) { // opchat list
-					if (!mS->mOpchatList.ContainsNick(user->mNick))
-						mS->mOpchatList.Add(user);
+					if (!mS->mOpchatList.ContainsHash(user->mNickHash))
+						mS->mOpchatList.AddWithHash(user, user->mNickHash);
 
 				} else if ((user->mClass >= mS->mC.opchat_class) && (ParClass < mS->mC.opchat_class)) {
-					if (mS->mOpchatList.ContainsNick(user->mNick))
-						mS->mOpchatList.Remove(user);
+					if (mS->mOpchatList.ContainsHash(user->mNickHash))
+						mS->mOpchatList.RemoveByHash(user->mNickHash);
 				}
 
 				if (RegFound) {
 					if ((user->mClass < mS->mC.oplist_class) && (ParClass >= mS->mC.oplist_class)) { // oplist
-						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Add(user);
+						if (!ui.mHideKeys && !mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.AddWithHash(user, user->mNickHash);
 
 							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 						}
 
 					} else if ((user->mClass >= mS->mC.oplist_class) && (ParClass < mS->mC.oplist_class)) {
-						if (!ui.mHideKeys && mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Remove(user);
+						if (!ui.mHideKeys && mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.RemoveByHash(user->mNickHash);
 
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
 
 							msg = user->mMyINFO;
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
@@ -3316,28 +3316,28 @@ bool cDCConsole::cfRegUsr::operator()()
 
 				} else if (field == "hide_keys") { // hide operator key, mHideKeys always overrides mShowKeys and oplist_class has last position
 					if (ui.mHideKeys && (par == "0")) { // setting to 0
-						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && !mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Add(user);
+						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && !mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.AddWithHash(user, user->mNickHash);
 
 							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
 						}
 
 					} else if (!ui.mHideKeys && (par != "0")) { // setting to 1
-						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Remove(user);
+						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.RemoveByHash(user->mNickHash);
 
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
 
 							msg = user->mMyINFO;
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
@@ -3351,28 +3351,28 @@ bool cDCConsole::cfRegUsr::operator()()
 
 				} else if (field == "show_keys") { // show operator key, mHideKeys always overrides mShowKeys and oplist_class has last position
 					if (!ui.mShowKeys && (par != "0")) { // setting to 1
-						if (!ui.mHideKeys && !mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Add(user);
+						if (!ui.mHideKeys && !mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.AddWithHash(user, user->mNickHash);
 
 							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now visible.");
 						}
 
 					} else if (ui.mShowKeys && (par == "0")) { // setting to 0
-						if (!ui.mHideKeys && (user->mClass < mS->mC.oplist_class) && mS->mOpList.ContainsNick(user->mNick)) {
-							mS->mOpList.Remove(user);
+						if (!ui.mHideKeys && (user->mClass < mS->mC.oplist_class) && mS->mOpList.ContainsHash(user->mNickHash)) {
+							mS->mOpList.RemoveByHash(user->mNickHash);
 
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
 
 							msg = user->mMyINFO;
-							mS->MyINFOToUsers(msg);
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (mS->mC.send_user_ip) { // send userip to operators
 								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe

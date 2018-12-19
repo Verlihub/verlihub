@@ -2056,15 +2056,15 @@ int _RegBot(lua_State *L)
 	string data;
 	data.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	data = robot->mMyINFO;
-	serv->MyINFOToUsers(data);
+	serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 
 	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist, reserve for pipe
 		serv->mP.Create_OpList(data, nick, true);
-		serv->MyINFOToUsers(data);
+		serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 	}
 
 	serv->mP.Create_BotList(data, nick, true); // send short botlist, reserve for pipe
-	serv->MyINFOToUsers(data, true);
+	serv->mUserList.SendToAllWithFeature(data, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 
 	li->addBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // add to lua bots
 	lua_pushboolean(L, 1);
@@ -2170,31 +2170,31 @@ int _EditBot(lua_State *L)
 
 	if (robot->mClass != iclass) { // different class
 		if ((robot->mClass < serv->mC.opchat_class) && (iclass >= serv->mC.opchat_class)) { // add to opchat list
-			if (!serv->mOpchatList.ContainsNick(nick))
-				serv->mOpchatList.Add(robot);
+			if (!serv->mOpchatList.ContainsHash(robot->mNickHash))
+				serv->mOpchatList.AddWithHash(robot, robot->mNickHash);
 
 		} else if ((robot->mClass >= serv->mC.opchat_class) && (iclass < serv->mC.opchat_class)) { // remove from opchat list
-			if (serv->mOpchatList.ContainsNick(nick))
-				serv->mOpchatList.Remove(robot);
+			if (serv->mOpchatList.ContainsHash(robot->mNickHash))
+				serv->mOpchatList.RemoveByHash(robot->mNickHash);
 		}
 
 		if ((robot->mClass < serv->mC.oplist_class) && (iclass >= serv->mC.oplist_class)) { // changing from user to op
-			if (!serv->mOpList.ContainsNick(nick)) { // add to oplist
-				serv->mOpList.Add(robot);
+			if (!serv->mOpList.ContainsHash(robot->mNickHash)) { // add to oplist
+				serv->mOpList.AddWithHash(robot, robot->mNickHash);
 
 				serv->mP.Create_OpList(data, nick, true); // send short oplist, reserve for pipe
-				serv->MyINFOToUsers(data);
+				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 			}
 
 		} else if ((robot->mClass >= serv->mC.oplist_class) && (iclass < serv->mC.oplist_class)) { // changing from op to user
-			if (serv->mOpList.ContainsNick(nick)) { // remove from oplist
-				serv->mOpList.Remove(robot);
+			if (serv->mOpList.ContainsHash(robot->mNickHash)) { // remove from oplist
+				serv->mOpList.RemoveByHash(robot->mNickHash);
 
 				serv->mP.Create_Quit(data, nick, true); // send quit, reserve for pipe
-				serv->MyINFOToUsers(data);
+				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 
 				serv->mP.Create_BotList(data, nick, true); // send short botlist after quit, reserve for pipe
-				serv->MyINFOToUsers(data, true);
+				serv->mUserList.SendToAllWithFeature(data, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 			}
 		}
 
@@ -2207,7 +2207,7 @@ int _EditBot(lua_State *L)
 		data.reserve(robot->mMyINFO.size() + 1);
 
 	data = robot->mMyINFO;
-	serv->MyINFOToUsers(data);
+	serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 
 	li->editBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // edit in lua bots
 	lua_pushboolean(L, 1);
@@ -2707,13 +2707,13 @@ int _AddChatUser(lua_State *L)
 	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+	if (!user || !user->mxConn) {
 		luaerror(L, "User not found");
 		return 2;
 	}
 
-	if (!serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
-		serv->mChatUsers.Add(user->mxConn->mpUser);
+	if (!serv->mChatUsers.ContainsHash(user->mNickHash)) {
+		serv->mChatUsers.AddWithHash(user, user->mNickHash);
 		lua_pushboolean(L, 1);
 		lua_pushnil(L);
 	} else {
@@ -2747,13 +2747,13 @@ int _DelChatUser(lua_State *L)
 	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+	if (!user || !user->mxConn) {
 		luaerror(L, "User not found");
 		return 2;
 	}
 
-	if (serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
-		serv->mChatUsers.Remove(user->mxConn->mpUser);
+	if (serv->mChatUsers.ContainsHash(user->mNickHash)) {
+		serv->mChatUsers.RemoveByHash(user->mNickHash);
 		lua_pushboolean(L, 1);
 		lua_pushnil(L);
 	} else {
@@ -2787,12 +2787,12 @@ int _IsChatUser(lua_State *L)
 	string nick = lua_tostring(L, 2);
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (!user || !user->mxConn || !user->mxConn->mpUser) {
+	if (!user || !user->mxConn) {
 		luaerror(L, "User not found");
 		return 2;
 	}
 
-	if (serv->mChatUsers.ContainsNick(user->mxConn->mpUser->mNick)) {
+	if (serv->mChatUsers.ContainsHash(user->mNickHash)) {
 		lua_pushboolean(L, 1);
 	} else {
 		lua_pushboolean(L, 0);
