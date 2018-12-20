@@ -1752,7 +1752,7 @@ long is_robot_nick_bad(const char *nick)
 	if (!nick || (nick[0] == '\0'))
 		return eBOT_WITHOUT_NICK;
 
-	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
+	const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
 	if (s_nick.find_first_of(badchars) != s_nick.npos) return eBOT_BAD_CHARS;
 	cServerDC *server = cpiPython::me->server;
 	if ((s_nick == server->mC.hub_security) || (s_nick == server->mC.opchat_name))
