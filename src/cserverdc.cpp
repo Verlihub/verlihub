@@ -1615,7 +1615,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &more)
 {
-	string bad_nick_chars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
+	static const string bad_nick_chars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
 	bool bad = false;
 	unsigned i;
 	char chr;
@@ -2727,7 +2727,7 @@ string cServerDC::EraseNewLines(const string &src)
 
 void cServerDC::RepBadNickChars(string &nick)
 {
-	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
+	static const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
 	size_t pos;
 
 	for (unsigned i = 0; i < badchars.size(); ++i) {

@@ -864,7 +864,7 @@ int CheckBotNick(const string &nick)
 	if (nick.empty())
 		return 2;
 
-	string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
+	static const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
 
 	if (nick.npos != nick.find_first_of(badchars))
 		return 3;
