@@ -276,10 +276,6 @@ bool cpiPython::AutoLoad()
 		filename = filenames[i];
 		pathname = mScriptDir + filename;
 		cPythonInterpreter *ip = new cPythonInterpreter(pathname);
-
-		if (!ip)
-			continue;
-
 		AddData(ip);
 
 		if (ip->Init()) {
@@ -1414,10 +1410,11 @@ w_Targs *_GetUserCC(int id, w_Targs *args)
 		return NULL;
 
 	const char *cc = "";
+	string geo;
 	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(nick);
 
 	if (user && user->mxConn) {
-		string geo = user->mxConn->GetGeoCC();
+		geo = user->mxConn->GetGeoCC();
 		cc = geo.c_str();
 	}
 
@@ -1752,7 +1749,7 @@ long is_robot_nick_bad(const char *nick)
 	if (!nick || (nick[0] == '\0'))
 		return eBOT_WITHOUT_NICK;
 
-	static const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
+	const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
 
 	if (s_nick.find_first_of(badchars) != s_nick.npos)
 		return eBOT_BAD_CHARS;

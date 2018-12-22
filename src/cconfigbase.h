@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -104,7 +104,7 @@ class cConfigBaseBase : public cObj
 			iterator &operator ++() { ++mIT; return *this; }
 			iterator(iterator &it){operator=(it);}
 			bool operator != (iterator &it){ return mIT != it.mIT;}
-			cConfigBaseBase *mC;
+			cConfigBaseBase *mC = NULL;
 			tIVIt mIT;
 			iterator &Set(class cConfigBaseBase *C,const tIVIt &it){mC=C;mIT=it; return *this;}
 			iterator &operator=(iterator & it){ mIT = it.mIT; mC=it.mC; return *this;}

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -107,11 +107,11 @@ bool cPluginManager::LoadPlugin(const string &file)
 	if(Log(3))
 		LogStream() << "Attempt loading plugin: " << file << endl;
 	plugin = new cPluginLoader(file);
-	if(!plugin)
-		return false;
+
 	if(!plugin->Open() || !plugin->LoadSym() || !mPlugins.AddWithHash(plugin, mPlugins.Key2Hash(plugin->mPlugin->Name()))) {
 		mLastLoadError = plugin->Error();
 		delete plugin;
+		plugin = NULL;
 		return false;
 	}
 

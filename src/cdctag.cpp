@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -38,23 +38,28 @@ cDCTag::cDCTag(cServerDC *mS, cDCClient *c):
 	mServer(mS),
 	client(c)
 {
+	mClientVersion = 0.;
 	mTotHubs = -1;
 	mHubsUsr = -1;
 	mHubsReg = -1;
 	mHubsOp = -1;
 	mSlots = -1;
 	mLimit = -1;
+	mClientMode = eCM_PASSIVE;
 }
 
 cDCTag::cDCTag(cServerDC *mS):
-	mServer(mS)
+	mServer(mS),
+	client(NULL)
 {
+	mClientVersion = 0.;
 	mTotHubs = -1;
 	mHubsUsr = -1;
 	mHubsReg = -1;
 	mHubsOp = -1;
 	mSlots = -1;
 	mLimit = -1;
+	mClientMode = eCM_PASSIVE;
 }
 
 cDCTag::~cDCTag()

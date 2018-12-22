@@ -42,6 +42,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	mFeatures = 0;
 	mSendNickList = false;
 	mNickListInProgress = false;
+	mSkipNickList = false;
 	mConnType = NULL;
 	mCloseReason = 0;
 	SetTimeOut(eTO_LOGIN, Server()->mC.timeout_length[eTO_LOGIN], server->mTime); // default login timeout
@@ -583,12 +584,14 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 
 	cConnDC *conn = new cConnDC(sd, mServer);
 
+	/* todo: use try instead
 	if (!conn) {
 		if (mServer->Log(0))
 			mServer->LogStream() << "Failed to create new connection" << endl;
 
 		return NULL;
 	}
+	*/
 
 	conn->mxMyFactory = this;
 	conn->mxProtocol = mProtocol;
@@ -632,9 +635,7 @@ string cConnDC::GetGeoCC()
 {
 	if (mCC.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-		if (serv)
-			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
 	}
 
 	return mCC;
