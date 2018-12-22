@@ -23,7 +23,6 @@
 
 #include "src/cvhplugin.h"
 #include "src/ctimeout.h"
-#include "src/cmeanfrequency.h"
 #include <fstream>
 
 using namespace std;
