@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -98,9 +98,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-		if (serv)
-			mMaxBuffer = serv->mC.max_outbuf_size;
+		mMaxBuffer = serv->mC.max_outbuf_size;
 	}
 
 	struct sockaddr saddr;
@@ -724,7 +722,7 @@ int cAsyncConn::OnTimer(cTime &now)
 void cAsyncConn::OnFlushDone()
 {}
 
-int cAsyncConn::Write(const string &data, bool flush)
+int cAsyncConn::Write(const string &data, bool flush) // note: data can actually be empty when we perform a timed flush
 {
 	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = data.size();
 	size_t calc_size = flush_size + buf_size + data_size;

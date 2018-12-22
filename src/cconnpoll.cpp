@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -43,7 +43,8 @@ cConnPoll::~cConnPoll()
 void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 {
  	unsigned event = FD(sock).events;
-	if(!event && mask)
+
+	if (!event)
 		FD(sock).fd = sock;
 
 	if(mask & eCC_CLOSE)

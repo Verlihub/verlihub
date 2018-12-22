@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1545,10 +1545,18 @@ int w_HasHook(int id, int hook)
 		log("PY: HasHook error: No script with id: %d\n", id);
 		return 0;
 	}
+
 	w_TScript *script = w_Scripts[id];
-	if (!script || hook < 0 || hook >= W_MAX_HOOKS) return 0;
-	if (hook == W_OnOperatorCommand) return 1;
-	if (script->hooks[hook]) return 1;
+
+	if ((hook < 0) || (hook >= W_MAX_HOOKS))
+		return 0;
+
+	if (hook == W_OnOperatorCommand)
+		return 1;
+
+	if (script->hooks[hook])
+		return 1;
+
 	return 0;
 }
 

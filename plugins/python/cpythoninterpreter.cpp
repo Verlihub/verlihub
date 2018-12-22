@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -62,8 +62,10 @@ bool cPythonInterpreter::Init()
 		id = -1;
 		return false;
 	}
+
 	id = cpiPython::lib_load(a);
-	if (a) free(a);
+	free(a);
+
 	if (id > -1) {
 		log1("PY: cPythonInterpreter loaded script %d:%s\n", id, mScriptName.c_str());
 		online = true;

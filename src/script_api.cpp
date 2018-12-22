@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -429,22 +429,22 @@ const char *GetUserIP(const char *nick)
 
 bool Ban(const char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server) {
-		cerr << "Server verlihub is unfortunately not running or not found." << endl;
+	if (!serv) {
+		cerr << "Verlihub not found" << endl;
 		return false;
 	}
 
-	cUser *usr = GetUser(nick);
+	cUser *user = GetUser(nick);
 
-	if (!usr || !usr->mxConn)
+	if (!user || !user->mxConn)
 		return false;
 
-	cBan ban(server);
-	server->mBanList->NewBan(ban, usr->mxConn, op, reason, howlong, bantype);
-	server->mBanList->AddBan(ban);
-	usr->mxConn->CloseNice(1000, eCR_KICKED);
+	cBan ban(serv);
+	serv->mBanList->NewBan(ban, user->mxConn, op, reason, howlong, bantype);
+	serv->mBanList->AddBan(ban);
+	user->mxConn->CloseNice(1000, eCR_KICKED);
 	return true;
 }
 

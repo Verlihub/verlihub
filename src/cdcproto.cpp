@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1551,7 +1551,7 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	if (back_in.empty())
+	if (back_in.empty()) // todo: Expression 'back_in.empty()' is always true - this needs to be implemented for it to work
 		return 0;
 
 	/*
@@ -4782,7 +4782,7 @@ void cDCProto::EscapeChars(const char *buf, int len, string &dest, bool WithDCN)
 				} else {
 					if (c < 10)
 						olen = 7;
-					else if ((c > 10) && (c < 100))
+					else if (c < 100) // c can not be == 10 here
 						olen = 6;
 
 					os.width(olen);

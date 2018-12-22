@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1752,12 +1752,19 @@ long is_robot_nick_bad(const char *nick)
 	if (!nick || (nick[0] == '\0'))
 		return eBOT_WITHOUT_NICK;
 
-	const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
-	if (s_nick.find_first_of(badchars) != s_nick.npos) return eBOT_BAD_CHARS;
+	static const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN)), s_nick(nick);
+
+	if (s_nick.find_first_of(badchars) != s_nick.npos)
+		return eBOT_BAD_CHARS;
+
 	cServerDC *server = cpiPython::me->server;
+
 	if ((s_nick == server->mC.hub_security) || (s_nick == server->mC.opchat_name))
 		return eBOT_RESERVED_NICK;
-	if (server->mRobotList.ContainsNick(s_nick)) return eBOT_EXISTS;
+
+	if (server->mRobotList.ContainsNick(s_nick))
+		return eBOT_EXISTS;
+
 	return eBOT_OK;
 }
 
