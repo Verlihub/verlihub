@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1665,39 +1665,43 @@ int _InUserSupports(lua_State *L)
 
 int _Ban(lua_State *L)
 {
-	string nick, op, reason;
-	unsigned howlong;
-	int bantype;
+	if (lua_gettop(L) == 6) { // todo: add operator and user notes
+		if (!lua_isstring(L, 2)) {
+			luaerror(L, ERR_PARAM);
+			return 2;
+		}
 
-	if(lua_gettop(L) == 6) // todo: add operator and user notes
-	{
-		if(!lua_isstring(L, 2)) {
+		string nick = lua_tostring(L, 2);
+
+		if (!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		nick = lua_tostring(L, 2);
-		if(!lua_isstring(L, 3)) {
+
+		string op = lua_tostring(L, 3);
+
+		if (!lua_isstring(L, 4)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		op = lua_tostring(L, 3);
-		if(!lua_isstring(L, 4)) {
+
+		string reason = lua_tostring(L, 4);
+
+		if (!lua_isnumber(L, 5)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		reason = lua_tostring(L, 4);
-		if(!lua_isnumber(L, 5)) {
+
+		unsigned howlong = (unsigned)lua_tonumber(L, 5);
+
+		if (!lua_isnumber(L, 6)) {
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}
-		howlong = (unsigned) lua_tonumber(L, 5);
-		if(!lua_isnumber(L, 6)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		}
-		bantype = (int) lua_tonumber(L, 6);
-		if(!Ban(nick.c_str(), op, reason, howlong, bantype)) {
-			//lua_pushboolean(L, 0);
+
+		unsigned bantype = (unsigned)lua_tonumber(L, 6);
+
+		if (!Ban(nick.c_str(), op, reason, howlong, bantype)) {
 			luaerror(L, "User not found");
 			return 2;
 		}
@@ -1707,6 +1711,7 @@ int _Ban(lua_State *L)
 		lua_pushnil(L);
 		return 2;
 	}
+
 	lua_pushboolean(L, 1);
 	return 1;
 }

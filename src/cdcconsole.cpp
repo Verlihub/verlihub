@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1618,7 +1618,7 @@ bool cDCConsole::cfBan::operator()()
 		return false;
 	}
 
-	int BanType = eBF_NICKIP;
+	unsigned BanType = eBF_NICKIP;
 
 	if (mIdRex->PartFound(BAN_TYPE)) {
 		mIdRex->Extract(BAN_TYPE, mIdStr, tmp);
@@ -1752,7 +1752,7 @@ bool cDCConsole::cfBan::operator()()
 				case eBF_HOST2:
 				case eBF_HOST3:
 				case eBF_HOSTR1:
-					if (MyClass < (eUC_ADMIN - (BanType - eBF_HOST1))) {
+					if (unsigned(MyClass) < (eUC_ADMIN - (BanType - eBF_HOST1))) {
 						(*mOS) << _("You have no rights to do this.");
 						return false;
 					}
@@ -3048,7 +3048,7 @@ bool cDCConsole::cfRegUsr::operator()()
 			break;
 
 		case eAC_INFO:
-			authorized = (RegFound && (MyClass >= eUC_OPERATOR));
+			authorized = RegFound;
 			break;
 	}
 

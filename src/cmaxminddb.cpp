@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -747,7 +747,7 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 			string path = mServ->mDBConf.mmdb_path;
 			path += "/GeoIP2-Country.mmdb";
 
-			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
+			if (FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 
 			path = mServ->mDBConf.mmdb_path;
@@ -756,7 +756,7 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 		} else { // defaults
-			if ((ok != MMDB_SUCCESS) && FileExists("/usr/share/GeoIP/GeoIP2-Country.mmdb"))
+			if (FileExists("/usr/share/GeoIP/GeoIP2-Country.mmdb"))
 				ok = MMDB_open("/usr/share/GeoIP/GeoIP2-Country.mmdb", flags, mmdb);
 
 			if ((ok != MMDB_SUCCESS) && FileExists("/usr/local/share/GeoIP/GeoIP2-Country.mmdb"))
@@ -776,11 +776,8 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 		}
 
 		if (ok != MMDB_SUCCESS) {
-			if (mmdb) {
-				free(mmdb);
-				mmdb = NULL;
-			}
-
+			free(mmdb);
+			mmdb = NULL;
 			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind Country > http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind Country > " << mmdb->filename << endl;
@@ -801,7 +798,7 @@ MMDB_s *cMaxMindDB::TryCityDB(unsigned int flags)
 			string path = mServ->mDBConf.mmdb_path;
 			path += "/GeoIP2-City.mmdb";
 
-			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
+			if (FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 
 			path = mServ->mDBConf.mmdb_path;
@@ -810,7 +807,7 @@ MMDB_s *cMaxMindDB::TryCityDB(unsigned int flags)
 			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 		} else { // defaults
-			if ((ok != MMDB_SUCCESS) && FileExists("/usr/share/GeoIP/GeoIP2-City.mmdb"))
+			if (FileExists("/usr/share/GeoIP/GeoIP2-City.mmdb"))
 				ok = MMDB_open("/usr/share/GeoIP/GeoIP2-City.mmdb", flags, mmdb);
 
 			if ((ok != MMDB_SUCCESS) && FileExists("/usr/local/share/GeoIP/GeoIP2-City.mmdb"))
@@ -830,11 +827,8 @@ MMDB_s *cMaxMindDB::TryCityDB(unsigned int flags)
 		}
 
 		if (ok != MMDB_SUCCESS) {
-			if (mmdb) {
-				free(mmdb);
-				mmdb = NULL;
-			}
-
+			free(mmdb);
+			mmdb = NULL;
 			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind City > http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind City > " << mmdb->filename << endl;
@@ -855,7 +849,7 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 			string path = mServ->mDBConf.mmdb_path;
 			path += "/GeoIP2-ASN.mmdb";
 
-			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
+			if (FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 
 			path = mServ->mDBConf.mmdb_path;
@@ -864,7 +858,7 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 			if ((ok != MMDB_SUCCESS) && FileExists(path.c_str()))
 				ok = MMDB_open(path.c_str(), flags, mmdb);
 		} else { // defaults
-			if ((ok != MMDB_SUCCESS) && FileExists("/usr/share/GeoIP/GeoIP2-ASN.mmdb"))
+			if (FileExists("/usr/share/GeoIP/GeoIP2-ASN.mmdb"))
 				ok = MMDB_open("/usr/share/GeoIP/GeoIP2-ASN.mmdb", flags, mmdb);
 
 			if ((ok != MMDB_SUCCESS) && FileExists("/usr/local/share/GeoIP/GeoIP2-ASN.mmdb"))
@@ -884,11 +878,8 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 		}
 
 		if (ok != MMDB_SUCCESS) {
-			if (mmdb) {
-				free(mmdb);
-				mmdb = NULL;
-			}
-
+			free(mmdb);
+			mmdb = NULL;
 			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind ASN > http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind ASN > " << mmdb->filename << endl;

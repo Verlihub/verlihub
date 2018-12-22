@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -317,9 +317,6 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 		return false;
 
 	nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-	if (!serv)
-		return false;
 
 	if (GetTheoricalClass() > serv->mC.max_class_proto_flood)
 		return false;
@@ -647,9 +644,7 @@ string cConnDC::GetGeoCN()
 {
 	if (mCN.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-		if (serv)
-			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
 	}
 
 	return mCN;
@@ -659,9 +654,7 @@ string cConnDC::GetGeoCI()
 {
 	if (mCity.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-		if (serv)
-			serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
 	}
 
 	return mCity;
@@ -678,12 +671,6 @@ void cConnDC::SetGeoZone()
 	}
 
 	nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-
-	if (!serv) {
-		mGeoZone = 0;
-		return;
-	}
-
 	string cc;
 
 	for (unsigned int pos = 0; pos < 3; pos++) {

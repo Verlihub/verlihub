@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -147,9 +147,8 @@ void cAsyncSocketServer::stop(int code, int delay)
 void cAsyncSocketServer::close()
 {
 	mbRun = false;
-	tCLIt it;
 
-	for (it = mConnList.begin(); it != mConnList.end(); ++it) {
+	for (tCLIt it = mConnList.begin(); it != mConnList.end(); ++it) {
 		if (*it) {
 			mConnChooser.DelConn(*it);
 
@@ -206,7 +205,6 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 	}
 
 	bool badit = false;
-	tCLIt emptyit;
 	tCLIt it = old_conn->mIterator;
 
 	/*
@@ -214,7 +212,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 		this sometimes happens with larger amount of users
 		todo: does this leave any memory leaks?
 	*/
-	if ((it == mConnList.end()) || (it == emptyit)) {
+	if (it == mConnList.end()) {
 		vhErr(1) << "Invalid iterator for connection: " << old_conn << endl;
 		badit = true;
 		//throw "Deleting connection without iterator";
@@ -234,7 +232,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 	if (!badit)
 		mConnList.erase(it);
 
-	old_conn->mIterator = emptyit;
+	old_conn->mIterator = mConnList.end();
 
 	if (old_conn->mxMyFactory != NULL)
 		old_conn->mxMyFactory->DeleteConn(old_conn);

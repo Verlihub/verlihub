@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -516,7 +516,7 @@ bool cServerDC::RemoveNick(cUser *User)
 
 		if (!User->mxConn)
 			mUserList.RemoveByHash(User->mNickHash);
-		else if (other && other->mxConn && User->mxConn && (other->mxConn == User->mxConn)) // make sure that the user we want to remove is the correct one
+		else if (other && other->mxConn && (other->mxConn == User->mxConn)) // make sure that the user we want to remove is the correct one
 			mUserList.RemoveByHash(User->mNickHash);
 		else
 			return false;
@@ -1250,7 +1250,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		}
 	#endif
 
-	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) {
+	if ((conn->mpUser->mClass >= eUC_NORMUSER) && mC.msg_welcome[conn->mpUser->mClass].size()) { // pingers dont have welcome messages
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
 		const size_t pos = omsg.find("%[C");
@@ -1732,8 +1732,9 @@ int cServerDC::OnTimer(cTime &now)
 			mSysLoad = eSL_SYSTEM_DOWN;
 	}
 
+	unsigned int zone;
+
 	if (mC.max_upload_kbps > 0.00001) {
-		unsigned int zone;
 		double total_upload = 0.;
 
 		for (zone = 0; zone <= USER_ZONES; zone++)
@@ -1769,6 +1770,17 @@ int cServerDC::OnTimer(cTime &now)
 
 		if (mC.use_penlist_cache)
 			mPenList->UpdateCache();
+
+		/*
+			todo
+				we have a bug where current upload counter is failing sometimes
+				during high cpu usage when hub hangs it starts to show wrong values
+				Other users: 5433 of 10000 [33.04 KB/s] - while real hub upload is around 3-4 mb/s
+				temporarily we try to reset the counter every timer_reloadcfg_period - 300 seconds by default
+		*/
+
+		for (zone = 0; zone <= USER_ZONES; zone++)
+			this->mUploadZone[zone].Reset(now);
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
@@ -2172,7 +2184,7 @@ unsigned int cServerDC::CntConnIP(const unsigned long ip)
 	return tot;
 }
 
-bool cServerDC::CheckUserClone(cConnDC *conn, string &clone)
+bool cServerDC::CheckUserClone(cConnDC *conn, string &clone) // todo: add config for zero share clones
 {
 	if (!mC.clone_detect_count || !conn || !conn->mpUser || !conn->mpUser->mShare || (conn->mpUser->mClass > int(mC.max_class_check_clone)))
 		return false;

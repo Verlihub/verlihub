@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -42,6 +42,7 @@ cBan::cBan(cServerDC *s):
 	mType = 0;
 	mRangeMin = 0;
 	mRangeMax = 0;
+	mDisplayType = 0;
 }
 
 cBan::~cBan()
@@ -49,7 +50,9 @@ cBan::~cBan()
 
 cUnBan::cUnBan(cServerDC *s):
 	cBan(s)
-{}
+{
+	mDateUnban = 0;
+}
 
 cUnBan::cUnBan(cBan &Ban, cServerDC *s):
 	cBan(s)
@@ -66,6 +69,7 @@ cUnBan::cUnBan(cBan &Ban, cServerDC *s):
 	mNickOp = Ban.mNickOp;
 	mReason = Ban.mReason;
 	mType = Ban.mType;
+	mDateUnban = 0;
 }
 
 cUnBan::~cUnBan()
@@ -171,8 +175,10 @@ void cBan::SetType(unsigned type)
 {
 	for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
 		if (type == (unsigned)(1 << mType))
-			break;
+			return;
 	}
+
+	mType = eBF_NICK; // default type in case we fail
 }
 
 void cUnBan::DisplayComplete(ostream &os)
