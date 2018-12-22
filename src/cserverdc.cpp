@@ -1922,15 +1922,11 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 		to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
 		pHubList = new cHTTPConn(curhost, port); // connect
 
-		if (!pHubList || !pHubList->mGood) {
+		if (!pHubList->mGood) {
 			to_user << _("Connection error") << "\r\n";
-
-			if (pHubList) {
-				pHubList->Close();
-				delete pHubList;
-				pHubList = NULL;
-			}
-
+			pHubList->Close();
+			delete pHubList;
+			pHubList = NULL;
 			continue;
 		}
 
@@ -2975,38 +2971,33 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 	string fake;
 	ci = new cConfigItemBaseString(fake, var);
+	bool load = mSetupList.LoadItem(conf, ci);
 
-	if (ci) {
-		bool load = mSetupList.LoadItem(conf, ci);
+	if (load)
+		ci->ConvertTo(val_old);
 
-		if (load)
-			ci->ConvertTo(val_old);
+	ci->ConvertFrom(val_new);
+	ci->ConvertTo(val_new);
+	bool save = true;
 
-		ci->ConvertFrom(val_new);
-		ci->ConvertTo(val_new);
-		bool save = true;
+	#ifndef WITHOUT_PLUGINS
+		save = mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, (load ? ci->GetTypeID() : -1));
+	#endif
 
-		#ifndef WITHOUT_PLUGINS
-			save = mCallBacks.mOnSetConfig.CallAll((user ? user : mHubSec), &sconf, &svar, &val_new, &val_old, (load ? ci->GetTypeID() : -1));
-		#endif
+	if (save)
+		mSetupList.SaveItem(conf, ci);
 
-		if (save)
-			mSetupList.SaveItem(conf, ci);
-
-		delete ci;
-		ci = NULL;
-		return int(save);
-	}
-
-	return -3;
+	delete ci;
+	ci = NULL;
+	return int(save);
 }
 
 char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 {
-	char *ret = NULL;
+	char *ret = NULL; // note: caller must free non null values returned by getconfig
 
 	if (def)
-		ret = strdup(def); // caller must free non null values returned by getconfig
+		ret = strdup(def);
 
 	if (!conf || !var)
 		return ret;
@@ -3019,7 +3010,10 @@ char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 
 		if (ci) {
 			ci->ConvertTo(val);
-			if (ret) free(ret);
+
+			if (ret)
+				free(ret);
+
 			return strdup(val.c_str());
 		} else {
 			if (ErrLog(1))
@@ -3031,20 +3025,19 @@ char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 
 	string fake;
 	ci = new cConfigItemBaseString(fake, var);
+	bool load = mSetupList.LoadItem(conf, ci);
 
-	if (ci) {
-		bool load = mSetupList.LoadItem(conf, ci);
+	if (load)
+		ci->ConvertTo(val);
 
-		if (load)
-			ci->ConvertTo(val);
+	delete ci;
+	ci = NULL;
 
-		delete ci;
-		ci = NULL;
+	if (load) {
+		if (ret)
+			free(ret);
 
-		if (load) {
-			if (ret) free(ret);
-			return strdup(val.c_str());
-		}
+		return strdup(val.c_str());
 	}
 
 	return ret;
@@ -3115,15 +3108,11 @@ void cServerDC::DoStackTrace()
 
 	cHTTPConn *http = new cHTTPConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
 
-	if (!http || !http->mGood) {
+	if (!http->mGood) {
 		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
-
-		if (http) {
-			http->Close();
-			delete http;
-			http = NULL;
-		}
-
+		http->Close();
+		delete http;
+		http = NULL;
 		return;
 	}
 

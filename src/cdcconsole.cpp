@@ -1068,12 +1068,16 @@ int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 
 	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (60 * minutes) / mOwner->timer_serv_period); // 60 steps at most
 
+	/* todo: use try instead
 	if (fn) {
+	*/
 		mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
 		ostr << autosprintf(ngettext("Updating max_users variable to %d for the duration of %d minute.", "Updating max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
+	/*
 	} else {
 		ostr << autosprintf(ngettext("Failed to update max_users variable to %d for the duration of %d minute.", "Failed to update max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
 	}
+	*/
 
 	mOwner->DCPublicHS(ostr.str(), conn);
 	return 1;
@@ -1645,7 +1649,7 @@ bool cDCConsole::cfBan::operator()()
 		if (tmp != "perm") {
 			BanTime = mS->Str2Period(tmp, *mOS);
 
-			if (BanTime < 0) {
+			if (BanTime == 0) {
 				(*mOS) << _("Please provide a valid ban time.");
 				return false;
 			}
@@ -3053,7 +3057,7 @@ bool cDCConsole::cfRegUsr::operator()()
 	}
 
 	if (MyClass == eUC_MASTER)
-		authorized = (RegFound || (!RegFound && (Action == eAC_NEW)));
+		authorized = (RegFound || (Action == eAC_NEW));
 
 	if (!authorized) {
 		if (!RegFound && (Action != eAC_NEW))

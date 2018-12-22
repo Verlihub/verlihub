@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -186,7 +186,13 @@ public:
 		int mEvent;
 		int mRevent;
 		cConnBase *mConn;
-		sChooseRes():mSock(0), mEvent(nEnums::tChEvent(0)), mRevent(nEnums::tChEvent(0)), mConn(NULL){}
+
+		sChooseRes():
+			mSock(0),
+			mEvent(nEnums::eCC_INPUT),
+			mRevent(nEnums::eCC_INPUT),
+			mConn(NULL)
+		{}
 	};
 
 	#if 1

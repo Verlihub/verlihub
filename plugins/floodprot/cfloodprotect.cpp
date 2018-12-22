@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -193,7 +193,6 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 		cTime now;
 		sUserInfo * usr;
 		usr = new sUserInfo(conn->AddrIP());
-		if(!usr) return false;
 		usr->mLastAction = now;
 		usr->mElapsedTime = cTime(0,0);
 		mUserInfo.AddWithHash(usr, Hash);

@@ -90,12 +90,14 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 	mxAcceptingFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
+	mIP(0),
 	mAddrPort(0),
 	mServPort(0),
-	mType(ct)
+	mMaxBuffer(MAX_SEND_SIZE),
+	mType(ct),
+	mBufEnd(0),
+	mBufReadPos(0)
 {
-	mMaxBuffer = MAX_SEND_SIZE;
-
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
 		mMaxBuffer = serv->mC.max_outbuf_size;
@@ -104,9 +106,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 	struct sockaddr saddr;
 	struct sockaddr_in *addr_in;
 	socklen_t addr_size = sizeof(saddr);
-	mIP = 0;
 	ClearLine();
-	mBufEnd = mBufReadPos = 0;
 
 	if (mSockDesc) {
 		if (0 > getpeername(mSockDesc, &saddr, &addr_size)) {
@@ -141,6 +141,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	cObj("cAsyncConn"),
 	//mIterator(0),
+	mZLibFlag(false),
 	ok(false),
 	mWritable(true),
 #if !defined _WIN32
@@ -153,7 +154,10 @@ cAsyncConn::cAsyncConn(const string &host, int port, bool udp):
 	mxAcceptingFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
+	mIP(0),
 	mAddrPort(port),
+	mServPort(0),
+	mMaxBuffer(0),
 	mType(eCT_SERVER),
 	mBufEnd(0),
 	mBufReadPos(0),

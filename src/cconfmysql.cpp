@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -23,13 +23,16 @@
 #include <string.h>
 
 using namespace std;
+
 namespace nVerliHub {
 	using namespace nConfig;
 	using namespace nMySQL;
 	using namespace nEnums;
+
 	namespace nMySQL {
 
-cMySQLColumn::cMySQLColumn(): mNull(false)
+cMySQLColumn::cMySQLColumn():
+	mNull(false)
 {}
 
 cMySQLColumn::~cMySQLColumn()
@@ -198,16 +201,23 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 	}; // namespace nMySQL
 	namespace nConfig {
 
-cConfMySQL::cConfMySQL(cMySQL &mysql): mMySQL(mysql), mQuery(mMySQL), mMySQLTable(mMySQL)
+cConfMySQL::cConfMySQL(cMySQL &mysql):
+	mMySQL(mysql),
+	mQuery(mMySQL),
+	mCols(0),
+	mMySQLTable(mMySQL)
 {
-	if (mItemCreator != NULL)
+	if (mItemCreator)
 		delete mItemCreator;
 
 	mItemCreator = new cMySQLItemCreator;
 }
 
 cConfMySQL::~cConfMySQL()
-{}
+{
+	if (mItemCreator)
+		delete mItemCreator;
+}
 
 void cConfMySQL::CreateTable()
 {

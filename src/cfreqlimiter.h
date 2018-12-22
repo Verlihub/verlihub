@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,6 +20,7 @@
 
 #ifndef CFREQLIMITER_H
 #define CFREQLIMITER_H
+
 #include "ctimeout.h"
 #include "cmeanfrequency.h"
 
@@ -55,7 +56,10 @@ public:
 		mMaxCnt = max_cnt;
 	}
 
-	cFreqLimiter() {}
+	cFreqLimiter():
+		mMaxCnt(0)
+	{}
+
 	virtual ~cFreqLimiter() {}
 
 	/** to mesure min delay */
