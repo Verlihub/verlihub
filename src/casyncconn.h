@@ -358,7 +358,7 @@ namespace nVerliHub {
 				* Return the pointer to current read line.
 				* @return Pointer to a string.
 				*/
-				string& * cAsyncConn::GetLine()
+				string * cAsyncConn::GetLine()
 				{
 					return mxLine;
 				}
