@@ -25,11 +25,19 @@
 #include "cobj.h"
 
 #ifndef REGISTER_PLUGIN
-#define REGISTER_PLUGIN(__classname) \
+#define REGISTER_PLUGIN(__classname)\
 	extern "C" {\
-		nVerliHub::nPlugin::cPluginBase * get_plugin(void){ return new (__classname); }\
+		nVerliHub::nPlugin::cPluginBase* get_plugin(void)\
+		{\
+			return new (__classname);\
+		}\
 		void del_plugin(nVerliHub::nPlugin::cPluginBase *plugin)\
-		{if(plugin) delete plugin;}\
+		{\
+			if (plugin) {\
+				delete plugin;\
+				plugin = NULL;\
+			}\
+		}\
 	}
 #endif
 

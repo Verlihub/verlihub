@@ -866,6 +866,7 @@ static PyObject *__GetGeoIP(PyObject *self, PyObject *args)
 		}
 
 		delete data;
+		data = NULL;
 		return p;
 	}
 

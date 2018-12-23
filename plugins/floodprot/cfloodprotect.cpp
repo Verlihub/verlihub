@@ -64,8 +64,7 @@ cFloodprotect::~cFloodprotect()
 
 bool cFloodprotect::CleanUp(int secs)
 {
-	cTime now; // cleanup if expired
-	unsigned long Hash;
+	unsigned long Hash; // cleanup if expired
 	sUserInfo *userinfo = NULL;
 	tUIIt it, it2;
 
@@ -75,7 +74,7 @@ bool cFloodprotect::CleanUp(int secs)
 		++it2;
 		if(*it)
 		{
-			if((*it)->mLastAction.Sec() + secs < now.Sec())
+			if((*it)->mLastAction.Sec() + secs < mS->mTime.Sec())
     			{
 				// clean up after ?? sec inactivity
 				Hash = cBanList::Ip2Num((*it)->mIP); // todo: (*it)->conn->IP2Num()
@@ -105,15 +104,14 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 
 	if (mUserInfo.ContainsHash(Hash))
 	{
-		cTime now;
 		sUserInfo * usr = 0;
 		usr = mUserInfo.GetByHash(Hash);
 
 		if (!usr || usr->mDisabled)
 			return false;
 
-		usr->mElapsedTime += now.Get() - usr->mLastAction;
-		usr->mLastAction = now;
+		usr->mElapsedTime += mS->mTime - usr->mLastAction;
+		usr->mLastAction = mS->mTime;
 		usr->mActionCounter++;
 		usr->addFloodType(ft); // registers the current action type for later analysis
 
@@ -150,13 +148,13 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 
 				Kick.mOp = mS->mC.hub_security;
 				Kick.mIP = usr->mIP;
-				Kick.mTime = cTime().Sec();
+				Kick.mTime = mS->mTime.Sec();
 				Kick.mReason = "HIGH FLOOD FREQUENCY DETECTED!";
 				mS->mBanList->NewBan(Ban, Kick, mCfg.mBanTimeOnFlood, eBF_IP);
 				mS->mBanList->AddBan(Ban);
 				usr->mDisabled = true;
 				usr->mActionCounter = 0;
-				usr->mElapsedTime = cTime(0,0);
+				usr->mElapsedTime = cTime(0, 0);
 				return false;
 			}
 			if((usr->mElapsedTime.Sec() >= 10) && (usr->mElapsedTime.Sec() < 30)) // between 0.33 Hz and 1 Hz is medium frequency
@@ -170,7 +168,7 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 				//mS->ReportUserToOpchat(conn, text, false);
 				conn->CloseNow();
 				usr->mActionCounter = 0;
-				usr->mElapsedTime = cTime(0,0);
+				usr->mElapsedTime = cTime(0, 0);
 				return false;
 			}
 			if(usr->mElapsedTime.Sec() >= 30) // less than 0.33 Hz is low frequency
@@ -183,17 +181,16 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 				//text = os.str();
 				//mS->ReportUserToOpchat(conn, text, false);
 				usr->mActionCounter = 0;
-				usr->mElapsedTime = cTime(0,0);
+				usr->mElapsedTime = cTime(0, 0);
 				return true;
 			}
 		}
 	}
 	else
 	{
-		cTime now;
 		sUserInfo * usr;
 		usr = new sUserInfo(conn->AddrIP());
-		usr->mLastAction = now;
+		usr->mLastAction = mS->mTime;
 		usr->mElapsedTime = cTime(0,0);
 		mUserInfo.AddWithHash(usr, Hash);
 	}

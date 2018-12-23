@@ -154,6 +154,7 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 		(*it)->Unregister(plugin->mPlugin);
 
 	delete plugin;
+	plugin = NULL;
 	return true;
 }
 

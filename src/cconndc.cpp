@@ -74,6 +74,7 @@ bool cConnDC::SetUser(cUser *usr)
 		if(ErrLog(1))
 			LogStream() << "Trying to add user when it's actually done" << endl;
 		delete usr;
+		usr = NULL;
 		return false;
 	}
 	mpUser = usr;
@@ -104,7 +105,7 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 	int ret = Write(data, Flush);
 
 	if ((Server()->mTime.Sec() - mTimeLastAttempt.Sec()) >= 2) // delay 2 seconds
-		mTimeLastAttempt.Get();
+		mTimeLastAttempt = Server()->mTime;
 
 	if (ret > 0) { // calculate upload bandwidth in real time
 		SetGeoZone(); // must be called first

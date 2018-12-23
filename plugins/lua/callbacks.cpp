@@ -2532,8 +2532,7 @@ int _GetUpTime(lua_State *L)
 		if (r == 2) sf = 2;
 	}
 
-	cTime upTime;
-	upTime = server->mTime;
+	cTime upTime = server->mTime;
 	upTime -= server->mStartTime;
 	lua_pushboolean(L, 1);
 

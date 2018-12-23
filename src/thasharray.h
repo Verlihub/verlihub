@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,6 +20,7 @@
 
 #ifndef NUTILSTHASHARRAY_H
 #define NUTILSTHASHARRAY_H
+
 #include <string.h>
 #include "cobj.h"
 
@@ -448,6 +449,7 @@ namespace nVerliHub {
 								prev->mNext = it->mNext;
 								it->mNext = NULL;
 								delete it;
+								it = NULL;
 							}
 							return Data;
 						}
@@ -534,6 +536,7 @@ namespace nVerliHub {
 						Item = mData->Get(it);
 						if(Item != NULL) {
 							delete Item;
+							Item = NULL;
 						}
 						mData->Update(NULL, it);
 					}
@@ -687,11 +690,14 @@ namespace nVerliHub {
 					for (unsigned it = 0; it < OldData->Capacity(); it++) {
 						Item = OldData->Get(it);
 
-						if (Item)
+						if (Item) {
 							delete Item;
+							Item = NULL;
+						}
 					}
 
 					delete OldData;
+					OldData = NULL;
 					mIsResizing = false;
 					return 0;
 				}

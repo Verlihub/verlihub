@@ -148,6 +148,7 @@ public:
 			if (li == NULL || li->mScriptName.compare(name))
 				continue;
 			delete li;
+			li = NULL;
 			mPython.erase(it);
 			return true;
 		}

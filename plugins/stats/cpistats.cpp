@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -87,13 +87,13 @@ bool cpiStats::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 		case eDC_MSEARCH:
 		case eDC_SEARCH:
 		case eDC_TTHS:
-			mFreqSearchA.Insert(cTime());
+			mFreqSearchA.Insert(mServer->mTime);
 			break;
 
 		case eDC_MSEARCH_PAS:
 		case eDC_SEARCH_PAS:
 		case eDC_TTHS_PAS:
-			mFreqSearchP.Insert(cTime());
+			mFreqSearchP.Insert(mServer->mTime);
 			break;
 
 		default:
@@ -105,9 +105,12 @@ bool cpiStats::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 
 cpiStats::~cpiStats()
 {
-	if (mStats)
+	if (mStats) {
 		delete mStats;
+		mStats = NULL;
+	}
 }
+
 	}; // namespace nStatsPlugin
 }; // namespace nVerliHub
 REGISTER_PLUGIN(nVerliHub::nStatsPlugin::cpiStats);

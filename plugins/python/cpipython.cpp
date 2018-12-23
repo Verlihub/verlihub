@@ -79,6 +79,7 @@ cpiPython::~cpiPython()
 	if (lib_handle) dlclose(lib_handle);
 	log1("PY: cpiPython::destructor   Plugin ready to be unloaded\n");
 	delete mQuery;
+	mQuery = NULL;
 	return;
 }
 
@@ -1874,7 +1875,7 @@ w_Targs *_UserRestrictions(int id, w_Targs *args)
 	if (!u) return NULL;
 
 	long period;
-	long now = (long)nUtils::cTime().Sec();
+	long now = cpiPython::me->server->mTime.Sec();
 	long week = 3600 * 24 * 7;
 
 	if (chat.length()) {

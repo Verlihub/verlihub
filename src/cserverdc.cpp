@@ -247,8 +247,10 @@ cServerDC::~cServerDC()
 	}
 
 	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); i++) { // destruct the lists of pointers
-		if (*i)
+		if (*i) {
 			delete *i;
+			(*i) = NULL;
+		}
 	}
 
 	close();
@@ -275,7 +277,7 @@ cServerDC::~cServerDC()
 
 	if (mR) {
 		delete mR;
-		mR= NULL;
+		mR = NULL;
 	}
 
 	if (mBanList) {
@@ -1319,7 +1321,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	SendHeaders(conn, 1);
 	AfterUserLogin(conn);
 	conn->ClearTimeOut(eTO_LOGIN);
-	conn->mpUser->mT.login.Get();
+	conn->mpUser->mT.login = mTime;
 }
 
 /*
@@ -2642,7 +2644,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 				mBanList->NewBan(ban, kick, (/*user->mToBan*/to_ban ? /*user->mBanTime*/ban_time : mC.tban_kick), eBF_NICKIP);
 
 				if (ban.mDateEnd) {
-					cTimePrint age(ban.mDateEnd - cTime().Sec(), 0);
+					cTimePrint age(ban.mDateEnd - mTime.Sec(), 0);
 
 					if (mC.notify_kicks_to_all == -1) {
 						ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());

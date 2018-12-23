@@ -153,7 +153,7 @@ public:
 	};
 
 protected:
-	 int Select(cTime &tmout);
+	int Select(cTime &tmout);
 	// select settings
 	sFDSet mReadFS;
 	sFDSet mWriteFS;

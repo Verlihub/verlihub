@@ -49,10 +49,6 @@ class cBasicItemCreator
 		NewItemMethod(char *, PChar);
 		NewItemMethod(string, String);
 		NewItemMethod(double, Double);
-		virtual void DeleteItem(cConfigItemBase *item)
-		{
-			delete item;
-		}
 };
 
 
