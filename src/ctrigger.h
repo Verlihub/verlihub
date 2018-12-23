@@ -38,13 +38,13 @@ namespace nVerliHub {
 		 */
 		enum
 		{
-			//eTF_EXECUTE = 1 << 0, // Execute the content of the trigger message in as a shell command
-			eTF_SENDPM = 1 << 0, // Send trigger message as private message
-			eTF_MOTD = 1 << 1, // Trigger when an user logs in
-			eTF_HELP = 1 << 2, // Trigger on +help or !help command
-			eTF_DB = 1 << 3, // Trigger message is stored in DB (def column)
-			eTF_VARS = 1 << 4, // Replace variables
-			eTF_SENDTOALL = 1 << 5 // Send trigger message to all when triggered
+			eTF_EXECUTE = 1 << 0, // Execute the content of the trigger message in as a shell command, todo: get rid of this flag, but we need to replace it or something, else current trigger flags get messed
+			eTF_SENDPM = 1 << 1, // Send trigger message as private message
+			eTF_MOTD = 1 << 2, // Trigger when an user logs in
+			eTF_HELP = 1 << 3, // Trigger on +help or !help command
+			eTF_DB = 1 << 4, // Trigger message is stored in DB (def column)
+			eTF_VARS = 1 << 5, // Replace variables
+			eTF_SENDTOALL = 1 << 6 // Send trigger message to all when triggered
 		};
 	};
 	namespace nTables {
