@@ -271,11 +271,6 @@ void cAsyncConn::ClearLine()
 }
 
 
-string* cAsyncConn::GetLine()
-{
-	return mxLine;
-}
-
 void cAsyncConn::CloseNice(int msec)
 {
 	OnCloseNice();

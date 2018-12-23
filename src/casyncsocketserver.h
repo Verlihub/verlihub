@@ -268,7 +268,7 @@ namespace nVerliHub {
 			* @param conn The connection that has new incoming message.
 			* @param message Pointer to the new message.
 			*/
-			virtual void OnNewMessage(cAsyncConn *, string *);
+			virtual void OnNewMessage(cAsyncConn *, string& *);
 
 			/**
 			* Perform output operation on the given connection.

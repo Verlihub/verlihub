@@ -358,7 +358,10 @@ namespace nVerliHub {
 				* Return the pointer to current read line.
 				* @return Pointer to a string.
 				*/
-				string * GetLine();
+				string& * cAsyncConn::GetLine()
+				{
+					return mxLine;
+				}
 
 				/**
 				 * Return the value for the given option of the socket.

@@ -769,7 +769,7 @@ protected: // Protected methods
 	* @param conn User connection.
 	* @param msg The message.
 	*/
-	void OnNewMessage(cAsyncConn * , string * );
+	void OnNewMessage(cAsyncConn * , string& * );
 
 	/**
 	* Check if another user with same nick is already logged in.

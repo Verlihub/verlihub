@@ -277,7 +277,7 @@ int cAsyncSocketServer::output(cAsyncConn * conn)
 	return 0;
 }
 
-void cAsyncSocketServer::OnNewMessage(cAsyncConn *, string *str)
+void cAsyncSocketServer::OnNewMessage(cAsyncConn *, string& *str)
 {
 	delete str;
 	str = NULL;

@@ -1077,7 +1077,7 @@ string * cServerDC::FactoryString(cAsyncConn *conn)
 	return conn->FactoryString();
 }
 
-void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
+void cServerDC::OnNewMessage(cAsyncConn *conn, string& *str)
 {
 	size_t len = (*str).size() + 1;
 	this->mDownloadZone.Insert(this->mTime, len);
