@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -71,7 +71,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("error_cnt", "int(11)", "0", true, mModel.mErrorCount);
 	AddCol("error_ip", "varchar(16)", "", true, mModel.mErrorIP);
 	AddCol("enabled", "tinyint(1)", "1", true, mModel.mEnabled);
-	AddCol("email", "varchar(60)", "", true, mModel.mEmail);
+	//AddCol("email", "varchar(60)", "", true, mModel.mEmail);
 	AddCol("note_op", "text", "", true, mModel.mNoteOp);
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("auth_ip", "varchar(15)", "", true, mModel.mAuthIP);

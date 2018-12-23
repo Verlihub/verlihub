@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -485,13 +485,15 @@ public:
 	virtual bool OnUnLoad(long code) { return true; }
 
 	/// per-user data of the plugin
+	/*
 	virtual cPluginUserData *GetPluginUserData( cUser * );
 	virtual cPluginUserData *SetPluginUserData( cUser *, cPluginUserData *NewData );
+	*/
 
 	/// Pointer for the verlihub server
 	nSocket::cServerDC *mServer;
 	cUserCollection mRobots;
-	nUtils::tHashArray<cPluginUserData*> *mUserDataTable;
+	//nUtils::tHashArray<cPluginUserData*> *mUserDataTable;
 };
 
 	}; // namespace nPlugins

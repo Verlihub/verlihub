@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -28,13 +28,13 @@ else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 		$ENV{SystemDrive}/MySQL/*/include
 	)
 
-	if(WIN32 AND MSVC)
-		find_library(MYSQL_LIBRARIES NAMES libmysql
-			PATHS
-				$ENV{ProgramFiles}/MySQL/*/lib/opt
-				$ENV{SystemDrive}/MySQL/*/lib/opt
-		)
-	else(WIN32 AND MSVC)
+	#if(WIN32 AND MSVC)
+		#find_library(MYSQL_LIBRARIES NAMES libmysql
+			#PATHS
+				#$ENV{ProgramFiles}/MySQL/*/lib/opt
+				#$ENV{SystemDrive}/MySQL/*/lib/opt
+		#)
+	#else(WIN32 AND MSVC)
 		find_library(MYSQL_LIBRARIES NAMES mysqlclient
 			PATHS
 				/usr/lib/mysql
@@ -42,7 +42,7 @@ else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 				/usr/pkg/lib/mysql
 				/usr/local/pkg/lib/mysql
 		)
-	endif(WIN32 AND MSVC)
+	#endif(WIN32 AND MSVC)
 
 	if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 		set(MYSQL_FOUND TRUE)

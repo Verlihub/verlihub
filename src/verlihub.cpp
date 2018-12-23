@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -19,15 +19,20 @@
 */
 
 #include "stdafx.h"
+
+/*
 #ifdef _WIN32
 #include <windows.h>
 #include <tchar.h>
 #define BUFSIZE MAX_PATH
 #include <local.h>
 #endif
+*/
+
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include "cserverdc.h"
 #include <iostream>
 #include <stdlib.h>
@@ -47,7 +52,7 @@ cObj mainLogger("main");
 #define MAIN_LOG_NOTICE if (mainLogger.Log(0)) mainLogger.LogStream()
 #define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
 
-#if ! defined _WIN32
+//#if ! defined _WIN32
 void mySigPipeHandler(int i)
 {
 	signal(SIGPIPE, mySigPipeHandler);
@@ -92,8 +97,7 @@ void mySigHupHandler(int i)
 	if (serv)
 		serv->Reload();
 }
-
-#endif
+//#endif
 
 bool DirExists(const char *dirname)
 {
@@ -165,6 +169,7 @@ int main(int argc, char *argv[])
 		arg >> port;
 	}
 
+	/*
 	#ifdef _WIN32
 		TCHAR Buffer[BUFSIZE];
 
@@ -175,6 +180,7 @@ int main(int argc, char *argv[])
 
 		ConfigBase = Buffer;
 	#else
+	*/
 		const char *DirName = NULL;
 		char *HomeDir = getenv("HOME");
 		string tmp;
@@ -206,7 +212,7 @@ int main(int argc, char *argv[])
 
 		if (!ConfigBase.size())
 			ConfigBase = "/etc/verlihub";
-	#endif
+	//#endif
 
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 	try
@@ -214,13 +220,13 @@ int main(int argc, char *argv[])
 		cServerDC server(ConfigBase, argv[0]); // create server
 		cObj::msLogLevel += verbosity;
 
-		#ifndef _WIN32
+		//#ifndef _WIN32
 			signal(SIGPIPE, mySigPipeHandler);
 			signal(SIGIO,   mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP,  mySigHupHandler);
-		#endif
+		//#endif
 
 		server.StartListening(port);
 		result = server.run(); // run the main loop until it stops itself

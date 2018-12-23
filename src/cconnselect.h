@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,13 +20,18 @@
 
 #ifndef NSERVERCCONNSELECT_H
 #define NSERVERCCONNSELECT_H
+
 #include "cconnchoose.h"
+
 #if USE_SELECT
+/*
 #if defined _WIN32
 #include "Winsock2.h"
 #else
+*/
 #include <sys/select.h>
-#endif
+//#endif
+
 #include "thasharray.h"
 
 namespace nVerliHub {
@@ -87,12 +92,14 @@ public:
 		sFDSet(){ FD_ZERO(this);}
 		sFDSet & operator=(const sFDSet &set)
 		{
+			/*
 			#ifdef _WIN32
 			fd_count=set.fd_count;
 			memcpy(&fd_array,&(set.fd_array), sizeof (fd_array));
 			#else
+			*/
 			memcpy(&fds_bits,&(set.fds_bits), sizeof(fds_bits));
-			#endif
+			//#endif
 			return *this;
 		}
 		bool IsSet(tSocket sock){ return FD_ISSET(sock, this) != 0;}

@@ -687,12 +687,12 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << autosprintf(_("Class: %d [%s]"), ucl, mOwner->UserClassName(nEnums::tUserCl(ucl))) << "\r\n";
 
 	if (ucl == eUC_NORMUSER) {
-		if (conn->mpUser->IsPassive)
+		if (conn->mpUser->mPassive)
 			sear = mOwner->mC.int_search_pas;
 		else
 			sear = mOwner->mC.int_search;
 	} else if (ucl == eUC_REGUSER) {
-		if (conn->mpUser->IsPassive)
+		if (conn->mpUser->mPassive)
 			sear = mOwner->mC.int_search_reg_pas;
 		else
 			sear = mOwner->mC.int_search_reg;
@@ -709,7 +709,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	}
 
 	os << " [*] " << autosprintf(ngettext("Search interval: %d second", "Search interval: %d seconds", sear), sear) << "\r\n";
-	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->IsPassive ? _("Passive") : _("Active"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->mPassive ? _("Passive") : _("Active"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
 	mOwner->DCPublicHS(os.str(), conn);

@@ -19,11 +19,15 @@
 */
 
 #include "casyncsocketserver.h"
+
+/*
 #if defined _WIN32
 #  include <Winsock2.h>
 #else
-#  include <sys/socket.h>
-#endif
+*/
+#include <sys/socket.h>
+//#endif
+
 #include <unistd.h>
 #include <stdio.h>
 #include <algorithm>
@@ -36,7 +40,7 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nSocket {
 
-	bool nSocket::cAsyncSocketServer::WSinitialized = false;
+	//bool nSocket::cAsyncSocketServer::WSinitialized = false;
 
 cAsyncSocketServer::cAsyncSocketServer(int port):
 	cObj("cAsyncSocketServer"),
@@ -53,6 +57,7 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	mRunResult(0),
 	mNowTreating(NULL)
 {
+	/*
 	#ifdef _WIN32
 	if(!this->WSinitialized) {
 
@@ -64,22 +69,18 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 
 		err = WSAStartup(wVersionRequested, &wsaData);
 		if(err != 0) {
-			/* Tell the user that we could not find a usable */
-			/* WinSock DLL.                                  */
+			// Tell the user that we could not find a usable
+			// WinSock DLL.
 			return;
 		}
 
-		/*
-		 * Confirm that the WinSock DLL supports 2.2.
-		 * Note that if the DLL supports versions greater
-		 * than 2.2 in addition to 2.2, it will still return
-		 * 2.2 in wVersion since that is the version we
-		 * requested.
-		 */
+		// Confirm that the WinSock DLL supports 2.2.
+		// Note that if the DLL supports versions greater
+		// than 2.2 in addition to 2.2, it will still return
+		// 2.2 in wVersion since that is the version we
+		// requested.
 		if(LOBYTE( wsaData.wVersion ) != 2 ||  HIBYTE( wsaData.wVersion ) != 2) {
-			/* Tell the user that we could not find a usable
-			 * WinSock DLL.
-			 */
+			// Tell the user that we could not find a usable WinSock DLL
 			WSACleanup();
 			return;
 		}
@@ -88,14 +89,17 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 		this->WSinitialized = true;
 	}
 	#endif
+	*/
 }
 
 cAsyncSocketServer::~cAsyncSocketServer()
 {
 	close();
+	/*
 	#ifdef _WIN32
 	WSACleanup();
 	#endif
+	*/
 	vhLog(2) << "Allocated objects: " << cObj::GetCount() << endl;
 	vhLog(2) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
 }
@@ -117,11 +121,13 @@ int cAsyncSocketServer::run()
 			OnTimerBase(mTime);
 		}
 
-		#if !defined _WIN32
+		//#if !defined _WIN32
 			::usleep(mStepDelay * 1000);
+		/*
 		#else
 			::Sleep(mStepDelay);
 		#endif
+		*/
 
 		mFrequency.Insert(mTime);
 
@@ -162,6 +168,7 @@ void cAsyncSocketServer::close()
 	}
 }
 
+/*
 unsigned int cAsyncSocketServer::getPort() const
 {
 	return mPort;
@@ -171,6 +178,7 @@ void cAsyncSocketServer::setPort(unsigned int _newVal)
 {
 	mPort = _newVal;
 }
+*/
 
 void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 {
@@ -321,11 +329,13 @@ void cAsyncSocketServer::TimeStep()
 	{
 		int n = mConnChooser.Choose(tmout);
 		if(!n) {
-			#if ! defined _WIN32
+			//#if ! defined _WIN32
 			::usleep(50);
+			/*
 			#else
 			::Sleep(0);
 			#endif
+			*/
 			return;
 		}
 	}
@@ -358,13 +368,14 @@ void cAsyncSocketServer::TimeStep()
 				if(new_conn) addConnection(new_conn);
 				i++;
 			} while(new_conn && i <= 101);
+/*
 #ifdef _WIN32
 			vhLog(1) << "num connections" << mConnChooser.mConnList.size() << endl;
 #endif
-
+*/
 		}
 		if(OK && (activity & eCC_INPUT)  &&
-			((conn->GetType() == eCT_CLIENT) || (conn->GetType() == eCT_CLIENTUDP)))
+			/*(*/(conn->GetType() == eCT_CLIENT)/* || (conn->GetType() == eCT_CLIENTUDP))*/)
 			// Data to be read or data in buffer
 		{
 			if(input(conn) <= 0)
@@ -382,16 +393,18 @@ void cAsyncSocketServer::TimeStep()
 	}
 }
 
-cAsyncConn * cAsyncSocketServer::Listen(int OnPort, bool UDP)
+cAsyncConn * cAsyncSocketServer::Listen(int OnPort/*, bool UDP*/)
 {
 	cAsyncConn *ListenSock;
 
-	if(!UDP)
+	//if(!UDP)
 		ListenSock = new cAsyncConn(0, this, eCT_LISTEN);
+	/*
 	else
 		ListenSock = new cAsyncConn(0, this, eCT_CLIENTUDP);
+	*/
 
-	if(this->ListenWithConn(ListenSock, OnPort, UDP) != NULL) {
+	if(this->ListenWithConn(ListenSock, OnPort/*, UDP*/) != NULL) {
 		return ListenSock;
 	} else {
 		delete ListenSock;
@@ -406,17 +419,17 @@ int cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		mPort = OverrideDefaultPort;
 	if(mPort && !OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
-	if(this->Listen(OverrideDefaultPort, false) != NULL)
+	if(this->Listen(OverrideDefaultPort/*, false*/) != NULL)
 		return 0;
 	return -1;
 }
 
-cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort, bool UDP)
+cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
 {
 	if(ListenSock != NULL) {
-		if(ListenSock->ListenOnPort(OnPort,mAddr.c_str(), UDP)< 0) {
+		if(ListenSock->ListenOnPort(OnPort,mAddr.c_str()/*, UDP*/)< 0) {
 			if(Log(0)) {
-				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (UDP ? " UDP":" TCP") << endl;
+				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
 				LogStream() << "Please make sure the port is open and not already used by another process" << endl;
 			}
 			throw "Can't listen";
@@ -426,7 +439,7 @@ cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPo
 		this->mConnChooser.cConnChoose::OptIn(
 			(cConnBase *)ListenSock,
 			tChEvent(eCC_INPUT|eCC_ERROR));
-		if(Log(0)) LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (UDP?" UDP":" TCP") << endl;
+		if(Log(0)) LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
 		return ListenSock;
 	}
 	return NULL;

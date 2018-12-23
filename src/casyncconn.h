@@ -32,9 +32,9 @@
 #include "cconnbase.h"
 #include "cprotocol.h"
 
-#ifndef _WIN32
+//#ifndef _WIN32
 	#include <netinet/in.h>
-#endif
+//#endif
 
 #include <string>
 #include <list>
@@ -53,11 +53,11 @@ namespace nVerliHub {
 			/// TCP client connection
 			eCT_CLIENT,
 			/// UDP client connection
-			eCT_CLIENTUDP,
+			//eCT_CLIENTUDP,
 			/// TCP server connection
-			eCT_SERVER,
+			eCT_SERVER//,
 			/// UDP server connection
-			eCT_SERVERUDP
+			//eCT_SERVERUDP
 		};
 
 		/**
@@ -157,7 +157,7 @@ namespace nVerliHub {
 				 * @param port The port of the connection.
 				 * @param udp If the connection is UDP socket.
 				 */
-				cAsyncConn(const string & host, int port, bool udp=false);
+				cAsyncConn(const string & host, int port/*, bool udp=false*/);
 
 				/**
 				 * Class destructor.
@@ -335,7 +335,7 @@ namespace nVerliHub {
 				 * Return the connection type object.
 				 * @return The connection object.
 				 */
-				virtual const tConnType& getType();
+				//virtual const tConnType& getType();
 
 				/**
 				 * Return the connection type object.
@@ -347,10 +347,12 @@ namespace nVerliHub {
 				 * Return the IP address as binary data in network byte order.
 				 * @return The IP address in network byte order.
 				 */
+				/*
 				const unsigned long GetSockAddress()
 				{
 					return mAddrIN.sin_addr.s_addr;
 				}
+				*/
 
 				/**
 				* Return the pointer to current read line.
@@ -393,7 +395,7 @@ namespace nVerliHub {
 				 * @param udp True if it is an UDP connection.
 				 * @return The socket descriptor or -1 if the connection already exists.
 				 */
-				int ListenOnPort(int port, const char *ia=NULL, bool udp=false);
+				int ListenOnPort(int port, const char *ia=NULL/*, bool udp=false*/);
 
 				/**
 				 * Event handler function called when write buffer gets empty.
@@ -440,7 +442,7 @@ namespace nVerliHub {
 				 * @param data The data to send.
 				 * @return A negative number of failure.
 				 */
-				static int SendUDPMsg(const string &host, int port, const string &data);
+				//static int SendUDPMsg(const string &host, int port, const string &data);
 
 				/**
 				* Set a pointer where to store the line to read and the delimiter.
@@ -467,7 +469,7 @@ namespace nVerliHub {
 				 * @param port The port.
 				 * @return Zero on success or -1 on failure.
 				 */
-				int SetupUDP(const string &, int);
+				//int SetupUDP(const string &, int);
 
 				/**
 				 * Return the socket identification or descriptor.
@@ -599,7 +601,7 @@ namespace nVerliHub {
 				 * @param udp True if the connection is UDP one. Default to TCP.
 				 * @return A negative value indicates that the connection is not created.
 				 */
-				tSocket CreateSock(bool udp=false);
+				tSocket CreateSock(/*bool udp=false*/);
 
 				/**
 				 * Return a pointer to an instance of connection factory

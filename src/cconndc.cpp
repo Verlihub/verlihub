@@ -42,7 +42,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	mFeatures = 0;
 	mSendNickList = false;
 	mNickListInProgress = false;
-	mSkipNickList = false;
+	//mSkipNickList = false;
 	mConnType = NULL;
 	mCloseReason = 0;
 	SetTimeOut(eTO_LOGIN, Server()->mC.timeout_length[eTO_LOGIN], server->mTime); // default login timeout

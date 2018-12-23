@@ -101,7 +101,7 @@ void cPluginManager::UnLoadAll()
 
 bool cPluginManager::LoadPlugin(const string &file)
 {
-#if ! defined _WIN32
+//#if ! defined _WIN32
 	cPluginLoader *plugin;
 	mLastLoadError = "";
 	if(Log(3))
@@ -126,7 +126,7 @@ bool cPluginManager::LoadPlugin(const string &file)
 	}
 	if(Log(1))
 		LogStream() << "Succes loading plugin: " << file << endl;
-#endif
+//#endif
 	return true;
 }
 

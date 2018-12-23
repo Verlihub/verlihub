@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -33,11 +33,13 @@
 #include <algorithm>
 #include <ctype.h>
 
+/*
 #ifdef _WIN32
 	#include <windows.h>
 #else
+*/
 	#include <unistd.h>
-#endif
+//#endif
 
 #ifdef HAVE_BSD
 	#include <sys/syslimits.h>
@@ -111,6 +113,7 @@ void ExpandPath(string &Path)
 	if (Path.substr(0, 2) == "./") {
 		string tmp = Path;
 
+		/*
 		#ifdef _WIN32
 			char *cPath = new char[35];
 			int size = GetCurrentDirectory(35, cPath);
@@ -127,6 +130,8 @@ void ExpandPath(string &Path)
 			Path = string(cPath);
 			delete[] cPath;
 		#elif defined HAVE_BSD
+		*/
+		#if defined HAVE_BSD
 			char *cPath = getcwd(NULL, PATH_MAX);
 			Path = cPath;
 			free(cPath);
@@ -145,13 +150,13 @@ void ExpandPath(string &Path)
 
 	size_t pos;
 
-	#if ! defined _WIN32
+	//#if ! defined _WIN32
 		pos = Path.find('~');
 
 		if (pos != Path.npos) {
 			Path.replace(pos, 2, getenv("HOME"));
 		}
-	#endif
+	//#endif
 
 	pos = Path.find("../"); // todo: doesnt work on windows
 
@@ -279,24 +284,28 @@ string StringFrom(__int64 const &val)
 {
 	char buf[32];
 
+	/*
 	#ifdef _WIN32
 		sprintf(buf, "%I64d", val);
 	#else
+	*/
 		sprintf(buf, "%lld", val);
-	#endif
+	//#endif
 
 	return buf;
 }
 
 __int64 StringAsLL(const string &str)
 {
+	/*
 	#ifdef _WIN32
 		__int64 result;
 		sscanf(str.c_str(), "%I64d", &result);
 		return result;
 	#else
+	*/
 		return strtoll(str.c_str(), NULL, 10);
-	#endif
+	//#endif
 }
 
 bool IsNumber(const char *num)

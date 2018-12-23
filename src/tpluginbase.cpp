@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -35,10 +35,12 @@ tPluginBase::~tPluginBase()
 
 bool tPluginBase::Open()
 {
+	/*
 	#ifdef _WIN32
 	mHandle = LoadLibrary(mFileName.c_str());
 	if(mHandle == NULL)
 	#else
+	*/
 
 	#ifdef HAVE_FREEBSD
 	/*
@@ -50,7 +52,7 @@ bool tPluginBase::Open()
 
 	mHandle = dlopen(mFileName.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_GLOBAL);
 	if(!mHandle)
-	#endif
+	//#endif
 	{
 		if(ErrLog(1)) LogStream() << "Can't open plugin '" << mFileName << "' because:" << Error() << endl;
 		return false;
@@ -60,11 +62,13 @@ bool tPluginBase::Open()
 
 bool tPluginBase::Close()
 {
+	/*
 	#ifdef _WIN32
 	if(!FreeLibrary(mHandle))
 	#else
+	*/
 	if(dlclose(mHandle))
-	#endif
+	//#endif
 	{
 		if(ErrLog(1)) LogStream() << "Can't close :" << Error() << endl;
 	}
@@ -74,6 +78,7 @@ bool tPluginBase::Close()
 string tPluginBase::Error()
 {
 	const char *error;
+	/*
 	#ifdef _WIN32
 		LPVOID buff;
 		FormatMessage(
@@ -88,8 +93,9 @@ string tPluginBase::Error()
 		error= (const char *) buff;
 		LocalFree(buff);
 	#else
+	*/
 	error = dlerror();
-	#endif
+	//#endif
 	return string(error?error:"ok");
 }
 

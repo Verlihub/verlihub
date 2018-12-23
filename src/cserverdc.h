@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,11 +20,16 @@
 
 #ifndef CSERVERDC_H
 #define CSERVERDC_H
+
 #include "casyncsocketserver.h"
 #include "cmysql.h"
+
+/*
 #if defined _WIN32
 #include <winsock2.h>
 #endif
+*/
+
 #include <fstream>
 #include "cuser.h"
 #include "cmessagedc.h"
@@ -77,6 +82,7 @@ namespace nVerliHub {
 			//eVN_RESERVED
 		} tVAL_NICK;
 
+		/*
 		typedef enum
 		{
 			eVI_OK,
@@ -87,14 +93,15 @@ namespace nVerliHub {
 			eVI_BAN_RANGE,
 			eVI_BAN_HOST
 		} tVAL_IP;
+		*/
 
 		typedef enum
 		{
 			eMA_PROCEED,
-			eMA_LIMITED,
+			//eMA_LIMITED,
 			eMA_LATER,
-			eMA_WARNING,
-			eMA_IGNORE,
+			//eMA_WARNING,
+			//eMA_IGNORE,
 			eMA_HANGUP,
 			eMA_HANGUP1,
 			eMA_TBAN,
@@ -603,9 +610,9 @@ class cServerDC : public cAsyncSocketServer
 		ofstream mNetOutLog;
 		// Hublist registration thread
 
-		#ifndef _WIN32 // todo: implement worker thread on windows
+		//#ifndef _WIN32 // todo: implement worker thread on windows
 			cWorkerThread mHublistReg;
-		#endif
+		//#endif
 
 		// traffic frequency for all zones
 		cMeanFrequency<unsigned long, 10> mUploadZone[USER_ZONES + 1];

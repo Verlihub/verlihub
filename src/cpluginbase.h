@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,8 +20,10 @@
 
 #ifndef NPLUGINCPLUGINBASE_H
 #define NPLUGINCPLUGINBASE_H
+
 #include <string>
 #include "cobj.h"
+
 #ifndef REGISTER_PLUGIN
 #define REGISTER_PLUGIN(__classname) \
 	extern "C" {\
@@ -32,8 +34,10 @@
 #endif
 
 using std::string;
+
 namespace nVerliHub {
 	namespace nPlugin {
+
 	class cPluginManager;
 /**
 the plugin base class suitable for any application
@@ -49,7 +53,7 @@ public:
 	virtual ~cPluginBase();
 	const string &Name(){return mName;}
 	const string &Version(){return mVersion;}
-	void Suicide(){mIsAlive = false;}
+	//void Suicide(){mIsAlive = false;}
 	bool IsAlive(){return mIsAlive;}
 	void SetMgr( cPluginManager *mgr){ mManager = mgr; };
 	bool RegisterCallBack(string id);

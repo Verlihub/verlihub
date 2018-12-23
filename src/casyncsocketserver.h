@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -24,10 +24,11 @@
 #include "cconnchoose.h"
 
 #if USE_SELECT
-#include "cconnselect.h"
+	#include "cconnselect.h"
 #else
-#include "cconnpoll.h"
+	#include "cconnpoll.h"
 #endif
+
 #include "ctimeout.h"
 #include <list>
 #include "cobj.h"
@@ -39,6 +40,7 @@ using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;
+
 	namespace nSocket {
 		/// @addtogroup Core
 		/// @{
@@ -79,7 +81,7 @@ namespace nVerliHub {
 				* Return the port on which the server is listening on.
 				* @return The port.
 				*/
-				virtual unsigned int getPort() const;
+				//virtual unsigned int getPort() const;
 
 				/**
 				 * Create a new connection and handle it.
@@ -88,7 +90,7 @@ namespace nVerliHub {
 				 * @return The new connection.
 				 * @see ListenWithConn()
 				 */
-				virtual cAsyncConn * Listen(int OnPort, bool UDP = false);
+				virtual cAsyncConn * Listen(int OnPort/*, bool UDP = false*/);
 
 				/**
 				 * Handle the given connection and listen on the given port.
@@ -97,7 +99,7 @@ namespace nVerliHub {
 				 * @param UDP True if it is an UDP connection.
 				 * @return The new connection.
 				 */
-				virtual cAsyncConn * ListenWithConn(cAsyncConn *connection, int OnPort, bool UDP=false);
+				virtual cAsyncConn * ListenWithConn(cAsyncConn *connection, int OnPort/*, bool UDP=false*/);
 
 				/**
 				* This event is triggered when a connection is closed.
@@ -139,7 +141,7 @@ namespace nVerliHub {
 				 * Set the port to listen on
 				 * @param newPort The new port.
 				 */
-				virtual void setPort(const unsigned int newPort);
+				//virtual void setPort(const unsigned int newPort);
 
 				/**
 				 * Start the socket to listen on.
@@ -215,7 +217,7 @@ namespace nVerliHub {
 			#endif
 
 			/// True if Windows sockets is initialized.
-			static bool WSinitialized;
+			//static bool WSinitialized;
 
 			/// Pointer to connection factory instance.
 			cConnFactory *mFactory;
@@ -230,10 +232,12 @@ namespace nVerliHub {
 			* Return true if the server accepts new incoming connections.
 			* @return True if the server accepts a new connection or false otherwise.
 			*/
+			/*
 			virtual bool AllowNewConn()
 			{
 				return true;
 			};
+			*/
 
 			/**
 			* Remove the connection from the server.
@@ -296,6 +300,8 @@ namespace nVerliHub {
 			cAsyncConn * mNowTreating;
 		};
 		/// @}
+
 	}; // namespace nSocket
 }; // namespace nVerliHub
+
 #endif

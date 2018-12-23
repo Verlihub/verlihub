@@ -347,7 +347,7 @@ int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 	conn->SetLSFlag(eLS_KEYOK);
 	conn->ClearTimeOut(eTO_KEY);
 	conn->SetTimeOut(eTO_VALNICK, mS->mC.timeout_length[eTO_VALNICK], mS->mTime);
-	conn->mT.key.Get();
+	//conn->mT.key.Get();
 	conn->mLock.clear(); // not needed anymore
 	ShrinkStringToFit(conn->mLock);
 	return 0;
@@ -1043,21 +1043,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	bool was_passive = conn->mpUser->IsPassive; // user might have changed his mode
+	bool was_passive = conn->mpUser->mPassive; // user might have changed his mode
 
 	switch (dc_tag->mClientMode) {
 		case eCM_NOTAG:
 		case eCM_PASSIVE:
 		case eCM_SOCK5:
 		case eCM_OTHER:
-			conn->mpUser->IsPassive = true;
+			conn->mpUser->mPassive = true;
 			break;
 		case eCM_ACTIVE:
-			conn->mpUser->IsPassive = false;
+			conn->mpUser->mPassive = false;
 			break;
 	}
 
-	if (conn->mpUser->mInList && (was_passive != conn->mpUser->IsPassive)) { // change user mode if differs and not first time
+	if (conn->mpUser->mInList && (was_passive != conn->mpUser->mPassive)) { // change user mode if differs and not first time
 		if (was_passive) {
 			if (mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
 				mS->mPassiveUsers.RemoveByHash(conn->mpUser->mNickHash);
@@ -1075,7 +1075,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 	string omsg;
 
-	if (conn->mpUser->IsPassive && (conn->mpUser->mClass != eUC_PINGER) && (conn->mpUser->mClass < eUC_OPERATOR) && (mS->mC.max_users_passive > -1) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
+	if (conn->mpUser->mPassive && (conn->mpUser->mClass != eUC_PINGER) && (conn->mpUser->mClass < eUC_OPERATOR) && (mS->mC.max_users_passive > -1) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
 		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
 
 		if (conn->Log(2))
@@ -1125,7 +1125,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		min_share_a = min_share;
 		min_share_p = (__int64)(min_share * mS->mC.min_share_factor_passive);
 
-		if (conn->mpUser->IsPassive)
+		if (conn->mpUser->mPassive)
 			min_share = min_share_p;
 
 		//if (conn->mpUser->Can(eUR_NOSHARE, mS->mTime.Sec()))
@@ -1162,7 +1162,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 
 			if (temp_min_share) {
-				if (conn->mpUser->IsPassive)
+				if (conn->mpUser->mPassive)
 					temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
 
 				if (share_check < temp_min_share) {
@@ -1172,7 +1172,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 		}
 
-		int use_hub_class = ((conn->mpUser->IsPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
+		int use_hub_class = ((conn->mpUser->mPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
 
 		if (conn->mpUser->mClass < use_hub_class) {
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
@@ -2077,7 +2077,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if (mS->mC.filter_lan_requests && (conn->mpUser->mIsLan != other->mIsLan)) { // filter lan to wan and reverse
+	if (mS->mC.filter_lan_requests && (conn->mpUser->mLan != other->mLan)) { // filter lan to wan and reverse
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user because one of you is in a LAN: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2233,7 +2233,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (other->IsPassive && !(other->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
+	if (other->mPassive && !(other->mMyFlag & eMF_NAT)) { // passive request to passive user, allow if other user supports nat connection
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user, because he is also in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);

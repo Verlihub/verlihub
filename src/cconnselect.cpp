@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -143,6 +143,7 @@ void cConnSelect::FDSet2HashRevents(sFDSet &fdset, unsigned mask)
 {
 	unsigned i;
 	tSocket sock;
+	/*
 	#ifdef _WIN32
 	for(i = 0; i < fdset.fd_count; i++)
 	{
@@ -162,6 +163,7 @@ void cConnSelect::FDSet2HashRevents(sFDSet &fdset, unsigned mask)
 		}
 	}
 	#else
+	*/
 	for(i = 0; i < FD_SETSIZE; i++)
 	{
 		sock = i;
@@ -182,7 +184,7 @@ void cConnSelect::FDSet2HashRevents(sFDSet &fdset, unsigned mask)
 			}
 		}
 	}
-	#endif
+	//#endif
 }
 
 	}; // namespace nSocket

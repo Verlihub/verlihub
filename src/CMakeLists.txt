@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -60,7 +60,6 @@ SET(VERLIHUB_HDRS
 	cmutex.h
 	cmysql.h
 	cobj.h
-	coperator.h
 	cpcre.h
 	cpenaltylist.h
 	cpluginbase.h
@@ -143,7 +142,6 @@ SET(VERLIHUB_SRCS
 	cmutex.cpp
 	cmysql.cpp
 	cobj.cpp
-	coperator.cpp
 	cpcre.cpp
 	cpenaltylist.cpp
 	cpluginbase.cpp
