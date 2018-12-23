@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -33,7 +33,7 @@ cVHPlugin::cVHPlugin():
 	mRobots(false, false, false)
 {
 	mServer = 0;
-	mUserDataTable = NULL;
+	//mUserDataTable = NULL;
 }
 
 cVHPlugin::~cVHPlugin()
@@ -45,10 +45,12 @@ cVHPlugin::~cVHPlugin()
 		++it;
 		DelRobot(robot);
 	}
+	/*
 	if (mUserDataTable) {
 		delete mUserDataTable;
 		mUserDataTable = NULL;
 	}
+	*/
 }
 
 bool cVHPlugin::AddRobot(cUserRobot *robot)
@@ -97,6 +99,7 @@ bool cVHPlugin::LoadScript(const string &filename, ostream &os)
 	return false;
 }
 
+/*
 cPluginUserData *cVHPlugin::GetPluginUserData( cUser * User )
 {
 	if (mUserDataTable) {
@@ -118,6 +121,7 @@ cPluginUserData *cVHPlugin::SetPluginUserData( cUser *User, cPluginUserData *New
 	mUserDataTable->SetByHash(Hash, NewData);
 	return OldData;
 }
+*/
 
 	}; // namespace nPlugin
 }; // namespace nVerliHub

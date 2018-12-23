@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -65,7 +65,7 @@ class cMessageParser : public cObj
 		typedef vector<tChunk> tChunkList;
 		typedef tChunkList::iterator tCLIt;
 		typedef vector<string *> tStrPtrList;
-		typedef tStrPtrList::iterator tSPLIt;
+		//typedef tStrPtrList::iterator tSPLIt;
 		/** the list of chunks */
 		tChunkList mChunks;
 		/** list of string pointers */
@@ -75,9 +75,9 @@ class cMessageParser : public cObj
 		unsigned long mChStrMap;
 
 		/** indicates if the message is tooo long so it can't be receved complete */
-		bool Overfill;
+		//bool Overfill;
 		/** indicates if the message is completely received */
-		bool Received;
+		//bool Received;
 		/** error in message indicator */
 		bool mError;
 

@@ -46,10 +46,12 @@ cThread::~cThread()
 	}
 }
 
+/*
 bool cThread::Stopped() const
 {
 	return (mStop == 1) || (mRun == 0);
 }
+*/
 
 /** */
 int cThread::Start()

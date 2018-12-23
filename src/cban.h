@@ -161,7 +161,7 @@ namespace nVerliHub {
 				string mNoteUsr;
 
 				/// How ban should be displayed to output stream.
-				int mDisplayType;
+				//int mDisplayType;
 
 				/// Pointer to a cServerDC instance.
 				nSocket::cServerDC *mS;

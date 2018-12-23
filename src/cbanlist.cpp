@@ -105,11 +105,13 @@ int cBanList::UpdateBan(cBan &ban)
 	return 0;
 }
 
+/*
 bool cBanList::LoadBanByKey(cBan &ban)
 {
 	SetBaseTo(&ban);
 	return LoadPK();
 }
+*/
 
 void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, const string &reason, unsigned length, unsigned mask)
 {

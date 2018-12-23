@@ -134,7 +134,7 @@ bool cConnPoll::RevTest(tSocket sock)
 
 int cConnPoll::poll(int wp_sec)
 {
-#if ! defined _WIN32
+//#if ! defined _WIN32
 	int ret = 0, n = 0;
 	int todo = mFDs.size();
 	int done = 0;
@@ -153,9 +153,11 @@ int cConnPoll::poll(int wp_sec)
 		n+= ret;
 	}
 	return n;
+/*
 #else
 	return 0;
 #endif
+*/
 }
 
 bool cConnPoll::AddConn(cConnBase *conn)

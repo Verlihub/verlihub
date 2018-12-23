@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -47,10 +47,12 @@ cPluginLoader::~cPluginLoader()
 
 bool cPluginLoader::Open()
 {
+	/*
 	#ifdef _WIN32
 	mHandle = LoadLibrary(mFileName.c_str());
 	if(mHandle == NULL) {
 	#else
+	*/
 
 	#ifdef HAVE_FREEBSD
 	/*
@@ -64,7 +66,7 @@ bool cPluginLoader::Open()
 	if(!mHandle || IsError()) // Note that || operator evaluates only the first statement if that one is true
 	{
 		if (!mHandle) IsError(); // Call it again
-	#endif
+	//#endif
 		if(ErrLog(1)) LogStream() << "Cannot open plugin '" << mFileName << "': " << Error() << endl;
 		return false;
 	}
@@ -75,12 +77,14 @@ bool cPluginLoader::Close()
 {
 	mcbDelPluginFunc(mPlugin);
 	mPlugin = NULL;
+	/*
 	#ifdef _WIN32
 	if(!FreeLibrary(mHandle))
 	#else
+	*/
 	dlclose(mHandle);
 	if(IsError())
-	#endif
+	//#endif
 	{
 		if(ErrLog(1)) LogStream() << "Cannot close plugin:" << Error() << endl;
 		return false;
@@ -124,6 +128,7 @@ bool cPluginLoader::LoadSym()
 
 void * cPluginLoader::LoadSym(const char *name)
 {
+	/*
 	#ifdef _WIN32
 	void *func = (void *) GetProcAddress(mHandle, name);
 	if(func == NULL) {
@@ -131,13 +136,14 @@ void * cPluginLoader::LoadSym(const char *name)
 		return NULL;
 	}
 	#else
+	*/
 	void *func = dlsym( mHandle, name);
 	if(IsError())
 	{
 		if(ErrLog(1)) LogStream() << "Can't load " << name <<" exported interface :" << Error() << endl;
 		return NULL;
 	}
-	#endif
+	//#endif
 	return func;
 }
 	}; // namespace nPlugin

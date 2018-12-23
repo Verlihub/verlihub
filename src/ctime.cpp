@@ -27,9 +27,11 @@
 #include <sstream>
 #include <string.h>
 
+/*
 #if defined _WIN32
 	#include <windows.h>
 #endif
+*/
 
 #include "i18n.h"
 

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -51,18 +51,21 @@ namespace nVerliHub {
 		/** user rights, there will be defaults for every class, but they can be changed */
 		typedef enum
 		{
-			eUR_NOINFO  = 0x000001, //< can login without user info
-			eUR_NOSHARE = 0x000002, //< can login with less than share limit
-			eUR_CHAT 	= 0x000004, //<  can talk in the main chat
-			eUR_SEARCH  = 0x000008, //< can search
-			eUR_STPM    = 0x000010, //< stealth PM (with other nick, that doesn't exist or not registered)
-			eUR_OPCHAT	= 0x000020, //< can opchat
+			//eUR_NOINFO  = 0x000001, //< can login without user info
+			eUR_NOSHARE = /*0x000002*/0x000001, //< can login with less than share limit
+			eUR_CHAT 	= /*0x000004*/0x000002, //<  can talk in the main chat
+			eUR_SEARCH  = /*0x000008*/0x000004, //< can search
+			//eUR_STPM    = 0x000010, //< stealth PM (with other nick, that doesn't exist or not registered)
+			eUR_OPCHAT	= /*0x000020*/0x000008, //< can opchat
+			/*
 			eUR_REDIR   = 0x000040, //< can op force move to a selected hublist
 			eUR_REDIRANY= 0x000080, //< can op force move to any hub
-			eUR_KICK    = 0x000100, //< can kick (with a previous chat message)
-			eUR_DROP    = 0x000200, //< can drop users (without the chat message)
-			eUR_TBAN  	= 0x000400, //< can use tban up to a configurable limit
-			eUR_PBAN 	= 0x000800, //< can ban longer than the tban limit
+			*/
+			eUR_KICK    = /*0x000100*/0x000010, //< can kick (with a previous chat message)
+			eUR_DROP    = /*0x000200*/0x000020, //< can drop users (without the chat message)
+			eUR_TBAN  	= /*0x000400*/0x000040, //< can use tban up to a configurable limit
+			eUR_PBAN 	= /*0x000800*/0x000080, //< can ban longer than the tban limit
+			/*
 			eUR_GETIP  	= 0x001000, //< get user's ip
 			eUR_FULL1   = 0x002000, //< connection on almost full hub
 			eUR_FULL2   = 0x004000, //< connection on completely full hub (someone is doconnected)
@@ -72,9 +75,10 @@ namespace nVerliHub {
 			eUR_S_MINS  = 0x040000, //< set minshare
 			eUR_S_HUBN  = 0x080000, //< set hubname
 			eUR_S_REDI	= 0x100000,  //< set redirhub(s) etc...
-			eUR_CTM     = 0x200000,  // start download
-			eUR_PM      = 0x400000,   // private messages
-			eUR_REG     = 0x800000 //< can create or edit registered users (lowr classes)
+			*/
+			eUR_CTM     = /*0x200000*/0x000100,  // start download
+			eUR_PM      = /*0x400000*/0x000200,   // private messages
+			eUR_REG     = /*0x800000*/0x000400 //< can create or edit registered users (lowr classes)
 		} tUserRights;
 
 		typedef enum
@@ -183,8 +187,8 @@ public:
 
 	// client flag in myinfo
 	unsigned int mMyFlag;
-	bool IsPassive; // user is in passive mode
-	bool mIsLan; // user has lan ip
+	bool mPassive; // user is in passive mode
+	bool mLan; // user has lan ip
 
 	/* Rights of the user */
 	unsigned long mRights;
@@ -209,13 +213,13 @@ public:
 		cTime msg_search;
 
 		sTimes():
-			connect(0l),
+			//connect(0l),
 			login(0l),
 			search(0l),
 			info(0l),
 			chat(0l),
 			nicklist(0l),
-			pm(0l),
+			//pm(0l),
 			msg_ctm(0l),
 			msg_search(0l)
 		{}
@@ -232,9 +236,9 @@ public:
 	bool mRCTMLock;
 
 	/** 0 means perm ban, otherwiese in seconds */
-	long mBanTime;
+	//long mBanTime;
 	/** indicates whether user is to ban after the following kick */
-	bool mToBan;
+	//bool mToBan;
 	/** minimal class users that can see this one */
 	//nEnums::tUserCl mVisibleClassMin;
 	/** minimal class users that can see this one as operator */

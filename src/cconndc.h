@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -386,7 +386,7 @@ namespace nVerliHub {
 				bool mNickListInProgress;
 
 				/// True if nicklist should be skipped.
-				bool mSkipNickList;
+				//bool mSkipNickList;
 
 				/// Pointer to cConnType instance
 				/// that represents the type of connection.
@@ -439,13 +439,13 @@ namespace nVerliHub {
 			{
 				/// Time when the $Key is received.
 				/// @todo Is still used?
-				cTime key;
+				//cTime key;
 				/// Time of last ping.
 				cTime ping;
 				/**
 				 * Constructor.
 				 */
-				sTimes():key(0l),ping(0l){};
+				sTimes():/*key(0l),*/ping(0l){};
 			};
 
 			/// Ping handler.

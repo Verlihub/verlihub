@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -186,7 +186,7 @@ namespace nVerliHub {
 				 * @param ban cBan instance.
 				 * @return True if the entry if found or false otherwise.
 				 */
-				bool LoadBanByKey(cBan &ban);
+				//bool LoadBanByKey(cBan &ban);
 
 				/**
 				 * Fill the given cBan instance from the given

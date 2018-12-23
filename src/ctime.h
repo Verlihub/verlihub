@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,19 +20,26 @@
 
 #ifndef NUTILS_CTIME_H
 #define NUTILS_CTIME_H
+
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include <ostream>
 #include <time.h>
+
+/*
 #if defined _WIN32
 #include <Winsock2.h>
 #endif
+*/
+
 #include <string>
 #include <sys/time.h>
-#ifndef _WIN32
+
+//#ifndef _WIN32
 #define __int64 long long
-#endif
+//#endif
 
 namespace nVerliHub {
 	namespace nUtils {

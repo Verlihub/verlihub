@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,14 +20,21 @@
 
 #ifndef NPLUGINCPLUGINLOADER_H
 #define NPLUGINCPLUGINLOADER_H
+
 #include <string>
+
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include <dlfcn.h>
+
+/*
 #ifdef _WIN32
 #include <windows.h>
 #endif
+*/
+
 #include "cpluginbase.h"
 
 using std::string;
@@ -49,6 +56,7 @@ public:
 	int StrLog(ostream & ostr, int level);
 	bool IsError()
 	{
+		/*
 		#ifdef _WIN32
 		LPVOID buff;
 		FormatMessage(
@@ -63,8 +71,9 @@ public:
 		mError= (const char *) buff;
 		LocalFree(buff);
 		#else
+		*/
 		return (mError = dlerror()) != NULL;
-		#endif
+		//#endif
 	}
 	string Error(){return string((mError!=NULL)?mError:"ok");}
 	string GetFilename(){ return mFileName;}
@@ -74,11 +83,13 @@ public:
 protected:
 	string mFileName;
 	const char * mError;
+	/*
 	#ifdef _WIN32
 	HINSTANCE mHandle;
 	#else
+	*/
 	void *mHandle;
-	#endif
+	//#endif
 	typedef cPluginBase *(*tcbGetPluginFunc)(void);
 	typedef void (*tcbDelPluginFunc)(cPluginBase *);
 	tcbDelPluginFunc mcbDelPluginFunc;

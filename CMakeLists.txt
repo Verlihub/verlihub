@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -31,7 +31,7 @@ message(STATUS)
 SET(VERLIHUB_VERSION_MAJOR 1)
 SET(VERLIHUB_VERSION_MINOR 1)
 SET(VERLIHUB_VERSION_PATCH 0)
-SET(VERLIHUB_VERSION_TWEAK 28)
+SET(VERLIHUB_VERSION_TWEAK 29)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 #SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}")
 SET(PROJECT_NAME "verlihub")
@@ -45,9 +45,9 @@ INCLUDE(MacroLogFeature)
 INCLUDE(VerlihubMacro)
 OPTION(INSTALL_CMAKE_FILES "Install the *.cmake files into the CMake root" ON)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # detect os
-	ADD_DEFINITIONS(-D_WIN32 1) # WIN32 flag already exists
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+#IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # detect os
+	#ADD_DEFINITIONS(-D_WIN32 1) # WIN32 flag already exists
+#ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	ADD_DEFINITIONS(-DHAVE_LINUX)

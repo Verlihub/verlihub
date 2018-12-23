@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,11 +20,13 @@
 
 #ifndef COBJ_H
 #define COBJ_H
+
 #include <iostream>
 #include <sstream>
-#ifndef _WIN32
+
+//#ifndef _WIN32
 #define __int64 long long
-#endif
+//#endif
 
 #define vhLog(level) if (Log(level)) LogStream()
 #define vhErr(level) if (ErrLog(level)) LogStream()

@@ -42,7 +42,7 @@ cBan::cBan(cServerDC *s):
 	mType = 0;
 	mRangeMin = 0;
 	mRangeMax = 0;
-	mDisplayType = 0;
+	//mDisplayType = 0;
 }
 
 cBan::~cBan()
@@ -77,9 +77,12 @@ cUnBan::~cUnBan()
 
 ostream & operator << (ostream &os, cBan &ban)
 {
+	/*
 	switch (ban.mDisplayType) {
 		case 0:
+	*/
 			ban.DisplayComplete(os);
+	/*
 			break;
 		case 1:
 			ban.DisplayUser(os);
@@ -91,6 +94,7 @@ ostream & operator << (ostream &os, cBan &ban)
 			os << _("Unknown");
 			break;
 	}
+	*/
 
 	return os;
 }

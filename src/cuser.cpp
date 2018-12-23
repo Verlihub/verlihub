@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -69,7 +69,7 @@ cUser::cUser(const string &nick):
 	mMyFlag(0),
 	mRCTMCount(0),
 	mRCTMLock(false),
-	mBanTime(0),
+	//mBanTime(0),
 	mShare(0),
 	mSearchNumber(0),
 	mHideKicksForClass(eUC_NORMUSER)//,
@@ -78,7 +78,7 @@ cUser::cUser(const string &nick):
 {
 	SetClassName("cUser");
 	mRights = 0;
-	mToBan = false;
+	//mToBan = false;
 	SetRight(eUR_CHAT, 0, true);
 	SetRight(eUR_PM, 0, true);
 	SetRight(eUR_SEARCH, 0, true);
@@ -95,8 +95,8 @@ cUser::cUser(const string &nick):
 	mHideShare = false;
 	mHideCtmMsg = false;
 	mSetPass = false;
-	IsPassive = true;
-	mIsLan = false;
+	mPassive = true;
+	mLan = false;
 	memset(mFloodHashes, 0, sizeof(mFloodHashes));
 	memset(mFloodCounters, 0, sizeof(mFloodCounters));
 }

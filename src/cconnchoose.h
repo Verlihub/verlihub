@@ -33,29 +33,33 @@
 #endif // TEMP_FAILURE_RETRY
 
 #ifndef TEMP_FAILURE_RETRY
-	#if !defined _WIN32
+	//#if !defined _WIN32
 		#define TEMP_FAILURE_RETRY(expression) \
 		(__extension__ ({ long int __result;\
 		while ((__result = (long int) (expression)) == -1L && errno == EINTR){}; __result; }))
+	/*
 	#else // _WIN32
 		#define TEMP_FAILURE_RETRY(expression) while ((long int) (expression) == -1L && errno == EINTR){}
 	#endif // _WIN32
+	*/
 #endif
 
+/*
 #ifdef _WIN32
 	#define USE_SELECT 1
 #else
+*/
 	#if HAVE_SYS_POLL_H
 		#define USE_SELECT 0
 	#else
 		#define USE_SELECT 1
 	#endif
-#endif // _WIN32
+//#endif // _WIN32
 
 #include "ctime.h"
 #include "cconnbase.h"
 
-#ifndef _WIN32
+//#ifndef _WIN32
 	#ifndef USE_OLD_CONNLIST
 		#include <vector>
 		using std::vector;
@@ -64,9 +68,11 @@
 		#include "tchashlistmap.h"
 		using std::map;
 	#endif // USE_OLD_CONNLIST
+/*
 #else
 	#include "thasharray.h"
 #endif // _WIN32
+*/
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -119,15 +125,17 @@ public:
 	cConnChoose();
 	virtual ~cConnChoose();
 
-	#ifndef _WIN32
+	//#ifndef _WIN32
 	#ifdef USE_OLD_CONNLIST
 	typedef tcHashListMap <cConnBase* , tSocket> tConnList;
 	#else
 	typedef vector<cConnBase*> tConnList;
 	#endif
+	/*
 	#else
 	typedef tHashArray<cConnBase*> tConnList;
 	#endif
+	*/
 
 	/**
 	* Add new connection to be handled by connection manager.

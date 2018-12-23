@@ -322,7 +322,7 @@ int cServerDC::StartListening(int OverrideDefaultPort)
 	while(i) {
 		i = 0;
 		is >> i;
-		if (i) cAsyncSocketServer::Listen(i, false);
+		if (i) cAsyncSocketServer::Listen(i/*, false*/);
 	}
 	return _result;
 }
@@ -482,7 +482,7 @@ bool cServerDC::AddToList(cUser *user)
 
 	user->mInList = true;
 
-	if (user->IsPassive)
+	if (user->mPassive)
 		mPassiveUsers.AddWithHash(user, user->mNickHash);
 	else
 		mActiveUsers.AddWithHash(user, user->mNickHash);
@@ -872,7 +872,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 			if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
 				continue;
 
-			if (other->mpUser->IsPassive && !(other->mpUser->mMyFlag & eMF_NAT)) // passive request to passive user, allow if other user supports nat connection
+			if (other->mpUser->mPassive && !(other->mpUser->mMyFlag & eMF_NAT)) // passive request to passive user, allow if other user supports nat connection
 				continue;
 
 			if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
@@ -929,7 +929,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 				if (other->mpUser->mNickHash == conn->mpUser->mNickHash) // dont send to self
 					continue;
 
-				if (conn->mpUser->mIsLan != other->mpUser->mIsLan) // filter lan to wan and reverse
+				if (conn->mpUser->mLan != other->mpUser->mLan) // filter lan to wan and reverse
 					continue;
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
@@ -1277,7 +1277,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		DCPublicHSToAll(omsg, mC.delayed_chat);
 	}
 
-	conn->mpUser->mIsLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip
+	conn->mpUser->mLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip
 }
 
 void cServerDC::DoUserLogin(cConnDC *conn)
@@ -2587,22 +2587,24 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 					user->mxConn->LogStream() << "Kicked by " << op->mNick << " because: " << why << endl;
 
 				string temp;
-				user->mToBan = false;
+				unsigned long ban_time = 0;
+				//user->mToBan = false;
+				bool to_ban = false;
 
 				if ((flags & eKI_WHY) && why.size() && (mP.mKickBanPattern.Exec(why) >= 0)) {
-					unsigned int age = 0;
+					//unsigned int age = 0;
 					mP.mKickBanPattern.Extract(1, why, temp);
 
 					if (temp.size())
-						age = Str2Period(temp, os);
+						ban_time = Str2Period(temp, os);
 
-					if (age > mC.tban_max)
-						age = mC.tban_max;
+					if (ban_time > mC.tban_max)
+						ban_time = mC.tban_max;
 
-					if ((!age && op->Can(eUR_PBAN, mTime)) || (age && (((age > mC.tban_kick) && op->Can(eUR_TBAN, mTime)) || (age <= mC.tban_kick))))
-						user->mToBan = true;
+					if ((!ban_time && op->Can(eUR_PBAN, mTime)) || (ban_time && (((ban_time > mC.tban_kick) && op->Can(eUR_TBAN, mTime)) || (ban_time <= mC.tban_kick))))
+						to_ban = true; //user->mToBan = true;
 
-					user->mBanTime = age;
+					//user->mBanTime = age;
 
 					if (mC.msg_replace_ban.size())
 						mP.mKickBanPattern.Replace(0, new_why, mC.msg_replace_ban);
@@ -2637,7 +2639,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 				if (note_usr.size())
 					ban.mNoteUsr = note_usr;
 
-				mBanList->NewBan(ban, kick, (user->mToBan ? user->mBanTime : mC.tban_kick), eBF_NICKIP);
+				mBanList->NewBan(ban, kick, (/*user->mToBan*/to_ban ? /*user->mBanTime*/ban_time : mC.tban_kick), eBF_NICKIP);
 
 				if (ban.mDateEnd) {
 					cTimePrint age(ban.mDateEnd - cTime().Sec(), 0);

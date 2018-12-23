@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -18,7 +18,9 @@
 	of the GNU General Public License.
 */
 
+/*
 #ifdef _WIN32
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #endif
+*/
