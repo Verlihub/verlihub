@@ -155,6 +155,7 @@ bool cConsole::cfDelPythonScript::operator()()
 		if (li && ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
 			delete li;
+			li = NULL;
 			GetPI()->mPython.erase(it);
 			return true;
 		}
@@ -276,6 +277,7 @@ bool cConsole::cfReloadPythonScript::operator()()
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
 			delete li;
+			li = NULL;
 			GetPI()->mPython.erase(it);
 			break;
 		}

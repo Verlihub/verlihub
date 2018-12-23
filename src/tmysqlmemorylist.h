@@ -187,12 +187,13 @@ public:
 		DeletePK();
 		iterator it;
 		for(it = begin(); it != end(); ++it) {
-			DataType* CurrentData =  *it;
+			DataType* CurrentData = *it;
 			if((CurrentData != NULL) && CompareDataKey(data, *CurrentData))
 			{
-				delete CurrentData;
-				*it = NULL;
 				mData.erase(it);
+				delete CurrentData;
+				CurrentData = NULL;
+				*it = NULL;
 				break;
 			}
 		}

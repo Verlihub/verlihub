@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -43,7 +43,7 @@ void cStats::CleanUp()
 {
 	mQuery.Clear();
 	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where("
-		"realtime < " << cTime().Sec() - 7 * 3600* 24 <<
+		"realtime < " << mS->mTime.Sec() - 7 * 3600* 24 <<
 		')';
 	mQuery.Query();
 	mQuery.Clear();

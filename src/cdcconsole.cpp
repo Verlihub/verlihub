@@ -521,7 +521,7 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 		mOwner->LastBCNick = conn->mpUser->mNick;
 
 	unsigned int count = mOwner->SendToAllWithNickCCVars(start, end, cl_min, cl_max, cc_zone);
-	TimeAfter.Get();
+	TimeAfter = mOwner->mTime;
 	ostr << autosprintf(ngettext("Message delivered to %d user in zones %s in %s.", "Message delivered to %d users in zones %s in %s.", count),
 	     count, cc_zone.c_str(), cTimePrint(TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	mOwner->DCPublicHS(ostr.str(), conn);
@@ -1718,7 +1718,7 @@ bool cDCConsole::cfBan::operator()()
 			else
 				Ban.mReason = _("No reason specified"); // default reason, doesnt work when no reason is specified, bad regexp
 
-			Ban.mDateStart = cTimePrint().Sec();
+			Ban.mDateStart = mS->mTime.Sec();
 
 			if (BanTime)
 				Ban.mDateEnd = Ban.mDateStart + BanTime;
@@ -1740,7 +1740,7 @@ bool cDCConsole::cfBan::operator()()
 
 						mParRex->Extract(BAN_REASON, mParStr, Kick.mReason);
 						Kick.mOp = mConn->mpUser->mNick;
-						Kick.mTime = cTimePrint().Sec();
+						Kick.mTime = mS->mTime.Sec();
 
 						if (BanType == eBF_NICK)
 							Kick.mNick = Who;
@@ -2286,7 +2286,7 @@ bool cDCConsole::cfGag::operator()()
 	pen.mOpNick = mConn->mpUser->mNick;
 
 	if (!isun)
-		now = cTimePrint().Sec() + per;
+		now = mS->mTime.Sec() + per;
 
 	switch (act) {
 		case eAC_GAG:
@@ -2753,7 +2753,7 @@ bool cDCConsole::cfKick::operator()()
 				pen.mNick = nick;
 
 			pen.mOpNick = mConn->mpUser->mNick;
-			pen.mStartChat = (unsigned long)((act == eAC_GAG) ? cTimePrint().Sec() + mS->mC.tban_kick : 1);
+			pen.mStartChat = (unsigned long)((act == eAC_GAG) ? mS->mTime.Sec() + mS->mC.tban_kick : 1);
 
 			if ((act == eAC_GAG) ? !mS->mPenList->AddPenalty(pen) : !mS->mPenList->RemPenalty(pen)) {
 				(*mOS) << autosprintf(_("Error setting rights or restrictions for user: %s"), pen.mNick.c_str());
@@ -3518,7 +3518,7 @@ bool cDCConsole::cfBc::operator()()
 		mS->LastBCNick = mConn->mpUser->mNick;
 
 	int count = mS->SendToAllWithNickVars(start, end, MinClass, MaxClass);
-	TimeAfter.Get();
+	TimeAfter = mS->mTime;
 	*mOS << autosprintf(ngettext("Message delivered to %d user in %s.", "Message delivered to %d users in %s.", count),
 	     count, cTimePrint(TimeAfter - TimeBefore).AsPeriod().AsString().c_str());
 	return true;

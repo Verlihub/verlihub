@@ -215,8 +215,10 @@ cConfMySQL::cConfMySQL(cMySQL &mysql):
 
 cConfMySQL::~cConfMySQL()
 {
-	if (mItemCreator)
+	if (mItemCreator) {
 		delete mItemCreator;
+		mItemCreator = NULL;
+	}
 }
 
 void cConfMySQL::CreateTable()

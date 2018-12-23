@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -98,6 +98,7 @@ bool cConsole::cfDelPerlScript::operator()()
 			scriptfile = pi->mScriptName;
 			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
 			delete pi;
+			pi = NULL;
 			GetPI()->mPerl.mPerl.erase(it);
 			break;
 		}
@@ -188,6 +189,7 @@ bool cConsole::cfReloadPerlScript::operator()()
 			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
 			scriptfile = pi->mScriptName;
 			delete pi;
+			pi = NULL;
 			GetPI()->mPerl.mPerl.erase(it);
 			break;
 		}

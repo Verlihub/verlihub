@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -22,10 +22,10 @@
 #define _CPIFLOODPROT_H_
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
+
 #include "cfloodprotect.h"
-#include "src/ctime.h"
 #include "src/cconndc.h"
 #include "src/cvhplugin.h"
 #include "src/cmessagedc.h"

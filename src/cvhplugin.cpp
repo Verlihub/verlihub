@@ -71,10 +71,11 @@ cPluginRobot * cVHPlugin::NewRobot(const string &Nick, int uclass)
 	cPluginRobot *robot = new cPluginRobot(Nick, this, mServer);
 	//set class before adding to list, otherwise user can't be op
 	robot->mClass = tUserCl(uclass);
-	if (AddRobot(robot))
+	if (AddRobot(robot)) {
 		return robot;
-	else {
+	}else {
 		delete robot;
+		robot = NULL;
 		return NULL;
 	}
 }
@@ -84,6 +85,7 @@ bool cVHPlugin::DelRobot(cUserRobot *robot)
 	bool result = mRobots.Remove(robot);
 	mServer->DelRobot(robot);
 	delete robot;
+	robot = NULL;
 	return result;
 }
 

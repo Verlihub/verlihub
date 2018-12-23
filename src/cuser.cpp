@@ -221,7 +221,7 @@ void cUser::DisplayInfo(ostream &os)
 
 void cUser::DisplayRightsInfo(ostream &os, bool head)
 {
-	cTime now = cTime().Sec();
+	cTime now = mxServer->mTime.Sec();
 
 	if (head) {
 		os << _("User rights information") << ":\r\n\r\n";
@@ -537,7 +537,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 	};
 
 	if (notify && msg.size() && mxConn)
-		mxServer->DCPublicHS(autosprintf(msg.c_str(), cTimePrint(until - cTime().Sec()).AsPeriod().AsString().c_str()), mxConn);
+		mxServer->DCPublicHS(autosprintf(msg.c_str(), cTimePrint(until - mxServer->mTime.Sec()).AsPeriod().AsString().c_str()), mxConn);
 }
 
 void cUser::ApplyRights(cPenaltyList::sPenalty &pen)

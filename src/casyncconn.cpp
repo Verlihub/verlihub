@@ -286,7 +286,11 @@ void cAsyncConn::CloseNice(int msec)
 		return;
 	}
 
-	mCloseAfter.Get();
+	if (mxServer)
+		mCloseAfter = mxServer->mTime;
+	else
+		mCloseAfter.Get();
+
 	mCloseAfter += msec;
 }
 
@@ -360,8 +364,13 @@ int cAsyncConn::ReadAll()
 		mBufReadPos = 0;
 		// End string
 		msBuffer[mBufEnd] = '\0';
-		mTimeLastIOAction.Get();
+
+		if (mxServer)
+			mTimeLastIOAction = mxServer->mTime;
+		else
+			mTimeLastIOAction.Get();
 	}
+
 	return buf_len;
 }
 
@@ -715,11 +724,15 @@ cAsyncConn * cAsyncConn::Accept()
 	tSocket sd;
 	cConnFactory *AcceptingFactory = NULL;
 	cAsyncConn *new_conn = NULL;
-
 	sd = AcceptSock();
-	if(sd == INVALID_SOCKET)
+
+	if (sd == INVALID_SOCKET)
 		return NULL;
-	mTimeLastIOAction.Get();
+
+	if (mxServer)
+		mTimeLastIOAction = mxServer->mTime;
+	else
+		mTimeLastIOAction.Get();
 
 	AcceptingFactory = this->GetAcceptingFactory();
 	if (AcceptingFactory != NULL)
@@ -863,7 +876,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		}
 
 		if (calc_size > 0) { // some data was sent, update the buffer
-			mTimeLastIOAction.Get();
+			if (serv)
+				mTimeLastIOAction = serv->mTime;
+			else
+				mTimeLastIOAction.Get();
+
 			StrCutLeft(mBufSend, calc_size); // this is supposed to actually reduce the size of buffer, it does a copy so it is slower but memory usage is important
 			buf_size -= calc_size;
 		} else if (bool(mCloseAfter)) { // we must close nice the connection
@@ -907,7 +924,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 				LogStream() << "Blocking output" << endl;
 		}
 
-		mTimeLastIOAction.Get();
+		if (serv)
+			mTimeLastIOAction = serv->mTime;
+		else
+			mTimeLastIOAction.Get();
+
 		OnFlushDone(); // report that flush is done
 	}
 
@@ -928,10 +949,12 @@ cMessageParser *cAsyncConn::CreateParser()
 
 void cAsyncConn::DeleteParser(cMessageParser *OldParser)
 {
-	if (this->mxProtocol != NULL)
+	if (this->mxProtocol != NULL) {
 		this->mxProtocol->DeleteParser(OldParser);
-	else
+	} else {
 		delete OldParser;
+		OldParser = NULL;
+	}
 }
 
 string * cAsyncConn::FactoryString()

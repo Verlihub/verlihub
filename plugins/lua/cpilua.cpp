@@ -63,6 +63,7 @@ cpiLua::~cpiLua()
 	if (mQuery != NULL) {
 		mQuery->Clear();
 		delete mQuery;
+		mQuery = NULL;
 	}
 
 	this->Empty();

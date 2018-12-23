@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -40,10 +40,12 @@ cPerlMulti::~cPerlMulti()
 int cPerlMulti::Parse(int argc, const char *argv[]) {
 	cPerlInterpreter *perl = new cPerlInterpreter();
 	int ret = perl->Parse(argc, argv);
-	if (ret)
+	if (ret) {
 		delete perl;
-	else
+		perl = NULL;
+	} else {
 		mPerl.push_back(perl);
+	}
 	return ret;
 }
 

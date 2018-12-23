@@ -59,7 +59,7 @@ namespace nVerliHub {
 	bool SetConfig(const char *conf, const char *var, const char *val);
 	char* GetConfig(const char *conf, const char *var, const char *def = NULL);
 	const char* GetVHCfgDir();
-	bool GetTempRights(const char *nick, map<string,int> &rights);
+	//bool GetTempRights(const char *nick, map<string,int> &rights);
 	bool AddRegUser(const char *nick, int uclass, const char *pass, const char* op);
 	bool DelRegUser(const char *nick);
 	bool SetRegClass(const char *nick, int clas);

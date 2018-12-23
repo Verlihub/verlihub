@@ -63,8 +63,10 @@ cMessageParser *cDCProto::CreateParser()
 
 void cDCProto::DeleteParser(cMessageParser *OldParser)
 {
-	if (OldParser != NULL)
+	if (OldParser != NULL) {
 		delete OldParser;
+		OldParser = NULL;
+	}
 }
 
 int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
@@ -347,7 +349,7 @@ int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 	conn->SetLSFlag(eLS_KEYOK);
 	conn->ClearTimeOut(eTO_KEY);
 	conn->SetTimeOut(eTO_VALNICK, mS->mC.timeout_length[eTO_VALNICK], mS->mTime);
-	//conn->mT.key.Get();
+	//conn->mT.key = mS->mTime;
 	conn->mLock.clear(); // not needed anymore
 	ShrinkStringToFit(conn->mLock);
 	return 0;
@@ -4829,6 +4831,8 @@ void cDCProto::Lock2Key(const string &Lock, string &fkey)
 	cDCProto::EscapeChars(key, len, fkey, true);
 	delete [] key;
 	delete [] lock;
+	key = NULL;
+	lock = NULL;
 }
 
 	}; // namespace nProtocol

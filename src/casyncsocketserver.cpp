@@ -108,12 +108,10 @@ int cAsyncSocketServer::run()
 {
 	mT.stop = cTime(0, 0);
 	mbRun = true;
-	cTime now;
-
 	vhLog(1) << "Main loop start" << endl;
 
 	while (mbRun) {
-		mTime.Get();
+		mTime.Get(); // note: always current time, dont modify this container anywhere
 		TimeStep();
 
 		if (mTime >= (mT.main + timer_serv_period)) {
@@ -242,10 +240,12 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 
 	old_conn->mIterator = mConnList.end();
 
-	if (old_conn->mxMyFactory != NULL)
+	if (old_conn->mxMyFactory != NULL) {
 		old_conn->mxMyFactory->DeleteConn(old_conn);
-	else
+	} else {
 		delete old_conn;
+		old_conn = NULL;
+	}
 }
 
 int cAsyncSocketServer::input(cAsyncConn *conn)
@@ -280,6 +280,7 @@ int cAsyncSocketServer::output(cAsyncConn * conn)
 void cAsyncSocketServer::OnNewMessage(cAsyncConn *, string *str)
 {
 	delete str;
+	str = NULL;
 }
 
 string * cAsyncSocketServer::FactoryString(cAsyncConn *)
@@ -408,6 +409,7 @@ cAsyncConn * cAsyncSocketServer::Listen(int OnPort/*, bool UDP*/)
 		return ListenSock;
 	} else {
 		delete ListenSock;
+		ListenSock = NULL;
 		return NULL;
 	}
 }

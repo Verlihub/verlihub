@@ -19,14 +19,16 @@
 */
 
 #include "cconnselect.h"
+
 #if ! HAVE_SYS_POLL_H
 
 namespace nVerliHub {
 	using namespace nEnums;
+
 	namespace nSocket {
+
 cConnSelect::cConnSelect()
-{
-}
+{}
 
 cConnSelect::~cConnSelect()
 {
@@ -41,8 +43,9 @@ cConnSelect::~cConnSelect()
 		if (FD)
 		{
 			sock = FD->mSock;
-			delete FD;
 			mFDs.RemoveByHash(sock);
+			delete FD;
+			FD = NULL;
 		}
 	}
 }
@@ -80,8 +83,9 @@ void cConnSelect::OptOut(tSocket sock, tChEvent mask)
 		FD->mEvent -= (FD->mEvent & mask);
 		if(!FD->mEvent)
 		{
-			delete FD;
 			mFDs.RemoveByHash(sock);
+			delete FD;
+			FD = NULL;
 		}
 	}
 }
@@ -189,4 +193,5 @@ void cConnSelect::FDSet2HashRevents(sFDSet &fdset, unsigned mask)
 
 	}; // namespace nSocket
 }; // namespace nVerliHub
+
 #endif

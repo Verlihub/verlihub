@@ -577,12 +577,19 @@ const char * GetVHCfgDir()
 	return server->mConfigBaseDir.c_str();
 }
 
+/*
 #define count_of(arg) (sizeof(arg) / sizeof(arg[0]))
 bool GetTempRights(const char *nick,  map<string,int> &rights)
 {
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Verlihub not found" << endl;
+		return 0;
+	}
+
 	cUser *user = GetUser(nick);
 	if(user == NULL) return false;
-	cTime time = cTime().Sec();
 
 	static const int ids[] = { eUR_CHAT, eUR_PM, eUR_SEARCH, eUR_CTM, eUR_KICK, eUR_REG, eUR_OPCHAT, eUR_DROP, eUR_TBAN, eUR_PBAN, eUR_NOSHARE };
 	for(unsigned int i = 0; i < count_of(ids); i++) {
@@ -622,10 +629,11 @@ bool GetTempRights(const char *nick,  map<string,int> &rights)
 				key = "noshare";
 			break;
 		}
-		if(!key.empty()) rights[key] = (user->Can(ids[i],time) ? 1 : 0);
+		if(!key.empty()) rights[key] = (user->Can(ids[i], serv->mTime.Sec()) ? 1 : 0);
 	}
 	return true;
 }
+*/
 
 bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 {

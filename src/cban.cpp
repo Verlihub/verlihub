@@ -129,7 +129,7 @@ void cBan::DisplayUser(ostream &os)
 	os << " [*] " << _("Time") << ": ";
 
 	if (mDateEnd) {
-		cTimePrint HowLong(mDateEnd - cTime().Sec());
+		cTimePrint HowLong(mDateEnd - mS->mTime.Sec());
 		os << autosprintf(_("%s left"), HowLong.AsPeriod().AsString().c_str());
 	} else {
 		os << _("Permanently");
@@ -162,7 +162,7 @@ void cBan::DisplayComplete(ostream &os)
 	os << " [*] " << _("Last hit") << ": ";
 
 	if (mLastHit)
-		os << autosprintf(_("%s ago"), cTimePrint(cTime().Sec() - mLastHit).AsPeriod().AsString().c_str());
+		os << autosprintf(_("%s ago"), cTimePrint(mS->mTime.Sec() - mLastHit).AsPeriod().AsString().c_str());
 	else
 		os << _("Never");
 
@@ -196,7 +196,7 @@ void cBan::DisplayKick(ostream &os)
 	os << "\t\t";
 
 	if (mDateEnd) {
-		cTimePrint HowLong(mDateEnd - cTime().Sec(), 0);
+		cTimePrint HowLong(mDateEnd - mS->mTime.Sec(), 0);
 
 		if (HowLong.Sec() < 0) {
 			os << autosprintf(_("Expired %s"), cTimePrint(mDateEnd, 0).AsDate().AsString().c_str());
@@ -212,7 +212,7 @@ void cBan::DisplayKick(ostream &os)
 	os << "\t";
 
 	if (mLastHit)
-		os << cTimePrint(cTime().Sec() - mLastHit).AsPeriod().AsString();
+		os << cTimePrint(mS->mTime.Sec() - mLastHit).AsPeriod().AsString();
 	else
 		os << _("Never");
 }
