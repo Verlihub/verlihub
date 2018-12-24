@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -110,13 +110,19 @@ void cUserCollection::ufDoIPList::AppendList(string &list, cUserBase *user)
 {
 	cUser *point = static_cast<cUser*>(user);
 
-	if (point->mxConn) {
+	if (point->mxConn) { // real user
 		list.reserve(list.size() + point->mNick.size() + 1 + point->mxConn->AddrIP().size() + mSep.size()); // always reserve because we are adding new data every time
 		list.append(point->mNick);
 		list.append(1, ' ');
 		list.append(point->mxConn->AddrIP());
-		list.append(mSep);
+
+	} else { // bots have local ip
+		list.reserve(list.size() + point->mNick.size() + 1 + 9 + mSep.size());
+		list.append(point->mNick);
+		list.append(" 127.0.0.1"); // size() = 1 + 9
 	}
+
+	list.append(mSep);
 }
 
 bool cUserCollection::Add(cUserBase *user)

@@ -420,11 +420,12 @@ const char *GetUserIP(const char *nick)
 {
 	cUser *usr = GetUser(nick);
 
-	if (!usr || !usr->mxConn) {
+	if (!usr)
 		return "";
-	} else {
+	else if (!usr->mxConn) // bots have local ip
+		return "127.0.0.1";
+	else
 		return usr->mxConn->AddrIP().c_str();
-	}
 }
 
 bool Ban(const char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)

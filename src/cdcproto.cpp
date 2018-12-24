@@ -3102,11 +3102,19 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 		other = mS->mUserList.GetUserByNick(nick);
 
-		if (other && other->mxConn && other->mInList) {
-			back.reserve(back.size() + nick.size() + 1 + other->mxConn->AddrIP().size() + sep.size()); // we are always reserving, no need for capacity check
-			back.append(nick);
-			back.append(1, ' ');
-			back.append(other->mxConn->AddrIP());
+		if (other && other->mInList) {
+			if (other->mxConn) { // real user
+				back.reserve(back.size() + nick.size() + 1 + other->mxConn->AddrIP().size() + sep.size()); // we are always reserving, no need for capacity check
+				back.append(nick);
+				back.append(1, ' ');
+				back.append(other->mxConn->AddrIP());
+
+			} else { // bots have local ip
+				back.reserve(back.size() + nick.size() + 1 + 9 + sep.size()); // we are always reserving, no need for capacity check
+				back.append(nick);
+				back.append(" 127.0.0.1"); // size() = 1 + 9
+			}
+
 			back.append(sep);
 		}
 	}
