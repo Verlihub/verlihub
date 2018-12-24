@@ -5,7 +5,7 @@ import sys
 app_info = """
     
     Verlihub Python Integration Test v.1.0.0 - Test setup program
-    Copyright (C) 2016-2017 Verlihub Team, info at verlihub dot net
+    Copyright (C) 2016-2019 Verlihub Team, info at verlihub dot net
     Created by Frog (frogged), the_frog at wp dot pl
     License: GNU General Public License v.3, see http://www.gnu.org/licenses/
     

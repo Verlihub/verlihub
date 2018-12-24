@@ -203,12 +203,16 @@ bool cpiLua::AutoLoad()
 	for (size_t i = 0; i < filenames.size(); i++) {
 		filename = filenames[i];
 		pathname = mScriptDir + filename;
-		cLuaInterpreter *ip = new cLuaInterpreter(config, pathname);
+		cLuaInterpreter *ip = NULL;
 
-		/* todo: use try instead
-		if (!ip)
+		try {
+			ip = new cLuaInterpreter(config, pathname);
+		} catch (...) {
+			if (Log(1))
+				LogStream() << "Failed creating cLuaInterpreter for script: " << filename << endl;
+
 			continue;
-		*/
+		}
 
 		if (ip->Init()) {
 			AddData(ip);

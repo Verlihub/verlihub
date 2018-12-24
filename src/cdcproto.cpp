@@ -721,7 +721,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	try {
+	//try {
 		cUser *NewUser = new cUser(nick);
 
 		if (!conn->SetUser(NewUser)) {
@@ -735,7 +735,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 				return -2;
 			}
 		#endif
-
+	/*
 	} catch (...) {
 		if (mS->ErrLog(2))
 			mS->LogStream() << "Unhandled exception in cServerDC::DC_ValidateNick" << endl;
@@ -746,6 +746,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		mS->ConnCloseMsg(conn, _("Undefined error occurred."), 1000);
 		return -1;
 	}
+	*/
 
 	if (conn->mpUser) {
 		if (conn->mRegInfo && (conn->mRegInfo->mClass == eUC_PINGER)) {
@@ -3850,7 +3851,7 @@ bool cDCProto::FindInSupports(const string &list, const string &flag)
 
 int cDCProto::NickList(cConnDC *conn)
 {
-	try {
+	//try {
 		string _str;
 
 		if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE)
@@ -3907,6 +3908,7 @@ int cDCProto::NickList(cConnDC *conn)
 			if (mS->CollectExtJSON(_str, conn))
 				conn->Send(_str, false); // no pipe, its already added by collector
 		}
+	/*
 	} catch (...) {
 		if (conn->ErrLog(2))
 			conn->LogStream() << "Exception in cDCProto::NickList" << endl;
@@ -3914,6 +3916,7 @@ int cDCProto::NickList(cConnDC *conn)
 		conn->CloseNow();
 		return -1;
 	}
+	*/
 
 	return 0;
 }

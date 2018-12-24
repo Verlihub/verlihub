@@ -86,8 +86,8 @@ cpiPython::~cpiPython()
 void cpiPython::OnLoad(cServerDC *server)
 {
 	log4("PY: cpiPython::OnLoad\n");
-	cVHPlugin::OnLoad(server);
 	mQuery = new cQuery(server->mMySQL);
+	cVHPlugin::OnLoad(server);
 	mScriptDir = mServer->mConfigBaseDir + "/scripts/";
 	this->server = server;
 	botname = server->mC.hub_security;
@@ -276,7 +276,15 @@ bool cpiPython::AutoLoad()
 	for (size_t i = 0; i < filenames.size(); i++) {
 		filename = filenames[i];
 		pathname = mScriptDir + filename;
-		cPythonInterpreter *ip = new cPythonInterpreter(pathname);
+		cPythonInterpreter *ip = NULL;
+
+		try {
+			ip = new cPythonInterpreter(pathname);
+		} catch(...) {
+			log1("Error creating cPythonInterpreter for script: %s\n", filename.c_str());
+			continue;
+		}
+
 		AddData(ip);
 
 		if (ip->Init()) {
@@ -1523,7 +1531,7 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 	else if (geo_cont == "AN")
 		cont = "Antarctica";
 
-	vector<string> *data = new vector<string>();
+	vector<string> *data = new vector<string>(); // note: lib_pack automatically destructs all arguments
 	data->push_back("host");
 	data->push_back(geo_host);
 	data->push_back("range_low");

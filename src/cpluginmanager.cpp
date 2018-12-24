@@ -115,16 +115,16 @@ bool cPluginManager::LoadPlugin(const string &file)
 		return false;
 	}
 
-	try {
+	try { // used rearely
 		plugin->mPlugin->SetMgr(this);
 		plugin->mPlugin->RegisterAll();
-
 		OnPluginLoad(plugin->mPlugin);
 	} catch (...) {
-		if(ErrLog(1))
+		if (ErrLog(1))
 			LogStream() << "Plugin " << file << " caused an exception" << endl;
 	}
-	if(Log(1))
+
+	if (Log(1))
 		LogStream() << "Succes loading plugin: " << file << endl;
 //#endif
 	return true;

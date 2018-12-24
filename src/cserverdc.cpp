@@ -187,12 +187,14 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	mFactory = new cDCConnFactory(this);
 
-	try {
+	//try {
 		mPluginManager.LoadAll();
+	/*
 	} catch (...) {
 		if (ErrLog(1))
 			LogStream() << "Plugin load error" << endl;
 	}
+	*/
 
 	memset(mProtoCount, 0, sizeof(mProtoCount));
 	memset(mProtoTotal, 0, sizeof(mProtoTotal));
@@ -218,12 +220,14 @@ cServerDC::~cServerDC()
 
 	this->OnUnLoad(0);
 
+	/*
 	try { // unload all plugins, todo: still broken, must be fixed
-		//mPluginManager.UnLoadAll();
+		mPluginManager.UnLoadAll();
 	} catch (...) {
 		if (ErrLog(1))
 			LogStream() << "Plugin unload error" << endl;
 	}
+	*/
 
 	CtmToHubClearList(); // ctm2hub
 

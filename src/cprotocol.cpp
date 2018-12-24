@@ -110,7 +110,7 @@ string &cMessageParser::ChunkString(unsigned int n)
 	if (!(mChStrMap & flag)) {
 		mChStrMap |= flag;
 
-		try {
+		//try {
 			tChunk &chu = mChunks[n];
 
 			if ((chu.first >= 0) && (chu.second >= 0) && ((unsigned int)chu.first <= mStr.length()) && ((unsigned int)chu.second <= mStr.length())) { // chunk can be empty
@@ -120,10 +120,12 @@ string &cMessageParser::ChunkString(unsigned int n)
 			}
 
 			ShrinkStringToFit(mChStrings[n]);
+		/*
 		} catch (...) {
 			if (ErrLog(1))
 				LogStream() << "Exception in chunk string" << endl;
 		}
+		*/
 	}
 
 	return mChStrings[n];

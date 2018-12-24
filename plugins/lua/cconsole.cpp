@@ -271,14 +271,14 @@ bool cConsole::cfAddLuaScript::operator()()
 	if (GetPI()->server)
 		config = GetPI()->server->mDBConf.config_name;
 
-	cLuaInterpreter *ip = new cLuaInterpreter(config, scriptfile);
+	cLuaInterpreter *ip = NULL;
 
-	/* todo: use try instead
-	if (!ip) {
-		(*mOS) << _("Failed to allocate new Lua interpreter.");
+	try {
+		ip = new cLuaInterpreter(config, scriptfile);
+	} catch (...) {
+		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s"), scriptfile.c_str());
 		return false;
 	}
-	*/
 
 	if (ip->Init()) {
 		(*mOS) << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());
@@ -336,14 +336,14 @@ bool cConsole::cfReloadLuaScript::operator()()
 	if (GetPI()->server)
 		config = GetPI()->server->mDBConf.config_name;
 
-	cLuaInterpreter *ip = new cLuaInterpreter(config, scriptfile);
+	cLuaInterpreter *ip = NULL;
 
-	/* todo: use try instead
-	if (!ip) {
-		(*mOS) << ' ' << _("Failed to allocate new Lua interpreter.");
+	try {
+		ip = new cLuaInterpreter(config, scriptfile);
+	} catch (...) {
+		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s"), scriptfile.c_str());
 		return false;
 	}
-	*/
 
 	if (ip->Init()) {
 		(*mOS) << ' ' << autosprintf(_("Script is now loaded: %s"), scriptfile.c_str());

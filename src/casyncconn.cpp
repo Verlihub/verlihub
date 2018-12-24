@@ -376,18 +376,18 @@ int cAsyncConn::ReadAll()
 
 int cAsyncConn::SendAll(const char *buf, size_t &len)
 {
-	size_t total = 0;        /* how many bytes we've sent */
-	size_t bytesleft = len; /* how many we have left to send */
+	size_t total = 0; // how many bytes weve sent
+	size_t bytesleft = len; // how many we have left to send
 	int n = 0;
-	int repetitions=0;
+	int repetitions = 0;
 	//bool udp = (this->GetType() == eCT_SERVERUDP);
 
 #ifndef QUICK_SEND
-	while(total < len) {
-		try {
+	while (total < len) {
+		//try {
 			//if(!udp) {
 //#if ! defined _WIN32
-				n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL|MSG_DONTWAIT);
+				n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
 				int RetryCount = 0;
@@ -408,6 +408,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 				n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr *)&mAddrIN, sizeof(struct sockaddr));
 			}
 			*/
+			/*
     		} catch(...) {
 			if(ErrLog(2))
 				LogStream() << "exception in SendAll(buf," << len
@@ -417,9 +418,12 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 					<< " n=" << n << endl;
 			return -1;
 		}
+		*/
 		repetitions++;
-		if(n == -1)
+
+		if (n == -1)
 			break;
+
 		total += n;
 		bytesleft -= n;
 	}
@@ -434,7 +438,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	total = n;
 #endif
 	len = total; /* return number actually sent here */
-	return n == -1?-1:0; /* return -1 on failure, 0 on success */
+	return n == -1 ? -1 : 0; /* return -1 on failure, 0 on success */
 }
 
 /*

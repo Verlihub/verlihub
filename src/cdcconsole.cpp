@@ -193,16 +193,18 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 			if (cmdid == "unhidekick" || cmdid == "uhk") return CmdUnHideKick(cmd_line, conn);
 			if (cmdid == "commands" || cmdid == "cmds") return CmdCmds(cmd_line, conn);
 
-			try {
+			//try {
 				if (mCmdr.ParseAll(str, os, conn) >= 0) {
 					mOwner->DCPublicHS(os.str().c_str(), conn);
 					return 1;
 				}
+			/*
 			} catch (const char *ex) {
 				if(Log(0)) LogStream() << "Exception in command: " << ex << endl;
 			} catch (...) {
 				if(Log(0)) LogStream() << "Exception in command." << endl;
 			}
+			*/
 			break;
 		default:
 			return 0;

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # VH Event Logger - an example script for the Verlihub Python plugin
-# Copyright (C) 2016-2017 Verlihub Team, info at verlihub dot net
+# Copyright (C) 2016-2019 Verlihub Team, info at verlihub dot net
 # Created in 2007 by Frog (frogged), the_frog at wp dot pl
 # License: GNU General Public License v.3, see http://www.gnu.org/licenses/
 # Last update: 2016-03-03
