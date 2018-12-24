@@ -215,26 +215,26 @@ int main(int argc, char *argv[])
 	//#endif
 
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
-	try
-	{
+
+	//try { // whole process is running inside try?
 		cServerDC server(ConfigBase, argv[0]); // create server
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
 			signal(SIGPIPE, mySigPipeHandler);
-			signal(SIGIO,   mySigIOHandler);
+			signal(SIGIO, mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
-			signal(SIGHUP,  mySigHupHandler);
+			signal(SIGHUP, mySigHupHandler);
 		//#endif
 
 		server.StartListening(port);
 		result = server.run(); // run the main loop until it stops itself
 		return result;
-	}
-	catch (const char *exception)
-	{
+	/*
+	} catch (const char *exception) {
 		MAIN_LOG_ERROR << exception << endl;
 		return 3;
 	}
+	*/
 }

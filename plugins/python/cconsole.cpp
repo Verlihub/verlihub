@@ -224,14 +224,14 @@ bool cConsole::cfAddPythonScript::operator()()
 		}
 	}
 
-	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
+	cPythonInterpreter *ip = NULL;
 
-	/* todo: use try instead
-	if (!ip) {
-		(*mOS) << _("Failed to allocate new Python interpreter.");
+	try {
+		ip = new cPythonInterpreter(scriptfile);
+	} catch(...) {
+		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s"), scriptfile.c_str());
 		return false;
 	}
-	*/
 
 	GetPI()->AddData(ip);
 
@@ -290,14 +290,14 @@ bool cConsole::cfReloadPythonScript::operator()()
 			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
 	}
 
-	cPythonInterpreter *ip = new cPythonInterpreter(scriptfile);
+	cPythonInterpreter *ip = NULL;
 
-	/* todo: use try instead
-	if (!ip) {
-		(*mOS) << ' ' << _("Failed to allocate new Python interpreter.");
+	try {
+		ip = new cPythonInterpreter(scriptfile);
+	} catch(...) {
+		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s"), scriptfile.c_str());
 		return false;
 	}
-	*/
 
 	GetPI()->AddData(ip, position);
 	if (ip->Init()) {

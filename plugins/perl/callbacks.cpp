@@ -155,7 +155,7 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int clas, cons
 	temp.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 
-	if (clas >= 3) { // todo: oplist_class, botlist
+	if (clas >= 3) { // todo: oplist_class, userip
 		serv->mP.Create_OpList(temp, nick, true); // send short oplist, reserve for pipe
 		serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 	}

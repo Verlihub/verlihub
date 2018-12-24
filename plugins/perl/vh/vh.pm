@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2018 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -311,7 +311,7 @@ Verlihub Team E<lt>info at verlihub dot netE<gt>
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-Copyright (C) 2006-2017 Verlihub Team, info at verlihub dot net
+Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
 
 Verlihub is free software; You can redistribute it
 and modify it under the terms of the GNU General

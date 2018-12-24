@@ -345,7 +345,7 @@ void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
 int cBanList::Unban(ostream &os, const string &value, const string &reason, const string &nickOp, int mask, bool deleteEntry)
 {
 	SelectFields(mQuery.OStream());
-	if(!AddTestCondition(mQuery.OStream() << " WHERE ", value, mask)) {
+	if(!AddTestCondition(mQuery.OStream() << " where ", value, mask)) {
 		mQuery.Clear();
 		return 0;
 	}
@@ -370,7 +370,7 @@ int cBanList::Unban(ostream &os, const string &value, const string &reason, cons
 	}
 	mQuery.Clear();
 	if(deleteEntry) {
-		mQuery.OStream() << "DELETE FROM " << this->mMySQLTable.mName << " WHERE ";
+		mQuery.OStream() << "delete from " << this->mMySQLTable.mName << " where ";
 		AddTestCondition(mQuery.OStream() , value, mask);
 		mQuery.Query();
 		mQuery.Clear();
