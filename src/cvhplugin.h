@@ -20,16 +20,20 @@
 
 #ifndef NDIRECTCONNECT_NPLUGINCVHPLUGIN_H
 #define NDIRECTCONNECT_NPLUGINCVHPLUGIN_H
+
 #include "cpluginbase.h"
 #include "cusercollection.h"
 #include <vector>
 
 using namespace std;
+
 namespace  nVerliHub {
 	//using nPlugin::cPluginBase;
+
 	namespace nProtocol {
 		class cMessageDC;
 	};
+
 	namespace nTables {
 		class cBan;
 		class cRegUserInfo;
@@ -42,6 +46,7 @@ namespace  nVerliHub {
 		class cServerDC;
 		class cConnDC;
 	};
+
 	//using nSocket::cConnDC;
 	class cDCTag;
 	class cUser;
@@ -60,7 +65,6 @@ public:
 };
 
 typedef vector<ScriptResponse> ScriptResponses;
-
 
 namespace nPlugin {
 
@@ -414,7 +418,7 @@ public:
 
 	virtual bool AddRobot(cUserRobot *);
 	virtual bool DelRobot(cUserRobot *);
-	virtual cPluginRobot * NewRobot(const string &Nick, int);
+	virtual cPluginRobot* NewRobot(const string &nick, const int clas, const string &info);
 
 	/// robot events
 	virtual bool RobotOnPM( cPluginRobot *, cMessageDC *, nSocket::cConnDC *){ return true;};

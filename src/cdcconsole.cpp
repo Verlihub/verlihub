@@ -657,7 +657,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("Donation") << ":\r\n\r\n";
 	os << "\tPayPal: https://paypal.me/feardc/\r\n";
 	os << "\tBitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw\r\n";
-	os << "\t" << _("Donators") << ": Deivis (75 EUR)\r\n";
+	os << "\t" << _("Donators") << ": Deivis (85 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;

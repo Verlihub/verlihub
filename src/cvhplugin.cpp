@@ -66,14 +66,16 @@ bool cVHPlugin::AddRobot(cUserRobot *robot)
 	return true;
 }
 
-cPluginRobot * cVHPlugin::NewRobot(const string &Nick, int uclass)
+cPluginRobot* cVHPlugin::NewRobot(const string &nick, const int clas, const string &info)
 {
-	cPluginRobot *robot = new cPluginRobot(Nick, this, mServer);
-	//set class before adding to list, otherwise user can't be op
-	robot->mClass = tUserCl(uclass);
+	cPluginRobot *robot = new cPluginRobot(nick, this, mServer);
+	robot->mClass = tUserCl(clas); //set class and myinfo before adding to list, so server can show user to all
+	robot->mMyINFO.reserve(info.size());
+	robot->mMyINFO = info;
+
 	if (AddRobot(robot)) {
 		return robot;
-	}else {
+	} else {
 		delete robot;
 		robot = NULL;
 		return NULL;
@@ -82,11 +84,11 @@ cPluginRobot * cVHPlugin::NewRobot(const string &Nick, int uclass)
 
 bool cVHPlugin::DelRobot(cUserRobot *robot)
 {
-	bool result = mRobots.Remove(robot);
+	const bool res = mRobots.Remove(robot);
 	mServer->DelRobot(robot);
 	delete robot;
 	robot = NULL;
-	return result;
+	return res;
 }
 
 bool cVHPlugin::AddScript(const string &filename, ostream &os)

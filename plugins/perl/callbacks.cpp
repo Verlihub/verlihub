@@ -79,11 +79,6 @@ int nVerliHub::nPerlPlugin::nCallback::IsUserOnline(const char *nick) {
 	return usr == NULL ? 0 : 1;
 }
 
-int nVerliHub::nPerlPlugin::nCallback::IsBot(const char *nick) {
-	cServerDC *server = GetCurrentVerlihub();
-	cUserRobot *robot = (cUserRobot *)server->mRobotList.GetUserBaseByNick(nick);
-	return robot == NULL ? 0 : 1;
-}
 int nVerliHub::nPerlPlugin::nCallback::GetUpTime() {
 	cServerDC *server = GetCurrentVerlihub();
 	cTime upTime = server->mTime;
@@ -116,80 +111,91 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 }
 
 
-bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share)
+bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int clas, const char *desc, const char *conn, const char *mail, const char *shar)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server)
+	if (!serv)
 		return false;
 
-	cpiPerl *pi = GetPI();
+	cpiPerl *perl = GetPI();
 
-	if (!pi)
+	if (!perl)
 		return false;
 
-	cPluginRobot *robot = pi->NewRobot(nick, uclass);
+	string info;
+	serv->mP.Create_MyINFO(info, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
 
-	if (!robot) {
+	if (!perl->NewRobot(nick, clas, info)) { // note: this will show user to all
 		// error: "Error adding bot; it may already exist"
 	    return false;
 	}
 
-	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-	//pi->mPerl.addBot(nick, share, (char*)robot->mMyINFO.c_str(), uclass);
-	string omsg;
-	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-	server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
-
-	if (uclass >= 3) {
-		server->mOpList.GetNickList(omsg, true); // reserve for pipe
-		server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
-	}
-
+	//perl->mPerl.addBot(nick, shar, (char*)info.c_str(), clas);
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int uclass, const char *desc, const char *speed, const char *email, const char *share)
+bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int clas, const char *desc, const char *conn, const char *mail, const char *shar)
 {
-	cServerDC *server = GetCurrentVerlihub();
+	cServerDC *serv = GetCurrentVerlihub();
 
-	if (!server)
+	if (!serv)
 		return false;
 
-	cUserRobot *robot = (cUserRobot*)server->mRobotList.GetUserBaseByNick(nick);
+	cUserRobot *robot = (cUserRobot*)serv->mRobotList.GetUserBaseByNick(nick);
 
 	if (!robot) {
 		// error: "???"
 		return false;
 	}
 
-	server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-	//pi->mPerl.editBot(nick, share, (char *) robot->mMyINFO.c_str(), uclass);
-	string omsg;
-	omsg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-	server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
+	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
+	//pi->mPerl.editBot(nick, shar, (char*)robot->mMyINFO.c_str(), clas);
+	string temp;
+	temp.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
+	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 
-	if (uclass >= 3) {
-		server->mOpList.GetNickList(omsg, true); // reserve for pipe
-		server->mUserList.SendToAll(omsg, server->mC.delayed_myinfo, true);
+	if (clas >= 3) { // todo: oplist_class, botlist
+		serv->mP.Create_OpList(temp, nick, true); // send short oplist, reserve for pipe
+		serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 	}
 
 	return true;
 }
 
-bool nVerliHub::nPerlPlugin::nCallback::UnRegBot(const char *nick) {
-	cServerDC *server = GetCurrentVerlihub();
-	cpiPerl *pi = GetPI();
+bool nVerliHub::nPerlPlugin::nCallback::UnRegBot(const char *nick)
+{
+	cServerDC *serv = GetCurrentVerlihub();
 
-	cUserRobot *robot = (cUserRobot *)server->mRobotList.GetUserBaseByNick(nick);
-	if(robot != NULL) {
-		//pi->mPerl.delBot(nick);
-		pi->DelRobot(robot);
+	if (!serv)
+		return false;
+
+	cpiPerl *perl = GetPI();
+
+	if (!perl)
+		return false;
+
+	cUserRobot *robot = (cUserRobot*)serv->mRobotList.GetUserBaseByNick(nick);
+
+	if (robot) {
+		//perl->mPerl.delBot(nick);
+		perl->DelRobot(robot); // delete bot, this will also send quit to all
 	} else {
 		// error: "Bot doesn't exist"
-	        return false;
+		return false;
 	}
+
 	return true;
+}
+
+int nVerliHub::nPerlPlugin::nCallback::IsBot(const char *nick)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv)
+		return 0;
+
+	return (serv->mRobotList.ContainsNick(nick) ? 1 : 0);
 }
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetTopic() {

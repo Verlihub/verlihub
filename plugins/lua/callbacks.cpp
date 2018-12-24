@@ -1960,8 +1960,10 @@ int _GetLuaBots(lua_State *L)
 
 int _RegBot(lua_State *L)
 {
-	if (lua_gettop(L) < 7) {
-		luaL_error(L, "Error calling VH:RegBot, expected 6 argument but got %d.", lua_gettop(L) - 1);
+	const int args = lua_gettop(L) - 1;
+
+	if (args < 6) {
+		luaL_error(L, "Error calling VH:RegBot, expected 6 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -1986,15 +1988,15 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	cLuaInterpreter *li = FindLua(L);
+	cLuaInterpreter *lua = FindLua(L);
 
-	if (!li) {
+	if (!lua) {
 		luaerror(L, ERR_LUA);
 		return 2;
 	}
 
 	const string nick = lua_tostring(L, 2);
-	int bad = CheckBotNick(nick); // check bot nick
+	const int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
 		case 2:
@@ -2016,64 +2018,53 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	int iclass;
+	int clas;
+	string temp;
 
 	if (lua_isstring(L, 3)) {
-		string temp = lua_tostring(L, 3);
+		temp = lua_tostring(L, 3);
 
 		if (temp.empty())
-			iclass = 0;
+			clas = 0;
 		else
-			iclass = StrToInt(temp);
-	} else
-		iclass = (int)lua_tonumber(L, 3);
+			clas = StrToInt(temp);
+	} else {
+		clas = (int)lua_tonumber(L, 3);
+	}
 
-	if ((iclass < eUC_PINGER) || (iclass > eUC_MASTER) || ((iclass > eUC_ADMIN) && (iclass < eUC_MASTER))) {
+	if ((clas < eUC_NORMUSER) || (clas > eUC_MASTER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER))) {
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
 
-	cPluginRobot *robot = plug->NewRobot(nick, iclass);
+	const string desc = lua_tostring(L, 4);
+	const string conn = lua_tostring(L, 5);
+	const string mail = lua_tostring(L, 6);
+	string shar;
+	int share;
 
-	if (!robot) {
+	if (lua_isstring(L, 7)) {
+		shar = lua_tostring(L, 7);
+
+		if (shar.empty()) {
+			shar = "0";
+			share = 0;
+		} else {
+			share = StrToInt(shar);
+		}
+	} else {
+		share = (int)lua_tonumber(L, 7);
+		shar = IntToStr(share);
+	}
+
+	serv->mP.Create_MyINFO(temp, nick, desc, conn, mail, shar, false); // create myinfo, dont reserve for pipe, we are not sending this
+
+	if (!plug->NewRobot(nick, clas, temp)) { // note: this will show user to all
 		luaerror(L, "Error registering bot");
 		return 2;
 	}
 
-	string desc = lua_tostring(L, 4);
-	string speed = lua_tostring(L, 5);
-	string email = lua_tostring(L, 6);
-	string share;
-	int ishare;
-
-	if (lua_isstring(L, 7)) {
-		share = lua_tostring(L, 7);
-
-		if (share.empty()) {
-			share = "0";
-			ishare = 0;
-		} else
-			ishare = StrToInt(share);
-	} else {
-		ishare = (int)lua_tonumber(L, 7);
-		share = IntToStr(ishare);
-	}
-
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send myinfo, dont reserve for pipe, we are not sending this
-	string data;
-	data.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-	data = robot->mMyINFO;
-	serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-
-	if (robot->mClass >= serv->mC.oplist_class) { // send short oplist, reserve for pipe
-		serv->mP.Create_OpList(data, nick, true);
-		serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-	}
-
-	serv->mP.Create_BotList(data, nick, true); // send short botlist, reserve for pipe
-	serv->mUserList.SendToAllWithFeature(data, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
-
-	li->addBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // add to lua bots
+	lua->addBot(nick.c_str(), temp.c_str(), share, clas); // add to lua bots
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -2081,8 +2072,10 @@ int _RegBot(lua_State *L)
 
 int _EditBot(lua_State *L)
 {
-	if (lua_gettop(L) < 7) {
-		luaL_error(L, "Error calling VH:EditBot, expected 6 argument but got %d.", lua_gettop(L) - 1);
+	const int args = lua_gettop(L) - 1;
+
+	if (args < 6) {
+		luaL_error(L, "Error calling VH:EditBot, expected 6 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2100,15 +2093,15 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	cLuaInterpreter *li = FindLua(L);
+	cLuaInterpreter *lua = FindLua(L);
 
-	if (!li) {
+	if (!lua) {
 		luaerror(L, ERR_LUA);
 		return 2;
 	}
 
 	const string nick = lua_tostring(L, 2);
-	int bad = CheckBotNick(nick); // check bot nick
+	const int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
 		case 2:
@@ -2137,86 +2130,83 @@ int _EditBot(lua_State *L)
 		return 2;
 	}
 
-	int iclass;
+	int clas;
+	string temp;
 
 	if (lua_isstring(L, 3)) {
-		string temp = lua_tostring(L, 3);
+		temp = lua_tostring(L, 3);
 
 		if (temp.empty())
-			iclass = 0;
+			clas = 0;
 		else
-			iclass = StrToInt(temp);
-	} else
-		iclass = (int)lua_tonumber(L, 3);
+			clas = StrToInt(temp);
+	} else {
+		clas = (int)lua_tonumber(L, 3);
+	}
 
-	if ((iclass < eUC_PINGER) || (iclass > eUC_MASTER) || ((iclass > eUC_ADMIN) && (iclass < eUC_MASTER))) {
+	if ((clas < eUC_NORMUSER) || (clas > eUC_MASTER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER))) {
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
 
-	string desc = lua_tostring(L, 4);
-	string speed = lua_tostring(L, 5);
-	string email = lua_tostring(L, 6);
-	string share;
-	int ishare;
+	const string desc = lua_tostring(L, 4);
+	const string conn = lua_tostring(L, 5);
+	const string mail = lua_tostring(L, 6);
+	string shar;
+	int share;
 
 	if (lua_isstring(L, 7)) {
-		share = lua_tostring(L, 7);
+		shar = lua_tostring(L, 7);
 
-		if (share.empty()) {
-			share = "0";
-			ishare = 0;
-		} else
-			ishare = StrToInt(share);
+		if (shar.empty()) {
+			shar = "0";
+			share = 0;
+		} else {
+			share = StrToInt(shar);
+		}
 	} else {
-		ishare = (int)lua_tonumber(L, 7);
-		share = IntToStr(ishare);
+		share = (int)lua_tonumber(L, 7);
+		shar = IntToStr(share);
 	}
 
-	string data;
-
-	if (robot->mClass != iclass) { // different class
-		if ((robot->mClass < serv->mC.opchat_class) && (iclass >= serv->mC.opchat_class)) { // add to opchat list
-			if (!serv->mOpchatList.ContainsHash(robot->mNickHash))
-				serv->mOpchatList.AddWithHash(robot, robot->mNickHash);
-
-		} else if ((robot->mClass >= serv->mC.opchat_class) && (iclass < serv->mC.opchat_class)) { // remove from opchat list
-			if (serv->mOpchatList.ContainsHash(robot->mNickHash))
-				serv->mOpchatList.RemoveByHash(robot->mNickHash);
-		}
-
-		if ((robot->mClass < serv->mC.oplist_class) && (iclass >= serv->mC.oplist_class)) { // changing from user to op
+	if (robot->mClass != clas) { // different class
+		if ((robot->mClass < serv->mC.oplist_class) && (clas >= serv->mC.oplist_class)) { // changing from user to op
 			if (!serv->mOpList.ContainsHash(robot->mNickHash)) { // add to oplist
 				serv->mOpList.AddWithHash(robot, robot->mNickHash);
 
-				serv->mP.Create_OpList(data, nick, true); // send short oplist, reserve for pipe
-				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+				serv->mP.Create_OpList(temp, nick, true); // send short oplist, reserve for pipe
+				serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 			}
 
-		} else if ((robot->mClass >= serv->mC.oplist_class) && (iclass < serv->mC.oplist_class)) { // changing from op to user
+		} else if ((robot->mClass >= serv->mC.oplist_class) && (clas < serv->mC.oplist_class)) { // changing from op to user
 			if (serv->mOpList.ContainsHash(robot->mNickHash)) { // remove from oplist
 				serv->mOpList.RemoveByHash(robot->mNickHash);
 
-				serv->mP.Create_Quit(data, nick, true); // send quit, reserve for pipe
-				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+				serv->mP.Create_Quit(temp, nick, true); // send quit, reserve for pipe
+				serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 
-				serv->mP.Create_BotList(data, nick, true); // send short botlist after quit, reserve for pipe
-				serv->mUserList.SendToAllWithFeature(data, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
+				serv->mP.Create_BotList(temp, nick, true); // send short botlist after quit, reserve for pipe
+				serv->mUserList.SendToAllWithFeature(temp, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
+
+				if (serv->mC.send_user_ip) { // send userip to operators, bots have local ip
+					serv->mP.Create_UserIP(temp, nick, "127.0.0.1", true); // reserve for pipe
+					serv->mUserList.SendToAllWithClassFeature(temp, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
+				}
 			}
 		}
 
-		robot->mClass = (tUserCl)iclass; // set new class
+		robot->mClass = (tUserCl)clas; // set new class
 	}
 
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, speed, email, share, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
+	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
 
-	if (data.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
-		data.reserve(robot->mMyINFO.size() + 1);
+	if (temp.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
+		temp.reserve(robot->mMyINFO.size() + 1);
 
-	data = robot->mMyINFO;
-	serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+	temp = robot->mMyINFO;
+	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 
-	li->editBot(nick.c_str(), robot->mMyINFO.c_str(), ishare, iclass); // edit in lua bots
+	lua->editBot(nick.c_str(), robot->mMyINFO.c_str(), share, clas); // edit in lua bots
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -2224,8 +2214,10 @@ int _EditBot(lua_State *L)
 
 int _UnRegBot(lua_State *L)
 {
-	if (lua_gettop(L) < 2) {
-		luaL_error(L, "Error calling VH:UnRegBot, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	const int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:UnRegBot, expected 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2250,15 +2242,15 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	cLuaInterpreter *li = FindLua(L);
+	cLuaInterpreter *lua = FindLua(L);
 
-	if (!li) {
+	if (!lua) {
 		luaerror(L, ERR_LUA);
 		return 2;
 	}
 
 	const string nick = lua_tostring(L, 2);
-	int bad = CheckBotNick(nick); // check bot nick
+	const int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
 		case 2:
@@ -2287,8 +2279,8 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	li->delBot(nick.c_str()); // delete from lua bots
-	plug->DelRobot(robot); // delete bot
+	lua->delBot(nick.c_str()); // delete from lua bots
+	plug->DelRobot(robot); // delete bot, this will also send quit to all
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -2296,8 +2288,10 @@ int _UnRegBot(lua_State *L)
 
 int _IsBot(lua_State *L)
 {
-	if (lua_gettop(L) < 2) {
-		luaL_error(L, "Error calling VH:IsBot, expected 1 argument but got %d.", lua_gettop(L) - 1);
+	const int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:IsBot, expected 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2316,7 +2310,7 @@ int _IsBot(lua_State *L)
 	}
 
 	const string nick = lua_tostring(L, 2);
-	int bad = CheckBotNick(nick); // check bot nick
+	const int bad = CheckBotNick(nick); // check bot nick
 
 	switch (bad) {
 		case 2:
@@ -2336,13 +2330,6 @@ int _IsBot(lua_State *L)
 	if (!serv->mRobotList.ContainsNick(nick)) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
-		return 2;
-	}
-
-	cUserRobot *robot = (cUserRobot*)serv->mRobotList.GetUserBaseByNick(nick);
-
-	if (!robot) {
-		luaerror(L, "Error getting bot");
 		return 2;
 	}
 

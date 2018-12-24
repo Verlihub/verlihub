@@ -1370,11 +1370,23 @@ w_Targs *_GetUserHost(int id, w_Targs *args)
 w_Targs *_GetUserIP(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
 	const char *ip = "";
-	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (u && u->mxConn) ip = u->mxConn->AddrIP().c_str();
+	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
+	if (user) {
+		if (user->mxConn)
+			ip = user->mxConn->AddrIP().c_str();
+		else // bots have local ip
+			ip = "127.0.0.1";
+	}
+
 	return cpiPython::lib_pack("s", strdup(ip));
 }
 
@@ -1776,40 +1788,26 @@ w_Targs *_IsRobotNickBad(int id, w_Targs *args)
 
 w_Targs *_AddRobot(int id, w_Targs *args)
 {
-	const char *nick, *desc, *speed, *email, *share;
-	long uclass;
+	const char *nick, *desc, *conn, *mail, *shar;
+	long clas;
 
-	if (!cpiPython::lib_unpack(args, "slssss", &nick, &uclass, &desc, &speed, &email, &share))
+	if (!cpiPython::lib_unpack(args, "slssss", &nick, &clas, &desc, &conn, &mail, &shar))
 		return NULL;
 
-	if (!nick || !desc || !speed || !email || !share)
+	if (!nick || (nick[0] == '\0') || !desc || !conn || !mail || !shar)
 		return NULL;
 
 	if (is_robot_nick_bad(nick))
 		return NULL;
 
-	if (uclass < -1 || (uclass > 5 && uclass != 10))
-		uclass = 0;
+	if (clas < 0 || (clas > 5 && clas != 10))
+		clas = 0;
 
-	cPluginRobot *robot = cpiPython::me->NewRobot(nick, uclass);
+	string info;
+	cpiPython::me->server->mP.Create_MyINFO(info, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
 
-	if (robot) {
-		cServerDC *server = cpiPython::me->server;
-		server->mP.Create_MyINFO(robot->mMyINFO, robot->mNick, desc, speed, email, share, false); // dont reserve for pipe, we are not sending this
-		string msg;
-		msg.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-		msg = robot->mMyINFO;
-		server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
-
-		if (robot->mClass >= server->mC.oplist_class) {
-			server->mP.Create_OpList(msg, robot->mNick, true); // reserve for pipe
-			server->mUserList.SendToAll(msg, server->mC.delayed_myinfo, true);
-		}
-
-		server->mP.Create_BotList(msg, robot->mNick, true); // reserve for pipe
-		server->mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, server->mC.delayed_myinfo, true);
+	if (cpiPython::me->NewRobot(nick, clas, info)) // note: this will show user to all
 		return w_ret1;
-	}
 
 	return NULL;
 }
@@ -1817,17 +1815,18 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 w_Targs *_DelRobot(int id, w_Targs *args)
 {
 	const char *nick;
+
 	if (!cpiPython::lib_unpack(args, "s", &nick))
 		return NULL;
 
 	if (!nick || (nick[0] == '\0'))
 		return NULL;
 
-	cPluginRobot *robot = (cPluginRobot*)cpiPython::me->server->mUserList.GetUserByNick(nick);
+	cUserRobot *robot = (cUserRobot*)cpiPython::me->server->mRobotList.GetUserBaseByNick(nick);
 
-	if (robot) {
-		if (cpiPython::me->DelRobot(robot))
-			return w_ret1;
+	if (robot) { // delete bot, this will also send quit to all
+		cpiPython::me->DelRobot(robot);
+		return w_ret1;
 	}
 
 	return NULL;

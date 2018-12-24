@@ -444,7 +444,8 @@ bool cServerDC::AddRobot(cUserRobot *robot)
 {
 	if (AddToList(robot)) {
 		robot->mxServer = this;
-		return mRobotList.AddWithHash(robot, robot->mNickHash);
+		mRobotList.AddWithHash(robot, robot->mNickHash);
+		return true;
 	}
 
 	return false;
@@ -452,8 +453,10 @@ bool cServerDC::AddRobot(cUserRobot *robot)
 
 bool cServerDC::DelRobot(cUserRobot *robot)
 {
-	if (this->RemoveNick(robot))
-		return mRobotList.RemoveByHash(robot->mNickHash);
+	if (this->RemoveNick(robot)) {
+		mRobotList.RemoveByHash(robot->mNickHash);
+		return true;
+	}
 
 	return false;
 }
@@ -484,65 +487,74 @@ bool cServerDC::AddToList(cUser *user)
 
 	user->mInList = true;
 
-	if (user->mPassive)
-		mPassiveUsers.AddWithHash(user, user->mNickHash);
-	else
-		mActiveUsers.AddWithHash(user, user->mNickHash);
+	if (user->mxConn) { // dont add bots to these lists
+		if (user->mPassive)
+			mPassiveUsers.AddWithHash(user, user->mNickHash);
+		else
+			mActiveUsers.AddWithHash(user, user->mNickHash);
+	}
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys))
 		mOpList.AddWithHash(user, user->mNickHash);
 
-	if (user->Can(eUR_OPCHAT, mTime.Sec()))
-		mOpchatList.AddWithHash(user, user->mNickHash);
+	if (user->mxConn) { // real users only
+		if (user->Can(eUR_OPCHAT, mTime.Sec()))
+			mOpchatList.AddWithHash(user, user->mNickHash);
 
-	if ((user->mClass >= eUC_OPERATOR) || mC.chat_default_on)
-		mChatUsers.AddWithHash(user, user->mNickHash);
-	else if (user->mxConn)
-		DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
+		if ((user->mClass >= eUC_OPERATOR) || mC.chat_default_on)
+			mChatUsers.AddWithHash(user, user->mNickHash);
+		else
+			DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
 
-	if (user->mxConn && user->mxConn->Log(3))
-		user->mxConn->LogStream() << "Adding at the end of nicklist, becomes in list" << endl;
+		if (user->mxConn->Log(3))
+			user->mxConn->LogStream() << "Adding user at the end of nicklist" << endl;
+
+	} else { // note: this will send myinfo, oplist, botlist and userip for bots, we no longer need to do this manually
+		ShowUserToAll(user);
+	}
 
 	return true;
 }
 
-bool cServerDC::RemoveNick(cUser *User)
+bool cServerDC::RemoveNick(cUser *user)
 {
-	if (mUserList.ContainsHash(User->mNickHash)) {
+	if (mUserList.ContainsHash(user->mNickHash)) {
 		#ifndef WITHOUT_PLUGINS
-			if (User->mxConn && User->mxConn->GetLSFlag(eLS_LOGIN_DONE) && User->mInList)
-				mCallBacks.mOnUserLogout.CallAll(User);
+			if (user->mxConn && user->mxConn->GetLSFlag(eLS_LOGIN_DONE) && user->mInList)
+				mCallBacks.mOnUserLogout.CallAll(user);
 		#endif
 
-		cUser *other = mUserList.GetUserByHash(User->mNickHash);
+		cUser *other = mUserList.GetUserByHash(user->mNickHash);
 
-		if (!User->mxConn)
-			mUserList.RemoveByHash(User->mNickHash);
-		else if (other && other->mxConn && (other->mxConn == User->mxConn)) // make sure that the user we want to remove is the correct one
-			mUserList.RemoveByHash(User->mNickHash);
+		if (!user->mxConn)
+			mUserList.RemoveByHash(user->mNickHash);
+		else if (other && other->mxConn && (other->mxConn == user->mxConn)) // make sure that the user we want to remove is the correct one
+			mUserList.RemoveByHash(user->mNickHash);
 		else
 			return false;
 	}
 
-	if (mOpList.ContainsHash(User->mNickHash))
-		mOpList.RemoveByHash(User->mNickHash);
+	if (mOpList.ContainsHash(user->mNickHash))
+		mOpList.RemoveByHash(user->mNickHash);
 
-	if (mOpchatList.ContainsHash(User->mNickHash))
-		mOpchatList.RemoveByHash(User->mNickHash);
+	if (user->mxConn) { // only real users
+		if (mOpchatList.ContainsHash(user->mNickHash))
+			mOpchatList.RemoveByHash(user->mNickHash);
 
-	if (mActiveUsers.ContainsHash(User->mNickHash))
-		mActiveUsers.RemoveByHash(User->mNickHash);
+		if (mActiveUsers.ContainsHash(user->mNickHash))
+			mActiveUsers.RemoveByHash(user->mNickHash);
 
-	if (mPassiveUsers.ContainsHash(User->mNickHash))
-		mPassiveUsers.RemoveByHash(User->mNickHash);
+		if (mPassiveUsers.ContainsHash(user->mNickHash))
+			mPassiveUsers.RemoveByHash(user->mNickHash);
 
-	if (mChatUsers.ContainsHash(User->mNickHash))
-		mChatUsers.RemoveByHash(User->mNickHash);
+		if (mChatUsers.ContainsHash(user->mNickHash))
+			mChatUsers.RemoveByHash(user->mNickHash);
+	}
 
-	if (User->mInList) {
-		User->mInList = false;
+	if (user->mInList) {
+		user->mInList = false; // this will prevent user from receiving own quit
 		string omsg;
-		mP.Create_Quit(omsg, User->mNick, true); // reserve for pipe
+		mP.Create_Quit(omsg, user->mNick, true); // reserve for pipe
 		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 	}
 
@@ -1297,7 +1309,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 
 	cPenaltyList::sPenalty pen; // users special rights and restrictions
 
-	if (mPenList->LoadTo(pen, conn->mpUser->mNick) && (conn->mpUser->mClass != eUC_PINGER))
+	if ((conn->mpUser->mClass != eUC_PINGER) && mPenList->LoadTo(pen, conn->mpUser->mNick))
 		conn->mpUser->ApplyRights(pen);
 
 	if (!AddToList(conn->mpUser)) { // insert user to userlist
@@ -1364,12 +1376,21 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
 	}
 
-	if (mC.send_user_ip && user->mxConn) { // send userip to operators
-		mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
+	if (mC.send_user_ip) { // send userip to operators
+		if (user->mxConn) // real user
+			mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
+		else // bots have local ip
+			mP.Create_UserIP(msg, user->mNick, "127.0.0.1", true); // reserve for pipe
+
 		mUserList.SendToAllWithClassFeature(msg, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
-	user->mInList = false;
+	if (!user->mxConn) { // send short botlist to users with this feature
+		mP.Create_BotList(msg, mHubSec->mNick, true); // reserve for pipe
+		mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, mC.delayed_myinfo, true);
+	}
+
+	user->mInList = false; // note: this will prevent user from getting own myinfo, oplist and userip, i guess its done elsewhere
 	mUserList.FlushCache();
 	user->mInList = true;
 	return true;
@@ -1783,6 +1804,8 @@ int cServerDC::OnTimer(cTime &now)
 
 		for (zone = 0; zone <= USER_ZONES; zone++)
 			this->mUploadZone[zone].Reset(now);
+
+		mFrequency.Reset(now); // todo: same as above
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
@@ -2798,19 +2821,10 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						return 0;
 					}
 
-					DelRobot((cMainRobot*)mHubSec);
+					DelRobot((cMainRobot*)mHubSec); // this will send quit to all
 					mHubSec->mNick = val_new;
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-					AddRobot((cMainRobot*)mHubSec);
-					data.reserve(mHubSec->mMyINFO.size() + 1); // send myinfo, first use
-					data = mHubSec->mMyINFO;
-					mUserList.SendToAll(data, mC.delayed_myinfo, true);
-
-					mP.Create_OpList(data, mHubSec->mNick, true); // send short oplist, reserve for pipe
-					mUserList.SendToAll(data, mC.delayed_myinfo, true);
-
-					mP.Create_BotList(data, mHubSec->mNick, true); // send short botlist, reserve for pipe
-					mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
+					AddRobot((cMainRobot*)mHubSec); // note: this will show user to all
 
 					#ifndef WITHOUT_PLUGINS
 						data.clear();
@@ -2825,7 +2839,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					}
 
 					if (mOpChat)
-						DelRobot((cMainRobot*)mOpChat);
+						DelRobot((cMainRobot*)mOpChat); // this will send quit to all
 
 					if (val_new.size()) {
 						if (mOpChat) {
@@ -2836,16 +2850,8 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 						}
 
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-						AddRobot((cMainRobot*)mOpChat);
-						data.reserve(mOpChat->mMyINFO.size() + 1); // send myinfo, first use
-						data = mOpChat->mMyINFO;
-						mUserList.SendToAll(data, mC.delayed_myinfo, true);
+						AddRobot((cMainRobot*)mOpChat); // note: this will show user to all
 
-						mP.Create_OpList(data, mOpChat->mNick, true); // send short oplist, reserve for pipe
-						mUserList.SendToAll(data, mC.delayed_myinfo, true);
-
-						mP.Create_BotList(data, mOpChat->mNick, true); // send short botlist, reserve for pipe
-						mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 					} else if (mOpChat) {
 						delete mOpChat;
 						mOpChat = NULL;
@@ -2858,14 +2864,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					#endif
 
 				} else if (svar == "hub_security_desc") {
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share, false); // send new myinfo, dont reserve for pipe, we are not sending this
 					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 					data = mHubSec->mMyINFO;
 					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share, false); // send myinfo, dont reserve for pipe, we are not sending this
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share, false); // send new myinfo, dont reserve for pipe, we are not sending this
 						data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 						data = mOpChat->mMyINFO;
 						mUserList.SendToAll(data, mC.delayed_myinfo, true);
