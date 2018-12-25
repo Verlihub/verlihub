@@ -67,6 +67,7 @@ public:
 	virtual const char *CmdWord(int cmd);
 	virtual bool IsConnAllowed(cConnDC* conn,int cmd);
 	virtual void GetHelpForCommand(int cmd, ostream &os);
+	virtual void GetHelp(ostream &os);
 
 	enum {eLC_ON = eLC_FREE, eLC_OFF, eLC_RE};
 

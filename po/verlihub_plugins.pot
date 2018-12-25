@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-12-25 19:27+0100\n"
+"POT-Creation-Date: 2018-12-26 00:31+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -423,37 +423,37 @@ msgstr ""
 msgid "%s build time: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:145
+#: ../plugins/plugman/cconsole.cpp:160
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:150
+#: ../plugins/plugman/cconsole.cpp:165
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:182 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:197 ../plugins/plugman/cplugs.cpp:134
 msgid "Plugin loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:187 ../plugins/plugman/cconsole.cpp:210
-#: ../plugins/plugman/cconsole.cpp:233
+#: ../plugins/plugman/cconsole.cpp:202 ../plugins/plugman/cconsole.cpp:225
+#: ../plugins/plugman/cconsole.cpp:248
 #, c-format
 msgid "Plugin not found: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:202
+#: ../plugins/plugman/cconsole.cpp:217
 msgid "Plugin unloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:205
+#: ../plugins/plugman/cconsole.cpp:220
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:225 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:240 ../plugins/plugman/cplugs.cpp:182
 msgid "Plugin reloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:228
+#: ../plugins/plugman/cconsole.cpp:243
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 
