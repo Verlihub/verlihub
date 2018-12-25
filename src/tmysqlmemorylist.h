@@ -193,7 +193,6 @@ public:
 				mData.erase(it);
 				delete CurrentData;
 				CurrentData = NULL;
-				*it = NULL;
 				break;
 			}
 		}

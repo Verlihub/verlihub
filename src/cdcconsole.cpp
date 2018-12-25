@@ -1624,8 +1624,8 @@ bool cDCConsole::cfBan::operator()()
 		return false;
 	}
 
-	unsigned BanType = eBF_NICKIP;
-
+	int BanType = eBF_NICKIP;
+	
 	if (mIdRex->PartFound(BAN_TYPE)) {
 		mIdRex->Extract(BAN_TYPE, mIdStr, tmp);
 		BanType = this->StringToIntFromList(tmp, bannames, banids, sizeof(bannames) / sizeof(char*));
