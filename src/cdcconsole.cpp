@@ -1249,7 +1249,7 @@ int cDCConsole::CmdProtect(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdReload(istringstream &cmd_line, cConnDC *conn)
 {
-	mOwner->Reload();
+	mOwner->ReloadNow();
 	mOwner->DCPublicHS(_("Done reloading all lists and databases."), conn);
 	return 1;
 }
@@ -1625,7 +1625,7 @@ bool cDCConsole::cfBan::operator()()
 	}
 
 	int BanType = eBF_NICKIP;
-	
+
 	if (mIdRex->PartFound(BAN_TYPE)) {
 		mIdRex->Extract(BAN_TYPE, mIdStr, tmp);
 		BanType = this->StringToIntFromList(tmp, bannames, banids, sizeof(bannames) / sizeof(char*));
@@ -1758,7 +1758,7 @@ bool cDCConsole::cfBan::operator()()
 				case eBF_HOST2:
 				case eBF_HOST3:
 				case eBF_HOSTR1:
-					if (unsigned(MyClass) < (eUC_ADMIN - (BanType - eBF_HOST1))) {
+					if (MyClass < (eUC_ADMIN - (BanType - eBF_HOST1))) {
 						(*mOS) << _("You have no rights to do this.");
 						return false;
 					}
