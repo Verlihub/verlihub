@@ -670,8 +670,11 @@ class cServerDC : public cAsyncSocketServer
 		int CtmToHubRefererList(string &list);
 		void CtmToHubClearList();
 
-		// Reloads configuration and all caches.
-		void Reload();
+		// external triggers
+		void SyncStop();
+		void SyncReload();
+		void ReloadNow();
+		bool mReloadNow;
 
 protected: // Protected methods
 	/**

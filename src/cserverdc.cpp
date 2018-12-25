@@ -82,6 +82,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mPassiveUsers(false, false, false),
 	mChatUsers(false, false, false),
 	mRobotList(true, false, false),
+	mReloadNow(false),
 	mUserCountTot(0),
 	mTotalShare(0),
 	mTotalSharePeak(0),
@@ -1788,6 +1789,9 @@ int cServerDC::OnTimer(cTime &now)
 	if (bool(mHublistTimer.mMinDelay) && (mHublistTimer.Check(mTime, 1) == 0))
 		this->RegisterInHublist(mC.hublist_host, mC.hublist_port, NULL);
 
+	if (mReloadNow) // reload now
+		this->ReloadNow();
+
 	if (bool(mReloadcfgTimer.mMinDelay) && (mReloadcfgTimer.Check(mTime, 1) == 0)) {
 		mC.Load();
 		//mCo->mTriggers->ReloadAll();
@@ -3229,7 +3233,18 @@ void cServerDC::CtmToHubClearList()
 	mCtmToHubList.clear();
 }
 
-void cServerDC::Reload()
+void cServerDC::SyncStop()
+{
+	DCPublicHSToAll(_("Please note, hub will be stopped now."), false);
+	this->stop(0, -1);
+}
+
+void cServerDC::SyncReload()
+{
+	mReloadNow = true;
+}
+
+void cServerDC::ReloadNow()
 {
 	mC.Load();
 	mCo->mTriggers->ReloadAll();
@@ -3243,6 +3258,12 @@ void cServerDC::Reload()
 		mPenList->UpdateCache();
 
 	this->mMaxMindDB->ReloadAll(); // reload maxminddb
+
+	if (mReloadNow) {
+		const string info(_("Done reloading all lists and databases."));
+		DCPublicToAll(mC.hub_security, info, int(eUC_ADMIN), int(eUC_MASTER), false); // send to class 5 and 10, no delay
+		mReloadNow = false; // reset flag
+	}
 }
 
 	}; // namespace nServer

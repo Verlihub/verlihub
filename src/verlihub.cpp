@@ -71,9 +71,9 @@ void mySigQuitHandler(int i)
 	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
 
 	if (serv)
-		serv->OnUnLoad(0);
+		serv->SyncStop();
 
-	exit(0);
+	//exit(0);
 }
 
 void mySigServHandler(int i)
@@ -81,9 +81,9 @@ void mySigServHandler(int i)
 	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
 	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
 
-	if (serv) {
-		serv->OnUnLoad(9);
+	if (serv) { // note: this is a crash, i dont think we can actually perform a proper stop()
 		serv->DoStackTrace();
+		serv->OnUnLoad(9); // try to unload as much as possible
 	}
 
 	exit(128 + i); // proper exit code for this signal
@@ -95,7 +95,7 @@ void mySigHupHandler(int i)
 	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
 
 	if (serv)
-		serv->Reload();
+		serv->SyncReload();
 }
 //#endif
 
@@ -230,6 +230,7 @@ int main(int argc, char *argv[])
 
 		server.StartListening(port);
 		result = server.run(); // run the main loop until it stops itself
+		// todo: need to destroy server here?
 		return result;
 	/*
 	} catch (const char *exception) {

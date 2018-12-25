@@ -186,10 +186,11 @@ public:
 		SetBaseTo(&data);
 		DeletePK();
 		iterator it;
-		for(it = begin(); it != end(); ++it) {
-			DataType* CurrentData = *it;
-			if((CurrentData != NULL) && CompareDataKey(data, *CurrentData))
-			{
+
+		for (it = begin(); it != end(); ++it) {
+			DataType *CurrentData = *it;
+
+			if ((CurrentData != NULL) && CompareDataKey(data, *CurrentData)) {
 				mData.erase(it);
 				delete CurrentData;
 				CurrentData = NULL;
