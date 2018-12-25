@@ -2853,6 +2853,11 @@ bool cDCConsole::cfPlug::operator()()
 			if (mParRex->PartFound(1)) {
 				mParRex->Extract(1, mParStr, tmp);
 
+				if (tmp == PLUGMAN_NAME) {
+					(*mOS) << _("You don't want to unload Plugman because all other plugins are loaded via it.");
+					return true;
+				}
+
 				if (!mS->mPluginManager.UnloadPlugin(tmp))
 					return false;
 			}
@@ -2871,6 +2876,11 @@ bool cDCConsole::cfPlug::operator()()
 			break;
 		case eAC_RELOAD:
 			if (GetParStr(1, tmp)) {
+				if (tmp == PLUGMAN_NAME) {
+					(*mOS) << _("You don't want to reload Plugman because all other plugins are loaded via it.");
+					return true;
+				}
+
 				if (!mS->mPluginManager.ReloadPlugin(tmp)) {
 					(*mOS) << mS->mPluginManager.GetError();
 					return false;

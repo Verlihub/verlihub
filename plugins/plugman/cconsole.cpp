@@ -55,9 +55,10 @@ const char *cPlugConsole::CmdPrefix()
 
 bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
 {
-	if (!conn || !conn->mpUser) return false;
-	switch(cmd)
-	{
+	if (!conn || !conn->mpUser)
+		return false;
+
+	switch (cmd) {
 		case eLC_ADD:
 		case eLC_DEL:
 		case eLC_MOD:
@@ -65,70 +66,84 @@ bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
 		case eLC_OFF:
 		case eLC_RE:
 			return conn->mpUser->mClass >= eUC_ADMIN;
-		break;
 		case eLC_LST:
 			return conn->mpUser->mClass >= eUC_OPERATOR;
-		break;
-		default: return false; break;
+		default:
+			return false;
 	}
+}
+
+void cPlugConsole::GetHelp(ostream &os)
+{
+	os << "https://github.com/verlihub/verlihub/wiki/command-list#plugins"; // todo
 }
 
 void cPlugConsole::GetHelpForCommand(int cmd, ostream &os)
 {
 	string help_str;
-	switch(cmd)
-	{
+
+	switch (cmd) {
 		case eLC_LST:
-		help_str = "!lstplug\r\nGive a list of registered plugins";
-		break;
+			help_str = "!lstplug\r\nGive a list of registered plugins";
+			break;
 		case eLC_ADD:
 		case eLC_MOD:
-		help_str = "!(add|mod)plug <nick>"
-			"[ -p <\"path\">]"
-			"[ -d <\"desc\">]"
-			"[ -a <autoload>]"
-			"\r\n""      register or update a plugin\r\n"
-		"     * name - short plugin name\r\n"
-		"     * path - a relative or absolute filename of the plugin's binary (it's better to provide absoulute path)\r\n"
-		"     * desc - a breif description of what the plugin does\r\n"
-		"     * autoload - 1/0 to autoload plugin at startup";
-		break;
+			help_str = "!(add|mod)plug <nick>"
+				"[ -p <\"path\">]"
+				"[ -d <\"desc\">]"
+				"[ -a <autoload>]"
+				"\r\n""      register or update a plugin\r\n"
+				"     * name - short plugin name\r\n"
+				"     * path - a relative or absolute filename of the plugin's binary (it's better to provide absoulute path)\r\n"
+				"     * desc - a breif description of what the plugin does\r\n"
+				"     * autoload - 1/0 to autoload plugin at startup";
+
+			break;
 		case eLC_DEL:
-		help_str = "!delplug <ipmin_or_iprange>"; break;
-		default: break;
+			help_str = "!delplug <ipmin_or_iprange>";
+			break;
+		default:
+			break;
 	}
+
 	cDCProto::EscapeChars(help_str,help_str);
 	os << help_str;
 }
 
-const char * cPlugConsole::GetParamsRegex(int cmd)
+const char* cPlugConsole::GetParamsRegex(int cmd)
 {
-	switch(cmd)
-	{
+	switch (cmd) {
 		case eLC_ADD:
 		case eLC_MOD:
 			return "^(\\S+)(" // <nick>
-			      "( -p ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))|" // <"path">
-			      "( -d ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))|" // [ <desc>]
-			      "( -a ?([01]))|"
-			      ")*\\s*$" // the end of message
-			      ; break;
-		case eLC_DEL: return "(\\S+)"; break;
-		case eLC_ON: return "(\\S+)"; break;
-		case eLC_OFF: return "(\\S+)"; break;
-		case eLC_RE: return "(\\S+)"; break;
-		default : return ""; break;
-	};
+				"( -p ?(\")?((?(4)[^\"]+?|\\S+))(?(4)\"))|" // <"path">
+				"( -d ?(\")?((?(7)[^\"]+?|\\S+))(?(7)\"))|" // [ <desc>]
+				"( -a ?([01]))|"
+				")*\\s*$"; // the end of message
+		case eLC_DEL:
+			return "(\\S+)";
+		case eLC_ON:
+			return "(\\S+)";
+		case eLC_OFF:
+			return "(\\S+)";
+		case eLC_RE:
+			return "(\\S+)";
+		default:
+			return "";
+	}
 }
 
-const char *cPlugConsole::CmdWord(int cmd)
+const char* cPlugConsole::CmdWord(int cmd)
 {
-	switch(cmd)
-	{
-		case eLC_ON : return "on";
-		case eLC_OFF: return "off";
-		case eLC_RE : return "re";
-		default: return tPlugConsoleBase::CmdWord(cmd);
+	switch (cmd) {
+		case eLC_ON:
+			return "on";
+		case eLC_OFF:
+			return "off";
+		case eLC_RE:
+			return "re";
+		default:
+			return tPlugConsoleBase::CmdWord(cmd);
 	}
 }
 
