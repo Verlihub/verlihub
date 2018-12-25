@@ -3236,7 +3236,7 @@ void cServerDC::CtmToHubClearList()
 void cServerDC::SyncStop()
 {
 	DCPublicHSToAll(_("Please note, hub will be stopped now."), false);
-	this->stop(0, -1);
+	this->stop(0);
 }
 
 void cServerDC::SyncReload()

@@ -230,7 +230,6 @@ int main(int argc, char *argv[])
 
 		server.StartListening(port);
 		result = server.run(); // run the main loop until it stops itself
-		// todo: need to destroy server here?
 		return result;
 	/*
 	} catch (const char *exception) {
