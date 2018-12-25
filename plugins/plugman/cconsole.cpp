@@ -67,6 +67,7 @@ bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
 		case eLC_RE:
 			return conn->mpUser->mClass >= eUC_ADMIN;
 		case eLC_LST:
+		case eLC_HELP:
 			return conn->mpUser->mClass >= eUC_OPERATOR;
 		default:
 			return false;
