@@ -447,6 +447,7 @@ cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPo
 	return NULL;
 }
 
+/*
 bool cAsyncSocketServer::StopListenConn(cAsyncConn *connection)
 {
 	if (connection != NULL) {
@@ -455,5 +456,7 @@ bool cAsyncSocketServer::StopListenConn(cAsyncConn *connection)
 	}
 	return false;
 }
+*/
+
 	}; // namespace nSocket
 }; // namespace nVerliHub

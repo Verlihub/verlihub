@@ -188,15 +188,6 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	mFactory = new cDCConnFactory(this);
 
-	//try {
-		mPluginManager.LoadAll();
-	/*
-	} catch (...) {
-		if (ErrLog(1))
-			LogStream() << "Plugin load error" << endl;
-	}
-	*/
-
 	memset(mProtoCount, 0, sizeof(mProtoCount));
 	memset(mProtoTotal, 0, sizeof(mProtoTotal));
 	memset(mProtoSaved, 0, sizeof(mProtoSaved));
@@ -212,6 +203,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mCtmToHubConf.mLast = this->mTime;
 	mCtmToHubConf.mStart = false;
 	mCtmToHubConf.mNew = 0;
+
+	mPluginManager.LoadAll(); // load all plugins at last
 }
 
 cServerDC::~cServerDC()
@@ -219,16 +212,8 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
-	this->OnUnLoad(0);
-
-	/*
-	try { // unload all plugins, todo: still broken, must be fixed
-		mPluginManager.UnLoadAll();
-	} catch (...) {
-		if (ErrLog(1))
-			LogStream() << "Plugin unload error" << endl;
-	}
-	*/
+	this->OnUnLoad(0); // tell all plugins and their scripts that we are shutting down
+	mPluginManager.UnLoadAll(); // unload all plugins first
 
 	CtmToHubClearList(); // ctm2hub
 

@@ -24,11 +24,12 @@
 
 namespace nVerliHub {
 	using namespace nSocket;
+
 	namespace nPlugMan {
 
 cpiPlug::cpiPlug()
 {
-	mName = "Plugman";
+	mName = PLUGMAN_NAME;
 	mVersion = PLUGMAN_VERSION;
 }
 

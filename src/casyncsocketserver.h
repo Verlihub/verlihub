@@ -161,7 +161,7 @@ namespace nVerliHub {
 				 * @param connection The connection.
 				 * @return True if succesfull or false otherwise.
 				 */
-				virtual bool StopListenConn(cAsyncConn *connection);
+				//virtual bool StopListenConn(cAsyncConn *connection);
 
 				/**
 				* This method handles all connections and
