@@ -3476,7 +3476,8 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 	ostringstream rsn;
 	string pref;
 
-	if (msg && msg->mStr.size()) {
+	if (msg) {
+	if (msg->mStr.size()) {
 		pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));
 
 		if (pref.size())
@@ -3496,6 +3497,7 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 	}
 
 	mS->ConnCloseMsg(conn, rsn.str(), 1000, eCR_LOGIN_ERR);
+	}
 	return true;
 }
 
