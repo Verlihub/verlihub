@@ -29,8 +29,7 @@ cVHPluginMgr::cVHPluginMgr(cServerDC *server,const string &pluginDir):
 	cPluginManager(pluginDir), mServer(server)
 {
 	SetClassName("cVHPluginMgr");
-	vhLog(0) << "using plugins in: " << pluginDir << endl;
-	vhLog(0) << "------------------------" << endl;
+	vhLog(0) << "Plugin working directory: " << pluginDir << endl;
 }
 
 cVHPluginMgr::~cVHPluginMgr()

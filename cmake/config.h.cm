@@ -23,6 +23,7 @@
 
 /* package name */
 #define HUB_VERSION_NAME "Verlihub"
+#define PLUGMAN_NAME "Plugman"
 
 /* version number of package */
 #define HUB_VERSION_VERS "@VERLIHUB_VERSION@"

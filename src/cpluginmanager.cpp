@@ -43,9 +43,7 @@ cPluginManager::cPluginManager(const string &path):
 }
 
 cPluginManager::~cPluginManager()
-{
-	//this->UnLoadAll();
-}
+{}
 
 bool cPluginManager::LoadAll()
 {
@@ -81,9 +79,9 @@ void cPluginManager::UnLoadAll()
 	tPlugins::iterator it;
 
 	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
-		if (*it) {
+		if ((*it) && (*it)->mPlugin && ((*it)->mPlugin->Name() != PLUGMAN_NAME)) {
 			plugs.push_back((*it)->mPlugin->Name());
-			this->UnloadPlugin((*it)->mPlugin->Name(), false);
+			this->UnloadPlugin((*it)->mPlugin->Name(), false); // todo: temporary bug workaround
 		}
 	}
 
@@ -91,12 +89,15 @@ void cPluginManager::UnLoadAll()
 		for (unsigned int i = 0; i < plugs.size(); i++) {
 			if (!mPlugins.RemoveByHash(mPlugins.Key2Hash(plugs[i]))) {
 				if (ErrLog(2))
-					LogStream() << "Can't unload plugin: " << plugs[i] << endl;
+					LogStream() << "Unable to remove plugin from plugin list: " << plugs[i] << endl;
 			}
 		}
 
 		plugs.clear();
 	}
+
+	this->UnloadPlugin(PLUGMAN_NAME, false); // unload plugman at last because all plugins are most likely loaded via it
+	mPlugins.RemoveByHash(mPlugins.Key2Hash(PLUGMAN_NAME)); // todo: temporary bug workaround
 }
 
 bool cPluginManager::LoadPlugin(const string &file)
@@ -132,6 +133,9 @@ bool cPluginManager::LoadPlugin(const string &file)
 
 bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 {
+	if (Log(0))
+		LogStream() << "Trying to unload plugin: " << name << endl;
+
 	cPluginLoader *plugin = mPlugins.GetByHash(mPlugins.Key2Hash(name));
 
 	if (!plugin) {
@@ -141,7 +145,14 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 		return false;
 	}
 
-	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
+	if (!plugin->mPlugin) {
+		if (ErrLog(2))
+			LogStream() << "Plugin was not initialized: " << name << endl;
+
+		return false;
+	}
+
+	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) { // todo: we have a bug here, use workaround above
 		if (ErrLog(2))
 			LogStream() << "Can't unload plugin: " << name << endl;
 
@@ -155,6 +166,10 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 
 	delete plugin;
 	plugin = NULL;
+
+	if (Log(0))
+		LogStream() << "Plugin successfully unloaded: " << name << endl;
+
 	return true;
 }
 
