@@ -102,8 +102,8 @@ class cConfigBaseBase : public cObj
 			cConfigBaseBase *mC = NULL;
 			tIVIt mIT;
 			iterator &Set(class cConfigBaseBase *C,const tIVIt &it){mC=C;mIT=it; return *this;}
-		private:
 			iterator &operator=(iterator & it){ mIT = it.mIT; mC=it.mC; return *this;}
+		private:
 			iterator(const iterator &it);
 
 		};
