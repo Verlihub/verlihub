@@ -241,8 +241,6 @@ public:
 		{
 			return mRes.mSock == it.mRes.mSock;
 		}
-	private:
-		iterator(const iterator &it);
 		iterator &operator=(const iterator &it)
 		{
 			mRes.mSock = it.mRes.mSock;
@@ -250,6 +248,8 @@ public:
 			mChoose = it.mChoose;
 			return *this;
 		}
+	private:
+		iterator(const iterator &it);
 	};
 
 	iterator &begin()
@@ -258,7 +258,7 @@ public:
 		sBegin.mRes.mSock = 0;
 		if( !RevTest(tSocket(0)) ) ++sBegin;
 		return sBegin;
-	};
+	}
 
 	iterator &end()
 	{
@@ -328,7 +328,7 @@ public:
 		if(!RevTest((*(mConnList.begin()))->operator tSocket()))
 			++sBegin;
 		return sBegin;
-	};
+	}
 
 	iterator &end()
 	{
