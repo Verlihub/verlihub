@@ -222,7 +222,7 @@ public:
 			while( (++mRes.mSock <= *mEnd) && !(mChoose->RevTest(mRes.mSock)) ){
 			}
 			return *this;
-		};
+		}
 
 		sChooseRes & operator*()
 		{
@@ -230,7 +230,7 @@ public:
 			mRes.mRevent = mChoose->RevGet(mRes.mSock);
 			mRes.mConn  = mChoose->operator[](mRes.mSock);
 			return mRes;
-		};
+		}
 
 		bool operator!=(const iterator &it) const
 		{
@@ -241,7 +241,8 @@ public:
 		{
 			return mRes.mSock == it.mRes.mSock;
 		}
-
+	private:
+		iterator(const iterator &it);
 		iterator &operator=(const iterator &it)
 		{
 			mRes.mSock = it.mRes.mSock;

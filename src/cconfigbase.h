@@ -98,12 +98,13 @@ class cConfigBaseBase : public cObj
 			iterator (class cConfigBaseBase *C,const tIVIt &it):mC(C),mIT(it){}
 			cConfigItemBase * operator* () { return mC->mhItems.GetByHash(*mIT);}
 			iterator &operator ++() { ++mIT; return *this; }
-			iterator(iterator &it){operator=(it);}
-			bool operator != (iterator &it){ return mIT != it.mIT;}
+			bool operator != (iterator &it) const { return mIT != it.mIT;}
 			cConfigBaseBase *mC = NULL;
 			tIVIt mIT;
 			iterator &Set(class cConfigBaseBase *C,const tIVIt &it){mC=C;mIT=it; return *this;}
+		private:
 			iterator &operator=(iterator & it){ mIT = it.mIT; mC=it.mC; return *this;}
+			iterator(const iterator &it);
 
 		};
 

@@ -121,16 +121,9 @@ public:
 	{
 		cConnSelect *mSel;
 		tFDs::iterator mIT;
-		iterator(){}
+		iterator():mSel(NULL){}
 		iterator(cConnSelect *sel, tFDs::iterator it) : mSel(sel), mIT(it)
 		{}
-
-		iterator & operator=(const iterator &it)
-		{
-			mSel= it.mSel;
-			mIT = it.mIT;
-			return *this;
-		}
 
 		bool operator != (const iterator &it)
 		{
@@ -150,6 +143,14 @@ public:
 		}
 
 		iterator & operator ++(){ Advance(); return *this;}
+	private:
+		iterator(const iterator &it);
+		iterator & operator=(const iterator &it)
+		{
+			mSel= it.mSel;
+			mIT = it.mIT;
+			return *this;
+		}
 	};
 
 protected:
