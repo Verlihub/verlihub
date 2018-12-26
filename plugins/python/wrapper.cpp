@@ -1341,6 +1341,10 @@ int w_Load(w_Targs *args)
 		return -1;
 	}
 	w_TScript *script = (w_TScript *)calloc(1, sizeof(w_TScript));
+	if (!script) {
+		log2("PY: cannot calloc\n");
+		return -1;
+	}
 	w_Scripts[id] = script;
 	script->id = id;
 	script->callbacks = w_Python->callbacks;

@@ -222,7 +222,7 @@ public:
 			while( (++mRes.mSock <= *mEnd) && !(mChoose->RevTest(mRes.mSock)) ){
 			}
 			return *this;
-		};
+		}
 
 		sChooseRes & operator*()
 		{
@@ -230,7 +230,7 @@ public:
 			mRes.mRevent = mChoose->RevGet(mRes.mSock);
 			mRes.mConn  = mChoose->operator[](mRes.mSock);
 			return mRes;
-		};
+		}
 
 		bool operator!=(const iterator &it) const
 		{
@@ -241,7 +241,6 @@ public:
 		{
 			return mRes.mSock == it.mRes.mSock;
 		}
-
 		iterator &operator=(const iterator &it)
 		{
 			mRes.mSock = it.mRes.mSock;
@@ -249,6 +248,8 @@ public:
 			mChoose = it.mChoose;
 			return *this;
 		}
+	private:
+		iterator(const iterator &it);
 	};
 
 	iterator &begin()
@@ -257,7 +258,7 @@ public:
 		sBegin.mRes.mSock = 0;
 		if( !RevTest(tSocket(0)) ) ++sBegin;
 		return sBegin;
-	};
+	}
 
 	iterator &end()
 	{
@@ -327,7 +328,7 @@ public:
 		if(!RevTest((*(mConnList.begin()))->operator tSocket()))
 			++sBegin;
 		return sBegin;
-	};
+	}
 
 	iterator &end()
 	{
