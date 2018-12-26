@@ -137,6 +137,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 	}
 
 	memset(&mCloseAfter, 0, sizeof(mCloseAfter));
+	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 }
 
 // connect to given host or ip on port
@@ -571,12 +572,13 @@ tSocket cAsyncConn::CreateSock(/*bool udp*/)
 
 int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 {
-	if(sock < 0)
+	if (sock < 0)
 		return -1;
-	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
+
 	mAddrIN.sin_family = AF_INET;
 	mAddrIN.sin_addr.s_addr = INADDR_ANY; // default listen address
-	if(ia)
+
+	if (ia) {
 //#if !defined _WIN32
 		inet_aton(ia, &mAddrIN.sin_addr); // override it
 /*
@@ -584,14 +586,15 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 		mAddrIN.sin_addr.s_addr = inet_addr(ia);
 #endif
 */
+	}
+
 	mAddrIN.sin_port = htons(port);
 	memset(&(mAddrIN.sin_zero), '\0', 8);
 
-
-	/* Bind socket to port */
-	if(bind(sock, (struct sockaddr *)&mAddrIN, sizeof(mAddrIN)) == -1) {
+	// bind socket to port
+	if (bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1)
 		return -1;
-	}
+
 	return sock;
 }
 

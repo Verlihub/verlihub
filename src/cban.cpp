@@ -177,6 +177,11 @@ const char *cBan::GetBanType()
 
 void cBan::SetType(unsigned type)
 {
+	/*
+		Undefined behavior. Check the shift operator '<<'. The right operand ('mType' = [0..1023]) is greater than or equal to the length in bits of the promoted left operand.
+		this is false because: mType < nEnums::eBF_LAST
+	*/
+
 	for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
 		if (type == (unsigned)(1 << mType))
 			return;

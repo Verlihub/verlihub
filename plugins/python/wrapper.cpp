@@ -72,6 +72,10 @@ char *w_SubStr(const char *s, int _start, int _end)
 
 	len2 = end - start;
 	s2 = (char*)malloc(len2 + 1);
+
+	if (!s2)
+		return strdup("");
+
 	s2[len2] = 0;
 	s2 = strncpy(s2, &s[start], len2);
 	return s2;
@@ -1277,7 +1281,11 @@ static PyMethodDef w_vh_methods[] = {
 
 int w_Begin(w_Tcallback *cblist)
 {
-	w_Python = (w_TScript *)calloc(1, sizeof(w_TScript));
+	w_Python = (w_TScript*)calloc(1, sizeof(w_TScript));
+
+	if (!w_Python)
+		return 0;
+
 	w_Python->callbacks = (w_Tcallback *)calloc(W_MAX_CALLBACKS, sizeof(void *));
 	w_Python->name = strdup("core");
 	w_Python->path = strdup("core");
@@ -1477,14 +1485,18 @@ int w_Load(w_Targs *args)
 		return w_Unload(id);
 	}
 
-	char *hooks;
-	hooks = (char *)calloc(W_MAX_HOOKS, sizeof(char));
+	char *hooks = (char*)calloc(W_MAX_HOOKS, sizeof(char));
+
+	if (!hooks)
+		return -1;
+
 	for (int i = 0; i < W_MAX_HOOKS; i++) {
 		pFunc = w_GetHook(i);
 		if (!pFunc) continue;
 		hooks[i] = 1;
 		Py_DECREF(pFunc);
 	}
+
 	script->hooks = hooks;
 
 	if (log_level > 2) {
