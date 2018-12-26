@@ -3474,7 +3474,7 @@ bool cDCProto::CheckUserLogin(cConnDC *conn, cMessageDC *msg, bool inlist)
 		return false;
 
 	ostringstream rsn;
-	string pref("");
+	string pref;
 
 	if (msg && msg->mStr.size()) {
 		pref = msg->mStr.substr(0, msg->mStr.find_first_of(' '));

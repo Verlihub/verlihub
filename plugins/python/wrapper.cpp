@@ -1340,11 +1340,14 @@ int w_Load(w_Targs *args)
 		log2("PY: cannot start a new python interpreter with ID %ld\n", id);
 		return -1;
 	}
-	w_TScript *script = (w_TScript *)calloc(1, sizeof(w_TScript));
+
+	w_TScript *script = (w_TScript*)calloc(1, sizeof(w_TScript));
+
 	if (!script) {
-		log2("PY: cannot calloc\n");
+		log2("PY: cannot calloc for script: %s\n", scriptname);
 		return -1;
 	}
+
 	w_Scripts[id] = script;
 	script->id = id;
 	script->callbacks = w_Python->callbacks;
