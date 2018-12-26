@@ -122,11 +122,8 @@ const char* cPlugConsole::GetParamsRegex(int cmd)
 				"( -a ?([01]))|"
 				")*\\s*$"; // the end of message
 		case eLC_DEL:
-			return "(\\S+)";
 		case eLC_ON:
-			return "(\\S+)";
 		case eLC_OFF:
-			return "(\\S+)";
 		case eLC_RE:
 			return "(\\S+)";
 		default:
