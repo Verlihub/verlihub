@@ -106,10 +106,11 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 		vhLog(1) << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
 	}
 
-	mSetupList.CreateTable();
+	mSetupList.CreateTable(); // must be done first
 	mC.AddVars();
 	mC.Save();
 	mC.Load();
+
 	mConnTypes = new cConnTypes(this);
 	mCo = new cDCConsole(this, mMySQL);
 	mR = new cRegList(mMySQL, this);
@@ -154,7 +155,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	if (mC.use_penlist_cache)
 		mPenList->ReloadCache();
 
-	mUserList.SetNickListStart("$NickList "); // setup userlists
+	mUserList.SetNickListStart("$NickList "); // set up userlists
 	mOpList.SetNickListStart("$OpList ");
 	mRobotList.SetNickListStart("$BotList ");
 	mUserList.SetNickListSeparator("$$");
@@ -162,21 +163,28 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mRobotList.SetNickListSeparator("$$");
 	mOpchatList.SetNickListSeparator("\r\n");
 
-	string speed("\x1"), mail, share("0"), val_new, val_old; // add the bots
-	mHubSec = new cMainRobot((mC.hub_security.size() ? mC.hub_security : HUB_VERSION_NAME), this);
-	mHubSec->mClass = tUserCl(10);
-	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
-	AddRobot((cMainRobot*)mHubSec);
+	string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), val_new, val_old; // add the bots
+	tag.reserve(1 + name.size() + 3 + vers.size() + 17);
+	tag.append(1, '<');
+	tag.append(name);
+	tag.append(" V:");
+	tag.append(vers);
+	tag.append(",M:A,H:0/0/1,S:0>");
 
 	if (mC.hub_security.empty())
 		SetConfig(mDBConf.config_name.c_str(), "hub_security", HUB_VERSION_NAME, val_new, val_old);
 	else if (mC.hub_security == mC.opchat_name)
 		SetConfig(mDBConf.config_name.c_str(), "opchat_name", "", val_new, val_old);
 
+	mHubSec = new cMainRobot(mC.hub_security, this);
+	mHubSec->mClass = tUserCl(10);
+	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
+	AddRobot((cMainRobot*)mHubSec);
+
 	if (mC.opchat_name.size()) {
 		mOpChat = new cOpChat(mC.opchat_name, this);
 		mOpChat->mClass = tUserCl(10);
-		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
+		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
 		AddRobot((cMainRobot*)mOpChat);
 	}
 
@@ -1356,28 +1364,28 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 bool cServerDC::ShowUserToAll(cUser *user)
 {
-	string msg;
-	msg.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
-	msg = user->mMyINFO;
-	mUserList.SendToAll(msg, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
+	string data;
+	data.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
+	data = user->mMyINFO;
+	mUserList.SendToAll(data, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
-		mP.Create_OpList(msg, user->mNick, true); // reserve for pipe
-		mUserList.SendToAll(msg, mC.delayed_myinfo, true);
+		mP.Create_OpList(data, user->mNick, true); // reserve for pipe
+		mUserList.SendToAll(data, mC.delayed_myinfo, true);
 	}
 
 	if (mC.send_user_ip) { // send userip to operators
 		if (user->mxConn) // real user
-			mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
+			mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
 		else // bots have local ip
-			mP.Create_UserIP(msg, user->mNick, "127.0.0.1", true); // reserve for pipe
+			mP.Create_UserIP(data, user->mNick, "127.0.0.1", true); // reserve for pipe
 
-		mUserList.SendToAllWithClassFeature(msg, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
+		mUserList.SendToAllWithClassFeature(data, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
 	if (!user->mxConn) { // send short botlist to users with this feature
-		mP.Create_BotList(msg, mHubSec->mNick, true); // reserve for pipe
-		mUserList.SendToAllWithFeature(msg, eSF_BOTLIST, mC.delayed_myinfo, true);
+		mP.Create_BotList(data, user->mNick, true); // reserve for pipe
+		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 	}
 
 	user->mInList = false; // note: this will prevent user from getting own myinfo, oplist and userip, i guess its done elsewhere
@@ -2806,7 +2814,13 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 			#endif
 
 			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc") || (svar == "cmd_start_op") || (svar == "cmd_start_user")) && (val_new != val_old)) { // take care of special hub configs in real time
-				string speed("\x1"), mail, share("0"), data;
+				string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), data;
+				tag.reserve(1 + name.size() + 3 + vers.size() + 17);
+				tag.append(1, '<');
+				tag.append(name);
+				tag.append(" V:");
+				tag.append(vers);
+				tag.append(",M:A,H:0/0/1,S:0>");
 
 				if (svar == "hub_security") {
 					if (val_new.empty() || (val_new == mC.opchat_name)) { // dont allow empty or equal to opchat nick
@@ -2816,7 +2830,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 					DelRobot((cMainRobot*)mHubSec); // this will send quit to all
 					mHubSec->mNick = val_new;
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
 					AddRobot((cMainRobot*)mHubSec); // note: this will show user to all
 
 					#ifndef WITHOUT_PLUGINS
@@ -2842,7 +2856,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 							mOpChat->mClass = tUserCl(10);
 						}
 
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
 						AddRobot((cMainRobot*)mOpChat); // note: this will show user to all
 
 					} else if (mOpChat) {
@@ -2857,15 +2871,15 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					#endif
 
 				} else if (svar == "hub_security_desc") {
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new, speed, mail, share, false); // send new myinfo, dont reserve for pipe, we are not sending this
+					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
 					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
 					data = mHubSec->mMyINFO;
 					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new, speed, mail, share, false); // send new myinfo, dont reserve for pipe, we are not sending this
-						data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
+						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
+						data.reserve(mOpChat->mMyINFO.size() + 1); // first use, reserve for pipe
 						data = mOpChat->mMyINFO;
 						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 					}

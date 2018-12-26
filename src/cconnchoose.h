@@ -241,6 +241,7 @@ public:
 		{
 			return mRes.mSock == it.mRes.mSock;
 		}
+
 		iterator &operator=(const iterator &it)
 		{
 			mRes.mSock = it.mRes.mSock;
@@ -248,8 +249,9 @@ public:
 			mChoose = it.mChoose;
 			return *this;
 		}
-	private:
-		iterator(const iterator &it);
+
+		private:
+			iterator(const iterator &it);
 	};
 
 	iterator &begin()

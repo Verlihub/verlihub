@@ -35,7 +35,8 @@ cZLib::cZLib():
 {
 	inBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
 	outBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
-	if(outBuf)
+
+	if (outBuf)
 		memcpy(outBuf, "$ZOn|", ZON_LEN);
 }
 
