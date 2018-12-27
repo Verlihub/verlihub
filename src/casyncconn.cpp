@@ -813,7 +813,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 	const char *send_buf = mBufFlush.data(); // pointer to flush buffer
 
-	if (flush_size && send_buf) { // check if there is something to flush, else send old remaining data
+	if (flush_size) { // check if there is something to flush, else send old remaining data
 		if (mZLibFlag && serv && !serv->mC.disable_zlib && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
 			if (send_buf[flush_size - 1] == '|') {
 				calc_size = 0; // we dont use it anymore
@@ -861,9 +861,6 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	}
 
 	send_buf = mBufSend.data(); // pointer to send buffer
-
-	if (!send_buf)
-		return 0;
 
 	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
 
