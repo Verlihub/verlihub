@@ -400,7 +400,7 @@ namespace nVerliHub {
 				/**
 				 * Event handler function called when write buffer gets empty.
 				 */
-				virtual void OnFlushDone();
+				//virtual void OnFlushDone();
 
 				/**
 				 * Event handler function called every period of time by OnTimerBase().

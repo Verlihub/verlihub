@@ -1353,7 +1353,7 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 		if (conn->mSendNickList) { // this may not send all data at once
 			mP.NickList(conn); // this will set mNickListInProgress
-			conn->mSendNickList = false;
+			//conn->mSendNickList = false;
 		}
 	} else {
 		return false;
@@ -1407,40 +1407,46 @@ bool cServerDC::MinDelay(cTime &then, unsigned int min, bool update)
 			use timeins instead of mindelay, or change to microsecond resolution
 	*/
 
+	/*
 	cTime now;
 	cTime diff = now - then;
+	*/
 
-	if (diff.Sec() >= (long)min) {
-		then = now;
+	if ((mTime.Sec() - then.Sec()) >= (long)min) { // diff.Sec()
+		then = mTime; // now
 		return true;
 	}
 
 	if (update) // update timestamp
-		then = now;
+		then = mTime; // now
 
 	return false;
 }
 
 bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 {
+	/*
 	cTime now;
 	cTime diff = now - then;
+	*/
 
-	if (diff.MiliSec() >= (__int64)min) {
-		then = now;
+	if ((mTime.MiliSec() - then.MiliSec()) >= (__int64)min) { // diff.MiliSec()
+		then = mTime; // now
 		return true;
 	}
 
 	if (update) // update timestamp
-		then = now;
+		then = mTime; // now
 
 	return false;
 }
 
+/*
 bool cServerDC::AllowNewConn()
 {
 	return (mConnList.size() <= (unsigned)(mC.max_users_total + mC.max_extra_regs + mC.max_extra_vips + mC.max_extra_ops + mC.max_extra_cheefs + mC.max_extra_admins + 300));
 }
+*/
 
 int cServerDC::SaveFile(const string &file, const string &text)
 {
@@ -1729,12 +1735,12 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 int cServerDC::OnTimer(cTime &now)
 {
 	mUserList.FlushCache();
-	mOpList.FlushCache();
+	//mOpList.FlushCache(); // we are not sending anything to operators, only nicks are used
 	mOpchatList.FlushCache();
 	mActiveUsers.FlushCache();
 	mPassiveUsers.FlushCache();
 	mChatUsers.FlushCache();
-	mRobotList.FlushCache();
+	//mRobotList.FlushCache(); // we are not sending anything to bots, they are bots
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {
