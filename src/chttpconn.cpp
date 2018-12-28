@@ -155,15 +155,12 @@ int cHTTPConn::Write(const string &data)
 	}
 
 	if (dasi)
-		mSend.append(data.data(), dasi);
+		mSend.append(data);
 
 	if (!busi)
 		return 0;
 
 	const char *buf = mSend.data();
-
-	if (!buf)
-		return 0;
 
 	if (Send(buf, busi) == -1) {
 		if ((errno != EAGAIN) && (errno != EINTR)) {
