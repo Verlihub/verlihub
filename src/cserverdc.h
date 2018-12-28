@@ -693,7 +693,7 @@ protected: // Protected methods
 	* Return if the server is able to accept a new incoming connection.
 	* @return True if connection is accepted or false otherwise.
 	*/
-	bool AllowNewConn();
+	//bool AllowNewConn();
 
 	/**
 	* This method is called before the user is logged in.

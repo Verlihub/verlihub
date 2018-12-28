@@ -41,7 +41,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	memset(&mTO, 0, sizeof(mTO));
 	mFeatures = 0;
 	mSendNickList = false;
-	mNickListInProgress = false;
+	//mNickListInProgress = false;
 	//mSkipNickList = false;
 	mConnType = NULL;
 	mCloseReason = 0;
@@ -237,12 +237,13 @@ int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
 	return 0 == mTO[timeout].Check(now);
 }
 
+/*
 void cConnDC::OnFlushDone()
 {
-	mBufFlush.erase(0, GetFlushSize());
-	mBufSend.erase(0, GetBufferSize());
-	ShrinkStringToFit(mBufFlush);
-	ShrinkStringToFit(mBufSend);
+	//mBufFlush.erase(0, GetFlushSize()); // all buffers were already resized and shrinked in cAsyncConn::Write(), else i dont understand when this is called or if its called at all
+	//mBufSend.erase(0, GetBufferSize());
+	//ShrinkStringToFit(mBufFlush);
+	//ShrinkStringToFit(mBufSend);
 
 	if (mNickListInProgress) {
 		SetLSFlag(eLS_NICKLST);
@@ -259,6 +260,7 @@ void cConnDC::OnFlushDone()
 		}
 	}
 }
+*/
 
 int cConnDC::OnCloseNice()
 {

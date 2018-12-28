@@ -289,7 +289,7 @@ namespace nVerliHub {
 				/**
 				 * Event handler function called when write buffer gets empty.
 				 */
-				void OnFlushDone();
+				//void OnFlushDone();
 
 				/**
 				 * This method is called every period of time.
@@ -383,7 +383,7 @@ namespace nVerliHub {
 				bool mSendNickList;
 
 				/// True if the hub is sending nicklist to the user.
-				bool mNickListInProgress;
+				//bool mNickListInProgress;
 
 				/// True if nicklist should be skipped.
 				//bool mSkipNickList;

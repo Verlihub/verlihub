@@ -102,7 +102,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 {
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		mMaxBuffer = serv->mC.max_outbuf_size;
+		mMaxBuffer = serv->mC.max_outbuf_size; // todo: this is useless, we need to update mMaxBuffer for all users every time max_outbuf_size is changed
 	}
 
 	struct sockaddr saddr;
@@ -779,8 +779,10 @@ int cAsyncConn::OnTimer(cTime &now)
 	return 0;
 }
 
+/*
 void cAsyncConn::OnFlushDone()
 {}
+*/
 
 int cAsyncConn::Write(const string &data, bool flush) // note: data can actually be empty when we perform a timed flush
 {
@@ -795,13 +797,6 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		return -1;
 	}
 
-	nVerliHub::cServerDC *serv = NULL;
-
-	if (mxServer)
-		serv = (nVerliHub::cServerDC*)mxServer;
-	else if (Log(5))
-		LogStream() << "Server not available for write operations" << endl;
-
 	if (data_size) { // we have something new to append
 		mBufFlush.reserve(mBufFlush.size() + data_size); // always reserve because we are adding new data
 		mBufFlush.append(data.data(), data_size);
@@ -813,6 +808,13 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 	if (!buf_size || !flush) // nothing to send or send it later
 		return 0;
+
+	nVerliHub::cServerDC *serv = NULL;
+
+	if (mxServer)
+		serv = (nVerliHub::cServerDC*)mxServer;
+	else if (Log(5))
+		LogStream() << "Server not available for write operations" << endl;
 
 	const char *send_buf = mBufFlush.data(); // pointer to flush buffer
 
@@ -864,6 +866,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	}
 
 	send_buf = mBufSend.data(); // pointer to send buffer
+
+	/*
+	if (!send_buf)
+		return 0;
+	*/
 
 	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
 
@@ -933,7 +940,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		else
 			mTimeLastIOAction.Get();
 
-		OnFlushDone(); // report that flush is done
+		//OnFlushDone(); // report that flush is done
 	}
 
 	return calc_size;

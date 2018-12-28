@@ -3854,8 +3854,10 @@ int cDCProto::NickList(cConnDC *conn)
 	//try {
 		string _str;
 
+		/*
 		if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE)
 			conn->mNickListInProgress = true;
+		*/
 
 		if (conn->mFeatures & eSF_NOHELLO) {
 			if (conn->Log(3))

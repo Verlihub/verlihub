@@ -335,7 +335,7 @@ public:
 	void SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe);
 	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe);
 	void FlushCache();
-	void FlushForUser(cUserBase *user);
+	//void FlushForUser(cUserBase *user);
 
 	virtual void OnAdd(cUserBase *user)
 	{

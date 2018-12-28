@@ -146,7 +146,7 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 
 int cHTTPConn::Write(const string &data)
 {
-	size_t dasi = data.size();
+	const size_t dasi = data.size();
 	size_t busi = GetSize() + dasi;
 
 	if (busi > MAX_SEND) {
@@ -161,6 +161,11 @@ int cHTTPConn::Write(const string &data)
 		return 0;
 
 	const char *buf = mSend.data();
+
+	/*
+	if (!buf)
+		return 0;
+	*/
 
 	if (Send(buf, busi) == -1) {
 		if ((errno != EAGAIN) && (errno != EINTR)) {
