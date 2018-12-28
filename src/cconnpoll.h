@@ -55,7 +55,7 @@ public:
 	virtual int Choose(nUtils::cTime &tmout)
 	{
 		return this->poll((int)tmout.MiliSec());
-	};
+	}
 
 	/**
 	* Register the connection for the given I/O operation.
@@ -105,12 +105,12 @@ public:
 		cPollfd()
 		{
 			reset();
-		};
+		}
 		void reset()
 		{
 			fd=-1;
 			events=revents=0;
-		};
+		}
 	};
 
 	virtual bool RevTest(cPollfd &);

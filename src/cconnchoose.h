@@ -302,7 +302,7 @@ public:
 			mRes.mRevent = mChoose->RevGet(mRes.mSock);
 			mRes.mConn  = *mIterator;
 			return mRes;
-		};
+		}
 
 		bool operator!=(const iterator &it) const
 		{
