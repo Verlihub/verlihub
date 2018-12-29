@@ -30,12 +30,12 @@ cDBConf::cDBConf(const string &file):
 
 	Add("db_host", db_host, string("localhost"));
 	Add("db_user", db_user, string("verlihub"));
-	Add("db_pass", db_pass, string(""));
+	Add("db_pass", db_pass, string());
 	Add("db_data", db_data, string("verlihub"));
 	Add("db_charset", db_charset, string(""));
 	Add("config_name", config_name, string("config"));
-	Add("locale", locale, string(""));
-	Add("mmdb_path", mmdb_path, string(""));
+	Add("locale", locale, string());
+	Add("mmdb_path", mmdb_path, string());
 
 	Load();
 }
