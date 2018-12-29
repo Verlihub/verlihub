@@ -149,7 +149,7 @@ void cUserCollection::GetNickList(string &dest, const bool pipe)
 		mRemakeNextNickList = false;
 	}
 
-	if (dest.capacity() < (mNickList.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (mNickList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mNickList.size() + (pipe ? 1 : 0)));
 
 	dest = mNickList;
@@ -163,7 +163,7 @@ void cUserCollection::GetInfoList(string &dest, const bool pipe)
 		mRemakeNextInfoList = false;
 	}
 
-	if (dest.capacity() < (mInfoList.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (mInfoList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mInfoList.size() + (pipe ? 1 : 0)));
 
 	dest = mInfoList;
@@ -177,7 +177,7 @@ void cUserCollection::GetIPList(string &dest, const bool pipe)
 		mRemakeNextIPList = false;
 	}
 
-	if (dest.capacity() < (mIPList.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (mIPList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mIPList.size() + (pipe ? 1 : 0)));
 
 	dest = mIPList;

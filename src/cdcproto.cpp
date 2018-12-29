@@ -4031,7 +4031,7 @@ void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &des
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1 + (pipe ? 1 : 0)))
 		dest.reserve(13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1 + (pipe ? 1 : 0));
 
 	dest.append("$MyINFO $ALL ");
@@ -4052,7 +4052,7 @@ void cDCProto::Create_Lock(string &dest, const string &lock, const string &name,
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (6 + lock.size() + 4 + name.size() + 1 + vers.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (6 + lock.size() + 4 + name.size() + 1 + vers.size() + (pipe ? 1 : 0)))
 		dest.reserve(6 + lock.size() + 4 + name.size() + 1 + vers.size() + (pipe ? 1 : 0));
 
 	dest.append("$Lock ");
@@ -4068,7 +4068,7 @@ void cDCProto::Create_Chat(string &dest, const string &nick, const string &text,
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (1 + nick.size() + 2 + text.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (1 + nick.size() + 2 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(1 + nick.size() + 2 + text.size() + (pipe ? 1 : 0));
 
 	dest.append(1, '<');
@@ -4082,7 +4082,7 @@ void cDCProto::Create_Me(string &dest, const string &nick, const string &text, c
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (3 + nick.size() + 1 + text.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (3 + nick.size() + 1 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(3 + nick.size() + 1 + text.size() + (pipe ? 1 : 0));
 
 	dest.append("** ");
@@ -4096,7 +4096,7 @@ void cDCProto::Create_PM(string &dest,const string &from, const string &to, cons
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0));
 
 	dest.append("$To: ");
@@ -4139,10 +4139,10 @@ void cDCProto::Create_HubName(string &dest, const string &name, const string &to
 		dest.clear();
 
 	if (topic.size()) {
-		if (dest.capacity() < (9 + name.size() + 3 + topic.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (9 + name.size() + 3 + topic.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + name.size() + 3 + topic.size() + (pipe ? 1 : 0));
 	} else {
-		if (dest.capacity() < (9 + name.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (9 + name.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + name.size() + (pipe ? 1 : 0));
 	}
 
@@ -4160,7 +4160,7 @@ void cDCProto::Create_HubTopic(string &dest, const string &topic, const bool pip
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + topic.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + topic.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + topic.size() + (pipe ? 1 : 0));
 
 	dest.append("$HubTopic ");
@@ -4172,7 +4172,7 @@ void cDCProto::Create_Quit(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (6 + nick.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (6 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(6 + nick.size() + (pipe ? 1 : 0));
 
 	dest.append("$Quit ");
@@ -4184,7 +4184,7 @@ void cDCProto::Create_Hello(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (7 + nick.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (7 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(7 + nick.size() + (pipe ? 1 : 0));
 
 	dest.append("$Hello ");
@@ -4196,7 +4196,7 @@ void cDCProto::Create_LogedIn(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (9 + nick.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (9 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(9 + nick.size() + (pipe ? 1 : 0));
 
 	dest.append("$LogedIn ");
@@ -4208,7 +4208,7 @@ void cDCProto::Create_ValidateDenide(string &dest, const string &nick, const boo
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (16 + nick.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (16 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(16 + nick.size() + (pipe ? 1 : 0));
 
 	dest.append("$ValidateDenide ");
@@ -4221,10 +4221,10 @@ void cDCProto::Create_BadNick(string &dest, const string &id, const string &par,
 		dest.clear();
 
 	if (par.size()) {
-		if (dest.capacity() < (9 + id.size() + 1 + par.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (9 + id.size() + 1 + par.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + id.size() + 1 + par.size() + (pipe ? 1 : 0));
 	} else {
-		if (dest.capacity() < (9 + id.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (9 + id.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + id.size() + (pipe ? 1 : 0));
 	}
 
@@ -4242,7 +4242,7 @@ void cDCProto::Create_NickList(string &dest, const string &nick, const bool pipe
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + nick.size() + 2 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(10 + nick.size() + 2 + (pipe ? 1 : 0));
 
 	dest.append("$NickList ");
@@ -4255,7 +4255,7 @@ void cDCProto::Create_OpList(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + nick.size() + 2 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(8 + nick.size() + 2 + (pipe ? 1 : 0));
 
 	dest.append("$OpList ");
@@ -4268,7 +4268,7 @@ void cDCProto::Create_BotList(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (9 + nick.size() + 2 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (9 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(9 + nick.size() + 2 + (pipe ? 1 : 0));
 
 	dest.append("$BotList ");
@@ -4281,7 +4281,7 @@ void cDCProto::Create_Key(string &dest, const string &key, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (5 + key.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (5 + key.size() + (pipe ? 1 : 0)))
 		dest.reserve(5 + key.size() + (pipe ? 1 : 0));
 
 	dest.append("$Key ");
@@ -4292,7 +4292,7 @@ void cDCProto::Create_FailOver(string &dest, const string &addr, const bool pipe
 {
 	dest.clear();
 
-	if (dest.capacity() < (10 + addr.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + addr.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + addr.size() + (pipe ? 1 : 0));
 
 	dest.append("$FailOver ");
@@ -4305,9 +4305,9 @@ void cDCProto::Create_ForceMove(string &dest, const string &addr, const bool cle
 		if (dest.size())
 			dest.clear();
 
-		if (dest.capacity() < (11 + addr.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (11 + addr.size() + (pipe ? 1 : 0)))
 			dest.reserve(11 + addr.size() + (pipe ? 1 : 0));
-	} else if (dest.capacity() < (dest.size() + 11 + addr.size() + (pipe ? 1 : 0))) {
+	} else if (dest.capacity() <= (dest.size() + 11 + addr.size() + (pipe ? 1 : 0))) {
 		dest.reserve(dest.size() + 11 + addr.size() + (pipe ? 1 : 0));
 	}
 
@@ -4320,7 +4320,7 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size() + (pipe ? 1 : 0)))
 		dest.reserve(13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size() + (pipe ? 1 : 0));
 
 	dest.append("$ConnectToMe ");
@@ -4337,7 +4337,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &lim
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + addr.size() + 1 + lims.size() + spat.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + addr.size() + 1 + lims.size() + spat.size() + (pipe ? 1 : 0)))
 		dest.reserve(8 + addr.size() + 1 + lims.size() + spat.size() + (pipe ? 1 : 0));
 
 	dest.append("$Search ");
@@ -4353,10 +4353,10 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &tth
 		dest.clear();
 
 	if (pas) {
-		if (dest.capacity() < (8 + 4 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (8 + 4 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
 			dest.reserve(8 + 4 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0));
 	} else {
-		if (dest.capacity() < (8 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
+		if (dest.capacity() <= (8 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
 			dest.reserve(8 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0));
 	}
 
@@ -4375,7 +4375,7 @@ void cDCProto::Create_SA(string &dest, const string &tth, const string &addr, co
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (4 + tth.size() + 1 + addr.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (4 + tth.size() + 1 + addr.size() + (pipe ? 1 : 0)))
 		dest.reserve(4 + tth.size() + 1 + addr.size() + (pipe ? 1 : 0));
 
 	dest.append("$SA ");
@@ -4389,7 +4389,7 @@ void cDCProto::Create_SP(string &dest, const string &tth, const string &nick, co
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (4 + tth.size() + 1 + nick.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (4 + tth.size() + 1 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(4 + tth.size() + 1 + nick.size() + (pipe ? 1 : 0));
 
 	dest.append("$SP ");
@@ -4403,7 +4403,7 @@ void cDCProto::Create_UserIP(string &dest, const string &list, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + list.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + list.size() + (pipe ? 1 : 0)))
 		dest.reserve(8 + list.size() + (pipe ? 1 : 0));
 
 	dest.append("$UserIP ");
@@ -4415,7 +4415,7 @@ void cDCProto::Create_UserIP(string &dest, const string &nick, const string &add
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0));
 
 	dest.append("$UserIP ");
@@ -4430,7 +4430,7 @@ void cDCProto::Create_GetPass(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + (pipe ? 1 : 0)))
 		dest.reserve(8 + (pipe ? 1 : 0));
 
 	dest.append("$GetPass");
@@ -4441,7 +4441,7 @@ void cDCProto::Create_BadPass(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (8 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (8 + (pipe ? 1 : 0)))
 		dest.reserve(8 + (pipe ? 1 : 0));
 
 	dest.append("$BadPass");
@@ -4452,7 +4452,7 @@ void cDCProto::Create_GetHubURL(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + (pipe ? 1 : 0)))
 		dest.reserve(10 + (pipe ? 1 : 0));
 
 	dest.append("$GetHubURL");
@@ -4463,7 +4463,7 @@ void cDCProto::Create_HubIsFull(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + (pipe ? 1 : 0)))
 		dest.reserve(10 + (pipe ? 1 : 0));
 
 	dest.append("$HubIsFull");
@@ -4474,7 +4474,7 @@ void cDCProto::Create_Supports(string &dest, const string &flags, const bool pip
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + flags.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + flags.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + flags.size() + (pipe ? 1 : 0));
 
 	dest.append("$Supports ");
@@ -4486,7 +4486,7 @@ void cDCProto::Create_NickRule(string &dest, const string &rules, const bool pip
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (10 + rules.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (10 + rules.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + rules.size() + (pipe ? 1 : 0));
 
 	dest.append("$NickRule ");
@@ -4498,7 +4498,7 @@ void cDCProto::Create_SearchRule(string &dest, const string &rules, const bool p
 	if (dest.size())
 		dest.clear();
 
-	if (dest.capacity() < (12 + rules.size() + (pipe ? 1 : 0)))
+	if (dest.capacity() <= (12 + rules.size() + (pipe ? 1 : 0)))
 		dest.reserve(12 + rules.size() + (pipe ? 1 : 0));
 
 	dest.append("$SearchRule ");
