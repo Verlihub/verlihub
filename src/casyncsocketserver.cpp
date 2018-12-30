@@ -50,6 +50,8 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	timer_serv_period(1),
 	mStepDelay(0),
 	mNoConnDelay(0),
+	mChooseTimeOut(0),
+	mAcceptNum(0),
 	mMaxLineLength(10240),
 	mUseDNS(0),
 	mFrequency(mTime, 90.0, 20),
