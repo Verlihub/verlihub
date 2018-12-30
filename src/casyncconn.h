@@ -410,7 +410,7 @@ namespace nVerliHub {
 				 * @return Always zero.
 				 * @see OnTimerBase()
 				 */
-				virtual int OnTimer(cTime &now);
+				virtual int OnTimer(const cTime &now);
 
 				/**
 				 * This event is trigger every N seconds by cAsyncSocketServer::OnTimerBase()
@@ -418,7 +418,7 @@ namespace nVerliHub {
 				 * @param now The current time.
 				 * @return Always zero.
 				 */
-				int OnTimerBase(cTime &now);
+				int OnTimerBase(const cTime &now);
 
 				/**
 				 * Read all available data from the socket and store them in the buffer.

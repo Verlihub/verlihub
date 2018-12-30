@@ -66,7 +66,7 @@ namespace nVerliHub {
 				void Close();
 				void CloseNice(int msec = 0);
 				void CloseNow();
-				int OnTimerBase(cTime &now);
+				int OnTimerBase(const cTime &now);
 
 				cTime mLast;
 				bool mGood;
