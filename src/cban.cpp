@@ -141,11 +141,13 @@ void cBan::DisplayUser(ostream &os)
 		os << " [*] " << autosprintf(_("User note: %s"), mNoteUsr.c_str()) << "\r\n";
 }
 
+/*
 void cUnBan::DisplayUser(ostream &os)
 {
 	this->cBan::DisplayUser(os);
 	os << autosprintf(_("Removed: %s by %s because %s"), cTimePrint(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
 }
+*/
 
 void cBan::DisplayComplete(ostream &os)
 {
@@ -190,11 +192,13 @@ void cBan::SetType(unsigned type)
 	mType = eBF_NICK; // default type in case we fail
 }
 
+/*
 void cUnBan::DisplayComplete(ostream &os)
 {
 	this->cBan::DisplayComplete(os);
 	os << autosprintf(_("Removed: %s by %s because %s"), cTimePrint(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
 }
+*/
 
 void cBan::DisplayKick(ostream &os)
 {

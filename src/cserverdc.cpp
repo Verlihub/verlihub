@@ -1332,6 +1332,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	AfterUserLogin(conn);
 	conn->ClearTimeOut(eTO_LOGIN);
 	conn->mpUser->mT.login = mTime;
+	conn->SetPing(mTime);
 }
 
 /*

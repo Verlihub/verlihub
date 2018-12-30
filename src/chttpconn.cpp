@@ -180,7 +180,7 @@ int cHTTPConn::Write(const string &data)
 			CloseNow();
 		}
 	} else {
-		mSend.erase(0, busi);
+		mSend.clear();
 		ShrinkStringToFit(mSend);
 
 		if (bool(mClose))

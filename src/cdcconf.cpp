@@ -94,7 +94,7 @@ void cDCConf::AddVars()
 	Add("max_users4",max_users[4],1000);
 	Add("max_users5",max_users[5],1000);
 	Add("max_users6",max_users[6],1000);
-	Add("hubfull_message", hubfull_message, "");
+	Add("hubfull_message", hubfull_message, string());
 	// End max users configuration
 
 	// Share configuration
@@ -285,7 +285,7 @@ void cDCConf::AddVars()
 	Add("default_password_encryption", default_password_encryption, (unsigned int)cRegUserInfo::eCRYPT_ENCRYPT); // 1
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
-	Add("wrongpass_message", wrongpass_message, "");
+	Add("wrongpass_message", wrongpass_message, string());
 	Add("wrongpassword_report", wrongpassword_report, true);
 	Add("report_pass_reset", report_pass_reset, false);
 	Add("wrongauthip_report", wrongauthip_report, 1);
@@ -411,7 +411,7 @@ void cDCConf::AddVars()
 	// End IP and zone configuration
 
 	// Custom messages
-	Add("ban_extra_message", ban_extra_message, "");
+	Add("ban_extra_message", ban_extra_message, string());
 	Add("msg_replace_ban",msg_replace_ban, string());
 	Add("msg_welcome_guest",msg_welcome[0]);
 	Add("msg_welcome_reg",msg_welcome[1]);

@@ -56,7 +56,7 @@ cPenaltyList::~cPenaltyList()
 
 void cPenaltyList::Cleanup()
 {
-	cTime now = mServ->mTime.Sec(); // Now -= (60 * 60 * 24 * 7);
+	const long now = mServ->mTime.Sec(); // Now -= (60 * 60 * 24 * 7);
 	cQuery query(mMySQL);
 	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`st_chat` < " << now << ") and (`st_search` < " << now << ") and (`st_ctm` < " << now << ") and (`st_pm` < " << now << ") and (`st_kick` < " << now << ") and (`st_share0` < " << now << ") and (`st_reg` < " << now << ") and (`st_opchat` < " << now << ')';
 	query.Query();
@@ -131,46 +131,45 @@ bool cPenaltyList::RemPenalty(sPenalty &penal)
 	SetBaseTo(&mModel);
 	mModel.mNick = penal.mNick;
 	mModel.mOpNick = penal.mOpNick;
-	cTime now = mServ->mTime.Sec();
 	bool keep = false;
 
 	if (LoadPK()) { // existing user
-		if (penal.mStartChat < now)
+		if (penal.mStartChat < mServ->mTime.Sec())
 			mModel.mStartChat = 1;
 		else
 			keep = true;
 
-		if (penal.mStartCTM < now)
+		if (penal.mStartCTM < mServ->mTime.Sec())
 			mModel.mStartCTM = 1;
 		else
 			keep = true;
 
-		if (penal.mStartPM < now)
+		if (penal.mStartPM < mServ->mTime.Sec())
 			mModel.mStartPM = 1;
 		else
 			keep = true;
 
-		if (penal.mStartSearch < now)
+		if (penal.mStartSearch < mServ->mTime.Sec())
 			mModel.mStartSearch = 1;
 		else
 			keep = true;
 
-		if (penal.mStopKick < now)
+		if (penal.mStopKick < mServ->mTime.Sec())
 			mModel.mStopKick = 1;
 		else
 			keep = true;
 
-		if (penal.mStopShare0 < now)
+		if (penal.mStopShare0 < mServ->mTime.Sec())
 			mModel.mStopShare0 = 1;
 		else
 			keep = true;
 
-		if (penal.mStopReg < now)
+		if (penal.mStopReg < mServ->mTime.Sec())
 			mModel.mStopReg = 1;
 		else
 			keep = true;
 
-		if (penal.mStopOpchat < now)
+		if (penal.mStopOpchat < mServ->mTime.Sec())
 			mModel.mStopOpchat = 1;
 		else
 			keep = true;
@@ -193,7 +192,6 @@ void cPenaltyList::ListAll(ostream &os)
 	query.OStream() << "select `nick` from `" << mMySQLTable.mName << '`';
 	query.Query();
 	unsigned int tot = query.StoreResult();
-	cTime now = mServ->mTime.Sec();
 	long dif;
 	MYSQL_ROW row = NULL;
 	bool sep;
@@ -209,7 +207,7 @@ void cPenaltyList::ListAll(ostream &os)
 			sep = false;
 
 			if (pen.mStartChat > 1) {
-				dif = pen.mStartChat - now;
+				dif = pen.mStartChat - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					//if (sep)
@@ -221,7 +219,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStartPM > 1) {
-				dif = pen.mStartPM - now;
+				dif = pen.mStartPM - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -233,7 +231,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStartSearch > 1) {
-				dif = pen.mStartSearch - now;
+				dif = pen.mStartSearch - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -245,7 +243,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStartCTM > 1) {
-				dif = pen.mStartCTM - now;
+				dif = pen.mStartCTM - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -257,7 +255,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStopShare0 > 1) {
-				dif = pen.mStopShare0 - now;
+				dif = pen.mStopShare0 - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -269,7 +267,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStopReg > 1) {
-				dif = pen.mStopReg - now;
+				dif = pen.mStopReg - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -281,7 +279,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStopOpchat > 1) {
-				dif = pen.mStopOpchat - now;
+				dif = pen.mStopOpchat - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)
@@ -293,7 +291,7 @@ void cPenaltyList::ListAll(ostream &os)
 			}
 
 			if (pen.mStopKick > 1) {
-				dif = pen.mStopKick - now;
+				dif = pen.mStopKick - mServ->mTime.Sec();
 
 				if (dif > 0) {
 					if (sep)

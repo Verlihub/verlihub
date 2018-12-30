@@ -1898,14 +1898,10 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 
 	ostringstream os;
 
-	if (conn->mpUser->mClass < eUC_VIPUSER) { // check chat delay
-		const cTimePrint diff = mS->mTime - conn->mpUser->mT.chat;
-
-		if (!mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // keep resetting timer when user dont read what we say
-			os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you waited only %s."), mS->mC.int_chat_ms, diff.AsPeriod().AsString().c_str());
-			mS->DCPublicHS(os.str(), conn);
-			return 0;
-		}
+	if ((conn->mpUser->mClass < eUC_VIPUSER) && mS->mC.int_chat_ms && !mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // check chat delay, keep resetting timer when user dont read what we say
+		os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you waited only %s."), mS->mC.int_chat_ms, cTimePrint(mS->mTime - conn->mpUser->mT.chat).AsPeriod().AsString().c_str());
+		mS->DCPublicHS(os.str(), conn);
+		return 0;
 	}
 
 	string &text = msg->ChunkString(eCH_CH_MSG);
@@ -2408,7 +2404,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		saddr.append(StringFrom(iport));
 	}
 
-	unsigned int delay;
+	unsigned int delay = 0;
 
 	switch (conn->mpUser->mClass) { // prepare delay
 		case eUC_REGUSER:
@@ -2434,11 +2430,10 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
-		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
+	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
+		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2572,7 +2567,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	string search, tths;
 
 	if (mS->mC.use_search_filter)
-		Create_Search(search, saddr, lims, spat, false); // dont reserve for pipe, buffer is copied before sending
+		Create_Search(search, saddr, lims, spat, true/*todo: false*/); // dont reserve for pipe, buffer is copied before sending
 	else
 		Create_Search(search, saddr, lims, spat, true); // reserve for pipe
 
@@ -2580,9 +2575,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 		spat = spat.substr(4);
 
 		if (passive) // dont reserve for pipe, buffer is copied before sending
-			Create_SP(tths, spat, nick, false);
+			Create_SP(tths, spat, nick, true/*todo: false*/);
 		else
-			Create_SA(tths, spat, saddr, false);
+			Create_SA(tths, spat, saddr, true/*todo: false*/);
 	}
 
 	if (mS->mC.use_search_filter) { // send it using filter
@@ -2668,7 +2663,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 
 	saddr.append(1, ':');
 	saddr.append(StringFrom(iport));
-	unsigned int delay;
+	unsigned int delay = 0;
 
 	switch (conn->mpUser->mClass) { // prepare delay
 		case eUC_REGUSER:
@@ -2694,11 +2689,10 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
-		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
+	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
+		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2707,7 +2701,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string search;
-	Create_Search(search, saddr, tth, false, false); // dont reserve for pipe, buffer is copied before sending
+	Create_Search(search, saddr, tth, false, true/*todo: false*/); // dont reserve for pipe, buffer is copied before sending
 
 	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
 		cUser::tFloodHashType Hash = 0; // check same message flood
@@ -2783,7 +2777,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string tths;
-	Create_SA(tths, tth, saddr, false); // dont reserve for pipe, buffer is copied before sending
+	Create_SA(tths, tth, saddr, true/*todo: false*/); // dont reserve for pipe, buffer is copied before sending
 	mS->SearchToAll(conn, search, tths, false); // can send it only using filter
 	return 0;
 }
@@ -2833,7 +2827,7 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserNick(conn, nick)) // verify sender
 		return -1;
 
-	unsigned int delay;
+	unsigned int delay = 0;
 
 	switch (conn->mpUser->mClass) { // prepare delay
 		case eUC_REGUSER:
@@ -2859,11 +2853,10 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (!mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
-		if (conn->mpUser->mSearchNumber >= mS->mC.search_number) {
-			string delay_str = cTimePrint(delay, 0).AsPeriod().AsString();
+	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
+		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, delay_str.c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2872,7 +2865,7 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string search;
-	Create_Search(search, nick, tth, true, false); // dont reserve for pipe, buffer is copied before sending
+	Create_Search(search, nick, tth, true, true/*todo: false*/); // dont reserve for pipe, buffer is copied before sending
 
 	if (conn->mpUser->mClass < eUC_OPERATOR) { // if not operator
 		cUser::tFloodHashType Hash = 0; // check same message flood
@@ -2941,7 +2934,7 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	conn->mpUser->mSearchNumber++; // set counter last of all
 	conn->mSRCounter = 0;
 	string tths;
-	Create_SP(tths, tth, nick, false); // dont reserve for pipe, buffer is copied before sending
+	Create_SP(tths, tth, nick, true/*todo: false*/); // dont reserve for pipe, buffer is copied before sending
 	mS->SearchToAll(conn, search, tths, true); // can send it only using filter
 	return 0;
 }

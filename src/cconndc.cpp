@@ -163,11 +163,12 @@ const char *cConnDC::GetTimeOutType(tTimeOut timeout)
 
 int cConnDC::GetTheoricalClass()
 {
-	if (mFeatures & eSF_BOTINFO)
-		return -1;
+	if (!mRegInfo || !mRegInfo->mEnabled) {
+		if (mFeatures & eSF_BOTINFO)
+			return -1;
 
-	if (!mRegInfo || !mRegInfo->mEnabled)
 		return 0;
+	}
 
 	return mRegInfo->mClass;
 }
@@ -198,10 +199,7 @@ int cConnDC::OnTimer(cTime &now)
 		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
 	}
 
-	cTime ten_min_ago; // check frozen users, send to every user, every minute an empty message
-	ten_min_ago = ten_min_ago - 600;
-
-	if (Server()->MinDelay(mT.ping, Server()->mC.delayed_ping) && mpUser && mpUser->mInList && (mpUser->mT.login < ten_min_ago)) {
+	if (mpUser && mpUser->mInList && Server()->mC.delayed_ping && Server()->MinDelay(mT.ping, Server()->mC.delayed_ping)) { // check frozen users, every minute by default
 		string omsg;
 		omsg.reserve(1);
 		omsg.append(1, '|');
@@ -240,8 +238,8 @@ int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
 /*
 void cConnDC::OnFlushDone()
 {
-	//mBufFlush.erase(0, GetFlushSize()); // all buffers were already resized and shrinked in cAsyncConn::Write(), else i dont understand when this is called or if its called at all
-	//mBufSend.erase(0, GetBufferSize());
+	//mBufFlush.clear(); // all buffers were already resized and shrinked in cAsyncConn::Write(), else i dont understand when this is called or if its called at all
+	//mBufSend.clear();
 	//ShrinkStringToFit(mBufFlush);
 	//ShrinkStringToFit(mBufSend);
 
