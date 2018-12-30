@@ -660,12 +660,16 @@ bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 		string &msg = message->ChunkString(eCH_PM_MSG);
 
 		if (!mxServer->mP.ParseForCommands(msg, conn, 1)) {
-			cUser *other = mxServer->mUserList.GetUserByNick(mxServer->LastBCNick);
+			if (mxServer->LastBCNick.size() && (mxServer->LastBCNick != "disable")) {
+				cUser *other = mxServer->mUserList.GetUserByNick(mxServer->LastBCNick);
 
-			if (other && other->mxConn)
-				mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
-			else
-				mxServer->DCPrivateHS(_("Hub security doesn't accept private messages, use main chat instead."), conn);
+				if (other && other->mxConn) {
+					mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
+					return true;
+				}
+			}
+
+			mxServer->DCPrivateHS(_("Hub security doesn't accept private messages, use main chat instead."), conn);
 		}
 	}
 

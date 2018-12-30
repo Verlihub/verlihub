@@ -345,6 +345,11 @@ namespace nVerliHub {
 				*/
 				int SetTimeOut(tTimeOut timeout, double seconds, cTime &now);
 
+				void SetPing(cTime &now)
+				{
+					mT.ping = now;
+				}
+
 				/**
 				* Log an event.
 				* @param ostr The message of the event.

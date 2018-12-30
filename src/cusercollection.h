@@ -152,7 +152,7 @@ public:
 
 		virtual void Clear()
 		{
-			mList.erase(0, mList.size());
+			mList.clear();
 			ShrinkStringToFit(mList);
 
 			if (mStart.size()) {

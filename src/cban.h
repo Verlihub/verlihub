@@ -198,13 +198,13 @@ namespace nVerliHub {
 				* Display full information about the unban.
 				* @param os The output stream.
 				*/
-				virtual void DisplayComplete(ostream &os);
+				//virtual void DisplayComplete(ostream &os);
 
 				/**
 				* Display unban information about the user.
 				* @param os The output stream.
 				*/
-				virtual void DisplayUser(ostream &);
+				//virtual void DisplayUser(ostream &);
 
 				/// Time of the unban in Unix time format
 				long mDateUnban;

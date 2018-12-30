@@ -272,7 +272,7 @@ void cInfoServer::BufferInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Chat user list upload cache: %s / %s"), convertByte(mServer->mChatUsers.GetCacheSize()).c_str(), convertByte(mServer->mChatUsers.GetCacheCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Operator list size: %d"), mServer->mOpList.Size()) << "\r\n";
-	os << " [*] " << autosprintf(_("Operator list upload cache: %s / %s"), convertByte(mServer->mOpList.GetCacheSize()).c_str(), convertByte(mServer->mOpList.GetCacheCapacity()).c_str()) << "\r\n";
+	//os << " [*] " << autosprintf(_("Operator list upload cache: %s / %s"), convertByte(mServer->mOpList.GetCacheSize()).c_str(), convertByte(mServer->mOpList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator list nick list: %s / %s"), convertByte(mServer->mOpList.GetNickListSize()).c_str(), convertByte(mServer->mOpList.GetNickListCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Operator chat list size: %d"), mServer->mOpchatList.Size()) << "\r\n";
@@ -280,7 +280,7 @@ void cInfoServer::BufferInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Operator chat list nick list: %s / %s"), convertByte(mServer->mOpchatList.GetNickListSize()).c_str(), convertByte(mServer->mOpchatList.GetNickListCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Bot list size: %d"), mServer->mRobotList.Size()) << "\r\n";
-	os << " [*] " << autosprintf(_("Bot list upload cache: %s / %s"), convertByte(mServer->mRobotList.GetCacheSize()).c_str(), convertByte(mServer->mRobotList.GetCacheCapacity()).c_str()) << "\r\n";
+	//os << " [*] " << autosprintf(_("Bot list upload cache: %s / %s"), convertByte(mServer->mRobotList.GetCacheSize()).c_str(), convertByte(mServer->mRobotList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Bot list nick list: %s / %s"), convertByte(mServer->mRobotList.GetNickListSize()).c_str(), convertByte(mServer->mRobotList.GetNickListCapacity()).c_str()) << "\r\n";
 }
 
