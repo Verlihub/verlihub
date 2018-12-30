@@ -319,7 +319,7 @@ void cHTTPConn::CloseNice(int msec)
 	mClose += msec;
 }
 
-int cHTTPConn::OnTimerBase(cTime &now)
+int cHTTPConn::OnTimerBase(const cTime &now)
 {
 
 	if (bool(mClose) && (mClose > now))

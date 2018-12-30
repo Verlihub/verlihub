@@ -1733,7 +1733,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 	return eVN_OK;
 }
 
-int cServerDC::OnTimer(cTime &now)
+int cServerDC::OnTimer(const cTime &now)
 {
 	mUserList.FlushCache();
 	//mOpList.FlushCache(); // we are not sending anything to operators, only nicks are used
@@ -1877,7 +1877,7 @@ int cServerDC::OnTimer(cTime &now)
 	#ifndef WITHOUT_PLUGINS
 		SendScriptCommands();
 
-		if (!mCallBacks.mOnTimer.CallAll(now.MiliSec()))
+		if (!mCallBacks.mOnTimer.CallAll(this->mTime.MiliSec()))
 			return false;
 	#endif
 

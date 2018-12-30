@@ -115,7 +115,7 @@ namespace nVerliHub {
 				* @return Always zero.
 				* @see OnTimerBase()
 				*/
-				virtual int OnTimer(cTime &now);
+				virtual int OnTimer(const cTime &now);
 
 				/**
 				* This event is trigger every N seconds.
@@ -124,7 +124,7 @@ namespace nVerliHub {
 				* @param now Current time.
 				* @return Always zero.
 				*/
-				int OnTimerBase(cTime &now);
+				int OnTimerBase(const cTime &now);
 
 				/**
 				* Start the main loop.
@@ -186,7 +186,10 @@ namespace nVerliHub {
 				int timer_serv_period;
 
 				/// Delay in milliseconds to wait in main loop for every iteration.
-				int mStepDelay;
+				unsigned int mStepDelay;
+				unsigned int mNoConnDelay;
+				unsigned int mChooseTimeOut;
+				unsigned int mAcceptNum;
 
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;

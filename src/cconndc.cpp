@@ -173,7 +173,7 @@ int cConnDC::GetTheoricalClass()
 	return mRegInfo->mClass;
 }
 
-int cConnDC::OnTimer(cTime &now)
+int cConnDC::OnTimer(const cTime &now)
 {
 	ostringstream os;
 	int i;
@@ -228,10 +228,11 @@ int cConnDC::SetTimeOut(tTimeOut timeout, double seconds, cTime &now)
 	return 1;
 }
 
-int cConnDC::CheckTimeOut(tTimeOut timeout, cTime &now)
+int cConnDC::CheckTimeOut(tTimeOut timeout, const cTime &now)
 {
-	if(timeout >= eTO_MAXTO)
+	if (timeout >= eTO_MAXTO)
 		return 0;
+
 	return 0 == mTO[timeout].Check(now);
 }
 

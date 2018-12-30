@@ -102,7 +102,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 {
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		mMaxBuffer = serv->mC.max_outbuf_size; // todo: this is useless, we need to update mMaxBuffer for all users every time max_outbuf_size is changed
+		mMaxBuffer = serv->mC.max_outbuf_size;
 	}
 
 	struct sockaddr saddr;
@@ -762,19 +762,20 @@ tConnType cAsyncConn::GetType()
 	return mType;
 }
 
-int cAsyncConn::OnTimerBase(cTime &now)
+int cAsyncConn::OnTimerBase(const cTime &now)
 {
 
-	if(bool(mCloseAfter) && (mCloseAfter > now)) {
+	if (bool(mCloseAfter) && (mCloseAfter > now)) {
 		CloseNow();
 		return 0;
 	}
+
 	Flush();
 	OnTimer(now);
 	return 0;
 }
 
-int cAsyncConn::OnTimer(cTime &now)
+int cAsyncConn::OnTimer(const cTime &now)
 {
 	return 0;
 }

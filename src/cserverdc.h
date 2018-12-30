@@ -331,7 +331,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param now Current time.
 		* @return False if callbacks fails or true otherwise.
 		*/
-		virtual int OnTimer(cTime &now);
+		virtual int OnTimer(const cTime &now);
 
 		/**
 		* Start the socket and listen on ports.

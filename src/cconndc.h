@@ -235,7 +235,7 @@ namespace nVerliHub {
 				 * @param now Current time.
 				 * @return 1 if timeout is expired or 0 otherwise.
 				 */
-				int CheckTimeOut(tTimeOut timeout, cTime &now);
+				int CheckTimeOut(tTimeOut timeout, const cTime &now);
 
 				/**
 				 * Reset and clear the given timeout.
@@ -296,7 +296,7 @@ namespace nVerliHub {
 				 * @param now Current time.
 				 * @return Always zero.
 				 */
-				virtual int OnTimer(cTime &now);
+				virtual int OnTimer(const cTime &now);
 
 				/**
 				 * Reset login status flag and set a new value.
@@ -345,7 +345,7 @@ namespace nVerliHub {
 				*/
 				int SetTimeOut(tTimeOut timeout, double seconds, cTime &now);
 
-				void SetPing(cTime &now)
+				void SetPing(const cTime &now)
 				{
 					mT.ping = now;
 				}
