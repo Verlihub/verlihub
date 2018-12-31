@@ -313,12 +313,12 @@ void cConfMySQL::WherePKey(ostream &os)
 	os << ')';
 }
 
-void cConfMySQL::AllFields(ostream &os, bool DoF, bool DoV, bool IsAff, string joint)
+void cConfMySQL::AllFields(ostream &os, bool DoF, bool DoV, bool IsAff, const string &joint)
 {
 	 for_each(mhItems.begin(), mhItems.end(), ufEqual(os, joint , DoF, DoV, IsAff));
 }
 
-void cConfMySQL::AllPKFields(ostream &os, bool DoF, bool DoV, bool IsAff, string joint)
+void cConfMySQL::AllPKFields(ostream &os, bool DoF, bool DoV, bool IsAff, const string &joint)
 {
 	 for_each(mPrimaryKey.begin(), mPrimaryKey.end(), ufEqual(os, joint , DoF, DoV, IsAff));
 }

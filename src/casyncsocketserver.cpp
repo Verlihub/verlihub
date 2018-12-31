@@ -333,7 +333,7 @@ int cAsyncSocketServer::OnTimer(const cTime &now)
 
 void cAsyncSocketServer::TimeStep()
 {
-	cTime tmout(0, (mChooseTimeOut + 1 * 1000));
+	cTime tmout(0, ((mChooseTimeOut * 1000) + 1));
 
 	if (!mConnChooser.Choose(tmout)) {
 		//#if !defined _WIN32
