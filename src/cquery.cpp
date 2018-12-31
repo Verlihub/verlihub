@@ -47,7 +47,7 @@ void cQuery::Clear(void)
 
 int cQuery::Query()
 {
-	string qstr(mOS.str());
+	const string qstr(mOS.str());
 	if(Log(3)) LogStream() << "Execute query ~" << qstr << '~' << endl;
 	if(mysql_query(mMySQL.mDBHandle, qstr.c_str()))
 	{
