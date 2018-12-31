@@ -168,7 +168,7 @@ namespace nVerliHub {
 				 * Create a new connection.
 				 * @see AcceptSock()
 				 */
-				virtual cAsyncConn * Accept();
+				virtual cAsyncConn* Accept(const unsigned int sleep, const unsigned int tries);
 
 				/**
 				 * Return the hostname.
@@ -395,7 +395,7 @@ namespace nVerliHub {
 				 * @param udp True if it is an UDP connection.
 				 * @return The socket descriptor or -1 if the connection already exists.
 				 */
-				int ListenOnPort(int port, const char *ia=NULL/*, bool udp=false*/);
+				int ListenOnPort(int port, const char *ia, const unsigned int blog/*, bool udp = false*/);
 
 				/**
 				 * Event handler function called when write buffer gets empty.
@@ -425,7 +425,7 @@ namespace nVerliHub {
 				 * @see ReadLineLocal()
 				 * @return Number of read bytes
 				 */
-				int ReadAll();
+				int ReadAll(const unsigned int tries);
 
 				/**
 				 * Read a line and store it in the internal line buffer.
@@ -586,7 +586,7 @@ namespace nVerliHub {
 				 * Validate and accept a new socket connection.
 				 * @return A negative value indicates that the connection is not accepted.
 				 */
-				tSocket AcceptSock();
+				tSocket AcceptSock(const unsigned int sleep, const unsigned int tries);
 
 				/**
 				 * Bind the given socket to an address and port.
@@ -594,7 +594,7 @@ namespace nVerliHub {
 				 * @param port The port.
 				 * @param add The address.
 				 */
-				int BindSocket(int sock, int port, const char *addr=NULL);
+				int BindSocket(int sock, int port, const char *addr);
 
 				/**
 				 * Create a new socket connection.
@@ -616,7 +616,7 @@ namespace nVerliHub {
 				 * @param sock The identifier of the socket to listen on.
 				 * @return A negative value if the operation failed or the identifier of the socket.
 				 */
-				int ListenSock(int sock);
+				int ListenSock(int sock, const unsigned int blog);
 
 				/**
 				 * Set socket in non-blocking mode.

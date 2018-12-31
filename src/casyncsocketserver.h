@@ -90,7 +90,7 @@ namespace nVerliHub {
 				 * @return The new connection.
 				 * @see ListenWithConn()
 				 */
-				virtual cAsyncConn * Listen(int OnPort/*, bool UDP = false*/);
+				virtual cAsyncConn* Listen(int OnPort/*, bool UDP = false*/);
 
 				/**
 				 * Handle the given connection and listen on the given port.
@@ -99,7 +99,7 @@ namespace nVerliHub {
 				 * @param UDP True if it is an UDP connection.
 				 * @return The new connection.
 				 */
-				virtual cAsyncConn * ListenWithConn(cAsyncConn *connection, int OnPort/*, bool UDP=false*/);
+				virtual cAsyncConn* ListenWithConn(cAsyncConn *connection, int OnPort/*, bool UDP=false*/);
 
 				/**
 				* This event is triggered when a connection is closed.
@@ -188,8 +188,10 @@ namespace nVerliHub {
 				/// Delay in milliseconds to wait in main loop for every iteration.
 				unsigned int mStepDelay;
 				unsigned int mNoConnDelay;
+				unsigned int mNoReadTry;
 				unsigned int mChooseTimeOut;
 				unsigned int mAcceptNum;
+				unsigned int mAcceptTry;
 
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;

@@ -48,14 +48,19 @@ void cQuery::Clear(void)
 int cQuery::Query()
 {
 	const string qstr(mOS.str());
-	if(Log(3)) LogStream() << "Execute query ~" << qstr << '~' << endl;
-	if(mysql_query(mMySQL.mDBHandle, qstr.c_str()))
-	{
-		if(ErrLog(1)) LogStream() << "Error in query ~" << qstr << '~' << endl;
-		mMySQL.Error(2,string("Query error:"));
+
+	if (Log(3))
+		LogStream() << "Execute query ~" << qstr << '~' << endl;
+
+	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) {
+		if (ErrLog(1))
+			LogStream() << "Error in query ~" << qstr << '~' << endl;
+
+		mMySQL.Error(2, "Query error:");
 		return -1;
 	}
-	return 1;//mysql_affected_rows(mMySQL.mDBHandle);
+
+	return 1; //mysql_affected_rows(mMySQL.mDBHandle)
 }
 
 int cQuery::StoreResult()

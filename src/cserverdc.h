@@ -246,7 +246,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param CfgBase Path to VerliHub configuration folder.
 		* @param ExecPath Process name.
 		*/
-		cServerDC(string CfgBase = string("./.verlihub"), const string &ExecPath= "");
+		cServerDC(string CfgBase = "./.verlihub", const string &ExecPath= "");
 
 		/**
 		* Class destructor.

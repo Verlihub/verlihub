@@ -384,7 +384,7 @@ w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 	if (!query) return NULL;
 	if (limit < 1) limit = 100;
 	log4("PY: SQL   query: %s\n", query);
-	q = string() + query;
+	q = query;
 	mQuery->OStream() << q;
 	if (mQuery->Query() < 0) {
 		mQuery->Clear();
@@ -1070,7 +1070,12 @@ w_Targs *_usermc(int id, w_Targs *args)
 	if (!msg) return NULL;
 	if (!mynick) mynick = cpiPython::botname.c_str();
 
-	string data = string() + '<' + mynick + "> " + msg + PipeIfMissing(msg);
+	string data;
+	data.append(1, '<');
+	data.append(mynick);
+	data.append("> ");
+	data.append(msg);
+	data.append(PipeIfMissing(msg));
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 
 	if (u && u->mxConn) {
@@ -1109,7 +1114,16 @@ w_Targs *_pm(int id, w_Targs *args)
 	if (!from) from = cpiPython::botname.c_str();
 	if (!mynick) mynick = from;
 
-	string data = string() + "$To: " + nick + " From: " + from + " $<" + mynick + "> " + msg + PipeIfMissing(msg);
+	string data;
+	data.append("$To: ");
+	data.append(nick);
+	data.append(" From: ");
+	data.append(from);
+	data.append(" $<");
+	data.append(mynick);
+	data.append("> ");
+	data.append(msg);
+	data.append(PipeIfMissing(msg));
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (u && u->mxConn) {
 		u->mxConn->Send(data, false);

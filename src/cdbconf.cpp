@@ -28,14 +28,14 @@ cDBConf::cDBConf(const string &file):
 {
 	msLogLevel = 1;
 
-	Add("db_host", db_host, string("localhost"));
-	Add("db_user", db_user, string("verlihub"));
-	Add("db_pass", db_pass, string());
-	Add("db_data", db_data, string("verlihub"));
-	Add("db_charset", db_charset, string());
-	Add("config_name", config_name, string("config"));
-	Add("locale", locale, string());
-	Add("mmdb_path", mmdb_path, string());
+	Add("db_host", db_host, "localhost");
+	Add("db_user", db_user, "verlihub");
+	Add("db_pass", db_pass, "");
+	Add("db_data", db_data, "verlihub");
+	Add("db_charset", db_charset, "");
+	Add("config_name", config_name, "config");
+	Add("locale", locale, "");
+	Add("mmdb_path", mmdb_path, "");
 
 	Load();
 }

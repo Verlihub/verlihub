@@ -78,7 +78,7 @@ class cRegUserInfo
 		* @param crypt_method The crypt method to use
 		* @return Zero on success or -1 on failure
 		*/
-		void SetPass(string password, tCryptMethods crypt_method);
+		void SetPass(const string &password, tCryptMethods crypt_method);
 
 	public: // Public attributes
 		/** nickname */

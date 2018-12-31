@@ -42,6 +42,7 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 cMySQL::~cMySQL()
 {
 	mysql_close(mDBHandle);
+	mDBHandle = NULL;
 }
 
 void cMySQL::Init()

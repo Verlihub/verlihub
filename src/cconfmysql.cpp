@@ -309,7 +309,7 @@ void cConfMySQL::AddPrimaryKey(const char *key)
 void cConfMySQL::WherePKey(ostream &os)
 {
 	os << " where (";
-	AllPKFields(os, true, true, false, string(" and "));
+	AllPKFields(os, true, true, false, " and ");
 	os << ')';
 }
 
@@ -326,14 +326,14 @@ void cConfMySQL::AllPKFields(ostream &os, bool DoF, bool DoV, bool IsAff, string
 void cConfMySQL::SelectFields(ostream &os)
 {
 	os << "select ";
-	AllFields(os, true, false, false, string(", "));
+	AllFields(os, true, false, false, ", ");
 	os << " from " << mMySQLTable.mName << ' ';
 }
 
 void cConfMySQL::UpdateFields(ostream &os)
 {
 	os << "update " << mMySQLTable.mName << " set ";
-	AllFields(mQuery.OStream(), true, true, true, string(", "));
+	AllFields(mQuery.OStream(), true, true, true, ", ");
 }
 
 bool cConfMySQL::LoadPK()
@@ -353,14 +353,14 @@ bool cConfMySQL::LoadPK()
 bool cConfMySQL::SavePK(bool dup)
 {
 	mQuery.OStream() << "insert" << (dup ? "" : " ignore") << " into " << mMySQLTable.mName << " (";
-	AllFields(mQuery.OStream(), true, false, false, string(", "));
+	AllFields(mQuery.OStream(), true, false, false, ", ");
 	mQuery.OStream() << ") values (";
-	AllFields(mQuery.OStream(), false, true, true, string(", "));
+	AllFields(mQuery.OStream(), false, true, true, ", ");
 	mQuery.OStream() << ')';
 
 	if (dup) {
 		mQuery.OStream() << " on duplicate key update ";
-		AllFields(mQuery.OStream(), true, true, true, string(", "));
+		AllFields(mQuery.OStream(), true, true, true, ", ");
 	}
 
 	bool ret = mQuery.Query();
@@ -446,7 +446,7 @@ bool cConfMySQL::UpdatePKVar(const char* var_name, string &new_val)
 bool cConfMySQL::UpdatePKVar(cConfigItemBase *item)
 {
 	mQuery.OStream() << "update " << mMySQLTable.mName << " set ";
-	ufEqual(mQuery.OStream(), string(", "), true, true, true)(item);
+	ufEqual(mQuery.OStream(), ", ", true, true, true)(item);
 	WherePKey(mQuery.OStream());
 	bool ret = mQuery.Query();
 	mQuery.Clear();
