@@ -46,7 +46,6 @@ cMySQL::~cMySQL()
 
 void cMySQL::Init()
 {
-	mDBHandle = NULL;
 	mDBHandle = mysql_init(mDBHandle);
 
 	if (!mDBHandle)
