@@ -269,42 +269,42 @@ int w_unpack(w_Targs *a, const char *format, ...)
 
 const char *w_packprint(w_Targs *a)
 {
-	static string o;
-
 	if (!a || !a->format)
 		return "(null)";
 
-	o = string() + a->format + " ( ";
+	static string o;
+	o.append(a->format);
+	o.append(" ( ");
 	char *buf = (char*)calloc(410, sizeof(char));
 
 	for (unsigned int i = 0; i < strlen(a->format); i++) {
 		if (i > 0)
-			o += ", ";
+			o.append(", ");
 
 		switch (a->format[i]) {
 			case 'l':
 				snprintf(buf, 400, "l:%ld", a->args[i].l);
-				o += buf;
+				o.append(buf);
 				break;
 			case 's':
 				snprintf(buf, 400, "s:%s", a->args[i].s);
-				o += buf;
+				o.append(buf);
 				break;
 			case 'd':
 				snprintf(buf, 400, "l:%f", a->args[i].d);
-				o += buf;
+				o.append(buf);
 				break;
 			case 'p':
 				snprintf(buf, 400, "l:%p", a->args[i].p);
-				o += buf;
+				o.append(buf);
 				break;
 			default:
-				o += "invalid";
+				o.append("invalid");
 		}
 	}
 
 	free(buf);
-	o += " )";
+	o.append(" )");
 	return o.c_str();
 }
 

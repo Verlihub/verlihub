@@ -50,9 +50,11 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	timer_serv_period(1),
 	mStepDelay(0),
 	mNoConnDelay(0),
+	mNoReadTry(0),
 	mChooseTimeOut(0),
 	mAcceptNum(0),
-	mMaxLineLength(10240),
+	mAcceptTry(0),
+	mMaxLineLength(0),
 	mUseDNS(0),
 	mFrequency(mTime, 90.0, 20),
 	mbRun(false),
@@ -254,27 +256,29 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 int cAsyncSocketServer::input(cAsyncConn *conn)
 {
 	int just_read=0;
-	// Read all data available into a buffer
-	if(conn->ReadAll() <= 0)
+
+	if (conn->ReadAll(mNoReadTry) <= 0) // read all data available into a buffer
 		return 0;
-	while(conn->ok && conn->mWritable) {
-		// Create new line obj if necessary
-		if(conn->LineStatus() == AC_LS_NO_LINE)
-			conn->SetLineToRead(FactoryString(conn),'|',mMaxLineLength);
-		// Read data into it from the buffer
-		just_read += conn->ReadLineLocal();
-		if(conn->LineStatus() == AC_LS_LINE_DONE) {
-			OnNewMessage(conn,conn->GetLine());
-			conn->ClearLine();
-			// Connection may be closed after this
+
+	while (conn->ok && conn->mWritable) {
+		if (conn->LineStatus() == AC_LS_NO_LINE) // create new line if necessary
+			conn->SetLineToRead(FactoryString(conn), '|', mMaxLineLength);
+
+		just_read += conn->ReadLineLocal(); // read data into it from the buffer
+
+		if (conn->LineStatus() == AC_LS_LINE_DONE) {
+			OnNewMessage(conn, conn->GetLine());
+			conn->ClearLine(); // connection may be closed after this
 		}
-		if(conn->BufferEmpty())
+
+		if (conn->BufferEmpty())
 			break;
 	}
+
 	return just_read;
 }
 
-int cAsyncSocketServer::output(cAsyncConn * conn)
+int cAsyncSocketServer::output(cAsyncConn *conn)
 {
 	conn->Flush();
 	return 0;
@@ -329,7 +333,7 @@ int cAsyncSocketServer::OnTimer(const cTime &now)
 
 void cAsyncSocketServer::TimeStep()
 {
-	cTime tmout(0, mChooseTimeOut);
+	cTime tmout(0, (mChooseTimeOut + 1 * 1000));
 
 	if (!mConnChooser.Choose(tmout)) {
 		//#if !defined _WIN32
@@ -367,13 +371,13 @@ void cAsyncSocketServer::TimeStep()
 			cAsyncConn *new_conn = NULL; // accept incoming connection
 
 			do {
-				new_conn = conn->Accept();
+				new_conn = conn->Accept(mNoConnDelay, mAcceptTry);
 
 				if (new_conn)
 					addConnection(new_conn);
 
 				i++;
-			} while(new_conn && (i <= mAcceptNum));
+			} while (new_conn && (i <= mAcceptNum));
 
 			/*
 			#ifdef _WIN32
@@ -429,24 +433,28 @@ int cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	return -1;
 }
 
-cAsyncConn * cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
+cAsyncConn* cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
 {
-	if(ListenSock != NULL) {
-		if(ListenSock->ListenOnPort(OnPort,mAddr.c_str()/*, UDP*/)< 0) {
-			if(Log(0)) {
+	if (ListenSock) {
+		if (ListenSock->ListenOnPort(OnPort, mAddr.c_str(), mAcceptNum/*, UDP*/) < 0) {
+			if (Log(0)) {
 				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
 				LogStream() << "Please make sure the port is open and not already used by another process" << endl;
 			}
-			throw "Can't listen";
+
+			throw "Unable to listen";
 			return NULL;
 		}
+
 		this->mConnChooser.AddConn(ListenSock);
-		this->mConnChooser.cConnChoose::OptIn(
-			(cConnBase *)ListenSock,
-			tChEvent(eCC_INPUT|eCC_ERROR));
-		if(Log(0)) LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
+		this->mConnChooser.cConnChoose::OptIn((cConnBase*)ListenSock, tChEvent(eCC_INPUT | eCC_ERROR));
+
+		if (Log(0))
+			LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
+
 		return ListenSock;
 	}
+
 	return NULL;
 }
 

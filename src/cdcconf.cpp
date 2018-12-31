@@ -40,23 +40,23 @@ void cDCConf::AddVars()
 {
 	// Hub info and basic settings
 	Add("hub_name", hub_name, HUB_VERSION_NAME);
-	Add("hub_desc",hub_desc,string());
-	Add("hub_topic",hub_topic,string());
-	Add("hub_category",hub_category,string());
-	Add("hub_icon_url", hub_icon_url, string());
-	Add("hub_logo_url", hub_logo_url, string());
+	Add("hub_desc",hub_desc, "");
+	Add("hub_topic",hub_topic, "");
+	Add("hub_category",hub_category, "");
+	Add("hub_icon_url", hub_icon_url, "");
+	Add("hub_logo_url", hub_logo_url, "");
 	Add("hub_encoding", hub_encoding, DEFAULT_HUB_ENCODING);
-	Add("hub_owner",hub_owner,string());
+	Add("hub_owner",hub_owner, "");
 	Add("hub_version", hub_version, HUB_VERSION_VERS);
-	Add("hub_version_special",hub_version_special,string());
+	Add("hub_version_special",hub_version_special, "");
 	Add("hub_security", hub_security, HUB_VERSION_NAME);
-	Add("hub_security_desc", hub_security_desc, string("Hub security"));
-	Add("opchat_name", opchat_name, string("OpChat"));
-	Add("opchat_desc", opchat_desc, string("Operator chat"));
+	Add("hub_security_desc", hub_security_desc, "Hub security");
+	Add("opchat_name", opchat_name, "OpChat");
+	Add("opchat_desc", opchat_desc, "Operator chat");
 	Add("opchat_class", opchat_class, int(eUC_OPERATOR));
-	Add("hub_host", hub_host, string());
-	Add("hub_failover_hosts", hub_failover_hosts, string());
-	Add("listen_ip",mS.mAddr,string("0.0.0.0"));
+	Add("hub_host", hub_host, "");
+	Add("hub_failover_hosts", hub_failover_hosts, "");
+	Add("listen_ip",mS.mAddr, "0.0.0.0");
 
 	//#if !defined _WIN32
 		Add("listen_port", mS.mPort, 4111);
@@ -66,11 +66,11 @@ void cDCConf::AddVars()
 	#endif
 	*/
 
-	Add("extra_listen_ports", extra_listen_ports,string());
+	Add("extra_listen_ports", extra_listen_ports, "");
 	// End hub info and basic settings
 
 	// begin hublist configuration
-	Add("hublist_host", hublist_host, string("hublist.te-home.net"));
+	Add("hublist_host", hublist_host, "hublist.te-home.net");
 	Add("hublist_port", hublist_port, 2501);
 	Add("hublist_send_minshare", hublist_send_minshare, true);
 	Add("hublist_send_listhost", hublist_send_listhost, true);
@@ -94,7 +94,7 @@ void cDCConf::AddVars()
 	Add("max_users4",max_users[4],1000);
 	Add("max_users5",max_users[5],1000);
 	Add("max_users6",max_users[6],1000);
-	Add("hubfull_message", hubfull_message, string());
+	Add("hubfull_message", hubfull_message, "");
 	// End max users configuration
 
 	// Share configuration
@@ -130,11 +130,11 @@ void cDCConf::AddVars()
 	// Nicklist configuration
 	Add("max_nick",max_nick,64u);
 	Add("min_nick",min_nick,1u);
-	Add("nick_chars",nick_chars, string());
-	Add("nick_prefix", nick_prefix, string());
+	Add("nick_chars",nick_chars, "");
+	Add("nick_prefix", nick_prefix, "");
 	Add("nick_prefix_nocase", nick_prefix_nocase, false);
 	Add("nick_prefix_cc", nick_prefix_cc, false);
-	Add("nick_prefix_autoreg",nick_prefix_autoreg,string());
+	Add("nick_prefix_autoreg",nick_prefix_autoreg, "");
 	Add("autoreg_class", autoreg_class, 0);
 	Add("autounreg_class", autounreg_class, 0);
 	// End nicklist configuration
@@ -285,7 +285,7 @@ void cDCConf::AddVars()
 	Add("default_password_encryption", default_password_encryption, (unsigned int)cRegUserInfo::eCRYPT_ENCRYPT); // 1
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
-	Add("wrongpass_message", wrongpass_message, string());
+	Add("wrongpass_message", wrongpass_message, "");
 	Add("wrongpassword_report", wrongpassword_report, true);
 	Add("report_pass_reset", report_pass_reset, false);
 	Add("wrongauthip_report", wrongauthip_report, 1);
@@ -336,14 +336,16 @@ void cDCConf::AddVars()
 	*/
 	Add("hide_msg_badctm", hide_msg_badctm, false);
 
-	Add("timer_conn_period", mS.timer_conn_period, 4);
-	Add("timer_serv_period", mS.timer_serv_period, 1);
-	Add("min_frequency", min_frequency, 0.3);
-	Add("step_delay", mS.mStepDelay, 50); // note: this is milliseconds
-	Add("no_conn_delay", mS.mNoConnDelay, 50); // note: this is microseconds
-	Add("conn_choose_timeout", mS.mChooseTimeOut, 1000l); // note: this is microseconds
-	Add("conn_accept_num", mS.mAcceptNum, 101);
-	Add("max_upload_kbps", max_upload_kbps, 2000000.0);
+	Add("adv_timer_conn_period", mS.timer_conn_period, 4);
+	Add("adv_timer_serv_period", mS.timer_serv_period, 1);
+	Add("adv_min_frequency", min_frequency, 0.3);
+	Add("adv_step_delay", mS.mStepDelay, 50); // note: this is milliseconds
+	Add("adv_no_conn_delay", mS.mNoConnDelay, 50); // note: this is microseconds
+	Add("adv_no_read_try", mS.mNoReadTry, 100);
+	Add("adv_conn_choose_timeout", mS.mChooseTimeOut, 10); // note: this is milliseconds
+	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
+	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
+	Add("adv_max_upload_kbps", max_upload_kbps, 128000.);
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache", use_reglist_cache, true);
 	Add("use_penlist_cache", use_penlist_cache, true);
@@ -355,7 +357,7 @@ void cDCConf::AddVars()
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
-	Add("mmdb_names_lang", mmdb_names_lang, string()); // maxminddb names language, empty means english
+	Add("mmdb_names_lang", mmdb_names_lang, ""); // maxminddb names language, empty means english
 	Add("mmdb_conv_depth", mmdb_conv_depth, 2); // conversion depth, 0 = do nothing, 1 = utf8 to hub_encoding conversion, 2 = transliteration
 	Add("mmdb_cache", mmdb_cache, true);
 	Add("mmdb_cache_mins", mmdb_cache_mins, 60); // 0 = never delete
@@ -387,7 +389,7 @@ void cDCConf::AddVars()
 	Add("tag_min_class_ignore", tag_min_class_ignore, (int)eUC_OPERATOR);
 	Add("show_desc_len",show_desc_len,-1);
 	Add("desc_insert_mode", desc_insert_mode, false);
-	Add("desc_insert_vars", desc_insert_vars, string()); // %[CLASS], %[CLASSNAME], %[MODE], %[CC], %[CN], %[CITY]
+	Add("desc_insert_vars", desc_insert_vars, ""); // %[CLASS], %[CLASSNAME], %[MODE], %[CC], %[CN], %[CITY]
 	Add("show_email", show_email, true);
 	Add("show_speed", show_speed, true);
 	Add("tag_min_hs_ratio", tag_min_hs_ratio, 0.);
@@ -402,20 +404,20 @@ void cDCConf::AddVars()
 	// End tag configuration
 
 	// IP and zone configuration
-	Add("cc_zone1",cc_zone[0],string());
-	Add("cc_zone2",cc_zone[1],string());
-	Add("cc_zone3",cc_zone[2],string());
-	Add("ip_zone4_min",ip_zone4_min,string());
-	Add("ip_zone4_max",ip_zone4_max,string());
-	Add("ip_zone5_min",ip_zone5_min,string());
-	Add("ip_zone5_max",ip_zone5_max,string());
-	Add("ip_zone6_min",ip_zone6_min,string());
-	Add("ip_zone6_max",ip_zone6_max,string());
+	Add("cc_zone1",cc_zone[0], "");
+	Add("cc_zone2",cc_zone[1], "");
+	Add("cc_zone3",cc_zone[2], "");
+	Add("ip_zone4_min",ip_zone4_min, "");
+	Add("ip_zone4_max",ip_zone4_max, "");
+	Add("ip_zone5_min",ip_zone5_min, "");
+	Add("ip_zone5_max",ip_zone5_max, "");
+	Add("ip_zone6_min",ip_zone6_min, "");
+	Add("ip_zone6_max",ip_zone6_max, "");
 	// End IP and zone configuration
 
 	// Custom messages
-	Add("ban_extra_message", ban_extra_message, string());
-	Add("msg_replace_ban",msg_replace_ban, string());
+	Add("ban_extra_message", ban_extra_message, "");
+	Add("msg_replace_ban",msg_replace_ban, "");
 	Add("msg_welcome_guest",msg_welcome[0]);
 	Add("msg_welcome_reg",msg_welcome[1]);
 	Add("msg_welcome_vip",msg_welcome[2]);

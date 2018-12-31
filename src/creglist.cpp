@@ -82,8 +82,8 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	SetBaseTo(&mModel);
 }
 
-cRegList::~cRegList(){
-}
+cRegList::~cRegList()
+{}
 
 bool cRegList::FindRegInfo(cRegUserInfo &ui, const string &nick)
 {
@@ -141,7 +141,8 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int clas, const char 
 
 	ui.mRegDate = mS->mTime.Sec();
 	ui.mRegOp = (op && op->mpUser) ? op->mpUser->mNick : mS->mC.hub_security;
-	ui.SetPass((pass ? string(pass) : string()), cRegUserInfo::tCryptMethods(mS->mC.default_password_encryption));
+	string pwd(pass);
+	ui.SetPass(pwd, cRegUserInfo::tCryptMethods(mS->mC.default_password_encryption));
 
 	if (clas < eUC_NORMUSER) // pingers dont have password
 		ui.mPwdChange = false;

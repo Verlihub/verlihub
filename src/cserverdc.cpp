@@ -1475,7 +1475,7 @@ bool cServerDC::SetUserRegInfo(cConnDC *conn, const string &nick)
 
 	if (mR->FindRegInfo(*sRegInfo, nick)) {
 		conn->mRegInfo = sRegInfo;
-		sRegInfo = new cRegUserInfo;
+		sRegInfo = new cRegUserInfo; // todo: this needs to be destroyed when stopping hub
 	}
 
 	return true;

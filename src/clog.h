@@ -59,7 +59,7 @@ private:
 class cSyslogStream: public std::ostream
 {
 public:
-	explicit cSyslogStream(const std::string& name = std::string(), bool is_daemon = 1):
+	explicit cSyslogStream(const std::string &name = "", bool is_daemon = 1):
 		std::ostream(&streambuf),
 		streambuf(name, is_daemon)
 	{ }

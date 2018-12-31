@@ -135,15 +135,16 @@ string& cRegUserInfo::GetNick()
 	return mNick;
 }
 
-void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
+void cRegUserInfo::SetPass(const string &str, tCryptMethods crypt_method)
 {
-	mPwdChange = !str.size();
+	string pass(str);
+	mPwdChange = pass.empty();
 
-	if (str.size()) {
+	if (!mPwdChange) {
 		string salt;
 		static const char *saltchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./";
 		static const int saltcharsnum = strlen(saltchars);
-		unsigned char charsalt[2] = {(unsigned char)((char*)&str)[0], (unsigned char)((char*)&str)[1]};
+		unsigned char charsalt[2] = {(unsigned char)((char*)&pass)[0], (unsigned char)((char*)&pass)[1]};
 		unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
 		char md5_hex[33];
 
@@ -152,11 +153,11 @@ void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
 				charsalt[0] = saltchars[charsalt[0] % saltcharsnum];
 				charsalt[1] = saltchars[charsalt[1] % saltcharsnum];
 				salt.assign((char*)charsalt, 2);
-				mPasswd = crypt(str.c_str(), salt.c_str());
+				mPasswd = crypt(pass.c_str(), salt.c_str());
 				mPWCrypt = eCRYPT_ENCRYPT;
 				break;
 			case eCRYPT_MD5:
-				MD5((const unsigned char*)str.c_str(), str.size(), md5_buf);
+				MD5((const unsigned char*)pass.c_str(), pass.size(), md5_buf);
 				md5_buf[MD5_DIGEST_LENGTH] = 0;
 
 				for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
@@ -168,12 +169,13 @@ void cRegUserInfo::SetPass(string str, tCryptMethods crypt_method)
 				mPWCrypt = eCRYPT_MD5;
 				break;
 			case eCRYPT_NONE:
-				mPasswd = str;
+				mPasswd = pass;
 				mPWCrypt = eCRYPT_NONE;
 				break;
 		}
-	} else
-		mPasswd = str;
+	} else {
+		mPasswd = pass;
+	}
 }
 
 	}; // namespace nTables

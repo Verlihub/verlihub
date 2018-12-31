@@ -305,66 +305,68 @@ void cAsyncConn::CloseNow()
 	}
 }
 
-int cAsyncConn::ReadAll()
+int cAsyncConn::ReadAll(const unsigned int tries)
 {
-	int buf_len = 0 , i=0;//, addr_len = sizeof(struct sockaddr);
+	int buf_len = 0; //addr_len = sizeof(struct sockaddr)
+	unsigned int i = 0;
 	mBufReadPos = 0;
 	mBufEnd = 0;
 	//bool udp = (this->GetType() == eCT_CLIENTUDP);
 
-	if(!ok || !mWritable)
+	if (!ok || !mWritable)
 		return -1;
 
-	//if(!udp) {
-		while(
-			((buf_len = recv(mSockDesc, msBuffer, MAX_MESS_SIZE, 0)) == -1) &&
-			((errno == EAGAIN) || (errno == EINTR))
-			&& (i++ <= 100)
-		)	{
-//#if ! defined _WIN32
-	    ::usleep(5);
-//#endif
+	//if (!udp) {
+		while (((buf_len = recv(mSockDesc, msBuffer, MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
+	//#if !defined _WIN32
+			::usleep(5);
+	//#endif
 		}
 	/*
 	} else {
-		while(
-			((buf_len = recvfrom(mSockDesc, msBuffer, MAX_MESS_SIZE, 0, (struct sockaddr *)&mAddrIN, (socklen_t *)&addr_len)) == -1) &&
-			(i++ <= 100)
-		) {
-#if ! defined _WIN32
-			::usleep(5);
-#endif
+		while (((buf_len = recvfrom(mSockDesc, msBuffer, MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
+	#if !defined _WIN32
+		::usleep(5);
+	#endif
 		}
 	}
 	*/
 
-	if(buf_len <= 0) {
-		//if(!udp) {
-			if(buf_len == 0) {
-				/* Connection closed - hung up*/
-				if(Log(2))
-					LogStream() << "User hung up.." << endl;
+	if (buf_len <= 0) {
+		//if (!udp) {
+			if (buf_len == 0) {
+				if (Log(2)) // connection hung up
+					LogStream() << "User hung up" << endl;
+
 				CloseNow();
 				return -1;
+
 			} else {
-				if(Log(2))
-					LogStream() << "Read IO Error: " << errno << " : " << strerror(errno) << endl;
-				switch(errno) {
-					case ECONNRESET:/* connection reset by peer */ break;
-					case ETIMEDOUT:/* connection timed out */break;
-					case EHOSTUNREACH:/* No route to host */ break;
-					default:break;
-				} // end switch
+				if (Log(2))
+					LogStream() << "Read IO Error: " << errno << " = " << strerror(errno) << endl;
+
+				/*
+				switch (errno) {
+					case ECONNRESET: // connection reset by peer
+						break;
+					case ETIMEDOUT: // connection timed out
+						break;
+					case EHOSTUNREACH: // no route to host
+						break;
+					default:
+						break;
+				}
+				*/
 			}
+
 			CloseNow();
 			return -1;
 		//}
-	} else {
-		// Received data
+
+	} else { // received data
 		mBufEnd = buf_len;
 		mBufReadPos = 0;
-		// End string
-		msBuffer[mBufEnd] = '\0';
+		msBuffer[mBufEnd] = '\0'; // end string
 
 		if (mxServer)
 			mTimeLastIOAction = mxServer->mTime;
@@ -380,7 +382,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	size_t total = 0; // how many bytes weve sent
 	size_t bytesleft = len; // how many we have left to send
 	int n = 0;
-	int repetitions = 0;
+	//int repetitions = 0;
 	//bool udp = (this->GetType() == eCT_SERVERUDP);
 
 #ifndef QUICK_SEND
@@ -420,7 +422,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 			return -1;
 		}
 		*/
-		repetitions++;
+		//repetitions++;
 
 		if (n == -1)
 			break;
@@ -438,6 +440,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	*/
 	total = n;
 #endif
+
 	len = total; /* return number actually sent here */
 	return n == -1 ? -1 : 0; /* return -1 on failure, 0 on success */
 }
@@ -488,30 +491,34 @@ int cAsyncConn::Connect(const string &host, int port)
 	struct sockaddr_in dest_addr;
 	mSockDesc = CreateSock();
 
-	if(mSockDesc == INVALID_SOCKET) {
-		vhErr(1) << "Error getting socket." << endl;
+	if (mSockDesc == INVALID_SOCKET) {
+		vhErr(1) << "Error getting socket" << endl;
 		ok = false;
 		return -1;
 	}
+
 	cTime timeout(5.0);
 	SetSockOpt(SO_RCVTIMEO, &timeout, sizeof(timeval));
 	SetSockOpt(SO_SNDTIMEO, &timeout, sizeof(timeval));
 
 	struct hostent *he = gethostbyname(host.c_str());
-	if(he != NULL) {
+
+	if (he) {
 		dest_addr.sin_family = AF_INET;
 		dest_addr.sin_port = htons(port);
-		dest_addr.sin_addr.s_addr = *(unsigned*)(he->h_addr_list[0]);//inet_addr(host.c_str());
+		dest_addr.sin_addr.s_addr = *(unsigned*)(he->h_addr_list[0]); //inet_addr(host.c_str())
 		memset(&(dest_addr.sin_zero), '\0', 8);
+		int s = connect(mSockDesc, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr));
 
-		int s = connect(mSockDesc, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr));
-		if(s==-1) {
+		if (s == -1) {
 			vhErr(1) << "Error connecting to " << host << ':' << port << endl;
 			ok = false;
 			return -1;
 		}
+
 		ok = true;
 		return 0;
+
 	} else {
 		vhErr(2) << "Error resolving host " << host << endl;
 		ok = false;
@@ -521,22 +528,24 @@ int cAsyncConn::Connect(const string &host, int port)
 
 int cAsyncConn::SetSockOpt(int optname, const void *optval, int optlen)
 {
-//#ifndef _WIN32
-	return setsockopt(this->mSockDesc, SOL_SOCKET, optname, optval , optlen);
-/*
-#else
-	return 0;
-#endif
-*/
+	//#ifndef _WIN32
+		return setsockopt(this->mSockDesc, SOL_SOCKET, optname, optval, optlen);
+	/*
+	#else
+		return 0;
+	#endif
+	*/
 }
 
 int cAsyncConn::GetSockOpt(int optname, void *optval, int &optlen)
 {
 	int result = 0;
-//#ifndef _WIN32
-	socklen_t _optlen;
-	result = getsockopt(this->mSockDesc, SOL_SOCKET, optname, optval , &_optlen);
-//#endif
+
+	//#ifndef _WIN32
+		socklen_t _optlen;
+		result = getsockopt(this->mSockDesc, SOL_SOCKET, optname, optval, &_optlen);
+	//#endif
+
 	return result;
 }
 
@@ -578,160 +587,179 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 	mAddrIN.sin_family = AF_INET;
 	mAddrIN.sin_addr.s_addr = INADDR_ANY; // default listen address
 
-	if (ia) {
-//#if !defined _WIN32
+	if (ia && (ia[0] != '\0')) {
+	//#if !defined _WIN32
 		inet_aton(ia, &mAddrIN.sin_addr); // override it
-/*
-#else
+	/*
+	#else
 		mAddrIN.sin_addr.s_addr = inet_addr(ia);
-#endif
-*/
+	#endif
+	*/
 	}
 
 	mAddrIN.sin_port = htons(port);
 	memset(&(mAddrIN.sin_zero), '\0', 8);
 
-	// bind socket to port
-	if (bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1)
+	if (bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1) // bind socket to port
 		return -1;
 
 	return sock;
 }
 
-int cAsyncConn::ListenSock(int sock)
+int cAsyncConn::ListenSock(int sock, const unsigned int blog)
 {
-	if(sock < 0)
+	if (sock < 0)
 		return -1;
-	if(listen(sock, 100) == -1) {
+
+	if (listen(sock, blog) == -1) { // note: this is backlog
 		vhErr(0) << "Error listening" << endl;
 		return -1;
 	}
+
 	return sock;
 }
 
 tSocket cAsyncConn::NonBlockSock(int sock)
 {
-	if(sock < 0)
+	if (sock < 0)
 		return -1;
-//#if !defined _WIN32
-	int flags;
-	if((flags = fcntl(sock, F_GETFL, 0)) < 0)
-		return INVALID_SOCKET;
-	if( fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0 )
-		return INVALID_SOCKET;
-/*
-#else
-	unsigned long one = 1;
-	if(SOCKET_ERROR == ioctlsocket(sock, FIONBIO, &one))
-		return INVALID_SOCKET;
-#endif
-*/
+
+	//#if !defined _WIN32
+		int flags;
+
+		if ((flags = fcntl(sock, F_GETFL, 0)) < 0)
+			return INVALID_SOCKET;
+
+		if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
+			return INVALID_SOCKET;
+	/*
+	#else
+		unsigned long one = 1;
+
+		if (SOCKET_ERROR == ioctlsocket(sock, FIONBIO, &one))
+			return INVALID_SOCKET;
+	#endif
+	*/
+
 	return sock;
 }
 
-int cAsyncConn::ListenOnPort(int port, const char *address/*, bool udp*/)
+int cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int blog/*, bool udp*/)
 {
-	if(mSockDesc)
+	if (mSockDesc)
 		return -1;
+
 	mSockDesc = CreateSock(/*udp*/);
-	mSockDesc = BindSocket(mSockDesc,port,address);
-	//if(!udp) {
-	    mSockDesc = ListenSock(mSockDesc);
+	mSockDesc = BindSocket(mSockDesc, port, address);
+
+	//if (!udp) {
+	    mSockDesc = ListenSock(mSockDesc, blog);
 	    mSockDesc = NonBlockSock(mSockDesc);
 	//}
+
 	ok = mSockDesc > 0;
 	return mSockDesc;
 }
 
-tSocket cAsyncConn::AcceptSock()
+tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int tries)
 {
 	socklen_t namelen;
 	sockoptval_t yes = 1;
-	int i=0;
-	//#if ! defined _WIN32
-	struct sockaddr_in client;
+	unsigned int i = 0;
+
+	//#if !defined _WIN32
+		struct sockaddr_in client;
 	/*
 	#else
-	struct sockaddr client;
+		struct sockaddr client;
 	#endif
 	*/
 
-
-	/* Get a socket for the connected user.  */
-	namelen = sizeof(client);
+	namelen = sizeof(client); // get a socket for the connected user
 	memset(&client, 0, namelen);
 
-	//#if ! defined _WIN32
-		tSocket socknum = ::accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+	//#if !defined _WIN32
+		tSocket socknum = ::accept(mSockDesc, (struct sockaddr*)&client, &namelen);
 	/*
 	#else
-		tSocket socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+		tSocket socknum = accept(mSockDesc, (struct sockaddr*)&client, &namelen);
 	#endif
 	*/
 
-	while(( socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < 10)) {
-		//#if ! defined _WIN32
-		socknum = ::accept(mSockDesc, (struct sockaddr *)&client, (socklen_t*)&namelen);
+	while ((socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < tries)) {
+		//#if !defined _WIN32
+			socknum = ::accept(mSockDesc, (struct sockaddr*)&client, (socklen_t*)&namelen);
 		/*
 		#else
-   		socknum = accept(mSockDesc, (struct sockaddr *)&client, &namelen);
+			socknum = accept(mSockDesc, (struct sockaddr*)&client, &namelen);
 		#endif
 		*/
 
-		//#if ! defined _WIN32
-		::usleep(50);
+		//#if !defined _WIN32
+			::usleep(sleep);
 		/*
 		#else
-		::Sleep(1);
+			::Sleep(1);
 		#endif
 		*/
 	}
 
-	if(socknum == INVALID_SOCKET) {
+	if (socknum == INVALID_SOCKET) {
 		/*
 		#ifdef _WIN32
-		vhErr(1) << WSAGetLastError() << "  " << sizeof(fd_set) << endl;
+			vhErr(1) << WSAGetLastError() << "  " << sizeof(fd_set) << endl;
 		#endif
 		*/
+
 		return INVALID_SOCKET;
 	}
-	if(Log(3))
-		LogStream() << "Accepted Socket " << socknum << endl;
+
+	if (Log(3))
+		LogStream() << "Accepted socket: " << socknum << endl;
+
 	sSocketCounter++;
 
-//#ifndef _WIN32
-	if(setsockopt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(int)) == SOCKET_ERROR) {
+	//#ifndef _WIN32
+	if (setsockopt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(int)) == SOCKET_ERROR) {
 		TEMP_FAILURE_RETRY(closesocket(socknum));
-		if(errno != EINTR) {
-			sSocketCounter --;
+
+		if (errno != EINTR) {
+			sSocketCounter--;
+
 			if (Log(3))
 				LogStream() << "Closing socket " << socknum << endl;
-		} else if(ErrLog(1))
+
+		} else if (ErrLog(1)) {
 			LogStream() << "Socket not closed" << endl;
+		}
+
 		return INVALID_SOCKET;
 	}
-//#endif
-	if((socknum = NonBlockSock(socknum)) == INVALID_SOCKET)
+	//#endif
+
+	if ((socknum = NonBlockSock(socknum)) == INVALID_SOCKET)
 		return INVALID_SOCKET;
 
 	return socknum;
 }
 
-cConnFactory * cAsyncConn::GetAcceptingFactory()
+cConnFactory* cAsyncConn::GetAcceptingFactory()
 {
-	if(this->mxAcceptingFactory)
+	if (this->mxAcceptingFactory)
 		return mxAcceptingFactory;
-	if(mxServer && mxServer->mFactory)
+
+	if (mxServer && mxServer->mFactory)
 		return mxServer->mFactory;
+
 	return NULL;
 }
 
-cAsyncConn * cAsyncConn::Accept()
+cAsyncConn* cAsyncConn::Accept(const unsigned int sleep, const unsigned int tries)
 {
 	tSocket sd;
 	cConnFactory *AcceptingFactory = NULL;
 	cAsyncConn *new_conn = NULL;
-	sd = AcceptSock();
+	sd = AcceptSock(sleep, tries);
 
 	if (sd == INVALID_SOCKET)
 		return NULL;
@@ -742,10 +770,12 @@ cAsyncConn * cAsyncConn::Accept()
 		mTimeLastIOAction.Get();
 
 	AcceptingFactory = this->GetAcceptingFactory();
-	if (AcceptingFactory != NULL)
+
+	if (AcceptingFactory)
 		new_conn = AcceptingFactory->CreateConn(sd);
-	if(!new_conn)
-		throw "can't create connection";
+
+	if (!new_conn)
+		throw "Unable to create connection";
 
 	return new_conn;
 }
