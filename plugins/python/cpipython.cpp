@@ -377,14 +377,13 @@ int cpiPython::SplitMyINFO(const char *msg, char **nick, char **desc,
 w_Targs *cpiPython::SQL(int id, w_Targs *args)  // (char *query)
 {
 	const char *query;
-	string q;
 	long limit;
 	if (!lib_begin || !lib_pack || !lib_unpack || !lib_packprint || !mQuery) return NULL;
 	if (!lib_unpack(args, "sl", &query, &limit)) return NULL;
 	if (!query) return NULL;
 	if (limit < 1) limit = 100;
 	log4("PY: SQL   query: %s\n", query);
-	q = query;
+	string q(query);
 	mQuery->OStream() << q;
 	if (mQuery->Query() < 0) {
 		mQuery->Clear();

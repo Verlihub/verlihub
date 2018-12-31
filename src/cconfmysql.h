@@ -128,8 +128,8 @@ public:
 	int EndQuery(nMySQL::cQuery &);
 	void AddPrimaryKey(const char*);
 	void WherePKey(ostream &os);
-	void AllFields(ostream &, bool DoF=true, bool DoV=false, bool IsAff = false, string joint = ", ");
-	void AllPKFields(ostream &, bool DoF=true, bool DoV=false, bool IsAff = false, string joint = ", ");
+	void AllFields(ostream &, bool DoF=true, bool DoV=false, bool IsAff = false, const string &joint = ", ");
+	void AllPKFields(ostream &, bool DoF=true, bool DoV=false, bool IsAff = false, const string &joint = ", ");
 	void SelectFields(ostream &);
 	void UpdateFields(ostream &os);
 	bool UpdatePKVar(const char* var_name, string &new_val);
