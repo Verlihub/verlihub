@@ -142,9 +142,6 @@ public:
 	*/
 	string mMyINFO;
 
-	// last extjson
-	string mExtJSON;
-
 	// users class
 	nEnums::tUserCl mClass;
 	// if the user was added to the list
@@ -273,7 +270,8 @@ public:
 	/* The class over which the users are able to see kick messages*/
 	int mHideKicksForClass;
 
-	protected: // Protected attributes
+	// last extjson
+	string mExtJSON;
 
 	public:
 	//long ShareEnthropy(const string &sharesize);

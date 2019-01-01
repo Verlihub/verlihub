@@ -342,6 +342,7 @@ void cDCConf::AddVars()
 	Add("adv_step_delay", mS.mStepDelay, 50); // note: this is milliseconds
 	Add("adv_no_conn_delay", mS.mNoConnDelay, 50); // note: this is microseconds
 	Add("adv_no_read_try", mS.mNoReadTry, 100);
+	Add("adv_no_read_delay", mS.mNoReadDelay, 5); // note: this is microseconds
 	Add("adv_conn_choose_timeout", mS.mChooseTimeOut, 10); // note: this is milliseconds
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);

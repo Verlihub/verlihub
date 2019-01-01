@@ -369,7 +369,7 @@ namespace nVerliHub {
 				 * @return A negative number if value is not retrived.
 				 * @see getsockopt
 				 */
-				int GetSockOpt(int optname, void *optval, int &optlen);
+				//int GetSockOpt(int optname, void *optval, int &optlen);
 
 				/**
 				 * Convert a given IP address in network byte order to a string.
@@ -425,7 +425,7 @@ namespace nVerliHub {
 				 * @see ReadLineLocal()
 				 * @return Number of read bytes
 				 */
-				int ReadAll(const unsigned int tries);
+				int ReadAll(const unsigned int tries, const unsigned int sleep);
 
 				/**
 				 * Read a line and store it in the internal line buffer.
