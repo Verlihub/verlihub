@@ -1010,12 +1010,13 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 		if (!(other->mFeatures & eSF_EXTJSON2)) // only those who support this
 			continue;
 
-		if (conn && conn->mpUser && (other->mpUser->mNickHash == conn->mpUser->mNickHash)) // skip self
-			continue;
-
 		if (other->mpUser->mExtJSON.empty()) // only those who actually have something
 			continue;
 
+		if (conn && conn->mpUser && (other->mpUser->mNickHash == conn->mpUser->mNickHash)) // skip self
+			continue;
+
+		dest.reserve(other->mpUser->mExtJSON.size() + 1);
 		dest.append(other->mpUser->mExtJSON);
 		dest.append(1, '|');
 		count++;
@@ -2195,7 +2196,7 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 	return tot;
 }
 
-unsigned int cServerDC::CntConnIP(const unsigned long ip)
+bool cServerDC::CntConnIP(const unsigned long ip, const unsigned int max)
 {
 	cUserCollection::iterator it;
 	unsigned int tot = 0;
@@ -2205,12 +2206,16 @@ unsigned int cServerDC::CntConnIP(const unsigned long ip)
 		conn = ((cUser*)(*it))->mxConn;
 
 		if (conn && conn->ok) {
-			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->IP2Num() == ip))
+			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->IP2Num() == ip)) {
 				tot++;
+
+				if (tot >= max)
+					return true;
+			}
 		}
 	}
 
-	return tot;
+	return false;
 }
 
 bool cServerDC::CheckUserClone(cConnDC *conn, string &clone) // todo: add config for zero share clones

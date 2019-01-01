@@ -239,8 +239,10 @@ bool cpiLua::CallAll(const char *fncname, const char *args[], cConnDC *conn)
 		tvLuaInterpreter::iterator it;
 
 		for (it = mLua.begin(); it != mLua.end(); ++it) {
-			if (!(*it)->CallFunction(fncname, args, conn))
-				ret = false;
+			if (*it) {
+				if (!(*it)->CallFunction(fncname, args, conn))
+					ret = false;
+			}
 		}
 	}
 

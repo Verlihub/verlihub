@@ -622,10 +622,10 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		if (mS->mUserCount[conn->mGeoZone] >= limit_cc) {
 			string zonestr, zonedat;
 
-			if (conn->mGeoZone >= 1 && conn->mGeoZone <= 3) { // country zones
+			if ((conn->mGeoZone >= 1) && (conn->mGeoZone <= 3)) { // country zones
 				zonestr = _("User limit in country zone %s exceeded at %d/%d online users.");
 				zonedat = mS->mC.cc_zone[conn->mGeoZone - 1];
-			} else if (conn->mGeoZone >= 4 && conn->mGeoZone <= 6) { // ip range zones
+			} else if ((conn->mGeoZone >= 4) && (conn->mGeoZone <= 6)) { // ip range zones
 				zonestr = _("User limit in IP zone %s exceeded at %d/%d online users.");
 
 				switch (conn->mGeoZone) {
@@ -679,16 +679,12 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		mS->mUserCount[conn->mGeoZone]++;
 	}
 
-	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER)) { // user limit from single ip
-		const unsigned int tot = mS->CntConnIP(conn->IP2Num());
-
-		if (tot >= mS->mC.max_users_from_ip) {
-			os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), tot);
-			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
-			Create_HubIsFull(omsg, true); // must be sent after chat message, reserve for pipe
-			conn->Send(omsg, true);
-			return -1;
-		}
+	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER) && mS->CntConnIP(conn->IP2Num(), mS->mC.max_users_from_ip)) { // user limit from single ip
+		os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), mS->mC.max_users_from_ip);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+		Create_HubIsFull(omsg, true); // must be sent after chat message, reserve for pipe
+		conn->Send(omsg, true);
+		return -1;
 	}
 
 	if (mS->mC.hub_name.size()) { // send hub name without topic
@@ -1605,7 +1601,7 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		if (mS->mCallBacks.mOnParsedMsgExtJSON.CallAll(conn, msg))
 		#endif
 		{
-			if (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0) {
+			if (conn->mpUser->mExtJSON.empty() || (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0)) {
 				string _str;
 				_str.reserve(msg->mStr.size() + 1); // first use, reserve for pipe
 				_str = msg->mStr;
@@ -3898,8 +3894,6 @@ int cDCProto::NickList(cConnDC *conn)
 		}
 
 		if (!mS->mC.disable_extjson && (conn->mFeatures & eSF_EXTJSON2)) { // extjson
-			_str.clear();
-
 			if (mS->CollectExtJSON(_str, conn))
 				conn->Send(_str, false); // no pipe, its already added by collector
 		}

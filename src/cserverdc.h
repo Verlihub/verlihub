@@ -580,7 +580,7 @@ class cServerDC : public cAsyncSocketServer
 		unsigned int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact = true);
 
 		// return number of users with class <= 1 with specific ip address
-		unsigned int CntConnIP(const unsigned long ip);
+		bool CntConnIP(const unsigned long ip, const unsigned int max);
 
 		// clone detection
 		bool CheckUserClone(cConnDC *conn, string &clone);

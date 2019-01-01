@@ -189,6 +189,7 @@ namespace nVerliHub {
 				unsigned int mStepDelay;
 				unsigned int mNoConnDelay;
 				unsigned int mNoReadTry;
+				unsigned int mNoReadDelay;
 				unsigned int mChooseTimeOut;
 				unsigned int mAcceptNum;
 				unsigned int mAcceptTry;
