@@ -810,6 +810,19 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			return 0;
 		}
 
+		conn->mpUser->mClass = tUserCl(conn->mRegInfo->getClass());
+
+		if ((conn->mpUser->mClass >= mS->mC.opchat_class) && !mS->mOpchatList.ContainsHash(conn->mpUser->mNickHash)) // opchat list
+			mS->mOpchatList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+
+		if ((conn->mpUser->mClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist
+			mS->mOpList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+			string str;
+			mS->mP.Create_OpList(str, conn->mpUser->mNick, true); // send short oplist, reserve for pipe
+			mS->mUserList.SendToAll(str, mS->mC.delayed_myinfo, true);
+		}
+
+		mS->SetUserRegInfo(conn, conn->mpUser->mNick); // update registration information in real time aswell
 		os << _("Password updated successfully.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
@@ -838,7 +851,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 		}
 
 	} else { // wrong password
-		if (conn->mRegInfo && (conn->mRegInfo->getClass() > 0)) { // user is regged
+		if (conn->mRegInfo && (tUserCl(conn->mRegInfo->getClass()) != eUC_NORMUSER)) { // user is regged
 			omsg = _("Incorrect password");
 
 			if (mS->mC.wrongpassword_report)
