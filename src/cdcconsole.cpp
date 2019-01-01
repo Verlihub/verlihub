@@ -1033,6 +1033,18 @@ int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
+	conn->mpUser->mClass = tUserCl(ui.getClass());
+
+	if ((conn->mpUser->mClass >= mOwner->mC.opchat_class) && !mOwner->mOpchatList.ContainsHash(conn->mpUser->mNickHash)) // opchat list
+		mOwner->mOpchatList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+
+	if ((conn->mpUser->mClass >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist
+		mOwner->mOpList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+		mOwner->mP.Create_OpList(str, conn->mpUser->mNick, true); // send short oplist, reserve for pipe
+		mOwner->mUserList.SendToAll(str, mOwner->mC.delayed_myinfo, true);
+	}
+
+	mOwner->SetUserRegInfo(conn, conn->mpUser->mNick); // update registration information in real time aswell
 	ostr << _("Password updated successfully.");
 	mOwner->DCPrivateHS(ostr.str(), conn);
 	mOwner->DCPublicHS(ostr.str(), conn);
