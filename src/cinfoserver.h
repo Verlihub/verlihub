@@ -103,7 +103,7 @@ class cInfoServer: public nConfig::cConfigBase
 		tHubURLInfoList mHubURLInfoList;
 
 		// helper functions
-		int ParseMemSizeLine(char *line);
+		unsigned __int64 ParseMemSizeLine(char *line);
 };
 
 }; // namespace nVerliHub

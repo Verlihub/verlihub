@@ -26,6 +26,7 @@
 #include "cconndc.h"
 #include "cfreqlimiter.h"
 #include "cpenaltylist.h"
+#include "stringutils.h"
 #include "ctime.h"
 
 using namespace std;
@@ -122,7 +123,20 @@ class cUserBase: public cObj
 {
 public:
 	cUserBase(const string &nick = "");
-	virtual ~cUserBase() {}
+
+	virtual ~cUserBase()
+	{
+		if (mNick.size()) {
+			mNick.clear();
+			ShrinkStringToFit(mNick);
+		}
+
+		if (mMyINFO.size()) {
+			mMyINFO.clear();
+			ShrinkStringToFit(mMyINFO);
+		}
+	}
+
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
@@ -163,7 +177,12 @@ public:
 	cUser(const string &nick = "");
 
 	virtual ~cUser()
-	{}
+	{
+		if (mExtJSON.size()) {
+			mExtJSON.clear();
+			ShrinkStringToFit(mExtJSON);
+		}
+	}
 
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
