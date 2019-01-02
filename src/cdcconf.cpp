@@ -140,10 +140,6 @@ void cDCConf::AddVars()
 	// End nicklist configuration
 
 	// protocol commands length
-	Add("max_outbuf_size", max_outbuf_size, 1048576ul);
-	Add("max_outfill_size", max_outfill_size, 786432ul);
-	Add("max_unblock_size", max_unblock_size, 524288ul);
-	Add("max_message_size", mS.mMaxLineLength, 10240ul);
 	Add("max_len_supports", max_len_supports, 512);
 	Add("max_len_version", max_len_version, 64);
 	Add("max_len_myinfo", max_len_myinfo, 512);
@@ -347,6 +343,10 @@ void cDCConf::AddVars()
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
 	Add("adv_max_upload_kbps", max_upload_kbps, 128000.);
+	Add("adv_max_outbuf_size", max_outbuf_size, 1048576ul);
+	Add("adv_max_outfill_size", max_outfill_size, 786432ul);
+	Add("adv_max_unblock_size", max_unblock_size, 524288ul);
+	Add("adv_max_message_size", mS.mMaxLineLength, 10240ul);
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache", use_reglist_cache, true);
 	Add("use_penlist_cache", use_penlist_cache, true);

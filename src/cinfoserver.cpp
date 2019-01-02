@@ -337,7 +337,7 @@ void cInfoServer::SystemInfo(ostream &os)
 		size_val *= (unsigned __int64)serverInfo.mem_unit;
 		os << " [*] " << autosprintf(_("Free swap: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
 
-		int size_vm = 0, size_res = 0; // self memory sizes and cpu usage
+		unsigned __int64 size_vm = 0, size_res = 0; // self memory sizes and cpu usage
 		double perc_cpu;
 		FILE *file = fopen("/proc/self/status", "r");
 
@@ -392,10 +392,10 @@ void cInfoServer::SystemInfo(ostream &os)
 	#endif
 }
 
-int cInfoServer::ParseMemSizeLine(char *line)
+unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
 {
-	int len = strlen(line);
-	const char* pos = line;
+	unsigned __int64 len = strlen(line);
+	const char *pos = line;
 
 	while (((*pos) < '0') || ((*pos) > '9'))
 		pos++;

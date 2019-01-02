@@ -121,7 +121,9 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 
 		addr_in = (struct sockaddr_in*)&saddr;
 		mIP = addr_in->sin_addr.s_addr; // copy ip
-		mAddrIP = inet_ntoa(addr_in->sin_addr); // ip address
+		char *temp = inet_ntoa(addr_in->sin_addr);
+		mAddrIP.reserve(strlen(temp));
+		mAddrIP = temp; // ip address
 
 		if (mxServer && mxServer->mUseDNS) // host name
 			DNSLookup();
@@ -130,7 +132,9 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 
 		if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
 			addr_in = (struct sockaddr_in*)&saddr;
-			mServAddr = inet_ntoa(addr_in->sin_addr);
+			temp = inet_ntoa(addr_in->sin_addr);
+			mServAddr.reserve(strlen(temp));
+			mServAddr = temp;
 			mServPort = ntohs(addr_in->sin_port);
 		} else if (Log(2)) {
 			LogStream() << "Error getting socket name" << endl;
@@ -183,6 +187,12 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/):
 
 cAsyncConn::~cAsyncConn()
 {
+	mBufSend.clear();
+	ShrinkStringToFit(mBufSend);
+	mBufFlush.clear();
+	ShrinkStringToFit(mBufFlush);
+	ClearLine(); // note: not sure about this line
+
 	if (mpMsgParser)
 		this->DeleteParser(mpMsgParser);
 
@@ -283,7 +293,7 @@ string* cAsyncConn::GetLine()
 
 void cAsyncConn::CloseNice(int msec)
 {
-	OnCloseNice();
+	OnCloseNice(); // must be first
 	mWritable = false;
 
 	if ((msec <= 0) || (!GetFlushSize() && !GetBufferSize())) {
@@ -1015,8 +1025,10 @@ bool cAsyncConn::DNSLookup()
 
 	struct hostent *hp;
 
-	if (hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET))
+	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET))) {
+		mAddrHost.reserve(strlen(hp->h_name));
 		mAddrHost = hp->h_name;
+	}
 
 	return (hp != NULL);
 }
