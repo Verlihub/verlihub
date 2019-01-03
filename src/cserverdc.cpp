@@ -1056,7 +1056,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		return -1;
 	}
 
-	if (mBanList->IsIPTempBanned(conn->AddrIP())) { // check temporary ip ban
+	if (mBanList->IsIPTempBanned(conn->IP2Num())) { // check temporary ip ban
 		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(conn->IP2Num());
 
 		if (tban && (tban->mUntil > mTime.Sec())) {
@@ -1076,8 +1076,9 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 			}
 
 			return -1;
-		} else // ban expired, do nothing
-			mBanList->DelIPTempBan(conn->AddrIP());
+		} else { // ban expired, do nothing
+			mBanList->DelIPTempBan(conn->IP2Num());
+		}
 	}
 
 	conn->SetTimeOut(eTO_KEY, mC.timeout_length[eTO_KEY], mTime);

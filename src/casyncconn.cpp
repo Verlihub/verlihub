@@ -25,6 +25,7 @@
 #include <ostream>
 #include "casyncsocketserver.h"
 #include "cserverdc.h"
+#include "cbanlist.h"
 
 /*
 #if defined _WIN32
@@ -91,6 +92,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
 	mIP(0),
+	mNumIP(0),
 	mAddrPort(0),
 	mServPort(0),
 	mMaxBuffer(MAX_SEND_SIZE),
@@ -122,6 +124,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 		char *temp = inet_ntoa(addr_in->sin_addr);
 		mAddrIP.reserve(strlen(temp) + 1);
 		mAddrIP = temp; // ip address
+		mNumIP = cBanList::Ip2Num(mAddrIP);
 
 		if (mxServer && mxServer->mUseDNS) // host name
 			DNSLookup();
@@ -163,6 +166,7 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/):
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
 	mIP(0),
+	mNumIP(0),
 	mAddrPort(port),
 	mServPort(0),
 	mMaxBuffer(0),

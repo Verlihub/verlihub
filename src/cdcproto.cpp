@@ -860,7 +860,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			if (mS->mC.wrongpass_message.size())
 				omsg = mS->mC.wrongpass_message;
 
-			mS->mBanList->AddIPTempBan(conn->AddrIP(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
+			mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
 
 			if (conn->Log(2))
 				conn->LogStream() << omsg << endl;

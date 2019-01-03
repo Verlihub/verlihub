@@ -498,10 +498,17 @@ unsigned long cBanList::Ip2Num(const string &ip)
 	char c;
 	istringstream is(ip);
 	unsigned long mask = 0;
-	is >> i >> c; mask += i & 0xFF; mask <<= 8;
-	is >> i >> c; mask += i & 0xFF; mask <<= 8;
-	is >> i >> c; mask += i & 0xFF; mask <<= 8;
-	is >> i     ; mask += i & 0xFF;
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+	is >> i >> c;
+	mask += i & 0xFF;
+	mask <<= 8;
+	is >> i;
+	mask += i & 0xFF;
 	return mask;
 	*/
 }
