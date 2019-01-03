@@ -556,18 +556,18 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	}
 
 	if ((action >= 3) && serv->mC.proto_flood_tban_time) { // add temporary ban
-		if (mpUser) { // we have user, create full ban
-			cBan pfban(serv);
-			cKick pfkick;
-			pfkick.mOp = serv->mC.hub_security;
-			pfkick.mIP = AddrIP();
-			pfkick.mNick = mpUser->mNick;
-			pfkick.mTime = serv->mTime.Sec();
-			pfkick.mReason = to_user.str();
-			serv->mBanList->NewBan(pfban, pfkick, serv->mC.proto_flood_tban_time, eBF_NICKIP);
-			serv->mBanList->AddBan(pfban);
-		} else // user missing, create short ban
-			serv->mBanList->AddIPTempBan(AddrIP(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, _("Protocol flood"), eBT_FLOOD);
+		serv->mBanList->AddIPTempBan(AddrIP(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
+		/*
+		cBan pfban(serv);
+		cKick pfkick;
+		pfkick.mOp = serv->mC.hub_security;
+		pfkick.mIP = AddrIP();
+		pfkick.mNick = mpUser->mNick;
+		pfkick.mTime = serv->mTime.Sec();
+		pfkick.mReason = to_user.str();
+		serv->mBanList->NewBan(pfban, pfkick, serv->mC.proto_flood_tban_time, eBF_NICKIP);
+		serv->mBanList->AddBan(pfban);
+		*/
 	}
 
 	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_LOGIN_ERR);

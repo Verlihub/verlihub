@@ -21,15 +21,17 @@
 #include "cinfoserver.h"
 #include "stringutils.h"
 #include "cserverdc.h"
+#include "casyncconn.h"
+#include "cbanlist.h"
 
 #if defined HAVE_LINUX
-#include <unistd.h>
-#include <sys/utsname.h>
-#include <sys/sysinfo.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/times.h>
-#include <sys/vtimes.h>
+	#include <unistd.h>
+	#include <sys/utsname.h>
+	#include <sys/sysinfo.h>
+	#include <sys/time.h>
+	#include <sys/resource.h>
+	#include <sys/times.h>
+	#include <sys/vtimes.h>
 #endif
 
 #include "i18n.h"
@@ -71,6 +73,9 @@ cInfoServer::cInfoServer()
 		}
 	#endif
 }
+
+cInfoServer::~cInfoServer()
+{}
 
 void cInfoServer::PortInfo(ostream &os)
 {
@@ -253,33 +258,37 @@ void cInfoServer::BufferInfo(ostream &os)
 
 	os << _("User buffer information") << ":\r\n";
 	os << "\r\n";
+	os << " [*] " << autosprintf(_("Socket counter: %lu"), cAsyncConn::sSocketCounter) << "\r\n";
+	os << " [*] " << autosprintf(_("Connection list size: %d"), mServer->GetConnListSize()) << "\r\n";
+	os << " [*] " << autosprintf(_("Connection chooser list size: %d"), mServer->GetConnChooserSize()) << "\r\n";
+	os << "\r\n";
 	os << " [*] " << autosprintf(_("User upload buffers: %d / %s / %s"), total_bufs, convertByte(total_buf_size).c_str(), convertByte(total_buf_cap).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User upload caches: %d / %s / %s"), total_bufs, convertByte(total_flush_size).c_str(), convertByte(total_flush_cap).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("User list size: %d"), mServer->mUserList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("User list size: %d / %d"), mServer->mUserList.Size(), mServer->mUserList.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list upload cache: %s / %s"), convertByte(mServer->mUserList.GetCacheSize()).c_str(), convertByte(mServer->mUserList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list nick list: %s / %s"), convertByte(mServer->mUserList.GetNickListSize()).c_str(), convertByte(mServer->mUserList.GetNickListCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list MyINFO list: %s / %s"), convertByte(mServer->mUserList.GetInfoListSize()).c_str(), convertByte(mServer->mUserList.GetInfoListCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list IP list: %s / %s"), convertByte(mServer->mUserList.GetIPListSize()).c_str(), convertByte(mServer->mUserList.GetIPListCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Active user list size: %d"), mServer->mActiveUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Active user list size: %d / %d"), mServer->mActiveUsers.Size(), mServer->mActiveUsers.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("Active user list upload cache: %s / %s"), convertByte(mServer->mActiveUsers.GetCacheSize()).c_str(), convertByte(mServer->mActiveUsers.GetCacheCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Passive user list size: %d"), mServer->mPassiveUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Passive user list size: %d / %d"), mServer->mPassiveUsers.Size(), mServer->mPassiveUsers.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive user list upload cache: %s / %s"), convertByte(mServer->mPassiveUsers.GetCacheSize()).c_str(), convertByte(mServer->mPassiveUsers.GetCacheCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Chat user list size: %d"), mServer->mChatUsers.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Chat user list size: %d / %d"), mServer->mChatUsers.Size(), mServer->mChatUsers.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("Chat user list upload cache: %s / %s"), convertByte(mServer->mChatUsers.GetCacheSize()).c_str(), convertByte(mServer->mChatUsers.GetCacheCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Operator list size: %d"), mServer->mOpList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Operator list size: %d / %d"), mServer->mOpList.Size(), mServer->mOpList.Capacity()) << "\r\n";
 	//os << " [*] " << autosprintf(_("Operator list upload cache: %s / %s"), convertByte(mServer->mOpList.GetCacheSize()).c_str(), convertByte(mServer->mOpList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator list nick list: %s / %s"), convertByte(mServer->mOpList.GetNickListSize()).c_str(), convertByte(mServer->mOpList.GetNickListCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Operator chat list size: %d"), mServer->mOpchatList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Operator chat list size: %d / %d"), mServer->mOpchatList.Size(), mServer->mOpchatList.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator chat list upload cache: %s / %s"), convertByte(mServer->mOpchatList.GetCacheSize()).c_str(), convertByte(mServer->mOpchatList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator chat list nick list: %s / %s"), convertByte(mServer->mOpchatList.GetNickListSize()).c_str(), convertByte(mServer->mOpchatList.GetNickListCapacity()).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Bot list size: %d"), mServer->mRobotList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Bot list size: %d / %d"), mServer->mRobotList.Size(), mServer->mRobotList.Capacity()) << "\r\n";
 	//os << " [*] " << autosprintf(_("Bot list upload cache: %s / %s"), convertByte(mServer->mRobotList.GetCacheSize()).c_str(), convertByte(mServer->mRobotList.GetCacheCapacity()).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Bot list nick list: %s / %s"), convertByte(mServer->mRobotList.GetNickListSize()).c_str(), convertByte(mServer->mRobotList.GetNickListCapacity()).c_str()) << "\r\n";
 }
@@ -482,10 +491,10 @@ void cInfoServer::Output(ostream &os, int Class)
 	}
 
 	total += mServer->mUploadZone[0].GetMean(mServer->mTime); // print zone 0
-	os << " [*] " << autosprintf(_("Other users: %d of %d [%s]"), mServer->mUserCount[0], mServer->mC.max_users[0], convertByte(total, true).c_str()) << "\r\n";
-}
+	os << " [*] " << autosprintf(_("Other users: %d of %d [%s]"), mServer->mUserCount[0], mServer->mC.max_users[0], convertByte(total, true).c_str()) << "\r\n\r\n";
 
-cInfoServer::~cInfoServer()
-{}
+	os << " [*] " << autosprintf(_("Temporary nick ban list size: %d / %d"), mServer->mBanList->GetTempNickListSize(), mServer->mBanList->GetTempNickListCapacity()) << "\r\n";
+	os << " [*] " << autosprintf(_("Temporary IP ban list size: %d / %d"), mServer->mBanList->GetTempIPListSize(), mServer->mBanList->GetTempIPListCapacity()) << "\r\n";
+}
 
 }; // namespace nVerliHub

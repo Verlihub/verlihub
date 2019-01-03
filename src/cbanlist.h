@@ -153,6 +153,26 @@ namespace nVerliHub {
 				tTempNickIPBans mTempNickBanlist;
 				tTempNickIPBans mTempIPBanlist;
 
+				unsigned int GetTempNickListSize() const
+				{
+					return mTempNickBanlist.Size();
+				}
+
+				unsigned int GetTempNickListCapacity() const
+				{
+					return mTempNickBanlist.Capacity();
+				}
+
+				unsigned int GetTempIPListSize() const
+				{
+					return mTempIPBanlist.Size();
+				}
+
+				unsigned int GetTempIPListCapacity() const
+				{
+					return mTempIPBanlist.Capacity();
+				}
+
 				/**
 				 * Extract the level domain substring from the given host.
 				 * @param hostname The hostname.
