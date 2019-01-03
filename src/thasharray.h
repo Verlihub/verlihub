@@ -723,6 +723,11 @@ namespace nVerliHub {
 					return mSize;
 				}
 
+				unsigned Capacity() const
+				{
+					return mData->mCapacity;
+				}
+
 				/// Define a cointer of pointer of sItem instance.
 				typedef tUniqueHashArray<sItem *> tData;
 

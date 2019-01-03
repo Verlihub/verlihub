@@ -195,10 +195,10 @@ void cUserCollection::SendToAll(string &data, const bool cache, const bool pipe)
 	if (Log(4))
 		LogStream() << "Stop SendToAll" << endl;
 
-	if (mSendAllCache.size()) {
+	if (mSendAllCache.size())
 		mSendAllCache.clear();
-		ShrinkStringToFit(mSendAllCache);
-	}
+
+	ShrinkStringToFit(mSendAllCache);
 
 	if (pipe)
 		data.erase(data.size() - 1, 1);
@@ -221,10 +221,10 @@ void cUserCollection::SendToAllWithClass(string &data, const int min_class, cons
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithClass" << endl;
 
-	if (mSendAllCache.size()) {
+	if (mSendAllCache.size())
 		mSendAllCache.clear();
-		ShrinkStringToFit(mSendAllCache);
-	}
+
+	ShrinkStringToFit(mSendAllCache);
 
 	if (pipe)
 		data.erase(data.size() - 1, 1);
@@ -242,10 +242,10 @@ void cUserCollection::SendToAllWithFeature(string &data, const unsigned feature,
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithFeature" << endl;
 
-	if (mSendAllCache.size()) {
+	if (mSendAllCache.size())
 		mSendAllCache.clear();
-		ShrinkStringToFit(mSendAllCache);
-	}
+
+	ShrinkStringToFit(mSendAllCache);
 
 	if (pipe)
 		data.erase(data.size() - 1, 1);
@@ -263,10 +263,10 @@ void cUserCollection::SendToAllWithClassFeature(string &data, const int min_clas
 	if (Log(4))
 		LogStream() << "Stop SendToAllWithClassFeature" << endl;
 
-	if (mSendAllCache.size()) {
+	if (mSendAllCache.size())
 		mSendAllCache.clear();
-		ShrinkStringToFit(mSendAllCache);
-	}
+
+	ShrinkStringToFit(mSendAllCache);
 
 	if (pipe)
 		data.erase(data.size() - 1, 1);

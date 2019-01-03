@@ -206,6 +206,16 @@ namespace nVerliHub {
 				/// Measure the frequency of the server.
 				nUtils::cMeanFrequency<unsigned ,21> mFrequency;
 
+				unsigned int GetConnListSize() const
+				{
+					return mConnList.size();
+				}
+
+				unsigned int GetConnChooserSize() const
+				{
+					return mConnChooser.mConnList.size();
+				}
+
 		protected:
 			/// Indicate if the main loop is running.
 			bool mbRun;

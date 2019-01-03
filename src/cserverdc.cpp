@@ -1067,6 +1067,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 					ConnCloseMsg(conn, os.str(), 1000, eCR_PASSWORD);
 					break;
 				case eBT_FLOOD:
+				//case eBT_CLONE:
 					ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 					break;
 				default:

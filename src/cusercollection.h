@@ -152,7 +152,9 @@ public:
 
 		virtual void Clear()
 		{
-			mList.clear();
+			if (mList.size())
+				mList.clear();
+
 			ShrinkStringToFit(mList);
 
 			if (mStart.size()) {
@@ -356,42 +358,42 @@ public:
 		mRemakeNextIPList = mKeepIPList;
 	}
 
-	size_t GetCacheSize()
+	unsigned int GetCacheSize() const
 	{
 		return mSendAllCache.size();
 	}
 
-	size_t GetCacheCapacity()
+	unsigned int GetCacheCapacity() const
 	{
 		return mSendAllCache.capacity();
 	}
 
-	size_t GetNickListSize()
+	unsigned int GetNickListSize() const
 	{
 		return mNickList.size();
 	}
 
-	size_t GetNickListCapacity()
+	unsigned int GetNickListCapacity() const
 	{
 		return mNickList.capacity();
 	}
 
-	size_t GetInfoListSize()
+	unsigned int GetInfoListSize() const
 	{
 		return mInfoList.size();
 	}
 
-	size_t GetInfoListCapacity()
+	unsigned int GetInfoListCapacity() const
 	{
 		return mInfoList.capacity();
 	}
 
-	size_t GetIPListSize()
+	unsigned int GetIPListSize() const
 	{
 		return mIPList.size();
 	}
 
-	size_t GetIPListCapacity()
+	unsigned int GetIPListCapacity() const
 	{
 		return mIPList.capacity();
 	}
