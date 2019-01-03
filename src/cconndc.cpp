@@ -556,7 +556,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	}
 
 	if ((action >= 3) && serv->mC.proto_flood_tban_time) { // add temporary ban
-		serv->mBanList->AddIPTempBan(AddrIP(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
+		serv->mBanList->AddIPTempBan(IP2Num(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
 		/*
 		cBan pfban(serv);
 		cKick pfkick;

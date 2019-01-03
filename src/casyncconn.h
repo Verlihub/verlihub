@@ -183,14 +183,14 @@ namespace nVerliHub {
 				 * Return the IP address.
 				 * @return The IP address.
 				 */
-				const string & AddrIP()
+				const string& AddrIP()
 				{
 					return mAddrIP;
 				}
 
 				unsigned long IP2Num() const // numerical ip address
 				{
-					return mIP;
+					return mNumIP;
 				}
 
 				/**
@@ -558,6 +558,7 @@ namespace nVerliHub {
 
 				/// Integer that represents the numeric value of the IP address of the connection.
 				unsigned long mIP;
+				unsigned long mNumIP;
 
 				/// Port of the connection.
 				unsigned int mAddrPort;
