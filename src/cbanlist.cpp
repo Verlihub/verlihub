@@ -18,6 +18,12 @@
 	of the GNU General Public License.
 */
 
+/*
+#include <arpa/inet.h> // inet_pton
+#include <netinet/in.h> // sockaddr_in
+#include <sys/socket.h> // AF_INET
+*/
+
 #include "cconndc.h"
 #include "cserverdc.h"
 #include "cbanlist.h"
@@ -29,6 +35,7 @@ namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
 	using namespace nSocket;
+
 	namespace nTables {
 
 cBanList::cBanList(cServerDC *s):
@@ -66,7 +73,9 @@ cBanList::~cBanList()
 	RemoveOldShortTempBans(0);
 }
 
-cUnBanList::cUnBanList(cServerDC* s) : cBanList(s), mModelUn(s)
+cUnBanList::cUnBanList(cServerDC* s):
+	cBanList(s),
+	mModelUn(s)
 {
 	mMySQLTable.mName = "unbanlist";
 	SetBaseTo(&mModelUn);
@@ -77,7 +86,8 @@ cUnBanList::cUnBanList(cServerDC* s) : cBanList(s), mModelUn(s)
 	mMySQLTable.mExtra = "UNIQUE (ip, nick, date_unban)";
 }
 
-cUnBanList::~cUnBanList(){}
+cUnBanList::~cUnBanList()
+{}
 
 void cBanList::Cleanup()
 {
@@ -486,6 +496,15 @@ void cBanList::List(ostream &os, int count)
 
 unsigned long cBanList::Ip2Num(const string &ip)
 {
+	/*
+	struct sockaddr_in sa; // this returns different number
+
+	if (inet_pton(AF_INET, ip.c_str(), &(sa.sin_addr)) == 1)
+		return sa.sin_addr.s_addr;
+
+	return 0;
+	*/
+
 	unsigned long a = 0, b = 0, c = 0, d = 0;
 
 	if (sscanf(ip.c_str(), "%lu.%lu.%lu.%lu", &a, &b, &c, &d) == 4)
@@ -515,8 +534,20 @@ unsigned long cBanList::Ip2Num(const string &ip)
 
 void cBanList::Num2Ip(unsigned long mask, string &ip)
 {
+	/*
+	struct sockaddr_in sa; // this returns different number
+	char temp[INET_ADDRSTRLEN];
+	sa.sin_addr.s_addr = mask;
+
+	if (inet_ntop(AF_INET, &(sa.sin_addr), temp, INET_ADDRSTRLEN)) {
+		ip.clear();
+		ip.reserve(strlen(temp) + 1);
+		ip = temp;
+	}
+	*/
+
 	ostringstream os;
-	unsigned char *i = (unsigned char *)&mask;
+	unsigned char *i = (unsigned char*)&mask;
 	os << int(i[3]) << '.';
 	os << int(i[2]) << '.';
 	os << int(i[1]) << '.';
