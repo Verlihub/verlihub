@@ -47,9 +47,9 @@
 
 //#if !defined _WIN32
 	#include <arpa/inet.h>
-	#include <netinet/in.h> /* for sockaddr_in */
-	#include <sys/socket.h> /* for AF_INET */
-	#include <netdb.h> /* for gethostbyaddr */
+	#include <netinet/in.h> // sockaddr_in
+	#include <sys/socket.h> // AF_INET
+	#include <netdb.h> // gethostbyaddr
 //#endif
 
 #include <unistd.h>
@@ -102,48 +102,52 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 {
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		mMaxBuffer = serv->mC.max_outbuf_size;
+
+		if (serv)
+			mMaxBuffer = serv->mC.max_outbuf_size;
 	}
 
 	ClearLine();
+	memset(&mCloseAfter, 0, sizeof(mCloseAfter));
+	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 
 	if (mSockDesc) {
 		struct sockaddr saddr;
-		struct sockaddr_in *addr_in;
 		socklen_t addr_size = sizeof(saddr);
 
 		if (0 > getpeername(mSockDesc, &saddr, &addr_size)) {
 			if (Log(2))
-				LogStream() << "Error getting peer name, closing" << endl;
+				LogStream() << "Error getting peer name: " << mSockDesc << endl;
 
-			CloseNow();
+			CloseNow(); // note: this uses mCloseAfter
+
+		} else {
+			struct sockaddr_in *addr_in = (struct sockaddr_in*)&saddr;
+			mIP = addr_in->sin_addr.s_addr; // copy ip
+			char *temp = inet_ntoa(addr_in->sin_addr);
+			mAddrIP.reserve(strlen(temp) + 1);
+			mAddrIP = temp; // ip address
+			mNumIP = cBanList::Ip2Num(mAddrIP);
+
+			if (mxServer && mxServer->mUseDNS) // host name
+				DNSLookup();
+
+			mAddrPort = ntohs(addr_in->sin_port); // port number
+
+			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
+				addr_in = (struct sockaddr_in*)&saddr;
+				temp = inet_ntoa(addr_in->sin_addr);
+				mServAddr.reserve(strlen(temp) + 1);
+				mServAddr = temp;
+				mServPort = ntohs(addr_in->sin_port);
+			} else if (Log(2)) {
+				LogStream() << "Error getting socket name" << endl;
+			}
 		}
 
-		addr_in = (struct sockaddr_in*)&saddr;
-		mIP = addr_in->sin_addr.s_addr; // copy ip
-		char *temp = inet_ntoa(addr_in->sin_addr);
-		mAddrIP.reserve(strlen(temp) + 1);
-		mAddrIP = temp; // ip address
-		mNumIP = cBanList::Ip2Num(mAddrIP);
-
-		if (mxServer && mxServer->mUseDNS) // host name
-			DNSLookup();
-
-		mAddrPort = ntohs(addr_in->sin_port); // port number
-
-		if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
-			addr_in = (struct sockaddr_in*)&saddr;
-			temp = inet_ntoa(addr_in->sin_addr);
-			mServAddr.reserve(strlen(temp) + 1);
-			mServAddr = temp;
-			mServPort = ntohs(addr_in->sin_port);
-		} else if (Log(2)) {
-			LogStream() << "Error getting socket name" << endl;
-		}
+	} else {
+		CloseNow();
 	}
-
-	memset(&mCloseAfter, 0, sizeof(mCloseAfter));
-	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 }
 
 // connect to given host or ip on port
@@ -189,12 +193,6 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/):
 
 cAsyncConn::~cAsyncConn()
 {
-	mBufSend.clear();
-	ShrinkStringToFit(mBufSend);
-	mBufFlush.clear();
-	ShrinkStringToFit(mBufFlush);
-	ClearLine(); // note: not sure about this line
-
 	if (mpMsgParser)
 		this->DeleteParser(mpMsgParser);
 

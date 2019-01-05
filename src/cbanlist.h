@@ -72,8 +72,7 @@ namespace nVerliHub {
 					mUntil(until),
 					mReason(reason),
 					mType(bantype)
-				{
-				};
+				{}
 
 				long mUntil; // expiration time
 				string mReason; // reason
@@ -307,6 +306,7 @@ namespace nVerliHub {
 				 * @return Always zero.
 				 */
 				int UpdateBan(cBan &);
+
 			protected:
 				/// cBan instance.
 				/// This is the model of the table and
