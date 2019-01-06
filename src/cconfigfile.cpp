@@ -32,56 +32,76 @@ namespace nVerliHub {
 	* variable can be also outputed by the << operator
 */
 
-cConfigFile::cConfigFile(const string &file, bool load): mFile(file)
+cConfigFile::cConfigFile(const string &file, bool load):
+	mFile(file)
 {
-	if(load) Load();
+	if (load)
+		Load();
 }
 
-cConfigFile::~cConfigFile(){
-}
+cConfigFile::~cConfigFile()
+{}
 
-/** The config load function - from a file */
-int cConfigFile::Load()
+int cConfigFile::Load() // config load function from a file
 {
-	string name;
-	string str;
-	istringstream *ss;
-	cConfigItemBase *ci;
-	char ch;
-
 	ifstream is(mFile.c_str());
-	if(!is.is_open()) {
-		if(ErrLog(1))LogStream() << "Can't open file '" << mFile << "' for reading." << endl;
+
+	if (!is.is_open()) {
+		if (ErrLog(1))
+			LogStream() << "Unable to open configuration file: " << mFile << endl;
+
 		return 0;
 	}
 
-	while(!is.eof()) {
-		ch = ' ';
-		is >> name;
-		if(name[name.size()-1] != '=') {
-			is >> ch >> ws;
-			if(ch == ' ')
-				break;
+	string name;
+	string str;
+	istringstream *ss = NULL;
+	cConfigItemBase *ci;
+	char ch;
 
+	while (!is.eof()) {
+		is >> name;
+
+		if (name.empty())
+			continue;
+
+		ch = ' ';
+
+		if (name[name.size() - 1] != '=') {
+			is >> ch >> ws;
+
+			if (ch == ' ')
+				break;
 		} else {
-			ch='=';
-			name.assign(name,0,name.size()-1);
+			ch = '=';
+			name.assign(name, 0, name.size() - 1);
 		}
 
-		getline(is,str);
-		if(ch != '=') break;
-		if((ci = operator[](name))) {
+		getline(is, str);
+
+		if (ch != '=')
+			break;
+
+		if ((ci = operator[](name))) {
 			ss = new istringstream(str);
 			//ss->str(str);
-			ss->seekg(0,istream::beg);
+			ss->seekg(0, istream::beg);
 			(*ss) >> *ci;
 			delete ss;
 			ss = NULL;
+		} else {
+			if (ErrLog(3))
+				LogStream() << "Uknown configuration variable " << name << " in file: " << mFile << endl;
 		}
-		else
-			if(ErrLog(3)) LogStream() << "Uknown variable '" << name << "' in file '" << mFile << "', ignoring it" << endl;
 	}
+
 	is.close();
+
+	if (ss) {
+		delete ss;
+		ss = NULL;
+	}
+
 	return 0;
 }
 
