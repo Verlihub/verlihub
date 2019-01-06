@@ -58,8 +58,9 @@
 #include "ctime.h"
 #include "stringutils.h"
 
-//#if ! defined _WIN32
+//#if !defined _WIN32
 	#define sockoptval_t int
+
 	inline int closesocket(int s)
 	{
 		return ::close(s);
@@ -79,26 +80,32 @@ namespace nVerliHub {
 char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE + 1];
 unsigned long cAsyncConn::sSocketCounter = 0;
 
-cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connection to hub
+cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
 	//mIterator(0),
 	ok(desc > 0),
 	mWritable(true),
-	mSockDesc(desc),
 	mxServer(s),
 	mxMyFactory(NULL),
 	mxAcceptingFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
+	mSockDesc(desc),
+	mSeparator('|'),
+	mLineSize(0),
 	mIP(0),
 	mNumIP(0),
 	mAddrPort(0),
 	mServPort(0),
 	mMaxBuffer(MAX_SEND_SIZE),
+	mLineSizeMax(0),
 	mType(ct),
+	mxLine(NULL),
+	meLineStatus(AC_LS_NO_LINE),
 	mBufEnd(0),
-	mBufReadPos(0)
+	mBufReadPos(0),
+	mCloseAfter(0, 0)
 {
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
@@ -107,8 +114,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 			mMaxBuffer = serv->mC.max_outbuf_size;
 	}
 
-	ClearLine();
-	memset(&mCloseAfter, 0, sizeof(mCloseAfter));
 	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 
 	if (mSockDesc) {
@@ -150,13 +155,17 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // connec
 	}
 }
 
-// connect to given host or ip on port
-cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/):
+cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing connection
 	cObj("cAsyncConn"),
 	//mIterator(0),
 	mZLibFlag(false),
 	ok(false),
 	mWritable(true),
+	mxServer(NULL),
+	mxMyFactory(NULL),
+	mxAcceptingFactory(NULL),
+	mxProtocol(NULL),
+	mpMsgParser(NULL),
 //#if !defined _WIN32
 	mSockDesc(-1),
 /*
@@ -164,23 +173,21 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/):
 	mSockDesc(0),
 #endif
 */
-	mxServer(NULL),
-	mxMyFactory(NULL),
-	mxAcceptingFactory(NULL),
-	mxProtocol(NULL),
-	mpMsgParser(NULL),
+	mSeparator('|'),
+	mLineSize(0),
 	mIP(0),
 	mNumIP(0),
 	mAddrPort(port),
 	mServPort(0),
 	mMaxBuffer(0),
+	mLineSizeMax(0),
 	mType(eCT_SERVER),
+	mxLine(NULL),
+	meLineStatus(AC_LS_NO_LINE),
 	mBufEnd(0),
 	mBufReadPos(0),
 	mCloseAfter(0, 0)
 {
-	ClearLine();
-
 	/*
 	if (udp) {
 		mType = eCT_SERVERUDP;
@@ -217,9 +224,9 @@ void cAsyncConn::Close()
 		sSocketCounter--;
 
 		if (Log(3))
-			LogStream() << "Closing socket " << mSockDesc << endl;
+			LogStream() << "Closing socket: " << mSockDesc << endl;
 	} else if (ErrLog(1)) {
-		LogStream() << "Socket not closed" << endl;
+		LogStream() << "Socket not closed: " << mSockDesc << endl;
 	}
 
 	mSockDesc = 0;

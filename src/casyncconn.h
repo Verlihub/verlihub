@@ -505,9 +505,6 @@ namespace nVerliHub {
 				/// Indicate if we can write data to the connection.
 				bool mWritable;
 
-				/// Socket descriptor.
-				tSocket mSockDesc;
-
 				/// Pointer to an instance of cAsyncSocketServer.
 				cAsyncSocketServer *mxServer;
 
@@ -528,6 +525,9 @@ namespace nVerliHub {
 				static unsigned long sSocketCounter;
 
 			protected:
+				/// Socket descriptor.
+				tSocket mSockDesc;
+
 				/// Static buffer that contains stock data.
 				/// Buffer is filled by ReadAll() call but data are fetched
 				/// line per line by calling ReadLineLocal().
