@@ -97,9 +97,9 @@ bool cConsole::cfDelPerlScript::operator()()
 			found = true;
 			scriptfile = pi->mScriptName;
 			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
+			GetPI()->mPerl.mPerl.erase(it);
 			delete pi;
 			pi = NULL;
-			GetPI()->mPerl.mPerl.erase(it);
 			break;
 		}
 	}
@@ -188,9 +188,9 @@ bool cConsole::cfReloadPerlScript::operator()()
 			found = true;
 			(*mOS) << autosprintf(_("Script %s stopped."), pi->mScriptName.c_str()) << ' ';
 			scriptfile = pi->mScriptName;
+			GetPI()->mPerl.mPerl.erase(it);
 			delete pi;
 			pi = NULL;
-			GetPI()->mPerl.mPerl.erase(it);
 			break;
 		}
 	}

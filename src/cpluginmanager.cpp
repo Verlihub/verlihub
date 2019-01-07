@@ -102,32 +102,37 @@ void cPluginManager::UnLoadAll()
 
 bool cPluginManager::LoadPlugin(const string &file)
 {
-//#if ! defined _WIN32
-	cPluginLoader *plugin;
-	mLastLoadError = "";
-	if(Log(3))
-		LogStream() << "Attempt loading plugin: " << file << endl;
-	plugin = new cPluginLoader(file);
+//#if !defined _WIN32
+	if (Log(3))
+		LogStream() << "Trying to load plugin: " << file << endl;
 
-	if(!plugin->Open() || !plugin->LoadSym() || !mPlugins.AddWithHash(plugin, mPlugins.Key2Hash(plugin->mPlugin->Name()))) {
+	mLastLoadError = "";
+	cPluginLoader *plugin = new cPluginLoader(file);
+
+	if (!plugin->Open() || !plugin->LoadSym() || !mPlugins.AddWithHash(plugin, mPlugins.Key2Hash(plugin->mPlugin->Name()))) {
 		mLastLoadError = plugin->Error();
 		delete plugin;
 		plugin = NULL;
 		return false;
 	}
 
-	try { // used rearely
+	try { // used rarely
 		plugin->mPlugin->SetMgr(this);
 		plugin->mPlugin->RegisterAll();
 		OnPluginLoad(plugin->mPlugin);
-	} catch (...) {
+	} catch (const char *ex) {
 		if (ErrLog(1))
-			LogStream() << "Plugin " << file << " caused an exception" << endl;
+			LogStream() << "Plugin load exception: " << file << " [ " << ex << " ]" << endl;
+
+		delete plugin;
+		plugin = NULL;
+		return false;
 	}
 
 	if (Log(1))
-		LogStream() << "Succes loading plugin: " << file << endl;
+		LogStream() << "Plugin successfully loaded: " << file << endl;
 //#endif
+
 	return true;
 }
 
@@ -154,7 +159,7 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 
 	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) { // todo: we have a bug here, use workaround above
 		if (ErrLog(2))
-			LogStream() << "Can't unload plugin: " << name << endl;
+			LogStream() << "Unable to unload plugin: " << name << endl;
 
 		return false;
 	}

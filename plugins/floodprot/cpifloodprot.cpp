@@ -24,9 +24,9 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nEnums;
 	namespace nFloodProtectPlugin {
-cpiFloodprot::cpiFloodprot() : mFloodprotect(0)
+cpiFloodprot::cpiFloodprot() : mFloodprotect(NULL)
 {
-	mName = "Floodprotect";
+	mName = "FloodProtect";
 	mVersion = FLOODPROT_VERSION;
 }
 
@@ -35,7 +35,7 @@ cpiFloodprot::~cpiFloodprot()
 	if(mFloodprotect)
 	{
 		delete mFloodprotect;
-		mFloodprotect = 0;
+		mFloodprotect = NULL;
 	}
 }
 

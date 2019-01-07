@@ -324,7 +324,7 @@ namespace nVerliHub {
 						 */
 						~sItem()
 						{
-							if(mNext != NULL) {
+							if (mNext != NULL) {
 								delete mNext;
 								mNext =  NULL;
 							}
@@ -431,28 +431,33 @@ namespace nVerliHub {
 						DataType DeleteHash(tHashType hash, sItem *&start)
 						{
 							DataType Data = (DataType)NULL;
-							if(mHash == hash) {
+
+							if (mHash == hash) {
 								start = mNext;
 								mNext = NULL;
 								Data = mData;
 								return Data;
 							}
+
 							sItem *it = mNext;
 							sItem *prev = this;
 
-							while((it != NULL ) && (it->mHash != hash)) {
+							while ((it != NULL ) && (it->mHash != hash)) {
 								prev = it;
 								it = it->mNext;
 							}
-							if(it != NULL) {
+
+							if (it != NULL) {
 								Data = it->mData;
 								prev->mNext = it->mNext;
 								it->mNext = NULL;
 								delete it;
 								it = NULL;
 							}
+
 							return Data;
 						}
+
 					private:
 						/// Next item in the list.
 						sItem *mNext;
@@ -532,13 +537,15 @@ namespace nVerliHub {
 				void Clear()
 				{
 					sItem *Item = NULL;
+
 					for (unsigned it = 0; it < mData->Capacity(); it++) {
 						Item = mData->Get(it);
-						if(Item != NULL) {
+						mData->Update(NULL, it);
+
+						if (Item != NULL) {
 							delete Item;
 							Item = NULL;
 						}
-						mData->Update(NULL, it);
 					}
 				}
 
@@ -645,26 +652,28 @@ namespace nVerliHub {
 				bool RemoveByHash(const tHashType &hash)
 				{
 					unsigned HashShort = hash % mData->mCapacity;
-					sItem * Items, *Item = NULL;
+					sItem *Items, *Item = NULL;
 					Items = mData->Get(HashShort);
-					if(Items == NULL)
+
+					if (Items == NULL)
 						return false;
 
 					Item = Items;
 					DataType Data = Items->DeleteHash(hash, Item);
-					if(Item != Items) {
+
+					if (Item != Items) {
 						mData->Update(Item, HashShort);
 						delete Items;
 						Items = NULL;
 					}
 
-					if((DataType)NULL != Data) {
+					if ((DataType)NULL != Data) {
 						OnRemove(Data);
 						mSize--;
 						return true;
-					} else {
-						return false;
 					}
+
+					return false;
 				}
 
 				/*
@@ -876,7 +885,9 @@ template <class DataType> tUniqueHashArray<DataType>::tUniqueHashArray(unsigned 
 
 template <class DataType> tUniqueHashArray<DataType>::~tUniqueHashArray()
 {
-	if (mData) delete [] mData;
+	if (mData)
+		delete [] mData;
+
 	mData = NULL;
 }
 
@@ -894,11 +905,17 @@ template <class DataType> DataType tUniqueHashArray<DataType>::Insert(DataType c
 
 template <class DataType> DataType tUniqueHashArray<DataType>::Update(DataType const Data, unsigned hash)
 {
-	if (hash > mCapacity) hash %= mCapacity;
+	if (hash > mCapacity)
+		hash %= mCapacity;
+
 	DataType OldData = mData[hash];
 	mData[hash] = Data;
-	if (!OldData && Data) mSize ++;
-	else if (OldData && !Data) mSize --;
+
+	if (!OldData && Data)
+		mSize++;
+	else if (OldData && !Data)
+		mSize--;
+
 	return OldData;
 }
 
