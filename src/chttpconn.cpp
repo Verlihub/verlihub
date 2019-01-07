@@ -52,7 +52,8 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-char *cHTTPConn::mBuf = new char[MAX_DATA + 1];
+std::vector<char> cHTTPConn::mBuf;
+int cHTTPConn::mEnd = 0;
 
 cHTTPConn::cHTTPConn(int sock):
 	mGood(sock > 0),
@@ -259,8 +260,11 @@ int cHTTPConn::Read()
 
 	if (!mGood || !mWrite)
 		return -1;
-
-	while (((len = recv(mSock, mBuf, MAX_DATA, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (max++ <= 100)) {
+	if(mBuf.empty())
+	{
+		mBuf.resize(MAX_DATA + 1); // TODO use dynamic grow
+	}
+	while (((len = recv(mSock, mBuf.data(), MAX_DATA, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (max++ <= 100)) {
 		::usleep(5);
 	}
 
