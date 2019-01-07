@@ -171,13 +171,13 @@ bool cpiLua::RegisterAll()
 bool cpiLua::AutoLoad()
 {
 	if (Log(0))
-		LogStream() << "Opening directory: " << mScriptDir << endl;
+		LogStream() << "Opening Lua script directory: " << mScriptDir << endl;
 
 	DIR *dir = opendir(mScriptDir.c_str());
 
 	if (!dir) {
 		if (Log(1))
-			LogStream() << "Error opening directory" << endl;
+			LogStream() << "Error opening Lua script directory: " << mScriptDir << endl;
 
 		return false;
 	}
@@ -199,17 +199,17 @@ bool cpiLua::AutoLoad()
 
 	closedir(dir);
 	sort(filenames.begin(), filenames.end());
+	cLuaInterpreter *ip;
 
 	for (size_t i = 0; i < filenames.size(); i++) {
 		filename = filenames[i];
 		pathname = mScriptDir + filename;
-		cLuaInterpreter *ip = NULL;
 
 		try {
 			ip = new cLuaInterpreter(config, pathname);
-		} catch (...) {
+		} catch (const char *ex) {
 			if (Log(1))
-				LogStream() << "Failed creating cLuaInterpreter for script: " << filename << endl;
+				LogStream() << "Failed creating cLuaInterpreter for script: " << filename << " [ " << ex << " ]" << endl;
 
 			continue;
 		}
@@ -225,6 +225,7 @@ bool cpiLua::AutoLoad()
 				LogStream() << "Failed loading or parsing Lua script: " << filename << endl;
 
 			delete ip;
+			ip = NULL;
 		}
 	}
 

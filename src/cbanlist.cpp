@@ -630,6 +630,7 @@ void cBanList::DelIPTempBan(unsigned long ip)
 	if (tban) {
 		mTempIPBanlist.RemoveByHash(ip);
 		delete tban;
+		tban = NULL;
 	}
 }
 

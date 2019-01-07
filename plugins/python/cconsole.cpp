@@ -154,9 +154,9 @@ bool cConsole::cfDelPythonScript::operator()()
 
 		if (li && ((number && (num == li->id)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
+			GetPI()->mPython.erase(it);
 			delete li;
 			li = NULL;
-			GetPI()->mPython.erase(it);
 			return true;
 		}
 	}
@@ -228,8 +228,8 @@ bool cConsole::cfAddPythonScript::operator()()
 
 	try {
 		ip = new cPythonInterpreter(scriptfile);
-	} catch(...) {
-		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s"), scriptfile.c_str());
+	} catch (const char *ex) {
+		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s [ %s ]"), scriptfile.c_str(), ex);
 		return false;
 	}
 
@@ -276,9 +276,9 @@ bool cConsole::cfReloadPythonScript::operator()()
 			found = true;
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script #%d stopped: %s"), li->id, li->mScriptName.c_str());
+			GetPI()->mPython.erase(it);
 			delete li;
 			li = NULL;
-			GetPI()->mPython.erase(it);
 			break;
 		}
 	}
@@ -294,8 +294,8 @@ bool cConsole::cfReloadPythonScript::operator()()
 
 	try {
 		ip = new cPythonInterpreter(scriptfile);
-	} catch(...) {
-		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s"), scriptfile.c_str());
+	} catch (const char *ex) {
+		(*mOS) << autosprintf(_("Failed to allocate new Python interpreter for script: %s [ %s ]"), scriptfile.c_str(), ex);
 		return false;
 	}
 

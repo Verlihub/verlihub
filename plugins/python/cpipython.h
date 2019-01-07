@@ -147,9 +147,9 @@ public:
 			li = *it;
 			if (li == NULL || li->mScriptName.compare(name))
 				continue;
+			mPython.erase(it);
 			delete li;
 			li = NULL;
-			mPython.erase(it);
 			return true;
 		}
 		log("PY: ERROR: Failed to remove interpreter for %s\n", name.c_str());

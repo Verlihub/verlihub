@@ -202,8 +202,9 @@ bool cConsole::cfDelLuaScript::operator()()
 		if (li && ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
-			delete li;
 			GetPI()->mLua.erase(it);
+			delete li;
+			li = NULL;
 			return true;
 		}
 	}
@@ -275,8 +276,8 @@ bool cConsole::cfAddLuaScript::operator()()
 
 	try {
 		ip = new cLuaInterpreter(config, scriptfile);
-	} catch (...) {
-		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s"), scriptfile.c_str());
+	} catch (const char *ex) {
+		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s [ %s ]"), scriptfile.c_str(), ex);
 		return false;
 	}
 
@@ -288,6 +289,7 @@ bool cConsole::cfAddLuaScript::operator()()
 	} else {
 		(*mOS) << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		delete ip;
+		ip = NULL;
 		return false;
 	}
 }
@@ -318,8 +320,9 @@ bool cConsole::cfReloadLuaScript::operator()()
 			found = true;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			scriptfile = li->mScriptName;
-			delete li;
 			GetPI()->mLua.erase(it);
+			delete li;
+			li = NULL;
 			break;
 		}
 	}
@@ -340,8 +343,8 @@ bool cConsole::cfReloadLuaScript::operator()()
 
 	try {
 		ip = new cLuaInterpreter(config, scriptfile);
-	} catch (...) {
-		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s"), scriptfile.c_str());
+	} catch (const char *ex) {
+		(*mOS) << autosprintf(_("Failed to allocate new Lua interpreter for script: %s [ %s ]"), scriptfile.c_str(), ex);
 		return false;
 	}
 
@@ -353,6 +356,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 	} else {
 		(*mOS) << ' ' << autosprintf(_("Script not found or couldn't be parsed: %s"), scriptfile.c_str());
 		delete ip;
+		ip = NULL;
 		return false;
 	}
 }

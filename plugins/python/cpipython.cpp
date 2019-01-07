@@ -285,8 +285,8 @@ bool cpiPython::AutoLoad()
 
 		try {
 			ip = new cPythonInterpreter(pathname);
-		} catch(...) {
-			log1("Error creating cPythonInterpreter for script: %s\n", filename.c_str());
+		} catch (const char *ex) {
+			log1("Error creating cPythonInterpreter for script: %s [ %s ]\n", filename.c_str(), ex);
 			continue;
 		}
 
