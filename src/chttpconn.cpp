@@ -62,7 +62,6 @@ cHTTPConn::cHTTPConn(int sock):
 	mHost(""),
 	mPort(0)
 {
-	mEnd = 0;
 	memset(&mClose, 0, sizeof(mClose));
 }
 
@@ -72,7 +71,6 @@ cHTTPConn::cHTTPConn(const string &host, const int port):
 	mSock(0),
 	mHost(host),
 	mPort(port),
-	mEnd(0),
 	mClose(0, 0)
 {
 	Connect(host, port);
