@@ -52,17 +52,16 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-std::vector<char> cHTTPConn::mBuf;
-int cHTTPConn::mEnd = 0;
-
 cHTTPConn::cHTTPConn(int sock):
 	mGood(sock > 0),
 	mWrite(true),
 	mSock(sock),
 	mHost(""),
-	mPort(0)
+	mPort(0),
+	mEnd(0),
+	mClose(0, 0)
 {
-	memset(&mClose, 0, sizeof(mClose));
+	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 }
 
 cHTTPConn::cHTTPConn(const string &host, const int port):
@@ -71,8 +70,10 @@ cHTTPConn::cHTTPConn(const string &host, const int port):
 	mSock(0),
 	mHost(host),
 	mPort(port),
+	mEnd(0),
 	mClose(0, 0)
 {
+	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 	Connect(host, port);
 }
 
@@ -253,20 +254,17 @@ int cHTTPConn::Send(const char *buf, size_t &len)
 
 int cHTTPConn::Read()
 {
+	if (!mGood || !mWrite)
+		return -1;
+
 	int len = 0, max = 0;
 	mEnd = 0;
 
-	if (!mGood || !mWrite)
-		return -1;
-	if(mBuf.empty())
-	{
-		mBuf.resize(MAX_DATA + 1); // TODO use dynamic grow
-	}
-	while (((len = recv(mSock, mBuf.data(), MAX_DATA, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (max++ <= 100)) {
+	while (((len = recv(mSock, mBuf.data(), MAX_DATA, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (max++ <= 100))
 		::usleep(5);
-	}
 
 	if (len <= 0) {
+		/*
 		if (len == 0) {
 			CloseNow();
 			return -1;
@@ -279,6 +277,7 @@ int cHTTPConn::Read()
 					break;
 			}
 		}
+		*/
 
 		CloseNow();
 		return -1;
@@ -300,6 +299,7 @@ void cHTTPConn::Close()
 	mGood = false;
 	TEMP_FAILURE_RETRY(::close(mSock));
 	mSock = INVALID_SOCKET;
+	mBuf.clear();
 }
 
 void cHTTPConn::CloseNow()
