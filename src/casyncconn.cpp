@@ -71,13 +71,15 @@
 	#define MSG_NOSIGNAL 0
 #endif
 
+using namespace std;
+
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
 
 	namespace nSocket {
 
-char *cAsyncConn::msBuffer = new char[MAX_MESS_SIZE + 1];
+vector<char> cAsyncConn::msBuffer(MAX_MESS_SIZE + 1); // todo: use dynamic grow
 unsigned long cAsyncConn::sSocketCounter = 0;
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
@@ -245,7 +247,7 @@ int cAsyncConn::ReadLineLocal()
 	if (!mxLine)
 		throw "ReadLine with null line pointer";
 
-	char *pos, *buf = msBuffer + mBufReadPos;
+	char *pos, *buf = msBuffer.data() + mBufReadPos;
 	int len = mBufEnd - mBufReadPos;
 
 	if (NULL == (pos = (char*)memchr(buf, mSeparator, len))) {
@@ -339,14 +341,14 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 	//bool udp = (this->GetType() == eCT_CLIENTUDP);
 
 	//if (!udp) {
-		while (((buf_len = recv(mSockDesc, msBuffer, MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
+		while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
 	//#if !defined _WIN32
 			::usleep(sleep);
 	//#endif
 		}
 	/*
 	} else {
-		while (((buf_len = recvfrom(mSockDesc, msBuffer, MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
+		while (((buf_len = recvfrom(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
 	#if !defined _WIN32
 		::usleep(sleep);
 	#endif

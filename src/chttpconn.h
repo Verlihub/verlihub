@@ -42,20 +42,18 @@ namespace nVerliHub {
 				cHTTPConn(const string &host, int port);
 				virtual ~cHTTPConn();
 
-				virtual operator tSocket() const
-				{
-					return mSock;
-				}
-
 				size_t GetSize() const
 				{
 					return mSend.size();
 				}
 
-				static unsigned int GetBuf(string &buf)
+				unsigned int GetBuf(string &buf)
 				{
-					buf.clear();
-					buf.assign(mBuf.data(), 0, mEnd);
+					if (mEnd) {
+						buf.clear();
+						buf.assign(mBuf.data(), 0, mEnd);
+					}
+
 					return mEnd;
 				}
 
@@ -75,17 +73,23 @@ namespace nVerliHub {
 				tSocket mSock;
 
 			protected:
-				string mSend, mHost;
-				unsigned int mPort;
+				virtual operator tSocket() const
+				{
+					return mSock;
+				}
+
 				tSocket Create();
 				int Send(const char *buf, size_t &len);
 
+				string mSend, mHost;
+				unsigned int mPort;
+
 			private:
-				static std::vector<char> mBuf;
-				static int mEnd;
+				vector<char> mBuf; // note: http connections dont share same buffer
+				unsigned int mEnd;
 				cTime mClose;
 		};
-		
+
 	}; // namespace nSocket
 }; // namespace nVerliHub
 

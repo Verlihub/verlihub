@@ -38,6 +38,7 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
 using namespace std;
 
@@ -102,7 +103,9 @@ namespace nVerliHub {
 				 * Class constructor.
 				 * @param protocol Pointer to an instance of cProtocol interface.
 				 */
-				cConnFactory(nProtocol::cProtocol *protocol): mProtocol(protocol) {};
+				cConnFactory(nProtocol::cProtocol *protocol):
+					mProtocol(protocol)
+				{}
 
 				/**
 				 * Class destructor.
@@ -133,7 +136,7 @@ namespace nVerliHub {
 		 * @author Daniel Muller
 		 * @author Janos Horvath (UDP support)
 		 */
-		class cAsyncConn : public cConnBase, public cObj
+		class cAsyncConn: public cConnBase, public cObj
 		{
 			public:
 				/// Define a list of connections.
@@ -149,7 +152,7 @@ namespace nVerliHub {
 				 * @param ct The type of connection. See tConnType for more information.
 				 * @see tConnType
 				 */
-				cAsyncConn(int sd=0, cAsyncSocketServer *s=NULL, tConnType ct= nEnums::eCT_CLIENT);
+				cAsyncConn(int sd = 0, cAsyncSocketServer *s = NULL, tConnType ct = nEnums::eCT_CLIENT);
 
 				/**
 				 * Class constructor.
@@ -226,22 +229,22 @@ namespace nVerliHub {
 				/*
 					returns buffer sizes
 				*/
-				size_t GetBufferSize()
+				size_t GetBufferSize() const
 				{
 					return mBufSend.size();
 				}
 
-				size_t GetBufferCapacity()
+				size_t GetBufferCapacity() const
 				{
 					return mBufSend.capacity();
 				}
 
-				size_t GetFlushSize()
+				size_t GetFlushSize() const
 				{
 					return mBufFlush.size();
 				}
 
-				size_t GetFlushCapacity()
+				size_t GetFlushCapacity() const
 				{
 					return mBufFlush.capacity();
 				}
@@ -261,7 +264,7 @@ namespace nVerliHub {
 				* Close the connection after given milliseconds.
 				* @param msec Number in millisecond to wait before closing the connection.
 				*/
-				void CloseNice(int msec=0);
+				void CloseNice(int msec = 0);
 
 				/**
 				 * Close immediatly the connection.
@@ -528,11 +531,6 @@ namespace nVerliHub {
 				/// Socket descriptor.
 				tSocket mSockDesc;
 
-				/// Static buffer that contains stock data.
-				/// Buffer is filled by ReadAll() call but data are fetched
-				/// line per line by calling ReadLineLocal().
-				static char *msBuffer;
-
 				/*
 					buffers that contain outgoing protocol data to send
 					if data is not sent at once, rest is stored in send buffer
@@ -653,14 +651,14 @@ namespace nVerliHub {
 				/// @see tLineStatus
 				nEnums::tLineStatus meLineStatus;
 
-				/// End position in the buffer.
-				int mBufEnd;
+				static vector<char> msBuffer; // note: this buffer is shared between all connections
+				unsigned int mBufEnd;
 
 				// Read buffer position
 				/// Current position in the buffer.
 				/// The position is pushed forward when a new line is read from the buffer.
 				/// @see ReadLineLocal()
-				int mBufReadPos;
+				unsigned int mBufReadPos;
 
 				/// The time when the connection has been closed.
 				cTime mCloseAfter;

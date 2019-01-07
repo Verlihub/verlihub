@@ -55,7 +55,7 @@ int cConfigFile::Load() // config load function from a file
 
 	string name;
 	string str;
-	istringstream *ss = NULL;
+	istringstream *ss;
 	cConfigItemBase *ci;
 	char ch;
 
@@ -91,18 +91,12 @@ int cConfigFile::Load() // config load function from a file
 			ss = NULL;
 		} else {
 			if (ErrLog(3))
-				LogStream() << "Uknown configuration variable " << name << " in file: " << mFile << endl;
+				LogStream() << "Unknown configuration variable " << name << " in file: " << mFile << endl;
 		}
 	}
 
 	is.close();
-
-	if (ss) {
-		delete ss;
-		ss = NULL;
-	}
-
-	return 0;
+	return 1;
 }
 
 /** save config, to be able to load it after */
