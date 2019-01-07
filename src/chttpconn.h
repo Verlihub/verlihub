@@ -25,6 +25,7 @@
 #include "ctime.h"
 #include "cconnbase.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -46,15 +47,15 @@ namespace nVerliHub {
 					return mSock;
 				}
 
-				size_t GetSize()
+				size_t GetSize() const
 				{
 					return mSend.size();
 				}
 
-				unsigned int GetBuf(string &buf)
+				static unsigned int GetBuf(string &buf)
 				{
 					buf.clear();
-					buf.assign(mBuf, 0, mEnd);
+					buf.assign(mBuf.data(), 0, mEnd);
 					return mEnd;
 				}
 
@@ -74,17 +75,17 @@ namespace nVerliHub {
 				tSocket mSock;
 
 			protected:
-				static char *mBuf;
 				string mSend, mHost;
 				unsigned int mPort;
 				tSocket Create();
 				int Send(const char *buf, size_t &len);
 
 			private:
-				int mEnd;
+				static std::vector<char> mBuf;
+				static int mEnd;
 				cTime mClose;
 		};
-
+		
 	}; // namespace nSocket
 }; // namespace nVerliHub
 
