@@ -541,7 +541,7 @@ void cBanList::Num2Ip(unsigned long mask, string &ip)
 
 	if (inet_ntop(AF_INET, &(sa.sin_addr), temp, INET_ADDRSTRLEN)) {
 		ip.clear();
-		ip.reserve(strlen(temp) + 1);
+		ip.reserve(strlen(temp));
 		ip = temp;
 	}
 	*/

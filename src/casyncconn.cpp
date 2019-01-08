@@ -132,7 +132,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			struct sockaddr_in *addr_in = (struct sockaddr_in*)&saddr;
 			mIP = addr_in->sin_addr.s_addr; // copy ip
 			char *temp = inet_ntoa(addr_in->sin_addr);
-			mAddrIP.reserve(strlen(temp) + 1);
+			mAddrIP.reserve(strlen(temp));
 			mAddrIP = temp; // ip address
 			mNumIP = cBanList::Ip2Num(mAddrIP);
 
@@ -144,7 +144,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
 				addr_in = (struct sockaddr_in*)&saddr;
 				temp = inet_ntoa(addr_in->sin_addr);
-				mServAddr.reserve(strlen(temp) + 1);
+				mServAddr.reserve(strlen(temp));
 				mServAddr = temp;
 				mServPort = ntohs(addr_in->sin_port);
 			} else if (Log(2)) {
@@ -1035,7 +1035,7 @@ bool cAsyncConn::DNSLookup()
 	struct hostent *hp;
 
 	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET))) {
-		mAddrHost.reserve(strlen(hp->h_name) + 1);
+		mAddrHost.reserve(strlen(hp->h_name));
 		mAddrHost = hp->h_name;
 	}
 

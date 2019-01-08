@@ -185,14 +185,15 @@ IF(NOT HAVE_GETOPT_H)
 	MESSAGE(FATAL_ERROR "[ ER ] getopt.h header not found, it is required to build Verlihub.")
 ENDIF(NOT HAVE_GETOPT_H)
 
+SET(CMAKE_BUILD_TYPE Release)
 OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF) # use cmake -DDEFINE_DEBUG=ON to enable debug
 
 IF(DEFINE_DEBUG)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -g")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -g") # -Wextra
 	SET(CMAKE_BUILD_TYPE Debug)
-	MESSAGE(STATUS "[ OK ] Build type: ${CMAKE_BUILD_TYPE}")
 ENDIF(DEFINE_DEBUG)
 
+MESSAGE(STATUS "[ OK ] Build type: ${CMAKE_BUILD_TYPE}")
 ADD_DEFINITIONS(-DHAVE_CONFIG_H)
 
 IF(UNIX)
