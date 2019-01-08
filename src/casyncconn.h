@@ -177,7 +177,7 @@ namespace nVerliHub {
 				 * Return the hostname.
 				 * @return The hostname.
 				 */
-				const string & AddrHost()
+				const string& AddrHost()
 				{
 					return mAddrHost;
 				}
@@ -200,19 +200,19 @@ namespace nVerliHub {
 				 * Return the port.
 				 * @return The port.
 				 */
-				const unsigned int AddrPort()
+				unsigned int AddrPort() const
 				{
 					return mAddrPort;
 				}
 
 				// return server address and port that user is connected to
 
-				const unsigned int GetServPort()
+				unsigned int GetServPort() const
 				{
 					return mServPort;
 				}
 
-				const string GetServAddr()
+				const string& GetServAddr()
 				{
 					return mServAddr;
 				}
@@ -351,7 +351,7 @@ namespace nVerliHub {
 				 * @return The IP address in network byte order.
 				 */
 				/*
-				const unsigned long GetSockAddress()
+				unsigned long GetSockAddress() const
 				{
 					return mAddrIN.sin_addr.s_addr;
 				}
