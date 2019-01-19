@@ -27,6 +27,7 @@
 #endif
 
 #include "chttpconn.h"
+#include "cconnchoose.h"
 #include <ostream>
 #include <arpa/inet.h>
 #include <sys/socket.h> // AF_INET
