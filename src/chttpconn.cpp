@@ -30,6 +30,7 @@
 #include "cconnchoose.h"
 #include <ostream>
 #include <arpa/inet.h>
+#include <netinet/in.h> // sockaddr_in
 #include <sys/socket.h> // AF_INET
 #include <netdb.h> // gethostbyname
 #include <unistd.h>
