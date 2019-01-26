@@ -114,6 +114,7 @@ public:
 	unsigned int max_chat_lines;
 	unsigned int max_flood_counter_pm;
 	unsigned int max_flood_counter_mcto;
+	unsigned int same_flood_ban_time;
 	bool delayed_search;
 	bool delayed_myinfo; // implies also delayed quit
 	bool drop_invalid_key;

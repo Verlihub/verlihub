@@ -164,10 +164,11 @@ void cDCConf::AddVars()
 	Add("notify_gag_chats", notify_gag_chats, false);
 	// end of section
 
-	// private message configuration
+	// same message flood
 	Add("max_flood_counter_pm", max_flood_counter_pm, 5);
 	Add("max_flood_counter_mcto", max_flood_counter_mcto, 5);
-	// end private message configuration
+	Add("same_flood_ban_time", same_flood_ban_time, 900);
+	// end of section
 
 	/*
 		protocol flood, period in seconds, limit is maximum count, any of two values to 0 means disabled
