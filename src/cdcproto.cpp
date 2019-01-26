@@ -1749,10 +1749,14 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) { // check for same message flood
 		if (Hash == conn->mpUser->mFloodHashes[eFH_PM]) {
 			if (conn->mpUser->mFloodCounters[eFC_PM]++ > mS->mC.max_flood_counter_pm) {
-				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
 				os << autosprintf(_("Same message flood in PM: %s"), text.c_str());
 				mS->ReportUserToOpchat(conn, os.str());
-				conn->CloseNow();
+				mS->DCPrivateHS(os.str(), conn);
+
+				if (mS->mC.same_flood_ban_time) // add temporary ban
+					mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
+
+				conn->CloseNice(1000, eCR_KICKED);
 				return -5;
 			}
 		} else {
@@ -1848,10 +1852,14 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if (Hash && (conn->mpUser->mClass < eUC_OPERATOR)) { // check for same message flood
 		if (Hash == conn->mpUser->mFloodHashes[eFH_MCTO]) {
 			if (conn->mpUser->mFloodCounters[eFC_MCTO]++ > mS->mC.max_flood_counter_mcto) {
-				mS->DCPrivateHS(_("Private message flood detected from your client."), conn);
 				os << autosprintf(_("Same message flood in MCTo: %s"), text.c_str());
 				mS->ReportUserToOpchat(conn, os.str());
-				conn->CloseNow();
+				mS->DCPrivateHS(os.str(), conn);
+
+				if (mS->mC.same_flood_ban_time) // add temporary ban
+					mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
+
+				conn->CloseNice(1000, eCR_KICKED);
 				return -5;
 			}
 		} else {
