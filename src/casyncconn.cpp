@@ -236,10 +236,11 @@ void cAsyncConn::Close()
 
 void cAsyncConn::Flush()
 {
-	string empty;
+	if (!GetFlushSize() && !GetBufferSize())
+		return;
 
-	if (GetFlushSize() || GetBufferSize()) // write buffers
-		Write(empty, true);
+	string empty;
+	Write(empty, true); // write buffers
 }
 
 int cAsyncConn::ReadLineLocal()
@@ -875,6 +876,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 					mBufSend.reserve(mBufSend.size() + calc_size); // always reserve because we are adding new data
 					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
 					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
+
 				} else { // compression is larger than initial data or something failed
 					mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
@@ -898,9 +900,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 				mBufFlush.clear(); // clean up flush buffer in both cases
 				ShrinkStringToFit(mBufFlush);
+
 			} else if (Log(1)) { // client will fail to decompress when pipe is missing, this happens when we are flushing incomplete data, todo: not sure if wait or do something already here
 				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
 			}
+
 		} else { // compression is disabled or data too short for good result
 			mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
 			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
@@ -938,6 +942,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 			StrCutLeft(mBufSend, calc_size); // this is supposed to actually reduce the size of buffer, it does a copy so it is slower but memory usage is important
 			buf_size -= calc_size;
+
 		} else if (bool(mCloseAfter)) { // we must close nice the connection
 			CloseNow();
 		}
