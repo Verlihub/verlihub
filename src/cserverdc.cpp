@@ -327,6 +327,7 @@ int cServerDC::StartListening(int OverrideDefaultPort)
 	return _result;
 }
 
+/*
 tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 {
 	tMsgAct result = eMA_PROCEED;
@@ -380,6 +381,7 @@ tMsgAct cServerDC::Filter(tDCMsg msg, cConnDC *conn)
 
 	return result;
 }
+*/
 
 int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 {
@@ -1763,13 +1765,11 @@ int cServerDC::OnTimer(const cTime &now)
 			mSysLoad = eSL_SYSTEM_DOWN;
 	}
 
-	unsigned int zone;
-
-	if (mC.max_upload_kbps > 0.00001) {
+	if ((mSysLoad < eSL_PROGRESSIVE) && (mC.max_upload_kbps > 0.)) {
 		double total_upload = 0.;
 
-		for (zone = 0; zone <= USER_ZONES; zone++)
-			total_upload += this->mUploadZone[zone].GetMean(this->mTime);
+		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
+			total_upload += mUploadZone[zone].GetMean(mTime);
 
 		if ((total_upload / 1024.0) > mC.max_upload_kbps)
 			mSysLoad = eSL_PROGRESSIVE;
@@ -1778,7 +1778,7 @@ int cServerDC::OnTimer(const cTime &now)
 	for (tTFIt i = mTmpFunc.begin(); i != mTmpFunc.end(); ++i) { // perform all temp functions
 		if (*i) {
 			if ((*i)->done()) { // delete finished functions
-				delete *i;
+				delete (*i);
 				(*i) = NULL;
 			} else { // step the rest
 				(*i)->step();
@@ -1815,10 +1815,10 @@ int cServerDC::OnTimer(const cTime &now)
 		*/
 
 		/*
-		for (zone = 0; zone <= USER_ZONES; zone++)
-			this->mUploadZone[zone].Reset(now);
+		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
+			this->mUploadZone[zone].Reset(mTime);
 
-		mFrequency.Reset(now); // todo: same as above
+		mFrequency.Reset(mTime); // todo: same as above
 		*/
 
 		if (Log(2))
@@ -1878,7 +1878,7 @@ int cServerDC::OnTimer(const cTime &now)
 
 	mBanList->mTempNickBanlist.AutoResize();
 	mBanList->mTempIPBanlist.AutoResize();
-	mCo->mTriggers->OnTimer(now.Sec());
+	mCo->mTriggers->OnTimer(mTime.Sec());
 
 	#ifndef WITHOUT_PLUGINS
 		SendScriptCommands();

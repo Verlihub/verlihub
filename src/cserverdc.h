@@ -95,6 +95,7 @@ namespace nVerliHub {
 		} tVAL_IP;
 		*/
 
+		/*
 		typedef enum
 		{
 			eMA_PROCEED,
@@ -108,6 +109,7 @@ namespace nVerliHub {
 			eMA_ERROR
 
 		} tMsgAct;
+		*/
 
 		typedef enum
 		{
@@ -321,7 +323,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param conn The user connection.
 		* @return The action to do or what the user can send.
 		*/
-		tMsgAct Filter(nEnums::tDCMsg msg, cConnDC * conn);
+		//tMsgAct Filter(nEnums::tDCMsg msg, cConnDC * conn);
 
 		/**
 		* This method is called every period.

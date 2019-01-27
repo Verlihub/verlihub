@@ -343,7 +343,7 @@ void cDCConf::AddVars()
 	Add("adv_conn_choose_timeout", mS.mChooseTimeOut, 10); // note: this is milliseconds
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
-	Add("adv_max_upload_kbps", max_upload_kbps, 128000.);
+	Add("adv_max_upload_kbps", max_upload_kbps, 131072.);
 	Add("adv_max_outbuf_size", max_outbuf_size, 1048576ul);
 	Add("adv_max_outfill_size", max_outfill_size, 786432ul);
 	Add("adv_max_unblock_size", max_unblock_size, 524288ul);
