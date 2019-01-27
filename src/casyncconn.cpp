@@ -437,7 +437,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 			}
 			*/
 			/*
-    	} catch (...) {
+		} catch (...) {
 			if (ErrLog(2))
 				LogStream() << "Exception in SendAll(buf, " << len << ") total=" << total << " left=" << bytesleft << " rep=" << repetitions << " n=" << n << endl;
 
@@ -945,23 +945,23 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		if (serv && ok) { // buffer overfill protection, only on registered connections
 			serv->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			if (buf_size < (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE)) { // if buffer size is smaller than unblock size, allow read operation on the connection
+			if (buf_size < serv->mC.max_unblock_size) { // if buffer size is smaller than unblock size, allow read operation on the connection
 				serv->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
-					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
+					if (serv->mNetOutLog && serv->mNetOutLog.is_open())
 						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << serv->mC.max_unblock_size << endl;
 
-					LogStream() << "Unblocking input: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
+					LogStream() << "Unblocking input: " << buf_size << " of " << serv->mC.max_unblock_size << endl;
 				}
-			} else if (buf_size >= (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE)) { // if buffer is bigger than maximum send size, block read operation
+			} else if (buf_size >= serv->mC.max_outfill_size) { // if buffer is bigger than maximum send size, block read operation
 				serv->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
-					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
+					if (serv->mNetOutLog && serv->mNetOutLog.is_open())
 						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << serv->mC.max_outfill_size << endl;
 
-					LogStream() << "Blocking input: " << buf_size << " of " << (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE) << endl;
+					LogStream() << "Blocking input: " << buf_size << " of " << serv->mC.max_outfill_size << endl;
 				}
 			}
 		}
