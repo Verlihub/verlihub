@@ -411,41 +411,41 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 #ifndef QUICK_SEND
 	while (total < len) {
 		//try {
-			//if(!udp) {
-//#if ! defined _WIN32
+			//if (!udp) {
+//#if !defined _WIN32
 				n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
 				int RetryCount = 0;
+
 				do {
 					if ((n = send(mSockDesc, buf + total, (int)bytesleft, 0)) != SOCKET_ERROR)
 						break;
-					if (WSAGetLastError() == WSAEWOULDBLOCK)
-					{
-					  if(ErrLog(3)) LogStream() << "cAsynConn Warning.. Resource unavailable...Retrying.. " << ++RetryCount <<endl;
-							::Sleep(50);
+
+					if (WSAGetLastError() == WSAEWOULDBLOCK) {
+						if (ErrLog(3))
+							LogStream() << "cAsynConn Warning, resource unavailable, retrying" << ++RetryCount <<endl;
+
+						::Sleep(50);
 					}
-				}
-				while (WSAGetLastError() == WSAEWOULDBLOCK);
+				} while (WSAGetLastError() == WSAEWOULDBLOCK);
 #endif
 */
 			/*
 			} else {
-				n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr *)&mAddrIN, sizeof(struct sockaddr));
+				n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
 			}
 			*/
 			/*
-    		} catch(...) {
-			if(ErrLog(2))
-				LogStream() << "exception in SendAll(buf," << len
-					<< ") total=" << total
-					<< " left=" << bytesleft
-					<< " rep=" << repetitions
-					<< " n=" << n << endl;
+    	} catch (...) {
+			if (ErrLog(2))
+				LogStream() << "Exception in SendAll(buf, " << len << ") total=" << total << " left=" << bytesleft << " rep=" << repetitions << " n=" << n << endl;
+
 			return -1;
 		}
+
+		repetitions++;
 		*/
-		//repetitions++;
 
 		if (n == -1)
 			break;
@@ -454,18 +454,17 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		bytesleft -= n;
 	}
 #else
-	//if(!udp) {
+	//if (!udp)
 		n = send(mSockDesc, buf + total, bytesleft, 0);
 	/*
-	}
 	else
-		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr *)&mAddrIN, sizeof(struct sockaddr));
+		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
 	*/
 	total = n;
 #endif
 
-	len = total; /* return number actually sent here */
-	return n == -1 ? -1 : 0; /* return -1 on failure, 0 on success */
+	len = total; // number of bytes actually sent
+	return ((n == -1) ? -1 : 0); // -1 on failure, 0 on success
 }
 
 /*
@@ -943,11 +942,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			CloseNow();
 		}
 
-		if (mxServer && ok) { // buffer overfill protection, only on registered connections
-			mxServer->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
+		if (serv && ok) { // buffer overfill protection, only on registered connections
+			serv->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
 			if (buf_size < (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE)) { // if buffer size is smaller than unblock size, allow read operation on the connection
-				mxServer->mConnChooser.OptIn(this, eCC_INPUT);
+				serv->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
@@ -956,7 +955,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 					LogStream() << "Unblocking input: " << buf_size << " of " << (serv ? serv->mC.max_unblock_size : MAX_SEND_UNBLOCK_SIZE) << endl;
 				}
 			} else if (buf_size >= (serv ? serv->mC.max_outfill_size : MAX_SEND_FILL_SIZE)) { // if buffer is bigger than maximum send size, block read operation
-				mxServer->mConnChooser.OptOut(this, eCC_INPUT);
+				serv->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
 					if (serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
@@ -973,8 +972,8 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		if (bool(mCloseAfter)) // close nice the connection
 			CloseNow();
 
-		if (mxServer && ok) { // unregister connection for write operation
-			mxServer->mConnChooser.OptOut(this, eCC_OUTPUT);
+		if (serv && ok) { // unregister connection for write operation
+			serv->mConnChooser.OptOut(this, eCC_OUTPUT);
 
 			if (Log(5))
 				LogStream() << "Blocking output" << endl;

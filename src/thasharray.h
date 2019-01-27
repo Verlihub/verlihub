@@ -522,7 +522,7 @@ namespace nVerliHub {
 				 * Autoresize the container.
 				 * A complete resizing can be automatically triggered when the load factor exceeds some threshold.
 				 */
-				void AutoResize() // todo: why double capacity? can we make it smaller?
+				void AutoResize()
 				{
 					if((this->mSize > this->mData->mCapacity * 2 ) || ((this->mSize * 2 + 1) < this->mData->mCapacity)) {
 						if(Log(3))

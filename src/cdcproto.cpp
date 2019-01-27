@@ -1609,6 +1609,17 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_EXTJSON)) // protocol flood
 		return -1;
 
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (mS->mSysLoad >= eSL_CAPACITY)) { // check hub load first of all
+		if (mS->Log(3))
+			mS->LogStream() << "Hub load is too high for ExtJSON: " << mS->mSysLoad << endl;
+
+		/*
+		os << _("Sorry, hub load is too high to process your ExtJSON. Please try again later."); // dont notify user, this feature is not important
+		mS->DCPublicHS(os.str(), conn);
+		*/
+		return -2;
+	}
+
 	if (!mS->mC.disable_extjson) { // forward to users who support this, if enabled and if changed
 		#ifndef WITHOUT_PLUGINS
 		if (mS->mCallBacks.mOnParsedMsgExtJSON.CallAll(conn, msg))
@@ -2368,9 +2379,9 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	ostringstream os;
 
-	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (mS->mSysLoad >= eSL_CAPACITY)) { // check hub load first of all
 		if (mS->Log(3))
-			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
+			mS->LogStream() << "Hub load is too high for search request: " << mS->mSysLoad << endl;
 
 		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
 		mS->DCPublicHS(os.str(), conn);
@@ -2646,9 +2657,9 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
 		return -1;
 
-	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (mS->mSysLoad >= eSL_CAPACITY)) { // check hub load first of all
 		if (mS->Log(3))
-			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
+			mS->LogStream() << "Hub load is too high for search request: " << mS->mSysLoad << endl;
 
 		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
 		mS->DCPublicHS(os.str(), conn);
@@ -2825,9 +2836,9 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_SEARCH)) // protocol flood
 		return -1;
 
-	if (mS->mSysLoad >= (eSL_CAPACITY + conn->mpUser->mClass)) { // check hub load first of all
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (mS->mSysLoad >= eSL_CAPACITY)) { // check hub load first of all
 		if (mS->Log(3))
-			mS->LogStream() << "Hub load is too high for search: " << mS->mSysLoad << endl;
+			mS->LogStream() << "Hub load is too high for search request: " << mS->mSysLoad << endl;
 
 		os << _("Sorry, hub load is too high to process your search request. Please try again later.");
 		mS->DCPublicHS(os.str(), conn);
@@ -2971,6 +2982,17 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->CheckProtoFlood(msg->mStr, ePF_SR)) // protocol flood
 		return -1;
+
+	if ((conn->mpUser->mClass < eUC_OPERATOR) && (mS->mSysLoad >= eSL_CAPACITY)) { // check hub load first of all
+		if (mS->Log(3))
+			mS->LogStream() << "Hub load is too high for search result: " << mS->mSysLoad << endl;
+
+		/*
+		os << _("Sorry, hub load is too high to process your search result. Please try again later."); // dont notify user, he is probably sending alot of results
+		mS->DCPublicHS(os.str(), conn);
+		*/
+		return -2;
+	}
 
 	cUser *other = mS->mUserList.GetUserByNick(msg->ChunkString(eCH_SR_TO)); // find other user
 
