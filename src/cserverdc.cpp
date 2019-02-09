@@ -1811,15 +1811,12 @@ int cServerDC::OnTimer(const cTime &now)
 				during high cpu usage when hub hangs it starts to show wrong values
 				Other users: 5433 of 10000 [33.04 KB/s] - while real hub upload is around 3-4 mb/s
 				temporarily we try to reset the counter every timer_reloadcfg_period - 300 seconds by default
-				nope, this seems to break something else instead, need to find initial bug
 		*/
 
-		/*
 		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
 			this->mUploadZone[zone].Reset(mTime);
 
 		mFrequency.Reset(mTime); // todo: same as above
-		*/
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
