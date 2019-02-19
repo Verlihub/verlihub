@@ -39,7 +39,7 @@ namespace nVerliHub {
 #endif
 	unsigned int cObj::msCounterObj = 0;
 	const string cObj::mEmpty;
-	using nUtils::cTimePrint;
+	using nUtils::cTime;
 /** with name constructor */
 cObj::cObj(const char *name) : mClassName(name), mToLog(&cout)
 {
@@ -70,7 +70,7 @@ int cObj::StrLog(ostream &ostr, int level)
 		else
 #endif
 		{
-			cTimePrint now;
+			cTime now;
 			ostr << " (" << level << ") ";
 			if(1)
 			{

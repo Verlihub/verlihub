@@ -201,7 +201,7 @@ namespace nVerliHub {
 				int mUseDNS;
 
 				/// The current time.
-				cTimePrint mTime;
+				cTime mTime;
 
 				/// Measure the frequency of the server.
 				nUtils::cMeanFrequency<unsigned ,21> mFrequency;
