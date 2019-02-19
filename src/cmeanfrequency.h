@@ -45,13 +45,13 @@ template<class T, int max_size=20> class cMeanFrequency
 {
 	public:
 	/** period length over which it is measured */
-	cTimePrint mOverPeriod;
+	cTime mOverPeriod;
 	/** length of every part or resolution */
-	cTimePrint mPeriodPart;
+	cTime mPeriodPart;
 	/** start and end of mesured time */
-	cTimePrint mStart, mEnd;
+	cTime mStart, mEnd;
 	/** start (maybe end) of the partly period where we are now */
-	cTimePrint mPart;
+	cTime mPart;
 	/** resolution of mesure */
 	int mResolution;
 	/** counts of events in every part of pertiod/resolution */
@@ -74,20 +74,20 @@ template<class T, int max_size=20> class cMeanFrequency
 	/************** conctruction */
 	cMeanFrequency()
 	{
-		cTimePrint now;
+		cTime now;
 		mResolution = max_size;
 		SetPeriod(0.);
 		Reset(now);
 	}
 
-	cMeanFrequency(const cTimePrint &now)
+	cMeanFrequency(const cTime &now)
 	{
 		mResolution = max_size;
 		SetPeriod(1.);
 		Reset(now);
 	}
 
-	cMeanFrequency(const cTimePrint &now, double per, int res):
+	cMeanFrequency(const cTime &now, double per, int res):
 		mOverPeriod(per),
 		mPeriodPart(per/res),
 		mResolution(res)
@@ -96,13 +96,13 @@ template<class T, int max_size=20> class cMeanFrequency
 	}
 
 	/** insert/add */
-	void Insert(const cTimePrint &now, T data=1)
+	void Insert(const cTime &now, T data=1)
 	{
 		Adjust(now);
 		mCounts[(mStartIdx+mNumFill) % mResolution] += data;
 	}
 
-	double GetMean(const cTimePrint &now)
+	double GetMean(const cTime &now)
 	{
 		T sum = CountAll(now);
 		double Sum = sum;
@@ -113,7 +113,7 @@ template<class T, int max_size=20> class cMeanFrequency
 	}
 
 	/** calculate count over all period */
-	T CountAll(const cTimePrint &now)
+	T CountAll(const cTime &now)
 	{
 		Adjust(now);
 		T sum=0;
@@ -127,12 +127,12 @@ template<class T, int max_size=20> class cMeanFrequency
 	};
 
 	/** adjust state to current time */
-	void Adjust(const cTimePrint &now)
+	void Adjust(const cTime &now)
 	{
 		// need adjustment
 		if( mEnd < now )
 		{
-			cTimePrint t(mEnd);
+			cTime t(mEnd);
 			t += mOverPeriod; // if last adjustment happend more thern period ago
 			// in this case we can empty all
 			if( t < now ) { Reset(now); return; }
@@ -160,7 +160,7 @@ template<class T, int max_size=20> class cMeanFrequency
 		if (mStartIdx >= mResolution) mStartIdx -= mResolution;
 	}
 
-	void Reset(const cTimePrint &now)
+	void Reset(const cTime &now)
 	{
 		memset(&mCounts,0, sizeof(mCounts));
 		mStart = now;
@@ -175,7 +175,7 @@ template<class T, int max_size=20> class cMeanFrequency
 	/** setup the opeverperiod and the resolution */
 	void SetPeriod(double per)
 	{
-		mOverPeriod = cTimePrint(per);
+		mOverPeriod = cTime(per);
 		mPeriodPart = mOverPeriod / mResolution;
 	}
 

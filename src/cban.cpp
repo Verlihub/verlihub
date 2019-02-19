@@ -129,7 +129,7 @@ void cBan::DisplayUser(ostream &os)
 	os << " [*] " << _("Time") << ": ";
 
 	if (mDateEnd) {
-		cTimePrint HowLong(mDateEnd - mS->mTime.Sec());
+		cTime HowLong(mDateEnd - mS->mTime.Sec());
 		os << autosprintf(_("%s left"), HowLong.AsPeriod().AsString().c_str());
 	} else {
 		os << _("Permanently");
@@ -145,7 +145,7 @@ void cBan::DisplayUser(ostream &os)
 void cUnBan::DisplayUser(ostream &os)
 {
 	this->cBan::DisplayUser(os);
-	os << autosprintf(_("Removed: %s by %s because %s"), cTimePrint(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
+	os << autosprintf(_("Removed: %s by %s because %s"), cTime(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
 }
 */
 
@@ -164,7 +164,7 @@ void cBan::DisplayComplete(ostream &os)
 	os << " [*] " << _("Last hit") << ": ";
 
 	if (mLastHit)
-		os << autosprintf(_("%s ago"), cTimePrint(mS->mTime.Sec() - mLastHit).AsPeriod().AsString().c_str());
+		os << autosprintf(_("%s ago"), cTime(mS->mTime.Sec() - mLastHit).AsPeriod().AsString().c_str());
 	else
 		os << _("Never");
 
@@ -196,7 +196,7 @@ void cBan::SetType(unsigned type)
 void cUnBan::DisplayComplete(ostream &os)
 {
 	this->cBan::DisplayComplete(os);
-	os << autosprintf(_("Removed: %s by %s because %s"), cTimePrint(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
+	os << autosprintf(_("Removed: %s by %s because %s"), cTime(mDateUnban,0).AsDate().AsString().c_str(), mUnNickOp.c_str(), mUnReason.c_str()) << "\r\n";
 }
 */
 
@@ -205,10 +205,10 @@ void cBan::DisplayKick(ostream &os)
 	os << "\t\t";
 
 	if (mDateEnd) {
-		cTimePrint HowLong(mDateEnd - mS->mTime.Sec(), 0);
+		cTime HowLong(mDateEnd - mS->mTime.Sec(), 0);
 
 		if (HowLong.Sec() < 0) {
-			os << autosprintf(_("Expired %s"), cTimePrint(mDateEnd, 0).AsDate().AsString().c_str());
+			os << autosprintf(_("Expired %s"), cTime(mDateEnd, 0).AsDate().AsString().c_str());
 		} else {
 			os << HowLong.AsPeriod().AsString().c_str();
 			os << "\t";
@@ -221,7 +221,7 @@ void cBan::DisplayKick(ostream &os)
 	os << "\t";
 
 	if (mLastHit)
-		os << cTimePrint(mS->mTime.Sec() - mLastHit).AsPeriod().AsString();
+		os << cTime(mS->mTime.Sec() - mLastHit).AsPeriod().AsString();
 	else
 		os << _("Never");
 }

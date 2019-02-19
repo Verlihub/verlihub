@@ -1927,7 +1927,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if ((conn->mpUser->mClass < eUC_VIPUSER) && mS->mC.int_chat_ms && !mS->MinDelayMS(conn->mpUser->mT.chat, mS->mC.int_chat_ms, true)) { // check chat delay, keep resetting timer when user dont read what we say
-		os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you waited only %s."), mS->mC.int_chat_ms, cTimePrint(mS->mTime - conn->mpUser->mT.chat).AsPeriod().AsString().c_str());
+		os << autosprintf(_("Your message wasn't sent because minimum chat delay is %lu ms but you waited only %s."), mS->mC.int_chat_ms, cTime(mS->mTime - conn->mpUser->mT.chat).AsPeriod().AsString().c_str());
 		mS->DCPublicHS(os.str(), conn);
 		return 0;
 	}
@@ -2461,7 +2461,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTime(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2720,7 +2720,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTime(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}
@@ -2884,7 +2884,7 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	if (delay && !mS->MinDelay(conn->mpUser->mT.search, delay)) { // check delay
 		if (mS->mC.search_number && (conn->mpUser->mSearchNumber >= mS->mC.search_number)) {
 			os << autosprintf(_("Don't search too often.")) << ' ';
-			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTimePrint(delay, 0).AsPeriod().AsString().c_str());
+			os << autosprintf(ngettext("You can perform %d search in %s.", "You can perform %d searches in %s.", mS->mC.search_number), mS->mC.search_number, cTime(delay, 0).AsPeriod().AsString().c_str());
 			mS->DCPublicHS(os.str(), conn);
 			return -1;
 		}

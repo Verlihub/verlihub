@@ -43,23 +43,38 @@ namespace nVerliHub {
 cTime::~cTime()
 {}
 
-string cTimePrint::AsString() const
+string cTime::AsString() const
 {
 	ostringstream os;
 	os << (*this);
 	return os.str();
 }
 
-std::ostream& operator<<(std::ostream &os, const cTimePrint &t)
+std::ostream& operator<<(std::ostream &os, const cTime &t)
 {
-	#define CTIME_BUFFSIZE 26
-	static char buf[CTIME_BUFFSIZE + 1];
+	/*
+	#ifdef _WIN32
+		static char *buf;
+	#else
+	*/
+		#define CTIME_BUFFSIZE 26
+		static char buf[CTIME_BUFFSIZE + 1];
+	//#endif
+
 	long n, rest, i;
 	ostringstream ostr;
 
 	switch (t.mPrintType) {
 		case 1:
-			strftime(buf, CTIME_BUFFSIZE + 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t*) & (t.tv_sec)));
+			/*
+			#ifdef _WIN32
+				buf = ctime((const time_t*) & (t.tv_sec));
+			#else
+			*/
+				strftime(buf, CTIME_BUFFSIZE + 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t*) & (t.tv_sec)));
+			//#endif
+
+			buf[strlen(buf)] = 0;
 			os << buf;
 			break;
 
@@ -69,18 +84,14 @@ std::ostream& operator<<(std::ostream &os, const cTimePrint &t)
 			n = rest / (24 * 3600 * 7);
 			rest %= (24 * 3600 * 7);
 
-			if (n > 0) {
-				++i;
+			if ((n > 0) && (++i <= 2))
 				ostr << ' ' << autosprintf(ngettext("%ld week", "%ld weeks", n), n);
-			}
 
 			n = rest / (24 * 3600);
 			rest %= (24 * 3600);
 
-			if (n > 0) {
-				++i;
+			if ((n > 0) && (++i <= 2))
 				ostr << ' ' << autosprintf(ngettext("%ld day", "%ld days", n), n);
-			}
 
 			n = rest / 3600;
 			rest %= 3600;
