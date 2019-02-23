@@ -218,6 +218,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 	}
 
 	bool badit = false;
+	tCLIt emptyit;
 	tCLIt it = old_conn->mIterator;
 
 	/*
@@ -226,7 +227,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 		todo: does this leave any memory leaks?
 	*/
 
-	if (it == mConnList.end()) {
+	if ((it == mConnList.end()) || (it == emptyit)) {
 		vhErr(1) << "Invalid iterator for connection: " << old_conn << endl;
 		badit = true;
 		//throw "Deleting connection without iterator";
@@ -246,7 +247,7 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 	if (!badit)
 		mConnList.erase(it);
 
-	old_conn->mIterator = mConnList.end();
+	old_conn->mIterator = emptyit;
 
 	if (old_conn->mxMyFactory) {
 		old_conn->mxMyFactory->DeleteConn(old_conn);
