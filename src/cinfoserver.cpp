@@ -311,7 +311,7 @@ void cInfoServer::SystemInfo(ostream &os)
 			os << " [*] " << autosprintf(_("Kernel: %s [%s]"), osname.release, osname.machine) << "\r\n\r\n";
 		}
 
-		os << " [*] " << autosprintf(_("Uptime: %s"), cTime(serverInfo.uptime).AsPeriod().AsString().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Uptime: %s"), cTimePrint(serverInfo.uptime).AsPeriod().AsString().c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("Load averages: %.2f %.2f %.2f"), (serverInfo.loads[0] / 65536.0), (serverInfo.loads[1] / 65536.0), (serverInfo.loads[2] / 65536.0)) << "\r\n";
 		os << " [*] " << autosprintf(_("Total processes: %d"), serverInfo.procs) << "\r\n\r\n";
 
@@ -425,7 +425,7 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << "\r\n";
 
 	os << " [*] " << autosprintf(_("Version: %s"), HUB_VERSION_VERS) << "\r\n";
-	os << " [*] " << autosprintf(_("Uptime: %s"), cTime(mServer->mTime - mServer->mStartTime).AsPeriod().AsString().c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Uptime: %s"), cTimePrint(mServer->mTime - mServer->mStartTime).AsPeriod().AsString().c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Frequency: %.4f [%s]"), mServer->mFrequency.GetMean(mServer->mTime), mServer->SysLoadName()) << "\r\n\r\n";
 	os << " [*] " << autosprintf(_("Name: %s"), (mServer->mC.hub_name.size() ? mServer->mC.hub_name.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Owner: %s"), (mServer->mC.hub_owner.size() ? mServer->mC.hub_owner.c_str() : _("Not set"))) << "\r\n";

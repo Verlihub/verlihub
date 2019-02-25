@@ -213,7 +213,7 @@ void cPenaltyList::ListAll(ostream &os)
 					//if (sep)
 						//os << ", ";
 
-					os << autosprintf(_("Chat: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Chat: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -225,7 +225,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("PM: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("PM: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -237,7 +237,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Search: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Search: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -249,7 +249,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Download: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Download: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -261,7 +261,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Share: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Share: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -273,7 +273,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Register: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Register: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -285,7 +285,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Operator chat: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Operator chat: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					sep = true;
 				}
 			}
@@ -297,7 +297,7 @@ void cPenaltyList::ListAll(ostream &os)
 					if (sep)
 						os << ", ";
 
-					os << autosprintf(_("Kick: %s"), cTime(dif).AsPeriod().AsString().c_str());
+					os << autosprintf(_("Kick: %s"), cTimePrint(dif).AsPeriod().AsString().c_str());
 					//sep = true;
 				}
 			}
