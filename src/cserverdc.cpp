@@ -1062,7 +1062,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(conn->IP2Num());
 
 		if (tban && (tban->mUntil > mTime.Sec())) {
-			os << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
+			os << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTimePrint(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
 
 			switch (tban->mType) {
 				case eBT_PASSW:
@@ -1515,7 +1515,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 			cBanList::sTempBan *tban = mBanList->mTempNickBanlist.GetByHash(mBanList->mTempNickBanlist.HashLowerString(nick));
 
 			if (tban && (tban->mUntil > mTime.Sec())) {
-				errmsg << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTime(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
+				errmsg << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTimePrint(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
 
 				switch (tban->mType) {
 					case eBT_RECON:
@@ -2572,7 +2572,7 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 
 	if (((mC.host_header > 2) ? 2 : mC.host_header) == where) {
 		ostringstream os;
-		cTime runtime;
+		cTimePrint runtime;
 		runtime -= mStartTime;
 
 		if (mC.extended_welcome_message) {
@@ -2682,7 +2682,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 				mBanList->NewBan(ban, kick, (/*user->mToBan*/to_ban ? /*user->mBanTime*/ban_time : mC.tban_kick), eBF_NICKIP);
 
 				if (ban.mDateEnd) {
-					cTime age(ban.mDateEnd - mTime.Sec(), 0);
+					cTimePrint age(ban.mDateEnd - mTime.Sec(), 0);
 
 					if (mC.notify_kicks_to_all == -1) {
 						ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());

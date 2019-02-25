@@ -206,7 +206,7 @@ void cMsgList::UpdateCache()
 
 ostream & operator << (ostream &os, sMessage &Msg)
 {
-	const cTime date_sent(Msg.mDateSent,0);
+	const cTimePrint date_sent(Msg.mDateSent,0);
 	switch (Msg.mPrintType) {
 		case sMessage::AS_SUBJECT:
 			os << autosprintf(_("From: %s To: %s\nDate: %s\nSubject: %s\n"), Msg.mSender.c_str(), Msg.mReceiver.c_str(), date_sent.AsDate().AsString().c_str(), Msg.mSubject.c_str());

@@ -19,6 +19,7 @@
 */
 
 #include "cserverdc.h"
+#include "casyncconn.h"
 #include "creguserinfo.h"
 #include "cdcconf.h"
 #include <string>
@@ -344,9 +345,9 @@ void cDCConf::AddVars()
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
 	Add("adv_max_upload_kbps", max_upload_kbps, 131072.);
-	Add("adv_max_outbuf_size", max_outbuf_size, 1048576ul);
-	Add("adv_max_outfill_size", max_outfill_size, 786432ul);
-	Add("adv_max_unblock_size", max_unblock_size, 524288ul);
+	Add("adv_max_outbuf_size", max_outbuf_size, (unsigned long)MAX_SEND_SIZE);
+	Add("adv_max_outfill_size", max_outfill_size, (unsigned long)MAX_SEND_FILL_SIZE);
+	Add("adv_max_unblock_size", max_unblock_size, (unsigned long)MAX_SEND_UNBLOCK_SIZE);
 	Add("adv_max_message_size", mS.mMaxLineLength, 10240ul);
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache", use_reglist_cache, true);

@@ -109,9 +109,9 @@ istream & operator >> (istream &is, cRegUserInfo &ui)
 ostream& operator << (ostream &os, cRegUserInfo &ui)
 {
 	os << "\r\n [*] " << autosprintf(_("Class: %d"), ui.mClass) << "\r\n";
-	os << " [*] " << autosprintf(_("Registered on: %s [%s]"), (ui.mRegDate ? cTime(ui.mRegDate, 0).AsDate().AsString().c_str() : _("Unknown")), (ui.mRegOp.size() ? ui.mRegOp.c_str() : _("Not set"))) << "\r\n";
-	os << " [*] " << autosprintf(_("Last login: %s [%d] [%s]"), (ui.mLoginLast ? cTime(ui.mLoginLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mLoginCount, (ui.mLoginIP.size() ? ui.mLoginIP.c_str() : _("Not set"))) << "\r\n";
-	os << " [*] " << autosprintf(_("Last error: %s [%d] [%s]"), (ui.mErrorLast ? cTime(ui.mErrorLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mErrorCount, (ui.mErrorIP.size() ? ui.mErrorIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Registered on: %s [%s]"), (ui.mRegDate ? cTimePrint(ui.mRegDate, 0).AsDate().AsString().c_str() : _("Unknown")), (ui.mRegOp.size() ? ui.mRegOp.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Last login: %s [%d] [%s]"), (ui.mLoginLast ? cTimePrint(ui.mLoginLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mLoginCount, (ui.mLoginIP.size() ? ui.mLoginIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Last error: %s [%d] [%s]"), (ui.mErrorLast ? cTimePrint(ui.mErrorLast, 0).AsDate().AsString().c_str() : _("Never")), ui.mErrorCount, (ui.mErrorIP.size() ? ui.mErrorIP.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Password set: %s"), ((ui.mPwdChange || ui.mPasswd.empty()) ? _("No") : _("Yes"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Enabled: %s"), (ui.mEnabled ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Protected: %s"), (ui.mClassProtect ? _("Yes") : _("No"))) << "\r\n";

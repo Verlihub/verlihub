@@ -1065,7 +1065,7 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	if (mDBCO) {
 		os << " [*] " << autosprintf(_("Type: %s"), mDBCO->metadata.database_type) << "\r\n";
 		os << " [*] " << autosprintf(_("Binary version: %d.%d"), (unsigned short)mDBCO->metadata.binary_format_major_version, (unsigned short)mDBCO->metadata.binary_format_minor_version) << "\r\n";
-		os << " [*] " << autosprintf(_("Build time: %s"), cTime((long)mDBCO->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Build time: %s"), cTimePrint((long)mDBCO->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("Node count: %d"), (unsigned int)mDBCO->metadata.node_count) << "\r\n";
 		os << " [*] " << autosprintf(_("File name: %s"), mDBCO->filename) << "\r\n";
 
@@ -1079,7 +1079,7 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	if (mDBCI) {
 		os << " [*] " << autosprintf(_("Type: %s"), mDBCI->metadata.database_type) << "\r\n";
 		os << " [*] " << autosprintf(_("Binary version: %d.%d"), (unsigned short)mDBCI->metadata.binary_format_major_version, (unsigned short)mDBCI->metadata.binary_format_minor_version) << "\r\n";
-		os << " [*] " << autosprintf(_("Build time: %s"), cTime((long)mDBCI->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Build time: %s"), cTimePrint((long)mDBCI->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("Node count: %d"), (unsigned int)mDBCI->metadata.node_count) << "\r\n";
 		os << " [*] " << autosprintf(_("File name: %s"), mDBCI->filename) << "\r\n";
 
@@ -1093,7 +1093,7 @@ void cMaxMindDB::ShowInfo(ostream &os)
 	if (mDBAS) {
 		os << " [*] " << autosprintf(_("Type: %s"), mDBAS->metadata.database_type) << "\r\n";
 		os << " [*] " << autosprintf(_("Binary version: %d.%d"), (unsigned short)mDBAS->metadata.binary_format_major_version, (unsigned short)mDBAS->metadata.binary_format_minor_version) << "\r\n";
-		os << " [*] " << autosprintf(_("Build time: %s"), cTime((long)mDBAS->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Build time: %s"), cTimePrint((long)mDBAS->metadata.build_epoch).AsDate().AsString().c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("Node count: %d"), (unsigned int)mDBAS->metadata.node_count) << "\r\n";
 		os << " [*] " << autosprintf(_("File name: %s"), mDBAS->filename) << "\r\n";
 

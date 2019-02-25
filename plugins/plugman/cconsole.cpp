@@ -40,7 +40,7 @@ void cPlugConsole::ListHead(ostream *os)
 	(*os) << "\r\n\r\n";
 	(*os) << " [*] " << autosprintf(_("%s version: %s"), mOwner->Name().c_str(), mOwner->Version().c_str()) << "\r\n";
 	(*os) << " [*] " << autosprintf(_("%s executable: %s"), HUB_VERSION_NAME, mOwner->mServer->mExecPath.c_str()) << "\r\n";
-	(*os) << " [*] " << autosprintf(_("%s build time: %s"), HUB_VERSION_NAME, cTime(mOwner->mList->mVHTime, 0).AsDate().AsString().c_str()) << "\r\n";
+	(*os) << " [*] " << autosprintf(_("%s build time: %s"), HUB_VERSION_NAME, cTimePrint(mOwner->mList->mVHTime, 0).AsDate().AsString().c_str()) << "\r\n";
 }
 
 const char *cPlugConsole::CmdSuffix()
