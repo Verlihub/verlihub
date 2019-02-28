@@ -94,7 +94,7 @@ class cConfigBaseBase : public cObj
 		*/
 		struct iterator
 		{
-			iterator(){}
+			iterator():mC(NULL){}
 			iterator (class cConfigBaseBase *C,const tIVIt &it):mC(C),mIT(it){}
 			cConfigItemBase * operator* () { return mC->mhItems.GetByHash(*mIT);}
 			iterator &operator ++() { ++mIT; return *this; }
@@ -104,7 +104,7 @@ class cConfigBaseBase : public cObj
 				return mIT != it.mIT;
 			}
 
-			cConfigBaseBase *mC = NULL;
+			cConfigBaseBase *mC;
 			tIVIt mIT;
 			iterator &Set(class cConfigBaseBase *C,const tIVIt &it){mC=C;mIT=it; return *this;}
 
