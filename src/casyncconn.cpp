@@ -85,7 +85,6 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
-	mIterator(0),
 	ok(desc > 0),
 	mWritable(true),
 	mxServer(s),
@@ -160,7 +159,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
-	mIterator(0),
 	ok(false),
 	mWritable(true),
 	mxServer(NULL),
