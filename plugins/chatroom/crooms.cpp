@@ -77,8 +77,10 @@ void cRoom::OnLoad()
 		mChatRoom->mClass = tUserCl(3);
 
 		if (mTopic.size()) {
+#ifdef USE_BUFFER_RESERVE
 			if (desc.capacity() < (desc.size() + 2 + mTopic.size()))
 				desc.reserve(desc.size() + 2 + mTopic.size());
+#endif
 
 			desc.append(": ");
 			desc.append(mTopic);

@@ -63,7 +63,9 @@ bool cpiFloodprot::OnNewConn(cConnDC *conn)
 {
 	if (!mFloodprotect->AddConn(conn, 1)) {
 		string omsg;
+#ifdef USE_BUFFER_RESERVE
 		omsg.reserve(63 + 1);
+#endif
 		omsg = "Sorry, the limit of connections from your IP has been exceeded."; // length = 63
 		conn->Send(omsg, true);
 		conn->CloseNice(500); // not sure if this is needed
@@ -77,7 +79,9 @@ bool cpiFloodprot::OnUserLogin(cUser *user)
 {
 	if (!mFloodprotect->AddConn(user->mxConn, 1)) {
 		string omsg;
+#ifdef USE_BUFFER_RESERVE
 		omsg.reserve(76 + 1);
+#endif
 		omsg = "Sorry, the limit of unregistered connections form your IP has been exceeded."; // length = 76
 		user->mxConn->Send(omsg, true);
 		user->mxConn->CloseNice(500); // not sure if this is needed

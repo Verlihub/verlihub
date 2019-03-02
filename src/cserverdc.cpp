@@ -164,7 +164,9 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mOpchatList.SetNickListSeparator("\r\n");
 
 	string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), val_new, val_old; // add the bots
+#ifdef USE_BUFFER_RESERVE
 	tag.reserve(1 + name.size() + 3 + vers.size() + 17);
+#endif
 	tag.append(1, '<');
 	tag.append(name);
 	tag.append(" V:");
@@ -401,9 +403,13 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_class, int max_class, bool delay)
 {
 	string msg, nick, data;
+#ifdef USE_BUFFER_RESERVE
 	nick.reserve(from.size()); // first use
+#endif
 	nick = from;
+#ifdef USE_BUFFER_RESERVE
 	data.reserve(txt.size());
+#endif
 	data = txt;
 	mP.Create_Chat(msg, from, txt, true); // reserve for pipe
 
@@ -424,9 +430,13 @@ int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 {
 	string msg, nick, data;
+#ifdef USE_BUFFER_RESERVE
 	nick.reserve(mC.hub_security.size()); // first use
+#endif
 	nick = mC.hub_security;
+#ifdef USE_BUFFER_RESERVE
 	data.reserve(text.size());
+#endif
 	data = text;
 	mP.Create_Chat(msg, nick, text, true); // reserve for pipe
 	mUserList.SendToAll(msg, delay, true);
@@ -653,7 +663,9 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here, bug?
 {
 	string str;
+#ifdef USE_BUFFER_RESERVE
 	str.reserve(data.size() + 1); // reserve for pipe
+#endif
 	str = data;
 	cConnDC *conn;
 	tCLIt i;
@@ -677,8 +689,10 @@ int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm,
 		conn = (cConnDC*)(*i);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
+#ifdef USE_BUFFER_RESERVE
 			if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
 				str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
+#endif
 
 			str = start + conn->mpUser->mNick + end;
 			conn->Send(str, true); // pipe is added by default for safety
@@ -726,8 +740,10 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
 
+#ifdef USE_BUFFER_RESERVE
 			if (temp.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
 				temp.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
+#endif
 
 			temp = start + conn->mpUser->mNick + tend; // finalize
 			conn->Send(temp, true); // pipe is added by default for safety
@@ -775,8 +791,10 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
 
+#ifdef USE_BUFFER_RESERVE
 			if (tmsg.capacity() < (tmsg.size() + 1)) // reserve for pipe
 				tmsg.reserve(tmsg.size() + 1);
+#endif
 
 			conn->Send(tmsg, true); // pipe is added by default for safety
 			tot++;
@@ -800,8 +818,10 @@ int cServerDC::SendToAllWithNickCC(const string &start, const string &end, int c
 			str = conn->GetGeoCC();
 
 			if (cc_zone.find(str) != cc_zone.npos) {
+#ifdef USE_BUFFER_RESERVE
 				if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
 					str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
+#endif
 
 				str = start + conn->mpUser->mNick + end;
 				conn->Send(str, true); // pipe is added by default for safety
@@ -851,8 +871,10 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 				ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 				ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
 
+#ifdef USE_BUFFER_RESERVE
 				if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + tend.size() + 1)) // reserve for pipe
 					str.reserve(start.size() + conn->mpUser->mNick.size() + tend.size() + 1);
+#endif
 
 				str = start + conn->mpUser->mNick + tend; // finalize
 				conn->Send(str, true); // pipe is added by default for safety
@@ -870,11 +892,13 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 	tCLIt i;
 	unsigned int count = 0;
 	size_t saved = 0, len_data = data.size(), len_tths = tths.size();
+#ifdef USE_BUFFER_RESERVE
 	string _tths, _data;
 	_tths.reserve(tths.size() + 1); // first use, reserve for pipe
 	_tths = tths;
 	_data.reserve(data.size() + 1);
 	_data = data;
+#endif
 
 	if (len_tths)
 		saved = len_data - len_tths;
@@ -909,9 +933,17 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 				mProtoSaved[1] += saved; // add saved upload with tths
+#ifdef USE_BUFFER_RESERVE
 				other->Send(_tths, true, !mC.delayed_search);
+#else
+				other->Send(tths, true, !mC.delayed_search);
+#endif
 			} else {
+#ifdef USE_BUFFER_RESERVE
 				other->Send(_data, true, !mC.delayed_search);
+#else
+				other->Send(data, true, !mC.delayed_search);
+#endif
 			}
 
 			count++;
@@ -948,9 +980,17 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
+#ifdef USE_BUFFER_RESERVE
 					other->Send(_tths, true, !mC.delayed_search);
+#else
+					other->Send(tths, true, !mC.delayed_search);
+#endif
 				} else {
+#ifdef USE_BUFFER_RESERVE
 					other->Send(_data, true, !mC.delayed_search);
+#else
+					other->Send(data, true, !mC.delayed_search);
+#endif
 				}
 
 				count++;
@@ -983,9 +1023,17 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
+#ifdef USE_BUFFER_RESERVE
 					other->Send(_tths, true, !mC.delayed_search);
+#else
+					other->Send(tths, true, !mC.delayed_search);
+#endif
 				} else {
+#ifdef USE_BUFFER_RESERVE
 					other->Send(_data, true, !mC.delayed_search);
+#else
+					other->Send(data, true, !mC.delayed_search);
+#endif
 				}
 
 				count++;
@@ -1018,7 +1066,9 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 		if (conn && conn->mpUser && (other->mpUser->mNickHash == conn->mpUser->mNickHash)) // skip self
 			continue;
 
+#ifdef USE_BUFFER_RESERVE
 		dest.reserve(other->mpUser->mExtJSON.size() + 1);
+#endif
 		dest.append(other->mpUser->mExtJSON);
 		dest.append(1, '|');
 		count++;
@@ -1039,7 +1089,9 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 			return -1;
 	#endif
 
+#ifdef USE_BUFFER_RESERVE
 	conn->mLock.reserve(22 + 4); // better to reserve
+#endif
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // length = 22
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
@@ -1371,7 +1423,9 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string data;
+#ifdef USE_BUFFER_RESERVE
 	data.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
+#endif
 	data = user->mMyINFO;
 	mUserList.SendToAll(data, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
 
@@ -2178,13 +2232,17 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 			ipnum = conn->IP2Num();
 
 			if (exact && (ip_min == ipnum)) {
+#ifdef USE_BUFFER_RESERVE
 				dest.reserve(sep.size() + (*it)->mNick.size()); // reserve all the way
+#endif
 				dest.append(sep);
 				dest.append((*it)->mNick);
 				tot++;
 
 			} else if ((ip_min <= ipnum) && (ip_max >= ipnum)) {
+#ifdef USE_BUFFER_RESERVE
 				dest.reserve(sep.size() + (*it)->mNick.size() + 2 + conn->AddrIP().size() + 1); // reserve all the way
+#endif
 				dest.append(sep);
 				dest.append((*it)->mNick);
 				dest.append(" [");
@@ -2829,7 +2887,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc") || (svar == "cmd_start_op") || (svar == "cmd_start_user")) && (val_new != val_old)) { // take care of special hub configs in real time
 				string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), data;
+#ifdef USE_BUFFER_RESERVE
 				tag.reserve(1 + name.size() + 3 + vers.size() + 17);
+#endif
 				tag.append(1, '<');
 				tag.append(name);
 				tag.append(" V:");
@@ -2886,14 +2946,18 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 				} else if (svar == "hub_security_desc") {
 					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
+#ifdef USE_BUFFER_RESERVE
 					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
+#endif
 					data = mHubSec->mMyINFO;
 					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
 						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
+#ifdef USE_BUFFER_RESERVE
 						data.reserve(mOpChat->mMyINFO.size() + 1); // first use, reserve for pipe
+#endif
 						data = mOpChat->mMyINFO;
 						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 					}

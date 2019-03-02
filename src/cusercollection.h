@@ -142,7 +142,9 @@ public:
 			mList(list)
 		{
 			/*
+#ifdef USE_BUFFER_RESERVE
 			mSep.reserve(2);
+#endif
 			mSep = "$$";
 			*/
 		}
@@ -158,7 +160,9 @@ public:
 			ShrinkStringToFit(mList);
 
 			if (mStart.size()) {
+#ifdef USE_BUFFER_RESERVE
 				mList.reserve(mStart.size());
+#endif
 				mList.append(mStart);
 			}
 		}
@@ -176,7 +180,9 @@ public:
 		ufDoInfoList(string &list):
 			ufDoNickList(list)
 		{
+#ifdef USE_BUFFER_RESERVE
 			mSep.reserve(1);
+#endif
 			mSep = "|";
 		}
 
@@ -193,8 +199,10 @@ public:
 		ufDoIPList(string &list):
 			ufDoNickList(list)
 		{
+#ifdef USE_BUFFER_RESERVE
 			mSep.reserve(2);
 			mStart.reserve(8);
+#endif
 			mSep = "$$";
 			mStart = "$UserIP ";
 		}
@@ -231,13 +239,17 @@ public:
 
 	void SetNickListStart(const string &start)
 	{
+#ifdef USE_BUFFER_RESERVE
 		mNickListMaker.mStart.reserve(start.size());
+#endif
 		mNickListMaker.mStart = start;
 	}
 
 	void SetNickListSeparator(const string &sep)
 	{
+#ifdef USE_BUFFER_RESERVE
 		mNickListMaker.mSep.reserve(sep.size());
+#endif
 		mNickListMaker.mSep = sep;
 	}
 

@@ -62,7 +62,9 @@ inline void AppendReservePlusPipe(string &dest, string &data, const bool pipe)
 	if (pipe) // must always be already reserved for pipe
 		data.append(1, '|');
 
+#ifdef USE_BUFFER_RESERVE
 	dest.reserve(dest.size() + data.size());
+#endif
 	dest.append(data);
 }
 

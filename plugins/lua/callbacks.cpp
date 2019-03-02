@@ -2200,8 +2200,10 @@ int _EditBot(lua_State *L)
 
 	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
 
+#ifdef USE_BUFFER_RESERVE
 	if (temp.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
 		temp.reserve(robot->mMyINFO.size() + 1);
+#endif
 
 	temp = robot->mMyINFO;
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all

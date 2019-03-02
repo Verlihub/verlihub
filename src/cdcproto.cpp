@@ -380,6 +380,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	istringstream is(supports);
 	string feature, omsg, pars;
 
+#ifdef USE_BUFFER_RESERVE
 	pars.reserve( // all possible support flags, i think we win by doing this due to massive appendings later, todo: update list when new flags added
 		/*OpPlus */7 +
 		/*NoHello */8 +
@@ -401,6 +402,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		/*HubURL */7 +
 		/*ExtJSON2 */9
 	);
+#endif
 
 	while (1) {
 		feature = mS->mEmpty;
@@ -1360,15 +1362,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		*/
 
 		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), myinfo) != 0)) {
+#ifdef USE_BUFFER_RESERVE
 			if (conn->mpUser->mMyINFO.capacity() < myinfo.size())
 				conn->mpUser->mMyINFO.reserve(myinfo.size());
+#endif
 
 			conn->mpUser->mMyINFO = myinfo;
+#ifdef USE_BUFFER_RESERVE
 			myinfo.reserve(myinfo.size() + 1); // reserve for pipe
+#endif
 			mS->mUserList.SendToAll(myinfo, mS->mC.delayed_myinfo, true);
 		}
 	} else { // user logs in for the first time
+#ifdef USE_BUFFER_RESERVE
 		conn->mpUser->mMyINFO.reserve(myinfo.size()); // first use
+#endif
 		conn->mpUser->mMyINFO = myinfo;
 		conn->SetLSFlag(eLS_MYINFO);
 
@@ -1627,10 +1635,14 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 		{
 			if (conn->mpUser->mExtJSON.empty() || (StrCompare(msg->mStr, 0, conn->mpUser->mExtJSON.size(), conn->mpUser->mExtJSON) != 0)) {
 				string _str;
+#ifdef USE_BUFFER_RESERVE
 				_str.reserve(msg->mStr.size() + 1); // first use, reserve for pipe
+#endif
 				_str = msg->mStr;
 				mS->mUserList.SendToAllWithFeature(_str, eSF_EXTJSON2, mS->mC.delayed_myinfo, true);
+#ifdef USE_BUFFER_RESERVE
 				conn->mpUser->mExtJSON.reserve(msg->mStr.size());
+#endif
 				conn->mpUser->mExtJSON = msg->mStr;
 			}
 		}
@@ -1672,8 +1684,10 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 		return 0;
 
 	if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
+#ifdef USE_BUFFER_RESERVE
 		if (omsg.capacity() < (user->mMyINFO.size() + 1))
 			omsg.reserve(user->mMyINFO.size() + 1); // reserve for pipe
+#endif
 
 		omsg = user->mMyINFO;
 		conn->Send(omsg, true, false); // must be flushed, else user can wait for data forever
@@ -1793,7 +1807,9 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	string _str;
+#ifdef USE_BUFFER_RESERVE
 	_str.reserve(msg->mStr.size() + 1); // first use
+#endif
 	_str = msg->mStr;
 	other->mxConn->Send(_str, true); // send it
 	return 0;
@@ -1898,7 +1914,9 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	string mcto;
 
 	if (other->mxConn->mFeatures & eSF_MCTO) { // send as is if supported by client
+#ifdef USE_BUFFER_RESERVE
 		mcto.reserve(msg->mStr.size() + 1); // reserve for pipe
+#endif
 		mcto = msg->mStr;
 	} else { // convert to private main chat message
 		Create_Chat(mcto, conn->mpUser->mNick, text, true); // reserve for pipe
@@ -1984,7 +2002,9 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	string _str;
+#ifdef USE_BUFFER_RESERVE
 	_str.reserve(msg->mStr.size() + 1); // first use, reserve for pipe
+#endif
 	_str = msg->mStr;
 	mS->mChatUsers.SendToAll(_str, mS->mC.delayed_chat, true); // send it
 	return 0;
@@ -2348,7 +2368,9 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	#endif
 
 	string _str;
+#ifdef USE_BUFFER_RESERVE
 	_str.reserve(msg->mStr.size() + 1); // first use
+#endif
 	_str = msg->mStr;
 	other->mxConn->Send(_str, true); // send it
 	return 0;
@@ -3008,7 +3030,9 @@ int cDCProto::DC_SR(cMessageDC *msg, cConnDC *conn)
 		return 0;
 
 	string sr;
+#ifdef USE_BUFFER_RESERVE
 	sr.reserve(msg->mChunks[eCH_SR_TO].first/* - 1 + 1*/); // first use, reserve for pipe
+#endif
 	sr.assign(msg->mStr, 0, msg->mChunks[eCH_SR_TO].first - 1); // cut the end
 	other->mxConn->Send(sr, true, !mS->mC.delayed_search); // part of search, must be delayed too
 	return 0;
@@ -3093,7 +3117,9 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << mS->mC.hub_encoding;
 
 	string info;
+#ifdef USE_BUFFER_RESERVE
 	info.reserve(os.str().size() + 1); // first use, reserve for pipe
+#endif
 	info = os.str();
 	conn->Send(info, true, false);
 	conn->SetLSFlag(eLS_BOTINFO);
@@ -3137,13 +3163,17 @@ int cDCProto::DCO_UserIP(cMessageDC *msg, cConnDC *conn)
 
 		if (other && other->mInList) {
 			if (other->mxConn) { // real user
+#ifdef USE_BUFFER_RESERVE
 				back.reserve(back.size() + nick.size() + 1 + other->mxConn->AddrIP().size() + sep.size()); // we are always reserving, no need for capacity check
+#endif
 				back.append(nick);
 				back.append(1, ' ');
 				back.append(other->mxConn->AddrIP());
 
 			} else { // bots have local ip
+#ifdef USE_BUFFER_RESERVE
 				back.reserve(back.size() + nick.size() + 1 + 9 + sep.size()); // we are always reserving, no need for capacity check
+#endif
 				back.append(nick);
 				back.append(" 127.0.0.1"); // size() = 1 + 9
 			}
@@ -3350,13 +3380,17 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 
 	const string &ip = msg->ChunkString(eCH_1_PARAM);
 	string nicklist, sep("$$");
+#ifdef USE_BUFFER_RESERVE
 	nicklist.reserve(13 + ip.size() + 1);
+#endif
 	nicklist.append("$UsersWithIP ");
 	nicklist.append(ip);
 	nicklist.append(1, '$');
 	const unsigned long num = cBanList::Ip2Num(ip);
 	mS->WhoIP(num, num, nicklist, sep, true);
+#ifdef USE_BUFFER_RESERVE
 	nicklist.reserve(nicklist.size() + 1); // reserve for pipe
+#endif
 	conn->Send(nicklist, true);
 	return 0;
 }
@@ -4061,8 +4095,10 @@ void cDCProto::Create_MyINFO(string &dest, const string &nick, const string &des
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1 + (pipe ? 1 : 0)))
 		dest.reserve(13 + nick.size() + 1 + desc.size() + 3 + speed.size() + 1 + mail.size() + 1 + share.size() + 1 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$MyINFO $ALL ");
 	dest.append(nick);
@@ -4082,8 +4118,10 @@ void cDCProto::Create_Lock(string &dest, const string &lock, const string &name,
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (6 + lock.size() + 4 + name.size() + 1 + vers.size() + (pipe ? 1 : 0)))
 		dest.reserve(6 + lock.size() + 4 + name.size() + 1 + vers.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Lock ");
 	dest.append(lock);
@@ -4098,8 +4136,10 @@ void cDCProto::Create_Chat(string &dest, const string &nick, const string &text,
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (1 + nick.size() + 2 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(1 + nick.size() + 2 + text.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append(1, '<');
 	dest.append(nick);
@@ -4112,8 +4152,10 @@ void cDCProto::Create_Me(string &dest, const string &nick, const string &text, c
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (3 + nick.size() + 1 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(3 + nick.size() + 1 + text.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("** ");
 	dest.append(nick);
@@ -4126,8 +4168,10 @@ void cDCProto::Create_PM(string &dest,const string &from, const string &to, cons
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0)))
 		dest.reserve(5 + to.size() + 7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$To: ");
 	dest.append(to);
@@ -4148,11 +4192,13 @@ void cDCProto::Create_PMForBroadcast(string &start, string &end, const string &f
 	if (end.size())
 		end.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (start.capacity() < (5))
 		start.reserve(5);
 
 	if (end.capacity() < (7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0)))
 		end.reserve(7 + from.size() + 3 + sign.size() + 2 + text.size() + (pipe ? 1 : 0));
+#endif
 
 	start.append("$To: ");
 	end.append(" From: ");
@@ -4168,6 +4214,7 @@ void cDCProto::Create_HubName(string &dest, const string &name, const string &to
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (topic.size()) {
 		if (dest.capacity() < (9 + name.size() + 3 + topic.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + name.size() + 3 + topic.size() + (pipe ? 1 : 0));
@@ -4175,6 +4222,7 @@ void cDCProto::Create_HubName(string &dest, const string &name, const string &to
 		if (dest.capacity() < (9 + name.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + name.size() + (pipe ? 1 : 0));
 	}
+#endif
 
 	dest.append("$HubName ");
 	dest.append(name);
@@ -4190,8 +4238,10 @@ void cDCProto::Create_HubTopic(string &dest, const string &topic, const bool pip
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + topic.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + topic.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$HubTopic ");
 	dest.append(topic);
@@ -4202,8 +4252,10 @@ void cDCProto::Create_Quit(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (6 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(6 + nick.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Quit ");
 	dest.append(nick);
@@ -4214,8 +4266,10 @@ void cDCProto::Create_Hello(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (7 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(7 + nick.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Hello ");
 	dest.append(nick);
@@ -4226,8 +4280,10 @@ void cDCProto::Create_LogedIn(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (9 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(9 + nick.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$LogedIn ");
 	dest.append(nick);
@@ -4238,8 +4294,10 @@ void cDCProto::Create_ValidateDenide(string &dest, const string &nick, const boo
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (16 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(16 + nick.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$ValidateDenide ");
 	dest.append(nick);
@@ -4250,6 +4308,7 @@ void cDCProto::Create_BadNick(string &dest, const string &id, const string &par,
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (par.size()) {
 		if (dest.capacity() < (9 + id.size() + 1 + par.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + id.size() + 1 + par.size() + (pipe ? 1 : 0));
@@ -4257,6 +4316,7 @@ void cDCProto::Create_BadNick(string &dest, const string &id, const string &par,
 		if (dest.capacity() < (9 + id.size() + (pipe ? 1 : 0)))
 			dest.reserve(9 + id.size() + (pipe ? 1 : 0));
 	}
+#endif
 
 	dest.append("$BadNick ");
 	dest.append(id);
@@ -4272,8 +4332,10 @@ void cDCProto::Create_NickList(string &dest, const string &nick, const bool pipe
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(10 + nick.size() + 2 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$NickList ");
 	dest.append(nick);
@@ -4285,8 +4347,10 @@ void cDCProto::Create_OpList(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(8 + nick.size() + 2 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$OpList ");
 	dest.append(nick);
@@ -4298,8 +4362,10 @@ void cDCProto::Create_BotList(string &dest, const string &nick, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (9 + nick.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(9 + nick.size() + 2 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$BotList ");
 	dest.append(nick);
@@ -4311,8 +4377,10 @@ void cDCProto::Create_Key(string &dest, const string &key, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (5 + key.size() + (pipe ? 1 : 0)))
 		dest.reserve(5 + key.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Key ");
 	dest.append(key);
@@ -4322,8 +4390,10 @@ void cDCProto::Create_FailOver(string &dest, const string &addr, const bool pipe
 {
 	dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + addr.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + addr.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$FailOver ");
 	dest.append(addr);
@@ -4335,10 +4405,12 @@ void cDCProto::Create_ForceMove(string &dest, const string &addr, const bool cle
 		if (dest.size())
 			dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 		if (dest.capacity() < (11 + addr.size() + (pipe ? 1 : 0)))
 			dest.reserve(11 + addr.size() + (pipe ? 1 : 0));
 	} else if (dest.capacity() < (dest.size() + 11 + addr.size() + (pipe ? 1 : 0))) {
 		dest.reserve(dest.size() + 11 + addr.size() + (pipe ? 1 : 0));
+#endif
 	}
 
 	dest.append("$ForceMove ");
@@ -4350,8 +4422,10 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size() + (pipe ? 1 : 0)))
 		dest.reserve(13 + nick.size() + 1 + addr.size() + 1 + port.size() + extra.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$ConnectToMe ");
 	dest.append(nick);
@@ -4367,8 +4441,10 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &lim
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + addr.size() + 1 + lims.size() + spat.size() + (pipe ? 1 : 0)))
 		dest.reserve(8 + addr.size() + 1 + lims.size() + spat.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Search ");
 	dest.append(addr);
@@ -4382,6 +4458,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &tth
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (pas) {
 		if (dest.capacity() < (8 + 4 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
 			dest.reserve(8 + 4 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0));
@@ -4389,6 +4466,7 @@ void cDCProto::Create_Search(string &dest, const string &addr, const string &tth
 		if (dest.capacity() < (8 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0)))
 			dest.reserve(8 + addr.size() + 13 + tth.size() + (pipe ? 1 : 0));
 	}
+#endif
 
 	dest.append("$Search ");
 
@@ -4405,8 +4483,10 @@ void cDCProto::Create_SA(string &dest, const string &tth, const string &addr, co
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (4 + tth.size() + 1 + addr.size() + (pipe ? 1 : 0)))
 		dest.reserve(4 + tth.size() + 1 + addr.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$SA ");
 	dest.append(tth);
@@ -4419,8 +4499,10 @@ void cDCProto::Create_SP(string &dest, const string &tth, const string &nick, co
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (4 + tth.size() + 1 + nick.size() + (pipe ? 1 : 0)))
 		dest.reserve(4 + tth.size() + 1 + nick.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$SP ");
 	dest.append(tth);
@@ -4433,8 +4515,10 @@ void cDCProto::Create_UserIP(string &dest, const string &list, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + list.size() + (pipe ? 1 : 0)))
 		dest.reserve(8 + list.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$UserIP ");
 	dest.append(list);
@@ -4445,8 +4529,10 @@ void cDCProto::Create_UserIP(string &dest, const string &nick, const string &add
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0)))
 		dest.reserve(8 + nick.size() + 1 + addr.size() + 2 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$UserIP ");
 	dest.append(nick);
@@ -4460,8 +4546,10 @@ void cDCProto::Create_GetPass(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + (pipe ? 1 : 0)))
 		dest.reserve(8 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$GetPass");
 }
@@ -4471,8 +4559,10 @@ void cDCProto::Create_BadPass(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (8 + (pipe ? 1 : 0)))
 		dest.reserve(8 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$BadPass");
 }
@@ -4482,8 +4572,10 @@ void cDCProto::Create_GetHubURL(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + (pipe ? 1 : 0)))
 		dest.reserve(10 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$GetHubURL");
 }
@@ -4493,8 +4585,10 @@ void cDCProto::Create_HubIsFull(string &dest, const bool pipe)
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + (pipe ? 1 : 0)))
 		dest.reserve(10 + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$HubIsFull");
 }
@@ -4504,8 +4598,10 @@ void cDCProto::Create_Supports(string &dest, const string &flags, const bool pip
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + flags.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + flags.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$Supports ");
 	dest.append(flags);
@@ -4516,8 +4612,10 @@ void cDCProto::Create_NickRule(string &dest, const string &rules, const bool pip
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (10 + rules.size() + (pipe ? 1 : 0)))
 		dest.reserve(10 + rules.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$NickRule ");
 	dest.append(rules);
@@ -4528,8 +4626,10 @@ void cDCProto::Create_SearchRule(string &dest, const string &rules, const bool p
 	if (dest.size())
 		dest.clear();
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (12 + rules.size() + (pipe ? 1 : 0)))
 		dest.reserve(12 + rules.size() + (pipe ? 1 : 0));
+#endif
 
 	dest.append("$SearchRule ");
 	dest.append(rules);
@@ -4540,7 +4640,9 @@ cConnType* cDCProto::ParseSpeed(const string &uspeed)
 	string speed;
 
 	if (uspeed.size() > 1) {
+#ifdef USE_BUFFER_RESERVE
 		speed.reserve(uspeed.size() - 1);
+#endif
 		speed.assign(uspeed, 0, uspeed.size() - 1);
 	}
 

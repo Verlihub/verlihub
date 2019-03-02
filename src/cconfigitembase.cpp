@@ -104,7 +104,9 @@ void cConfigItemBasePChar::ConvertFrom(const std::string &str)
 
 void cConfigItemBaseBool::ConvertTo(std::string &str)
 {
+#ifdef USE_BUFFER_RESERVE
 	str.reserve(1);
+#endif
 	str = ((this->Data()) ? "1" : "0");
 }
 
@@ -158,7 +160,9 @@ void cConfigItemBaseChar::ConvertTo(std::string &str)
 
 void cConfigItemBaseString::ConvertTo(std::string &str)
 {
+#ifdef USE_BUFFER_RESERVE
 	str.reserve(this->Data().size());
+#endif
 	str = this->Data();
 }
 

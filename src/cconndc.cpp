@@ -201,7 +201,9 @@ int cConnDC::OnTimer(const cTime &now)
 
 	if (mpUser && mpUser->mInList && Server()->mC.delayed_ping && Server()->MinDelay(mT.ping, Server()->mC.delayed_ping)) { // check frozen users, every minute by default
 		string omsg;
+#ifdef USE_BUFFER_RESERVE
 		omsg.reserve(1);
+#endif
 		omsg.append(1, '|');
 		Send(omsg, false);
 	}

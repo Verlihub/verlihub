@@ -70,7 +70,9 @@ cPluginRobot* cVHPlugin::NewRobot(const string &nick, const int clas, const stri
 {
 	cPluginRobot *robot = new cPluginRobot(nick, this, mServer);
 	robot->mClass = tUserCl(clas); //set class and myinfo before adding to list, so server can show user to all
+#ifdef USE_BUFFER_RESERVE
 	robot->mMyINFO.reserve(info.size());
+#endif
 	robot->mMyINFO = info;
 
 	if (AddRobot(robot)) {

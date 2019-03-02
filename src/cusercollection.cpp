@@ -37,7 +37,9 @@ void cUserCollection::ufSendWithNick::operator()(cUserBase *user)
 {
 	if (user && user->CanSend()) {
 		string _str;
+#ifdef USE_BUFFER_RESERVE
 		_str.reserve(mDataStart.size() + user->mNick.size() + mDataEnd.size() + 1); // first use, reserve for pipe
+#endif
 		_str = mDataStart + user->mNick + mDataEnd;
 		user->Send(_str, true, true); // always flushes
 	}
@@ -94,14 +96,18 @@ void cUserCollection::Nick2Hash(const string &nick, tHashType &hash)
 
 void cUserCollection::ufDoNickList::AppendList(string &list, cUserBase *user)
 {
+#ifdef USE_BUFFER_RESERVE
 	list.reserve(list.size() + user->mNick.size() + mSep.size()); // always reserve because we are adding new data every time
+#endif
 	list.append(user->mNick);
 	list.append(mSep);
 }
 
 void cUserCollection::ufDoInfoList::AppendList(string &list, cUserBase *user)
 {
+#ifdef USE_BUFFER_RESERVE
 	list.reserve(list.size() + user->mMyINFO.size() + mSep.size()); // always reserve because we are adding new data every time
+#endif
 	list.append(user->mMyINFO);
 	list.append(mSep);
 }
@@ -111,13 +117,17 @@ void cUserCollection::ufDoIPList::AppendList(string &list, cUserBase *user)
 	cUser *point = static_cast<cUser*>(user);
 
 	if (point->mxConn) { // real user
+#ifdef USE_BUFFER_RESERVE
 		list.reserve(list.size() + point->mNick.size() + 1 + point->mxConn->AddrIP().size() + mSep.size()); // always reserve because we are adding new data every time
+#endif
 		list.append(point->mNick);
 		list.append(1, ' ');
 		list.append(point->mxConn->AddrIP());
 
 	} else { // bots have local ip
+#ifdef USE_BUFFER_RESERVE
 		list.reserve(list.size() + point->mNick.size() + 1 + 9 + mSep.size());
+#endif
 		list.append(point->mNick);
 		list.append(" 127.0.0.1"); // size() = 1 + 9
 	}
@@ -149,8 +159,10 @@ void cUserCollection::GetNickList(string &dest, const bool pipe)
 		mRemakeNextNickList = false;
 	}
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (mNickList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mNickList.size() + (pipe ? 1 : 0)));
+#endif
 
 	dest = mNickList;
 }
@@ -163,8 +175,10 @@ void cUserCollection::GetInfoList(string &dest, const bool pipe)
 		mRemakeNextInfoList = false;
 	}
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (mInfoList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mInfoList.size() + (pipe ? 1 : 0)));
+#endif
 
 	dest = mInfoList;
 }
@@ -177,8 +191,10 @@ void cUserCollection::GetIPList(string &dest, const bool pipe)
 		mRemakeNextIPList = false;
 	}
 
+#ifdef USE_BUFFER_RESERVE
 	if (dest.capacity() < (mIPList.size() + (pipe ? 1 : 0)))
 		dest.reserve((mIPList.size() + (pipe ? 1 : 0)));
+#endif
 
 	dest = mIPList;
 }
