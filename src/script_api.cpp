@@ -722,8 +722,10 @@ bool DelRegUser(const char *nick)
 			serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 			if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 				data.reserve(user->mMyINFO.size() + 1);
+#endif
 
 			data = user->mMyINFO;
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
@@ -800,8 +802,10 @@ bool SetRegClass(const char *nick, int clas)
 				serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 				if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 					data.reserve(user->mMyINFO.size() + 1);
+#endif
 
 				data = user->mMyINFO;
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
@@ -889,8 +893,10 @@ bool CheckDataPipe(string &data)
 	if (data.size() && (data[data.size() - 1] == '|'))
 		return false;
 
+#ifdef USE_BUFFER_RESERVE
 	if (data.capacity() < (data.size() + 1)) // reserve for pipe
 		data.reserve(data.size() + 1);
+#endif
 
 	return true;
 }

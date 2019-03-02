@@ -152,7 +152,9 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int clas, cons
 	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
 	//pi->mPerl.editBot(nick, shar, (char*)robot->mMyINFO.c_str(), clas);
 	string temp;
+#ifdef USE_BUFFER_RESERVE
 	temp.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
+#endif
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 
 	if (clas >= 3) { // todo: oplist_class, userip

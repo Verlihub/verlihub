@@ -1338,11 +1338,15 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 	freee(origmail);
 	freee(origsize);
 
+#ifdef USE_BUFFER_RESERVE
 	if (u->mMyINFO.capacity() < newinfo.size())
 		u->mMyINFO.reserve(newinfo.size());
+#endif
 
 	u->mMyINFO = newinfo;
+#ifdef USE_BUFFER_RESERVE
 	newinfo.reserve(newinfo.size() + 1); // reserve for pipe
+#endif
 	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true);
 	return w_ret1;
 }

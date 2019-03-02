@@ -772,8 +772,10 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 					mOwner->mP.Create_Quit(data, conn->mpUser->mNick, true); // send quit to all, reserve for pipe
 					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 					if (data.capacity() < (conn->mpUser->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 						data.reserve(conn->mpUser->mMyINFO.size() + 1);
+#endif
 
 					data = conn->mpUser->mMyINFO;
 					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
@@ -1152,8 +1154,10 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 						mOwner->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 							msg.reserve(user->mMyINFO.size() + 1);
+#endif
 
 						msg = user->mMyINFO;
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
@@ -1425,7 +1429,9 @@ bool cDCConsole::cfRaw::operator()()
 
 			if (user && user->mxConn) {
 				if (id == eRC_PM) {
+#ifdef USE_BUFFER_RESERVE
 					cmd.reserve(cmd.size() + nick.size() + end.size() + 1); // more additions, reserve for pipe again
+#endif
 					cmd.append(nick);
 					cmd.append(end);
 				}
@@ -3181,8 +3187,10 @@ bool cDCConsole::cfRegUsr::operator()()
 						mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all
 							msg.reserve(user->mMyINFO.size() + 1);
+#endif
 
 						msg = user->mMyINFO;
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
@@ -3261,8 +3269,10 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
+#endif
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
@@ -3363,8 +3373,10 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
+#endif
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
@@ -3398,8 +3410,10 @@ bool cDCConsole::cfRegUsr::operator()()
 							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
+#ifdef USE_BUFFER_RESERVE
 							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
 								msg.reserve(user->mMyINFO.size() + 1);
+#endif
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
