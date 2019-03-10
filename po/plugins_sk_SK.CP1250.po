@@ -4,16 +4,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2018-01-21 01:48+0100\n"
-"PO-Revision-Date: 2017-01-05 09:08+0000\n"
+"POT-Creation-Date: 2019-03-02 11:44+0100\n"
+"PO-Revision-Date: 2019-01-09 06:47+0000\n"
 "Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Slovak (Slovakia) (http://www.transifex.com/feardc/verlihub-100/language/sk_SK/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: sk_SK\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 2.0.6\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Poedit 2.2.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -134,7 +134,7 @@ msgstr ""
 msgid "invalid key"
 msgstr ""
 
-#: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:156
+#: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:160
 msgid "Date"
 msgstr ""
 
@@ -142,7 +142,7 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:157
+#: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:161
 msgid "Nickname"
 msgstr ""
 
@@ -150,12 +150,12 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
-#: ../plugins/iplog/ciplog.cpp:148
+#: ../plugins/iplog/ciplog.cpp:152
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
 msgstr ""
 
-#: ../plugins/iplog/ciplog.cpp:150
+#: ../plugins/iplog/ciplog.cpp:154
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
 msgstr ""
@@ -223,13 +223,13 @@ msgid "Loaded Lua scripts"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:158
-#: ../plugins/perl/cconsole.cpp:69 ../plugins/python/cconsole.cpp:87
+#: ../plugins/perl/cconsole.cpp:56 ../plugins/python/cconsole.cpp:87
 #: ../plugins/python/cconsole.cpp:107
 msgid "ID"
 msgstr ""
 
 #: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:159
-#: ../plugins/perl/cconsole.cpp:70 ../plugins/python/cconsole.cpp:88
+#: ../plugins/perl/cconsole.cpp:57 ../plugins/python/cconsole.cpp:88
 #: ../plugins/python/cconsole.cpp:108
 msgid "Script"
 msgstr ""
@@ -238,8 +238,8 @@ msgstr ""
 msgid "Memory"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:229
-#: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:186
+#: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:230
+#: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:187
 #, c-format
 msgid "Failed loading directory: %s"
 msgstr ""
@@ -249,76 +249,77 @@ msgstr ""
 msgid "Lua scripts found in: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:204 ../plugins/lua/cconsole.cpp:317
+#: ../plugins/lua/cconsole.cpp:204 ../plugins/lua/cconsole.cpp:321
 #, c-format
 msgid "Script stopped: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:212 ../plugins/lua/cconsole.cpp:327
-#: ../plugins/python/cconsole.cpp:164 ../plugins/python/cconsole.cpp:284
+#: ../plugins/lua/cconsole.cpp:213 ../plugins/lua/cconsole.cpp:332
+#: ../plugins/python/cconsole.cpp:165 ../plugins/python/cconsole.cpp:288
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:329
-#: ../plugins/python/cconsole.cpp:166 ../plugins/python/cconsole.cpp:286
+#: ../plugins/lua/cconsole.cpp:215 ../plugins/lua/cconsole.cpp:334
+#: ../plugins/python/cconsole.cpp:167 ../plugins/python/cconsole.cpp:290
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:248
+#: ../plugins/lua/cconsole.cpp:249
 #, c-format
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:264
+#: ../plugins/lua/cconsole.cpp:265
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:277 ../plugins/lua/cconsole.cpp:340
-msgid "Failed to allocate new Lua interpreter."
+#: ../plugins/lua/cconsole.cpp:280 ../plugins/lua/cconsole.cpp:347
+#, c-format
+msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:345
+#: ../plugins/lua/cconsole.cpp:285 ../plugins/lua/cconsole.cpp:352
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:350
-#: ../plugins/perl/cconsole.cpp:176 ../plugins/perl/cconsole.cpp:219
-#: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:301
+#: ../plugins/lua/cconsole.cpp:290 ../plugins/lua/cconsole.cpp:357
+#: ../plugins/perl/cconsole.cpp:164 ../plugins/perl/cconsole.cpp:208
+#: ../plugins/python/cconsole.cpp:242 ../plugins/python/cconsole.cpp:307
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:368
+#: ../plugins/lua/cconsole.cpp:376
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:370
+#: ../plugins/lua/cconsole.cpp:378
 #, c-format
 msgid "Current log level: %d"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:388 ../plugins/python/cconsole.cpp:322
+#: ../plugins/lua/cconsole.cpp:396 ../plugins/python/cconsole.cpp:328
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:390
+#: ../plugins/lua/cconsole.cpp:398
 #, c-format
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:200
+#: ../plugins/lua/cluainterpreter.cpp:205
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:206
+#: ../plugins/lua/cluainterpreter.cpp:211
 msgid "Unknown error"
 msgstr ""
 
@@ -338,12 +339,13 @@ msgid_plural "You have %d messages in your box."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:229
+#: ../plugins/messenger/cmsglist.cpp:212
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -351,7 +353,7 @@ msgid ""
 "Subject: %s\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:232
+#: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
 msgid ""
 "From: %s To: %s\n"
@@ -361,7 +363,7 @@ msgid ""
 "----\n"
 msgstr ""
 
-#: ../plugins/messenger/cmsglist.cpp:235
+#: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
 msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
@@ -369,41 +371,41 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:68
+#: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:112 ../plugins/perl/cconsole.cpp:201
+#: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:189
 #, c-format
 msgid "Script %s stopped."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:121 ../plugins/perl/cconsole.cpp:211
+#: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:123
+#: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:150
+#: ../plugins/perl/cconsole.cpp:138
 #, c-format
 msgid "Failed loading directory %s."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:171
+#: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:178 ../plugins/perl/cconsole.cpp:221
+#: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
 msgstr ""
 
-#: ../plugins/perl/cconsole.cpp:213
+#: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
 msgstr ""
@@ -423,100 +425,100 @@ msgstr ""
 msgid "%s build time: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:145
+#: ../plugins/plugman/cconsole.cpp:158
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:150
+#: ../plugins/plugman/cconsole.cpp:163
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:182 ../plugins/plugman/cplugs.cpp:133
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
 msgid "Plugin loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:187 ../plugins/plugman/cconsole.cpp:210
-#: ../plugins/plugman/cconsole.cpp:233
+#: ../plugins/plugman/cconsole.cpp:200 ../plugins/plugman/cconsole.cpp:223
+#: ../plugins/plugman/cconsole.cpp:246
 #, c-format
 msgid "Plugin not found: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:202
+#: ../plugins/plugman/cconsole.cpp:215
 msgid "Plugin unloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:205
+#: ../plugins/plugman/cconsole.cpp:218
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:225 ../plugins/plugman/cplugs.cpp:181
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
 msgid "Plugin reloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:228
+#: ../plugins/plugman/cconsole.cpp:241
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:46
+#: ../plugins/plugman/cplugs.cpp:47
 msgid "Plugin not found."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:117
+#: ../plugins/plugman/cplugs.cpp:118
 msgid "Plugin does not support scripts."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:123
+#: ../plugins/plugman/cplugs.cpp:124
 msgid "Script loaded."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:125
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Error loading script."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:154
+#: ../plugins/plugman/cplugs.cpp:155
 msgid "Plugin needs to be recompiled."
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-#, c-format
-msgid "Name: %s [%s] [%s]"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "On"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Off"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Automated"
-msgstr ""
-
-#: ../plugins/plugman/cplugs.cpp:205
-msgid "Manual"
 msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:206
 #, c-format
+msgid "Name: %s [%s] [%s]"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "On"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Off"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Automated"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:206
+msgid "Manual"
+msgstr ""
+
+#: ../plugins/plugman/cplugs.cpp:207
+#, c-format
 msgid "Path: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:209
+#: ../plugins/plugman/cplugs.cpp:210
 #, c-format
 msgid "Description: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:212
+#: ../plugins/plugman/cplugs.cpp:213
 #, c-format
 msgid "Last error: %s"
 msgstr ""
 
 #: ../plugins/python/cconsole.cpp:82 ../plugins/python/cconsole.cpp:133
-#: ../plugins/python/cconsole.cpp:174 ../plugins/python/cconsole.cpp:248
-#: ../plugins/python/cconsole.cpp:310
+#: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
+#: ../plugins/python/cconsole.cpp:316
 msgid "Python interpreter is not loaded."
 msgstr ""
 
@@ -529,28 +531,29 @@ msgstr ""
 msgid "Python scripts found in: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:275
+#: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:278
 #, c-format
 msgid "Script #%d stopped: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:205
+#: ../plugins/python/cconsole.cpp:206
 #, c-format
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:221
+#: ../plugins/python/cconsole.cpp:222
 #, c-format
 msgid "Script #%d is already loaded: %s"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:229 ../plugins/python/cconsole.cpp:292
-msgid "Failed to allocate new Python interpreter."
+#: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
+#, c-format
+msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
 msgstr ""
 
-#: ../plugins/python/cconsole.cpp:236 ../plugins/python/cconsole.cpp:298
+#: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
 msgid "Script #%d is now loaded: %s"
 msgstr ""
