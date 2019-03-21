@@ -53,6 +53,8 @@ cpiLua::cpiLua():
 
 cpiLua::~cpiLua()
 {
+	const char *args[] = { NULL };
+	CallAll("UnLoad", args);
 	ostringstream val;
 	val << this->log_level;
 	SetConfig("pi_lua", "log_level", val.str().c_str());

@@ -43,12 +43,8 @@ cLuaInterpreter::cLuaInterpreter(const string& configname, const string& scriptn
 
 cLuaInterpreter::~cLuaInterpreter()
 {
-	const char *args[] = { NULL };
-
-	if (mL) {
-		CallFunction("UnLoad", args);
+	if (mL)
 		lua_close(mL);
-	}
 
 	clean();
 }
