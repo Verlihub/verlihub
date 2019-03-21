@@ -200,6 +200,8 @@ bool cConsole::cfDelLuaScript::operator()()
 		li = *it;
 
 		if (li && ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
+			const char *args[] = { NULL };
+			li->CallFunction("UnLoad", args);
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			GetPI()->mLua.erase(it);
@@ -318,6 +320,8 @@ bool cConsole::cfReloadLuaScript::operator()()
 
 		if (li && ((number && (num == i)) || (!number && (StrCompare(li->mScriptName, 0, li->mScriptName.size(), scriptfile) == 0)))) {
 			found = true;
+			const char *args[] = { NULL };
+			li->CallFunction("UnLoad", args);
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			scriptfile = li->mScriptName;
 			GetPI()->mLua.erase(it);
