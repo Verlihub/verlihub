@@ -8,7 +8,7 @@ Verlihub 1.2.0.x
 
 Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating systems that provides useful high level functions such as:
 
-  * ~~Very low RAM and CPU usage~~ (it has become very rich during the years, so it does require good hardware for large hubs, this statement is correct only for small hubs below 2000 users)
+  * Very low RAM and CPU usage
   * It can hold more than 20.000 users
   * Utility scripts for simple installation and hub management
   * Export and import of hub setting via MySQL
