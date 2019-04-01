@@ -1873,8 +1873,8 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 					const char *msg = PyString_AsString(pValue);
 
 					if (msg) {
-						log2("PY: [%d:%s] CallHook OnScriptQuery: returned %s\n", id, name, msg);
 						res = w_pack("s", msg);
+						log2("PY: [%d:%s] CallHook OnScriptQuery: returned %s\n", id, name, msg);
 						break;
 					}
 				}
@@ -1906,14 +1906,7 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 
 					if (PyArg_ParseTuple(pValue, temp.c_str(), &str, &num)) {
 						res = w_pack("sl", str, num);
-
-						if (log_level > 1) {
-							temp.clear();
-							temp.append(w_HookName(func));
-							printf("PY: [%d:%s] CallHook %s: returned ( %s, %ld )\n", id, name, temp.c_str(), str, num);
-							fflush(stdout);
-						}
-
+						log2("PY: [%d:%s] CallHook %s: returned ( %s, %ld )\n", id, name, w_HookName(func), str, num);
 					} else {
 						PyErr_Print();
 					}
