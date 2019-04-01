@@ -1812,69 +1812,73 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 	PyObject *pValue = PyObject_CallObject(pFunc, args);
 	Py_DECREF(args);
 	Py_DECREF(pFunc);
+
 	if (pValue != NULL) {
 		bool firstMyINFO = false;
+
 		switch (func) {
 			// case W_OnParsedMsgValidateNick:
 			// case W_OnOperatorCommand:
 			// case W_OnUserCommand:
 			case W_OnParsedMsgChat:
-				if (PyString_Check(pValue)) {
-					// a replacement message
+				if (PyString_Check(pValue)) { // replacement message
 					const char *msg = PyString_AsString(pValue);
+
 					if (msg) {
 						log2("PY: [%d:%s] CallHook OnParsedMsgChat: returned %s\n", id, name, msg);
 						res = w_pack("ss", NULL, msg);
 						break;
 					}
 				}
-				if (PyTuple_Check(pValue))
-					if (PyTuple_Size(pValue) == 2) {
-						// nick and message replacements (NULL values mean no change)
-						const char *nick = NULL;
-						const char *msg = NULL;
-						if (PyArg_ParseTuple(pValue, "zz:OnParsedMsgChat", &nick, &msg)) {
-							res = w_pack("ss", nick, msg);
-							log2("PY: [%d:%s] CallHook OnParsedMsgChat: returned ( %s, %s )\n",
-								id, name, nick, msg);
-							break;
-						} else
-							PyErr_Print();
-						break;
+
+				if (PyTuple_Check(pValue) && (PyTuple_Size(pValue) == 2)) { // nick and message replacements, null mean no change
+					const char *nick = NULL;
+					const char *msg = NULL;
+
+					if (PyArg_ParseTuple(pValue, "zz:OnParsedMsgChat", &nick, &msg)) {
+						res = w_pack("ss", nick, msg);
+						log2("PY: [%d:%s] CallHook OnParsedMsgChat: returned ( %s, %s )\n", id, name, nick, msg);
+					} else {
+						PyErr_Print();
 					}
+
+					break;
+				}
+
 			// case W_OnParsedMsgSearch:
 			// case W_OnParsedMsgSR:
 			case W_OnFirstMyINFO:
 				firstMyINFO = true;
+
 			case W_OnParsedMsgMyINFO:
-				if (PyTuple_Check(pValue))
-					if (PyTuple_Size(pValue) == 5) { 
-						// (desc, tag, speed, email, sharesize)
-						const char *desc = NULL;
-						const char *tag = NULL;
-						const char *speed = NULL;
-						const char *email = NULL;
-						const char *share = NULL;
-						if (PyArg_ParseTuple(pValue, (firstMyINFO ? "zzzzz:OnFirstMyINFO"
-								: "zzzzz:OnParsedMsgMyINFO"), &desc, &tag, &speed, &email, &share)) {
-							res = w_pack("sssss", desc, tag, speed, email, share);
-							log2("PY: [%d:%s] CallHook %s: returned ( %s, %s, %s, %s, %s )\n", id, name,
-								(firstMyINFO ? "OnFirstMyINFO" : "OnParsedMsgMyINFO"),
-								desc, tag, speed, email, share);
-							break;
-						} else
-							PyErr_Print();
-						break;
+				if (PyTuple_Check(pValue) && (PyTuple_Size(pValue) == 5)) { // (desc, tag, speed, mail, share)
+					const char *desc = NULL;
+					const char *tag = NULL;
+					const char *speed = NULL;
+					const char *email = NULL;
+					const char *share = NULL;
+
+					if (PyArg_ParseTuple(pValue, (firstMyINFO ? "zzzzz:OnFirstMyINFO" : "zzzzz:OnParsedMsgMyINFO"), &desc, &tag, &speed, &email, &share)) {
+						res = w_pack("sssss", desc, tag, speed, email, share);
+						log2("PY: [%d:%s] CallHook %s: returned ( %s, %s, %s, %s, %s )\n", id, name, (firstMyINFO ? "OnFirstMyINFO" : "OnParsedMsgMyINFO"), desc, tag, speed, email, share);
+					} else {
+						PyErr_Print();
 					}
+
+					break;
+				}
+
 			case W_OnScriptQuery:
 				if (PyString_Check(pValue)) {
 					const char *msg = PyString_AsString(pValue);
+
 					if (msg) {
 						log2("PY: [%d:%s] CallHook OnScriptQuery: returned %s\n", id, name, msg);
 						res = w_pack("s", msg);
 						break;
 					}
 				}
+
 			// case W_OnParsedMsgAny:
 			// case W_OnParsedMsgAnyEx:
 			// case W_OnOpChatMessage:
@@ -1888,74 +1892,105 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			// case W_OnParsedMsgMCTo:
 			// case W_OnParsedMsgConnectToMe:
 			default:
-				if (pValue == Py_None)
+				if (pValue == Py_None) {
 					res = w_pack("l", (long)1);
-				else if (PyInt_Check(pValue))
+
+				} else if (PyInt_Check(pValue)) {
 					res = w_pack("l", (long)PyInt_AS_LONG(pValue));
-				else {
+
+				} else if (PyTuple_Check(pValue) && (PyTuple_Size(pValue) == 2)) { // (string, result) will send string as protocol message back to user and return result to plugin
+					const char *str = NULL;
+					long num = 1;
+					string temp = "zl:";
+					temp.append(w_HookName(func));
+
+					if (PyArg_ParseTuple(pValue, temp.c_str(), &str, &num)) {
+						res = w_pack("sl", str, num);
+
+						if (log_level > 1) {
+							temp.clear();
+							temp.append(w_HookName(func));
+							printf("PY: [%d:%s] CallHook %s: returned ( %s, %ld )\n", id, name, temp.c_str(), str, num);
+							fflush(stdout);
+						}
+
+					} else {
+						PyErr_Print();
+					}
+
+				} else {
 					if (log_level > 0) {
-						printf("PY: [%d:%s] CallHook %s: unexpected return value: ",
-							id, name, w_HookName(func));
+						printf("PY: [%d:%s] CallHook %s: unexpected return value: ", id, name, w_HookName(func));
 						PyObject_Print(pValue, stdout, 0);
 						printf("\n");
 						fflush(stdout);
 					}
+
 					res = w_pack("l", (long)1);
 				}
+
 				break;
 		}
+
 		Py_DECREF(pValue);
+
 	} else {
-		if (func == W_OnTimer && PyErr_Occurred()) {
+		if ((func == W_OnTimer) && PyErr_Occurred()) {
 			// OnTimer was changed on September 27, 2015 from no arguments to one argument.
 			// We handle it here, so that logs aren't flooded with errors and old scripts keep working.
 			PyObject *exc, *val, *trace, *str;
 			PyErr_Fetch(&exc, &val, &trace);
 
-			if (exc != NULL) PyErr_NormalizeException(&exc, &val, &trace);
-			if (exc != NULL && PyErr_GivenExceptionMatches(exc, PyExc_TypeError)) {
+			if (exc != NULL)
+				PyErr_NormalizeException(&exc, &val, &trace);
+
+			if ((exc != NULL) && PyErr_GivenExceptionMatches(exc, PyExc_TypeError)) {
 				const char *error = NULL;
 				const char *use_zero = "OnTimer() takes no arguments";
 				const char *use_one = "OnTimer() takes exactly 1 argument";
 				Py_INCREF(val);
 				str = PyObject_Str(val);
-				if (str != NULL && PyString_Check(str) && PyString_GET_SIZE(str) != 0)
+
+				if ((str != NULL) && PyString_Check(str) && (PyString_GET_SIZE(str) != 0))
 					error = PyString_AsString(str);
 
 				if (!script->use_old_ontimer && error && !strncmp(error, use_zero, strlen(use_zero))) {
 					script->use_old_ontimer = true;
-					log("PY: [%d:%s] %s didn't expect an argument; we'll call it without it next time\n",
-						id, name, w_HookName(func));
+					log("PY: [%d:%s] %s didn't expect an argument; we'll call it without it next time\n", id, name, w_HookName(func));
 					Py_DECREF(val);
 					PyErr_Clear();
+
 				} else if (script->use_old_ontimer && error && !strncmp(error, use_one, strlen(use_one))) {
 					script->use_old_ontimer = false;
-					log("PY: [%d:%s] %s expected an argument; we'll call it with one next time\n",
-						id, name, w_HookName(func));
+					log("PY: [%d:%s] %s expected an argument; we'll call it with one next time\n", id, name, w_HookName(func));
 					Py_DECREF(val);
 					PyErr_Clear();
+
 				} else {
 					log("PY: [%d:%s] TypeError in %s\n", id, name, w_HookName(func));
 					PyErr_Display(exc, val, trace);
 					fflush(stdout);
 				}
+
 			} else {
 				log("PY: [%d:%s] Other error in %s\n", id, name, w_HookName(func));
 				PyErr_Display(exc, val, trace);
 				fflush(stdout);
 			}
+
 		} else if (PyErr_Occurred()) {
 			log("PY: [%d:%s] Call (%s): failed\n", id, name, w_HookName(func));
 			PyErr_Print();
 			fflush(stdout);
 		}
 	}
-	if (!res) res = w_pack("l", (long)1);
+
+	if (!res)
+		res = w_pack("l", (long)1);
 
 	PyEval_ReleaseThread(script->state);
 	return res;
 }
-
 
 const char *w_HookName(int hook)
 {
