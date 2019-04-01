@@ -596,7 +596,7 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 						msg->ApplyChunk(eCH_CH_MSG);
 					}
 
-					ret = true;  // we have changed the message so we want the hub to process it and send it
+					ret = true; // we have changed the message so we want the hub to process it and send it
 
 				} else if (lib_unpack(result, "sl", &str, &num)) { // string returned, send protocol message to user
 					if (str && (str[0] != 0)) {
@@ -768,11 +768,11 @@ bool cpiPython::OnParsedMsgSR(cConnDC *conn, cMessageDC *msg)
 
 bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, const char *funcname) // common code for OnParsedMsgMyINFO and OnFirstMyINFO
 {
-	if (!funcname)
-		funcname = "???";
-
 	if (!online)
 		return true;
+
+	if (!funcname)
+		funcname = "???";
 
 	if (conn && conn->mpUser && msg) {
 		const char *original = msg->mStr.c_str();
@@ -803,7 +803,7 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 				}
 
 				if (lib_unpack(result, "l", &num)) { // default return value
-					log3("PY: Call %s: returned int:%ld\n", lib_hookname(func), num);
+					log3("PY: Call %s: returned int: %ld\n", lib_hookname(func), num);
 
 					if (!num)
 						ret = false;
