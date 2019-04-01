@@ -118,7 +118,7 @@ public:
 	void LogLevel(int);
 	int char2int(char c);
 	cPythonInterpreter *GetInterpreter(int id);
-	bool CallAll(int func, w_Targs *args);
+	bool CallAll(int func, w_Targs *args, cConnDC *conn = NULL);
 	unsigned int Size() { return mPython.size(); }
 
 	void Empty()

@@ -455,146 +455,191 @@ cPythonInterpreter *cpiPython::GetInterpreter(int id)
 	return NULL;
 }
 
-// the default handler: returns true unless the calback returns 0
-bool cpiPython::CallAll(int func, w_Targs *args)
+bool cpiPython::CallAll(int func, w_Targs *args, cConnDC *conn) // the default handler returns true unless the callback returns false
 {
-	if (!online) return true;
-	w_Targs *result;
-	bool ret = true;
-	long num;
-	if (func != W_OnTimer) {
+	if (!online)
+		return true;
+
+	if (func != W_OnTimer)
 		log2("PY: CallAll %s: parameters %s\n", lib_hookname(func), lib_packprint(args))
-	} else {
+	else
 		log4("PY: CallAll %s\n", lib_hookname(func));
-	}
+
+	bool ret = true;
+
 	if (Size()) {
-		tvPythonInterpreter::iterator it;
-		for (it = mPython.begin(); it != mPython.end(); ++it) {
+		w_Targs *result;
+		long num = 1;
+		const char *str = NULL;
+
+		for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
 			result = (*it)->CallFunction(func, args);
-			if (!result) {
-				// callback doesn't exist or a failure
-				if (func != W_OnTimer) log4("PY: CallAll %s: returned NULL\n", lib_hookname(func));
+
+			if (!result) { // callback doesnt exist
+				if (func != W_OnTimer)
+					log4("PY: CallAll %s: returned NULL\n", lib_hookname(func));
+
 				continue;
 			}
-			if (lib_unpack(result, "l", &num)) {
-				// default return value is 1L, which means: further processing
-				if (func != W_OnTimer) log3("PY: CallAll %s: returned int:%ld\n", lib_hookname(func), num);
-				if (!num) ret = false;  // 0L means no more processing outside this plugin
-			} else {
-				// something unknown was returned... we will let the hub call other plugins
+
+			if (lib_unpack(result, "l", &num)) { // default return value
+				if (func != W_OnTimer)
+					log3("PY: CallAll %s: returned int: %ld\n", lib_hookname(func), num);
+
+				if (!num)
+					ret = false;
+
+			} else if (lib_unpack(result, "sl", &str, &num)) { // string returned, send protocol message to user
+				if (conn && str && (str[0] != 0)) {
+					string data = str;
+					data.append(PipeIfMissing(str));
+					conn->Send(data, false);
+				}
+
+				if (!num)
+					ret = false;
+
+			} else { // something else was returned
 				log1("PY: CallAll %s: unexpected return value %s\n", lib_hookname(func), lib_packprint(result));
 			}
+
 			free(result);
 		}
 	}
-	free(args);  // WARNING: args is freed, do not try to access it after calling CallAll!
+
+	free(args);
 	return ret;
 }
 
 bool cpiPython::OnNewConn(cConnDC *conn)
 {
-	if (conn != NULL) {
+	if (conn) {
 		w_Targs *args = lib_pack("s", conn->AddrIP().c_str());
-		return CallAll(W_OnNewConn, args);
+		return CallAll(W_OnNewConn, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnCloseConn(cConnDC *conn)
 {
-	if (conn != NULL) {
+	if (conn) {
 		w_Targs *args = lib_pack("s", conn->AddrIP().c_str());
-		return CallAll(W_OnCloseConn, args);
+		return CallAll(W_OnCloseConn, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnCloseConnEx(cConnDC *conn)
 {
-	if (conn != NULL) {
+	if (conn) {
 		const char *ip = conn->AddrIP().c_str();
 		long reason = conn->mCloseReason;
 		const char *nick = (conn->mpUser ? conn->mpUser->mNick.c_str() : "");
 		w_Targs *args = lib_pack("sls", ip, reason, nick);
-		return CallAll(W_OnCloseConnEx, args);
+		return CallAll(W_OnCloseConnEx, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 {
-	if (!online) return true;
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (!online)
+		return true;
+
+	if (conn && conn->mpUser && msg) {
 		int func = W_OnParsedMsgChat;
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_CH_MSG).c_str());
 		log2("PY: Call %s: parameters %s\n", lib_hookname(func), lib_packprint(args));
 		bool ret = true;
-		w_Targs *result;
-		long num;
-		const char *nick = NULL;
-		const char *message = NULL;
 
 		if (Size()) {
-			tvPythonInterpreter::iterator it;
-			for (it = mPython.begin(); it != mPython.end(); ++it) {
+			w_Targs *result;
+			long num = 1;
+			const char *str = NULL;
+			const char *nick = NULL;
+			const char *message = NULL;
+
+			for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
 				result = (*it)->CallFunction(func, args);
+
 				if (!result) {
 					log3("PY: Call %s: returned NULL\n", lib_hookname(func));
 					continue;
 				}
-				if (lib_unpack(result, "l", &num)) {
-					// default return value is 1L, which means: further processing
-					log3("PY: Call %s: returned int:%ld\n", lib_hookname(func), num);
-					if (!num) ret = false;  // 0L means no more processing outside this plugin
+
+				if (lib_unpack(result, "l", &num)) { // default return value
+					log3("PY: Call %s: returned int: %ld\n", lib_hookname(func), num);
+
+					if (!num)
+						ret = false;
+
 				} else if (lib_unpack(result, "ss", &nick, &message)) {
 					// Script wants to change nick or contents of the message.
 					// Normally you would use SendDataToAll and return 0 from your script,
 					// but this kind of message modification allows you to process it 
 					// not by just one but as many scripts as you want.
-					log2("PY: modifying message - Call %s: returned %s\n",
-						lib_hookname(func), lib_packprint(result));
+
+					log2("PY: modifying message - Call %s: returned %s\n", lib_hookname(func), lib_packprint(result));
+
 					if (nick) {
 						string &nick0 = msg->ChunkString(eCH_CH_NICK);
 						nick0 = nick;
 						msg->ApplyChunk(eCH_CH_NICK);
 					}
+
 					if (message) {
 						string &message0 = msg->ChunkString(eCH_CH_MSG);
 						message0 = message;
 						msg->ApplyChunk(eCH_CH_MSG);
 					}
-					ret = true;  // we've changed the message so we want the hub to process it and send it
-				} else {
-					// something unknown was returned... we will let the hub call other plugins
-					log1("PY: Call %s: unexpected return value: %s\n",
-						lib_hookname(func), lib_packprint(result));
+
+					ret = true;  // we have changed the message so we want the hub to process it and send it
+
+				} else if (lib_unpack(result, "sl", &str, &num)) { // string returned, send protocol message to user
+					if (str && (str[0] != 0)) {
+						string data = str;
+						data.append(PipeIfMissing(str));
+						conn->Send(data, false);
+					}
+
+					if (!num)
+						ret = false;
+
+				} else { // something unknown was returned
+					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
+
 				free(result);
 			}
 		}
+
 		free(args);
 		return ret;
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgPM(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		w_Targs *args = lib_pack("sss", conn->mpUser->mNick.c_str(),
-			msg->ChunkString(eCH_PM_MSG).c_str(), msg->ChunkString(eCH_PM_TO).c_str());
-		return CallAll(W_OnParsedMsgPM, args);
+	if (conn && conn->mpUser && msg) {
+		w_Targs *args = lib_pack("sss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_PM_MSG).c_str(), msg->ChunkString(eCH_PM_TO).c_str());
+		return CallAll(W_OnParsedMsgPM, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		w_Targs *args = lib_pack("sss", conn->mpUser->mNick.c_str(),
-			msg->ChunkString(eCH_MCTO_MSG).c_str(), msg->ChunkString(eCH_MCTO_TO).c_str());
-		return CallAll(W_OnParsedMsgMCTo, args);
+	if (conn && conn->mpUser && msg) {
+		w_Targs *args = lib_pack("sss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_MCTO_MSG).c_str(), msg->ChunkString(eCH_MCTO_TO).c_str());
+		return CallAll(W_OnParsedMsgMCTo, args, conn);
 	}
+
 	return true;
 }
 
@@ -602,8 +647,9 @@ bool cpiPython::OnParsedMsgSupports(cConnDC *conn, cMessageDC *msg, string *back
 {
 	if (conn && msg && back) {
 		w_Targs *args = lib_pack("sss", conn->AddrIP().c_str(), msg->mStr.c_str(), back->c_str());
-		return CallAll(W_OnParsedMsgSupports, args);
+		return CallAll(W_OnParsedMsgSupports, args, conn);
 	}
+
 	return true;
 }
 
@@ -611,8 +657,9 @@ bool cpiPython::OnParsedMsgMyHubURL(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgMyHubURL, args);
+		return CallAll(W_OnParsedMsgMyHubURL, args, conn);
 	}
+
 	return true;
 }
 
@@ -620,54 +667,59 @@ bool cpiPython::OnParsedMsgExtJSON(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgExtJSON, args);
+		return CallAll(W_OnParsedMsgExtJSON, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgBotINFO(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgBotINFO, args);
+		return CallAll(W_OnParsedMsgBotINFO, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgVersion(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (msg != NULL)) {
+	if (conn && msg) {
 		w_Targs *args = lib_pack("ss", conn->AddrIP().c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgVersion, args);
+		return CallAll(W_OnParsedMsgVersion, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgMyPass(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_1_ALL).c_str());
-		return CallAll(W_OnParsedMsgMyPass, args);
+		return CallAll(W_OnParsedMsgMyPass, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgRevConnectToMe(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_RC_OTHER).c_str());
-		return CallAll(W_OnParsedMsgRevConnectToMe, args);
+		return CallAll(W_OnParsedMsgRevConnectToMe, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
-		w_Targs *args = lib_pack("ssss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_CM_NICK).c_str(),
-			msg->ChunkString(eCH_CM_IP).c_str(), msg->ChunkString(eCH_CM_PORT).c_str());
-		return CallAll(W_OnParsedMsgConnectToMe, args);
+	if (conn && conn->mpUser && msg) {
+		w_Targs *args = lib_pack("ssss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_CM_NICK).c_str(), msg->ChunkString(eCH_CM_IP).c_str(), msg->ChunkString(eCH_CM_PORT).c_str());
+		return CallAll(W_OnParsedMsgConnectToMe, args, conn);
 	}
+
 	return true;
 }
 
@@ -698,7 +750,7 @@ bool cpiPython::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 		}
 
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), data.c_str());
-		return CallAll(W_OnParsedMsgSearch, args);
+		return CallAll(W_OnParsedMsgSearch, args, conn);
 	}
 
 	return true;
@@ -706,49 +758,59 @@ bool cpiPython::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 
 bool cpiPython::OnParsedMsgSR(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->ChunkString(eCH_SR_ALL).c_str());
-		return CallAll(W_OnParsedMsgSR, args);
+		return CallAll(W_OnParsedMsgSR, args, conn);
 	}
+
 	return true;
 }
 
-// Common code for OnParsedMsgMyINFO and OnFirstMyINFO
-bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, const char *funcname)
+bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, const char *funcname) // common code for OnParsedMsgMyINFO and OnFirstMyINFO
 {
-	if (!funcname) funcname = "???";
-	if (!online) return true;
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (!funcname)
+		funcname = "???";
+
+	if (!online)
+		return true;
+
+	if (conn && conn->mpUser && msg) {
 		const char *original = msg->mStr.c_str();
 		char *n, *origdesc, *origtag, *origspeed, *origmail, *origsize;
 		const char *desc, *tag, *speed, *mail, *size;
 		const char *nick = conn->mpUser->mNick.c_str();
+
 		if (!SplitMyINFO(original, &n, &origdesc, &origtag, &origspeed, &origmail, &origsize)) {
 			log1("PY: Call %s: malformed myinfo message: %s\n", funcname, original);
 			return true;
 		}
+
 		w_Targs *args = lib_pack("ssssss", n, origdesc, origtag, origspeed, origmail, origsize);
 		log2("PY: Call %s: parameters %s\n", lib_hookname(func), lib_packprint(args));
 		bool ret = true;
-		w_Targs *result;
-		long num;
 
 		if (Size()) {
-			tvPythonInterpreter::iterator it;
-			for (it = mPython.begin(); it != mPython.end(); ++it) {
+			w_Targs *result;
+			long num = 1;
+			const char *str = NULL;
+
+			for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
 				result = (*it)->CallFunction(func, args);
+
 				if (!result) {
 					log3("PY: Call %s: returned NULL\n", lib_hookname(func));
 					continue;
 				}
-				if (lib_unpack(result, "l", &num)) {
-					// default return value is 1L, which means: further processing
+
+				if (lib_unpack(result, "l", &num)) { // default return value
 					log3("PY: Call %s: returned int:%ld\n", lib_hookname(func), num);
-					if (!num) ret = false;  // 0L means no more processing outside this plugin
-				} else if (lib_unpack(result, "sssss", &desc, &tag, &speed, &mail, &size)) {
-					// script wants to change the contents of myinfo
-					log2("PY: modifying message - Call %s: returned %s\n",
-						lib_hookname(func), lib_packprint(result));
+
+					if (!num)
+						ret = false;
+
+				} else if (lib_unpack(result, "sssss", &desc, &tag, &speed, &mail, &size)) { // script wants to change the contents of myinfo
+					log2("PY: modifying message - Call %s: returned %s\n", lib_hookname(func), lib_packprint(result));
+
 					if (desc || tag || speed || mail || size) {
 						// message chunks need updating to new MyINFO, which has the format:
 						// $MyINFO $ALL <nick> <interests>$ $<speed\x01>$<e-mail>$<sharesize>$
@@ -766,23 +828,35 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 						newinfo += (size) ? size : origsize;
 						newinfo += '$';
 						log3("myinfo: [ %s ] will become: [ %s ]\n", original, newinfo.c_str());
-
 						msg->ReInit();
 						msg->mStr = newinfo;
-						// msg->mType = eDC_MYINFO;
+						//msg->mType = eDC_MYINFO;
 						msg->Parse();
+
 						if (msg->SplitChunks())
 							log1("cpiPython::%s: failed to split new MyINFO into chunks\n", funcname);
 					}
-					ret = true;  // we've changed myinfo so we want the hub to store it now
-				} else {
-					// something unknown was returned... we will let the hub call other plugins
-					log1("PY: Call %s: unexpected return value: %s\n",
-						lib_hookname(func), lib_packprint(result));
+
+					ret = true; // we have changed myinfo so we want the hub to store it now
+
+				} else if (lib_unpack(result, "sl", &str, &num)) { // string returned, send protocol message to user
+					if (str && (str[0] != 0)) {
+						string data = str;
+						data.append(PipeIfMissing(str));
+						conn->Send(data, false);
+					}
+
+					if (!num)
+						ret = false;
+
+				} else { // something else was returned
+					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
+
 				free(result);
 			}
 		}
+
 		freee(args);
 		freee(n);
 		freee(origdesc);
@@ -792,7 +866,8 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 		freee(origsize);
 		return ret;
 	}
-	return true;  // true means further processing
+
+	return true;
 }
 
 bool cpiPython::OnParsedMsgMyINFO(cConnDC *conn, cMessageDC *msg)
@@ -807,28 +882,31 @@ bool cpiPython::OnFirstMyINFO(cConnDC *conn, cMessageDC *msg)
 
 bool cpiPython::OnParsedMsgValidateNick(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("s", msg->ChunkString(eCH_1_ALL).c_str());
-		return CallAll(W_OnParsedMsgValidateNick, args);
+		return CallAll(W_OnParsedMsgValidateNick, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgAny(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgAny, args);
+		return CallAll(W_OnParsedMsgAny, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnParsedMsgAnyEx(cConnDC *conn, cMessageDC *msg)
 {
-	if ((conn != NULL) && (conn->mpUser == NULL) && (msg != NULL)) {
+	if (conn && conn->mpUser && msg) {
 		w_Targs *args = lib_pack("ss", conn->AddrIP().c_str(), msg->mStr.c_str());
-		return CallAll(W_OnParsedMsgAnyEx, args);
+		return CallAll(W_OnParsedMsgAnyEx, args, conn);
 	}
+
 	return true;
 }
 
@@ -838,6 +916,7 @@ bool cpiPython::OnOpChatMessage(string *nick, string *data)
 		w_Targs *args = lib_pack("ss", nick->c_str(), data->c_str());
 		return CallAll(W_OnOpChatMessage, args);
 	}
+
 	return true;
 }
 
@@ -847,6 +926,7 @@ bool cpiPython::OnPublicBotMessage(string *nick, string *data, int min_class, in
 		w_Targs *args = lib_pack("ssll", nick->c_str(), data->c_str(), (long)min_class, (long)max_class);
 		return CallAll(W_OnPublicBotMessage, args);
 	}
+
 	return true;
 }
 
@@ -859,10 +939,10 @@ bool cpiPython::OnUnLoad(long code)
 bool cpiPython::OnCtmToHub(cConnDC *conn, string *ref)
 {
 	if (conn && ref) {
-		w_Targs *args = lib_pack("sslls", conn->mMyNick.c_str(), conn->AddrIP().c_str(),
-			conn->AddrPort(), conn->GetServPort(), ref->c_str());
-		return CallAll(W_OnCtmToHub, args);
+		w_Targs *args = lib_pack("sslls", conn->mMyNick.c_str(), conn->AddrIP().c_str(), conn->AddrPort(), conn->GetServPort(), ref->c_str());
+		return CallAll(W_OnCtmToHub, args, conn);
 	}
+
 	return true;
 }
 
@@ -870,7 +950,7 @@ bool cpiPython::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 {
 	if (conn && conn->mpUser && conn->mpUser->mInList && msg && msg->mStr.size()) { // only after login
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), msg->mStr.c_str());
-		return CallAll(W_OnUnknownMsg, args);
+		return CallAll(W_OnUnknownMsg, args, conn);
 	}
 
 	return true;
@@ -878,11 +958,14 @@ bool cpiPython::OnUnknownMsg(cConnDC *conn, cMessageDC *msg)
 
 bool cpiPython::OnOperatorCommand(cConnDC *conn, string *command)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
-		if (mConsole.DoCommand(*command, conn)) return false;
+	if (conn && conn->mpUser && command) {
+		if (mConsole.DoCommand(*command, conn))
+			return false;
+
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), command->c_str());
-		return CallAll(W_OnOperatorCommand, args);
+		return CallAll(W_OnOperatorCommand, args, conn);
 	}
+
 	return true;
 }
 
@@ -890,8 +973,9 @@ bool cpiPython::OnOperatorKicks(cUser *op, cUser *user, string *why)
 {
 	if (op && user && why) {
 		w_Targs *args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
-		return CallAll(W_OnOperatorKicks, args);
+		return CallAll(W_OnOperatorKicks, args, op->mxConn);
 	}
+
 	return true;
 }
 
@@ -900,34 +984,35 @@ bool cpiPython::OnOperatorDrops(cUser *op, cUser *user, string *why)
 	if (op && user && why) {
 		bool res1, res2;
 		w_Targs *args = lib_pack("ss", op->mNick.c_str(), user->mNick.c_str());
-		// Calling the legacy version first
-		res1 = CallAll(W_OnOperatorDrops, args);
+		res1 = CallAll(W_OnOperatorDrops, args, op->mxConn); // calling the legacy version first
 		args = lib_pack("sss", op->mNick.c_str(), user->mNick.c_str(), why->c_str());
-		res2 = CallAll(W_OnOperatorDropsWithReason, args);
+		res2 = CallAll(W_OnOperatorDropsWithReason, args, op->mxConn);
 		return res1 && res2;
 	}
+
 	return true;
 }
 
 bool cpiPython::OnUserCommand(cConnDC *conn, string *command)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (command != NULL)) {
+	if (conn && conn->mpUser && command) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), command->c_str());
-		return CallAll(W_OnUserCommand, args);
+		return CallAll(W_OnUserCommand, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnHubCommand(cConnDC *conn, string *command, int is_op_cmd, int in_pm)
 {
-	// we chop the first char off command and put it in the prefix variable.
-	if (conn && conn->mpUser && command && command->size() > 0) {
+	if (conn && conn->mpUser && command && (command->size() > 0)) {
 		long uclass = conn->mpUser->mClass;
 		const char *nick = conn->mpUser->mNick.c_str();
-		string prefix(*command, 0, 1);
+		string prefix(*command, 0, 1); // we chop the first char off command and put it in the prefix variable
 		w_Targs *args = lib_pack("sslls", nick, command->c_str() + 1, uclass, (long)in_pm, prefix.c_str());
-		return CallAll(W_OnHubCommand, args);
+		return CallAll(W_OnHubCommand, args, conn);
 	}
+
 	return true;
 }
 
@@ -938,88 +1023,105 @@ bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string 
 			if (!cmd->compare("_hub_security_change")) {
 				cpiPython::botname = *data;
 				log("PY: botname was updated to: %s\n", cpiPython::botname.c_str());
+
 			} else if (!cmd->compare("_opchat_name_change")) {
 				cpiPython::opchatname = *data;
 				log("PY: opchatname was updated to: %s\n", cpiPython::opchatname.c_str());
 			}
 		}
+
 		w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), plug->c_str(), script->c_str());
 		return CallAll(W_OnScriptCommand, args);
 	}
+	
 	return true;
 }
 
 bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
 {
-	if (!online || !cmd || !data || !recipient || !sender || !resp) return true;
+	if (!online || !cmd || !data || !recipient || !sender || !resp)
+		return true;
+
 	int func = W_OnScriptQuery;
 	w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), recipient->c_str(), sender->c_str());
 	log2("PY: Call %s: parameters %s\n", lib_hookname(func), lib_packprint(args));
 	w_Targs *result;
 
 	if (Size()) {
-		tvPythonInterpreter::iterator it;
-		for (it = mPython.begin(); it != mPython.end(); ++it) {
+		for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
 			const char *response;
 			bool should_call = (*it)->receive_all_script_queries;
+
 			if (!should_call) {
 				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
 					should_call = true;
 			}
-			if (!should_call) continue;
+
+			if (!should_call)
+				continue;
+
 			if (!cmd->compare("_get_script_file")) {
 				resp->push_back(ScriptResponse((*it)->mScriptName, (*it)->mScriptName));
 				continue;
 			}
+
 			if (!cmd->compare("_get_script_name")) {
 				resp->push_back(ScriptResponse((*it)->name, (*it)->mScriptName));
 				continue;
 			}
+
 			if (!cmd->compare("_get_script_version")) {
 				resp->push_back(ScriptResponse((*it)->version, (*it)->mScriptName));
 				continue;
 			}
+
 			result = (*it)->CallFunction(func, args);
-			if (!result) continue;
-			if (lib_unpack(result, "s", &response)) {
-				if (response) {
-					ScriptResponse sr;
-					sr.data = string(response);
-					sr.sender = (*it)->mScriptName;
-					resp->push_back(sr);
-				}
+
+			if (!result)
+				continue;
+
+			if (lib_unpack(result, "s", &response) && response) {
+				ScriptResponse sr;
+				sr.data = string(response);
+				sr.sender = (*it)->mScriptName;
+				resp->push_back(sr);
 			}
+
 			free(result);
 		}
 	}
+
 	free(args);
 	return true;
 }
 
 bool cpiPython::OnValidateTag(cConnDC *conn, cDCTag *tag)
 {
-	if ((conn != NULL) && (conn->mpUser != NULL) && (tag != NULL)) {
+	if (conn && conn->mpUser && tag) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), tag->mTag.c_str());
-		return CallAll(W_OnValidateTag, args);
+		return CallAll(W_OnValidateTag, args, conn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnUserLogin(cUser *user)
 {
-	if (user != NULL) {
+	if (user) {
 		w_Targs *args = lib_pack("s", user->mNick.c_str());
-		return CallAll(W_OnUserLogin, args);
+		return CallAll(W_OnUserLogin, args, user->mxConn);
 	}
+
 	return true;
 }
 
 bool cpiPython::OnUserLogout(cUser *user)
 {
-	if (user != NULL) {
+	if (user) {
 		w_Targs *args = lib_pack("s", user->mNick.c_str());
-		return CallAll(W_OnUserLogout, args);
+		return CallAll(W_OnUserLogout, args, user->mxConn);
 	}
+
 	return true;
 }
 
@@ -1029,30 +1131,30 @@ bool cpiPython::OnTimer(__int64 msec)
 	return CallAll(W_OnTimer, args);
 }
 
-bool cpiPython::OnNewReg(cUser *op, string nick, int cls)  // todo: is not called
+bool cpiPython::OnNewReg(cUser *op, string nick, int cls) // todo: is not called
 {
 	const char *opnick = (op ? op->mNick : cpiPython::botname).c_str();
 	w_Targs *args = lib_pack("ssl", opnick, nick.c_str(), (long)cls);
-	return CallAll(W_OnNewReg, args);
+	return CallAll(W_OnNewReg, args, (op ? op->mxConn : NULL));
 }
 
-bool cpiPython::OnNewBan(cUser* user, cBan *ban) // todo: is not called
+bool cpiPython::OnNewBan(cUser *user, cBan *ban) // todo: is not called
 {
-	if (ban != NULL) {
-		w_Targs *args = lib_pack("ssss", ban->mNickOp.c_str(), ban->mIP.c_str(),
-			ban->mNick.c_str(), ban->mReason.c_str());
-		return CallAll(W_OnNewBan, args);
+	if (ban) {
+		w_Targs *args = lib_pack("ssss", ban->mNickOp.c_str(), ban->mIP.c_str(), ban->mNick.c_str(), ban->mReason.c_str());
+		return CallAll(W_OnNewBan, args, (user ? user->mxConn : NULL));
 	}
+
 	return true;
 }
 
 bool cpiPython::OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type)
 {
 	if (user && conf && var && val_new && val_old) {
-		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), 
-			val_new->c_str(), val_old->c_str(), val_type);
-		return CallAll(W_OnSetConfig, args);
+		w_Targs *args = lib_pack("sssssl", user->mNick.c_str(), conf->c_str(), var->c_str(), val_new->c_str(), val_old->c_str(), val_type);
+		return CallAll(W_OnSetConfig, args, user->mxConn);
 	}
+
 	return true;
 }
 
@@ -1065,9 +1167,15 @@ using namespace nPythonPlugin;
 w_Targs *_usermc(int id, w_Targs *args)
 {
 	const char *msg, *nick, *mynick;
-	if (!cpiPython::lib_unpack(args, "sss", &msg, &nick, &mynick)) return NULL;
-	if (!msg) return NULL;
-	if (!mynick) mynick = cpiPython::botname.c_str();
+
+	if (!cpiPython::lib_unpack(args, "sss", &msg, &nick, &mynick))
+		return NULL;
+
+	if (!msg)
+		return NULL;
+
+	if (!mynick)
+		mynick = cpiPython::botname.c_str();
 
 	string data;
 	data.append(1, '<');
@@ -1081,6 +1189,7 @@ w_Targs *_usermc(int id, w_Targs *args)
 		u->mxConn->Send(data, false);
 		return w_ret1;
 	}
+
 	return NULL;
 }
 
@@ -1108,10 +1217,18 @@ w_Targs *_classmc(int id, w_Targs *args)
 w_Targs *_pm(int id, w_Targs *args)
 {
 	const char *msg, *nick, *from, *mynick;
-	if (!cpiPython::lib_unpack(args, "ssss", &msg, &nick, &from, &mynick)) return NULL;
-	if (!msg || !nick) return NULL;
-	if (!from) from = cpiPython::botname.c_str();
-	if (!mynick) mynick = from;
+
+	if (!cpiPython::lib_unpack(args, "ssss", &msg, &nick, &from, &mynick))
+		return NULL;
+
+	if (!msg || !nick)
+		return NULL;
+
+	if (!from)
+		from = cpiPython::botname.c_str();
+
+	if (!mynick)
+		mynick = from;
 
 	string data;
 	data.append("$To: ");
@@ -1124,10 +1241,12 @@ w_Targs *_pm(int id, w_Targs *args)
 	data.append(msg);
 	data.append(PipeIfMissing(msg));
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
 	if (u && u->mxConn) {
 		u->mxConn->Send(data, false);
 		return w_ret1;
 	}
+
 	return NULL;
 }
 
@@ -1263,14 +1382,23 @@ w_Targs *_CloseConnection(int id, w_Targs *args)
 {
 	const char *nick;
 	long nice, reason;
-	if (!cpiPython::lib_unpack(args, "sll", &nick, &nice, &reason)) return NULL;
-	if (!nick) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "sll", &nick, &nice, &reason))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
 	if (u && u->mxConn) {
-		if (nice == 1) nice = 1000;
+		if (nice == 1)
+			nice = 1000;
+
 		u->mxConn->CloseNice(nice, reason);
 		return w_ret1;
 	}
+
 	return NULL;
 }
 
@@ -1386,14 +1514,23 @@ w_Targs *_GetBotList(int id, w_Targs *args)
 w_Targs *_GetUserHost(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
 	const char *host = "";
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+
 	if (u && u->mxConn) {
-		if (!cpiPython::me->server->mUseDNS) u->mxConn->DNSLookup();
+		if (!cpiPython::me->server->mUseDNS)
+			u->mxConn->DNSLookup();
+
 		host = u->mxConn->AddrHost().c_str();
 	}
+
 	return cpiPython::lib_pack("s", strdup(host));
 }
 
@@ -1423,11 +1560,19 @@ w_Targs *_GetUserIP(int id, w_Targs *args)
 w_Targs *_GetUserHubURL(int id, w_Targs *args)
 {
 	const char *nick;
-	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
-	if (!nick) return NULL;
+
+	if (!cpiPython::lib_unpack(args, "s", &nick))
+		return NULL;
+
+	if (!nick)
+		return NULL;
+
 	const char *url = "";
 	cUser *user = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (user && user->mxConn) url = user->mxConn->mHubURL.c_str();
+
+	if (user && user->mxConn)
+		url = user->mxConn->mHubURL.c_str();
+
 	return cpiPython::lib_pack("s", strdup(url));
 }
 
