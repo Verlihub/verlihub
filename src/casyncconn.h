@@ -496,6 +496,11 @@ namespace nVerliHub {
 				// states that client supports zlib compression
 				bool mZLibFlag;
 
+				// tls proxy
+				bool mGotMyIP;
+				bool mSecConn;
+				bool SetSecConn(const string &addr, const string &mode);
+
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;
 

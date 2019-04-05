@@ -65,6 +65,7 @@ namespace nVerliHub {
 			eDCO_WHOIP,
 			eDCO_GETTOPIC,
 			eDCO_SETTOPIC,
+			eDCC_MYIP,
 			eDCC_MYNICK,
 			eDCC_LOCK,
 			eDC_IN,
@@ -96,6 +97,8 @@ namespace nVerliHub {
 		enum { eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE };
 		// IN
 		enum { eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA };
+		// MyIP
+		enum { eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_MODE };
 		// ExtJSON
 		enum { eCH_EJ_ALL, eCH_EJ_NICK, eCH_EJ_PARS };
 		/// connecttome   $ConnectToMe <remoteNick> <senderIp>:<senderPort>

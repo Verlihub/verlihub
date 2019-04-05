@@ -197,6 +197,9 @@ namespace nVerliHub {
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;
 
+				// tls proxy ip
+				string mTLSProxy;
+
 				/// Use reverse DNS lookup feature when there is a new connection.
 				int mUseDNS;
 

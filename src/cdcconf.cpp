@@ -39,7 +39,7 @@ cDCConf::~cDCConf()
 
 void cDCConf::AddVars()
 {
-	// Hub info and basic settings
+	// hub info and basic settings
 	Add("hub_name", hub_name, HUB_VERSION_NAME);
 	Add("hub_desc",hub_desc, "");
 	Add("hub_topic",hub_topic, "");
@@ -68,7 +68,8 @@ void cDCConf::AddVars()
 	*/
 
 	Add("extra_listen_ports", extra_listen_ports, "");
-	// End hub info and basic settings
+	Add("tls_proxy_ip", mS.mTLSProxy, "");
+	// end of section
 
 	// begin hublist configuration
 	Add("hublist_host", hublist_host, "hublist.te-home.net");

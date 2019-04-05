@@ -282,6 +282,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			this->DCO_SetTopic(msg, conn);
 			break;
 
+		case eDCC_MYIP:
+			this->DCC_MyIP(msg, conn);
+			break;
+
 		case eDCC_MYNICK:
 			this->DCC_MyNick(msg, conn);
 			break;
@@ -3451,6 +3455,40 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 /*
 	client commands
 */
+
+int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
+{
+	if (mS->mTLSProxy.empty())
+		return this->DCU_Unknown(msg, conn);
+
+	if (conn->AddrIP() != mS->mTLSProxy)
+		return this->DCU_Unknown(msg, conn);
+
+	if ((msg->mLen < 15) || (msg->mLen > 23)) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (msg->SplitChunks()) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	const string &addr = msg->ChunkString(eCH_MYIP_IP);
+	const string &mode = msg->ChunkString(eCH_MYIP_MODE);
+
+	if (!conn->SetSecConn(addr, mode)) {
+		conn->CloseNow();
+		return -1;
+	}
+
+	if (0 > mS->OnNewConn(conn)) {
+		mS->delConnection(conn);
+		return -1;
+	}
+
+	return 0;
+}
 
 int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
 {
