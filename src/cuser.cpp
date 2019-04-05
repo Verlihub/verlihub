@@ -215,6 +215,9 @@ void cUser::DisplayInfo(ostream &os)
 	if (ci.size() && (ci != "--"))
 		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
+	if (mxServer->mTLSProxy.size())
+		os << " [*] " << autosprintf(_("Secure connection: %s"), (this->mxConn->mSecConn ? _("Yes") : _("No"))) << "\r\n"; // secure connection
+
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));
 }

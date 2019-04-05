@@ -65,6 +65,7 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand("$WhoIP "),
 	cProtoCommand("$GetTopic"),
 	cProtoCommand("$SetTopic "),
+	cProtoCommand("$MyIP "),
 	cProtoCommand("$MyNick "),
 	cProtoCommand("$Lock "),
 	cProtoCommand("$IN "),
@@ -313,6 +314,17 @@ bool cMessageDC::SplitChunks()
 				mError = true;
 			else
 				SetChunk(eCH_1_PARAM, mKWSize, mLen - mKWSize);
+
+			break;
+
+		case eDCC_MYIP:
+			/*
+				$MyIP <ip> P/S
+				eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_MODE
+			*/
+
+			if (!SplitOnTwo(mKWSize, ' ', eCH_MYIP_IP, eCH_MYIP_MODE))
+				mError = true;
 
 			break;
 

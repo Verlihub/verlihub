@@ -192,6 +192,9 @@ protected:
 	// unknown message
 	int DCU_Unknown(cMessageDC *msg, nSocket::cConnDC *conn);
 
+	// tls proxy
+	int DCC_MyIP(cMessageDC *msg, nSocket::cConnDC *conn);
+
 	// ctm2hub
 	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);
 	int DCC_Lock(cMessageDC *msg, nSocket::cConnDC *conn);

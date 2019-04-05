@@ -85,6 +85,8 @@ unsigned long cAsyncConn::sSocketCounter = 0;
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
+	mGotMyIP(false),
+	mSecConn(false),
 	ok(desc > 0),
 	mWritable(true),
 	mxServer(s),
@@ -163,6 +165,8 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
+	mGotMyIP(false),
+	mSecConn(false),
 	ok(false),
 	mWritable(true),
 	mxServer(NULL),
@@ -1044,6 +1048,24 @@ string* cAsyncConn::FactoryString()
 	return &(mpMsgParser->GetStr());
 }
 
+bool cAsyncConn::SetSecConn(const string &addr, const string &mode)
+{
+	if (mGotMyIP)
+		return false;
+
+	if (addr.empty() || (mode.size() != 1)) // todo: validate aswell
+		return false;
+
+	mAddrIP = addr;
+	mNumIP = cBanList::Ip2Num(addr);
+	// todo: mIP, DNSLookup()
+
+	if (mode[0] == 'S')
+		mSecConn = true;
+
+	mGotMyIP = true;
+	return true;
+}
 
 bool cAsyncConn::DNSLookup()
 {

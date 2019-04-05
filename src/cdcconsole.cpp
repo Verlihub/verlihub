@@ -552,6 +552,10 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("IP") << ": " << conn->AddrIP().c_str() << "\r\n";
 	os << " [*] " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str() << "\r\n";
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
+
+	if (mOwner->mTLSProxy.size())
+		os << " [*] " << autosprintf(_("Secure connection: %s"), (conn->mSecConn ? _("Yes") : _("No"))) << "\r\n"; // secure connection
+
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
