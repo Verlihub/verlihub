@@ -99,6 +99,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserClass", &_GetUserClass);
 	RegisterFunction("GetUserHost", &_GetUserHost);
 	RegisterFunction("GetUserIP", &_GetUserIP);
+	RegisterFunction("IsSecConn", &_IsSecConn);
 	RegisterFunction("IsUserOnline", &_IsUserOnline);
 	RegisterFunction("GetUserSupports", &_GetUserSupports);
 	RegisterFunction("GetUserHubURL", &_GetUserHubURL);

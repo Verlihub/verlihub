@@ -203,7 +203,7 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 	tCLIt it = mConnList.insert(mConnList.begin(), new_conn);
 	new_conn->mIterator = it;
 
-	if (new_conn->AddrIP() == mTLSProxy) // tls proxy, wait for myip command
+	if (mTLSProxy.size() && (new_conn->AddrIP() == mTLSProxy)) // tls proxy, wait for myip command
 		return;
 
 	if (0 > OnNewConn(new_conn))
