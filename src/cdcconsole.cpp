@@ -676,14 +676,42 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 		return 0;
 
 	ostringstream os;
+	string temp;
 	int ucl = conn->GetTheoricalClass();
-	unsigned int sear = 0;
+	unsigned int sear = 0, contot = 0, consec = 0;
+	cAsyncConn *usco;
+
+	for (cUserCollection::iterator it = mOwner->mUserList.begin(); it != mOwner->mUserList.end(); ++it) {
+		usco = ((cUser*)(*it))->mxConn;
+
+		if (usco && usco->ok) {
+			contot++;
+
+			if (usco->mSecConn)
+				consec++;
+		}
+	}
+
 	os << _("Hub information") << ":\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("Owner: %s"), (mOwner->mC.hub_owner.size() ? mOwner->mC.hub_owner.c_str() : _("Not set"))) << "\r\n";
-	os << " [*] " << autosprintf(_("Address: %s"), mOwner->mC.hub_host.c_str()) << "\r\n";
+
+	if (mOwner->mC.hub_host.size()) {
+		temp = "dchub://";
+		temp.append(mOwner->mC.hub_host);
+	}
+
+	os << " [*] " << autosprintf(_("Address: %s"), (temp.size() ? temp.c_str() : _("Not set"))) << "\r\n";
+
+	if (mOwner->mTLSProxy.size() && mOwner->mC.hub_host.size()) {
+		temp = "nmdcs://";
+		temp.append(mOwner->mC.hub_host);
+		os << " [*] " << autosprintf(_("Secure: %s"), temp.c_str()) << "\r\n";
+	}
+
 	os << " [*] " << autosprintf(_("Status: %s"), mOwner->SysLoadName()) << "\r\n";
-	os << " [*] " << autosprintf(_("Users: %d"), mOwner->mUserCountTot) << "\r\n";
+	os << " [*] " << autosprintf(_("Users: %d of %d"), mOwner->mUserCountTot, mOwner->mC.max_users_total) << "\r\n";
+	os << " [*] " << autosprintf(_("Secure: %d of %d"), consec, contot) << "\r\n";
 	os << " [*] " << autosprintf(_("Active: %d"), mOwner->mActiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive: %d"), mOwner->mPassiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Bots: %d"), mOwner->mRobotList.Size()) << "\r\n";
@@ -717,6 +745,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 
 	os << " [*] " << autosprintf(ngettext("Search interval: %d second", "Search interval: %d seconds", sear), sear) << "\r\n";
 	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->mPassive ? _("Passive") : _("Active"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Secure: %s"), (conn->mSecConn ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
 	mOwner->DCPublicHS(os.str(), conn);

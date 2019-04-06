@@ -194,6 +194,7 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << " [*] &#36;ConnectToMe: " << mServer->mProtoCount[nEnums::eDC_CONNECTTOME] << "\r\n";
 	os << " [*] &#36;RevConnectToMe: " << mServer->mProtoCount[nEnums::eDC_RCONNECTTOME] << "\r\n";
 	os << " [*] &#36;MultiConnectToMe: " << mServer->mProtoCount[nEnums::eDC_MCONNECTTOME] << "\r\n";
+	os << " [*] &#36;MyIP: " << mServer->mProtoCount[nEnums::eDCC_MYIP] << "\r\n";
 	os << " [*] &#36;Key: " << mServer->mProtoCount[nEnums::eDC_KEY] << "\r\n";
 	os << " [*] &#36;Supports: " << mServer->mProtoCount[nEnums::eDC_SUPPORTS] << "\r\n";
 	os << " [*] &#36;ValidateNick: " << mServer->mProtoCount[nEnums::eDC_VALIDATENICK] << "\r\n";
@@ -432,9 +433,24 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << autosprintf(_("Category: %s"), (mServer->mC.hub_category.size() ? mServer->mC.hub_category.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Locale: %s"), (mServer->mDBConf.locale.size() ? mServer->mDBConf.locale.c_str() : _("Not set"))) << "\r\n\r\n";
 
+	unsigned int contot = 0, consec = 0;
+	cAsyncConn *conn;
+
+	for (cUserCollection::iterator it = mServer->mUserList.begin(); it != mServer->mUserList.end(); ++it) {
+		conn = ((cUser*)(*it))->mxConn;
+
+		if (conn && conn->ok) {
+			contot++;
+
+			if (conn->mSecConn)
+				consec++;
+		}
+	}
+
 	os << " [*] " << autosprintf(_("Users: %d of %d"), mServer->mUserCountTot, mServer->mC.max_users_total) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mServer->mTotalShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list: %d"), mServer->mUserList.Size()) << "\r\n";
+	os << " [*] " << autosprintf(_("Secure users: %d of %d"), consec, contot) << "\r\n";
 	os << " [*] " << autosprintf(_("Active users: %d"), mServer->mActiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive users: %d"), mServer->mPassiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator count: %d of %d"), mServer->mOpchatList.Size(), mServer->mOpList.Size()) << "\r\n";

@@ -1428,6 +1428,43 @@ int _GetUserIP(lua_State *L)
 	}
 }
 
+int _IsSecConn(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:IsSecConn, expected atleast 1 argument but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushboolean(L, (user->mxConn->mSecConn ? 1 : 0));
+	return 2;
+}
+
 int _IsUserOnline(lua_State *L)
 {
 	if(lua_gettop(L) == 2) {
