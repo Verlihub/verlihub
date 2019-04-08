@@ -1312,13 +1312,6 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	if (mUserList.Size() > mUsersPeak)
 		mUsersPeak = mUserList.Size();
 
-	#ifndef WITHOUT_PLUGINS
-		if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) { // todo: i think we need to move this before hubtopic and userinfo
-			conn->CloseNow();
-			return;
-		}
-	#endif
-
 	if ((conn->mpUser->mClass >= eUC_NORMUSER) && mC.msg_welcome[conn->mpUser->mClass].size()) { // pingers dont have welcome messages
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
@@ -1347,6 +1340,13 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	}
 
 	conn->mpUser->mLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) {
+			conn->CloseNow();
+			return;
+		}
+	#endif
 }
 
 void cServerDC::DoUserLogin(cConnDC *conn)
@@ -1371,6 +1371,13 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		conn->CloseNow();
 		return;
 	}
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mCallBacks.mOnUserInList.CallAll(conn->mpUser)) {
+			conn->CloseNow();
+			return;
+		}
+	#endif
 
 	string omsg;
 

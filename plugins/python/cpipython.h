@@ -100,8 +100,9 @@ public:
 	virtual bool OnHubCommand(nSocket::cConnDC *conn, std::string *command, int is_op_cmd, int in_pm);
 	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
 	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
-	virtual bool OnUserLogin(cUser *);
-	virtual bool OnUserLogout(cUser *);
+	virtual bool OnUserInList(cUser *user);
+	virtual bool OnUserLogin(cUser *user);
+	virtual bool OnUserLogout(cUser *user);
 	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser* User, std::string mNick, int mClass);
 	virtual bool OnNewBan(cUser *, nTables::cBan *);

@@ -238,6 +238,7 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnHubCommand");
 	RegisterCallBack("VH_OnScriptCommand");
 	RegisterCallBack("VH_OnScriptQuery");
+	RegisterCallBack("VH_OnUserInList");
 	RegisterCallBack("VH_OnUserLogin");
 	RegisterCallBack("VH_OnUserLogout");
 	RegisterCallBack("VH_OnTimer");
@@ -1100,6 +1101,16 @@ bool cpiPython::OnValidateTag(cConnDC *conn, cDCTag *tag)
 	if (conn && conn->mpUser && tag) {
 		w_Targs *args = lib_pack("ss", conn->mpUser->mNick.c_str(), tag->mTag.c_str());
 		return CallAll(W_OnValidateTag, args, conn);
+	}
+
+	return true;
+}
+
+bool cpiPython::OnUserInList(cUser *user)
+{
+	if (user) {
+		w_Targs *args = lib_pack("s", user->mNick.c_str());
+		return CallAll(W_OnUserInList, args, user->mxConn);
 	}
 
 	return true;

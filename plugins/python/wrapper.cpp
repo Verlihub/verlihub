@@ -1687,18 +1687,21 @@ w_Targs *w_CallHook(int id, int func, w_Targs *params)
 			}
 			args = Py_BuildValue("(l)", n0);
 			break;
+
+		case W_OnUserInList:
 		case W_OnUserLogin:
 		case W_OnUserLogout:
 		case W_OnNewConn:
 		case W_OnCloseConn:
 		case W_OnParsedMsgValidateNick:
 			if (!w_unpack(params, "s", &s0)) {
-				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, 
-					w_HookName(func), w_packprint(params));
+				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, w_HookName(func), w_packprint(params));
 				break;
 			}
+
 			args = Py_BuildValue("(z)", s0);
 			break;
+
 		case W_OnCloseConnEx:
 			if (!w_unpack(params, "sls", &s0, &n0, &s1)) {
 				log1("PY: [%d:%s] CallHook %s: unexpected parameters %s\n", id, name, 
@@ -2023,6 +2026,7 @@ const char *w_HookName(int hook)
 		case W_OnHubCommand:              return "OnHubCommand";
 		case W_OnScriptCommand:           return "OnScriptCommand";
 		case W_OnScriptQuery:             return "OnScriptQuery";
+		case W_OnUserInList:              return "OnUserInList";
 		case W_OnUserLogin:               return "OnUserLogin";
 		case W_OnUserLogout:              return "OnUserLogout";
 		case W_OnTimer:                   return "OnTimer";

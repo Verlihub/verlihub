@@ -850,8 +850,9 @@ private:
 			mOnParsedMsgSR(mgr, "VH_OnParsedMsgSR", &cVHPlugin::OnParsedMsgSR),
 			mOnOperatorKicks( mgr, "VH_OnOperatorKicks", &cVHPlugin::OnOperatorKicks),
 			mOnOperatorDrops(mgr, "VH_OnOperatorDrops", &cVHPlugin::OnOperatorDrops),
+			mOnUserInList(mgr, "VH_OnUserInList", &cVHPlugin::OnUserInList),
 			mOnUserLogin(mgr, "VH_OnUserLogin", &cVHPlugin::OnUserLogin),
-			mOnUserLogout  (mgr, "VH_OnUserLogout",   &cVHPlugin::OnUserLogout ),
+			mOnUserLogout(mgr, "VH_OnUserLogout", &cVHPlugin::OnUserLogout),
 			mOnValidateTag(mgr, "VH_OnValidateTag", &cVHPlugin::OnValidateTag),
 			mOnTimer(mgr, "VH_OnTimer", &cVHPlugin::OnTimer),
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
@@ -896,6 +897,7 @@ private:
 		cVHCBL_Message mOnParsedMsgSR;
 		cVHCBL_UsrUsrStr mOnOperatorKicks;
 		cVHCBL_UsrUsrStr mOnOperatorDrops;
+		cVHCBL_User mOnUserInList;
 		cVHCBL_User mOnUserLogin;
 		cVHCBL_User mOnUserLogout;
 		cVHCBL_ConnTag mOnValidateTag;
