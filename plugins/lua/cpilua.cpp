@@ -152,6 +152,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnOperatorKicks");
 	RegisterCallBack("VH_OnOperatorDrops");
 	RegisterCallBack("VH_OnValidateTag");
+	RegisterCallBack("VH_OnUserInList");
 	RegisterCallBack("VH_OnUserLogin");
 	RegisterCallBack("VH_OnUserLogout");
 	RegisterCallBack("VH_OnTimer");
@@ -795,10 +796,34 @@ bool cpiLua::OnValidateTag(cConnDC *conn, cDCTag *tag)
 	return true;
 }
 
+bool cpiLua::OnUserInList(cUser *user)
+{
+	if (user) {
+		if (user->mxConn) {
+			const char *args[] = {
+				user->mNick.c_str(),
+				user->mxConn->AddrIP().c_str(),
+				NULL
+			};
+
+			return CallAll("VH_OnUserInList", args, user->mxConn);
+		} else {
+			const char *args[] = {
+				user->mNick.c_str(),
+				NULL
+			};
+
+			return CallAll("VH_OnUserInList", args);
+		}
+	}
+
+	return true;
+}
+
 bool cpiLua::OnUserLogin(cUser *user)
 {
-	if (user != NULL) {
-		if (user->mxConn != NULL) {
+	if (user) {
+		if (user->mxConn) {
 			const char *args[] = {
 				user->mNick.c_str(),
 				user->mxConn->AddrIP().c_str(),
@@ -821,8 +846,8 @@ bool cpiLua::OnUserLogin(cUser *user)
 
 bool cpiLua::OnUserLogout(cUser *user)
 {
-	if (user != NULL) {
-		if (user->mxConn != NULL) {
+	if (user) {
+		if (user->mxConn) {
 			const char *args[] = {
 				user->mNick.c_str(),
 				user->mxConn->AddrIP().c_str(),

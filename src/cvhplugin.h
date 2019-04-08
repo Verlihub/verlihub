@@ -366,20 +366,27 @@ public:
 	*/
 	virtual bool OnOperatorDrops(cUser *op, cUser *user, string *why) { return true; }
 
-	//! Event handler function that is called when user login is completed
-	/*!
-	 * 	Use RegisterCallBack("VH_OnUserLogin") to register it. This event cannot be discardable.
-	\param User The user
-	\param User The dropped user
-	 */
-	virtual bool OnUserLogin(cUser* User){ return true; }
+	/*
+		event handler called before user login is complete
+		it allows you to call any nick based plugin functions
+		use RegisterCallBack("VH_OnUserInList") to register it
+		this event is discardable
+	*/
+	virtual bool OnUserInList(cUser *user) { return true; }
 
-	//! Event handler function that is called when user logout is completed
-	/*!
-	 * 	Use RegisterCallBack("VH_OnUserLogout") to register it. This event cannot be discardable.
-	\param User The user
-	 */
-	virtual bool OnUserLogout(cUser* User){ return true; }
+	/*
+		event handler called when user login is complete
+		use RegisterCallBack("VH_OnUserLogin") to register it
+		this event is discardable
+	*/
+	virtual bool OnUserLogin(cUser *user) { return true; }
+
+	/*
+		event handler called when user logout is complete
+		use RegisterCallBack("VH_OnUserLogout") to register it
+		this event is discardable
+	*/
+	virtual bool OnUserLogout(cUser *user) { return true; }
 
 	/*
 	* Event handler function that is called when a new ban is about to be created.

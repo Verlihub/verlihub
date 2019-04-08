@@ -71,8 +71,9 @@ public:
 	virtual bool OnOperatorKicks(cUser *, cUser *, string *);
 	virtual bool OnOperatorDrops(cUser *, cUser *, string *);
 	virtual bool OnValidateTag(nSocket::cConnDC *, cDCTag *);
-	virtual bool OnUserLogin(cUser *);
-	virtual bool OnUserLogout(cUser *);
+	virtual bool OnUserInList(cUser *user);
+	virtual bool OnUserLogin(cUser *user);
+	virtual bool OnUserLogout(cUser *user);
 	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser *, string, int);
 	virtual bool OnDelReg(cUser *, string, int);

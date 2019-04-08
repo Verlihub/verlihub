@@ -79,6 +79,7 @@ enum {
 	W_OnHubCommand,
 	W_OnScriptCommand,
 	W_OnScriptQuery,
+	W_OnUserInList,
 	W_OnUserLogin,
 	W_OnUserLogout,
 	W_OnTimer,

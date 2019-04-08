@@ -643,6 +643,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tVerliba, Daniel Muller, dan at verliba dot cz\r\n";
 	os << "\tRoLex, Aleksandr Zenkov, webmaster at feardc dot net\r\n";
 	os << "\tFlylinkDC-dev, Pavel Pimenov, pavel dot pimenov at gmail dot com\r\n";
+	os << "\tDexo, Denys Smirnov, dexo at verlihub dot net\r\n";
 	os << "\tShurik, Aleksandr Zeinalov, shurik at sbin dot ru\r\n";
 	os << "\tVovochka, Vladimir Perepechin, vovochka13 at gmail dot com\r\n";
 	os << "\t" << _("Not forgetting other 4 people who didn't want to be listed here.") << "\r\n\r\n";
@@ -650,7 +651,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
-	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis)\r\n\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang)\r\n\r\n";
 	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub-100/\r\n\r\n";
 	os << " [*] " << _("Contributors") << ":\r\n\r\n";
 	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
