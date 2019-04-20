@@ -2226,6 +2226,27 @@ unsigned int cServerDC::WhoHubURL(const string &url, string &dest, const string 
 	return cnt;
 }
 
+unsigned int cServerDC::WhoTLSVer(const string &vers, string &dest, const string &sep)
+{
+	unsigned int cnt = 0;
+	cConnDC *conn;
+
+	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && conn->mTLSVer.size() && (conn->mTLSVer.find(vers) != string::npos)) {
+			dest += sep;
+			dest += (*i)->mNick;
+			dest += " [";
+			dest += conn->mTLSVer;
+			dest += ']';
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
 unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact)
 {
 	unsigned int tot = 0;

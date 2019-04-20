@@ -36,10 +36,12 @@ extern "C"
 
 #include "cpilua.h"
 #include "callbacks.h"
+#include "src/cbanlist.h"
 #include "src/cserverdc.h"
 #include "src/cconndc.h"
 #include "src/cuser.h"
 #include "src/script_api.h"
+#include "src/i18n.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -1433,7 +1435,7 @@ int _IsSecConn(lua_State *L)
 	int args = lua_gettop(L) - 1;
 
 	if (args < 1) {
-		luaL_error(L, "Error calling VH:IsSecConn, expected atleast 1 argument but got %d.", args);
+		luaL_error(L, "Error calling VH:IsSecConn, expected 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -1461,7 +1463,44 @@ int _IsSecConn(lua_State *L)
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushboolean(L, (user->mxConn->mSecConn ? 1 : 0));
+	lua_pushboolean(L, ((user->mxConn->mTLSVer.size() && (user->mxConn->mTLSVer != "0.0")) ? 1 : 0));
+	return 2;
+}
+
+int _GetTLSVer(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:GetTLSVer, expected 1 argument but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = lua_tostring(L, 2);
+	cUser *user = serv->mUserList.GetUserByNick(nick);
+
+	if (!user || !user->mxConn) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, user->mxConn->mTLSVer.c_str());
 	return 2;
 }
 
@@ -1700,6 +1739,61 @@ int _InUserSupports(lua_State *L)
 	return 2;
 }
 
+int _PassTempBan(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:PassTempBan, expected 2 arguments but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isnumber(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string addr = lua_tostring(L, 2);
+
+	if ((addr.size() < 7) || (addr.size() > 15)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const unsigned long adnu = cBanList::Ip2Num(addr);
+
+	if (adnu == 0) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const unsigned int mult = (unsigned int)lua_tonumber(L, 3);
+
+	if (mult == 0) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string reas = _("Incorrect password");
+
+	if (serv->mC.wrongpass_message.size())
+		reas = serv->mC.wrongpass_message;
+
+	serv->mBanList->AddIPTempBan(adnu, serv->mTime.Sec() + (serv->mC.pwd_tmpban * mult), reas, eBT_PASSW);
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
 int _Ban(lua_State *L)
 {
 	if (lua_gettop(L) == 6) { // todo: add operator and user notes
@@ -1764,7 +1858,7 @@ int _KickUser(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) ||!lua_isstring(L, 4) || ((args >= 4) && !lua_isstring(L, 5)) || ((args >= 5) && !lua_isstring(L, 6))) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || ((args >= 4) && !lua_isstring(L, 5)) || ((args >= 5) && !lua_isstring(L, 6))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}

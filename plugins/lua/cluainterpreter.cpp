@@ -100,12 +100,14 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserHost", &_GetUserHost);
 	RegisterFunction("GetUserIP", &_GetUserIP);
 	RegisterFunction("IsSecConn", &_IsSecConn);
+	RegisterFunction("GetTLSVer", &_GetTLSVer);
 	RegisterFunction("IsUserOnline", &_IsUserOnline);
 	RegisterFunction("GetUserSupports", &_GetUserSupports);
 	RegisterFunction("GetUserHubURL", &_GetUserHubURL);
 	RegisterFunction("GetUserExtJSON", &_GetUserExtJSON);
 	RegisterFunction("GetUserVersion", &_GetUserVersion);
 	RegisterFunction("InUserSupports", &_InUserSupports);
+	RegisterFunction("PassTempBan", &_PassTempBan);
 	RegisterFunction("Ban", &_Ban);
 	RegisterFunction("KickUser", &_KickUser);
 	RegisterFunction("KickRedirUser", &_KickRedirUser);

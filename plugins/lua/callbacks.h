@@ -67,6 +67,7 @@ namespace nVerliHub {
 	int _GetUserHost(lua_State *L);
 	int _GetUserIP(lua_State *L);
 	int _IsSecConn(lua_State *L);
+	int _GetTLSVer(lua_State *L);
 	int _IsUserOnline(lua_State *L);
 	int _GetUserSupports(lua_State *L);
 	int _GetUserHubURL(lua_State *L);
@@ -77,6 +78,7 @@ namespace nVerliHub {
 	int _GetOPList(lua_State *L);
 	int _GetBotList(lua_State *L);
 	int _GetLuaBots(lua_State *L);
+	int _PassTempBan(lua_State *L);
 	int _Ban(lua_State *L);
 	int _KickUser(lua_State *L);
 	int _KickRedirUser(lua_State *L);

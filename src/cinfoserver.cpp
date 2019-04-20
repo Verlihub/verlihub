@@ -442,7 +442,7 @@ void cInfoServer::Output(ostream &os, int Class)
 		if (conn && conn->ok) {
 			contot++;
 
-			if (conn->mSecConn)
+			if (conn->mTLSVer.size() && (conn->mTLSVer != "0.0"))
 				consec++;
 		}
 	}

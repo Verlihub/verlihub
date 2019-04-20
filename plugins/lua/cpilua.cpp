@@ -158,6 +158,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnTimer");
 	RegisterCallBack("VH_OnNewReg");
 	RegisterCallBack("VH_OnDelReg");
+	RegisterCallBack("VH_OnBadPass");
 	RegisterCallBack("VH_OnNewBan");
 	RegisterCallBack("VH_OnUnBan");
 	RegisterCallBack("VH_OnSetConfig");
@@ -940,6 +941,21 @@ bool cpiLua::OnUpdateClass(cUser *user, string mNick, int oldClass, int newClass
 	}
 
 	return res;
+}
+
+bool cpiLua::OnBadPass(cUser *user)
+{
+	if (user && user->mxConn) {
+		const char *args[] = {
+			user->mNick.c_str(),
+			user->mxConn->AddrIP().c_str(),
+			NULL
+		};
+
+		return CallAll("VH_OnBadPass", args, user->mxConn);
+	}
+
+	return true;
 }
 
 bool cpiLua::OnNewBan(cUser *user, cBan *ban)

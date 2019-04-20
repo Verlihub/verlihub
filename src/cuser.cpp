@@ -216,7 +216,7 @@ void cUser::DisplayInfo(ostream &os)
 		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
 	if (mxServer->mTLSProxy.size())
-		os << " [*] " << autosprintf(_("Secure connection: %s"), (this->mxConn->mSecConn ? _("Yes") : _("No"))) << "\r\n"; // secure connection
+		os << " [*] " << autosprintf(_("TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // tls
 
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));

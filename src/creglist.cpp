@@ -66,16 +66,16 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("login_last", "int(11)", "0", true, mModel.mLoginLast);
 	AddCol("logout_last", "int(11)", "0", true, mModel.mLogoutLast);
 	AddCol("login_cnt", "int(11)", "0", true, mModel.mLoginCount);
-	AddCol("login_ip", "varchar(16)", "", true, mModel.mLoginIP);
+	AddCol("login_ip", "varchar(15)", "", true, mModel.mLoginIP);
 	AddCol("error_last", "int(11)", "", true, mModel.mErrorLast);
 	AddCol("error_cnt", "int(11)", "0", true, mModel.mErrorCount);
-	AddCol("error_ip", "varchar(16)", "", true, mModel.mErrorIP);
+	AddCol("error_ip", "varchar(15)", "", true, mModel.mErrorIP);
 	AddCol("enabled", "tinyint(1)", "1", true, mModel.mEnabled);
 	//AddCol("email", "varchar(60)", "", true, mModel.mEmail);
 	AddCol("note_op", "text", "", true, mModel.mNoteOp);
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("auth_ip", "varchar(15)", "", true, mModel.mAuthIP);
-	AddCol("alternate_ip", "varchar(16)", "", true, mModel.mAlternateIP);
+	AddCol("alternate_ip", "varchar(15)", "", true, mModel.mAlternateIP);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick), ";
 	mMySQLTable.mExtra+= "INDEX login_index (login_last), ";
 	mMySQLTable.mExtra+= "INDEX logout_index (logout_last)";
@@ -210,7 +210,6 @@ bool cRegList::LoginError(cConnDC *conn, const string &nick)
 	mModel.mErrorCount++;
 	return UpdatePK();
 }
-
 
 /*!
     \fn ::nTables::cRegList::DelReg(const string &nick)

@@ -319,11 +319,11 @@ bool cMessageDC::SplitChunks()
 
 		case eDCC_MYIP:
 			/*
-				$MyIP <ip> P/S
-				eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_MODE
+				$MyIP <ip> <version>
+				eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_VERS
 			*/
 
-			if (!SplitOnTwo(mKWSize, ' ', eCH_MYIP_IP, eCH_MYIP_MODE))
+			if (!SplitOnTwo(mKWSize, ' ', eCH_MYIP_IP, eCH_MYIP_VERS))
 				mError = true;
 
 			break;
