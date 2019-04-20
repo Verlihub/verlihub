@@ -98,7 +98,7 @@ namespace nVerliHub {
 		// IN
 		enum { eCH_IN_ALL, eCH_IN_NICK, eCH_IN_DATA };
 		// MyIP
-		enum { eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_MODE };
+		enum { eCH_MYIP_ALL, eCH_MYIP_IP, eCH_MYIP_VERS };
 		// ExtJSON
 		enum { eCH_EJ_ALL, eCH_EJ_NICK, eCH_EJ_PARS };
 		/// connecttome   $ConnectToMe <remoteNick> <senderIp>:<senderPort>

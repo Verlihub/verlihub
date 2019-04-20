@@ -497,9 +497,8 @@ namespace nVerliHub {
 				bool mZLibFlag;
 
 				// tls proxy
-				bool mGotMyIP;
-				bool mSecConn;
-				bool SetSecConn(const string &addr, const string &mode);
+				string mTLSVer;
+				bool SetSecConn(const string &addr, string &vers);
 
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;

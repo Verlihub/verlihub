@@ -113,6 +113,7 @@
 	!whocity <city>				- Find users with city
 	!whoport <port>				- Find users on port
 	!whourl <url>				- Find users on URL
+	!whotls <tls>				- Find users with TLS version
 
  [*] Hub information:
 

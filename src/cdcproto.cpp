@@ -866,7 +866,12 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			if (mS->mC.wrongpass_message.size())
 				omsg = mS->mC.wrongpass_message;
 
-			mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
+			#ifndef WITHOUT_PLUGINS
+			if (mS->mCallBacks.mOnBadPass.CallAll(conn->mpUser))
+			#endif
+			{
+				mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
+			}
 
 			if (conn->Log(2))
 				conn->LogStream() << omsg << endl;
@@ -3464,7 +3469,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	if (conn->AddrIP() != mS->mTLSProxy)
 		return this->DCU_Unknown(msg, conn);
 
-	if ((msg->mLen < 15) || (msg->mLen > 23)) {
+	if ((msg->mLen < 17) || (msg->mLen > 25)) {
 		conn->CloseNow();
 		return -1;
 	}
@@ -3475,9 +3480,9 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	}
 
 	const string &addr = msg->ChunkString(eCH_MYIP_IP);
-	const string &mode = msg->ChunkString(eCH_MYIP_MODE);
+	string &vers = msg->ChunkString(eCH_MYIP_VERS);
 
-	if (!conn->SetSecConn(addr, mode)) {
+	if (!conn->SetSecConn(addr, vers)) {
 		conn->CloseNow();
 		return -1;
 	}

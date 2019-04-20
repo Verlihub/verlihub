@@ -389,6 +389,14 @@ public:
 	virtual bool OnUserLogout(cUser *user) { return true; }
 
 	/*
+		event handler called on bad password from user
+		use RegisterCallBack("VH_OnBadPass") to register it
+		this event is partially discardable
+		it allows you to add own ban instead of built in
+	*/
+	virtual bool OnBadPass(cUser *user) { return true; }
+
+	/*
 	* Event handler function that is called when a new ban is about to be created.
 	* Use RegisterCallBack("VH_OnNewBan") to register it. This event can be discarded.
 	* user = The operator.

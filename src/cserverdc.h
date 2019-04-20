@@ -578,6 +578,9 @@ class cServerDC : public cAsyncSocketServer
 		// return list of users with specific partial hub url
 		unsigned int WhoHubURL(const string &url, string &dest, const string &sep);
 
+		// return list of users with specific partial tls version
+		unsigned int WhoTLSVer(const string &vers, string &dest, const string &sep);
+
 		// return list of users with specific ip address range
 		unsigned int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact = true);
 
@@ -858,6 +861,7 @@ private:
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
 			mOnDelReg(mgr, "VH_OnDelReg", &cVHPlugin::OnDelReg),
 			mOnUpdateClass(mgr, "VH_OnUpdateClass", &cVHPlugin::OnUpdateClass),
+			mOnBadPass(mgr, "VH_OnBadPass", &cVHPlugin::OnBadPass),
 			mOnNewBan(mgr, "VH_OnNewBan", &cVHPlugin::OnNewBan),
 			mOnUnBan(mgr, "VH_OnUnBan", &cVHPlugin::OnUnBan),
 			mOnSetConfig(mgr, "VH_OnSetConfig", &cVHPlugin::OnSetConfig),
@@ -905,6 +909,7 @@ private:
 		cVHCBL_UsrStrInt mOnNewReg;
 		cVHCBL_UsrStrInt mOnDelReg;
 		cVHCBL_UsrStrIntInt mOnUpdateClass;
+		cVHCBL_User mOnBadPass;
 		cVHCBL_UsrBan mOnNewBan;
 		cVHCBL_UsrStrStrStr mOnUnBan;
 		cVHCBL_UsrStrStrStrStrInt mOnSetConfig;

@@ -78,6 +78,7 @@ public:
 	virtual bool OnNewReg(cUser *, string, int);
 	virtual bool OnDelReg(cUser *, string, int);
 	virtual bool OnUpdateClass(cUser *, string, int, int);
+	virtual bool OnBadPass(cUser *user);
 	virtual bool OnNewBan(cUser *, cBan *);
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
 	virtual bool OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type);

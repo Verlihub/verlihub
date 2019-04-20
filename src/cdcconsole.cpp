@@ -554,7 +554,7 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
 
 	if (mOwner->mTLSProxy.size())
-		os << " [*] " << autosprintf(_("Secure connection: %s"), (conn->mSecConn ? _("Yes") : _("No"))) << "\r\n"; // secure connection
+		os << " [*] " << autosprintf(_("TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n"; // tls
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
@@ -688,7 +688,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 		if (usco && usco->ok) {
 			contot++;
 
-			if (usco->mSecConn)
+			if (usco->mTLSVer.size() && (usco->mTLSVer != "0.0"))
 				consec++;
 		}
 	}
@@ -746,7 +746,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 
 	os << " [*] " << autosprintf(ngettext("Search interval: %d second", "Search interval: %d seconds", sear), sear) << "\r\n";
 	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->mPassive ? _("Passive") : _("Active"))) << "\r\n";
-	os << " [*] " << autosprintf(_("Secure: %s"), (conn->mSecConn ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
 	mOwner->DCPublicHS(os.str(), conn);
@@ -2588,7 +2588,8 @@ bool cDCConsole::cfWho::operator()()
 		eAC_CC,
 		eAC_CITY,
 		eAC_HUBPORT,
-		eAC_HUBURL
+		eAC_HUBURL,
+		eAC_TLS
 	};
 
 	static const char *actionnames[] = {
@@ -2597,7 +2598,8 @@ bool cDCConsole::cfWho::operator()()
 		"cc", "country",
 		"city",
 		"hubport", "port",
-		"huburl", "url"
+		"huburl", "url",
+		"tls"
 	};
 
 	static const int actionids[] = {
@@ -2606,7 +2608,8 @@ bool cDCConsole::cfWho::operator()()
 		eAC_CC, eAC_CC,
 		eAC_CITY,
 		eAC_HUBPORT, eAC_HUBPORT,
-		eAC_HUBURL, eAC_HUBURL
+		eAC_HUBURL, eAC_HUBURL,
+		eAC_TLS
 	};
 
 	string tmp;
@@ -2688,6 +2691,14 @@ bool cDCConsole::cfWho::operator()()
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with hub URL %s", "Found %d users with hub URL %s", cnt), cnt, tmp.c_str());
+
+			break;
+
+		case eAC_TLS:
+			cnt = mS->WhoTLSVer(tmp, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with TLS version %s", "Found %d users with TLS version %s", cnt), cnt, tmp.c_str());
 
 			break;
 
