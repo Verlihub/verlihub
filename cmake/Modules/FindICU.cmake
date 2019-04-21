@@ -42,8 +42,9 @@ endmacro(declare_icu_component)
 
 declare_icu_component(uc icuuc) # common and data libraries
 declare_icu_component(io icuio) # stream and i/o library
-declare_icu_component(le icule) # layout library
-declare_icu_component(lx iculx) # paragraph layout library
+#declare_icu_component(le icule) # layout library
+#declare_icu_component(-le-hb icu-le-hb) # layout library
+#declare_icu_component(lx iculx) # paragraph layout library
 
 set(ICU_FOUND TRUE)
 set(ICU_LIBRARIES)
