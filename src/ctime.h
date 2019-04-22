@@ -115,7 +115,7 @@ public:
 	cTimePrint operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTimePrint(cTime(sec,usec).Normalize());}
 	const cTimePrint & AsDate() const { mPrintType=1; return *this;}
 	const cTimePrint & AsPeriod() const { mPrintType=2; return *this;}
-	operator cTime() {return *this;}
+	//operator cTime() {return *this;}
 	std::string AsString() const;
 	friend std::ostream & operator<< (std::ostream &os, const cTimePrint &t);
 };

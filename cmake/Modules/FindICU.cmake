@@ -16,7 +16,7 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 function(icudebug _varname)
 	if(ICU_DEBUG)
