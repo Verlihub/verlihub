@@ -150,6 +150,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 			}
 
 			ReplaceVarInString(buf, "IP", buf, conn->AddrIP());
+			ReplaceVarInString(buf, "TLS", buf, ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer : _("No")));
 			ReplaceVarInString(buf, "HOST", buf, conn->AddrHost());
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);
 			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare));

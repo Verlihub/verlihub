@@ -1051,7 +1051,12 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 
 	mAddrIP = addr;
 	mNumIP = cBanList::Ip2Num(addr);
-	// todo: mIP, DNSLookup()
+	mIP = inet_addr(addr.c_str());
+
+	if (mxServer && mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
+		mAddrHost.clear();
+		DNSLookup();
+	}
 
 	if (vers.size() == 1) {
 		if (vers[0] == 'S')
