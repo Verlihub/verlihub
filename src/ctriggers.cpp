@@ -259,7 +259,8 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " %[CC]\t\t\t- User country code\r\n";
 	help += " %[CN]\t\t\t- User country name\r\n";
 	help += " %[CITY]\t\t\t- User city\r\n";
-	help += " %[IP]\t\t\t- User IP\r\n";
+	help += " %[IP]\t\t\t- User IP address\r\n";
+	help += " %[TLS]\t\t\t- User TLS version if available\r\n";
 	help += " %[HOST]\t\t- User host\r\n";
 	help += " %[NICK]\t\t\t- User nick\r\n";
 	help += " %[CLASS]\t\t- User class number\r\n";

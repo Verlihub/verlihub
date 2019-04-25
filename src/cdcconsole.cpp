@@ -550,6 +550,10 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	string cc = conn->GetGeoCC(), cn = conn->GetGeoCN(), ci = conn->GetGeoCI();
 	os << _("Your IP information") << ":\r\n\r\n";
 	os << " [*] " << _("IP") << ": " << conn->AddrIP().c_str() << "\r\n";
+
+	if (conn->AddrHost().size())
+		os << " [*] " << autosprintf(_("Host: %s"), conn->AddrHost().c_str()) << "\r\n";
+
 	os << " [*] " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str() << "\r\n";
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
 
