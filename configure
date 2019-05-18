@@ -176,4 +176,5 @@ fi
   fi
 fi
 
+./dcproxy.sh || exit 1
 run_cmake
