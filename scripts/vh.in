@@ -1,7 +1,7 @@
 #!@BASH_PATH@
 
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -450,18 +450,18 @@ function update_mmdb() # [mmdb_path]
 	fi
 
 	echo_s "Processing MaxMind Country database.\n" $BOLD # process country database
-	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz" > /dev/null 2>&1
+	wget "https://ledo.feardc.net/mmdb/country.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind Country database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	tar --wildcards --no-same-owner -xzf "GeoLite2-Country.tar.gz" "GeoLite2-Country_*/GeoLite2-Country.mmdb"
+	tar --wildcards --no-same-owner -xzf "country.tar.gz" "GeoLite2-Country_*/GeoLite2-Country.mmdb"
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error decompressing MaxMind Country database.\n" $RED_BOLD
-		rm -f "GeoLite2-Country.tar.gz"
+		rm -f "country.tar.gz"
 		exit 1
 	fi
 
@@ -470,26 +470,26 @@ function update_mmdb() # [mmdb_path]
 	if [ $? -ne 0 ]; then
 		echo_s "Error moving MaxMind Country database.\n" $RED_BOLD
 		rm -fr GeoLite2-Country_*
-		rm -f "GeoLite2-Country.tar.gz"
+		rm -f "country.tar.gz"
 		exit 1
 	fi
 
 	rm -fr GeoLite2-Country_*
-	rm -f "GeoLite2-Country.tar.gz"
+	rm -f "country.tar.gz"
 
 	echo_s "Processing MaxMind City database.\n" $BOLD # process city database
-	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz" > /dev/null 2>&1
+	wget "https://ledo.feardc.net/mmdb/city.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind City database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	tar --wildcards --no-same-owner -xzf "GeoLite2-City.tar.gz" "GeoLite2-City_*/GeoLite2-City.mmdb"
+	tar --wildcards --no-same-owner -xzf "city.tar.gz" "GeoLite2-City_*/GeoLite2-City.mmdb"
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error decompressing MaxMind City database.\n" $RED_BOLD
-		rm -f "GeoLite2-City.tar.gz"
+		rm -f "city.tar.gz"
 		exit 1
 	fi
 
@@ -498,26 +498,26 @@ function update_mmdb() # [mmdb_path]
 	if [ $? -ne 0 ]; then
 		echo_s "Error moving MaxMind City database.\n" $RED_BOLD
 		rm -fr GeoLite2-City_*
-		rm -f "GeoLite2-City.tar.gz"
+		rm -f "city.tar.gz"
 		exit 1
 	fi
 
 	rm -fr GeoLite2-City_*
-	rm -f "GeoLite2-City.tar.gz"
+	rm -f "city.tar.gz"
 
 	echo_s "Processing MaxMind ASN database.\n" $BOLD # process asn database
-	wget "http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz" > /dev/null 2>&1
+	wget "https://ledo.feardc.net/mmdb/asn.tar.gz" > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind ASN database.\n" $RED_BOLD
 		exit 1
 	fi
 
-	tar --wildcards --no-same-owner -xzf "GeoLite2-ASN.tar.gz" "GeoLite2-ASN_*/GeoLite2-ASN.mmdb"
+	tar --wildcards --no-same-owner -xzf "asn.tar.gz" "GeoLite2-ASN_*/GeoLite2-ASN.mmdb"
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error decompressing MaxMind ASN database.\n" $RED_BOLD
-		rm -f "GeoLite2-ASN.tar.gz"
+		rm -f "asn.tar.gz"
 		exit 1
 	fi
 
@@ -526,12 +526,12 @@ function update_mmdb() # [mmdb_path]
 	if [ $? -ne 0 ]; then
 		echo_s "Error moving MaxMind ASN database.\n" $RED_BOLD
 		rm -fr GeoLite2-ASN_*
-		rm -f "GeoLite2-ASN.tar.gz"
+		rm -f "asn.tar.gz"
 		exit 1
 	fi
 
 	rm -fr GeoLite2-ASN_*
-	rm -f "GeoLite2-ASN.tar.gz"
+	rm -f "asn.tar.gz"
 
 	echo_s "Done updating all free MaxMind databases, please use !reload command in your hubs.\n" $GREEN_BOLD # finish
 	exit 0
@@ -818,8 +818,7 @@ function install() # [sleep_time]
 		fi
 
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to '$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'" &> /dev/null
-
+		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS';" &> /dev/null
 		if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; then # check again
 			echo_s "\nMySQL database " $RED_BOLD
 			echo_s "$MYSQL_DB_NAME" $BOLD

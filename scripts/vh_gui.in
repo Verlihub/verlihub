@@ -1,7 +1,7 @@
 #!@BASH_PATH@
 
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -421,9 +421,9 @@ install() {
 	fi
 
 	export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* to 	'$MYSQL_USER'@'$CURRENT_ADDRESS' identified by '$MYSQL_PASSWORD'"
+	$MYSQL -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS';"
 
-	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; 
+	if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME";
 	then
 		$DIALOG --title "MySQL settings" --msgbox "A error happens while trying to create DB or to gran permission. Fix the problem and run the setup again." 8 50
 		_quit;

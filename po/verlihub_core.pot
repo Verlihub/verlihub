@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2019-04-20 21:09+0200\n"
+"POT-Creation-Date: 2020-02-20 22:19+0100\n"
 "PO-Revision-Date: 2016-03-11 20:28+0100\n"
 "Last-Translator: Frog <the_frog@wp.pl>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: ../src\n"
 
 #: ../src/cban.cpp:107 ../src/cserverdc.cpp:2625 ../src/cuser.cpp:199
@@ -102,8 +102,8 @@ msgstr ""
 msgid "Nick + IP"
 msgstr ""
 
-#: ../src/cban.cpp:176 ../src/cdcconsole.cpp:328 ../src/cdcconsole.cpp:403
-#: ../src/cdcconsole.cpp:552 ../src/cdcconsole.cpp:1325
+#: ../src/cban.cpp:176 ../src/cdcconsole.cpp:324 ../src/cdcconsole.cpp:399
+#: ../src/cdcconsole.cpp:548 ../src/cdcconsole.cpp:1325
 msgid "IP"
 msgstr ""
 
@@ -267,7 +267,7 @@ msgstr ""
 
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:443
 #: ../src/cpluginmanager.cpp:227 ../src/cpluginmanager.cpp:240
-#: ../src/ctriggers.cpp:434
+#: ../src/ctriggers.cpp:435
 msgid "Name"
 msgstr ""
 
@@ -352,11 +352,11 @@ msgstr ""
 #: ../src/creguserinfo.cpp:116 ../src/creguserinfo.cpp:117
 #: ../src/creguserinfo.cpp:118 ../src/creguserinfo.cpp:119
 #: ../src/creguserinfo.cpp:120 ../src/creguserinfo.cpp:121
-#: ../src/creguserinfo.cpp:122 ../src/ctrigger.cpp:270 ../src/cuser.cpp:219
-#: ../src/cuser.cpp:239 ../src/cuser.cpp:251 ../src/cuser.cpp:261
-#: ../src/cuser.cpp:273 ../src/cuser.cpp:285 ../src/cuser.cpp:295
-#: ../src/cuser.cpp:305 ../src/cuser.cpp:315 ../src/cuser.cpp:325
-#: ../src/cuser.cpp:335 ../src/cuser.cpp:345
+#: ../src/creguserinfo.cpp:122 ../src/ctrigger.cpp:153 ../src/ctrigger.cpp:271
+#: ../src/cuser.cpp:219 ../src/cuser.cpp:239 ../src/cuser.cpp:251
+#: ../src/cuser.cpp:261 ../src/cuser.cpp:273 ../src/cuser.cpp:285
+#: ../src/cuser.cpp:295 ../src/cuser.cpp:305 ../src/cuser.cpp:315
+#: ../src/cuser.cpp:325 ../src/cuser.cpp:335 ../src/cuser.cpp:345
 msgid "No"
 msgstr ""
 
@@ -376,21 +376,21 @@ msgstr ""
 msgid "Banned"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:230
+#: ../src/cdcconsole.cpp:226
 msgid "User commands are currently disabled."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:307
+#: ../src/cdcconsole.cpp:303
 msgid "Full list of commands"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:327 ../src/cdcconsole.cpp:360
-#: ../src/cdcconsole.cpp:402
+#: ../src/cdcconsole.cpp:323 ../src/cdcconsole.cpp:356
+#: ../src/cdcconsole.cpp:398
 msgid "User"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:330 ../src/cdcconsole.cpp:365
-#: ../src/cdcconsole.cpp:410 ../src/cdcconsole.cpp:1210
+#: ../src/cdcconsole.cpp:326 ../src/cdcconsole.cpp:361
+#: ../src/cdcconsole.cpp:406 ../src/cdcconsole.cpp:1210
 #: ../src/cdcconsole.cpp:1235 ../src/cdcconsole.cpp:1261
 #: ../src/cdcconsole.cpp:1295 ../src/cdcconsole.cpp:1475
 #: ../src/cdcconsole.cpp:2319 ../src/cdcconsole.cpp:2764
@@ -400,81 +400,86 @@ msgstr ""
 msgid "User not found: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:336 ../src/cdcconsole.cpp:371
-#: ../src/cdcconsole.cpp:417
+#: ../src/cdcconsole.cpp:332 ../src/cdcconsole.cpp:367
+#: ../src/cdcconsole.cpp:413
 msgid "Please specify one or more nicks separated by space."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:338 ../src/cdcconsole.cpp:373
-#: ../src/cdcconsole.cpp:419
+#: ../src/cdcconsole.cpp:334 ../src/cdcconsole.cpp:369
+#: ../src/cdcconsole.cpp:415
 #, c-format
 msgid "Showing %d result"
 msgid_plural "Showing %d results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/cdcconsole.cpp:361 ../src/cdcconsole.cpp:408
+#: ../src/cdcconsole.cpp:357 ../src/cdcconsole.cpp:404
 #: ../src/cdcconsole.cpp:1326
 msgid "Host"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:363
+#: ../src/cdcconsole.cpp:359
 #, c-format
 msgid "Unable to resolve hostname of user: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:404 ../src/cdcconsole.cpp:553
+#: ../src/cdcconsole.cpp:400 ../src/cdcconsole.cpp:553
 msgid "Country"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:405 ../src/cdcconsole.cpp:554
+#: ../src/cdcconsole.cpp:401 ../src/cdcconsole.cpp:554
 msgid "City"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:458
+#: ../src/cdcconsole.cpp:454
 msgid "Please note, hub is no longer scheduled for restart."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:460
+#: ../src/cdcconsole.cpp:456
 #, c-format
 msgid "Please note, hub has been scheduled to restart in: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:462
+#: ../src/cdcconsole.cpp:458
 msgid "Please note, hub will be restarted now."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:465
+#: ../src/cdcconsole.cpp:461
 msgid "Please note, hub is no longer scheduled for stop."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:467
+#: ../src/cdcconsole.cpp:463
 #, c-format
 msgid "Please note, hub has been scheduled to stop in: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:469 ../src/cserverdc.cpp:3343
+#: ../src/cdcconsole.cpp:465 ../src/cserverdc.cpp:3343
 msgid "Please note, hub will be stopped now."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:513
+#: ../src/cdcconsole.cpp:509
 msgid "Usage example: !ccbc :US:GB: <message>"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:527
+#: ../src/cdcconsole.cpp:523
 #, c-format
 msgid "Message delivered to %d user in zones %s in %s."
 msgid_plural "Message delivered to %d users in zones %s in %s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/cdcconsole.cpp:536 ../src/cdcconsole.cpp:721
+#: ../src/cdcconsole.cpp:532 ../src/cdcconsole.cpp:721
 #: ../src/cserverdc.cpp:1307
 msgid "Your information"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:551
+#: ../src/cdcconsole.cpp:547
 msgid "Your IP information"
+msgstr ""
+
+#: ../src/cdcconsole.cpp:551 ../src/cserverdc.cpp:2641 ../src/cuser.cpp:208
+#, c-format
+msgid "Host: %s"
 msgstr ""
 
 #: ../src/cdcconsole.cpp:557 ../src/cdcconsole.cpp:749 ../src/cuser.cpp:219
@@ -585,7 +590,7 @@ msgstr ""
 #: ../src/creguserinfo.cpp:113 ../src/creguserinfo.cpp:114
 #: ../src/creguserinfo.cpp:123 ../src/creguserinfo.cpp:124
 #: ../src/creguserinfo.cpp:125 ../src/creguserinfo.cpp:128
-#: ../src/ctrigger.cpp:273
+#: ../src/ctrigger.cpp:274
 msgid "Not set"
 msgstr ""
 
@@ -2730,11 +2735,6 @@ msgstr ""
 msgid "Master"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2641 ../src/cuser.cpp:208
-#, c-format
-msgid "Host: %s"
-msgstr ""
-
 #: ../src/cserverdc.cpp:2667
 #, c-format
 msgid "Users: %d"
@@ -2893,41 +2893,41 @@ msgstr[1] ""
 msgid "Show list of triggers"
 msgstr ""
 
-#: ../src/ctriggers.cpp:319
+#: ../src/ctriggers.cpp:320
 msgid "The definition is empty or not specified. Please define it with -d option."
 msgstr ""
 
-#: ../src/ctriggers.cpp:324
+#: ../src/ctriggers.cpp:325
 msgid "It's not allowed to define dbconfig file as trigger."
 msgstr ""
 
-#: ../src/ctriggers.cpp:327
+#: ../src/ctriggers.cpp:328
 #, c-format
 msgid "User '%s' tried to define dbconfig as trigger"
 msgstr ""
 
-#: ../src/ctriggers.cpp:339
+#: ../src/ctriggers.cpp:340
 #, c-format
 msgid "The file %s for the trigger %s must be located in %s configuration folder, use %%[CFG] variable, for example: %%[CFG]/%s"
 msgstr ""
 
-#: ../src/ctriggers.cpp:435
+#: ../src/ctriggers.cpp:436
 msgid "Flags"
 msgstr ""
 
-#: ../src/ctriggers.cpp:436
+#: ../src/ctriggers.cpp:437
 msgid "Class"
 msgstr ""
 
-#: ../src/ctriggers.cpp:437
+#: ../src/ctriggers.cpp:438
 msgid "Timer"
 msgstr ""
 
-#: ../src/ctriggers.cpp:438
+#: ../src/ctriggers.cpp:439
 msgid "Sender"
 msgstr ""
 
-#: ../src/ctriggers.cpp:439
+#: ../src/ctriggers.cpp:440
 msgid "Definition"
 msgstr ""
 

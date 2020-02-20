@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -123,7 +123,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	unsigned int i, j;
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 2; i++) {
 		for (j = 0; j < mCo->mRedirects->mOldMap[i].size(); j++)
 			mCo->mRedirects->mOldMap[i][j] = char(int(mCo->mRedirects->mOldMap[i][j]) - j - i);
 	}

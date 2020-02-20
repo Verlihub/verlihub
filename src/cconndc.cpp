@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -557,20 +557,8 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			//break;
 	}
 
-	if ((action >= 3) && serv->mC.proto_flood_tban_time) { // add temporary ban
+	if ((action >= 3) && serv->mC.proto_flood_tban_time) // add temporary ban
 		serv->mBanList->AddIPTempBan(IP2Num(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
-		/*
-		cBan pfban(serv);
-		cKick pfkick;
-		pfkick.mOp = serv->mC.hub_security;
-		pfkick.mIP = AddrIP();
-		pfkick.mNick = mpUser->mNick;
-		pfkick.mTime = serv->mTime.Sec();
-		pfkick.mReason = to_user.str();
-		serv->mBanList->NewBan(pfban, pfkick, serv->mC.proto_flood_tban_time, eBF_NICKIP);
-		serv->mBanList->AddBan(pfban);
-		*/
-	}
 
 	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_LOGIN_ERR);
 	return true;

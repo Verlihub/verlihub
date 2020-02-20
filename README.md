@@ -6,10 +6,11 @@ Travis build status
 Verlihub 1.2.0.x
 ==============
 
-Verlihub is a NeoModus Direct Connect server for Unix and Linux based operating systems that provides useful high level functions such as:
+Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
 
-  * Very low RAM and CPU usage
-  * It can hold more than 20.000 users
+  * Low RAM and CPU usage
+  * It can hold more than 25.000 users
+  * TLS secured connection via NMDCS protocol
   * Utility scripts for simple installation and hub management
   * Export and import of hub setting via MySQL
   * User management with privilegies
@@ -28,7 +29,7 @@ Links
   * Crash Server: https://crash.verlihub.net/
   * Translate: https://transifex.com/feardc/verlihub-100/
   * Ledokol: https://ledo.feardc.net/
-  * Support hub: dchub://hub.verlihub.net:7777/
+  * Support hub: nmdcs://hub.verlihub.net:7777/
   * Hublist: https://te-home.net/?do=hublist
 
 Donation

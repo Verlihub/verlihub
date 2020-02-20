@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -56,7 +56,7 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("date_start", "int(11)", "0", true, mModel.mDateStart);
 	AddCol("date_limit", "int(11)", "", true, mModel.mDateEnd);
 	AddCol("last_hit", "int(11)", "", true, mModel.mLastHit);
-	AddCol("nick_op", "varchar(64)", "", true, mModel.mNickOp);
+	AddCol("nick_op", "varchar(128)", "", true, mModel.mNickOp);
 	AddCol("reason", "text", "", true, mModel.mReason);
 	AddCol("note_op", "text", "", true, mModel.mNoteOp);
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
@@ -81,7 +81,7 @@ cUnBanList::cUnBanList(cServerDC* s):
 	SetBaseTo(&mModelUn);
 	AddCol("date_unban", "int(11)", "", true, mModelUn.mDateUnban);
 	AddPrimaryKey("date_unban");
-	AddCol("unban_op", "varchar(30)", "", true, mModelUn.mUnNickOp);
+	AddCol("unban_op", "varchar(128)", "", true, mModelUn.mUnNickOp);
 	AddCol("unban_reason", "text", "", true, mModelUn.mUnReason);
 	mMySQLTable.mExtra = "UNIQUE (ip, nick, date_unban)";
 }
