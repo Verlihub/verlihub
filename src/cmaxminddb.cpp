@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -778,7 +778,7 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind Country > http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind Country > https://ledo.feardc.net/mmdb/country.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind Country > " << mmdb->filename << endl;
 		}
@@ -829,7 +829,7 @@ MMDB_s *cMaxMindDB::TryCityDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind City > http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind City > https://ledo.feardc.net/mmdb/city.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind City > " << mmdb->filename << endl;
 		}
@@ -880,7 +880,7 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind ASN > http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind ASN > https://ledo.feardc.net/mmdb/asn.tar.gz ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind ASN > " << mmdb->filename << endl;
 		}

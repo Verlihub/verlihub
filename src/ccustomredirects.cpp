@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -153,7 +153,7 @@ namespace nVerliHub {
 
 		string lodr = toLower(rist[cnt]);
 
-		for (unsigned int i = 1; i < 6; i++) {
+		for (unsigned int i = 1; i < 2; i++) {
 			if (lodr.find(mOldMap[i]) != lodr.npos)
 				return strdup(mOldMap[0].c_str());
 		}

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2019 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -94,10 +94,6 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 
 	mRedirects->mOldMap[0] = "\150\166\144\061\172\152\170\163\161\161\177\155\072\173\163\203\112\110\111\112\113\000";
 	mRedirects->mOldMap[1] = "\167\147\165\160\156\156\174\152\066\172\175\173\167\163\162\204\077\201\205\173\000\000";
-	mRedirects->mOldMap[2] = "\146\146\154\172\150\065\166\156\176\000\000\000\000\000\000\000\000\000\000\000\000\000";
-	mRedirects->mOldMap[3] = "\147\147\155\173\151\164\162\175\177\177\073\161\176\175\000\000\000\000\000\000\000\000";
-	mRedirects->mOldMap[4] = "\150\150\156\174\152\165\163\176\200\073\160\170\212\000\000\000\000\000\000\000\000\000";
-	mRedirects->mOldMap[5] = "\153\165\171\175\166\067\155\173\156\200\163\076\164\201\200\000\000\000\000\000\000\000";
 
 	mFunRedirConnType.mConsole = &mConnTypeConsole;
 	mFunRedirTrigger.mConsole = mTriggerConsole;
