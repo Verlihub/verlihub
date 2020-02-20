@@ -19,7 +19,7 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
   * Extend functionality with Lua, Python and Perl scripts
   * Generate statistics for your hub
   * Import users from PtokaX, Aquila or YnHub
-  * And alot more
+  * And much more
 
 Links
 ==============
