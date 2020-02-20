@@ -29,6 +29,7 @@ Links
   * Crash Server: https://crash.verlihub.net/
   * Translate: https://transifex.com/feardc/verlihub-100/
   * Ledokol: https://ledo.feardc.net/
+  * MMDB: https://ledo.feardc.net/mmdb/
   * Support hub: nmdcs://hub.verlihub.net:7777/
   * Hublist: https://te-home.net/?do=hublist
 
