@@ -18,7 +18,7 @@ before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gettext mariadb libmaxminddb lua libgcrypt pcre; fi
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libmysqlclient-dev libpcre3-dev libmaxminddb-dev libmaxminddb0 libicu-dev libasprintf-dev libssl-dev; fi
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install python2.7-dev liblua5.2-dev libperl-dev python-mysqldb; fi
-    - mysql -u root -e "create database if not exists `vh_test_xx`; create user 'vh_test_xx'@'127.0.0.1' identified by 'vh_test_xx'; grant all on `vh_test_xx`.* to 'vh_test_xx'@'127.0.0.1'; flush privileges;"
+    - mysql -u root -e "create database if not exists vh_test_xx; create user 'vh_test_xx'@'127.0.0.1' identified by 'vh_test_xx'; grant all on vh_test_xx.* to 'vh_test_xx'@'127.0.0.1'; flush privileges;"
 
 before_script:
     - mkdir build
