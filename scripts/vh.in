@@ -785,7 +785,7 @@ function install() # [sleep_time]
 
 		_ask_admin_access
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'" &> /dev/null
+		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;" &> /dev/null
 
 		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ; then # check again
 			echo_s "\nMySQL account " $RED_BOLD
@@ -818,7 +818,9 @@ function install() # [sleep_time]
 		fi
 
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS';" &> /dev/null
+		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\` CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS'; FLUSH PRIVILEGES;" &> /dev/null
+		# CREATE USER IF NOT EXISTS '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD';
+
 		if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; then # check again
 			echo_s "\nMySQL database " $RED_BOLD
 			echo_s "$MYSQL_DB_NAME" $BOLD
