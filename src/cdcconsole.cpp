@@ -611,21 +611,24 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 {
-	if (!conn) return 0;
-	if (!conn->mpUser) return 0;
+	if (!conn || !conn->mpUser)
+		return 0;
 
 	if (switchon) { // chat
 		if (!mOwner->mChatUsers.ContainsHash(conn->mpUser->mNickHash)) {
 			mOwner->DCPublicHS(_("Public chat messages are now visible. To hide them, write: +nochat"), conn);
 			mOwner->mChatUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
-		} else
+		} else {
 			mOwner->DCPublicHS(_("Public chat messages are already visible. To hide them, write: +nochat"), conn);
+		}
+
 	} else { // nochat
 		if (mOwner->mChatUsers.ContainsHash(conn->mpUser->mNickHash)) {
 			mOwner->DCPublicHS(_("Public chat messages are now hidden. To show them, write: +chat"), conn);
 			mOwner->mChatUsers.RemoveByHash(conn->mpUser->mNickHash);
-		} else
+		} else {
 			mOwner->DCPublicHS(_("Public chat messages are already hidden. To show them, write: +chat"), conn);
+		}
 	}
 
 	return 1;
@@ -2301,8 +2304,13 @@ bool cDCConsole::cfGag::operator()()
 	}
 
 	if (!mParRex->PartFound(1)) {
-		(*mOS) << _("Missing command parameters.");
-		return false;
+		if (temp == "nochat") { // nochat command
+			istringstream cmd_line("nochat");
+			return ((cDCConsole*)mCo)->CmdChat(cmd_line, mConn, false);
+		} else {
+			(*mOS) << _("Missing command parameters.");
+			return false;
+		}
 	}
 
 	string nick;
