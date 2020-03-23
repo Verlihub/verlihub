@@ -611,6 +611,8 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdChat(istringstream &cmd_line, cConnDC *conn, bool switchon)
 {
+	// note: here we dont set user->mHideChat because user might want to temporarily enable chat
+
 	if (!conn || !conn->mpUser)
 		return 0;
 
@@ -752,6 +754,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << autosprintf(_("TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Chat: %s"), (conn->mpUser->mHideChat ? _("Yes") : _("No"))) << "\r\n";
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
@@ -3405,6 +3408,28 @@ bool cDCConsole::cfRegUsr::operator()()
 
 						if (ostr.str().empty())
 							ostr << _("Your share is now hidden.");
+					}
+
+				} else if (field == "hide_chat") { // change hidden chat flag on the fly
+					if (user->mHideChat && (par == "0")) { // setting to 0
+						user->mHideChat = false;
+
+						if (!mS->mChatUsers.ContainsHash(user->mNickHash)) {
+							mS->mChatUsers.AddWithHash(user, user->mNickHash);
+
+							if (ostr.str().empty())
+								ostr << _("Public chat messages are now visible. To hide them, write: +nochat");
+						}
+
+					} else if (!user->mHideChat && (par != "0")) { // setting to 0, it appears that only 0 means false, anything else means true
+						user->mHideChat = true;
+
+						if (mS->mChatUsers.ContainsHash(user->mNickHash)) {
+							mS->mChatUsers.RemoveByHash(user->mNickHash);
+
+							if (ostr.str().empty())
+								ostr << _("Public chat messages are now hidden. To show them, write: +chat");
+						}
 					}
 
 				} else if (field == "hide_keys") { // hide operator key, mHideKeys always overrides mShowKeys and oplist_class has last position

@@ -95,6 +95,7 @@ class cRegUserInfo
 		bool mHideKeys;
 		bool mShowKeys;
 		bool mHideShare;
+		bool mHideChat;
 		bool mHideCtmMsg;
 		long mRegDate;
 		string mRegOp;

@@ -50,6 +50,7 @@ cRegUserInfo::cRegUserInfo():
 	mHideKeys(false),
 	mShowKeys(false),
 	mHideShare(false),
+	mHideChat(false),
 	mHideCtmMsg(false),
 	mRegDate(0),
 	mLoginCount(0),
@@ -119,6 +120,7 @@ ostream& operator << (ostream &os, cRegUserInfo &ui)
 	os << " [*] " << autosprintf(_("Hide key: %s"), (ui.mHideKeys ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Show key: %s"), (ui.mShowKeys ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Hide share: %s"), (ui.mHideShare ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hide chat: %s"), (ui.mHideChat ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Hide messages: %s"), (ui.mHideCtmMsg ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Authorization IP: %s"), (ui.mAuthIP.size() ? ui.mAuthIP.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Alternate IP: %s"), (ui.mAlternateIP.size() ? ui.mAlternateIP.c_str() : _("Not set"))) << "\r\n";

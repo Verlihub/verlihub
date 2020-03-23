@@ -262,6 +262,8 @@ public:
 	bool mHideKick;
 	/** hide share **/
 	bool mHideShare;
+	// hide chat
+	bool mHideChat;
 	// hide no ctm messages
 	bool mHideCtmMsg;
 	// set password request flag

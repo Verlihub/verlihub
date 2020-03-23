@@ -93,6 +93,7 @@ cUser::cUser(const string &nick):
 	mProtectFrom = 0;
 	mHideKick = false;
 	mHideShare = false;
+	mHideChat = false;
 	mHideCtmMsg = false;
 	mSetPass = false;
 	mPassive = true;
@@ -138,6 +139,7 @@ void cUser::Register()
 	mHideKicksForClass = mxConn->mRegInfo->mClassHideKick;
 	mHideKick = mxConn->mRegInfo->mHideKick;
 	mHideShare = mxConn->mRegInfo->mHideShare;
+	mHideChat = mxConn->mRegInfo->mHideChat;
 	mHideCtmMsg = mxConn->mRegInfo->mHideCtmMsg;
 
 	if (mClass == eUC_PINGER) {

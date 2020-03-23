@@ -516,6 +516,11 @@ bool cServerDC::AddToList(cUser *user)
 		else
 			DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
 
+		if (user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideChat && mChatUsers.ContainsHash(user->mNickHash)) { // hide chat, only if not hidden earlier
+			mChatUsers.RemoveByHash(user->mNickHash);
+			DCPublicHS(_("You won't see public chat messages, to restore use +chat command."), user->mxConn);
+		}
+
 		if (user->mxConn->Log(3))
 			user->mxConn->LogStream() << "Adding user at the end of nicklist" << endl;
 
