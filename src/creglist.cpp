@@ -57,6 +57,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("hide_keys", "tinyint(1)", "0", true, mModel.mHideKeys);
 	AddCol("show_keys", "tinyint(1)", "0", true, mModel.mShowKeys);
 	AddCol("hide_share", "tinyint(1)", "0", true, mModel.mHideShare);
+	AddCol("hide_chat", "tinyint(1)", "0", true, mModel.mHideChat);
 	AddCol("hide_ctmmsg", "tinyint(1)", "0", true, mModel.mHideCtmMsg);
 	AddCol("reg_date", "int(11)", "", true, mModel.mRegDate);
 	AddCol("reg_op", "varchar(64)", "", true, mModel.mRegOp);
