@@ -38,10 +38,10 @@ namespace nVerliHub {
 	{
 		AddCol("address", "varchar(125)", "", false, mModel.mAddress);
 		AddPrimaryKey("address");
-		AddCol("flag", "smallint(5)", "", false, mModel.mFlag);
-		AddCol("start", "tinyint(2)", "", false, mModel.mStart);
-		AddCol("stop", "tinyint(2)", "", false, mModel.mStop);
-		AddCol("enable", "tinyint(1)", "1", true, mModel.mEnable);
+		AddCol("flag", "smallint(5)", "0", false, mModel.mFlag);
+		AddCol("start", "tinyint(2)", "0", false, mModel.mStart);
+		AddCol("stop", "tinyint(2)", "0", false, mModel.mStop);
+		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
 	}

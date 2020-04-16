@@ -111,7 +111,7 @@ namespace nVerliHub {
 			else
 				temp.erase(temp.end() - 1);
 
-			os << "\t" << temp;
+			os << "\t" << temp << "=" << flag;
 			return os;
 		}
 

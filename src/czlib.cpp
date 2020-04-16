@@ -77,9 +77,9 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	char *new_buf = (char*)realloc(inBuf, inBufLen);
 
 	if (!new_buf) {
-		free(inBuf);
+		//free(inBuf); // todo: this causes crash
 		outLen = inLastLen = outLastLen = 0;
-		err = -90;
+		err = -inBufLen; // note: special message
 		return NULL;
 	}
 

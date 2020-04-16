@@ -893,19 +893,15 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 #endif
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
-					if (Log(5)) {
-						if (calc_size) {
+					if (calc_size) {
+						if (Log(5))
 							LogStream() << "Compressed ZLib data is larger, fall back: " << calc_size << " vs " << flush_size << endl;
+					} else {
+						if (comp_err > -100) { // note: special message
+							if (Log(0)) // todo: see if this happens too often, we dont want to flood in logs eigther
+								LogStream() << "Reallocation of ZLib buffer failed, fall back: " << comp_err << endl;
 						} else {
-							switch (comp_err) {
-								case -90:
-									LogStream() << "Reallocation of ZLib buffer failed, fall back: " << comp_err << endl;
-									break;
-
-								default:
-									LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
-									break;
-							}
+							LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
 						}
 					}
 				}
