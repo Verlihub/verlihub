@@ -62,7 +62,7 @@ class cTrigger
 public:
 	cTrigger();
 	virtual ~cTrigger();
-	int DoIt(istringstream & cmd_line, nSocket::cConnDC *conn, nSocket::cServerDC &server, bool timer=false);
+	int DoIt(istringstream &cmd_line, nSocket::cConnDC *conn, nSocket::cServerDC &server);
 	/**
 	 The trigger
 	*/
