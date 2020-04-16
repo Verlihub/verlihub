@@ -65,7 +65,7 @@ void cTriggers::AddFields()
 	AddCol("descr", "text", "", true, mModel.mDescription);
 	AddCol("min_class", "int(2)", "", true, mModel.mMinClass);
 	AddCol("max_class", "int(2)", "10", true, mModel.mMaxClass);
-	AddCol("flags", "int(2)", "0", true, mModel.mFlags);
+	AddCol("flags", "int(3)", "0", true, mModel.mFlags);
 	AddCol("seconds", "int(15)", "0", true, mModel.mSeconds);
 	mMySQLTable.mExtra = "PRIMARY KEY(command)";
 	SetBaseTo(&mModel);
@@ -94,7 +94,7 @@ void cTriggers::OnTimer(long now)
 
 		if (next < now) {
 			trigger->mLastTrigger = now;
-			trigger->DoIt(is, NULL, *mOwner, true);
+			trigger->DoIt(is, NULL, *mOwner);
 		}
 	 }
 }

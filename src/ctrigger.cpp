@@ -71,21 +71,15 @@ cTrigger::~cTrigger(){}
   @return 0 if an error occurs or the user cannot see the trigger
   */
 
-int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bool timer)
+int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 {
-	bool timeTrigger = timer && conn;
-	int uclass = 0;
+	bool user = conn && conn->mpUser;
+	int clas = 0;
 
-	if (!timeTrigger) { // check if it has been triggered by timeout, if not, check the connection and the user rights
-		if (!conn)
-			return 0;
+	if (user) { // check rights when triggered by user
+		clas = conn->mpUser->mClass;
 
-		if (!conn->mpUser)
-			return 0;
-
-		uclass = conn->mpUser->mClass;
-
-		if ((uclass < this->mMinClass) || (uclass > this->mMaxClass))
+		if ((clas < eUC_NORMUSER) || (clas < this->mMinClass) || (clas > this->mMaxClass))
 			return 0;
 	}
 
@@ -105,15 +99,16 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 
 	ReplaceVarInString(sender, "PAR1", sender, par1);
 
-	if (!timeTrigger)
+	if (user)
 		ReplaceVarInString(sender, "NICK", sender, conn->mpUser->mNick);
 
 	if (mFlags & eTF_DB) {
 		buf = mDefinition;
+
 	} else {
 		ReplaceVarInString(mDefinition, "CFG", filename, server.mConfigBaseDir);
 
-		if (!timeTrigger && (filename.find("%[CC]") != filename.npos)) { // only if found
+		if (user && (filename.find("%[CC]") != filename.npos)) { // only if found
 			geo = conn->GetGeoCC(); // country code
 			ReplaceVarInString(filename, "CC", filename, geo);
 		}
@@ -127,9 +122,9 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 		ReplaceVarInString(buf, "PAR1", buf, par1);
 		ReplaceVarInString(buf, "END1", buf, end1);
 
-		if (!timeTrigger) {
-			ReplaceVarInString(buf, "CLASS", buf, uclass);
-			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(uclass)));
+		if (user) {
+			ReplaceVarInString(buf, "CLASS", buf, clas);
+			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(clas)));
 			const size_t pos = buf.find("%[C");
 
 			if (pos != buf.npos) { // only if found
@@ -206,27 +201,28 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server, bo
 			string start, end;
 			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
 
-			if (mFlags & eTF_VARS) { // use vars
+			if (mFlags & eTF_VARS) // use vars
 				server.SendToAllWithNickVars(start, end, this->mMinClass, this->mMaxClass);
-			} else { // no vars
+			else // no vars
 				server.SendToAllWithNick(start, end, this->mMinClass, this->mMaxClass);
-			}
+
 		} else { // mc
 			if (mFlags & eTF_VARS) { // use vars
 				string msg;
 				server.mP.Create_Chat(msg, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
 				server.SendToAllNoNickVars(msg, this->mMinClass, this->mMaxClass);
 				server.OnPublicBotMessage(&sender, &buf, this->mMinClass, this->mMaxClass); // todo: make it discardable if needed
+
 			} else { // no vars
 				server.DCPublicToAll(sender, buf, this->mMinClass, this->mMaxClass, server.mC.delayed_chat);
 			}
 		}
-	} else if (!timeTrigger) { // to single
-		if (mFlags & eTF_SENDPM) { // pm
+
+	} else if (user) { // to single
+		if (mFlags & eTF_SENDPM) // pm
 			server.DCPrivateHS(buf, conn, &sender, &sender);
-		} else { // mc
+		else // mc
 			server.DCPublic(sender, buf, conn);
-		}
 	}
 
 	return 1;
