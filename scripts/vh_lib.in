@@ -27,7 +27,7 @@ LIBDIR=@libdir@
 PLUGINDIR=@plugindir@
 DAEMON_NAME="vh_daemon"
 TIMESTAMP=`date +%s`
-VER="1.9"
+VER="2.0"
 
 # Check if user class is a valid number
 function check_class() #class
@@ -57,14 +57,14 @@ function _register() # nickname, class, password, input_password_crypt, reg_date
 				0) PASSWORD="'$3'" && ENCRYPTION=0;;
 				1) PASSWORD="ENCRYPT('$3')" && ENCRYPTION=1;;
 				2) PASSWORD="MD5('$3')" && ENCRYPTION=2;;
-				*) PASSWORD="ENCRYPT('$3')" && ENCRYPTION=1;;
+				*) PASSWORD="MD5('$3')" && ENCRYPTION=2;; # default md5
 			esac;
 			SQL_VALUES="$SQL_VALUES,$PASSWORD,'0','$ENCRYPTION'"
 		else
 			case "$4" in
 				"encrypt") PWD_CRYPT="1";;
 				"md5") PWD_CRYPT="2";;
-				*) PWD_CRYPT="1";;
+				*) PWD_CRYPT="2";; # default md5
 			esac;
 			SQL_VALUES="$SQL_VALUES,'$3','0','$PWD_CRYPT'"
 		fi;

@@ -1317,7 +1317,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	if (mUserList.Size() > mUsersPeak)
 		mUsersPeak = mUserList.Size();
 
-	if ((conn->mpUser->mClass >= eUC_NORMUSER) && mC.msg_welcome[conn->mpUser->mClass].size()) { // pingers dont have welcome messages
+	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) { // pingers dont have welcome messages
 		omsg.clear();
 		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
 		const size_t pos = omsg.find("%[C");
