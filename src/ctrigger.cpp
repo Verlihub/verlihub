@@ -191,7 +191,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 		ReplaceVarInString(buf, "HH", buf, tmf);
 		sprintf(tmf, "%02d", lt->tm_mday);
 		ReplaceVarInString(buf, "DD", buf, tmf);
-		sprintf(tmf, "%02d", lt->tm_mon + 1);
+		sprintf(tmf, "%02hd", lt->tm_mon + 1);
 		ReplaceVarInString(buf, "MM", buf, tmf);
 		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year);
 	}

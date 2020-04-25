@@ -281,7 +281,7 @@ void cDCConf::AddVars()
 	Add("disable_usr_cmds", disable_usr_cmds, false);
 	Add("disable_report_cmd", disable_report_cmd, false);
 	Add("always_ask_password", always_ask_password, false);
-	Add("default_password_encryption", default_password_encryption, (unsigned int)cRegUserInfo::eCRYPT_ENCRYPT); // 1
+	Add("default_password_encryption", default_password_encryption, (unsigned int)cRegUserInfo::eCRYPT_MD5); // 2
 	Add("password_min_len", password_min_len, 6);
 	Add("pwd_tmpban", pwd_tmpban, 60);
 	Add("wrongpass_message", wrongpass_message, "");
@@ -419,17 +419,17 @@ void cDCConf::AddVars()
 	Add("ip_zone6_max",ip_zone6_max, "");
 	// End IP and zone configuration
 
-	// Custom messages
+	// custom messages
 	Add("ban_extra_message", ban_extra_message, "");
-	Add("msg_replace_ban",msg_replace_ban, "");
-	Add("msg_welcome_guest",msg_welcome[0]);
-	Add("msg_welcome_reg",msg_welcome[1]);
-	Add("msg_welcome_vip",msg_welcome[2]);
-	Add("msg_welcome_op",msg_welcome[3]);
-	Add("msg_welcome_cheef",msg_welcome[4]);
-	Add("msg_welcome_admin",msg_welcome[5]);
-	Add("msg_welcome_master",msg_welcome[10]);
-	// End custom messages
+	Add("msg_replace_ban", msg_replace_ban, "");
+	Add("msg_welcome_guest", msg_welcome[int(eUC_NORMUSER)]);
+	Add("msg_welcome_reg", msg_welcome[int(eUC_REGUSER)]);
+	Add("msg_welcome_vip", msg_welcome[int(eUC_VIPUSER)]);
+	Add("msg_welcome_op", msg_welcome[int(eUC_OPERATOR)]);
+	Add("msg_welcome_cheef", msg_welcome[int(eUC_CHEEF)]);
+	Add("msg_welcome_admin", msg_welcome[int(eUC_ADMIN)]);
+	Add("msg_welcome_master", msg_welcome[int(eUC_MASTER)]);
+	// end of section
 }
 
 int cDCConf::Load()

@@ -345,7 +345,7 @@ public:
 
 	string ban_extra_message;
 	string msg_replace_ban;
-	string msg_welcome[11];
+	string msg_welcome[int(eUC_MASTER) + 1];
 	bool desc_insert_mode;
 	string desc_insert_vars;
 public: // Public attributes
