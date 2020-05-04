@@ -118,16 +118,16 @@ int main(int argc, char *argv[])
 {
 	int result = 0;
 	string ConfigBase;
-	int port = 0;
+	unsigned int port = 0;
 	int verbosity = 0;
 
 	const char* short_options = "Ss:d:v";
 
 	const struct option long_options[] = {
-		{"syslog",          no_argument,        0, 'S'},
-		{"syslog-suffix",   required_argument,  0, 's'},
-		{"config-dir",      required_argument,  0, 'd'},
-		{"verbose",         no_argument,        0, 'v'},
+		{"syslog", no_argument, 0, 'S'},
+		{"syslog-suffix", required_argument, 0, 's'},
+		{"config-dir", required_argument, 0, 'd'},
+		{"verbose", no_argument, 0, 'v'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -135,8 +135,8 @@ int main(int argc, char *argv[])
 	int opt = -1;
 	char *OptDirName = NULL;
 
-	while( (opt = getopt_long(argc, argv, short_options, long_options, &long_index)) != -1 ) {
-		switch( opt ) {
+	while ((opt = getopt_long(argc, argv, short_options, long_options, &long_index)) != -1 ) {
+		switch (opt) {
 			case 'S':
 #ifdef ENABLE_SYSLOG
 				cObj::msUseSyslog = 1;
@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
 				MAIN_LOG_NOTICE << "Logging to syslog is disabled at compile time" << endl;
 #endif
 				break;
+
 			case 's':
 #ifdef ENABLE_SYSLOG
 				cObj::msSyslogIdent += '-';
@@ -152,9 +153,11 @@ int main(int argc, char *argv[])
 				MAIN_LOG_NOTICE << "Logging to syslog is disabled at compile time" << endl;
 #endif
 				break;
+
 			case 'd':
 				OptDirName = optarg;
 				break;
+
 			case 'v':
 				verbosity++;
 				break;
@@ -164,9 +167,13 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
+
 	if (optind < argc) {
 		stringstream arg(argv[optind]);
 		arg >> port;
+
+		if (port == 2) // install workaround
+			port = 4111;
 	}
 
 	/*
@@ -188,11 +195,13 @@ int main(int argc, char *argv[])
 		if (HomeDir) {
 			tmp = HomeDir;
 			tmp += "/.config/verlihub";
-			if (DirExists(tmp.c_str()))
+
+			if (DirExists(tmp.c_str())) {
 				ConfigBase = tmp;
-			else {
+			} else {
 				tmp = HomeDir;
 				tmp += "/.verlihub";
+
 				if (DirExists(tmp.c_str()))
 					ConfigBase = tmp;
 			}
@@ -205,9 +214,9 @@ int main(int argc, char *argv[])
 
 		DirName = getenv("VERLIHUB_CFG");
 
-		if ((OptDirName != NULL) && DirExists(OptDirName))
+		if (OptDirName && DirExists(OptDirName))
 			ConfigBase = OptDirName;
-		else if ((DirName != NULL) && DirExists(DirName))
+		else if (DirName && DirExists(DirName))
 			ConfigBase = DirName;
 
 		if (!ConfigBase.size())
