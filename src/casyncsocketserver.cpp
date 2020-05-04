@@ -449,6 +449,7 @@ cAsyncConn* cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPor
 			if (Log(0)) {
 				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
 				LogStream() << "Please make sure the port is open and not already used by another process" << endl;
+				LogStream() << "Remember that hub must be started using root when port number is below 1024" << endl;
 			}
 
 			throw "Unable to listen";
