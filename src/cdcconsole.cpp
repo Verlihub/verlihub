@@ -2600,7 +2600,10 @@ bool cDCConsole::cfWho::operator()()
 		eAC_CITY,
 		eAC_HUBPORT,
 		eAC_HUBURL,
-		eAC_TLS
+		eAC_TLS,
+		eAC_SUPS,
+		eAC_VER,
+		eAC_INFO
 	};
 
 	static const char *actionnames[] = {
@@ -2610,7 +2613,10 @@ bool cDCConsole::cfWho::operator()()
 		"city",
 		"hubport", "port",
 		"huburl", "url",
-		"tls"
+		"tls",
+		"supports", "sups",
+		"nmdc", "ver",
+		"myinfo", "info"
 	};
 
 	static const int actionids[] = {
@@ -2620,7 +2626,10 @@ bool cDCConsole::cfWho::operator()()
 		eAC_CITY,
 		eAC_HUBPORT, eAC_HUBPORT,
 		eAC_HUBURL, eAC_HUBURL,
-		eAC_TLS
+		eAC_TLS,
+		eAC_SUPS, eAC_SUPS,
+		eAC_VER, eAC_VER,
+		eAC_INFO, eAC_INFO
 	};
 
 	string tmp;
@@ -2710,6 +2719,30 @@ bool cDCConsole::cfWho::operator()()
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with TLS version %s", "Found %d users with TLS version %s", cnt), cnt, tmp.c_str());
+
+			break;
+
+		case eAC_SUPS:
+			cnt = mS->WhoSupports(tmp, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with supports %s", "Found %d users with supports %s", cnt), cnt, tmp.c_str());
+
+			break;
+
+		case eAC_VER:
+			cnt = mS->WhoNMDCVer(tmp, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with NMDC version %s", "Found %d users with NMDC version %s", cnt), cnt, tmp.c_str());
+
+			break;
+
+		case eAC_INFO:
+			cnt = mS->WhoMyINFO(tmp, who, sep);
+
+			if (cnt)
+				(*mOS) << autosprintf(ngettext("Found %d user with MyINFO %s", "Found %d users with MyINFO %s", cnt), cnt, tmp.c_str());
 
 			break;
 
