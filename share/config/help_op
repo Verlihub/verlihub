@@ -114,6 +114,9 @@
 	!whoport <port>				- Find users on port
 	!whourl <url>				- Find users on URL
 	!whotls <tls>				- Find users with TLS version
+	!whosups <sups>				- Find users with supports
+	!whonmdc <nmdc>				- Find users with NMDC version
+	!whoinfo <info>				- Find users with MyINFO
 
  [*] Hub information:
 

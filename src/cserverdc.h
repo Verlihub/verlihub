@@ -581,6 +581,15 @@ class cServerDC : public cAsyncSocketServer
 		// return list of users with specific partial tls version
 		unsigned int WhoTLSVer(const string &vers, string &dest, const string &sep);
 
+		// return list of users with specific partial supports flags
+		unsigned int WhoSupports(const string &sups, string &dest, const string &sep);
+
+		// return list of users with specific partial nmdc version
+		unsigned int WhoNMDCVer(const string &vers, string &dest, const string &sep);
+
+		// return list of users with specific partial myinfo string
+		unsigned int WhoMyINFO(const string &info, string &dest, const string &sep);
+
 		// return list of users with specific ip address range
 		unsigned int WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact = true);
 

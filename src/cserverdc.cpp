@@ -2252,6 +2252,80 @@ unsigned int cServerDC::WhoTLSVer(const string &vers, string &dest, const string
 	return cnt;
 }
 
+unsigned int cServerDC::WhoSupports(const string &sups, string &dest, const string &sep)
+{
+	unsigned int cnt = 0;
+	cConnDC *conn;
+	string low;
+
+	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && conn->mSupportsText.size()) {
+			low = toLower(conn->mSupportsText);
+
+			if (low.find(sups) != string::npos) {
+				dest += sep;
+				dest += (*i)->mNick;
+				dest += " [";
+				dest += conn->mSupportsText;
+				dest += ']';
+				cnt++;
+			}
+		}
+	}
+
+	return cnt;
+}
+
+unsigned int cServerDC::WhoNMDCVer(const string &vers, string &dest, const string &sep)
+{
+	unsigned int cnt = 0;
+	cConnDC *conn;
+
+	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
+		conn = ((cUser*)(*i))->mxConn;
+
+		if (conn && conn->mVersion.size() && (conn->mVersion.find(vers) != string::npos)) {
+			dest += sep;
+			dest += (*i)->mNick;
+			dest += " [";
+			dest += conn->mVersion;
+			dest += ']';
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
+unsigned int cServerDC::WhoMyINFO(const string &info, string &dest, const string &sep)
+{
+	unsigned int cnt = 0;
+	cUser *user;
+	string myinfo, low;
+
+	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
+		user = (cUser*)(*i);
+
+		if (user && user->mMyINFO.size()) {
+			low = toLower(user->mMyINFO);
+
+			if (low.find(info) != string::npos) {
+				cDCProto::EscapeChars(user->mMyINFO, myinfo);
+				dest += sep;
+				dest += user->mNick;
+				dest += " [";
+				dest += myinfo;
+				dest += ']';
+				cnt++;
+			}
+		}
+	}
+
+	return cnt;
+}
+
 unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string &dest, const string &sep, bool exact)
 {
 	unsigned int tot = 0;
