@@ -2303,7 +2303,8 @@ unsigned int cServerDC::WhoMyINFO(const string &info, string &dest, const string
 {
 	unsigned int cnt = 0;
 	cUser *user;
-	string myinfo, low;
+	string myinfo, low, unfo;
+	cDCProto::UnEscapeChars(info, unfo);
 
 	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
 		user = (cUser*)(*i);
@@ -2311,7 +2312,7 @@ unsigned int cServerDC::WhoMyINFO(const string &info, string &dest, const string
 		if (user && user->mMyINFO.size()) {
 			low = toLower(user->mMyINFO);
 
-			if (low.find(info) != string::npos) {
+			if (low.find(unfo) != string::npos) {
 				cDCProto::EscapeChars(user->mMyINFO, myinfo);
 				dest += sep;
 				dest += user->mNick;
