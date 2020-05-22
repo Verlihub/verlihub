@@ -27,8 +27,8 @@
 #include "cmysql.h"
 #include "cquery.h"
 
-#define DEFAULT_COLLATION "utf8_unicode_ci"
-#define DEFAULT_CHARSET "utf8"
+#define DEFAULT_COLLATION ""
+#define DEFAULT_CHARSET ""
 
 using namespace std;
 
