@@ -146,7 +146,14 @@ bool cMySQLTable::CreateTable()
 	if (mExtra.size())
 		mQuery.OStream() << ", " << mExtra;
 
-	mQuery.OStream() << ") character set " << DEFAULT_CHARSET << " collate " << DEFAULT_COLLATION;
+	mQuery.OStream() << ")";
+
+	if (DEFAULT_CHARSET != "")
+		mQuery.OStream() << " character set " << DEFAULT_CHARSET;
+
+	if (DEFAULT_COLLATION != "")
+		mQuery.OStream() << " collate " << DEFAULT_COLLATION;
+
 	mQuery.Query();
 	mQuery.Clear();
 	return true;
@@ -186,11 +193,16 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 		}
 	}
 
-	if (GetCollation() && (mCollation != DEFAULT_COLLATION)) {
+	if ((DEFAULT_COLLATION != "") && GetCollation() && (mCollation != DEFAULT_COLLATION)) {
 		if (Log(1))
-			LogStream() << "Altering table " << mName << ", setting character set to " << DEFAULT_CHARSET << " and collation to " << DEFAULT_COLLATION << endl;
+			LogStream() << "Altering table " << mName << ", setting character set to " << ((DEFAULT_CHARSET != "") ? DEFAULT_CHARSET : "<default>") << " and collation to " << DEFAULT_COLLATION << endl;
 
-		mQuery.OStream() << "alter table " << mName << " character set " << DEFAULT_CHARSET << " collate " << DEFAULT_COLLATION;
+		mQuery.OStream() << "alter table " << mName;
+
+		if (DEFAULT_CHARSET != "")
+			mQuery.OStream() << " character set " << DEFAULT_CHARSET;
+
+		mQuery.OStream() << " collate " << DEFAULT_COLLATION;
 		mQuery.Query();
 		mQuery.Clear();
 	}

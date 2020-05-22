@@ -56,7 +56,7 @@ void cMySQL::Init()
 bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
 {
 	if (Log(1))
-		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : DEFAULT_CHARSET) << endl;
+		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : ((DEFAULT_CHARSET != "") ? DEFAULT_CHARSET : "<default>")) << endl;
 
 	mysql_options(mDBHandle, MYSQL_OPT_COMPRESS, 0);
 
@@ -66,6 +66,8 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 
 	if (charset.size())
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
+	else if (DEFAULT_CHARSET != "")
+		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
 	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, 0, 0)) {
 		Error(1, _("Connection to MySQL server failed"));
