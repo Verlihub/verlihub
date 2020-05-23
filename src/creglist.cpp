@@ -130,7 +130,7 @@ bool cRegList::AddRegUser(const string &nick, cConnDC *op, int clas, const char 
 	if (FindRegInfo(ui, nick))
 		return false;
 
-	if ((toLower(nick) == toLower(mS->mC.opchat_name)) || (toLower(nick) == toLower(mS->mC.hub_security))) // dont register operator chat and hub security
+	if ((toLower(nick, true) == toLower(mS->mC.opchat_name, true)) || (toLower(nick, true) == toLower(mS->mC.hub_security, true))) // dont register operator chat and hub security
 		return false;
 
 	ui.mNick = nick; // todo: nick2dbkey

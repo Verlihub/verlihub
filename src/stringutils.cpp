@@ -58,17 +58,49 @@ int StrCompare(const string &str1, int start, int count, const char *str2)
 	return str1.compare(start, count, str2);
 }
 
-string toLower(const string &str)
+string toLower(const string &str, bool cyr)
 {
 	string result = str;
 	transform(str.begin(), str.end(), result.begin(), ::tolower);
+
+	if (cyr) { // cyrillic alphabet
+		unsigned int b;
+
+		for (unsigned int i = 0; i < result.size(); ++i) {
+			b = (unsigned int)((unsigned char)result[i]);
+
+			if (b == 168)
+				result[i] = (unsigned char)(b + 16);
+			else if ((b >= 192) && (b <= 223))
+				result[i] = (unsigned char)(b + 32);
+			else
+				result[i] = (unsigned char)(b);
+		}
+	}
+
 	return result;
 }
 
-string toUpper(const string &str)
+string toUpper(const string &str, bool cyr)
 {
 	string result = str;
 	transform(str.begin(), str.end(), result.begin(), ::toupper);
+
+	if (cyr) { // cyrillic alphabet
+		unsigned int b;
+
+		for (unsigned int i = 0; i < result.size(); ++i) {
+			b = (unsigned int)((unsigned char)result[i]);
+
+			if (b == 184)
+				result[i] = (unsigned char)(b - 16);
+			else if ((b >= 224) && (b <= 255))
+				result[i] = (unsigned char)(b - 32);
+			else
+				result[i] = (unsigned char)(b);
+		}
+	}
+
 	return result;
 }
 

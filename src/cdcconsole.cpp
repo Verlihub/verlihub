@@ -2647,7 +2647,7 @@ bool cDCConsole::cfWho::operator()()
 	}
 
 	string sep("\r\n\t");
-	string who, low;
+	string who;
 	unsigned long ip_min, ip_max;
 	unsigned int cnt, port = 0;
 
@@ -2688,8 +2688,7 @@ bool cDCConsole::cfWho::operator()()
 			break;
 
 		case eAC_CITY:
-			low = toLower(tmp);
-			cnt = mS->WhoCity(low, who, sep);
+			cnt = mS->WhoCity(tmp, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with city %s", "Found %d users with city %s", cnt), cnt, tmp.c_str());
@@ -2706,8 +2705,7 @@ bool cDCConsole::cfWho::operator()()
 			break;
 
 		case eAC_HUBURL:
-			low = toLower(tmp);
-			cnt = mS->WhoHubURL(low, who, sep);
+			cnt = mS->WhoHubURL(tmp, who, sep);
 
 			if (cnt)
 				(*mOS) << autosprintf(ngettext("Found %d user with hub URL %s", "Found %d users with hub URL %s", cnt), cnt, tmp.c_str());
