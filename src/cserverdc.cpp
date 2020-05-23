@@ -1760,7 +1760,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 			string pref, snick;
 
 			if (mC.nick_prefix_nocase)
-				snick = toLower(nick);
+				snick = toLower(nick, true);
 			else
 				snick = nick;
 
@@ -1772,7 +1772,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 					break;
 
 				if (mC.nick_prefix_nocase)
-					pref = toLower(pref);
+					pref = toLower(pref, true);
 
 				if ((snick.size() >= pref.size()) && (StrCompare(snick, 0, pref.size(), pref) == 0)) {
 					bad = false;
@@ -2169,7 +2169,7 @@ unsigned int cServerDC::WhoCity(const string &city, string &dest, const string &
 
 		if (conn) {
 			ci = conn->GetGeoCI();
-			low = toLower(ci);
+			low = toLower(ci, true);
 
 			if (low.find(city) != low.npos) {
 				dest += sep;
@@ -2310,7 +2310,7 @@ unsigned int cServerDC::WhoMyINFO(const string &info, string &dest, const string
 		user = (cUser*)(*i);
 
 		if (user && user->mMyINFO.size()) {
-			low = toLower(user->mMyINFO);
+			low = toLower(user->mMyINFO, true);
 
 			if (low.find(unfo) != string::npos) {
 				cDCProto::EscapeChars(user->mMyINFO, myinfo);
