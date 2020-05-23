@@ -26,11 +26,12 @@ Links
 
   * Website: https://github.com/verlihub/
   * Wiki: https://github.com/verlihub/verlihub/wiki/
-  * Crash Server: https://crash.verlihub.net/
+  * Crash: https://crash.verlihub.net/
   * Translate: https://transifex.com/feardc/verlihub-100/
   * Ledokol: https://ledo.feardc.net/
   * MMDB: https://ledo.feardc.net/mmdb/
-  * Support hub: nmdcs://hub.verlihub.net:7777/
+  * Proxy: https://github.com/verlihub/tls-proxy/
+  * Support: nmdcs://hub.verlihub.net:7777/
   * Hublist: https://te-home.net/?do=hublist
 
 Donation
