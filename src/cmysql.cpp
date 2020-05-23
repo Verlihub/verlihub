@@ -50,7 +50,7 @@ void cMySQL::Init()
 	mDBHandle = mysql_init(mDBHandle);
 
 	if (!mDBHandle)
-		Error(0, _("Can't initiate MySQL structure"));
+		Error(0, _("Can not initiate MySQL structure"));
 }
 
 bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
@@ -58,26 +58,23 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 	if (Log(1))
 		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : ((DEFAULT_CHARSET != "") ? DEFAULT_CHARSET : "<default>")) << endl;
 
-	mysql_options(mDBHandle, MYSQL_OPT_COMPRESS, 0);
-
-	#if MYSQL_VERSION_ID >= 50000
-		mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, "true");
-	#endif
+	bool yes = true;
+	mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, &yes);
 
 	if (charset.size())
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
 	else if (DEFAULT_CHARSET != "")
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
-	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, 0, 0)) {
-		Error(1, _("Connection to MySQL server failed"));
+	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, NULL, 0)) {
+		Error(0, mysql_error(mDBHandle));
 		return false;
 	}
 
 	return true;
 }
 
-void cMySQL::Error(int level, const string& text)
+void cMySQL::Error(int level, const string &text)
 {
 	if (ErrLog(level))
 		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;
