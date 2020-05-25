@@ -819,11 +819,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 
 					data = conn->mpUser->mMyINFO;
 					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
-
-					if (mOwner->mC.send_user_ip) { // send userip to operators
-						mOwner->mP.Create_UserIP(data, conn->mpUser->mNick, conn->AddrIP(), true); // reserve for pipe
-						mOwner->mUserList.SendToAllWithClassFeature(data, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
-					}
+					mOwner->ShowUserIP(conn); // send userip to operators
 				}
 
 				conn->mpUser->mClass = eUC_NORMUSER;
@@ -1201,11 +1197,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 
 						msg = user->mMyINFO;
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
-
-						if (mOwner->mC.send_user_ip) { // send userip to operators
-							mOwner->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-							mOwner->mUserList.SendToAllWithClassFeature(msg, mOwner->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mOwner->mC.delayed_myinfo, true); // must be delayed too
-						}
+						mOwner->ShowUserIP(user->mxConn); // send userip to operators
 					}
 				}
 			}
@@ -3281,11 +3273,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 						msg = user->mMyINFO;
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-						if (mS->mC.send_user_ip) { // send userip to operators
-							mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-							mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
-						}
+						mS->ShowUserIP(user->mxConn); // send userip to operators
 					}
 
 					user->mClass = eUC_NORMUSER;
@@ -3363,11 +3351,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
-							}
+							mS->ShowUserIP(user->mxConn); // send userip to operators
 						}
 					}
 				}
@@ -3489,11 +3473,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
-							}
+							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now hidden.");
@@ -3526,11 +3506,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							msg = user->mMyINFO;
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-							if (mS->mC.send_user_ip) { // send userip to operators
-								mS->mP.Create_UserIP(msg, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-								mS->mUserList.SendToAllWithClassFeature(msg, mS->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mS->mC.delayed_myinfo, true); // must be delayed too
-							}
+							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now hidden.");

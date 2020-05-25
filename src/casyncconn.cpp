@@ -1042,11 +1042,16 @@ string* cAsyncConn::FactoryString()
 
 bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 {
-	if (mTLSVer.size() || (addr.size() < 7) || (addr.size() > 15) || vers.empty() || (vers.size() > 3)) // todo: validate address
+	if (mTLSVer.size() || (addr.size() < 7) || (addr.size() > 15) || vers.empty() || (vers.size() > 3))
 		return false;
 
+	const unsigned long num = cBanList::Ip2Num(addr);
+
+	if ((num == 0) || (num > 4294967295)) // validate ip
+		return false;
+
+	mNumIP = num;
 	mAddrIP = addr;
-	mNumIP = cBanList::Ip2Num(addr);
 	mIP = inet_addr(addr.c_str());
 
 	if (mxServer && mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
@@ -1062,6 +1067,38 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 	}
 
 	mTLSVer = vers;
+	return true;
+}
+
+bool cAsyncConn::SetUserIP(const string &addr)
+{
+	if ((addr.size() < 7) || (addr.size() > 15))
+		return false;
+
+	const unsigned long num = cBanList::Ip2Num(addr);
+
+	if ((num == 0) || (num > 4294967295)) // validate ip
+		return false;
+
+	if (mNumIP == num) // same ip, valid
+		return true;
+
+	mNumIP = num;
+	mAddrIP = addr;
+	mIP = inet_addr(addr.c_str());
+
+	if (mxServer) {
+		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+
+		if (serv) // send userip to operators
+			serv->ShowUserIP(this);
+
+		if (mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
+			mAddrHost.clear();
+			DNSLookup();
+		}
+	}
+
 	return true;
 }
 

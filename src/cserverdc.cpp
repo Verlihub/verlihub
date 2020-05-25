@@ -1466,6 +1466,26 @@ bool cServerDC::ShowUserToAll(cUser *user)
 	return true;
 }
 
+void cServerDC::ShowUserIP(cAsyncConn *conn)
+{
+	if (!conn)
+		return;
+
+	cConnDC *conc = (cConnDC*)conn;
+
+	if (!conc || !conc->mpUser)
+		return;
+
+	if (!conc->mpUser->mT.login) // only after login
+		return;
+
+	if (mC.send_user_ip) { // send userip to operators
+		string data;
+		mP.Create_UserIP(data, conc->mpUser->mNick, conc->AddrIP(), true); // reserve for pipe
+		mUserList.SendToAllWithClassFeature(data, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
+	}
+}
+
 void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int reason)
 {
 	DCPublicHS(msg, conn);

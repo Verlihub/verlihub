@@ -780,6 +780,11 @@ static PyObject *__GetUserIP(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *__SetUserIP(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_SetUserIP, args, "ss"));
+}
+
 static PyObject *__GetUserHubURL(PyObject *self, PyObject *args)
 {
 	char *res;
@@ -1240,6 +1245,7 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetBotList",         __GetBotList,         METH_VARARGS},
 	{"GetUserHost",        __GetUserHost,        METH_VARARGS},
 	{"GetUserIP",          __GetUserIP,          METH_VARARGS},
+	{"SetUserIP",          __SetUserIP,          METH_VARARGS},
 	{"GetUserHubURL",      __GetUserHubURL,      METH_VARARGS},
 	{"GetUserExtJSON",     __GetUserExtJSON,     METH_VARARGS},
 	{"GetUserCC",          __GetUserCC,          METH_VARARGS},
@@ -2054,6 +2060,7 @@ const char *w_CallName(int callback)
 		case W_GetUserClass:         return "GetUserClass";
 		case W_GetUserHost:          return "GetUserHost";
 		case W_GetUserIP:            return "GetUserIP";
+		case W_SetUserIP:            return "SetUserIP";
 		case W_GetUserHubURL:        return "GetUserHubURL";
 		case W_GetUserExtJSON:       return "GetUserExtJSON";
 		case W_GetUserCC:            return "GetUserCC";
