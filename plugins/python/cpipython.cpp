@@ -152,6 +152,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetBotList]         = &_GetBotList;
 	callbacklist[W_GetUserHost]        = &_GetUserHost;
 	callbacklist[W_GetUserIP]          = &_GetUserIP;
+	callbacklist[W_SetUserIP]          = &_SetUserIP;
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
 	callbacklist[W_GetUserExtJSON]     = &_GetUserExtJSON;
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
@@ -1566,6 +1567,22 @@ w_Targs *_GetUserIP(int id, w_Targs *args)
 	}
 
 	return cpiPython::lib_pack("s", strdup(ip));
+}
+
+w_Targs *_SetUserIP(int id, w_Targs *args)
+{
+	const char *nick, *ip;
+
+	if (!cpiPython::lib_unpack(args, "ss", &nick, &ip))
+		return NULL;
+
+	if (!nick || !ip)
+		return NULL;
+
+	if (!SetUserIP(nick, ip))
+		return NULL;
+
+	return w_ret1;
 }
 
 w_Targs *_GetUserHubURL(int id, w_Targs *args)

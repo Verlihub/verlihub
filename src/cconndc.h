@@ -397,9 +397,11 @@ namespace nVerliHub {
 				/// that represents the type of connection.
 				cConnType *mConnType;
 
+				// geolocation
 				string GetGeoCC(); // country code
 				string GetGeoCN(); // country name
 				string GetGeoCI(); // city name
+				void ResetGeo(); // reset all
 				void SetGeoZone(); // country code zone
 				int mGeoZone;
 

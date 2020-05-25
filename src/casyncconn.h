@@ -499,6 +499,7 @@ namespace nVerliHub {
 				// tls proxy
 				string mTLSVer;
 				bool SetSecConn(const string &addr, string &vers);
+				bool SetUserIP(const string &addr);
 
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;

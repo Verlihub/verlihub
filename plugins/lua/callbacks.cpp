@@ -1430,6 +1430,39 @@ int _GetUserIP(lua_State *L)
 	}
 }
 
+int _SetUserIP(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SetUserIP, expected 2 arguments but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = lua_tostring(L, 2), addr = lua_tostring(L, 3);
+
+	if (nick.empty() || addr.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	if (!SetUserIP(nick.c_str(), addr.c_str())) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
 int _IsSecConn(lua_State *L)
 {
 	int args = lua_gettop(L) - 1;

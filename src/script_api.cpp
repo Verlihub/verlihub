@@ -428,6 +428,25 @@ const char *GetUserIP(const char *nick)
 		return usr->mxConn->AddrIP().c_str();
 }
 
+bool SetUserIP(const char *nick, const char *ip)
+{
+	if (!nick || !ip)
+		return false;
+
+	cUser *user = GetUser(nick);
+
+	if (!user || !user->mxConn)
+		return false;
+
+	const string addr(ip);
+
+	if (!user->mxConn->SetUserIP(addr))
+		return false;
+
+	user->mxConn->ResetGeo();
+	return true;
+}
+
 bool Ban(const char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
 	cServerDC *serv = GetCurrentVerlihub();
@@ -729,11 +748,7 @@ bool DelRegUser(const char *nick)
 
 			data = user->mMyINFO;
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-
-			if (serv->mC.send_user_ip) { // send userip to operators
-				serv->mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-				serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
-			}
+			serv->ShowUserIP(user->mxConn); // send userip to operators
 		}
 
 		user->mClass = eUC_NORMUSER;
@@ -809,11 +824,7 @@ bool SetRegClass(const char *nick, int clas)
 
 				data = user->mMyINFO;
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-
-				if (serv->mC.send_user_ip) { // send userip to operators
-					serv->mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
-					serv->mUserList.SendToAllWithClassFeature(data, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
-				}
+				serv->ShowUserIP(user->mxConn); // send userip to operators
 			}
 		}
 

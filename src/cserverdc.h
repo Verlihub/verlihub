@@ -534,6 +534,7 @@ class cServerDC : public cAsyncSocketServer
 		* @return Always true.
 		*/
 		bool ShowUserToAll(cUser *user);
+		void ShowUserIP(cAsyncConn *conn);
 
 		/*
 			convert string to time in seconds

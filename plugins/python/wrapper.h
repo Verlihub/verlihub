@@ -107,6 +107,7 @@ enum {
 	W_GetUserClass,
 	W_GetUserHost,
 	W_GetUserIP,
+	W_SetUserIP,
 	W_GetUserHubURL,
 	W_GetUserExtJSON,
 	W_GetUserCC,

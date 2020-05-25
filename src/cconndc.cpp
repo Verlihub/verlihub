@@ -653,6 +653,27 @@ string cConnDC::GetGeoCI()
 	return mCity;
 }
 
+void cConnDC::ResetGeo()
+{
+	mCC.clear();
+	mCN.clear();
+	mCity.clear();
+
+	if (mGeoZone == -1) // only if not set
+		return;
+
+	if (!mxServer) {
+		mGeoZone = 0;
+		return;
+	}
+
+	nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+	serv->mUserCount[mGeoZone]--;
+	mGeoZone = -1;
+	SetGeoZone();
+	serv->mUserCount[mGeoZone]++;
+}
+
 void cConnDC::SetGeoZone()
 {
 	if (mGeoZone > -1) // already set
