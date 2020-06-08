@@ -318,7 +318,7 @@ install() {
 	REALUSER="$USER"
 	$DIALOG --title "Getting started" --msgbox "Hello $REALUSER, let's start with the configuration of database access... \nIf you have some problems with configuration you can: \n\n \
 			- Follow the official documentation: https://github.com/verlihub/verlihub/wiki/\n \
-			- Seek support on VAZ: dchub://hub.verlihub.net:7777/"  10 80 
+			- Seek support on VAZ: nmdcs://hub.verlihub.net:7777"  10 80 
 		
 	set_path $VERLIHUB_CFG > /dev/null 2>&1;
 
@@ -608,7 +608,7 @@ install() {
 				Hostname: $MYSQL_HOST" 12 55 && SETUP_INFO_OK=true || $DIALOG --title "Hub settings" --msgbox "Let's try again with configuration." 6 30
 		fi
 	done
-	
+
 	# Save info to DB
 	$DIALOG --infobox "Creating settings; this could take some times..." 5 45
 	_mysql_update "hub_name" $VH_HUB_NAME

@@ -700,7 +700,7 @@ function install() # [sleep_time]
 	echo_s " * Follow our official manual: "
 	echo_s "https://github.com/verlihub/verlihub/wiki/" $BOLD
 	echo_s "\n * Seek help on our support hub: "
-	echo_s "dchub://hub.verlihub.net:7777/" $BOLD
+	echo_s "nmdcs://hub.verlihub.net:7777" $BOLD
 	echo_s "\n * Check out official MySQL manual: "
 	echo_s "https://dev.mysql.com/doc/refman/5.7/en/" $BOLD
 	echo_s "\n\n[*] MySQL information:\n\n" $BOLD
@@ -1084,7 +1084,7 @@ function install() # [sleep_time]
 	echo_s " command for further instructions.\n\n" $GREEN_BOLD
 	
 	echo_s "For any other questions please get in contact with us using our official support hub: "
-	echo_s "dchub://hub.verlihub.net:7777/\n" $BOLD
+	echo_s "nmdcs://hub.verlihub.net:7777\n" $BOLD
 	exit 0
 }
 
