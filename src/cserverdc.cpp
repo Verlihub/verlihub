@@ -2408,19 +2408,22 @@ bool cServerDC::CntConnIP(const unsigned long ip, const unsigned int max)
 
 bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 {
-	if (!mC.clone_detect_count || !conn || !conn->mpUser || (conn->mpUser->mClass > int(mC.max_class_check_clone)))
-		return false;
-
 	cUserCollection::iterator i;
 	cConnDC *other;
 	unsigned int count = 0;
 	string comp;
+	size_t posh, poss;
 
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
 		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mMyINFO.size() && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->IP2Num() == conn->IP2Num())) {
 			comp.assign(other->mpUser->mMyINFO, 14 + other->mpUser->mNick.size(), -1); // "$MyINFO $ALL <nick> "
+			posh = comp.find(",H:"); // workaround for clients that cant predict hub count before sending myinfo
+			poss = comp.find(",S:");
+
+			if ((posh != comp.npos) && (poss != comp.npos) && (poss > posh))
+				comp.erase(posh + 3, poss - posh - 3);
 
 			if (StrCompare(comp, 0, comp.size(), part) == 0) {
 				count++;
