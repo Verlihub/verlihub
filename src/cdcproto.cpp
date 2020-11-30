@@ -1368,17 +1368,24 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		}
 
 	} else { // user logs in for the first time
-		string clone; // detect clone using all myinfo and ip parameters
-		temp.assign(myinfo, 14 + nick.size(), -1); // "$MyINFO $ALL <nick> "
 
-		if (mS->CheckUserClone(conn, temp, clone)) {
-			os << autosprintf(_("You are already in the hub using another nick: %s"), clone.c_str());
+		if ((mS->mC.clone_detect_count) && (conn->mpUser->mClass <= int(mS->mC.max_class_check_clone))) { // detect clone using all myinfo and ip parameters
+			string clone;
+			temp.assign(myinfo, 14 + nick.size(), -1); // "$MyINFO $ALL <nick> "
+			const size_t posh = temp.find(",H:"), poss = temp.find(",S:"); // workaround for clients that cant predict hub count before sending myinfo
 
-			if (conn->Log(2))
-				conn->LogStream() << os.str() << endl;
+			if ((posh != temp.npos) && (poss != temp.npos) && (poss > posh))
+				temp.erase(posh + 3, poss - posh - 3);
 
-			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
-			return -1;
+			if (mS->CheckUserClone(conn, temp, clone)) {
+				os << autosprintf(_("You are already in the hub using another nick: %s"), clone.c_str());
+
+				if (conn->Log(2))
+					conn->LogStream() << os.str() << endl;
+
+				mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
+				return -1;
+			}
 		}
 
 #ifdef USE_BUFFER_RESERVE
