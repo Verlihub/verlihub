@@ -1213,22 +1213,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	else
 		mS->mTotalShare += share_byte;
 
-	if (!conn->mpUser->mInList) { // detect clone using ip and share, only when user logs in
-		string clone;
-
-		if (mS->CheckUserClone(conn, clone)) {
-			os << autosprintf(_("You are already in the hub using another nick: %s"), clone.c_str());
-
-			if (conn->Log(2))
-				conn->LogStream() << os.str() << endl;
-
-			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
-			delete dc_tag;
-			dc_tag = NULL;
-			return -1;
-		}
-	}
-
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
 		cBan Ban(mS);
 		unsigned int banned = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
@@ -1382,7 +1366,21 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 #endif
 			mS->mUserList.SendToAll(myinfo, mS->mC.delayed_myinfo, true);
 		}
+
 	} else { // user logs in for the first time
+		string clone; // detect clone using all myinfo and ip parameters
+		temp.assign(myinfo, 14 + nick.size(), -1); // "$MyINFO $ALL <nick> "
+
+		if (mS->CheckUserClone(conn, temp, clone)) {
+			os << autosprintf(_("You are already in the hub using another nick: %s"), clone.c_str());
+
+			if (conn->Log(2))
+				conn->LogStream() << os.str() << endl;
+
+			mS->ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
+			return -1;
+		}
+
 #ifdef USE_BUFFER_RESERVE
 		conn->mpUser->mMyINFO.reserve(myinfo.size()); // first use
 #endif

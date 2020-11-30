@@ -598,7 +598,7 @@ class cServerDC : public cAsyncSocketServer
 		bool CntConnIP(const unsigned long ip, const unsigned int max);
 
 		// clone detection
-		bool CheckUserClone(cConnDC *conn, string &clone);
+		bool CheckUserClone(cConnDC *conn, const string &part, string &clone);
 
 		// protocol flood from all
 		unsigned int mProtoFloodAllCounts[nEnums::ePFA_LAST];
