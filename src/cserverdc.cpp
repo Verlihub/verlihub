@@ -1126,8 +1126,10 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 					ConnCloseMsg(conn, os.str(), 1000, eCR_PASSWORD);
 					break;
 				case eBT_FLOOD:
-				//case eBT_CLONE:
 					ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+					break;
+				case eBT_CLONE:
+					ConnCloseMsg(conn, os.str(), 1000, eCR_CLONE);
 					break;
 				default:
 					ConnCloseMsg(conn, os.str(), 1000, eCR_KICKED);
@@ -2439,18 +2441,9 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 
 					if (mC.clone_det_tban_time) { // add temporary nick ban
 						mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
-						/*
-						cBan ccban(this);
-						cKick cckick;
-						cckick.mOp = mC.hub_security;
-						//cckick.mIP = conn->AddrIP(); // dont set ip, we dont want to ban first user
-						//cckick.mShare = conn->mpUser->mShare; // dont set share
-						cckick.mNick = conn->mpUser->mNick;
-						cckick.mTime = mTime.Sec();
-						cckick.mReason = os.str();
-						mBanList->NewBan(ccban, cckick, mC.clone_det_tban_time, eBF_NICK);
-						mBanList->AddBan(ccban);
-						*/
+
+						if (mC.clone_ip_tban_time) // add temporary ip ban if enabled
+							mBanList->AddIPTempBan(conn->IP2Num(), mTime.Sec() + mC.clone_ip_tban_time, _("Clone detected"), eBT_CLONE);
 					}
 
 					clone = other->mpUser->mNick; // uses last nick
