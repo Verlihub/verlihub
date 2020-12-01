@@ -339,6 +339,7 @@ public:
 	bool clone_detect_report;
 	unsigned int clone_detect_count;
 	unsigned long clone_det_tban_time;
+	unsigned long clone_ip_tban_time;
 	bool nullchars_report;
 	bool botinfo_report;
 	double timeout_length[6];

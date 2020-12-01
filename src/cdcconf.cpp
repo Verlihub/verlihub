@@ -313,6 +313,7 @@ void cDCConf::AddVars()
 	Add("max_class_check_clone", max_class_check_clone, 0);
 	Add("max_class_self_repass", max_class_self_repass, 0); // 0 means disabled
 	Add("clone_det_tban_time", clone_det_tban_time, 1800); // 30 minutes
+	Add("clone_ip_tban_time", clone_ip_tban_time, 0); // 0 means disabled
 	Add("tban_kick", tban_kick, 300);
 	Add("tban_max", tban_max, 3600 * 24 * 30);
 	Add("log_level",mS.msLogLevel, 0);
