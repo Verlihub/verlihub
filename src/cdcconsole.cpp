@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -677,7 +677,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tPayPal: https://paypal.me/feardc/\r\n";
 	os << "\tBitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw\r\n";
 	os << "\tEthereum: 0xA24034373D87a28dCF1eEC394b1cEB0dAd8649D0\r\n";
-	os << "\t" << _("Donators") << ": Deivis (85 EUR)\r\n";
+	os << "\t" << _("Donators") << ": Deivis (85 EUR), Captain (10 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;

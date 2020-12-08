@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # VH Integration Test - a script for the Verlihub Python plugin
-# Copyright (C) 2016-2020 Verlihub Team, info at verlihub dot net
+# Copyright (C) 2016-2021 Verlihub Team, info at verlihub dot net
 # Created in 2016 by Frog (frogged), the_frog at wp dot pl
 # License: GNU General Public License v.3, see http://www.gnu.org/licenses/
 # Last update: 2016-03-03
