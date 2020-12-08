@@ -18,6 +18,9 @@
 
 		-f [flags]				- Flags
 		-e [1/0]				- Enabled
+		-a [hh:mm]				- Start
+		-z [hh:mm]				- Stop
+		-c [:cc:]				- Country
 
 	!delredirect <address>			- Remove redirect
 	!lstredirect				- List redirects

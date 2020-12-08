@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -272,7 +272,8 @@ int cConnDC::OnCloseNice()
 		Send(omsg, true);
 
 	} else if (mxServer) {
-		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason);
+		const string &cc = GetGeoCC();
+		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc);
 
 		if (addr) {
 			Server()->mP.Create_ForceMove(omsg, addr, true, true); // reserve for pipe

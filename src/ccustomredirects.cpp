@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -41,6 +41,7 @@ namespace nVerliHub {
 		AddCol("flag", "smallint(5)", "0", false, mModel.mFlag);
 		AddCol("start", "tinyint(2)", "0", false, mModel.mStart);
 		AddCol("stop", "tinyint(2)", "0", false, mModel.mStop);
+		AddCol("country", "varchar(50)", "", true, mModel.mCountry);
 		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
@@ -95,7 +96,7 @@ namespace nVerliHub {
 	/*
 		find redirect url from a given type
 	*/
-	char* cRedirects::MatchByType(unsigned int rype)
+	char* cRedirects::MatchByType(unsigned int rype, const string &cc)
 	{
 		int rmap = MapTo(rype);
 
@@ -104,7 +105,7 @@ namespace nVerliHub {
 
 		iterator it;
 		cRedirect *redir;
-		const char *rist[10];
+		const char *rist[10]; // todo: why max 10 matches?
 		int cnt = 0;
 		time_t curr_time;
 		time(&curr_time);
@@ -128,8 +129,10 @@ namespace nVerliHub {
 
 			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rmap))) {
 				if ((redir->mStart == redir->mStop) || ((int (lt->tm_hour) >= redir->mStart) && (int (lt->tm_hour) <= redir->mStop))) { // redirect hours
-					rist[cnt] = redir->mAddress.c_str();
-					cnt++;
+					if (redir->mCountry.empty() || cc.empty() || (toUpper(redir->mCountry).find(cc) != redir->mCountry.npos)) { // country match
+						rist[cnt] = redir->mAddress.c_str();
+						cnt++;
+					}
 				}
 			}
 		}
@@ -201,6 +204,7 @@ namespace nVerliHub {
 					"[ -f <flags>]"
 					"[ -a <start>]"
 					"[ -z <stop>]"
+					"[ -c <:cc:>]"
 					"[ -e <1/0>]";
 
 				break;
@@ -251,6 +255,7 @@ namespace nVerliHub {
 						"( -f ?(\\d+))?|"
 						"( -a ?(\\d+))?|"
 						"( -z ?(\\d+))?|"
+						"( -c ?(\\S*))?|"
 						"( -e ?(1|0))?|"
 						")*\\s*$";
 
@@ -271,6 +276,7 @@ namespace nVerliHub {
    			eADD_FLAGp, eADD_FLAG,
 			eADD_STARTp, eADD_START,
 			eADD_STOPp, eADD_STOP,
+			eADD_COUNTRYp, eADD_COUNTRY,
 			eADD_ENABLEp, eADD_ENABLE
 		};
 
@@ -278,6 +284,7 @@ namespace nVerliHub {
 		cmd->GetParInt(eADD_FLAG, data.mFlag);
 		cmd->GetParInt(eADD_START, data.mStart);
 		cmd->GetParInt(eADD_STOP, data.mStop);
+		cmd->GetParStr(eADD_COUNTRY, data.mCountry);
 		cmd->GetParInt(eADD_ENABLE, data.mEnable);
 		return true;
 	}
@@ -298,7 +305,8 @@ namespace nVerliHub {
 		(*os) << "\t" << _("URL");
 		(*os) << "\t\t\t\t" << _("Status");
 		(*os) << "\t" << _("Type");
-		(*os) << "\r\n\t" << string(110, '-') << "\r\n";
+		(*os) << "\t\t" << _("Country");
+		(*os) << "\r\n\t" << string(150, '-') << "\r\n";
 	}
 
 	bool cRedirectConsole::IsConnAllowed(cConnDC *conn, int cmd)

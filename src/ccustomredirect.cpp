@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -32,6 +32,7 @@ namespace nVerliHub {
 			mCount = 0;
 			mStart = 0;
 			mStop = 0;
+			mCountry = "";
 		}
 
 		cRedirect::~cRedirect()
@@ -112,6 +113,13 @@ namespace nVerliHub {
 				temp.erase(temp.end() - 1);
 
 			os << "\t" << temp << "=" << flag;
+			os << "\t\t";
+
+			if (tr.mCountry.size())
+				os << tr.mCountry;
+			else
+				os << "any";
+
 			return os;
 		}
 

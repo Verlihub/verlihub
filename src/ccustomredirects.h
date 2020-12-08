@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2020 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -46,7 +46,7 @@ namespace nVerliHub {
 				virtual void AddFields();
 				cRedirect* Find(const string &name);
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);
-				char* MatchByType(unsigned int rype);
+				char* MatchByType(unsigned int rype, const string &cc);
 				int MapTo(unsigned int rype);
 				void Random(int &key);
 				string mOldMap[2];
