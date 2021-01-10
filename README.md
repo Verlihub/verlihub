@@ -3,7 +3,7 @@ Travis build status
 
 [![Build status](https://travis-ci.org/Verlihub/verlihub.svg?branch=master)](https://travis-ci.org/Verlihub/verlihub)
 
-Verlihub 1.2.0.x
+Verlihub 1.3.0.x
 ==============
 
 Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
