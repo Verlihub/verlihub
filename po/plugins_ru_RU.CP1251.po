@@ -1,5 +1,6 @@
 # 
 # Translators:
+# Aleksandr Zenkov <webmaster@feardc.net>, 2019
 # Aleksandr Zenkov <webmaster@feardc.net>, 2014-2016
 # Dimetro83 <dimetro83@gmail.com>, 2018
 # Aleksey Kosterin <kosterinaleksey@gmail.com>, 2012
@@ -16,16 +17,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2019-03-02 11:44+0100\n"
-"PO-Revision-Date: 2019-01-09 07:10+0000\n"
-"Last-Translator: Александр Шандала <admin@milenahub.ru>\n"
+"POT-Creation-Date: 2020-11-30 22:06+0100\n"
+"PO-Revision-Date: 2019-04-21 08:04+0000\n"
+"Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/feardc/verlihub-100/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru_RU\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -196,6 +197,10 @@ msgstr "Ваш ник должен соответствовать %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Ваш тип соединения должен соответствовать %[pattern]"
 
+#: ../plugins/lua/callbacks.cpp:1819
+msgid "Incorrect password"
+msgstr "Неверный пароль"
+
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
 msgstr "У вас нет прав для выполнения этого."
@@ -250,7 +255,7 @@ msgstr "Скрипт"
 msgid "Memory"
 msgstr "Память"
 
-#: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:230
+#: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:232
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:187
 #, c-format
 msgid "Failed loading directory: %s"
@@ -261,68 +266,68 @@ msgstr "Ошибка при загрузке каталога: %s"
 msgid "Lua scripts found in: %s"
 msgstr "Lua скрипты найденные в: %s"
 
-#: ../plugins/lua/cconsole.cpp:204 ../plugins/lua/cconsole.cpp:321
+#: ../plugins/lua/cconsole.cpp:206 ../plugins/lua/cconsole.cpp:325
 #, c-format
 msgid "Script stopped: %s"
 msgstr "Скрипт остановлен: %s"
 
-#: ../plugins/lua/cconsole.cpp:213 ../plugins/lua/cconsole.cpp:332
+#: ../plugins/lua/cconsole.cpp:215 ../plugins/lua/cconsole.cpp:336
 #: ../plugins/python/cconsole.cpp:165 ../plugins/python/cconsole.cpp:288
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr "Скрипт не остановлен, потому что он не загружен #%d"
 
-#: ../plugins/lua/cconsole.cpp:215 ../plugins/lua/cconsole.cpp:334
+#: ../plugins/lua/cconsole.cpp:217 ../plugins/lua/cconsole.cpp:338
 #: ../plugins/python/cconsole.cpp:167 ../plugins/python/cconsole.cpp:290
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr "Скрипт не остановлен, потому что он не загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:249
+#: ../plugins/lua/cconsole.cpp:251
 #, c-format
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
 msgstr "Скрипт номер %d вне диапазона. Узнать правильный номер можно командой !luafiles или указать взамен путь скрипта."
 
-#: ../plugins/lua/cconsole.cpp:265
+#: ../plugins/lua/cconsole.cpp:267
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr "Скрипт уже загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:280 ../plugins/lua/cconsole.cpp:347
+#: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
 msgstr "Не удалось выделить новый интерпретатор Lua для скриптов: %s [ %s ]"
 
-#: ../plugins/lua/cconsole.cpp:285 ../plugins/lua/cconsole.cpp:352
+#: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr "Скрипт успешно загружен: %s"
 
-#: ../plugins/lua/cconsole.cpp:290 ../plugins/lua/cconsole.cpp:357
+#: ../plugins/lua/cconsole.cpp:292 ../plugins/lua/cconsole.cpp:361
 #: ../plugins/perl/cconsole.cpp:164 ../plugins/perl/cconsole.cpp:208
 #: ../plugins/python/cconsole.cpp:242 ../plugins/python/cconsole.cpp:307
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr "Скрипт не найден или не может быть разобран: %s"
 
-#: ../plugins/lua/cconsole.cpp:376
+#: ../plugins/lua/cconsole.cpp:380
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr "Обновлена конфигурация %s.%s с '%s' на '%s'."
 
-#: ../plugins/lua/cconsole.cpp:378
+#: ../plugins/lua/cconsole.cpp:382
 #, c-format
 msgid "Current log level: %d"
 msgstr "Текущий уровень логов: %d"
 
-#: ../plugins/lua/cconsole.cpp:396 ../plugins/python/cconsole.cpp:328
+#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:328
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr "Обновлена конфигурация %s.%s: %s -> %s"
 
-#: ../plugins/lua/cconsole.cpp:398
+#: ../plugins/lua/cconsole.cpp:402
 #, c-format
 msgid "Current error class: %d"
 msgstr "Данный класс для ошибок: %d"
