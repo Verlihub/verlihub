@@ -327,6 +327,7 @@ public:
 	bool use_penlist_cache;
 	bool chat_default_on;
 	bool notify_gag_chats;
+	bool clean_gags_cleanbans;
 	bool always_ask_password;
 	unsigned int default_password_encryption;
 	unsigned int password_min_len;

@@ -110,6 +110,7 @@ class cPenaltyList: public cConfMySQL
 		cPenaltyList(nMySQL::cMySQL &mysql, nSocket::cServerDC *);
 		~cPenaltyList();
 		void Cleanup(void);
+		void CleanType(const string &type);
 		bool LoadTo(sPenalty &, const string &nick);
 		bool AddPenalty(sPenalty &);
 		bool RemPenalty(sPenalty &);

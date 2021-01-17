@@ -309,7 +309,7 @@ public:
 	typedef cDCCommand::sDCCmdFunc cfDCCmdBase;
 	typedef cDCCommand cDCCmdBase;
 
-	enum{ eCM_CMD, eCM_BAN, eCM_GAG, eCM_TRIGGER, eCM_CUSTOMREDIR, eCM_DCCLIENT, eCM_SET, eCM_REG, eCM_INFO, eCM_RAW, eCM_WHO, eCM_KICK, eCM_PLUG, eCM_REPORT, eCM_BROADCAST, eCM_CONNTYPE, eCM_TRIGGERS, eCM_GETCONFIG, eCM_CLEAN };
+	enum { eCM_CMD, eCM_BAN, eCM_TEMPBAN, eCM_GAG, eCM_TRIGGER, eCM_CUSTOMREDIR, eCM_DCCLIENT, eCM_SET, eCM_REG, eCM_INFO, eCM_RAW, eCM_WHO, eCM_KICK, eCM_PLUG, eCM_REPORT, eCM_BROADCAST, eCM_CONNTYPE, eCM_TRIGGERS, eCM_GETCONFIG, eCM_CLEAN };
 
 	// Pointr to VerliHub server
 	nSocket::cServerDC *mServer;
@@ -325,8 +325,10 @@ public:
 private:
 	cCommandCollection mCmdr;
 	cCommandCollection mUserCmdr;
-	struct cfBan : cfDCCmdBase { virtual bool operator()(); } mFunBan;
+	struct cfBan: cfDCCmdBase { virtual bool operator()(); } mFunBan;
 	cDCCmdBase mCmdBan;
+	struct cfTempBan: cfDCCmdBase { virtual bool operator()(); } mFunTempBan;
+	cDCCmdBase mCmdTempBan;
 	struct cfGag : cfDCCmdBase { virtual bool operator()(); } mFunGag;
 	cDCCmdBase mCmdGag;
 	struct cfTrigger : cfDCCmdBase { virtual bool operator()(); } mFunTrigger;

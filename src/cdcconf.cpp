@@ -164,6 +164,7 @@ void cDCConf::AddVars()
 	Add("mainchat_class", mainchat_class, int(eUC_NORMUSER));
 	Add("private_class", private_class, int(eUC_NORMUSER));
 	Add("notify_gag_chats", notify_gag_chats, false);
+	Add("clean_gags_cleanbans", clean_gags_cleanbans, false);
 	// end of section
 
 	// same message flood
