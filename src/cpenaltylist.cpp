@@ -63,6 +63,16 @@ void cPenaltyList::Cleanup()
 	query.Clear();
 }
 
+void cPenaltyList::CleanType(const string &type)
+{
+	cQuery query(mMySQL);
+	query.OStream() << "delete from `" << mMySQLTable.mName << "` where (`";
+	cConfMySQL::WriteStringConstant(query.OStream(), type);
+	query.OStream() << "` > 1)";
+	query.Query();
+	query.Clear();
+}
+
 bool cPenaltyList::LoadTo(sPenalty &pen, const string &nick)
 {
 	if (mServ->mC.use_penlist_cache && (!mCache.IsLoaded() || !mCache.Find(nick))) // table can be empty aswell

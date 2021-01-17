@@ -636,6 +636,94 @@ void cBanList::DelIPTempBan(unsigned long ip)
 	}
 }
 
+void cBanList::ShowNickTempBan(ostream &os, const string &nick)
+{
+	unsigned long hash = mTempNickBanlist.HashLowerString(nick);
+	sTempBan *tban = mTempNickBanlist.GetByHash(hash);
+
+	if (tban) {
+		os << "\r\n\r\n";
+		os << " [*] " << autosprintf(_("Nick: %s"), nick.c_str()) << "\r\n";
+		cTimePrint until(tban->mUntil - mS->mTime.Sec());
+		os << " [*] " << _("Time") << ": " << autosprintf(_("%s left"), until.AsPeriod().AsString().c_str()) << "\r\n";
+		os << " [*] " << _("Type") << ": ";
+
+		switch (tban->mType) {
+			case eBT_PASSW:
+				os << _("Password");
+				break;
+
+			case eBT_RECON:
+				os << _("Reconnect");
+				break;
+
+			case eBT_FLOOD:
+				os << _("Flood");
+				break;
+
+			case eBT_CLONE:
+				os << _("Clone");
+				break;
+
+			default:
+				os << _("Unknown");
+				break;
+		}
+
+		os << "\r\n";
+
+		if (tban->mReason.size())
+			os << " [*] " << autosprintf(_("Reason: %s"), tban->mReason.c_str()) << "\r\n";
+
+	} else {
+		os << ' ' << _("Not found");
+	}
+}
+
+void cBanList::ShowIPTempBan(ostream &os, const string &ip)
+{
+	const unsigned long hash = Ip2Num(ip);
+	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
+
+	if (tban) {
+		os << "\r\n\r\n";
+		os << " [*] " << autosprintf(_("IP: %s"), ip.c_str()) << "\r\n";
+		cTimePrint until(tban->mUntil - mS->mTime.Sec());
+		os << " [*] " << _("Time") << ": " << autosprintf(_("%s left"), until.AsPeriod().AsString().c_str()) << "\r\n";
+		os << " [*] " << _("Type") << ": ";
+
+		switch (tban->mType) {
+			case eBT_PASSW:
+				os << _("Password");
+				break;
+
+			case eBT_RECON:
+				os << _("Reconnect");
+				break;
+
+			case eBT_FLOOD:
+				os << _("Flood");
+				break;
+
+			case eBT_CLONE:
+				os << _("Clone");
+				break;
+
+			default:
+				os << _("Unknown");
+				break;
+		}
+
+		os << "\r\n";
+
+		if (tban->mReason.size())
+			os << " [*] " << autosprintf(_("Reason: %s"), tban->mReason.c_str()) << "\r\n";
+
+	} else {
+		os << ' ' << _("Not found");
+	}
+}
+
 bool cBanList::IsNickTempBanned(const string &nick)
 {
 	return mTempNickBanlist.ContainsHash(mTempNickBanlist.HashLowerString(nick));

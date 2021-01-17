@@ -56,7 +56,8 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mDCClients(NULL),
 	mCmdr(this),
 	mUserCmdr(this),
- 	mCmdBan(int(eCM_BAN), ".(del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
+ 	mCmdBan(int(eCM_BAN), ".(add|new|del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
+	mCmdTempBan(int(eCM_TEMPBAN), ".(info|del|un)?tempban(nick|ip)? ", "(\\S+)", &mFunTempBan),
 	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
 	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+)( (.*))?", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
@@ -100,6 +101,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mFunCustomRedir.mConsole = mRedirectConsole;
 	mFunDCClient.mConsole = mDCClientConsole;
 	mCmdr.Add(&mCmdBan);
+	mCmdr.Add(&mCmdTempBan);
 	mCmdr.Add(&mCmdGag);
 	mCmdr.Add(&mCmdTrigger);
 	mCmdr.Add(&mCmdSetVar);
@@ -1573,7 +1575,15 @@ bool cDCConsole::cfClean::operator()()
 			mS->mUnBanList->TruncateTable();
 			mS->mKickList->TruncateTable();
 
-			(*mOS) << _("Ban, unban, kick and temporary ban lists has been cleaned.");
+			if (mS->mC.clean_gags_cleanbans) {
+				mS->mPenList->CleanType("st_chat");
+				mS->mPenList->CleanType("st_pm");
+				(*mOS) << _("Ban, unban, kick, temporary ban and chat gag lists has been cleaned.");
+
+			} else {
+				(*mOS) << _("Ban, unban, kick and temporary ban lists has been cleaned.");
+			}
+
 			break;
 
 		default:
@@ -1632,14 +1642,14 @@ bool cDCConsole::cfBan::operator()()
 	static const char *prefixnames[] = {
 		"add", "new",
 		"rm", "del", "un",
-		"info", "check",
+		"info",
 		"list", "ls", "lst"
 	};
 
 	static const int prefixids[] = {
 		BAN_BAN, BAN_BAN,
 		BAN_UNBAN, BAN_UNBAN, BAN_UNBAN,
-		BAN_INFO, BAN_INFO,
+		BAN_INFO,
 		BAN_LIST, BAN_LIST, BAN_LIST
 	};
 
@@ -1740,6 +1750,7 @@ bool cDCConsole::cfBan::operator()()
 				#endif
 
 				(*mOS) << _("Removed ban") << ":\r\n";
+
 			} else {
 				(*mOS) << _("Ban information") << ":\r\n";
 			}
@@ -1759,9 +1770,11 @@ bool cDCConsole::cfBan::operator()()
 						Count += mS->mBanList->Unban(*mOS, Host, tmp, mConn->mpUser->mNick, eBF_HOST1, false);
 					}
 				}
+
 			} else if (BanType == eBF_NICK) {
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, eBF_NICK, unban);
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, eBF_NICKIP, unban);
+
 			} else {
 				Count += mS->mBanList->Unban(*mOS, Who, tmp, mConn->mpUser->mNick, BanType, unban);
 			}
@@ -1794,6 +1807,7 @@ bool cDCConsole::cfBan::operator()()
 				case eBF_IP:
 					if (mS->mKickList->FindKick(Kick, Who, mConn->mpUser->mNick, 3000, true, true, IsNick)) {
 						mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
+
 					} else {
 						if (BanType == eBF_NICKIP)
 							BanType = eBF_IP;
@@ -1923,6 +1937,161 @@ bool cDCConsole::cfBan::operator()()
 			mS->mBanList->AddBan(Ban);
 			(*mOS) << _("Added new ban") << ":\r\n";
 			Ban.DisplayComplete(*mOS);
+			break;
+
+		default:
+			(*mOS) << _("This command is not implemented.");
+			return false;
+	}
+
+	return true;
+}
+
+bool cDCConsole::cfTempBan::operator()()
+{
+	if (!mConn || !mConn->mpUser)
+		return false;
+
+	if (mConn->mpUser->mClass < eUC_OPERATOR) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
+
+	enum {
+		BAN_PREFIX = 1, // mIdStr
+		BAN_TYPE = 2,
+		BAN_WHO = 1 // mParStr
+	};
+
+	string who;
+
+	if (mParRex->PartFound(BAN_WHO))
+		GetParStr(BAN_WHO, who);
+
+	if (who.empty()) {
+		(*mOS) << _("Missing command parameters.");
+		return false;
+	}
+
+	enum {
+		BAN_INFO,
+		BAN_UNBAN
+	};
+
+	static const char *prefixnames[] = {
+		"info",
+		"del", "un"
+	};
+
+	static const int prefixids[] = {
+		BAN_INFO,
+		BAN_UNBAN, BAN_UNBAN
+	};
+
+	string temp;
+	int act = BAN_INFO;
+
+	if (mIdRex->PartFound(BAN_PREFIX)) {
+		mIdRex->Extract(BAN_PREFIX, mIdStr, temp);
+		act = this->StringToIntFromList(temp, prefixnames, prefixids, sizeof(prefixnames) / sizeof(char*));
+
+		if (act < 0)
+			return false;
+	}
+
+	static const char *bannames[] = {
+		"nick",
+		"ip"
+	};
+
+	static const int banids[] = {
+		eBF_NICK,
+		eBF_IP
+	};
+
+	int type = eBF_NICKIP;
+
+	if (mIdRex->PartFound(BAN_TYPE)) {
+		mIdRex->Extract(BAN_TYPE, mIdStr, temp);
+		type = this->StringToIntFromList(temp, bannames, banids, sizeof(bannames) / sizeof(char*));
+
+		if (type < 0)
+			return false;
+	}
+
+	switch (act) {
+		case BAN_UNBAN: // unban
+			if (type == eBF_NICKIP) { // any
+				if (mS->mBanList->IsNickTempBanned(who)) { // test nick
+					(*mOS) << _("Removed temporary nick ban") << ':';
+					mS->mBanList->ShowNickTempBan(*mOS, who);
+					mS->mBanList->DelNickTempBan(who);
+
+				} else if (mS->mBanList->IsIPTempBanned(who)) { // test ip
+					(*mOS) << _("Removed temporary IP ban") << ':';
+					mS->mBanList->ShowIPTempBan(*mOS, who);
+					mS->mBanList->DelIPTempBan(who);
+
+				} else { // not found
+					(*mOS) << _("Temporary ban not found") << ": " << who;
+				}
+
+			} else if (type == eBF_NICK) { // nick
+				if (mS->mBanList->IsNickTempBanned(who)) { // test nick
+					(*mOS) << _("Removed temporary nick ban") << ':';
+					mS->mBanList->ShowNickTempBan(*mOS, who);
+					mS->mBanList->DelNickTempBan(who);
+
+				} else { // not found
+					(*mOS) << _("Temporary nick ban not found") << ": " << who;
+				}
+
+			} else if (type == eBF_IP) { // ip
+				if (mS->mBanList->IsIPTempBanned(who)) { // test ip
+					(*mOS) << _("Removed temporary IP ban") << ':';
+					mS->mBanList->ShowIPTempBan(*mOS, who);
+					mS->mBanList->DelIPTempBan(who);
+
+				} else { // not found
+					(*mOS) << _("Temporary IP ban not found") << ": " << who;
+				}
+			}
+
+			break;
+
+		case BAN_INFO: // info
+			if (type == eBF_NICKIP) { // any
+				if (mS->mBanList->IsNickTempBanned(who)) { // test nick
+					(*mOS) << _("Temporary nick ban information") << ':';
+					mS->mBanList->ShowNickTempBan(*mOS, who);
+
+				} else if (mS->mBanList->IsIPTempBanned(who)) { // test ip
+					(*mOS) << _("Temporary IP ban information") << ':';
+					mS->mBanList->ShowIPTempBan(*mOS, who);
+
+				} else { // not found
+					(*mOS) << _("Temporary ban not found") << ": " << who;
+				}
+
+			} else if (type == eBF_NICK) { // nick
+				if (mS->mBanList->IsNickTempBanned(who)) { // test nick
+					(*mOS) << _("Temporary nick ban information") << ':';
+					mS->mBanList->ShowNickTempBan(*mOS, who);
+
+				} else { // not found
+					(*mOS) << _("Temporary nick ban not found") << ": " << who;
+				}
+
+			} else if (type == eBF_IP) { // ip
+				if (mS->mBanList->IsIPTempBanned(who)) { // test ip
+					(*mOS) << _("Temporary IP ban information") << ':';
+					mS->mBanList->ShowIPTempBan(*mOS, who);
+
+				} else { // not found
+					(*mOS) << _("Temporary IP ban not found") << ": " << who;
+				}
+			}
+
 			break;
 
 		default:
@@ -2562,7 +2731,7 @@ bool cDCConsole::cfGag::operator()()
 	return true;
 }
 
-bool cDCConsole::cfCmd::operator()()
+bool cDCConsole::cfCmd::operator()() // todo: remove this, we have complete help
 {
 	enum { eAC_LIST };
 	static const char * actionnames [] = { "list", "lst" };

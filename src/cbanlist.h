@@ -142,6 +142,10 @@ namespace nVerliHub {
 				void DelIPTempBan(const string &ip);
 				void DelIPTempBan(unsigned long ip);
 
+				// show temporary nick or ip ban
+				void ShowNickTempBan(ostream &os, const string &nick);
+				void ShowIPTempBan(ostream &os, const string &ip);
+
 				// check if nick or ip is temporarily banned
 				bool IsNickTempBanned(const string &nick);
 				bool IsIPTempBanned(const string &ip);

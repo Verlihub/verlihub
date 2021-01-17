@@ -41,6 +41,10 @@
 		!infobanhostr1 <host>		- Information about leftmost part of host ban
 		!infobanshare <share>		- Information about share size ban
 
+		!infotempban <value>		- Information about any temporary ban
+		!infotempbannick <nick>		- Information about temporary nick ban
+		!infotempbanip <ip>		- Information about temporary IP address ban
+
 		!unban <value> [reason]		- Remove any ban
 		!unbanip <ip> [reason]		- Remove IP address ban
 		!unbanrange <range> [reason]	- Remove IP range ban
@@ -52,11 +56,15 @@
 		!unbanhostr1 <host> [reason]	- Remove leftmost part of host ban
 		!unbanshare <share> [reason]	- Remove share size ban
 
+		!untempban <value>		- Remove any temporary ban
+		!untempbannick <nick>		- Remove temporary nick ban
+		!untempbanip <ip>			- Remove temporary IP address ban
+
 		!cleankicklist			- Clean kick list
 		!cleanbanlist			- Clean ban list
 		!cleanunbanlist			- Clean unban list
-		!cleantempbans			- Clean temorary ban list
-		!cleanallban			- Clean kick, ban, unban and temorary ban lists
+		!cleantempbans			- Clean temporary ban list
+		!cleanallban			- Clean kick, ban, unban, temporary ban and chat gag lists
 
  [*] Rights:
 
