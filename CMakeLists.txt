@@ -23,6 +23,8 @@ message(STATUS)
 message(STATUS "You can change build options with: -D{OPTION}=ON|OFF")
 message(STATUS "You can turn on debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "You can disable all plugins with: -DWITH_PLUGINS=OFF")
+message(STATUS "You can turn on buffer reservation with: -DUSE_BUFFER_RESERVE=ON")
+#message(STATUS "You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
 message(STATUS "You can also disable specific plugins with: -DWITH_{NAME}=OFF")
 message(STATUS "Plugin names: LUA PYTHON PERL FORBID CHATROOM IPLOG ISP MESSENGER STATS REPLACER FLOODPROT")
 message(STATUS "If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
@@ -31,7 +33,7 @@ message(STATUS)
 SET(VERLIHUB_VERSION_MAJOR 1)
 SET(VERLIHUB_VERSION_MINOR 3)
 SET(VERLIHUB_VERSION_PATCH 0)
-SET(VERLIHUB_VERSION_TWEAK 1)
+SET(VERLIHUB_VERSION_TWEAK 2)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 #SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}")
 SET(PROJECT_NAME "verlihub")
@@ -187,7 +189,7 @@ IF(NOT HAVE_GETOPT_H)
 ENDIF(NOT HAVE_GETOPT_H)
 
 ADD_DEFINITIONS(-DUSE_BUFFER_RESERVE)
-OPTION(USE_BUFFER_RESERVE "Use buffer string reservation?" OFF) # use cmake -DUSE_BUFFER_RESERVE=ON to use buffer string reservation
+OPTION(USE_BUFFER_RESERVE "Use buffer string reservation" OFF) # use cmake -DUSE_BUFFER_RESERVE=ON to use buffer string reservation
 
 OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF) # use cmake -DDEFINE_DEBUG=ON to enable debug
 
@@ -197,6 +199,10 @@ IF(DEFINE_DEBUG)
 ELSE(DEFINE_DEBUG)
 	SET(CMAKE_BUILD_TYPE Release)
 ENDIF(DEFINE_DEBUG)
+
+
+#ADD_DEFINITIONS(-DUSE_SSL_CONNECTS)
+#OPTION(USE_SSL_CONNECTS "Use SSL secured connects" ON) # use cmake -DUSE_SSL_CONNECTS=OFF to disable ssl
 
 MESSAGE(STATUS "[ OK ] Build type: ${CMAKE_BUILD_TYPE}")
 ADD_DEFINITIONS(-DHAVE_CONFIG_H)

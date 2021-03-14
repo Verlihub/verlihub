@@ -44,7 +44,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	//mNickListInProgress = false;
 	//mSkipNickList = false;
 	mConnType = NULL;
-	mCloseReason = 0;
+	mCloseReason = eCR_DEFAULT;
 	SetTimeOut(eTO_LOGIN, Server()->mC.timeout_length[eTO_LOGIN], server->mTime); // default login timeout
 	mGeoZone = -1;
 	mRegInfo = NULL;

@@ -122,7 +122,7 @@ namespace nVerliHub {
 
 		enum
 		{
-			eCR_DEFAULT = 0,  // default value, means not closed or unknown reason
+			eCR_DEFAULT = 0, // default value, means not closed or unknown reason
 			eCR_INVALID_USER, // bad nick, banned nick, ip or whatever
 			eCR_KICKED, // user was kicked
 			eCR_FORCEMOVE, // operator redirect command
@@ -142,7 +142,8 @@ namespace nVerliHub {
 			eCR_CLONE, // clone detected
 			eCR_SELF, // same user connects twice
 			eCR_BADNICK, // bad nick, already used, too short, etc
-			eCR_NOREDIR // do not redirect, special reason
+			eCR_NOREDIR, // do not redirect, special reason
+			eCR_PLUGIN // connection closed by plugin
 		};
 
 		enum
@@ -345,7 +346,7 @@ class cServerDC : public cAsyncSocketServer
 		/*
 			kick user and perform different actions based of flags
 		*/
-		void DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op = "", const string &note_usr = "");
+		void DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op = "", const string &note_usr = "", bool hide = false);
 
 		/*
 			Send a private message to user from other user or hub security.

@@ -36,6 +36,12 @@
 	#include <netinet/in.h>
 //#endif
 
+/*
+#ifdef USE_SSL_CONNECTS
+	#include <openssl/ssl.h>
+#endif
+*/
+
 #include <string>
 #include <list>
 #include <vector>
@@ -482,6 +488,13 @@ namespace nVerliHub {
 				{
 					return mSockDesc;
 				}
+
+			/*
+			#ifdef USE_SSL_CONNECTS
+				// ssl connection
+				SSL *mSSLConn;
+			#endif
+			*/
 
 				/**
 				 * Write the given data into the output buffer.

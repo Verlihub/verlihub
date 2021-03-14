@@ -103,6 +103,11 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 	mLineSizeMax(0),
 	mType(ct),
 	mxLine(NULL),
+/*
+#ifdef USE_SSL_CONNECTS
+	mSSLConn(NULL),
+#endif
+*/
 	meLineStatus(AC_LS_NO_LINE),
 	mBufEnd(0),
 	mBufReadPos(0),
@@ -218,6 +223,16 @@ void cAsyncConn::Close()
 
 	mWritable = false;
 	ok = false;
+
+/*
+#ifdef USE_SSL_CONNECTS
+	if (mSSLConn) {
+		SSL_shutdown(mSSLConn);
+		SSL_free(mSSLConn);
+		mSSLConn = NULL;
+	}
+#endif
+*/
 
 	if (mxServer)
 		mxServer->OnConnClose(this);
@@ -348,11 +363,25 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 	//bool udp = (this->GetType() == eCT_CLIENTUDP);
 
 	//if (!udp) {
-		while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
-	//#if !defined _WIN32
-			::usleep(sleep);
-	//#endif
+/*
+#ifdef USE_SSL_CONNECTS
+		if (mSSLConn) {
+			while (((buf_len = SSL_read(mSSLConn, msBuffer.data(), MAX_MESS_SIZE)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) // todo: errno
+				::usleep(sleep);
+
+		} else {
+#endif
+*/
+			while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
+			//#if !defined _WIN32
+				::usleep(sleep);
+			//#endif
+			}
+/*
+#ifdef USE_SSL_CONNECTS
 		}
+#endif
+*/
 	/*
 	} else {
 		while (((buf_len = recvfrom(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
@@ -368,9 +397,6 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 			if (buf_len == 0) {
 				if (Log(2)) // connection hung up
 					LogStream() << "User hung up" << endl;
-
-				CloseNow();
-				return -1;
 
 			} else {
 				if (Log(2))
@@ -395,6 +421,14 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 		//}
 
 	} else { // received data
+		if ((buf_len > 2) && (msBuffer[0] == 0x16) && (msBuffer[1] == 0x03)) { // detect tls connection
+			if (Log(1))
+				LogStream() << "Closing TLS connection" << endl;
+
+			CloseNow(); // todo: eCR_TLS_SESS
+			return -1;
+		}
+
 		mBufEnd = buf_len;
 		msBuffer[mBufEnd] = '\0'; // end string
 
@@ -420,7 +454,14 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		//try {
 			//if (!udp) {
 //#if !defined _WIN32
-				n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
+			/*
+			#ifdef USE_SSL_CONNECTS
+				if (mSSLConn)
+					n = SSL_write(mSSLConn, buf + total, bytesleft);
+				else
+			#endif
+			*/
+					n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
 				int RetryCount = 0;
@@ -462,7 +503,14 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	}
 #else
 	//if (!udp)
-		n = send(mSockDesc, buf + total, bytesleft, 0);
+	/*
+	#ifdef USE_SSL_CONNECTS
+		if (mSSLConn)
+			n = SSL_write(mSSLConn, buf + total, bytesleft);
+		else
+	#endif
+	*/
+			n = send(mSockDesc, buf + total, bytesleft, 0);
 	/*
 	else
 		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
@@ -738,6 +786,31 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 
 	if (Log(3))
 		LogStream() << "Accepted socket: " << socknum << endl;
+
+/*
+#ifdef USE_SSL_CONNECTS
+	if (mxServer && mxServer->mSSLCont) {
+		mSSLConn = SSL_new(mxServer->mSSLCont);
+
+		if (mSSLConn) {
+			SSL_set_fd(mSSLConn, socknum);
+
+			if (SSL_accept(mSSLConn) <= 0) {
+				if (Log(0))
+					LogStream() << "Failed to accept client SSL socket: " << socknum << endl;
+
+				ERR_print_errors_fp(stderr);
+				SSL_free(mSSLConn);
+				mSSLConn = NULL;
+			}
+
+		} else {
+			if (Log(0))
+				LogStream() << "Failed to create client SSL socket: " << socknum << endl;
+		}
+	}
+#endif
+*/
 
 	sSocketCounter++;
 	sockoptval_t yes = 1;

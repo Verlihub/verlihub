@@ -1200,7 +1200,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 				RemoveNick(olduser);
 			} else {
-				conn->CloseNow();
+				conn->CloseNow(eCR_SELF);
 				return false;
 			}
 
@@ -1350,7 +1350,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return;
 		}
 	#endif
@@ -1362,7 +1362,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		if (conn->ErrLog(2))
 			conn->LogStream() << "User login when not all done" << endl;
 
-		conn->CloseNow();
+		conn->CloseNow(eCR_LOGIN_ERR);
 		return;
 	}
 
@@ -1375,13 +1375,13 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 		conn->mpUser->ApplyRights(pen);
 
 	if (!AddToList(conn->mpUser)) { // insert user to userlist
-		conn->CloseNow();
+		conn->CloseNow(eCR_INVALID_USER);
 		return;
 	}
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mCallBacks.mOnUserInList.CallAll(conn->mpUser)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return;
 		}
 	#endif
@@ -1413,7 +1413,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 bool cServerDC::BeginUserLogin(cConnDC *conn)
 {
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_LOGIN_ERR);
 		return false;
 	}
 
@@ -2777,7 +2777,7 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 	}
 }
 
-void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op, const string &note_usr)
+void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const string &why, int flags, const string &note_op, const string &note_usr, bool hide)
 {
 	if (!op || nick.empty() || (op->mNick == nick)) // todo: possible to use user pointer instead of nick string here? then we can use mNickHash
 		return;
@@ -2787,10 +2787,13 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 	if (!user || !user->mxConn) {
 		ostr << autosprintf(_("User not found: %s"), nick.c_str());
+
 	} else if (((user->mClass + int(mC.classdif_kick)) > op->mClass) || !op->Can(eUR_KICK, mTime.Sec())) {
 		ostr << autosprintf(_("You have no rights to kick user: %s"), nick.c_str());
+
 	} else if (user->mProtectFrom >= op->mClass) {
 		ostr << autosprintf(_("User is protected from your kicks: %s"), nick.c_str());
+
 	} else {
 		string new_why(why);
 		bool keep = true;
@@ -2799,6 +2802,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 			#ifndef WITHOUT_PLUGINS
 				keep = mCallBacks.mOnOperatorKicks.CallAll(op, user, &new_why);
 			#endif
+
 		} else if (flags & eKI_DROP) {
 			#ifndef WITHOUT_PLUGINS
 				keep = mCallBacks.mOnOperatorDrops.CallAll(op, user, &new_why);
@@ -2873,15 +2877,18 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 					if (mC.notify_kicks_to_all == -1) {
 						ostr << autosprintf(_("User was kicked and banned for %s: %s"), age.AsPeriod().AsString().c_str(), nick.c_str());
+
 					} else { // message to all
 						if (new_why.size())
 							toall << autosprintf(_("%s was kicked and banned for %s by %s with reason: %s"), nick.c_str(), age.AsPeriod().AsString().c_str(), op->mNick.c_str(), new_why.c_str());
 						else
 							toall << autosprintf(_("%s was kicked and banned for %s by %s without reason."), nick.c_str(), age.AsPeriod().AsString().c_str(), op->mNick.c_str());
 					}
+
 				} else {
 					if (mC.notify_kicks_to_all == -1) {
 						ostr << autosprintf(_("User was kicked and banned permanently: %s"), nick.c_str());
+
 					} else { // message to all
 						if (new_why.size())
 							toall << autosprintf(_("%s was kicked and banned permanently by %s with reason: %s"), nick.c_str(), op->mNick.c_str(), new_why.c_str());
@@ -2891,6 +2898,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 				}
 
 				mBanList->AddBan(ban);
+
 			} else if (flags & eKI_DROP) {
 				if (user->mxConn->Log(2))
 					user->mxConn->LogStream() << "Dropped by " << op->mNick << " because: " << new_why << endl;
@@ -2902,6 +2910,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 						os << autosprintf(_("%s dropped user without reason"), op->mNick.c_str());
 
 					ReportUserToOpchat(user->mxConn, os.str(), mC.dest_drop_chat);
+
 				} else { // message to all
 					if (new_why.size())
 						toall << autosprintf(_("%s was dropped by %s with reason: %s"), nick.c_str(), op->mNick.c_str(), new_why.c_str());
@@ -2920,6 +2929,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 			if (flags & eKI_CLOSE)
 				user->mxConn->CloseNice(1000, eCR_KICKED);
+
 		} else {
 			ostr << _("Your action was blocked by a plugin.");
 		}
@@ -2932,7 +2942,7 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 			DCPublicHS(ostr.str(), op->mxConn);
 	}
 
-	if ((mC.notify_kicks_to_all > -1) && toall.str().size()) // message to all
+	if (!hide && (mC.notify_kicks_to_all > -1) && toall.str().size()) // message to all
 		DCPublicToAll(mC.hub_security, toall.str(), mC.notify_kicks_to_all, int(eUC_MASTER), mC.delayed_chat);
 }
 

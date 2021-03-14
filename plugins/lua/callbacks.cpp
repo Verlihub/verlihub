@@ -1891,7 +1891,7 @@ int _KickUser(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || ((args >= 4) && !lua_isstring(L, 5)) || ((args >= 5) && !lua_isstring(L, 6))) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || !lua_isstring(L, 4) || ((args >= 4) && !lua_isstring(L, 5)) || ((args >= 5) && !lua_isstring(L, 6)) || ((args >= 6) && !lua_isnumber(L, 7))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
@@ -1909,7 +1909,12 @@ int _KickUser(lua_State *L)
 	if (args >= 5)
 		note_usr = lua_tostring(L, 6);
 
-	if (!KickUser(oper.c_str(), nick.c_str(), why.c_str(), (note_op.size() ? note_op.c_str() : NULL), (note_usr.size() ? note_usr.c_str() : NULL))) {
+	int hide = 0;
+
+	if (args >= 6)
+		hide = lua_tonumber(L, 7);
+
+	if (!KickUser(oper.c_str(), nick.c_str(), why.c_str(), (note_op.size() ? note_op.c_str() : NULL), (note_usr.size() ? note_usr.c_str() : NULL), (hide == 1))) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}

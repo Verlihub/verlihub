@@ -28,15 +28,19 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nUtils;
 	using namespace nTables;
+
 	namespace nTables {
 		class cConnType;
 	};
+
 	namespace nProtocol {
 		class cDCProto;
 	}
+
 	using nProtocol::cDCProto;
 
 	class cUser;
+
 	namespace nSocket {
 		class cServerDC;
 	};
@@ -216,6 +220,7 @@ namespace nVerliHub {
 		class cConnDC : public cAsyncConn
 		{
 			friend class nProtocol::cDCProto;
+
 			public:
 				/**
 				 * Class constructor.
@@ -249,13 +254,13 @@ namespace nVerliHub {
 				 * @param msed Time in milliseconds before closing the connection.
 				 * @param reason The reason.
 				 */
-				virtual void CloseNice(int msec, int reason = 0);
+				virtual void CloseNice(int msec, int reason = 0); // eCR_DEFAULT
 
 				/**
 				 * Close the connection with the given reason.
 				 * @param reason The reason.
 				 */
-				virtual void CloseNow(int reason = 0);
+				virtual void CloseNow(int reason = 0); // eCR_DEFAULT
 
 				/**
 				 * Return if the given login status flag is set or not.
