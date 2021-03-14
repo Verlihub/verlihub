@@ -61,6 +61,11 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 	mbRun(false),
 	mFactory(NULL),
 	mRunResult(0),
+/*
+#ifdef USE_SSL_CONNECTS
+	mSSLCont(NULL),
+#endif
+*/
 	mNowTreating(NULL)
 {
 	/*
@@ -116,6 +121,45 @@ int cAsyncSocketServer::run()
 	mbRun = true;
 	vhLog(1) << "Main loop start" << endl;
 
+/*
+#ifdef USE_SSL_CONNECTS
+	// https://wiki.openssl.org/index.php/Simple_TLS_Server
+	SSL_load_error_strings();
+	OpenSSL_add_ssl_algorithms();
+	const SSL_METHOD *meth = TLS_server_method(); // todo: detect version from ssl.h
+	mSSLCont = SSL_CTX_new(meth);
+
+	if (mSSLCont) {
+		SSL_CTX_set_options(mSSLCont, SSL_OP_NO_COMPRESSION); // no compression
+		SSL_CTX_set_min_proto_version(mSSLCont, TLS1_3_VERSION); // min version 1.3
+		SSL_CTX_set_max_proto_version(mSSLCont, TLS1_3_VERSION); // max version 1.3
+		SSL_CTX_set_ecdh_auto(mSSLCont, 1);
+
+		if (SSL_CTX_use_certificate_file(mSSLCont, "/home/rolex/.certs/FearDC.crt", SSL_FILETYPE_PEM) <= 0) { // todo: add config
+			vhLog(0) << ("Failed to apply SSL certificate to server SSL context") << endl;
+			ERR_print_errors_fp(stderr);
+			SSL_CTX_free(mSSLCont);
+			mSSLCont = NULL;
+			EVP_cleanup();
+
+		} else {
+			if (SSL_CTX_use_PrivateKey_file(mSSLCont, "/home/rolex/.certs/FearDC.key", SSL_FILETYPE_PEM) <= 0 ) { // todo: add config
+				vhLog(0) << ("Failed to apply SSL key to server SSL context") << endl;
+				ERR_print_errors_fp(stderr);
+				SSL_CTX_free(mSSLCont);
+				mSSLCont = NULL;
+				EVP_cleanup();
+			}
+		}
+
+	} else {
+		vhLog(0) << ("Failed to create server SSL context") << endl;
+		ERR_print_errors_fp(stderr);
+		EVP_cleanup();
+    }
+#endif
+*/
+
 	while (mbRun) {
 		mTime.Get(); // note: always current time, dont modify this container anywhere
 		TimeStep();
@@ -140,7 +184,6 @@ int cAsyncSocketServer::run()
 	}
 
 	vhLog(1) << "Main loop stop with code " << mRunResult << endl;
-
 	return mRunResult;
 }
 
@@ -170,6 +213,16 @@ void cAsyncSocketServer::close()
 			}
 		}
 	}
+
+/*
+#ifdef USE_SSL_CONNECTS
+	if (mSSLCont) {
+		SSL_CTX_free(mSSLCont);
+		mSSLCont = NULL;
+		EVP_cleanup();
+	}
+#endif
+*/
 }
 
 /*

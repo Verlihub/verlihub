@@ -113,7 +113,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 					mS->ReportUserToOpchat(conn, os.str());
 				}
 
-				conn->CloseNow();
+				conn->CloseNow(eCR_SYNTAX);
 				return -1;
 			}
 
@@ -131,7 +131,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 					return 1;
 			} else {
 				if (!mS->mCallBacks.mOnParsedMsgAnyEx.CallAll(conn, msg)) {
-					conn->CloseNow();
+					conn->CloseNow(eCR_PLUGIN);
 					return -1;
 				}
 			}
@@ -727,13 +727,13 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		cUser *NewUser = new cUser(nick);
 
 		if (!conn->SetUser(NewUser)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_INVALID_USER);
 			return -1;
 		}
 
 		#ifndef WITHOUT_PLUGINS
 			if (!mS->mCallBacks.mOnParsedMsgValidateNick.CallAll(conn, msg)) {
-				conn->CloseNow();
+				conn->CloseNow(eCR_PLUGIN);
 				return -2;
 			}
 		#endif
@@ -787,7 +787,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyPass.CallAll(conn, msg)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return -1;
 		}
 	#endif
@@ -936,7 +936,7 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgMyHubURL.CallAll(conn, msg)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return -1;
 		}
 	#endif
@@ -970,7 +970,7 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgVersion.CallAll(conn, msg)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return -1;
 		}
 	#endif
@@ -3088,7 +3088,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mS->mCallBacks.mOnParsedMsgBotINFO.CallAll(conn, msg)) {
-			conn->CloseNow();
+			conn->CloseNow(eCR_PLUGIN);
 			return -1;
 		}
 	#endif
@@ -3475,12 +3475,12 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		return this->DCU_Unknown(msg, conn);
 
 	if ((msg->mLen < 17) || (msg->mLen > 25)) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
 	if (msg->SplitChunks()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
@@ -3488,7 +3488,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	string &vers = msg->ChunkString(eCH_MYIP_VERS);
 
 	if (!conn->SetSecConn(addr, vers)) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
@@ -3506,24 +3506,24 @@ int cDCProto::DCC_MyNick(cMessageDC *msg, cConnDC *conn)
 		return this->DCU_Unknown(msg, conn);
 
 	if (conn->mMyNick.size()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_LOGIN_ERR);
 		return -1;
 	}
 
 	if (msg->mLen > mS->mC.max_len_mynick) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
 	if (msg->SplitChunks()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
 	const string &nick = msg->ChunkString(eCH_1_PARAM);
 
 	if (nick.empty()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
@@ -3537,24 +3537,24 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 		return this->DCU_Unknown(msg, conn);
 
 	if (conn->mMyNick.empty()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_LOGIN_ERR);
 		return -1;
 	}
 
 	if (msg->mLen > mS->mC.max_len_lock) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
 	if (msg->SplitChunks()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
 	const string &lock = msg->ChunkString(eCH_1_PARAM);
 
 	if (lock.empty()) {
-		conn->CloseNow();
+		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 

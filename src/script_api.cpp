@@ -237,7 +237,7 @@ bool SendToOpChat(const char *data, const char *nick)
 	return true;
 }
 
-bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op, const char *note_usr)
+bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op, const char *note_usr, bool hide)
 {
 	if (!oper || !nick)
 		return false;
@@ -259,7 +259,7 @@ bool KickUser(const char *oper, const char *nick, const char *why, const char *n
 	if (!user || !user->mxConn)
 		return false;
 
-	serv->DCKickNick(NULL, opuser, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), (note_op ? note_op : ""), (note_usr ? note_usr : ""));
+	serv->DCKickNick(NULL, opuser, nick, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), (note_op ? note_op : ""), (note_usr ? note_usr : ""), hide);
 	return true;
 }
 
@@ -274,9 +274,9 @@ bool CloseConnection(const char *nick, long delay)
 		return false;
 
 	if (delay)
-		user->mxConn->CloseNice(delay, eCR_KICKED);
+		user->mxConn->CloseNice(delay, eCR_PLUGIN);
 	else
-		user->mxConn->CloseNow();
+		user->mxConn->CloseNow(eCR_PLUGIN);
 
 	return true;
 }

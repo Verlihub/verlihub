@@ -53,7 +53,7 @@ namespace nVerliHub {
 	const char* GetUserIP(const char *nick);
 	bool SetUserIP(const char *nick, const char *ip);
 	bool Ban(const char *, const string &, const string &, unsigned, unsigned);
-	bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op = NULL, const char *note_usr = NULL);
+	bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op = NULL, const char *note_usr = NULL, bool hide = false);
 	bool DeleteNickTempBan(const char *nick);
 	bool DeleteIPTempBan(const char *ip);
 	bool ParseCommand(const char *nick, const char *cmd, int pm);

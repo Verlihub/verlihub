@@ -32,9 +32,15 @@
 #include "ctimeout.h"
 #include <list>
 #include "cobj.h"
-//#include "cconndc.h" // added
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
+
+/*
+#ifdef USE_SSL_CONNECTS
+	#include <openssl/ssl.h>
+	#include <openssl/err.h>
+#endif
+*/
 
 using namespace std;
 
@@ -125,6 +131,13 @@ namespace nVerliHub {
 				* @return Always zero.
 				*/
 				int OnTimerBase(const cTime &now);
+
+			/*
+			#ifdef USE_SSL_CONNECTS
+				// ssl context
+				SSL_CTX* mSSLCont;
+			#endif
+			*/
 
 				/**
 				* Start the main loop.

@@ -1904,7 +1904,7 @@ bool cDCConsole::cfBan::operator()()
 								mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 							}
 
-							conn->CloseNow(); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+							conn->CloseNow(eCR_KICKED); // todo: user dont get any message, only if notify_kicks_to_all is in his range
 						}
 					}
 				}
@@ -1930,7 +1930,7 @@ bool cDCConsole::cfBan::operator()()
 						mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 					}
 
-					user->mxConn->CloseNow(); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+					user->mxConn->CloseNow(eCR_KICKED); // todo: user dont get any message, only if notify_kicks_to_all is in his range
 				}
 			}
 
