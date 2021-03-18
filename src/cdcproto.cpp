@@ -705,6 +705,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 			mS->ReportUserToOpchat(conn, autosprintf(_("Authorization IP mismatch from %s"), nick.c_str()));
 
 		os << autosprintf(_("Authorization IP for this account doesn't match your IP address: %s"), conn->mAddrIP.c_str());
+		mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, os.str(), eBT_PASSW); // ban ip for pwd_tmpban
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
