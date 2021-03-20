@@ -121,7 +121,7 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	else
 		send << '/';
 
-	send << " HTTP/1.0\r\n";
+	send << " HTTP/1.1\r\n";
 
 	if (head.find("Host: ") == head.npos)
 		send << "Host: " << mHost << ':' << mPort << "\r\n";
@@ -132,13 +132,15 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	if (head.find("Content-Type: ") == head.npos)
 		send << "Content-Type: " << ((meth == "POST") ? "application/x-www-form-urlencoded" : "text/plain") << "\r\n";
 
-	if ((head.find("Content-Length: ") == head.npos) && data.size())
-		send << "Content-Length: " << data.size() << "\r\n\r\n";
+	if (head.find("Content-Length: ") == head.npos)
+		send << "Content-Length: " << data.size() << "\r\n";
 
+	/*
 	if (head.find("Connection: ") == head.npos)
 		send << "Connection: Close\r\n";
+	*/
 
-	send << head << "\r\n";
+	send << head << "\r\n"; // note: must be double before data
 
 	if (data.size())
 		send << data;
