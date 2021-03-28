@@ -99,7 +99,8 @@ namespace nVerliHub {
 
 		typedef enum // myinfo flags
 		{
-			eMF_NAT = 0x20 // nat connection support
+			eMF_TLS = 0x10, // tls download support
+			eMF_NAT = 0x20 // nat/tls upload support
 		} tMyFlags;
 	};
 

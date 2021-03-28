@@ -2181,37 +2181,42 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 			if ((pize > 2) && (port.substr(pize - 2) == "NS")) { // + tls
 				if (conn->mpUser->mMyFlag & eMF_NAT) {
-					if (conn->mFeatures & eSF_TLS) // only if sender supports it
+					if (conn->mFeatures & eSF_TLS) // only if sender supports it, todo: must both support this?
 						extra = "NS " + natnick;
 					else
 						extra = "N " + natnick;
 				}
 
 				port.assign(port, 0, pize - 2);
+
 			} else if (port[pize - 1] == 'N') {
 				if (conn->mpUser->mMyFlag & eMF_NAT)
 					extra = "N " + natnick;
 
 				port.assign(port, 0, pize - 1);
 			}
+
 		} else
 			port.assign(port, 0, pos);
+
 	} else if ((pize > 2) && (port.substr(pize - 2) == "RS")) { // nat + tls
 		if (conn->mpUser->mMyFlag & eMF_NAT) {
-			if (conn->mFeatures & eSF_TLS) // only if sender supports it
+			if (conn->mFeatures & eSF_TLS) // only if sender supports it, todo: must both support this?
 				extra = "RS";
 			else
 				extra = 'R';
 		}
 
 		port.assign(port, 0, pize - 2);
+
 	} else if (port[pize - 1] == 'R') { // nat
-		if (conn->mpUser->mMyFlag & eMF_NAT)
+		if (conn->mpUser->mMyFlag & eMF_NAT) // todo: must both support this?
 			extra = 'R';
 
 		port.assign(port, 0, pize - 1);
+
 	} else if (port[pize - 1] == 'S') { // tls
-		if (conn->mFeatures & eSF_TLS) // only if sender supports it
+		if ((conn->mFeatures & eSF_TLS) && (other->mxConn->mFeatures & eSF_TLS)) // only if both support it, todo: maybe use eMF_TLS aswell?
 			extra = 'S';
 
 		port.assign(port, 0, pize - 1);
