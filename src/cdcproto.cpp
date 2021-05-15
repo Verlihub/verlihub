@@ -1372,8 +1372,14 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		if ((mS->mC.clone_detect_count) && (conn->mpUser->mClass <= int(mS->mC.max_class_check_clone))) { // detect clone using all myinfo and ip parameters
 			string clone;
-			temp.assign(myinfo, 14 + nick.size(), -1); // "$MyINFO $ALL <nick> "
-			const size_t posh = temp.find(",H:"), poss = temp.find(",S:"); // workaround for clients that cant predict hub count before sending myinfo
+			temp.assign(myinfo, 14 + nick.size(), -1); // "$MyINFO $ALL <nick> ", note: same in cserverdc.cpp
+			size_t posh = temp.find(",M:"), poss = temp.find(",H:"); // workaround for flylinkdc that sets passive mode for its second clone
+
+			if ((posh != temp.npos) && (poss != temp.npos) && (poss > posh))
+				temp.erase(posh + 3, poss - posh - 3);
+
+			posh = temp.find(",H:"); // workaround for clients that cant predict hub count before sending myinfo
+			poss = temp.find(",S:");
 
 			if ((posh != temp.npos) && (poss != temp.npos) && (poss > posh))
 				temp.erase(posh + 3, poss - posh - 3);
