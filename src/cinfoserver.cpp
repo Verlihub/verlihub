@@ -31,7 +31,7 @@
 	#include <sys/time.h>
 	#include <sys/resource.h>
 	#include <sys/times.h>
-	#include <sys/vtimes.h>
+	//#include <sys/vtimes.h>
 #endif
 
 #include "i18n.h"

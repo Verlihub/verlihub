@@ -3113,9 +3113,25 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	char pipe = '|';
 	cConnType *ConnType = mS->mConnTypes->FindConnType("default");
 	unsigned __int64 minshare = mS->mC.min_share;
+	string host = mS->mC.hub_host;
+	size_t pos;
 
 	if (mS->mC.min_share_use_hub > minshare)
 		minshare = mS->mC.min_share_use_hub;
+
+	if (host.size() > 2) { // remove protocol
+		pos = host.find("://");
+
+		if (pos != host.npos)
+			host.erase(0, pos + 3);
+	}
+
+	if (host.size()) {
+		pos = host.find(':');
+
+		if ((pos == host.npos) && (mS->mPort != 411)) // add port
+			host.append(':' + StringFrom(mS->mPort));
+	}
 
 	if (mS->mC.hub_icon_url.size())
 		os << "$SetIcon " << mS->mC.hub_icon_url << pipe;
@@ -3125,7 +3141,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 
 	os << "$HubINFO ";
 	os << mS->mC.hub_name << sep;
-	os << mS->mC.hub_host << sep;
+	os << host << sep;
 	os << mS->mC.hub_desc << sep;
 	os << mS->mC.max_users_total << sep;
 	os << StringFrom((unsigned __int64)(1024 * 1024) * minshare) << sep;
