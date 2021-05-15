@@ -2435,7 +2435,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 		other = ((cUser*)(*i))->mxConn;
 
 		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mMyINFO.size() && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->IP2Num() == conn->IP2Num())) {
-			comp.assign(other->mpUser->mMyINFO, 14 + other->mpUser->mNick.size(), -1); // "$MyINFO $ALL <nick> "
+			comp.assign(other->mpUser->mMyINFO, 14 + other->mpUser->mNick.size(), -1); // "$MyINFO $ALL <nick> ", note: same in cdcproto.cpp
 			posh = comp.find(",M:"); // workaround for flylinkdc that sets passive mode for its second clone
 			poss = comp.find(",H:");
 
