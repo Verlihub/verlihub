@@ -2038,7 +2038,22 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	size_t pos;
 	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string curhost, lock, key;
+	string curhost, lock, key, hubhost = mC.hub_host;
+
+	if (hubhost.size() > 2) { // remove protocol
+		pos = hubhost.find("://");
+
+		if (pos != hubhost.npos)
+			hubhost.erase(0, pos + 3);
+	}
+
+	if (hubhost.size()) {
+		pos = hubhost.find(':');
+
+		if ((pos == hubhost.npos) && (mPort != 411)) // add port
+			hubhost.append(':' + StringFrom(mPort));
+	}
+
 	cHTTPConn *pHubList;
 	to_user << _("Hublist registration results") << ":\r\n\r\n";
 
@@ -2076,7 +2091,7 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 					to_serv.clear();
 					to_serv << lock << pipe; // create registration data
 					to_serv << mC.hub_name << pipe;
-					to_serv << mC.hub_host << pipe;
+					to_serv << hubhost << pipe;
 
 					if (mC.hublist_send_minshare)
 						to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
@@ -2421,6 +2436,12 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 
 		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mMyINFO.size() && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->IP2Num() == conn->IP2Num())) {
 			comp.assign(other->mpUser->mMyINFO, 14 + other->mpUser->mNick.size(), -1); // "$MyINFO $ALL <nick> "
+			posh = comp.find(",M:"); // workaround for flylinkdc that sets passive mode for its second clone
+			poss = comp.find(",H:");
+
+			if ((posh != comp.npos) && (poss != comp.npos) && (poss > posh))
+				comp.erase(posh + 3, poss - posh - 3);
+
 			posh = comp.find(",H:"); // workaround for clients that cant predict hub count before sending myinfo
 			poss = comp.find(",S:");
 
