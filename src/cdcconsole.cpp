@@ -58,7 +58,7 @@ cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
 	mUserCmdr(this),
  	mCmdBan(int(eCM_BAN), ".(add|new|del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
 	mCmdTempBan(int(eCM_TEMPBAN), ".(info|del|un)?tempban(nick|ip)? ", "(\\S+)", &mFunTempBan),
-	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochat|nopm|nochats|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
+	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochats|nochat|nopm|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
 	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+)( (.*))?", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
 	mCmdRegUsr(int(eCM_REG),".r(eg)?(n(ew)?(user)?|del(ete)?|pass(wd)?|(en|dis)able|(set)?class|(protect|hidekick)(class)?|set|=|info|list|lst) ", "(\\S+)( (((\\S+) )?(.*)))?", &mFunRegUsr),
