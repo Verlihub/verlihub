@@ -42,6 +42,7 @@ namespace nVerliHub {
 		AddCol("start", "tinyint(2)", "0", false, mModel.mStart);
 		AddCol("stop", "tinyint(2)", "0", false, mModel.mStop);
 		AddCol("country", "varchar(50)", "", true, mModel.mCountry);
+		AddCol("secure", "tinyint(1)", "2", false, mModel.mSecure);
 		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
@@ -96,7 +97,7 @@ namespace nVerliHub {
 	/*
 		find redirect url from a given type
 	*/
-	char* cRedirects::MatchByType(unsigned int rype, const string &cc)
+	char* cRedirects::MatchByType(unsigned int rype, const string &cc, bool issec)
 	{
 		int rmap = MapTo(rype);
 
@@ -130,8 +131,10 @@ namespace nVerliHub {
 			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rmap))) {
 				if ((redir->mStart == redir->mStop) || ((int (lt->tm_hour) >= redir->mStart) && (int (lt->tm_hour) <= redir->mStop))) { // redirect hours
 					if (redir->mCountry.empty() || cc.empty() || (toUpper(redir->mCountry).find(cc) != redir->mCountry.npos)) { // country match
-						rist[cnt] = redir->mAddress.c_str();
-						cnt++;
+						if ((redir->mSecure == 2) || ((redir->mSecure == 1) == issec)) { // secure connection
+							rist[cnt] = redir->mAddress.c_str();
+							cnt++;
+						}
 					}
 				}
 			}
@@ -205,7 +208,8 @@ namespace nVerliHub {
 					"[ -a <start>]"
 					"[ -z <stop>]"
 					"[ -c <:cc:>]"
-					"[ -e <1/0>]";
+					"[ -s <2=any/1=yes/0=no>]"
+					"[ -e <1=yes/0=no>]";
 
 				break;
 
@@ -252,12 +256,13 @@ namespace nVerliHub {
 			case eLC_ADD:
 			case eLC_MOD:
 				return "^(\\S+)("
-						"( -f ?(\\d+))?|"
-						"( -a ?(\\d+))?|"
-						"( -z ?(\\d+))?|"
-						"( -c ?(\\S*))?|"
-						"( -e ?(1|0))?|"
-						")*\\s*$";
+					"( -f ?(\\d+))?|"
+					"( -a ?(\\d+))?|"
+					"( -z ?(\\d+))?|"
+					"( -c ?(\\S*))?|"
+					"( -s ?(2|1|0))?|"
+					"( -e ?(1|0))?|"
+					")*\\s*$";
 
 			case eLC_DEL:
 				return "(\\S+)";
@@ -277,6 +282,7 @@ namespace nVerliHub {
 			eADD_STARTp, eADD_START,
 			eADD_STOPp, eADD_STOP,
 			eADD_COUNTRYp, eADD_COUNTRY,
+			eADD_SECUREp, eADD_SECURE,
 			eADD_ENABLEp, eADD_ENABLE
 		};
 
@@ -285,6 +291,7 @@ namespace nVerliHub {
 		cmd->GetParInt(eADD_START, data.mStart);
 		cmd->GetParInt(eADD_STOP, data.mStop);
 		cmd->GetParStr(eADD_COUNTRY, data.mCountry);
+		cmd->GetParInt(eADD_SECURE, data.mSecure);
 		cmd->GetParInt(eADD_ENABLE, data.mEnable);
 		return true;
 	}
@@ -306,6 +313,7 @@ namespace nVerliHub {
 		(*os) << "\t\t\t\t" << _("Status");
 		(*os) << "\t" << _("Type");
 		(*os) << "\t\t" << _("Country");
+		(*os) << "\t" << _("Secure");
 		(*os) << "\r\n\t" << string(150, '-') << "\r\n";
 	}
 

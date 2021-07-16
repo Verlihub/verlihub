@@ -33,6 +33,7 @@ namespace nVerliHub {
 			mStart = 0;
 			mStop = 0;
 			mCountry = "";
+			mSecure = 2; // 0 - no, 1 - yes, 2 - any
 		}
 
 		cRedirect::~cRedirect()
@@ -61,7 +62,7 @@ namespace nVerliHub {
 			else
 				os << "59";
 
-			os << "\t" << tr.mAddress;
+			os << "\t" << tr.mAddress << ' ';
 
 			if (tr.mAddress.size() <= 8)
 				os << "\t";
@@ -118,8 +119,9 @@ namespace nVerliHub {
 			if (tr.mCountry.size())
 				os << tr.mCountry;
 			else
-				os << "any";
+				os << _("Any");
 
+			os << "\t" << ((tr.mSecure == 2) ? _("Any") : ((tr.mSecure == 1) ? _("Yes") : _("No")));
 			return os;
 		}
 

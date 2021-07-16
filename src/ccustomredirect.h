@@ -87,6 +87,8 @@ namespace nVerliHub {
 				string mCountry;
 				// redirect address
 				string mAddress;
+				// secure connection
+				int mSecure;
 				// redirect status
 				int mEnable;
 		};
