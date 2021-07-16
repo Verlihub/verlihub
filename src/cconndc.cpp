@@ -273,7 +273,7 @@ int cConnDC::OnCloseNice()
 
 	} else if (mxServer) {
 		const string &cc = GetGeoCC();
-		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc);
+		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc, (this->mTLSVer.size() && (this->mTLSVer != "0.0")));
 
 		if (addr) {
 			Server()->mP.Create_ForceMove(omsg, addr, true, true); // reserve for pipe
