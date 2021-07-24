@@ -692,7 +692,7 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 
 	ostringstream os;
 	string temp, host = mOwner->mC.hub_host, port = StringFrom(mOwner->mPort);
-	size_t pos;
+	size_t pos = string::npos;
 	int ucl = conn->GetTheoricalClass();
 	unsigned int sear = 0, contot = 0, consec = 0;
 	cAsyncConn *usco;
