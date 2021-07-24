@@ -35,7 +35,7 @@ cPenaltyList::cPenaltyList(cMySQL &mysql, cServerDC *serv):
 	mServ(serv)
 {
 	mMySQLTable.mName = "temp_rights";
-	AddCol("nick", "varchar(128) primary key", "", false, mModel.mNick);
+	AddCol("nick", "varchar(128)", "", false, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("op", "varchar(128)", "", true, mModel.mOpNick);
 	AddCol("since", "int(11)", "", true, mModel.mSince);

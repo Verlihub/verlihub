@@ -140,11 +140,12 @@ bool cLuaInterpreter::Init()
 	if (serv) {
 		VHPushString("HubSec", serv->mC.hub_security.c_str());
 		VHPushString("OpChat", serv->mC.opchat_name.c_str());
-		VHPushString("HubVer", HUB_VERSION_VERS);
-		VHPushString("PlugVer", LUA_PI_VERSION);
-		VHPushString("ConfName", mConfigName.c_str());
-		VHPushString("ScriptName", mScriptName.c_str());
 	}
+
+	VHPushString("HubVer", HUB_VERSION_VERS);
+	VHPushString("PlugVer", LUA_PI_VERSION);
+	VHPushString("ConfName", mConfigName.c_str());
+	VHPushString("ScriptName", mScriptName.c_str());
 
 	lua_setglobal(mL, VH_TABLE_NAME);
 	int status = luaL_dofile(mL, mScriptName.c_str());
