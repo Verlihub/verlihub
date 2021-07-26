@@ -85,6 +85,8 @@ SET(VERLIHUB_HDRS
 	cvhpluginmgr.h
 	cworkerthread.h
 	czlib.h
+	dcproxy.h
+	dcproxy_types.h
 	gettext.h
 	i18n.h
 	script_api.h
@@ -203,7 +205,7 @@ TARGET_LINK_LIBRARIES(vhapi libverlihub)
 
 # Link libverlihub against verlihub executable
 ADD_EXECUTABLE(verlihub verlihub.cpp)
-TARGET_LINK_LIBRARIES(verlihub libverlihub)
+TARGET_LINK_LIBRARIES(verlihub libverlihub ${VERLIHUB_SOURCE_DIR}/build-proxy/dcproxy.a)
 
 # ----------------------------------------------------------------------------------------------------
 # Generate verlihub_config
