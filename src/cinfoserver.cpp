@@ -24,7 +24,7 @@
 #include "casyncconn.h"
 #include "cbanlist.h"
 
-#if defined HAVE_LINUX
+//#if defined HAVE_LINUX
 	#include <unistd.h>
 	#include <sys/utsname.h>
 	#include <sys/sysinfo.h>
@@ -32,7 +32,7 @@
 	#include <sys/resource.h>
 	#include <sys/times.h>
 	//#include <sys/vtimes.h>
-#endif
+//#endif
 
 #include "i18n.h"
 
@@ -296,7 +296,7 @@ void cInfoServer::BufferInfo(ostream &os)
 
 void cInfoServer::SystemInfo(ostream &os)
 {
-	#if defined HAVE_LINUX
+	//#if defined HAVE_LINUX
 		struct sysinfo serverInfo;
 
 		if (sysinfo(&serverInfo)) {
@@ -397,9 +397,9 @@ void cInfoServer::SystemInfo(ostream &os)
 		struct rusage resourceUsage;
 		getrusage(RUSAGE_SELF, &resourceUsage);
 		*/
-	#else
-		os << _("System information not available.");
-	#endif
+	//#else
+		//os << _("System information not available.");
+	//#endif
 }
 
 unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
