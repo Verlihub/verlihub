@@ -152,7 +152,7 @@ ENDIF(USE_CUSTOM_AUTOSPRINTF)
 
 IF(HAVE_BSD)
 	Find_Package(ExecInfo REQUIRED)
-	Find_Package(sysinfo REQUIRED)
+	Find_Package(SysInfo REQUIRED)
 	SET(CMAKE_CXX_COMPILER "clang++")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 ENDIF(HAVE_BSD)
