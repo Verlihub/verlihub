@@ -51,7 +51,7 @@ cInfoServer::cInfoServer()
 	mServer = NULL;
 	num_cpu = 0; // get number of cpu cores if we have linux
 
-	#if defined HAVE_LINUX
+	//#if defined HAVE_LINUX
 		struct tms time_sample;
 		last_cpu = times(&time_sample);
 		last_sys_cpu = time_sample.tms_stime;
@@ -71,7 +71,7 @@ cInfoServer::cInfoServer()
 			if (num_cpu == 0) // we dont want to divide by zero
 				num_cpu = 1;
 		}
-	#endif
+	//#endif
 }
 
 cInfoServer::~cInfoServer()
