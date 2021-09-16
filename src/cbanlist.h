@@ -218,14 +218,14 @@ namespace nVerliHub {
 				 * IP address, host, reason of the ban, the banner nickname,
 				 * the nickname of the user and the start and end date of the ban.
 				 * @param ban cBan instance where to store the result.
-				 * @param connection The user connection.
+				 * @param conn The user connection.
 				 * @param nick_op The banner nickname.
 				 * @param reason The reason of the ban.
 				 * @param length The time of the ban.
 				 * @param mask The bit-mask for ban type.
 				 * @see tBanFlags
 				 */
-				void NewBan(cBan &ban, nSocket::cConnDC *connection, const string &nickOp, const string &reason, unsigned length, unsigned mask);
+				void NewBan(cBan &ban, nSocket::cConnDC *conn, const string &nickOp, const string &reason, unsigned length, unsigned mask);
 
 				/**
 				* Fill the given cBan instance from the given
@@ -278,7 +278,7 @@ namespace nVerliHub {
 				 * value of the given bit-mask.
 				 * If the ban entry found is loaded into cBan instance.
 				 * @param ban The cBan instance where to load the ban entry.
-				 * @param connection The connection of the user.
+				 * @param conn The connection of the user.
 				 * @param nickname The nickname.
 				 * @param mask The bit-mask for conditions.
 				 * @see tBanFlags
@@ -335,7 +335,7 @@ namespace nVerliHub {
 		 * and it interacts with banlist table in a MySQL database.
 		 * @author Daniel Muller
 		 */
-		class cUnBanList : public cBanList
+		class cUnBanList: public cBanList
 		{
 			public:
 				/**
@@ -363,6 +363,7 @@ namespace nVerliHub {
 				cUnBan mModelUn;
 		};
 		/// @}
+
 	}; // namesapce nTables
 }; // namespace nVerliHub
 

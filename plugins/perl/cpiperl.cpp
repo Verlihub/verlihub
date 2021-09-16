@@ -429,11 +429,14 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnUserCommand(cConnDC *conn , std::string 
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnHubCommand(cConnDC *conn , std::string *command, int op, int pm)
 {
+	const string s_op = toString(op);
+	const string s_pm = toString(pm);
+
 	const char *args[] = { "VH_OnHubCommand",
 				conn->mpUser->mNick.c_str(),
 				command->c_str(),
-				toString(op).c_str(),
-				toString(pm).c_str(),
+				s_op.c_str(),
+				s_pm.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
@@ -471,10 +474,12 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnTimer(__int64 msec)
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnNewReg(cUser *op, string nick, int uclass)
 {
+	const string s_uclass = toString(uclass);
+
 	const char *args[] = { "VH_OnNewReg",
 				op->mNick.c_str(),
 				nick.c_str(),
-				toString(uclass).c_str(),
+				s_uclass.c_str(),
 				NULL };
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
 	return ret;
@@ -535,9 +540,11 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnParsedMsgRevConnectToMe(cConnDC *conn, c
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnDelReg(cUser *op, std::string mNick, int mClass)
 {
+	const string s_mClass = toString(mClass);
+
 	const char *args[] = { "VH_OnDelReg",
 				mNick.c_str(),
-				toString(mClass).c_str(),
+				s_mClass.c_str(),
 				op->mNick.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);
@@ -546,10 +553,13 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnDelReg(cUser *op, std::string mNick, int
 
 bool nVerliHub::nPerlPlugin::cpiPerl::OnUpdateClass(cUser *op, std::string mNick, int oldClass, int newClass)
 {
+	const string s_oldClass = toString(oldClass);
+	const string s_newClass = toString(newClass);
+
 	const char *args[] = { "VH_OnUpdateClass",
 				mNick.c_str(),
-				toString(oldClass).c_str(),
-				toString(newClass).c_str(),
+				s_oldClass.c_str(),
+				s_newClass.c_str(),
 				op->mNick.c_str(),
 				NULL};
 	bool ret = mPerl.CallArgv(PERL_CALL, args);

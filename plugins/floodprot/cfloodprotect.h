@@ -112,14 +112,14 @@ public:
 	~cFloodprotect();
 	bool CleanUp(int secs);
 	bool CheckFlood(nSocket::cConnDC *, nEnums::tFloodType);
-	bool AddConn(nSocket::cConnDC *, short diff = 1);
+	bool AddConn(nSocket::cConnDC *, int diff = 1);
 	int KickAll(nSocket::cConnDC *);
 
 	nSocket::cServerDC * mS;
 
 	typedef tcHashListMap<sUserInfo *> tUserInfo;
 	//FIXME: DataType in tHashArray template must be a pointer!
-	typedef tHashArray<short int> tConnCounter;
+	typedef tHashArray<long> tConnCounter;
 	typedef tUserInfo::iterator tUIIt;
 	tUserInfo mUserInfo;
 	tConnCounter mConnCounter;

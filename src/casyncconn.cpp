@@ -672,7 +672,7 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 	mAddrIN.sin_port = htons(port);
 	memset(&(mAddrIN.sin_zero), '\0', 8);
 
-	if (bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1) // bind socket to port
+	if (::bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1) // bind socket to port
 		return -1;
 
 	return sock;
