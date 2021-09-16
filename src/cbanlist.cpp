@@ -50,7 +50,7 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("nick", "varchar(128)", "", true, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("ban_type", "tinyint(4)", "0", true, mModel.mType);
-	AddCol("host", "text", "", true, mModel.mHost);
+	AddCol("host", "text", "", true, mModel.mHost); // todo: varchar(255)
 	AddCol("range_fr", "bigint(32)", "", true, mModel.mRangeMin);
 	AddCol("range_to", "bigint(32)", "", true, mModel.mRangeMax);
 	AddCol("date_start", "int(11)", "0", true, mModel.mDateStart);
@@ -61,10 +61,10 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("note_op", "text", "", true, mModel.mNoteOp);
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
-	mMySQLTable.mExtra = "UNIQUE (ip,nick), ";
-	mMySQLTable.mExtra += "INDEX nick_index (nick), ";
-	mMySQLTable.mExtra += "INDEX date_index (date_limit), ";
-	mMySQLTable.mExtra += "INDEX range_index (range_fr)";
+	mMySQLTable.mExtra = "unique (`ip`, `nick`), ";
+	mMySQLTable.mExtra += "index `nick_index` (`nick`), ";
+	mMySQLTable.mExtra += "index `date_index` (`date_limit`), ";
+	mMySQLTable.mExtra += "index `range_index` (`range_fr`)";
 	SetBaseTo(&mModel);
 }
 
@@ -83,7 +83,7 @@ cUnBanList::cUnBanList(cServerDC* s):
 	AddPrimaryKey("date_unban");
 	AddCol("unban_op", "varchar(128)", "", true, mModelUn.mUnNickOp);
 	AddCol("unban_reason", "text", "", true, mModelUn.mUnReason);
-	mMySQLTable.mExtra = "UNIQUE (ip, nick, date_unban)";
+	mMySQLTable.mExtra = "unique (`ip`, `nick`, `date_unban`)";
 }
 
 cUnBanList::~cUnBanList()
@@ -91,14 +91,14 @@ cUnBanList::~cUnBanList()
 
 void cBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where date_limit is not null and date_limit < " << (mS->mTime.Sec() - (3600 * 24 * 7));
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_limit` is not null and `date_limit` < " << (mS->mTime.Sec() - (3600 * 24 * 7));
 	mQuery.Query();
 	mQuery.Clear();
 }
 
 void cUnBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where date_unban < " << (cTime().Sec() - (3600 * 24 * 30)); // todo: mS->mTime.Sec()
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_unban` < " << (cTime().Sec() - (3600 * 24 * 30)); // todo: mS->mTime.Sec()
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -121,11 +121,11 @@ bool cBanList::LoadBanByKey(cBan &ban)
 }
 */
 
-void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, const string &reason, unsigned length, unsigned mask)
+void cBanList::NewBan(cBan &ban, cConnDC *conn, const string &nickOp, const string &reason, unsigned length, unsigned mask)
 {
-	if (connection) {
-		ban.mIP = connection->AddrIP();
-		ban.mHost = connection->AddrHost();
+	if (conn) {
+		ban.mIP = conn->AddrIP();
+		ban.mHost = conn->AddrHost();
 		ban.mDateStart = mS->mTime.Sec();
 		ban.mDateEnd = ban.mDateStart + length;
 		ban.mLastHit = 0;
@@ -133,84 +133,100 @@ void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, cons
 		ban.mNickOp = nickOp;
 		ban.SetType(mask);
 
-		if (connection->mpUser) {
-			ban.mNick = connection->mpUser->mNick;
-			ban.mShare = connection->mpUser->mShare;
+		if (conn->mpUser) {
+			ban.mNick = conn->mpUser->mNick;
+			ban.mShare = conn->mpUser->mShare;
 		} else {
 			ban.mNick = "nonick_" + ban.mIP;
 		}
 	}
 }
 
-void cBanList::AddBan(cBan &ban)
+void cBanList::AddBan(cBan &ban) // todo: nick2dbkey
 {
-	//@todo nick2dbkey
 	switch (1 << ban.mType) {
 		case eBF_NICK:
 			ban.mIP = "_nickban_";
-		break;
+			break;
+
 		case eBF_IP:
 			ban.mNick = "_ipban_";
-		break;
+			break;
+
 		case eBF_RANGE:
 			ban.mNick = "_rangeban_";
-		break;
+			break;
+
 		case eBF_HOST1:
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 1))
+				return;
+
 			ban.mIP = "_host1ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,1))
-				return;
-		break;
+			break;
+
 		case eBF_HOST2:
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 2))
+				return;
+
 			ban.mIP = "_host2ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,2))
-				return;
-		break;
+			break;
+
 		case eBF_HOST3:
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 3))
+				return;
+
 			ban.mIP = "_host3ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,3))
-				return;
-		break;
+			break;
+
 		case eBF_HOSTR1:
-			ban.mIP = "_hostr1ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,-1))
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, -1))
 				return;
-		break;
+
+			ban.mIP = "_hostr1ban_";
+			break;
+
 		case eBF_SHARE:
 			ban.mNick = "_shareban_";
-		break;
+			break;
+
 		case eBF_PREFIX:
 			ban.mIP = "_prefixban_";
-		break;
-		default: break;
+			break;
+
+		default:
+			break;
 	}
 
-	// copy PK
-	cBan OldBan(mS);
+	cBan OldBan(mS); // copy pk
 	OldBan.mIP = ban.mIP;
 	OldBan.mNick = ban.mNick;
-	// Load by PK to mModel
-	SetBaseTo( &OldBan );
+	SetBaseTo(&OldBan); // load by pk to mModel
 	bool update = false;
 
-	if(LoadPK()) {
+	if (LoadPK()) {
 		update = true;
 		mModel = OldBan;
-		if(ban.mReason.size())
+
+		if (ban.mReason.size())
 			mModel.mReason += " / " + ban.mReason;
-		if(!ban.mDateEnd || (ban.mDateEnd > mModel.mDateEnd))
+
+		if (!ban.mDateEnd || (ban.mDateEnd > mModel.mDateEnd))
 			mModel.mDateEnd = ban.mDateEnd;
+
 		mModel.mNickOp = ban.mNickOp;
 
-		if((1 << ban.mType) == eBF_RANGE) {
+		if ((1 << ban.mType) == eBF_RANGE) {
 			mModel.mRangeMin = ban.mRangeMin;
 			mModel.mRangeMax = ban.mRangeMax;
 		}
-	} else
+
+	} else {
 		mModel = ban;
+	}
 
 	SetBaseTo(&mModel);
 
-	if(update)
+	if (update)
 		UpdatePK();
 	else
 		SavePK(false);
@@ -288,7 +304,7 @@ unsigned int cBanList::TestBan(cBan &ban, cConnDC *conn, const string &nick, uns
 	if (!found)
 		return 0;
 
-	query << ") and ((`date_limit` >= " << mS->mTime.Sec() << ") or (`date_limit` is null) or (`date_limit` = 0)) order by `date_limit` desc limit 1";
+	query << ") and ((`date_limit` >= " << mS->mTime.Sec() << ") or (`date_limit` is null) or (`date_limit` = 0)) order by `date_limit` desc limit 1"; // todo: why we have limit here?
 
 	if (StartQuery(query.str()) == -1)
 		return 0;
@@ -313,7 +329,7 @@ void cBanList::DelBan(cBan &Ban)
 
 int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where";
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where";
 
 	if (mask & eBF_IP) {
 		mQuery.OStream() << " `ip` = '";
@@ -355,18 +371,21 @@ void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
 int cBanList::Unban(ostream &os, const string &value, const string &reason, const string &nickOp, int mask, bool deleteEntry)
 {
 	SelectFields(mQuery.OStream());
-	if(!AddTestCondition(mQuery.OStream() << " where ", value, mask)) {
+
+	if (!AddTestCondition(mQuery.OStream() << " where ", value, mask)) {
 		mQuery.Clear();
 		return 0;
 	}
+
 	db_iterator it;
 	cUnBan *unban = NULL;
 	int i = 0;
 	SetBaseTo(&mModel);
 
-	for(it = db_begin(); it != db_end(); ++it) {
+	for (it = db_begin(); it != db_end(); ++it) {
 		mModel.DisplayComplete(os);
-		if(deleteEntry) {
+
+		if (deleteEntry) {
 			unban = new cUnBan(mModel, mS);
 			unban->mUnReason = reason;
 			unban->mUnNickOp = nickOp;
@@ -376,15 +395,19 @@ int cBanList::Unban(ostream &os, const string &value, const string &reason, cons
 			delete unban;
 			unban = NULL;
 		}
+
 		i++;
 	}
+
 	mQuery.Clear();
-	if(deleteEntry) {
-		mQuery.OStream() << "delete from " << this->mMySQLTable.mName << " where ";
-		AddTestCondition(mQuery.OStream() , value, mask);
+
+	if (deleteEntry) {
+		mQuery.OStream() << "delete from `" << this->mMySQLTable.mName << "` where ";
+		AddTestCondition(mQuery.OStream(), value, mask);
 		mQuery.Query();
 		mQuery.Clear();
 	}
+
 	return i;
 }
 
@@ -392,23 +415,31 @@ bool cBanList::GetHostSubstring(const string &hostname, string &result, int leve
 {
 	string tmp(".");
 	size_t pos;
-	if(level > 0) {
+
+	if (level > 0) {
 		tmp += hostname;
 		pos = tmp.npos;
-		for(int i = 0; i < level; i++) {
-			if(!pos)
+
+		for (int i = 0; i < level; i++) {
+			if (!pos)
 				return false;
-			pos = tmp.rfind('.',pos-1);
+
+			pos = tmp.rfind('.', pos - 1);
 		}
-		result.assign(tmp, pos, tmp.size()-pos);
-	} else if(level < 0) {
+
+		result.assign(tmp, pos, tmp.size() - pos);
+
+	} else if (level < 0) {
 		tmp = hostname;
 		pos = 0;
+
 		for (int i = 0; i < -level; i++) {
 			if (pos == tmp.npos)
 				return false;
-			pos = tmp.find('.',pos+1);
+
+			pos = tmp.find('.', pos + 1);
 		}
+
 		result.assign(tmp, 0, pos);
 	}
 
@@ -419,55 +450,81 @@ bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 {
 	string host;
 	unsigned long num;
-	switch(mask) {
+
+	switch (mask) {
+		/*
 		case eBF_NICK:
-			os << "( nick = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
-		break;
+			os << "(`nick` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+		*/
+
+		case eBF_NICK:
+			os << "(`ip` = '_nickban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+
+		/*
 		case eBF_IP:
-			os << "(ip='"; cConfMySQL::WriteStringConstant(os, value); os << "')";
-		break;
-		//case (int)eBF_NICK  : os << "(ip='_nickban_' AND nick='" << value << "')"; break;
-		//case (int)eBF_IP    : os << "(nick='_ipban_' AND ip='" << value << "')"; break;
-		case eBF_RANGE :
+			os << "(`ip` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+		*/
+
+		case eBF_IP:
+			os << "(`nick` = '_ipban_' and `ip` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+
+		case eBF_RANGE:
 			num = Ip2Num(value);
-			os << "(nick='_rangeban_' AND " << num << " BETWEEN range_fr AND range_to )";
-		break;
-		case eBF_SHARE :
-			os << "(nick='_shareban_' AND share_size = '" << value << "')";
-		break;
-		case eBF_HOST1 :
-			if(!this->GetHostSubstring(value, host, 1)) {
-				os << " 0 ";
+			os << "(`nick` = '_rangeban_' and (" << num << " between `range_fr` and `range_to`))";
+			break;
+
+		case eBF_SHARE:
+			os << "(`nick` = '_shareban_' and `share_size` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+
+		case eBF_HOST1:
+			if (!this->GetHostSubstring(value, host, 1)) {
+				os << '0';
 				return false;
 			}
-			os << "(ip='_host1ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOST2 :
-			if(!this->GetHostSubstring(value, host, 2)) {
-				os << " 0 ";
+
+			os << "(`ip` = '_host1ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOST2:
+			if (!this->GetHostSubstring(value, host, 2)) {
+				os << '0';
 				return false;
 			}
-			os << "(ip='_host2ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOST3 :
-			if(!this->GetHostSubstring(value, host, 3)) {
-				os << " 0 ";
+
+			os << "(`ip` = '_host2ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOST3:
+			if (!this->GetHostSubstring(value, host, 3)) {
+				os << '0';
 				return false;
-			};
-			os << "(ip='_host3ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOSTR1 :
-			if(!this->GetHostSubstring(value, host, -1)) {
-				os << " 0 ";
+			}
+
+			os << "(`ip` = '_host3ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOSTR1:
+			if (!this->GetHostSubstring(value, host, -1)) {
+				os << '0';
 				return false;
-			};
-			os << "(ip='_hostr1ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_PREFIX :
-			os << "(ip='_prefixban_' AND nick=LEFT('";cConfMySQL::WriteStringConstant(os, value); os << "',LENGTH(nick)))";
-		break;
-		default: return false;
+			}
+
+			os << "(`ip` = '_hostr1ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_PREFIX:
+			os << "(`ip` = '_prefixban_' and `nick` = left('"; cConfMySQL::WriteStringConstant(os, value); os << "', length(`nick`)))";
+			break;
+
+		default:
+			return false;
 	}
+
 	return true;
 }
 
@@ -475,7 +532,7 @@ void cBanList::List(ostream &os, int count)
 {
 	mQuery.Clear();
 	SelectFields(mQuery.OStream());
-	mQuery.OStream() << " order by date_start desc limit " << count;
+	mQuery.OStream() << " order by `date_start` desc limit " << count;
 	db_iterator it;
 	SetBaseTo(&mModel);
 
@@ -747,33 +804,37 @@ int cBanList::RemoveOldShortTempBans(long before)
 	long Until;
 	sTempBan *tban;
 
-	for(it = mTempNickBanlist.begin(); it != mTempNickBanlist.end();) {
+	for (it = mTempNickBanlist.begin(); it != mTempNickBanlist.end();) {
 		Hash = it.mItem->mHash;
 		tban = *it;
 		Until = tban->mUntil;
-
 		++it;
-		if(!before || (Until< before)) {
+
+		if (!before || (Until < before)) {
 			this->mTempNickBanlist.RemoveByHash(Hash);
 			delete tban;
 			tban = NULL;
 			n++;
 		}
 	}
-	for(it = mTempIPBanlist.begin(); it != mTempIPBanlist.end();) {
+
+	for (it = mTempIPBanlist.begin(); it != mTempIPBanlist.end();) {
 		Hash = it.mItem->mHash;
 		tban = *it;
 		Until = tban->mUntil;
-
 		++it;
-		if(!before || (Until< before)) {
+
+		if (!before || (Until < before)) {
 			this->mTempIPBanlist.RemoveByHash(Hash);
 			delete tban;
 			tban = NULL;
 			n++;
 		}
 	}
+
 	return n;
 }
+
 	}; // namespace nTables
+
 }; // namespace nVerliHub

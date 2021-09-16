@@ -231,19 +231,19 @@ int cFloodprotect::KickAll(cConnDC *conn)
 	return cnt;
 }
 
-bool cFloodprotect::AddConn(cConnDC *conn, short difference)
+bool cFloodprotect::AddConn(cConnDC *conn, int difference)
 {
 	if (!conn) // maybe special users, anyway, return true is safe
 		return true;
 
 	const unsigned long Hash = conn->IP2Num(); // best hash for ip is itself
-	short int Count =  mConnCounter.GetByHash(Hash);
+	long Count =  mConnCounter.GetByHash(Hash);
 
 	Count += difference;
 
 	// every user has 2 points
 
-	short limit = 2 * mCfg.mMaxUsersPerIP;
+	int limit = 2 * mCfg.mMaxUsersPerIP;
 
 	bool exists = mConnCounter.ContainsHash(Hash);
 
