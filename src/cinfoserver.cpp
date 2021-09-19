@@ -335,10 +335,11 @@ void cInfoServer::SystemInfo(ostream &os)
 	unsigned __int64 size_vm = 0, size_res = 0; // self memory sizes and cpu usage
 	double perc_cpu;
 
-/*
-#if defined HAVE_BSD && defined HAVE_LIBKVM && defined(_SC_PAGESIZE)
+#if defined HAVE_BSD //&& defined HAVE_LIBKVM && defined(_SC_PAGESIZE)
 
-	int mypid = ::getpid(); // get own pid
+	GetPsMem(size_vm, size_res);
+/*
+	const pid_t mypid = ::getpid(); // get own pid
 
 	if (mypid > 0) {
 		kvm_t *vm = kvm_open(NULL, NULL, NULL, O_RDONLY, NULL);
@@ -356,11 +357,9 @@ void cInfoServer::SystemInfo(ostream &os)
 			vm = NULL;
 		}
 	}
-
-#elif defined HAVE_LINUX
 */
 
-#if defined HAVE_LINUX
+#elif defined HAVE_LINUX
 
 	FILE *file = fopen("/proc/self/status", "r");
 
@@ -423,6 +422,64 @@ unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
 	line[len - 3] = '\0';
 	len = atoi(pos);
 	return len;
+}
+
+void cInfoServer::GetPsMem(unsigned __int64 &virt, unsigned __int64 &res)
+{
+	const pid_t mypid = ::getpid(); // get own pid
+
+	if (mypid < 1)
+		return;
+
+	ostringstream os;
+	os << "ps -o vsize= " << mypid; // virtual memory
+	FILE *pipe = popen(os.str().c_str(), "r");
+
+	if (!pipe)
+		return;
+
+	char buf[128];
+	os.str("");
+	os.clear();
+
+	try {
+		while (fgets(buf, sizeof buf, pipe) != NULL) {
+			os << buf;
+		}
+	} catch (...) {
+		pclose(pipe);
+	}
+
+	pclose(pipe);
+
+	if (os.str().size()) {
+		virt = atoi(os.str().c_str());
+		os.str("");
+		os.clear();
+	}
+
+	os << "ps -o rss= " << mypid; // resident memory
+	pipe = popen(os.str().c_str(), "r");
+
+	if (!pipe)
+		return;
+
+	memset(buf, 0, sizeof buf);
+	os.str("");
+	os.clear();
+
+	try {
+		while (fgets(buf, sizeof buf, pipe) != NULL) {
+			os << buf;
+		}
+	} catch (...) {
+		pclose(pipe);
+	}
+
+	pclose(pipe);
+
+	if (os.str().size())
+		res = atoi(os.str().c_str());
 }
 
 void cInfoServer::SetServer(cServerDC *Server)
