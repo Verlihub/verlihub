@@ -29,16 +29,30 @@ ADD_PLUGIN(ENABLE_PLUGIN plugman)
 
 OPTION(WITH_LUA "Whether to build the lua plugin or not" TRUE)
 IF(WITH_LUA)
-	Find_Package(Lua52) # Lua 5.2
+	Find_Package(Lua "5.4" EXACT)
 	#Find_Package(LuaSocket)
 
-	IF(LUA52_FOUND)
-		ADD_PLUGIN(LUA52_FOUND lua)
-	ELSE(LUA52_FOUND)
-		Find_Package(Lua51) # Lua 5.1
-		#Find_Package(LuaSocket)
-		ADD_PLUGIN(LUA51_FOUND lua)
-	ENDIF(LUA52_FOUND)
+	IF(LUA_FOUND)
+		ADD_PLUGIN(LUA_FOUND lua)
+	ELSE(LUA_FOUND)
+		Find_Package(Lua "5.3" EXACT)
+
+		IF(LUA_FOUND)
+			ADD_PLUGIN(LUA_FOUND lua)
+		ELSE(LUA_FOUND)
+			Find_Package(Lua "5.2" EXACT)
+
+			IF(LUA_FOUND)
+				ADD_PLUGIN(LUA_FOUND lua)
+			ELSE(LUA_FOUND)
+				Find_Package(Lua "5.1" EXACT)
+
+				IF(LUA_FOUND)
+					ADD_PLUGIN(LUA_FOUND lua)
+				ENDIF(LUA_FOUND)
+			ENDIF(LUA_FOUND)
+		ENDIF(LUA_FOUND)
+	ENDIF(LUA_FOUND)
 ELSE(WITH_LUA)
 	MESSAGE(STATUS "---- Cannot build lua plugin (user specified -DWITH_LUA=OFF)")
 ENDIF(WITH_LUA)
