@@ -104,7 +104,7 @@ class cInfoServer: public nConfig::cConfigBase
 
 		// helper functions
 		unsigned __int64 ParseMemSizeLine(char *line);
-		void GetPsMem(unsigned __int64 &virt, unsigned __int64 &res);
+		string ParsePsLine(pid_t pid, const string &proc, const string &what);
 };
 
 }; // namespace nVerliHub

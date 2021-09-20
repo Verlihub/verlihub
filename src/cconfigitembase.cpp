@@ -38,12 +38,12 @@ namespace nVerliHub {
 
 void cConfigItemBaseBool::ConvertFrom(const std::string &str)
 {
-	*this = (0 != atoi(str.c_str()));
+	*this = (0 != atoi(str.c_str())); // todo: is this safe?
 }
 
 void cConfigItemBaseInt::ConvertFrom(const std::string &str)
 {
-	*this = atoi(str.c_str());
+	*this = atoi(str.c_str()); // todo: is this safe?
 }
 
 void cConfigItemBaseUInt::ConvertFrom(const std::string &str)

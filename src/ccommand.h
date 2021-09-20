@@ -21,6 +21,7 @@
 #ifndef NCMDRCCOMMAND_H
 #define NCMDRCCOMMAND_H
 #include "cpcre.h"
+#include "stringutils.h"
 #include <string>
 #include <ostream>
 #include <iostream>
@@ -160,8 +161,10 @@ namespace nVerliHub {
 						virtual bool GetParInt(int index, int &dest)
 						{
 							string tmp;
-							if(!GetParStr(index, tmp))
+
+							if (!GetParStr(index, tmp) || !nUtils::IsNumber(tmp.c_str()))
 								return false;
+
 							dest = atoi(tmp.c_str());
 							return true;
 						}
@@ -175,8 +178,10 @@ namespace nVerliHub {
 						virtual bool GetParLong(int index, long &dest)
 						{
 							string tmp;
-							if(!GetParStr(index, tmp))
+
+							if (!GetParStr(index, tmp) || !nUtils::IsNumber(tmp.c_str()))
 								return false;
+
 							dest = atoi(tmp.c_str());
 							return true;
 						}

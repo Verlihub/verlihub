@@ -231,7 +231,7 @@ bool nVerliHub::nPerlPlugin::nCallback::InUserSupports(const char *nick, const c
 		return false;
 
 	std::string flag = _flag;
-	int iflag = atoi(_flag);
+	int iflag = atoi(_flag); // todo: IsNumber
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn)
