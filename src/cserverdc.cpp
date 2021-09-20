@@ -1097,7 +1097,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 #ifdef USE_BUFFER_RESERVE
 	conn->mLock.reserve(22 + 4); // better to reserve
 #endif
-	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // length = 22
+	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // length = 22, todo: EscapeChars with DCN
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));

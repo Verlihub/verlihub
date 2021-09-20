@@ -334,13 +334,23 @@ void cInfoServer::SystemInfo(ostream &os)
 
 	unsigned __int64 size_vm = 0, size_res = 0; // self memory sizes and cpu usage
 	double perc_cpu;
+	pid_t mypid;
+	string temp;
 
 #if defined HAVE_BSD //&& defined HAVE_LIBKVM && defined(_SC_PAGESIZE)
 
-	GetPsMem(size_vm, size_res);
-/*
-	const pid_t mypid = ::getpid(); // get own pid
+	mypid = ::getpid(); // get own pid
+	temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
 
+	if (temp.size())
+		size_vm = StringAsLL(temp);
+
+	temp = ParsePsLine(mypid, "", "rss"); // resident memory
+
+	if (temp.size())
+		size_res = StringAsLL(temp);
+
+/*
 	if (mypid > 0) {
 		kvm_t *vm = kvm_open(NULL, NULL, NULL, O_RDONLY, NULL);
 
@@ -367,7 +377,7 @@ void cInfoServer::SystemInfo(ostream &os)
 		int found = 0;
 		char line[128];
 
-		while (fgets(line, 128, file) != NULL) {
+		while (fgets(line, sizeof line, file) != NULL) {
 			if (strncmp(line, "VmSize:", 7) == 0) { // virtual memory
 				size_vm = ParseMemSizeLine(line);
 				found += 1;
@@ -409,77 +419,134 @@ void cInfoServer::SystemInfo(ostream &os)
 
 	os << " [*] " << autosprintf(_("CPU cores: %d"), num_cpu) << "\r\n";
 	os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n";
+
+	mypid = 0;
+	temp = ParsePsLine(0, "mysqld", "pid"); // try mysql
+	string name;
+
+	if (temp.size()) {
+		mypid = StringAsLL(temp);
+		name = "MySQL";
+
+	} else {
+		temp = ParsePsLine(0, "mariadbd", "pid"); // try mariadb
+
+		if (temp.size()) {
+			mypid = StringAsLL(temp);
+			name = "MariaDB";
+		}
+	}
+
+	if (mypid > 0) {
+		size_vm = 0;
+		size_res = 0;
+		temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
+
+		if (temp.size())
+			size_vm = StringAsLL(temp);
+
+		temp = ParsePsLine(mypid, "", "rss"); // resident memory
+
+		if (temp.size())
+			size_res = StringAsLL(temp);
+
+		os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), name.c_str(), convertByte(size_vm * 1024).c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), name.c_str(), convertByte(size_res * 1024).c_str()) << "\r\n";
+	}
+
+	if (mServer->mTLSProxy.size()) { // try proxy if enabled
+		temp.clear();
+
+		if (mServer->mAddr.size())
+			temp = mServer->mAddr;
+		else
+			temp = "0.0.0.0";
+
+		temp = "proxy .*\\-\\-hub\\=" + temp + "\\:" + StringFrom(mServer->mPort);
+		temp = ParsePsLine(0, temp, "pidf");
+
+		if (temp.size()) {
+			mypid = StringAsLL(temp);
+
+			if (mypid > 0) {
+				size_vm = 0;
+				size_res = 0;
+				temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
+
+				if (temp.size())
+					size_vm = StringAsLL(temp);
+
+				temp = ParsePsLine(mypid, "", "rss"); // resident memory
+
+				if (temp.size())
+					size_res = StringAsLL(temp);
+
+				os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), _("TLS proxy"), convertByte(size_vm * 1024).c_str()) << "\r\n";
+				os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), _("TLS proxy"), convertByte(size_res * 1024).c_str()) << "\r\n";
+			}
+		}
+	}
 }
 
 unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
 {
 	unsigned __int64 len = strlen(line);
+
+	if (len < 4) // safety first
+		return 0;
+
 	const char *pos = line;
 
 	while (((*pos) < '0') || ((*pos) > '9'))
 		pos++;
 
-	line[len - 3] = '\0';
-	len = atoi(pos);
+	line[len - 3] = '\0'; // get rid of suffix
+	len = StringAsLL(pos);
 	return len;
 }
 
-void cInfoServer::GetPsMem(unsigned __int64 &virt, unsigned __int64 &res)
+string cInfoServer::ParsePsLine(pid_t pid, const string &proc, const string &what)
 {
-	const pid_t mypid = ::getpid(); // get own pid
-
-	if (mypid < 1)
-		return;
-
+	string res;
 	ostringstream os;
-	os << "ps -o vsize= " << mypid; // virtual memory
-	FILE *pipe = popen(os.str().c_str(), "r");
 
-	if (!pipe)
-		return;
+	if (strncmp(what.c_str(), "pidf", 4) == 0) { // full pid, note: proc is not validated
+		if (proc.size())
+			os << "pgrep -f \"" << proc << '\"';
 
-	char buf[128];
-	os.str("");
-	os.clear();
+	} else if (strncmp(what.c_str(), "pid", 3) == 0) { // pid, note: proc is not validated
+		if (proc.size())
+			os << "pgrep \"" << proc << '\"';
 
-	try {
-		while (fgets(buf, sizeof buf, pipe) != NULL) {
-			os << buf;
-		}
-	} catch (...) {
-		pclose(pipe);
+	} else if ((strncmp(what.c_str(), "vsize", 5) == 0) || (strncmp(what.c_str(), "rss", 3) == 0) || (strncmp(what.c_str(), "pcpu", 3) == 0)) { // field
+		if (pid > 0)
+			os << "ps -o " << what << "= " << pid;
 	}
-
-	pclose(pipe);
 
 	if (os.str().size()) {
-		virt = atoi(os.str().c_str());
-		os.str("");
-		os.clear();
-	}
+		FILE *pipe = popen(os.str().c_str(), "r");
 
-	os << "ps -o rss= " << mypid; // resident memory
-	pipe = popen(os.str().c_str(), "r");
+		if (pipe) {
+			char buf[128];
+			os.str("");
+			os.clear();
 
-	if (!pipe)
-		return;
+			try {
+				while (fgets(buf, sizeof buf, pipe) != NULL) {
+					os << buf;
+				}
+			} catch (...) {
+				pclose(pipe);
+			}
 
-	memset(buf, 0, sizeof buf);
-	os.str("");
-	os.clear();
+			pclose(pipe);
 
-	try {
-		while (fgets(buf, sizeof buf, pipe) != NULL) {
-			os << buf;
+			if (os.str().size())
+				res = os.str();
 		}
-	} catch (...) {
-		pclose(pipe);
 	}
 
-	pclose(pipe);
-
-	if (os.str().size())
-		res = atoi(os.str().c_str());
+	return res;
 }
 
 void cInfoServer::SetServer(cServerDC *Server)

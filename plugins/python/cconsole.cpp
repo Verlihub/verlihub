@@ -319,6 +319,12 @@ bool cConsole::cfLogPythonScript::operator()()
 
 	string level;
 	GetParStr(1, level);
+
+	if (!IsNumber(level.c_str())) {
+		(*mOS) << _("Level must be a number.");
+		return true;
+	}
+
 	ostringstream ss;
 	ss << cpiPython::log_level;
 	string oldValue = ss.str();
