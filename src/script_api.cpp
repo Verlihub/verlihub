@@ -502,6 +502,9 @@ bool DeleteIPTempBan(const char *ip)
 
 bool ParseCommand(const char *nick, const char *cmd, int pm)
 {
+	if (!nick || !cmd)
+		return false;
+
 	cServerDC *serv = GetCurrentVerlihub();
 
 	if (!serv) {

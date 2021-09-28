@@ -96,7 +96,7 @@ class cDCProto : public cProtocol
 	* flag = Message is sent in PM or MC.
 	* return = 1 if the message is a command otherwise 0.
 	*/
-	int ParseForCommands(string &, nSocket::cConnDC *, int);
+	virtual int ParseForCommands(string &cmd, nSocket::cConnDC *conn, int pm);
 
 	/**
 	* Process a given protocol message that has been already parsed.

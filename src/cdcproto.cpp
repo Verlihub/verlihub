@@ -4065,7 +4065,7 @@ int cDCProto::NickList(cConnDC *conn)
 
 int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 {
-	if (text.empty())
+	if (text.empty() || !conn || !conn->mpUser)
 		return 0;
 
 	ostringstream omsg;
