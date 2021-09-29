@@ -90,11 +90,11 @@ class cDCProto : public cProtocol
 	int NickList(nSocket::cConnDC *);
 
 	/*
-	* Check if the message is a command and pass it to the console.
-	* msg = The message.
-	* conn = User connection.
-	* flag = Message is sent in PM or MC.
-	* return = 1 if the message is a command otherwise 0.
+	* check if the message is a command and pass it to the console
+	* cmd - the command
+	* conn - user connection
+	* pm - command is sent in pm
+	* return - 1 if the message is a command otherwise 0
 	*/
 	virtual int ParseForCommands(string &cmd, nSocket::cConnDC *conn, int pm);
 
