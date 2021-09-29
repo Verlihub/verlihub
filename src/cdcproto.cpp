@@ -4068,20 +4068,25 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 	if (text.empty() || !conn || !conn->mpUser)
 		return 0;
 
+	string cmd(text);
+
+	if (cmd.empty())
+		return 0;
+
 	ostringstream omsg;
 
 	// operator commands
 
-	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.cmd_start_op.find_first_of(text[0]) != string::npos)) {
+	if ((conn->mpUser->mClass >= eUC_OPERATOR) && (mS->mC.cmd_start_op.find_first_of(cmd[0]) != string::npos)) {
 		#ifndef WITHOUT_PLUGINS
-		if (mS->mCallBacks.mOnHubCommand.CallAll(conn, &text, 1, pm) && mS->mCallBacks.mOnOperatorCommand.CallAll(conn, &text))
+		if (mS->mCallBacks.mOnHubCommand.CallAll(conn, &cmd, 1, pm) && mS->mCallBacks.mOnOperatorCommand.CallAll(conn, &cmd))
 		#endif
 		{
-			if (!mS->mCo->OpCommand(text, conn) && !mS->mCo->UsrCommand(text, conn)) {
+			if (!mS->mCo->OpCommand(cmd, conn) && !mS->mCo->UsrCommand(cmd, conn)) {
 				if (mS->mC.unknown_cmd_chat)
 					return 0;
 
-				omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
+				omsg << autosprintf(_("Unknown hub command: %s"), cmd.c_str());
 				mS->DCPublicHS(omsg.str(), conn);
 			}
 		}
@@ -4091,16 +4096,16 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 
 	// user commands
 
-	if (mS->mC.cmd_start_user.find_first_of(text[0]) != string::npos) {
+	if (mS->mC.cmd_start_user.find_first_of(cmd[0]) != string::npos) {
 		#ifndef WITHOUT_PLUGINS
-		if (mS->mCallBacks.mOnHubCommand.CallAll(conn, &text, 0, pm) && mS->mCallBacks.mOnUserCommand.CallAll(conn, &text))
+		if (mS->mCallBacks.mOnHubCommand.CallAll(conn, &cmd, 0, pm) && mS->mCallBacks.mOnUserCommand.CallAll(conn, &cmd))
 		#endif
 		{
-			if (!mS->mCo->UsrCommand(text, conn)) {
+			if (!mS->mCo->UsrCommand(cmd, conn)) {
 				if (mS->mC.unknown_cmd_chat)
 					return 0;
 
-				omsg << autosprintf(_("Unknown hub command: %s"), text.c_str());
+				omsg << autosprintf(_("Unknown hub command: %s"), cmd.c_str());
 				mS->DCPublicHS(omsg.str(), conn);
 			}
 		}

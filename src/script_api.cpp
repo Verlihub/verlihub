@@ -517,7 +517,7 @@ bool ParseCommand(const char *nick, const char *cmd, int pm)
 	if (!usr || !usr->mxConn)
 		return false;
 
-	string command(cmd);
+	static string command(cmd);
 	serv->mP.ParseForCommands(command, usr->mxConn, pm);
 	return true;
 }
