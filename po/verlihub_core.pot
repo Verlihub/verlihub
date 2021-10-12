@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2021-09-20 19:33+0200\n"
+"POT-Creation-Date: 2021-10-12 17:45+0200\n"
 "PO-Revision-Date: 2016-03-11 20:28+0100\n"
 "Last-Translator: Frog <the_frog@wp.pl>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -738,7 +738,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:831 ../src/cdcconsole.cpp:832
 #: ../src/cdcconsole.cpp:3452 ../src/cdcconsole.cpp:3453
-#: ../src/script_api.cpp:732 ../src/script_api.cpp:733
+#: ../src/script_api.cpp:735 ../src/script_api.cpp:736
 msgid "You have been unregistered."
 msgstr ""
 
@@ -1397,7 +1397,7 @@ msgstr ""
 msgid "User is already registered: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3408 ../src/script_api.cpp:686
+#: ../src/cdcconsole.cpp:3408 ../src/script_api.cpp:689
 #, c-format
 msgid "You have been registered with class %d. Please set your password by using following command: +passwd <password>"
 msgstr ""
@@ -1434,7 +1434,7 @@ msgstr ""
 msgid "You can change your password now. Use the +passwd command followed by your new password."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3558 ../src/script_api.cpp:792
+#: ../src/cdcconsole.cpp:3558 ../src/script_api.cpp:795
 #, c-format
 msgid "Your class has been changed to %d."
 msgstr ""
@@ -1674,7 +1674,7 @@ msgstr ""
 msgid "Same message flood in MCTo: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:1922 ../src/cdcproto.cpp:4153
+#: ../src/cdcproto.cpp:1922 ../src/cdcproto.cpp:4158
 #, c-format
 msgid "Your chat message contains %d characters but maximum allowed is %d characters."
 msgstr ""
@@ -1906,12 +1906,12 @@ msgstr ""
 msgid "Nick spoofing attempt detected from your client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4084 ../src/cdcproto.cpp:4103
+#: ../src/cdcproto.cpp:4089 ../src/cdcproto.cpp:4108
 #, c-format
 msgid "Unknown hub command: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4161
+#: ../src/cdcproto.cpp:4166
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr ""
@@ -2260,7 +2260,7 @@ msgstr ""
 
 #: ../src/cinfoserver.cpp:302
 #, c-format
-msgid "Total processes: %d"
+msgid "Total processes inclusive threads: %d"
 msgstr ""
 
 #: ../src/cinfoserver.cpp:312
