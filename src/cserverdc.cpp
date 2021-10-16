@@ -2270,7 +2270,7 @@ int cServerDC::DoCheckForUpdates(bool git, string reply)
 
 	if (code == 100) { // success
 		os << autosprintf(_("New version of Verlihub is available for compilation: %s"), ver.c_str()) << "\r\n\r\n";
-		os << ' ' << autosprintf(_("For developer version perform following command in your local Git repository in order to update files: %s"), _("git pull")) << "\r\n";
+		os << ' ' << autosprintf(_("For developer version perform following command in your local Git repository in order to update files: %s"), "git pull") << "\r\n";
 		os << ' ' << autosprintf(_("For stable version visit following page and download latest release archive in order to update files: %s"), "https://github.com/verlihub/verlihub/releases/") << "\r\n";
 	}
 
