@@ -665,7 +665,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
 	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang)\r\n\r\n";
-	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub-100/\r\n\r\n";
+	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n\r\n";
 	os << " [*] " << _("Contributors") << ":\r\n\r\n";
 	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
 	os << " [*] " << _("Credits") << ":\r\n\r\n";
@@ -675,7 +675,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << "Git" << ": https://github.com/verlihub/verlihub/\r\n";
 	os << "\t" << _("Wiki") << ": https://github.com/verlihub/verlihub/wiki/\r\n";
 	os << "\t" << _("Crash") << ": https://crash.verlihub.net/\r\n";
-	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub-100/\r\n";
+	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n";
 	os << "\t" << "Ledokol" << ": https://ledo.feardc.net/\r\n";
 	os << "\t" << "MMDB" << ": https://ledo.feardc.net/mmdb/\r\n";
 	os << "\t" << _("Proxy") << ": https://github.com/verlihub/tls-proxy/\r\n";
