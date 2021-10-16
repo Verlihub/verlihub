@@ -27,7 +27,7 @@ Links
   * Website: https://github.com/verlihub/
   * Wiki: https://github.com/verlihub/verlihub/wiki/
   * Crash: https://crash.verlihub.net/
-  * Translate: https://transifex.com/feardc/verlihub-100/
+  * Translate: https://transifex.com/feardc/verlihub/
   * Ledokol: https://ledo.feardc.net/
   * MMDB: https://ledo.feardc.net/mmdb/
   * Proxy: https://github.com/verlihub/tls-proxy/
