@@ -61,6 +61,30 @@ protected:
 	Typ2 mPar2;
 	Typ3 mPar3;
 };
+
+template<class ClassType, class Typ1, class Typ2> class tThreadWork2T: public cThreadWork
+{
+public:
+	typedef int(ClassType::*tT2Callback)(Typ1, Typ2);
+
+	tThreadWork2T(Typ1 const &par1, Typ2 const &par2, ClassType *object, tT2Callback cb):
+		mCB(cb),
+		mObject(object),
+		mPar1(par1),
+		mPar2(par2)
+	{}
+
+	virtual int DoTheWork()
+	{
+		return (mObject->*mCB)(mPar1, mPar2);
+	}
+protected:
+	tT2Callback mCB;
+	ClassType *mObject;
+	Typ1 mPar1;
+	Typ2 mPar2;
+};
+
 	}; // namespace nThread
 }; // namespace nVerliHub
 

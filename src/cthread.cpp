@@ -36,14 +36,11 @@ cThread::cThread()
 
 cThread::~cThread()
 {
-	void * status;
-
+	void *status;
 	mStop = 1;
 
-	if ( mRun == 1 )
-	{
+	if (mRun == 1)
 		pthread_join(mThread, &status);
-	}
 }
 
 /*
@@ -53,42 +50,42 @@ bool cThread::Stopped() const
 }
 */
 
-/** */
 int cThread::Start()
 {
-	if (mRun || !mStop) return -1;
-	mStop = 0;
+	if (mRun || !mStop)
+		return -1;
 
+	mStop = 0;
 	return pthread_create(&mThread, 0, (tThreadFunc)ThreadFunc, this);
 }
 
-/** */
-int cThread::Stop( bool BeHard )
+int cThread::Stop(bool BeHard)
 {
-	void * status;
+	void *status;
 
-	if (!mRun || mStop) return -1;
-	mStop=1;
+	if (!mRun || mStop)
+		return -1;
 
-	if ( BeHard ) pthread_join(mThread,&status);
+	mStop = 1;
+
+	if (BeHard)
+		pthread_join(mThread, &status);
+
 	return 0;
 }
 
 void *cThread::ThreadFunc(void *obj)
 {
-	cThread *This = (cThread *)obj;
+	cThread *This = (cThread*)obj;
 	This->mRun = 1;
-	while(!This->mStop) // infinite lop, can be stopped only by deleting instance
-	{
-		if  (This->HasSomethingToDo())
-		{
+
+	while (!This->mStop) { // infinite loop, can be stopped only by deleting instance
+		if (This->HasSomethingToDo())
 			This->DoSomething();
-		}
 		else
-		{
 			usleep(1000);
-		}
 	}
+
 	This->mRun = 0;
 	return obj;
 }

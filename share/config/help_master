@@ -1,5 +1,9 @@
 [*] Master with class 10:
 
+ [*] Update check:
+
+	!update					- Check for updates
+
  [*] Hublist registration:
 
 	!hublist					- Register on hublists

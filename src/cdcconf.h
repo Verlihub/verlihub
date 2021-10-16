@@ -157,6 +157,7 @@ public:
 	unsigned int hublist_port;
 	bool hublist_send_minshare;
 	bool hublist_send_listhost;
+	bool update_check_git;
 	// checking preferences
 	unsigned int classdif_reg;
 	//unsigned int classdif_search;
