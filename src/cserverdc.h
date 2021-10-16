@@ -424,6 +424,10 @@ class cServerDC : public cAsyncSocketServer
 		*/
 		int RegisterInHublist(string host, unsigned int port, cConnDC *conn);
 
+		// update check
+		int DoCheckForUpdates(bool git, string reply = "");
+		int CheckForUpdates(bool git, cConnDC *conn = NULL);
+
 		/**
 		* Report an user to opchat.
 		* @param conn User connection.
@@ -624,11 +628,8 @@ class cServerDC : public cAsyncSocketServer
 		string LastBCNick;
 		// Network output log
 		ofstream mNetOutLog;
-		// Hublist registration thread
-
-		//#ifndef _WIN32 // todo: implement worker thread on windows
-			cWorkerThread mHublistReg;
-		//#endif
+		cWorkerThread mHublistReg; // hublist registration thread
+		cWorkerThread mUpdateCheck; // update check thread
 
 		// traffic frequency for all zones
 		cMeanFrequency<unsigned long, 10> mUploadZone[USER_ZONES + 1];
@@ -824,8 +825,8 @@ public:
 	cTime mStartTime;
 	// Timer that deletes temp bans
 	cTimeOut mSlowTimer;
-	// Timer that periodically registers the hub to hublists
-	cTimeOut mHublistTimer;
+	cTimeOut mHublistTimer; // hublist registration timer
+	cTimeOut mUpdateTimer; // update check timer
 	// Timer that reloads hub configuration
 	cTimeOut mReloadcfgTimer;
 	// Plugin manager

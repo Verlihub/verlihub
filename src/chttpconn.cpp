@@ -148,6 +148,26 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	return Write(send.str()) > 0;
 }
 
+bool cHTTPConn::ParseReply(string &repl)
+{
+	if (Read() <= 0)
+		return false;
+
+	string data(mBuf.data());
+
+	if (data.empty())
+		return false;
+
+	size_t pos = data.find("\r\n\r\n"); // skip headers for now
+
+	if (pos == data.npos)
+		return false;
+
+	data.erase(0, pos + 4);
+	repl = data;
+	return true;
+}
+
 int cHTTPConn::Write(const string &data)
 {
 	const size_t dasi = data.size();

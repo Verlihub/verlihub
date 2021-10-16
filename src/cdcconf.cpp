@@ -76,8 +76,13 @@ void cDCConf::AddVars()
 	Add("hublist_port", hublist_port, 2501);
 	Add("hublist_send_minshare", hublist_send_minshare, true);
 	Add("hublist_send_listhost", hublist_send_listhost, true);
-	Add("timer_hublist_period", mS.mHublistTimer.mMinDelay.tv_sec, (__typeof__(mS.mHublistTimer.mMinDelay.tv_sec)) 3 * 3600);
+	Add("timer_hublist_period", mS.mHublistTimer.mMinDelay.tv_sec, (__typeof__(mS.mHublistTimer.mMinDelay.tv_sec)) 6 * 3600);
 	// end hublist configuration
+
+	// begin update check configuration
+	Add("update_check_git", update_check_git, false);
+	Add("update_check_period", mS.mUpdateTimer.mMinDelay.tv_sec, (__typeof__(mS.mUpdateTimer.mMinDelay.tv_sec)) 12 * 3600);
+	// end of section
 
 	// Max users configuration
 	Add("max_users",max_users_total,6000);

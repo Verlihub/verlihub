@@ -23,34 +23,36 @@
 namespace nVerliHub {
 	namespace nThread {
 
-cWorkerThread::cWorkerThread() : mWork(NULL)
+cWorkerThread::cWorkerThread():
+	mWork(NULL)
 {}
-
 
 cWorkerThread::~cWorkerThread()
 {
 	Stop(true);
-	if (mWork)
-	{
+
+	if (mWork) {
 		delete mWork;
 		mWork = NULL;
 	}
-
 }
 
 bool cWorkerThread::AddWork(cThreadWork *theWork)
 {
 	bool Result = false;
-	if (TryLock())
-	{
-		if (!mWork)
-		{
+
+	if (TryLock()) {
+		if (!mWork) {
 			mWork = theWork;
 			Result = true;
 		}
+
 		UnLock();
 	}
-	if(Result) Start();
+
+	if (Result)
+		Start();
+
 	return Result;
 }
 
@@ -61,11 +63,10 @@ bool cWorkerThread::HasSomethingToDo()
 
 /*!
     \fn nThreads::cWorkerThread::Thread(cObj *)
- */
+*/
 void cWorkerThread::DoSomething()
 {
-	if (mWork != NULL)
-	{
+	if (mWork != NULL) {
 		mWork->DoTheWork();
 		delete mWork;
 		mWork = NULL;

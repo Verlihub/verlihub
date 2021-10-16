@@ -87,8 +87,9 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mTotalShare(0),
 	mTotalSharePeak(0),
 	mSlowTimer(30.0, 0.0, mTime),
-	mHublistTimer(0.0,0.0, mTime),
-	mReloadcfgTimer(0.0,0.0,mTime),
+	mHublistTimer(0.0, 0.0, mTime),
+	mUpdateTimer(0.0, 0.0, mTime),
+	mReloadcfgTimer(0.0, 0.0,mTime),
 	mPluginManager(this, CfgBase + "/plugins"),
 	mCallBacks(&mPluginManager)
 {
@@ -1877,8 +1878,11 @@ int cServerDC::OnTimer(const cTime &now)
 	if (bool(mSlowTimer.mMinDelay) && (mSlowTimer.Check(mTime, 1) == 0))
 		mBanList->RemoveOldShortTempBans(mTime.Sec());
 
-	if (bool(mHublistTimer.mMinDelay) && (mHublistTimer.Check(mTime, 1) == 0))
+	if (bool(mHublistTimer.mMinDelay) && (mHublistTimer.Check(mTime, 1) == 0) && mC.hublist_host.size()) // hublist registration
 		this->RegisterInHublist(mC.hublist_host, mC.hublist_port, NULL);
+
+	if (bool(mUpdateTimer.mMinDelay) && (mUpdateTimer.Check(mTime, 1) == 0)) // update check
+		this->CheckForUpdates(mC.update_check_git);
 
 	if (mReloadNow) // reload now
 		this->ReloadNow();
@@ -2168,6 +2172,150 @@ int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 		work = NULL;
 		return 0;
 	}
+}
+
+int cServerDC::DoCheckForUpdates(bool git, string reply)
+{
+	cHTTPConn *pConn;
+	pConn = new cHTTPConn("ledo.feardc.net", 80); // connect
+	unsigned int code = 0;
+	string ver;
+
+	if (pConn->mGood) {
+		if (pConn->Request("", (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"), "", "")) {
+			string data;
+
+			if (pConn->ParseReply(data) && (data.size() >= 7) && (data.size() <= 19)) { // we are expecting 1.22.333.4444
+				ver = data;
+				string sv1, sv2, sv3, sv4;
+				size_t pos = data.find('.'); // v1
+
+				if (pos != data.npos) {
+					sv1 = data.substr(0, pos);
+
+					if (sv1.size() && nUtils::IsNumber(sv1.c_str())) {
+						data = data.substr(pos + 1);
+						pos = data.find('.'); // v2
+
+						if (pos != data.npos) {
+							sv2 = data.substr(0, pos);
+
+							if (sv2.size() && nUtils::IsNumber(sv2.c_str())) {
+								data = data.substr(pos + 1);
+								pos = data.find('.'); // v3
+
+								if (pos != data.npos) {
+									sv3 = data.substr(0, pos);
+
+									if (sv3.size() && nUtils::IsNumber(sv3.c_str())) {
+										sv4 = data.substr(pos + 1); // v4
+
+										if (sv4.size() && nUtils::IsNumber(sv4.c_str())) {
+											int iv1 = atoi(sv1.c_str()), iv2 = atoi(sv2.c_str()), iv3 = atoi(sv3.c_str()), iv4 = atoi(sv4.c_str());
+
+											if (
+												(iv1 > HUB_VERSION_A) // v1
+													|| ((iv1 == HUB_VERSION_A) && (iv2 > HUB_VERSION_B)) // v2
+														|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 > HUB_VERSION_C)) // v3
+															|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 == HUB_VERSION_C) && (iv4 > HUB_VERSION_D)) // v4
+											) // higher version
+												code = 100;
+											else // lower or same version
+												code = 50;
+
+										} else { // bad data
+											code = 10;
+										}
+
+									} else { // bad data
+										code = 9;
+									}
+
+								} else { // bad data
+									code = 8;
+								}
+
+							} else { // bad data
+								code = 7;
+							}
+
+						} else { // bad data
+							code = 6;
+						}
+
+					} else { // bad data
+						code = 5;
+					}
+
+				} else { // bad data
+					code = 4;
+				}
+
+			} else { // bad data
+				code = 3;
+			}
+
+		} else { // send error
+			code = 2;
+		}
+
+	} else { // connection error
+		code = 1;
+	}
+
+	pConn->Close();
+	delete pConn;
+	pConn = NULL;
+	ostringstream os;
+
+	if (code == 100) { // success
+		os << autosprintf(_("New version of Verlihub is available for compilation: %s"), ver.c_str()) << "\r\n\r\n";
+		os << ' ' << autosprintf(_("For developer version perform following command in your local Git repository in order to update files: %s"), _("git pull")) << "\r\n";
+		os << ' ' << autosprintf(_("For stable version visit following page and download latest release archive in order to update files: %s"), "https://github.com/verlihub/verlihub/releases/") << "\r\n";
+	}
+
+	if (reply.size()) {
+		cUser *user = mUserList.GetUserByNick(reply);
+
+		if (user && user->mxConn) { // only to user
+			if (code == 50)
+				os << _("Your version of Verlihub is currently up to date.");
+			else if (code == 1)
+				os << _("Failed connecting to update server.");
+			else if (code == 2)
+				os << _("Failed sending request to update server.");
+			else if ((code >= 3) && (code < 50))
+				os << autosprintf(_("Failed parsing reply from update server with code: %d"), code);
+
+			DCPublicHS(os.str(), user->mxConn);
+		}
+
+	} else if ((code == 100) && this->mOpChat) { // only if available
+		this->mOpChat->SendPMToAll(os.str(), NULL);
+	}
+
+	return 1;
+}
+
+int cServerDC::CheckForUpdates(bool git, cConnDC *conn)
+{
+	string reply;
+
+	if (conn) {
+		DCPublicHS(_("Checking for updates, please wait."), conn);
+
+		if (conn->mpUser)
+			reply = conn->mpUser->mNick;
+	}
+
+	cThreadWork *work = new tThreadWork2T<cServerDC, bool, string>(git, reply, this, &cServerDC::DoCheckForUpdates);
+
+	if (mUpdateCheck.AddWork(work))
+		return 1;
+
+	delete work;
+	work = NULL;
+	return 0;
 }
 
 unsigned int cServerDC::WhoCC(const string &cc, string &dest, const string &sep)

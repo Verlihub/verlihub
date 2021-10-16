@@ -173,6 +173,12 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 				mOwner->RegisterInHublist(mOwner->mC.hublist_host, mOwner->mC.hublist_port, conn);
 				return 1;
 			}
+
+			if (cmdid == "update") {
+				mOwner->CheckForUpdates(mOwner->mC.update_check_git, conn);
+				return 1;
+			}
+
 		case eUC_ADMIN:
 			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
 			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);

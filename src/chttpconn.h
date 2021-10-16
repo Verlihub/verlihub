@@ -61,6 +61,7 @@ namespace nVerliHub {
 				int SetOpt(int name, const void *val, int len, int sock = 0);
 				int Write(const string &data);
 				bool Request(const string &meth, const string &req, const string &head, const string &data);
+				bool ParseReply(string &repl);
 				int Read();
 				void Close();
 				void CloseNice(int msec = 0);
