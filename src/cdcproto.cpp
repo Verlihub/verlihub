@@ -440,7 +440,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if (((feature.size() == 6) && (StrCompare(feature, 0, 6, "ZPipe0") == 0)) || ((feature.size() == 5) && (StrCompare(feature, 0, 5, "ZPipe") == 0))) {
 			conn->mFeatures |= eSF_ZLIB;
 			conn->mZLibFlag = true;
-			pars.append("ZPipe "); // send even if disabled, we might want to turn it on any time, also we are no longer testing it
+			pars.append("ZPipe0 "); // send even if disabled, we might want to turn it on any time, todo: which clients actually use ZPipe without 0?
 
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "ChatOnly") == 0)) {
 			conn->mFeatures |= eSF_CHATONLY;
