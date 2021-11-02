@@ -146,6 +146,9 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 
 			ReplaceVarInString(buf, "IP", buf, conn->AddrIP());
 			ReplaceVarInString(buf, "TLS", buf, ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer : _("No")));
+			ReplaceVarInString(buf, "CLI_TLS", buf, (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No")));
+			ReplaceVarInString(buf, "CLI_NAT", buf, (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No")));
+			ReplaceVarInString(buf, "MODE", buf, (conn->mpUser->mPassive ? _("Passive") : _("Active")));
 			ReplaceVarInString(buf, "HOST", buf, conn->AddrHost());
 			ReplaceVarInString(buf, "NICK", buf, conn->mpUser->mNick);
 			ReplaceVarInString(buf, "SHARE", buf, convertByte(conn->mpUser->mShare));
@@ -199,7 +202,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 	if (mFlags & eTF_SENDTOALL) { // to all
 		if (mFlags & eTF_SENDPM) { // pm
 			string start, end;
-			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
+			server.mP.Create_PMForBroadcast(start, end, sender, sender, buf);
 
 			if (mFlags & eTF_VARS) // use vars
 				server.SendToAllWithNickVars(start, end, this->mMinClass, this->mMaxClass);
@@ -209,7 +212,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 		} else { // mc
 			if (mFlags & eTF_VARS) { // use vars
 				string msg;
-				server.mP.Create_Chat(msg, sender, buf, false); // dont reserve for pipe, buffer is copied before sending
+				server.mP.Create_Chat(msg, sender, buf);
 				server.SendToAllNoNickVars(msg, this->mMinClass, this->mMaxClass);
 				server.OnPublicBotMessage(&sender, &buf, this->mMinClass, this->mMaxClass); // todo: make it discardable if needed
 

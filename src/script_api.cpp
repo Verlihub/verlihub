@@ -67,8 +67,7 @@ bool SendDataToUser(const char *data, const char *nick, bool delay)
 		return false;
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	user->mxConn->Send(omsg, pipe, !delay);
+	user->mxConn->Send(omsg, CheckDataPipe(omsg), !delay);
 	return true;
 }
 
@@ -85,8 +84,7 @@ bool SendToClass(const char *data, int min_class, int max_class, bool delay)
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
+	serv->mUserList.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -103,8 +101,7 @@ bool SendToAll(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mUserList.SendToAll(omsg, delay, pipe);
+	serv->mUserList.SendToAll(omsg, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -121,8 +118,7 @@ bool SendToActive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mActiveUsers.SendToAll(omsg, delay, pipe);
+	serv->mActiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -139,8 +135,7 @@ bool SendToActiveClass(const char *data, int min_class, int max_class, bool dela
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
+	serv->mActiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -157,8 +152,7 @@ bool SendToPassive(const char *data, bool delay)
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mPassiveUsers.SendToAll(omsg, delay, pipe);
+	serv->mPassiveUsers.SendToAll(omsg, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -175,8 +169,7 @@ bool SendToPassiveClass(const char *data, int min_class, int max_class, bool del
 	}
 
 	string omsg(data);
-	const bool pipe = CheckDataPipe(omsg);
-	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, pipe);
+	serv->mPassiveUsers.SendToAllWithClass(omsg, min_class, max_class, delay, CheckDataPipe(omsg));
 	return true;
 }
 
@@ -193,7 +186,7 @@ bool SendPMToAll(const char *data, const char *from, int min_class, int max_clas
 	}
 
 	string start, end;
-	serv->mP.Create_PMForBroadcast(start, end, from, from, data, false); // dont reserve for pipe, buffer is copied before sending
+	serv->mP.Create_PMForBroadcast(start, end, from, from, data);
 	serv->SendToAllWithNick(start, end, min_class, max_class);
 	return true;
 }
@@ -211,7 +204,7 @@ bool SendToChat(const char *nick, const char *text, int min_class, int max_class
 	}
 
 	string omsg;
-	serv->mP.Create_Chat(omsg, nick, text, true); // reserve for pipe
+	serv->mP.Create_Chat(omsg, nick, text);
 	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true);
 	return true;
 }
@@ -380,9 +373,9 @@ const char *GetMyINFO(const char *nick)
 	cUser *usr = GetUser(nick);
 
 	if (usr)
-		return usr->mMyINFO.c_str();
-	else
-		return "";
+		return usr->mFakeMyINFO.c_str();
+
+	return "";
 }
 
 int GetUserClass(const char *nick)
@@ -444,6 +437,46 @@ bool SetUserIP(const char *nick, const char *ip)
 		return false;
 
 	user->mxConn->ResetGeo();
+	return true;
+}
+
+bool SetMyINFOFlag(const char *nick, const unsigned int flag)
+{
+	if (!nick || (flag < 1))
+		return false;
+
+	if (!((flag == eMF_NORM) || (flag == eMF_AWAY) || (flag == eMF_SERV) || (flag == eMF_FIRE) || (flag == eMF_TLS) || (flag == eMF_NAT))) // check supported flags
+		return false;
+
+	cUser *user = GetUser(nick);
+
+	if (!user || !user->mxConn)
+		return false;
+
+	if (user->GetMyFlag(flag)) // is already set
+		return true;
+
+	user->SetMyFlag(flag); // set it
+	return true;
+}
+
+bool UnsetMyINFOFlag(const char *nick, const unsigned int flag)
+{
+	if (!nick || (flag < 1))
+		return false;
+
+	if (!((flag == eMF_NORM) || (flag == eMF_AWAY) || (flag == eMF_SERV) || (flag == eMF_FIRE) || (flag == eMF_TLS) || (flag == eMF_NAT))) // check supported flags
+		return false;
+
+	cUser *user = GetUser(nick);
+
+	if (!user || !user->mxConn)
+		return false;
+
+	if (!user->GetMyFlag(flag)) // is already unset
+		return true;
+
+	user->UnsetMyFlag(flag); // unset it
 	return true;
 }
 
@@ -583,7 +616,7 @@ const char* __GetNickList()
 
 	if (server) {
 		string list;
-		server->mUserList.GetNickList(list, false);
+		server->mUserList.GetNickList(list);
 		return strdup(list.c_str());
 	}
 
@@ -696,7 +729,7 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 		if ((clas >= serv->mC.oplist_class) && !serv->mOpList.ContainsHash(user->mNickHash)) { // oplist
 			serv->mOpList.AddWithHash(user, user->mNickHash);
 
-			serv->mP.Create_OpList(data, user->mNick, true); // send short oplist, reserve for pipe
+			serv->mP.Create_OpList(data, user->mNick); // send short oplist
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 		}
 
@@ -741,15 +774,9 @@ bool DelRegUser(const char *nick)
 		if (serv->mOpList.ContainsHash(user->mNickHash)) { // oplist, only if user is there
 			serv->mOpList.RemoveByHash(user->mNickHash);
 
-			serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
+			serv->mP.Create_Quit(data, user->mNick); // send quit to all
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-			if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-				data.reserve(user->mMyINFO.size() + 1);
-#endif
-
-			data = user->mMyINFO;
+			data = user->mFakeMyINFO;
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 			serv->ShowUserIP(user->mxConn); // send userip to operators
 		}
@@ -809,7 +836,7 @@ bool SetRegClass(const char *nick, int clas)
 			if (!ui.mHideKeys && !serv->mOpList.ContainsHash(user->mNickHash)) {
 				serv->mOpList.AddWithHash(user, user->mNickHash);
 
-				serv->mP.Create_OpList(data, user->mNick, true); // send short oplist, reserve for pipe
+				serv->mP.Create_OpList(data, user->mNick); // send short oplist
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 			}
 
@@ -817,15 +844,9 @@ bool SetRegClass(const char *nick, int clas)
 			if (!ui.mHideKeys && serv->mOpList.ContainsHash(user->mNickHash)) {
 				serv->mOpList.RemoveByHash(user->mNickHash);
 
-				serv->mP.Create_Quit(data, user->mNick, true); // send quit to all, reserve for pipe
+				serv->mP.Create_Quit(data, user->mNick); // send quit to all
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-				if (data.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-					data.reserve(user->mMyINFO.size() + 1);
-#endif
-
-				data = user->mMyINFO;
+				data = user->mFakeMyINFO;
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
 				serv->ShowUserIP(user->mxConn); // send userip to operators
 			}
@@ -902,15 +923,10 @@ int CheckBotNick(const string &nick)
 	return 1;
 }
 
-bool CheckDataPipe(string &data)
+bool CheckDataPipe(const string &data)
 {
 	if (data.size() && (data[data.size() - 1] == '|'))
 		return false;
-
-#ifdef USE_BUFFER_RESERVE
-	if (data.capacity() < (data.size() + 1)) // reserve for pipe
-		data.reserve(data.size() + 1);
-#endif
 
 	return true;
 }

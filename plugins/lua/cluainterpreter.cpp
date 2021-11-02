@@ -100,6 +100,8 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetUserHost", &_GetUserHost);
 	RegisterFunction("GetUserIP", &_GetUserIP);
 	RegisterFunction("SetUserIP", &_SetUserIP);
+	RegisterFunction("SetMyINFOFlag", &_SetMyINFOFlag);
+	RegisterFunction("UnsetMyINFOFlag", &_UnsetMyINFOFlag);
 	RegisterFunction("IsSecConn", &_IsSecConn);
 	RegisterFunction("GetTLSVer", &_GetTLSVer);
 	RegisterFunction("IsUserOnline", &_IsUserOnline);
@@ -212,7 +214,7 @@ void cLuaInterpreter::ReportLuaError(const char *error)
 		toall.append(_("Unknown error"));
 
 	string start, end;
-	serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall, false); // dont reserve for pipe, buffer is copied before adding pipe
+	serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
 	serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
 	cpiLua::me->ReportLuaError(toall); // also write to err file
 }

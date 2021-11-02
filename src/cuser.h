@@ -99,8 +99,12 @@ namespace nVerliHub {
 
 		typedef enum // myinfo flags
 		{
-			eMF_TLS = 0x10, // tls download support
-			eMF_NAT = 0x20 // nat/tls upload support
+			eMF_NORM = 0x01,
+			eMF_AWAY = 0x02,
+			eMF_SERV = 0x04,
+			eMF_FIRE = 0x08,
+			eMF_TLS = 0x10, // tls support
+			eMF_NAT = 0x20 // nat support
 		} tMyFlags;
 	};
 
@@ -131,20 +135,13 @@ public:
 	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
 public:
-	// users myinfo parts
 	string mNick;
+	string mMyINFO; // real myinfo used only for comparing
+	string mFakeMyINFO; // we send only this modified myinfo
 
 	// store user nick hash and use it as much as possible instead of nick
 	typedef unsigned long tHashType;
 	tHashType mNickHash;
-
-	/*
-	string mDescStr; // todo: dont define unless actually used
-	string mTagStr;
-	string mConnStr;
-	string mMailStr;
-	*/
-	string mMyINFO;
 
 	// users class
 	nEnums::tUserCl mClass;
@@ -173,6 +170,11 @@ public:
 	virtual bool HasFeature(unsigned feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
 
+	// client flag in myinfo
+	bool GetMyFlag(unsigned short flag) const { return (mMyFlag & flag) == flag; }
+	void SetMyFlag(unsigned short flag) { mMyFlag |= flag; }
+	void UnsetMyFlag(unsigned short flag) { mMyFlag &= ~flag; }
+
 	/** check for the right to ... */
 	inline int HaveRightTo(unsigned int mask){ return mRights & mask; }
 	/** return tru if user needs a password and the password is correct */
@@ -186,8 +188,7 @@ public:
 	/* Pointer to the srever (this pointer must never be deleted) */
 	nSocket::cServerDC *mxServer;
 
-	// client flag in myinfo
-	unsigned int mMyFlag;
+	unsigned short mMyFlag; // status flag in myinfo
 	bool mPassive; // user is in passive mode
 	bool mLan; // user has lan ip
 

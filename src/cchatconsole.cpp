@@ -180,7 +180,7 @@ bool cChatConsole::cfMembers::operator()()
 		return false;
 
 	string NickList;
-	GetTheList()->GetNickList(NickList, false);
+	GetTheList()->GetNickList(NickList);
 	(*mOS) << _("Chatroom members") << ":\r\n\r\n" << NickList;
 	return true;
 }

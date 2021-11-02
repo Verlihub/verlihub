@@ -567,17 +567,28 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << autosprintf(_("Category: %s"), (mServer->mC.hub_category.size() ? mServer->mC.hub_category.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Locale: %s"), (mServer->mDBConf.locale.size() ? mServer->mDBConf.locale.c_str() : _("Not set"))) << "\r\n\r\n";
 
-	unsigned int contot = 0, consec = 0;
+	unsigned int contot = 0, consec = 0, contls = 0, connat = 0;
 	cAsyncConn *conn;
+	cUser *user;
 
 	for (cUserCollection::iterator it = mServer->mUserList.begin(); it != mServer->mUserList.end(); ++it) {
-		conn = ((cUser*)(*it))->mxConn;
+		user = ((cUser*)(*it));
 
-		if (conn && conn->ok) {
-			contot++;
+		if (user) {
+			conn = user->mxConn;
 
-			if (conn->mTLSVer.size() && (conn->mTLSVer != "0.0"))
-				consec++;
+			if (conn && conn->ok) {
+				contot++;
+
+				if (conn->mTLSVer.size() && (conn->mTLSVer != "0.0"))
+					consec++;
+
+				if (user->GetMyFlag(eMF_TLS))
+					contls++;
+
+				if (user->GetMyFlag(eMF_NAT))
+					connat++;
+			}
 		}
 	}
 
@@ -585,6 +596,8 @@ void cInfoServer::Output(ostream &os, int Class)
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(mServer->mTotalShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list: %d"), mServer->mUserList.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Secure users: %d of %d"), consec, contot) << "\r\n";
+	os << " [*] " << autosprintf(_("Client TLS users: %d of %d"), contls, contot) << "\r\n";
+	os << " [*] " << autosprintf(_("Client NAT users: %d of %d"), connat, contot) << "\r\n";
 	os << " [*] " << autosprintf(_("Active users: %d"), mServer->mActiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Passive users: %d"), mServer->mPassiveUsers.Size()) << "\r\n";
 	os << " [*] " << autosprintf(_("Operator count: %d of %d"), mServer->mOpchatList.Size(), mServer->mOpList.Size()) << "\r\n";

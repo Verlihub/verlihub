@@ -260,7 +260,10 @@ void cTriggerConsole::GetHelp(ostream &os)
 	help += " %[CN]\t\t\t- User country name\r\n";
 	help += " %[CITY]\t\t\t- User city\r\n";
 	help += " %[IP]\t\t\t- User IP address\r\n";
-	help += " %[TLS]\t\t\t- User TLS version if available\r\n";
+	help += " %[TLS]\t\t\t- User TLS version if available in client to hub connection\r\n";
+	help += " %[CLI_TLS]\t\t\t- User TLS encryption support in client to client connections\r\n";
+	help += " %[CLI_NAT]\t\t\t- User NAT traversal support in client to client connections\r\n";
+	help += " %[MODE]\t\t- User connection mode\r\n";
 	help += " %[HOST]\t\t- User host\r\n";
 	help += " %[NICK]\t\t\t- User nick\r\n";
 	help += " %[CLASS]\t\t- User class number\r\n";

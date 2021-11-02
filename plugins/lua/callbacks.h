@@ -67,6 +67,8 @@ namespace nVerliHub {
 	int _GetUserHost(lua_State *L);
 	int _GetUserIP(lua_State *L);
 	int _SetUserIP(lua_State *L);
+	int _SetMyINFOFlag(lua_State *L);
+	int _UnsetMyINFOFlag(lua_State *L);
 	int _IsSecConn(lua_State *L);
 	int _GetTLSVer(lua_State *L);
 	int _IsUserOnline(lua_State *L);

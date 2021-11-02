@@ -108,6 +108,8 @@ enum {
 	W_GetUserHost,
 	W_GetUserIP,
 	W_SetUserIP,
+	W_SetMyINFOFlag,
+	W_UnsetMyINFOFlag,
 	W_GetUserHubURL,
 	W_GetUserExtJSON,
 	W_GetUserCC,

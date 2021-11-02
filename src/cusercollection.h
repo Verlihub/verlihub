@@ -141,12 +141,7 @@ public:
 		ufDoNickList(string &list):
 			mList(list)
 		{
-			/*
-#ifdef USE_BUFFER_RESERVE
-			mSep.reserve(2);
-#endif
-			mSep = "$$";
-			*/
+			//mSep = "$$";
 		}
 
 		virtual ~ufDoNickList()
@@ -159,12 +154,8 @@ public:
 
 			ShrinkStringToFit(mList);
 
-			if (mStart.size()) {
-#ifdef USE_BUFFER_RESERVE
-				mList.reserve(mStart.size());
-#endif
+			if (mStart.size())
 				mList.append(mStart);
-			}
 		}
 
 		virtual void AppendList(string &list, cUserBase *user);
@@ -180,9 +171,6 @@ public:
 		ufDoInfoList(string &list):
 			ufDoNickList(list)
 		{
-#ifdef USE_BUFFER_RESERVE
-			mSep.reserve(1);
-#endif
 			mSep = "|";
 		}
 
@@ -199,10 +187,6 @@ public:
 		ufDoIPList(string &list):
 			ufDoNickList(list)
 		{
-#ifdef USE_BUFFER_RESERVE
-			mSep.reserve(2);
-			mStart.reserve(8);
-#endif
 			mSep = "$$";
 			mStart = "$UserIP ";
 		}
@@ -239,23 +223,17 @@ public:
 
 	void SetNickListStart(const string &start)
 	{
-#ifdef USE_BUFFER_RESERVE
-		mNickListMaker.mStart.reserve(start.size());
-#endif
 		mNickListMaker.mStart = start;
 	}
 
 	void SetNickListSeparator(const string &sep)
 	{
-#ifdef USE_BUFFER_RESERVE
-		mNickListMaker.mSep.reserve(sep.size());
-#endif
 		mNickListMaker.mSep = sep;
 	}
 
-	virtual void GetNickList(string &dest, const bool pipe);
-	virtual void GetInfoList(string &dest, const bool pipe);
-	virtual void GetIPList(string &dest, const bool pipe);
+	virtual void GetNickList(string &dest);
+	virtual void GetInfoList(string &dest);
+	virtual void GetIPList(string &dest);
 	void Nick2Hash(const string &nick, tHashType &hash);
 
 	tHashType Nick2Hash(const string &nick)

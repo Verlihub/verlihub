@@ -225,6 +225,8 @@ extern "C" w_Targs *_GetBotList        (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHost       (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserIP         (int id, w_Targs *args);
 extern "C" w_Targs *_SetUserIP         (int id, w_Targs *args);
+extern "C" w_Targs *_SetMyINFOFlag     (int id, w_Targs *args);
+extern "C" w_Targs *_UnsetMyINFOFlag   (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserHubURL     (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);

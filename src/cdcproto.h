@@ -22,6 +22,7 @@
 #define CDCPROTO_H
 
 #include <string>
+#include <unicode/ucnv.h>
 #include "cpcre.h"
 #include "cprotocol.h"
 
@@ -68,7 +69,7 @@ class cDCProto : public cProtocol
 	/**
 	* Class destructor.
 	*/
-	virtual ~cDCProto(){};
+	virtual ~cDCProto();
 
 	/**
 	* Create the parser to process protocol messages.
@@ -211,39 +212,39 @@ protected:
 	static bool CheckChatMsg(const string &text, nSocket::cConnDC *conn);
 
 	// protocol creation helper functions, note, they all clear destination buffer before appending new data
-	static void Create_Chat(string &dest, const string &nick, const string &text, const bool pipe);
-	static void Create_Me(string &dest, const string &nick, const string &text, const bool pipe);
-	static void Create_Lock(string &dest, const string &lock, const string &name, const string &vers, const bool pipe);
-	static void Create_HubName(string &dest, const string &name, const string &topic, const bool pipe);
-	static void Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share, const bool pipe);
-	static void Create_PM(string &dest, const string &from, const string &to, const string &sign, const string &text, const bool pipe);
-	static void Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text, const bool pipe);
-	static void Create_Quit(string &dest, const string &nick, const bool pipe);
-	static void Create_ValidateDenide(string &dest, const string &nick, const bool pipe);
-	static void Create_BadNick(string &dest, const string &id, const string &par, const bool pipe);
-	static void Create_Hello(string &dest, const string &nick, const bool pipe);
-	static void Create_LogedIn(string &dest, const string &nick, const bool pipe);
-	static void Create_NickList(string &dest, const string &nick, const bool pipe);
-	static void Create_OpList(string &dest, const string &nick, const bool pipe);
-	static void Create_BotList(string &dest, const string &nick, const bool pipe);
-	static void Create_Key(string &dest, const string &key, const bool pipe);
-	static void Create_FailOver(string &dest, const string &addr, const bool pipe);
-	static void Create_ForceMove(string &dest, const string &addr, const bool clear, const bool pipe);
-	static void Create_HubTopic(string &dest, const string &topic, const bool pipe);
-	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra, const bool pipe);
-	static void Create_Search(string &dest, const string &addr, const string &lims, const string &spat, const bool pipe);
-	static void Create_Search(string &dest, const string &addr, const string &tth, const bool pas, const bool pipe);
-	static void Create_SA(string &dest, const string &tth, const string &addr, const bool pipe);
-	static void Create_SP(string &dest, const string &tth, const string &nick, const bool pipe);
-	static void Create_UserIP(string &dest, const string &list, const bool pipe);
-	static void Create_UserIP(string &dest, const string &nick, const string &addr, const bool pipe);
-	static void Create_GetPass(string &dest, const bool pipe);
-	static void Create_BadPass(string &dest, const bool pipe);
-	static void Create_GetHubURL(string &dest, const bool pipe);
-	static void Create_HubIsFull(string &dest, const bool pipe);
-	static void Create_Supports(string &dest, const string &flags, const bool pipe);
-	static void Create_NickRule(string &dest, const string &rules, const bool pipe);
-	static void Create_SearchRule(string &dest, const string &rules, const bool pipe);
+	static void Create_Chat(string &dest, const string &nick, const string &text);
+	static void Create_Me(string &dest, const string &nick, const string &text);
+	static void Create_Lock(string &dest, const string &lock, const string &name, const string &vers);
+	static void Create_HubName(string &dest, const string &name, const string &topic);
+	static void Create_MyINFO(string &dest, const string &nick, const string &desc, const string &speed, const string &mail, const string &share);
+	static void Create_PM(string &dest, const string &from, const string &to, const string &sign, const string &text);
+	static void Create_PMForBroadcast(string &start, string &end, const string &from, const string &sign, const string &text);
+	static void Create_Quit(string &dest, const string &nick);
+	static void Create_ValidateDenide(string &dest, const string &nick);
+	static void Create_BadNick(string &dest, const string &id, const string &par);
+	static void Create_Hello(string &dest, const string &nick);
+	static void Create_LogedIn(string &dest, const string &nick);
+	static void Create_NickList(string &dest, const string &nick);
+	static void Create_OpList(string &dest, const string &nick);
+	static void Create_BotList(string &dest, const string &nick);
+	static void Create_Key(string &dest, const string &key);
+	static void Create_FailOver(string &dest, const string &addr);
+	static void Create_ForceMove(string &dest, const string &addr, const bool clear);
+	static void Create_HubTopic(string &dest, const string &topic);
+	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra);
+	static void Create_Search(string &dest, const string &addr, const string &lims, const string &spat);
+	static void Create_Search(string &dest, const string &addr, const string &tth, const bool pas);
+	static void Create_SA(string &dest, const string &tth, const string &addr);
+	static void Create_SP(string &dest, const string &tth, const string &nick);
+	static void Create_UserIP(string &dest, const string &list);
+	static void Create_UserIP(string &dest, const string &nick, const string &addr);
+	static void Create_GetPass(string &dest);
+	static void Create_BadPass(string &dest);
+	static void Create_GetHubURL(string &dest);
+	static void Create_HubIsFull(string &dest);
+	static void Create_Supports(string &dest, const string &flags);
+	static void Create_NickRule(string &dest, const string &rules);
+	static void Create_SearchRule(string &dest, const string &rules);
 
 	/**
 	* Treat mainchat messages.
@@ -322,7 +323,12 @@ protected:
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckProtoLen(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
+	bool CheckCompatTLS(nSocket::cConnDC *one, nSocket::cConnDC *two);
 	bool FindInSupports(const string &list, const string &flag);
+
+	// from utf8
+	bool FromUTF8(const string &data, string &back);
+	UConverter *mConv;
 
 	/**
 	* Escape DC string.

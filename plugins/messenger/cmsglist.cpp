@@ -121,7 +121,7 @@ void cMsgList::DeliverOnline(cUser *dest, sMessage &msg)
 	string omsg;
 	ostringstream os;
 	os << msg.AsOnline();
-	mServer->mP.Create_PM(omsg, msg.mSender, dest->mNick, msg.mSender, os.str(), true);
+	mServer->mP.Create_PM(omsg, msg.mSender, dest->mNick, msg.mSender, os.str());
 	dest->mxConn->Send(omsg, true);
 }
 
@@ -190,7 +190,7 @@ int cMsgList::DeliverModelToUser(cUser *dest)
 	string pm;
 	ostringstream os;
 	os << mModel.AsDelivery();
-	mServer->mP.Create_PM(pm, mModel.mSender, dest->mNick, mModel.mSender, os.str(), true);
+	mServer->mP.Create_PM(pm, mModel.mSender, dest->mNick, mModel.mSender, os.str());
 	dest->mxConn->Send(pm, true);
 	return 0;
 }

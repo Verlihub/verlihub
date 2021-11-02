@@ -200,11 +200,7 @@ int cConnDC::OnTimer(const cTime &now)
 	}
 
 	if (mpUser && mpUser->mInList && Server()->mC.delayed_ping && Server()->MinDelay(mT.ping, Server()->mC.delayed_ping)) { // check frozen users, every minute by default
-		string omsg;
-#ifdef USE_BUFFER_RESERVE
-		omsg.reserve(1);
-#endif
-		omsg.append(1, '|');
+		string omsg("|");
 		Send(omsg, false);
 	}
 
@@ -268,7 +264,7 @@ int cConnDC::OnCloseNice()
 	string omsg;
 
 	if (this->mCloseRedirect.size()) {
-		Server()->mP.Create_ForceMove(omsg, this->mCloseRedirect, true, true); // reserve for pipe
+		Server()->mP.Create_ForceMove(omsg, this->mCloseRedirect, true);
 		Send(omsg, true);
 
 	} else if (mxServer) {
@@ -276,7 +272,7 @@ int cConnDC::OnCloseNice()
 		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc, (this->mTLSVer.size() && (this->mTLSVer != "0.0")));
 
 		if (addr) {
-			Server()->mP.Create_ForceMove(omsg, addr, true, true); // reserve for pipe
+			Server()->mP.Create_ForceMove(omsg, addr, true);
 			Send(omsg, true);
 			free(addr);
 		}

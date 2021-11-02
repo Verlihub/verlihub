@@ -99,14 +99,14 @@ const char *nVerliHub::nPerlPlugin::nCallback::GetHubSecAlias() {
 const char *nVerliHub::nPerlPlugin::nCallback::GetOPList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
-	server->mOpList.GetNickList(list, false);
+	server->mOpList.GetNickList(list);
 	return strdup(list.c_str());
 }
 
 const char *nVerliHub::nPerlPlugin::nCallback::GetBotList() {
 	cServerDC *server = GetCurrentVerlihub();
 	string list;
-	server->mRobotList.GetNickList(list, false);
+	server->mRobotList.GetNickList(list);
 	return strdup(list.c_str());
 }
 
@@ -124,7 +124,7 @@ bool nVerliHub::nPerlPlugin::nCallback::RegBot(const char *nick, int clas, const
 		return false;
 
 	string info;
-	serv->mP.Create_MyINFO(info, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
+	serv->mP.Create_MyINFO(info, nick, desc, conn, mail, shar);
 
 	if (!perl->NewRobot(nick, clas, info)) { // note: this will show user to all
 		// error: "Error adding bot; it may already exist"
@@ -149,16 +149,13 @@ bool nVerliHub::nPerlPlugin::nCallback::EditBot(const char *nick, int clas, cons
 		return false;
 	}
 
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
-	//pi->mPerl.editBot(nick, shar, (char*)robot->mMyINFO.c_str(), clas);
-	string temp;
-#ifdef USE_BUFFER_RESERVE
-	temp.reserve(robot->mMyINFO.size() + 1); // first use, reserve for pipe
-#endif
+	serv->mP.Create_MyINFO(robot->mFakeMyINFO, nick, desc, conn, mail, shar);
+	//pi->mPerl.editBot(nick, shar, (char*)robot->mFakeMyINFO.c_str(), clas);
+	string temp(robot->mFakeMyINFO);
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 
 	if (clas >= 3) { // todo: oplist_class, userip
-		serv->mP.Create_OpList(temp, nick, true); // send short oplist, reserve for pipe
+		serv->mP.Create_OpList(temp, nick); // send short oplist
 		serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 	}
 
@@ -210,7 +207,7 @@ bool nVerliHub::nPerlPlugin::nCallback::SetTopic(const char *_topic) {
 	std::string topic = _topic;
 	std::string message;
 	SetConfig("config", "hub_topic", _topic);
-	server->mP.Create_HubName(message, server->mC.hub_name, topic, false); // dont reserve for pipe, buffer is copied before sending
+	server->mP.Create_HubName(message, server->mC.hub_name, topic);
 	server->SendToAll(message, eUC_NORMUSER, eUC_MASTER);
 	return true;
 }
