@@ -23,7 +23,6 @@ message(STATUS)
 message(STATUS "You can change build options with: -D{OPTION}=ON|OFF")
 message(STATUS "You can turn on debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "You can disable all plugins with: -DWITH_PLUGINS=OFF")
-message(STATUS "You can turn on buffer reservation with: -DUSE_BUFFER_RESERVE=ON")
 #message(STATUS "You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
 message(STATUS "You can also disable specific plugins with: -DWITH_{NAME}=OFF")
 message(STATUS "Plugin names: LUA PYTHON PERL FORBID CHATROOM IPLOG ISP MESSENGER STATS REPLACER FLOODPROT")
@@ -33,7 +32,7 @@ message(STATUS)
 SET(VERLIHUB_VERSION_MAJOR 1) # note: these must be numbers, else compilation will fail
 SET(VERLIHUB_VERSION_MINOR 3)
 SET(VERLIHUB_VERSION_PATCH 1)
-SET(VERLIHUB_VERSION_TWEAK 0)
+SET(VERLIHUB_VERSION_TWEAK 1)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 #SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}")
 SET(PROJECT_NAME "verlihub")
@@ -202,9 +201,6 @@ ENDIF(HAVE_SYSLOG_H)
 IF(NOT HAVE_GETOPT_H)
 	MESSAGE(FATAL_ERROR "[ ER ] getopt.h header not found, it is required to build Verlihub.")
 ENDIF(NOT HAVE_GETOPT_H)
-
-ADD_DEFINITIONS(-DUSE_BUFFER_RESERVE)
-OPTION(USE_BUFFER_RESERVE "Use buffer string reservation" OFF) # use cmake -DUSE_BUFFER_RESERVE=ON to use buffer string reservation
 
 OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF) # use cmake -DDEFINE_DEBUG=ON to enable debug
 

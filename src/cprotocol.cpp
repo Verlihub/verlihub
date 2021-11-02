@@ -73,7 +73,7 @@ void cMessageParser::ReInit()
 	mError = false;
 	mModified = false;
 	mStr.resize(0);
-	mStr.reserve(512); // todo: do we really need this big reserve? some commands are alot smaller
+	//mStr.reserve(512); // todo: do we really need this big reserve? some commands are alot smaller
 	mType = eMSG_UNPARSED;
 	mKWSize = 0;
 }

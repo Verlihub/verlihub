@@ -136,9 +136,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			struct sockaddr_in *addr_in = (struct sockaddr_in*)&saddr;
 			mIP = addr_in->sin_addr.s_addr; // copy ip
 			char *temp = inet_ntoa(addr_in->sin_addr);
-#ifdef USE_BUFFER_RESERVE
-			mAddrIP.reserve(strlen(temp));
-#endif
 			mAddrIP = temp; // ip address
 			mNumIP = cBanList::Ip2Num(mAddrIP);
 
@@ -150,9 +147,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
 				addr_in = (struct sockaddr_in*)&saddr;
 				temp = inet_ntoa(addr_in->sin_addr);
-#ifdef USE_BUFFER_RESERVE
-				mServAddr.reserve(strlen(temp));
-#endif
 				mServAddr = temp;
 				mServPort = ntohs(addr_in->sin_port);
 			} else if (Log(2)) {
@@ -274,9 +268,6 @@ int cAsyncConn::ReadLineLocal()
 			return 0;
 		}
 
-#ifdef USE_BUFFER_RESERVE
-		mxLine->reserve(len);
-#endif
 		mxLine->append((char*)buf, len);
 		mBufEnd = 0;
 		mBufReadPos = 0;
@@ -284,9 +275,6 @@ int cAsyncConn::ReadLineLocal()
 	}
 
 	len = pos - buf;
-#ifdef USE_BUFFER_RESERVE
-	mxLine->reserve(len);
-#endif
 	mxLine->append((char*)buf, len);
 	mBufReadPos += len + 1;
 	meLineStatus = AC_LS_LINE_DONE;
@@ -922,9 +910,6 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	}
 
 	if (data_size) { // we have something new to append
-#ifdef USE_BUFFER_RESERVE
-		mBufFlush.reserve(mBufFlush.size() + data_size); // always reserve because we are adding new data
-#endif
 		mBufFlush.append(data.data(), data_size);
 		flush_size += data_size;
 	}
@@ -954,16 +939,10 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 				if (calc_size && zlib_buf) { // compression successful
 					buf_size -= flush_size; // recalculate final send buffer size
 					buf_size += calc_size;
-#ifdef USE_BUFFER_RESERVE
-					mBufSend.reserve(mBufSend.size() + calc_size); // always reserve because we are adding new data
-#endif
 					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
 					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
 
 				} else { // compression is larger than initial data or something failed
-#ifdef USE_BUFFER_RESERVE
-					mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
-#endif
 					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 
 					if (calc_size) {
@@ -987,9 +966,6 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			}
 
 		} else { // compression is disabled or data too short for good result
-#ifdef USE_BUFFER_RESERVE
-			mBufSend.reserve(mBufSend.size() + flush_size); // always reserve because we are adding new data
-#endif
 			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
 			mBufFlush.clear(); // clean up flush buffer
 			ShrinkStringToFit(mBufFlush);
@@ -1182,12 +1158,8 @@ bool cAsyncConn::DNSLookup()
 
 	struct hostent *hp;
 
-	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET))) {
-#ifdef USE_BUFFER_RESERVE
-		mAddrHost.reserve(strlen(hp->h_name));
-#endif
+	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET)))
 		mAddrHost = hp->h_name;
-	}
 
 	return (hp != NULL);
 }

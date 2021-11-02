@@ -77,16 +77,11 @@ void cRoom::OnLoad()
 		mChatRoom->mClass = tUserCl(3);
 
 		if (mTopic.size()) {
-#ifdef USE_BUFFER_RESERVE
-			if (desc.capacity() < (desc.size() + 2 + mTopic.size()))
-				desc.reserve(desc.size() + 2 + mTopic.size());
-#endif
-
 			desc.append(": ");
 			desc.append(mTopic);
 		}
 
-		mServer->mP.Create_MyINFO(mChatRoom->mMyINFO, mNick, desc, speed, mail, share, false); // dont reserve for pipe, we are not sending this
+		mServer->mP.Create_MyINFO(mChatRoom->mFakeMyINFO, mNick, desc, speed, mail, share);
 		mPlugin->AddRobot(mChatRoom);
 	}
 }

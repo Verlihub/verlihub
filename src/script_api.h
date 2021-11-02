@@ -52,6 +52,8 @@ namespace nVerliHub {
 	const char* GetUserHost(const char *nick);
 	const char* GetUserIP(const char *nick);
 	bool SetUserIP(const char *nick, const char *ip);
+	bool SetMyINFOFlag(const char *nick, const unsigned int flag);
+	bool UnsetMyINFOFlag(const char *nick, const unsigned int flag);
 	bool Ban(const char *, const string &, const string &, unsigned, unsigned);
 	bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op = NULL, const char *note_usr = NULL, bool hide = false);
 	bool DeleteNickTempBan(const char *nick);
@@ -67,7 +69,7 @@ namespace nVerliHub {
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst = false);
 	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);
-	bool CheckDataPipe(string &data);
+	bool CheckDataPipe(const string &data);
 
 	extern "C"
 	{

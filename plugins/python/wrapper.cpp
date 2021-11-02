@@ -785,6 +785,16 @@ static PyObject *__SetUserIP(PyObject *self, PyObject *args)
 	return pybool(BasicCall(W_SetUserIP, args, "ss"));
 }
 
+static PyObject *__SetMyINFOFlag(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_SetMyINFOFlag, args, "sl"));
+}
+
+static PyObject *__UnsetMyINFOFlag(PyObject *self, PyObject *args)
+{
+	return pybool(BasicCall(W_UnsetMyINFOFlag, args, "sl"));
+}
+
 static PyObject *__GetUserHubURL(PyObject *self, PyObject *args)
 {
 	char *res;
@@ -1246,6 +1256,8 @@ static PyMethodDef w_vh_methods[] = {
 	{"GetUserHost",        __GetUserHost,        METH_VARARGS},
 	{"GetUserIP",          __GetUserIP,          METH_VARARGS},
 	{"SetUserIP",          __SetUserIP,          METH_VARARGS},
+	{"SetMyINFOFlag",      __SetMyINFOFlag,      METH_VARARGS},
+	{"UnsetMyINFOFlag",    __UnsetMyINFOFlag,    METH_VARARGS},
 	{"GetUserHubURL",      __GetUserHubURL,      METH_VARARGS},
 	{"GetUserExtJSON",     __GetUserExtJSON,     METH_VARARGS},
 	{"GetUserCC",          __GetUserCC,          METH_VARARGS},
@@ -2061,6 +2073,8 @@ const char *w_CallName(int callback)
 		case W_GetUserHost:          return "GetUserHost";
 		case W_GetUserIP:            return "GetUserIP";
 		case W_SetUserIP:            return "SetUserIP";
+		case W_SetMyINFOFlag:        return "SetMyINFOFlag";
+		case W_UnsetMyINFOFlag:      return "UnsetMyINFOFlag";
 		case W_GetUserHubURL:        return "GetUserHubURL";
 		case W_GetUserExtJSON:       return "GetUserExtJSON";
 		case W_GetUserCC:            return "GetUserCC";

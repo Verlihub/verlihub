@@ -306,11 +306,11 @@ bool nVerliHub::nPerlPlugin::cpiPerl::OnParsedMsgSearch(cConnDC *conn, cMessageD
 			break;
 
 		case eDC_TTHS:
-			conn->mpUser->mxServer->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false, false); // dont reserve for pipe, we are not sending this
+			conn->mpUser->mxServer->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false);
 			break;
 
 		case eDC_TTHS_PAS:
-			conn->mpUser->mxServer->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true, false); // dont reserve for pipe, we are not sending this
+			conn->mpUser->mxServer->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
 			break;
 
 		default:

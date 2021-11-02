@@ -1312,7 +1312,7 @@ int _GetOPList(lua_State *L)
 
 		if (server) {
 			string oplist;
-			server->mOpList.GetNickList(oplist, false);
+			server->mOpList.GetNickList(oplist);
 
 			if (oplist.empty())
 				result = 0;
@@ -1341,7 +1341,7 @@ int _GetBotList(lua_State *L)
 
 		if (server) {
 			string botlist;
-			server->mRobotList.GetNickList(botlist, false);
+			server->mRobotList.GetNickList(botlist);
 
 			if (botlist.empty())
 				result = 0;
@@ -1463,6 +1463,74 @@ int _SetUserIP(lua_State *L)
 	return 2;
 }
 
+int _SetMyINFOFlag(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SetMyINFOFlag, expected 2 arguments but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isnumber(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = lua_tostring(L, 2);
+	const unsigned int flag = (unsigned int)lua_tonumber(L, 3);
+
+	if (nick.empty() || (flag < 1)) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	if (!SetMyINFOFlag(nick.c_str(), flag)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
+int _UnsetMyINFOFlag(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:UnsetMyINFOFlag, expected 2 arguments but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isnumber(L, 3)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string nick = lua_tostring(L, 2);
+	const unsigned int flag = (unsigned int)lua_tonumber(L, 3);
+
+	if (nick.empty() || (flag < 1)) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	if (!UnsetMyINFOFlag(nick.c_str(), flag)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
 int _IsSecConn(lua_State *L)
 {
 	int args = lua_gettop(L) - 1;
@@ -1551,8 +1619,9 @@ int _IsUserOnline(lua_State *L)
 		}
 		string nick = lua_tostring(L, 2);
 		cUser *usr = server->mUserList.GetUserByNick(nick);
+		lua_pushboolean(L, 1);
 		lua_pushboolean(L, (usr == NULL ? 0 : 1));
-		return 1;
+		return 2;
 	} else {
 		luaL_error(L, "Error calling VH:IsUserOnline; expected 1 argument but got %d", lua_gettop(L) - 1);
 		lua_pushboolean(L, 0);
@@ -2226,7 +2295,7 @@ int _RegBot(lua_State *L)
 		shar = IntToStr(share);
 	}
 
-	serv->mP.Create_MyINFO(temp, nick, desc, conn, mail, shar, false); // create myinfo, dont reserve for pipe, we are not sending this
+	serv->mP.Create_MyINFO(temp, nick, desc, conn, mail, shar); // create myinfo
 
 	if (!plug->NewRobot(nick, clas, temp)) { // note: this will show user to all
 		luaerror(L, "Error registering bot");
@@ -2343,7 +2412,7 @@ int _EditBot(lua_State *L)
 			if (!serv->mOpList.ContainsHash(robot->mNickHash)) { // add to oplist
 				serv->mOpList.AddWithHash(robot, robot->mNickHash);
 
-				serv->mP.Create_OpList(temp, nick, true); // send short oplist, reserve for pipe
+				serv->mP.Create_OpList(temp, nick); // send short oplist
 				serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 			}
 
@@ -2351,14 +2420,14 @@ int _EditBot(lua_State *L)
 			if (serv->mOpList.ContainsHash(robot->mNickHash)) { // remove from oplist
 				serv->mOpList.RemoveByHash(robot->mNickHash);
 
-				serv->mP.Create_Quit(temp, nick, true); // send quit, reserve for pipe
+				serv->mP.Create_Quit(temp, nick); // send quit
 				serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true);
 
-				serv->mP.Create_BotList(temp, nick, true); // send short botlist after quit, reserve for pipe
+				serv->mP.Create_BotList(temp, nick); // send short botlist after quit
 				serv->mUserList.SendToAllWithFeature(temp, eSF_BOTLIST, serv->mC.delayed_myinfo, true);
 
 				if (serv->mC.send_user_ip) { // send userip to operators, bots have local ip
-					serv->mP.Create_UserIP(temp, nick, "127.0.0.1", true); // reserve for pipe
+					serv->mP.Create_UserIP(temp, nick, "127.0.0.1");
 					serv->mUserList.SendToAllWithClassFeature(temp, serv->mC.user_ip_class, eUC_MASTER, eSF_USERIP2, serv->mC.delayed_myinfo, true); // must be delayed too
 				}
 			}
@@ -2367,17 +2436,10 @@ int _EditBot(lua_State *L)
 		robot->mClass = (tUserCl)clas; // set new class
 	}
 
-	serv->mP.Create_MyINFO(robot->mMyINFO, nick, desc, conn, mail, shar, false); // send new myinfo after quit, dont reserve for pipe, we are not sending this
-
-#ifdef USE_BUFFER_RESERVE
-	if (temp.capacity() < (robot->mMyINFO.size() + 1)) // reserve for pipe
-		temp.reserve(robot->mMyINFO.size() + 1);
-#endif
-
-	temp = robot->mMyINFO;
+	serv->mP.Create_MyINFO(robot->mFakeMyINFO, nick, desc, conn, mail, shar);
+	temp = robot->mFakeMyINFO;
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
-
-	lua->editBot(nick.c_str(), robot->mMyINFO.c_str(), share, clas); // edit in lua bots
+	lua->editBot(nick.c_str(), robot->mFakeMyINFO.c_str(), share, clas); // edit in lua bots
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -3123,7 +3185,7 @@ int _SetTopic(lua_State *L)
 
 	string topic = lua_tostring(L, 2);
 	string omsg;
-	serv->mP.Create_HubName(omsg, serv->mC.hub_name, topic, false); // dont reserve for pipe, buffer is copied before adding pipe
+	serv->mP.Create_HubName(omsg, serv->mC.hub_name, topic);
 	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 	SetConfig(li->mConfigName.c_str(), "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);

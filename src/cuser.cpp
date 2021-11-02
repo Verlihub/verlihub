@@ -66,7 +66,7 @@ cUser::cUser(const string &nick):
 	cUserBase(nick),
 	mxConn(NULL),
 	mxServer(NULL),
-	mMyFlag(0),
+	mMyFlag(1),
 	mRCTMCount(0),
 	mRCTMLock(false),
 	//mBanTime(0),
@@ -218,7 +218,10 @@ void cUser::DisplayInfo(ostream &os)
 		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
 	if (mxServer->mTLSProxy.size())
-		os << " [*] " << autosprintf(_("TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // tls
+		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
+
+	os << " [*] " << autosprintf(_("Client TLS: %s"), (this->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls
+	os << " [*] " << autosprintf(_("Client NAT: %s"), (this->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
 
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));
@@ -563,7 +566,7 @@ bool cUserRobot::SendPMTo(cConnDC *conn, const string &msg)
 		return false;
 
 	string pm;
-	mxServer->mP.Create_PM(pm, mNick, conn->mpUser->mNick, mNick, msg, true); // reserve for pipe
+	mxServer->mP.Create_PM(pm, mNick, conn->mpUser->mNick, mNick, msg);
 	conn->Send(pm, true);
 	return true;
 }
@@ -596,7 +599,7 @@ void cChatRoom::SendPMToAll(const string &data, cConnDC *conn, bool fromplug, bo
 	else
 		from = mNick;
 
-	this->mxServer->mP.Create_PMForBroadcast(start, end, mNick, from, data, false); // dont reserve for pipe, buffer is copied before sending
+	this->mxServer->mP.Create_PMForBroadcast(start, end, mNick, from, data);
 	bool temp = false;
 
 	if (skipself && conn && conn->mpUser) {

@@ -165,9 +165,6 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mOpchatList.SetNickListSeparator("\r\n");
 
 	string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), val_new, val_old; // add the bots
-#ifdef USE_BUFFER_RESERVE
-	tag.reserve(1 + name.size() + 3 + vers.size() + 17);
-#endif
 	tag.append(1, '<');
 	tag.append(name);
 	tag.append(" V:");
@@ -181,13 +178,13 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	mHubSec = new cMainRobot(mC.hub_security, this);
 	mHubSec->mClass = tUserCl(10);
-	mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
+	mP.Create_MyINFO(mHubSec->mFakeMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar);
 	AddRobot((cMainRobot*)mHubSec);
 
 	if (mC.opchat_name.size()) {
 		mOpChat = new cOpChat(mC.opchat_name, this);
 		mOpChat->mClass = tUserCl(10);
-		mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
+		mP.Create_MyINFO(mOpChat->mFakeMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar);
 		AddRobot((cMainRobot*)mOpChat);
 	}
 
@@ -391,7 +388,7 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 	if (conn) {
 		if (txt.size()) {
 			string msg;
-			mP.Create_Chat(msg, from, txt, true); // reserve for pipe
+			mP.Create_Chat(msg, from, txt);
 			conn->Send(msg, true);
 		}
 
@@ -403,16 +400,8 @@ int cServerDC::DCPublic(const string &from, const string &txt, cConnDC *conn)
 
 int cServerDC::DCPublicToAll(const string &from, const string &txt, int min_class, int max_class, bool delay)
 {
-	string msg, nick, data;
-#ifdef USE_BUFFER_RESERVE
-	nick.reserve(from.size()); // first use
-#endif
-	nick = from;
-#ifdef USE_BUFFER_RESERVE
-	data.reserve(txt.size());
-#endif
-	data = txt;
-	mP.Create_Chat(msg, from, txt, true); // reserve for pipe
+	string msg, nick(from), data(txt);
+	mP.Create_Chat(msg, from, txt);
 
 	if ((min_class != eUC_NORMUSER) || (max_class != eUC_MASTER))
 		mUserList.SendToAllWithClass(msg, min_class, max_class, delay, true);
@@ -430,16 +419,8 @@ int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 
 void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 {
-	string msg, nick, data;
-#ifdef USE_BUFFER_RESERVE
-	nick.reserve(mC.hub_security.size()); // first use
-#endif
-	nick = mC.hub_security;
-#ifdef USE_BUFFER_RESERVE
-	data.reserve(text.size());
-#endif
-	data = text;
-	mP.Create_Chat(msg, nick, text, true); // reserve for pipe
+	string msg, nick(mC.hub_security), data(text);
+	mP.Create_Chat(msg, nick, text);
 	mUserList.SendToAll(msg, delay, true);
 	this->OnPublicBotMessage(&nick, &data, int(eUC_NORMUSER), int(eUC_MASTER)); // todo: make it discardable if needed
 }
@@ -447,7 +428,7 @@ void cServerDC::DCPublicHSToAll(const string &text, bool delay)
 int cServerDC::DCPrivateHS(const string &text, cConnDC *conn, string *from, string *nick)
 {
 	string msg;
-	mP.Create_PM(msg, ((from != NULL) ? (*from) : (mC.hub_security)), conn->mpUser->mNick, ((nick != NULL) ? (*nick) : (mC.hub_security)), text, true); // reserve for pipe
+	mP.Create_PM(msg, ((from != NULL) ? (*from) : (mC.hub_security)), conn->mpUser->mNick, ((nick != NULL) ? (*nick) : (mC.hub_security)), text);
 	return conn->Send(msg, true);
 }
 
@@ -570,7 +551,7 @@ bool cServerDC::RemoveNick(cUser *user)
 	if (user->mInList) {
 		user->mInList = false; // this will prevent user from receiving own quit
 		string omsg;
-		mP.Create_Quit(omsg, user->mNick, true); // reserve for pipe
+		mP.Create_Quit(omsg, user->mNick);
 		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
 	}
 
@@ -666,15 +647,11 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	return NULL;
 }
 
-void cServerDC::SendToAll(const string &data, int cm, int cM) // note: class range is ignored here, bug?
+void cServerDC::SendToAll(const string &data, int cm, int cM) // todo: class range is ignored here, bug?
 {
-	string str;
-#ifdef USE_BUFFER_RESERVE
-	str.reserve(data.size() + 1); // reserve for pipe
-#endif
-	str = data;
 	cConnDC *conn;
 	tCLIt i;
+	string str(data);
 
 	for (i = mConnList.begin(); i != mConnList.end(); i++) {
 		conn = (cConnDC*)(*i);
@@ -695,11 +672,6 @@ int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm,
 		conn = (cConnDC*)(*i);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
-#ifdef USE_BUFFER_RESERVE
-			if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
-				str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
-#endif
-
 			str = start + conn->mpUser->mNick + end;
 			conn->Send(str, true); // pipe is added by default for safety
 			counter++;
@@ -745,12 +717,6 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 
 			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-
-#ifdef USE_BUFFER_RESERVE
-			if (temp.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
-				temp.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
-#endif
-
 			temp = start + conn->mpUser->mNick + tend; // finalize
 			conn->Send(temp, true); // pipe is added by default for safety
 			tot++;
@@ -796,12 +762,6 @@ int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 
 			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
 			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
-
-#ifdef USE_BUFFER_RESERVE
-			if (tmsg.capacity() < (tmsg.size() + 1)) // reserve for pipe
-				tmsg.reserve(tmsg.size() + 1);
-#endif
-
 			conn->Send(tmsg, true); // pipe is added by default for safety
 			tot++;
 		}
@@ -824,11 +784,6 @@ int cServerDC::SendToAllWithNickCC(const string &start, const string &end, int c
 			str = conn->GetGeoCC();
 
 			if (cc_zone.find(str) != cc_zone.npos) {
-#ifdef USE_BUFFER_RESERVE
-				if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + end.size() + 1)) // reserve for pipe
-					str.reserve(start.size() + conn->mpUser->mNick.size() + end.size() + 1);
-#endif
-
 				str = start + conn->mpUser->mNick + end;
 				conn->Send(str, true); // pipe is added by default for safety
 				tot++;
@@ -876,12 +831,6 @@ int cServerDC::SendToAllWithNickCCVars(const string &start, const string &end, i
 
 				ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
 				ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-
-#ifdef USE_BUFFER_RESERVE
-				if (str.capacity() < (start.size() + conn->mpUser->mNick.size() + tend.size() + 1)) // reserve for pipe
-					str.reserve(start.size() + conn->mpUser->mNick.size() + tend.size() + 1);
-#endif
-
 				str = start + conn->mpUser->mNick + tend; // finalize
 				conn->Send(str, true); // pipe is added by default for safety
 				tot++;
@@ -898,13 +847,6 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 	tCLIt i;
 	unsigned int count = 0;
 	size_t saved = 0, len_data = data.size(), len_tths = tths.size();
-#ifdef USE_BUFFER_RESERVE
-	string _tths, _data;
-	_tths.reserve(tths.size() + 1); // first use, reserve for pipe
-	_tths = tths;
-	_data.reserve(data.size() + 1);
-	_data = data;
-#endif
 
 	if (len_tths)
 		saved = len_data - len_tths;
@@ -916,7 +858,7 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 			if (!other || !other->ok || !other->mpUser || !other->mpUser->mInList) // base condition
 				continue;
 
-			if (other->mpUser->mPassive && !(other->mpUser->mMyFlag & eMF_NAT)) // passive request to passive user, allow if other user supports nat connection
+			if (other->mpUser->mPassive && (!conn->mpUser->GetMyFlag(eMF_NAT) || !other->mpUser->GetMyFlag(eMF_NAT))) // passive request to passive user, allow if both support nat traversal
 				continue;
 
 			if (tth && !(other->mFeatures & eSF_TTHSEARCH)) // dont send to user without tth search support
@@ -939,17 +881,10 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 			if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 				mProtoSaved[1] += saved; // add saved upload with tths
-#ifdef USE_BUFFER_RESERVE
-				other->Send(_tths, true, !mC.delayed_search);
-#else
 				other->Send(tths, true, !mC.delayed_search);
-#endif
+
 			} else {
-#ifdef USE_BUFFER_RESERVE
-				other->Send(_data, true, !mC.delayed_search);
-#else
 				other->Send(data, true, !mC.delayed_search);
-#endif
 			}
 
 			count++;
@@ -986,17 +921,10 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
-#ifdef USE_BUFFER_RESERVE
-					other->Send(_tths, true, !mC.delayed_search);
-#else
 					other->Send(tths, true, !mC.delayed_search);
-#endif
+
 				} else {
-#ifdef USE_BUFFER_RESERVE
-					other->Send(_data, true, !mC.delayed_search);
-#else
 					other->Send(data, true, !mC.delayed_search);
-#endif
 				}
 
 				count++;
@@ -1029,17 +957,10 @@ unsigned int cServerDC::SearchToAll(cConnDC *conn, string &data, string &tths, b
 
 				if (tth && len_tths && (other->mFeatures & eSF_TTHS)) {
 					mProtoSaved[1] += saved; // add saved upload with tths
-#ifdef USE_BUFFER_RESERVE
-					other->Send(_tths, true, !mC.delayed_search);
-#else
 					other->Send(tths, true, !mC.delayed_search);
-#endif
+
 				} else {
-#ifdef USE_BUFFER_RESERVE
-					other->Send(_data, true, !mC.delayed_search);
-#else
 					other->Send(data, true, !mC.delayed_search);
-#endif
 				}
 
 				count++;
@@ -1072,9 +993,6 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 		if (conn && conn->mpUser && (other->mpUser->mNickHash == conn->mpUser->mNickHash)) // skip self
 			continue;
 
-#ifdef USE_BUFFER_RESERVE
-		dest.reserve(other->mpUser->mExtJSON.size() + 1);
-#endif
 		dest.append(other->mpUser->mExtJSON);
 		dest.append(1, '|');
 		count++;
@@ -1095,17 +1013,14 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 			return -1;
 	#endif
 
-#ifdef USE_BUFFER_RESERVE
-	conn->mLock.reserve(22 + 4); // better to reserve
-#endif
-	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // length = 22, todo: EscapeChars with DCN
+	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
 
 	string omsg;
-	mP.Create_Lock(omsg, conn->mLock, HUB_VERSION_NAME, HUB_VERSION_VERS, true); // reserve for pipe
+	mP.Create_Lock(omsg, conn->mLock, HUB_VERSION_NAME, HUB_VERSION_VERS);
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
 	ostringstream os;
@@ -1173,7 +1088,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
-		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(conn->mpUser->mMyINFO, 0, olduser->mMyINFO.size(), olduser->mMyINFO) == 0))
+		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(olduser->mMyINFO, 0, olduser->mMyINFO.size(), conn->mpUser->mMyINFO) == 0))
 			sameuser = true;
 
 		string omsg;
@@ -1181,7 +1096,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		if (sameuser && !mC.allow_same_user && (conn->mpUser->mClass <= mC.max_class_same_user)) { // dont allow same users
 			omsg = _("You're already logged in with same nick and IP address.");
 			DCPublicHS(omsg, conn);
-			mP.Create_ValidateDenide(omsg, conn->mpUser->mNick, true); // reserve for pipe
+			mP.Create_ValidateDenide(omsg, conn->mpUser->mNick);
 			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_SELF);
 			return false;
@@ -1208,7 +1123,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 		} else {
 			omsg = _("Your nick is already taken by another user.");
 			DCPublicHS(omsg, conn);
-			mP.Create_ValidateDenide(omsg, conn->mpUser->mNick, true); // reserve for pipe
+			mP.Create_ValidateDenide(omsg, conn->mpUser->mNick);
 			conn->Send(omsg, true);
 			conn->CloseNice(1000, eCR_BADNICK);
 			return false;
@@ -1246,7 +1161,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 				} else {
 					omsg = _("Your nick is already taken by another user.");
 					DCPublicHS(omsg, conn);
-					mP.Create_ValidateDenide(omsg, conn->mpUser->mNick, true); // reserve for pipe
+					mP.Create_ValidateDenide(omsg, conn->mpUser->mNick);
 					conn->Send(omsg, true);
 				}
 
@@ -1298,7 +1213,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 		if (mC.send_pass_request) {
 			conn->mpUser->mSetPass = true;
-			mP.Create_GetPass(omsg, true); // reserve for pipe
+			mP.Create_GetPass(omsg);
 			conn->Send(omsg, true);
 		}
 
@@ -1306,7 +1221,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	}
 
 	if (mC.hub_topic.size()/* && (conn->mFeatures & eSF_HUBTOPIC)*/) { // send the hub topic
-		mP.Create_HubTopic(omsg, mC.hub_topic, true); // reserve for pipe
+		mP.Create_HubTopic(omsg, mC.hub_topic);
 		conn->Send(omsg, true);
 	}
 
@@ -1390,12 +1305,12 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	string omsg;
 
 	if (mC.hub_name.size() && mC.hub_topic.size()) { // send hub name with topic
-		mP.Create_HubName(omsg, mC.hub_name, mC.hub_topic, true); // reserve for pipe
+		mP.Create_HubName(omsg, mC.hub_name, mC.hub_topic);
 		conn->Send(omsg, true);
 	}
 
 	if ((conn->mFeatures & eSF_FAILOVER) && mC.hub_failover_hosts.size()) { // send failover hosts if not empty and client supports it
-		mP.Create_FailOver(omsg, mC.hub_failover_hosts, true); // reserve for pipe
+		mP.Create_FailOver(omsg, mC.hub_failover_hosts);
 		conn->Send(omsg, true);
 	}
 
@@ -1437,29 +1352,25 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 bool cServerDC::ShowUserToAll(cUser *user)
 {
-	string data;
-#ifdef USE_BUFFER_RESERVE
-	data.reserve(user->mMyINFO.size() + 1); // first use, reserve for pipe
-#endif
-	data = user->mMyINFO;
+	string data(user->mFakeMyINFO);
 	mUserList.SendToAll(data, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
-		mP.Create_OpList(data, user->mNick, true); // reserve for pipe
+		mP.Create_OpList(data, user->mNick);
 		mUserList.SendToAll(data, mC.delayed_myinfo, true);
 	}
 
 	if (mC.send_user_ip) { // send userip to operators
 		if (user->mxConn) // real user
-			mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP(), true); // reserve for pipe
+			mP.Create_UserIP(data, user->mNick, user->mxConn->AddrIP());
 		else // bots have local ip
-			mP.Create_UserIP(data, user->mNick, "127.0.0.1", true); // reserve for pipe
+			mP.Create_UserIP(data, user->mNick, "127.0.0.1");
 
 		mUserList.SendToAllWithClassFeature(data, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 
 	if (!user->mxConn) { // send short botlist to users with this feature
-		mP.Create_BotList(data, user->mNick, true); // reserve for pipe
+		mP.Create_BotList(data, user->mNick);
 		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 	}
 
@@ -1484,7 +1395,7 @@ void cServerDC::ShowUserIP(cAsyncConn *conn)
 
 	if (mC.send_user_ip) { // send userip to operators
 		string data;
-		mP.Create_UserIP(data, conc->mpUser->mNick, conc->AddrIP(), true); // reserve for pipe
+		mP.Create_UserIP(data, conc->mpUser->mNick, conc->AddrIP());
 		mUserList.SendToAllWithClassFeature(data, mC.user_ip_class, eUC_MASTER, eSF_USERIP2, mC.delayed_myinfo, true); // must be delayed too
 	}
 }
@@ -1627,7 +1538,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 						errmsg << ' ' << autosprintf(_("Valid nick characters: %s"), mC.nick_chars.c_str());
 
 					if (conn->mFeatures & eSF_NICKRULE)
-						mP.Create_BadNick(extra, "Char", StrByteList(more), true);
+						mP.Create_BadNick(extra, "Char", StrByteList(more));
 
 					break;
 
@@ -1636,9 +1547,9 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 
 					if (conn->mFeatures & eSF_NICKRULE) {
 						if (mC.min_nick > 255)
-							mP.Create_BadNick(extra, "Min", "255", true);
+							mP.Create_BadNick(extra, "Min", "255");
 						else
-							mP.Create_BadNick(extra, "Min", StringFrom(mC.min_nick), true);
+							mP.Create_BadNick(extra, "Min", StringFrom(mC.min_nick));
 					}
 
 					break;
@@ -1647,20 +1558,20 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					errmsg << autosprintf(_("Your nick is too long, maximum allowed length is %d characters."), mC.max_nick);
 
 					if (conn->mFeatures & eSF_NICKRULE)
-						mP.Create_BadNick(extra, "Max", StringFrom(mC.max_nick), true);
+						mP.Create_BadNick(extra, "Max", StringFrom(mC.max_nick));
 
 					break;
 
 				case eVN_USED:
 					errmsg << _("Your nick is already taken by another user.");
-					mP.Create_ValidateDenide(extra, nick, true);
+					mP.Create_ValidateDenide(extra, nick);
 					break;
 
 				case eVN_PREFIX:
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
 
 					if (conn->mFeatures & eSF_NICKRULE)
-						mP.Create_BadNick(extra, "Pref", mC.nick_prefix, true);
+						mP.Create_BadNick(extra, "Pref", mC.nick_prefix);
 
 					break;
 
@@ -1668,7 +1579,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					errmsg << _("Your nick contains operator prefix but you are not registered, please remove it.");
 
 					if (conn->mFeatures & eSF_NICKRULE)
-						mP.Create_BadNick(extra, "Pref", "", true);
+						mP.Create_BadNick(extra, "Pref", "");
 
 					break;
 
@@ -1683,7 +1594,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		if (vn != eVN_OK) {
 			DCPublicHS(errmsg.str(), conn);
 
-			if (extra.size()) // all are already reserved for pipe
+			if (extra.size())
 				conn->Send(extra, true);
 
 			if (conn->Log(2))
@@ -2090,7 +2001,7 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 						cDCProto::Lock2Key(lock, key);
 					}
 
-					mP.Create_Key(lock, key, false); // dont reserve for pipe, we are constructing this message manually
+					mP.Create_Key(lock, key);
 					to_serv.str("");
 					to_serv.clear();
 					to_serv << lock << pipe; // create registration data
@@ -2494,11 +2405,11 @@ unsigned int cServerDC::WhoMyINFO(const string &info, string &dest, const string
 	for (cUserCollection::iterator i = mUserList.begin(); i != mUserList.end(); ++i) {
 		user = (cUser*)(*i);
 
-		if (user && user->mMyINFO.size()) {
-			low = toLower(user->mMyINFO, true);
+		if (user && user->mFakeMyINFO.size()) {
+			low = toLower(user->mFakeMyINFO, true);
 
 			if (low.find(unfo) != string::npos) {
-				cDCProto::EscapeChars(user->mMyINFO, myinfo);
+				cDCProto::EscapeChars(user->mFakeMyINFO, myinfo);
 				dest += sep;
 				dest += user->mNick;
 				dest += " [";
@@ -2525,17 +2436,11 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 			ipnum = conn->IP2Num();
 
 			if (exact && (ip_min == ipnum)) {
-#ifdef USE_BUFFER_RESERVE
-				dest.reserve(sep.size() + (*it)->mNick.size()); // reserve all the way
-#endif
 				dest.append(sep);
 				dest.append((*it)->mNick);
 				tot++;
 
 			} else if ((ip_min <= ipnum) && (ip_max >= ipnum)) {
-#ifdef USE_BUFFER_RESERVE
-				dest.reserve(sep.size() + (*it)->mNick.size() + 2 + conn->AddrIP().size() + 1); // reserve all the way
-#endif
 				dest.append(sep);
 				dest.append((*it)->mNick);
 				dest.append(" [");
@@ -2913,7 +2818,7 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 	if (!ToMain && mOpChat) {
 		mOpChat->SendPMToAll(os.str(), NULL);
 	} else {
-		mP.Create_Chat(temp, mC.opchat_name, os.str(), true); // reserve for pipe
+		mP.Create_Chat(temp, mC.opchat_name, os.str());
 		mOpchatList.SendToAll(temp, false, true);
 	}
 }
@@ -3195,9 +3100,6 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 			if (((svar == "hub_security") || (svar == "opchat_name") || (svar == "hub_security_desc") || (svar == "opchat_desc") || (svar == "cmd_start_op") || (svar == "cmd_start_user")) && (val_new != val_old)) { // take care of special hub configs in real time
 				string tag, name(HUB_VERSION_NAME), vers(HUB_VERSION_VERS), flag("\x1"), mail, shar("0"), data;
-#ifdef USE_BUFFER_RESERVE
-				tag.reserve(1 + name.size() + 3 + vers.size() + 17);
-#endif
 				tag.append(1, '<');
 				tag.append(name);
 				tag.append(" V:");
@@ -3212,7 +3114,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 					DelRobot((cMainRobot*)mHubSec); // this will send quit to all
 					mHubSec->mNick = val_new;
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
+					mP.Create_MyINFO(mHubSec->mFakeMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar);
 					AddRobot((cMainRobot*)mHubSec); // note: this will show user to all
 
 					#ifndef WITHOUT_PLUGINS
@@ -3238,7 +3140,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 							mOpChat->mClass = tUserCl(10);
 						}
 
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar, false); // dont reserve for pipe, we are not sending this
+						mP.Create_MyINFO(mOpChat->mFakeMyINFO, mOpChat->mNick, mC.opchat_desc + tag, flag, mail, shar);
 						AddRobot((cMainRobot*)mOpChat); // note: this will show user to all
 
 					} else if (mOpChat) {
@@ -3253,20 +3155,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					#endif
 
 				} else if (svar == "hub_security_desc") {
-					mP.Create_MyINFO(mHubSec->mMyINFO, mHubSec->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
-#ifdef USE_BUFFER_RESERVE
-					data.reserve(mHubSec->mMyINFO.size() + 1); // first use, reserve for pipe
-#endif
-					data = mHubSec->mMyINFO;
+					mP.Create_MyINFO(mHubSec->mFakeMyINFO, mHubSec->mNick, val_new + tag, flag, mail, shar); // send new myinfo
+					data = mHubSec->mFakeMyINFO;
 					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
-						mP.Create_MyINFO(mOpChat->mMyINFO, mOpChat->mNick, val_new + tag, flag, mail, shar, false); // send new myinfo, dont reserve for pipe, we are not sending this
-#ifdef USE_BUFFER_RESERVE
-						data.reserve(mOpChat->mMyINFO.size() + 1); // first use, reserve for pipe
-#endif
-						data = mOpChat->mMyINFO;
+						mP.Create_MyINFO(mOpChat->mFakeMyINFO, mOpChat->mNick, val_new + tag, flag, mail, shar); // send new myinfo
+						data = mOpChat->mFakeMyINFO;
 						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 					}
 

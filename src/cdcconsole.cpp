@@ -520,7 +520,7 @@ int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_mi
 	}
 
 	cc_zone = toUpper(cc_zone);
-	mOwner->mP.Create_PMForBroadcast(start, end, mOwner->mC.hub_security, mOwner->mC.hub_security, str, false); // conn->mpUser->mNick, dont reserve for pipe, buffer is copied before sending
+	mOwner->mP.Create_PMForBroadcast(start, end, mOwner->mC.hub_security, mOwner->mC.hub_security, str); // conn->mpUser->mNick
 	cTimePrint TimeBefore, TimeAfter;
 
 	if (mOwner->LastBCNick != "disable")
@@ -547,7 +547,7 @@ int cDCConsole::CmdMyInfo(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 {
-	if (!conn)
+	if (!conn || !conn->mpUser)
 		return 0;
 
 	ostringstream os;
@@ -561,9 +561,11 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str() << "\r\n";
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
 
-	if (mOwner->mTLSProxy.size())
-		os << " [*] " << autosprintf(_("TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n"; // tls
+	if (mOwner->mTLSProxy.size()) // client to hub tls
+		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
 
+	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client to client tls
+	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client to client nat
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }
@@ -598,7 +600,7 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	if (text.size() && (text[0] == ' ')) // small fix for getline
 		text = text.substr(1);
 
-	mOwner->mP.Create_Chat(temp, conn->mpUser->mNick, text, false); // dont reserve for pipe, we are not sending this
+	mOwner->mP.Create_Chat(temp, conn->mpUser->mNick, text);
 	cUser::tFloodHashType Hash = 0;
 	Hash = tHashArray<void*>::HashString(temp);
 
@@ -612,7 +614,7 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length and other conditions
 		return 1;
 
-	mOwner->mP.Create_Me(temp, conn->mpUser->mNick, text, true); // reserve for pipe
+	mOwner->mP.Create_Me(temp, conn->mpUser->mNick, text);
 	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
@@ -785,7 +787,9 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 
 	os << " [*] " << autosprintf(ngettext("Search interval: %d second", "Search interval: %d seconds", sear), sear) << "\r\n";
 	os << " [*] " << autosprintf(_("Mode: %s"), (conn->mpUser->mPassive ? _("Passive") : _("Active"))) << "\r\n";
-	os << " [*] " << autosprintf(_("TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hub TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Chat: %s"), (conn->mpUser->mHideChat ? _("Yes") : _("No"))) << "\r\n";
@@ -843,16 +847,10 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 				if (mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist, only if user is there
 					mOwner->mOpList.RemoveByHash(conn->mpUser->mNickHash);
 
-					mOwner->mP.Create_Quit(data, conn->mpUser->mNick, true); // send quit to all, reserve for pipe
+					mOwner->mP.Create_Quit(data, conn->mpUser->mNick); // send quit to all
 					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-					if (data.capacity() < (conn->mpUser->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-						data.reserve(conn->mpUser->mMyINFO.size() + 1);
-#endif
-
-					data = conn->mpUser->mMyINFO;
-					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
+					data = conn->mpUser->mFakeMyINFO;
+					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true); // send myinfo to all
 					mOwner->ShowUserIP(conn); // send userip to operators
 				}
 
@@ -951,7 +949,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 			if ((mOwner->mC.autoreg_class >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist
 				mOwner->mOpList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
 
-				mOwner->mP.Create_OpList(data, conn->mpUser->mNick, true); // send short oplist, reserve for pipe
+				mOwner->mP.Create_OpList(data, conn->mpUser->mNick); // send short oplist
 				mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
 			}
 
@@ -1015,7 +1013,7 @@ int cDCConsole::CmdTopic(istringstream &cmd_line, cConnDC *conn)
 
 	if (res == 1) {
 		string omsg;
-		mOwner->mP.Create_HubName(omsg, mOwner->mC.hub_name, topic, false); // dont reserve for pipe, buffer is copied before sending
+		mOwner->mP.Create_HubName(omsg, mOwner->mC.hub_name, topic);
 		mOwner->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 
 		if (topic.size())
@@ -1112,7 +1110,7 @@ int cDCConsole::CmdRegMyPasswd(istringstream &cmd_line, cConnDC *conn)
 
 	if ((conn->mpUser->mClass >= mOwner->mC.oplist_class) && !mOwner->mOpList.ContainsHash(conn->mpUser->mNickHash)) { // oplist
 		mOwner->mOpList.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
-		mOwner->mP.Create_OpList(str, conn->mpUser->mNick, true); // send short oplist, reserve for pipe
+		mOwner->mP.Create_OpList(str, conn->mpUser->mNick); // send short oplist
 		mOwner->mUserList.SendToAll(str, mOwner->mC.delayed_myinfo, true);
 	}
 
@@ -1213,7 +1211,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 					if (!user->mxConn->mRegInfo->mHideKeys && !mOwner->mOpList.ContainsHash(user->mNickHash)) {
 						mOwner->mOpList.AddWithHash(user, user->mNickHash);
 
-						mOwner->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
+						mOwner->mP.Create_OpList(msg, user->mNick); // send short oplist
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
 					}
 
@@ -1221,16 +1219,10 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsHash(user->mNickHash)) {
 						mOwner->mOpList.RemoveByHash(user->mNickHash);
 
-						mOwner->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
+						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-							msg.reserve(user->mMyINFO.size() + 1);
-#endif
-
-						msg = user->mMyINFO;
-						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
+						msg = user->mFakeMyINFO;
+						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true); // send myinfo to all
 						mOwner->ShowUserIP(user->mxConn); // send userip to operators
 					}
 				}
@@ -1454,23 +1446,23 @@ bool cDCConsole::cfRaw::operator()()
 
 	switch (id) {
 		case eRC_HUBNAME:
-			mS->mP.Create_HubName(cmd, par, "", true); // topic is included in param
+			mS->mP.Create_HubName(cmd, par, ""); // topic is included in param
 			break;
 
 		case eRC_QUIT:
-			mS->mP.Create_Quit(cmd, par, true);
+			mS->mP.Create_Quit(cmd, par);
 			break;
 
 		case eRC_REDIR:
-			mS->mP.Create_ForceMove(cmd, par, true, true);
+			mS->mP.Create_ForceMove(cmd, par, true);
 			break;
 
 		case eRC_PM:
-			mS->mP.Create_PMForBroadcast(cmd, end, mS->mC.hub_security, mConn->mpUser->mNick, par, true);
+			mS->mP.Create_PMForBroadcast(cmd, end, mS->mC.hub_security, mConn->mpUser->mNick, par);
 			break;
 
 		case eRC_CHAT:
-			mS->mP.Create_Chat(cmd, mConn->mpUser->mNick, par, true);
+			mS->mP.Create_Chat(cmd, mConn->mpUser->mNick, par);
 			break;
 
 		default:
@@ -1495,14 +1487,11 @@ bool cDCConsole::cfRaw::operator()()
 
 			if (user && user->mxConn) {
 				if (id == eRC_PM) {
-#ifdef USE_BUFFER_RESERVE
-					cmd.reserve(cmd.size() + nick.size() + end.size() + 1); // more additions, reserve for pipe again
-#endif
 					cmd.append(nick);
 					cmd.append(end);
 				}
 
-				user->mxConn->Send(cmd, true); // all are reserved for pipe
+				user->mxConn->Send(cmd, true);
 			} else {
 				(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
 				return true;
@@ -3422,7 +3411,7 @@ bool cDCConsole::cfRegUsr::operator()()
 					if ((ParClass >= mS->mC.oplist_class) && !mS->mOpList.ContainsHash(user->mNickHash)) { // oplist
 						mS->mOpList.AddWithHash(user, user->mNickHash);
 
-						mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
+						mS->mP.Create_OpList(msg, user->mNick); // send short oplist
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 					}
 
@@ -3464,16 +3453,10 @@ bool cDCConsole::cfRegUsr::operator()()
 					if (mS->mOpList.ContainsHash(user->mNickHash)) { // oplist, only if user is there
 						mS->mOpList.RemoveByHash(user->mNickHash);
 
-						mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
+						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-						if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all
-							msg.reserve(user->mMyINFO.size() + 1);
-#endif
-
-						msg = user->mMyINFO;
-						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
+						msg = user->mFakeMyINFO;
+						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
 						mS->ShowUserIP(user->mxConn); // send userip to operators
 					}
 
@@ -3534,7 +3517,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						if (!ui.mHideKeys && !mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.AddWithHash(user, user->mNickHash);
 
-							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 						}
 
@@ -3542,16 +3525,10 @@ bool cDCConsole::cfRegUsr::operator()()
 						if (!ui.mHideKeys && mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.RemoveByHash(user->mNickHash);
 
-							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-								msg.reserve(user->mMyINFO.size() + 1);
-#endif
-
-							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
+							msg = user->mFakeMyINFO;
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 						}
 					}
@@ -3653,7 +3630,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && !mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.AddWithHash(user, user->mNickHash);
 
-							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (ostr.str().empty())
@@ -3664,16 +3641,10 @@ bool cDCConsole::cfRegUsr::operator()()
 						if ((ui.mShowKeys || (user->mClass >= mS->mC.oplist_class)) && mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.RemoveByHash(user->mNickHash);
 
-							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-								msg.reserve(user->mMyINFO.size() + 1);
-#endif
-
-							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
+							msg = user->mFakeMyINFO;
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())
@@ -3686,7 +3657,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						if (!ui.mHideKeys && !mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.AddWithHash(user, user->mNickHash);
 
-							mS->mP.Create_OpList(msg, user->mNick, true); // send short oplist, reserve for pipe
+							mS->mP.Create_OpList(msg, user->mNick); // send short oplist
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
 
 							if (ostr.str().empty())
@@ -3697,16 +3668,10 @@ bool cDCConsole::cfRegUsr::operator()()
 						if (!ui.mHideKeys && (user->mClass < mS->mC.oplist_class) && mS->mOpList.ContainsHash(user->mNickHash)) {
 							mS->mOpList.RemoveByHash(user->mNickHash);
 
-							mS->mP.Create_Quit(msg, user->mNick, true); // send quit to all, reserve for pipe
+							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-
-#ifdef USE_BUFFER_RESERVE
-							if (msg.capacity() < (user->mMyINFO.size() + 1)) // send myinfo to all, reserve for pipe
-								msg.reserve(user->mMyINFO.size() + 1);
-#endif
-
-							msg = user->mMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
+							msg = user->mFakeMyINFO;
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())
@@ -3836,7 +3801,7 @@ bool cDCConsole::cfBc::operator()()
 	}
 
 	string start, end;
-	mS->mP.Create_PMForBroadcast(start, end, mS->mC.hub_security, mS->mC.hub_security, message, false); // this->mConn->mpUser->mNick, dont reserve for pipe, buffer is copied before sending
+	mS->mP.Create_PMForBroadcast(start, end, mS->mC.hub_security, mS->mC.hub_security, message); // this->mConn->mpUser->mNick
 	cTimePrint TimeBefore, TimeAfter;
 
 	if (mS->LastBCNick != "disable")

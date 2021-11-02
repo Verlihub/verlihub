@@ -57,14 +57,11 @@ unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");
 
-inline void AppendReservePlusPipe(string &dest, string &data, const bool pipe)
+inline void AppendPipe(string &dest, string &data, const bool pipe)
 {
-	if (pipe) // must always be already reserved for pipe
+	if (pipe)
 		data.append(1, '|');
 
-#ifdef USE_BUFFER_RESERVE
-	dest.reserve(dest.size() + data.size());
-#endif
 	dest.append(data);
 }
 

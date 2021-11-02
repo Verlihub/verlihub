@@ -153,6 +153,8 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserHost]        = &_GetUserHost;
 	callbacklist[W_GetUserIP]          = &_GetUserIP;
 	callbacklist[W_SetUserIP]          = &_SetUserIP;
+	callbacklist[W_SetMyINFOFlag]      = &_SetMyINFOFlag;
+	callbacklist[W_UnsetMyINFOFlag]    = &_UnsetMyINFOFlag;
 	callbacklist[W_GetUserHubURL]      = &_GetUserHubURL;
 	callbacklist[W_GetUserExtJSON]     = &_GetUserExtJSON;
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
@@ -740,11 +742,11 @@ bool cpiPython::OnParsedMsgSearch(cConnDC *conn, cMessageDC *msg)
 				break;
 
 			case eDC_TTHS:
-				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false, false); // dont reserve for pipe, we are not sending this
+				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SA_ADDR), msg->ChunkString(eCH_SA_TTH), false);
 				break;
 
 			case eDC_TTHS_PAS:
-				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true, false); // dont reserve for pipe, we are not sending this
+				cpiPython::me->server->mP.Create_Search(data, msg->ChunkString(eCH_SP_NICK), msg->ChunkString(eCH_SP_TTH), true);
 				break;
 
 			default:
@@ -1384,7 +1386,7 @@ w_Targs *_SendPMToAll(int id, w_Targs *args)
 		return NULL;
 
 	string start, end;
-	cpiPython::me->server->mP.Create_PMForBroadcast(start, end, from, from, data, false); // dont reserve for pipe, buffer is copied before sending
+	cpiPython::me->server->mP.Create_PMForBroadcast(start, end, from, from, data);
 	cpiPython::me->server->SendToAllWithNick(start, end, min_class, max_class);
 	cpiPython::me->server->LastBCNick = from;
 	return w_ret1;
@@ -1422,8 +1424,8 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (!u) return NULL;
 	char *n, *desc, *tag, *speed, *mail, *size;
-	if (!cpiPython::me->SplitMyINFO(u->mMyINFO.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
-		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", u->mMyINFO.c_str());
+	if (!cpiPython::me->SplitMyINFO(u->mFakeMyINFO.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
+		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", u->mFakeMyINFO.c_str());
 		return NULL;
 	}
 	w_Targs *res = cpiPython::lib_pack("ssssss", n, desc, tag, speed, mail, size);
@@ -1446,7 +1448,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 		log1("PY SetMyINFO   user %s not found\n", nick);
 		return NULL;
 	}
-	string nfo = u->mMyINFO;
+	string nfo = u->mFakeMyINFO;
 	if (nfo.length() < 20) {
 		log1("PY SetMyINFO   couldn't read user's current MyINFO\n");
 		return NULL;
@@ -1478,15 +1480,7 @@ w_Targs *_SetMyINFO(int id, w_Targs *args)
 	freee(origmail);
 	freee(origsize);
 
-#ifdef USE_BUFFER_RESERVE
-	if (u->mMyINFO.capacity() < newinfo.size())
-		u->mMyINFO.reserve(newinfo.size());
-#endif
-
-	u->mMyINFO = newinfo;
-#ifdef USE_BUFFER_RESERVE
-	newinfo.reserve(newinfo.size() + 1); // reserve for pipe
-#endif
+	u->mFakeMyINFO = newinfo; // todo: modify mMyFlag
 	cpiPython::me->server->mUserList.SendToAll(newinfo, cpiPython::me->server->mC.delayed_myinfo, true);
 	return w_ret1;
 }
@@ -1505,21 +1499,21 @@ w_Targs *_GetUserClass(int id, w_Targs *args)
 w_Targs *_GetNickList(int id, w_Targs *args)
 {
 	string list;
-	cpiPython::me->server->mUserList.GetNickList(list, false);
+	cpiPython::me->server->mUserList.GetNickList(list);
 	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
 	string list;
-	cpiPython::me->server->mOpList.GetNickList(list, false);
+	cpiPython::me->server->mOpList.GetNickList(list);
 	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
 	string list;
-	cpiPython::me->server->mRobotList.GetNickList(list, false);
+	cpiPython::me->server->mRobotList.GetNickList(list);
 	return cpiPython::lib_pack("s", strdup(list.c_str()));
 }
 
@@ -1580,6 +1574,40 @@ w_Targs *_SetUserIP(int id, w_Targs *args)
 		return NULL;
 
 	if (!SetUserIP(nick, ip))
+		return NULL;
+
+	return w_ret1;
+}
+
+w_Targs *_SetMyINFOFlag(int id, w_Targs *args)
+{
+	const char *nick;
+	unsigned int flag = 0;
+
+	if (!cpiPython::lib_unpack(args, "sl", &nick, &flag))
+		return NULL;
+
+	if (!nick || (flag < 1))
+		return NULL;
+
+	if (!SetMyINFOFlag(nick, flag))
+		return NULL;
+
+	return w_ret1;
+}
+
+w_Targs *_UnsetMyINFOFlag(int id, w_Targs *args)
+{
+	const char *nick;
+	unsigned int flag = 0;
+
+	if (!cpiPython::lib_unpack(args, "sl", &nick, &flag))
+		return NULL;
+
+	if (!nick || (flag < 1))
+		return NULL;
+
+	if (!UnsetMyINFOFlag(nick, flag))
 		return NULL;
 
 	return w_ret1;
@@ -2007,7 +2035,7 @@ w_Targs *_AddRobot(int id, w_Targs *args)
 		clas = 0;
 
 	string info;
-	cpiPython::me->server->mP.Create_MyINFO(info, nick, desc, conn, mail, shar, false); // dont reserve for pipe, we are not sending this
+	cpiPython::me->server->mP.Create_MyINFO(info, nick, desc, conn, mail, shar);
 
 	if (cpiPython::me->NewRobot(nick, clas, info)) // note: this will show user to all
 		return w_ret1;
@@ -2134,7 +2162,7 @@ w_Targs *_Topic(int id, w_Targs *args)
 	if (topic && (strlen(topic) < 1024)) {
 		cpiPython::me->server->mC.hub_topic = topic;
 		string msg, sTopic(topic);
-		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic, true); // reserve for pipe
+		cpiPython::me->server->mP.Create_HubName(msg, cpiPython::me->server->mC.hub_name, sTopic);
 		cpiPython::me->server->mUserList.SendToAll(msg, true, true);
 	}
 

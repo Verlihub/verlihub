@@ -539,13 +539,8 @@ void cBanList::Num2Ip(unsigned long mask, string &ip)
 	char temp[INET_ADDRSTRLEN];
 	sa.sin_addr.s_addr = mask;
 
-	if (inet_ntop(AF_INET, &(sa.sin_addr), temp, INET_ADDRSTRLEN)) {
-		ip.clear();
-#ifdef USE_BUFFER_RESERVE
-		ip.reserve(strlen(temp));
-#endif
+	if (inet_ntop(AF_INET, &(sa.sin_addr), temp, INET_ADDRSTRLEN))
 		ip = temp;
-	}
 	*/
 
 	ostringstream os;
