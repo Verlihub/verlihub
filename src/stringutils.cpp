@@ -346,8 +346,11 @@ bool IsNumber(const char *num)
 		return false;
 
 	for (unsigned int pos = 0; num[pos]; pos++) {
-		if (!isdigit(num[pos]))
+		if ((pos == 0) && (num[pos] == '-')) { // allow negative numbers
+			// pass
+		} else if (!isdigit(num[pos])) {
 			return false;
+		}
 	}
 
 	return true;

@@ -3929,36 +3929,6 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 
 	ostringstream os;
 
-	if (!(one->mFeatures & eSF_TLS) || !one->mpUser->GetMyFlag(eMF_TLS)) { // one dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("Your client doesn't support secure connections to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
-			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
-			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
-			os << "\tAirDC++ @ https://airdcpp.net/\r\n";
-			os << "\tApexDC++ @ https://apexdc.net/\r\n";
-			os << "\tEiskaltDC++ @ https://eiskaltdcpp.sourceforge.io/\r\n";
-			os << "\tFlylinkDC++ @ http://flylinkdc.com/\r\n";
-			mS->DCPublicHS(os.str(), one);
-		}
-
-		return false;
-	}
-
-	if (!(two->mFeatures & eSF_TLS) || !two->mpUser->GetMyFlag(eMF_TLS)) { // two dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
-			os << autosprintf(_("User you're trying connect to doesn't support secure connections, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
-			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
-			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
-			os << "\tAirDC++ @ https://airdcpp.net/\r\n";
-			os << "\tApexDC++ @ https://apexdc.net/\r\n";
-			os << "\tEiskaltDC++ @ https://eiskaltdcpp.sourceforge.io/\r\n";
-			os << "\tFlylinkDC++ @ http://flylinkdc.com/\r\n";
-			mS->DCPublicHS(os.str(), one);
-		}
-
-		return false;
-	}
-
 	if (one->mTLSVer.size() && (one->mTLSVer != "0.0") && two->mTLSVer.size() && (two->mTLSVer != "0.0")) { // we know tls version of both users
 		/*
 			1.3 works with 1.3 and 1.2
@@ -4013,6 +3983,36 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 				return true;
 			}
 		}
+	}
+
+	if (!(one->mFeatures & eSF_TLS) || !one->mpUser->GetMyFlag(eMF_TLS)) { // one dont have tls flag in supports or myinfo
+		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("Your client doesn't support secure connections to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
+			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
+			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
+			os << "\tAirDC++ @ https://airdcpp.net/\r\n";
+			os << "\tApexDC++ @ https://apexdc.net/\r\n";
+			os << "\tEiskaltDC++ @ https://eiskaltdcpp.sourceforge.io/\r\n";
+			os << "\tFlylinkDC++ @ http://flylinkdc.com/\r\n";
+			mS->DCPublicHS(os.str(), one);
+		}
+
+		return false;
+	}
+
+	if (!(two->mFeatures & eSF_TLS) || !two->mpUser->GetMyFlag(eMF_TLS)) { // two dont have tls flag in supports or myinfo
+		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("User you're trying connect to doesn't support secure connections, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
+			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
+			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
+			os << "\tAirDC++ @ https://airdcpp.net/\r\n";
+			os << "\tApexDC++ @ https://apexdc.net/\r\n";
+			os << "\tEiskaltDC++ @ https://eiskaltdcpp.sourceforge.io/\r\n";
+			os << "\tFlylinkDC++ @ http://flylinkdc.com/\r\n";
+			mS->DCPublicHS(os.str(), one);
+		}
+
+		return false;
 	}
 
 	return true; // default, note: we can not predict future version compatibility, it is now up to a script to compare tls client versions
