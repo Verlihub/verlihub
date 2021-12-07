@@ -3258,7 +3258,7 @@ bool cDCConsole::cfRegUsr::operator()()
 		}
 		*/
 
-		if ((MyClass < eUC_MASTER) && (cls >= eUC_NORMUSER) && (cls > int(MyClass - mS->mC.classdif_reg))) {
+		if ((MyClass < eUC_MASTER) && (MyClass < cls)) {
 			(*mOS) << _("You have no rights to do this.");
 			return false;
 		}

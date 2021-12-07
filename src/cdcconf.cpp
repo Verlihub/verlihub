@@ -72,7 +72,7 @@ void cDCConf::AddVars()
 	// end of section
 
 	// begin hublist configuration
-	Add("hublist_host", hublist_host, "hublist.te-home.net");
+	Add("hublist_host", hublist_host, "hublist.te-home.net hublist.pwiam.com");
 	Add("hublist_port", hublist_port, 2501);
 	Add("hublist_send_minshare", hublist_send_minshare, true);
 	Add("hublist_send_listhost", hublist_send_listhost, true);
