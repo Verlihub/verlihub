@@ -3082,13 +3082,10 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	if (mS->mC.botinfo_report)
 		mS->ReportUserToOpchat(conn, os.str());
 
-	os.str("");
-	os.clear();
 	char sep = '$';
-	char pipe = '|';
 	cConnType *ConnType = mS->mConnTypes->FindConnType("default");
 	unsigned __int64 minshare = mS->mC.min_share;
-	string host = mS->mC.hub_host;
+	string host, icon, logo, info = mS->mC.hub_host;
 	size_t pos;
 
 	if (mS->mC.min_share_use_hub > minshare)
@@ -3109,12 +3106,13 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (mS->mC.hub_icon_url.size())
-		os << "$SetIcon " << mS->mC.hub_icon_url << pipe;
+		Create_SetIcon(icon, mS->mC.hub_icon_url);
 
 	if (mS->mC.hub_logo_url.size())
-		os << "$SetLogo " << mS->mC.hub_logo_url << pipe;
+		Create_SetLogo(logo, mS->mC.hub_logo_url);
 
-	os << "$HubINFO ";
+	os.str("");
+	os.clear();
 	os << mS->mC.hub_name << sep;
 	os << host << sep;
 	os << mS->mC.hub_desc << sep;
@@ -3126,9 +3124,10 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	os << mS->mC.hub_owner << sep;
 	os << mS->mC.hub_category << sep;
 	os << mS->mC.hub_encoding;
-
-	string omsg(os.str());
-	conn->Send(omsg, true, false);
+	string pars(os.str());
+	Create_HubINFO(info, pars);
+	pars = icon + logo + info;
+	conn->Send(pars, true, false);
 	conn->SetLSFlag(eLS_BOTINFO);
 	return 0;
 }
@@ -4619,6 +4618,39 @@ void cDCProto::Create_SearchRule(string &dest, const string &rules)
 
 	dest.append("$SearchRule ");
 	dest.append(rules);
+}
+
+void cDCProto::Create_SetIcon(string &dest, const string &url, bool pipe)
+{
+	if (dest.size())
+		dest.clear();
+
+	dest.append("$SetIcon ");
+	dest.append(url);
+
+	if (pipe)
+		dest.append(1, '|');
+}
+
+void cDCProto::Create_SetLogo(string &dest, const string &url, bool pipe)
+{
+	if (dest.size())
+		dest.clear();
+
+	dest.append("$SetLogo ");
+	dest.append(url);
+
+	if (pipe)
+		dest.append(1, '|');
+}
+
+void cDCProto::Create_HubINFO(string &dest, const string &pars)
+{
+	if (dest.size())
+		dest.clear();
+
+	dest.append("$HubINFO ");
+	dest.append(pars);
 }
 
 cConnType* cDCProto::ParseSpeed(const string &uspeed)

@@ -245,6 +245,9 @@ protected:
 	static void Create_Supports(string &dest, const string &flags);
 	static void Create_NickRule(string &dest, const string &rules);
 	static void Create_SearchRule(string &dest, const string &rules);
+	static void Create_SetIcon(string &dest, const string &url, bool pipe = true);
+	static void Create_SetLogo(string &dest, const string &url, bool pipe = true);
+	static void Create_HubINFO(string &dest, const string &pars);
 
 	/**
 	* Treat mainchat messages.
