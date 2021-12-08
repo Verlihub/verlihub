@@ -1014,6 +1014,10 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	#endif
 
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN
+
+	if (mTLSProxy.size())
+		conn->mLock.append("TLS_");
+
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
 	conn->mLock.append(StringFrom(rand() % 10));
