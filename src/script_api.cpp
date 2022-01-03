@@ -442,13 +442,20 @@ bool SetUserIP(const char *nick, const char *ip)
 
 bool SetMyINFOFlag(const char *nick, const unsigned int flag)
 {
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Verlihub not found" << endl;
+		return false;
+	}
+
 	if (!nick || (flag < 1))
 		return false;
 
 	if (!((flag == eMF_NORM) || (flag == eMF_AWAY) || (flag == eMF_SERV) || (flag == eMF_FIRE) || (flag == eMF_TLS) || (flag == eMF_NAT))) // check supported flags
 		return false;
 
-	cUser *user = GetUser(nick);
+	cUser *user = serv->GetConnUserByNick(nick);
 
 	if (!user || !user->mxConn)
 		return false;
@@ -462,13 +469,20 @@ bool SetMyINFOFlag(const char *nick, const unsigned int flag)
 
 bool UnsetMyINFOFlag(const char *nick, const unsigned int flag)
 {
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		cerr << "Verlihub not found" << endl;
+		return false;
+	}
+
 	if (!nick || (flag < 1))
 		return false;
 
 	if (!((flag == eMF_NORM) || (flag == eMF_AWAY) || (flag == eMF_SERV) || (flag == eMF_FIRE) || (flag == eMF_TLS) || (flag == eMF_NAT))) // check supported flags
 		return false;
 
-	cUser *user = GetUser(nick);
+	cUser *user = serv->GetConnUserByNick(nick);
 
 	if (!user || !user->mxConn)
 		return false;

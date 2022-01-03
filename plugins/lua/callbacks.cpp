@@ -1592,7 +1592,7 @@ int _GetTLSVer(lua_State *L)
 	}
 
 	const string nick = lua_tostring(L, 2);
-	cUser *user = serv->mUserList.GetUserByNick(nick);
+	cUser *user = serv->GetConnUserByNick(nick);
 
 	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
