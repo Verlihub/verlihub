@@ -463,6 +463,8 @@ class cServerDC : public cAsyncSocketServer
 
 		// get connection by ip
 		cConnDC* GetConnByIP(const unsigned long ip);
+		// get user from connection list by nick
+		cUser* GetConnUserByNick(const string &nick);
 
 		/**
 		* Send data to all users that are in userlist.

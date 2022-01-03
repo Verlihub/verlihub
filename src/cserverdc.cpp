@@ -647,6 +647,24 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	return NULL;
 }
 
+cUser* cServerDC::GetConnUserByNick(const string &nick) // note: use this with caution, user might not be in list yet
+{
+	if (nick.empty())
+		return NULL;
+
+	cConnDC *conn;
+	tCLIt pos;
+
+	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
+		conn = (cConnDC*)(*pos);
+
+		if (conn && conn->ok && conn->mpUser && conn->mpUser->mNick.size() && (StrCompare(conn->mpUser->mNick, 0, conn->mpUser->mNick.size(), nick) == 0))
+			return conn->mpUser;
+	}
+
+	return NULL;
+}
+
 void cServerDC::SendToAll(const string &data, int cm, int cM) // todo: class range is ignored here, bug?
 {
 	cConnDC *conn;
