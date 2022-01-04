@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -238,6 +238,7 @@ protected:
 	static void Create_SP(string &dest, const string &tth, const string &nick);
 	static void Create_UserIP(string &dest, const string &list);
 	static void Create_UserIP(string &dest, const string &nick, const string &addr);
+	static void Create_DataStat(string &dest, int type, int act);
 	static void Create_GetPass(string &dest);
 	static void Create_BadPass(string &dest);
 	static void Create_GetHubURL(string &dest);
