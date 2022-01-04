@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1827,6 +1827,7 @@ int _InUserSupports(lua_State *L)
 		((flag.size() == 4) && (StrCompare(flag, 0, 4, "ACTM") == 0) && (user->mxConn->mFeatures & eSF_ACTM)) ||
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "SaltPass") == 0) && (user->mxConn->mFeatures & eSF_SALTPASS)) ||
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "NickRule") == 0) && (user->mxConn->mFeatures & eSF_NICKRULE)) ||
+		((flag.size() == 8) && (StrCompare(flag, 0, 8, "DataStat") == 0) && (user->mxConn->mFeatures & eSF_DATASTAT)) ||
 		((flag.size() == 10) && (StrCompare(flag, 0, 10, "SearchRule") == 0) && (user->mxConn->mFeatures & eSF_SEARRULE)) ||
 		((flag.size() == 6) && (StrCompare(flag, 0, 6, "HubURL") == 0) && (user->mxConn->mFeatures & eSF_HUBURL)) ||
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "ExtJSON2") == 0) && (user->mxConn->mFeatures & eSF_EXTJSON2))

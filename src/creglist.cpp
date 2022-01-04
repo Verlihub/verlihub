@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -77,6 +77,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("auth_ip", "varchar(15)", "", true, mModel.mAuthIP);
 	AddCol("alternate_ip", "varchar(15)", "", true, mModel.mAlternateIP);
+	//AddCol("lang", "varchar(2)", "", true, mModel.mLang);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick), ";
 	mMySQLTable.mExtra+= "INDEX login_index (login_last), ";
 	mMySQLTable.mExtra+= "INDEX logout_index (logout_last)";
