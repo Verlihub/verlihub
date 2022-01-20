@@ -1386,71 +1386,71 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		conn->SetLSFlag(eLS_MYINFO);
 
 		if (conn->mFeatures & eSF_SEARRULE) { // send search rule command
-			temp.clear();
-			temp.append("Min ");
-			temp.append(StringFrom(mS->mC.min_search_chars));
-			temp.append("$$Max ");
-			temp.append(StringFrom(mS->mC.max_len_search));
-			temp.append("$$Num ");
-			temp.append(StringFrom(mS->mC.search_number));
-			temp.append("$$Int ");
+			string pars;
+			pars.append("Min ");
+			pars.append(StringFrom(mS->mC.min_search_chars));
+			pars.append("$$Max ");
+			pars.append(StringFrom(mS->mC.max_len_search));
+			pars.append("$$Num ");
+			pars.append(StringFrom(mS->mC.search_number));
+			pars.append("$$Int ");
 
 			if ((conn->mpUser->mClass >= int(eUC_NORMUSER)) && (conn->mpUser->mClass >= mS->mC.min_class_use_hub)) {
 				switch (conn->mpUser->mClass) {
 					case eUC_REGUSER:
-						temp.append(StringFrom(mS->mC.int_search_reg));
+						pars.append(StringFrom(mS->mC.int_search_reg));
 						break;
 
 					case eUC_VIPUSER:
-						temp.append(StringFrom(mS->mC.int_search_vip));
+						pars.append(StringFrom(mS->mC.int_search_vip));
 						break;
 
 					case eUC_OPERATOR:
 					case eUC_CHEEF:
 					case eUC_ADMIN:
-						temp.append(StringFrom(mS->mC.int_search_op));
+						pars.append(StringFrom(mS->mC.int_search_op));
 						break;
 
 					case eUC_MASTER:
-						temp.append(1, '0');
+						pars.append(1, '0');
 						break;
 
 					default:
-						temp.append(StringFrom(mS->mC.int_search));
+						pars.append(StringFrom(mS->mC.int_search));
 						break;
 				}
 			} else {
-				temp.append("-1");
+				pars.append("-1");
 			}
 
-			temp.append("$$IntPas ");
+			pars.append("$$IntPas ");
 
 			if ((conn->mpUser->mClass >= int(eUC_NORMUSER)) && (conn->mpUser->mClass >= mS->mC.min_class_use_hub_passive)) {
 				switch (conn->mpUser->mClass) {
 					case eUC_REGUSER:
-						temp.append(StringFrom(mS->mC.int_search_reg_pas));
+						pars.append(StringFrom(mS->mC.int_search_reg_pas));
 						break;
 
 					case eUC_VIPUSER:
-						temp.append(StringFrom(mS->mC.int_search_vip));
+						pars.append(StringFrom(mS->mC.int_search_vip));
 						break;
 
 					case eUC_OPERATOR:
 					case eUC_CHEEF:
 					case eUC_ADMIN:
-						temp.append(StringFrom(mS->mC.int_search_op));
+						pars.append(StringFrom(mS->mC.int_search_op));
 						break;
 
 					case eUC_MASTER:
-						temp.append(1, '0');
+						pars.append(1, '0');
 						break;
 
 					default:
-						temp.append(StringFrom(mS->mC.int_search_pas));
+						pars.append(StringFrom(mS->mC.int_search_pas));
 						break;
 				}
 			} else {
-				temp.append("-1");
+				pars.append("-1");
 			}
 
 			share_check = 0;
@@ -1473,11 +1473,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			}
 
 			if (share_check > 0) { // todo: mS->mC.min_share_factor_passive
-				temp.append("$$Share ");
-				temp.append(StringFrom(share_check * 1024 * 1024));
+				pars.append("$$Share ");
+				pars.append(StringFrom(share_check * 1024 * 1024));
 			}
 
-			Create_SearchRule(temp, temp);
+			Create_SearchRule(temp, pars);
 			conn->Send(temp, true);
 		}
 
