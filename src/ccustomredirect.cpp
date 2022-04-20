@@ -34,6 +34,7 @@ namespace nVerliHub {
 			mStop = 0;
 			mCountry = "";
 			mSecure = 2; // 0 - no, 1 - yes, 2 - any
+			mShare = 0;
 		}
 
 		cRedirect::~cRedirect()
@@ -122,6 +123,7 @@ namespace nVerliHub {
 				os << _("Any");
 
 			os << "\t" << ((tr.mSecure == 2) ? _("Any") : ((tr.mSecure == 1) ? _("Yes") : _("No")));
+			os << "\t" << tr.mShare << " " << _("GB");
 			return os;
 		}
 

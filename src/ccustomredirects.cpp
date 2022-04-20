@@ -43,6 +43,7 @@ namespace nVerliHub {
 		AddCol("stop", "tinyint(2)", "0", false, mModel.mStop);
 		AddCol("country", "varchar(50)", "", true, mModel.mCountry);
 		AddCol("secure", "tinyint(1)", "2", false, mModel.mSecure);
+		AddCol("share", "int(11)", "0", false, mModel.mShare);
 		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(address)";
 		SetBaseTo(&mModel);
@@ -97,7 +98,7 @@ namespace nVerliHub {
 	/*
 		find redirect url from a given type
 	*/
-	char* cRedirects::MatchByType(unsigned int rype, const string &cc, bool issec)
+	char* cRedirects::MatchByType(unsigned int rype, const string &cc, bool issec, unsigned __int64 shar)
 	{
 		int rmap = MapTo(rype);
 
@@ -132,8 +133,10 @@ namespace nVerliHub {
 				if ((redir->mStart == redir->mStop) || ((int (lt->tm_hour) >= redir->mStart) && (int (lt->tm_hour) <= redir->mStop))) { // redirect hours
 					if (redir->mCountry.empty() || cc.empty() || (toUpper(redir->mCountry).find(cc) != redir->mCountry.npos)) { // country match
 						if ((redir->mSecure == 2) || ((redir->mSecure == 1) == issec)) { // secure connection
-							rist[cnt] = redir->mAddress.c_str();
-							cnt++;
+							if ((redir->mShare == 0) || (shar >= (unsigned __int64)((unsigned long)redir->mShare * 1024ul * 1024ul * 1024ul))) { // minimal share in gb
+								rist[cnt] = redir->mAddress.c_str();
+								cnt++;
+							}
 						}
 					}
 				}
@@ -209,6 +212,7 @@ namespace nVerliHub {
 					"[ -z <stop>]"
 					"[ -c <:cc:>]"
 					"[ -s <2=any/1=yes/0=no>]"
+					"[ -g <share>]"
 					"[ -e <1=yes/0=no>]";
 
 				break;
@@ -261,6 +265,7 @@ namespace nVerliHub {
 					"( -z ?(\\d+))?|"
 					"( -c ?(\\S*))?|"
 					"( -s ?(2|1|0))?|"
+					"( -g ?(\\d+))?|"
 					"( -e ?(1|0))?|"
 					")*\\s*$";
 
@@ -283,6 +288,7 @@ namespace nVerliHub {
 			eADD_STOPp, eADD_STOP,
 			eADD_COUNTRYp, eADD_COUNTRY,
 			eADD_SECUREp, eADD_SECURE,
+			eADD_SHAREp, eADD_SHARE,
 			eADD_ENABLEp, eADD_ENABLE
 		};
 
@@ -292,6 +298,7 @@ namespace nVerliHub {
 		cmd->GetParInt(eADD_STOP, data.mStop);
 		cmd->GetParStr(eADD_COUNTRY, data.mCountry);
 		cmd->GetParInt(eADD_SECURE, data.mSecure);
+		cmd->GetParInt(eADD_SHARE, data.mShare);
 		cmd->GetParInt(eADD_ENABLE, data.mEnable);
 		return true;
 	}
@@ -314,6 +321,7 @@ namespace nVerliHub {
 		(*os) << "\t" << _("Type");
 		(*os) << "\t\t" << _("Country");
 		(*os) << "\t" << _("Secure");
+		(*os) << "\t" << _("Share");
 		(*os) << "\r\n\t" << string(150, '-') << "\r\n";
 	}
 

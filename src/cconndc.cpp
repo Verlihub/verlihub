@@ -269,7 +269,12 @@ int cConnDC::OnCloseNice()
 
 	} else if (mxServer) {
 		const string &cc = GetGeoCC();
-		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc, (this->mTLSVer.size() && (this->mTLSVer != "0.0")));
+		unsigned __int64 shar = 0;
+
+		if (mpUser && (mpUser->mShare > 0))
+			shar = mpUser->mShare;
+
+		char *addr = Server()->mCo->mRedirects->MatchByType(this->mCloseReason, cc, (this->mTLSVer.size() && (this->mTLSVer != "0.0")), shar);
 
 		if (addr) {
 			Server()->mP.Create_ForceMove(omsg, addr, true);

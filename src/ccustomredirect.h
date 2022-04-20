@@ -89,6 +89,8 @@ namespace nVerliHub {
 				string mAddress;
 				// secure connection
 				int mSecure;
+				// minimal share in gb
+				int mShare;
 				// redirect status
 				int mEnable;
 		};

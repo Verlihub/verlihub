@@ -21,6 +21,8 @@
 		-a [hh:mm]				- Start
 		-z [hh:mm]				- Stop
 		-c [:cc:]				- Country
+		-s [2/1/0]				- Secure
+		-g [gb]					- Share
 
 	!delredirect <address>			- Remove redirect
 	!lstredirect				- List redirects
