@@ -46,7 +46,7 @@ namespace nVerliHub {
 				virtual void AddFields();
 				cRedirect* Find(const string &name);
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);
-				char* MatchByType(unsigned int rype, const string &cc, bool issec);
+				char* MatchByType(unsigned int rype, const string &cc, bool issec, unsigned __int64 shar);
 				int MapTo(unsigned int rype);
 				void Random(int &key);
 				string mOldMap[2];

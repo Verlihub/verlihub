@@ -1074,38 +1074,6 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			break;
 	}
 
-	if (conn->mpUser->mInList && (check != conn->mpUser->mPassive)) { // change user mode if differs and not first time
-		if (check) {
-			if (mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
-				mS->mPassiveUsers.RemoveByHash(conn->mpUser->mNickHash);
-
-			if (!mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
-				mS->mActiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
-		} else {
-			if (mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
-				mS->mActiveUsers.RemoveByHash(conn->mpUser->mNickHash);
-
-			if (!mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
-				mS->mPassiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
-		}
-	}
-
-	string temp;
-
-	if (conn->mpUser->mPassive && (conn->mpUser->mClass != eUC_PINGER) && (conn->mpUser->mClass < eUC_OPERATOR) && (mS->mC.max_users_passive > -1) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
-		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
-
-		if (conn->Log(2))
-			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
-
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
-		Create_HubIsFull(temp); // must be sent after chat message
-		conn->Send(temp, true);
-		delete dc_tag;
-		dc_tag = NULL;
-		return -1;
-	}
-
 	string myinfo_share = msg->ChunkString(eCH_MI_SIZE); // check share conditions
 
 	if ((myinfo_share.size() > 18) || !IsNumber(myinfo_share.c_str()))
@@ -1115,6 +1083,16 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	share_byte = StringAsLL(myinfo_share);
 	share_check = share_byte / (1024 * 1024);
 
+	if (!conn->mpUser->mHideShare) // minus old share, only if not hidden
+		mS->mTotalShare -= conn->mpUser->mShare;
+
+	conn->mpUser->mShare = share_byte; // note: from here on share limited redirects are available
+
+	if (conn->mpUser->mHideShare) // update total share
+		myinfo_share = "0";
+	else
+		mS->mTotalShare += share_byte;
+
 	if (conn->mpUser->mClass <= eUC_OPERATOR) { // calculate minimum and maximum
 		__int64 min_share = mS->mC.min_share;
 		__int64 max_share = mS->mC.max_share;
@@ -1122,6 +1100,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		if (conn->mpUser->mClass == eUC_PINGER) {
 			min_share = 0;
+
 		} else {
 			if (conn->mpUser->mClass >= eUC_REGUSER) {
 				min_share = mS->mC.min_share_reg;
@@ -1182,7 +1161,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				if (conn->mpUser->mPassive)
 					temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
 
-				if (share_check < temp_min_share) {
+				if (share_check < temp_min_share) { // todo: notify user
 					conn->mpUser->SetRight(eUR_SEARCH, 0);
 					conn->mpUser->SetRight(eUR_CTM, 0);
 				}
@@ -1191,21 +1170,43 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		result = ((conn->mpUser->mPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
 
-		if (conn->mpUser->mClass < result) {
+		if (conn->mpUser->mClass < result) { // todo: notify user
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
 	}
 
-	if (!conn->mpUser->mHideShare) // minus old share, only if not hidden
-		mS->mTotalShare -= conn->mpUser->mShare;
+	if (conn->mpUser->mInList && (check != conn->mpUser->mPassive)) { // change user mode if differs and not first time
+		if (check) {
+			if (mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mPassiveUsers.RemoveByHash(conn->mpUser->mNickHash);
 
-	conn->mpUser->mShare = share_byte;
+			if (!mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mActiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+		} else {
+			if (mS->mActiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mActiveUsers.RemoveByHash(conn->mpUser->mNickHash);
 
-	if (conn->mpUser->mHideShare) // update total share
-		myinfo_share = "0";
-	else
-		mS->mTotalShare += share_byte;
+			if (!mS->mPassiveUsers.ContainsHash(conn->mpUser->mNickHash))
+				mS->mPassiveUsers.AddWithHash(conn->mpUser, conn->mpUser->mNickHash);
+		}
+	}
+
+	string temp;
+
+	if (conn->mpUser->mPassive && (conn->mpUser->mClass != eUC_PINGER) && (conn->mpUser->mClass < eUC_OPERATOR) && (mS->mC.max_users_passive > -1) && (mS->mPassiveUsers.Size() > (unsigned int)mS->mC.max_users_passive)) { // passive user limit
+		os << autosprintf(_("Passive user limit exceeded at %d users. Try again later or set up an active connection."), mS->mPassiveUsers.Size());
+
+		if (conn->Log(2))
+			conn->LogStream() << "Passive user limit exceeded: " << mS->mPassiveUsers.Size() << endl;
+
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
+		Create_HubIsFull(temp); // must be sent after chat message
+		conn->Send(temp, true);
+		delete dc_tag;
+		dc_tag = NULL;
+		return -1;
+	}
 
 	conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1]; // set status flags, note: we set it before executing callbacks, so plugins have option to change it before showing user to all
 
@@ -4729,7 +4730,7 @@ void cDCProto::ParseReferer(const string &lock, string &ref, bool inlock)
 
 	ref = toLower(ref);
 
-	if (ref.size() > 2) { // use this instead
+	if (ref.size() > 2) { // use this instead, todo: what about nmdcs:// ?
 		pos = ref.find("://");
 
 		if (pos != ref.npos)
