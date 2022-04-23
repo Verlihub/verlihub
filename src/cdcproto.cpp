@@ -1044,7 +1044,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	int result = 0;
 
 	if ((!mS->mC.tag_allow_none || (mS->mCo->mDCClients->mPositionInDesc >= 0)) && (conn->mpUser->mClass < mS->mC.tag_min_class_ignore) && (conn->mpUser->mClass != eUC_PINGER)) // validate tag
-		check = dc_tag->ValidateTag(os, conn->mConnType, result);
+		check = dc_tag->ValidateTag(os, conn, result);
 
 	#ifndef WITHOUT_PLUGINS
 		check = (check && mS->mCallBacks.mOnValidateTag.CallAll(conn, dc_tag));

@@ -81,7 +81,7 @@ namespace nVerliHub {
 				virtual bool CompareDataKey(const cDCClient &D1, const cDCClient &D2);
 				bool ParsePos(const string &desc);
 				cDCTag* ParseTag(const string &desc);
-				bool ValidateTag(cDCTag *tag, ostream &os, cConnType *conn_type, int &code);
+				//bool ValidateTag(cDCTag *tag, ostream &os, cConnDC *conn, int &code);
 		};
 
 

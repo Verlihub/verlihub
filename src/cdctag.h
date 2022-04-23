@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -138,7 +138,7 @@ namespace nVerliHub {
 			 * @param code An integer that contains an error code after validation.
 			 * @return The parsing result
 			 */
-			bool ValidateTag(ostream &os, cConnType *conn_type, int &code);
+			bool ValidateTag(ostream &os, cConnDC *conn, int &code);
 
 			/**
 			 * Friend << operator to output a cDCTag instance.
