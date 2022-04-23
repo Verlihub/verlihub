@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -30,6 +30,7 @@ namespace nVerliHub {
 			mBan = false;
 			mMinVersion = -1;
 			mMaxVersion = -1;
+			mMinVerUse = -1;
 			mEnable = true;
 		}
 
@@ -54,7 +55,14 @@ namespace nVerliHub {
  			else
  				os << autosprintf("%.4f", tr.mMinVersion) << " - " << autosprintf("%.4f", tr.mMaxVersion);
 
-			os << "\t" << (tr.mBan ? _("Yes") : _("No")) << "\t" << (tr.mEnable ? _("On") : _("Off"));
+			os << "\t";
+
+			if (tr.mMinVerUse < 0)
+ 				os << _("Any") << "\t";
+			else
+				os << autosprintf("%.4f", tr.mMinVerUse);
+
+			os << "\t" << (tr.mBan ? _("Yes") : _("No")) << "\t\t" << (tr.mEnable ? _("On") : _("Off"));
 			return os;
 		}
 

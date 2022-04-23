@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -65,10 +65,10 @@ cDCTag::cDCTag(cServerDC *mS):
 cDCTag::~cDCTag()
 {}
 
-bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
+bool cDCTag::ValidateTag(ostream &os, cConnDC *conn, int &code)
 {
 	if (client && client->mBan) { // check if client id is banned
-		os << autosprintf(_("Your client is banned from this hub: %s"), client->mName.c_str());
+		os << autosprintf(_("Your client is not allowed on this hub: %s"), client->mName.c_str());
 		code = eTC_BANNED;
 		return false;
 	}
@@ -127,14 +127,14 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 		return false;
 	}
 
-	if ((conn_type->mTagMinSlots > 0) && (mSlots < conn_type->mTagMinSlots)) {
-		os << autosprintf(_("Too little open slots for your connection type %s, minimum is %d and you have %d."), conn_type->mIdentifier.c_str(), conn_type->mTagMinSlots, mSlots);
+	if ((conn->mConnType->mTagMinSlots > 0) && (mSlots < conn->mConnType->mTagMinSlots)) {
+		os << autosprintf(_("Too little open slots for your connection type %s, minimum is %d and you have %d."), conn->mConnType->mIdentifier.c_str(), conn->mConnType->mTagMinSlots, mSlots);
 		code = eTC_MIN_SLOTS;
 		return false;
 	}
 
-	if ((conn_type->mTagMaxSlots > 0) && (mSlots > conn_type->mTagMaxSlots)) {
-		os << autosprintf(_("Too many open slots for your connection type %s, maximum is %d and you have %d."), conn_type->mIdentifier.c_str(), conn_type->mTagMaxSlots, mSlots);
+	if ((conn->mConnType->mTagMaxSlots > 0) && (mSlots > conn->mConnType->mTagMaxSlots)) {
+		os << autosprintf(_("Too many open slots for your connection type %s, maximum is %d and you have %d."), conn->mConnType->mIdentifier.c_str(), conn->mConnType->mTagMaxSlots, mSlots);
 		code = eTC_MAX_SLOTS;
 		return false;
 	}
@@ -159,20 +159,21 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 	}
 
 	if (mLimit >= 0) {
-		if ((conn_type->mTagMinLimit) > mLimit) { // DCGUI bug, if (tag->mClientType == eCT_DCGUI) limit *= mSlots;
-			os << autosprintf(_("Too low upload limit for your connection type %s, minimum upload rate is %.2f."), conn_type->mIdentifier.c_str(), conn_type->mTagMinLimit);
+		if ((conn->mConnType->mTagMinLimit) > mLimit) { // DCGUI bug, if (tag->mClientType == eCT_DCGUI) limit *= mSlots;
+			os << autosprintf(_("Too low upload limit for your connection type %s, minimum upload rate is %.2f."), conn->mConnType->mIdentifier.c_str(), conn->mConnType->mTagMinLimit);
 			code = eTC_MIN_LIMIT;
 			return false;
 		}
 
-		if ((conn_type->mTagMinLSRatio * mSlots) > mLimit ) {
-			os << autosprintf(_("Too low upload limit per slot for your connection type %s, minimum upload limit is %.2f per slot."), conn_type->mIdentifier.c_str(), conn_type->mTagMinLSRatio);
+		if ((conn->mConnType->mTagMinLSRatio * mSlots) > mLimit ) {
+			os << autosprintf(_("Too low upload limit per slot for your connection type %s, minimum upload limit is %.2f per slot."), conn->mConnType->mIdentifier.c_str(), conn->mConnType->mTagMinLSRatio);
 			code = eTC_MIN_LS_RATIO;
 			return false;
 		}
 	}
 
-	double minVersion = mServer->mC.tag_min_version, maxVersion = mServer->mC.tag_max_version; // use tag_min_version and tag_max_version for unknown client or use the version number in the matching rule
+	// use tag_min_version and tag_max_version for unknown client or use the version number in the matching rule
+	double minVersion = mServer->mC.tag_min_version, maxVersion = mServer->mC.tag_max_version;
 
 	if (client) {
 		minVersion = client->mMinVersion;
@@ -203,10 +204,15 @@ bool cDCTag::ValidateTag(ostream &os, cConnType *conn_type, int &code)
 		return false;
 	}
 
+	if (client && conn->mpUser && (client->mMinVerUse >= 0) && ((double)mClientVersion < client->mMinVerUse)) { // minimum version to use hub, known clients only, todo: notify user
+		conn->mpUser->SetRight(eUR_SEARCH, 0);
+		conn->mpUser->SetRight(eUR_CTM, 0);
+	}
+
 	return true;
 }
 
-ostream &operator << (ostream &os, cDCTag &tag)
+ostream &operator << (ostream &os, cDCTag &tag) // todo: this is interesting, where does it appear?
 {
 	os << "[::] " << _("Client") << ": " << (tag.client ? tag.client->mName : _("Unknown")) << ' ' << tag.mClientVersion << "\r\n";
 	os << "[::] " << _("Mode") << ": ";

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -106,6 +106,7 @@ namespace nVerliHub {
 		AddCol("tag_id", "varchar(125)", "", false, mModel.mTagID);
 		AddCol("min_version", "decimal(8,5)", "-1", false, mModel.mMinVersion);
 		AddCol("max_version", "decimal(8,5)", "-1", false, mModel.mMaxVersion);
+		AddCol("min_ver_use", "decimal(8,5)", "-1", false, mModel.mMinVerUse);
 		AddCol("ban", "tinyint(1)", "0", false, mModel.mBan);
 		AddCol("enable", "tinyint(1)", "1", false, mModel.mEnable);
 		mMySQLTable.mExtra = "PRIMARY KEY(name)";
@@ -224,11 +225,11 @@ namespace nVerliHub {
 		if (mParser.mModeRE.Exec(tag->mTagBody) >= 1) { // client mode
 			mParser.mModeRE.Extract(1, tag->mTagBody, str);
 
-			if ((str == "A") || (str == "AA") || (str == "AP") || (str == "A5") || (str == "AN"))
+			if (str == "A")
 				tag->mClientMode = eCM_ACTIVE;
-			else if ((str == "P") || (str == "PP") || (str == "PA") || (str == "P5") || (str == "PN"))
+			else if (str == "P")
 				tag->mClientMode = eCM_PASSIVE;
-			else if ((str == "5") || (str == "55") || (str == "5A") || (str == "5P") || (str == "5N"))
+			else if (str == "5")
 				tag->mClientMode = eCM_SOCK5;
 			else
 				tag->mClientMode = eCM_OTHER;
@@ -322,6 +323,7 @@ namespace nVerliHub {
 					"[ -b <1/0>]"
 					"[ -v <min_ver>]"
 					"[ -V <max_ver>]"
+					"[ -u <min_ver_use>]"
 					"[ -e <1/0>]";
 
 				break;
@@ -344,12 +346,12 @@ namespace nVerliHub {
 	{
 		string help;
 		help = "https://github.com/verlihub/verlihub/wiki/clients/\r\n\r\n";
-		help += "-t \tClient ID (in <++ V:0.75,M:A,H:1/0/0,S:1> ID is '++')\r\n";
-		help += "-b \tBan client matching this rule (0 - no, 1 - yes)\r\n";
-		help += "-v \tMinimum version number\r\n";
-		help += "-V \tMaximum version number\r\n";
-		help += "-e \tEnable or disable this rule (0 - off, 1 - on)\r\n";
-
+		help += " -t\tClient ID (in <++ V:0.871,M:A,H:1/0/0,S:1> ID is '++')\r\n";
+		help += " -b\tBan client with any version (0 - no, 1 - yes)\r\n";
+		help += " -v\tMinimum allowed version number\r\n";
+		help += " -V\tMaximum allowed version number\r\n";
+		help += " -u\tMinimum version to use hub\r\n";
+		help += " -e\tEnable or disable this rule (0 - off, 1 - on)\r\n";
 		cDCProto::EscapeChars(help, help);
 		os << help;
 	}
@@ -364,6 +366,7 @@ namespace nVerliHub {
 					"( -b ?(0|1))?|"
 					"( -v ?(\\-?\\d+(\\.\\d+)?))?|"
 					"( -V ?(\\-?\\d+(\\.\\d+)?))?|"
+					"( -u ?(\\-?\\d+(\\.\\d+)?))?|"
 					"( -e ?(0|1))?"
 					")*\\s*$";
 
@@ -386,6 +389,7 @@ namespace nVerliHub {
 			eDATA_CLIENTBANNEDp, eDATA_CLIENTBANNED,
 			eDATA_MINVp, eDATA_MINV, eDATA_MINVDECp,
 			eDATA_MAXVp, eDATA_MAXV, eDATA_MAXVDECp,
+			eDATA_MINVUp, eDATA_MINVU, eDATA_MINVUDECp,
 			eDATA_ENABLEp, eDATA_ENABLE
 		};
 
@@ -425,6 +429,7 @@ namespace nVerliHub {
 		cmd->GetParBool(eDATA_CLIENTBANNED, temp.mBan);
 		cmd->GetParDouble(eDATA_MINV, temp.mMinVersion);
 		cmd->GetParDouble(eDATA_MAXV, temp.mMaxVersion);
+		cmd->GetParDouble(eDATA_MINVU, temp.mMinVerUse);
 		cmd->GetParBool(eDATA_ENABLE, temp.mEnable);
 		data = temp;
 		return true;
@@ -443,7 +448,8 @@ namespace nVerliHub {
 		(*os) << "\r\n\r\n\t" << _("Name");
 		(*os) << "\t\t\t" << _("ID");
 		(*os) << "\t\t" << _("Version");
-		(*os) << "\t\t\t" << _("Banned");
+		(*os) << "\t\t\t" << _("Use hub");
+		(*os) << "\t\t" << _("Banned");
 		(*os) << "\t" << _("Status");
 		(*os) << "\r\n\t" << string(116, '-') << "\r\n";
 	}
