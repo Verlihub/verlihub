@@ -72,6 +72,7 @@
 		-t <"id">				- ID
 		-v [min_version]			- Minimum version
 		-V [max_version]			- Maximum version
+		-u [min_version]			- Minimum search and download version
 		-e [1/0]				- Enabled
 		-b [1/0]				- Banned
 
