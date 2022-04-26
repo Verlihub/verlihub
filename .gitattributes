@@ -1,3 +1,3 @@
-# trigger text files must have windows line endings, else they look weird on windows clients
-share/config/* text eol=crlf
-share/config/ru/* text eol=crlf
+# trigger text files must have unix line endings, else they look weird on windows clients
+share/config/* text eol=lf
+share/config/ru/* text eol=lf
