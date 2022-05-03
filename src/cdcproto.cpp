@@ -3948,7 +3948,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 				return true;
 
 			} else if (two->mTLSVer == "1.0") { // two has version 1.0
-				if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+				if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 					os << autosprintf(_("User you're trying connect to doesn't have compatible TLS version in order to establish secure connection, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
 					os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
 					os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
@@ -3970,7 +3970,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 
 		} else if (one->mTLSVer == "1.0") { // one has version 1.0
 			if (two->mTLSVer == "1.3") { // two has version 1.3
-				if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+				if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 					os << autosprintf(_("Your client doesn't have compatible TLS version in order to establish secure connection to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
 					os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
 					os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
@@ -3990,7 +3990,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 	}
 
 	if (!(one->mFeatures & eSF_TLS) || !one->mpUser->GetMyFlag(eMF_TLS)) { // one dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+		if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("Your client doesn't support secure connections to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
 			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
 			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";
@@ -4005,7 +4005,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 	}
 
 	if (!(two->mFeatures & eSF_TLS) || !two->mpUser->GetMyFlag(eMF_TLS)) { // two dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badctm && !one->mpUser->mHideCtmMsg) {
+		if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("User you're trying connect to doesn't support secure connections, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
 			os << "\r\n\r\n " << _("Consider these modern clients") << ":\r\n\r\n";
 			os << "\tDC++ @ https://dcplusplus.sourceforge.io/\r\n";

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -341,6 +341,7 @@ void cDCConf::AddVars()
 			passive connect request to passive user
 	*/
 	Add("hide_msg_badctm", hide_msg_badctm, false);
+	Add("hide_msg_badtlsctm", hide_msg_badtlsctm, false);
 
 	Add("adv_timer_conn_period", mS.timer_conn_period, 4);
 	Add("adv_timer_serv_period", mS.timer_serv_period, 1);

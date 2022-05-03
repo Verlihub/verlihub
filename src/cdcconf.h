@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -181,6 +181,7 @@ public:
 	bool use_search_filter;
 	bool filter_lan_requests;
 	bool hide_msg_badctm;
+	bool hide_msg_badtlsctm;
 	unsigned int search_number;
 	unsigned int min_search_chars;
 	unsigned int int_search;
