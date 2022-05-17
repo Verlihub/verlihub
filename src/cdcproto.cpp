@@ -702,6 +702,11 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (conn->mRegInfo && conn->mRegInfo->mFakeIP.size()) { // set fake ip
+		if (conn->SetUserIP(conn->mRegInfo->mFakeIP))
+			conn->ResetGeo();
+	}
+
 	if (conn->NeedsPassword()) {
 		Create_GetPass(omsg);
 		conn->Send(omsg, true);
@@ -4227,7 +4232,7 @@ bool cDCProto::CheckIP(cConnDC *conn, const string &ip)
 	if (StrCompare(ip, 0, conn->mAddrIP.size(), conn->mAddrIP) == 0)
 		return true;
 
-	if (conn->mRegInfo && conn->mRegInfo->mAlternateIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mAlternateIP.size(), conn->mRegInfo->mAlternateIP) == 0))
+	if (conn->mRegInfo && ((conn->mRegInfo->mAlternateIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mAlternateIP.size(), conn->mRegInfo->mAlternateIP) == 0)) || (conn->mRegInfo->mFakeIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mFakeIP.size(), conn->mRegInfo->mFakeIP) == 0))))
 		return true;
 
 	return false;
