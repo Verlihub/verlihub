@@ -26,6 +26,7 @@
 		pwd_crypt <0/1/2>		- Password encryption method: 0 = none, 1 = encrypt, 2 = MD5
 		auth_ip [ip]			- Authorization IP address
 		alternate_ip [ip]			- Alternative IP address
+		fake_ip [ip]			- Fake IP address
 		lang [cc]			- Language country code
 		reg_op [nick]			- Account owner nick
 		email [note]			- Email address

@@ -114,6 +114,8 @@ class cRegUserInfo
 		string mAuthIP;
 		/** alternate IP address for the ConnectToMe messages ip */
 		string mAlternateIP;
+		// set fake ip on login
+		string mFakeIP;
 		// user language
 		//string mLang;
 		/** can change password */

@@ -77,6 +77,7 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
 	AddCol("auth_ip", "varchar(15)", "", true, mModel.mAuthIP);
 	AddCol("alternate_ip", "varchar(15)", "", true, mModel.mAlternateIP);
+	AddCol("fake_ip", "varchar(15)", "", true, mModel.mFakeIP);
 	//AddCol("lang", "varchar(2)", "", true, mModel.mLang);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick), ";
 	mMySQLTable.mExtra+= "INDEX login_index (login_last), ";

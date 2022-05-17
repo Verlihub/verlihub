@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -3677,6 +3677,25 @@ bool cDCConsole::cfRegUsr::operator()()
 							if (ostr.str().empty())
 								ostr << _("Your operator key is now hidden.");
 						}
+					}
+
+				} else if (field == "fake_ip") { // set user fake ip in real time, if empty, we dont know real ip, so need to reconnect
+					if (par.size()) {
+						if (user->mxConn->SetUserIP(par)) {
+							user->mxConn->ResetGeo();
+
+							if (ostr.str().empty())
+								ostr << autosprintf(_("Your fake IP is now set: %s"), par.c_str());
+
+						} else {
+							(*mOS) << autosprintf(_("Specified fake IP is not valid: %s"), par.c_str());
+							par = "";
+							mS->mR->SetVar(nick, field, par);
+							return false;
+						}
+
+					} else if (ostr.str().empty()) {
+						ostr << _("Your fake IP is now unset, please reconnect to get back your real IP.");
 					}
 				}
 			}

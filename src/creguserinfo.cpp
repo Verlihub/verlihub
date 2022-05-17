@@ -124,6 +124,7 @@ ostream& operator << (ostream &os, cRegUserInfo &ui)
 	os << " [*] " << autosprintf(_("Hide messages: %s"), (ui.mHideCtmMsg ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Authorization IP: %s"), (ui.mAuthIP.size() ? ui.mAuthIP.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Alternate IP: %s"), (ui.mAlternateIP.size() ? ui.mAlternateIP.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Fake IP: %s"), (ui.mFakeIP.size() ? ui.mFakeIP.c_str() : _("Not set"))) << "\r\n";
 	//os << " [*] " << autosprintf(_("Language: %s"), (ui.mLang.size() ? ui.mLang.c_str() : _("Not set"))) << "\r\n";
 	os << " [*] " << autosprintf(_("User note: %s"), (ui.mNoteUsr.size() ? ui.mNoteUsr.c_str() : _("Not set"))) << "\r\n";
 
