@@ -377,19 +377,17 @@ bool cMessageDC::SplitChunks()
 
 			break;
 
-		case eDC_MCTO: // same as private message, basically we can remove this case, but dont forget to take in use eCH_PM_* instead
+		case eDC_MCTO:
 			/*
-				$MCTo: <othernick> From: <mynick> $<<mynick>> <message>
-				eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
+				https://nmdc.sourceforge.io/NMDC.html#_mcto
+				$MCTo: <othernick> $<mynick> <message>
+				eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
 			*/
 
-			if (!SplitOnTwo(mKWSize, " From: ", eCH_MCTO_TO, eCH_MCTO_FROM))
+			if (!SplitOnTwo(mKWSize, " $", eCH_MCTO_TO, eCH_MCTO_CHMSG))
 				mError = true;
 
-			if (!SplitOnTwo(" $<", eCH_MCTO_FROM, eCH_MCTO_FROM, eCH_MCTO_CHMSG))
-				mError = true;
-
-			if (!SplitOnTwo("> ", eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG))
+			if (!SplitOnTwo(' ', eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG))
 				mError = true;
 
 			break;

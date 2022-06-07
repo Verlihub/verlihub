@@ -1818,10 +1818,9 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	const string &from = msg->ChunkString(eCH_MCTO_FROM);
 	const string &nick = msg->ChunkString(eCH_MCTO_NICK);
 
-	if (CheckUserNick(conn, from) || CheckUserNick(conn, nick))
+	if (CheckUserNick(conn, nick))
 		return -1;
 
 	if (conn->CheckProtoFlood(msg->mStr, ePF_MCTO)) // protocol flood
