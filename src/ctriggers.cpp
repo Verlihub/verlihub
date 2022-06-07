@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -243,7 +243,7 @@ void cTriggerConsole::GetHelp(ostream &os)
 
 	help += " Available trigger flags:\r\n\r\n";
 	help += " 0\t\t\t- Send to main chat, visible to user only\r\n";
-	help += " 1\t\t\t- Execute command\r\n";
+	help += " 1\t\t\t- Execute command (functionality removed)\r\n";
 	help += " 2\t\t\t- Message is sent to PM\r\n";
 	help += " 4\t\t\t- Automatically trigger when user logs in\r\n";
 	help += " 8\t\t\t- Trigger on help command\r\n";

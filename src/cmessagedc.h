@@ -92,7 +92,7 @@ namespace nVerliHub {
 		// private chat : CHMSH is a "<nick> msg" together
 		enum { eCH_PM_ALL, eCH_PM_TO, eCH_PM_FROM, eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG } ;
 		// private mainchat message
-		enum {eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG};
+		enum {eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG};
 		// MyINFO : INFO is all the rest together
 		enum { eCH_MI_ALL, eCH_MI_DEST, eCH_MI_NICK, eCH_MI_INFO, eCH_MI_DESC, eCH_MI_SPEED, eCH_MI_MAIL, eCH_MI_SIZE };
 		// IN

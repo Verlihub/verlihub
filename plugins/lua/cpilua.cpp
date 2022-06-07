@@ -368,7 +368,7 @@ bool cpiLua::OnParsedMsgMCTo(cConnDC *conn, cMessageDC *msg)
 			msg->ChunkString(eCH_MCTO_MSG).c_str(),
 			msg->ChunkString(eCH_MCTO_TO).c_str(),
 			NULL
-		}; // eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_FROM, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
+		}; // eCH_MCTO_ALL, eCH_MCTO_TO, eCH_MCTO_CHMSG, eCH_MCTO_NICK, eCH_MCTO_MSG
 
 		return CallAll("VH_OnParsedMsgMCTo", args, conn);
 	}
