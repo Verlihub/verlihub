@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -3040,6 +3040,27 @@ void cServerDC::DCKickNick(ostream *use_os, cUser *op, const string &nick, const
 
 	if (!hide && (mC.notify_kicks_to_all > -1) && toall.str().size()) // message to all
 		DCPublicToAll(mC.hub_security, toall.str(), mC.notify_kicks_to_all, int(eUC_MASTER), mC.delayed_chat);
+}
+
+void cServerDC::RemoveMyINFOFlag(string &dest, const string &info, unsigned short flag)
+{
+	dest = info;
+	size_t pos = dest.find("$ $");
+
+	if (pos == dest.npos)
+		return;
+
+	pos = dest.find("$", pos + 3);
+
+	if (pos == dest.npos)
+		return;
+
+	unsigned short my = dest[pos - 1];
+
+	if ((my & flag) == flag) {
+		my &= ~flag;
+		dest[pos - 1] = my;
+	}
 }
 
 string cServerDC::EraseNewLines(const string &src)

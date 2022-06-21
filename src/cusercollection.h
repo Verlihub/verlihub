@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -113,6 +113,38 @@ public:
 
 		void operator()(cUserBase *user);
 	};
+
+/*
+	struct ufSendWithMyFlag: public unary_function<void, iterator> // unary function for sending data to all users with flag in myinfo
+	{
+		string &mData;
+		unsigned short mFlag;
+		bool mCache;
+
+		ufSendWithMyFlag(string &data, const unsigned short flag, const bool cache):
+			mData(data),
+			mFlag(flag),
+			mCache(cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithoutMyFlag: public unary_function<void, iterator> // unary function for sending data to all users without flag in myinfo
+	{
+		string &mData;
+		unsigned short mFlag;
+		bool mCache;
+
+		ufSendWithoutMyFlag(string &data, const unsigned short flag, const bool cache):
+			mData(data),
+			mFlag(flag),
+			mCache(cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+*/
 
 	struct ufSendWithClassFeature: public unary_function<void, iterator> // unary function for sending data to all users by class range and feature in supports
 	{
@@ -325,6 +357,8 @@ public:
 	void SendToAllWithNick(string &start, string &end);
 	void SendToAllWithClass(string &data, const int min_class, const int max_class, const bool cache, const bool pipe);
 	void SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe);
+	//void SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
+	//void SendToAllWithoutMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
 	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe);
 	void FlushCache();
 	//void FlushForUser(cUserBase *user);

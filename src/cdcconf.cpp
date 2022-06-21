@@ -332,7 +332,7 @@ void cDCConf::AddVars()
 	Add("max_class_same_user", max_class_same_user, int(eUC_NORMUSER));
 
 	/*
-		hide following messages
+		hides following messages
 			connect request to offline user
 			connect request to bot
 			connect request to self
@@ -341,7 +341,7 @@ void cDCConf::AddVars()
 			passive connect request to passive user
 	*/
 	Add("hide_msg_badctm", hide_msg_badctm, false);
-	Add("hide_msg_badtlsctm", hide_msg_badtlsctm, false);
+	Add("hide_msg_badtlsctm", hide_msg_badtlsctm, false); // hides tls compatibility messages
 
 	Add("adv_timer_conn_period", mS.timer_conn_period, 4);
 	Add("adv_timer_serv_period", mS.timer_serv_period, 1);
@@ -369,6 +369,7 @@ void cDCConf::AddVars()
 	Add("zlib_min_len", zlib_min_len, 100);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
+	Add("myinfo_tls_filter", myinfo_tls_filter, false);
 	Add("mmdb_names_lang", mmdb_names_lang, ""); // maxminddb names language, empty means english
 	Add("mmdb_conv_depth", mmdb_conv_depth, 2); // conversion depth, 0 = do nothing, 1 = utf8 to hub_encoding conversion, 2 = transliteration
 	Add("mmdb_cache", mmdb_cache, true);
