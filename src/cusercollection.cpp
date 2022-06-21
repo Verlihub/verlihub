@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -52,6 +52,20 @@ void cUserCollection::ufSendWithFeature::operator()(cUserBase *user)
 	if (user && user->CanSend() && user->HasFeature(mFeature))
 		user->Send(mData, false, !mCache); // no pipe
 }
+
+/*
+void cUserCollection::ufSendWithMyFlag::operator()(cUserBase *user)
+{
+	if (user && user->CanSend() && user->GetMyFlag(mFlag))
+		user->Send(mData, false, !mCache); // no pipe
+}
+
+void cUserCollection::ufSendWithoutMyFlag::operator()(cUserBase *user)
+{
+	if (user && user->CanSend() && !user->GetMyFlag(mFlag))
+		user->Send(mData, false, !mCache); // no pipe
+}
+*/
 
 void cUserCollection::ufSendWithClassFeature::operator()(cUserBase *user)
 {
@@ -235,6 +249,50 @@ void cUserCollection::SendToAllWithFeature(string &data, const unsigned feature,
 	if (pipe)
 		data.erase(data.size() - 1, 1);
 }
+
+/*
+void cUserCollection::SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe)
+{
+	AppendPipe(mSendAllCache, data, pipe);
+
+	if (Log(4))
+		LogStream() << "Start SendToAllWithMyFlag" << endl;
+
+	for_each(this->begin(), this->end(), ufSendWithMyFlag(mSendAllCache, flag, cache));
+
+	if (Log(4))
+		LogStream() << "Stop SendToAllWithMyFlag" << endl;
+
+	if (mSendAllCache.size())
+		mSendAllCache.clear();
+
+	ShrinkStringToFit(mSendAllCache);
+
+	if (pipe)
+		data.erase(data.size() - 1, 1);
+}
+
+void cUserCollection::SendToAllWithoutMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe)
+{
+	AppendPipe(mSendAllCache, data, pipe);
+
+	if (Log(4))
+		LogStream() << "Start SendToAllWithoutMyFlag" << endl;
+
+	for_each(this->begin(), this->end(), ufSendWithoutMyFlag(mSendAllCache, flag, cache));
+
+	if (Log(4))
+		LogStream() << "Stop SendToAllWithoutMyFlag" << endl;
+
+	if (mSendAllCache.size())
+		mSendAllCache.clear();
+
+	ShrinkStringToFit(mSendAllCache);
+
+	if (pipe)
+		data.erase(data.size() - 1, 1);
+}
+*/
 
 void cUserCollection::SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe)
 {

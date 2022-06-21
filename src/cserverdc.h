@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -618,6 +618,7 @@ class cServerDC : public cAsyncSocketServer
 		char* UserClassName(nEnums::tUserCl ucl);
 		bool CheckPortNumber(unsigned int port);
 		string EraseNewLines(const string &src);
+		void RemoveMyINFOFlag(string &dest, const string &info, unsigned short flag);
 		static void RepBadNickChars(string &nick);
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
 		char* GetConfig(const char *conf, const char *var, const char *def);

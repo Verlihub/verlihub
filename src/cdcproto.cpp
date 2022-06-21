@@ -4109,7 +4109,28 @@ int cDCProto::NickList(cConnDC *conn)
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			mS->mUserList.GetInfoList(_str);
+			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+				cUser *user;
+				string info;
+				_str.clear();
+
+				for (cUserCollection::iterator it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
+					user = (cUser*)(*it);
+
+					if (user && user->mInList && user->mFakeMyINFO.size()) {
+						if (user->GetMyFlag(eMF_TLS))
+							mS->RemoveMyINFOFlag(info, user->mFakeMyINFO, eMF_TLS);
+						else
+							info = user->mFakeMyINFO;
+
+						_str += info + '|';
+					}
+				}
+
+			} else {
+				mS->mUserList.GetInfoList(_str);
+			}
+
 			conn->Send(_str, false); // pipe was already added by list generator
 
 		} else if (conn->mFeatures & eSF_NOGETINFO) {
@@ -4118,7 +4139,29 @@ int cDCProto::NickList(cConnDC *conn)
 
 			mS->mUserList.GetNickList(_str);
 			conn->Send(_str, true);
-			mS->mUserList.GetInfoList(_str);
+
+			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+				cUser *user;
+				string info;
+				_str.clear();
+
+				for (cUserCollection::iterator it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
+					user = (cUser*)(*it);
+
+					if (user && user->mInList && user->mFakeMyINFO.size()) {
+						if (user->GetMyFlag(eMF_TLS))
+							mS->RemoveMyINFOFlag(info, user->mFakeMyINFO, eMF_TLS);
+						else
+							info = user->mFakeMyINFO;
+
+						_str += info + '|';
+					}
+				}
+
+			} else {
+				mS->mUserList.GetInfoList(_str);
+			}
+
 			conn->Send(_str, false); // pipe was already added by list generator
 
 		} else {
