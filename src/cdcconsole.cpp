@@ -849,8 +849,18 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 
 					mOwner->mP.Create_Quit(data, conn->mpUser->mNick); // send quit to all
 					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true);
-					data = conn->mpUser->mFakeMyINFO;
-					mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true); // send myinfo to all
+
+					if (mOwner->mC.myinfo_tls_filter && conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+						data = conn->mpUser->mFakeMyINFO;
+						mOwner->mUserList.SendToAllWithMyFlag(data, eMF_TLS, mOwner->mC.delayed_myinfo, true);
+						mOwner->RemoveMyINFOFlag(data, conn->mpUser->mFakeMyINFO, eMF_TLS);
+						mOwner->mUserList.SendToAllWithoutMyFlag(data, eMF_TLS, mOwner->mC.delayed_myinfo, true);
+
+					} else {
+						data = conn->mpUser->mFakeMyINFO;
+						mOwner->mUserList.SendToAll(data, mOwner->mC.delayed_myinfo, true); // send myinfo to all
+					}
+
 					mOwner->ShowUserIP(conn); // send userip to operators
 				}
 
@@ -1221,8 +1231,18 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 
 						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
 						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true);
-						msg = user->mFakeMyINFO;
-						mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true); // send myinfo to all
+
+						if (mOwner->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+							msg = user->mFakeMyINFO;
+							mOwner->mUserList.SendToAllWithMyFlag(msg, eMF_TLS, mOwner->mC.delayed_myinfo, true);
+							mOwner->RemoveMyINFOFlag(msg, user->mFakeMyINFO, eMF_TLS);
+							mOwner->mUserList.SendToAllWithoutMyFlag(msg, eMF_TLS, mOwner->mC.delayed_myinfo, true);
+
+						} else {
+							msg = user->mFakeMyINFO;
+							mOwner->mUserList.SendToAll(msg, mOwner->mC.delayed_myinfo, true); // send myinfo to all
+						}
+
 						mOwner->ShowUserIP(user->mxConn); // send userip to operators
 					}
 				}
@@ -3455,8 +3475,18 @@ bool cDCConsole::cfRegUsr::operator()()
 
 						mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-						msg = user->mFakeMyINFO;
-						mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+
+						if (mS->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+							msg = user->mFakeMyINFO;
+							mS->mUserList.SendToAllWithMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+							mS->RemoveMyINFOFlag(msg, user->mFakeMyINFO, eMF_TLS);
+							mS->mUserList.SendToAllWithoutMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+
+						} else {
+							msg = user->mFakeMyINFO;
+							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+						}
+
 						mS->ShowUserIP(user->mxConn); // send userip to operators
 					}
 
@@ -3527,8 +3557,18 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-							msg = user->mFakeMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+
+							if (mS->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAllWithMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+								mS->RemoveMyINFOFlag(msg, user->mFakeMyINFO, eMF_TLS);
+								mS->mUserList.SendToAllWithoutMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+
+							} else {
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+							}
+
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 						}
 					}
@@ -3643,8 +3683,18 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-							msg = user->mFakeMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+
+							if (mS->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAllWithMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+								mS->RemoveMyINFOFlag(msg, user->mFakeMyINFO, eMF_TLS);
+								mS->mUserList.SendToAllWithoutMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+
+							} else {
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+							}
+
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())
@@ -3670,8 +3720,18 @@ bool cDCConsole::cfRegUsr::operator()()
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
 							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true);
-							msg = user->mFakeMyINFO;
-							mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+
+							if (mS->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAllWithMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+								mS->RemoveMyINFOFlag(msg, user->mFakeMyINFO, eMF_TLS);
+								mS->mUserList.SendToAllWithoutMyFlag(msg, eMF_TLS, mS->mC.delayed_myinfo, true);
+
+							} else {
+								msg = user->mFakeMyINFO;
+								mS->mUserList.SendToAll(msg, mS->mC.delayed_myinfo, true); // send myinfo to all
+							}
+
 							mS->ShowUserIP(user->mxConn); // send userip to operators
 
 							if (ostr.str().empty())

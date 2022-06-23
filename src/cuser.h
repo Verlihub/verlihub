@@ -133,7 +133,7 @@ public:
 
 	virtual bool CanSend();
 	virtual bool HasFeature(unsigned feature);
-	//virtual bool GetMyFlag(unsigned short flag) const { return false; }
+	virtual bool GetMyFlag(unsigned short flag) const { return false; }
 	virtual void Send(string &data, bool pipe, bool flush = true);
 public:
 	string mNick;
