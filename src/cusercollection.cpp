@@ -53,7 +53,6 @@ void cUserCollection::ufSendWithFeature::operator()(cUserBase *user)
 		user->Send(mData, false, !mCache); // no pipe
 }
 
-/*
 void cUserCollection::ufSendWithMyFlag::operator()(cUserBase *user)
 {
 	if (user && user->CanSend() && user->GetMyFlag(mFlag))
@@ -65,7 +64,6 @@ void cUserCollection::ufSendWithoutMyFlag::operator()(cUserBase *user)
 	if (user && user->CanSend() && !user->GetMyFlag(mFlag))
 		user->Send(mData, false, !mCache); // no pipe
 }
-*/
 
 void cUserCollection::ufSendWithClassFeature::operator()(cUserBase *user)
 {
@@ -250,7 +248,6 @@ void cUserCollection::SendToAllWithFeature(string &data, const unsigned feature,
 		data.erase(data.size() - 1, 1);
 }
 
-/*
 void cUserCollection::SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe)
 {
 	AppendPipe(mSendAllCache, data, pipe);
@@ -292,7 +289,6 @@ void cUserCollection::SendToAllWithoutMyFlag(string &data, const unsigned short 
 	if (pipe)
 		data.erase(data.size() - 1, 1);
 }
-*/
 
 void cUserCollection::SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe)
 {

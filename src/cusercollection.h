@@ -114,7 +114,6 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-/*
 	struct ufSendWithMyFlag: public unary_function<void, iterator> // unary function for sending data to all users with flag in myinfo
 	{
 		string &mData;
@@ -144,7 +143,6 @@ public:
 
 		void operator()(cUserBase *user);
 	};
-*/
 
 	struct ufSendWithClassFeature: public unary_function<void, iterator> // unary function for sending data to all users by class range and feature in supports
 	{
@@ -357,8 +355,8 @@ public:
 	void SendToAllWithNick(string &start, string &end);
 	void SendToAllWithClass(string &data, const int min_class, const int max_class, const bool cache, const bool pipe);
 	void SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe);
-	//void SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
-	//void SendToAllWithoutMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
+	void SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
+	void SendToAllWithoutMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
 	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe);
 	void FlushCache();
 	//void FlushForUser(cUserBase *user);

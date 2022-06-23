@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -790,8 +790,18 @@ bool DelRegUser(const char *nick)
 
 			serv->mP.Create_Quit(data, user->mNick); // send quit to all
 			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-			data = user->mFakeMyINFO;
-			serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+
+			if (serv->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+				data = user->mFakeMyINFO;
+				serv->mUserList.SendToAllWithMyFlag(data, eMF_TLS, serv->mC.delayed_myinfo, true);
+				serv->RemoveMyINFOFlag(data, user->mFakeMyINFO, eMF_TLS);
+				serv->mUserList.SendToAllWithoutMyFlag(data, eMF_TLS, serv->mC.delayed_myinfo, true);
+
+			} else {
+				data = user->mFakeMyINFO;
+				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+			}
+
 			serv->ShowUserIP(user->mxConn); // send userip to operators
 		}
 
@@ -860,8 +870,18 @@ bool SetRegClass(const char *nick, int clas)
 
 				serv->mP.Create_Quit(data, user->mNick); // send quit to all
 				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
-				data = user->mFakeMyINFO;
-				serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+
+				if (serv->mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+					data = user->mFakeMyINFO;
+					serv->mUserList.SendToAllWithMyFlag(data, eMF_TLS, serv->mC.delayed_myinfo, true);
+					serv->RemoveMyINFOFlag(data, user->mFakeMyINFO, eMF_TLS);
+					serv->mUserList.SendToAllWithoutMyFlag(data, eMF_TLS, serv->mC.delayed_myinfo, true);
+
+				} else {
+					data = user->mFakeMyINFO;
+					serv->mUserList.SendToAll(data, serv->mC.delayed_myinfo, true);
+				}
+
 				serv->ShowUserIP(user->mxConn); // send userip to operators
 			}
 		}

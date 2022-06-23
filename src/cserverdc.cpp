@@ -1374,8 +1374,18 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 
 bool cServerDC::ShowUserToAll(cUser *user)
 {
-	string data(user->mFakeMyINFO);
-	mUserList.SendToAll(data, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
+	string data;
+
+	if (mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+		data = user->mFakeMyINFO;
+		mUserList.SendToAllWithMyFlag(data, eMF_TLS, mC.delayed_myinfo, true);
+		RemoveMyINFOFlag(data, user->mFakeMyINFO, eMF_TLS);
+		mUserList.SendToAllWithoutMyFlag(data, eMF_TLS, mC.delayed_myinfo, true);
+
+	} else {
+		data = user->mFakeMyINFO;
+		mUserList.SendToAll(data, mC.delayed_myinfo, true); // all users get myinfo, use cache, so this can be after user is added
+	}
 
 	if (((user->mClass >= mC.oplist_class) && !(user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mHideKeys)) || (user->mxConn && user->mxConn->mRegInfo && user->mxConn->mRegInfo->mShowKeys && !user->mxConn->mRegInfo->mHideKeys)) { // send short oplist
 		mP.Create_OpList(data, user->mNick);
