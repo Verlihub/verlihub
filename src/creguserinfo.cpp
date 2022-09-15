@@ -19,18 +19,20 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+	#include <config.h>
 #endif
-// for the crypt
-// broken build on NetBSD
+
+// for the crypt, broken build on NetBSD
 #ifndef HAVE_NETBSD
-#define _XOPEN_SOURCE
+	#define _XOPEN_SOURCE
 #endif
+
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <openssl/md5.h>
+
 #include "creguserinfo.h"
+#include "stringutils.h"
 #include "cuser.h"
 #include "ctime.h"
 #include "i18n.h"
@@ -70,33 +72,23 @@ bool cRegUserInfo::PWVerify(const string &pass)
 	if (!mPasswd.size() || !pass.size()) // check both password lengths
 		return false;
 
-	string crypt_buf;
-	unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
-	char md5_hex[33];
-	bool result = false;
+	string comp;
 
 	switch (mPWCrypt) {
 		case eCRYPT_ENCRYPT:
-			crypt_buf = crypt(pass.c_str(), mPasswd.c_str());
-			result = crypt_buf == mPasswd;
+			comp = crypt(pass.c_str(), mPasswd.c_str());
 			break;
+
 		case eCRYPT_MD5:
-			MD5((const unsigned char*)pass.c_str(), pass.size(), md5_buf);
-			md5_buf[MD5_DIGEST_LENGTH] = 0;
-
-			for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
-				sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
-			}
-
-			md5_hex[32] = 0;
-			result = mPasswd == string(md5_hex);
+			comp = StrToMD5ToHex(pass);
 			break;
+
 		case eCRYPT_NONE:
-			result = pass == mPasswd;
+			comp = pass;
 			break;
 	}
 
-	return result;
+	return comp == mPasswd;
 }
 
 istream & operator >> (istream &is, cRegUserInfo &ui)
@@ -144,41 +136,33 @@ void cRegUserInfo::SetPass(const string &str, tCryptMethods crypt_method)
 	string pass(str);
 	mPwdChange = pass.empty();
 
-	if (!mPwdChange) {
-		string salt;
-		static const char *saltchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./";
-		static const int saltcharsnum = strlen(saltchars);
-		unsigned char charsalt[2] = {(unsigned char)((char*)&pass)[0], (unsigned char)((char*)&pass)[1]};
-		unsigned char md5_buf[MD5_DIGEST_LENGTH + 1];
-		char md5_hex[33];
-
-		switch (crypt_method) {
-			case eCRYPT_ENCRYPT:
-				charsalt[0] = saltchars[charsalt[0] % saltcharsnum];
-				charsalt[1] = saltchars[charsalt[1] % saltcharsnum];
-				salt.assign((char*)charsalt, 2);
-				mPasswd = crypt(pass.c_str(), salt.c_str());
-				mPWCrypt = eCRYPT_ENCRYPT;
-				break;
-			case eCRYPT_MD5:
-				MD5((const unsigned char*)pass.c_str(), pass.size(), md5_buf);
-				md5_buf[MD5_DIGEST_LENGTH] = 0;
-
-				for (int i = 0; i < MD5_DIGEST_LENGTH; i++) { // convert to hexadecimal
-					sprintf(md5_hex + (i * 2), "%02x", md5_buf[i]);
-				}
-
-				md5_hex[32] = 0;
-				mPasswd = string(md5_hex);
-				mPWCrypt = eCRYPT_MD5;
-				break;
-			case eCRYPT_NONE:
-				mPasswd = pass;
-				mPWCrypt = eCRYPT_NONE;
-				break;
-		}
-	} else {
+	if (mPwdChange) {
 		mPasswd = pass;
+		return;
+	}
+
+	static const char arr[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./"; // 64
+	unsigned char dec[2] = {(unsigned char)((char*)&pass)[0], (unsigned char)((char*)&pass)[1]};
+	string out;
+
+	switch (crypt_method) {
+		case eCRYPT_ENCRYPT:
+			dec[0] = arr[dec[0] % 64];
+			dec[1] = arr[dec[1] % 64];
+			out.assign((char*)dec, 2);
+			mPasswd = crypt(pass.c_str(), out.c_str());
+			mPWCrypt = eCRYPT_ENCRYPT;
+			break;
+
+		case eCRYPT_MD5:
+			mPasswd = StrToMD5ToHex(pass);
+			mPWCrypt = eCRYPT_MD5;
+			break;
+
+		case eCRYPT_NONE:
+			mPasswd = pass;
+			mPWCrypt = eCRYPT_NONE;
+			break;
 	}
 }
 
