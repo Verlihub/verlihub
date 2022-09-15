@@ -33,7 +33,7 @@
 #include <algorithm>
 #include <ctype.h>
 
-#ifdef OPENSSL_NO_DEPRECATED_3_0
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 	#include <openssl/evp.h>
 #else
 	#include <openssl/md5.h>
@@ -418,7 +418,7 @@ string StrToMD5ToHex(const string &str)
 	unsigned char *buf = (unsigned char*)str.c_str();
 	unsigned char md5[16]; // MD5_DIGEST_LENGTH
 
-#ifdef OPENSSL_NO_DEPRECATED_3_0
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 	EVP_DigestInit_ex(ctx, EVP_md5(), NULL);
 	EVP_DigestUpdate(ctx, buf, len);
