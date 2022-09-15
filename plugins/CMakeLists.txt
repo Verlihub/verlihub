@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -16,18 +16,18 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# Plugman plugin
-
 OPTION(WITH_PLUGINS "Whether to build any plugins or not" TRUE)
 IF(WITH_PLUGINS)
 
 SET(ENABLE_PLUGIN TRUE)
 
+# plugman plugin, always enabled
+
 ADD_PLUGIN(ENABLE_PLUGIN plugman)
 
-# Lua plugin
+# lua plugin
 
-OPTION(WITH_LUA "Whether to build the lua plugin or not" TRUE)
+OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
 IF(WITH_LUA)
 	Find_Package(Lua "5.4" EXACT)
 	#Find_Package(LuaSocket)
@@ -54,57 +54,99 @@ IF(WITH_LUA)
 		ENDIF(LUA_FOUND)
 	ENDIF(LUA_FOUND)
 ELSE(WITH_LUA)
-	MESSAGE(STATUS "---- Cannot build lua plugin (user specified -DWITH_LUA=OFF)")
+	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
 ENDIF(WITH_LUA)
 
-# Python plugin
+# python plugin
 
-OPTION(WITH_PYTHON "Whether to build the python plugin or not" TRUE)
+OPTION(WITH_PYTHON "Whether to build PYTHON plugin or not" TRUE)
 IF(WITH_PYTHON)
 	SET(Python_ADDITIONAL_VERSIONS 2.7)
 	Find_Package(PythonLibs 2.7)
 	ADD_PLUGIN(PYTHONLIBS_FOUND python)
 ELSE(WITH_PYTHON)
-	MESSAGE(STATUS "---- Cannot build python plugin (user specified -DWITH_PYTHON=OFF)")
+	MESSAGE(STATUS "Not building PYTHON plugin, to enable please use: -DWITH_PYTHON=ON")
 ENDIF(WITH_PYTHON)
 
-# Perl plugin
+# perl plugin, deprecated
 
-OPTION(WITH_PERL "Whether to build the perl plugin or not" TRUE)
+OPTION(WITH_PERL "Whether to build PERL plugin or not" FALSE)
 IF(WITH_PERL)
 	Find_Package(PerlLibs)
-	# Workaround for Debian: libperl-dev required
+
 	IF(EXISTS "/etc/debian_version")
 		Find_Library(PERLLIBS_SO perl)
+
 		IF(PERLLIBS_FOUND AND PERLLIBS_SO)
 			SET(PERLLIBS_FOUND TRUE)
 		ELSE()
 			SET(PERLLIBS_FOUND FALSE)
 		ENDIF()
 	ENDIF()
+
 	ADD_PLUGIN(PERLLIBS_FOUND perl)
 ELSE(WITH_PERL)
-	MESSAGE(STATUS "---- Cannot build perl plugin (user specified -DWITH_PERL=OFF)")
+	MESSAGE(STATUS "Not building PERL plugin because DEPRECATED, to enable please use: -DWITH_PERL=ON")
 ENDIF(WITH_PERL)
 
-# Other plugins
+# other plugins, deprecated
 
-ADD_PLUGIN(ENABLE_PLUGIN forbid)
+OPTION(WITH_FORBID "Whether to build FORBID plugin or not" FALSE)
+IF(WITH_FORBID)
+	ADD_PLUGIN(ENABLE_PLUGIN forbid)
+ELSE(WITH_FORBID)
+	MESSAGE(STATUS "Not building FORBID plugin because DEPRECATED, to enable please use: -DWITH_FORBID=ON")
+ENDIF(WITH_FORBID)
 
-ADD_PLUGIN(ENABLE_PLUGIN chatroom)
+OPTION(WITH_CHATROOM "Whether to build CHATROOM plugin or not" FALSE)
+IF(WITH_CHATROOM)
+	ADD_PLUGIN(ENABLE_PLUGIN chatroom)
+ELSE(WITH_CHATROOM)
+	MESSAGE(STATUS "Not building CHATROOM plugin because DEPRECATED, to enable please use: -DWITH_CHATROOM=ON")
+ENDIF(WITH_CHATROOM)
 
-ADD_PLUGIN(ENABLE_PLUGIN iplog)
+OPTION(WITH_IPLOG "Whether to build IPLOG plugin or not" FALSE)
+IF(WITH_IPLOG)
+	ADD_PLUGIN(ENABLE_PLUGIN iplog)
+ELSE(WITH_IPLOG)
+	MESSAGE(STATUS "Not building IPLOG plugin because DEPRECATED, to enable please use: -DWITH_IPLOG=ON")
+ENDIF(WITH_IPLOG)
 
-ADD_PLUGIN(ENABLE_PLUGIN isp)
+OPTION(WITH_ISP "Whether to build ISP plugin or not" FALSE)
+IF(WITH_ISP)
+	ADD_PLUGIN(ENABLE_PLUGIN isp)
+ELSE(WITH_ISP)
+	MESSAGE(STATUS "Not building ISP plugin because DEPRECATED, to enable please use: -DWITH_ISP=ON")
+ENDIF(WITH_ISP)
 
-ADD_PLUGIN(ENABLE_PLUGIN messenger)
+OPTION(WITH_MESSENGER "Whether to build MESSENGER plugin or not" FALSE)
+IF(WITH_MESSENGER)
+	ADD_PLUGIN(ENABLE_PLUGIN messenger)
+ELSE(WITH_MESSENGER)
+	MESSAGE(STATUS "Not building MESSENGER plugin because DEPRECATED, to enable please use: -DWITH_MESSENGER=ON")
+ENDIF(WITH_MESSENGER)
 
-ADD_PLUGIN(ENABLE_PLUGIN stats)
+OPTION(WITH_STATS "Whether to build STATS plugin or not" FALSE)
+IF(WITH_STATS)
+	ADD_PLUGIN(ENABLE_PLUGIN stats)
+ELSE(WITH_STATS)
+	MESSAGE(STATUS "Not building STATS plugin because DEPRECATED, to enable please use: -DWITH_STATS=ON")
+ENDIF(WITH_STATS)
 
-ADD_PLUGIN(ENABLE_PLUGIN replacer)
+OPTION(WITH_REPLACER "Whether to build REPLACER plugin or not" FALSE)
+IF(WITH_REPLACER)
+	ADD_PLUGIN(ENABLE_PLUGIN replacer)
+ELSE(WITH_REPLACER)
+	MESSAGE(STATUS "Not building REPLACER plugin because DEPRECATED, to enable please use: -DWITH_REPLACER=ON")
+ENDIF(WITH_REPLACER)
 
-ADD_PLUGIN(ENABLE_PLUGIN floodprot)
+OPTION(WITH_FLOODPROT "Whether to build FLOODPROT plugin or not" FALSE)
+IF(WITH_FLOODPROT)
+	ADD_PLUGIN(ENABLE_PLUGIN floodprot)
+ELSE(WITH_FLOODPROT)
+	MESSAGE(STATUS "Not building FLOODPROT plugin because DEPRECATED, to enable please use: -DWITH_FLOODPROT=ON")
+ENDIF(WITH_FLOODPROT)
 
 ELSE(WITH_PLUGINS)
-	MESSAGE(STATUS "---- Will not build any plugins (user specified -DWITH_PLUGINS=OFF)")
+	MESSAGE(STATUS "Will not build any plugins, to enable please use: -DWITH_PLUGINS=ON")
 ENDIF(WITH_PLUGINS)

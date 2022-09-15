@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -27,12 +27,12 @@ MACRO(ADD_PLUGIN _var _name) # _src
 	OPTION(WITH_${PLUGIN_OPTION} "Build ${_name} plugin?" TRUE)
 
 	IF(${_var} AND WITH_${PLUGIN_OPTION})
-		MESSAGE(STATUS "[ OK ] Building ${_name} plugin.")
+		MESSAGE(STATUS "[ OK ] Building ${_name} plugin")
 		ADD_SUBDIRECTORY(${_src})
 		MATH(EXPR OK_PLUGINS_COUNT "${OK_PLUGINS_COUNT} + 1")
 		SET(OK_PLUGINS_COUNT "${OK_PLUGINS_COUNT}" PARENT_SCOPE)
 	ELSEIF(WITH_${PLUGIN_OPTION})
-		MESSAGE(STATUS "[ ER ] Not building ${_name} plugin due to unsatisfied dependencies.")
+		MESSAGE(STATUS "[ ER ] Not building ${_name} plugin due to unsatisfied dependencies")
 	ELSE(${_var} AND WITH_${PLUGIN_OPTION})
 		MESSAGE(STATUS "[ OK ] Not building ${_name} plugin due to user specification: -DWITH_${PLUGIN_OPTION}=OFF")
 	ENDIF(${_var} AND WITH_${PLUGIN_OPTION})

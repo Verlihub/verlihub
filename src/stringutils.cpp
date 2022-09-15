@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -32,6 +32,12 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
+
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+	#include <openssl/evp.h>
+#else
+	#include <openssl/md5.h>
+#endif
 
 /*
 #ifdef _WIN32
@@ -400,6 +406,44 @@ string StrByteList(const string &data, const string &sep)
 	}
 
 	return res;
+}
+
+string StrToMD5ToHex(const string &str)
+{
+	size_t len = str.size();
+
+	if (!len)
+		return string();
+
+	unsigned char *buf = (unsigned char*)str.c_str();
+	unsigned char md5[16]; // MD5_DIGEST_LENGTH
+
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+	EVP_DigestInit_ex(ctx, EVP_md5(), NULL);
+	EVP_DigestUpdate(ctx, buf, len);
+	EVP_DigestFinal_ex(ctx, md5, NULL);
+	EVP_MD_CTX_free(ctx);
+#else
+	MD5_CTX ctx;
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, buf, len);
+	MD5_Final(md5, &ctx);
+#endif
+
+	static const char arr[] = "0123456789abcdef";
+	string out;
+
+	for (int pos = 0; pos < 16; pos++) {
+		unsigned char chr = md5[pos];
+		char dec[3];
+		dec[0] = arr[chr >> 4];
+		dec[1] = arr[chr & 0xf];
+		dec[2] = 0;
+		out.append(dec);
+	}
+
+	return out;
 }
 
 	}; // namespace nUtils
