@@ -121,7 +121,7 @@ ENDIF(NOT PLUGINDIR)
 
 message(STATUS "[ OK ] Library directory: ${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
 
-Find_Package(OpenSSL REQUIRED) # find dependences
+Find_Package(OpenSSL 1.1.0 REQUIRED) # find dependences
 Find_Package(Crypt REQUIRED)
 Find_Package(MySQL REQUIRED)
 Find_Package(ZLIB REQUIRED)

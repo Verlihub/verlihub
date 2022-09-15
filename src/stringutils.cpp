@@ -33,11 +33,13 @@
 #include <algorithm>
 #include <ctype.h>
 
+/*
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 	#include <openssl/md5.h>
 #else
+*/
 	#include <openssl/evp.h>
-#endif
+//#endif
 
 /*
 #ifdef _WIN32
@@ -418,18 +420,20 @@ string StrToMD5ToHex(const string &str)
 	unsigned char *buf = (unsigned char*)str.c_str();
 	unsigned char md5[16]; // MD5_DIGEST_LENGTH
 
+/*
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 	MD5_CTX ctx;
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, buf, len);
 	MD5_Final(md5, &ctx);
 #else
+*/
 	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 	EVP_DigestInit_ex(ctx, EVP_md5(), NULL);
 	EVP_DigestUpdate(ctx, buf, len);
 	EVP_DigestFinal_ex(ctx, md5, NULL);
 	EVP_MD_CTX_free(ctx);
-#endif
+//#endif
 
 	static const char arr[] = "0123456789abcdef";
 	string out;
