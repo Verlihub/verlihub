@@ -1,8 +1,3 @@
-Travis build status
-==============
-
-[![Build status](https://travis-ci.org/Verlihub/verlihub.svg?branch=master)](https://travis-ci.org/Verlihub/verlihub)
-
 Verlihub 1.3.0.x
 ==============
 
