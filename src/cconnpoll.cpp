@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -32,9 +32,9 @@ namespace nVerliHub {
 	namespace nSocket {
 
 cConnPoll::cConnPoll():
-	mBlockSize(1024) // todo: what is this?
+	mBlockSize(1024)
 {
-	mFDs.reserve(20480); // todo: what is this? really need that big reserve?
+	mFDs.reserve(20480);
 }
 
 cConnPoll::~cConnPoll()

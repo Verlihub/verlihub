@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -124,6 +124,8 @@ int cAsyncSocketServer::run()
 /*
 #ifdef USE_SSL_CONNECTS
 	// https://wiki.openssl.org/index.php/Simple_TLS_Server
+	// https://github.com/wolfSSL/wolfssl-examples/blob/master/tls/server-tls-nonblocking.c
+	SSL_library_init();
 	SSL_load_error_strings();
 	OpenSSL_add_ssl_algorithms();
 	const SSL_METHOD *meth = TLS_server_method(); // todo: detect version from ssl.h
@@ -133,29 +135,26 @@ int cAsyncSocketServer::run()
 		SSL_CTX_set_options(mSSLCont, SSL_OP_NO_COMPRESSION); // no compression
 		SSL_CTX_set_min_proto_version(mSSLCont, TLS1_3_VERSION); // min version 1.3
 		SSL_CTX_set_max_proto_version(mSSLCont, TLS1_3_VERSION); // max version 1.3
-		SSL_CTX_set_ecdh_auto(mSSLCont, 1);
 
 		if (SSL_CTX_use_certificate_file(mSSLCont, "/home/rolex/.certs/FearDC.crt", SSL_FILETYPE_PEM) <= 0) { // todo: add config
 			vhLog(0) << ("Failed to apply SSL certificate to server SSL context") << endl;
-			ERR_print_errors_fp(stderr);
 			SSL_CTX_free(mSSLCont);
 			mSSLCont = NULL;
+			ERR_free_strings();
 			EVP_cleanup();
 
 		} else {
 			if (SSL_CTX_use_PrivateKey_file(mSSLCont, "/home/rolex/.certs/FearDC.key", SSL_FILETYPE_PEM) <= 0 ) { // todo: add config
 				vhLog(0) << ("Failed to apply SSL key to server SSL context") << endl;
-				ERR_print_errors_fp(stderr);
 				SSL_CTX_free(mSSLCont);
 				mSSLCont = NULL;
+				ERR_free_strings();
 				EVP_cleanup();
 			}
 		}
 
 	} else {
 		vhLog(0) << ("Failed to create server SSL context") << endl;
-		ERR_print_errors_fp(stderr);
-		EVP_cleanup();
     }
 #endif
 */
@@ -219,6 +218,7 @@ void cAsyncSocketServer::close()
 	if (mSSLCont) {
 		SSL_CTX_free(mSSLCont);
 		mSSLCont = NULL;
+		ERR_free_strings();
 		EVP_cleanup();
 	}
 #endif

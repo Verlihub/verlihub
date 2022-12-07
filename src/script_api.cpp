@@ -911,21 +911,6 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool
 	return serv->AddScriptCommand(cmd, data, plug, script, inst);
 }
 
-bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses)
-{
-	if (!cmd || !data || !recipient || !sender || !responses)
-		return false;
-
-	cServerDC *serv = GetCurrentVerlihub();
-	if (!serv) {
-		cerr << "Server not found" << endl;
-		return false;
-	}
-
-	serv->OnScriptQuery(cmd, data, recipient, sender, responses);
-	return true;
-}
-
 int CheckBotNick(const string &nick)
 {
 	/*

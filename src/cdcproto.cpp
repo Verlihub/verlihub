@@ -1293,22 +1293,22 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 			temp = mS->mC.desc_insert_vars;
 			ReplaceVarInString(temp, "CLASS", temp, conn->mpUser->mClass);
 			ReplaceVarInString(temp, "CLASSNAME", temp, mS->UserClassName(conn->mpUser->mClass));
-			result = temp.find("%[C");
+			size_t pos = temp.find("%[C");
 
-			if (result != temp.npos) { // only if found
+			if (pos != temp.npos) { // only if found
 				string geo;
 
-				if (temp.find("%[CC]", result) != temp.npos) {
+				if (temp.find("%[CC]", pos) != temp.npos) {
 					geo = conn->GetGeoCC(); // country code
 					ReplaceVarInString(temp, "CC", temp, geo);
 				}
 
-				if (temp.find("%[CN]", result) != temp.npos) {
+				if (temp.find("%[CN]", pos) != temp.npos) {
 					geo = conn->GetGeoCN(); // country name
 					ReplaceVarInString(temp, "CN", temp, geo);
 				}
 
-				if (temp.find("%[CITY]", result) != temp.npos) {
+				if (temp.find("%[CITY]", pos) != temp.npos) {
 					geo = conn->GetGeoCI(); // city name
 					ReplaceVarInString(temp, "CITY", temp, geo);
 				}

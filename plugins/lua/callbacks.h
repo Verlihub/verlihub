@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -105,7 +105,6 @@ namespace nVerliHub {
 	int _GetTopic(lua_State *L);
 	int _SetTopic(lua_State *L);
 	int _ScriptCommand(lua_State *L);
-	int _ScriptQuery(lua_State *L);
 
 	nLuaPlugin::cLuaInterpreter *FindLua(lua_State *L);
 	void luaerror(lua_State *L, const char *errstr);

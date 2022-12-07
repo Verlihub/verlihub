@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -67,7 +67,6 @@ namespace nVerliHub {
 	bool DelRegUser(const char *nick);
 	bool SetRegClass(const char *nick, int clas);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst = false);
-	bool ScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses);
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

@@ -3233,69 +3233,6 @@ int _ScriptCommand(lua_State *L)
 	return 2;
 }
 
-int _ScriptQuery(lua_State *L)
-{
-	int arg_num = lua_gettop(L) - 1;
-	if (arg_num < 2) {
-		luaL_error(L, "Error calling VH:ScriptQuery, expected 2 to 4 arguments but got %d.", arg_num);
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-		return 2;
-	}
-
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3)) {
-		luaerror(L, ERR_PARAM);
-		return 2;
-	}
-
-	if ((arg_num > 2 && !lua_isstring(L, 4)) || (arg_num > 3 && !lua_isnumber(L, 5))) {
-		luaerror(L, ERR_PARAM);
-		return 2;
-	}
-
-	cLuaInterpreter *li = FindLua(L);
-
-	if (!li) {
-		luaerror(L, ERR_LUA);
-		return 2;
-	}
-
-	string cmd = lua_tostring(L, 2);
-	string data = lua_tostring(L, 3);
-	string recipient = (arg_num > 2) ? lua_tostring(L, 4) : "";
-	int use_long_output = (arg_num > 3) ? lua_tonumber(L, 5) : 0;
-	ScriptResponses responses;
-
-	if (!ScriptQuery(&cmd, &data, &recipient, &li->mScriptName, &responses)) {
-		luaerror(L, ERR_CALL);
-		return 2;
-	}
-
-	lua_pushboolean(L, 1);
-	lua_newtable(L);
-	int z = lua_gettop(L);
-
-	for (size_t i = 0; i < responses.size(); i++) {
-		if (use_long_output) {
-			lua_pushnumber(L, i);
-			lua_newtable(L);
-			lua_pushnumber(L, 0);
-			lua_pushstring(L, responses[i].data.c_str());
-			lua_rawset(L, -3);
-			lua_pushnumber(L, 1);
-			lua_pushstring(L, responses[i].sender.c_str());
-			lua_rawset(L, -3);
-			lua_rawset(L, z);
-		} else {
-			lua_pushnumber(L, i);
-			lua_pushstring(L, responses[i].data.c_str());
-			lua_rawset(L, -3);  // store the pair on the table
-		}
-	}
-
-	return 2;
-}
-
 void luaerror(lua_State *L, const char *errstr)
 {
 	lua_pushboolean(L, 0);

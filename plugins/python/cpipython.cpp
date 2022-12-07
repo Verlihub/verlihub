@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -171,7 +171,6 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_DelIPTempBan]       = &_DelIPTempBan;
 	callbacklist[W_ParseCommand]       = &_ParseCommand;
 	callbacklist[W_ScriptCommand]      = &_ScriptCommand;
-	callbacklist[W_ScriptQuery]        = &_ScriptQuery;
 	callbacklist[W_SetConfig]          = &_SetConfig;
 	callbacklist[W_GetConfig]          = &_GetConfig;
 	callbacklist[W_IsRobotNickBad]     = &_IsRobotNickBad;
@@ -240,7 +239,6 @@ bool cpiPython::RegisterAll()
 	RegisterCallBack("VH_OnUserCommand");
 	RegisterCallBack("VH_OnHubCommand");
 	RegisterCallBack("VH_OnScriptCommand");
-	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnUserInList");
 	RegisterCallBack("VH_OnUserLogin");
 	RegisterCallBack("VH_OnUserLogout");
@@ -1038,64 +1036,6 @@ bool cpiPython::OnScriptCommand(string *cmd, string *data, string *plug, string 
 		return CallAll(W_OnScriptCommand, args);
 	}
 	
-	return true;
-}
-
-bool cpiPython::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
-{
-	if (!online || !cmd || !data || !recipient || !sender || !resp)
-		return true;
-
-	int func = W_OnScriptQuery;
-	w_Targs *args = lib_pack("ssss", cmd->c_str(), data->c_str(), recipient->c_str(), sender->c_str());
-	log2("PY: Call %s: parameters %s\n", lib_hookname(func), lib_packprint(args));
-	w_Targs *result;
-
-	if (Size()) {
-		for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
-			const char *response;
-			bool should_call = (*it)->receive_all_script_queries;
-
-			if (!should_call) {
-				if (!recipient->size() || !recipient->compare("python") || !recipient->compare((*it)->mScriptName))
-					should_call = true;
-			}
-
-			if (!should_call)
-				continue;
-
-			if (!cmd->compare("_get_script_file")) {
-				resp->push_back(ScriptResponse((*it)->mScriptName, (*it)->mScriptName));
-				continue;
-			}
-
-			if (!cmd->compare("_get_script_name")) {
-				resp->push_back(ScriptResponse((*it)->name, (*it)->mScriptName));
-				continue;
-			}
-
-			if (!cmd->compare("_get_script_version")) {
-				resp->push_back(ScriptResponse((*it)->version, (*it)->mScriptName));
-				continue;
-			}
-
-			result = (*it)->CallFunction(func, args);
-
-			if (!result)
-				continue;
-
-			if (lib_unpack(result, "s", &response) && response) {
-				ScriptResponse sr;
-				sr.data = string(response);
-				sr.sender = (*it)->mScriptName;
-				resp->push_back(sr);
-			}
-
-			free(result);
-		}
-	}
-
-	free(args);
 	return true;
 }
 
@@ -1933,39 +1873,6 @@ w_Targs* _ScriptCommand(int id, w_Targs *args)
 		return NULL;
 
 	return w_ret1;
-}
-
-w_Targs* _ScriptQuery(int id, w_Targs *args)
-{
-	const char *cmd, *data, *recipient = NULL;
-	long use_long_output;
-	ScriptResponses responses;
-	if (!cpiPython::lib_unpack(args, "sssl", &cmd, &data, &recipient, &use_long_output)) return NULL;
-	if (!cmd || !data) return NULL;
-	if (!recipient) recipient = "";
-	string s_cmd(cmd), s_data(data), s_recipient(recipient);
-	string s_sender(cpiPython::me->GetInterpreter(id)->mScriptName);
-	
-	if (!ScriptQuery(&s_cmd, &s_data, &s_recipient, &s_sender, &responses))
-		return NULL;
-	if (responses.size() == 0)
-		return cpiPython::lib_pack("lllp", (long)1, (long)0, (long)0, (void *)NULL);
-	long rows = responses.size();
-	long cols = (use_long_output ? 2 : 1);
-	const char **res = (const char **)calloc(cols * rows, sizeof(char *));
-	if (!res) {
-		log1("PY: ScriptQuery   malloc failed\n");
-		return NULL;
-	}
-	for (long r = 0; r < rows; r++) {
-		if (cols == 1) {
-			res[r] = strdup(responses[r].data.c_str());
-		} else {
-			res[(r * cols)] = strdup(responses[r].data.c_str());
-			res[(r * cols) + 1] = strdup(responses[r].sender.c_str());
-		}
-	}
-	return cpiPython::lib_pack("lllp", (long)1, (long)rows, (long)cols, (void *)res);
 }
 
 w_Targs *_SetConfig(int id, w_Targs *args)

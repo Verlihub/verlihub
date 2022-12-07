@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -47,11 +47,6 @@ SET(CONFIG_FILES_RU # russian
 	config/ru/help_vip
 )
 
-SET(TEST_SCRIPT_FILES
-	test_scripts/vh_event_log.py
-	test_scripts/vh_integration_test.py
-)
-
 SET(prefix ${CMAKE_INSTALL_PREFIX})
 SET(plugindir "${CMAKE_INSTALL_PREFIX}/${PLUGINDIR}")
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/sql/default_pi_plug.sql.in ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
@@ -59,4 +54,3 @@ SET(SQL_FILES ${SQL_FILES}  ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
 INSTALL(FILES ${SQL_FILES} DESTINATION share/${PROJECT_NAME}/sql)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION share/${PROJECT_NAME}/config)
 INSTALL(FILES ${CONFIG_FILES_RU} DESTINATION share/${PROJECT_NAME}/config/ru)
-INSTALL(FILES ${TEST_SCRIPT_FILES} DESTINATION share/${PROJECT_NAME}/test_scripts)

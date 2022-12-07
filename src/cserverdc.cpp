@@ -598,13 +598,6 @@ void cServerDC::SendScriptCommands()
 	mScriptCommands.clear();
 }
 
-void cServerDC::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *responses)
-{
-	#ifndef WITHOUT_PLUGINS
-		mCallBacks.mOnScriptQuery.CallAll(cmd, data, recipient, sender, responses);
-	#endif
-}
-
 bool cServerDC::OnOpChatMessage(string *nick, string *data)
 {
 	#ifndef WITHOUT_PLUGINS

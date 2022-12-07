@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -83,7 +83,6 @@ public:
 	virtual bool OnUnBan(cUser *, string nick, string op, string reason);
 	virtual bool OnSetConfig(cUser *user, string *conf, string *var, string *val_new, string *val_old, int val_type);
 	virtual bool OnScriptCommand(string *cmd, string *data, string *plug, string *script);
-	virtual bool OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp);
 	virtual bool OnCtmToHub(cConnDC *conn, string *ref);
 	virtual bool OnOpChatMessage(string *nick, string *data);
 	virtual bool OnPublicBotMessage(string *nick, string *data, int min_class, int max_class);
