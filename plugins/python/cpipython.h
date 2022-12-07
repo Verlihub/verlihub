@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -99,7 +99,6 @@ public:
 	virtual bool OnUserCommand(nSocket::cConnDC *, std::string *);
 	virtual bool OnHubCommand(nSocket::cConnDC *conn, std::string *command, int is_op_cmd, int in_pm);
 	virtual bool OnScriptCommand(std::string *cmd, std::string *data, std::string *plug, std::string *script);
-	virtual bool OnScriptQuery(std::string *cmd, std::string *data, std::string *recipient, std::string *sender, ScriptResponses *resp);
 	virtual bool OnUserInList(cUser *user);
 	virtual bool OnUserLogin(cUser *user);
 	virtual bool OnUserLogout(cUser *user);
@@ -243,7 +242,6 @@ extern "C" w_Targs *_DelNickTempBan    (int id, w_Targs *args);
 extern "C" w_Targs *_DelIPTempBan      (int id, w_Targs *args);
 extern "C" w_Targs *_ParseCommand      (int id, w_Targs *args);
 extern "C" w_Targs *_ScriptCommand     (int id, w_Targs *args);
-extern "C" w_Targs *_ScriptQuery       (int id, w_Targs *args);
 extern "C" w_Targs *_SetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_GetConfig         (int id, w_Targs *args);
 extern "C" w_Targs *_IsRobotNickBad    (int id, w_Targs *args);

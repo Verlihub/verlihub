@@ -33,7 +33,7 @@ message(STATUS)
 SET(VERLIHUB_VERSION_MAJOR 1) # note: these must be numbers, else compilation will fail
 SET(VERLIHUB_VERSION_MINOR 3)
 SET(VERLIHUB_VERSION_PATCH 1)
-SET(VERLIHUB_VERSION_TWEAK 13)
+SET(VERLIHUB_VERSION_TWEAK 14)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 #SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}")
 SET(PROJECT_NAME "verlihub")
@@ -229,16 +229,6 @@ IF(UNIX)
 	IF(NOT BASH_PATH)
 		MESSAGE(FATAL_ERROR "[ ER ] Bash shell not found, please install it via your package manager or compile from source: http://ftp.gnu.org/gnu/bash/")
 	ENDIF(NOT BASH_PATH)
-
-	FIND_PROGRAM(PYTHON_PATH python2.7
-		PATHS
-			/usr/bin
-			/usr/local/bin
-	)
-
-	IF(NOT PYTHON_PATH)
-		MESSAGE(WARNING "[ WA ] Python interpreter not found, you will not be able to run integration test.")
-	ENDIF(NOT PYTHON_PATH)
 ENDIF(UNIX)
 
 # ----------------------------------------------------------------------------------------------------
@@ -295,8 +285,8 @@ IF(WITH_PYTHON)
 ENDIF(WITH_PYTHON)
 
 IF(WITH_LUA)
-	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, lua (>= 5.1)")
-	SET(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}, lua >= 5.1")
+	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, lua (>= 5.2)")
+	SET(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}, lua >= 5.2")
 ENDIF(WITH_LUA)
 
 SET(CPACK_GENERATOR "DEB;RPM;TBZ2")

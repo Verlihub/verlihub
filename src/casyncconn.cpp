@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -354,8 +354,17 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 /*
 #ifdef USE_SSL_CONNECTS
 		if (mSSLConn) {
-			while (((buf_len = SSL_read(mSSLConn, msBuffer.data(), MAX_MESS_SIZE)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) // todo: errno
+			int err = 0;
+
+			do {
+				buf_len = SSL_read(mSSLConn, msBuffer.data(), MAX_MESS_SIZE);
+				err = SSL_get_error(mSSLConn, buf_len);
+
+				if (err == SSL_ERROR_WANT_READ)
+					mxServer->mConnChooser.OptIn(this, eCC_INPUT);
+
 				::usleep(sleep);
+			} while ((err == SSL_ERROR_WANT_READ) && (i++ <= tries));
 
 		} else {
 #endif
@@ -433,7 +442,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 {
 	size_t total = 0; // how many bytes weve sent
 	size_t bytesleft = len; // how many we have left to send
-	int n = 0;
+	int n = 0; //, err = 0;
 	//int repetitions = 0;
 	//bool udp = (this->GetType() == eCT_SERVERUDP);
 
@@ -442,13 +451,18 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		//try {
 			//if (!udp) {
 //#if !defined _WIN32
-			/*
-			#ifdef USE_SSL_CONNECTS
-				if (mSSLConn)
-					n = SSL_write(mSSLConn, buf + total, bytesleft);
-				else
-			#endif
-			*/
+/*
+#ifdef USE_SSL_CONNECTS
+				if (mSSLConn) {
+					do {
+						n = SSL_write(mSSLConn, buf + total, bytesleft);
+						err = SSL_get_error(mSSLConn, n);
+						//sleep(1);
+					} while (err == SSL_ERROR_WANT_WRITE);
+
+				} else {
+#endif
+*/
 					n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
@@ -465,6 +479,13 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 						::Sleep(50);
 					}
 				} while (WSAGetLastError() == WSAEWOULDBLOCK);
+*/
+/*
+#ifdef USE_SSL_CONNECTS
+				}
+#endif
+*/
+/*
 #endif
 */
 			/*
@@ -491,14 +512,24 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	}
 #else
 	//if (!udp)
-	/*
-	#ifdef USE_SSL_CONNECTS
-		if (mSSLConn)
-			n = SSL_write(mSSLConn, buf + total, bytesleft);
-		else
-	#endif
-	*/
+/*
+#ifdef USE_SSL_CONNECTS
+		if (mSSLConn) {
+			do {
+				n = SSL_write(mSSLConn, buf + total, bytesleft);
+				err = SSL_get_error(mSSLConn, n);
+				//sleep(1);
+			} while (err == SSL_ERROR_WANT_WRITE);
+
+		} else {
+#endif
+*/
 			n = send(mSockDesc, buf + total, bytesleft, 0);
+/*
+#ifdef USE_SSL_CONNECTS
+		}
+#endif
+*/
 	/*
 	else
 		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
@@ -781,15 +812,30 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 		mSSLConn = SSL_new(mxServer->mSSLCont);
 
 		if (mSSLConn) {
-			SSL_set_fd(mSSLConn, socknum);
+			int ret = 0, err = 0;
 
-			if (SSL_accept(mSSLConn) <= 0) {
+			if ((ret = SSL_set_fd(mSSLConn, socknum)) == 1) {
+				i = 0;
+
+				do {
+					ret = SSL_accept(mSSLConn);
+					err = SSL_get_error(mSSLConn, ret);
+
+					if (err == SSL_ERROR_WANT_READ)
+						mxServer->mConnChooser.OptIn(this, eCC_INPUT);
+				} while (((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) && (i++ < tries));
+
+				if (ret != 1) {
+					if (Log(0))
+						LogStream() << "Failed to accept client SSL socket: " << socknum << " (" << err << '/' << ret << ')' << endl;
+
+					SSL_free(mSSLConn);
+					mSSLConn = NULL;
+				}
+
+			} else {
 				if (Log(0))
-					LogStream() << "Failed to accept client SSL socket: " << socknum << endl;
-
-				ERR_print_errors_fp(stderr);
-				SSL_free(mSSLConn);
-				mSSLConn = NULL;
+					LogStream() << "Failed to set SSL file descriptor: " << socknum << " (" << SSL_get_error(mSSLConn, ret) << '/' << ret << ')' << endl;
 			}
 
 		} else {

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -78,7 +78,6 @@ enum {
 	W_OnUserCommand,
 	W_OnHubCommand,
 	W_OnScriptCommand,
-	W_OnScriptQuery,
 	W_OnUserInList,
 	W_OnUserLogin,
 	W_OnUserLogout,
@@ -129,7 +128,6 @@ enum {
 	W_DelIPTempBan,
 	W_ParseCommand,
 	W_ScriptCommand,
-	W_ScriptQuery,
 	W_SetConfig,
 	W_GetConfig,
 	W_IsRobotNickBad,

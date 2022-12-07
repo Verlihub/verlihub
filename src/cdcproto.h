@@ -330,10 +330,6 @@ protected:
 	bool CheckCompatTLS(nSocket::cConnDC *one, nSocket::cConnDC *two);
 	bool FindInSupports(const string &list, const string &flag);
 
-	// from utf8
-	bool FromUTF8(const string &data, string &back);
-	UConverter *mConv;
-
 	/**
 	* Escape DC string.
 	* @param msg The message to escape.
@@ -384,6 +380,10 @@ protected:
 
 	// Direct Connect hub server
 	nSocket::cServerDC *mS;
+
+	// from utf8
+	bool FromUTF8(const string &data, string &back);
+	UConverter *mConv;
 };
 
 	}; // namespace nProtocol

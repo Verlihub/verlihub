@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -164,7 +164,6 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnSetConfig");
 	RegisterCallBack("VH_OnUpdateClass");
 	RegisterCallBack("VH_OnScriptCommand");
-	RegisterCallBack("VH_OnScriptQuery");
 	RegisterCallBack("VH_OnCtmToHub");
 	RegisterCallBack("VH_OnOpChatMessage");
 	RegisterCallBack("VH_OnPublicBotMessage");
@@ -1061,23 +1060,6 @@ bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *sc
 		};
 
 		CallAll("VH_OnScriptCommand", args);
-	}
-
-	return true;
-}
-
-bool cpiLua::OnScriptQuery(string *cmd, string *data, string *recipient, string *sender, ScriptResponses *resp)
-{
-	if (cmd && data && recipient && sender && resp) {
-		const char *args[] = {
-			cmd->c_str(),
-			data->c_str(),
-			recipient->c_str(),
-			sender->c_str(),
-			NULL
-		};
-
-		CallAll("VH_OnScriptQuery", args, (cConnDC *)resp);
 	}
 
 	return true;

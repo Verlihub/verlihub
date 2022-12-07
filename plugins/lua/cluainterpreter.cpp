@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2021 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -136,7 +136,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetTopic", &_GetTopic);
 	RegisterFunction("SetTopic", &_SetTopic);
 	RegisterFunction("ScriptCommand", &_ScriptCommand);
-	RegisterFunction("ScriptQuery", &_ScriptQuery);
+
 	cServerDC *serv = cServerDC::sCurrentServer;
 
 	if (serv) {
@@ -150,33 +150,13 @@ bool cLuaInterpreter::Init()
 	VHPushString("ScriptName", mScriptName.c_str());
 
 	lua_setglobal(mL, VH_TABLE_NAME);
-	int status = luaL_dofile(mL, mScriptName.c_str());
 
-	if (status) {
-		const char *error = luaL_checkstring(mL, 1);
+	if (luaL_dofile(mL, mScriptName.c_str())) {
+		const char *error = lua_tostring(mL, -1);
 		ReportLuaError(error);
 		return false;
 	}
 
-	lua_pushstring(mL, LUA_PI_VERSION);
-	lua_setglobal(mL, "_PLUGINVERSION");
-	lua_pushstring(mL, HUB_VERSION_VERS);
-	lua_setglobal(mL, "_HUBVERSION");
-	lua_pushstring(mL, mScriptName.c_str());
-	lua_setglobal(mL, "_SCRIPTFILE");
-	const char *path = mScriptName.c_str();
-
-	for (int i = strlen(path) - 2; i >= 0; i--) {
-		if ((path[i] == '/') || (path[i] == '\\')) {
-			path = &path[i + 1];
-			break;
-		}
-	}
-
-	lua_pushstring(mL, path); // these two globals are to be set by the script, but should have sane defaults
-	lua_setglobal(mL, "_SCRIPTNAME");
-	lua_pushstring(mL, "0.0.0");
-	lua_setglobal(mL, "_SCRIPTVERSION");
 	return true;
 }
 
@@ -246,172 +226,108 @@ void cLuaInterpreter::VHPushString(const char *name, const char *val, bool updat
 
 bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC *conn)
 {
-	ScriptResponses *responses = NULL;
-
-	if (!strcmp(func, "VH_OnScriptQuery")) {
-		const char *recipient = args[2];
-
-		if (recipient && (recipient[0] != '\0') && strcmp(recipient, "lua") && strcmp(recipient, mScriptName.c_str()))
-			return true;
-
-		responses = (ScriptResponses*)conn;
-		conn = NULL;
-	}
-
 	lua_settop(mL, 0);
-	int base = lua_gettop(mL);
-	lua_pushliteral(mL, "_TRACEBACK");
-
-	#if defined LUA_GLOBALSINDEX
-		lua_rawget(mL, LUA_GLOBALSINDEX);
-	#else
-		lua_pushglobaltable(mL);
-	#endif
-
-	lua_insert(mL, base);
 	lua_getglobal(mL, func);
 
-	if (lua_isnil(mL, -1)) { // function dont exist
-		lua_pop(mL, -1); // remove nil value
-		lua_remove(mL, base); // remove _TRACEBACK
-	} else {
-		int i = 0;
+	if (lua_isnil(mL, -1)) {
+		lua_pop(mL, 1);
+		return true;
+	}
 
-		while (args[i] != NULL) {
-			lua_pushstring(mL, args[i]);
-			i++;
-		}
+	int pos = 0;
 
-		int result = lua_pcall(mL, i, 1, base);
+	while (args[pos] != NULL) {
+		lua_pushstring(mL, args[pos]);
+		pos++;
+	}
 
-		if (result) {
-			const char *error = lua_tostring(mL, -1);
-			ReportLuaError(error);
-			lua_pop(mL, 1);
-			lua_remove(mL, base); // remove _TRACEBACK
-			return true;
-		}
+	if (lua_pcall(mL, pos, 1, 0)) {
+		const char *err = lua_tostring(mL, -1);
+		ReportLuaError(err);
+		lua_pop(mL, 1);
+		return true;
+	}
 
-		bool ret = true;
+	bool ret = true;
 
-		if (lua_istable(mL, -1)) {
-			/*
-				new style, advanced table return
+	if (lua_istable(mL, -1)) {
+		/*
+			new style, advanced table return
 
-				table index = 1, type = string
-				value: data = protocol message to send
-				value: empty = dont send anything
+			table index = 1, type = string
+			value: data = protocol message to send
+			value: empty = dont send anything
 
-				table index = 2, type = boolean
-				value: 0 = discard
-				value: 1 = dont discard
+			table index = 2, type = boolean
+			value: 0 = discard
+			value: 1 = dont discard
 
-				table index = 3, type = boolean
-				value: 0 = disconnect user
-				value: 1 = dont disconnect
-			*/
+			table index = 3, type = boolean
+			value: 0 = disconnect user
+			value: 1 = dont disconnect
+		*/
 
-			i = lua_gettop(mL);
-			lua_pushnil(mL);
+		string data;
+		lua_pushnil(mL);
 
-			while (lua_next(mL, i) != 0) {
-				if (lua_isnumber(mL, -2)) { // table keys must not be named
-					int key = (int)lua_tonumber(mL, -2);
+		while (lua_next(mL, -2)) {
+			if (lua_isnumber(mL, -2)) { // table keys must not be named
+				pos = (int)lua_tonumber(mL, -2);
 
-					if (key == 1) { // message?
-						if (lua_isstring(mL, -1) && conn) { // value at index 1 must be a string, connection is required
-							string data = lua_tostring(mL, -1);
+				if (pos == 1) { // the message
+					if (lua_isstring(mL, -1) && conn) { // value at index 1 must be a string, connection is required
+						data = lua_tostring(mL, -1);
 
-							if (data.size())
-								conn->Send(data, false); // send data, script must add the ending pipe
-						}
-					} else if (key == 2) { // discard?
-						if (lua_isnumber(mL, -1)) { // value at index 2 must be a boolean
-							if ((int)lua_tonumber(mL, -1) == 0)
-								ret = false;
+						if (data.size())
+							conn->Send(data, false); // send data, script must add the ending pipe
+					}
+
+				} else if (pos == 2) { // discard flag
+					if (lua_isnumber(mL, -1)) { // value at index 2 must be a boolean
+						if ((int)lua_tonumber(mL, -1) == 0)
+							ret = false;
+
+					} else { // accept boolean and nil
+						if ((int)lua_toboolean(mL, -1) == 0)
+							ret = false;
+					}
+
+				} else if (pos == 3) { // disconnect flag
+					if (conn) { // connection is required
+						if (lua_isnumber(mL, -1)) { // value at index 3 must be a boolean
+							if ((int)lua_tonumber(mL, -1) == 0) {
+								conn->CloseNow(); // disconnect user
+								ret = false; // automatically discard due disconnect
+							}
+
 						} else { // accept boolean and nil
-							if ((int)lua_toboolean(mL, -1) == 0)
-								ret = false;
-						}
-					} else if (key == 3) { // disconnect?
-						if (conn) { // connection is required
-							if (lua_isnumber(mL, -1)) { // value at index 3 must be a boolean
-								if ((int)lua_tonumber(mL, -1) == 0) {
-									conn->CloseNow(); // disconnect user
-									ret = false; // automatically discard due disconnect
-								}
-							} else { // accept boolean and nil
-								if ((int)lua_toboolean(mL, -1) == 0) {
-									conn->CloseNow(); // disconnect user
-									ret = false; // automatically discard due disconnect
-								}
+							if ((int)lua_toboolean(mL, -1) == 0) {
+								conn->CloseNow(); // disconnect user
+								ret = false; // automatically discard due disconnect
 							}
 						}
 					}
 				}
-
-				lua_pop(mL, 1);
-			}
-		} else if (lua_isnumber(mL, -1)) {
-			/*
-				old school, simple boolean return for backward compatibility
-
-				type = boolean
-				value: 0 = discard
-				value: 1 = dont discard
-			*/
-
-			if ((int)lua_tonumber(mL, -1) == 0)
-				ret = false;
-		//} else { // accept boolean and nil, same as above
-			//if ((int)lua_toboolean(mL, -1) == 0)
-				//ret = false;
-
-		}
-		if (!strcmp(func, "VH_OnScriptQuery") && responses) {
-			const char *command = args[0];
-			const char *answer = NULL;
-			const char *sender = mScriptName.c_str();
-			bool to_pop = false;
-
-			if (lua_isstring(mL, -1))
-				answer = lua_tostring(mL, -1);
-
-			if ((!answer || (answer[0] == '\0')) && command && (command[0] != '\0')) {
-				if (!strcmp(command, "_get_script_file")) {
-					answer = mScriptName.c_str();
-
-				} else if (!strcmp(command, "_get_script_version")) {
-					lua_getglobal(mL, "_SCRIPTVERSION");
-
-					if (lua_isstring(mL, -1))
-						answer = lua_tostring(mL, -1);
-
-					to_pop = true;
-
-				} else if (!strcmp(command, "_get_script_name")) {
-					lua_getglobal(mL, "_SCRIPTNAME");
-
-					if (lua_isstring(mL, -1))
-						answer = lua_tostring(mL, -1);
-
-					to_pop = true;
-				}
 			}
 
-			if (answer && (answer[0] != '\0'))
-				responses->push_back(ScriptResponse(answer, sender));
-
-			if (to_pop)
-				lua_pop(mL, 1);
+			lua_pop(mL, 1);
 		}
 
-		lua_pop(mL, 1);
-		lua_remove(mL, base); // remove _TRACEBACK
-		return ret;
+	} else if (lua_isnumber(mL, -1)) {
+		/*
+			old school, simple boolean return for backward compatibility
+
+			type = boolean
+			value: 0 = discard
+			value: 1 = dont discard
+		*/
+
+		if ((int)lua_tonumber(mL, -1) == 0)
+			ret = false;
 	}
 
-	return true;
+	lua_pop(mL, 1);
+	return ret;
 }
 
 	}; // namespace nLuaPlugin
