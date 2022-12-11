@@ -4,16 +4,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2020-11-30 22:06+0100\n"
-"PO-Revision-Date: 2019-04-21 06:05+0000\n"
-"Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/feardc/verlihub-100/language/zh_CN/)\n"
+"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"PO-Revision-Date: 2014-06-20 09:10+0000\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
+"Language-Team: Chinese (China) (http://www.transifex.com/feardc/verlihub/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=GB18030\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -184,7 +184,7 @@ msgstr ""
 msgid "Your connection type should match %[pattern]"
 msgstr ""
 
-#: ../plugins/lua/callbacks.cpp:1819
+#: ../plugins/lua/callbacks.cpp:1889
 msgid "Incorrect password"
 msgstr ""
 
@@ -309,7 +309,7 @@ msgstr ""
 msgid "Current log level: %d"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:328
+#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:334
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr ""
@@ -319,11 +319,11 @@ msgstr ""
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:205
+#: ../plugins/lua/cluainterpreter.cpp:188
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:211
+#: ../plugins/lua/cluainterpreter.cpp:194
 msgid "Unknown error"
 msgstr ""
 
@@ -557,6 +557,10 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
 msgid "Script #%d is now loaded: %s"
+msgstr ""
+
+#: ../plugins/python/cconsole.cpp:324
+msgid "Level must be a number."
 msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66

@@ -6,16 +6,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2020-11-30 22:06+0100\n"
-"PO-Revision-Date: 2019-04-21 06:05+0000\n"
-"Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>\n"
-"Language-Team: German (Germany) (http://www.transifex.com/feardc/verlihub-100/language/de_DE/)\n"
+"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"PO-Revision-Date: 2014-06-20 09:10+0000\n"
+"Last-Translator: daniel dny <danny05_c00l@yahoo.com>, 2016\n"
+"Language-Team: German (Germany) (http://www.transifex.com/feardc/verlihub/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -186,7 +186,7 @@ msgstr "Ihr Nickname sollte %[pattern] entsprechen"
 msgid "Your connection type should match %[pattern]"
 msgstr "Ihr Verbindungstyp sollte %[pattern] entsprechen"
 
-#: ../plugins/lua/callbacks.cpp:1819
+#: ../plugins/lua/callbacks.cpp:1889
 msgid "Incorrect password"
 msgstr ""
 
@@ -311,7 +311,7 @@ msgstr "Konfiguration %s.%s von '%s' auf '%s' aktualisiert."
 msgid "Current log level: %d"
 msgstr "Aktuelle Protokollierungsstufe: %d"
 
-#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:328
+#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:334
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr "Konfiguration aktualisiert %s.%s: %s -> %s"
@@ -321,11 +321,11 @@ msgstr "Konfiguration aktualisiert %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Aktuelle Fehlerklasse: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:205
+#: ../plugins/lua/cluainterpreter.cpp:188
 msgid "Lua error"
 msgstr "Lua-Fehler"
 
-#: ../plugins/lua/cluainterpreter.cpp:211
+#: ../plugins/lua/cluainterpreter.cpp:194
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
@@ -561,6 +561,10 @@ msgstr ""
 #, c-format
 msgid "Script #%d is now loaded: %s"
 msgstr "Skript #%d ist jetzt geladen: %s"
+
+#: ../plugins/python/cconsole.cpp:324
+msgid "Level must be a number."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
