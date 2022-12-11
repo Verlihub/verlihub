@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2020-11-30 22:06+0100\n"
-"PO-Revision-Date: 2019-04-21 06:05+0000\n"
-"Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>\n"
-"Language-Team: Romanian (Romania) (http://www.transifex.com/feardc/verlihub-100/language/ro_RO/)\n"
+"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"PO-Revision-Date: 2014-06-20 09:10+0000\n"
+"Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>, 2014-2019\n"
+"Language-Team: Romanian (Romania) (http://www.transifex.com/feardc/verlihub/language/ro_RO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ro_RO\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -187,7 +187,7 @@ msgstr "Numele tau de utilizator se potriveste cu %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Tipul tau de conexiune se potriveste cu %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1819
+#: ../plugins/lua/callbacks.cpp:1889
 msgid "Incorrect password"
 msgstr ""
 
@@ -312,7 +312,7 @@ msgstr "Se înnoieste configurarea %s.%s din '%s' în '%s'."
 msgid "Current log level: %d"
 msgstr "Nivelul curent al log-ului: %d"
 
-#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:328
+#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:334
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr "Actualizare configurãri %s.%s: %s -> %s"
@@ -322,11 +322,11 @@ msgstr "Actualizare configurãri %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Eroare curentã class: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:205
+#: ../plugins/lua/cluainterpreter.cpp:188
 msgid "Lua error"
 msgstr "Eroare lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:211
+#: ../plugins/lua/cluainterpreter.cpp:194
 msgid "Unknown error"
 msgstr "Eroare necunoscuta"
 
@@ -563,6 +563,10 @@ msgstr "Alocare eºuatã a noului interpret pentru scripte Python: %s [ %s ]"
 #, c-format
 msgid "Script #%d is now loaded: %s"
 msgstr "Scriptul #%d este acum încãrcat: %s"
+
+#: ../plugins/python/cconsole.cpp:324
+msgid "Level must be a number."
+msgstr ""
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
