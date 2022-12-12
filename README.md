@@ -1,4 +1,4 @@
-Verlihub 1.3.0.x
+Verlihub 1.4.0.x
 ==============
 
 Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
@@ -19,14 +19,14 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
 Links
 ==============
 
-  * Website: https://github.com/verlihub/
-  * Wiki: https://github.com/verlihub/verlihub/wiki/
-  * Crash: https://crash.verlihub.net/
-  * Translate: https://transifex.com/feardc/verlihub/
-  * Ledokol: https://ledo.feardc.net/
-  * MMDB: https://ledo.feardc.net/mmdb/
-  * Proxy: https://github.com/verlihub/tls-proxy/
-  * Support: nmdcs://hub.verlihub.net:7777/
+  * Website: https://github.com/verlihub
+  * Wiki: https://github.com/verlihub/verlihub/wiki
+  * Crash: https://crash.verlihub.net
+  * Translate: https://transifex.com/feardc/verlihub
+  * Ledokol: https://ledo.feardc.net
+  * MMDB: https://ledo.feardc.net/mmdb
+  * Proxy: https://github.com/verlihub/tls-proxy
+  * Support: nmdcs://hub.verlihub.net:7777
   * Hublist: https://te-home.net/?do=hublist
 
 Donation
