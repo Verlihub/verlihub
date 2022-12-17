@@ -185,14 +185,8 @@ namespace nVerliHub {
 				 */
 				bool GetHostSubstring(const string &hostname, string &dest, int level);
 
-				/**
-				 * Convert an Internet address in standard format (dotted string)
-				 * representation to Internet network address.
-				 * @param ip The IP address in standard format representation.
-				 * @return The Internet network address.
-				 * * @see Num2Ip()
-				 */
-				static unsigned long Ip2Num(const string &ip);
+				// convert ipv4 address to number and validate, check against 0.0.0.0 is optional
+				static bool Ip2Num(const string &ip, unsigned long &mask, bool zero = true);
 
 				/**
 				 * Fetch a list of ban entries sorted by ban time

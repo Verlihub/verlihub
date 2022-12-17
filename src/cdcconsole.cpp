@@ -1917,7 +1917,7 @@ bool cDCConsole::cfBan::operator()()
 					conn = ((cUser*)(*i))->mxConn;
 
 					if (conn && conn->mpUser) {
-						ipnum = conn->IP2Num();
+						ipnum = conn->AddrToNumber();
 
 						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum))) {
 							if (mS->mC.notify_kicks_to_all > -1) { // message to all
@@ -2850,12 +2850,16 @@ bool cDCConsole::cfWho::operator()()
 
 	string sep("\r\n\t");
 	string who;
-	unsigned long ip_min, ip_max;
+	unsigned long ip_min = 0, ip_max = 0;
 	unsigned int cnt, port = 0;
 
 	switch (Action) {
 		case eAC_IP:
-			ip_min = cBanList::Ip2Num(tmp);
+			if (!cBanList::Ip2Num(tmp, ip_min, false)) {
+				(*mOS) << autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255");
+				return false;
+			}
+
 			ip_max = ip_min;
 			cnt = mS->WhoIP(ip_min, ip_max, who, sep, true);
 
@@ -2865,8 +2869,10 @@ bool cDCConsole::cfWho::operator()()
 			break;
 
 		case eAC_RANGE:
-			if (!cDCConsole::GetIPRange(tmp, ip_min, ip_max))
+			if (!cDCConsole::GetIPRange(tmp, ip_min, ip_max)) {
+				(*mOS) << autosprintf(_("Unknown range format: %s"), tmp.c_str());
 				return false;
+			}
 
 			cnt = mS->WhoIP(ip_min, ip_max, who, sep, false);
 
@@ -3913,21 +3919,34 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 	if (mIPRangeRex.PartFound(R_RANGE)) { // <from>-<to>
 		if (mIPRangeRex.PartFound(R_DOTS)) {
 			mIPRangeRex.Extract(R_IP1, rang, temp);
-			frdr = cBanList::Ip2Num(temp);
+
+			if (!cBanList::Ip2Num(temp, frdr)) // can be 0.0.0.0
+				return false;
+
 			mIPRangeRex.Extract(R_IP2, rang, temp);
-			todr = cBanList::Ip2Num(temp);
+
+			if (!cBanList::Ip2Num(temp, todr, false)) // cant be 0.0.0.0
+				return false;
+
 		} else { // <addr>/<mask>
 			mIPRangeRex.Extract(0, rang, temp);
-			frdr = cBanList::Ip2Num(temp);
+
+			if (!cBanList::Ip2Num(temp, frdr)) // can be 0.0.0.0
+				return false;
+
 			int pos = temp.find_first_of("/\\");
 			istringstream is(temp.substr(pos + 1));
 			is >> pos;
 			frdr = frdr & (0xFFFFFFFF << (32 - pos));
 			todr = frdr + (0xFFFFFFFF >> pos);
 		}
+
 	} else { // <addr>
 		mIPRangeRex.Extract(R_IP1, rang, temp);
-		frdr = cBanList::Ip2Num(temp);
+
+		if (!cBanList::Ip2Num(temp, frdr, false)) // cant be 0.0.0.0
+			return false;
+
 		todr = frdr;
 	}
 

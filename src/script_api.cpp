@@ -299,7 +299,11 @@ string GetIPCC(const char *ip)
 		return "";
 	}
 
-	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	unsigned long ipnum = 0;
+
+	if (!cBanList::Ip2Num(ip, ipnum, false))
+		return "";
+
 	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
 	string cc;
 
@@ -326,7 +330,11 @@ string GetIPCN(const char *ip)
 		return "";
 	}
 
-	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	unsigned long ipnum = 0;
+
+	if (!cBanList::Ip2Num(ip, ipnum, false))
+		return "";
+
 	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
 	string cn;
 
@@ -353,7 +361,11 @@ string GetIPCity(const char *ip, const char *db)
 		return "";
 	}
 
-	const unsigned long ipnum = cBanList::Ip2Num(ip);
+	unsigned long ipnum = 0;
+
+	if (!cBanList::Ip2Num(ip, ipnum, false))
+		return "";
+
 	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
 	string ci;
 

@@ -64,7 +64,7 @@ cFloodprotect::~cFloodprotect()
 
 bool cFloodprotect::CleanUp(int secs)
 {
-	unsigned long Hash; // cleanup if expired
+	unsigned long Hash = 0; // cleanup if expired
 	sUserInfo *userinfo = NULL;
 	tUIIt it, it2;
 
@@ -77,7 +77,7 @@ bool cFloodprotect::CleanUp(int secs)
 			if((*it)->mLastAction.Sec() + secs < mS->mTime.Sec())
     			{
 				// clean up after ?? sec inactivity
-				Hash = cBanList::Ip2Num((*it)->mIP); // todo: (*it)->conn->IP2Num()
+				cBanList::Ip2Num((*it)->mIP, Hash); // todo: (*it)->conn->AddrToNumber()
 				userinfo = mUserInfo.GetByHash(Hash);
 				mUserInfo.RemoveByHash(Hash);
 				if(userinfo)
@@ -100,7 +100,7 @@ bool cFloodprotect::CheckFlood(cConnDC *conn, tFloodType ft)
 	if (conn->mpUser && (conn->mpUser->mClass >= eUC_OPERATOR))
 		return true;
 
-	const unsigned long Hash = conn->IP2Num();
+	const unsigned long Hash = conn->AddrToNumber();
 
 	if (mUserInfo.ContainsHash(Hash))
 	{
@@ -205,14 +205,14 @@ int cFloodprotect::KickAll(cConnDC *conn)
 	int cnt = 0;
 	cConnDC *tempConn = 0;
 	cUserCollection::iterator it;
-	const unsigned long ip = conn->IP2Num();
+	const unsigned long ip = conn->AddrToNumber();
 
 	for(it=mS->mUserList.begin(); it!=mS->mUserList.end(); ++it)
 	{
 		tempConn = (static_cast<cUser *>(*it))->mxConn;
 		if(tempConn)
 		{
-			if(ip == tempConn->IP2Num())
+			if(ip == tempConn->AddrToNumber())
 			{
 				if(tempConn->mpUser)
 				{
@@ -236,7 +236,7 @@ bool cFloodprotect::AddConn(cConnDC *conn, int difference)
 	if (!conn) // maybe special users, anyway, return true is safe
 		return true;
 
-	const unsigned long Hash = conn->IP2Num(); // best hash for ip is itself
+	const unsigned long Hash = conn->AddrToNumber(); // best hash for ip is itself
 	long Count =  mConnCounter.GetByHash(Hash);
 
 	Count += difference;
