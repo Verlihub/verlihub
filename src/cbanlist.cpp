@@ -28,8 +28,9 @@
 #include "cserverdc.h"
 #include "cbanlist.h"
 #include "i18n.h"
-#include <stdio.h>
 #include "stringutils.h"
+
+#include <stdio.h>
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -418,7 +419,8 @@ bool cBanList::GetHostSubstring(const string &hostname, string &result, int leve
 bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 {
 	string host;
-	unsigned long num;
+	unsigned long num = 0;
+
 	switch(mask) {
 		case eBF_NICK:
 			os << "( nick = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
@@ -428,10 +430,16 @@ bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 		break;
 		//case (int)eBF_NICK  : os << "(ip='_nickban_' AND nick='" << value << "')"; break;
 		//case (int)eBF_IP    : os << "(nick='_ipban_' AND ip='" << value << "')"; break;
-		case eBF_RANGE :
-			num = Ip2Num(value);
-			os << "(nick='_rangeban_' AND " << num << " BETWEEN range_fr AND range_to )";
-		break;
+
+		case eBF_RANGE:
+			if (!Ip2Num(value, num, false)) {
+				os << " 0 ";
+				return false;
+			}
+
+			os << "(`nick` = '_rangeban_' and " << num << " between `range_fr` and `range_to`)";
+			break;
+
 		case eBF_SHARE :
 			os << "(nick='_shareban_' AND share_size = '" << value << "')";
 		break;
@@ -494,8 +502,37 @@ void cBanList::List(ostream &os, int count)
 	mQuery.Clear();
 }
 
-unsigned long cBanList::Ip2Num(const string &ip)
+bool cBanList::Ip2Num(const string &ip, unsigned long &mask, bool zero)
 {
+	if ((ip.size() < 7) || (ip.size() > 15))
+		return false;
+
+	unsigned long p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+	stringstream comp;
+
+	if (sscanf(ip.c_str(), "%lu.%lu.%lu.%lu", &p1, &p2, &p3, &p4) == 4) {
+		if ((p1 >= 0) && (p1 <= 255)) { // p1
+			if ((p2 >= 0) && (p2 <= 255)) { // p2
+				if ((p3 >= 0) && (p3 <= 255)) { // p3
+					if ((p4 >= 0) && (p4 <= 255)) { // p4
+						comp << p1 << '.' << p2 << '.' << p3 << '.' << p4;
+
+						if (ip == comp.str()) {
+							mask = (p1 << 24) + (p2 << 16) + (p3 << 8) + p4;
+
+							if (((zero && (mask >= 0UL)) || (!zero && (mask > 0UL))) && (mask <= 4294967295UL))
+								return true;
+
+							mask = 0; // reset for unvalidated result
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+
 	/*
 	struct sockaddr_in sa; // this returns different number
 
@@ -504,13 +541,6 @@ unsigned long cBanList::Ip2Num(const string &ip)
 
 	return 0;
 	*/
-
-	unsigned long a = 0, b = 0, c = 0, d = 0;
-
-	if (sscanf(ip.c_str(), "%lu.%lu.%lu.%lu", &a, &b, &c, &d) == 4)
-		return (a << 24) + (b << 16) + (c << 8) + d;
-
-	return 0;
 
 	/*
 	int i;
@@ -569,13 +599,18 @@ void cBanList::AddNickTempBan(const string &nick, long until, const string &reas
 
 void cBanList::AddIPTempBan(const string &ip, long until, const string &reason, unsigned bantype)
 {
-	const unsigned long hash = Ip2Num(ip);
+	unsigned long hash = 0;
+
+	if (!Ip2Num(ip, hash, false))
+		return;
+
 	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
 
 	if (tban) {
 		tban->mUntil = time_t(until);
 		tban->mReason = reason;
 		tban->mType = bantype;
+
 	} else {
 		tban = new sTempBan(until, reason, bantype);
 		mTempIPBanlist.AddWithHash(tban, hash);
@@ -610,7 +645,11 @@ void cBanList::DelNickTempBan(const string &nick)
 
 void cBanList::DelIPTempBan(const string &ip)
 {
-	const unsigned long hash = Ip2Num(ip);
+	unsigned long hash = 0;
+
+	if (!Ip2Num(ip, hash, false))
+		return;
+
 	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
 
 	if (tban) {
@@ -677,7 +716,13 @@ void cBanList::ShowNickTempBan(ostream &os, const string &nick)
 
 void cBanList::ShowIPTempBan(ostream &os, const string &ip)
 {
-	const unsigned long hash = Ip2Num(ip);
+	unsigned long hash = 0;
+
+	if (!Ip2Num(ip, hash, false)) {
+		os << ' ' << _("Bad IP specified");
+		return;
+	}
+
 	sTempBan *tban = mTempIPBanlist.GetByHash(hash);
 
 	if (tban) {
@@ -726,7 +771,8 @@ bool cBanList::IsNickTempBanned(const string &nick)
 
 bool cBanList::IsIPTempBanned(const string &ip)
 {
-	return mTempIPBanlist.ContainsHash(Ip2Num(ip));
+	unsigned long hash = 0;
+	return Ip2Num(ip, hash, false) && mTempIPBanlist.ContainsHash(hash);
 }
 
 bool cBanList::IsIPTempBanned(unsigned long ip)

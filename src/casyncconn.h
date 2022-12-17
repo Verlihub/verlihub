@@ -197,7 +197,7 @@ namespace nVerliHub {
 					return mAddrIP;
 				}
 
-				unsigned long IP2Num() const // numerical ip address
+				unsigned long AddrToNumber() const // numerical ip address
 				{
 					return mNumIP;
 				}

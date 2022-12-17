@@ -633,7 +633,7 @@ cConnDC* cServerDC::GetConnByIP(const unsigned long ip)
 	for (pos = mConnList.begin(); pos != mConnList.end(); pos++) {
 		conn = (cConnDC*)(*pos);
 
-		if (conn && conn->ok && (ip == conn->IP2Num()))
+		if (conn && conn->ok && (ip == conn->AddrToNumber()))
 			return conn;
 	}
 
@@ -1046,8 +1046,8 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		return -1;
 	}
 
-	if (mBanList->IsIPTempBanned(conn->IP2Num())) { // check temporary ip ban
-		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(conn->IP2Num());
+	if (mBanList->IsIPTempBanned(conn->AddrToNumber())) { // check temporary ip ban
+		cBanList::sTempBan *tban = mBanList->mTempIPBanlist.GetByHash(conn->AddrToNumber());
 
 		if (tban && (tban->mUntil > mTime.Sec())) {
 			os << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTimePrint(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
@@ -1069,7 +1069,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 
 			return -1;
 		} else { // ban expired, do nothing
-			mBanList->DelIPTempBan(conn->IP2Num());
+			mBanList->DelIPTempBan(conn->AddrToNumber());
 		}
 	}
 
@@ -1103,7 +1103,7 @@ bool cServerDC::VerifyUniqueNick(cConnDC *conn)
 
 		if (conn->mpUser->mClass >= eUC_REGUSER)
 			sameuser = true;
-		else if (olduser && olduser->mxConn && (conn->IP2Num() == olduser->mxConn->IP2Num()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(olduser->mMyINFO, 0, olduser->mMyINFO.size(), conn->mpUser->mMyINFO) == 0))
+		else if (olduser && olduser->mxConn && (conn->AddrToNumber() == olduser->mxConn->AddrToNumber()) && (conn->mpUser->mShare == olduser->mShare) && (StrCompare(olduser->mMyINFO, 0, olduser->mMyINFO.size(), conn->mpUser->mMyINFO) == 0))
 			sameuser = true;
 
 		string omsg;
@@ -1752,7 +1752,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 		if (mUserList.ContainsKey(userkey)) {
 			cUser *olduser = mUserList.GetUserByKey(userkey);
 
-			if (olduser && olduser->mxConn && (conn->IP2Num() != olduser->mxConn->IP2Num())) // make sure its not same user
+			if (olduser && olduser->mxConn && (conn->AddrToNumber() != olduser->mxConn->AddrToNumber())) // make sure its not same user
 				return eVN_USED;
 		}
 	}
@@ -2458,7 +2458,7 @@ unsigned int cServerDC::WhoIP(unsigned long ip_min, unsigned long ip_max, string
 		conn = ((cUser*)(*it))->mxConn;
 
 		if (conn && conn->ok) {
-			ipnum = conn->IP2Num();
+			ipnum = conn->AddrToNumber();
 
 			if (exact && (ip_min == ipnum)) {
 				dest.append(sep);
@@ -2489,7 +2489,7 @@ bool cServerDC::CntConnIP(const unsigned long ip, const unsigned int max)
 		conn = ((cUser*)(*it))->mxConn;
 
 		if (conn && conn->ok) {
-			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->IP2Num() == ip)) {
+			if ((conn->GetTheoricalClass() <= eUC_REGUSER) && (conn->AddrToNumber() == ip)) {
 				tot++;
 
 				if (tot >= max)
@@ -2512,7 +2512,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 	for (i = mUserList.begin(); i != mUserList.end(); ++i) { // skip self
 		other = ((cUser*)(*i))->mxConn;
 
-		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mMyINFO.size() && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->IP2Num() == conn->IP2Num())) {
+		if (other && other->mpUser && other->mpUser->mInList && other->mpUser->mMyINFO.size() && (other->mpUser->mNickHash != conn->mpUser->mNickHash) && (other->mpUser->mClass <= int(mC.max_class_check_clone)) && (other->AddrToNumber() == conn->AddrToNumber())) {
 			comp.assign(other->mpUser->mMyINFO, 14 + other->mpUser->mNick.size(), -1); // "$MyINFO $ALL <nick> ", note: same in cdcproto.cpp
 			posh = comp.find(",M:"); // workaround for flylinkdc that sets passive mode for its second clone
 			poss = comp.find(",H:");
@@ -2542,7 +2542,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 						mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
 
 						if (mC.clone_ip_tban_time) // add temporary ip ban if enabled
-							mBanList->AddIPTempBan(conn->IP2Num(), mTime.Sec() + mC.clone_ip_tban_time, _("Clone detected"), eBT_CLONE);
+							mBanList->AddIPTempBan(conn->AddrToNumber(), mTime.Sec() + mC.clone_ip_tban_time, _("Clone detected"), eBT_CLONE);
 					}
 
 					clone = other->mpUser->mNick; // uses last nick
@@ -3296,6 +3296,50 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 				if (data)
 					free(data);
+
+			} else if ((svar == "listen_ip") && (val_new != val_old)) { // validate listen ip
+				unsigned long ip = 0;
+
+				if (val_new.empty() || !cBanList::Ip2Num(val_new, ip)) { // cant be empty, 0.0.0.0 - 255.255.255.255
+					if (user->mxConn)
+						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.0", "255.255.255.255"), user->mxConn);
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+			} else if ((svar == "tls_proxy_ip") && (val_new != val_old) && val_new.size()) { // validate proxy ip
+				unsigned long ip = 0;
+
+				if (!cBanList::Ip2Num(val_new, ip, false)) { // 0.0.0.1 - 255.255.255.255
+					if (user->mxConn)
+						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255"), user->mxConn);
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+			} else if (((svar == "ip_zone4_min") || (svar == "ip_zone5_min") || (svar == "ip_zone6_min")) && (val_new != val_old) && val_new.size()) { // validate low zones
+				unsigned long ip = 0;
+
+				if (!cBanList::Ip2Num(val_new, ip)) { // 0.0.0.0 - 255.255.255.255
+					if (user->mxConn)
+						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.0", "255.255.255.255"), user->mxConn);
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+			} else if (((svar == "ip_zone4_max") || (svar == "ip_zone5_max") || (svar == "ip_zone6_max")) && (val_new != val_old) && val_new.size()) { // validate high zones
+				unsigned long ip = 0;
+
+				if (!cBanList::Ip2Num(val_new, ip, false)) { // 0.0.0.1 - 255.255.255.255
+					if (user->mxConn)
+						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255"), user->mxConn);
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
 			}
 
 			mSetupList.SaveItem(conf, ci);

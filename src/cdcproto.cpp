@@ -677,7 +677,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		mS->mUserCount[conn->mGeoZone]++;
 	}
 
-	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER) && mS->CntConnIP(conn->IP2Num(), mS->mC.max_users_from_ip)) { // user limit from single ip
+	if ((mS->mC.max_users_from_ip != 0) && (conn->GetTheoricalClass() < eUC_VIPUSER) && mS->CntConnIP(conn->AddrToNumber(), mS->mC.max_users_from_ip)) { // user limit from single ip
 		os << autosprintf(_("User limit from IP address %s exceeded at %d online users."), conn->mAddrIP.c_str(), mS->mC.max_users_from_ip);
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_USERLIMIT);
 		Create_HubIsFull(omsg); // must be sent after chat message
@@ -697,7 +697,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 			mS->ReportUserToOpchat(conn, autosprintf(_("Authorization IP mismatch from %s"), nick.c_str()));
 
 		os << autosprintf(_("Authorization IP for this account doesn't match your IP address: %s"), conn->mAddrIP.c_str());
-		mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, os.str(), eBT_PASSW); // ban ip for pwd_tmpban
+		mS->mBanList->AddIPTempBan(conn->AddrToNumber(), mS->mTime.Sec() + mS->mC.pwd_tmpban, os.str(), eBT_PASSW); // ban ip for pwd_tmpban
 		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
 		return -1;
 	}
@@ -868,7 +868,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 			if (mS->mCallBacks.mOnBadPass.CallAll(conn->mpUser))
 			#endif
 			{
-				mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
+				mS->mBanList->AddIPTempBan(conn->AddrToNumber(), mS->mTime.Sec() + mS->mC.pwd_tmpban, omsg, eBT_PASSW); // ban ip instead of nick
 			}
 
 			if (conn->Log(2))
@@ -1786,7 +1786,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 				mS->DCPrivateHS(os.str(), conn);
 
 				if (mS->mC.same_flood_ban_time) // add temporary ban
-					mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
+					mS->mBanList->AddIPTempBan(conn->AddrToNumber(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
 
 				conn->CloseNice(1000, eCR_KICKED);
 				return -5;
@@ -1886,7 +1886,7 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 				mS->DCPrivateHS(os.str(), conn);
 
 				if (mS->mC.same_flood_ban_time) // add temporary ban
-					mS->mBanList->AddIPTempBan(conn->IP2Num(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
+					mS->mBanList->AddIPTempBan(conn->AddrToNumber(), mS->mTime.Sec() + mS->mC.same_flood_ban_time, os.str(), eBT_FLOOD);
 
 				conn->CloseNice(1000, eCR_KICKED);
 				return -5;
@@ -3400,7 +3400,8 @@ int cDCProto::DCO_WhoIP(cMessageDC *msg, cConnDC *conn)
 	nicklist.append("$UsersWithIP ");
 	nicklist.append(ip);
 	nicklist.append(1, '$');
-	const unsigned long num = cBanList::Ip2Num(ip);
+	unsigned long num = 0;
+	cBanList::Ip2Num(ip, num); // not validated, returns 0 in case of error
 	mS->WhoIP(num, num, nicklist, sep, true);
 	conn->Send(nicklist, true);
 	return 0;
@@ -4297,9 +4298,9 @@ bool cDCProto::isLanIP(const string &ip)
 	if (ip.substr(0, 4) == "127.")
 		return true;
 
-	const unsigned long lip = cBanList::Ip2Num(ip);
+	unsigned long lip = 0;
 
-	if ((lip >= 167772160UL && lip <= 184549375UL) || (lip >= 2886729728UL && lip <= 2887778303UL) || (lip >= 3232235520UL && lip <= 3232301055UL))
+	if (cBanList::Ip2Num(ip, lip, false) && (((lip >= 167772160UL) && (lip <= 184549375UL)) || ((lip >= 2886729728UL) && (lip <= 2887778303UL)) || ((lip >= 3232235520UL) && (lip <= 3232301055UL))))
 		return true;
 
 	/*

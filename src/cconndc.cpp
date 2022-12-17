@@ -560,7 +560,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 	}
 
 	if ((action >= 3) && serv->mC.proto_flood_tban_time) // add temporary ban
-		serv->mBanList->AddIPTempBan(IP2Num(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
+		serv->mBanList->AddIPTempBan(AddrToNumber(), serv->mTime.Sec() + serv->mC.proto_flood_tban_time, to_user.str(), eBT_FLOOD);
 
 	serv->ConnCloseMsg(this, to_user.str(), 1000, eCR_LOGIN_ERR);
 	return true;
@@ -701,11 +701,11 @@ void cConnDC::SetGeoZone()
 		}
 	}
 
-	unsigned long inum = IP2Num(), imin, imax;
+	unsigned long inum = AddrToNumber(), imin = 0, imax = 0;
 
 	if (serv->mC.ip_zone4_min.size() && serv->mC.ip_zone4_max.size()) {
-		imin = cBanList::Ip2Num(serv->mC.ip_zone4_min);
-		imax = cBanList::Ip2Num(serv->mC.ip_zone4_max);
+		cBanList::Ip2Num(serv->mC.ip_zone4_min, imin); // validated on set
+		cBanList::Ip2Num(serv->mC.ip_zone4_max, imax);
 
 		if ((imin <= inum) && (imax >= inum)) {
 			mGeoZone = 4;
@@ -714,8 +714,8 @@ void cConnDC::SetGeoZone()
 	}
 
 	if (serv->mC.ip_zone5_min.size() && serv->mC.ip_zone5_max.size()) {
-		imin = cBanList::Ip2Num(serv->mC.ip_zone5_min);
-		imax = cBanList::Ip2Num(serv->mC.ip_zone5_max);
+		cBanList::Ip2Num(serv->mC.ip_zone5_min, imin); // validated on set
+		cBanList::Ip2Num(serv->mC.ip_zone5_max, imax);
 
 		if ((imin <= inum) && (imax >= inum)) {
 			mGeoZone = 5;
@@ -724,8 +724,8 @@ void cConnDC::SetGeoZone()
 	}
 
 	if (serv->mC.ip_zone6_min.size() && serv->mC.ip_zone6_max.size()) {
-		imin = cBanList::Ip2Num(serv->mC.ip_zone6_min);
-		imax = cBanList::Ip2Num(serv->mC.ip_zone6_max);
+		cBanList::Ip2Num(serv->mC.ip_zone6_min, imin); // validated on set
+		cBanList::Ip2Num(serv->mC.ip_zone6_max, imax);
 
 		if ((imin <= inum) && (imax >= inum)) {
 			mGeoZone = 6;

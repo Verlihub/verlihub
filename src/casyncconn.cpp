@@ -137,7 +137,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			mIP = addr_in->sin_addr.s_addr; // copy ip
 			char *temp = inet_ntoa(addr_in->sin_addr);
 			mAddrIP = temp; // ip address
-			mNumIP = cBanList::Ip2Num(mAddrIP);
+			cBanList::Ip2Num(mAddrIP, mNumIP); // not validated
 
 			if (mxServer && mxServer->mUseDNS) // host name
 				DNSLookup();
@@ -1137,12 +1137,12 @@ string* cAsyncConn::FactoryString()
 
 bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 {
-	if (mTLSVer.size() || (addr.size() < 7) || (addr.size() > 15) || vers.empty() || (vers.size() > 3))
+	if (mTLSVer.size() || vers.empty() || (vers.size() > 3))
 		return false;
 
-	const unsigned long num = cBanList::Ip2Num(addr);
+	unsigned long num = 0;
 
-	if ((num == 0) || (num > 4294967295)) // validate ip
+	if (!cBanList::Ip2Num(addr, num, false)) // validate ip
 		return false;
 
 	mNumIP = num;
@@ -1167,12 +1167,9 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 
 bool cAsyncConn::SetUserIP(const string &addr)
 {
-	if ((addr.size() < 7) || (addr.size() > 15))
-		return false;
+	unsigned long num = 0;
 
-	const unsigned long num = cBanList::Ip2Num(addr);
-
-	if ((num == 0) || (num > 4294967295)) // validate ip
+	if (!cBanList::Ip2Num(addr, num, false)) // validate ip
 		return false;
 
 	if (mNumIP == num) // same ip, valid
@@ -1244,7 +1241,7 @@ bool cAsyncConn::DNSResolveReverse(const string &ip, string &host)
 }
 
 /*
-string cAsyncConn::IPAsString(unsigned long addr) // todo: pavel talked about this, use it instead of IP2Num?
+string cAsyncConn::IPAsString(unsigned long addr) // todo: pavel talked about this, use it instead of AddrToNumber?
 {
 	struct in_addr in;
 	in.s_addr = addr;

@@ -71,11 +71,17 @@ void cIPLog::MakeSearchQuery(const string &who, bool isNick, int action, int lim
 {
 	SelectFields(mQuery.OStream());
 	mQuery.OStream() << (isNick ? "WHERE nick='" : "WHERE ip=");
+
 	if(isNick) {
 		WriteStringConstant(mQuery.OStream(),who);
 		mQuery.OStream() << '\'';
-	} else
-		mQuery.OStream() << cBanList::Ip2Num(who);
+
+	} else {
+		unsigned long num = 0;
+		cBanList::Ip2Num(who, num);
+		mQuery.OStream() << num;
+	}
+
 	if(action>= 0)
 		mQuery.OStream() << " AND action =" << action;
 	mQuery.OStream() << " ORDER BY date DESC LIMIT " << limit;
@@ -189,7 +195,7 @@ void cIPLog::AddFields()
 bool cIPLog::Log(cConnDC *conn, int action, int info)
 {
 	sUserStruct entry;
-	entry.mIP = cBanList::Ip2Num(conn->AddrIP());
+	cBanList::Ip2Num(conn->AddrIP(), entry.mIP);
 	if(conn->mpUser != NULL)
 		entry.mNick = conn->mpUser->mNick;
 	else

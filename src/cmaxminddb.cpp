@@ -128,9 +128,9 @@ bool cMaxMindDB::GetCC(const string &host, string &cc)
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		cc = "E1";
 		vhLog(3) << "[GetCC] Got erroneous IP: " << host << endl;
 		return false;
@@ -196,9 +196,9 @@ bool cMaxMindDB::GetCN(const string &host, string &cn)
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		cn = "Invalid IP";
 		vhLog(3) << "[GetCN] Got erroneous IP: " << host << endl;
 		return false;
@@ -265,9 +265,9 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		geo_city = "Invalid IP";
 		vhLog(3) << "[GetCity] Got erroneous IP: " << host << endl;
 		return false;
@@ -350,9 +350,9 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		geo_cc = "E1";
 		geo_cn = "Invalid IP";
 		geo_ci = "Invalid IP";
@@ -465,9 +465,9 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		geo_ran_lo = "0.0.0.0";
 		geo_ran_hi = "255.255.255.255";
 		geo_cc = "E1";
@@ -646,9 +646,9 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 		return true;
 	}
 
-	const unsigned long sip = cBanList::Ip2Num(host);
+	unsigned long sip = 0;
 
-	if ((sip == 0UL) || (sip > 4294967295UL)) {
+	if (!cBanList::Ip2Num(host, sip, false)) {
 		asn_name = "Invalid IP";
 		vhLog(3) << "[GetASN] Got erroneous IP: " << host << endl;
 		return false;

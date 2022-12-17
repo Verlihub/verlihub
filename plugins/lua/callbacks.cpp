@@ -1872,9 +1872,9 @@ int _PassTempBan(lua_State *L)
 		return 2;
 	}
 
-	const unsigned long adnu = cBanList::Ip2Num(addr);
+	unsigned long adnu = 0;
 
-	if (adnu == 0) {
+	if (!cBanList::Ip2Num(addr, adnu, false)) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
