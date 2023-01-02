@@ -49,6 +49,7 @@ SET(VERLIHUB_HDRS
 	cdctag.h
 	cfreqlimiter.h
 	chttpconn.h
+	cicuconvert.h
 	cmaxminddb.h
 	cinfoserver.h
 	cinterpolexp.h
@@ -131,6 +132,7 @@ SET(VERLIHUB_SRCS
 	cdctag.cpp
 	cfreqlimiter.cpp
 	chttpconn.cpp
+	cicuconvert.cpp
 	cmaxminddb.cpp
 	cinfoserver.cpp
 	cinterpolexp.cpp

@@ -575,8 +575,8 @@ namespace nVerliHub {
 					unsigned cumulative = 0;
 					for(unsigned i=0;i < mData->mCapacity; ++i) {
 						if(mData->mData[i] != NULL) {
-							cumulative = 0;
 							os << "Bucket #" << i << " [Cumulative NULL elements = " << cumulative << " Total = " << ((sItem*)mData->mData[i])->Size() << ']' << endl;
+							cumulative = 0;
 						} else {
 							cumulative++;
 						}

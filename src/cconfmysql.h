@@ -60,12 +60,12 @@ public:
 
 	virtual nConfig::cConfigItemBaseString* NewItem(string &var)
  	{
-		return new nConfig::cConfigItemMySQLString(var);
+		return new nConfig::cConfigItemMySQLString(var); // todo: where are these deleted?
  	};
 
 	virtual nConfig::cConfigItemBasePChar * NewItem(char * &var)
 	{
-		return new nConfig::cConfigItemMySQLPChar(var);
+		return new nConfig::cConfigItemMySQLPChar(var); // todo: where are these deleted?
 	};
 };
 

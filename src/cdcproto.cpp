@@ -25,17 +25,17 @@
 #include "cbanlist.h"
 #include "cmessagedc.h"
 #include "cdctag.h"
+#include "stringutils.h"
+#include "cdcconsole.h"
+#include "i18n.h"
+
 #include <string>
 #include <string.h>
+#include <stdio.h>
 
 #ifdef HAVE_CONFIG_H
 	#include <config.h>
 #endif
-
-#include <stdio.h>
-#include "stringutils.h"
-#include "cdcconsole.h"
-#include "i18n.h"
 
 using std::string;
 
@@ -48,8 +48,7 @@ namespace nVerliHub {
 	namespace nProtocol {
 
 cDCProto::cDCProto(cServerDC *serv):
-	mS(serv),
-	mConv(NULL)
+	mS(serv)
 {
 	if (!mKickChatPattern.Compile("^((\\S+) )?is kicking (\\S+) [bB]ecause: (.*)$"))
 		throw "error in kickchatpattern";
@@ -61,12 +60,7 @@ cDCProto::cDCProto(cServerDC *serv):
 }
 
 cDCProto::~cDCProto()
-{
-	if (mConv) {
-		ucnv_close(mConv);
-		mConv = NULL;
-	}
-}
+{}
 
 cMessageParser *cDCProto::CreateParser()
 {
@@ -153,7 +147,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	switch (msg->mType) {
 		case eDC_UNKNOWN: // this must be first
 			if (msg->mStr.size()) {
-				if (Log(1)) // dont log pings
+				if (Log(2)) // dont log pings
 					LogStream() << "Incoming unknown command: " << msg->mStr << endl;
 
 				mS->mProtoCount[eDC_UNKNOWN]++;
@@ -2055,17 +2049,15 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		*/
 
 		if (((pize > 2) && (port.substr(pize - 2) == "RS")) || ((pize > 1) && (port[pize - 1] == 'R'))) { // note: try to fix utf8 bug in nat reverse command
-			if (FromUTF8(nick, temp)) {
-				other = mS->mUserList.GetUserByNick(temp);
-
-				if (!other || !other->mInList)
-					return -1;
-
-				nick.assign(temp, 0, temp.size()); // set converted nick for further use
-
-			} else {
+			if (!mS->mICUConvert->Convert(nick.c_str(), nick.size(), temp)) // failed to convert
 				return -1;
-			}
+
+			other = mS->mUserList.GetUserByNick(temp);
+
+			if (!other || !other->mInList)
+				return -1;
+
+			nick.assign(temp, 0, temp.size()); // set converted nick for further use
 
 		} else {
 			return -1;
@@ -4037,48 +4029,6 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 	}
 
 	return true; // default, note: we can not predict future version compatibility, it is now up to a script to compare tls client versions
-}
-
-bool cDCProto::FromUTF8(const string &data, string &back)
-{
-	if (data.empty())
-		return false;
-
-	UErrorCode _ok = U_ZERO_ERROR;
-
-	if (!mConv) { // create once and reuse
-		string _set(DEFAULT_HUB_ENCODING);
-
-		if (mS->mC.hub_encoding.size())
-			_set = mS->mC.hub_encoding;
-
-		mConv = ucnv_open(_set.c_str(), &_ok);
-
-		if (U_FAILURE(_ok)) {
-			if (mConv) {
-				ucnv_close(mConv);
-				mConv = NULL;
-			}
-
-			return false;
-		}
-	}
-
-	string _data(data);
-	unsigned int _len = _data.length();
-	UnicodeString _uni = UnicodeString::fromUTF8(StringPiece(_data));
-	char _targ[_len];
-	_ok = U_ZERO_ERROR;
-	_len = ucnv_fromUChars(mConv, _targ, _len, _uni.getBuffer(), -1, &_ok);
-
-	if (U_FAILURE(_ok))
-		return false;
-
-	if (_len < 1)
-		return false;
-
-	back.assign(_targ, 0, _len);
-	return true;
 }
 
 bool cDCProto::FindInSupports(const string &list, const string &flag)

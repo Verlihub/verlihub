@@ -402,9 +402,9 @@ namespace nVerliHub {
 				 * @param port The port.
 				 * @param address The address.
 				 * @param udp True if it is an UDP connection.
-				 * @return The socket descriptor or -1 if the connection already exists.
+				 * @return True or False if the connection already exists.
 				 */
-				int ListenOnPort(int port, const char *ia, const unsigned int blog/*, bool udp = false*/);
+				bool ListenOnPort(int port, const char *ia, const unsigned int blog/*, bool udp = false*/);
 
 				/**
 				 * Event handler function called when write buffer gets empty.
@@ -531,10 +531,6 @@ namespace nVerliHub {
 
 				/// Pointer to an instance of connection factory.
 				cConnFactory * mxMyFactory;
-
-				/// Pointer to an instance of accepted connection factory.
-				/// @deprecated
-				cConnFactory * mxAcceptingFactory;
 
 				/// Pointer to an instance of the protocol handler.
 				nProtocol::cProtocol * mxProtocol;

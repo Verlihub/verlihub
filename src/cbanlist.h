@@ -303,7 +303,7 @@ namespace nVerliHub {
 				 * @param ban The cBan instance.
 				 * @return Always zero.
 				 */
-				int UpdateBan(cBan &);
+				//int UpdateBan(cBan &);
 
 			protected:
 				/// cBan instance.

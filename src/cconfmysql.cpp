@@ -68,7 +68,9 @@ cMySQLTable::cMySQLTable(cMySQL &mysql): cObj("cMySQLTable"), mQuery(mysql)
 {}
 
 cMySQLTable::~cMySQLTable()
-{}
+{
+	mQuery.Clear();
+}
 
 bool cMySQLTable::GetCollation()
 {
@@ -183,7 +185,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 		if (NeedAdd || NeedModif) {
 			result = true;
 
-			if (Log(1))
+			if (Log(2))
 				LogStream() << "Altering table " << mName << (NeedAdd ? " add column " : " modify column") << it->mName << " with type: " << it->mType << endl;
 
 			mQuery.OStream() << "alter table " << mName << ' ' << (NeedAdd ? "add" : "modify") << " column ";
@@ -194,7 +196,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 	}
 
 	if ((strcmp(DEFAULT_COLLATION, "") != 0) && GetCollation() && (strcmp(mCollation.c_str(), DEFAULT_COLLATION) != 0)) {
-		if (Log(1))
+		if (Log(2))
 			LogStream() << "Altering table " << mName << ", setting character set to " << ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>") << " and collation to " << DEFAULT_COLLATION << endl;
 
 		mQuery.OStream() << "alter table " << mName;
@@ -227,6 +229,8 @@ cConfMySQL::cConfMySQL(cMySQL &mysql):
 
 cConfMySQL::~cConfMySQL()
 {
+	mQuery.Clear();
+
 	if (mItemCreator) {
 		delete mItemCreator;
 		mItemCreator = NULL;
@@ -315,7 +319,7 @@ void cConfMySQL::AddPrimaryKey(const char *key)
 	cConfigItemBase *item = mhItems.GetByHash(Hash);
 
 	if (item != NULL)
-			mPrimaryKey.AddWithHash(item, Hash);
+		mPrimaryKey.AddWithHash(item, Hash);
 }
 
 void cConfMySQL::WherePKey(ostream &os)

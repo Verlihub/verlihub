@@ -65,9 +65,8 @@ public:
 	/**
 	* Class constructor.
 	* @param s Pointer to VerliHub server.
-	* @param mysql The connection object to MySQL database.
 	*/
-	cDCConsole(nSocket::cServerDC *s, nMySQL::cMySQL &mysql);
+	cDCConsole(nSocket::cServerDC *s);
 
 	/**
 	* Class destructor.

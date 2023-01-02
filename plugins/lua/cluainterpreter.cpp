@@ -46,6 +46,7 @@ cLuaInterpreter::~cLuaInterpreter()
 	if (mL)
 		lua_close(mL);
 
+	mL = NULL;
 	clean();
 }
 

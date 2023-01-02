@@ -34,11 +34,14 @@ namespace nVerliHub {
 cConnPoll::cConnPoll():
 	mBlockSize(1024)
 {
-	mFDs.reserve(20480);
+	//mFDs.reserve(20480);
+	mFDs.resize(20480);
 }
 
 cConnPoll::~cConnPoll()
-{}
+{
+	//mFDs.clear();
+}
 
 void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 {
@@ -190,7 +193,7 @@ bool cConnPoll::AddConn(cConnBase *conn)
 		return false;
 
 	if (mLastSock >= (tSocket)mFDs.size())
-		mFDs.resize(mLastSock + (mLastSock / 2));
+		mFDs.resize(mLastSock + (mLastSock / 4)); // todo: decreaser
 
 	return true;
 }

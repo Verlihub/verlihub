@@ -23,26 +23,19 @@
 namespace nVerliHub {
 	namespace nPlugin {
 
-cPluginLoader::cPluginLoader(const string &filename) :
+cPluginLoader::cPluginLoader(const string &filename):
 	cObj("cPluginLoader"),
-	mFileName(filename)
-{
-	mHandle = NULL;
-	mError = NULL;
-	mPlugin = NULL;
-	mcbGetPluginFunc = NULL;
-	mcbDelPluginFunc = NULL;
-}
-
+	mPlugin(NULL),
+	mFileName(filename),
+	mError(NULL),
+	mHandle(NULL),
+	mcbDelPluginFunc(NULL),
+	mcbGetPluginFunc(NULL)
+{}
 
 cPluginLoader::~cPluginLoader()
 {
-	if (mHandle) Close();
-	if (mPlugin && mcbDelPluginFunc)
-	{
-		mcbDelPluginFunc(mPlugin);
-		mPlugin = NULL;
-	}
+	Close();
 }
 
 bool cPluginLoader::Open()
@@ -63,33 +56,43 @@ bool cPluginLoader::Open()
 	#endif
 
 	mHandle = dlopen(mFileName.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_GLOBAL);
+
 	if(!mHandle || IsError()) // Note that || operator evaluates only the first statement if that one is true
 	{
 		if (!mHandle) IsError(); // Call it again
 	//#endif
-		if(ErrLog(1)) LogStream() << "Cannot open plugin '" << mFileName << "': " << Error() << endl;
+		if(ErrLog(1)) LogStream() << "Can't open plugin '" << mFileName << "': " << Error() << endl;
 		return false;
 	}
+
 	return true;
 }
 
 bool cPluginLoader::Close()
 {
-	mcbDelPluginFunc(mPlugin);
-	mPlugin = NULL;
+	if (mPlugin && mcbDelPluginFunc) {
+		mcbDelPluginFunc(mPlugin);
+		mPlugin = NULL;
+	}
+
 	/*
 	#ifdef _WIN32
 	if(!FreeLibrary(mHandle))
 	#else
 	*/
-	dlclose(mHandle);
+
+	if (mHandle) {
+		dlclose(mHandle);
+		mHandle = NULL;
+	}
+
 	if(IsError())
 	//#endif
 	{
-		if(ErrLog(1)) LogStream() << "Cannot close plugin:" << Error() << endl;
+		if(ErrLog(1)) LogStream() << "Can't close plugin:" << Error() << endl;
 		return false;
 	}
-	mHandle = NULL;
+
 	return true;
 }
 

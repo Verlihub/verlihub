@@ -104,6 +104,7 @@ void cUnBanList::Cleanup()
 	mQuery.Clear();
 }
 
+/*
 int cBanList::UpdateBan(cBan &ban)
 {
 	nMySQL::cQuery query(mMySQL);
@@ -113,6 +114,7 @@ int cBanList::UpdateBan(cBan &ban)
 	query.Query();
 	return 0;
 }
+*/
 
 /*
 bool cBanList::LoadBanByKey(cBan &ban)

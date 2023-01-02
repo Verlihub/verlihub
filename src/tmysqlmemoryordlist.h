@@ -45,7 +45,9 @@ public:
 		this->SetSelectOrder(db_order);
 	}
 
-	virtual ~tMySQLMemoryOrdList() {}
+	virtual ~tMySQLMemoryOrdList() {
+		this->Empty();
+	}
 
 	virtual DataType* FindDataPosition(DataType const &data, int &CurPos)
 	{

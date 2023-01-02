@@ -48,7 +48,9 @@ public:
 		tMySQLMemoryList<DataType, OwnerType> (mysql, owner, tablename)
 	{}
 
-	virtual ~tMySQLMemoryHash() {}
+	virtual ~tMySQLMemoryHash() {
+		this->Empty();
+	}
 
 	virtual DataType* AppendData(DataType const& data)
 	{

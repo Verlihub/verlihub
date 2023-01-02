@@ -40,7 +40,7 @@ cConfigBaseBase::~cConfigBaseBase()
 
 	for (it = mvItems.begin(); it != mvItems.end(); ++it) {
 		Hash = *it;
-		item = mhItems.GetByHash(Hash);
+		item = mhItems.GetByHash(Hash); // todo: not checked for valid pointer
 		mhItems.RemoveByHash(Hash);
 		delete item;
 		item = NULL;

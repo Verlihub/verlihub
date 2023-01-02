@@ -60,7 +60,9 @@ public:
 	* Class destructor.
 	* Allocated object are removed from the list and deleted
 	*/
-	virtual ~tMySQLMemoryList(){ this->Empty();}
+	virtual ~tMySQLMemoryList() {
+		this->Empty();
+	}
 
 	/**
 	* This method is called before loading data from mysql table to memory.

@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
-	//try { // whole process is running inside try?
+	//try { // todo: whole process is running inside try?
 		cServerDC server(ConfigBase, argv[0]); // create server
 		cObj::msLogLevel += verbosity;
 
@@ -237,7 +237,9 @@ int main(int argc, char *argv[])
 			signal(SIGHUP, mySigHupHandler);
 		//#endif
 
-		server.StartListening(port);
+		if (!server.StartListening(port))
+			return 0;
+
 		result = server.run(); // run the main loop until it stops itself
 		return result;
 	/*

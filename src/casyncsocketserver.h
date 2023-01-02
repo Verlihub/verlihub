@@ -30,10 +30,11 @@
 #endif
 
 #include "ctimeout.h"
-#include <list>
 #include "cobj.h"
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
+
+#include <list>
 
 /*
 #ifdef USE_SSL_CONNECTS
@@ -94,18 +95,17 @@ namespace nVerliHub {
 				 * @param OnPort The port to listen on.
 				 * @param UDP True if it is an UDP connection.
 				 * @return The new connection.
-				 * @see ListenWithConn()
 				 */
-				virtual cAsyncConn* Listen(int OnPort/*, bool UDP = false*/);
+				virtual bool Listen(int OnPort/*, bool UDP = false*/);
 
 				/**
 				 * Handle the given connection and listen on the given port.
 				 * @param connection The connection to listen on.
 				 * @param OnPort The port to listen on.
 				 * @param UDP True if it is an UDP connection.
-				 * @return The new connection.
+				 * @return True or False.
 				 */
-				virtual cAsyncConn* ListenWithConn(cAsyncConn *connection, int OnPort/*, bool UDP=false*/);
+				virtual bool ListenWithConn(cAsyncConn *connection, int OnPort/*, bool UDP=false*/);
 
 				/**
 				* This event is triggered when a connection is closed.
@@ -159,22 +159,15 @@ namespace nVerliHub {
 				/**
 				 * Start the socket to listen on.
 				 * @param OverrideDefaultPort Use this port instead of mPort.
-				 * @return -1 on failure.
+				 * @return false on failure.
 				 */
-				virtual int StartListening(int OverrideDefaultPort=0);
+				virtual bool StartListening(int OverrideDefaultPort = 0);
 
 				/*
 					set stop code and exit main loop using delay
 					or reset stop code and delay
 				*/
 				void stop(int code, int delay = 0);
-
-				/**
-				 * Stop handling the given connection.
-				 * @param connection The connection.
-				 * @return True if succesfull or false otherwise.
-				 */
-				//virtual bool StopListenConn(cAsyncConn *connection);
 
 				/**
 				* This method handles all connections and
@@ -239,6 +232,7 @@ namespace nVerliHub {
 			/// List of connections that the server is handling.
 			/// The list contains pointers to cAsyncConn instance.
 			tConnList mConnList;
+			tConnList mListList; // listening connections
 
 			#if !USE_SELECT
 				/// Connection chooser for poll.

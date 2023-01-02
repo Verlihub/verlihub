@@ -48,7 +48,7 @@ namespace nVerliHub {
 
 cPCRE cDCConsole::mIPRangeRex("^(\\d+\\.\\d+\\.\\d+\\.\\d+)((\\/(\\d+))|(\\.\\.|-)(\\d+\\.\\d+\\.\\d+\\.\\d+))?$",0);
 
-cDCConsole::cDCConsole(cServerDC *s, cMySQL &mysql):
+cDCConsole::cDCConsole(cServerDC *s):
 	cDCConsoleBase(s),
 	mServer(s),
 	mTriggers(NULL),

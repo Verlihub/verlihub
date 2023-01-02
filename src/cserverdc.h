@@ -39,6 +39,7 @@
 #include "cdcproto.h"
 #include "csetuplist.h"
 #include "ctempfunctionbase.h"
+#include "cicuconvert.h"
 #include "cmaxminddb.h"
 #include "cusercollection.h"
 #include "cvhpluginmgr.h"
@@ -62,6 +63,8 @@ using namespace std;
 
 namespace nVerliHub {
 	using nUtils::cMaxMindDB;
+	using nUtils::cICUConvert;
+
 	using namespace nPlugin;
 	using namespace nThread;
 	using namespace nSocket;
@@ -241,6 +244,7 @@ class cServerDC : public cAsyncSocketServer
 		// ZLib compression class
 		cZLib *mZLib;
 		cMaxMindDB *mMaxMindDB; // maxminddb class
+		cICUConvert *mICUConvert; // icu converter and transliterator
 		// Process name
 		string mExecPath;
 
@@ -336,7 +340,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param OverrideDefaultPort The port to override.
 		* @return The result of the socket operation.
 		*/
-		virtual int StartListening(int OverrideDefaultPort=0);
+		virtual bool StartListening(int OverrideDefaultPort = 0);
 
 		/*
 			kick user and perform different actions based of flags

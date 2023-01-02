@@ -78,8 +78,13 @@ cpiPython::~cpiPython()
 	if (lib_end) (*lib_end)();
 	if (lib_handle) dlclose(lib_handle);
 	log1("PY: cpiPython::destructor   Plugin ready to be unloaded\n");
-	delete mQuery;
-	mQuery = NULL;
+
+	if (mQuery) {
+		mQuery->Clear();
+		delete mQuery;
+		mQuery = NULL;
+	}
+
 	return;
 }
 

@@ -874,8 +874,10 @@ int _GetIPASN(lua_State *L)
 
 int _GetUserGeoIP(lua_State *L)
 {
-	if (lua_gettop(L) < 2) {
-		luaL_error(L, "Error calling VH:GetUserGeoIP, expected atleast 1 argument but got %d.", lua_gettop(L) - 1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:GetUserGeoIP, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -888,201 +890,117 @@ int _GetUserGeoIP(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2)) {
+	if (!lua_isstring(L, 2) || ((args > 1) && !lua_isstring(L, 3))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
 	string nick = lua_tostring(L, 2);
-	string db;
+	cUser *user = serv->mUserList.GetUserByNick(nick);
 
-	if (lua_gettop(L) > 2) {
-		if (!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		} else
-			db = lua_tostring(L, 3);
-	}
-
-	cUser *usr = serv->mUserList.GetUserByNick(nick);
-
-	if (!usr || !usr->mxConn) {
+	if (!user || !user->mxConn) {
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
-	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
-	double geo_lat, geo_lon;
-	unsigned short geo_met, geo_area;
+	string db, geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
+	double geo_lat = .0, geo_lon = .0;
+	unsigned short geo_met = 0, geo_area = 0;
 
-	if (serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, usr->mxConn->AddrIP(), db)) {
-		lua_pushboolean(L, 1);
-		lua_newtable(L);
-		int x = lua_gettop(L);
+	if (args > 1)
+		db = lua_tostring(L, 3);
 
-		lua_pushliteral(L, "host");
-		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_host.c_str()); }
-		lua_rawset(L, x);
+	bool ok = serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, user->mxConn->AddrIP(), db);
+	lua_pushboolean(L, (ok ? 1 : 0));
+	lua_newtable(L);
+	int pos = lua_gettop(L);
 
-		lua_pushliteral(L, "range_low");
-		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_lo.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "host");
+	if (geo_host.empty()) lua_pushnil(L); else lua_pushstring(L, geo_host.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "range_high");
-		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_hi.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "range_low");
+	if (geo_ran_lo.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ran_lo.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country_code");
-		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cc.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "range_high");
+	if (geo_ran_hi.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ran_hi.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country_code_xxx");
-		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ccc.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country_code");
+	if (geo_cc.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cc.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country");
-		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cn.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country_code_xxx");
+	if (geo_ccc.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ccc.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "region_code");
-		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_code.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country");
+	if (geo_cn.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cn.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "region");
-		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_name.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "region_code");
+	if (geo_reg_code.empty()) lua_pushnil(L); else lua_pushstring(L, geo_reg_code.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "time_zone");
-		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_tz.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "region");
+	if (geo_reg_name.empty()) lua_pushnil(L); else lua_pushstring(L, geo_reg_name.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "continent_code");
-		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cont.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "time_zone");
+	if (geo_tz.empty()) lua_pushnil(L); else lua_pushstring(L, geo_tz.c_str());
+	lua_settable(L, pos);
 
-		string cont;
+	lua_pushliteral(L, "continent_code");
+	if (geo_cont.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cont.c_str());
+	lua_settable(L, pos);
 
-		if (geo_cont == "AF") {
-			cont = "Africa";
-		} else if (geo_cont == "AS") {
-			cont = "Asia";
-		} else if (geo_cont == "EU") {
-			cont = "Europe";
-		} else if (geo_cont == "NA") {
-			cont = "North America";
-		} else if (geo_cont == "SA") {
-			cont = "South America";
-		} else if (geo_cont == "OC") {
-			cont = "Oceania";
-		} else if (geo_cont == "AN") {
-			cont = "Antarctica";
-		}
+	string cont;
+	if (geo_cont == "AF") cont = "Africa"; // todo: translate
+	else if (geo_cont == "AS") cont = "Asia";
+	else if (geo_cont == "EU") cont = "Europe";
+	else if (geo_cont == "NA") cont = "North America";
+	else if (geo_cont == "SA") cont = "South America";
+	else if (geo_cont == "OC") cont = "Oceania";
+	else if (geo_cont == "AN") cont = "Antarctica";
+	lua_pushliteral(L, "continent");
+	if (cont.empty()) lua_pushnil(L); else lua_pushstring(L, cont.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "continent");
-		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, cont.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "city");
+	if (geo_city.empty()) lua_pushnil(L); else lua_pushstring(L, geo_city.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "city");
-		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_city.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "postal_code");
+	if (geo_post.empty()) lua_pushnil(L); else lua_pushstring(L, geo_post.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "postal_code");
-		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_post.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "latitude");
+	lua_pushnumber(L, (double)geo_lat);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "latitude");
-		lua_pushnumber(L, (double)geo_lat);
-		lua_rawset(L, x);
+	lua_pushliteral(L, "longitude");
+	lua_pushnumber(L, (double)geo_lon);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "longitude");
-		lua_pushnumber(L, (double)geo_lon);
-		lua_rawset(L, x);
+	lua_pushliteral(L, "metro_code");
+	lua_pushnumber(L, (unsigned short)geo_met);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "metro_code");
-		lua_pushnumber(L, (unsigned short)geo_met);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "area_code");
-		lua_pushnumber(L, (unsigned short)geo_area);
-		lua_rawset(L, x);
-	} else {
-		lua_pushboolean(L, 0);
-		lua_newtable(L);
-		int x = lua_gettop(L);
-
-		lua_pushliteral(L, "host");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "range_low");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "range_high");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country_code_xxx");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "region_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "region");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "time_zone");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "continent_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "city");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "postal_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "latitude");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "longitude");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "metro_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "area_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-	}
+	lua_pushliteral(L, "area_code");
+	lua_pushnumber(L, (unsigned short)geo_area);
+	lua_settable(L, pos);
 
 	return 2;
 }
 
 int _GetHostGeoIP(lua_State *L)
 {
-	if (lua_gettop(L) < 2) {
-		luaL_error(L, "Error calling VH:GetHostGeoIP, expected atleast 1 argument but got %d.", lua_gettop(L) - 1);
+	int args = lua_gettop(L) - 1;
+
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:GetHostGeoIP, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -1095,185 +1013,99 @@ int _GetHostGeoIP(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2)) {
+	if (!lua_isstring(L, 2) || ((args > 1) && !lua_isstring(L, 3))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
-	string host = lua_tostring(L, 2);
-	string db;
+	string host = lua_tostring(L, 2), db, geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
 
-	if (lua_gettop(L) > 2) {
-		if (!lua_isstring(L, 3)) {
-			luaerror(L, ERR_PARAM);
-			return 2;
-		} else
-			db = lua_tostring(L, 3);
-	}
+	if (args > 1)
+		db = lua_tostring(L, 3);
 
-	string geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post;
-	double geo_lat, geo_lon;
-	unsigned short geo_met, geo_area;
+	double geo_lat = .0, geo_lon = .0;
+	unsigned short geo_met = 0, geo_area = 0;
 
-	if (serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db)) {
-		lua_pushboolean(L, 1);
-		lua_newtable(L);
-		int x = lua_gettop(L);
+	bool ok = serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, host, db);
+	lua_pushboolean(L, (ok ? 1 : 0));
+	lua_newtable(L);
+	int pos = lua_gettop(L);
 
-		lua_pushliteral(L, "host");
-		if (geo_host.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_host.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "host");
+	if (geo_host.empty()) lua_pushnil(L); else lua_pushstring(L, geo_host.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "range_low");
-		if (geo_ran_lo.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_lo.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "range_low");
+	if (geo_ran_lo.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ran_lo.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "range_high");
-		if (geo_ran_hi.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ran_hi.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "range_high");
+	if (geo_ran_hi.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ran_hi.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country_code");
-		if (geo_cc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cc.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country_code");
+	if (geo_cc.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cc.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country_code_xxx");
-		if (geo_ccc.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_ccc.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country_code_xxx");
+	if (geo_ccc.empty()) lua_pushnil(L); else lua_pushstring(L, geo_ccc.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "country");
-		if (geo_cn.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cn.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "country");
+	if (geo_cn.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cn.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "region_code");
-		if (geo_reg_code.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_code.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "region_code");
+	if (geo_reg_code.empty()) lua_pushnil(L); else lua_pushstring(L, geo_reg_code.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "region");
-		if (geo_reg_name.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_reg_name.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "region");
+	if (geo_reg_name.empty()) lua_pushnil(L); else lua_pushstring(L, geo_reg_name.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "time_zone");
-		if (geo_tz.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_tz.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "time_zone");
+	if (geo_tz.empty()) lua_pushnil(L); else lua_pushstring(L, geo_tz.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "continent_code");
-		if (geo_cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_cont.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "continent_code");
+	if (geo_cont.empty()) lua_pushnil(L); else lua_pushstring(L, geo_cont.c_str());
+	lua_settable(L, pos);
 
-		string cont;
+	string cont;
+	if (geo_cont == "AF") cont = "Africa"; // todo: translate
+	else if (geo_cont == "AS") cont = "Asia";
+	else if (geo_cont == "EU") cont = "Europe";
+	else if (geo_cont == "NA") cont = "North America";
+	else if (geo_cont == "SA") cont = "South America";
+	else if (geo_cont == "OC") cont = "Oceania";
+	else if (geo_cont == "AN") cont = "Antarctica";
+	lua_pushliteral(L, "continent");
+	if (cont.empty()) lua_pushnil(L); else lua_pushstring(L, cont.c_str());
+	lua_settable(L, pos);
 
-		if (geo_cont == "AF") {
-			cont = "Africa";
-		} else if (geo_cont == "AS") {
-			cont = "Asia";
-		} else if (geo_cont == "EU") {
-			cont = "Europe";
-		} else if (geo_cont == "NA") {
-			cont = "North America";
-		} else if (geo_cont == "SA") {
-			cont = "South America";
-		} else if (geo_cont == "OC") {
-			cont = "Oceania";
-		} else if (geo_cont == "AN") {
-			cont = "Antarctica";
-		}
+	lua_pushliteral(L, "city");
+	if (geo_city.empty()) lua_pushnil(L); else lua_pushstring(L, geo_city.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "continent");
-		if (cont.empty()) { lua_pushnil(L); } else { lua_pushstring(L, cont.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "postal_code");
+	if (geo_post.empty()) lua_pushnil(L); else lua_pushstring(L, geo_post.c_str());
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "city");
-		if (geo_city.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_city.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "latitude");
+	lua_pushnumber(L, (double)geo_lat);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "postal_code");
-		if (geo_post.empty()) { lua_pushnil(L); } else { lua_pushstring(L, geo_post.c_str()); }
-		lua_rawset(L, x);
+	lua_pushliteral(L, "longitude");
+	lua_pushnumber(L, (double)geo_lon);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "latitude");
-		lua_pushnumber(L, (double)geo_lat);
-		lua_rawset(L, x);
+	lua_pushliteral(L, "metro_code");
+	lua_pushnumber(L, (unsigned short)geo_met);
+	lua_settable(L, pos);
 
-		lua_pushliteral(L, "longitude");
-		lua_pushnumber(L, (double)geo_lon);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "metro_code");
-		lua_pushnumber(L, (unsigned short)geo_met);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "area_code");
-		lua_pushnumber(L, (unsigned short)geo_area);
-		lua_rawset(L, x);
-	} else {
-		lua_pushboolean(L, 0);
-		lua_newtable(L);
-		int x = lua_gettop(L);
-
-		lua_pushliteral(L, "host");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "range_low");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "range_high");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country_code_xxx");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "country");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "region_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "region");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "time_zone");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "continent_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "city");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "postal_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "latitude");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "longitude");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "metro_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-
-		lua_pushliteral(L, "area_code");
-		lua_pushnil(L);
-		lua_rawset(L, x);
-	}
+	lua_pushliteral(L, "area_code");
+	lua_pushnumber(L, (unsigned short)geo_area);
+	lua_settable(L, pos);
 
 	return 2;
 }
@@ -2162,34 +1994,45 @@ int _GetConfig(lua_State *L)
 
 int _GetLuaBots(lua_State *L)
 {
-	lua_newtable(L);
-	int key = 0, top = lua_gettop(L), tot = cpiLua::me->Size();
-	cLuaInterpreter *li;
+	/*
+	1 = table {
+		1 = table {
+			sScriptname = name,
+			sNick = nick,
+			sMyINFO = info,
+			iShare = shar,
+			iClass = clas
+		},
+		...
+	}
+	*/
 
-	for (int pos = 0; pos < tot; pos++) {
+	cLuaInterpreter *li;
+	lua_newtable(L);
+
+	for (unsigned int pos = 0; pos < cpiLua::me->Size(); pos++) {
 		li = cpiLua::me->mLua[pos];
 
 		if (li && li->mScriptName.size()) {
 			for (cLuaInterpreter::tvBot::iterator it = li->botList.begin(); it != li->botList.end(); ++it) {
-				lua_pushnumber(L, ++key);
 				lua_newtable(L);
-				int dep = lua_gettop(L);
-				lua_pushliteral(L, "sScriptname");
+
 				lua_pushstring(L, li->mScriptName.c_str());
-				lua_rawset(L, dep);
-				lua_pushliteral(L, "sNick");
+				lua_setfield(L, -2, "sScriptname");
+
 				lua_pushstring (L, it->first.c_str());
-				lua_rawset(L, dep);
-				lua_pushliteral(L, "sMyINFO");
+				lua_setfield(L, -2, "sNick");
+
 				lua_pushstring(L, it->second.uMyINFO.c_str());
-				lua_rawset(L, dep);
-				lua_pushliteral(L, "iShare");
+				lua_setfield(L, -2, "sMyINFO");
+
 				lua_pushnumber(L, it->second.uShare);
-				lua_rawset(L, dep);
-				lua_pushliteral(L, "iClass");
+				lua_setfield(L, -2, "iShare");
+
 				lua_pushnumber(L, it->second.uClass);
-				lua_rawset(L, dep);
-				lua_rawset(L, top);
+				lua_setfield(L, -2, "iClass");
+
+				lua_rawseti(L, -2, pos + 1);
 			}
 		}
 	}

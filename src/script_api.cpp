@@ -36,7 +36,6 @@ using namespace std;
 namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nEnums;
-	using namespace nMySQL;
 
 cServerDC* GetCurrentVerlihub()
 {
