@@ -27,36 +27,51 @@ namespace nVerliHub {
 
 	namespace nMySQL {
 
-cMySQL::cMySQL(): cObj("cMySQL")
-{
-	Init();
-}
-
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset): cObj("cMySQL"), mDBName(data)
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset):
+	cObj("cMySQL"),
+	mDBName(data),
+	mDBHandle(NULL)
 {
 	Init();
 
-	if (!Connect(host, user, pass, data, charset))
-		throw "MySQL connection error";
+	if (!Connect(host, user, pass, data, charset)) {
+		Close();
+		throw "Exiting due to unavailable MySQL connection";
+	}
 }
 
 cMySQL::~cMySQL()
 {
-	mysql_close(mDBHandle);
-	mDBHandle = NULL;
+	Close();
 }
 
 void cMySQL::Init()
 {
-	mDBHandle = mysql_init(mDBHandle);
+	if (mysql_library_init(0, NULL, NULL))
+		throw "Unable to initialize MySQL library";
+
+	mDBHandle = mysql_init(NULL);
 
 	if (!mDBHandle)
-		Error(0, _("Can not initiate MySQL structure"));
+		throw "Unable to initialize MySQL structure";
+}
+
+void cMySQL::Close()
+{
+	if (mDBHandle) {
+		if (Log(0))
+			LogStream() << "Closing MySQL connection" << endl;
+
+		mysql_close(mDBHandle);
+		mDBHandle = NULL;
+	}
+
+	mysql_library_end();
 }
 
 bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
 {
-	if (Log(1))
+	if (Log(0))
 		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
 
 	bool yes = true;
@@ -78,7 +93,7 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 void cMySQL::Error(int level, const string &text)
 {
 	if (ErrLog(level))
-		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;
+		LogStream() << text << ": " << (mDBHandle ? mysql_error(mDBHandle) : "Unknown error") << endl;
 }
 
 	}; // namepspace nMySQL

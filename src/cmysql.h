@@ -48,11 +48,11 @@ class cMySQL: public cObj
 {
 	friend class cQuery;
 	public:
-		cMySQL();
 		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
 		~cMySQL();
 		void Init();
 		bool Connect(string &host, string &user, string &passwd, string &db, string &charset);
+		void Close();
 
 		string GetDBName()
 		{

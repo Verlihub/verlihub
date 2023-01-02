@@ -20,12 +20,12 @@
 
 #ifndef NPLUGINCPLUGINMANAGER_H
 #define NPLUGINCPLUGINMANAGER_H
-#include <vector>
+
 #include <string>
 #include <iostream>
+
 #include "tchashlistmap.h"
 
-using std::vector;
 using std::string;
 using std::ostream;
 

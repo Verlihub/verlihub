@@ -64,6 +64,7 @@ bool cPythonInterpreter::Init()
 
 	id = cpiPython::lib_load(a);
 	free(a);
+	a = NULL;
 
 	if (id > -1) {
 		log1("PY: cPythonInterpreter loaded script %d:%s\n", id, mScriptName.c_str());

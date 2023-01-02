@@ -21,10 +21,10 @@
 #ifndef CDCPROTO_H
 #define CDCPROTO_H
 
-#include <string>
-#include <unicode/ucnv.h>
 #include "cpcre.h"
 #include "cprotocol.h"
+
+#include <string>
 
 using namespace std;
 
@@ -380,10 +380,6 @@ protected:
 
 	// Direct Connect hub server
 	nSocket::cServerDC *mS;
-
-	// from utf8
-	bool FromUTF8(const string &data, string &back);
-	UConverter *mConv;
 };
 
 	}; // namespace nProtocol

@@ -75,35 +75,24 @@ bool cPluginManager::LoadAll()
 
 void cPluginManager::UnLoadAll()
 {
-	vector<string> plugs;
 	tPlugins::iterator it;
+	cPluginLoader *plugin = NULL;
 
-	for (it = mPlugins.begin(); it != mPlugins.end(); ++it) {
-		if ((*it) && (*it)->mPlugin && ((*it)->mPlugin->Name() != PLUGMAN_NAME)) {
-			plugs.push_back((*it)->mPlugin->Name());
-			this->UnloadPlugin((*it)->mPlugin->Name(), false); // todo: temporary bug workaround
-		}
+	for (it = mPlugins.begin(); it != mPlugins.end();) {
+		plugin = (cPluginLoader*)(*it);
+		++it;
+
+		if (plugin && plugin->mPlugin/* && (plugin->mPlugin->Name() != PLUGMAN_NAME)*/)
+			this->UnloadPlugin(plugin->mPlugin->Name());
 	}
 
-	if (plugs.size()) {
-		for (unsigned int i = 0; i < plugs.size(); i++) {
-			if (!mPlugins.RemoveByHash(mPlugins.Key2Hash(plugs[i]))) {
-				if (ErrLog(2))
-					LogStream() << "Unable to remove plugin from plugin list: " << plugs[i] << endl;
-			}
-		}
-
-		plugs.clear();
-	}
-
-	this->UnloadPlugin(PLUGMAN_NAME, false); // unload plugman at last because all plugins are most likely loaded via it
-	mPlugins.RemoveByHash(mPlugins.Key2Hash(PLUGMAN_NAME)); // todo: temporary bug workaround
+	//this->UnloadPlugin(PLUGMAN_NAME); // unload plugman at last because all plugins are most likely loaded via it
 }
 
 bool cPluginManager::LoadPlugin(const string &file)
 {
 //#if !defined _WIN32
-	if (Log(3))
+	if (Log(1))
 		LogStream() << "Trying to load plugin: " << file << endl;
 
 	mLastLoadError = "";
@@ -124,13 +113,14 @@ bool cPluginManager::LoadPlugin(const string &file)
 		if (ErrLog(1))
 			LogStream() << "Plugin load exception: " << file << " [ " << ex << " ]" << endl;
 
+		// todo: del with hash since failed, if was added
 		delete plugin;
 		plugin = NULL;
 		return false;
 	}
 
 	if (Log(1))
-		LogStream() << "Plugin successfully loaded: " << file << endl;
+		LogStream() << "Plugin successfully loaded: " << plugin->mPlugin->Name() << endl;
 //#endif
 
 	return true;
@@ -138,43 +128,47 @@ bool cPluginManager::LoadPlugin(const string &file)
 
 bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 {
-	if (Log(0))
+	if (Log(1))
 		LogStream() << "Trying to unload plugin: " << name << endl;
 
 	cPluginLoader *plugin = mPlugins.GetByHash(mPlugins.Key2Hash(name));
 
 	if (!plugin) {
-		if (ErrLog(2))
+		if (ErrLog(1))
 			LogStream() << "Plugin not found for unload: " << name << endl;
 
 		return false;
 	}
 
 	if (!plugin->mPlugin) {
-		if (ErrLog(2))
+		if (ErrLog(1))
 			LogStream() << "Plugin was not initialized: " << name << endl;
 
+		mPlugins.RemoveByHash(mPlugins.Key2Hash(name));
+		delete plugin;
+		plugin = NULL;
 		return false;
 	}
 
-	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) { // todo: we have a bug here, use workaround above
-		if (ErrLog(2))
+	for (tCBList::iterator it = mCallBacks.begin(); it != mCallBacks.end(); ++it) {
+		if (*it)
+			(*it)->Unregister(plugin->mPlugin);
+	}
+
+	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
+		if (ErrLog(1))
 			LogStream() << "Unable to unload plugin: " << name << endl;
 
+		delete plugin;
+		plugin = NULL;
 		return false;
 	}
 
-	tCBList::iterator it;
-
-	for (it = mCallBacks.begin(); it != mCallBacks.end(); ++it)
-		(*it)->Unregister(plugin->mPlugin);
+	if (Log(1))
+		LogStream() << "Plugin successfully unloaded: " << name << endl;
 
 	delete plugin;
 	plugin = NULL;
-
-	if (Log(0))
-		LogStream() << "Plugin successfully unloaded: " << name << endl;
-
 	return true;
 }
 

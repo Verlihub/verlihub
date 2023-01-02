@@ -105,14 +105,13 @@ cAsyncSocketServer::cAsyncSocketServer(int port):
 
 cAsyncSocketServer::~cAsyncSocketServer()
 {
-	close();
 	/*
 	#ifdef _WIN32
 	WSACleanup();
 	#endif
 	*/
-	vhLog(2) << "Allocated objects: " << cObj::GetCount() << endl;
-	vhLog(2) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
+	vhLog(1) << "Allocated objects: " << cObj::GetCount() << endl;
+	vhLog(1) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
 }
 
 int cAsyncSocketServer::run()
@@ -199,8 +198,9 @@ void cAsyncSocketServer::stop(int code, int delay)
 void cAsyncSocketServer::close()
 {
 	mbRun = false;
+	tCLIt it;
 
-	for (tCLIt it = mConnList.begin(); it != mConnList.end(); ++it) {
+	for (it = mConnList.begin(); it != mConnList.end(); ++it) { // client connections
 		if (*it) {
 			mConnChooser.DelConn(*it);
 
@@ -210,6 +210,14 @@ void cAsyncSocketServer::close()
 				delete (*it);
 				(*it) = NULL;
 			}
+		}
+	}
+
+	for (it = mListList.begin(); it != mListList.end(); ++it) { // listening connections
+		if (*it) {
+			mConnChooser.DelConn(*it);
+			delete (*it);
+			(*it) = NULL;
 		}
 	}
 
@@ -463,25 +471,24 @@ void cAsyncSocketServer::TimeStep()
 	}
 }
 
-cAsyncConn* cAsyncSocketServer::Listen(int OnPort/*, bool UDP*/)
+bool cAsyncSocketServer::Listen(int OnPort/*, bool UDP*/)
 {
-	//if(!UDP)
+	//if (!UDP)
 		cAsyncConn *ListenSock = new cAsyncConn(0, this, eCT_LISTEN);
 	/*
 	else
 		cAsyncConn *ListenSock = new cAsyncConn(0, this, eCT_CLIENTUDP);
 	*/
 
-	if (this->ListenWithConn(ListenSock, OnPort/*, UDP*/)) {
-		return ListenSock;
-	} else {
-		delete ListenSock;
-		ListenSock = NULL;
-		return NULL;
-	}
+	if (this->ListenWithConn(ListenSock, OnPort/*, UDP*/))
+		return true;
+
+	delete ListenSock;
+	ListenSock = NULL;
+	return false;
 }
 
-int cAsyncSocketServer::StartListening(int OverrideDefaultPort)
+bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 {
 	if (OverrideDefaultPort && !mPort)
 		mPort = OverrideDefaultPort;
@@ -489,49 +496,33 @@ int cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (mPort && !OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
 
-	if (this->Listen(OverrideDefaultPort/*, false*/))
-		return 0;
-
-	return -1;
+	return this->Listen(OverrideDefaultPort/*, false*/);
 }
 
-cAsyncConn* cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
+bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
 {
-	if (ListenSock) {
-		if (ListenSock->ListenOnPort(OnPort, mAddr.c_str(), mAcceptNum/*, UDP*/) < 0) {
-			if (Log(0)) {
-				LogStream() << "Cannot listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
-				LogStream() << "Please make sure the port is open and not already used by another process" << endl;
-				LogStream() << "Remember that hub must be started using root when port number is below 1024" << endl;
-			}
+	if (!ListenSock)
+		return false;
 
-			throw "Unable to listen";
-			return NULL;
+	if (!ListenSock->ListenOnPort(OnPort, mAddr.c_str(), mAcceptNum/*, UDP*/)) {
+		if (Log(0)) {
+			LogStream() << "Can't listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
+			LogStream() << "Please make sure the port is open and not already used by another process" << endl;
+			LogStream() << "Remember that hub must be started using root when port number is below 1024" << endl;
 		}
 
-		this->mConnChooser.AddConn(ListenSock);
-		this->mConnChooser.cConnChoose::OptIn((cConnBase*)ListenSock, tChEvent(eCC_INPUT | eCC_ERROR));
-
-		if (Log(0))
-			LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
-
-		return ListenSock;
+		return false;
 	}
 
-	return NULL;
-}
+	this->mConnChooser.AddConn(ListenSock);
+	this->mConnChooser.cConnChoose::OptIn((cConnBase*)ListenSock, tChEvent(eCC_INPUT | eCC_ERROR));
+	mListList.push_back(ListenSock); // add to listening connections
 
-/*
-bool cAsyncSocketServer::StopListenConn(cAsyncConn *connection)
-{
-	if (connection) {
-		this->mConnChooser.DelConn(connection);
-		return true;
-	}
+	if (Log(0))
+		LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
 
-	return false;
+	return true;
 }
-*/
 
 	}; // namespace nSocket
 }; // namespace nVerliHub

@@ -23,25 +23,30 @@
 namespace nVerliHub {
 	namespace nMySQL {
 
-cQuery::cQuery(cMySQL & mysql)
-	: cObj("nMySQL::cQuery"), mMySQL(mysql), mResult(NULL)
+cQuery::cQuery(cMySQL &mysql):
+	cObj("nMySQL::cQuery"),
+	mMySQL(mysql),
+	mResult(NULL)
 {}
 
-cQuery::cQuery(cQuery & query)
-	: cObj("nMySQL::cQuery"), mMySQL(query.mMySQL), mResult(NULL)
+cQuery::cQuery(cQuery &query):
+	cObj("nMySQL::cQuery"),
+	mMySQL(query.mMySQL),
+	mResult(NULL)
 {}
 
 cQuery::~cQuery()
 {
+	Clear();
 }
 
 void cQuery::Clear(void)
 {
-	if(mResult)
-	{
+	if (mResult) {
 		mysql_free_result(mResult);
 		mResult = NULL;
 	}
+
 	mOS.str(mEmpty);
 }
 
@@ -53,7 +58,7 @@ int cQuery::Query()
 		LogStream() << "Execute query ~" << qstr << '~' << endl;
 
 	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) {
-		if (ErrLog(1))
+		if (ErrLog(2))
 			LogStream() << "Error in query ~" << qstr << '~' << endl;
 
 		mMySQL.Error(2, "Query error:");

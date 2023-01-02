@@ -55,7 +55,7 @@ public:
 	~cDCConf();
 	virtual int Load();
 	virtual int Save();
-	void AddVars();
+	void AddVars(); // todo: there is no DelVars to free memory
 
 	friend class nVerliHub::nSocket::cServerDC;
 	friend class nProtocol::cDCProto;

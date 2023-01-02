@@ -23,12 +23,11 @@
 
 #include "cobj.h"
 #include "ctime.h"
+
 #include <string>
 #include <ostream>
 #include <map>
 #include <maxminddb.h>
-#include <unicode/translit.h>
-#include <unicode/ucnv.h>
 
 using std::string;
 
@@ -60,10 +59,6 @@ namespace nVerliHub {
 			private:
 				nSocket::cServerDC *mServ;
 
-				Transliterator *mTran;
-				UConverter *mConv;
-				string mCharSet;
-
 				unsigned long mTotReqs;
 				unsigned long mTotCacs;
 
@@ -75,9 +70,7 @@ namespace nVerliHub {
 				MMDB_s *TryCityDB(unsigned int flags);
 				MMDB_s *TryASNDB(unsigned int flags);
 
-				const string &FromUTF8(const string &data, string &back, const string &tset/*, const string &fset = "UTF-8"*/);
-				const string &TranUTF8(const string &data, string &back);
-				const string &WorkUTF8(const char *udat, unsigned int ulen, string &back, const string &tset);
+				bool FromUTF8(const char *udat, unsigned int ulen, string &conv);
 
 				bool FileExists(const char *name);
 				unsigned long FileSize(const char *name);

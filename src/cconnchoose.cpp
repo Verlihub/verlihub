@@ -92,7 +92,7 @@ bool cConnChoose::AddConn(cConnBase *conn)
 	tSocket sock = (tSocket)(*conn);
 
 	if ((tSocket)mConnList.size() <= sock) // resize
-		mConnList.resize(sock + (sock / 4), NULL);
+		mConnList.resize(sock + (sock / 4), NULL); // todo: decreaser
 
  	if (mConnList[sock]) // dont add twice
 		return false;

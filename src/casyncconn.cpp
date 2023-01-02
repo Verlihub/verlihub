@@ -89,7 +89,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 	mWritable(true),
 	mxServer(s),
 	mxMyFactory(NULL),
-	mxAcceptingFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
 	mSockDesc(desc),
@@ -166,7 +165,6 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing 
 	mWritable(true),
 	mxServer(NULL),
 	mxMyFactory(NULL),
-	mxAcceptingFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
 //#if !defined _WIN32
@@ -419,7 +417,7 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 
 	} else { // received data
 		if ((buf_len > 2) && (msBuffer[0] == 0x16) && (msBuffer[1] == 0x03)) { // detect tls connection
-			if (Log(1))
+			if (Log(2))
 				LogStream() << "Closing TLS connection" << endl;
 
 			CloseNow(); // todo: eCR_TLS_SESS
@@ -673,7 +671,7 @@ tSocket cAsyncConn::CreateSock(/*bool udp*/)
 int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 {
 	if (sock < 0)
-		return -1;
+		return INVALID_SOCKET;
 
 	mAddrIN.sin_family = AF_INET;
 	mAddrIN.sin_addr.s_addr = INADDR_ANY; // default listen address
@@ -692,7 +690,7 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 	memset(&(mAddrIN.sin_zero), '\0', 8);
 
 	if (::bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1) // bind socket to port
-		return -1;
+		return INVALID_SOCKET;
 
 	return sock;
 }
@@ -700,11 +698,11 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 int cAsyncConn::ListenSock(int sock, const unsigned int blog)
 {
 	if (sock < 0)
-		return -1;
+		return INVALID_SOCKET;
 
 	if (listen(sock, blog) == -1) { // note: this is backlog
 		vhErr(0) << "Error listening" << endl;
-		return -1;
+		return INVALID_SOCKET;
 	}
 
 	return sock;
@@ -713,7 +711,7 @@ int cAsyncConn::ListenSock(int sock, const unsigned int blog)
 tSocket cAsyncConn::NonBlockSock(int sock)
 {
 	if (sock < 0)
-		return -1;
+		return INVALID_SOCKET;
 
 	//#if !defined _WIN32
 		int flags;
@@ -735,21 +733,36 @@ tSocket cAsyncConn::NonBlockSock(int sock)
 	return sock;
 }
 
-int cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int blog/*, bool udp*/)
+bool cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int blog/*, bool udp*/)
 {
 	if (mSockDesc)
-		return -1;
+		return false;
 
 	mSockDesc = CreateSock(/*udp*/);
+
+	if (mSockDesc == INVALID_SOCKET)
+		return false;
+
 	mSockDesc = BindSocket(mSockDesc, port, address);
+
+	if (mSockDesc == INVALID_SOCKET)
+		return false;
 
 	//if (!udp) {
 	    mSockDesc = ListenSock(mSockDesc, blog);
+
+		if (mSockDesc == INVALID_SOCKET)
+			return false;
+
 	    mSockDesc = NonBlockSock(mSockDesc);
+
+		if (mSockDesc == INVALID_SOCKET)
+			return false;
+
 	//}
 
 	ok = mSockDesc > 0;
-	return mSockDesc;
+	return ok;
 }
 
 tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int tries)
@@ -875,9 +888,6 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 
 cConnFactory* cAsyncConn::GetAcceptingFactory()
 {
-	if (this->mxAcceptingFactory)
-		return mxAcceptingFactory;
-
 	if (mxServer && mxServer->mFactory)
 		return mxServer->mFactory;
 

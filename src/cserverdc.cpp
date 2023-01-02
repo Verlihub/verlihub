@@ -113,7 +113,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mC.Load();
 
 	mConnTypes = new cConnTypes(this);
-	mCo = new cDCConsole(this, mMySQL);
+	mCo = new cDCConsole(this);
 	mR = new cRegList(mMySQL, this);
 	mBanList = new cBanList(this);
 	mUnBanList = new cUnBanList(this);
@@ -121,6 +121,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mKickList = new cKickList(mMySQL);
 	mZLib = new cZLib();
 	mMaxMindDB = new cMaxMindDB(this);
+	mICUConvert = new cICUConvert(this);
 
 	unsigned int i, j;
 
@@ -220,16 +221,13 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
-	this->OnUnLoad(0); // tell all plugins and their scripts that we are shutting down
-	mPluginManager.UnLoadAll(); // unload all plugins first
-
 	CtmToHubClearList(); // ctm2hub
 
 	if (mNetOutLog && mNetOutLog.is_open())
 		mNetOutLog.close();
 
-	cUserCollection::iterator it; // remove all users
 	cUser *user;
+	cUserCollection::iterator it; // remove all users
 
 	for (it = mUserList.begin(); it != mUserList.end();) {
 		user = (cUser*)(*it);
@@ -251,7 +249,9 @@ cServerDC::~cServerDC()
 		}
 	}
 
-	close();
+	close(); // close all remaining connections
+	this->OnUnLoad(0); // tell all plugins and their scripts that we are shutting down
+	mPluginManager.UnLoadAll();
 
 	if (mHubSec) { // remove main bots
 		delete mHubSec;
@@ -312,19 +312,34 @@ cServerDC::~cServerDC()
 		delete mMaxMindDB;
 		mMaxMindDB = NULL;
 	}
+
+	if (mICUConvert) {
+		delete mICUConvert;
+		mICUConvert = NULL;
+	}
 }
 
-int cServerDC::StartListening(int OverrideDefaultPort)
+bool cServerDC::StartListening(int OverrideDefaultPort)
 {
-	int _result = cAsyncSocketServer::StartListening(OverrideDefaultPort);
-	istringstream is(mC.extra_listen_ports);
-	int i = 1;
-	while(i) {
-		i = 0;
-		is >> i;
-		if (i) cAsyncSocketServer::Listen(i/*, false*/);
+	if (!cAsyncSocketServer::StartListening(OverrideDefaultPort)) // default port
+		return false;
+
+	if (mC.extra_listen_ports.size()) {
+		istringstream is(mC.extra_listen_ports);
+		int i = 1;
+
+		while (i) {
+			i = 0;
+			is >> i;
+
+			if ((i >= 1) && (i <= 65535)) {
+				if (!cAsyncSocketServer::Listen(i/*, false*/))
+					return false;
+			}
+		}
 	}
-	return _result;
+
+	return true;
 }
 
 /*
@@ -1501,11 +1516,13 @@ bool cServerDC::SetUserRegInfo(cConnDC *conn, const string &nick)
 		conn->mRegInfo = NULL;
 	}
 
-	static cRegUserInfo *sRegInfo = new cRegUserInfo;
+	cRegUserInfo *sRegInfo = new cRegUserInfo;
 
 	if (mR->FindRegInfo(*sRegInfo, nick)) {
 		conn->mRegInfo = sRegInfo;
-		sRegInfo = new cRegUserInfo; // todo: this needs to be destroyed when stopping hub
+	} else {
+		delete sRegInfo;
+		sRegInfo = NULL;
 	}
 
 	return true;
@@ -1519,15 +1536,9 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		return 0;
 
 	bool close = false;
-	//static cRegUserInfo *sRegInfo = new cRegUserInfo;
 
-	if (/*(*/nick.size() < (mC.max_nick * 2)/*) && mR->FindRegInfo(*sRegInfo, nick) && !conn->mRegInfo*/) {
-		/*
-		conn->mRegInfo = sRegInfo;
-		sRegInfo = new cRegUserInfo;
-		*/
+	if (nick.size() < (mC.max_nick * 2))
 		SetUserRegInfo(conn, nick);
-	}
 
 	string more;
 	tVAL_NICK vn = ValidateNick(conn, nick, more); // validate nick
