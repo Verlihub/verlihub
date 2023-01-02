@@ -346,7 +346,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 			ok = MMDB_open(db.c_str(), MMDB_MODE_MMAP, mmdb) == MMDB_SUCCESS;
 	}
 
-	string cc = "--", cn = "--", ci = "--";
+	string cc, cn, ci;
 
 	if ((ok && mmdb) || mDBCI || mDBCO) { // lookup, important database order: custom, city, country
 		int gai_err, mmdb_err;
@@ -381,7 +381,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 				r3 = FromUTF8((const char*)ent.utf8_string, (unsigned int)ent.data_size, ci);
 			}
 
-			if (r1 && r2 && r3) {
+			if (r1 || r2 || r3) {
 				if (mServ->mC.mmdb_cache)
 					MMDBCacheSet(sip, cc, cn, ci, "");
 
@@ -399,10 +399,10 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		free(mmdb);
 	}
 
-	geo_cc = cc;
-	geo_cn = cn;
-	geo_ci = ci;
-	return r1 && r2 && r3;
+	geo_cc = (r1 && cc.size() ? cc : "--");
+	geo_cn = (r2 && cn.size() ? cn : "--");
+	geo_ci = (r3 && ci.size() ? ci : "--");
+	return r1 || r2 || r3;
 }
 
 bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db)
@@ -480,7 +480,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 
 		if ((gai_err == 0) && (mmdb_err == MMDB_SUCCESS) && dat.found_entry) {
 			unsigned long ran_lo = sip, ran_hi = sip; // ip range
-			string rang(host), lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
+			string rang = host, lang(mServ->mC.mmdb_names_lang.size() ? mServ->mC.mmdb_names_lang : "en");
 			rang += '/';
 			rang += StringFrom(dat.netmask - (ok ? mmdb->ipv4_start_node.netmask : mDBCI->ipv4_start_node.netmask));
 
@@ -567,7 +567,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			geo_area = 0; // todo: area_code no longer supported, get rid of it
 			geo_host = host;
 
-			if (r2 && r3 && r8) { // cache used for set
+			if (r2 || r3 || r8) { // cache used for set
 				if (mServ->mC.mmdb_cache)
 					MMDBCacheSet(sip, geo_cc, geo_cn, geo_city, "");
 
@@ -585,7 +585,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		free(mmdb);
 	}
 
-	return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10 && r11 && r12;
+	return r1 || r2 || r3 || r4 || r5 || r6 || r7 || r8 || r9 || r10 || r11 || r12;
 }
 
 bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)

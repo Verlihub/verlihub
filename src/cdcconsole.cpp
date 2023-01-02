@@ -3919,21 +3919,25 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 	if (mIPRangeRex.PartFound(R_RANGE)) { // <from>-<to>
 		if (mIPRangeRex.PartFound(R_DOTS)) {
 			mIPRangeRex.Extract(R_IP1, rang, temp);
-
-			if (!cBanList::Ip2Num(temp, frdr)) // can be 0.0.0.0
+			cBanList::Ip2Num(temp, frdr);
+			/*
+			if (!cBanList::Ip2Num(temp, frdr))
 				return false;
-
+			*/
 			mIPRangeRex.Extract(R_IP2, rang, temp);
-
-			if (!cBanList::Ip2Num(temp, todr, false)) // cant be 0.0.0.0
+			cBanList::Ip2Num(temp, todr);
+			/*
+			if (!cBanList::Ip2Num(temp, todr))
 				return false;
+			*/
 
 		} else { // <addr>/<mask>
 			mIPRangeRex.Extract(0, rang, temp);
-
-			if (!cBanList::Ip2Num(temp, frdr)) // can be 0.0.0.0
+			cBanList::Ip2Num(temp, frdr);
+			/*
+			if (!cBanList::Ip2Num(temp, frdr))
 				return false;
-
+			*/
 			int pos = temp.find_first_of("/\\");
 			istringstream is(temp.substr(pos + 1));
 			is >> pos;
@@ -3943,10 +3947,11 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 
 	} else { // <addr>
 		mIPRangeRex.Extract(R_IP1, rang, temp);
-
-		if (!cBanList::Ip2Num(temp, frdr, false)) // cant be 0.0.0.0
+		cBanList::Ip2Num(temp, frdr);
+		/*
+		if (!cBanList::Ip2Num(temp, frdr))
 			return false;
-
+		*/
 		todr = frdr;
 	}
 
