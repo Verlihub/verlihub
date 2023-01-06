@@ -51,9 +51,9 @@ ELSE(WITH_LUA)
 	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
 ENDIF(WITH_LUA)
 
-# python plugin
+# python plugin, deprecated
 
-OPTION(WITH_PYTHON "Whether to build PYTHON plugin or not" TRUE)
+OPTION(WITH_PYTHON "Whether to build PYTHON plugin or not" FALSE)
 IF(WITH_PYTHON)
 	SET(Python_ADDITIONAL_VERSIONS 2.7)
 	Find_Package(PythonLibs 2.7)
