@@ -34,17 +34,17 @@ namespace nVerliHub {
 cConnPoll::cConnPoll():
 	mBlockSize(1024)
 {
-	mFDs.reserve(20480); // todo: free memory on exit
-	//mFDs.resize(20480);
+	mFDs.reserve(20480); // idea: number depends on open files limit for process
 }
 
 cConnPoll::~cConnPoll()
-{
-	mFDs.clear();
-}
+{}
 
 void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 {
+	if (tSocket(mFDs.size()) <= sock)
+		return;
+
  	unsigned event = FD(sock).events;
 
 	if (!event && mask)
@@ -52,6 +52,7 @@ void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 
 	if (mask & eCC_CLOSE) {
 		FD(sock).events = 0;
+
 	} else {
 		if (mask & eCC_INPUT)
 			event = POLLIN | POLLPRI;
@@ -68,6 +69,9 @@ void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 
 void cConnPoll::OptOut(tSocket sock, tChEvent mask)
 {
+	if (tSocket(mFDs.size()) <= sock)
+		return;
+
  	unsigned event = ~(0u);
 
 	if (mask & eCC_INPUT)
@@ -86,10 +90,15 @@ void cConnPoll::OptOut(tSocket sock, tChEvent mask)
 int cConnPoll::OptGet(tSocket sock)
 {
 	int mask = 0;
+
+	if (tSocket(mFDs.size()) <= sock)
+		return mask;
+
  	unsigned event = FD(sock).events;
 
 	if (!event && (FD(sock).fd == sock)) {
 		mask = eCC_CLOSE;
+
 	} else {
 		if (event & (POLLIN | POLLPRI))
 			mask |= eCC_INPUT;
@@ -107,6 +116,10 @@ int cConnPoll::OptGet(tSocket sock)
 int cConnPoll::RevGet(tSocket sock)
 {
 	int mask = 0;
+
+	if (tSocket(mFDs.size()) <= sock)
+		return mask;
+
 	cPollfd &theFD = FD(sock);
  	unsigned event = theFD.revents;
 
@@ -152,6 +165,9 @@ bool cConnPoll::RevTest(cPollfd &theFD)
 
 bool cConnPoll::RevTest(tSocket sock)
 {
+	if (tSocket(mFDs.size()) <= sock)
+		return false;
+
 	cPollfd &theFD = FD(sock);
 	return RevTest(theFD);
 }
@@ -193,7 +209,7 @@ bool cConnPoll::AddConn(cConnBase *conn)
 		return false;
 
 	if (mLastSock >= (tSocket)mFDs.size()) // 2
-		mFDs.resize(mLastSock + (mLastSock / 4)); // todo: decreaser
+		mFDs.resize(mLastSock + (mLastSock / 4));
 
 	return true;
 }
