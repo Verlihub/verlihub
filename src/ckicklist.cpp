@@ -37,9 +37,9 @@ cKickList::cKickList(cMySQL &mysql):
 	AddCol("time", "int(11)", "", false, mModel.mTime);
 	AddPrimaryKey("time");
 	AddCol("ip", "varchar(15)", "", true, mModel.mIP);
-	AddCol("host", "text", "", true, mModel.mHost);
+	AddCol("host", "varchar(255)", "", true, mModel.mHost);
 	AddCol("share_size", "varchar(15)", "", true, mModel.mShare);
-	AddCol("reason", "text", "", true, mModel.mReason);
+	AddCol("reason", "varchar(255)", "", true, mModel.mReason);
 	AddCol("op", "varchar(128)", "", false, mModel.mOp);
 	AddCol("is_drop", "tinyint(1)", "", true, mModel.mIsDrop);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick, time), ";
