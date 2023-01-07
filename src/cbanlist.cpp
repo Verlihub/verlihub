@@ -51,16 +51,16 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("nick", "varchar(128)", "", true, mModel.mNick);
 	AddPrimaryKey("nick");
 	AddCol("ban_type", "tinyint(4)", "0", true, mModel.mType);
-	AddCol("host", "text", "", true, mModel.mHost);
+	AddCol("host", "varchar(255)", "", true, mModel.mHost);
 	AddCol("range_fr", "bigint(32)", "", true, mModel.mRangeMin);
 	AddCol("range_to", "bigint(32)", "", true, mModel.mRangeMax);
 	AddCol("date_start", "int(11)", "0", true, mModel.mDateStart);
 	AddCol("date_limit", "int(11)", "", true, mModel.mDateEnd);
 	AddCol("last_hit", "int(11)", "", true, mModel.mLastHit);
 	AddCol("nick_op", "varchar(128)", "", true, mModel.mNickOp);
-	AddCol("reason", "text", "", true, mModel.mReason);
-	AddCol("note_op", "text", "", true, mModel.mNoteOp);
-	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
+	AddCol("reason", "varchar(255)", "", true, mModel.mReason);
+	AddCol("note_op", "varchar(255)", "", true, mModel.mNoteOp);
+	AddCol("note_usr", "varchar(255)", "", true, mModel.mNoteUsr);
 	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
 	mMySQLTable.mExtra = "UNIQUE (ip,nick), ";
 	mMySQLTable.mExtra += "INDEX nick_index (nick), ";
@@ -83,7 +83,7 @@ cUnBanList::cUnBanList(cServerDC* s):
 	AddCol("date_unban", "int(11)", "", true, mModelUn.mDateUnban);
 	AddPrimaryKey("date_unban");
 	AddCol("unban_op", "varchar(128)", "", true, mModelUn.mUnNickOp);
-	AddCol("unban_reason", "text", "", true, mModelUn.mUnReason);
+	AddCol("unban_reason", "varchar(255)", "", true, mModelUn.mUnReason);
 	mMySQLTable.mExtra = "UNIQUE (ip, nick, date_unban)";
 }
 

@@ -226,11 +226,11 @@ void cPlugs::AddFields()
 	AddPrimaryKey("nick");
 	AddCol("path","varchar(128)","",false,mModel.mPath);
 	AddCol("dest","varchar(10)","",true,mModel.mDest);
-	AddCol("detail","text","",true,mModel.mDesc);
+	AddCol("detail","varchar(255)","",true,mModel.mDesc);
 	AddCol("autoload","tinyint(1)","1",true,mModel.mLoadOnStartup);
 	AddCol(  "reload","tinyint(1)","0",true,mModel.mReloadNext);
 	AddCol(  "unload","tinyint(1)","0",true,mModel.mUnloadNext);
-	AddCol("error","text","",true,mModel.mLastError);
+	AddCol("error","varchar(255)","",true,mModel.mLastError);
 	AddCol("lastload","int(11)","",true,mModel.mLoadTime);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick)";
 }

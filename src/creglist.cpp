@@ -73,8 +73,8 @@ cRegList::cRegList(cMySQL &mysql, cServerDC *server):
 	AddCol("error_ip", "varchar(15)", "", true, mModel.mErrorIP);
 	AddCol("enabled", "tinyint(1)", "1", true, mModel.mEnabled);
 	//AddCol("email", "varchar(60)", "", true, mModel.mEmail);
-	AddCol("note_op", "text", "", true, mModel.mNoteOp);
-	AddCol("note_usr", "text", "", true, mModel.mNoteUsr);
+	AddCol("note_op", "varchar(255)", "", true, mModel.mNoteOp);
+	AddCol("note_usr", "varchar(255)", "", true, mModel.mNoteUsr);
 	AddCol("auth_ip", "varchar(15)", "", true, mModel.mAuthIP);
 	AddCol("alternate_ip", "varchar(15)", "", true, mModel.mAlternateIP);
 	AddCol("fake_ip", "varchar(15)", "", true, mModel.mFakeIP);
