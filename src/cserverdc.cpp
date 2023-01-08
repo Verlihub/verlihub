@@ -3522,7 +3522,10 @@ void cServerDC::DoStackTrace()
 	head << "Hub-Info-Uptime: " << (mTime.Sec() - mStartTime.Sec()) << "\r\n"; // uptime in seconds
 	head << "Hub-Info-Users: " << mUserCountTot << "\r\n";
 
-	if (http->Request("POST", "/vhcs.php", head.str(), bt.str()) && http->mGood) {
+	ostringstream data;
+	data << "backtrace=" << StrToHex(bt.str());
+
+	if (http->Request("POST", "/vhcs.php", head.str(), data.str()) && http->mGood) {
 		vhErr(0) << "Successfully sent stack backtrace to crash server" << endl;
 	} else {
 		vhErr(0) << "Failed sending to crash server, please post above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;

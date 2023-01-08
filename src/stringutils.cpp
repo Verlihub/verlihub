@@ -450,5 +450,19 @@ string StrToMD5ToHex(const string &str)
 	return out;
 }
 
+string StrToHex(const string &str)
+{
+	static const char hex[] = "0123456789abcdef";
+	string out;
+
+	for (unsigned char chr: str) {
+		out.append(1, '%');
+		out.append(1, hex[chr >> 4]);
+		out.append(1, hex[chr & 15]);
+	}
+
+	return out;
+}
+
 	}; // namespace nUtils
 }; // namespace nVerliHub
