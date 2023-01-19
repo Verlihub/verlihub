@@ -33,8 +33,8 @@ namespace nVerliHub {
 
 cPlug::cPlug():
 	mLoadOnStartup(true),
-	mReloadNext(false),
-	mUnloadNext(false),
+	//mReloadNext(false),
+	//mUnloadNext(false),
 	mLoadTime(0),
 	mOwner(NULL),
 	mMakeTime(0)
@@ -50,11 +50,12 @@ void cPlug::OnLoad()
 		}
 	}
 	if(mLoadOnStartup) {
-		mReloadNext = false;
-		mUnloadNext = false;
+		//mReloadNext = false;
+		//mUnloadNext = false;
 		Plugin();
 	}
 
+	/*
 	if(mReloadNext) {
 		mReloadNext = false;
 		mUnloadNext = false;
@@ -66,6 +67,7 @@ void cPlug::OnLoad()
 		Plugout();
 		SaveMe();
 	}
+	*/
 }
 
 cPlug *cPlug::FindDestPlugin() const
@@ -227,9 +229,9 @@ void cPlugs::AddFields()
 	AddCol("path","varchar(128)","",false,mModel.mPath);
 	AddCol("dest","varchar(10)","",true,mModel.mDest);
 	AddCol("detail","varchar(255)","",true,mModel.mDesc);
-	AddCol("autoload","tinyint(1)","1",true,mModel.mLoadOnStartup);
-	AddCol(  "reload","tinyint(1)","0",true,mModel.mReloadNext);
-	AddCol(  "unload","tinyint(1)","0",true,mModel.mUnloadNext);
+	AddCol("autoload","tinyint(1)","0",true,mModel.mLoadOnStartup);
+	//AddCol("reload","tinyint(1)","0",true,mModel.mReloadNext);
+	//AddCol("unload","tinyint(1)","0",true,mModel.mUnloadNext);
 	AddCol("error","varchar(255)","",true,mModel.mLastError);
 	AddCol("lastload","int(11)","",true,mModel.mLoadTime);
 	mMySQLTable.mExtra = "PRIMARY KEY(nick)";
@@ -245,34 +247,45 @@ cPlug * cPlugs::FindPlug(const string &nick)
 
 void cPlugs::PluginAll(int method)
 {
-	iterator it;
 	bool IsAuto = false;
-	switch(method) {
+
+	switch (method) {
 		case ePLUG_AUTOLOAD:
-		case ePLUG_AUTOUNLOAD:
-		case ePLUG_AUTORELOAD:
+		//case ePLUG_AUTOUNLOAD:
+		//case ePLUG_AUTORELOAD:
 			IsAuto = true;
 			break;
-		default:break;
-	};
 
-	for(it = begin(); it != end(); ++it) {
-		switch(method) {
+		default:
+			break;
+	}
+
+	iterator it;
+
+	for (it = begin(); it != end(); ++it) {
+		switch (method) {
 			case ePLUG_AUTOLOAD:
-			case ePLUG_LOAD:
+			//case ePLUG_LOAD:
 				if ((!IsAuto || (*it)->mLoadOnStartup) && (*it)->mPath.size() > 0)
 					(*it)->Plugin();
+
 				break;
+
+			/*
 			case ePLUG_AUTORELOAD:
 			case ePLUG_RELOAD:
 				(*it)->Replug();
 				break;
+
 			case ePLUG_AUTOUNLOAD:
 			case ePLUG_UNLOAD:
 				(*it)->Plugout();
 				break;
-			default:break;
-		};
+			*/
+
+			default:
+				break;
+		}
 	}
 }
 

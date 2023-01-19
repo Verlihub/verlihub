@@ -33,12 +33,13 @@ namespace nVerliHub {
 
 	namespace nEnums {
 		enum {
-			ePLUG_AUTOLOAD,
+			ePLUG_AUTOLOAD/*,
 			ePLUG_LOAD,
 			ePLUG_AUTORELOAD,
 			ePLUG_RELOAD,
 			ePLUG_AUTOUNLOAD,
 			ePLUG_UNLOAD
+			*/
 		};
 	};
 	namespace nPlugMan {
@@ -54,8 +55,8 @@ public:
 	string mDesc; // public description
 	string mDest; // destination plugin
 	bool mLoadOnStartup;
-	bool mReloadNext; // reload if it's loaded
-	bool mUnloadNext; // unload if it's loaded
+	//bool mReloadNext; // reload if it's loaded
+	//bool mUnloadNext; // unload if it's loaded
 	string mLastError;
 	unsigned mLoadTime;
 

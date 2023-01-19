@@ -55,12 +55,6 @@ cpiLua::~cpiLua()
 {
 	const char *args[] = { NULL };
 	CallAll("UnLoad", args);
-	ostringstream val;
-	val << this->log_level;
-	SetConfig("pi_lua", "log_level", val.str().c_str());
-	val.str("");
-	val << this->err_class;
-	SetConfig("pi_lua", "err_class", val.str().c_str());
 
 	if (mQuery != NULL) {
 		mQuery->Clear();
@@ -104,19 +98,23 @@ void cpiLua::OnLoad(cServerDC *serv)
 	def << this->log_level;
 	char *level = GetConfig("pi_lua", "log_level", def.str().c_str()); // get log level
 
-	if (level && IsNumber(level))
-		this->log_level = atoi(level);
+	if (level) {
+		if (IsNumber(level))
+			this->log_level = atoi(level);
 
-	if (level) free(level);
+		free(level);
+	}
 
 	def.str("");
 	def << this->err_class;
 	char *eclass = GetConfig("pi_lua", "err_class", def.str().c_str()); // get error class
 
-	if (eclass && IsNumber(eclass))
-		this->err_class = atoi(eclass);
+	if (eclass) {
+		if (IsNumber(eclass))
+			this->err_class = atoi(eclass);
 
-	if (eclass) free(eclass);
+		free(eclass);
+	}
 
 	AutoLoad();
 }
