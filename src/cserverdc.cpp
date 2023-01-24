@@ -2886,12 +2886,24 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 			os << '<' << mC.hub_security << "> " << autosprintf(_("Users: %d"), mUserCountTot) << '|';
 			os << '<' << mC.hub_security << "> " << autosprintf(_("Share: %s"), convertByte(mTotalShare).c_str()) << '|';
 			os << '<' << mC.hub_security << "> " << autosprintf(_("Status: %s"), SysLoadName()) << '|';
-			if (!mC.hub_version_special.empty()) os << '<' << mC.hub_security << "> " << mC.hub_version_special << '|';
-		} else
-			os << '<' << mC.hub_security << "> " << autosprintf(_("Software: %s %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"), HUB_VERSION_NAME, HUB_VERSION_VERS, mC.hub_version_special.c_str(), runtime.AsPeriod().AsString().c_str(), mUserCountTot, convertByte(mTotalShare, false).c_str()) << '|';
 
-		string res = os.str();
-		conn->Send(res, false);
+			if (mC.hub_version_special.size())
+				os << '<' << mC.hub_security << "> " << mC.hub_version_special << '|';
+
+		} else {
+			os << '<' << mC.hub_security << "> ";
+			os << autosprintf(_("Software: %s %s"), HUB_VERSION_NAME, HUB_VERSION_VERS) << " ][ ";
+			os << autosprintf(_("Uptime: %s"), runtime.AsPeriod().AsString().c_str()) << " ][ ";
+			os << autosprintf(_("Users: %d"), mUserCountTot) << " ][ ";
+			os << autosprintf(_("Share: %s"), convertByte(mTotalShare, false).c_str());
+
+			if (mC.hub_version_special.size())
+				os << " ][ " << mC.hub_version_special;
+
+			os << '|';
+		}
+
+		conn->Send(os.str(), false);
 	}
 }
 
