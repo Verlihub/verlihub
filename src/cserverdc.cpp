@@ -2903,7 +2903,8 @@ void cServerDC::SendHeaders(cConnDC *conn, unsigned int where)
 			os << '|';
 		}
 
-		conn->Send(os.str(), false);
+		string res = os.str();
+		conn->Send(res, false);
 	}
 }
 
