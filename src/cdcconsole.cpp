@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -669,7 +669,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang)\r\n\r\n";
 	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n\r\n";
 	os << " [*] " << _("Contributors") << ":\r\n\r\n";
-	os << "\tFrog, Eco-Logical, Intruder" << "\r\n\r\n";
+	os << "\tFrog, Eco-Logical, Intruder, PWiAM" << "\r\n\r\n";
 	os << " [*] " << _("Credits") << ":\r\n\r\n";
 	os << "\t" << _("We would like to thank everyone in our support hub for their input and valuable support and of course everyone who continues to use this great hub software.") << "\r\n\r\n";
 	os << " [*] " << _("Links") << ":\r\n\r\n";
@@ -685,8 +685,6 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Support") << ": nmdcs://hub.verlihub.net:7777\r\n\r\n";
 	os << " [*] " << _("Donation") << ":\r\n\r\n";
 	os << "\tPayPal: https://paypal.me/feardc/\r\n";
-	os << "\tBitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw\r\n";
-	os << "\tEthereum: 0xA24034373D87a28dCF1eEC394b1cEB0dAd8649D0\r\n";
 	os << "\t" << _("Donators") << ": Deivis (100 EUR), Captain (20 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
