@@ -33,5 +33,3 @@ Donation
 ==============
 
   * PayPal: [webmaster@feardc.net](https://paypal.me/feardc/)
-  * BitCoin: 1DDckwdpRmwzJVpZ9QRkMTugQFEbft43Rw
-  * Ethereum: 0xA24034373D87a28dCF1eEC394b1cEB0dAd8649D0

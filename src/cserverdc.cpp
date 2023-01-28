@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1058,7 +1058,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->mLock.append(StringFrom(rand() % 10));
 
 	string omsg;
-	mP.Create_Lock(omsg, conn->mLock, HUB_VERSION_NAME, HUB_VERSION_VERS);
+	mP.Create_Lock(omsg, conn->mLock, (mC.host_header ? HUB_VERSION_NAME : "NMDC"), (mC.host_header ? HUB_VERSION_VERS : "1,0091"));
 	conn->Send(omsg, true);
 	SendHeaders(conn, 2);
 	ostringstream os;
