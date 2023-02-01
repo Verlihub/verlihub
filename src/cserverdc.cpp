@@ -3372,6 +3372,11 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					ci->ConvertFrom(val_old);
 					return 0;
 				}
+
+			} else if ((svar == "hub_version") && user->mxConn) { // read only for user
+				DCPublicHS(_("Specified configuration variable is read only."), user->mxConn);
+				ci->ConvertFrom(val_old);
+				return 0;
 			}
 
 			mSetupList.SaveItem(conf, ci);
