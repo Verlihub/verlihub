@@ -4,26 +4,27 @@ Dependencies and installation
 
 * Required dependencies:
 
-	[ bin lib hdr ] GCC			4.x		[ 9.3.x  ]
-	[ bin --- hdr ] CMake		2.x		[ 3.16.x ]
-	[ bin lib hdr ] MySQL		5.x		[ 8.0.x  ]
-	[ --- lib hdr ] ZLib		1.x		[ 1.2.x  ]
-	[ --- lib hdr ] OpenSSL		1.x		[ 1.1.x  ]
-	[ --- lib hdr ] PCRE		8.x		[ 8.38.x ]
-	[ --- lib hdr ] GetText		0.x		[ 0.19.x ]
-	[ --- lib hdr ] MaxMindDB	1.x		[ 1.4.x  ]
-	[ --- lib hdr ] LibICU		55.x	[ 66.1.x ]
-	[ ??? ??? ??? ] LibIntl		?.?		[ ?.?.?  ]
-	[ ??? ??? ??? ] Crypt		?.?		[ ?.?.?  ]
-	[ ??? ??? ??? ] Threads		?.?		[ ?.?.?  ]
-	[ ??? ??? ??? ] DL			?.?		[ ?.?.?  ]
+	[ bin lib hdr ] GCC			4.8.0
+	[ bin --- hdr ] CMake		2.8.12
+	[ bin lib hdr ] MySQL		5.7.1
+	[ --- lib hdr ] OpenSSL		1.1.0
+	[ --- lib hdr ] LibICU		55.0
+	[ bin --- --- ] Make
+	[ --- lib hdr ] ZLib
+	[ --- lib hdr ] PCRE
+	[ --- lib hdr ] GetText
+	[ --- lib hdr ] MaxMindDB
+	[ ??? ??? ??? ] LibIntl
+	[ ??? ??? ??? ] Crypt
+	[ ??? ??? ??? ] Threads
+	[ ??? ??? ??? ] DL
 
 * Optional dependencies:
 
-	[ --- lib hdr ] Lua			5.x		[ 5.4.x  ]
-	[ --- lib hdr ] Python		2.x		[ 2.7.18 ]
-	[ --- lib hdr ] PERL		5.x		[ 5.30.x ]
-	[ bin --- --- ] Dialog		?.?		[ ?.?.?, for vh_gui script only ]
+	[ --- lib hdr ] Lua			5.2
+	[ --- lib hdr ] Python		2.7
+	[ --- lib hdr ] PERL		5.20
+	[ bin --- --- ] Dialog
 
 * Install dependencies on Debian:
 
@@ -31,7 +32,7 @@ sudo apt install libpcre3-dev libssl-dev mysql-server mysql-client libmysqlclien
 
  * Optional dependencies
 
- sudo apt install python2.7-dev liblua5.3-dev libperl-dev
+ sudo apt install python2.7-dev liblua5.2-dev libperl-dev
 
 * Install dependencies on CentOS:
 
