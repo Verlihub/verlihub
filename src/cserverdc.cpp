@@ -3333,7 +3333,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				unsigned long ip = 0;
 
 				if (val_new.empty() || !cBanList::Ip2Num(val_new, ip)) { // cant be empty, 0.0.0.0 - 255.255.255.255
-					if (user->mxConn)
+					if (user && user->mxConn)
 						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.0", "255.255.255.255"), user->mxConn);
 
 					ci->ConvertFrom(val_old);
@@ -3344,7 +3344,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				unsigned long ip = 0;
 
 				if (!cBanList::Ip2Num(val_new, ip, false)) { // 0.0.0.1 - 255.255.255.255
-					if (user->mxConn)
+					if (user && user->mxConn)
 						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255"), user->mxConn);
 
 					ci->ConvertFrom(val_old);
@@ -3355,7 +3355,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				unsigned long ip = 0;
 
 				if (!cBanList::Ip2Num(val_new, ip)) { // 0.0.0.0 - 255.255.255.255
-					if (user->mxConn)
+					if (user && user->mxConn)
 						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.0", "255.255.255.255"), user->mxConn);
 
 					ci->ConvertFrom(val_old);
@@ -3366,14 +3366,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				unsigned long ip = 0;
 
 				if (!cBanList::Ip2Num(val_new, ip, false)) { // 0.0.0.1 - 255.255.255.255
-					if (user->mxConn)
+					if (user && user->mxConn)
 						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255"), user->mxConn);
 
 					ci->ConvertFrom(val_old);
 					return 0;
 				}
 
-			} else if ((svar == "hub_version") && user->mxConn) { // read only for user
+			} else if ((svar == "hub_version") && user && user->mxConn) { // read only for user
 				DCPublicHS(_("Specified configuration variable is read only."), user->mxConn);
 				ci->ConvertFrom(val_old);
 				return 0;
