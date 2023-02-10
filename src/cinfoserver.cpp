@@ -297,7 +297,7 @@ void cInfoServer::SystemInfo(ostream &os)
 		os << " [*] " << autosprintf(_("Kernel: %s [%s]"), osname.release, osname.machine) << "\r\n\r\n";
 	}
 
-	os << " [*] " << autosprintf(_("Uptime: %s"), cTimePrint(serverInfo.uptime).AsPeriod().AsString().c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Uptime: %s"), cTimePrint((long) serverInfo.uptime).AsPeriod().AsString().c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Load averages: %.2f %.2f %.2f"), (serverInfo.loads[0] / 65536.0), (serverInfo.loads[1] / 65536.0), (serverInfo.loads[2] / 65536.0)) << "\r\n";
 	os << " [*] " << autosprintf(_("Total processes inclusive threads: %d"), serverInfo.procs) << "\r\n\r\n";
 
