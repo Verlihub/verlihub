@@ -23,9 +23,7 @@ Links
   * Wiki: https://github.com/verlihub/verlihub/wiki
   * Crash: https://crash.verlihub.net
   * Translate: https://transifex.com/feardc/verlihub
-  * Ledokol (Web Site): https://ledo.feardc.net
-  * Ledokol (Git Hub): https://github.com/Verlihub/ledokol
-  * Ledokol Wiki: https://github.com/verlihub/ledokol/wiki
+  * Ledokol: https://github.com/verlihub/ledokol
   * MMDB: https://ledo.feardc.net/mmdb
   * Proxy: https://github.com/verlihub/tls-proxy
   * Support: nmdcs://hub.verlihub.net:7777
