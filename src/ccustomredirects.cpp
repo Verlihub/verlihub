@@ -88,6 +88,7 @@ namespace nVerliHub {
 				return eBadNick;
 
 			case eCR_NOREDIR:
+			case eCR_FORCEMOVE: // we already sent redirect
 				return -1;
 
 			default:
