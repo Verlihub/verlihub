@@ -237,7 +237,7 @@ namespace nVerliHub {
 		string help("https://github.com/verlihub/verlihub/wiki/redirects/\r\n\r\n");
 
 		help += " Available redirect flags:\r\n\r\n";
-		help += " 0\t\t\t- For any other reason\r\n";
+		help += " 0\t\t\t- For any reason\r\n";
 		help += " 1\t\t\t- Ban and kick\r\n";
 		help += " 2\t\t\t- Hub is full\r\n";
 		help += " 4\t\t\t- Too low or too high share\r\n";
