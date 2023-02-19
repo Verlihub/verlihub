@@ -18,8 +18,8 @@
 
 		-f [flags]				- Flags
 		-e [1/0]				- Enabled
-		-a [hh:mm]				- Start
-		-z [hh:mm]				- Stop
+		-a [hour]				- Start
+		-z [hour]				- Stop
 		-c [:cc:]				- Country
 		-s [2/1/0]				- Secure
 		-g [gb]					- Share
