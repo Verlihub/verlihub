@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -42,7 +42,6 @@ namespace std {
 #include "stringutils.h"
 
 using std::string;
-using std::unary_function;
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -58,7 +57,111 @@ namespace nVerliHub {
 class cUserCollection: public tHashArray<cUserBase*>
 {
 public:
-	struct ufSend: public unary_function<void, iterator> // unary function for sending data to all users
+	class ufSendBase // base class for sending data to all users
+	{
+		protected:
+			string &mData;
+			bool mCache;
+		public:
+			ufSendBase(string &data, const bool cache):
+				mData(data),
+				mCache(cache)
+			{}
+	};
+
+	struct ufSendMinMax // base structure for sending data to all users by class range
+	{
+		int mMinClass;
+		int mMaxClass;
+
+		ufSendMinMax(const int min_class, const int max_class):
+			mMinClass(min_class),
+			mMaxClass(max_class)
+		{}
+	};
+
+	struct ufSend: public ufSendBase // unary function for sending data to all users
+	{
+		ufSend(string &data, const bool cache):
+			ufSendBase(data, cache)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithNick // unary function for sending data start + nick + data end to all users
+	{
+		string &mDataStart, &mDataEnd;
+
+		ufSendWithNick(string &data_s, string &data_e): // always flushes
+			mDataStart(data_s),
+			mDataEnd(data_e)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithClass: public ufSendBase, public ufSendMinMax // unary function for sending data to all users by class range
+	{
+		ufSendWithClass(string &data, const int min_class, const int max_class, const bool cache):
+			ufSendBase(data, cache),
+			ufSendMinMax(min_class, max_class)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithFeature: public ufSendBase // unary function for sending data to all users by feature in supports
+	{
+		unsigned mFeature;
+
+		ufSendWithFeature(string &data, const unsigned feature, const bool cache):
+			ufSendBase(data, cache),
+			mFeature(feature)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithMyFlag: public ufSendBase // unary function for sending data to all users with flag in myinfo
+	{
+		unsigned short mFlag;
+
+		ufSendWithMyFlag(string &data, const unsigned short flag, const bool cache):
+			ufSendBase(data, cache),
+			mFlag(flag)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithoutMyFlag: public ufSendBase // unary function for sending data to all users without flag in myinfo
+	{
+		unsigned short mFlag;
+
+		ufSendWithoutMyFlag(string &data, const unsigned short flag, const bool cache):
+			ufSendBase(data, cache),
+			mFlag(flag)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	struct ufSendWithClassFeature: public ufSendBase, ufSendMinMax // unary function for sending data to all users by class range and feature in supports
+	{
+		unsigned mFeature;
+
+		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache):
+			ufSendBase(data, cache),
+			ufSendMinMax(min_class, max_class),
+			mFeature(feature)
+		{}
+
+		void operator()(cUserBase *user);
+	};
+
+	/*
+	struct ufSend: public unary_function<void, iterator>
 	{
 		string &mData;
 		bool mCache;
@@ -71,7 +174,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithNick: public unary_function<void, iterator> // unary function for sending data start + nick + data end to all users
+	struct ufSendWithNick: public unary_function<void, iterator>
 	{
 		string &mDataStart, &mDataEnd;
 
@@ -83,7 +186,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithClass: public unary_function<void, iterator> // unary function for sending data to all users by class range
+	struct ufSendWithClass: public unary_function<void, iterator>
 	{
 		string &mData;
 		int mMinClass, mMaxClass;
@@ -99,7 +202,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithFeature: public unary_function<void, iterator> // unary function for sending data to all users by feature in supports
+	struct ufSendWithFeature: public unary_function<void, iterator>
 	{
 		string &mData;
 		unsigned mFeature;
@@ -114,7 +217,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithMyFlag: public unary_function<void, iterator> // unary function for sending data to all users with flag in myinfo
+	struct ufSendWithMyFlag: public unary_function<void, iterator>
 	{
 		string &mData;
 		unsigned short mFlag;
@@ -129,7 +232,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithoutMyFlag: public unary_function<void, iterator> // unary function for sending data to all users without flag in myinfo
+	struct ufSendWithoutMyFlag: public unary_function<void, iterator>
 	{
 		string &mData;
 		unsigned short mFlag;
@@ -144,7 +247,7 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufSendWithClassFeature: public unary_function<void, iterator> // unary function for sending data to all users by class range and feature in supports
+	struct ufSendWithClassFeature: public unary_function<void, iterator>
 	{
 		string &mData;
 		int mMinClass, mMaxClass;
@@ -162,7 +265,9 @@ public:
 		void operator()(cUserBase *user);
 	};
 
-	struct ufDoNickList: public unary_function<void, iterator> // unary function that constructs nick list
+	struct ufDoNickList: public unary_function<void, iterator>
+	*/
+	struct ufDoNickList // unary function that constructs nick list
 	{
 		string &mList;
 		string mStart;

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -131,7 +131,7 @@ namespace nVerliHub {
 			redir = (*it);
 
 			if (redir && redir->mEnable && (!redir->mFlag || (redir->mFlag & rmap))) {
-				if ((redir->mStart == redir->mStop) || ((int (lt->tm_hour) >= redir->mStart) && (int (lt->tm_hour) <= redir->mStop))) { // redirect hours
+				if ((redir->mStart == redir->mStop) || ((int(lt->tm_hour) >= redir->mStart) && (int(lt->tm_hour) <= redir->mStop))) { // redirect hours
 					if (redir->mCountry.empty() || cc.empty() || (toUpper(redir->mCountry).find(cc) != redir->mCountry.npos)) { // country match
 						if ((redir->mSecure == 2) || ((redir->mSecure == 1) == issec)) { // secure connection
 							if ((redir->mShare == 0) || (shar >= (unsigned __int64)((unsigned long)redir->mShare * 1024ul * 1024ul * 1024ul))) { // minimal share in gb

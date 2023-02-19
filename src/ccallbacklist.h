@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -61,7 +61,7 @@ namespace nVerliHub {
 				 * @param mgr Pointer to plugin manager
 				 * @param id The identifier of the list.
 				 */
-				cCallBackList(cPluginManager *mgr, string id);
+				cCallBackList(cPluginManager *mgr, const string &id);
 
 				/**
 				 * Class destructor.
@@ -114,16 +114,21 @@ namespace nVerliHub {
 				 * This structure represents a callback function that is called by
 				 * CallOne() and CallAll() methods.
 				 */
-				struct ufCallOne : public unary_function<void, tPICont::iterator>
+				//struct ufCallOne: public unary_function<void, tPICont::iterator>
+				struct ufCallOne
 				{
 					/// Pointer to plugin manager instance.
 					cPluginManager *mMgr;
-
 					/// Pointer to callbacklist instance.
 					cCallBackList *mCBL;
-
 					bool mCall;
-					ufCallOne(cPluginManager *mgr, cCallBackList *cbl) : mMgr(mgr), mCBL(cbl), mCall(true) {};
+
+					ufCallOne(cPluginManager *mgr, cCallBackList *cbl):
+						mMgr(mgr),
+						mCBL(cbl),
+						mCall(true)
+					{}
+
 					void operator()(cPluginBase *pi);
 				};
 			private:
