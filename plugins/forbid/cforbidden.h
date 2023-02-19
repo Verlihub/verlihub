@@ -78,7 +78,7 @@ class cForbidden : public tForbiddenBase
 {
 public:
 	cForbidden(cVHPlugin *pi);
-	virtual ~cForbidden(){};
+	virtual ~cForbidden(){}
 	virtual void AddFields();
 	virtual bool CompareDataKey(const cForbiddenWorker &D1, const cForbiddenWorker &D2);
 

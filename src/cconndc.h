@@ -458,7 +458,7 @@ namespace nVerliHub {
 				/**
 				 * Constructor.
 				 */
-				sTimes():/*key(0l),*/ping(0l){};
+				sTimes():/*key(0l),*/ping(0l){}
 			};
 
 			/// Ping handler.

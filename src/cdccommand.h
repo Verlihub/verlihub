@@ -50,7 +50,7 @@ namespace nVerliHub {
 	{
 	public:
 		cDCCommand();
-		virtual ~cDCCommand(){};
+		virtual ~cDCCommand(){}
 
 		//long mActionType;
 
@@ -61,7 +61,7 @@ namespace nVerliHub {
 			nSocket::cConnDC * mConn;
 			cDCConsoleBase *mCo;
 
-			virtual ~sDCCmdFunc(){};
+			virtual ~sDCCmdFunc(){}
 			virtual bool GetIDEnum(int rank, int &id, const char *ids[], const int enums[]);
 			virtual bool GetParUnEscapeStr(int rank, string &dest);
 			virtual bool GetParIPRange(int rank, unsigned long &ipmin, unsigned long &ipmax);

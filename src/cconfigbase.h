@@ -36,8 +36,8 @@ namespace nVerliHub {
 class cBasicItemCreator
 {
 	public:
-		cBasicItemCreator(){};
-		virtual ~cBasicItemCreator(){};
+		cBasicItemCreator(){}
+		virtual ~cBasicItemCreator(){}
 		NewItemMethod(bool, Bool);
 		NewItemMethod(char, Char);
 		NewItemMethod(int, Int);
@@ -153,8 +153,8 @@ very useful
 class cConfigBase : public cConfigBaseBase
 {
 	public:
-		cConfigBase(){};
-		virtual ~cConfigBase(){};
+		cConfigBase(){}
+		virtual ~cConfigBase(){}
 
 		DeclareAddMethods(bool);
 		DeclareAddMethods(char);

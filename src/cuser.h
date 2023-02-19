@@ -343,7 +343,7 @@ class cOpChat: public cChatRoom
 class cMainRobot: public cUserRobot
 {
 public:
-	cMainRobot(const string &nick, nSocket::cServerDC *server = NULL):cUserRobot(nick,server){};
+	cMainRobot(const string &nick, nSocket::cServerDC *server = NULL):cUserRobot(nick,server){}
 	virtual bool ReceiveMsg(nSocket::cConnDC *conn, nProtocol::cMessageDC *msg);
 };
 

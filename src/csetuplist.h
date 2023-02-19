@@ -44,7 +44,7 @@ public:
 	{
 		public:
 			cSetup()
-			{};
+			{}
 
 			cSetup(const string &file, const string &var, const string &val):
 				mFile(file),

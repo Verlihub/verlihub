@@ -25,7 +25,7 @@
 namespace nVerliHub {
 	namespace nPlugin {
 
-cCallBackList::cCallBackList(cPluginManager *mgr, string id):
+cCallBackList::cCallBackList(cPluginManager *mgr, const string& id):
 	mMgr(mgr),
 	mCallOne(mMgr, this),
 	mName(id)

@@ -57,15 +57,12 @@ bool cPluginManager::LoadAll()
 	}
 	struct dirent * ent = NULL;
 
-	string filename;
-	string pathname;
-
 	while (NULL!= (ent=readdir(dir))) {
-		filename = ent->d_name;
+		string filename = ent->d_name;
 		if(Log(3))
 			LogStream() << "filename: " << filename << endl;
 		if((filename.size() > 3) && (0 == StrCompare(filename,filename.size()-3,3,".so"))) {
-			pathname = mPluginDir+filename;
+			string pathname = mPluginDir+filename;
 			LoadPlugin(pathname);
 		}
 	}
@@ -186,7 +183,7 @@ bool cPluginManager::ReloadPlugin(const string &name)
 	return false;
 }
 
-bool cPluginManager::SetCallBack(string  id, cCallBackList *cb)
+bool cPluginManager::SetCallBack(string id, cCallBackList *cb)
 {
 	if(!cb)
 		return false;

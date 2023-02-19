@@ -36,7 +36,7 @@
 	//#if !defined _WIN32
 		#define TEMP_FAILURE_RETRY(expression) \
 		(__extension__ ({ long int __result;\
-		while ((__result = (long int) (expression)) == -1L && errno == EINTR){}; __result; }))
+		while ((__result = (long int) (expression)) == -1L && errno == EINTR){} __result; }))
 	/*
 	#else // _WIN32
 		#define TEMP_FAILURE_RETRY(expression) while ((long int) (expression) == -1L && errno == EINTR){}
@@ -215,7 +215,7 @@ public:
 		iterator(cConnChoose *ch, tSocket *end) :
 			mEnd(end), mChoose(ch){}
 
-		iterator():mEnd(0),mChoose(0){};
+		iterator():mEnd(0),mChoose(0){}
 
 		iterator &operator++()
 		{

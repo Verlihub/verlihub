@@ -884,7 +884,7 @@ private:
 			mOnOpChatMessage(mgr, "VH_OnOpChatMessage", &cVHPlugin::OnOpChatMessage),
 			mOnPublicBotMessage(mgr, "VH_OnPublicBotMessage", &cVHPlugin::OnPublicBotMessage),
 			mOnUnLoad(mgr, "VH_OnUnLoad", &cVHPlugin::OnUnLoad)
-		{};
+		{}
 
 		cVHCBL_Connection mOnNewConn;
 		cVHCBL_Connection mOnCloseConn;

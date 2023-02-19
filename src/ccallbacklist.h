@@ -26,7 +26,9 @@
 #include <string>
 #include <iostream>
 
-using namespace std;
+using std::list;
+using std::string;
+using std::ostream;
 
 namespace nVerliHub {
 	namespace nPlugin {
@@ -61,7 +63,7 @@ namespace nVerliHub {
 				 * @param mgr Pointer to plugin manager
 				 * @param id The identifier of the list.
 				 */
-				cCallBackList(cPluginManager *mgr, string id);
+				cCallBackList(cPluginManager *mgr, const string& id);
 
 				/**
 				 * Class destructor.
@@ -114,7 +116,7 @@ namespace nVerliHub {
 				 * This structure represents a callback function that is called by
 				 * CallOne() and CallAll() methods.
 				 */
-				struct ufCallOne : public unary_function<void, tPICont::iterator>
+				struct ufCallOne 
 				{
 					/// Pointer to plugin manager instance.
 					cPluginManager *mMgr;
@@ -123,7 +125,7 @@ namespace nVerliHub {
 					cCallBackList *mCBL;
 
 					bool mCall;
-					ufCallOne(cPluginManager *mgr, cCallBackList *cbl) : mMgr(mgr), mCBL(cbl), mCall(true) {};
+					ufCallOne(cPluginManager *mgr, cCallBackList *cbl) : mMgr(mgr), mCBL(cbl), mCall(true) {}
 					void operator()(cPluginBase *pi);
 				};
 			private:

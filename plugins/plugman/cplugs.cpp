@@ -220,7 +220,7 @@ ostream& operator << (ostream &os, const cPlug &plug)
 //--------------------------
 
 cPlugs::cPlugs(cVHPlugin *pi) : tPlugListBase(pi, "pi_plug") , mPM (NULL), mVHTime(0)
-{};
+{}
 
 void cPlugs::AddFields()
 {

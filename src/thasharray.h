@@ -617,14 +617,14 @@ namespace nVerliHub {
 				 * @param element The added element.
 				 */
 				virtual void OnAdd(DataType element)
-				{};
+				{}
 
 				/**
 				 * Event handler function called when an element is removed.
 				 * @param element The removed element.
 				 */
 				virtual void OnRemove(DataType element)
-				{};
+				{}
 
 				/**
 				 * Calculate the hash for the given key.

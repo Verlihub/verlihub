@@ -79,7 +79,7 @@ public:
 
 	// -- required methods
 	cPlug();
-	virtual ~cPlug(){};
+	virtual ~cPlug(){}
 	virtual void OnLoad();
 	friend ostream& operator << (ostream &, const cPlug &plug);
 

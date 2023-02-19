@@ -36,9 +36,9 @@ using namespace std;
 #define DeclarecConfigItemBaseT(TYPE,TypeID,Suffix) \
 class cConfigItemBase##Suffix : public cConfigItemBase { \
 public: \
-	cConfigItemBase##Suffix(TYPE &var): cConfigItemBase((void*)&var, 0){}; \
+	cConfigItemBase##Suffix(TYPE &var): cConfigItemBase((void*)&var, 0){} \
 	cConfigItemBase##Suffix(TYPE &var, string const &Name): cConfigItemBase((void*)&var, 0){this->mName=Name;}; \
-	virtual ~cConfigItemBase##Suffix(){}; \
+	virtual ~cConfigItemBase##Suffix(){} \
 	virtual TYPE & Data(){return *(TYPE*)mAddr;}; \
 	virtual cConfigItemBase##Suffix &operator=(TYPE const &i){*(TYPE*)Address() = i; return *this;};\
 	virtual nEnums::tItemType GetTypeID(){ return TypeID;} \
@@ -86,7 +86,7 @@ public:
 		mBuf[0] = 0;
 	}
 
-	virtual ~cConfigItemBase(){};
+	virtual ~cConfigItemBase(){}
 
 	/** setting value */
 	template <class TYPE> cConfigItemBase &operator=(const TYPE &i){*(TYPE*)Address() = i; return *this;};

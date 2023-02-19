@@ -55,7 +55,7 @@ namespace nVerliHub {
 				/**
 				* This function is called when cDCClient object is created. Here it is not useful so the body is empty
 				*/
-				virtual void OnLoad() {};
+				virtual void OnLoad() {}
 
 				/**
 				* Redefine << operator to print a client and show its description

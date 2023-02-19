@@ -34,8 +34,8 @@ namespace nVerliHub {
 
 class cTimeOut {
 public:
-	cTimeOut():mMinDelay(0l),mMaxDelay(0l),mLast(0l){};
-	cTimeOut(double min,double max,const cTime &now):mMinDelay(min),mMaxDelay(max),mLast(now){};
+	cTimeOut():mMinDelay(0l),mMaxDelay(0l),mLast(0l){}
+	cTimeOut(double min,double max,const cTime &now):mMinDelay(min),mMaxDelay(max),mLast(now){}
 	~cTimeOut();
 
 public:

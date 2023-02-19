@@ -66,7 +66,7 @@ namespace nVerliHub {
 				/**
 				* This function is called when cRedirect object is created. Here it is not useful so the body is empty
 				*/
-				virtual void OnLoad() {};
+				virtual void OnLoad() {}
 
 				/**
 				* Redefine << operator to print a redirect and show its status

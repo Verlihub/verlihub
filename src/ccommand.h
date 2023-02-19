@@ -94,7 +94,7 @@ namespace nVerliHub {
 						* Class destructor.
 						*/
 						virtual ~sCmdFunc()
-						{};
+						{}
 
 						/**
 						* Execute the command.
@@ -205,7 +205,7 @@ namespace nVerliHub {
 						* @param os The stream where to store the result.
 						* @see sCmdFunc::GetSyntaxHelp()
 						*/
-						virtual void GetSyntaxHelp(ostream &os, cCommand *){};
+						virtual void GetSyntaxHelp(ostream &os, cCommand *){}
 
 						/**
 						 * Return the ID used for the command.
@@ -323,7 +323,7 @@ namespace nVerliHub {
 			 * @param data The data to initialize the command.
 			 */
 			virtual void Init(void *data)
-			{};
+			{}
 
 			/**
 			 * Describe the command.

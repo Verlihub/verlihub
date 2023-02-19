@@ -87,8 +87,8 @@ public:
 	bool     RemoveByHash(const KeyType &Hash);
 	bool     ContainsHash(const KeyType &Hash);
 	DataType GetByHash(const KeyType &Hash);
-	virtual void OnAdd(DataType){};
-	virtual void OnRemove(DataType){};
+	virtual void OnAdd(DataType){}
+	virtual void OnRemove(DataType){}
 };
 
 template < class DataType, class KeyType >

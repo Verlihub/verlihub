@@ -75,7 +75,7 @@ namespace nVerliHub {
 				int mPositionInDesc;
 
 				cDCClients(nSocket::cServerDC *);
-				virtual ~cDCClients(){};
+				virtual ~cDCClients(){}
 				virtual void AddFields();
 				cDCClient* FindTag(const string &tagID);
 				virtual bool CompareDataKey(const cDCClient &D1, const cDCClient &D2);

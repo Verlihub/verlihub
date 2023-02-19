@@ -40,7 +40,7 @@ namespace nVerliHub {
 		class cConfigItemMySQL##Suffix : public cConfigItemBase##Suffix \
 		{ \
 		public: \
-			cConfigItemMySQL##Suffix(TYPE &var): cConfigItemBase##Suffix(var){}; \
+			cConfigItemMySQL##Suffix(TYPE &var): cConfigItemBase##Suffix(var){} \
 			virtual std::ostream &WriteToStream (std::ostream& os); \
 	}; \
 
@@ -56,7 +56,7 @@ namespace nVerliHub {
 class cMySQLItemCreator : public nConfig::cBasicItemCreator
 {
 public:
-	cMySQLItemCreator(){};
+	cMySQLItemCreator(){}
 
 	virtual nConfig::cConfigItemBaseString* NewItem(string &var)
  	{
@@ -173,7 +173,7 @@ protected: // Protected attributes
 		bool mIsAffect;
 		ufEqual (ostream &os, const string& joint, bool DoF = true, bool DoV = true, bool IsAff = true):
 			mOS(os), mJoint(joint), start(true),
-			mDoField(DoF), mDoValue(DoV), mIsAffect(IsAff) {};
+			mDoField(DoF), mDoValue(DoV), mIsAffect(IsAff) {}
 		ufEqual (ufEqual const &eq):
 			mOS(eq.mOS),mJoint(eq.mJoint),start(eq.start),
 			mDoField(eq.mDoField),mDoValue(eq.mDoValue),mIsAffect(eq.mIsAffect){}
@@ -215,8 +215,8 @@ public:
 	{
 		cConfMySQL *mConf;
 		nMySQL::cQuery *mQuery;
-		db_iterator(cConfMySQL *conf = NULL ) : mConf(conf), mQuery(conf?&conf->mQuery:NULL){};
-		db_iterator(cConfMySQL *conf, nMySQL::cQuery *query ) : mConf(conf), mQuery(query){};
+		db_iterator(cConfMySQL *conf = NULL ) : mConf(conf), mQuery(conf?&conf->mQuery:NULL){}
+		db_iterator(cConfMySQL *conf, nMySQL::cQuery *query ) : mConf(conf), mQuery(query){}
 		db_iterator &operator++();
 		db_iterator &operator= (const db_iterator &it ){mConf = it.mConf; mQuery = it.mQuery; return *this;}
 		db_iterator &operator= (cConfMySQL *conf){mConf = conf; mQuery=conf?&conf->mQuery:NULL; return *this;}

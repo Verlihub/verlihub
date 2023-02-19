@@ -45,7 +45,7 @@ class cTriggers : public tTriggersBase
 {
 public:
 	cTriggers(nSocket::cServerDC *);
-	virtual ~cTriggers(){};
+	virtual ~cTriggers(){}
 	virtual void AddFields();
 	cTrigger * Find(const string &name); //@todo Trigger stuff
 	virtual bool CompareDataKey(const cTrigger &D1, const cTrigger &D2);

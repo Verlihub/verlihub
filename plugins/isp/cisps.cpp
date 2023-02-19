@@ -158,7 +158,7 @@ int cISPCfg::Save()
 //--------------------------
 
 cISPs::cISPs(cVHPlugin *pi) : tISPListBase(pi, "pi_isp", "ipmin asc")
-{};
+{}
 
 void cISPs::AddFields()
 {

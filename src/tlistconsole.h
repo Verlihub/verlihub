@@ -51,7 +51,7 @@ public:
 	{}
 
 	virtual ~tListConsole()
-	{};
+	{}
 
 	enum { eLC_ADD, eLC_DEL, eLC_MOD, eLC_LST, eLC_HELP, eLC_FREE };
 
@@ -163,7 +163,7 @@ protected:
 	{
 		public:
 			~cfBase()
-			{};
+			{}
 
 			tListConsole<DATA_TYPE, LIST_TYPE, OWNER_TYPE> *GetConsole()
 			{
@@ -188,7 +188,7 @@ protected:
 	{
 	public:
 		virtual ~cfAdd()
-		{};
+		{}
 
 		virtual bool operator()()
 		{
@@ -224,7 +224,7 @@ protected:
 	{
 	public:
 		virtual ~cfDel()
-		{};
+		{}
 
 		virtual bool operator()()
 		{
@@ -247,7 +247,7 @@ protected:
 	{
 	public:
 		virtual ~cfMod()
-		{};
+		{}
 
 		virtual bool operator()()
 		{
@@ -277,7 +277,7 @@ protected:
 	{
 	public:
 		virtual ~cfLst()
-		{};
+		{}
 
 		virtual bool operator()()
 		{
@@ -297,7 +297,7 @@ protected:
 	{
 		public:
 			virtual ~cfHelp()
-			{};
+			{}
 
 			virtual bool operator()()
 			{

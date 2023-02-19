@@ -42,7 +42,7 @@ namespace nVerliHub {
 		{
 			public:
 				cRedirects(nSocket::cServerDC *);
-				virtual ~cRedirects() {};
+				virtual ~cRedirects() {}
 				virtual void AddFields();
 				cRedirect* Find(const string &name);
 				virtual bool CompareDataKey(const cRedirect &D1, const cRedirect &D2);

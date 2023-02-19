@@ -116,7 +116,7 @@ namespace nVerliHub {
 				/**
 				 * Class destructor.
 				 */
-				virtual ~cConnFactory(){};
+				virtual ~cConnFactory(){}
 
 				/**
 				 * Create a new connection for the given socket.
