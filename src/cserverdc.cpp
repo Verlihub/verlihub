@@ -1310,14 +1310,14 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 	#endif
 }
 
-void cServerDC::DoUserLogin(cConnDC *conn)
+bool cServerDC::DoUserLogin(cConnDC *conn)
 {
 	if (eLS_LOGIN_DONE != conn->GetLSFlag(eLS_LOGIN_DONE)) { // verify we didnt get here by chance
 		if (conn->ErrLog(2))
 			conn->LogStream() << "User login when not all done" << endl;
 
 		conn->CloseNow(eCR_LOGIN_ERR);
-		return;
+		return false;
 	}
 
 	if (mC.int_login && (conn->GetTheoricalClass() <= mC.max_class_int_login)) // login flood detection
@@ -1330,13 +1330,13 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 
 	if (!AddToList(conn->mpUser)) { // insert user to userlist
 		conn->CloseNow(eCR_INVALID_USER);
-		return;
+		return false;
 	}
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mCallBacks.mOnUserInList.CallAll(conn->mpUser)) {
 			conn->CloseNow(eCR_PLUGIN);
-			return;
+			return false;
 		}
 	#endif
 
@@ -1358,6 +1358,7 @@ void cServerDC::DoUserLogin(cConnDC *conn)
 	conn->ClearTimeOut(eTO_LOGIN);
 	conn->mpUser->mT.login = mTime;
 	conn->SetPing(mTime);
+	return true;
 }
 
 /*
@@ -1374,13 +1375,12 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 	if (conn->Log(2))
 		conn->LogStream() << "Begin login" << endl;
 
-	if (VerifyUniqueNick(conn)) { // check if nick is unique
-		DoUserLogin(conn);
-
+	if (VerifyUniqueNick(conn) && DoUserLogin(conn)) { // check if nick is unique
 		if (conn->mSendNickList) { // this may not send all data at once
 			mP.NickList(conn); // this will set mNickListInProgress
 			//conn->mSendNickList = false;
 		}
+
 	} else {
 		return false;
 	}
