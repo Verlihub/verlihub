@@ -328,7 +328,20 @@ namespace nVerliHub {
 
 	bool cRedirectConsole::IsConnAllowed(cConnDC *conn, int cmd)
 	{
-		return (conn && conn->mpUser && (conn->mpUser->mClass >= eUC_ADMIN));
+		if (!conn || !conn->mpUser)
+			return false;
+
+		switch (cmd) {
+			case eLC_ADD:
+			case eLC_MOD:
+			case eLC_DEL:
+			case eLC_HELP:
+				return (conn->mpUser->mClass >= eUC_ADMIN);
+			case eLC_LST:
+				return (conn->mpUser->mClass >= eUC_OPERATOR);
+			default:
+				return false;
+		}
 	}
 
 	}; // namespace nTables
