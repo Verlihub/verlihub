@@ -72,10 +72,9 @@ string toLower(const string &str, bool cyr)
 	transform(str.begin(), str.end(), result.begin(), ::tolower);
 
 	if (cyr) { // cyrillic alphabet
-		unsigned int b;
-
+	
 		for (unsigned int i = 0; i < result.size(); ++i) {
-			b = (unsigned int)((unsigned char)result[i]);
+			unsigned int b = (unsigned int)((unsigned char)result[i]);
 
 			if (b == 168)
 				result[i] = (unsigned char)(b + 16);
@@ -95,10 +94,9 @@ string toUpper(const string &str, bool cyr)
 	transform(str.begin(), str.end(), result.begin(), ::toupper);
 
 	if (cyr) { // cyrillic alphabet
-		unsigned int b;
-
+	
 		for (unsigned int i = 0; i < result.size(); ++i) {
-			b = (unsigned int)((unsigned char)result[i]);
+			unsigned int b = (unsigned int)((unsigned char)result[i]);
 
 			if (b == 184)
 				result[i] = (unsigned char)(b - 16);
@@ -396,7 +394,7 @@ bool LimitLines(const string &str, int max)
 	return true;
 }
 
-string StrByteList(const string &data, const string &sep)
+string StrByteList(const string &data)
 {
 	string res;
 

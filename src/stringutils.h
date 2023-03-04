@@ -55,7 +55,7 @@ __int64 StringAsLL(const string &);
 bool IsNumber(const char *num);
 unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
-string StrByteList(const string &data, const string &sep = " ");
+string StrByteList(const string &data);
 string StrToMD5ToHex(const string &str);
 string StrToHex(const string &str);
 
