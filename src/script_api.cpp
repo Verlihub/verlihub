@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -635,7 +635,7 @@ unsigned __int64 GetTotalShareSize()
 	return server->mTotalShare;
 }
 
-const char* __GetNickList()
+const char* __GetNickList() // note: caller must free result
 {
 	cServerDC *server = GetCurrentVerlihub();
 
@@ -645,7 +645,7 @@ const char* __GetNickList()
 		return strdup(list.c_str());
 	}
 
-	return "";
+	return strdup("");
 }
 
 const char * GetVHCfgDir()

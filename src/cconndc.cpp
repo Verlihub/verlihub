@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -50,7 +50,7 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	mRegInfo = NULL;
 	mSRCounter = 0;
 	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts)); // protocol flood
-	memset(mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
+	memset(&mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
 	memset(mProtoFloodReports, 0, sizeof(mProtoFloodReports));
 }
 
