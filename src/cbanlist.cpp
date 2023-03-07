@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -147,73 +147,93 @@ void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, cons
 
 void cBanList::AddBan(cBan &ban)
 {
-	//@todo nick2dbkey
-	switch (1 << ban.mType) {
+	switch (1 << ban.mType) { // todo: nick2dbkey
 		case eBF_NICK:
 			ban.mIP = "_nickban_";
-		break;
+			break;
+
 		case eBF_IP:
 			ban.mNick = "_ipban_";
-		break;
+			break;
+
 		case eBF_RANGE:
 			ban.mNick = "_rangeban_";
-		break;
+			break;
+
 		case eBF_HOST1:
 			ban.mIP = "_host1ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,1))
+
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 1))
 				return;
-		break;
+
+			break;
+
 		case eBF_HOST2:
 			ban.mIP = "_host2ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,2))
+
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 2))
 				return;
-		break;
+
+			break;
+
 		case eBF_HOST3:
 			ban.mIP = "_host3ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,3))
+
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 3))
 				return;
-		break;
+
+			break;
+
 		case eBF_HOSTR1:
 			ban.mIP = "_hostr1ban_";
-			if(!this->GetHostSubstring(ban.mHost,ban.mNick,-1))
+
+			if (!this->GetHostSubstring(ban.mHost, ban.mNick, -1))
 				return;
-		break;
+
+			break;
+
 		case eBF_SHARE:
 			ban.mNick = "_shareban_";
-		break;
+			break;
+
 		case eBF_PREFIX:
 			ban.mIP = "_prefixban_";
-		break;
-		default: break;
+			break;
+
+		default:
+			break;
 	}
 
-	// copy PK
-	cBan OldBan(mS);
+	cBan OldBan(mS); // copy pk
 	OldBan.mIP = ban.mIP;
 	OldBan.mNick = ban.mNick;
-	// Load by PK to mModel
-	SetBaseTo( &OldBan );
+	SetBaseTo(&OldBan); // load by pk to model
 	bool update = false;
 
-	if(LoadPK()) {
+	if (LoadPK()) {
 		update = true;
 		mModel = OldBan;
-		if(ban.mReason.size())
-			mModel.mReason += " / " + ban.mReason;
-		if(!ban.mDateEnd || (ban.mDateEnd > mModel.mDateEnd))
+
+		if (ban.mReason.size()) // mModel.mReason += " / " + ban.mReason;
+			mModel.mReason = ban.mReason;
+
+		if (!ban.mDateEnd || (ban.mDateEnd > mModel.mDateEnd))
 			mModel.mDateEnd = ban.mDateEnd;
+
 		mModel.mNickOp = ban.mNickOp;
 
-		if((1 << ban.mType) == eBF_RANGE) {
+		if ((1 << ban.mType) == eBF_RANGE) {
 			mModel.mRangeMin = ban.mRangeMin;
 			mModel.mRangeMax = ban.mRangeMax;
 		}
-	} else
+
+	} else {
 		mModel = ban;
+	}
 
 	SetBaseTo(&mModel);
 
-	if(update)
+	if (update)
 		UpdatePK();
 	else
 		SavePK(false);

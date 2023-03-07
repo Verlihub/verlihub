@@ -402,7 +402,7 @@ string StrByteList(const string &data, const string &sep)
 
 	for (unsigned i = 0; i < data.size(); ++i) {
 		if (i > 0)
-			res.append(1, ' ');
+			res.append(sep);
 
 		res.append(StringFrom(int(data[i])));
 	}
