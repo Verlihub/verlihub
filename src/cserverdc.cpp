@@ -212,7 +212,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	// protocol flood from all
 	memset(mProtoFloodAllCounts, 0, sizeof(mProtoFloodAllCounts));
-	memset(&mProtoFloodAllTimes, 0, sizeof(mProtoFloodAllTimes));
+	//memset(&mProtoFloodAllTimes, 0, sizeof(mProtoFloodAllTimes));
 	memset(mProtoFloodAllLocks, 0, sizeof(mProtoFloodAllLocks));
 
 	// ctm2hub

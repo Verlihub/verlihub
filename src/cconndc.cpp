@@ -50,8 +50,8 @@ cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
 	mRegInfo = NULL;
 	mSRCounter = 0;
 	memset(mProtoFloodCounts, 0, sizeof(mProtoFloodCounts)); // protocol flood
-	memset(&mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
-	memset(mProtoFloodReports, 0, sizeof(mProtoFloodReports));
+	//memset(&mProtoFloodTimes, 0, sizeof(mProtoFloodTimes));
+	//memset(&mProtoFloodReports, 0, sizeof(mProtoFloodReports));
 }
 
 cConnDC::~cConnDC()
