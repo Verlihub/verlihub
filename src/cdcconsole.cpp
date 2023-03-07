@@ -584,7 +584,7 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 
 	if (conn->mpUser->mClass < mOwner->mC.mainchat_class) {
-		mOwner->DCPublicHS(_("Main chat is currently disabled for users with your class."), conn);
+		mOwner->DCPublicHS(_("Main chat is currently disabled for users with your class, please consider registering on the hub or contact an operator."), conn);
 		return 1;
 	}
 
