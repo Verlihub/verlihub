@@ -1756,7 +1756,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->mpUser->mClass < mS->mC.private_class) {
-		os << _("Private chat is currently disabled for users with your class.");
+		os << _("Private chat is currently disabled for users with your class, please consider registering on the hub or contact an operator.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
 		return 0;
@@ -1855,8 +1855,8 @@ int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if (conn->mpUser->mClass < mS->mC.private_class) { // pm rules also apply on mcto, messages are also private
-		os << _("Private chat is currently disabled for users with your class.");
+	if (conn->mpUser->mClass < mS->mC.private_class) { // pm rules apply to mcto
+		os << _("Private chat is currently disabled for users with your class, please consider registering on the hub or contact an operator.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
 		return 0;
@@ -1957,7 +1957,7 @@ int cDCProto::DC_Chat(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->mpUser->mClass < mS->mC.mainchat_class) {
-		mS->DCPublicHS(_("Main chat is currently disabled for users with your class."), conn);
+		mS->DCPublicHS(_("Main chat is currently disabled for users with your class, please consider registering on the hub or contact an operator."), conn);
 		return 0;
 	}
 
