@@ -1209,11 +1209,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1]; // set status flags, note: we set it before executing callbacks, so plugins have option to change it before showing user to all
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
-		if (conn->mpUser->mShare > 0) { // check share ban if non zero
+		if ((conn->mpUser->mShare > 0) && (conn->mpUser->mClass <= eUC_REGUSER)) { // check share ban if non zero
 			cBan Ban(mS);
 			result = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
-			if (result && (conn->mpUser->mClass <= eUC_REGUSER)) {
+			if (result) {
 				os << ((result == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
 				Ban.DisplayUser(os);
 				mS->DCPublicHS(os.str(), conn);
