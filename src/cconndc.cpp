@@ -108,7 +108,6 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 		mTimeLastAttempt = Server()->mTime;
 
 	if (ret > 0) { // calculate upload bandwidth in real time
-		SetGeoZone(); // must be called first
 		//Server()->mUploadZone[mGeoZone].Dump();
 		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, ret);
 		//Server()->mUploadZone[mGeoZone].Dump();
@@ -603,7 +602,6 @@ void cDCConnFactory::DeleteConn(cAsyncConn * &connection)
 		#endif
 
 		if (conn->GetLSFlag(eLS_ALLOWED)) {
-			conn->SetGeoZone(); // must be called first
 			mServer->mUserCountTot--;
 			mServer->mUserCount[conn->mGeoZone]--;
 

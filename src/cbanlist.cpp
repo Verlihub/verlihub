@@ -62,10 +62,10 @@ cBanList::cBanList(cServerDC *s):
 	AddCol("note_op", "varchar(255)", "", true, mModel.mNoteOp);
 	AddCol("note_usr", "varchar(255)", "", true, mModel.mNoteUsr);
 	AddCol("share_size", "varchar(18)", "", true, mModel.mShare);
-	mMySQLTable.mExtra = "UNIQUE (ip,nick), ";
-	mMySQLTable.mExtra += "INDEX nick_index (nick), ";
-	mMySQLTable.mExtra += "INDEX date_index (date_limit), ";
-	mMySQLTable.mExtra += "INDEX range_index (range_fr)";
+	mMySQLTable.mExtra = "unique (`ip`, `nick`), ";
+	mMySQLTable.mExtra += "index `nick_index` (`nick`), ";
+	mMySQLTable.mExtra += "index `date_index` (`date_limit`), ";
+	mMySQLTable.mExtra += "index `range_index` (`range_fr`)";
 	SetBaseTo(&mModel);
 }
 
@@ -84,7 +84,7 @@ cUnBanList::cUnBanList(cServerDC* s):
 	AddPrimaryKey("date_unban");
 	AddCol("unban_op", "varchar(128)", "", true, mModelUn.mUnNickOp);
 	AddCol("unban_reason", "varchar(255)", "", true, mModelUn.mUnReason);
-	mMySQLTable.mExtra = "UNIQUE (ip, nick, date_unban)";
+	mMySQLTable.mExtra = "unique (`ip`, `nick`, `date_unban`)";
 }
 
 cUnBanList::~cUnBanList()
@@ -92,14 +92,14 @@ cUnBanList::~cUnBanList()
 
 void cBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where date_limit is not null and date_limit < " << (mS->mTime.Sec() - (3600 * 24 * 7));
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_limit` is not null and `date_limit` < " << (mS->mTime.Sec() - (3600 * 24 * 7));
 	mQuery.Query();
 	mQuery.Clear();
 }
 
 void cUnBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where date_unban < " << (cTime().Sec() - (3600 * 24 * 30)); // todo: mS->mTime.Sec()
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_unban` < " << (cTime().Sec() - (3600 * 24 * 30)); // todo: mS->mTime.Sec()
 	mQuery.Query();
 	mQuery.Clear();
 }
@@ -443,15 +443,16 @@ bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 	string host;
 	unsigned long num = 0;
 
-	switch(mask) {
+	switch (mask) {
 		case eBF_NICK:
-			os << "( nick = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
-		break;
+			os << "(`nick` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			//os << "(`ip` = '_nickban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+
 		case eBF_IP:
-			os << "(ip='"; cConfMySQL::WriteStringConstant(os, value); os << "')";
-		break;
-		//case (int)eBF_NICK  : os << "(ip='_nickban_' AND nick='" << value << "')"; break;
-		//case (int)eBF_IP    : os << "(nick='_ipban_' AND ip='" << value << "')"; break;
+			os << "(`ip` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			//os << "(`nick` = '_ipban_' and `ip` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
 
 		case eBF_RANGE:
 			if (!Ip2Num(value, num, false)) {
@@ -459,45 +460,57 @@ bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 				return false;
 			}
 
-			os << "(`nick` = '_rangeban_' and " << num << " between `range_fr` and `range_to`)";
+			os << "(`nick` = '_rangeban_' and (" << num << " between `range_fr` and `range_to`))";
 			break;
 
-		case eBF_SHARE :
-			os << "(nick='_shareban_' AND share_size = '" << value << "')";
-		break;
-		case eBF_HOST1 :
-			if(!this->GetHostSubstring(value, host, 1)) {
+		case eBF_SHARE:
+			os << "(`nick` = '_shareban_' and `share_size` = '"; cConfMySQL::WriteStringConstant(os, value); os << "')";
+			break;
+
+		case eBF_HOST1:
+			if (!this->GetHostSubstring(value, host, 1)) {
 				os << " 0 ";
 				return false;
 			}
-			os << "(ip='_host1ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOST2 :
-			if(!this->GetHostSubstring(value, host, 2)) {
+
+			os << "(`ip` = '_host1ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOST2:
+			if (!this->GetHostSubstring(value, host, 2)) {
 				os << " 0 ";
 				return false;
 			}
-			os << "(ip='_host2ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOST3 :
-			if(!this->GetHostSubstring(value, host, 3)) {
+
+			os << "(`ip` = '_host2ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOST3:
+			if (!this->GetHostSubstring(value, host, 3)) {
 				os << " 0 ";
 				return false;
 			};
-			os << "(ip='_host3ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_HOSTR1 :
-			if(!this->GetHostSubstring(value, host, -1)) {
+
+			os << "(`ip` = '_host3ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_HOSTR1:
+			if (!this->GetHostSubstring(value, host, -1)) {
 				os << " 0 ";
 				return false;
 			};
-			os << "(ip='_hostr1ban_' AND '" << host << "' = nick)";
-		break;
-		case eBF_PREFIX :
-			os << "(ip='_prefixban_' AND nick=LEFT('";cConfMySQL::WriteStringConstant(os, value); os << "',LENGTH(nick)))";
-		break;
-		default: return false;
+
+			os << "(`ip` = '_hostr1ban_' and `nick` = '"; cConfMySQL::WriteStringConstant(os, host); os << "')";
+			break;
+
+		case eBF_PREFIX:
+			os << "(`ip` = '_prefixban_' and `nick` = left('"; cConfMySQL::WriteStringConstant(os, value); os << "', length(`nick`)))";
+			break;
+
+		default:
+			return false;
 	}
+
 	return true;
 }
 
