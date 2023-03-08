@@ -588,7 +588,6 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	conn->SetGeoZone(); // must be called first
 	unsigned int limit = mS->mC.max_users_total; // user limits
 	unsigned int limit_cc = mS->mC.max_users[conn->mGeoZone];
 	unsigned int limit_extra = 0;
@@ -1210,21 +1209,23 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	conn->mpUser->mMyFlag = myinfo_speed[myinfo_speed.size() - 1]; // set status flags, note: we set it before executing callbacks, so plugins have option to change it before showing user to all
 
 	if (conn->GetLSFlag(eLS_LOGIN_DONE) != eLS_LOGIN_DONE) { // user sent myinfo for the first time
-		cBan Ban(mS);
-		result = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
+		if (conn->mpUser->mShare > 0) { // check share ban if non zero
+			cBan Ban(mS);
+			result = mS->mBanList->TestBan(Ban, conn, conn->mpUser->mNick, eBF_SHARE);
 
-		if (result && (conn->mpUser->mClass <= eUC_REGUSER)) {
-			os << ((result == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
-			Ban.DisplayUser(os);
-			mS->DCPublicHS(os.str(), conn);
+			if (result && (conn->mpUser->mClass <= eUC_REGUSER)) {
+				os << ((result == 1) ? _("You are prohibited from entering this hub") : _("You are banned from this hub")) << ":\r\n";
+				Ban.DisplayUser(os);
+				mS->DCPublicHS(os.str(), conn);
 
-			if (conn->Log(1))
-				conn->LogStream() << "Kicked user due to ban detection" << endl;
+				if (conn->Log(1))
+					conn->LogStream() << "Kicked user due to ban detection" << endl;
 
-			conn->CloseNice(1000, eCR_KICKED);
-			delete dc_tag;
-			dc_tag = NULL;
-			return -1;
+				conn->CloseNice(1000, eCR_KICKED);
+				delete dc_tag;
+				dc_tag = NULL;
+				return -1;
+			}
 		}
 
 		#ifndef WITHOUT_PLUGINS

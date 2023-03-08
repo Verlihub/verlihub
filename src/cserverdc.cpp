@@ -1047,7 +1047,8 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 			return -1;
 	#endif
 
-	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN
+	conn->SetGeoZone(); // set zone once on connect
+	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
 	if (mTLSProxy.size())
 		conn->mLock.append("TLS_");
