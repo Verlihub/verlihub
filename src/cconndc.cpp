@@ -692,7 +692,7 @@ void cConnDC::SetGeoZone()
 			if (cc.empty())
 				cc = GetGeoCC();
 
-			if ((cc == serv->mC.cc_zone[pos]) || (serv->mC.cc_zone[pos].find(cc) != serv->mC.cc_zone[pos].npos)) {
+			if ((cc == serv->mC.cc_zone[pos]) || (serv->mC.cc_zone[pos].find(cc) != string::npos)) {
 				mGeoZone = pos + 1;
 				return;
 			}
