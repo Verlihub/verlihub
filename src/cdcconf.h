@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -171,6 +171,7 @@ public:
 	int min_class_bc_regs;
 	int min_class_bc_vips;
 	int min_class_redir;
+	int min_class_lstredir;
 	int max_class_int_login;
 	unsigned int max_class_check_clone;
 	unsigned int max_class_self_repass;

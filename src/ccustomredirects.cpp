@@ -336,9 +336,9 @@ namespace nVerliHub {
 			case eLC_MOD:
 			case eLC_DEL:
 			case eLC_HELP:
-				return (conn->mpUser->mClass >= eUC_ADMIN);
+				return (conn->mpUser->mClass >= mOwner->mServer->mC.min_class_redir);
 			case eLC_LST:
-				return (conn->mpUser->mClass >= eUC_OPERATOR);
+				return (conn->mpUser->mClass >= mOwner->mServer->mC.min_class_lstredir);
 			default:
 				return false;
 		}
