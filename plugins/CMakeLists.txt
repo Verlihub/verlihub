@@ -29,18 +29,18 @@ ADD_PLUGIN(ENABLE_PLUGIN plugman)
 
 OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
 IF(WITH_LUA)
-	Find_Package(Lua "5.4" EXACT)
+	Find_Package(Lua "5.4")
 	#Find_Package(LuaSocket)
 
 	IF(LUA_FOUND)
 		ADD_PLUGIN(LUA_FOUND lua)
 	ELSE(LUA_FOUND)
-		Find_Package(Lua "5.3" EXACT)
+		Find_Package(Lua "5.3")
 
 		IF(LUA_FOUND)
 			ADD_PLUGIN(LUA_FOUND lua)
 		ELSE(LUA_FOUND)
-			Find_Package(Lua "5.2" EXACT)
+			Find_Package(Lua "5.2")
 
 			IF(LUA_FOUND)
 				ADD_PLUGIN(LUA_FOUND lua)
