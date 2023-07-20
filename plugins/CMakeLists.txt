@@ -17,8 +17,8 @@
 #	of the GNU General Public License.
 
 OPTION(WITH_PLUGINS "Whether to build any plugins or not" TRUE)
-IF(WITH_PLUGINS)
 
+IF(WITH_PLUGINS)
 SET(ENABLE_PLUGIN TRUE)
 
 # plugman plugin, always enabled
@@ -32,27 +32,30 @@ OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
 IF(WITH_LUA)
 	SET(Lua_MIN_VERSION "5.4")
 	Find_Package(Lua)
+	Find_Library(LUA_LIBRARIES NAMES lua lua5.4 liblua liblua5.4)
 	#Find_Package(LuaSocket)
 
-	IF(LUA_FOUND)
+	IF(LUA_FOUND AND LUA_LIBRARIES)
 		ADD_PLUGIN(LUA_FOUND lua)
 
-	ELSE(LUA_FOUND)
+	ELSE(LUA_FOUND AND LUA_LIBRARIES)
 		SET(Lua_MIN_VERSION "5.3")
 		Find_Package(Lua)
+		Find_Library(LUA_LIBRARIES NAMES lua lua5.3 liblua liblua5.3)
 
-		IF(LUA_FOUND)
+		IF(LUA_FOUND AND LUA_LIBRARIES)
 			ADD_PLUGIN(LUA_FOUND lua)
 
-		ELSE(LUA_FOUND)
+		ELSE(LUA_FOUND AND LUA_LIBRARIES)
 			SET(Lua_MIN_VERSION "5.2")
 			Find_Package(Lua)
+			Find_Library(LUA_LIBRARIES NAMES lua lua5.2 liblua liblua5.2)
 
-			IF(LUA_FOUND)
+			IF(LUA_FOUND AND LUA_LIBRARIES)
 				ADD_PLUGIN(LUA_FOUND lua)
-			ENDIF(LUA_FOUND)
-		ENDIF(LUA_FOUND)
-	ENDIF(LUA_FOUND)
+			ENDIF(LUA_FOUND AND LUA_LIBRARIES)
+		ENDIF(LUA_FOUND AND LUA_LIBRARIES)
+	ENDIF(LUA_FOUND AND LUA_LIBRARIES)
 
 ELSE(WITH_LUA)
 	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
