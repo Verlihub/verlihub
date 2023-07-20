@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -28,25 +28,32 @@ ADD_PLUGIN(ENABLE_PLUGIN plugman)
 # lua plugin
 
 OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
+
 IF(WITH_LUA)
-	Find_Package(Lua "5.4")
+	SET(Lua_MIN_VERSION "5.4")
+	Find_Package(Lua)
 	#Find_Package(LuaSocket)
 
 	IF(LUA_FOUND)
 		ADD_PLUGIN(LUA_FOUND lua)
+
 	ELSE(LUA_FOUND)
-		Find_Package(Lua "5.3")
+		SET(Lua_MIN_VERSION "5.3")
+		Find_Package(Lua)
 
 		IF(LUA_FOUND)
 			ADD_PLUGIN(LUA_FOUND lua)
+
 		ELSE(LUA_FOUND)
-			Find_Package(Lua "5.2")
+			SET(Lua_MIN_VERSION "5.2")
+			Find_Package(Lua)
 
 			IF(LUA_FOUND)
 				ADD_PLUGIN(LUA_FOUND lua)
 			ENDIF(LUA_FOUND)
 		ENDIF(LUA_FOUND)
 	ENDIF(LUA_FOUND)
+
 ELSE(WITH_LUA)
 	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
 ENDIF(WITH_LUA)
