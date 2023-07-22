@@ -30,33 +30,32 @@ ADD_PLUGIN(ENABLE_PLUGIN plugman)
 OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
 
 IF(WITH_LUA)
-	Include(FindLua) # note: cmake 3.18 is required
-	SET(Lua_MIN_VERSION "5.4")
-	Find_Package(Lua)
-	#Find_Library(LUA_LIBRARIES NAMES lua lua5.4 liblua liblua5.4)
-	#Find_Package(LuaSocket)
+	#SET(CMAKE_FIND_DEBUG_MODE 1) # todo: test only
 
-	IF(LUA_FOUND AND LUA_LIBRARIES)
-		ADD_PLUGIN(LUA_FOUND lua)
+	FIND_LIBRARY(LUA_DIR lua
+		PATH_SUFFIXES
+			lua
+			lua/5.4
+			lua/5.3
+			lua/5.2
+			lua5.4
+			lua5.3
+			lua5.2
+	)
 
-	ELSE(LUA_FOUND AND LUA_LIBRARIES)
-		SET(Lua_MIN_VERSION "5.3")
-		Find_Package(Lua)
-		#Find_Library(LUA_LIBRARIES NAMES lua lua5.3 liblua liblua5.3)
+	IF(LUA_DIR)
+		Get_Filename_Component(LUA_DIR "${LUA_DIR}" DIRECTORY)
+		MESSAGE(STATUS "Lua library path: ${LUA_DIR}")
+		SET(ENV{LUA_DIR} "${LUA_DIR}")
+	ENDIF(LUA_DIR)
 
-		IF(LUA_FOUND AND LUA_LIBRARIES)
-			ADD_PLUGIN(LUA_FOUND lua)
+	Find_Package(Lua 5.2 MODULE REQUIRED) # lua 5.2 and later, note: cmake 3.18 adds support for lua 5.4
 
-		ELSE(LUA_FOUND AND LUA_LIBRARIES)
-			SET(Lua_MIN_VERSION "5.2")
-			Find_Package(Lua)
-			#Find_Library(LUA_LIBRARIES NAMES lua lua5.2 liblua liblua5.2)
+	#IF(LUA_FOUND)
+		#Find_Package(LuaSocket)
+	#ENDIF(LUA_FOUND)
 
-			IF(LUA_FOUND AND LUA_LIBRARIES)
-				ADD_PLUGIN(LUA_FOUND lua)
-			ENDIF(LUA_FOUND AND LUA_LIBRARIES)
-		ENDIF(LUA_FOUND AND LUA_LIBRARIES)
-	ENDIF(LUA_FOUND AND LUA_LIBRARIES)
+	ADD_PLUGIN(LUA_FOUND lua)
 
 ELSE(WITH_LUA)
 	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
