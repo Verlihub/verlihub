@@ -31,24 +31,6 @@ OPTION(WITH_LUA "Whether to build LUA plugin or not" TRUE)
 
 IF(WITH_LUA)
 	#SET(CMAKE_FIND_DEBUG_MODE 1) # todo: test only
-
-	FIND_LIBRARY(LUA_DIR lua
-		PATH_SUFFIXES
-			lua
-			lua/5.4
-			lua/5.3
-			lua/5.2
-			lua5.4
-			lua5.3
-			lua5.2
-	)
-
-	IF(LUA_DIR)
-		Get_Filename_Component(LUA_DIR "${LUA_DIR}" DIRECTORY)
-		MESSAGE(STATUS "Lua library path: ${LUA_DIR}")
-		SET(ENV{LUA_DIR} "${LUA_DIR}")
-	ENDIF(LUA_DIR)
-
 	Find_Package(Lua 5.2 MODULE REQUIRED) # lua 5.2 and later, note: cmake 3.18 adds support for lua 5.4
 
 	#IF(LUA_FOUND)
