@@ -32,4 +32,4 @@ Links
 Donation
 ==============
 
-  * PayPal: [webmaster@feardc.net](https://paypal.me/feardc/)
+  * PayPal: [webmaster@feardc.net](https://www.paypal.com/paypalme/feardc/)

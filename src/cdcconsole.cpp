@@ -684,7 +684,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Hublist") << ": https://te-home.net/?do=hublist\r\n";
 	os << "\t" << _("Support") << ": nmdcs://hub.verlihub.net:7777\r\n\r\n";
 	os << " [*] " << _("Donation") << ":\r\n\r\n";
-	os << "\tPayPal: https://paypal.me/feardc/\r\n";
+	os << "\tPayPal: https://www.paypal.com/paypalme/feardc/\r\n";
 	os << "\t" << _("Donators") << ": Deivis (100 EUR), Captain (20 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
