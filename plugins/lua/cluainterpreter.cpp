@@ -271,38 +271,40 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 		string data;
 		lua_pushnil(mL);
 
-		while (lua_next(mL, -2)) {
-			if (lua_isnumber(mL, -2)) { // table keys must not be named
-				pos = (int)lua_tonumber(mL, -2);
+		while (lua_next(mL, -2) != 0) {
+			lua_pushvalue(mL, -2); // -1 is now key and -2 is value, pop 2 below
+
+			if (lua_isnumber(mL, -1)) { // table keys must not be named
+				pos = (int)lua_tonumber(mL, -1);
 
 				if (pos == 1) { // the message
-					if (lua_isstring(mL, -1) && conn) { // value at index 1 must be a string, connection is required
-						data = lua_tostring(mL, -1);
+					if (lua_isstring(mL, -2) && conn) { // value at index 1 must be a string, connection is required
+						data = lua_tostring(mL, -2);
 
 						if (data.size())
 							conn->Send(data, false); // send data, script must add the ending pipe
 					}
 
 				} else if (pos == 2) { // discard flag
-					if (lua_isnumber(mL, -1)) { // value at index 2 must be a boolean
-						if ((int)lua_tonumber(mL, -1) == 0)
+					if (lua_isnumber(mL, -2)) { // value at index 2 must be a boolean
+						if ((int)lua_tonumber(mL, -2) == 0)
 							ret = false;
 
 					} else { // accept boolean and nil
-						if ((int)lua_toboolean(mL, -1) == 0)
+						if ((int)lua_toboolean(mL, -2) == 0)
 							ret = false;
 					}
 
 				} else if (pos == 3) { // disconnect flag
 					if (conn) { // connection is required
-						if (lua_isnumber(mL, -1)) { // value at index 3 must be a boolean
-							if ((int)lua_tonumber(mL, -1) == 0) {
+						if (lua_isnumber(mL, -2)) { // value at index 3 must be a boolean
+							if ((int)lua_tonumber(mL, -2) == 0) {
 								conn->CloseNow(); // disconnect user
 								ret = false; // automatically discard due disconnect
 							}
 
 						} else { // accept boolean and nil
-							if ((int)lua_toboolean(mL, -1) == 0) {
+							if ((int)lua_toboolean(mL, -2) == 0) {
 								conn->CloseNow(); // disconnect user
 								ret = false; // automatically discard due disconnect
 							}
@@ -311,7 +313,7 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 				}
 			}
 
-			lua_pop(mL, 1);
+			lua_pop(mL, 2);
 		}
 
 	} else if (lua_isnumber(mL, -1)) {

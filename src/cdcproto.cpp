@@ -500,10 +500,6 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
 
-		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "DataStat") == 0)) {
-			conn->mFeatures |= eSF_DATASTAT;
-			pars.append("DataStat ");
-
 		} else if ((feature.size() == 10) && (StrCompare(feature, 0, 10, "SearchRule") == 0)) {
 			conn->mFeatures |= eSF_SEARRULE;
 			pars.append("SearchRule ");
@@ -4064,11 +4060,6 @@ int cDCProto::NickList(cConnDC *conn)
 			conn->mNickListInProgress = true;
 		*/
 
-		if (conn->mFeatures & eSF_DATASTAT) { // user list status begin
-			Create_DataStat(_str, 0, 1);
-			conn->Send(_str, true);
-		}
-
 		if (conn->mFeatures & eSF_NOHELLO) {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
@@ -4160,11 +4151,6 @@ int cDCProto::NickList(cConnDC *conn)
 		if (!mS->mC.disable_extjson && (conn->mFeatures & eSF_EXTJSON2)) { // extjson
 			if (mS->CollectExtJSON(_str, conn))
 				conn->Send(_str, false); // no pipe, its already added by collector
-		}
-
-		if (conn->mFeatures & eSF_DATASTAT) { // user list status end
-			Create_DataStat(_str, 0, 0);
-			conn->Send(_str, true);
 		}
 
 	/*
@@ -4586,40 +4572,6 @@ void cDCProto::Create_UserIP(string &dest, const string &nick, const string &add
 	dest.append(1, ' ');
 	dest.append(addr);
 	dest.append("$$");
-}
-
-void cDCProto::Create_DataStat(string &dest, int type, int act)
-{
-	if (dest.size())
-		dest.clear();
-
-	dest.append("$DataStat ");
-
-	switch (type) { // todo: add more useful status types
-		case 0: // user list
-			dest.append("UserList");
-			break;
-
-		default:
-			dest.append(1, '*');
-			break;
-	}
-
-	dest.append(1, ' ');
-
-	switch (act) { // todo: add more useful status actions
-		case 1:
-			dest.append("Begin");
-			break;
-
-		case 0:
-			dest.append("End");
-			break;
-
-		default:
-			dest.append(1, '*');
-			break;
-	}
 }
 
 void cDCProto::Create_GetPass(string &dest)
