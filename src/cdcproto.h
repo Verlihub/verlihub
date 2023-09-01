@@ -238,7 +238,6 @@ protected:
 	static void Create_SP(string &dest, const string &tth, const string &nick);
 	static void Create_UserIP(string &dest, const string &list);
 	static void Create_UserIP(string &dest, const string &nick, const string &addr);
-	static void Create_DataStat(string &dest, int type, int act);
 	static void Create_GetPass(string &dest);
 	static void Create_BadPass(string &dest);
 	static void Create_GetHubURL(string &dest);
