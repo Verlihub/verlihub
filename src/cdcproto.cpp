@@ -1530,7 +1530,7 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 	if (data.empty())
 		return 0;
 
-	string back_in, back_full, part, body, sep("$$");
+	string back_in, part, body, sep("$$");
 	bool empt;
 	data.append(sep);
 	size_t pos = data.find(sep);
