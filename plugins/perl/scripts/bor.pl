@@ -1,7 +1,7 @@
 # bor.pl
 # (C) Shurik, 2011
 # 
-# Скрипт показывает пользователю одну случайную цитату с bash.im (ex-bash.org.ru) по команде +bor
+# вЂ”РєСЂРёРїС‚ РїРѕРєР°Р·С‹РІР°РµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ РѕРґРЅСѓ СЃР»СѓС‡Р°Р№РЅСѓСЋ С†РёС‚Р°С‚Сѓ СЃ bash.im (ex-bash.org.ru) РїРѕ РєРѕРјР°РЅРґРµ +bor
 
 use vh;
 use LWP::UserAgent;
@@ -22,7 +22,7 @@ sub VH_OnUserCommand {
     my $q = "<br>".$1;
     $q =~ s#<br[\s/]*>#\n\ \ \ \ #igmx;
     $q = decode_entities($q);
-    vh::SendToUser(encode("cp1251","<bash.im> Случайная цитата:\n".$q."\n|"), $nick);
+    vh::SendToUser(encode("cp1251","<bash.im> вЂ”Р»СѓС‡Р°Р№РЅР°В¤ С†РёС‚Р°С‚Р°:\n".$q."\n|"), $nick);
     return 0;
   }
 

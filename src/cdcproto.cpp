@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2024 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -1530,7 +1530,7 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 	if (data.empty())
 		return 0;
 
-	string back_in, back_full, part, body, sep("$$");
+	string back_in, /* todo: back_full, */part, body, sep("$$");
 	bool empt;
 	data.append(sep);
 	size_t pos = data.find(sep);

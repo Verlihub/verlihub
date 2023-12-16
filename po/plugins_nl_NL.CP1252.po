@@ -5,16 +5,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"POT-Creation-Date: 2023-01-02 12:46+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: Marcel <future_dance@hotmail.com>, 2014-2019\n"
-"Language-Team: Dutch (Netherlands) (http://www.transifex.com/feardc/verlihub/language/nl_NL/)\n"
+"Language-Team: Dutch (Netherlands) (http://app.transifex.com/feardc/verlihub/language/nl_NL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: nl_NL\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -45,118 +45,118 @@ msgstr "MC"
 msgid "PM"
 msgstr "PM"
 
-#: ../plugins/iplog/ciplog.cpp:88
+#: ../plugins/iplog/ciplog.cpp:94
 #, c-format
 msgid "Last %d events of nick %s:"
 msgstr "Laatste %d gebeurtenissen van nick %s:"
 
-#: ../plugins/iplog/ciplog.cpp:90
+#: ../plugins/iplog/ciplog.cpp:96
 #, c-format
 msgid "Last %d events of IP %s:"
 msgstr "Laatste %d gebeurtenissen van IP %s:"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "connect"
 msgstr "verbinden"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "login"
 msgstr "log in"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "logout"
 msgstr "log uit"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "disconnect"
 msgstr "Verbinding verbroken"
 
-#: ../plugins/iplog/ciplog.cpp:98
+#: ../plugins/iplog/ciplog.cpp:104
 msgid "bad nick or nick temporarily banned"
 msgstr "Slechte nick of nick tijdelijk verbannen"
 
-#: ../plugins/iplog/ciplog.cpp:99
+#: ../plugins/iplog/ciplog.cpp:105
 msgid "used different nick in chat"
 msgstr "gebruikte verschillende nicks in de chat"
 
-#: ../plugins/iplog/ciplog.cpp:100
+#: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
 msgstr "gekikt"
 
-#: ../plugins/iplog/ciplog.cpp:101
+#: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
 msgstr "geredirect"
 
-#: ../plugins/iplog/ciplog.cpp:102
+#: ../plugins/iplog/ciplog.cpp:108
 msgid "exit from the hub"
 msgstr "verlaten van de hub"
 
-#: ../plugins/iplog/ciplog.cpp:103
+#: ../plugins/iplog/ciplog.cpp:109
 msgid "critical hub load"
 msgstr "kritische hub belasting"
 
-#: ../plugins/iplog/ciplog.cpp:104
+#: ../plugins/iplog/ciplog.cpp:110
 msgid "timeout"
 msgstr "timeout"
 
-#: ../plugins/iplog/ciplog.cpp:105
+#: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
 msgstr "gebruiker deed niks een lange tijd."
 
-#: ../plugins/iplog/ciplog.cpp:106
+#: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
 msgstr "De hub is vol."
 
-#: ../plugins/iplog/ciplog.cpp:107
+#: ../plugins/iplog/ciplog.cpp:113
 msgid "share limit"
 msgstr "Deel limiet"
 
-#: ../plugins/iplog/ciplog.cpp:108
+#: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
 msgstr "Geen tag of niet geldig"
 
-#: ../plugins/iplog/ciplog.cpp:109
+#: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
 msgstr "tag breekt hub regels"
 
-#: ../plugins/iplog/ciplog.cpp:110
+#: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
 msgstr "Verkeerd paswoord"
 
-#: ../plugins/iplog/ciplog.cpp:111
+#: ../plugins/iplog/ciplog.cpp:117
 msgid "error in login sequence"
 msgstr "Fout in log in volgorde"
 
-#: ../plugins/iplog/ciplog.cpp:112
+#: ../plugins/iplog/ciplog.cpp:118
 msgid "syntax error in some messages"
 msgstr "syntax error in sommige berichten"
 
-#: ../plugins/iplog/ciplog.cpp:113
+#: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
 msgstr "ongeldige sleutel"
 
-#: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:160
+#: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
 msgstr "Datum"
 
-#: ../plugins/iplog/ciplog.cpp:118
+#: ../plugins/iplog/ciplog.cpp:124
 msgid "Action"
 msgstr "Actie"
 
-#: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:161
+#: ../plugins/iplog/ciplog.cpp:125 ../plugins/iplog/ciplog.cpp:167
 msgid "Nickname"
 msgstr "Nicknaam"
 
-#: ../plugins/iplog/ciplog.cpp:120
+#: ../plugins/iplog/ciplog.cpp:126
 msgid "Info"
 msgstr "Info"
 
-#: ../plugins/iplog/ciplog.cpp:152
+#: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
 msgstr "Nick %s is de laaste tijd in de hub met het volgende IP"
 
-#: ../plugins/iplog/ciplog.cpp:154
+#: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
 msgstr "IP %s is de laatste tijd in de hub met de volgende nicknamen"
@@ -185,7 +185,7 @@ msgstr "Uw nick moet overeenkomen %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Uw type verbinding moet overeenkomen %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1889
+#: ../plugins/lua/callbacks.cpp:1721
 msgid "Incorrect password"
 msgstr ""
 
@@ -320,11 +320,11 @@ msgstr "Bijgewerkte configuratie %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Huidige error class: %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:188
+#: ../plugins/lua/cluainterpreter.cpp:189
 msgid "Lua error"
 msgstr "Lua fout"
 
-#: ../plugins/lua/cluainterpreter.cpp:194
+#: ../plugins/lua/cluainterpreter.cpp:195
 msgid "Unknown error"
 msgstr "Onbekende fout"
 

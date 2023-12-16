@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"POT-Creation-Date: 2023-01-02 12:46+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: mauron, 2019,2021\n"
-"Language-Team: French (France) (http://www.transifex.com/feardc/verlihub/language/fr_FR/)\n"
+"Language-Team: French (France) (http://app.transifex.com/feardc/verlihub/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr_FR\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -47,118 +47,118 @@ msgstr "Chat principal"
 msgid "PM"
 msgstr "Message privé"
 
-#: ../plugins/iplog/ciplog.cpp:88
+#: ../plugins/iplog/ciplog.cpp:94
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "Derniers %d évènements du pseudo %s:"
+msgstr "Derniers %d évènements du pseudo %s :"
 
-#: ../plugins/iplog/ciplog.cpp:90
+#: ../plugins/iplog/ciplog.cpp:96
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "Derniers %d évènements de l'IP %s:"
+msgstr "Derniers %d évènements de l'IP %s :"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "connect"
 msgstr "connexion"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "login"
 msgstr "ouverture de session"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "logout"
 msgstr "fermeture de session"
 
-#: ../plugins/iplog/ciplog.cpp:95
+#: ../plugins/iplog/ciplog.cpp:101
 msgid "disconnect"
 msgstr "déconnexion"
 
-#: ../plugins/iplog/ciplog.cpp:98
+#: ../plugins/iplog/ciplog.cpp:104
 msgid "bad nick or nick temporarily banned"
 msgstr "mauvais pseudo ou banni temporairement"
 
-#: ../plugins/iplog/ciplog.cpp:99
+#: ../plugins/iplog/ciplog.cpp:105
 msgid "used different nick in chat"
 msgstr "a utilisé un pseudo différent dans le chat"
 
-#: ../plugins/iplog/ciplog.cpp:100
+#: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
 msgstr "kické"
 
-#: ../plugins/iplog/ciplog.cpp:101
+#: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
 msgstr "redirigé"
 
-#: ../plugins/iplog/ciplog.cpp:102
+#: ../plugins/iplog/ciplog.cpp:108
 msgid "exit from the hub"
 msgstr "sortir du hub"
 
-#: ../plugins/iplog/ciplog.cpp:103
+#: ../plugins/iplog/ciplog.cpp:109
 msgid "critical hub load"
 msgstr "charge critique pour le hub"
 
-#: ../plugins/iplog/ciplog.cpp:104
+#: ../plugins/iplog/ciplog.cpp:110
 msgid "timeout"
 msgstr "délai d'attente dépassé"
 
-#: ../plugins/iplog/ciplog.cpp:105
+#: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
 msgstr "l'utilisateur n'a rien fait pendant trop longtemps"
 
-#: ../plugins/iplog/ciplog.cpp:106
+#: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
 msgstr "hub complet"
 
-#: ../plugins/iplog/ciplog.cpp:107
+#: ../plugins/iplog/ciplog.cpp:113
 msgid "share limit"
 msgstr "limite de partage"
 
-#: ../plugins/iplog/ciplog.cpp:108
+#: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
 msgstr "aucun tag ou invalide"
 
-#: ../plugins/iplog/ciplog.cpp:109
+#: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
 msgstr "le tag contrevient aux règles du hub"
 
-#: ../plugins/iplog/ciplog.cpp:110
+#: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
 msgstr "mot de passe incorrect"
 
-#: ../plugins/iplog/ciplog.cpp:111
+#: ../plugins/iplog/ciplog.cpp:117
 msgid "error in login sequence"
 msgstr "erreur dans la séquence d'ouverture de session"
 
-#: ../plugins/iplog/ciplog.cpp:112
+#: ../plugins/iplog/ciplog.cpp:118
 msgid "syntax error in some messages"
 msgstr "erreurs de syntaxe dans certains messages"
 
-#: ../plugins/iplog/ciplog.cpp:113
+#: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
 msgstr "clef invalide"
 
-#: ../plugins/iplog/ciplog.cpp:117 ../plugins/iplog/ciplog.cpp:160
+#: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
 msgstr "Date"
 
-#: ../plugins/iplog/ciplog.cpp:118
+#: ../plugins/iplog/ciplog.cpp:124
 msgid "Action"
 msgstr "Action"
 
-#: ../plugins/iplog/ciplog.cpp:119 ../plugins/iplog/ciplog.cpp:161
+#: ../plugins/iplog/ciplog.cpp:125 ../plugins/iplog/ciplog.cpp:167
 msgid "Nickname"
 msgstr "Pseudonyme"
 
-#: ../plugins/iplog/ciplog.cpp:120
+#: ../plugins/iplog/ciplog.cpp:126
 msgid "Info"
 msgstr "Info"
 
-#: ../plugins/iplog/ciplog.cpp:152
+#: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
 msgstr "Le pseudo %s a dernièrement été dans le hub avec l'IP suivante"
 
-#: ../plugins/iplog/ciplog.cpp:154
+#: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
 msgstr "L'IP %s a dernièrement été dans le hub avec les pseudos suivants"
@@ -187,7 +187,7 @@ msgstr "Votre pseudo doit correspondre à %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Votre type de connexion doit correspondre à %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1889
+#: ../plugins/lua/callbacks.cpp:1721
 msgid "Incorrect password"
 msgstr "Mot de passe incorrect"
 
@@ -283,7 +283,7 @@ msgstr "Le numéro du script %d est faux. Obtenez le bon numéro à l'aide de la co
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
 msgid "Script is already loaded: %s"
-msgstr "L script est déjà chargé : %s"
+msgstr "Le script est déjà chargé : %s"
 
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
@@ -322,11 +322,11 @@ msgstr "Mise à jour de la configuration %s.%s: %s -> %s"
 msgid "Current error class: %d"
 msgstr "Erreur de classe courante : %d"
 
-#: ../plugins/lua/cluainterpreter.cpp:188
+#: ../plugins/lua/cluainterpreter.cpp:189
 msgid "Lua error"
 msgstr "Erreur Lua"
 
-#: ../plugins/lua/cluainterpreter.cpp:194
+#: ../plugins/lua/cluainterpreter.cpp:195
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -357,7 +357,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "De: %s À: %s\nDate: %s\nObjet: %s\n"
+msgstr "De : %s À : %s\nDate : %s\nObjet : %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
@@ -367,7 +367,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "De: %s À: %s\nDate: %s\nObjet: %s\n%s\n----\n"
+msgstr "De : %s À : %s\nDate : %s\nObjet : %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
@@ -375,7 +375,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#MESSAGE HORS LIGNE# [%s]\nObjet: %s -------------------------\n%s"
+msgstr "#MESSAGE HORS LIGNE# [%s]\nObjet : %s -------------------------\n%s"
 
 #: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
@@ -557,7 +557,7 @@ msgstr "Script #%d déjà chargé : %s"
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr "Échec de lattribution d'un nouvel interpréteur Python pour le script : %s [ %s ]"
+msgstr "Échec de l'attribution d'un nouvel interpréteur Python pour le script : %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
@@ -587,12 +587,12 @@ msgstr "Classe affectée"
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "Le mot «%s» n'existe pas."
+msgstr "Le mot « %s » n'existe pas."
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Le mot «%s» a été effacé."
+msgstr "Le mot « %s » a été effacé."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
@@ -601,7 +601,7 @@ msgstr "Désolé, l'expression régulière que vous avez fournie ne peut être analys
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "Le mot «%s» existe déjà."
+msgstr "Le mot « %s » existe déjà."
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
@@ -613,4 +613,4 @@ msgstr "Le mot %s a été ajouté. Ce mot sera filtré du chat public pour les utili
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Erreur lors de l'ajout du mot «%s»."
+msgstr "Erreur lors de l'ajout du mot « %s »."

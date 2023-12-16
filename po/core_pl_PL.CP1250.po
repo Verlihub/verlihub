@@ -10,28 +10,28 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2022-12-07 19:44+0100\n"
+"POT-Creation-Date: 2023-03-07 22:39+0100\n"
 "PO-Revision-Date: 2014-06-20 09:02+0000\n"
 "Last-Translator: Joe Doe, 2021\n"
-"Language-Team: Polish (Poland) (http://www.transifex.com/feardc/verlihub/language/pl_PL/)\n"
+"Language-Team: Polish (Poland) (http://app.transifex.com/feardc/verlihub/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1250\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../src\n"
 "X-Poedit-SourceCharset: CP1250\n"
 
-#: ../src/cban.cpp:107 ../src/cbanlist.cpp:641 ../src/cserverdc.cpp:2825
+#: ../src/cban.cpp:107 ../src/cbanlist.cpp:702 ../src/cserverdc.cpp:2844
 #: ../src/cuser.cpp:202 ../src/cuser.cpp:238
 #, c-format
 msgid "Nick: %s"
 msgstr "Nazwa uzytkownika: %s"
 
-#: ../src/cban.cpp:110 ../src/cbanlist.cpp:685 ../src/cserverdc.cpp:2827
+#: ../src/cban.cpp:110 ../src/cbanlist.cpp:752 ../src/cserverdc.cpp:2846
 #: ../src/cuser.cpp:208
 #, c-format
 msgid "IP: %s"
@@ -47,7 +47,7 @@ msgstr "Zakres adresow IP: %s - %s"
 msgid "Share: %llu [%s]"
 msgstr "Udostepnienie: %llu [%s]"
 
-#: ../src/cban.cpp:124 ../src/cbanlist.cpp:671 ../src/cbanlist.cpp:715
+#: ../src/cban.cpp:124 ../src/cbanlist.cpp:732 ../src/cbanlist.cpp:782
 #, c-format
 msgid "Reason: %s"
 msgstr "Powod: %s"
@@ -57,12 +57,12 @@ msgstr "Powod: %s"
 msgid "Extra: %s"
 msgstr "Dodatkowy: %s"
 
-#: ../src/cban.cpp:129 ../src/cbanlist.cpp:485 ../src/cbanlist.cpp:643
-#: ../src/cbanlist.cpp:687
+#: ../src/cban.cpp:129 ../src/cbanlist.cpp:515 ../src/cbanlist.cpp:704
+#: ../src/cbanlist.cpp:754
 msgid "Time"
 msgstr "Czas"
 
-#: ../src/cban.cpp:133 ../src/cbanlist.cpp:643 ../src/cbanlist.cpp:687
+#: ../src/cban.cpp:133 ../src/cbanlist.cpp:704 ../src/cbanlist.cpp:754
 #, c-format
 msgid "%s left"
 msgstr "%s zostalo"
@@ -81,8 +81,8 @@ msgstr "Notatka u¿ytkownika: %s"
 msgid "Operator note: %s"
 msgstr "Notatka operatora: %s"
 
-#: ../src/cban.cpp:159 ../src/cmaxminddb.cpp:1066 ../src/cmaxminddb.cpp:1080
-#: ../src/cmaxminddb.cpp:1094
+#: ../src/cban.cpp:159 ../src/cmaxminddb.cpp:926 ../src/cmaxminddb.cpp:940
+#: ../src/cmaxminddb.cpp:954
 #, c-format
 msgid "Type: %s"
 msgstr "Rodzaj: %s"
@@ -92,7 +92,7 @@ msgstr "Rodzaj: %s"
 msgid "Operator: %s"
 msgstr "Operator: %s"
 
-#: ../src/cban.cpp:164 ../src/cbanlist.cpp:486
+#: ../src/cban.cpp:164 ../src/cbanlist.cpp:516
 msgid "Last hit"
 msgstr "Ostatni hit"
 
@@ -111,7 +111,7 @@ msgid "Nick + IP"
 msgstr "Nick + IP"
 
 #: ../src/cban.cpp:176 ../src/cdcconsole.cpp:332 ../src/cdcconsole.cpp:407
-#: ../src/cdcconsole.cpp:556 ../src/cdcconsole.cpp:1369
+#: ../src/cdcconsole.cpp:556 ../src/cdcconsole.cpp:1367
 msgid "IP"
 msgstr "IP"
 
@@ -156,46 +156,50 @@ msgstr "Uplynal %s"
 msgid "Permanent"
 msgstr "Staly"
 
-#: ../src/cbanlist.cpp:482
+#: ../src/cbanlist.cpp:512
 msgid "Item"
 msgstr "Pozycja w spisie"
 
-#: ../src/cbanlist.cpp:483 ../src/cbanlist.cpp:644 ../src/cbanlist.cpp:688
-#: ../src/ccustomredirects.cpp:321
+#: ../src/cbanlist.cpp:513 ../src/cbanlist.cpp:705 ../src/cbanlist.cpp:755
+#: ../src/ccustomredirects.cpp:322
 msgid "Type"
 msgstr "Typ"
 
-#: ../src/cbanlist.cpp:484 ../src/cpenaltylist.cpp:209
-#: ../src/cserverdc.cpp:2796
+#: ../src/cbanlist.cpp:514 ../src/cpenaltylist.cpp:209
+#: ../src/cserverdc.cpp:2815
 msgid "Operator"
 msgstr "Operator"
 
-#: ../src/cbanlist.cpp:648 ../src/cbanlist.cpp:692 ../src/cconndc.cpp:160
+#: ../src/cbanlist.cpp:709 ../src/cbanlist.cpp:759 ../src/cconndc.cpp:160
 msgid "Password"
 msgstr "Haslo"
 
-#: ../src/cbanlist.cpp:652 ../src/cbanlist.cpp:696
+#: ../src/cbanlist.cpp:713 ../src/cbanlist.cpp:763
 msgid "Reconnect"
 msgstr "Po³¹cz ponownie"
 
-#: ../src/cbanlist.cpp:656 ../src/cbanlist.cpp:700
+#: ../src/cbanlist.cpp:717 ../src/cbanlist.cpp:767
 msgid "Flood"
 msgstr "Flood"
 
-#: ../src/cbanlist.cpp:660 ../src/cbanlist.cpp:704
+#: ../src/cbanlist.cpp:721 ../src/cbanlist.cpp:771
 msgid "Clone"
 msgstr "Klon"
 
-#: ../src/cbanlist.cpp:664 ../src/cbanlist.cpp:708 ../src/cconndc.cpp:508
-#: ../src/cconndc.cpp:512 ../src/cdcproto.cpp:3662 ../src/cdcproto.cpp:3801
-#: ../src/cdctag.cpp:217 ../src/creguserinfo.cpp:105 ../src/cserverdc.cpp:2780
-#: ../src/cserverdc.cpp:2804
+#: ../src/cbanlist.cpp:725 ../src/cbanlist.cpp:775 ../src/cconndc.cpp:508
+#: ../src/cconndc.cpp:512 ../src/cdcproto.cpp:3655 ../src/cdcproto.cpp:3794
+#: ../src/cdctag.cpp:217 ../src/creguserinfo.cpp:105 ../src/cserverdc.cpp:2799
+#: ../src/cserverdc.cpp:2823
 msgid "Unknown"
 msgstr "Nieznany"
 
-#: ../src/cbanlist.cpp:674 ../src/cbanlist.cpp:718
+#: ../src/cbanlist.cpp:735 ../src/cbanlist.cpp:785
 msgid "Not found"
 msgstr "Nie znaleziono"
+
+#: ../src/cbanlist.cpp:744
+msgid "Bad IP specified"
+msgstr ""
 
 #: ../src/cchatconsole.cpp:140 ../src/cchatconsole.cpp:198
 #, c-format
@@ -281,9 +285,9 @@ msgstr "Ogolny limit czasu"
 msgid "Protocol flood detected"
 msgstr "Wykryto protocol flood."
 
-#: ../src/cconndc.cpp:488 ../src/cdcproto.cpp:3598 ../src/cdcproto.cpp:3749
-#: ../src/cserverdc.cpp:2636 ../src/cserverdc.cpp:2703
-#: ../src/cserverdc.cpp:2744
+#: ../src/cconndc.cpp:488 ../src/cdcproto.cpp:3591 ../src/cdcproto.cpp:3742
+#: ../src/cserverdc.cpp:2655 ../src/cserverdc.cpp:2722
+#: ../src/cserverdc.cpp:2763
 msgid "Chat"
 msgstr "Czat"
 
@@ -292,7 +296,7 @@ msgid "List of connection types"
 msgstr "Lista typow polaczen"
 
 #: ../src/cconntypes.cpp:190 ../src/cdcclients.cpp:448
-#: ../src/cpluginmanager.cpp:227 ../src/cpluginmanager.cpp:240
+#: ../src/cpluginmanager.cpp:221 ../src/cpluginmanager.cpp:234
 #: ../src/ctriggers.cpp:438
 msgid "Name"
 msgstr "Nazwa"
@@ -329,8 +333,8 @@ msgstr "Dowolny"
 
 #: ../src/ccustomredirect.cpp:125 ../src/cdcclient.cpp:65
 #: ../src/cdcconsole.cpp:567 ../src/cdcconsole.cpp:568
-#: ../src/cdcconsole.cpp:791 ../src/cdcconsole.cpp:792
-#: ../src/cdcconsole.cpp:794 ../src/cdcconsole.cpp:795
+#: ../src/cdcconsole.cpp:789 ../src/cdcconsole.cpp:790
+#: ../src/cdcconsole.cpp:792 ../src/cdcconsole.cpp:793
 #: ../src/creguserinfo.cpp:108 ../src/creguserinfo.cpp:109
 #: ../src/creguserinfo.cpp:110 ../src/creguserinfo.cpp:111
 #: ../src/creguserinfo.cpp:112 ../src/creguserinfo.cpp:113
@@ -347,9 +351,9 @@ msgstr "Tak"
 
 #: ../src/ccustomredirect.cpp:125 ../src/cdcclient.cpp:65
 #: ../src/cdcconsole.cpp:565 ../src/cdcconsole.cpp:567
-#: ../src/cdcconsole.cpp:568 ../src/cdcconsole.cpp:790
-#: ../src/cdcconsole.cpp:791 ../src/cdcconsole.cpp:792
-#: ../src/cdcconsole.cpp:794 ../src/cdcconsole.cpp:795
+#: ../src/cdcconsole.cpp:568 ../src/cdcconsole.cpp:788
+#: ../src/cdcconsole.cpp:789 ../src/cdcconsole.cpp:790
+#: ../src/cdcconsole.cpp:792 ../src/cdcconsole.cpp:793
 #: ../src/creguserinfo.cpp:108 ../src/creguserinfo.cpp:109
 #: ../src/creguserinfo.cpp:110 ../src/creguserinfo.cpp:111
 #: ../src/creguserinfo.cpp:112 ../src/creguserinfo.cpp:113
@@ -368,40 +372,40 @@ msgstr "Nie"
 msgid "GB"
 msgstr "GB"
 
-#: ../src/ccustomredirects.cpp:204
+#: ../src/ccustomredirects.cpp:205
 msgid "Show list of redirects"
 msgstr "Pokaz liste przekierowan"
 
-#: ../src/ccustomredirects.cpp:316
+#: ../src/ccustomredirects.cpp:317
 msgid "Hits"
 msgstr "Liczba"
 
-#: ../src/ccustomredirects.cpp:317
+#: ../src/ccustomredirects.cpp:318
 msgid "Start"
 msgstr "Uruchom"
 
-#: ../src/ccustomredirects.cpp:318
+#: ../src/ccustomredirects.cpp:319
 msgid "Stop"
 msgstr "Zatrzymaj"
 
-#: ../src/ccustomredirects.cpp:319
+#: ../src/ccustomredirects.cpp:320
 msgid "URL"
 msgstr "URL"
 
-#: ../src/ccustomredirects.cpp:320 ../src/cdcclients.cpp:453
+#: ../src/ccustomredirects.cpp:321 ../src/cdcclients.cpp:453
 msgid "Status"
 msgstr "Status"
 
-#: ../src/ccustomredirects.cpp:322 ../src/cdcconsole.cpp:408
+#: ../src/ccustomredirects.cpp:323 ../src/cdcconsole.cpp:408
 #: ../src/cdcconsole.cpp:561
 msgid "Country"
 msgstr "Kraj"
 
-#: ../src/ccustomredirects.cpp:323
+#: ../src/ccustomredirects.cpp:324
 msgid "Secure"
 msgstr "Zabezpieczone"
 
-#: ../src/ccustomredirects.cpp:324
+#: ../src/ccustomredirects.cpp:325
 msgid "Share"
 msgstr ""
 
@@ -423,7 +427,7 @@ msgstr "Pokaz liste klientow"
 msgid "ID"
 msgstr "ID"
 
-#: ../src/cdcclients.cpp:450 ../src/cpluginmanager.cpp:228
+#: ../src/cdcclients.cpp:450 ../src/cpluginmanager.cpp:222
 msgid "Version"
 msgstr "Wersja"
 
@@ -449,12 +453,12 @@ msgid "User"
 msgstr "Uzytkownik"
 
 #: ../src/cdcconsole.cpp:334 ../src/cdcconsole.cpp:369
-#: ../src/cdcconsole.cpp:414 ../src/cdcconsole.cpp:1254
-#: ../src/cdcconsole.cpp:1279 ../src/cdcconsole.cpp:1305
-#: ../src/cdcconsole.cpp:1339 ../src/cdcconsole.cpp:1516
-#: ../src/cdcconsole.cpp:2532 ../src/cdcconsole.cpp:3008
-#: ../src/cdcconsole.cpp:3020 ../src/cdcproto.cpp:3305
-#: ../src/cserverdc.cpp:2888
+#: ../src/cdcconsole.cpp:414 ../src/cdcconsole.cpp:1252
+#: ../src/cdcconsole.cpp:1277 ../src/cdcconsole.cpp:1303
+#: ../src/cdcconsole.cpp:1337 ../src/cdcconsole.cpp:1514
+#: ../src/cdcconsole.cpp:2530 ../src/cdcconsole.cpp:3012
+#: ../src/cdcconsole.cpp:3024 ../src/cdcproto.cpp:3297
+#: ../src/cserverdc.cpp:2920
 #, c-format
 msgid "User not found: %s"
 msgstr "Nie znaleziono uzytkownika: %s"
@@ -475,7 +479,7 @@ msgstr[2] "Wyswietlam %d rezulatow"
 msgstr[3] "Wyswietlam %d rezulatow"
 
 #: ../src/cdcconsole.cpp:365 ../src/cdcconsole.cpp:412
-#: ../src/cdcconsole.cpp:1370
+#: ../src/cdcconsole.cpp:1368
 msgid "Host"
 msgstr "Host"
 
@@ -510,7 +514,7 @@ msgstr "Uwaga, zaplanowano zatrzymanie huba."
 msgid "Please note, hub has been scheduled to stop in: %s"
 msgstr "Uwaga: zaplanowano zatrzymanie huba za %s"
 
-#: ../src/cdcconsole.cpp:473 ../src/cserverdc.cpp:3565
+#: ../src/cdcconsole.cpp:473 ../src/cserverdc.cpp:3649
 msgid "Please note, hub will be stopped now."
 msgstr "Uwaga: hub zostanie teraz wylaczony!"
 
@@ -527,8 +531,8 @@ msgstr[1] "Wiadomosc dostarczona do %d uzytkownikow w strefach %s w %s."
 msgstr[2] "Wiadomosc dostarczona do %d uzytkownikow w strefach %s w %s."
 msgstr[3] "Wiadomosc dostarczona do %d uzytkownikow w strefach %s w %s."
 
-#: ../src/cdcconsole.cpp:540 ../src/cdcconsole.cpp:762
-#: ../src/cserverdc.cpp:1245
+#: ../src/cdcconsole.cpp:540 ../src/cdcconsole.cpp:760
+#: ../src/cserverdc.cpp:1268
 msgid "Your information"
 msgstr "Twoje dane"
 
@@ -536,22 +540,22 @@ msgstr "Twoje dane"
 msgid "Your IP information"
 msgstr "Twoje IP"
 
-#: ../src/cdcconsole.cpp:559 ../src/cserverdc.cpp:2841 ../src/cuser.cpp:211
+#: ../src/cdcconsole.cpp:559 ../src/cserverdc.cpp:2860 ../src/cuser.cpp:211
 #, c-format
 msgid "Host: %s"
 msgstr "Host: %s"
 
-#: ../src/cdcconsole.cpp:565 ../src/cdcconsole.cpp:790 ../src/cuser.cpp:222
+#: ../src/cdcconsole.cpp:565 ../src/cdcconsole.cpp:788 ../src/cuser.cpp:222
 #, c-format
 msgid "Hub TLS: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:567 ../src/cdcconsole.cpp:791 ../src/cuser.cpp:224
+#: ../src/cdcconsole.cpp:567 ../src/cdcconsole.cpp:789 ../src/cuser.cpp:224
 #, c-format
 msgid "Client TLS: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:568 ../src/cdcconsole.cpp:792 ../src/cuser.cpp:225
+#: ../src/cdcconsole.cpp:568 ../src/cdcconsole.cpp:790 ../src/cuser.cpp:225
 #, c-format
 msgid "Client NAT: %s"
 msgstr ""
@@ -560,15 +564,17 @@ msgstr ""
 msgid "This command is currently disabled."
 msgstr "To polecenie jest obecnie wylaczone."
 
-#: ../src/cdcconsole.cpp:587 ../src/cdcproto.cpp:1966
-msgid "Main chat is currently disabled for users with your class."
-msgstr "Glowny czat jest obecnie wylaczony dla uzytkowników z Twojej klasy."
+#: ../src/cdcconsole.cpp:587 ../src/cdcproto.cpp:1960
+msgid ""
+"Main chat is currently disabled for users with your class, please consider "
+"registering on the hub or contact an operator."
+msgstr ""
 
-#: ../src/cdcconsole.cpp:608 ../src/cdcproto.cpp:1974
+#: ../src/cdcconsole.cpp:608 ../src/cdcproto.cpp:1968
 msgid "Your message wasn't sent because it equals your previous message."
 msgstr "Twoja wiadomosc nie zostala wyslana, poniewaz jest taka sama jak poprzednia."
 
-#: ../src/cdcconsole.cpp:631 ../src/cdcconsole.cpp:3654
+#: ../src/cdcconsole.cpp:631 ../src/cdcconsole.cpp:3658
 msgid "Public chat messages are now visible. To hide them, write: +nochat"
 msgstr "Publiczny czat jest teraz widoczny. Aby go ukryc, uzyj komendy +nochat"
 
@@ -576,7 +582,7 @@ msgstr "Publiczny czat jest teraz widoczny. Aby go ukryc, uzyj komendy +nochat"
 msgid "Public chat messages are already visible. To hide them, write: +nochat"
 msgstr "Publiczny czat juz jest widoczny. Aby go ukryc, uzyj komendy +nochat"
 
-#: ../src/cdcconsole.cpp:639 ../src/cdcconsole.cpp:3664
+#: ../src/cdcconsole.cpp:639 ../src/cdcconsole.cpp:3668
 msgid "Public chat messages are now hidden. To show them, write: +chat"
 msgstr "Publiczny czat jest teraz ukryty. Aby to zmienic, uzyj komendy +chat"
 
@@ -584,7 +590,8 @@ msgstr "Publiczny czat jest teraz ukryty. Aby to zmienic, uzyj komendy +chat"
 msgid "Public chat messages are already hidden. To show them, write: +chat"
 msgstr "Publiczny czat juz jest ukryty. Aby to zmienic, uzyj komendy +chat"
 
-#: ../src/cdcconsole.cpp:656 ../src/cserverdc.cpp:2865
+#: ../src/cdcconsole.cpp:656 ../src/cserverdc.cpp:2884
+#: ../src/cserverdc.cpp:2895
 #, c-format
 msgid "Software: %s %s"
 msgstr "Oprogramowanie: %s %s"
@@ -652,25 +659,25 @@ msgstr "Wsparcie techniczne"
 msgid "Donation"
 msgstr "Darowizna"
 
-#: ../src/cdcconsole.cpp:690
+#: ../src/cdcconsole.cpp:688
 msgid "Donators"
 msgstr "Darczynca"
 
-#: ../src/cdcconsole.cpp:719 ../src/cinfoserver.cpp:559
+#: ../src/cdcconsole.cpp:717 ../src/cinfoserver.cpp:559
 msgid "Hub information"
 msgstr "Informacje o hubie"
 
-#: ../src/cdcconsole.cpp:721 ../src/cinfoserver.cpp:566
+#: ../src/cdcconsole.cpp:719 ../src/cinfoserver.cpp:566
 #, c-format
 msgid "Owner: %s"
 msgstr "Wlasciciel: %s"
 
-#: ../src/cdcconsole.cpp:721 ../src/cdcconsole.cpp:742
+#: ../src/cdcconsole.cpp:719 ../src/cdcconsole.cpp:740
 #: ../src/cinfoserver.cpp:565 ../src/cinfoserver.cpp:566
 #: ../src/cinfoserver.cpp:567 ../src/cinfoserver.cpp:568
 #: ../src/cinfoserver.cpp:612 ../src/cinfoserver.cpp:625
 #: ../src/cinfoserver.cpp:636 ../src/cinfoserver.cpp:647
-#: ../src/cmaxminddb.cpp:1051 ../src/creguserinfo.cpp:105
+#: ../src/cmaxminddb.cpp:911 ../src/creguserinfo.cpp:105
 #: ../src/creguserinfo.cpp:106 ../src/creguserinfo.cpp:107
 #: ../src/creguserinfo.cpp:117 ../src/creguserinfo.cpp:118
 #: ../src/creguserinfo.cpp:119 ../src/creguserinfo.cpp:121
@@ -678,61 +685,61 @@ msgstr "Wlasciciel: %s"
 msgid "Not set"
 msgstr "Nie ustawiono"
 
-#: ../src/cdcconsole.cpp:742
+#: ../src/cdcconsole.cpp:740
 #, c-format
 msgid "Address: %s"
 msgstr "Adres: %s"
 
-#: ../src/cdcconsole.cpp:751
+#: ../src/cdcconsole.cpp:749
 #, c-format
 msgid "Secure: %s"
 msgstr "Zabezpieczono: %s"
 
-#: ../src/cdcconsole.cpp:754 ../src/cmaxminddb.cpp:1063
-#: ../src/cmaxminddb.cpp:1077 ../src/cmaxminddb.cpp:1091
-#: ../src/cserverdc.cpp:2869
+#: ../src/cdcconsole.cpp:752 ../src/cmaxminddb.cpp:923
+#: ../src/cmaxminddb.cpp:937 ../src/cmaxminddb.cpp:951
+#: ../src/cserverdc.cpp:2888
 #, c-format
 msgid "Status: %s"
 msgstr "Status: %s"
 
-#: ../src/cdcconsole.cpp:755 ../src/cinfoserver.cpp:595
+#: ../src/cdcconsole.cpp:753 ../src/cinfoserver.cpp:595
 #, c-format
 msgid "Users: %d of %d"
 msgstr "Uzytkownicy: %d z %d"
 
-#: ../src/cdcconsole.cpp:756
+#: ../src/cdcconsole.cpp:754
 #, c-format
 msgid "Secure: %d of %d"
 msgstr "Zabezpieczono: %d z %d"
 
-#: ../src/cdcconsole.cpp:757
+#: ../src/cdcconsole.cpp:755
 #, c-format
 msgid "Active: %d"
 msgstr "Aktywny: %d"
 
-#: ../src/cdcconsole.cpp:758
+#: ../src/cdcconsole.cpp:756
 #, c-format
 msgid "Passive: %d"
 msgstr "Pasywny: %d"
 
-#: ../src/cdcconsole.cpp:759
+#: ../src/cdcconsole.cpp:757
 #, c-format
 msgid "Bots: %d"
 msgstr "Boty: %d"
 
-#: ../src/cdcconsole.cpp:760 ../src/cdcconsole.cpp:793
+#: ../src/cdcconsole.cpp:758 ../src/cdcconsole.cpp:791
 #: ../src/cinfoserver.cpp:596 ../src/cpenaltylist.cpp:274
-#: ../src/cserverdc.cpp:2868
+#: ../src/cserverdc.cpp:2887 ../src/cserverdc.cpp:2898
 #, c-format
 msgid "Share: %s"
 msgstr "Udostepnienie: %s"
 
-#: ../src/cdcconsole.cpp:764
+#: ../src/cdcconsole.cpp:762
 #, c-format
 msgid "Class: %d [%s]"
 msgstr "Klasa: %d [%s]"
 
-#: ../src/cdcconsole.cpp:788
+#: ../src/cdcconsole.cpp:786
 #, c-format
 msgid "Search interval: %d second"
 msgid_plural "Search interval: %d seconds"
@@ -741,171 +748,171 @@ msgstr[1] "Szukaj w odstepie %d sekund"
 msgstr[2] "Szukaj w odstepie %d sekund"
 msgstr[3] "Szukaj w odstepie %d sekund"
 
-#: ../src/cdcconsole.cpp:789
+#: ../src/cdcconsole.cpp:787
 #, c-format
 msgid "Mode: %s"
 msgstr "Tryb: %s"
 
-#: ../src/cdcconsole.cpp:789 ../src/cdctag.cpp:223 ../src/ctrigger.cpp:151
+#: ../src/cdcconsole.cpp:787 ../src/cdctag.cpp:223 ../src/ctrigger.cpp:151
 msgid "Passive"
 msgstr "Pasywny"
 
-#: ../src/cdcconsole.cpp:789 ../src/cdctag.cpp:221 ../src/ctrigger.cpp:151
+#: ../src/cdcconsole.cpp:787 ../src/cdctag.cpp:221 ../src/ctrigger.cpp:151
 msgid "Active"
 msgstr "Aktywny"
 
-#: ../src/cdcconsole.cpp:794
+#: ../src/cdcconsole.cpp:792
 #, c-format
 msgid "Hidden: %s"
 msgstr "Ukryty: %s"
 
-#: ../src/cdcconsole.cpp:795 ../src/cpenaltylist.cpp:226
+#: ../src/cdcconsole.cpp:793 ../src/cpenaltylist.cpp:226
 #, c-format
 msgid "Chat: %s"
 msgstr "Czat: %s"
 
-#: ../src/cdcconsole.cpp:806
+#: ../src/cdcconsole.cpp:804
 msgid "This functionality is currently disabled."
 msgstr "Ta funkcja jest obecnie wylaczona."
 
-#: ../src/cdcconsole.cpp:811
+#: ../src/cdcconsole.cpp:809
 msgid "Registration failed. Please contact an operator for help."
 msgstr "Rejestracja nie powiodla sie. Nalezy skontaktowac sie z operatorem, aby uzyskac pomoc."
 
-#: ../src/cdcconsole.cpp:819
+#: ../src/cdcconsole.cpp:817
 msgid "You are already registered."
 msgstr "Jestes juz zarejestrowany."
 
-#: ../src/cdcconsole.cpp:822
+#: ../src/cdcconsole.cpp:820
 msgid "You are not registered yet."
 msgstr "Nie jestes jeszcze zarejestrowany."
 
-#: ../src/cdcconsole.cpp:841 ../src/cdcconsole.cpp:842
-#: ../src/cdcconsole.cpp:3467 ../src/cdcconsole.cpp:3468
-#: ../src/script_api.cpp:782 ../src/script_api.cpp:783
+#: ../src/cdcconsole.cpp:839 ../src/cdcconsole.cpp:840
+#: ../src/cdcconsole.cpp:3471 ../src/cdcconsole.cpp:3472
+#: ../src/script_api.cpp:793 ../src/script_api.cpp:794
 msgid "You have been unregistered."
 msgstr "Zosta³eœ wyrejestrowany."
 
-#: ../src/cdcconsole.cpp:875
+#: ../src/cdcconsole.cpp:873
 msgid "User has been unregistered"
 msgstr "U¿ytkownik zosta³ wyrejestrowany."
 
-#: ../src/cdcconsole.cpp:878
+#: ../src/cdcconsole.cpp:876
 msgid "An error occured while unregistering."
 msgstr "Wystapil blad podczas wyrejestrowywania."
 
-#: ../src/cdcconsole.cpp:883
+#: ../src/cdcconsole.cpp:881
 msgid "Unregistration request"
 msgstr "Zadanie wyrejestrowania"
 
-#: ../src/cdcconsole.cpp:884
+#: ../src/cdcconsole.cpp:882
 msgid ""
 "Thank you, your unregistration request has been sent to operators. Please "
 "await an answer."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:902
+#: ../src/cdcconsole.cpp:900
 #, c-format
 msgid "Your nick must start with: %s"
 msgstr "Twoj nick musi zaczynac sie od: %s"
 
-#: ../src/cdcconsole.cpp:925
+#: ../src/cdcconsole.cpp:923
 #, c-format
 msgid "You need to share at least: %s"
 msgstr "Musisz udostêpniæ co najmniej: %s"
 
-#: ../src/cdcconsole.cpp:936 ../src/cdcconsole.cpp:1103
-#: ../src/cdcproto.cpp:802
+#: ../src/cdcconsole.cpp:934 ../src/cdcconsole.cpp:1101
+#: ../src/cdcproto.cpp:796
 #, c-format
 msgid "Minimum password length is %d characters. Please retry."
 msgstr "Minimalna dlugosc hasla wynosi %d znakow. Prosze sprobowac ponownie."
 
-#: ../src/cdcconsole.cpp:952 ../src/cdcconsole.cpp:3421
+#: ../src/cdcconsole.cpp:950 ../src/cdcconsole.cpp:3425
 #, c-format
 msgid "You have been registered with class %d and following password: %s"
 msgstr "Zostales zarejestrowany z klasa %d i haslem: %s"
 
-#: ../src/cdcconsole.cpp:969
+#: ../src/cdcconsole.cpp:967
 #, c-format
 msgid "New user has been registered with class %d"
 msgstr "Nowy u¿ytkownik zosta³ zarejestrowany z klas¹ %d"
 
-#: ../src/cdcconsole.cpp:973
+#: ../src/cdcconsole.cpp:971
 msgid "An error occured while registering."
 msgstr "Wystapil blad podczas rejestracji."
 
-#: ../src/cdcconsole.cpp:984
+#: ../src/cdcconsole.cpp:982
 #, c-format
 msgid "Registration request with password: %s"
 msgstr "Prosba o rejestracje z haslem: %s"
 
-#: ../src/cdcconsole.cpp:986
+#: ../src/cdcconsole.cpp:984
 msgid "Registration request without password"
 msgstr "Prosba o rejestracje bez wpisania hasla"
 
-#: ../src/cdcconsole.cpp:989
+#: ../src/cdcconsole.cpp:987
 msgid ""
 "Thank you, your registration request has been sent to operators. Please "
 "await an answer."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:999
+#: ../src/cdcconsole.cpp:997
 msgid "You have no rights to change topic."
 msgstr "Nie masz uprawnien do zmiany tematu."
 
-#: ../src/cdcconsole.cpp:1011
+#: ../src/cdcconsole.cpp:1009
 #, c-format
 msgid ""
 "Topic must not exceed 255 characters, but your topic has %d characters."
 msgstr "Maksymalna dlugosc tematu to 255 znakow, a Twoj posiada %d znakow."
 
-#: ../src/cdcconsole.cpp:1020 ../src/cdcconsole.cpp:1781
-#: ../src/cdcconsole.cpp:1905 ../src/cdcconsole.cpp:2428
-#: ../src/cdcconsole.cpp:3411 ../src/cdcconsole.cpp:3456
-#: ../src/cdcconsole.cpp:3530 ../src/cserverdc.cpp:3033
+#: ../src/cdcconsole.cpp:1018 ../src/cdcconsole.cpp:1779
+#: ../src/cdcconsole.cpp:1903 ../src/cdcconsole.cpp:2426
+#: ../src/cdcconsole.cpp:3415 ../src/cdcconsole.cpp:3460
+#: ../src/cdcconsole.cpp:3534 ../src/cserverdc.cpp:3065
 msgid "Your action was blocked by a plugin."
 msgstr "Twoje dzialanie zostalo uniemozliwione przez wtyczke."
 
-#: ../src/cdcconsole.cpp:1030
+#: ../src/cdcconsole.cpp:1028
 #, c-format
 msgid "%s changed the topic to: %s"
 msgstr "%s zmienil temat na: %s"
 
-#: ../src/cdcconsole.cpp:1032
+#: ../src/cdcconsole.cpp:1030
 #, c-format
 msgid "%s removed the topic."
 msgstr "%s usunal temat."
 
-#: ../src/cdcconsole.cpp:1094
+#: ../src/cdcconsole.cpp:1092
 msgid ""
 "You are not allowed to change your password now. Ask an operator for help."
 msgstr "Nie masz uprawnien do zmiany hasla. Skontaktuj sie z jednym z operatorow huba."
 
-#: ../src/cdcconsole.cpp:1110 ../src/cdcconsole.cpp:3516
-#: ../src/cdcproto.cpp:810
+#: ../src/cdcconsole.cpp:1108 ../src/cdcconsole.cpp:3520
+#: ../src/cdcproto.cpp:804
 msgid "Error updating password."
 msgstr "Blad aktualizacji hasla."
 
-#: ../src/cdcconsole.cpp:1128 ../src/cdcproto.cpp:830
+#: ../src/cdcconsole.cpp:1126 ../src/cdcproto.cpp:824
 msgid "Password updated successfully."
 msgstr "Haslo zostalo zaktualizowane."
 
-#: ../src/cdcconsole.cpp:1141
+#: ../src/cdcconsole.cpp:1139
 msgid ""
 "Please use: !hideme <class>, where <class> is the maximum class of users "
 "that may not see your kicks."
 msgstr "Prosze uzyc komendy !hideme <klasa>, gdzie <klasa> to maksymalna klasa uzytkowników, ktorzy nie beda widzieli, jak bedziesz kogos wykopywal."
 
-#: ../src/cdcconsole.cpp:1147
+#: ../src/cdcconsole.cpp:1145
 #, c-format
 msgid "Your kicks are now hidden from users with class %d and below."
 msgstr "Tylko uzytkownicy o klasie powyzej %d beda widzieli, jak bedziesz wykopywal innych."
 
-#: ../src/cdcconsole.cpp:1159
+#: ../src/cdcconsole.cpp:1157
 msgid "Command usage: !userlimit <max_users> [<minutes>=60]"
 msgstr "Uzycie komendy: !userlimit <max_users> [<minuty>=60]"
 
-#: ../src/cdcconsole.cpp:1170
+#: ../src/cdcconsole.cpp:1168
 #, c-format
 msgid "Updating max_users variable to %d for the duration of %d minute."
 msgid_plural ""
@@ -915,157 +922,157 @@ msgstr[1] "Zaktualizowano zmienna max_users na %d na czas %d minut."
 msgstr[2] "Zaktualizowano zmienna max_users na %d na czas %d minut."
 msgstr[3] "Zaktualizowano zmienna max_users na %d na czas %d minut."
 
-#: ../src/cdcconsole.cpp:1194
+#: ../src/cdcconsole.cpp:1192
 #, c-format
 msgid "Command usage: !class <nick> [class=%d]"
 msgstr "Sposób u¿ycia komendy: !class <nick> [class=%d]"
 
-#: ../src/cdcconsole.cpp:1194
+#: ../src/cdcconsole.cpp:1192
 #, c-format
 msgid "maximum allowed class is %d"
 msgstr "maksymalna klasa to %d"
 
-#: ../src/cdcconsole.cpp:1205
+#: ../src/cdcconsole.cpp:1203
 #, c-format
 msgid "Temporarily changing class from %d to %d for user: %s"
 msgstr "Tymczasowa zmiana klasy z %d na %d dla uzytkownika: %s"
 
-#: ../src/cdcconsole.cpp:1251
+#: ../src/cdcconsole.cpp:1249
 #, c-format
 msgid "You have no rights to change class for this user: %s"
 msgstr "Nie masz uprawnien, aby zmienic klase uzytkownika: %s"
 
-#: ../src/cdcconsole.cpp:1273
+#: ../src/cdcconsole.cpp:1271
 #, c-format
 msgid "Kicks of this user are now hidden: %s"
 msgstr "Kopniecia uzytkownika %s obecnie sa ukryte."
 
-#: ../src/cdcconsole.cpp:1276 ../src/cdcconsole.cpp:1302
-#: ../src/cdcconsole.cpp:1337 ../src/cdcconsole.cpp:1391
-#: ../src/cdcconsole.cpp:1536 ../src/cdcconsole.cpp:1639
-#: ../src/cdcconsole.cpp:1868 ../src/cdcconsole.cpp:1990
-#: ../src/cdcconsole.cpp:2145 ../src/cdcconsole.cpp:2219
-#: ../src/cdcconsole.cpp:2325 ../src/cdcconsole.cpp:2403
-#: ../src/cdcconsole.cpp:2500 ../src/cdcconsole.cpp:2794
-#: ../src/cdcconsole.cpp:3140 ../src/cdcconsole.cpp:3261
-#: ../src/cdcconsole.cpp:3282 ../src/cdcconsole.cpp:3331
-#: ../src/cdcconsole.cpp:3388 ../src/cdcconsole.cpp:3793
-#: ../src/cdcconsole.cpp:3878 ../src/tlistconsole.h:92
+#: ../src/cdcconsole.cpp:1274 ../src/cdcconsole.cpp:1300
+#: ../src/cdcconsole.cpp:1335 ../src/cdcconsole.cpp:1389
+#: ../src/cdcconsole.cpp:1534 ../src/cdcconsole.cpp:1637
+#: ../src/cdcconsole.cpp:1866 ../src/cdcconsole.cpp:1988
+#: ../src/cdcconsole.cpp:2143 ../src/cdcconsole.cpp:2217
+#: ../src/cdcconsole.cpp:2323 ../src/cdcconsole.cpp:2401
+#: ../src/cdcconsole.cpp:2498 ../src/cdcconsole.cpp:2792
+#: ../src/cdcconsole.cpp:3144 ../src/cdcconsole.cpp:3265
+#: ../src/cdcconsole.cpp:3286 ../src/cdcconsole.cpp:3335
+#: ../src/cdcconsole.cpp:3392 ../src/cdcconsole.cpp:3797
+#: ../src/cdcconsole.cpp:3882 ../src/tlistconsole.h:92
 msgid "You have no rights to do this."
 msgstr "Nie masz uprawnien, aby to zrobic."
 
-#: ../src/cdcconsole.cpp:1299
+#: ../src/cdcconsole.cpp:1297
 #, c-format
 msgid "Kicks of this user are now visible: %s"
 msgstr "Kopniecia uzytkownika %s sa teraz widoczne."
 
-#: ../src/cdcconsole.cpp:1323
+#: ../src/cdcconsole.cpp:1321
 msgid "Use !protect <nickname> <class>."
 msgstr "Uzyj !protect <nazwa uzytkownika> <klasa>."
 
-#: ../src/cdcconsole.cpp:1323
+#: ../src/cdcconsole.cpp:1321
 #, c-format
 msgid "Max class is %d"
 msgstr "Maksymalna klasa to %d"
 
-#: ../src/cdcconsole.cpp:1334
+#: ../src/cdcconsole.cpp:1332
 #, c-format
 msgid "User %s is temporarily protected from class %d"
 msgstr "Uzytkownik %s tymczasowo jest chroniony przed kopnieciem przez uzytkonikow klasy %d lub nizszych."
 
-#: ../src/cdcconsole.cpp:1348 ../src/cserverdc.cpp:3590
+#: ../src/cdcconsole.cpp:1346 ../src/cserverdc.cpp:3674
 msgid "Done reloading all lists and databases."
 msgstr "Przeladowano wszystkie bazy danych oraz wszystkie listy."
 
-#: ../src/cdcconsole.cpp:1355
+#: ../src/cdcconsole.cpp:1353
 msgid "Report command is currently disabled."
 msgstr "Komenda raport jest obecnie wylaczona"
 
-#: ../src/cdcconsole.cpp:1368
+#: ../src/cdcconsole.cpp:1366
 #, c-format
 msgid "Reported user %s"
 msgstr "Wysylam donos na uzytkownika %s"
 
-#: ../src/cdcconsole.cpp:1372
+#: ../src/cdcconsole.cpp:1370
 #, c-format
 msgid "Reported offline user %s"
 msgstr "Wysylam donos na niezalogowanego uzytkownika %s"
 
-#: ../src/cdcconsole.cpp:1375
+#: ../src/cdcconsole.cpp:1373
 msgid "Without reason"
 msgstr "Bez podania powodu"
 
-#: ../src/cdcconsole.cpp:1377
+#: ../src/cdcconsole.cpp:1375
 msgid "Reason"
 msgstr "Powod"
 
-#: ../src/cdcconsole.cpp:1381
+#: ../src/cdcconsole.cpp:1379
 msgid "Thank you, your report has been accepted."
 msgstr "Dziekujemy, donos zostal wyslany."
 
-#: ../src/cdcconsole.cpp:1459 ../src/cdcconsole.cpp:1725
-#: ../src/cdcconsole.cpp:2006 ../src/cdcconsole.cpp:2372
-#: ../src/cdcconsole.cpp:2516 ../src/cdcconsole.cpp:2847
-#: ../src/cdcconsole.cpp:3319 ../src/cdcconsole.cpp:3394
+#: ../src/cdcconsole.cpp:1457 ../src/cdcconsole.cpp:1723
+#: ../src/cdcconsole.cpp:2004 ../src/cdcconsole.cpp:2370
+#: ../src/cdcconsole.cpp:2514 ../src/cdcconsole.cpp:2845
+#: ../src/cdcconsole.cpp:3323 ../src/cdcconsole.cpp:3398
 msgid "Missing command parameters."
 msgstr "Brakujace parametry komend."
 
-#: ../src/cdcconsole.cpp:1526
+#: ../src/cdcconsole.cpp:1524
 msgid "Protocol command successfully sent."
 msgstr "Komenda zostala wyslana poprawnie."
 
-#: ../src/cdcconsole.cpp:1581
+#: ../src/cdcconsole.cpp:1579
 msgid "Ban list has been cleaned."
 msgstr "Lista banow zostala wyczyszczona."
 
-#: ../src/cdcconsole.cpp:1586
+#: ../src/cdcconsole.cpp:1584
 msgid "Temporary ban list has been cleaned."
 msgstr "Tymczasowa lista banow zostala wyczyszczona."
 
-#: ../src/cdcconsole.cpp:1591
+#: ../src/cdcconsole.cpp:1589
 msgid "Unban list has been cleaned."
 msgstr "Lista unban zostala wyczyszczona."
 
-#: ../src/cdcconsole.cpp:1596
+#: ../src/cdcconsole.cpp:1594
 msgid "Kick list has been cleaned."
 msgstr "Lista kopniec zostala wyczyszczona."
 
-#: ../src/cdcconsole.cpp:1603
+#: ../src/cdcconsole.cpp:1601
 msgid "Temporary rights list has been cleaned."
 msgstr "Lista tymczasowych praw zostala wyczyszczona."
 
-#: ../src/cdcconsole.cpp:1615
+#: ../src/cdcconsole.cpp:1613
 msgid "Ban, unban, kick, temporary ban and chat gag lists has been cleaned."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1618
+#: ../src/cdcconsole.cpp:1616
 msgid "Ban, unban, kick and temporary ban lists has been cleaned."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1624 ../src/cdcconsole.cpp:1977
-#: ../src/cdcconsole.cpp:2132 ../src/cdcconsole.cpp:2209
-#: ../src/cdcconsole.cpp:2312 ../src/cdcconsole.cpp:3106
-#: ../src/cdcconsole.cpp:3623 ../src/cdcconsole.cpp:3801
+#: ../src/cdcconsole.cpp:1622 ../src/cdcconsole.cpp:1975
+#: ../src/cdcconsole.cpp:2130 ../src/cdcconsole.cpp:2207
+#: ../src/cdcconsole.cpp:2310 ../src/cdcconsole.cpp:3110
+#: ../src/cdcconsole.cpp:3627 ../src/cdcconsole.cpp:3805
 msgid "This command is not implemented."
 msgstr "To polecenie nie jest obslugiwane."
 
-#: ../src/cdcconsole.cpp:1757
+#: ../src/cdcconsole.cpp:1755
 msgid "Please provide a valid ban time."
 msgstr "Podaj prawidlowy czas bana."
 
-#: ../src/cdcconsole.cpp:1777 ../src/cdcconsole.cpp:1826
+#: ../src/cdcconsole.cpp:1775 ../src/cdcconsole.cpp:1824
 msgid "No reason specified"
 msgstr "Nie podano uzasadnienia."
 
-#: ../src/cdcconsole.cpp:1786
+#: ../src/cdcconsole.cpp:1784
 msgid "Removed ban"
 msgstr "Usunieto bana"
 
-#: ../src/cdcconsole.cpp:1789
+#: ../src/cdcconsole.cpp:1787
 msgid "Ban information"
 msgstr "Informacja o banie"
 
-#: ../src/cdcconsole.cpp:1816
+#: ../src/cdcconsole.cpp:1814
 #, c-format
 msgid "%d ban found."
 msgid_plural "%d bans found."
@@ -1074,239 +1081,247 @@ msgstr[1] "Znaleziono %d bany."
 msgstr[2] "Znaleziono %d banow."
 msgstr[3] "Znaleziono %d banow."
 
-#: ../src/cdcconsole.cpp:1878
+#: ../src/cdcconsole.cpp:1876 ../src/cdcconsole.cpp:2871
 #, c-format
 msgid "Unknown range format: %s"
 msgstr "Nieznany format zakresu: %s"
 
-#: ../src/cdcconsole.cpp:1928 ../src/cdcconsole.cpp:1954
+#: ../src/cdcconsole.cpp:1926 ../src/cdcconsole.cpp:1952
 #, c-format
 msgid "%s was banned for %s by %s with reason: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1930 ../src/cdcconsole.cpp:1956
+#: ../src/cdcconsole.cpp:1928 ../src/cdcconsole.cpp:1954
 #, c-format
 msgid "%s was banned for %s by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1933 ../src/cdcconsole.cpp:1959
+#: ../src/cdcconsole.cpp:1931 ../src/cdcconsole.cpp:1957
 #, c-format
 msgid "%s was banned permanently by %s with reason: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1935 ../src/cdcconsole.cpp:1961
+#: ../src/cdcconsole.cpp:1933 ../src/cdcconsole.cpp:1959
 #, c-format
 msgid "%s was banned permanently by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:1972
+#: ../src/cdcconsole.cpp:1970
 msgid "Added new ban"
 msgstr "Dodano nowego bana"
 
-#: ../src/cdcconsole.cpp:2060 ../src/cdcconsole.cpp:2075
+#: ../src/cdcconsole.cpp:2058 ../src/cdcconsole.cpp:2073
 msgid "Removed temporary nick ban"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2065 ../src/cdcconsole.cpp:2085
+#: ../src/cdcconsole.cpp:2063 ../src/cdcconsole.cpp:2083
 msgid "Removed temporary IP ban"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2070 ../src/cdcconsole.cpp:2107
+#: ../src/cdcconsole.cpp:2068 ../src/cdcconsole.cpp:2105
 msgid "Temporary ban not found"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2080 ../src/cdcconsole.cpp:2116
+#: ../src/cdcconsole.cpp:2078 ../src/cdcconsole.cpp:2114
 msgid "Temporary nick ban not found"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2090 ../src/cdcconsole.cpp:2125
+#: ../src/cdcconsole.cpp:2088 ../src/cdcconsole.cpp:2123
 msgid "Temporary IP ban not found"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2099 ../src/cdcconsole.cpp:2112
+#: ../src/cdcconsole.cpp:2097 ../src/cdcconsole.cpp:2110
 msgid "Temporary nick ban information"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2103 ../src/cdcconsole.cpp:2121
+#: ../src/cdcconsole.cpp:2101 ../src/cdcconsole.cpp:2119
 msgid "Temporary IP ban information"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2303
+#: ../src/cdcconsole.cpp:2301
 #, c-format
 msgid "Trigger definition: %s"
 msgstr "Wyzwalacz definicji: %s"
 
-#: ../src/cdcconsole.cpp:2308
+#: ../src/cdcconsole.cpp:2306
 #, c-format
 msgid "Trigger not found: %s"
 msgstr "Wyzwalacz nie znaleziony: %s"
 
-#: ../src/cdcconsole.cpp:2364
+#: ../src/cdcconsole.cpp:2362
 #, c-format
 msgid "Configuration file: %s"
 msgstr "Plik konfiguracyjny: %s"
 
-#: ../src/cdcconsole.cpp:2367
+#: ../src/cdcconsole.cpp:2365
 #, c-format
 msgid "Configuration file is empty: %s"
 msgstr "Plik konfiguracyjny: %s jest pusty."
 
-#: ../src/cdcconsole.cpp:2387
+#: ../src/cdcconsole.cpp:2385
 #, c-format
 msgid "Configuration filter results: %s"
 msgstr "Filtruj wyniki z konfiguracji: %s"
 
-#: ../src/cdcconsole.cpp:2389
+#: ../src/cdcconsole.cpp:2387
 #, c-format
 msgid "Configuration filter didn't return any results: %s"
 msgstr "Konfiguracja filtra nie zwrocilo zadnych wynikow: %s"
 
-#: ../src/cdcconsole.cpp:2425
+#: ../src/cdcconsole.cpp:2423
 #, c-format
 msgid "Undefined configuration variable: %s.%s"
 msgstr "Nieznana zmienna konfiguracyjna: %s.%s"
 
-#: ../src/cdcconsole.cpp:2431
+#: ../src/cdcconsole.cpp:2429
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr "Zaktualizowano konfiguracje %s.%s: zmieniono '%s' na '%s'."
 
-#: ../src/cdcconsole.cpp:2440
+#: ../src/cdcconsole.cpp:2438
 #, c-format
 msgid ""
 "Warning: %s allows maximum %d users, but current resource limit is %d, so "
 "consider running ulimit -n <max_users> and restarting the hub."
 msgstr "Ostrzezenie: %s akceptuje maksymalnie %d uzytkownikow, ale obecny limit systemu wynosi %d. Mozna go zmienic, ustawiajac w systemie ulimit -n <max_users> i ponownie uruchomiajac hub."
 
-#: ../src/cdcconsole.cpp:2602 ../src/cdcconsole.cpp:3069
+#: ../src/cdcconsole.cpp:2600 ../src/cdcconsole.cpp:3073
 #, c-format
 msgid "Error setting rights or restrictions for user: %s"
 msgstr "Blad w ustawianiu praw i ograniczen dla uzytkownika %s"
 
-#: ../src/cdcconsole.cpp:2612 ../src/cdcconsole.cpp:3077
+#: ../src/cdcconsole.cpp:2610 ../src/cdcconsole.cpp:3081
 #, c-format
 msgid "Allowing user to use main chat again: %s"
 msgstr "Umozliwiam uzytkownikowi %s wysylanie publicznych wiadomosci."
 
-#: ../src/cdcconsole.cpp:2614 ../src/cdcconsole.cpp:3075
+#: ../src/cdcconsole.cpp:2612 ../src/cdcconsole.cpp:3079
 #, c-format
 msgid "Restricting user from using main chat: %s for %s"
 msgstr "Blokuje uzytkownikowi %s wysylanie publicznych wiadomosci przez %s."
 
-#: ../src/cdcconsole.cpp:2622 ../src/cdcconsole.cpp:3093
+#: ../src/cdcconsole.cpp:2620 ../src/cdcconsole.cpp:3097
 #, c-format
 msgid "%s was allowed to use main chat again by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2624 ../src/cdcconsole.cpp:3088
+#: ../src/cdcconsole.cpp:2622 ../src/cdcconsole.cpp:3092
 #, c-format
 msgid "%s was restricted from using main chat for %s by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2637
+#: ../src/cdcconsole.cpp:2635
 #, c-format
 msgid "Allowing user to use private chat again: %s"
 msgstr "Umozliwiam uzytkownikowi %s wysylanie prywatnych wiadomosci."
 
-#: ../src/cdcconsole.cpp:2639
+#: ../src/cdcconsole.cpp:2637
 #, c-format
 msgid "Restricting user from using private chat: %s for %s"
 msgstr "Blokuje uzytkownikowi %s wysylanie prywatnych wiadomosci przez %s."
 
-#: ../src/cdcconsole.cpp:2647
+#: ../src/cdcconsole.cpp:2645
 #, c-format
 msgid "%s was allowed to use private chat again by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2649
+#: ../src/cdcconsole.cpp:2647
 #, c-format
 msgid "%s was restricted from using private chat for %s by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2662
+#: ../src/cdcconsole.cpp:2660
 #, c-format
 msgid "Allowing user to use main and private chat again: %s"
 msgstr "Umozliwiam uzytkownikowi %s wysylanie publicznych i prywatnych wiadomosci."
 
-#: ../src/cdcconsole.cpp:2664
+#: ../src/cdcconsole.cpp:2662
 #, c-format
 msgid "Restricting user from using main and private chat: %s for %s"
 msgstr "Blokuje uzytkownikowi %s wysylanie publicznych i prywatnych wiadomosci przez %s."
 
-#: ../src/cdcconsole.cpp:2672
+#: ../src/cdcconsole.cpp:2670
 #, c-format
 msgid ""
 "%s was allowed to use main and private chat again by %s without reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2674
+#: ../src/cdcconsole.cpp:2672
 #, c-format
 msgid ""
 "%s was restricted from using main and private chat for %s by %s without "
 "reason."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:2687
+#: ../src/cdcconsole.cpp:2685
 #, c-format
 msgid "Allowing user to download again: %s"
 msgstr "Umozliwiam uzytkownikowi %s sciaganie plikow."
 
-#: ../src/cdcconsole.cpp:2689
+#: ../src/cdcconsole.cpp:2687
 #, c-format
 msgid "Restricting user from downloading: %s for %s"
 msgstr "Blokuje uzytkownikowi %s sciaganie plikow przez %s."
 
-#: ../src/cdcconsole.cpp:2698
+#: ../src/cdcconsole.cpp:2696
 #, c-format
 msgid "Allowing user to use search again: %s"
 msgstr "Umozliwiam uzytkownikowi %s wyszukiwanie."
 
-#: ../src/cdcconsole.cpp:2700
+#: ../src/cdcconsole.cpp:2698
 #, c-format
 msgid "Restricting user from using search: %s for %s"
 msgstr "Blokuje uzytkownikowi %s wyszukiwanie przez %s."
 
-#: ../src/cdcconsole.cpp:2709
+#: ../src/cdcconsole.cpp:2707
 #, c-format
 msgid "Taking away the right to hide share: %s"
 msgstr "Odbieram uzytkownikowi %s uprawnienie do ukrycia plikow."
 
-#: ../src/cdcconsole.cpp:2711
+#: ../src/cdcconsole.cpp:2709
 #, c-format
 msgid "Giving user the right to hide share: %s for %s"
 msgstr "Daje uzytkownikowi %s uprawnienie do ukrycia plikow przez %s."
 
-#: ../src/cdcconsole.cpp:2720
+#: ../src/cdcconsole.cpp:2718
 #, c-format
 msgid "Taking away the right to register others: %s"
 msgstr "Odbieram uzytkownikowi %s uprawnienie do rejestracji innych."
 
-#: ../src/cdcconsole.cpp:2722
+#: ../src/cdcconsole.cpp:2720
 #, c-format
 msgid "Giving user the right to register others: %s for %s"
 msgstr "Daje uzytkownikowi %s uprawnienie do rejestrowania innych przez %s."
 
-#: ../src/cdcconsole.cpp:2731
+#: ../src/cdcconsole.cpp:2729
 #, c-format
 msgid "Taking away the right to kick others: %s"
 msgstr "Odbieram uzytkownikowi %s uprawnienie do kopania."
 
-#: ../src/cdcconsole.cpp:2733
+#: ../src/cdcconsole.cpp:2731
 #, c-format
 msgid "Giving user the right to kick others: %s for %s"
 msgstr "Daje uzytkownikowi %s uprawnienie do kopania przez %s."
 
-#: ../src/cdcconsole.cpp:2742
+#: ../src/cdcconsole.cpp:2740
 #, c-format
 msgid "Taking away the right to use operator chat: %s"
 msgstr "Odbieram uzytkownikowi %s uprawnienie do korzystania z czatu operatorow."
 
-#: ../src/cdcconsole.cpp:2744
+#: ../src/cdcconsole.cpp:2742
 #, c-format
 msgid "Giving user the right to use operator chat: %s for %s"
 msgstr "Daje uzytkownikowi %s uprawnienie do korzystania z czatu operatorow przez %s."
 
-#: ../src/cdcconsole.cpp:2863
+#: ../src/cdcconsole.cpp:2857 ../src/cserverdc.cpp:3337
+#: ../src/cserverdc.cpp:3348 ../src/cserverdc.cpp:3359
+#: ../src/cserverdc.cpp:3370
+#, c-format
+msgid ""
+"Specified value is expected to be a valid IP address within range %s to %s."
+msgstr ""
+
+#: ../src/cdcconsole.cpp:2865
 #, c-format
 msgid "Found %d user with IP %s"
 msgid_plural "Found %d users with IP %s"
@@ -1315,7 +1330,7 @@ msgstr[1] "Znaleziono %d uzytkownikow z adresem IP %s"
 msgstr[2] "Znaleziono %d uzytkownikow z adresem IP %s"
 msgstr[3] "Znaleziono %d uzytkownikow z adresem IP %s"
 
-#: ../src/cdcconsole.cpp:2874
+#: ../src/cdcconsole.cpp:2878
 #, c-format
 msgid "Found %d user with range %s"
 msgid_plural "Found %d users with range %s"
@@ -1324,11 +1339,11 @@ msgstr[1] "Znaleziono %d uzytkownikow z IP w zakresie %s"
 msgstr[2] "Znaleziono %d uzytkownikow z IP w zakresie %s"
 msgstr[3] "Znaleziono %d uzytkownikow z IP w zakresie %s"
 
-#: ../src/cdcconsole.cpp:2880
+#: ../src/cdcconsole.cpp:2884
 msgid "Country code must be 2 characters long, for example RU."
 msgstr "Kod kraju musi byc 2-literowy, np. PL."
 
-#: ../src/cdcconsole.cpp:2888
+#: ../src/cdcconsole.cpp:2892
 #, c-format
 msgid "Found %d user with country code %s"
 msgid_plural "Found %d users with country code %s"
@@ -1337,7 +1352,7 @@ msgstr[1] "Znaleziono %d uzytkownikow z kodem kraju %s"
 msgstr[2] "Znaleziono %d uzytkownikow z kodem kraju %s"
 msgstr[3] "Znaleziono %d uzytkownikow z kodem kraju %s"
 
-#: ../src/cdcconsole.cpp:2896
+#: ../src/cdcconsole.cpp:2900
 #, c-format
 msgid "Found %d user with city %s"
 msgid_plural "Found %d users with city %s"
@@ -1346,7 +1361,7 @@ msgstr[1] "Znaleziono %d uzytkownikow z miasta %s"
 msgstr[2] "Znaleziono %d uzytkownikow z miasta %s"
 msgstr[3] "Znaleziono %d uzytkownikow z miasta %s"
 
-#: ../src/cdcconsole.cpp:2905
+#: ../src/cdcconsole.cpp:2909
 #, c-format
 msgid "Found %d user on hub port %d"
 msgid_plural "Found %d users on hub port %d"
@@ -1355,7 +1370,7 @@ msgstr[1] "Znaleziono %d uzytkownikow polaczonych z hubem na porcie %d"
 msgstr[2] "Znaleziono %d uzytkownikow polaczonych z hubem na porcie %d"
 msgstr[3] "Znaleziono %d uzytkownikow polaczonych z hubem na porcie %d"
 
-#: ../src/cdcconsole.cpp:2913
+#: ../src/cdcconsole.cpp:2917
 #, c-format
 msgid "Found %d user with hub URL %s"
 msgid_plural "Found %d users with hub URL %s"
@@ -1364,7 +1379,7 @@ msgstr[1] "Znaleziono %d uzytkownikow polaczonych z hubem przez URL %s"
 msgstr[2] "Znaleziono %d uzytkownikow polaczonych z hubem przez URL %s"
 msgstr[3] "Znaleziono %d uzytkownikow polaczonych z hubem przez URL %s"
 
-#: ../src/cdcconsole.cpp:2921
+#: ../src/cdcconsole.cpp:2925
 #, c-format
 msgid "Found %d user with TLS version %s"
 msgid_plural "Found %d users with TLS version %s"
@@ -1373,7 +1388,7 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: ../src/cdcconsole.cpp:2929
+#: ../src/cdcconsole.cpp:2933
 #, c-format
 msgid "Found %d user with supports %s"
 msgid_plural "Found %d users with supports %s"
@@ -1382,7 +1397,7 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: ../src/cdcconsole.cpp:2937
+#: ../src/cdcconsole.cpp:2941
 #, c-format
 msgid "Found %d user with NMDC version %s"
 msgid_plural "Found %d users with NMDC version %s"
@@ -1391,7 +1406,7 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: ../src/cdcconsole.cpp:2945
+#: ../src/cdcconsole.cpp:2949
 #, c-format
 msgid "Found %d user with MyINFO %s"
 msgid_plural "Found %d users with MyINFO %s"
@@ -1400,66 +1415,66 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: ../src/cdcconsole.cpp:2956
+#: ../src/cdcconsole.cpp:2960
 msgid "No users found."
 msgstr "Nie znaleziono uzytkownikow."
 
-#: ../src/cdcconsole.cpp:2988
+#: ../src/cdcconsole.cpp:2992
 msgid "You have no rights to gag, drop or kick anyone."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3011
+#: ../src/cdcconsole.cpp:3015
 #, c-format
 msgid "You have no rights to drop or kick user: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3024 ../src/cdcconsole.cpp:3029
+#: ../src/cdcconsole.cpp:3028 ../src/cdcconsole.cpp:3033
 #, c-format
 msgid "You have no rights to gag user: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3033
+#: ../src/cdcconsole.cpp:3037
 #, c-format
 msgid "You have no rights to gag nick: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3086
+#: ../src/cdcconsole.cpp:3090
 #, c-format
 msgid "%s was restricted from using main chat for %s by %s with reason: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3091
+#: ../src/cdcconsole.cpp:3095
 #, c-format
 msgid "%s was allowed to use main chat again by %s with reason: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3153
+#: ../src/cdcconsole.cpp:3157
 msgid "Loaded plugins"
 msgstr "Zaladowane wtyczki"
 
-#: ../src/cdcconsole.cpp:3157
+#: ../src/cdcconsole.cpp:3161
 msgid "Plugin callbacks"
 msgstr "Zdarzenia obslugiwane przez wtyczki"
 
-#: ../src/cdcconsole.cpp:3165
+#: ../src/cdcconsole.cpp:3169
 msgid ""
 "You don't want to unload Plugman because all other plugins are loaded via "
 "it."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3188
+#: ../src/cdcconsole.cpp:3192
 msgid ""
 "You don't want to reload Plugman because all other plugins are loaded via "
 "it."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3266
+#: ../src/cdcconsole.cpp:3270
 #, c-format
 msgid ""
 "classdif_reg value must be between %d and %d. Please correct this first."
 msgstr "Prawidlowa wartosc classdif_reg jest miedzy %d i %d. Proszê to poprawiæ."
 
-#: ../src/cdcconsole.cpp:3290
+#: ../src/cdcconsole.cpp:3294
 #, c-format
 msgid "Found %d registered user with class %d"
 msgid_plural "Found %d registered users with class %d"
@@ -1468,145 +1483,145 @@ msgstr[1] "Znaleziono %d zarejestrowanych uzytkownikow z klasa %d"
 msgstr[2] "Znaleziono %d zarejestrowanych uzytkownikow z klasa %d"
 msgstr[3] "Znaleziono %d zarejestrowanych uzytkownikow z klasa %d"
 
-#: ../src/cdcconsole.cpp:3292
+#: ../src/cdcconsole.cpp:3296
 #, c-format
 msgid "No registered users with class %d found."
 msgstr "Brak zarejestrowanych uzytkownikow z klasa %d"
 
-#: ../src/cdcconsole.cpp:3342
+#: ../src/cdcconsole.cpp:3346
 msgid "You specified invalid class number."
 msgstr "Okreslono nieprawidlowy numer klasy."
 
-#: ../src/cdcconsole.cpp:3384
+#: ../src/cdcconsole.cpp:3388
 #, c-format
 msgid "Registered user not found: %s"
 msgstr "Nie znaleziono zarejestrowanego uzytkownika: %s"
 
-#: ../src/cdcconsole.cpp:3386 ../src/cdcconsole.cpp:3405
+#: ../src/cdcconsole.cpp:3390 ../src/cdcconsole.cpp:3409
 #, c-format
 msgid "User is already registered: %s"
 msgstr "Uzytkownik %s jest juz zarejestrowany."
 
-#: ../src/cdcconsole.cpp:3423 ../src/script_api.cpp:736
+#: ../src/cdcconsole.cpp:3427 ../src/script_api.cpp:747
 #, c-format
 msgid ""
 "You have been registered with class %d. Please set your password by using "
 "following command: +passwd <password>"
 msgstr "Zostales zarejestrowany z klasa %d. Ustaw sobie teraz haslo za pomoca komendy +passwd <twoje_haslo>."
 
-#: ../src/cdcconsole.cpp:3443
+#: ../src/cdcconsole.cpp:3447
 #, c-format
 msgid "%s has been registered with class %d and password."
 msgstr "%s zostal zarejestrowany z klasa %d oraz haslem."
 
-#: ../src/cdcconsole.cpp:3445
+#: ../src/cdcconsole.cpp:3449
 #, c-format
 msgid ""
 "%s has been registered with class %d. Please tell him to set his password."
 msgstr "%s zostal zarejestrowany z klasa %d. Prosze, poinformuj teraz uzytkownika, aby ustawil sobie haslo."
 
-#: ../src/cdcconsole.cpp:3447
+#: ../src/cdcconsole.cpp:3451
 msgid "Error adding new user."
 msgstr "Blad podczas dodawania nowego uzytkownika."
 
-#: ../src/cdcconsole.cpp:3464
+#: ../src/cdcconsole.cpp:3468
 #, c-format
 msgid "%s has been unregistered, user information"
 msgstr "%s zostal wyrejestrowany, informacja o uzytkowniku"
 
-#: ../src/cdcconsole.cpp:3505
+#: ../src/cdcconsole.cpp:3509
 #, c-format
 msgid "Error unregistering %s, user information"
 msgstr "Blad wyrejestrowania %s, informacja o uzytkowniku"
 
-#: ../src/cdcconsole.cpp:3514
+#: ../src/cdcconsole.cpp:3518
 msgid "Password updated."
 msgstr "Haslo zaktualizowane."
 
-#: ../src/cdcconsole.cpp:3522
+#: ../src/cdcconsole.cpp:3526
 msgid ""
 "You can change your password now. Use the +passwd command followed by your "
 "new password."
 msgstr "Mozesz teraz zmienic haslo, uzywajac komendy +passwd <nowe_haslo>."
 
-#: ../src/cdcconsole.cpp:3581 ../src/script_api.cpp:846
+#: ../src/cdcconsole.cpp:3585 ../src/script_api.cpp:857
 #, c-format
 msgid "Your class has been changed to %d."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3588
+#: ../src/cdcconsole.cpp:3592
 msgid "Your registration has been enabled."
 msgstr "Twoja rejestracja zostala wlaczona."
 
-#: ../src/cdcconsole.cpp:3595
+#: ../src/cdcconsole.cpp:3599
 msgid "Your registration has been disabled."
 msgstr "Twoja rejestracja zostala wylaczona."
 
-#: ../src/cdcconsole.cpp:3600
+#: ../src/cdcconsole.cpp:3604
 #, c-format
 msgid "You are protected from being kicked by class %s and lower."
 msgstr "Jestes chwoniony przed kopnieciem przez uzytkownikow klasy %s i nizszych."
 
-#: ../src/cdcconsole.cpp:3609
+#: ../src/cdcconsole.cpp:3613
 #, c-format
 msgid "You kicks are hidden from class %s and lower."
 msgstr "Tylko uzytkownicy o klasie powyzej %s beda widzieli, jak bedziesz wykopywal innych."
 
-#: ../src/cdcconsole.cpp:3617
+#: ../src/cdcconsole.cpp:3621
 #, c-format
 msgid "%s registration information"
 msgstr "%s informacje o rejestracji"
 
-#: ../src/cdcconsole.cpp:3636
+#: ../src/cdcconsole.cpp:3640
 msgid "Your share is now visible."
 msgstr "Twoje udostepnione pliki sa teraz widoczne."
 
-#: ../src/cdcconsole.cpp:3643
+#: ../src/cdcconsole.cpp:3647
 msgid "Your share is now hidden."
 msgstr "Twoje udostepnione pliki sa teraz ukryte."
 
-#: ../src/cdcconsole.cpp:3677 ../src/cdcconsole.cpp:3714
+#: ../src/cdcconsole.cpp:3681 ../src/cdcconsole.cpp:3718
 msgid "Your operator key is now visible."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3701 ../src/cdcconsole.cpp:3738
+#: ../src/cdcconsole.cpp:3705 ../src/cdcconsole.cpp:3742
 msgid "Your operator key is now hidden."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3748
+#: ../src/cdcconsole.cpp:3752
 #, c-format
 msgid "Your fake IP is now set: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3751
+#: ../src/cdcconsole.cpp:3755
 #, c-format
 msgid "Specified fake IP is not valid: %s"
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3758
+#: ../src/cdcconsole.cpp:3762
 msgid "Your fake IP is now unset, please reconnect to get back your real IP."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:3763
+#: ../src/cdcconsole.cpp:3767
 #, c-format
 msgid "Updated variable %s to value %s for user: %s"
 msgstr "Zaktualizowanie zmiennej %s na wartosc %s dla uzytkownika %s."
 
-#: ../src/cdcconsole.cpp:3766
+#: ../src/cdcconsole.cpp:3770
 #, c-format
 msgid "Password reset for user: %s"
 msgstr "Resetowanie hasla dla: %s"
 
-#: ../src/cdcconsole.cpp:3779
+#: ../src/cdcconsole.cpp:3783
 #, c-format
 msgid "Error setting variable %s to value %s for user: %s"
 msgstr "Blad ustawienie zmiennej %s na wartosc %s dla uzytkownika %s"
 
-#: ../src/cdcconsole.cpp:3805
+#: ../src/cdcconsole.cpp:3809
 msgid "Command console is not ready."
 msgstr "Konsola polecen nie jest gotowa."
 
-#: ../src/cdcconsole.cpp:3891
+#: ../src/cdcconsole.cpp:3895
 #, c-format
 msgid "Message delivered to %d user in %s."
 msgid_plural "Message delivered to %d users in %s."
@@ -1615,279 +1630,281 @@ msgstr[1] "Wiadomosc dostarczona do %d uzytkownikow w %s"
 msgstr[2] "Wiadomosc dostarczona do %d uzytkownikow w %s"
 msgstr[3] "Wiadomosc dostarczona do %d uzytkownikow w %s"
 
-#: ../src/cdcproto.cpp:124
+#: ../src/cdcproto.cpp:118
 #, c-format
 msgid "Probably attempt of NULL character attack: %s"
 msgstr "Prawdopodobnie proba ataku NULL w postaci: %s"
 
-#: ../src/cdcproto.cpp:268
+#: ../src/cdcproto.cpp:262
 msgid "See you."
 msgstr "Do zobaczenia."
 
-#: ../src/cdcproto.cpp:338
+#: ../src/cdcproto.cpp:332
 msgid "Invalid login sequence, your client already sent key."
 msgstr "Nieprawidlowa sekwencja logowania: Twoj klient wyslal juz klucz."
 
-#: ../src/cdcproto.cpp:355
+#: ../src/cdcproto.cpp:349
 msgid "Your client provided invalid key in response to lock."
 msgstr "Twoj klient wyslal nieprawidlowy klucz w odpowiedzi na komende Lock."
 
-#: ../src/cdcproto.cpp:379
+#: ../src/cdcproto.cpp:373
 msgid "Invalid login sequence, your client already sent supports."
 msgstr "Nieprawidlowa sekwencja logowania: klient juz wyslal komende Supports."
 
-#: ../src/cdcproto.cpp:573
+#: ../src/cdcproto.cpp:567
 msgid "Invalid login sequence, your client already validated nick."
 msgstr "Nieprawidlowa sekwencja logowania: klient juz przeszedl walidacje nazwy uzytkownika."
 
-#: ../src/cdcproto.cpp:624
+#: ../src/cdcproto.cpp:618
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
 msgstr "Limit uzytkownikow w strefie krajow %s zostal przekroczony. Jest %d uzytkownikow w strefie na %d w ogole."
 
-#: ../src/cdcproto.cpp:627
+#: ../src/cdcproto.cpp:621
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
 msgstr "Limit uzytkownikow w zakresie IP %s zostal przekroczony. Jest %d uzytkownikow w tym zakresie na %d w ogole."
 
-#: ../src/cdcproto.cpp:641
+#: ../src/cdcproto.cpp:635
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
 msgstr "Limit uzytkownikow w glownej strefie zostal przekroczony. Jest %d uzytkownikow w strefie na %d w ogole."
 
-#: ../src/cdcproto.cpp:649
+#: ../src/cdcproto.cpp:643
 #, c-format
 msgid "User limit exceeded at %d online users."
 msgstr "Limit uzytkownikow przekroczony. Jest %d uzytkownikow online."
 
-#: ../src/cdcproto.cpp:658
+#: ../src/cdcproto.cpp:652
 msgid "This is a registered users only hub."
 msgstr "Hub tylko dla zarejestrowanych uzytkownikow."
 
-#: ../src/cdcproto.cpp:681
+#: ../src/cdcproto.cpp:675
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
 msgstr "Limit uzytkownikow z adresem IP %s przekroczony: %d"
 
-#: ../src/cdcproto.cpp:697
+#: ../src/cdcproto.cpp:691
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr "Nieudana autoryzacja adresu IP uzytkownika %s"
 
-#: ../src/cdcproto.cpp:699
+#: ../src/cdcproto.cpp:693
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
 msgstr "Autoryzacja adresu IP dla tego konta niezgodna jest z adresem IP: %s"
 
-#: ../src/cdcproto.cpp:774
+#: ../src/cdcproto.cpp:768
 msgid "Invalid login sequence, you client already sent password."
 msgstr "Nieprawidlowa sekwencja logowania: haslo klienta juz bylo wyslane."
 
-#: ../src/cdcproto.cpp:859
+#: ../src/cdcproto.cpp:853
 msgid "Incorrect password"
 msgstr "Nieprawidlowe haslo"
 
-#: ../src/cdcproto.cpp:878
+#: ../src/cdcproto.cpp:872
 msgid "You've been temporarily banned due to incorrect password."
 msgstr "Zostales tymczasowo zbanowany z powodu niewlasciwego hasla."
 
-#: ../src/cdcproto.cpp:900
+#: ../src/cdcproto.cpp:894
 msgid ""
 "Invalid login sequence, you didn't specify support for hub URL command."
 msgstr "Nieprawidlowa sekwencjia logowania: nie okreslono wsparcia dla komendy HubURL."
 
-#: ../src/cdcproto.cpp:910
+#: ../src/cdcproto.cpp:904
 msgid "Invalid login sequence, your client already sent hub URL."
 msgstr "Nieprawidlowa sekwencja logowania: klient juz wyslal komende HubURL."
 
-#: ../src/cdcproto.cpp:954
+#: ../src/cdcproto.cpp:948
 msgid "Invalid login sequence, you client already sent version."
 msgstr "Nieprawidlowa sekwencja logowania: klient juz wyslal informacje o wersji."
 
-#: ../src/cdcproto.cpp:1029
+#: ../src/cdcproto.cpp:1023
 msgid "Your client didn't specify a tag."
 msgstr "Twoj klient nie okreslil taga."
 
-#: ../src/cdcproto.cpp:1137
+#: ../src/cdcproto.cpp:1131
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s (%s for active users, %s for passive "
 "users)."
 msgstr "Udostepniasz %s ale minimalna dozwolona wartosc to %s (%s dla aktywnych, a %s dla pasywnych uzytkownikow)."
 
-#: ../src/cdcproto.cpp:1139
+#: ../src/cdcproto.cpp:1133
 #, c-format
 msgid "You share %s but maximum allowed is %s."
 msgstr "Udostepniasz %s, ale maksymalna dozwolona wartosc to %s."
 
-#: ../src/cdcproto.cpp:1203
+#: ../src/cdcproto.cpp:1197
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d users. Try again later or set up an active"
 " connection."
 msgstr "Limit uzytkownikow pasywnych przekroczony przy %d uzytkownikach. Jesli to mozliwe, sprobuj skonfigurowac tryb aktywny i ponownie wejsc na hub."
 
-#: ../src/cdcproto.cpp:1223 ../src/cserverdc.cpp:1643
+#: ../src/cdcproto.cpp:1217 ../src/cserverdc.cpp:1662
 msgid "You are prohibited from entering this hub"
 msgstr "Zakaz wejscia na hub."
 
-#: ../src/cdcproto.cpp:1223 ../src/cserverdc.cpp:1643
+#: ../src/cdcproto.cpp:1217 ../src/cserverdc.cpp:1662
 msgid "You are banned from this hub"
 msgstr "Zostales zbanowany"
 
-#: ../src/cdcproto.cpp:1388
+#: ../src/cdcproto.cpp:1382
 #, c-format
 msgid "You are already in the hub using another nick: %s"
 msgstr "Jestes juz na hubie na innym nicku: %s"
 
-#: ../src/cdcproto.cpp:1514
+#: ../src/cdcproto.cpp:1508
 msgid "Invalid login sequence, you didn't specify support for IN command."
 msgstr "Nieprawidlowa sekwencjia logowania: nie okreslono wsparcia dla komendy IN."
 
-#: ../src/cdcproto.cpp:1616
+#: ../src/cdcproto.cpp:1610
 msgid ""
 "Invalid login sequence, you didn't specify support for ExtJSON command."
 msgstr "Nieprawidlowa sekwencjia logowania: nie okreslono wsparcia dla komendy ExtJSON."
 
-#: ../src/cdcproto.cpp:1728 ../src/cdcproto.cpp:1842
+#: ../src/cdcproto.cpp:1722 ../src/cdcproto.cpp:1836
 #, c-format
 msgid "You're trying to send private message to an offline user: %s"
 msgstr "Probujesz wyslac prywatna wiadomosc do uzytkownika ktory jest w trybie niedostepnym: %s"
 
-#: ../src/cdcproto.cpp:1747 ../src/cdcproto.cpp:1848
+#: ../src/cdcproto.cpp:1741 ../src/cdcproto.cpp:1842
 #, c-format
 msgid "You're trying to send private message to a bot: %s"
 msgstr "Probujesz wyslac prywatna wiadomosc do bota: %s"
 
-#: ../src/cdcproto.cpp:1756 ../src/cdcproto.cpp:1856
+#: ../src/cdcproto.cpp:1750 ../src/cdcproto.cpp:1850
 msgid "You're not allowed to use private chat right now."
 msgstr "Nie jestes uprawniony do prowadzenia prywatnych rozmow."
 
-#: ../src/cdcproto.cpp:1759 ../src/cdcproto.cpp:1859
+#: ../src/cdcproto.cpp:1753 ../src/cdcproto.cpp:1853
 #, c-format
 msgid "User tries to speak with gag in PM to %s: %s"
 msgstr "Zakneblowany uzytkownik probuje rozmawiac na PM z %s: %s"
 
-#: ../src/cdcproto.cpp:1765 ../src/cdcproto.cpp:1865
-msgid "Private chat is currently disabled for users with your class."
-msgstr "Prywatne rozmowy sa wylaczone dla uzytkownikow twojej klasy."
+#: ../src/cdcproto.cpp:1759 ../src/cdcproto.cpp:1859
+msgid ""
+"Private chat is currently disabled for users with your class, please "
+"consider registering on the hub or contact an operator."
+msgstr ""
 
-#: ../src/cdcproto.cpp:1772 ../src/cdcproto.cpp:1872
+#: ../src/cdcproto.cpp:1766 ../src/cdcproto.cpp:1866
 msgid "You can't talk to this user."
 msgstr "Nie mozesz rozmawiac z tym uzytkownikiem."
 
-#: ../src/cdcproto.cpp:1784
+#: ../src/cdcproto.cpp:1778
 #, c-format
 msgid "Same message flood in PM: %s"
 msgstr "Flood identycznej wiadomosci na PM: %s"
 
-#: ../src/cdcproto.cpp:1803
+#: ../src/cdcproto.cpp:1797
 #, c-format
 msgid "Your PM contains %d characters but maximum allowed is %d characters."
 msgstr "Twoja wiadomosc na PM posiada %d znakow, maksymalna ilosc znakow to %d."
 
-#: ../src/cdcproto.cpp:1884
+#: ../src/cdcproto.cpp:1878
 #, c-format
 msgid "Same message flood in MCTo: %s"
 msgstr "Flood identycznej wiadomosci MCTo: %s"
 
-#: ../src/cdcproto.cpp:1903 ../src/cdcproto.cpp:4323
+#: ../src/cdcproto.cpp:1897 ../src/cdcproto.cpp:4274
 #, c-format
 msgid ""
 "Your chat message contains %d characters but maximum allowed is %d "
 "characters."
 msgstr "Twoja wiadomosc posiada %d znakow, a dozwolona ilosc znakow to %d."
 
-#: ../src/cdcproto.cpp:1946
+#: ../src/cdcproto.cpp:1940
 #, c-format
 msgid ""
 "Your message wasn't sent because minimum chat delay is %lu ms but you waited"
 " only %s."
 msgstr "Twoja wiadomosc nie zostala wyslana, poniewaz minimalny odstep miedzy wiadomosciami to %lu ms, a Ty wyslales kolejna wiadomosc po %s."
 
-#: ../src/cdcproto.cpp:1957
+#: ../src/cdcproto.cpp:1951
 msgid "You're not allowed to use main chat right now."
 msgstr "Nie mozesz obecnie uzywac czatu glownego."
 
-#: ../src/cdcproto.cpp:1960
+#: ../src/cdcproto.cpp:1954
 #, c-format
 msgid "User tries to speak with gag in MC: %s"
 msgstr "Zakneblowany uzytkownik probuje rozmawiac na MC: %s"
 
-#: ../src/cdcproto.cpp:2080 ../src/cdcproto.cpp:2292
+#: ../src/cdcproto.cpp:2072 ../src/cdcproto.cpp:2284
 #, c-format
 msgid "You're trying to connect to a bot: %s"
 msgstr "Probujesz sie polaczyc z uzytkownikiem, ktory jest botem: %s"
 
-#: ../src/cdcproto.cpp:2089 ../src/cdcproto.cpp:2301
+#: ../src/cdcproto.cpp:2081 ../src/cdcproto.cpp:2293
 msgid "You're trying to connect to yourself."
 msgstr "Probujesz polaczyc sie z samym soba."
 
-#: ../src/cdcproto.cpp:2096 ../src/cdcproto.cpp:2326
+#: ../src/cdcproto.cpp:2088 ../src/cdcproto.cpp:2318
 #, c-format
 msgid "You can't download unless you are registered with class %d."
 msgstr "Nie mozesz pobierac, gdyz masz klase nizsza niz %d"
 
-#: ../src/cdcproto.cpp:2123 ../src/cdcproto.cpp:2353
+#: ../src/cdcproto.cpp:2115 ../src/cdcproto.cpp:2345
 #, c-format
 msgid "You can't download unless you share %s."
 msgstr "Nie mozesz pobierac, chyba ze udostepnisz %s"
 
-#: ../src/cdcproto.cpp:2132 ../src/cdcproto.cpp:2362
+#: ../src/cdcproto.cpp:2124 ../src/cdcproto.cpp:2354
 msgid "You're not allowed to download from anyone."
 msgstr "Nie masz uprawnien do pobierania plikow."
 
-#: ../src/cdcproto.cpp:2139 ../src/cdcproto.cpp:2369
+#: ../src/cdcproto.cpp:2131 ../src/cdcproto.cpp:2361
 #, c-format
 msgid "You can't download from this user: %s"
 msgstr "Nie mozesz sciagac od uzytkownika %s"
 
-#: ../src/cdcproto.cpp:2148
+#: ../src/cdcproto.cpp:2140
 #, c-format
 msgid "You can't download from this user because one of you is in a LAN: %s"
 msgstr "Nie mozna pobierac od uzytkownika, poniewaz jeden z was jest w sieci LAN: %s"
 
-#: ../src/cdcproto.cpp:2157 ../src/cdcproto.cpp:2378
+#: ../src/cdcproto.cpp:2149 ../src/cdcproto.cpp:2370
 #, c-format
 msgid "You can't download from this user because he is in chat only mode: %s"
 msgstr "Nie mozna pobierac od uzytkownika, poniewaz jest on tylko w trybie do rozmow: %s"
 
-#: ../src/cdcproto.cpp:2248
+#: ../src/cdcproto.cpp:2240
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your connection request with real "
 "one: %s -> %s"
 msgstr "Zmieniam Twoj blednie podany przy probie polaczenia numer IP %s na faktyczny: %s"
 
-#: ../src/cdcproto.cpp:2283
+#: ../src/cdcproto.cpp:2275
 #, c-format
 msgid "You're trying to connect to an offline user: %s"
 msgstr "Probujesz sie polaczyc z uzytkownikiem, ktory nie jest obecny na hubie: %s"
 
-#: ../src/cdcproto.cpp:2308
+#: ../src/cdcproto.cpp:2300
 #, c-format
 msgid ""
 "You can't download from this user, because he is also in passive mode: %s"
 msgstr "Nie mozesz pobierac od uzytkownika, poniewaz jest on w trybie pasywnym: %s"
 
-#: ../src/cdcproto.cpp:2317
+#: ../src/cdcproto.cpp:2309
 #, c-format
 msgid ""
 "You can't download from this user while your share is hidden, because you "
 "are in passive mode: %s"
 msgstr "Nie mozna pobrac od tego uzytkownika w czasie, gdy ma ukryte udostepnienie, poniewa¿ jestes w trybie pasywnym: %s"
 
-#: ../src/cdcproto.cpp:2427 ../src/cdcproto.cpp:2701 ../src/cdcproto.cpp:2880
+#: ../src/cdcproto.cpp:2419 ../src/cdcproto.cpp:2693 ../src/cdcproto.cpp:2872
 msgid ""
 "Sorry, hub load is too high to process your search request. Please try again"
 " later."
 msgstr "Niestety obciazenie huba jest zbyt duze, aby przetwozyc Twoje wyszukiwanie. Sprobuj pozniej."
 
-#: ../src/cdcproto.cpp:2504 ../src/cdcproto.cpp:2759 ../src/cdcproto.cpp:2923
+#: ../src/cdcproto.cpp:2496 ../src/cdcproto.cpp:2751 ../src/cdcproto.cpp:2915
 msgid "Don't search too often."
 msgstr "Wyszukujesz zbyt czesto."
 
-#: ../src/cdcproto.cpp:2505 ../src/cdcproto.cpp:2760 ../src/cdcproto.cpp:2924
+#: ../src/cdcproto.cpp:2497 ../src/cdcproto.cpp:2752 ../src/cdcproto.cpp:2916
 #, c-format
 msgid "You can perform %d search in %s."
 msgid_plural "You can perform %d searches in %s."
@@ -1896,21 +1913,21 @@ msgstr[1] "Mozna wykonac %d wyszukiwan w %s."
 msgstr[2] "Mozna wykonac %d wyszukiwan w %s."
 msgstr[3] "Mozna wykonac %d wyszukiwan w %s."
 
-#: ../src/cdcproto.cpp:2527 ../src/cdcproto.cpp:2783 ../src/cdcproto.cpp:2947
+#: ../src/cdcproto.cpp:2519 ../src/cdcproto.cpp:2775 ../src/cdcproto.cpp:2939
 #, c-format
 msgid "You can't search unless you are registered with class %d."
 msgstr "Nie mozesz wyszukiwac, jesli nie jestes zarejestrowany z klasa minimum %d"
 
-#: ../src/cdcproto.cpp:2557 ../src/cdcproto.cpp:2813 ../src/cdcproto.cpp:2977
+#: ../src/cdcproto.cpp:2549 ../src/cdcproto.cpp:2805 ../src/cdcproto.cpp:2969
 #, c-format
 msgid "You can't search unless you share %s."
 msgstr "Nie mozesz wyszukiwac, jesli nie udostepnisz minimum %s"
 
-#: ../src/cdcproto.cpp:2566 ../src/cdcproto.cpp:2822 ../src/cdcproto.cpp:2986
+#: ../src/cdcproto.cpp:2558 ../src/cdcproto.cpp:2814 ../src/cdcproto.cpp:2978
 msgid "You're not allowed to search for anything."
 msgstr "Nie masz uprawnien do wyszukiwania."
 
-#: ../src/cdcproto.cpp:2609
+#: ../src/cdcproto.cpp:2601
 #, c-format
 msgid "Minimum search length is %d character."
 msgid_plural "Minimum search length is %d characters."
@@ -1919,85 +1936,85 @@ msgstr[1] "Minimalna dlugosc wyszukiwanej frazy to %d znaki."
 msgstr[2] "Minimalna dlugosc wyszukiwanej frazy to %d znakow."
 msgstr[3] "Minimalna dlugosc wyszukiwanej frazy to %d znakow."
 
-#: ../src/cdcproto.cpp:2631 ../src/cdcproto.cpp:2839
+#: ../src/cdcproto.cpp:2623 ../src/cdcproto.cpp:2831
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your search request with real one: "
 "%s -> %s"
 msgstr "Zmieniam Twoj blednie podany przy wyszukiwaniu numer IP %s na faktyczny: %s"
 
-#: ../src/cdcproto.cpp:2679 ../src/cdcproto.cpp:2858
+#: ../src/cdcproto.cpp:2671 ../src/cdcproto.cpp:2850
 msgid ""
 "Invalid login sequence, you didn't specify support for short TTH search "
 "command."
 msgstr "Nieprawidlowa sekwencjia logowania: nie okreslono wsparcia dla komendy wyszukiwania TTH."
 
-#: ../src/cdcproto.cpp:3065
+#: ../src/cdcproto.cpp:3057
 msgid "Invalid login sequence, you didn't identify yourself as pinger."
 msgstr "Nieprawidlowa sekwencja logowania: nie przedstawiles sie jako pinger."
 
-#: ../src/cdcproto.cpp:3075
+#: ../src/cdcproto.cpp:3067
 msgid "Invalid login sequence, you already sent pinger information."
 msgstr "Nieprawidlowa sekwencja logowania: juz wyslales informacje pingera."
 
-#: ../src/cdcproto.cpp:3094
+#: ../src/cdcproto.cpp:3086
 #, c-format
 msgid "Pinger entered the hub: %s"
 msgstr "Pinger wszedl na hub: %s"
 
-#: ../src/cdcproto.cpp:3241
+#: ../src/cdcproto.cpp:3233
 #, c-format
 msgid "You're trying to redirect an offline user: %s"
 msgstr "Probujesz sie polaczyc z uzytkownikiem, ktory nie jest obecny na hubie: %s"
 
-#: ../src/cdcproto.cpp:3247
+#: ../src/cdcproto.cpp:3239
 #, c-format
 msgid "You're trying to redirect a bot: %s"
 msgstr "Starasz sie przekierowac uzytkownika, ktory jest botem: %s"
 
-#: ../src/cdcproto.cpp:3253
+#: ../src/cdcproto.cpp:3245
 #, c-format
 msgid "You're trying to redirect a protected user: %s"
 msgstr "Starasz sie przekierowac uzytkownika, ktory jest chroniony: %s"
 
-#: ../src/cdcproto.cpp:3261
+#: ../src/cdcproto.cpp:3253
 msgid "Please specify valid redirect address."
 msgstr "Prosze podac poprawny adres przekierowania."
 
-#: ../src/cdcproto.cpp:3270
+#: ../src/cdcproto.cpp:3262
 #, c-format
 msgid "You are being redirected to %s because: %s"
 msgstr "Zostaniesz przekierowany na %s poniewaz: %s"
 
-#: ../src/cdcproto.cpp:3311
+#: ../src/cdcproto.cpp:3303
 msgid "Please provide a valid reason."
 msgstr "Prosze podac konkretny powod."
 
-#: ../src/cdcproto.cpp:3317
+#: ../src/cdcproto.cpp:3309
 msgid "You can't ban a user that is protected or has higher class."
 msgstr "Nie mozesz zbanowac uzytkownika chronionego lub o klasie wyzszej od Twojej."
 
-#: ../src/cdcproto.cpp:3323
+#: ../src/cdcproto.cpp:3315
 msgid "You can't ban a bot."
 msgstr "Nie mozna zbanowac bota."
 
-#: ../src/cdcproto.cpp:3329
+#: ../src/cdcproto.cpp:3321
 #, c-format
 msgid ""
 "You are temporarily prohibited from entering the hub for %s because: %s"
 msgstr "Jestes tymczasowo zbanowany na %s poniewaz %s"
 
-#: ../src/cdcproto.cpp:3331
+#: ../src/cdcproto.cpp:3323
 #, c-format
 msgid "You are permanently banned from the hub because: %s"
 msgstr "Zostales zbanowany na hubie poniewaz: %s"
 
-#: ../src/cdcproto.cpp:3366
+#: ../src/cdcproto.cpp:3358
 #, c-format
 msgid "No banned user found with IP %s."
 msgstr "Nie znaleziono zbanowanych uzytkownikow z IP %s"
 
-#: ../src/cdcproto.cpp:3370
+#: ../src/cdcproto.cpp:3362
 #, c-format
 msgid "Removed %d ban."
 msgid_plural "Removed %d bans."
@@ -2006,41 +2023,41 @@ msgstr[1] "Usunieto %d bany."
 msgstr[2] "Usunieto %d banow."
 msgstr[3] "Usunieto %d banow."
 
-#: ../src/cdcproto.cpp:3440
+#: ../src/cdcproto.cpp:3433
 #, c-format
 msgid "Topic is set to: %s"
 msgstr "Temat ustawiony jest na: %s"
 
-#: ../src/cdcproto.cpp:3598
+#: ../src/cdcproto.cpp:3591
 #, c-format
 msgid "Invalid login sequence, your client must validate nick first: %s"
 msgstr "Nieprawidlowa sekwencja logowania: pominieto walidacje nicka: %s"
 
-#: ../src/cdcproto.cpp:3600
+#: ../src/cdcproto.cpp:3593
 msgid "Invalid login sequence, your client must validate nick first."
 msgstr "Nieprawidlowa sekwencja logowania: pominieto walidacje nicka."
 
-#: ../src/cdcproto.cpp:3667
+#: ../src/cdcproto.cpp:3660
 #, c-format
 msgid "You have no rights to perform following operator action: %s"
 msgstr "Nie masz uprawnien, aby wykonac nastepujaca komende operatora: %s"
 
-#: ../src/cdcproto.cpp:3806
+#: ../src/cdcproto.cpp:3799
 #, c-format
 msgid "Your client sent malformed protocol command: %s"
 msgstr "Twoj klient wyslal polecenie niezgodne z protokolem: %s"
 
-#: ../src/cdcproto.cpp:3917
+#: ../src/cdcproto.cpp:3910
 #, c-format
 msgid "Your client sent too long protocol command: %s"
 msgstr "Twoj klient wyslal polecenie niezgodne z protokolem: %s"
 
-#: ../src/cdcproto.cpp:3932
+#: ../src/cdcproto.cpp:3925
 #, c-format
 msgid "Nick spoofing attempt detected from your client: %s"
 msgstr "Wykryto probe falszowania nicka przez Twojego klienta: %s"
 
-#: ../src/cdcproto.cpp:3964
+#: ../src/cdcproto.cpp:3957
 #, c-format
 msgid ""
 "User you're trying connect to doesn't have compatible TLS version in order "
@@ -2048,38 +2065,38 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:3965 ../src/cdcproto.cpp:3988 ../src/cdcproto.cpp:4009
-#: ../src/cdcproto.cpp:4025
+#: ../src/cdcproto.cpp:3958 ../src/cdcproto.cpp:3981 ../src/cdcproto.cpp:4002
+#: ../src/cdcproto.cpp:4018
 msgid "Consider these more or less modern clients"
 msgstr ""
 
-#: ../src/cdcproto.cpp:3987
+#: ../src/cdcproto.cpp:3980
 #, c-format
 msgid ""
 "Your client doesn't have compatible TLS version in order to establish secure"
 " connection to following user, please upgrade or replace your client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4008
+#: ../src/cdcproto.cpp:4001
 #, c-format
 msgid ""
 "Your client doesn't support secure connections to following user, please "
 "upgrade or replace your client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4024
+#: ../src/cdcproto.cpp:4017
 #, c-format
 msgid ""
 "User you're trying connect to doesn't support secure connections, tell him "
 "to upgrade or replace his client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4254 ../src/cdcproto.cpp:4273
+#: ../src/cdcproto.cpp:4205 ../src/cdcproto.cpp:4224
 #, c-format
 msgid "Unknown hub command: %s"
 msgstr "Nieznana komenda huba: %s"
 
-#: ../src/cdcproto.cpp:4331
+#: ../src/cdcproto.cpp:4282
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr "Twoja wiadomosc posiada %d wierszy, a dozwolona ilosc wierszy to %d."
@@ -2426,7 +2443,7 @@ msgid "Kernel: %s [%s]"
 msgstr "Jadro: %s [%s]"
 
 #: ../src/cinfoserver.cpp:300 ../src/cinfoserver.cpp:563
-#: ../src/cserverdc.cpp:2866
+#: ../src/cserverdc.cpp:2885 ../src/cserverdc.cpp:2896
 #, c-format
 msgid "Uptime: %s"
 msgstr "Czas pracy: %s"
@@ -2595,105 +2612,101 @@ msgstr ""
 msgid "Temporary IP ban list size: %d / %d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1048
+#: ../src/cmaxminddb.cpp:908
 msgid "MaxMindDB information"
 msgstr "MaxMindDB informacje"
 
-#: ../src/cmaxminddb.cpp:1049
+#: ../src/cmaxminddb.cpp:909
 #, c-format
 msgid "MaxMindDB version: %s"
 msgstr "MaxMindDB wersja: %s"
 
-#: ../src/cmaxminddb.cpp:1050
+#: ../src/cmaxminddb.cpp:910
 #, c-format
-msgid "ICU version: %d.%d.%d"
-msgstr "ICU wersja: %d.%d.%d"
+msgid "ICU version: %s"
+msgstr ""
 
-#: ../src/cmaxminddb.cpp:1051
+#: ../src/cmaxminddb.cpp:911
 #, c-format
 msgid "Database path: %s"
 msgstr "Œcie¿ka bazy danych: %s"
 
-#: ../src/cmaxminddb.cpp:1052
+#: ../src/cmaxminddb.cpp:912
 #, c-format
 msgid "Names language: %s"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1053
+#: ../src/cmaxminddb.cpp:913
 #, c-format
 msgid "Hub encoding: %s"
 msgstr "Kodowanie huba: %s"
 
-#: ../src/cmaxminddb.cpp:1054
+#: ../src/cmaxminddb.cpp:914
 #, c-format
 msgid "Total requests: %lu"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1057
+#: ../src/cmaxminddb.cpp:917
 #, c-format
 msgid "Cached requests: %lu"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1058
+#: ../src/cmaxminddb.cpp:918
 #, c-format
 msgid "Cached items: %lu"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1062
+#: ../src/cmaxminddb.cpp:922
 msgid "Country database"
 msgstr "Baza danych kraju"
 
-#: ../src/cmaxminddb.cpp:1063 ../src/cmaxminddb.cpp:1077
-#: ../src/cmaxminddb.cpp:1091
+#: ../src/cmaxminddb.cpp:923 ../src/cmaxminddb.cpp:937
+#: ../src/cmaxminddb.cpp:951
 msgid "Loaded"
 msgstr "Zaladowany"
 
-#: ../src/cmaxminddb.cpp:1063 ../src/cmaxminddb.cpp:1077
-#: ../src/cmaxminddb.cpp:1091
+#: ../src/cmaxminddb.cpp:923 ../src/cmaxminddb.cpp:937
+#: ../src/cmaxminddb.cpp:951
 msgid "Not loaded"
 msgstr "Nie zaladowany"
 
-#: ../src/cmaxminddb.cpp:1067 ../src/cmaxminddb.cpp:1081
-#: ../src/cmaxminddb.cpp:1095
+#: ../src/cmaxminddb.cpp:927 ../src/cmaxminddb.cpp:941
+#: ../src/cmaxminddb.cpp:955
 #, c-format
 msgid "Binary version: %d.%d"
 msgstr "Wersja binarna: %d . %d"
 
-#: ../src/cmaxminddb.cpp:1068 ../src/cmaxminddb.cpp:1082
-#: ../src/cmaxminddb.cpp:1096
+#: ../src/cmaxminddb.cpp:928 ../src/cmaxminddb.cpp:942
+#: ../src/cmaxminddb.cpp:956
 #, c-format
 msgid "Build time: %s"
 msgstr "Czas budowy: %s"
 
-#: ../src/cmaxminddb.cpp:1069 ../src/cmaxminddb.cpp:1083
-#: ../src/cmaxminddb.cpp:1097
+#: ../src/cmaxminddb.cpp:929 ../src/cmaxminddb.cpp:943
+#: ../src/cmaxminddb.cpp:957
 #, c-format
 msgid "Node count: %d"
 msgstr ""
 
-#: ../src/cmaxminddb.cpp:1070 ../src/cmaxminddb.cpp:1084
-#: ../src/cmaxminddb.cpp:1098
+#: ../src/cmaxminddb.cpp:930 ../src/cmaxminddb.cpp:944
+#: ../src/cmaxminddb.cpp:958
 #, c-format
 msgid "File name: %s"
 msgstr "Nazwa pliku: %s"
 
-#: ../src/cmaxminddb.cpp:1073 ../src/cmaxminddb.cpp:1087
-#: ../src/cmaxminddb.cpp:1101
+#: ../src/cmaxminddb.cpp:933 ../src/cmaxminddb.cpp:947
+#: ../src/cmaxminddb.cpp:961
 #, c-format
 msgid "File size: %s"
 msgstr "Rozmiar pliku: %s"
 
-#: ../src/cmaxminddb.cpp:1076
+#: ../src/cmaxminddb.cpp:936
 msgid "City database"
 msgstr "Baza danych miast"
 
-#: ../src/cmaxminddb.cpp:1090
+#: ../src/cmaxminddb.cpp:950
 msgid "ASN database"
 msgstr "Baza danych ASN"
-
-#: ../src/cmysql.cpp:54
-msgid "Can not initiate MySQL structure"
-msgstr "Nie mo¿na zainicjowaæ struktury MySQL"
 
 #: ../src/cpenaltylist.cpp:209
 msgid "Rights and restrictions"
@@ -2729,7 +2742,7 @@ msgstr "Czat operatorow: %s"
 msgid "Kick: %s"
 msgstr "Kopniecia: %s"
 
-#: ../src/cpluginmanager.cpp:241
+#: ../src/cpluginmanager.cpp:235
 msgid "Plugins"
 msgstr "Wtyczki"
 
@@ -2813,372 +2826,371 @@ msgstr "Alternatywny IP: %s"
 msgid "Fake IP: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:499 ../src/cserverdc.cpp:503
+#: ../src/cserverdc.cpp:522 ../src/cserverdc.cpp:526
 msgid "You won't see public chat messages, to restore use +chat command."
 msgstr "Nie bedziesz widziec wiadomosci czatu glownego. Aby to zmienic, uzyj komendy +chat."
 
-#: ../src/cserverdc.cpp:1044
+#: ../src/cserverdc.cpp:1067
 msgid ""
 "Hub is currently unable to service your request, please try again in a few "
 "minutes."
 msgstr "Hub nie jest obecnie w stanie obsluzyc Twego zadania. Sprobuj ponownie za kilka minut."
 
-#: ../src/cserverdc.cpp:1053 ../src/cserverdc.cpp:1543
+#: ../src/cserverdc.cpp:1076 ../src/cserverdc.cpp:1562
 #, c-format
 msgid ""
 "You're still temporarily prohibited from entering the hub for %s because: %s"
 msgstr "Jestes tymczasowo zbanowany na hubie %s poniewaz %s"
 
-#: ../src/cserverdc.cpp:1112
+#: ../src/cserverdc.cpp:1135
 msgid "You're already logged in with same nick and IP address."
 msgstr "Jestes juz zalogowany z wykorzystaniem tego samego adresu IP i nazwy uzytkownika."
 
-#: ../src/cserverdc.cpp:1126
+#: ../src/cserverdc.cpp:1149
 msgid "Another user has logged in with same nick and IP address."
 msgstr "Inny uzytkownik zalogowal sie z wykorzystaniem tego samego adresu IP i nazwy uzytkownika."
 
-#: ../src/cserverdc.cpp:1139 ../src/cserverdc.cpp:1591
+#: ../src/cserverdc.cpp:1162 ../src/cserverdc.cpp:1610
 msgid "Your nick is already taken by another user."
 msgstr "Twoja nazwa uzytkownika jest juz zajeta przez innego uzytkownika."
 
-#: ../src/cserverdc.cpp:1215
+#: ../src/cserverdc.cpp:1238
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
 msgstr "Musisz ustawic haslo za pomoca komendy +passwd <moje_haslo> lub wpisac je w wyskakujace okienko."
 
-#: ../src/cserverdc.cpp:1217
+#: ../src/cserverdc.cpp:1240
 msgid "You must set your password now using +passwd command."
 msgstr "Musisz ustawic teraz haslo za pomoca komendy +passwd <moje_haslo>."
 
-#: ../src/cserverdc.cpp:1301
+#: ../src/cserverdc.cpp:1324
 msgid "Reconnecting too fast"
 msgstr "Zbyt szybko probujesz sie ponownie polaczyc."
 
-#: ../src/cserverdc.cpp:1560
+#: ../src/cserverdc.cpp:1579
 msgid "Your nick contains forbidden characters."
 msgstr "Twoja nazwa uzytkownika zawiera niedozwolone znaki."
 
-#: ../src/cserverdc.cpp:1563
+#: ../src/cserverdc.cpp:1582
 #, c-format
 msgid "Valid nick characters: %s"
 msgstr "Dozwolone znaki w nazwie uzytkownika: %s"
 
-#: ../src/cserverdc.cpp:1571
+#: ../src/cserverdc.cpp:1590
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr "Twoja nazwa uzytkownika jest zbyt krotka, minimalna dlugosc wynosi %d znakow."
 
-#: ../src/cserverdc.cpp:1583
+#: ../src/cserverdc.cpp:1602
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr "Twoja nazwa uzytkownika jest zbyt dluga, maksymalna dlugosc wynosi %d znakow."
 
-#: ../src/cserverdc.cpp:1596
+#: ../src/cserverdc.cpp:1615
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
 msgstr "Prosze o dodanie do nicka jednego z nastepujacych prefiksow: %s"
 
-#: ../src/cserverdc.cpp:1604
+#: ../src/cserverdc.cpp:1623
 msgid ""
 "Your nick contains operator prefix but you are not registered, please remove"
 " it."
 msgstr "Twoja nazwa uzytkownika zawiera prefiks operatora, ale nie jestes zarejestrowany, wiec prosze go usunac."
 
-#: ../src/cserverdc.cpp:1612
+#: ../src/cserverdc.cpp:1631
 msgid "Unknown bad nick error, sorry."
 msgstr "Nieznany blad nazwy uzytkownika, przepraszamy."
 
-#: ../src/cserverdc.cpp:1660
+#: ../src/cserverdc.cpp:1679
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr "Prosze uzyc nastepujacego prefiksow przed nazwa uzytkownika: %s."
 
-#: ../src/cserverdc.cpp:1867
+#: ../src/cserverdc.cpp:1886
 #, c-format
 msgid ""
 "DDoS detection filtered %lu new connections and found %d new exploited hubs"
 msgstr "Wykrywanie DDoS: odfiltrowano %lu nowych polaczen i znaleziono %d nowych atakowanych hubow."
 
-#: ../src/cserverdc.cpp:1869
+#: ../src/cserverdc.cpp:1888
 #, c-format
 msgid "DDoS detection filtered %lu new connections."
 msgstr "Wykrywanie DDos: odfiltrowano %lu nowych polaczen."
 
-#: ../src/cserverdc.cpp:1880
+#: ../src/cserverdc.cpp:1899
 #, c-format
 msgid "DDoS stopped, filtered totally %lu connections."
 msgstr "DDos zatrzymany, odfiltrowano w sumie %lu polaczen."
 
-#: ../src/cserverdc.cpp:1953
+#: ../src/cserverdc.cpp:1972
 msgid ""
 "Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, "
 "w(eeks), M(onths) and y(ears)"
 msgstr "Dostepne jednostki czasu to: s (sekunda), m (minuta), h (godzina), d (dzien - to domyslnie), w (tydzien), M (miesiac), y (lata)."
 
-#: ../src/cserverdc.cpp:1964
+#: ../src/cserverdc.cpp:1983
 msgid "Please provide positive number for time unit."
 msgstr "Prosze podac dodatnia liczbe w okresleniu czasu."
 
-#: ../src/cserverdc.cpp:1998
+#: ../src/cserverdc.cpp:2017
 msgid "Hublist registration results"
 msgstr "Wyniki rejestracji na hublistach"
 
-#: ../src/cserverdc.cpp:2001
+#: ../src/cserverdc.cpp:2020
 #, c-format
 msgid "Sending information to: %s:%d"
 msgstr "Wysylanie informacji do: %s:%d"
 
-#: ../src/cserverdc.cpp:2005
+#: ../src/cserverdc.cpp:2024
 msgid "Connection error"
 msgstr "B³¹d po³¹czenia"
 
-#: ../src/cserverdc.cpp:2047
+#: ../src/cserverdc.cpp:2066
 msgid "Registration done"
 msgstr "Rejestracja zakoñczona"
 
-#: ../src/cserverdc.cpp:2049
+#: ../src/cserverdc.cpp:2068
 msgid "Send error"
 msgstr "Wyœlij b³¹d"
 
-#: ../src/cserverdc.cpp:2051
+#: ../src/cserverdc.cpp:2070
 msgid "Protocol error"
 msgstr "B³¹d protoko³u"
 
-#: ../src/cserverdc.cpp:2054 ../src/cserverdc.cpp:2057
+#: ../src/cserverdc.cpp:2073 ../src/cserverdc.cpp:2076
 msgid "Read error"
 msgstr "B³¹d odczytu"
 
-#: ../src/cserverdc.cpp:2069
+#: ../src/cserverdc.cpp:2088
 msgid "Finished registering in hublists."
 msgstr "Rejestracja na hublistach zakonczona."
 
-#: ../src/cserverdc.cpp:2081
+#: ../src/cserverdc.cpp:2100
 msgid "Hublist host is empty, nothing to do."
 msgstr "Lista hubow jest pusta, nie ma co robic."
 
-#: ../src/cserverdc.cpp:2088
+#: ../src/cserverdc.cpp:2107
 msgid "Hublist port number is invalid, nothing to do."
 msgstr "Numer portu hublisty nieprawidlowy, nic nie robie."
 
-#: ../src/cserverdc.cpp:2096
+#: ../src/cserverdc.cpp:2115
 msgid "Registering in hublists, please wait."
 msgstr "Rejestracja na hublistach, prosze czekac."
 
-#: ../src/cserverdc.cpp:2208
+#: ../src/cserverdc.cpp:2227
 #, c-format
 msgid "New version of Verlihub is available for compilation: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2209
+#: ../src/cserverdc.cpp:2228
 #, c-format
 msgid ""
 "For developer version perform following command in your local Git repository"
 " in order to update files: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2210
+#: ../src/cserverdc.cpp:2229
 #, c-format
 msgid ""
 "For stable version visit following page and download latest release archive "
 "in order to update files: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2218
+#: ../src/cserverdc.cpp:2237
 msgid "Your version of Verlihub is currently up to date."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2220
+#: ../src/cserverdc.cpp:2239
 msgid "Failed connecting to update server."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2222
+#: ../src/cserverdc.cpp:2241
 msgid "Failed sending request to update server."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2224
+#: ../src/cserverdc.cpp:2243
 #, c-format
 msgid "Failed parsing reply from update server with code: %d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2241
+#: ../src/cserverdc.cpp:2260
 msgid "Checking for updates, please wait."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2536
+#: ../src/cserverdc.cpp:2555
 #, c-format
 msgid "Detected clone of user with share %s: %s"
 msgstr "Wykryto klon uzytkownika z share %s: %s"
 
-#: ../src/cserverdc.cpp:2542 ../src/cserverdc.cpp:2545
+#: ../src/cserverdc.cpp:2561 ../src/cserverdc.cpp:2564
 msgid "Clone detected"
 msgstr "Wykryto klona"
 
-#: ../src/cserverdc.cpp:2615
+#: ../src/cserverdc.cpp:2634
 #, c-format
 msgid ""
 "Protocol command has been unlocked after stopped flood to user %s from all"
 msgstr "Polecenie protokolu zostalo odblokowane po zatrzymaniu floodu od wszyskich uzytkownikow %s"
 
-#: ../src/cserverdc.cpp:2631
+#: ../src/cserverdc.cpp:2650
 msgid "Protocol command has been unlocked after stopped flood from all"
 msgstr "Polecenie protokolu zostalo odblokowane po zatrzymaniu floodu od wszyskich"
 
-#: ../src/cserverdc.cpp:2668
+#: ../src/cserverdc.cpp:2687
 #, c-format
 msgid ""
 "Protocol command has been locked due to detection of flood to user %s from "
 "all"
 msgstr "Polecenie protokolu zostalo zablokowane z powodu wykrycia floodu od wszyskich uzytkownikow %s"
 
-#: ../src/cserverdc.cpp:2698
+#: ../src/cserverdc.cpp:2717
 msgid "Protocol command has been locked due to detection of flood from all"
 msgstr "Polecenie protokolu zostalo zablokowane z powodu wykrycia floodu od wszyskich"
 
-#: ../src/cserverdc.cpp:2739
+#: ../src/cserverdc.cpp:2758
 msgid ""
 "Sorry, following protocol command is temporarily locked due to flood "
 "detection"
 msgstr "Niestety, nastepujace polecenie protokolu zostalo tymczasowo zablokowane z powodu floodu"
 
-#: ../src/cserverdc.cpp:2770
+#: ../src/cserverdc.cpp:2789
 msgid "Normal"
 msgstr "Normalny"
 
-#: ../src/cserverdc.cpp:2772
+#: ../src/cserverdc.cpp:2791
 msgid "Progressive"
 msgstr "Progresywny"
 
-#: ../src/cserverdc.cpp:2774
+#: ../src/cserverdc.cpp:2793
 msgid "Capacity"
 msgstr "Osiagnieta pojemnosc"
 
-#: ../src/cserverdc.cpp:2776
+#: ../src/cserverdc.cpp:2795
 msgid "Recovery"
 msgstr "Odzyskiwanie sprawnosci"
 
-#: ../src/cserverdc.cpp:2778
+#: ../src/cserverdc.cpp:2797
 msgid "Down"
 msgstr "System padl"
 
-#: ../src/cserverdc.cpp:2788
+#: ../src/cserverdc.cpp:2807
 msgid "Pinger"
 msgstr "Pinger"
 
-#: ../src/cserverdc.cpp:2790
+#: ../src/cserverdc.cpp:2809
 msgid "Guest"
 msgstr "Gosc"
 
-#: ../src/cserverdc.cpp:2792
+#: ../src/cserverdc.cpp:2811
 msgid "Registered"
 msgstr "Zarejestrowany"
 
-#: ../src/cserverdc.cpp:2794
+#: ../src/cserverdc.cpp:2813
 msgid "VIP"
 msgstr "VIP"
 
-#: ../src/cserverdc.cpp:2798
+#: ../src/cserverdc.cpp:2817
 msgid "Cheef"
 msgstr "Cheef"
 
-#: ../src/cserverdc.cpp:2800
+#: ../src/cserverdc.cpp:2819
 msgid "Administrator"
 msgstr "Administrator"
 
-#: ../src/cserverdc.cpp:2802
+#: ../src/cserverdc.cpp:2821
 msgid "Master"
 msgstr "Wlasciciel"
 
-#: ../src/cserverdc.cpp:2867
+#: ../src/cserverdc.cpp:2886 ../src/cserverdc.cpp:2897
 #, c-format
 msgid "Users: %d"
 msgstr "Uzytkownicy: %d"
 
-#: ../src/cserverdc.cpp:2872
-#, c-format
-msgid "Software: %s %s%s ][ Uptime: %s ][ Users: %d ][ Share: %s"
-msgstr "Oprogramowanie: %s %s%s ][ Czas pracy: %s ][ Uzytkownicy: %d ][ Udostepnienie: %s"
-
-#: ../src/cserverdc.cpp:2891
+#: ../src/cserverdc.cpp:2923
 #, c-format
 msgid "You have no rights to kick user: %s"
 msgstr "Nie masz uprawnien, aby kopnac uzytkownika: %s"
 
-#: ../src/cserverdc.cpp:2894
+#: ../src/cserverdc.cpp:2926
 #, c-format
 msgid "User is protected from your kicks: %s"
 msgstr "Uzytkownik jest chroniony przed kopnieciem: %s"
 
-#: ../src/cserverdc.cpp:2956
+#: ../src/cserverdc.cpp:2988
 #, c-format
 msgid "You have been kicked because: %s"
 msgstr "Zostales wyrzucony, poniewaz: %s"
 
-#: ../src/cserverdc.cpp:2958
+#: ../src/cserverdc.cpp:2990
 msgid "You have been kicked from hub."
 msgstr "Zostales wyrzucony z huba."
 
-#: ../src/cserverdc.cpp:2978
+#: ../src/cserverdc.cpp:3010
 #, c-format
 msgid "User was kicked and banned for %s: %s"
 msgstr "Uzytkownik zostal wyrzucony i zbanowany na %s: %s"
 
-#: ../src/cserverdc.cpp:2982
+#: ../src/cserverdc.cpp:3014
 #, c-format
 msgid "%s was kicked and banned for %s by %s with reason: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2984
+#: ../src/cserverdc.cpp:3016
 #, c-format
 msgid "%s was kicked and banned for %s by %s without reason."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2989
+#: ../src/cserverdc.cpp:3021
 #, c-format
 msgid "User was kicked and banned permanently: %s"
 msgstr "Uzytkownik zostal wyrzucony i zbanowany na stale: %s"
 
-#: ../src/cserverdc.cpp:2993
+#: ../src/cserverdc.cpp:3025
 #, c-format
 msgid "%s was kicked and banned permanently by %s with reason: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2995
+#: ../src/cserverdc.cpp:3027
 #, c-format
 msgid "%s was kicked and banned permanently by %s without reason."
 msgstr ""
 
-#: ../src/cserverdc.cpp:3007
+#: ../src/cserverdc.cpp:3039
 #, c-format
 msgid "%s dropped user with reason: %s"
 msgstr "%s rozlaczyl uzytkownika z powodu: %s"
 
-#: ../src/cserverdc.cpp:3009
+#: ../src/cserverdc.cpp:3041
 #, c-format
 msgid "%s dropped user without reason"
 msgstr "%s rozlaczyl uzytkownika bez powodu"
 
-#: ../src/cserverdc.cpp:3015
+#: ../src/cserverdc.cpp:3047
 #, c-format
 msgid "%s was dropped by %s with reason: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:3017
+#: ../src/cserverdc.cpp:3049
 #, c-format
 msgid "%s was dropped by %s without reason."
 msgstr ""
 
-#: ../src/cserverdc.cpp:3021
+#: ../src/cserverdc.cpp:3053
 #, c-format
 msgid "You have been dropped because: %s"
 msgstr "Zostales rozlaczony, poniewaz: %s"
 
-#: ../src/cserverdc.cpp:3026
+#: ../src/cserverdc.cpp:3058
 #, c-format
 msgid "User was dropped: %s"
 msgstr "Uzytkownik zostal rozlaczony: %s"
 
-#: ../src/cserverdc.cpp:3516
+#: ../src/cserverdc.cpp:3377
+msgid "Specified configuration variable is read only."
+msgstr ""
+
+#: ../src/cserverdc.cpp:3600
 msgid "DDoS detected, gathering attack information..."
 msgstr "Wykryto DDoS. Zbieram informacje o ataku..."
 

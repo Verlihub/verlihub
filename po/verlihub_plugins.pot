@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-01-02 12:46+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
 #: ../plugins/chatroom/cconsole.cpp:53
@@ -184,7 +184,7 @@ msgstr ""
 msgid "Your connection type should match %[pattern]"
 msgstr ""
 
-#: ../plugins/lua/callbacks.cpp:1721
+#: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
 msgstr ""
 
@@ -435,7 +435,7 @@ msgstr ""
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr ""
 
@@ -453,7 +453,7 @@ msgstr ""
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr ""
 
@@ -465,54 +465,54 @@ msgstr ""
 msgid "Plugin not found."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:118
+#: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:124
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:126
+#: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Path: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
 msgstr ""
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 #, c-format
 msgid "Last error: %s"
 msgstr ""

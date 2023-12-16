@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2024 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -664,7 +664,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Not forgetting other 4 people who didn't want to be listed here.") << "\r\n\r\n";
 	os << " [*] " << _("Translators") << ":\r\n\r\n";
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
-	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog), German (Ettore Atalan),\r\n";
+	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog, PWiAM), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
 	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang)\r\n\r\n";
 	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n\r\n";
@@ -685,7 +685,7 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Support") << ": nmdcs://hub.verlihub.net:7777\r\n\r\n";
 	os << " [*] " << _("Donation") << ":\r\n\r\n";
 	os << "\tPayPal: https://www.paypal.com/paypalme/feardc/\r\n";
-	os << "\t" << _("Donators") << ": Deivis (100 EUR), Captain (20 EUR)\r\n";
+	os << "\t" << _("Donators") << ": Deivis (100 EUR), Captain (30 EUR)\r\n";
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
