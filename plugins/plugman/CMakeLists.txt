@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2022 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2024 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -17,7 +17,7 @@
 #	of the GNU General Public License.
 
 SET(PLUGMAN_VERSION_MAJOR 1)
-SET(PLUGMAN_VERSION_MINOR 4)
+SET(PLUGMAN_VERSION_MINOR 5)
 SET(PLUGMAN_VERSION_PATCH 0)
 SET(PLUGMAN_VERSION_TWEAK 0)
 SET(PLUGMAN_VERSION "${PLUGMAN_VERSION_MAJOR}.${PLUGMAN_VERSION_MINOR}.${PLUGMAN_VERSION_PATCH}.${PLUGMAN_VERSION_TWEAK}")

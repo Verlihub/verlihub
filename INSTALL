@@ -5,7 +5,7 @@ Dependencies and installation
 * Required dependencies:
 
 	[ bin lib hdr ] GCC			4.8.0
-	[ bin --- hdr ] CMake		2.8.12
+	[ bin --- hdr ] CMake		3.0
 	[ bin lib hdr ] MySQL		5.7.1
 	[ --- lib hdr ] OpenSSL		1.1.0
 	[ --- lib hdr ] LibICU		55.0

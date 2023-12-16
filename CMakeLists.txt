@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2023 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2024 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -31,9 +31,9 @@ message(STATUS "If you get errors related to autosprintf, please try with: -DUSE
 message(STATUS)
 
 SET(VERLIHUB_VERSION_MAJOR 1) # note: these must be numbers, else compilation will fail
-SET(VERLIHUB_VERSION_MINOR 4)
+SET(VERLIHUB_VERSION_MINOR 5)
 SET(VERLIHUB_VERSION_PATCH 0)
-SET(VERLIHUB_VERSION_TWEAK 5)
+SET(VERLIHUB_VERSION_TWEAK 0)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 #SET(VERLIHUB_SOVERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}")
 SET(PROJECT_NAME "verlihub")

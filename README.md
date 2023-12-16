@@ -1,4 +1,4 @@
-Verlihub 1.4.0.x
+Verlihub 1.5.0.0
 ==============
 
 Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
@@ -11,7 +11,7 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
   * User management with privilegies
   * Logging of nicks and IPs
   * Clients and connection management
-  * Extend functionality with Lua, Python and Perl scripts
+  * Extend functionality with Lua, Python (deprecated) and Perl (deprecated) scripts
   * Generate statistics for your hub
   * Import users from PtokaX, Aquila or YnHub
   * Plus much more

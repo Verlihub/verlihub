@@ -1,7 +1,7 @@
 INSERT IGNORE INTO pi_plug (nick,autoload,path,detail) VALUES
         ("isp"    ,0,"@plugindir@/libisp_pi.so"   ,"Hub restrictions by ISP (DEPRECATED)"),
         ("lua"    ,0,"@plugindir@/liblua_pi.so"   ,"Support for Lua scripts"),
-        ("python"   ,0,"@plugindir@/libpython_pi.so"  ,"Support for Python scripts"),
+        ("python"   ,0,"@plugindir@/libpython_pi.so"  ,"Support for Python scripts (DEPRECATED)"),
         ("perl"   ,0,"@plugindir@/libperl_pi.so"  ,"Support for Perl scripts (DEPRECATED)"),
         ("msg"    ,0,"@plugindir@/libmessenger_pi.so","Offline messenger system (DEPRECATED)"),
         ("flood"  ,0,"@plugindir@/libfloodprot_pi.so","Advanced flood protection (DEPRECATED)"),
