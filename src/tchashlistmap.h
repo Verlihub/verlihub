@@ -106,7 +106,7 @@ DataType tcHashListMap<DataType,KeyType>::GetByHash(const KeyType &Hash)
 }
 
 template < class DataType, class KeyType >
-bool tcHashListMap<DataType,KeyType>::AddWithHash(DataType Data, const KeyType &Hash)
+bool tcHashListMap<DataType,KeyType>::AddWithHash(DataType Data, const KeyType &Hash) // todo: when string, empty Hash causes crash
 {
 	if(ContainsHash(Hash)) { if(Log(0))LogStream() << "Trying to add " << Hash << " twice" << endl; return false; }
 

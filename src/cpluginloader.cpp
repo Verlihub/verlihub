@@ -43,25 +43,18 @@ bool cPluginLoader::Open()
 	/*
 	#ifdef _WIN32
 	mHandle = LoadLibrary(mFileName.c_str());
-	if(mHandle == NULL) {
-	#else
 	*/
 
-	#ifdef HAVE_FREEBSD
-	/*
-	* Reset dlerror() since it can contain error from previous
-	* call to dlopen()/dlsym().
-	*/
-	dlerror();
-	#endif
-
+	dlerror(); // reset
 	mHandle = dlopen(mFileName.c_str(), RTLD_NOW | RTLD_LAZY | RTLD_GLOBAL);
 
-	if(!mHandle || IsError()) // Note that || operator evaluates only the first statement if that one is true
-	{
-		if (!mHandle) IsError(); // Call it again
-	//#endif
-		if(ErrLog(1)) LogStream() << "Can't open plugin '" << mFileName << "': " << Error() << endl;
+	if (!mHandle || IsError()) {
+		if (!mHandle) // call it again
+			IsError();
+
+		if (ErrLog(0))
+			LogStream() << "Unable to open plugin: " << mFileName << " [ " << Error() << " ]" << endl;
+
 		return false;
 	}
 
@@ -71,83 +64,102 @@ bool cPluginLoader::Open()
 bool cPluginLoader::Close()
 {
 	if (mPlugin && mcbDelPluginFunc) {
-		mcbDelPluginFunc(mPlugin);
+		try {
+			mcbDelPluginFunc(mPlugin);
+		} catch (const char *ex) {
+			if (ErrLog(0))
+				LogStream() << "Plugin delete function execution error: " << mFileName << " [ " << ex << " ]" << endl;
+		}
+
 		mPlugin = NULL;
 	}
 
 	/*
 	#ifdef _WIN32
-	if(!FreeLibrary(mHandle))
-	#else
+	FreeLibrary(mHandle)
 	*/
 
 	if (mHandle) {
+		dlerror(); // reset
 		dlclose(mHandle);
 		mHandle = NULL;
 	}
 
-	if(IsError())
-	//#endif
-	{
-		if(ErrLog(1)) LogStream() << "Can't close plugin:" << Error() << endl;
+	if (IsError()) {
+		if (ErrLog(0))
+			LogStream() << "Unable to close plugin: " << mFileName << " [ " << Error() << " ]" << endl;
+
 		return false;
 	}
 
 	return true;
 }
 
-/** log the event */
-int cPluginLoader::StrLog(ostream & ostr, int level)
-{
-	if(cObj::StrLog(ostr,level))
-	{
-		LogStream()   << '(' << mFileName << ") ";
-		return 1;
-	}
-	return 0;
-}
-
 bool cPluginLoader::LoadSym()
 {
-	#ifdef HAVE_FREEBSD
-		/*
-			Reset dlerror() since it can contain error from previous call to dlopen() or dlsym()
-		*/
-
-		dlerror();
-	#endif
-
 	if (!mcbGetPluginFunc)
 		mcbGetPluginFunc = tcbGetPluginFunc(LoadSym("get_plugin"));
+
+	if (!mcbGetPluginFunc) {
+		mError = "Missing plugin get function.";
+		return false;
+	}
 
 	if (!mcbDelPluginFunc)
 		mcbDelPluginFunc = tcbDelPluginFunc(LoadSym("del_plugin"));
 
-	if (!mcbGetPluginFunc || !mcbDelPluginFunc)
+	if (!mcbDelPluginFunc) {
+		mError = "Missing plugin delete function.";
 		return false;
+	}
 
-	return (mPlugin = mcbGetPluginFunc()) != NULL;
+	try {
+		mPlugin = mcbGetPluginFunc();
+	} catch (const char *ex) {
+		if (ErrLog(0))
+			LogStream() << "Plugin get function execution error: " << mFileName << " [ " << ex << " ]" << endl;
+
+		mPlugin = NULL;
+	}
+
+	return (mPlugin != NULL);
 }
 
-void * cPluginLoader::LoadSym(const char *name)
+void* cPluginLoader::LoadSym(const char *name)
 {
+	//if (!mHandle)
+		//return NULL;
+
 	/*
 	#ifdef _WIN32
-	void *func = (void *) GetProcAddress(mHandle, name);
-	if(func == NULL) {
-		if(ErrLog(1)) LogStream() << "Can't load " << name <<" exported interface :" << GetLastError() << endl;
-		return NULL;
-	}
-	#else
+	void *func = (void*)GetProcAddress(mHandle, name);
 	*/
-	void *func = dlsym( mHandle, name);
-	if(IsError())
-	{
-		if(ErrLog(1)) LogStream() << "Can't load " << name <<" exported interface :" << Error() << endl;
+
+	dlerror(); // reset
+	void *func = dlsym(mHandle, name);
+
+	if (!func || IsError()) {
+		if (!func) // call it again
+			IsError();
+
+		if (ErrLog(0))
+			LogStream() << "Unable to load " << name << " exported interface for plugin: " << mFileName << " [ " << Error() << " ]" << endl;
+
 		return NULL;
 	}
-	//#endif
+
 	return func;
 }
+
+int cPluginLoader::StrLog(ostream &ostr, int level)
+{
+	if (cObj::StrLog(ostr, level)) {
+		LogStream() << '(' << mFileName << ") ";
+		return 1;
+	}
+
+	return 0;
+}
+
 	}; // namespace nPlugin
 }; // namespace nVerliHub

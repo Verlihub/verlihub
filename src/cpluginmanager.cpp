@@ -91,27 +91,47 @@ void cPluginManager::UnLoadAll()
 
 bool cPluginManager::LoadPlugin(const string &file)
 {
-//#if !defined _WIN32
-	if (Log(1))
+	if (Log(0))
 		LogStream() << "Trying to load plugin: " << file << endl;
 
 	mLastLoadError = "";
 	cPluginLoader *plugin = new cPluginLoader(file);
 
-	if (!plugin->Open() || !plugin->LoadSym() || !mPlugins.AddWithHash(plugin, mPlugins.Key2Hash(plugin->mPlugin->Name()))) {
+	if (!plugin->Open()) {
 		mLastLoadError = plugin->Error();
 		delete plugin;
 		plugin = NULL;
 		return false;
 	}
 
-	try { // used rarely
+	if (!plugin->LoadSym()) {
+		mLastLoadError = plugin->Error();
+		delete plugin;
+		plugin = NULL;
+		return false;
+	}
+
+	if (plugin->mPlugin->Name().empty()) {
+		mLastLoadError = "Plugin name is empty.";
+		delete plugin;
+		plugin = NULL;
+		return false;
+	}
+
+	if (!mPlugins.AddWithHash(plugin, mPlugins.Key2Hash(plugin->mPlugin->Name()))) {
+		mLastLoadError = "Failed to add plugin to list.";
+		delete plugin;
+		plugin = NULL;
+		return false;
+	}
+
+	try {
 		plugin->mPlugin->SetMgr(this);
 		plugin->mPlugin->RegisterAll();
 		OnPluginLoad(plugin->mPlugin);
 	} catch (const char *ex) {
-		if (ErrLog(1))
-			LogStream() << "Plugin load exception: " << file << " [ " << ex << " ]" << endl;
+		if (ErrLog(0))
+			LogStream() << "Plugin on load exception: " << file << " [ " << ex << " ]" << endl;
 
 		// todo: del with hash since failed, if was added
 		delete plugin;
@@ -119,29 +139,28 @@ bool cPluginManager::LoadPlugin(const string &file)
 		return false;
 	}
 
-	if (Log(1))
+	if (Log(0))
 		LogStream() << "Plugin successfully loaded: " << plugin->mPlugin->Name() << endl;
-//#endif
 
 	return true;
 }
 
 bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 {
-	if (Log(1))
+	if (Log(0))
 		LogStream() << "Trying to unload plugin: " << name << endl;
 
 	cPluginLoader *plugin = mPlugins.GetByHash(mPlugins.Key2Hash(name));
 
 	if (!plugin) {
-		if (ErrLog(1))
+		if (ErrLog(0))
 			LogStream() << "Plugin not found for unload: " << name << endl;
 
 		return false;
 	}
 
 	if (!plugin->mPlugin) {
-		if (ErrLog(1))
+		if (ErrLog(0))
 			LogStream() << "Plugin was not initialized: " << name << endl;
 
 		mPlugins.RemoveByHash(mPlugins.Key2Hash(name));
@@ -156,15 +175,15 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 	}
 
 	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
-		if (ErrLog(1))
-			LogStream() << "Unable to unload plugin: " << name << endl;
+		if (ErrLog(0))
+			LogStream() << "Failed to unload plugin: " << name << endl;
 
 		delete plugin;
 		plugin = NULL;
 		return false;
 	}
 
-	if (Log(1))
+	if (Log(0))
 		LogStream() << "Plugin successfully unloaded: " << name << endl;
 
 	delete plugin;

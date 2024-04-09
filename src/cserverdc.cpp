@@ -2552,7 +2552,7 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 				if (count >= mC.clone_detect_count) { // number of clones
 					ostringstream os;
 
-					if (mC.clone_detect_report || mC.clone_det_tban_time)
+					if (mC.clone_detect_report || mC.clone_det_tban_time) // todo: this is not used when not mC.clone_detect_report
 						os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
 
 					if (mC.clone_detect_report)
