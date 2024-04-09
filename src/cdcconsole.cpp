@@ -666,7 +666,8 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\tCzech (Uhlik), Italian (netcelli, Stefano, DiegoZ), Russian (plugman, MaxFox, RoLex, KCAHDEP),\r\n";
 	os << "\tSlovak (uNix), Romanian (WiZaRd, S0RiN, DANNY05), Polish (Zorro, Krzychu, Frog, PWiAM), German (Ettore Atalan),\r\n";
 	os << "\tSwedish (RoLex), Bulgarian (Boris Stefanov), Hungarian (Oszkar Ocsenas), Turkish (mauron),\r\n";
-	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang)\r\n\r\n";
+	os << "\tFrench (@tlantide), Dutch (Modswat), Lithuanian (Trumpy, Deivis), Spanish (Raytrax), Chinese (kinosang),\r\n";
+	os << "\tUkrainian (Master)\r\n\r\n";
 	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n\r\n";
 	os << " [*] " << _("Contributors") << ":\r\n\r\n";
 	os << "\tFrog, Eco-Logical, Intruder, PWiAM" << "\r\n\r\n";
