@@ -29,6 +29,8 @@ namespace nVerliHub {
 
 cPluginBase::cPluginBase():cObj("PluginBase")
 {
+	mName = "";
+	mVersion = "";
 	mIsAlive = true;
 	mManager = NULL;
 }
