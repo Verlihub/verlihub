@@ -375,6 +375,13 @@ public:
 	virtual bool OnUserLogout(cUser *user) { return true; }
 
 	/*
+		event handler called when clone count is too low, but atleast one
+		use RegisterCallBack("VH_OnCloneCountLow") to register it
+		this event is discardable
+	*/
+	virtual bool OnCloneCountLow(cUser *user, string nick, int count) { return true; }
+
+	/*
 		event handler called on bad password from user
 		use RegisterCallBack("VH_OnBadPass") to register it
 		this event is partially discardable

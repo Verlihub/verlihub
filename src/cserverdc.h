@@ -870,6 +870,7 @@ private:
 			mOnUserInList(mgr, "VH_OnUserInList", &cVHPlugin::OnUserInList),
 			mOnUserLogin(mgr, "VH_OnUserLogin", &cVHPlugin::OnUserLogin),
 			mOnUserLogout(mgr, "VH_OnUserLogout", &cVHPlugin::OnUserLogout),
+			mOnCloneCountLow(mgr, "VH_OnCloneCountLow", &cVHPlugin::OnCloneCountLow),
 			mOnValidateTag(mgr, "VH_OnValidateTag", &cVHPlugin::OnValidateTag),
 			mOnTimer(mgr, "VH_OnTimer", &cVHPlugin::OnTimer),
 			mOnNewReg(mgr, "VH_OnNewReg", &cVHPlugin::OnNewReg),
@@ -917,6 +918,7 @@ private:
 		cVHCBL_User mOnUserInList;
 		cVHCBL_User mOnUserLogin;
 		cVHCBL_User mOnUserLogout;
+		cVHCBL_UsrStrInt mOnCloneCountLow;
 		cVHCBL_ConnTag mOnValidateTag;
 		cVHCBL_int64 mOnTimer;
 		cVHCBL_UsrStrInt mOnNewReg;
