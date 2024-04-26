@@ -74,6 +74,7 @@ public:
 	virtual bool OnUserInList(cUser *user);
 	virtual bool OnUserLogin(cUser *user);
 	virtual bool OnUserLogout(cUser *user);
+	virtual bool OnCloneCountLow(cUser *, string, int);
 	virtual bool OnTimer(__int64);
 	virtual bool OnNewReg(cUser *, string, int);
 	virtual bool OnDelReg(cUser *, string, int);

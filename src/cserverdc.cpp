@@ -2548,11 +2548,12 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 
 			if (StrCompare(comp, 0, comp.size(), part) == 0) {
 				count++;
+				clone = other->mpUser->mNick; // use last nick
 
 				if (count >= mC.clone_detect_count) { // number of clones
 					ostringstream os;
 
-					if (mC.clone_detect_report || mC.clone_det_tban_time)
+					if (mC.clone_detect_report || mC.clone_det_tban_time) // todo: this is not used when not mC.clone_detect_report
 						os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
 
 					if (mC.clone_detect_report)
@@ -2565,8 +2566,12 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 							mBanList->AddIPTempBan(conn->AddrToNumber(), mTime.Sec() + mC.clone_ip_tban_time, _("Clone detected"), eBT_CLONE);
 					}
 
-					clone = other->mpUser->mNick; // uses last nick
 					return true;
+
+				#ifndef WITHOUT_PLUGINS
+				} else if (!mCallBacks.mOnCloneCountLow.CallAll(conn->mpUser, clone, count)) { // low count, but atleast one
+					return true;
+				#endif
 				}
 			}
 		}
