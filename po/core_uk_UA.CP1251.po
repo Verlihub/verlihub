@@ -233,7 +233,7 @@ msgstr "Користувач видалено з чат-кімнати: %s"
 
 #: ../src/cchatconsole.cpp:173
 msgid "You are removed from chatroom."
-msgstr "Вы удалены из чат-комнаты."
+msgstr "Ви видалені з чат-кімнати."
 
 #: ../src/cchatconsole.cpp:184
 msgid "Chatroom members"
@@ -1772,7 +1772,7 @@ msgstr "Помилка порядку авторизації, ви не вказали на підтримку команди IN."
 #: ../src/cdcproto.cpp:1610
 msgid ""
 "Invalid login sequence, you didn't specify support for ExtJSON command."
-msgstr "Ошибка порядка авторизации, вы не указали поддержку команды ExtJSON."
+msgstr "Помилка порядку авторизації, ви не вказали на підтримку команди ExtJSON."
 
 #: ../src/cdcproto.cpp:1722 ../src/cdcproto.cpp:1836
 #, c-format
@@ -1786,7 +1786,7 @@ msgstr "Ви намагаєтесь надіслати приватне повідомлення боту: %s"
 
 #: ../src/cdcproto.cpp:1750 ../src/cdcproto.cpp:1850
 msgid "You're not allowed to use private chat right now."
-msgstr "Вам не разрешено использовать личные сообщения на данный момент."
+msgstr "Вам не дозволено використовувати приватні повідомлення зараз."
 
 #: ../src/cdcproto.cpp:1753 ../src/cdcproto.cpp:1853
 #, c-format
@@ -1844,7 +1844,7 @@ msgstr "Користувач намагається розмовляти із заглушкою у головному чаті: %s"
 #: ../src/cdcproto.cpp:2072 ../src/cdcproto.cpp:2284
 #, c-format
 msgid "You're trying to connect to a bot: %s"
-msgstr "Вы пытаетесь соединиться с пользователем который является ботом: %s"
+msgstr "Ви намагаєтеся з'єднатися з користувачем, який є ботом: %s"
 
 #: ../src/cdcproto.cpp:2081 ../src/cdcproto.cpp:2293
 msgid "You're trying to connect to yourself."
@@ -2006,7 +2006,7 @@ msgstr "Ви не можете банити захищених користувачів або користувачів з більшими, 
 
 #: ../src/cdcproto.cpp:3315
 msgid "You can't ban a bot."
-msgstr "Вы не можете банити ботів."
+msgstr "Ви не можете банити ботів."
 
 #: ../src/cdcproto.cpp:3321
 #, c-format
