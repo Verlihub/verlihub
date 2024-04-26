@@ -639,7 +639,7 @@ msgstr "Ми хотіли б подякувати всім нашим клієнтам за їх вклад і цінну підтримку
 
 #: ../src/cdcconsole.cpp:675
 msgid "Links"
-msgstr "Ссылки"
+msgstr "Посилання"
 
 #: ../src/cdcconsole.cpp:676
 msgid "Website"
