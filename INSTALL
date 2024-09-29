@@ -34,7 +34,7 @@ sudo apt install libpcre3-dev libssl-dev mysql-server mysql-client libmysqlclien
 
  sudo apt install python2.7-dev liblua5.2-dev libperl-dev
 
-* Install dependencies on Raspbian:
+* Install dependencies on Raspberry Pi OS:
 
 sudo apt install libpcre3-dev libssl-dev mariadb-server mariadb-client libmariadb-dev libmariadb-dev-compat libmaxminddb-dev libicu-dev gettext libasprintf-dev liblua5.2-dev g++ make cmake
 
