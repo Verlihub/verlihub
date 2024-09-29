@@ -21,6 +21,7 @@ if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 	find_path(MYSQL_INCLUDE_DIR mysql.h
 		/usr/include/mysql
+		/usr/include/mariadb
 		/usr/local/include/mysql
 		/usr/pkg/include/mysql
 		/usr/local/pkg/include/mysql
@@ -41,6 +42,7 @@ else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 				/usr/local/lib/mysql
 				/usr/pkg/lib/mysql
 				/usr/local/pkg/lib/mysql
+				/usr/lib/aarch64-linux-gnu
 		)
 	#endif(WIN32 AND MSVC)
 
