@@ -1,4 +1,4 @@
-Verlihub 1.5.0.0
+Verlihub 1.6.0.0
 ==============
 
 Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
