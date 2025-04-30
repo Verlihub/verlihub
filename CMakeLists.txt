@@ -16,7 +16,9 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.16...3.6)
+#cmake_policy(VERSION 3.16)
+
 PROJECT(VERLIHUB)
 
 message(STATUS)
