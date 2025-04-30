@@ -1,33 +1,19 @@
 # 
 # Translators:
-# Aleksandr Zenkov <webmaster@feardc.net>, 2019,2021
-# Aleksandr Zenkov <webmaster@feardc.net>, 2014-2016
-# Dimetro83 <dimetro83@gmail.com>, 2018
-# Aleksey Kosterin <kosterinaleksey@gmail.com>, 2012
-# Александр Шандала (KCAHDEP) <admin@milenahub.ru>, 2016
-# MaxFox <maxfox@inbox.ru>, 2014
-# Stefano <netcelli@gmail.com>, 2011
-# Stefano <netcelli@gmail.com>, 2011
-# Александр  <exside@mail.com>, 2011
-# Александр <plugmn@gmail.com>, 2011
-# Александр <plugmn@gmail.com>, 2011
-# Александр Шандала (KCAHDEP) <admin@milenahub.ru>, 2017
-# Александр Шандала (KCAHDEP) <admin@milenahub.ru>, 2019
-# Naumovitch Dmitro (Master) <admin@dchub.in.ua>,2024
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-01-02 12:46+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
-"Last-Translator: Aleksandr Zenkov <webmaster@feardc.net>, 2019,2021\n"
+"Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Ukrainian (Ukraine) (http://app.transifex.com/feardc/verlihub/language/uk_UA/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: uk_UA\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Poedit 3.2.2\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -198,7 +184,7 @@ msgstr "Ваш нік повинен відповідати %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Ваш тип з'єднання має відповідати %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1721
+#: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
 msgstr "Невірний пароль"
 
@@ -452,7 +438,7 @@ msgstr "Назва плагіна не повинна містити більше 10 символів, будь ласка, спробуй
 msgid "Please provide a valid path for the plugin."
 msgstr "Вкажіть правильний шлях до плагіну."
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr "Плагін завантажено."
 
@@ -470,7 +456,7 @@ msgstr "Плагін вивантажено."
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Плагін не вивантажений, тому що, можливо, він не був завантажений."
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr "Плагін перезавантажено."
 
@@ -482,54 +468,54 @@ msgstr "Плагін не перевантажений, тому що, можливо, він не був завантажений."
 msgid "Plugin not found."
 msgstr "Плагін не знайдено."
 
-#: ../plugins/plugman/cplugs.cpp:118
+#: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
 msgstr "Плагін не підтримує скрипти."
 
-#: ../plugins/plugman/cplugs.cpp:124
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
 msgstr "Скрипт завантажено."
 
-#: ../plugins/plugman/cplugs.cpp:126
+#: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
 msgstr "Помилка завантаження скрипту."
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
 msgstr "Плагін вимагає перекомпілювання."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
 msgstr "Назва: %s [%s] [%s]"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
 msgstr "Увімк."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
 msgstr "Вимк."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
 msgstr "Автоматизовано"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr "Вручну"
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Path: %s"
 msgstr "Шлях: %s"
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
 msgstr "Опис: %s"
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 #, c-format
 msgid "Last error: %s"
 msgstr "Остання помилка: %s"

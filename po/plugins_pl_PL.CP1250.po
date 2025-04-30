@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-01-02 12:46+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: Joe Doe, 2021\n"
 "Language-Team: Polish (Poland) (http://app.transifex.com/feardc/verlihub/language/pl_PL/)\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -191,7 +191,7 @@ msgstr "Twoja nazwa uzytkownika powinna pasowac do wzorca %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Twoj typ polaczenia powinien pasowac do wzorca %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1721
+#: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
 msgstr "Nieprawid³owe has³o"
 
@@ -445,7 +445,7 @@ msgstr "Nazwa wtyczki powinna miec maksymalnie 10 znakow. Nalezy podac inna."
 msgid "Please provide a valid path for the plugin."
 msgstr "Prosze podac prawidlowa sciezke do wtyczki."
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr "Wtyczka zaladowana."
 
@@ -463,7 +463,7 @@ msgstr "Wtyczka wylaczona."
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Wtyczka nie zostala wylaczona, gdyz prawdopodobnie nie byla zaladowana."
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr "Wtyczka zostala przeladowana."
 
@@ -475,54 +475,54 @@ msgstr "Wtyczka nie zostala przeladowana, gdyz prawdopodobnie nie byla zaladowan
 msgid "Plugin not found."
 msgstr "Nie znaleziono wtyczki."
 
-#: ../plugins/plugman/cplugs.cpp:118
+#: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
 msgstr "Wtyczka nie obsluguje skryptow."
 
-#: ../plugins/plugman/cplugs.cpp:124
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
 msgstr "Skrypt zaladowany"
 
-#: ../plugins/plugman/cplugs.cpp:126
+#: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
 msgstr "Blad ladowania skryptow."
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
 msgstr "Wtyczka wymaga ponownej kompilacji."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
 msgstr "Nazwa: %s [%s] [%s]"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
 msgstr "Wlaczona"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
 msgstr "Wylaczona"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
 msgstr "Automatycznie"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr "Recznie"
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Path: %s"
 msgstr "Sciezka: %s"
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
 msgstr "Opis: %s"
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 #, c-format
 msgid "Last error: %s"
 msgstr "Ostatni blad: %s"
