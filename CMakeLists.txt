@@ -16,7 +16,7 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-cmake_minimum_required(VERSION 3.16...3.6)
+cmake_minimum_required(VERSION 3.16...3.50)
 #cmake_policy(VERSION 3.16)
 
 PROJECT(VERLIHUB)
@@ -171,7 +171,7 @@ IF(HAVE_ALPINE)
 ENDIF(HAVE_ALPINE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DU_USING_ICU_NAMESPACE=1")
-SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 17) # note: required by icu 75+
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -207,7 +207,8 @@ ENDIF(HAVE_BSD)
 # ----------------------------------------------------------------------------------------------------
 
 CHECK_INCLUDE_FILES(errno.h HAVE_ERRNO_H)
-CHECK_INCLUDE_FILES(sys/poll.h HAVE_SYS_POLL_H)
+#CHECK_INCLUDE_FILES(sys/poll.h HAVE_SYS_POLL_H)
+CHECK_INCLUDE_FILES(poll.h HAVE_SYS_POLL_H)
 CHECK_INCLUDE_FILES(getopt.h HAVE_GETOPT_H)
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
 
