@@ -1653,7 +1653,7 @@ msgstr "Autorisatie IP komt niet over een met wat is opgeslagen, van %s"
 #: ../src/cdcproto.cpp:688
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
-sgstr "Autorisatie IP voor dit account komt niet over een met uw IP address: %s"
+msgstr "Autorisatie IP voor dit account komt niet over een met uw IP address: %s"
 
 #: ../src/cdcproto.cpp:763
 msgid "Invalid login sequence, you client already sent password."
