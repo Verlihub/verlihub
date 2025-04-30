@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-03-07 22:39+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2014-06-20 09:02+0000\n"
 "Last-Translator: Marcel <future_dance@hotmail.com>, 2014-2019\n"
 "Language-Team: Dutch (Netherlands) (http://app.transifex.com/feardc/verlihub/language/nl_NL/)\n"
@@ -14,19 +14,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: nl_NL\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../src\n"
 "X-Poedit-SourceCharset: CP1252\n"
 
-#: ../src/cban.cpp:107 ../src/cbanlist.cpp:702 ../src/cserverdc.cpp:2844
+#: ../src/cban.cpp:107 ../src/cbanlist.cpp:715 ../src/cserverdc.cpp:2845
 #: ../src/cuser.cpp:202 ../src/cuser.cpp:238
 #, c-format
 msgid "Nick: %s"
 msgstr "Nicknaam: %s"
 
-#: ../src/cban.cpp:110 ../src/cbanlist.cpp:752 ../src/cserverdc.cpp:2846
+#: ../src/cban.cpp:110 ../src/cbanlist.cpp:765 ../src/cserverdc.cpp:2847
 #: ../src/cuser.cpp:208
 #, c-format
 msgid "IP: %s"
@@ -42,7 +42,7 @@ msgstr "IP reeks: %s - %s"
 msgid "Share: %llu [%s]"
 msgstr "Gedeeld: %llu [%s]"
 
-#: ../src/cban.cpp:124 ../src/cbanlist.cpp:732 ../src/cbanlist.cpp:782
+#: ../src/cban.cpp:124 ../src/cbanlist.cpp:745 ../src/cbanlist.cpp:795
 #, c-format
 msgid "Reason: %s"
 msgstr "Reden: %s"
@@ -52,12 +52,12 @@ msgstr "Reden: %s"
 msgid "Extra: %s"
 msgstr "Extra: %s"
 
-#: ../src/cban.cpp:129 ../src/cbanlist.cpp:515 ../src/cbanlist.cpp:704
-#: ../src/cbanlist.cpp:754
+#: ../src/cban.cpp:129 ../src/cbanlist.cpp:528 ../src/cbanlist.cpp:717
+#: ../src/cbanlist.cpp:767
 msgid "Time"
 msgstr "Tijd"
 
-#: ../src/cban.cpp:133 ../src/cbanlist.cpp:704 ../src/cbanlist.cpp:754
+#: ../src/cban.cpp:133 ../src/cbanlist.cpp:717 ../src/cbanlist.cpp:767
 #, c-format
 msgid "%s left"
 msgstr "%s over"
@@ -87,7 +87,7 @@ msgstr "Type: %s"
 msgid "Operator: %s"
 msgstr "Operator: %s"
 
-#: ../src/cban.cpp:164 ../src/cbanlist.cpp:516
+#: ../src/cban.cpp:164 ../src/cbanlist.cpp:529
 msgid "Last hit"
 msgstr "Laatste hit"
 
@@ -151,48 +151,48 @@ msgstr "Verlopen %s"
 msgid "Permanent"
 msgstr "Permanent"
 
-#: ../src/cbanlist.cpp:512
+#: ../src/cbanlist.cpp:525
 msgid "Item"
 msgstr "Item"
 
-#: ../src/cbanlist.cpp:513 ../src/cbanlist.cpp:705 ../src/cbanlist.cpp:755
+#: ../src/cbanlist.cpp:526 ../src/cbanlist.cpp:718 ../src/cbanlist.cpp:768
 #: ../src/ccustomredirects.cpp:322
 msgid "Type"
 msgstr "Type"
 
-#: ../src/cbanlist.cpp:514 ../src/cpenaltylist.cpp:209
-#: ../src/cserverdc.cpp:2815
+#: ../src/cbanlist.cpp:527 ../src/cpenaltylist.cpp:209
+#: ../src/cserverdc.cpp:2816
 msgid "Operator"
 msgstr "Operator"
 
-#: ../src/cbanlist.cpp:709 ../src/cbanlist.cpp:759 ../src/cconndc.cpp:160
+#: ../src/cbanlist.cpp:722 ../src/cbanlist.cpp:772 ../src/cconndc.cpp:159
 msgid "Password"
 msgstr "Paswoord"
 
-#: ../src/cbanlist.cpp:713 ../src/cbanlist.cpp:763
+#: ../src/cbanlist.cpp:726 ../src/cbanlist.cpp:776
 msgid "Reconnect"
 msgstr ""
 
-#: ../src/cbanlist.cpp:717 ../src/cbanlist.cpp:767
+#: ../src/cbanlist.cpp:730 ../src/cbanlist.cpp:780
 msgid "Flood"
 msgstr ""
 
-#: ../src/cbanlist.cpp:721 ../src/cbanlist.cpp:771
+#: ../src/cbanlist.cpp:734 ../src/cbanlist.cpp:784
 msgid "Clone"
 msgstr ""
 
-#: ../src/cbanlist.cpp:725 ../src/cbanlist.cpp:775 ../src/cconndc.cpp:508
-#: ../src/cconndc.cpp:512 ../src/cdcproto.cpp:3655 ../src/cdcproto.cpp:3794
-#: ../src/cdctag.cpp:217 ../src/creguserinfo.cpp:105 ../src/cserverdc.cpp:2799
-#: ../src/cserverdc.cpp:2823
+#: ../src/cbanlist.cpp:738 ../src/cbanlist.cpp:788 ../src/cconndc.cpp:507
+#: ../src/cconndc.cpp:511 ../src/cdcproto.cpp:3652 ../src/cdcproto.cpp:3791
+#: ../src/cdctag.cpp:217 ../src/creguserinfo.cpp:105 ../src/cserverdc.cpp:2800
+#: ../src/cserverdc.cpp:2824
 msgid "Unknown"
 msgstr "Onbekend"
 
-#: ../src/cbanlist.cpp:735 ../src/cbanlist.cpp:785
+#: ../src/cbanlist.cpp:748 ../src/cbanlist.cpp:798
 msgid "Not found"
 msgstr ""
 
-#: ../src/cbanlist.cpp:744
+#: ../src/cbanlist.cpp:757
 msgid "Bad IP specified"
 msgstr ""
 
@@ -251,38 +251,38 @@ msgstr "Parameters reguliere expressie"
 msgid "Command parameters error"
 msgstr "Commando parameters fout"
 
-#: ../src/cconndc.cpp:160
+#: ../src/cconndc.cpp:159
 msgid "Key"
 msgstr "Sleutel"
 
-#: ../src/cconndc.cpp:160
+#: ../src/cconndc.cpp:159
 msgid "ValidateNick"
 msgstr "Bekrachtigen nicknaam"
 
-#: ../src/cconndc.cpp:160
+#: ../src/cconndc.cpp:159
 msgid "Login"
 msgstr "Login"
 
-#: ../src/cconndc.cpp:160
+#: ../src/cconndc.cpp:159
 msgid "MyINFO"
 msgstr "MyINFO"
 
-#: ../src/cconndc.cpp:183
+#: ../src/cconndc.cpp:182
 #, c-format
 msgid "Operation timeout: %s"
 msgstr "Operatie timeout: %s"
 
-#: ../src/cconndc.cpp:194
+#: ../src/cconndc.cpp:193
 msgid "General timeout"
 msgstr "Algemeen timeout"
 
-#: ../src/cconndc.cpp:452
+#: ../src/cconndc.cpp:451
 msgid "Protocol flood detected"
 msgstr "Protocol flood gedetecteerd"
 
-#: ../src/cconndc.cpp:488 ../src/cdcproto.cpp:3591 ../src/cdcproto.cpp:3742
-#: ../src/cserverdc.cpp:2655 ../src/cserverdc.cpp:2722
-#: ../src/cserverdc.cpp:2763
+#: ../src/cconndc.cpp:487 ../src/cdcproto.cpp:3588 ../src/cdcproto.cpp:3739
+#: ../src/cserverdc.cpp:2656 ../src/cserverdc.cpp:2723
+#: ../src/cserverdc.cpp:2764
 msgid "Chat"
 msgstr "Chat"
 
@@ -452,8 +452,8 @@ msgstr "Gebruiker"
 #: ../src/cdcconsole.cpp:1277 ../src/cdcconsole.cpp:1303
 #: ../src/cdcconsole.cpp:1337 ../src/cdcconsole.cpp:1514
 #: ../src/cdcconsole.cpp:2530 ../src/cdcconsole.cpp:3012
-#: ../src/cdcconsole.cpp:3024 ../src/cdcproto.cpp:3297
-#: ../src/cserverdc.cpp:2920
+#: ../src/cdcconsole.cpp:3024 ../src/cdcproto.cpp:3294
+#: ../src/cserverdc.cpp:2921
 #, c-format
 msgid "User not found: %s"
 msgstr "Gebruiker niet gevonden: %s"
@@ -507,7 +507,7 @@ msgstr "Houdt u er rekening mee dat de hub niet langer is gepland voor stop. "
 msgid "Please note, hub has been scheduled to stop in: %s"
 msgstr "Let op, hub gepland te stoppen in: %s"
 
-#: ../src/cdcconsole.cpp:473 ../src/cserverdc.cpp:3649
+#: ../src/cdcconsole.cpp:473 ../src/cserverdc.cpp:3650
 msgid "Please note, hub will be stopped now."
 msgstr "Let op, hub zal nu worden gestopt."
 
@@ -523,7 +523,7 @@ msgstr[0] "Bericht afgeleverd aan  %d gebruikers in zone  %s in %s."
 msgstr[1] "Bericht afgeleverd aan  %d gebruikers in zone  %s in %s."
 
 #: ../src/cdcconsole.cpp:540 ../src/cdcconsole.cpp:760
-#: ../src/cserverdc.cpp:1268
+#: ../src/cserverdc.cpp:1269
 msgid "Your information"
 msgstr "Jouw informatie"
 
@@ -531,7 +531,7 @@ msgstr "Jouw informatie"
 msgid "Your IP information"
 msgstr "Jouw IP informatie"
 
-#: ../src/cdcconsole.cpp:559 ../src/cserverdc.cpp:2860 ../src/cuser.cpp:211
+#: ../src/cdcconsole.cpp:559 ../src/cserverdc.cpp:2861 ../src/cuser.cpp:211
 #, c-format
 msgid "Host: %s"
 msgstr "Host: %s"
@@ -555,13 +555,13 @@ msgstr ""
 msgid "This command is currently disabled."
 msgstr "Deze opdracht is momenteel uitgeschakeld."
 
-#: ../src/cdcconsole.cpp:587 ../src/cdcproto.cpp:1960
+#: ../src/cdcconsole.cpp:587 ../src/cdcproto.cpp:1957
 msgid ""
 "Main chat is currently disabled for users with your class, please consider "
 "registering on the hub or contact an operator."
 msgstr ""
 
-#: ../src/cdcconsole.cpp:608 ../src/cdcproto.cpp:1968
+#: ../src/cdcconsole.cpp:608 ../src/cdcproto.cpp:1965
 msgid "Your message wasn't sent because it equals your previous message."
 msgstr "uw bericht is niet verzonden, omdat het gelijk is aan uw vorige bericht ."
 
@@ -581,8 +581,8 @@ msgstr "Publieke chat -berichten worden nu verborgen . Om te laten zien , schrij
 msgid "Public chat messages are already hidden. To show them, write: +chat"
 msgstr "Openbare chatberichten zijn al verborgen . Om te laten zien , schrijf: + chat"
 
-#: ../src/cdcconsole.cpp:656 ../src/cserverdc.cpp:2884
-#: ../src/cserverdc.cpp:2895
+#: ../src/cdcconsole.cpp:656 ../src/cserverdc.cpp:2885
+#: ../src/cserverdc.cpp:2896
 #, c-format
 msgid "Software: %s %s"
 msgstr "Software: %s %s"
@@ -688,7 +688,7 @@ msgstr ""
 
 #: ../src/cdcconsole.cpp:752 ../src/cmaxminddb.cpp:923
 #: ../src/cmaxminddb.cpp:937 ../src/cmaxminddb.cpp:951
-#: ../src/cserverdc.cpp:2888
+#: ../src/cserverdc.cpp:2889
 #, c-format
 msgid "Status: %s"
 msgstr "Status: %s"
@@ -720,7 +720,7 @@ msgstr "Bots: %d"
 
 #: ../src/cdcconsole.cpp:758 ../src/cdcconsole.cpp:791
 #: ../src/cinfoserver.cpp:596 ../src/cpenaltylist.cpp:274
-#: ../src/cserverdc.cpp:2887 ../src/cserverdc.cpp:2898
+#: ../src/cserverdc.cpp:2888 ../src/cserverdc.cpp:2899
 #, c-format
 msgid "Share: %s"
 msgstr "Gedeeld: %s"
@@ -811,7 +811,7 @@ msgid "You need to share at least: %s"
 msgstr "Je moet op zijn minst delen:%s"
 
 #: ../src/cdcconsole.cpp:934 ../src/cdcconsole.cpp:1101
-#: ../src/cdcproto.cpp:796
+#: ../src/cdcproto.cpp:791
 #, c-format
 msgid "Minimum password length is %d characters. Please retry."
 msgstr "Minimale lengte van het wachtwoord is %d karakters . Probeer het opnieuw ."
@@ -858,7 +858,7 @@ msgstr "Topic mag niet meer dan 255 tekens , maar je onderwerp heeft %d karakter
 #: ../src/cdcconsole.cpp:1018 ../src/cdcconsole.cpp:1779
 #: ../src/cdcconsole.cpp:1903 ../src/cdcconsole.cpp:2426
 #: ../src/cdcconsole.cpp:3415 ../src/cdcconsole.cpp:3460
-#: ../src/cdcconsole.cpp:3534 ../src/cserverdc.cpp:3065
+#: ../src/cdcconsole.cpp:3534 ../src/cserverdc.cpp:3066
 msgid "Your action was blocked by a plugin."
 msgstr "Uw actie werd geblokkeerd door een plugin."
 
@@ -878,11 +878,11 @@ msgid ""
 msgstr "Het is niet toegestaan om uw wachtwoord te veranderen nu . Vraag een operator om hulp."
 
 #: ../src/cdcconsole.cpp:1108 ../src/cdcconsole.cpp:3520
-#: ../src/cdcproto.cpp:804
+#: ../src/cdcproto.cpp:799
 msgid "Error updating password."
 msgstr "Fout updaten paswoord"
 
-#: ../src/cdcconsole.cpp:1126 ../src/cdcproto.cpp:824
+#: ../src/cdcconsole.cpp:1126 ../src/cdcproto.cpp:819
 msgid "Password updated successfully."
 msgstr "Het updaten van het paswoord is succesvol verlopen."
 
@@ -890,7 +890,7 @@ msgstr "Het updaten van het paswoord is succesvol verlopen."
 msgid ""
 "Please use: !hideme <class>, where <class> is the maximum class of users "
 "that may not see your kicks."
-msgstr "Gebruik: !hideme  <class>, waar <class> is het maximum class van de gebruikers die niet uw kicks mogen zien ."
+msgstr "Gebruik: !hideme  <class>, waar <class> is het maximum lass van de gebruikers die niet uw kicks mogen zien ."
 
 #: ../src/cdcconsole.cpp:1145
 #, c-format
@@ -967,7 +967,7 @@ msgstr "Max class is %d"
 msgid "User %s is temporarily protected from class %d"
 msgstr "Gebruiker %s is tijdelijk beschermd tegen klasse %d"
 
-#: ../src/cdcconsole.cpp:1346 ../src/cserverdc.cpp:3674
+#: ../src/cdcconsole.cpp:1346 ../src/cserverdc.cpp:3675
 msgid "Done reloading all lists and databases."
 msgstr "Klaar met het herladen van alle lijsten en databases."
 
@@ -1298,9 +1298,9 @@ msgstr "Rechten wegnemen om de Operator chat te gebruiken: %s"
 msgid "Giving user the right to use operator chat: %s for %s"
 msgstr "Geef gebruiker het recht om de operator chat te gebruiken: %s voor %s"
 
-#: ../src/cdcconsole.cpp:2857 ../src/cserverdc.cpp:3337
-#: ../src/cserverdc.cpp:3348 ../src/cserverdc.cpp:3359
-#: ../src/cserverdc.cpp:3370
+#: ../src/cdcconsole.cpp:2857 ../src/cserverdc.cpp:3338
+#: ../src/cserverdc.cpp:3349 ../src/cserverdc.cpp:3360
+#: ../src/cserverdc.cpp:3371
 #, c-format
 msgid ""
 "Specified value is expected to be a valid IP address within range %s to %s."
@@ -1400,7 +1400,7 @@ msgstr "Je hebt geen rechten om gebruiker: %s te gaggen."
 
 #: ../src/cdcconsole.cpp:3037
 #, c-format
-msgid "You have no rights to gag nick: %s"
+msgid "You have no rights to ga nick: %s"
 msgstr "Je heb geen rechten om nick: %s te gaggen."
 
 #: ../src/cdcconsole.cpp:3090
@@ -1612,407 +1612,407 @@ msgstr "Uw client gaf een foutive sleutel in reactie om te vergrendelen"
 msgid "Invalid login sequence, your client already sent supports."
 msgstr "Ongeldige login volgorde, uw klant al verstuurd ondersteuning."
 
-#: ../src/cdcproto.cpp:567
+#: ../src/cdcproto.cpp:563
 msgid "Invalid login sequence, your client already validated nick."
 msgstr "Ongeldige login volgorde, uw client vallideerde de nick ."
 
-#: ../src/cdcproto.cpp:618
+#: ../src/cdcproto.cpp:613
 #, c-format
 msgid "User limit in country zone %s exceeded at %d/%d online users."
 msgstr "Gebruiker limiet in het land zone %s op %d / %d online gebruikers overschreden."
 
-#: ../src/cdcproto.cpp:621
+#: ../src/cdcproto.cpp:616
 #, c-format
 msgid "User limit in IP zone %s exceeded at %d/%d online users."
 msgstr "Gebruiker limiet in IP -zone %s op%d/%d online gebruikers overschreden."
 
-#: ../src/cdcproto.cpp:635
+#: ../src/cdcproto.cpp:630
 #, c-format
 msgid "User limit in main zone exceeded at %d/%d online users."
 msgstr "Gebruiker limiet in hoofd -zone op %d/%d online gebruikers overschreden."
 
-#: ../src/cdcproto.cpp:643
+#: ../src/cdcproto.cpp:638
 #, c-format
 msgid "User limit exceeded at %d online users."
 msgstr "Gebruiker limiet op %d online gebruikers overschreden."
 
-#: ../src/cdcproto.cpp:652
+#: ../src/cdcproto.cpp:647
 msgid "This is a registered users only hub."
 msgstr "Dit is een alleen voor geregistreerde gebruikers hub."
 
-#: ../src/cdcproto.cpp:675
+#: ../src/cdcproto.cpp:670
 #, c-format
 msgid "User limit from IP address %s exceeded at %d online users."
 msgstr "Gebruiker limiet van IP-adres %s op %d online gebruikers overschreden."
 
-#: ../src/cdcproto.cpp:691
+#: ../src/cdcproto.cpp:686
 #, c-format
 msgid "Authorization IP mismatch from %s"
 msgstr "Autorisatie IP komt niet over een met wat is opgeslagen, van %s"
 
-#: ../src/cdcproto.cpp:693
+#: ../src/cdcproto.cpp:688
 #, c-format
 msgid "Authorization IP for this account doesn't match your IP address: %s"
-msgstr "Autorisatie IP voor dit account komt niet over een met uw IP address: %s"
+sgstr "Autorisatie IP voor dit account komt niet over een met uw IP address: %s"
 
-#: ../src/cdcproto.cpp:768
+#: ../src/cdcproto.cpp:763
 msgid "Invalid login sequence, you client already sent password."
 msgstr "Ongeldige login volgorde, uw client verstuurde wachtwoord."
 
-#: ../src/cdcproto.cpp:853
+#: ../src/cdcproto.cpp:848
 msgid "Incorrect password"
 msgstr "incorrect wachtwoord"
 
-#: ../src/cdcproto.cpp:872
+#: ../src/cdcproto.cpp:867
 msgid "You've been temporarily banned due to incorrect password."
 msgstr "Je hebt tijdelijk verbannen als gevolg van onjuist wachtwoord ."
 
-#: ../src/cdcproto.cpp:894
+#: ../src/cdcproto.cpp:889
 msgid ""
 "Invalid login sequence, you didn't specify support for hub URL command."
 msgstr "Foute login volgorde. je hebt support niet gespecificeerd voor hub URL command."
 
-#: ../src/cdcproto.cpp:904
+#: ../src/cdcproto.cpp:899
 msgid "Invalid login sequence, your client already sent hub URL."
 msgstr "Foute login volgorde. je client verstuurd al een hub URL."
 
-#: ../src/cdcproto.cpp:948
+#: ../src/cdcproto.cpp:943
 msgid "Invalid login sequence, you client already sent version."
 msgstr "Ongeldige login volgorde, uw client verstuurde al versie"
 
-#: ../src/cdcproto.cpp:1023
+#: ../src/cdcproto.cpp:1018
 msgid "Your client didn't specify a tag."
 msgstr "Uw client heeft een tag niet opgeven ."
 
-#: ../src/cdcproto.cpp:1131
+#: ../src/cdcproto.cpp:1126
 #, c-format
 msgid ""
 "You share %s but minimum allowed is %s (%s for active users, %s for passive "
 "users)."
 msgstr "Je deelt %s maar minimaal toegestane %s ( %s voor actieve gebruikers, %s voor passieve gebruikers) ."
 
-#: ../src/cdcproto.cpp:1133
+#: ../src/cdcproto.cpp:1128
 #, c-format
 msgid "You share %s but maximum allowed is %s."
 msgstr "U deelt %s maar toegestane maximum is %s."
 
-#: ../src/cdcproto.cpp:1197
+#: ../src/cdcproto.cpp:1192
 #, c-format
 msgid ""
 "Passive user limit exceeded at %d users. Try again later or set up an active"
 " connection."
 msgstr "Passieve gebruiker limiet overschreden %d gebruikers . Probeer het later opnieuw of maak een actieve verbinding ."
 
-#: ../src/cdcproto.cpp:1217 ../src/cserverdc.cpp:1662
+#: ../src/cdcproto.cpp:1213 ../src/cserverdc.cpp:1663
 msgid "You are prohibited from entering this hub"
 msgstr "Je mag de hub niet in."
 
-#: ../src/cdcproto.cpp:1217 ../src/cserverdc.cpp:1662
+#: ../src/cdcproto.cpp:1213 ../src/cserverdc.cpp:1663
 msgid "You are banned from this hub"
 msgstr "U bent verbannen van deze hub"
 
-#: ../src/cdcproto.cpp:1382
+#: ../src/cdcproto.cpp:1379
 #, c-format
 msgid "You are already in the hub using another nick: %s"
 msgstr "U bent al in de hub aanwezig onder een andere nicknaam: %s"
 
-#: ../src/cdcproto.cpp:1508
+#: ../src/cdcproto.cpp:1505
 msgid "Invalid login sequence, you didn't specify support for IN command."
 msgstr "Ongeldige login volgorde, heb je geen steun te geven voor het commando "
 
-#: ../src/cdcproto.cpp:1610
+#: ../src/cdcproto.cpp:1607
 msgid ""
 "Invalid login sequence, you didn't specify support for ExtJSON command."
 msgstr "Ongeldige login volgorde, je hebt geen specificatie  support gegeven voor ExtJSON opdracht "
 
-#: ../src/cdcproto.cpp:1722 ../src/cdcproto.cpp:1836
+#: ../src/cdcproto.cpp:1719 ../src/cdcproto.cpp:1833
 #, c-format
 msgid "You're trying to send private message to an offline user: %s"
 msgstr "Je probeert privé-bericht te sturen naar een offline gebruiker : %s"
 
-#: ../src/cdcproto.cpp:1741 ../src/cdcproto.cpp:1842
+#: ../src/cdcproto.cpp:1738 ../src/cdcproto.cpp:1839
 #, c-format
 msgid "You're trying to send private message to a bot: %s"
 msgstr "Je probeert privé- bericht te sturen naar een bot : %s"
 
-#: ../src/cdcproto.cpp:1750 ../src/cdcproto.cpp:1850
+#: ../src/cdcproto.cpp:1747 ../src/cdcproto.cpp:1847
 msgid "You're not allowed to use private chat right now."
 msgstr "Je mag de privé chat nu niet gebruiken."
 
-#: ../src/cdcproto.cpp:1753 ../src/cdcproto.cpp:1853
+#: ../src/cdcproto.cpp:1750 ../src/cdcproto.cpp:1850
 #, c-format
 msgid "User tries to speak with gag in PM to %s: %s"
 msgstr "gebruiker probeert te schrijven met gag in PM met  %s: %s"
 
-#: ../src/cdcproto.cpp:1759 ../src/cdcproto.cpp:1859
+#: ../src/cdcproto.cpp:1756 ../src/cdcproto.cpp:1856
 msgid ""
 "Private chat is currently disabled for users with your class, please "
 "consider registering on the hub or contact an operator."
 msgstr ""
 
-#: ../src/cdcproto.cpp:1766 ../src/cdcproto.cpp:1866
+#: ../src/cdcproto.cpp:1763 ../src/cdcproto.cpp:1863
 msgid "You can't talk to this user."
 msgstr "U kunt niet praten met deze gebruiker ."
 
-#: ../src/cdcproto.cpp:1778
+#: ../src/cdcproto.cpp:1775
 #, c-format
 msgid "Same message flood in PM: %s"
 msgstr "Dezelfde berichten flood in PM: %s"
 
-#: ../src/cdcproto.cpp:1797
+#: ../src/cdcproto.cpp:1794
 #, c-format
 msgid "Your PM contains %d characters but maximum allowed is %d characters."
 msgstr "U PM bevat %d tekens maar maximaal toegestaan is %d tekens."
 
-#: ../src/cdcproto.cpp:1878
+#: ../src/cdcproto.cpp:1875
 #, c-format
 msgid "Same message flood in MCTo: %s"
 msgstr "Dezelfde berichten flood in MCTo: %s"
 
-#: ../src/cdcproto.cpp:1897 ../src/cdcproto.cpp:4274
+#: ../src/cdcproto.cpp:1894 ../src/cdcproto.cpp:4261
 #, c-format
 msgid ""
 "Your chat message contains %d characters but maximum allowed is %d "
 "characters."
 msgstr "Chatbericht bevat %d tekens maar maximaal toegelaten is %d tekens."
 
-#: ../src/cdcproto.cpp:1940
+#: ../src/cdcproto.cpp:1937
 #, c-format
 msgid ""
 "Your message wasn't sent because minimum chat delay is %lu ms but you waited"
 " only %s."
 msgstr "Je bericht is niet verzonden omdat minimum chat vertraging %lu ms , maar je wachte %s ."
 
-#: ../src/cdcproto.cpp:1951
+#: ../src/cdcproto.cpp:1948
 msgid "You're not allowed to use main chat right now."
 msgstr "je bent niet toegestaan om te gebruiken Main Chat nu. "
 
-#: ../src/cdcproto.cpp:1954
+#: ../src/cdcproto.cpp:1951
 #, c-format
 msgid "User tries to speak with gag in MC: %s"
 msgstr "Gebruiker probeert te schrijven met GAG in MC: %s"
 
-#: ../src/cdcproto.cpp:2072 ../src/cdcproto.cpp:2284
+#: ../src/cdcproto.cpp:2069 ../src/cdcproto.cpp:2281
 #, c-format
 msgid "You're trying to connect to a bot: %s"
 msgstr "Je probeert met een bot te verbinden: %s"
 
-#: ../src/cdcproto.cpp:2081 ../src/cdcproto.cpp:2293
+#: ../src/cdcproto.cpp:2078 ../src/cdcproto.cpp:2290
 msgid "You're trying to connect to yourself."
 msgstr "Je probeert met je zelf te verbinden."
 
-#: ../src/cdcproto.cpp:2088 ../src/cdcproto.cpp:2318
+#: ../src/cdcproto.cpp:2085 ../src/cdcproto.cpp:2315
 #, c-format
 msgid "You can't download unless you are registered with class %d."
 msgstr "Je kan niet downloaden , tenzij je bent geregistreerd met class %d ."
 
-#: ../src/cdcproto.cpp:2115 ../src/cdcproto.cpp:2345
+#: ../src/cdcproto.cpp:2112 ../src/cdcproto.cpp:2342
 #, c-format
 msgid "You can't download unless you share %s."
 msgstr "Je kan niet downloaden , tenzij je %s deelt."
 
-#: ../src/cdcproto.cpp:2124 ../src/cdcproto.cpp:2354
+#: ../src/cdcproto.cpp:2121 ../src/cdcproto.cpp:2351
 msgid "You're not allowed to download from anyone."
 msgstr "Het is niet toegestaan dat je van iemand download."
 
-#: ../src/cdcproto.cpp:2131 ../src/cdcproto.cpp:2361
+#: ../src/cdcproto.cpp:2128 ../src/cdcproto.cpp:2358
 #, c-format
 msgid "You can't download from this user: %s"
 msgstr "U kan niet downloaden van deze gebruiker: %s"
 
-#: ../src/cdcproto.cpp:2140
+#: ../src/cdcproto.cpp:2137
 #, c-format
 msgid "You can't download from this user because one of you is in a LAN: %s"
 msgstr "Je kan niet downloaden van deze gebruiker omdat een van jullie is in een LAN: %s"
 
-#: ../src/cdcproto.cpp:2149 ../src/cdcproto.cpp:2370
+#: ../src/cdcproto.cpp:2146 ../src/cdcproto.cpp:2367
 #, c-format
 msgid "You can't download from this user because he is in chat only mode: %s"
 msgstr "U kunt niet downloaden van deze gebruiker, alleen chat mode: %s"
 
-#: ../src/cdcproto.cpp:2240
+#: ../src/cdcproto.cpp:2237
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your connection request with real "
 "one: %s -> %s"
 msgstr "Het vervangen van verkeerde IP-adres zoals opgegeven in je verbinding met je echte IP adres: %s -> %s"
 
-#: ../src/cdcproto.cpp:2275
+#: ../src/cdcproto.cpp:2272
 #, c-format
 msgid "You're trying to connect to an offline user: %s"
 msgstr "Je probeert te verbinden met een gebruiker die niet online is: %s"
 
-#: ../src/cdcproto.cpp:2300
+#: ../src/cdcproto.cpp:2297
 #, c-format
 msgid ""
 "You can't download from this user, because he is also in passive mode: %s"
 msgstr "Je kan niet downloaden van deze gebruiker , want hij is ook in de passieve modus : %s"
 
-#: ../src/cdcproto.cpp:2309
+#: ../src/cdcproto.cpp:2306
 #, c-format
 msgid ""
 "You can't download from this user while your share is hidden, because you "
 "are in passive mode: %s"
 msgstr "Je kan niet downloaden van deze gebruiker , terwijl je share is verborgen , omdat je in passieve modus bent : %s"
 
-#: ../src/cdcproto.cpp:2419 ../src/cdcproto.cpp:2693 ../src/cdcproto.cpp:2872
+#: ../src/cdcproto.cpp:2416 ../src/cdcproto.cpp:2690 ../src/cdcproto.cpp:2869
 msgid ""
 "Sorry, hub load is too high to process your search request. Please try again"
 " later."
 msgstr "Sorry , hub belasting is te hoog om uw zoekopdracht te verwerken . Probeer het later opnieuw ."
 
-#: ../src/cdcproto.cpp:2496 ../src/cdcproto.cpp:2751 ../src/cdcproto.cpp:2915
+#: ../src/cdcproto.cpp:2493 ../src/cdcproto.cpp:2748 ../src/cdcproto.cpp:2912
 msgid "Don't search too often."
 msgstr "Niet zo vaak achter elkaar zoeken."
 
-#: ../src/cdcproto.cpp:2497 ../src/cdcproto.cpp:2752 ../src/cdcproto.cpp:2916
+#: ../src/cdcproto.cpp:2494 ../src/cdcproto.cpp:2749 ../src/cdcproto.cpp:2913
 #, c-format
 msgid "You can perform %d search in %s."
 msgid_plural "You can perform %d searches in %s."
 msgstr[0] "U kunt %d zoekopdrachten uit  voeren in %s ."
 msgstr[1] "U kunt %d zoekopdrachten uit  voeren in %s ."
 
-#: ../src/cdcproto.cpp:2519 ../src/cdcproto.cpp:2775 ../src/cdcproto.cpp:2939
+#: ../src/cdcproto.cpp:2516 ../src/cdcproto.cpp:2772 ../src/cdcproto.cpp:2936
 #, c-format
-msgid "You can't search unless you are registered with class %d."
+msgid "You can't search unless you are registered ith class %d."
 msgstr "Je kunt niet zoeken , tenzij je bent geregistreerd met class %d ."
 
-#: ../src/cdcproto.cpp:2549 ../src/cdcproto.cpp:2805 ../src/cdcproto.cpp:2969
+#: ../src/cdcproto.cpp:2546 ../src/cdcproto.cpp:2802 ../src/cdcproto.cpp:2966
 #, c-format
 msgid "You can't search unless you share %s."
 msgstr "Je kunt niet zoeken , tenzij je deelt %s"
 
-#: ../src/cdcproto.cpp:2558 ../src/cdcproto.cpp:2814 ../src/cdcproto.cpp:2978
+#: ../src/cdcproto.cpp:2555 ../src/cdcproto.cpp:2811 ../src/cdcproto.cpp:2975
 msgid "You're not allowed to search for anything."
 msgstr "Het is niet toegestaan dat je gebruik kunt maken van de zoek opdracht."
 
-#: ../src/cdcproto.cpp:2601
+#: ../src/cdcproto.cpp:2598
 #, c-format
 msgid "Minimum search length is %d character."
 msgid_plural "Minimum search length is %d characters."
 msgstr[0] "Minimale zoek lengte is %d tekens."
 msgstr[1] "Minimale search lengte is %d tekens."
 
-#: ../src/cdcproto.cpp:2623 ../src/cdcproto.cpp:2831
+#: ../src/cdcproto.cpp:2620 ../src/cdcproto.cpp:2828
 #, c-format
 msgid ""
 "Replacing wrong IP address specified in your search request with real one: "
 "%s -> %s"
 msgstr "Het vervangen van verkeerde IP-adres zoals opgegeven in je zoekopdracht met je echte IP adres: %s -> %s"
 
-#: ../src/cdcproto.cpp:2671 ../src/cdcproto.cpp:2850
+#: ../src/cdcproto.cpp:2668 ../src/cdcproto.cpp:2847
 msgid ""
 "Invalid login sequence, you didn't specify support for short TTH search "
 "command."
 msgstr "Ongeldige login volgorde, heb je geen ondersteuning voor de korte TTH search opdracht te geven."
 
-#: ../src/cdcproto.cpp:3057
+#: ../src/cdcproto.cpp:3054
 msgid "Invalid login sequence, you didn't identify yourself as pinger."
 msgstr "Ongeldige login volgorde, je kunt jezelf niet identificeren als pinger."
 
-#: ../src/cdcproto.cpp:3067
+#: ../src/cdcproto.cpp:3064
 msgid "Invalid login sequence, you already sent pinger information."
 msgstr "Ongeldige login volgorde, je hebt al pinger informatie verzonden."
 
-#: ../src/cdcproto.cpp:3086
+#: ../src/cdcproto.cpp:3083
 #, c-format
 msgid "Pinger entered the hub: %s"
 msgstr "Pinger is in de hub : %s"
 
-#: ../src/cdcproto.cpp:3233
+#: ../src/cdcproto.cpp:3230
 #, c-format
 msgid "You're trying to redirect an offline user: %s"
 msgstr "Je probeert een offline gebruiker om te leiden : %s"
 
-#: ../src/cdcproto.cpp:3239
+#: ../src/cdcproto.cpp:3236
 #, c-format
 msgid "You're trying to redirect a bot: %s"
 msgstr "Je probeert een bot om te leiden: %s"
 
-#: ../src/cdcproto.cpp:3245
+#: ../src/cdcproto.cpp:3242
 #, c-format
 msgid "You're trying to redirect a protected user: %s"
 msgstr "Je probeert een beschermde gebruiker om te leiden: %s"
 
-#: ../src/cdcproto.cpp:3253
+#: ../src/cdcproto.cpp:3250
 msgid "Please specify valid redirect address."
 msgstr "Omschrijf geldig redirect adres."
 
-#: ../src/cdcproto.cpp:3262
+#: ../src/cdcproto.cpp:3259
 #, c-format
 msgid "You are being redirected to %s because: %s"
 msgstr "U wordt doorgestuurd naar %s omdat: %s"
 
-#: ../src/cdcproto.cpp:3303
+#: ../src/cdcproto.cpp:3300
 msgid "Please provide a valid reason."
 msgstr "Geef een geldige reden."
 
-#: ../src/cdcproto.cpp:3309
+#: ../src/cdcproto.cpp:3306
 msgid "You can't ban a user that is protected or has higher class."
 msgstr "Je kunt een gebruiker die wordt beschermd of een hogere class heeft niet bannen."
 
-#: ../src/cdcproto.cpp:3315
+#: ../src/cdcproto.cpp:3312
 msgid "You can't ban a bot."
 msgstr "Je kunt geen bot bannen."
 
-#: ../src/cdcproto.cpp:3321
+#: ../src/cdcproto.cpp:3318
 #, c-format
 msgid ""
 "You are temporarily prohibited from entering the hub for %s because: %s"
 msgstr "Je mag de hub niet in voor %s omdat:%s"
 
-#: ../src/cdcproto.cpp:3323
+#: ../src/cdcproto.cpp:3320
 #, c-format
 msgid "You are permanently banned from the hub because: %s"
 msgstr "Je bent permanent verbannen uit de hub omdat: %s"
 
-#: ../src/cdcproto.cpp:3358
+#: ../src/cdcproto.cpp:3355
 #, c-format
 msgid "No banned user found with IP %s."
 msgstr "Geen gebannen gebruiker gevonden met IP %s ."
 
-#: ../src/cdcproto.cpp:3362
+#: ../src/cdcproto.cpp:3359
 #, c-format
 msgid "Removed %d ban."
 msgid_plural "Removed %d bans."
 msgstr[0] "Verwijderde bans %d"
 msgstr[1] "Verwijderde bans %d"
 
-#: ../src/cdcproto.cpp:3433
+#: ../src/cdcproto.cpp:3430
 #, c-format
 msgid "Topic is set to: %s"
 msgstr "Topic is veranderd naar: %s"
 
-#: ../src/cdcproto.cpp:3591
+#: ../src/cdcproto.cpp:3588
 #, c-format
 msgid "Invalid login sequence, your client must validate nick first: %s"
 msgstr "Onterechte login poging, je client herkent de nicknaam niet: %s"
 
-#: ../src/cdcproto.cpp:3593
+#: ../src/cdcproto.cpp:3590
 msgid "Invalid login sequence, your client must validate nick first."
 msgstr "Ongeldige login volgorde, moet uw klant nick eerste valideren."
 
-#: ../src/cdcproto.cpp:3660
+#: ../src/cdcproto.cpp:3657
 #, c-format
 msgid "You have no rights to perform following operator action: %s"
 msgstr "Je hebt geen rechten om volgende operator actie uit te voeren: %s"
 
-#: ../src/cdcproto.cpp:3799
+#: ../src/cdcproto.cpp:3796
 #, c-format
 msgid "Your client sent malformed protocol command: %s"
 msgstr "Uw  client verzond misvormde protocol commando: %s"
 
-#: ../src/cdcproto.cpp:3910
+#: ../src/cdcproto.cpp:3907
 #, c-format
 msgid "Your client sent too long protocol command: %s"
 msgstr "U client verstuurt een te lang protocol commando: %s"
 
-#: ../src/cdcproto.cpp:3925
+#: ../src/cdcproto.cpp:3922
 #, c-format
 msgid "Nick spoofing attempt detected from your client: %s"
 msgstr "Nick spoofing poging gedetecteerd van uw client: %s"
 
-#: ../src/cdcproto.cpp:3957
+#: ../src/cdcproto.cpp:3954
 #, c-format
 msgid ""
 "User you're trying connect to doesn't have compatible TLS version in order "
@@ -2020,38 +2020,38 @@ msgid ""
 "%s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:3958 ../src/cdcproto.cpp:3981 ../src/cdcproto.cpp:4002
-#: ../src/cdcproto.cpp:4018
+#: ../src/cdcproto.cpp:3955 ../src/cdcproto.cpp:3978 ../src/cdcproto.cpp:3999
+#: ../src/cdcproto.cpp:4015
 msgid "Consider these more or less modern clients"
 msgstr ""
 
-#: ../src/cdcproto.cpp:3980
+#: ../src/cdcproto.cpp:3977
 #, c-format
 msgid ""
 "Your client doesn't have compatible TLS version in order to establish secure"
 " connection to following user, please upgrade or replace your client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4001
+#: ../src/cdcproto.cpp:3998
 #, c-format
 msgid ""
 "Your client doesn't support secure connections to following user, please "
 "upgrade or replace your client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4017
+#: ../src/cdcproto.cpp:4014
 #, c-format
 msgid ""
 "User you're trying connect to doesn't support secure connections, tell him "
 "to upgrade or replace his client: %s"
 msgstr ""
 
-#: ../src/cdcproto.cpp:4205 ../src/cdcproto.cpp:4224
+#: ../src/cdcproto.cpp:4192 ../src/cdcproto.cpp:4211
 #, c-format
 msgid "Unknown hub command: %s"
 msgstr "Onbekend hub commando: %s"
 
-#: ../src/cdcproto.cpp:4282
+#: ../src/cdcproto.cpp:4269
 #, c-format
 msgid "Your chat message contains %d lines but maximum allowed is %d lines."
 msgstr "Chatbericht bevat %d lijnen, maar toegestane maximum is %d lijnen ."
@@ -2121,7 +2121,7 @@ msgstr "Te veel open slots voor uw type verbinding %s, maximum is %d en je hebt 
 #: ../src/cdctag.cpp:148
 #, c-format
 msgid "Your slots per hub ratio %.2f is too low, minimum is %.2f."
-msgstr "Uw slots per hub ratio %.2f is te laag, minimum is %.2f ."
+msgstr "Uw slots per hub ratio %.2f is te laag, minimum is %2f ."
 
 #: ../src/cdctag.cpp:149 ../src/cdctag.cpp:156
 #, c-format
@@ -2398,7 +2398,7 @@ msgid "Kernel: %s [%s]"
 msgstr "Kernel: %s [%s]"
 
 #: ../src/cinfoserver.cpp:300 ../src/cinfoserver.cpp:563
-#: ../src/cserverdc.cpp:2885 ../src/cserverdc.cpp:2896
+#: ../src/cserverdc.cpp:2886 ../src/cserverdc.cpp:2897
 #, c-format
 msgid "Uptime: %s"
 msgstr "Uptime: %s"
@@ -2785,367 +2785,367 @@ msgstr ""
 msgid "You won't see public chat messages, to restore use +chat command."
 msgstr "U zal niet geen chatberichten zien, om gebruik te herstellen gebruik het +chat commando."
 
-#: ../src/cserverdc.cpp:1067
+#: ../src/cserverdc.cpp:1068
 msgid ""
 "Hub is currently unable to service your request, please try again in a few "
 "minutes."
 msgstr "Hub is op dit moment niet in staat om uw verzoek te onderhouden, probeer het opnieuw in een paar minuten."
 
-#: ../src/cserverdc.cpp:1076 ../src/cserverdc.cpp:1562
+#: ../src/cserverdc.cpp:1077 ../src/cserverdc.cpp:1563
 #, c-format
 msgid ""
 "You're still temporarily prohibited from entering the hub for %s because: %s"
 msgstr "Je bent nog steeds tijdelijk verbannen om de hub in te mogen voor %s omdat: %s"
 
-#: ../src/cserverdc.cpp:1135
+#: ../src/cserverdc.cpp:1136
 msgid "You're already logged in with same nick and IP address."
 msgstr "Je bent al ingelogd met de Zelfde nick en IP adres."
 
-#: ../src/cserverdc.cpp:1149
+#: ../src/cserverdc.cpp:1150
 msgid "Another user has logged in with same nick and IP address."
 msgstr "Een andere gebruiker is ingelogd met dezelfde nick en IP -adres."
 
-#: ../src/cserverdc.cpp:1162 ../src/cserverdc.cpp:1610
+#: ../src/cserverdc.cpp:1163 ../src/cserverdc.cpp:1611
 msgid "Your nick is already taken by another user."
 msgstr "Uw nick is al in gebruik door een andere gebruiker."
 
-#: ../src/cserverdc.cpp:1238
+#: ../src/cserverdc.cpp:1239
 msgid ""
 "You must set your password now using +passwd command or entering it in "
 "password dialog."
 msgstr "U moet uw wachtwoord in stellen nu met behulp van +passwd commando of in te voeren in het dialoogvenster wachtwoord."
 
-#: ../src/cserverdc.cpp:1240
+#: ../src/cserverdc.cpp:1241
 msgid "You must set your password now using +passwd command."
 msgstr "U moet uw wachtwoord in stellen nu met behulp van +passwd commando."
 
-#: ../src/cserverdc.cpp:1324
+#: ../src/cserverdc.cpp:1325
 msgid "Reconnecting too fast"
 msgstr "U reconect te snel"
 
-#: ../src/cserverdc.cpp:1579
+#: ../src/cserverdc.cpp:1580
 msgid "Your nick contains forbidden characters."
 msgstr "Uw nick bevat verboden karakters."
 
-#: ../src/cserverdc.cpp:1582
+#: ../src/cserverdc.cpp:1583
 #, c-format
 msgid "Valid nick characters: %s"
 msgstr "Geldige nick tekens: %s"
 
-#: ../src/cserverdc.cpp:1590
+#: ../src/cserverdc.cpp:1591
 #, c-format
 msgid "Your nick is too short, minimum allowed length is %d characters."
 msgstr "Uw nick is te kort, minimale toegestane lengte is %d tekens."
 
-#: ../src/cserverdc.cpp:1602
+#: ../src/cserverdc.cpp:1603
 #, c-format
 msgid "Your nick is too long, maximum allowed length is %d characters."
 msgstr "Uw nick is te lang, maximaal toegestane lengte is %d tekens."
 
-#: ../src/cserverdc.cpp:1615
+#: ../src/cserverdc.cpp:1616
 #, c-format
 msgid "Please use one of following nick prefixes: %s"
 msgstr "Gebruik een van de volgende nick voorvoegsels: %s"
 
-#: ../src/cserverdc.cpp:1623
+#: ../src/cserverdc.cpp:1624
 msgid ""
 "Your nick contains operator prefix but you are not registered, please remove"
 " it."
 msgstr "Uw nick bevat operator prefix , maar je bent niet geregistreerd , verwijder deze dan "
 
-#: ../src/cserverdc.cpp:1631
+#: ../src/cserverdc.cpp:1632
 msgid "Unknown bad nick error, sorry."
 msgstr "Onbekende slechte nick fout, sorry."
 
-#: ../src/cserverdc.cpp:1679
+#: ../src/cserverdc.cpp:1680
 #, c-format
 msgid "Please use following nick prefix: %s"
 msgstr "Gebruik volgende nick prefix/voorvoegsel: %s"
 
-#: ../src/cserverdc.cpp:1886
+#: ../src/cserverdc.cpp:1887
 #, c-format
 msgid ""
 "DDoS detection filtered %lu new connections and found %d new exploited hubs"
 msgstr "DDoS- detectie gefilterd %lu nieuwe verbindingen en gevonden %d nieuwe uitgebuit hubs"
 
-#: ../src/cserverdc.cpp:1888
+#: ../src/cserverdc.cpp:1889
 #, c-format
 msgid "DDoS detection filtered %lu new connections."
 msgstr "DDoS- detectie gefilterd %lu nieuwe verbindingen."
 
-#: ../src/cserverdc.cpp:1899
+#: ../src/cserverdc.cpp:1900
 #, c-format
 msgid "DDoS stopped, filtered totally %lu connections."
 msgstr "DDoS gestopt, gefilterd totaal %lu verbindingen."
 
-#: ../src/cserverdc.cpp:1972
+#: ../src/cserverdc.cpp:1973
 msgid ""
 "Available time units are: s(econds), m(inutes), h(ours), d(ays) is default, "
 "w(eeks), M(onths) and y(ears)"
 msgstr "Beschikbare tijd units zijn: s(econden), m(inuten), u(ren), d(agen) is standaard, w(eken), M(aanden) en J(aren)"
 
-#: ../src/cserverdc.cpp:1983
+#: ../src/cserverdc.cpp:1984
 msgid "Please provide positive number for time unit."
 msgstr "Gelieve positief getal voor tijdseenheid."
 
-#: ../src/cserverdc.cpp:2017
+#: ../src/cserverdc.cpp:2018
 msgid "Hublist registration results"
 msgstr "Hubregistratie resultaten"
 
-#: ../src/cserverdc.cpp:2020
+#: ../src/cserverdc.cpp:2021
 #, c-format
 msgid "Sending information to: %s:%d"
 msgstr "Informatie gestuurd aan: %s:%d"
 
-#: ../src/cserverdc.cpp:2024
+#: ../src/cserverdc.cpp:2025
 msgid "Connection error"
 msgstr "Verbindingsfout"
 
-#: ../src/cserverdc.cpp:2066
+#: ../src/cserverdc.cpp:2067
 msgid "Registration done"
 msgstr "Registratie voltooid"
 
-#: ../src/cserverdc.cpp:2068
+#: ../src/cserverdc.cpp:2069
 msgid "Send error"
 msgstr "Verzend fout"
 
-#: ../src/cserverdc.cpp:2070
+#: ../src/cserverdc.cpp:2071
 msgid "Protocol error"
 msgstr "Protocolfout"
 
-#: ../src/cserverdc.cpp:2073 ../src/cserverdc.cpp:2076
+#: ../src/cserverdc.cpp:2074 ../src/cserverdc.cpp:2077
 msgid "Read error"
 msgstr "Leesfout"
 
-#: ../src/cserverdc.cpp:2088
+#: ../src/cserverdc.cpp:2089
 msgid "Finished registering in hublists."
 msgstr "Registreren in hublijsten klaar."
 
-#: ../src/cserverdc.cpp:2100
+#: ../src/cserverdc.cpp:2101
 msgid "Hublist host is empty, nothing to do."
 msgstr "Hublijst host is leeg, er is niks te doen."
 
-#: ../src/cserverdc.cpp:2107
+#: ../src/cserverdc.cpp:2108
 msgid "Hublist port number is invalid, nothing to do."
 msgstr "Hub lijst poortnummer ongeldig , niets te doen"
 
-#: ../src/cserverdc.cpp:2115
+#: ../src/cserverdc.cpp:2116
 msgid "Registering in hublists, please wait."
 msgstr "Registratie naar de hublijsten, A.U.B even geduld."
 
-#: ../src/cserverdc.cpp:2227
+#: ../src/cserverdc.cpp:2228
 #, c-format
 msgid "New version of Verlihub is available for compilation: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2228
+#: ../src/cserverdc.cpp:2229
 #, c-format
 msgid ""
 "For developer version perform following command in your local Git repository"
 " in order to update files: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2229
+#: ../src/cserverdc.cpp:2230
 #, c-format
 msgid ""
 "For stable version visit following page and download latest release archive "
 "in order to update files: %s"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2237
+#: ../src/cserverdc.cpp:2238
 msgid "Your version of Verlihub is currently up to date."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2239
+#: ../src/cserverdc.cpp:2240
 msgid "Failed connecting to update server."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2241
+#: ../src/cserverdc.cpp:2242
 msgid "Failed sending request to update server."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2243
+#: ../src/cserverdc.cpp:2244
 #, c-format
 msgid "Failed parsing reply from update server with code: %d"
 msgstr ""
 
-#: ../src/cserverdc.cpp:2260
+#: ../src/cserverdc.cpp:2261
 msgid "Checking for updates, please wait."
 msgstr ""
 
-#: ../src/cserverdc.cpp:2555
+#: ../src/cserverdc.cpp:2556
 #, c-format
 msgid "Detected clone of user with share %s: %s"
 msgstr "Gedetecteerd kloon van de gebruiker met  share %s: %s"
 
-#: ../src/cserverdc.cpp:2561 ../src/cserverdc.cpp:2564
+#: ../src/cserverdc.cpp:2562 ../src/cserverdc.cpp:2565
 msgid "Clone detected"
 msgstr "kloon gedetecteerd"
 
-#: ../src/cserverdc.cpp:2634
+#: ../src/cserverdc.cpp:2635
 #, c-format
 msgid ""
 "Protocol command has been unlocked after stopped flood to user %s from all"
 msgstr "Protocol opdracht is ontgrendeld na gestopte flood, naar gebruiker %s uit alle"
 
-#: ../src/cserverdc.cpp:2650
+#: ../src/cserverdc.cpp:2651
 msgid "Protocol command has been unlocked after stopped flood from all"
 msgstr "Protocol commando is ontgrendeld na gestopt flood"
 
-#: ../src/cserverdc.cpp:2687
+#: ../src/cserverdc.cpp:2688
 #, c-format
 msgid ""
 "Protocol command has been locked due to detection of flood to user %s from "
 "all"
 msgstr "Protocol opdracht is geblokkeerd als gevolg van detectie van flood van de gebruiker %s uit alle"
 
-#: ../src/cserverdc.cpp:2717
+#: ../src/cserverdc.cpp:2718
 msgid "Protocol command has been locked due to detection of flood from all"
 msgstr "Protocol commando is geblokkeerd als gevolg van de detectie van flood"
 
-#: ../src/cserverdc.cpp:2758
+#: ../src/cserverdc.cpp:2759
 msgid ""
 "Sorry, following protocol command is temporarily locked due to flood "
 "detection"
 msgstr "Sorry, volgende protocol commando is tijdelijk gesloten vanwege flood detectie"
 
-#: ../src/cserverdc.cpp:2789
+#: ../src/cserverdc.cpp:2790
 msgid "Normal"
 msgstr "Normaal"
 
-#: ../src/cserverdc.cpp:2791
+#: ../src/cserverdc.cpp:2792
 msgid "Progressive"
 msgstr "Progressief"
 
-#: ../src/cserverdc.cpp:2793
+#: ../src/cserverdc.cpp:2794
 msgid "Capacity"
 msgstr "Capaciteit"
 
-#: ../src/cserverdc.cpp:2795
+#: ../src/cserverdc.cpp:2796
 msgid "Recovery"
 msgstr "Herstel"
 
-#: ../src/cserverdc.cpp:2797
+#: ../src/cserverdc.cpp:2798
 msgid "Down"
 msgstr "Ofline"
 
-#: ../src/cserverdc.cpp:2807
+#: ../src/cserverdc.cpp:2808
 msgid "Pinger"
 msgstr "Pinger"
 
-#: ../src/cserverdc.cpp:2809
+#: ../src/cserverdc.cpp:2810
 msgid "Guest"
 msgstr "Gast"
 
-#: ../src/cserverdc.cpp:2811
+#: ../src/cserverdc.cpp:2812
 msgid "Registered"
 msgstr "Geregistreerd"
 
-#: ../src/cserverdc.cpp:2813
+#: ../src/cserverdc.cpp:2814
 msgid "VIP"
 msgstr "VIP"
 
-#: ../src/cserverdc.cpp:2817
+#: ../src/cserverdc.cpp:2818
 msgid "Cheef"
 msgstr "Chef"
 
-#: ../src/cserverdc.cpp:2819
+#: ../src/cserverdc.cpp:2820
 msgid "Administrator"
 msgstr "Administrator"
 
-#: ../src/cserverdc.cpp:2821
+#: ../src/cserverdc.cpp:2822
 msgid "Master"
 msgstr "Master"
 
-#: ../src/cserverdc.cpp:2886 ../src/cserverdc.cpp:2897
+#: ../src/cserverdc.cpp:2887 ../src/cserverdc.cpp:2898
 #, c-format
 msgid "Users: %d"
 msgstr "Gebruikers: %d"
 
-#: ../src/cserverdc.cpp:2923
+#: ../src/cserverdc.cpp:2924
 #, c-format
 msgid "You have no rights to kick user: %s"
 msgstr "U heeft geen rechten om gebruikers te kikken: %s ."
 
-#: ../src/cserverdc.cpp:2926
+#: ../src/cserverdc.cpp:2927
 #, c-format
 msgid "User is protected from your kicks: %s"
 msgstr "Gebruiker is beschermd tegen jouw kicks: %s"
 
-#: ../src/cserverdc.cpp:2988
+#: ../src/cserverdc.cpp:2989
 #, c-format
 msgid "You have been kicked because: %s"
 msgstr "U bent gekikt omdat %s"
 
-#: ../src/cserverdc.cpp:2990
+#: ../src/cserverdc.cpp:2991
 msgid "You have been kicked from hub."
 msgstr "U bent uit deze hub gekickt."
 
-#: ../src/cserverdc.cpp:3010
+#: ../src/cserverdc.cpp:3011
 #, c-format
 msgid "User was kicked and banned for %s: %s"
 msgstr "Gebruiker is gekickt en verbannen voor %s: %s"
 
-#: ../src/cserverdc.cpp:3014
+#: ../src/cserverdc.cpp:3015
 #, c-format
 msgid "%s was kicked and banned for %s by %s with reason: %s"
 msgstr "%s Is gekickt en verbannen voor %s door %s met reden %s"
 
-#: ../src/cserverdc.cpp:3016
+#: ../src/cserverdc.cpp:3017
 #, c-format
 msgid "%s was kicked and banned for %s by %s without reason."
 msgstr "%s is gekickt en verbannen voor %s door %s zonder reden."
 
-#: ../src/cserverdc.cpp:3021
+#: ../src/cserverdc.cpp:3022
 #, c-format
 msgid "User was kicked and banned permanently: %s"
 msgstr "Gebruiker is gekickt en permanent verbannen: %s"
 
-#: ../src/cserverdc.cpp:3025
+#: ../src/cserverdc.cpp:3026
 #, c-format
 msgid "%s was kicked and banned permanently by %s with reason: %s"
 msgstr "%s is gekickt en verbannen, permanent door %s met reden: %s"
 
-#: ../src/cserverdc.cpp:3027
+#: ../src/cserverdc.cpp:3028
 #, c-format
 msgid "%s was kicked and banned permanently by %s without reason."
 msgstr "%s is gekickt en verbannen permanent door %s zonder reden."
 
-#: ../src/cserverdc.cpp:3039
+#: ../src/cserverdc.cpp:3040
 #, c-format
 msgid "%s dropped user with reason: %s"
 msgstr "%s dropped gebruiker met reden: %s"
 
-#: ../src/cserverdc.cpp:3041
+#: ../src/cserverdc.cpp:3042
 #, c-format
 msgid "%s dropped user without reason"
 msgstr "%s dropped gebruiker zonder reden"
 
-#: ../src/cserverdc.cpp:3047
+#: ../src/cserverdc.cpp:3048
 #, c-format
 msgid "%s was dropped by %s with reason: %s"
 msgstr "%s is gedropt door %s met reden: %s"
 
-#: ../src/cserverdc.cpp:3049
+#: ../src/cserverdc.cpp:3050
 #, c-format
 msgid "%s was dropped by %s without reason."
 msgstr "%s is gedropt door %s zonder reden."
 
-#: ../src/cserverdc.cpp:3053
+#: ../src/cserverdc.cpp:3054
 #, c-format
 msgid "You have been dropped because: %s"
 msgstr "Je bent gedropped omdat: %s"
 
-#: ../src/cserverdc.cpp:3058
+#: ../src/cserverdc.cpp:3059
 #, c-format
 msgid "User was dropped: %s"
 msgstr "Gebruiker is gedropped: %s"
 
-#: ../src/cserverdc.cpp:3377
+#: ../src/cserverdc.cpp:3378
 msgid "Specified configuration variable is read only."
 msgstr ""
 
-#: ../src/cserverdc.cpp:3600
+#: ../src/cserverdc.cpp:3601
 msgid "DDoS detected, gathering attack information..."
 msgstr "DDoS gedetecteerd , bezig met het verzamelen aanval informatie ..."
 
@@ -3434,7 +3434,7 @@ msgstr "U mag geen gebruikers tijdelijk verbannen."
 #: ../src/cuser.cpp:529
 #, c-format
 msgid "You're now allowed to temporarily ban users for: %s"
-msgstr "Je mag geen gebruikers temp bannen voor: %s"
+msgstr "Je mag geen gebruikers temp bannenvoor: %s"
 
 #: ../src/cuser.cpp:536
 msgid "You're no longer allowed to permanently ban users."

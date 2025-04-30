@@ -2,20 +2,21 @@
 # Translators:
 # daniel dny <danny05_c00l@yahoo.com>, 2016
 # Ettore Atalan <atalanttore@googlemail.com>, 2014-2016
+# TiLTED, 2024
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-01-02 12:46+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
-"Last-Translator: daniel dny <danny05_c00l@yahoo.com>, 2016\n"
+"Last-Translator: TiLTED, 2024\n"
 "Language-Team: German (Germany) (http://app.transifex.com/feardc/verlihub/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1252\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -82,7 +83,7 @@ msgstr "Verwendete einen anderen Nichname im Chat"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
-msgstr ""
+msgstr "gekickt"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
@@ -118,7 +119,7 @@ msgstr "Kein Schlagwort oder nicht gültig"
 
 #: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
-msgstr ""
+msgstr "Tag bricht Hub-Regeln"
 
 #: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
@@ -155,12 +156,12 @@ msgstr "Info"
 #: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr ""
+msgstr "Nick %s hat sich zuletzt mit folgender IP im Hub angemeldet"
 
 #: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr ""
+msgstr "IP %s hat sich zuletzt mit folgendem Nick im Hub angemeldet"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
@@ -186,9 +187,9 @@ msgstr "Ihr Nickname sollte %[pattern] entsprechen"
 msgid "Your connection type should match %[pattern]"
 msgstr "Ihr Verbindungstyp sollte %[pattern] entsprechen"
 
-#: ../plugins/lua/callbacks.cpp:1721
+#: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
-msgstr ""
+msgstr "Falsches Passwort"
 
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
@@ -277,7 +278,7 @@ msgstr "Skript nicht gestoppt, weil es nicht geladen ist: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
-msgstr ""
+msgstr "Die Skriptnummer %d liegt außerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !luafiles oder geben Sie stattdessen den Skriptpfad an."
 
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
@@ -287,7 +288,7 @@ msgstr "Skript ist bereits geladen: %s"
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
-msgstr ""
+msgstr "Es konnte kein neuer Lua-Interpreter für das Skript zugewiesen werden: %s [ %s ]"
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
@@ -427,7 +428,7 @@ msgstr "%s Programmdatei: %s"
 #: ../plugins/plugman/cconsole.cpp:43
 #, c-format
 msgid "%s build time: %s"
-msgstr ""
+msgstr "%s  build time: %s"
 
 #: ../plugins/plugman/cconsole.cpp:158
 msgid ""
@@ -438,7 +439,7 @@ msgstr "Erweiterungsname darf maximal 10 Zeichen lang sein, bitte geben Sie eine
 msgid "Please provide a valid path for the plugin."
 msgstr "Bitte geben Sie einen gültigen Pfad für die Erweiterung an."
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr "Erweiterung geladen."
 
@@ -456,7 +457,7 @@ msgstr "Erweiterung entladen."
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Erweiterung nicht entladen, wahrscheinlich weil sie nicht geladen ist."
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr "Erweiterung neu geladen."
 
@@ -468,54 +469,54 @@ msgstr "Erweiterung nicht neu geladen, wahrscheinlich weil sie nicht geladen ist
 msgid "Plugin not found."
 msgstr "Erweiterung nicht gefunden."
 
-#: ../plugins/plugman/cplugs.cpp:118
+#: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
 msgstr "Erweiterung unterstützt keine Skripte."
 
-#: ../plugins/plugman/cplugs.cpp:124
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
 msgstr "Skript geladen."
 
-#: ../plugins/plugman/cplugs.cpp:126
+#: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
 msgstr "Fehler beim Laden des Skripts."
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
 msgstr "Erweiterung muss neu kompiliert werden."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
 msgstr "Name: %s [%s] [%s]"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
 msgstr "Ein"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
 msgstr "Aus"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
 msgstr "Automatisiert"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr "Manuell"
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Path: %s"
 msgstr "Pfad: %s"
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
 msgstr "Beschreibung: %s"
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 #, c-format
 msgid "Last error: %s"
 msgstr "Letzter Fehler: %s"
@@ -545,7 +546,7 @@ msgstr "Skript #%d gestoppt: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
-msgstr ""
+msgstr "Die Skriptnummer %d liegt außerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !pyfiles oder geben Sie stattdessen den Skriptpfad an."
 
 #: ../plugins/python/cconsole.cpp:222
 #, c-format
@@ -555,7 +556,7 @@ msgstr "Skript #%d ist bereits geladen: %s"
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr ""
+msgstr "Es konnte kein neuer Python-Interpreter für das Skript zugewiesen werden: %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
@@ -564,7 +565,7 @@ msgstr "Skript #%d ist jetzt geladen: %s"
 
 #: ../plugins/python/cconsole.cpp:324
 msgid "Level must be a number."
-msgstr ""
+msgstr "Level muss eine Zahl sein."
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
@@ -606,7 +607,7 @@ msgstr "Wort '%s' ist bereits vorhanden."
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr ""
+msgstr "Wort %s hinzugefügt. Dieses Wort wird im öffentlichen Chat für Benutzer gefiltert, deren Klasse kleiner als oder gleich %d ist."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format

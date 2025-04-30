@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-01-02 12:46+0100\n"
+"POT-Creation-Date: 2023-12-16 15:16+0100\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: mauron, 2018-2019,2021\n"
 "Language-Team: Turkish (Turkey) (http://app.transifex.com/feardc/verlihub/language/tr_TR/)\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -187,7 +187,7 @@ msgstr "Rumuzunuz þuna denk gelmelidir %[pattern]"
 msgid "Your connection type should match %[pattern]"
 msgstr "Baðlantý türünüz þuna denk gelmelidir %[pattern]"
 
-#: ../plugins/lua/callbacks.cpp:1721
+#: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
 msgstr "Yanlýþ parola"
 
@@ -439,7 +439,7 @@ msgstr "Eklentinin ismi azami 10 karakter içerebilir, baþka bir isim giriniz."
 msgid "Please provide a valid path for the plugin."
 msgstr "Eklenti için geçerli bir yol giriniz."
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:134
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr "Eklenti yüklendi."
 
@@ -457,7 +457,7 @@ msgstr "Eklenti kaldýrýldý."
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr "Eklenti kaldýrýlmadý, muhtemelen yüklenmediðinden."
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:182
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr "Eklenti tekrar yüklendi."
 
@@ -469,54 +469,54 @@ msgstr "Eklenti tekrar yüklenmedi, muhtemelen yüklenmediðinden."
 msgid "Plugin not found."
 msgstr "Eklenti bulunamadý"
 
-#: ../plugins/plugman/cplugs.cpp:118
+#: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
 msgstr "Eklenti betikleri desteklemiyor."
 
-#: ../plugins/plugman/cplugs.cpp:124
+#: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
 msgstr "Betki yüklendi."
 
-#: ../plugins/plugman/cplugs.cpp:126
+#: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
 msgstr "Betiðin yüklenmesinde hata oluþtu."
 
-#: ../plugins/plugman/cplugs.cpp:155
+#: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
 msgstr "Eklentinin yeniden derlenmeye ihtiyacý vardýr."
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
 msgstr "Ýsim: %s [%s] [%s]"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
 msgstr "Açýk"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
 msgstr "Kapalý"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
 msgstr "Otomatik"
 
-#: ../plugins/plugman/cplugs.cpp:206
+#: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
 msgstr "El ile"
 
-#: ../plugins/plugman/cplugs.cpp:207
+#: ../plugins/plugman/cplugs.cpp:209
 #, c-format
 msgid "Path: %s"
 msgstr "Yol: %s"
 
-#: ../plugins/plugman/cplugs.cpp:210
+#: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
 msgstr "Tanýmlama: %s"
 
-#: ../plugins/plugman/cplugs.cpp:213
+#: ../plugins/plugman/cplugs.cpp:215
 #, c-format
 msgid "Last error: %s"
 msgstr "Son hata: %s"
