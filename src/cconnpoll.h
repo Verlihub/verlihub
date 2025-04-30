@@ -22,7 +22,8 @@
 #ifndef NSERVERCCONNPOLL_H
 #define NSERVERCCONNPOLL_H
 #if !USE_SELECT
-#include <sys/poll.h>
+//#include <sys/poll.h>
+#include <poll.h>
 #if !defined _SYS_POLL_H_ && !defined _SYS_POLL_H && !defined pollfd && !defined _POLL_EMUL_H_ && !defined _POLL_H
 /** the poll file descriptor structure (where not defined) */
 struct pollfd {
