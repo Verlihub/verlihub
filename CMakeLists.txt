@@ -207,7 +207,7 @@ ENDIF(HAVE_BSD)
 # ----------------------------------------------------------------------------------------------------
 
 CHECK_INCLUDE_FILES(errno.h HAVE_ERRNO_H)
-CHECK_INCLUDE_FILES(sys/poll.h HAVE_SYS_POLL_H)
+CHECK_INCLUDE_FILES(poll.h HAVE_SYS_POLL_H)
 CHECK_INCLUDE_FILES(getopt.h HAVE_GETOPT_H)
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
 
