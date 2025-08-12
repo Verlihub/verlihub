@@ -69,6 +69,8 @@ void cDCConf::AddVars()
 
 	Add("extra_listen_ports", extra_listen_ports, "");
 	Add("tls_proxy_ip", mS.mTLSProxy, "");
+	Add("tls_only_mode", tls_only_mode, false);
+	Add("not_tls_redirect", not_tls_redirect, "");
 	// end of section
 
 	// begin hublist configuration

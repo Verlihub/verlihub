@@ -619,6 +619,7 @@ class cServerDC : public cAsyncSocketServer
 		string EraseNewLines(const string &src);
 		void RemoveMyINFOFlag(string &dest, const string &info, unsigned short flag);
 		static void RepBadNickChars(string &nick);
+		static void GetHubURLs(string &url, string &urls);
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
 		char* GetConfig(const char *conf, const char *var, const char *def);
 

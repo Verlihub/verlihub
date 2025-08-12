@@ -3144,6 +3144,39 @@ void cServerDC::RepBadNickChars(string &nick)
 	}
 }
 
+void cServerDC::GetHubURLs(string &url, string &urls)
+{
+	string host = mC.hub_host, port = StringFrom(mPort);
+	size_t pos = string::npos;
+
+	if (host.size() > 2) { // remove protocol
+		pos = host.find("://");
+
+		if (pos != host.npos)
+			host.erase(0, pos + 3);
+	}
+
+	if (host.size()) {
+		pos = host.find(':');
+
+		if ((pos == host.npos) && (mPort != 411)) { // add port
+			host.append(':' + port);
+			pos = 1; // note below
+		}
+
+		url = "dchub://";
+		url.append(host);
+	}
+
+	if (mTLSProxy.size() && host.size()) {
+		urls = "nmdcs://";
+		urls.append(host);
+
+		if (pos == host.npos) // always add port for nmdcs
+			urls.append(':' + port);
+	}
+}
+
 /*
 	global function to set SetupList config
 	also take care of any hub configs that needs to be updated in real time
