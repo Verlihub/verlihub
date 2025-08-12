@@ -3480,7 +3480,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	}
 
 	ostringstream os;
-	string msg, url;
+	string data, url;
 
 	if (mS->mC.tls_only_mode && conn->mTLSVer == "0.0") { // tls only mode
 		if (conn->Log(3))
@@ -3495,15 +3495,15 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		os << '|';
 
 		if (mS->mC.not_tls_redirect.size()) {
-			Create_ForceMove(msg, mS->mC.not_tls_redirect, false);
-			os << msg << '|';
+			Create_ForceMove(data, mS->mC.not_tls_redirect, false);
+			os << data << '|';
 		} else if (url.size()) {
-			Create_ForceMove(msg, url, false);
-			os << msg << '|';
+			Create_ForceMove(data, url, false);
+			os << data << '|';
 		}
 
-		msg = os.str();
-		conn->Send(msg, false, true); // send directly
+		data = os.str();
+		conn->Send(data, false, true); // send directly
 		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
 		return -1;
 	}
