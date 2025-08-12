@@ -3483,6 +3483,9 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	string url;
 
 	if (mS->mC.tls_only_mode && conn->mTLSVer == "0.0") { // tls only mode
+		if (conn->Log(3))
+			conn->LogStream() << "User not secure" << endl;
+
 		os << '<' << mS->mC.hub_security << "> " << _("This hub supports only TLS-encrypted connections.");
 		mS->GetHubURLs(url, url);
 
@@ -3494,7 +3497,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		if (mS->mC.not_tls_redirect.size())
 			Create_ForceMove(url, mS->mC.not_tls_redirect, true);
 
-		conn->Send(omsg, true, true); // add pipe and flush
+		conn->Send(os.str(), true, true); // add pipe and flush
 		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
 		return -1;
 	}
