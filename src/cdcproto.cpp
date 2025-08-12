@@ -3497,7 +3497,9 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		if (mS->mC.not_tls_redirect.size())
 			Create_ForceMove(url, mS->mC.not_tls_redirect, true);
 
-		conn->Send(os.str(), true, true); // add pipe and flush
+		os << url << '|';
+		url = os.str();
+		conn->Send(url, false, true); // send directly
 		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
 		return -1;
 	}
