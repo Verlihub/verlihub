@@ -3494,10 +3494,11 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 
 		os << '|';
 
-		if (mS->mC.not_tls_redirect.size())
+		if (mS->mC.not_tls_redirect.size()) {
 			Create_ForceMove(url, mS->mC.not_tls_redirect, true);
+			os << url << '|';
+		}
 
-		os << url << '|';
 		url = os.str();
 		conn->Send(url, false, true); // send directly
 		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
