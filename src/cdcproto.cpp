@@ -3479,6 +3479,26 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	ostringstream os;
+	string url;
+
+	if (mS->mC.tls_only_mode && conn->mTLSVer == "0.0") { // tls only mode
+		os << '<' << mS->mC.hub_security << "> " << _("This hub supports only TLS-encrypted connections.");
+		mS->GetHubURLs(url, url);
+
+		if (url.size())
+			os << ' ' << autosprintf(_("Please update your favorites to: %s"), url.c_str());
+
+		os << '|';
+
+		if (mS->mC.not_tls_redirect.size())
+			Create_ForceMove(url, mS->mC.not_tls_redirect, true);
+
+		conn->Send(omsg, true, true); // add pipe and flush
+		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
+		return -1;
+	}
+
 	if (0 > mS->OnNewConn(conn)) {
 		mS->delConnection(conn);
 		return -1;

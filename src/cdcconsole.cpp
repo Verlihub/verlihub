@@ -698,7 +698,8 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 		return 0;
 
 	ostringstream os;
-	string temp, host = mOwner->mC.hub_host, port = StringFrom(mOwner->mPort);
+	string url, urls;
+	mOwner->GetHubURLs(url, urls);
 	size_t pos = string::npos;
 	int ucl = conn->GetTheoricalClass();
 	unsigned int sear = 0, contot = 0, consec = 0;
@@ -718,37 +719,10 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	os << _("Hub information") << ":\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("Owner: %s"), (mOwner->mC.hub_owner.size() ? mOwner->mC.hub_owner.c_str() : _("Not set"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Address: %s"), (url.size() ? url.c_str() : _("Not set"))) << "\r\n";
 
-	if (host.size() > 2) { // remove protocol
-		pos = host.find("://");
-
-		if (pos != host.npos)
-			host.erase(0, pos + 3);
-	}
-
-	if (host.size()) {
-		pos = host.find(':');
-
-		if ((pos == host.npos) && (mOwner->mPort != 411)) { // add port
-			host.append(':' + port);
-			pos = 1; // note below
-		}
-
-		temp = "dchub://";
-		temp.append(host);
-	}
-
-	os << " [*] " << autosprintf(_("Address: %s"), (temp.size() ? temp.c_str() : _("Not set"))) << "\r\n";
-
-	if (mOwner->mTLSProxy.size() && host.size()) {
-		temp = "nmdcs://";
-		temp.append(host);
-
-		if (pos == host.npos) // always add port for nmdcs
-			temp.append(':' + port);
-
-		os << " [*] " << autosprintf(_("Secure: %s"), temp.c_str()) << "\r\n";
-	}
+	if (urls.size())
+		os << " [*] " << autosprintf(_("Secure: %s"), urls.c_str()) << "\r\n";
 
 	os << " [*] " << autosprintf(_("Status: %s"), mOwner->SysLoadName()) << "\r\n";
 	os << " [*] " << autosprintf(_("Users: %d of %d"), mOwner->mUserCountTot, mOwner->mC.max_users_total) << "\r\n";

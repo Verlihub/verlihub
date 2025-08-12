@@ -144,6 +144,8 @@ public:
 	bool dest_drop_chat;
 	bool report_dns_lookup;
 	bool report_user_country;
+	bool tls_only_mode;
+	string not_tls_redirect;
 	string extra_listen_ports;
 	string hub_version_special;
 	string hub_name;

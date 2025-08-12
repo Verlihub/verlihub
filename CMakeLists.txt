@@ -142,6 +142,22 @@ Find_Package(Gettext REQUIRED)
 Find_Package(Gettext-devel REQUIRED)
 Find_Package(Libintl REQUIRED)
 
+# todo
+#IF(USE_TLS_PROXY)
+#	FIND_PROGRAM(GOLANG_PATH go REQUIRED
+#		PATHS
+#			/usr/bin
+#			/usr/local/bin
+#			/var/snap
+#	)
+#
+#	IF(GOLANG_PATH)
+#		Execute_Process(COMMAND go build -buildmode=c-archive -o "./tls-proxy.a")
+#	ELSE(GOLANG_PATH)
+#		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
+#	ENDIF(GOLANG_PATH)
+#ENDIF(USE_TLS_PROXY)
+
 FIND_LIBRARY(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
 OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation?" OFF) # use cmake -DUSE_CUSTOM_AUTOSPRINTF=ON to use our own autosprintf
 
