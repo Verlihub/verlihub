@@ -23,8 +23,9 @@ PROJECT(VERLIHUB)
 
 message(STATUS)
 message(STATUS "You can change build options with: -D{OPTION}=ON|OFF")
-message(STATUS "You can turn on debug build with: -DDEFINE_DEBUG=ON")
+message(STATUS "You can enable debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "You can disable all plugins with: -DWITH_PLUGINS=OFF")
+message(STATUS "You can build and enable TLS proxy library with: -DUSE_TLS_PROXY=ON")
 #message(STATUS "You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
 message(STATUS "NOTE: Plugins other than LUA are now DEPRECATED")
 message(STATUS "You can enable or disable specific plugin with: -DWITH_{NAME}=[ON/OFF]")
@@ -128,7 +129,8 @@ ENDIF(NOT PLUGINDIR)
 
 message(STATUS "[ OK ] Library directory: ${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
 
-Find_Package(OpenSSL 1.1.0 REQUIRED) # find dependences
+# find dependences
+Find_Package(OpenSSL 1.1.0 REQUIRED)
 Find_Package(Crypt REQUIRED)
 Find_Package(MySQL REQUIRED)
 Find_Package(ZLIB REQUIRED)
@@ -142,24 +144,28 @@ Find_Package(Gettext REQUIRED)
 Find_Package(Gettext-devel REQUIRED)
 Find_Package(Libintl REQUIRED)
 
-# todo
-#IF(USE_TLS_PROXY)
-#	FIND_PROGRAM(GOLANG_PATH go REQUIRED
-#		PATHS
-#			/usr/bin
-#			/usr/local/bin
-#			/var/snap
-#	)
-#
-#	IF(GOLANG_PATH)
-#		Execute_Process(COMMAND go build -buildmode=c-archive -o "./tls-proxy.a")
-#	ELSE(GOLANG_PATH)
-#		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
-#	ENDIF(GOLANG_PATH)
-#ENDIF(USE_TLS_PROXY)
+OPTION(USE_TLS_PROXY "Build and enable TLS proxy library" OFF)
+
+IF(USE_TLS_PROXY)
+	FIND_PROGRAM(GOLANG_PATH go REQUIRED
+		PATHS
+			/usr/bin
+			/usr/local/bin
+			/var/snap
+	)
+
+	IF(GOLANG_PATH)
+		MESSAGE(STATUS "[ OK ] Building TLS proxy using GoLang")
+		Execute_Process(COMMAND go build -buildmode=c-archive -o "${VERLIHUB_SOURCE_DIR}/build/tls-proxy/dcproxy.a" "${VERLIHUB_SOURCE_DIR}/tls-proxy/lib/lib.go")
+		File(COPY "dcproxy.h" DESTINATION "${VERLIHUB_SOURCE_DIR}/src/")
+		File(COPY "${VERLIHUB_SOURCE_DIR}/tls-proxy/lib/dcproxy_types.h" DESTINATION "${VERLIHUB_SOURCE_DIR}/src/")
+	ELSE(GOLANG_PATH)
+		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
+	ENDIF(GOLANG_PATH)
+ENDIF(USE_TLS_PROXY)
 
 FIND_LIBRARY(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
-OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation?" OFF) # use cmake -DUSE_CUSTOM_AUTOSPRINTF=ON to use our own autosprintf
+OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation?" OFF)
 
 IF(USE_CUSTOM_AUTOSPRINTF)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
@@ -235,7 +241,7 @@ IF(NOT HAVE_GETOPT_H)
 	MESSAGE(FATAL_ERROR "[ ER ] getopt.h header not found, it is required to build Verlihub.")
 ENDIF(NOT HAVE_GETOPT_H)
 
-OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF) # use cmake -DDEFINE_DEBUG=ON to enable debug
+OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF)
 
 IF(DEFINE_DEBUG)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -g") # -Wextra
@@ -276,7 +282,8 @@ if(INSTALL_CMAKE_FILES)
 	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerlihub.cmake" DESTINATION ${CMAKE_ROOT}/Modules)
 endif()
 
-CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in" "${CMAKE_BINARY_DIR}/cmake/cmake_uninstall.cmake" IMMEDIATE @ONLY) # create uninstall configuration file and uninstall target
+# create uninstall configuration file and uninstall target
+CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in" "${CMAKE_BINARY_DIR}/cmake/cmake_uninstall.cmake" IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
 
 # ----------------------------------------------------------------------------------------------------
@@ -309,7 +316,7 @@ SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.5, mysql-client-5.5, mmdb
 SET(CPACK_RPM_PACKAGE_LICENSE ${CPACK_RESOURCE_FILE_LICENSE})
 SET(CPACK_RPM_PACKAGE_URL "https://github.com/verlihub/")
 SET(CPACK_RPM_PACKAGE_GROUP "Application/Internet")
-SET(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.0, mysql >= 5.0, maxminddb, gettext, pcre")
+SET(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.5, mysql >= 5.5, maxminddb, gettext, pcre")
 
 IF(WITH_PYTHON)
 	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python (>= 2.7)")
