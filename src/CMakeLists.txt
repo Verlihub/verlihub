@@ -102,6 +102,10 @@ SET(VERLIHUB_HDRS
 	tpluginbase.h
 )
 
+IF(USE_TLS_PROXY)
+	LIST(APPEND ${VERLIHUB_HDRS} dcproxy.h dcproxy_types.h)
+ENDIF(USE_TLS_PROXY)
+
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
@@ -205,7 +209,12 @@ TARGET_LINK_LIBRARIES(vhapi libverlihub)
 
 # Link libverlihub against verlihub executable
 ADD_EXECUTABLE(verlihub verlihub.cpp)
-TARGET_LINK_LIBRARIES(verlihub libverlihub)
+
+IF(USE_TLS_PROXY)
+	TARGET_LINK_LIBRARIES(verlihub libverlihub ${VERLIHUB_SOURCE_DIR}/build/tls-proxy/dcproxy.a)
+ELSE(USE_TLS_PROXY)
+	TARGET_LINK_LIBRARIES(verlihub libverlihub)
+ENDIF(USE_TLS_PROXY)
 
 # ----------------------------------------------------------------------------------------------------
 # Generate verlihub_config
