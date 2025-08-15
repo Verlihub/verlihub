@@ -25,7 +25,6 @@ Links
   * Translate: https://transifex.com/feardc/verlihub
   * Ledokol: https://github.com/verlihub/ledokol
   * MMDB: https://ledo.feardc.net/mmdb
-  * Proxy: https://github.com/verlihub/tls-proxy
   * Support: nmdcs://hub.verlihub.net:7777
   * Hublist: https://te-home.net/?do=hublist
 
