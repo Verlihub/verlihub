@@ -26,12 +26,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/verlihub/tls-proxy/dcproxy"
+	"github.com/verlihub/tls-proxy/proxy"
 )
 
 var (
 	fHost = flag.String("host", ":411", "Comma separated list of hosts to listen on")
-	fWait = flag.Duration("wait", 650*time.Millisecond, "Time to wait to detect the protocol")
+	fWait = flag.Duration("wait", 650 * time.Millisecond, "Time to wait to detect the protocol")
 	fHub = flag.String("hub", "127.0.0.1:411", "Hub address to connect to")
 	fHubNet = flag.String("net", "tcp4", "Hub network: tcp4, tcp6, tcp, unix")
 	fIP = flag.Bool("ip", true, "Send client IP")
@@ -39,10 +39,8 @@ var (
 	fCert = flag.String("cert", "hub.crt", "TLS .crt file")
 	fKey = flag.String("key", "hub.key", "TLS .key file")
 	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.2, 2 - 1.2, 3 - 1.3
-	fPProf = flag.String("pprof", "", "Serve profiler on a given address (empty = disabled)")
-	fMetrics = flag.String("metrics", "", "Serve metrics on a given address (empty = disabled)")
 	fBuf = flag.Int("buf", 10, "Buffer size in KB")
-	fCertOrg = flag.String("cert-org", "DCProxy", "Organization name for generated TLS certificate")
+	fCertOrg = flag.String("cert-org", "VHProxy", "Organization name for generated TLS certificate")
 	fCertHost = flag.String("cert-host", "localhost", "Hostname for generated TLS certificate")
 )
 
@@ -55,7 +53,7 @@ func main() {
 }
 
 func run() error {
-	p, err := dcproxy.New(dcproxy.Config{
+	p, err := proxy.New(proxy.Config {
 		HubAddr: *fHub,
 		HubNetwork: *fHubNet,
 		Hosts: strings.Split(*fHost, ","),
@@ -63,8 +61,6 @@ func run() error {
 		Key: *fKey,
 		CertOrg: *fCertOrg,
 		CertHost: *fCertHost,
-		PProf: *fPProf,
-		Metrics: *fMetrics,
 		LogErrors: *fLog,
 		Wait: *fWait,
 		Buffer: *fBuf,

@@ -1,1 +1,5 @@
 /build/
+/tls-proxy/README.md
+/tls-proxy/LICENSE
+/tls-proxy/.git/
+/tls-proxy/.gitignore
