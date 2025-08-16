@@ -20,4 +20,6 @@ module github.com/verlihub/tls-proxy
 
 go 1.13
 
+replace github.com/verlihub/tls-proxy => ./
+
 // end of file
