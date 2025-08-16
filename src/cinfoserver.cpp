@@ -453,39 +453,6 @@ void cInfoServer::SystemInfo(ostream &os)
 		os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), name.c_str(), convertByte(size_vm * 1024).c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), name.c_str(), convertByte(size_res * 1024).c_str()) << "\r\n";
 	}
-
-	if (mServer->mTLSProxy.size()) { // try proxy if enabled
-		temp.clear();
-
-		if (mServer->mAddr.size())
-			temp = mServer->mAddr;
-		else
-			temp = "0.0.0.0";
-
-		temp = "proxy .*\\-\\-hub\\=" + temp + "\\:" + StringFrom(mServer->mPort);
-		temp = ParsePsLine(0, temp, "pidf");
-
-		if (temp.size()) {
-			mypid = StringAsLL(temp);
-
-			if (mypid > 0) {
-				size_vm = 0;
-				size_res = 0;
-				temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
-
-				if (temp.size())
-					size_vm = StringAsLL(temp);
-
-				temp = ParsePsLine(mypid, "", "rss"); // resident memory
-
-				if (temp.size())
-					size_res = StringAsLL(temp);
-
-				os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), _("TLS proxy"), convertByte(size_vm * 1024).c_str()) << "\r\n";
-				os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), _("TLS proxy"), convertByte(size_res * 1024).c_str()) << "\r\n";
-			}
-		}
-	}
 }
 
 unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)

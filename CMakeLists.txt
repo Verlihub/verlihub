@@ -155,7 +155,7 @@ IF(USE_TLS_PROXY)
 	)
 
 	IF(GOLANG_PATH)
-		MESSAGE(STATUS "[ OK ] Building TLS proxy using GoLang")
+		MESSAGE(STATUS "[ OK ] Building TLS proxy using Go")
 		Execute_Process(COMMAND go build -buildmode=c-archive -o "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.a" "${CMAKE_SOURCE_DIR}/tls-proxy/export/export.go" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tls-proxy/")
 		MESSAGE(STATUS "[ OK ] Copying proxy.h")
 		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
