@@ -501,7 +501,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
 
 #ifdef USE_TLS_PROXY
-	const int hport = 4112;
+	const int hport = 4112; // todo: all configs, hub always listens on local ip and configured port, proxy listens listen_ip and listen_port + extra ports
 	int pport = mPort;
 	mPort = hport;
 	OverrideDefaultPort = hport;

@@ -5,7 +5,7 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
 
   * Low RAM and CPU usage
   * It can hold more than 25k users
-  * TLS secured connection via NMDCS protocol
+  * TLS-encrypted connection via NMDCS protocol (requires Go)
   * Utility scripts for simple installation and hub management
   * Export and import of hub setting via MySQL
   * User management with privilegies

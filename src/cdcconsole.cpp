@@ -681,7 +681,6 @@ int cDCConsole::CmdRInfo(istringstream &cmd_line, cConnDC *conn)
 	os << "\t" << _("Translate") << ": https://transifex.com/feardc/verlihub/\r\n";
 	os << "\t" << "Ledokol" << ": https://ledo.feardc.net/\r\n";
 	os << "\t" << "MMDB" << ": https://ledo.feardc.net/mmdb/\r\n";
-	os << "\t" << _("Proxy") << ": https://github.com/verlihub/tls-proxy/\r\n";
 	os << "\t" << _("Hublist") << ": https://te-home.net/?do=hublist\r\n";
 	os << "\t" << _("Support") << ": nmdcs://hub.verlihub.net:7777\r\n\r\n";
 	os << " [*] " << _("Donation") << ":\r\n\r\n";
