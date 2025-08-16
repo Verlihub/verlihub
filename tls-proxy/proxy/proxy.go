@@ -18,7 +18,7 @@
 	of the GNU General Public License.
 */
 
-package dcproxy
+package proxy
 
 import (
 	"bytes"
@@ -27,21 +27,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/verlihub/tls-proxy/certs"
-	"github.com/verlihub/tls-proxy/metrics"
 )
-
-/*
-func init() { // no longer needed in 1.13
-	os.Setenv("GODEBUG", os.Getenv("GODEBUG") + ",tls13=1")
-}
-*/
 
 type Config struct {
 	HubAddr string
@@ -51,8 +42,6 @@ type Config struct {
 	Key string
 	CertOrg string
 	CertHost string
-	PProf string
-	Metrics string
 	LogErrors bool
 	Wait time.Duration
 	Buffer int
@@ -63,7 +52,6 @@ type Config struct {
 type Proxy struct {
 	c Config
 	tls *tls.Config
-
 	wg sync.WaitGroup
 	lis []net.Listener
 }
@@ -91,7 +79,7 @@ func New(c Config) (*Proxy, error) {
 		log.Println("Generating certificates:", c.Cert, c.Key)
 
 		if c.CertOrg == "" {
-			c.CertOrg = "DCProxy"
+			c.CertOrg = "VHProxy"
 		}
 
 		if c.CertHost == "" {
@@ -154,26 +142,6 @@ func (p *Proxy) Close() error {
 }
 
 func (p *Proxy) Run() error {
-	if p.c.PProf != "" {
-		log.Println("Enabling profiler on", p.c.PProf)
-
-		go func() {
-			if err := http.ListenAndServe(p.c.PProf, nil); err != nil {
-				log.Println("Failed to enable profiler:", err)
-			}
-		}()
-	}
-
-	if p.c.Metrics != "" {
-		log.Println("Serving metrics on", p.c.Metrics)
-
-		go func() {
-			if err := metrics.ListenAndServe(p.c.Metrics); err != nil {
-				log.Println("Failed to serve metrics:", err)
-			}
-		}()
-	}
-
 	for _, host := range p.c.Hosts {
 		l, err := net.Listen("tcp4", host)
 
@@ -208,18 +176,13 @@ func (p *Proxy) acceptOn(l net.Listener) {
 				log.Println(err)
 			}
 
-			metrics.ConnError.Add(1)
 			continue
 		}
-
-		metrics.ConnAccepted.Add(1)
 
 		go func() {
 			err := p.serve(c)
 
 			if err != nil && err != io.EOF {
-				metrics.ConnError.Add(1)
-
 				if p.c.LogErrors {
 					log.Println(c.RemoteAddr(), err)
 				}
@@ -233,11 +196,8 @@ type timeoutErr interface {
 }
 
 func (p *Proxy) serve(c net.Conn) error {
-	metrics.ConnOpen.Add(1)
-
 	defer func() {
 		_ = c.Close()
-		metrics.ConnOpen.Add(-1)
 	}()
 
 	buf := make([]byte, 1024)
@@ -246,9 +206,6 @@ func (p *Proxy) serve(c net.Conn) error {
 	i += copy(buf[i:], " 0.0|")
 
 	if p.tls == nil || p.c.Wait <= 0 { // no auto detection
-		metrics.ConnInsecure.Add(1)
-		metrics.ConnOpenInsecure.Add(1)
-		defer metrics.ConnOpenInsecure.Add(-1)
 		return p.writeAndStream(buf[:i], c, i)
 	}
 
@@ -258,14 +215,10 @@ func (p *Proxy) serve(c net.Conn) error {
 		return err
 	}
 
-	start := time.Now()
 	n, err := c.Read(buf[i:])
 	_ = c.SetReadDeadline(time.Time{})
 
 	if e, ok := err.(timeoutErr); ok && e.Timeout() { // has to be plain nmdc
-		metrics.ConnInsecure.Add(1)
-		metrics.ConnOpenInsecure.Add(1)
-		defer metrics.ConnOpenInsecure.Add(-1)
 		return p.writeAndStream(buf[:i], c, i)
 	}
 
@@ -299,17 +252,9 @@ func (p *Proxy) serve(c net.Conn) error {
 		}
 
 		buf = buf[:i]
-		dt := time.Since(start).Seconds()
-		metrics.ConnTLS.Add(1)
-		metrics.ConnOpenTLS.Add(1)
-		defer metrics.ConnOpenTLS.Add(-1)
-		metrics.ConnTLSHandshake.Observe(dt)
 		return p.writeAndStream(buf, tc, i)
 	}
 
-	metrics.ConnInsecure.Add(1)
-	metrics.ConnOpenInsecure.Add(1)
-	defer metrics.ConnOpenInsecure.Add(-1)
 	return p.writeAndStream(buf, c, i)
 }
 
@@ -360,15 +305,15 @@ func (p *Proxy) stream(c, h io.ReadWriteCloser) error {
 
 	go func() {
 		defer closeBoth()
-		_, _ = p.copyBuffer(h, c, metrics.ConnRx)
+		_, _ = p.copyBuffer(h, c)
 	}()
 
-	_, _ = p.copyBuffer(c, h, metrics.ConnTx)
+	_, _ = p.copyBuffer(c, h)
 	return nil
 }
 
 // this was copied from io package and modified to add instrumentation
-func (p *Proxy) copyBuffer(dst io.Writer, src io.Reader, cnt metrics.Counter) (written int64, err error) {
+func (p *Proxy) copyBuffer(dst io.Writer, src io.Reader) (written int64, err error) {
 	size := p.c.Buffer * 1024
 
 	if l, ok := src.(*io.LimitedReader); ok && int64(size) > l.N {
@@ -386,7 +331,6 @@ func (p *Proxy) copyBuffer(dst io.Writer, src io.Reader, cnt metrics.Counter) (w
 
 		if nr > 0 {
 			nw, ew := dst.Write(buf[0:nr])
-			cnt.Add(float64(nw))
 
 			if nw > 0 {
 				written += int64(nw)
