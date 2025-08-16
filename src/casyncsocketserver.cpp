@@ -21,7 +21,7 @@
 #include "casyncsocketserver.h"
 
 #ifdef USE_TLS_PROXY
-	#include "dcproxy.h"
+	#include "proxy.h"
 #endif
 
 /*
@@ -501,42 +501,38 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
 
 #ifdef USE_TLS_PROXY
-	const int hubPort = 4112;
-	int proxyPort = mPort;
-	mPort = hubPort;
-	OverrideDefaultPort = hubPort;
+	const int hport = 4112;
+	int pport = mPort;
+	mPort = hport;
+	OverrideDefaultPort = hport;
+	stringstream ss;
+	ss << "127.0.0.1:" << hport;
+	string haddr = ss.str();
+	ss.str("");
+	ss << "0.0.0.0:" << pport;
+	string paddr = ss.str();
+	VH_ProxyConfig *conf = VH_ProxyCreate();
+	conf->HubAddr = haddr.c_str();
+	conf->HubNetwork = "tcp4"; // todo: unix
+	conf->Hosts = paddr.c_str(); // todo: multiple addresses
+	conf->Wait = 650; // ms
+	conf->Buffer = 10; // kb
+	LogStream() << "Starting TLS proxy " << paddr << " -> " << haddr << endl;
 
-	stringstream hubAddrS;
-	hubAddrS << "127.0.0.1:" << hubPort;
-	string hubAddr = hubAddrS.str();
-
-	stringstream proxyAddrsS;
-	proxyAddrsS << "0.0.0.0:" << proxyPort;
-	string proxyAddrs = proxyAddrsS.str();
-
-	DCProxyConfig *proxyConf = NewDCProxyConfig();
-	proxyConf->HubAddr = hubAddr.c_str();
-	proxyConf->HubNetwork = "tcp4"; // todo: unix
-	proxyConf->Hosts = proxyAddrs.c_str(); // todo: multiple addresses
-	proxyConf->Wait = 650; // ms
-	proxyConf->Buffer = 10; // kb
-
-	LogStream() << "Starting TLS proxy " << proxyAddrs << " -> " << hubAddr << endl;
-
-	if (!DCProxyStart(proxyConf)) {
-		char *err = DCLastError();
+	if (!VH_ProxyStart(conf)) {
+		char *err = VH_ProxyError();
 
 		if (err && Log(0)) {
 			LogStream() << "Error starting TLS proxy: " << err << endl;
 			delete err;
 		}
 
-		delete proxyConf;
+		delete conf;
 		return -1;
 	}
 
-	delete proxyConf;
-	return this->Listen(hubPort/*, false*/);
+	delete conf;
+	return this->Listen(hport/*, false*/);
 #else
 	return this->Listen(OverrideDefaultPort/*, false*/);
 #endif

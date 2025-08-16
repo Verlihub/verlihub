@@ -103,7 +103,7 @@ SET(VERLIHUB_HDRS
 )
 
 IF(USE_TLS_PROXY)
-	LIST(APPEND ${VERLIHUB_HDRS} dcproxy.h dcproxy_types.h)
+	LIST(APPEND ${VERLIHUB_HDRS} proxy.h proxy_types.h)
 ENDIF(USE_TLS_PROXY)
 
 SET(VERLIHUB_SRCS
@@ -211,7 +211,7 @@ TARGET_LINK_LIBRARIES(vhapi libverlihub)
 ADD_EXECUTABLE(verlihub verlihub.cpp)
 
 IF(USE_TLS_PROXY)
-	TARGET_LINK_LIBRARIES(verlihub libverlihub ${VERLIHUB_SOURCE_DIR}/build/tls-proxy/dcproxy.a)
+	TARGET_LINK_LIBRARIES(verlihub libverlihub ${VERLIHUB_SOURCE_DIR}/tls-proxy/build/proxy.a)
 ELSE(USE_TLS_PROXY)
 	TARGET_LINK_LIBRARIES(verlihub libverlihub)
 ENDIF(USE_TLS_PROXY)
