@@ -70,7 +70,7 @@ void cDCConf::AddVars()
 	Add("tls_listen_port", mS.mTLSPort, 0); // note: 0 to disable, default
 	Add("tls_only_mode", tls_only_mode, false);
 	Add("not_tls_redirect", not_tls_redirect, "");
-	Add("tls_detect_wait", mS.mTLSWait, 650 * 1000);
+	Add("tls_detect_wait", mS.mTLSWait, 600);
 	Add("tls_cert_file", mS.mTLSCert, "hub.crt");
 	Add("tls_key_file", mS.mTLSKey, "hub.key");
 	Add("tls_cert_org", mS.mTLSOrg, "Verlihub");
