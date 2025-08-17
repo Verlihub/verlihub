@@ -508,7 +508,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	string haddr, paddr, cdir, kdir, corg, chost;
 	stringstream ss;
 	ss << mTLSAddr << ':' << mTLSPort;
-	haddr = ss.str();
+	haddr.assign(ss.str());
 	ss.str("");
 	ss << mAddr << ':' << OverrideDefaultPort;
 
@@ -525,15 +525,15 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		}
 	}
 
-	paddr = ss.str();
+	paddr.assign(ss.str());
 	ss.str("");
 	ss << mConfBaseDir << '/' << mTLSCert;
-	cdir = ss.str();
+	cdir.assign(ss.str());
 	ss.str("");
 	ss << mConfBaseDir << '/' << mTLSKey;
-	kdir = ss.str();
-	corg = mTLSOrg;
-	chost = mTLSHost;
+	kdir.assign(ss.str());
+	corg.assign(mTLSOrg);
+	chost.assign(mTLSHost);
 	VH_ProxyConfig *conf = VH_ProxyCreate();
 	conf->HubAddr = haddr.c_str();
 	conf->HubNetwork = "tcp4"; // note: static
