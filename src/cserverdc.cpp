@@ -58,7 +58,7 @@ namespace nVerliHub {
 		bool cServerDC::mStackTrace = true;
 
 cServerDC::cServerDC(string CfgBase, const string &ExecPath):
-	cAsyncSocketServer(), // create parent class
+	cAsyncSocketServer(CfgBase), // create parent class
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
 	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // create and connect to mysql

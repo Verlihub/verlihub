@@ -213,7 +213,7 @@ class cServerDC : public cAsyncSocketServer
 	friend class nTables::cDCBanList;
 	friend class nVerliHub::cUser;
 	public:
-		// Path to VerliHub config folder
+		// Path to Verlihub config folder
 		string mConfigBaseDir;
 		// Database configuration
 		cDBConf mDBConf;
