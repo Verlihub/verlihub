@@ -5,14 +5,14 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
 
   * Low RAM and CPU usage
   * It can hold more than 25k users
-  * TLS-encrypted connection via NMDCS protocol (requires Go)
+  * TLS-encrypted connection via NMDCS protocol, requires Go
   * Utility scripts for simple installation and hub management
   * Export and import of hub setting via MySQL
   * User management with privilegies
-  * Logging of nicks and IPs (requires Ledokol)
+  * Logging of user IPs and complete MyINFOs, requires Ledokol
   * Clients and connections management
-  * Extend functionality with Lua, Python (deprecated) and Perl (deprecated) scripts
-  * Generate statistics for your hub (requires Ledokol)
+  * Extend functionality with Lua scripts
+  * Generate statistics for your hub, requires Ledokol
   * Import users from PtokaX, Aquila or YnHub
   * Plus much more
 
