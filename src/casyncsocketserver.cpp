@@ -528,15 +528,15 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	conf->HubAddr = haddr.c_str();
 	conf->HubNetwork = "tcp4"; // note: static
 	conf->Hosts = paddr.c_str();
-	conf->Cert = mTLSCert;
-	conf->Key = mTLSKey;
-	conf->CertOrg = mTLSOrg;
-	conf->CertHost = mTLSHost;
+	conf->Cert = mTLSCert.c_str();
+	conf->Key = mTLSKey.c_str();
+	conf->CertOrg = mTLSOrg.c_str();
+	conf->CertHost = mTLSHost.c_str();
 	conf->LogErrors = mTLSLog;
 	conf->Wait = mTLSWait;
 	conf->Buffer = mTLSBuf;
 	conf->MinVer = mTLSVer;
-	conf->NoSendIP = 0; // note: static
+	conf->NoSendIP = false; // note: static
 
 	if (Log(0))
 		LogStream() << "Starting TLS proxy: " << paddr << " -> " << haddr << endl;
