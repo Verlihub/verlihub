@@ -35,7 +35,7 @@ import (
 )
 
 func init() {
-	log.SetFlags(Lshortfile | Ldate | Ltime)
+	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.SetOutput(os.Stdout)
 }
 
