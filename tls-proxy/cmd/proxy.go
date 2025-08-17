@@ -30,7 +30,7 @@ import (
 )
 
 var (
-	fHost = flag.String("host", ":411", "Comma separated list of hosts to listen on")
+	fHost = flag.String("host", ":411", "Space separated list of hosts to listen on")
 	fWait = flag.Duration("wait", 650 * time.Millisecond, "Time to wait to detect the protocol")
 	fHub = flag.String("hub", "127.0.0.1:411", "Hub address to connect to")
 	fHubNet = flag.String("net", "tcp4", "Hub network: tcp4, tcp6, tcp, unix")
@@ -38,10 +38,10 @@ var (
 	fLog = flag.Bool("log", false, "Enable connection logging")
 	fCert = flag.String("cert", "hub.crt", "TLS .crt file")
 	fKey = flag.String("key", "hub.key", "TLS .key file")
-	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.2, 2 - 1.2, 3 - 1.3
+	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.1, 2 - 1.2, 3 - 1.3
 	fBuf = flag.Int("buf", 10, "Buffer size in KB")
-	fCertOrg = flag.String("cert-org", "VHProxy", "Organization name for generated TLS certificate")
-	fCertHost = flag.String("cert-host", "localhost", "Hostname for generated TLS certificate")
+	fCertOrg = flag.String("cert-org", "Verlihub", "Organization for TLS certificate")
+	fCertHost = flag.String("cert-host", "localhost", "Hostname for TLS certificate")
 )
 
 func main() {
@@ -56,7 +56,7 @@ func run() error {
 	p, err := proxy.New(proxy.Config {
 		HubAddr: *fHub,
 		HubNetwork: *fHubNet,
-		Hosts: strings.Split(*fHost, ","),
+		Hosts: strings.Split(*fHost, " "),
 		Cert: *fCert,
 		Key: *fKey,
 		CertOrg: *fCertOrg,

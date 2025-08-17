@@ -218,7 +218,7 @@ void cUser::DisplayInfo(ostream &os)
 	if (ci.size() && (ci != "--"))
 		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
-	if (mxServer->mTLSProxy.size())
+	if (mxServer->mTLSPort)
 		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
 
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (this->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls

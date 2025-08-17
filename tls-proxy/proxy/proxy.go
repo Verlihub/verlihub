@@ -31,12 +31,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/verlihub/tls-proxy/certs"
+	"github.com/verlihub/tls-proxy/utils"
 )
 
 type Config struct {
 	HubAddr string
-	HubNetwork string
+	HubNetwork string // verlihub supports only tcp4
 	Hosts []string
 	Cert string
 	Key string
@@ -46,7 +46,7 @@ type Config struct {
 	Wait time.Duration
 	Buffer int
 	MinVer int
-	NoSendIP bool
+	NoSendIP bool // must be enabled in verlihub
 }
 
 type Proxy struct {
@@ -79,7 +79,7 @@ func New(c Config) (*Proxy, error) {
 		log.Println("Generating certificates:", c.Cert, c.Key)
 
 		if c.CertOrg == "" {
-			c.CertOrg = "VHProxy"
+			c.CertOrg = "Verlihub"
 		}
 
 		if c.CertHost == "" {

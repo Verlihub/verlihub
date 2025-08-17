@@ -268,7 +268,7 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 	tCLIt it = mConnList.insert(mConnList.begin(), new_conn);
 	new_conn->mIterator = it;
 
-	if (mTLSProxy.size() && (new_conn->AddrIP() == mTLSProxy)) // tls proxy, wait for myip command
+	if (mTLSPort && (new_conn->AddrIP() == mTLSAddr)) // tls proxy, wait for myip command
 		return;
 
 	if (0 > OnNewConn(new_conn))
@@ -501,23 +501,45 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
 
 #ifdef USE_TLS_PROXY
-	const int hport = 4112; // todo: all configs, hub always listens on local ip and configured port, proxy listens listen_ip and listen_port + extra ports
-	int pport = mPort;
-	mPort = hport;
-	OverrideDefaultPort = hport;
+	if (!mTLSPort) // disabled
+		return this->Listen(OverrideDefaultPort/*, false*/);
+
 	stringstream ss;
-	ss << "127.0.0.1:" << hport;
+	ss << mTLSAddr << ':' << mTLSPort;
 	string haddr = ss.str();
 	ss.str("");
-	ss << "0.0.0.0:" << pport;
+	ss << mAddr << ':' << OverrideDefaultPort;
+
+	if (mExtra.size()) {
+		istringstream is(mExtra);
+		int i = 1;
+
+		while (i) {
+			i = 0;
+			is >> i;
+
+			if ((i >= 1) && (i <= 65535))
+				ss << ' ' << mAddr << ':' << i;
+		}
+	}
+
 	string paddr = ss.str();
 	VH_ProxyConfig *conf = VH_ProxyCreate();
 	conf->HubAddr = haddr.c_str();
-	conf->HubNetwork = "tcp4"; // todo: unix
-	conf->Hosts = paddr.c_str(); // todo: multiple addresses
-	conf->Wait = 650; // ms
-	conf->Buffer = 10; // kb
-	LogStream() << "Starting TLS proxy " << paddr << " -> " << haddr << endl;
+	conf->HubNetwork = "tcp4"; // note: static
+	conf->Hosts = paddr.c_str();
+	conf->Cert = mTLSCert;
+	conf->Key = mTLSKey;
+	conf->CertOrg = mTLSOrg;
+	conf->CertHost = mTLSHost;
+	conf->LogErrors = mTLSLog;
+	conf->Wait = mTLSWait;
+	conf->Buffer = mTLSBuf;
+	conf->MinVer = mTLSVer;
+	conf->NoSendIP = 0; // note: static
+
+	if (Log(0))
+		LogStream() << "Starting TLS proxy: " << paddr << " -> " << haddr << endl;
 
 	if (!VH_ProxyStart(conf)) {
 		char *err = VH_ProxyError();
@@ -528,11 +550,11 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		}
 
 		delete conf;
-		return -1;
+		return false;
 	}
 
 	delete conf;
-	return this->Listen(hport/*, false*/);
+	return this->Listen(mTLSPort/*, false*/);
 #else
 	return this->Listen(OverrideDefaultPort/*, false*/);
 #endif
@@ -543,9 +565,16 @@ bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bo
 	if (!ListenSock)
 		return false;
 
-	if (!ListenSock->ListenOnPort(OnPort, mAddr.c_str(), mAcceptNum/*, UDP*/)) {
+	string addr = mAddr;
+
+#ifdef USE_TLS_PROXY
+	if (mTLSPort)
+		addr = mTLSAddr;
+#endif
+
+	if (!ListenSock->ListenOnPort(OnPort, addr.c_str(), mAcceptNum/*, UDP*/)) {
 		if (Log(0)) {
-			LogStream() << "Can't listen on " << mAddr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
+			LogStream() << "Can't listen on " << addr << ':' << OnPort << (/*UDP ? " UDP":*/" TCP") << endl;
 			LogStream() << "Please make sure the port is open and not already used by another process" << endl;
 			LogStream() << "Remember that hub must be started using root when port number is below 1024" << endl;
 		}
@@ -558,7 +587,7 @@ bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bo
 	mListList.push_back(ListenSock); // add to listening connections
 
 	if (Log(0))
-		LogStream() << "Listening for connections on " << mAddr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
+		LogStream() << "Listening for connections on " << addr << ':' << OnPort << (/*UDP?" UDP":*/" TCP") << endl;
 
 	return true;
 }

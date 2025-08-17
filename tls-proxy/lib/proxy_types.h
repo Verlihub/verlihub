@@ -26,7 +26,7 @@
 typedef struct VH_ProxyConfig {
 	const char* HubAddr;
 	const char* HubNetwork;
-	const char* Hosts; // comma separated
+	const char* Hosts; // space separated
 	const char* Cert;
 	const char* Key;
 	const char* CertOrg;

@@ -62,7 +62,7 @@ func VH_ProxyStart(conf *C.VH_ProxyConfig) C.int {
 	c := proxy.Config {
 		HubAddr: C.GoString(conf.HubAddr),
 		HubNetwork: C.GoString(conf.HubNetwork),
-		Hosts: strings.Split(C.GoString(conf.Hosts), ","),
+		Hosts: strings.Split(C.GoString(conf.Hosts), " "),
 		Cert: C.GoString(conf.Cert),
 		Key: C.GoString(conf.Key),
 		CertOrg: C.GoString(conf.CertOrg),
