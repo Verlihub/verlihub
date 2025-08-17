@@ -122,10 +122,10 @@ void cDCConf::AddVars()
 	Add("min_share_use_hub",min_share_use_hub,(unsigned long)0);
 	Add("min_share_use_hub_reg",min_share_use_hub_reg,(unsigned long)0);
 	Add("min_share_use_hub_vip",min_share_use_hub_vip,(unsigned long)0);
-	Add("max_share",max_share,(unsigned long)30*1024*1024);
-	Add("max_share_reg",max_share_reg,(unsigned long)30*1024*1024);
-	Add("max_share_vip",max_share_vip,(unsigned long)30*1024*1024);
-	Add("max_share_ops",max_share_ops,(unsigned long)30*1024*1024);
+	Add("max_share",max_share,(unsigned long)150*1024*1024);
+	Add("max_share_reg",max_share_reg,(unsigned long)150*1024*1024);
+	Add("max_share_vip",max_share_vip,(unsigned long)150*1024*1024);
+	Add("max_share_ops",max_share_ops,(unsigned long)150*1024*1024);
 	// End share configuration
 
 	// search configuration
