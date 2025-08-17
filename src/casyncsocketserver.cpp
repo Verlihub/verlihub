@@ -505,9 +505,10 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (!mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
+	string haddr, paddr, cdir, kdir, corg, chost;
 	stringstream ss;
 	ss << mTLSAddr << ':' << mTLSPort;
-	string haddr = ss.str();
+	haddr = ss.str();
 	ss.str("");
 	ss << mAddr << ':' << OverrideDefaultPort;
 
@@ -524,21 +525,23 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		}
 	}
 
-	string paddr = ss.str();
+	paddr = ss.str();
+	ss.str("");
+	ss << mConfBaseDir << '/' << mTLSCert;
+	cdir = ss.str();
+	ss.str("");
+	ss << mConfBaseDir << '/' << mTLSKey;
+	kdir = ss.str();
+	corg = mTLSOrg;
+	chost = mTLSHost;
 	VH_ProxyConfig *conf = VH_ProxyCreate();
 	conf->HubAddr = haddr.c_str();
 	conf->HubNetwork = "tcp4"; // note: static
 	conf->Hosts = paddr.c_str();
-	ss.str("");
-	ss << mConfBaseDir << '/' << mTLSCert;
-	string cdir = ss.str();
 	conf->Cert = cdir.c_str();
-	ss.str("");
-	ss << mConfBaseDir << '/' << mTLSKey;
-	cdir = ss.str();
-	conf->Key = cdir.c_str();
-	conf->CertOrg = mTLSOrg.c_str();
-	conf->CertHost = mTLSHost.c_str();
+	conf->Key = kdir.c_str();
+	conf->CertOrg = corg.c_str();
+	conf->CertHost = chost.c_str();
 	conf->LogErrors = mTLSLog;
 	conf->Wait = mTLSWait;
 	conf->Buffer = mTLSBuf;
