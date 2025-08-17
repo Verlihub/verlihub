@@ -40,7 +40,7 @@ var (
 	fKey = flag.String("key", "hub.key", "TLS .key file")
 	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.1, 2 - 1.2, 3 - 1.3
 	fBuf = flag.Int("buf", 10, "Buffer size in KB")
-	fCertOrg = flag.String("cert-org", "Verlihub", "Organization for TLS certificate")
+	fCertOrg = flag.String("cert-org", "Verlihub", "Organisation for TLS certificate")
 	fCertHost = flag.String("cert-host", "localhost", "Hostname for TLS certificate")
 )
 
