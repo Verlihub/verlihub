@@ -3455,10 +3455,10 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 {
-	if (mS->mTLSProxy.empty())
+	if (!mS->mTLSPort)
 		return this->DCU_Unknown(msg, conn);
 
-	if (conn->AddrIP() != mS->mTLSProxy)
+	if (conn->AddrIP() != mS->mTLSAddr)
 		return this->DCU_Unknown(msg, conn);
 
 	if ((msg->mLen < 17) || (msg->mLen > 25)) {

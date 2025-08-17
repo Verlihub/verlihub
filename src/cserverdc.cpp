@@ -332,8 +332,9 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 	if (!cAsyncSocketServer::StartListening(OverrideDefaultPort)) // default port
 		return false;
 
-	if (mC.extra_listen_ports.size()) {
-		istringstream is(mC.extra_listen_ports);
+#ifndef USE_TLS_PROXY
+	if (mExtra.size()) {
+		istringstream is(mExtra);
 		int i = 1;
 
 		while (i) {
@@ -346,6 +347,7 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 			}
 		}
 	}
+#endif
 
 	return true;
 }
@@ -1050,7 +1052,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
-	if (mTLSProxy.size()) {
+	if (mTLSPort) {
 		if (mC.tls_only_mode)
 			conn->mLock.append("TLSONLY_");
 		else
@@ -3172,7 +3174,7 @@ void cServerDC::GetHubURLs(string &url, string &urls)
 		url.append(host);
 	}
 
-	if (mTLSProxy.size() && host.size()) {
+	if (mTLSPort && host.size()) {
 		urls = "nmdcs://";
 		urls.append(host);
 
@@ -3384,10 +3386,10 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
-			} else if ((svar == "tls_proxy_ip") && (val_new != val_old) && val_new.size()) { // validate proxy ip
+			} else if ((svar == "tls_listen_ip") && (val_new != val_old)) { // validate proxy ip, todo: tls_min_ver - 0-3
 				unsigned long ip = 0;
 
-				if (!cBanList::Ip2Num(val_new, ip, false)) { // 0.0.0.1 - 255.255.255.255
+				if (val_new.empty() || !cBanList::Ip2Num(val_new, ip, false)) { // cant be empty, 0.0.0.1 - 255.255.255.255
 					if (user && user->mxConn)
 						DCPublicHS(autosprintf(_("Specified value is expected to be a valid IP address within range %s to %s."), "0.0.0.1", "255.255.255.255"), user->mxConn);
 

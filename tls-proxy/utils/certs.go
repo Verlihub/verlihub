@@ -87,7 +87,7 @@ func certTemplate(org string) (*x509.Certificate, error) {
 		Subject: pkix.Name{Organization: []string{org}},
 		SignatureAlgorithm: x509.SHA256WithRSA,
 		NotBefore: time.Now(),
-		NotAfter: time.Now().Add(time.Hour * 24 * 356),
+		NotAfter: time.Now().Add(time.Hour * 24 * 356 * 5), // 5 years
 		BasicConstraintsValid: true,
 	}
 

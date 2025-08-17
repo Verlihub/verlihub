@@ -57,20 +57,27 @@ void cDCConf::AddVars()
 	Add("opchat_class", opchat_class, int(eUC_OPERATOR));
 	Add("hub_host", hub_host, "");
 	Add("hub_failover_hosts", hub_failover_hosts, "");
-	Add("listen_ip",mS.mAddr, "0.0.0.0");
+	// end of section
 
-	//#if !defined _WIN32
-		Add("listen_port", mS.mPort, 4111);
-	/*
-	#else
-		Add("listen_port", mS.mPort, 411);
-	#endif
-	*/
+	// listen address
+	Add("listen_ip", mS.mAddr, "0.0.0.0");
+	Add("listen_port", mS.mPort, 4111);
+	Add("extra_listen_ports", mS.mExtra, "");
+	// end of section
 
-	Add("extra_listen_ports", extra_listen_ports, "");
-	Add("tls_proxy_ip", mS.mTLSProxy, "");
+	// tls proxy
+	Add("tls_listen_ip", mS.mTLSAddr, "127.0.0.1");
+	Add("tls_listen_port", mS.mTLSPort, 0); // note: 0 to disable, default
 	Add("tls_only_mode", tls_only_mode, false);
 	Add("not_tls_redirect", not_tls_redirect, "");
+	Add("tls_detect_wait", mS.mTLSWait, 650 * 1000);
+	Add("tls_cert_file", mS.mTLSCert, "hub.crt");
+	Add("tls_key_file", mS.mTSLKey, "hub.key");
+	Add("tls_cert_org", mS.mTLSOrg, "Verlihub");
+	Add("tls_cert_host", mS.mTLSHost, "localhost");
+	Add("tls_min_ver", mS.mTLSVer, 2);
+	Add("tls_buf_size", mS.mTLSBuf, 10);
+	Add("tls_conn_log", mS.mTLSLog, false);
 	// end of section
 
 	// begin hublist configuration

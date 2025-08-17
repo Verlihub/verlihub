@@ -177,11 +177,12 @@ namespace nVerliHub {
 				*/
 				void TimeStep();
 
-				/// The address to listen on
+				// address to listen on
 				string mAddr;
 
-				/// The port to listen on
+				// main and extra ports to listen on
 				unsigned int mPort;
+				string mExtra;
 
 				/// Connection period to call event time method cAsyncConn::OnTimerBase().
 				/// This value controls how often cAsyncConn::OnTimerBase() is called.
@@ -203,8 +204,17 @@ namespace nVerliHub {
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;
 
-				// tls proxy ip
-				string mTLSProxy;
+				// tls proxy
+				string mTLSAddr;
+				unsigned int mTLSPort;
+				unsigned int mTLSWait;
+				string mTLSCert;
+				string mTSLKey;
+				string mTLSOrg;
+				string mTLSHost;
+				unsigned int mTLSVer;
+				unsigned int mTLSBuf;
+				bool mTLSLog;
 
 				/// Use reverse DNS lookup feature when there is a new connection.
 				int mUseDNS;
