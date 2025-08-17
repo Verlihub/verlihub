@@ -528,8 +528,14 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	conf->HubAddr = haddr.c_str();
 	conf->HubNetwork = "tcp4"; // note: static
 	conf->Hosts = paddr.c_str();
-	conf->Cert = mTLSCert.c_str();
-	conf->Key = mTLSKey.c_str();
+	ss.str("");
+	ss << mConfigBaseDir << '/' << mTLSCert;
+	string cdir = ss.str();
+	conf->Cert = cdir.c_str();
+	ss.str("");
+	ss << mConfigBaseDir << '/' << mTLSKey;
+	string cdir = ss.str();
+	conf->Key = cdir.c_str();
 	conf->CertOrg = mTLSOrg.c_str();
 	conf->CertHost = mTLSHost.c_str();
 	conf->LogErrors = mTLSLog;
