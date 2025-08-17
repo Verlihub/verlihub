@@ -74,7 +74,7 @@ func New(c Config) (*Proxy, error) {
 
 	p := &Proxy{c: c}
 
-	if c.Cert == "" || c.Key == "" {
+	if c.Cert == "" && c.Key == "" {
 		c.Cert = "hub.crt"
 		c.Key = "hub.key"
 	}
