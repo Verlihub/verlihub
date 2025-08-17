@@ -34,6 +34,10 @@ import (
 	"github.com/verlihub/tls-proxy/utils"
 )
 
+func init() {
+	log.SetOutput(os.Stdout)
+}
+
 type Config struct {
 	HubAddr string
 	HubNetwork string // verlihub supports only tcp4
