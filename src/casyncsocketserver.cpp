@@ -46,8 +46,9 @@ namespace nVerliHub {
 
 	//bool nSocket::cAsyncSocketServer::WSinitialized = false;
 
-cAsyncSocketServer::cAsyncSocketServer(int port):
+cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	cObj("cAsyncSocketServer"),
+	mConfBaseDir(CfgBase),
 	mAddr("0.0.0.0"),
 	mPort(port),
 	timer_conn_period(4),
@@ -529,11 +530,11 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	conf->HubNetwork = "tcp4"; // note: static
 	conf->Hosts = paddr.c_str();
 	ss.str("");
-	ss << mConfigBaseDir << '/' << mTLSCert;
+	ss << mConfBaseDir << '/' << mTLSCert;
 	string cdir = ss.str();
 	conf->Cert = cdir.c_str();
 	ss.str("");
-	ss << mConfigBaseDir << '/' << mTLSKey;
+	ss << mConfBaseDir << '/' << mTLSKey;
 	string cdir = ss.str();
 	conf->Key = cdir.c_str();
 	conf->CertOrg = mTLSOrg.c_str();

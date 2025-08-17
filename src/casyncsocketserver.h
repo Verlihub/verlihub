@@ -67,12 +67,15 @@ namespace nVerliHub {
 				/// Define an iterator to a list of connections.
 				typedef tConnList::iterator tCLIt;
 
+				// base directory
+				string mConfBaseDir;
+
 				/**
 				* Class constructor.
 				* Create a server and start listening on given port.
 				* @param port The port to listen on.
 				*/
-				cAsyncSocketServer(int port=0);
+				cAsyncSocketServer(string CfgBase = ".", int port = 0);
 
 				/**
 				* Class destructor.
