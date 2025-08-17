@@ -147,8 +147,6 @@ Find_Package(Libintl REQUIRED)
 OPTION(USE_TLS_PROXY "Build TLS proxy library" OFF)
 
 IF(USE_TLS_PROXY)
-	ADD_DEFINITIONS(-DUSE_TLS_PROXY=1)
-
 	FIND_PROGRAM(GOLANG_PATH go REQUIRED
 		PATHS
 			/usr/bin
@@ -163,6 +161,7 @@ IF(USE_TLS_PROXY)
 		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
 		MESSAGE(STATUS "[ OK ] Copying proxy_types.h")
 		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
+		ADD_DEFINITIONS(-DUSE_TLS_PROXY=1)
 	ELSE(GOLANG_PATH)
 		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
 	ENDIF(GOLANG_PATH)
