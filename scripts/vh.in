@@ -158,20 +158,24 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 	# Check if MySQL socket exists
 	_mysql_export_socket
 
-	# this block will perform different checks and set open files limit higher than hub user limit if required
+	# check and set open files limit higher than double hub user limit
 	echo "-- Checking open files limit before hub start"
-	local CUR_LIMIT=`ulimit -n` # get current open files limit
-	local RE="^[0-9]+$" # number regular expression
-	if [[ $CUR_LIMIT =~ $RE ]]; then # check if we got what we wanted
-		local HUB_LIMIT=$(_mysql_value "max_users") # get hub user limit
-		if [[ $HUB_LIMIT =~ $RE ]]; then # check if we got what we wanted
-			if [ $CUR_LIMIT -le $HUB_LIMIT ]; then # compare current open files limit with hub user limit
-				local NEW_LIMIT=$(($CUR_LIMIT+$HUB_LIMIT)) # create new open files limit
-				if [[ $NEW_LIMIT =~ $RE ]]; then # check if we got what we wanted
-					ulimit -n $NEW_LIMIT # set new open files limit in same console
-					local SET_LIMIT=`ulimit -n` # get new open files limit
-					if [[ $SET_LIMIT =~ $RE ]]; then # check if we got what we wanted
-						if [ $SET_LIMIT -eq $NEW_LIMIT ]; then # compare set open files limit with new open files limit
+	local CUR_LIMIT=`ulimit -n`
+	local RE="^[0-9]+$"
+
+	if [[ $CUR_LIMIT =~ $RE ]]; then
+		local HUB_LIMIT=$(_mysql_value "max_users")
+
+		if [[ $HUB_LIMIT =~ $RE ]]; then
+			local NEW_LIMIT=$(($CUR_LIMIT+($HUB_LIMIT*2)))
+
+			if [[ $NEW_LIMIT =~ $RE ]]; then
+				if [ $CUR_LIMIT -le $NEW_LIMIT ]; then
+					ulimit -n $NEW_LIMIT
+					local SET_LIMIT=`ulimit -n`
+
+					if [[ $SET_LIMIT =~ $RE ]]; then
+						if [ $SET_LIMIT -eq $NEW_LIMIT ]; then
 							echo -n "-- Successfully changed open files limit to "
 							echo_s "$SET_LIMIT\n" $GREEN
 						else
@@ -181,10 +185,10 @@ function run_hub() # path_to_dbconfig, do_not_print_deafult_path_msg
 						echo "-- Failed to get new open files limit, it will remain unchanged"
 					fi
 				else
-					echo "-- Failed to create new open files limit, it will remain unchanged"
+					echo "-- Current open files limit is higher than double hub user limit, change not required"
 				fi
 			else
-				echo "-- Current open files limit is higher than hub user limit, change not required"
+				echo "-- Failed to create new open files limit, it will remain unchanged"
 			fi
 		else
 			echo "-- Failed to get hub user limit, open files limit will remain unchanged"
