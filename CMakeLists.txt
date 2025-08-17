@@ -165,6 +165,8 @@ IF(USE_TLS_PROXY)
 	ELSE(GOLANG_PATH)
 		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
 	ENDIF(GOLANG_PATH)
+ELSE(USE_TLS_PROXY)
+	MESSAGE(STATUS "[ OK ] NOTE: NOT building TLS proxy")
 ENDIF(USE_TLS_PROXY)
 
 FIND_LIBRARY(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
