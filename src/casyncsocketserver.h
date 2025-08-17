@@ -209,7 +209,7 @@ namespace nVerliHub {
 				unsigned int mTLSPort;
 				unsigned int mTLSWait;
 				string mTLSCert;
-				string mTSLKey;
+				string mTLSKey;
 				string mTLSOrg;
 				string mTLSHost;
 				unsigned int mTLSVer;
