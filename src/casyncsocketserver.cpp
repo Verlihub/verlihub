@@ -535,7 +535,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	conf->Cert = cdir.c_str();
 	ss.str("");
 	ss << mConfBaseDir << '/' << mTLSKey;
-	string cdir = ss.str();
+	cdir = ss.str();
 	conf->Key = cdir.c_str();
 	conf->CertOrg = mTLSOrg.c_str();
 	conf->CertHost = mTLSHost.c_str();
