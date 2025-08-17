@@ -144,6 +144,7 @@ Find_Package(Gettext REQUIRED)
 Find_Package(Gettext-devel REQUIRED)
 Find_Package(Libintl REQUIRED)
 
+ADD_DEFINITIONS(-DUSE_TLS_PROXY)
 OPTION(USE_TLS_PROXY "Build TLS proxy library" OFF)
 
 IF(USE_TLS_PROXY)
