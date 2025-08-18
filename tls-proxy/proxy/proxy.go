@@ -96,7 +96,7 @@ func New(c Config) (*Proxy, error) {
 			c.CertHost = "localhost"
 		}
 
-		cert, key, err := certs.generateCerts(c.CertHost, c.CertOrg, c.CertMail)
+		cert, key, err := certs.GenerateCerts(c.CertHost, c.CertOrg, c.CertMail)
 
 		if err != nil {
 			return nil, err
