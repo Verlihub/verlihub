@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-func Generate(host, org string) (cert, key []byte, _ error) {
+func generateCerts(host, org, mail string) (cert, key []byte, _ error) {
 	// generate a new key-pair
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 
@@ -58,6 +58,7 @@ func Generate(host, org string) (cert, key []byte, _ error) {
 		rootCertTmpl.DNSNames = []string{host}
 	}
 
+	rootCertTmpl.EmailAddresses = []string{mail}
 	_, rootCertPEM, err := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
 
 	if err != nil {

@@ -41,6 +41,7 @@ var (
 	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.1, 2 - 1.2, 3 - 1.3
 	fBuf = flag.Int("buf", 10, "Buffer size in KB")
 	fCertOrg = flag.String("cert-org", "Verlihub", "Organisation for TLS certificate")
+	fCertMail = flag.String("cert-mail", "verlihub@localhost", "Email for TLS certificate")
 	fCertHost = flag.String("cert-host", "localhost", "Hostname for TLS certificate")
 )
 
@@ -60,6 +61,7 @@ func run() error {
 		Cert: *fCert,
 		Key: *fKey,
 		CertOrg: *fCertOrg,
+		CertMail: *fCertMail,
 		CertHost: *fCertHost,
 		LogErrors: *fLog,
 		Wait: *fWait,

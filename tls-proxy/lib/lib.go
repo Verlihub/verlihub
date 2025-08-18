@@ -66,6 +66,7 @@ func VH_ProxyStart(conf *C.VH_ProxyConfig) C.int {
 		Cert: C.GoString(conf.Cert),
 		Key: C.GoString(conf.Key),
 		CertOrg: C.GoString(conf.CertOrg),
+		CertMail: C.GoString(conf.CertMail),
 		CertHost: C.GoString(conf.CertHost),
 		LogErrors: bool(conf.LogErrors),
 		Wait: time.Duration(conf.Wait) * time.Millisecond,

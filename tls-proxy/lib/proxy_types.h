@@ -30,6 +30,7 @@ typedef struct VH_ProxyConfig {
 	const char* Cert;
 	const char* Key;
 	const char* CertOrg;
+	const char* CertMail;
 	const char* CertHost;
 	bool LogErrors;
 	int Wait; // ms
