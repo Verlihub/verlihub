@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-func generateCerts(host, org, mail string) (cert, key []byte, _ error) {
+func GenerateCerts(host, org, mail string) (cert, key []byte, _ error) {
 	// generate a new key-pair
 	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
 
