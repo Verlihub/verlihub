@@ -46,6 +46,7 @@ type Config struct {
 	Cert string
 	Key string
 	CertOrg string
+	CertMail string
 	CertHost string
 	LogErrors bool
 	Wait time.Duration
@@ -87,11 +88,15 @@ func New(c Config) (*Proxy, error) {
 			c.CertOrg = "Verlihub"
 		}
 
+		if c.CertMail == "" {
+			c.CertMail = "verlihub@localhost"
+		}
+
 		if c.CertHost == "" {
 			c.CertHost = "localhost"
 		}
 
-		cert, key, err := certs.Generate(c.CertHost, c.CertOrg)
+		cert, key, err := certs.generateCerts(c.CertHost, c.CertOrg, c.CertMail)
 
 		if err != nil {
 			return nil, err

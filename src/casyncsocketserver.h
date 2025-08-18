@@ -214,6 +214,7 @@ namespace nVerliHub {
 				string mTLSCert;
 				string mTLSKey;
 				string mTLSOrg;
+				string mTLSMail;
 				string mTLSHost;
 				unsigned int mTLSVer;
 				unsigned int mTLSBuf;
