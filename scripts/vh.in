@@ -60,8 +60,8 @@ help_me()
 		echo_s "\t-f, --off" $BLUE && echo -e "\t\t\t\tDisable auto load of plugin"
 		echo_s "\t-d, --configdir" $BLUE && echo -e "  [path_to_dbconfig] \tSpecify the hub with location of dbconfig file. Optional"	
 	echo_s "  -u, --adduser" $RED && echo -e "\t<nick> <password> <class> [path_to_dbconfig]\tRegister a new user in the database"
-	echo_s "  -gc, --getconf" $RED && echo -e "\t<variable> [path_to_dbconfig]\tGet hub configuration by variable"
-	echo_s "  -sc, --setconf" $RED && echo -e "\t<variable> <value> [path_to_dbconfig]\tSet hub configuration by variable, use '_' for empty string"
+	echo_s "  -gc, --getconf" $RED && echo -e "\t<variable> <path_to_dbconfig>\tGet hub configuration by variable"
+	echo_s "  -sc, --setconf" $RED && echo -e "\t<variable> <value> <path_to_dbconfig>\tSet hub configuration by variable, use '_' for empty string"
 	echo_s "  -c, --clean" $RED && echo -e "\t[path_to_dbconfig] \t\t\tClean kicklist, banlist, unbanlist, iplog, stats and messages tables"	
 	echo_s "  -b, --backup" $RED && echo -e "\t<destination_path> [path_to_dbconfig] \tMake backup of database from the given dbconfig path"
 	echo_s "  -w, --restore" $RED && echo -e "\t<path_to_sql>      [path_to_dbconfig] \tImport the given SQL file in the database for given dbconfig path"
@@ -412,6 +412,16 @@ function add_user() # nicknam, # password, # class, # path_to_dbconfig
 
 function get_config() # variable, # path_to_dbconfig
 {
+	if [ "_$1" = "_" ]; then
+		echo_s "-- Specify a valid variable\n" $RED
+		exit 1;
+	fi;
+
+	if [ "_$2" = "_" ]; then
+		echo_s "-- Specify a valid path to dbconfig\n" $RED
+		exit 1;
+	fi;
+
 	if ! set_path $2 ; then
 		exit 1;
 	fi
@@ -421,16 +431,11 @@ function get_config() # variable, # path_to_dbconfig
 		exit 1;
 	fi
 
-	if [ "_$1" = "_" ]; then
-		echo_s "-- Specify a valid variable\n" $RED
-		exit 1;
-	fi;
-
 	local VALUE=$(_mysql_value "$1")
 
-	echo_s "Variable" $BOLD
+	echo_s "\tVariable" $BOLD
 	echo_s ": $1\n"
-	echo_s "Current value" $BOLD
+	echo_s "\tCurrent value" $BOLD
 	echo_s ": $VALUE\n"
 	echo_s "\tConfig directory" $BOLD
 	echo_s ": $CONFIG_DIR\n"
@@ -440,15 +445,6 @@ function get_config() # variable, # path_to_dbconfig
 
 function set_config() # variable, #value, # path_to_dbconfig
 {
-	if ! set_path $3 ; then
-		exit 1;
-	fi
-
-	if ! _is_table_exists "SetupList" ; then
-		echo_s "-- SetupList table does not exist, fix the error and try again\n" $RED
-		exit 1;
-	fi
-
 	if [ "_$1" = "_" ]; then
 		echo_s "-- Specify a valid variable\n" $RED
 		exit 1;
@@ -459,18 +455,32 @@ function set_config() # variable, #value, # path_to_dbconfig
 		exit 1;
 	fi;
 
+	if [ "_$3" = "_" ]; then
+		echo_s "-- Specify a valid path to dbconfig\n" $RED
+		exit 1;
+	fi;
+
+	if ! set_path $3 ; then
+		exit 1;
+	fi
+
+	if ! _is_table_exists "SetupList" ; then
+		echo_s "-- SetupList table does not exist, fix the error and try again\n" $RED
+		exit 1;
+	fi
+
 	local VALUE="$2"
 
 	if [ "$2" = "_" ]; then
 		VALUE=""
 	fi;
 
-	_mysql_update "$1" "$2" # todo: mysql escape
+	_mysql_update "$1" "$VALUE" # todo: mysql escape
 	VALUE=$(_mysql_value "$1")
 
-	echo_s "Variable" $BOLD
+	echo_s "\tVariable" $BOLD
 	echo_s ": $1\n"
-	echo_s "New value" $BOLD
+	echo_s "\tNew value" $BOLD
 	echo_s ": $VALUE\n"
 	echo_s "\tConfig directory" $BOLD
 	echo_s ": $CONFIG_DIR\n"
