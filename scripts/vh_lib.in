@@ -226,7 +226,7 @@ function _mysql_value() #val
 	VAL=$(_mysql_query "SELECT val FROM SetupList WHERE var = '$1'")
 	VAL=$(echo $VAL | cut -d' ' -f2) # Get second value of return string from MySQL
 	if [ "$VAL" == "NULL" ] || [ "_$VAL" == "_" ]; then
-		echo "not_set"
+		echo "NULL"
 	else
 		echo $VAL
 	fi

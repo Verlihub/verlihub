@@ -126,6 +126,9 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	if (head.find("Host: ") == head.npos)
 		send << "Host: " << mHost << ':' << mPort << "\r\n";
 
+	if (head.find("Accept: ") == head.npos)
+		send << "Accept: */*\r\n";
+
 	if (head.find("User-Agent: ") == head.npos)
 		send << "User-Agent: Mozilla/5.0 (compatible; " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "; +https://github.com/verlihub/)\r\n";
 
