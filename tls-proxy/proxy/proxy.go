@@ -28,8 +28,12 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"sync"
 	"time"
+	"runtime"
+	"runtime/debug"
 
 	"github.com/verlihub/tls-proxy/utils"
 )
@@ -37,6 +41,11 @@ import (
 func init() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.SetOutput(os.Stdout)
+
+	signal.Ignore(syscall.SIGPIPE) // todo: testing
+	runtime.GOMAXPROCS(1)
+	runtime.LockOSThread()
+	debug.SetGCPercent(-1)
 }
 
 type Config struct {
