@@ -475,11 +475,14 @@ function set_config() # variable, #value, # path_to_dbconfig
 		VALUE=""
 	fi;
 
+	local OLDVAL=$(_mysql_value "$1")
 	_mysql_update "$1" "$VALUE" # todo: mysql escape
 	VALUE=$(_mysql_value "$1")
 
 	echo_s "\tVariable" $BOLD
 	echo_s ": $1\n"
+	echo_s "\tOld value" $BOLD
+	echo_s ": $OLDVAL\n"
 	echo_s "\tNew value" $BOLD
 	echo_s ": $VALUE\n"
 	echo_s "\tConfig directory" $BOLD
