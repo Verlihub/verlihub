@@ -60,6 +60,8 @@ help_me()
 		echo_s "\t-f, --off" $BLUE && echo -e "\t\t\t\tDisable auto load of plugin"
 		echo_s "\t-d, --configdir" $BLUE && echo -e "  [path_to_dbconfig] \tSpecify the hub with location of dbconfig file. Optional"	
 	echo_s "  -u, --adduser" $RED && echo -e "\t<nick> <password> <class> [path_to_dbconfig]\tRegister a new user in the database"
+	echo_s "  -gc, --getconf" $RED && echo -e "\t<variable> [path_to_dbconfig]\tGet hub configuration by variable"
+	echo_s "  -sc, --setconf" $RED && echo -e "\t<variable> <value> [path_to_dbconfig]\tSet hub configuration by variable, use '_' for empty string"
 	echo_s "  -c, --clean" $RED && echo -e "\t[path_to_dbconfig] \t\t\tClean kicklist, banlist, unbanlist, iplog, stats and messages tables"	
 	echo_s "  -b, --backup" $RED && echo -e "\t<destination_path> [path_to_dbconfig] \tMake backup of database from the given dbconfig path"
 	echo_s "  -w, --restore" $RED && echo -e "\t<path_to_sql>      [path_to_dbconfig] \tImport the given SQL file in the database for given dbconfig path"
@@ -406,6 +408,74 @@ function add_user() # nicknam, # password, # class, # path_to_dbconfig
 	else
 		echo "-- Skipped"
 	fi
+}
+
+function get_config() # variable, # path_to_dbconfig
+{
+	if ! set_path $2 ; then
+		exit 1;
+	fi
+
+	if ! _is_table_exists "SetupList" ; then
+		echo_s "-- SetupList table does not exist, fix the error and try again\n" $RED
+		exit 1;
+	fi
+
+	if [ "_$1" = "_" ]; then
+		echo_s "-- Specify a valid variable\n" $RED
+		exit 1;
+	fi;
+
+	local VALUE=$(_mysql_value "$1")
+
+	echo_s "Variable" $BOLD
+	echo_s ": $1\n"
+	echo_s "Current value" $BOLD
+	echo_s ": $VALUE\n"
+	echo_s "\tConfig directory" $BOLD
+	echo_s ": $CONFIG_DIR\n"
+
+	echo "-- Done"
+}
+
+function set_config() # variable, #value, # path_to_dbconfig
+{
+	if ! set_path $3 ; then
+		exit 1;
+	fi
+
+	if ! _is_table_exists "SetupList" ; then
+		echo_s "-- SetupList table does not exist, fix the error and try again\n" $RED
+		exit 1;
+	fi
+
+	if [ "_$1" = "_" ]; then
+		echo_s "-- Specify a valid variable\n" $RED
+		exit 1;
+	fi;
+
+	if [ "_$2" = "_" ]; then
+		echo_s "-- Specify a valid value, use '_' for empty string\n" $RED
+		exit 1;
+	fi;
+
+	local VALUE="$2"
+
+	if [ "$2" = "_" ]; then
+		VALUE=""
+	fi;
+
+	_mysql_update "$1" "$2" # todo: mysql escape
+	VALUE=$(_mysql_value "$1")
+
+	echo_s "Variable" $BOLD
+	echo_s ": $1\n"
+	echo_s "New value" $BOLD
+	echo_s ": $VALUE\n"
+	echo_s "\tConfig directory" $BOLD
+	echo_s ": $CONFIG_DIR\n"
+
+	echo "-- Done"
 }
 
 function reg_importer() # options
@@ -1057,7 +1127,7 @@ function install() # [sleep_time]
 
 	# write to database
 	echo_s "\nPlease wait while creating settings.\n"
-	_mysql_update "hub_name" $VH_HUB_NAME
+	_mysql_update "hub_name" "$VH_HUB_NAME"
 
 	if [ "$VH_HUB_PORT" = "411" ]; then
 		_mysql_update "hub_host" "$VH_HUB_HOST"
@@ -1065,10 +1135,10 @@ function install() # [sleep_time]
 		_mysql_update "hub_host" "$VH_HUB_HOST:$VH_HUB_PORT"
 	fi
 
-	_mysql_update "listen_port" $VH_HUB_PORT
+	_mysql_update "listen_port" "$VH_HUB_PORT"
 
 	if [ "_$VH_HUB_ENCODING" != "_" ]; then
-		_mysql_update "hub_encoding" $VH_HUB_ENCODING
+		_mysql_update "hub_encoding" "$VH_HUB_ENCODING"
 	fi
 
 	if ! _register $VH_MASTER_NAME "10" $VH_MASTER_PASSWORD "plain" ; then
@@ -1235,6 +1305,8 @@ case "_$1" in # available options
 	"_-g"|"_--geoip")	shift; update_mmdb $1;;
 	"_-a"|"_--autoload")shift; autoload $@;;
 	"_-u"|"_--adduser") shift; add_user $@;;
+	"_-gc"|"_--getconf") shift; get_config $@;;
+	"_-sc"|"_--setconf") shift; set_config $@;;
 	#"_-m"|"_--regimporter")	shift; reg_importer $@;;
 	"_-b"|"_--backup")	shift; backup $1 $2;;
 	"_-w"|"_--restore")	shift; restore $1 $2;;
