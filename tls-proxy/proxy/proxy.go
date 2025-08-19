@@ -174,7 +174,7 @@ func (p *Proxy) Run() error {
 		}()
 	}
 
-	p.Wait()
+	//p.Wait()
 	return nil
 }
 
