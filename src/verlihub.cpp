@@ -53,6 +53,7 @@ cObj mainLogger("main");
 #define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
 
 //#if ! defined _WIN32
+/*
 void mySigPipeHandler(int i)
 {
 	signal(SIGPIPE, mySigPipeHandler);
@@ -64,6 +65,7 @@ void mySigIOHandler(int i)
 	signal(SIGIO, mySigIOHandler);
 	MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
 }
+*/
 
 void mySigQuitHandler(int i)
 {
@@ -230,8 +232,8 @@ int main(int argc, char *argv[])
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
-			signal(SIGPIPE, mySigPipeHandler);
-			signal(SIGIO, mySigIOHandler);
+			signal(SIGPIPE, SIG_IGN); // mySigPipeHandler
+			signal(SIGIO, SIG_IGN); // mySigIOHandler
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
