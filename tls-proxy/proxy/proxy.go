@@ -26,6 +26,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"net"
 	"os"
 	"os/signal"
@@ -62,6 +63,21 @@ type Config struct {
 	Buffer int
 	MinVer int
 	NoSendIP bool // must be enabled in verlihub
+}
+
+func (p *Proxy) SetBuf(val int) {
+	log.Println("Setting buffer config to:", strconv.Itoa(val))
+	p.c.Buffer = val
+}
+
+func (p *Proxy) SetWait(val int) {
+	log.Println("Setting wait config to:", strconv.Itoa(val))
+	p.c.Wait = time.Duration(val) * time.Millisecond
+}
+
+func (p *Proxy) SetLog(val bool) {
+	log.Println("Setting log config to:", strconv.FormatBool(val))
+	p.c.LogErrors = val
 }
 
 type Proxy struct {
