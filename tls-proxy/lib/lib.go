@@ -103,6 +103,33 @@ func VH_ProxyStop() {
 	curProxy = nil
 }
 
+//export VH_ProxySetBuf
+func VH_ProxySetBuf(val int) {
+	if curProxy == nil {
+		return
+	}
+
+	curProxy.SetBuf(val)
+}
+
+//export VH_ProxySetWait
+func VH_ProxySetWait(val int) {
+	if curProxy == nil {
+		return
+	}
+
+	curProxy.SetWait(val)
+}
+
+//export VH_ProxySetLog
+func VH_ProxySetLog(val bool) {
+	if curProxy == nil {
+		return
+	}
+
+	curProxy.SetLog(val)
+}
+
 func main() {}
 
 // end of file

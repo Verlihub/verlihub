@@ -22,6 +22,10 @@
 	#include <config.h>
 #endif
 
+#ifdef USE_TLS_PROXY
+	#include "proxy.h"
+#endif
+
 #include "cserverdc.h"
 #include "cinterpolexp.h"
 #include "cconndc.h"
@@ -3397,6 +3401,39 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
+			} else if ((svar == "tls_buf_size") && (val_new != val_old)) { // live change
+				if (val_new.empty()) { // dont allow empty
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+#ifdef USE_TLS_PROXY
+				unsigned int num = StringAsLL(val_new);
+				VH_ProxySetBuf(num);
+#endif
+
+			} else if ((svar == "tls_detect_wait") && (val_new != val_old)) { // live change
+				if (val_new.empty()) { // dont allow empty
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+#ifdef USE_TLS_PROXY
+				unsigned int num = StringAsLL(val_new);
+				VH_ProxySetWait(num);
+#endif
+
+			} else if ((svar == "tls_err_log") && (val_new != val_old)) { // live change
+				if (val_new.empty()) { // dont allow empty
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
+#ifdef USE_TLS_PROXY
+				unsigned int num = StringAsLL(val_new);
+				VH_ProxySetLog(num); // note: is boolean
+#endif
+
 			} else if (((svar == "ip_zone4_min") || (svar == "ip_zone5_min") || (svar == "ip_zone6_min")) && (val_new != val_old) && val_new.size()) { // validate low zones
 				unsigned long ip = 0;
 
@@ -3603,7 +3640,7 @@ void cServerDC::DoStackTrace()
 		vhErr(0) << "Failed sending to crash server, please post above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 	}
 
-	http->Close();
+	http->CloseNice(500);
 	delete http;
 	http = NULL;
 }
