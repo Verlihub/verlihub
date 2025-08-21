@@ -34,7 +34,7 @@ import (
 	"sync"
 	"time"
 	"runtime"
-	"runtime/debug"
+	//"runtime/debug"
 
 	"github.com/verlihub/tls-proxy/utils"
 )
