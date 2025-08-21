@@ -31,18 +31,18 @@ import (
 
 var (
 	fHost = flag.String("host", ":411", "Space separated list of hosts to listen on")
-	fWait = flag.Duration("wait", 650 * time.Millisecond, "Time to wait to detect the protocol")
+	fWait = flag.Duration("wait", 600 * time.Millisecond, "Time to wait to detect the protocol")
 	fHub = flag.String("hub", "127.0.0.1:411", "Hub address to connect to")
-	fHubNet = flag.String("net", "tcp4", "Hub network: tcp4, tcp6, tcp, unix")
+	fHubNet = flag.String("net", "tcp4", "Network type: tcp4, tcp6, tcp, unix")
 	fIP = flag.Bool("ip", true, "Send client IP")
-	fLog = flag.Bool("log", false, "Enable connection logging")
-	fCert = flag.String("cert", "hub.crt", "TLS .crt file")
-	fKey = flag.String("key", "hub.key", "TLS .key file")
+	fLog = flag.Bool("log", false, "Enable error logging")
+	fCert = flag.String("cert", "hub.crt", "Public .crt file")
+	fKey = flag.String("key", "hub.key", "Private .key file")
 	fVer = flag.Int("ver", 2, "Minimum required TLS version") // 0 - 1.0, 1 - 1.1, 2 - 1.2, 3 - 1.3
 	fBuf = flag.Int("buf", 10, "Buffer size in KB")
-	fCertOrg = flag.String("cert-org", "Verlihub", "Organisation for TLS certificate")
-	fCertMail = flag.String("cert-mail", "verlihub@localhost", "Email for TLS certificate")
-	fCertHost = flag.String("cert-host", "localhost", "Hostname for TLS certificate")
+	fCertOrg = flag.String("cert-org", "Verlihub", "Certificate organisation")
+	fCertMail = flag.String("cert-mail", "verlihub@localhost", "Certificate email")
+	fCertHost = flag.String("cert-host", "localhost", "Certificate hostname")
 )
 
 func main() {
