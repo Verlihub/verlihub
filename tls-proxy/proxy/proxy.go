@@ -46,7 +46,7 @@ func init() {
 	signal.Ignore(syscall.SIGPIPE) // todo: testing
 	runtime.GOMAXPROCS(1)
 	runtime.LockOSThread()
-	debug.SetGCPercent(-1)
+	//debug.SetGCPercent(-1)
 }
 
 type Config struct {
