@@ -21,15 +21,15 @@ msgstr ""
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Adj meg chatszoba listÃ¡t"
+msgstr "Adj meg chatszoba listát"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "Add meg a listÃ¡t a tiltott kifejezÃ©sekhez"
+msgstr "Add meg a listát a tiltott kifejezésekhez"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "SajnÃ¡lom, a regulÃ¡ris kifejezÃ©s amit megadtÃ¡l nem Ã©rvÃ©nyes"
+msgstr "Sajnálom, a reguláris kifejezés amit megadtál nem érvényes"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
@@ -47,12 +47,12 @@ msgstr ""
 #: ../plugins/iplog/ciplog.cpp:94
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "UtolsÃ³ %d esemÃ©ny a %s felhasznÃ¡lÃ³tÃ³l:"
+msgstr "Utolsó %d esemény a %s felhasználótól:"
 
 #: ../plugins/iplog/ciplog.cpp:96
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "UtolsÃ³ %d esemÃ©ny a %s IP cÃ­mrÅ‘l:"
+msgstr "Utolsó %d esemény a %s IP címrõl:"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "connect"
@@ -60,15 +60,15 @@ msgstr "kapcsolat"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "login"
-msgstr "belÃ©pÃ©s"
+msgstr "belépés"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "logout"
-msgstr "kilÃ©pÃ©s"
+msgstr "kilépés"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "disconnect"
-msgstr "bontÃ¡s"
+msgstr "bontás"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "bad nick or nick temporarily banned"
@@ -76,31 +76,31 @@ msgstr "rossz nick vagy ideiglenesen kitiltott"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "used different nick in chat"
-msgstr "mÃ¡s nevet hasznÃ¡lt a chatben"
+msgstr "más nevet használt a chatben"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
-msgstr "kirÃºgott"
+msgstr "kirúgott"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
-msgstr "Ã¡tirÃ¡nyÃ­tott"
+msgstr "átirányított"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "exit from the hub"
-msgstr "kilÃ©pÃ©s a hubrÃ³l"
+msgstr "kilépés a hubról"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "critical hub load"
-msgstr "kritikus hubterhelÃ©s"
+msgstr "kritikus hubterhelés"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "timeout"
-msgstr "idÅ‘tÃºllÃ©pÃ©s"
+msgstr "idõtúllépés"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
-msgstr "felhasznÃ¡lÃ³ tÃºl sok ideig volt tÃ©tlen"
+msgstr "felhasználó túl sok ideig volt tétlen"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
@@ -108,73 +108,73 @@ msgstr "hub megtelt"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "share limit"
-msgstr "megosztÃ¡slimit"
+msgstr "megosztáslimit"
 
 #: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
-msgstr "nincs tag vagy nem Ã©rvÃ©nyes"
+msgstr "nincs tag vagy nem érvényes"
 
 #: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
-msgstr "tag megsÃ©rti a hub szabÃ¡lyzatÃ¡t"
+msgstr "tag megsérti a hub szabályzatát"
 
 #: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
-msgstr "rossz jelszÃ³"
+msgstr "rossz jelszó"
 
 #: ../plugins/iplog/ciplog.cpp:117
 msgid "error in login sequence"
-msgstr "hiba a belÃ©pÃ©si szekvenciÃ¡ban"
+msgstr "hiba a belépési szekvenciában"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "syntax error in some messages"
-msgstr "szintaktikai hiba nÃ©hÃ¡ny Ã¼zenetben"
+msgstr "szintaktikai hiba néhány üzenetben"
 
 #: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
-msgstr "Ã©rvÃ©nytelen kulcs"
+msgstr "érvénytelen kulcs"
 
 #: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
-msgstr "DÃ¡tum"
+msgstr "Dátum"
 
 #: ../plugins/iplog/ciplog.cpp:124
 msgid "Action"
-msgstr "MÅ±velet"
+msgstr "Mûvelet"
 
 #: ../plugins/iplog/ciplog.cpp:125 ../plugins/iplog/ciplog.cpp:167
 msgid "Nickname"
-msgstr "NicknÃ©v"
+msgstr "Nicknév"
 
 #: ../plugins/iplog/ciplog.cpp:126
 msgid "Info"
-msgstr "InformÃ¡ciÃ³"
+msgstr "Információ"
 
 #: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "A %s felhasznÃ¡lÃ³ utoljÃ¡ra ezekkel az IP cÃ­mekkel volt a hubon"
+msgstr "A %s felhasználó utoljára ezekkel az IP címekkel volt a hubon"
 
 #: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "IP %s utoljÃ¡ra ezekhez a nickekhez volt rendelve a hubon"
+msgstr "IP %s utoljára ezekhez a nickekhez volt rendelve a hubon"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "Adj meg ISP listÃ¡t"
+msgstr "Adj meg ISP listát"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "Ismeretlen minta formÃ¡tum"
+msgstr "Ismeretlen minta formátum"
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "SajnÃ¡lom, a regulÃ¡ris kifejezÃ©s amit a nickre megadtÃ¡l nem Ã©rvÃ©nyes"
+msgstr "Sajnálom, a reguláris kifejezés amit a nickre megadtál nem érvényes"
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "SajnÃ¡lom, a regulÃ¡ris kifejezÃ©s amit a kapcsolatra megadtÃ¡l nem Ã©rvÃ©nyes"
+msgstr "Sajnálom, a reguláris kifejezés amit a kapcsolatra megadtál nem érvényes"
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
@@ -330,22 +330,22 @@ msgstr ""
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Az Ã¼zenet %s felÃ© elkÃ¼ldve, mivel online"
+msgstr "Az üzenet %s felé elküldve, mivel online"
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "Ãœzenet elmentve"
+msgstr "Üzenet elmentve"
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "%d Ã¼zeneted van a fiÃ³kodban"
-msgstr[1] "%d Ã¼zeneted van a fiÃ³kodban"
+msgstr[0] "%d üzeneted van a fiókodban"
+msgstr[1] "%d üzeneted van a fiókodban"
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "Nincs Ãºj Ã¼zeneted"
+msgstr "Nincs új üzeneted"
 
 #: ../plugins/messenger/cmsglist.cpp:212
 #, c-format
@@ -353,7 +353,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "KitÅ‘l: %s Kinek: %s\nDÃ¡tum: %s\nTÃ¡rgy: %s\n"
+msgstr "Kitõl: %s Kinek: %s\nDátum: %s\nTárgy: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
@@ -363,7 +363,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "KitÅ‘l: %s Kinek: %s\nDÃ¡tum: %s\nTÃ¡rgy: %s\n%s\n----\n"
+msgstr "Kitõl: %s Kinek: %s\nDátum: %s\nTárgy: %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
@@ -371,7 +371,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#OFFLINE ÃœZENET# [%s]\nTÃ¡rgy: %s -------------------------\n%s"
+msgstr "#OFFLINE ÜZENET# [%s]\nTárgy: %s -------------------------\n%s"
 
 #: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
@@ -380,27 +380,27 @@ msgstr ""
 #: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:189
 #, c-format
 msgid "Script %s stopped."
-msgstr "A %s script leÃ¡llt"
+msgstr "A %s script leállt"
 
 #: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "A #%s script nem Ã¡llÃ­thatÃ³ le, mert nem fut"
+msgstr "A #%s script nem állítható le, mert nem fut"
 
 #: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "A %s script nem Ã¡llÃ­thatÃ³ le, mert nem fut"
+msgstr "A %s script nem állítható le, mert nem fut"
 
 #: ../plugins/perl/cconsole.cpp:138
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "Nem sikerÃ¼lt betÃ¶lteni a %s kÃ¶nyvtÃ¡rat"
+msgstr "Nem sikerült betölteni a %s könyvtárat"
 
 #: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
-msgstr "MÃ¡r fut a %s scriptet."
+msgstr "Már fut a %s scriptet."
 
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
@@ -410,7 +410,7 @@ msgstr "A %s script elindult"
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "A %s script nem Ã¡llÃ­thatÃ³ le, mert nem fut"
+msgstr "A %s script nem állítható le, mert nem fut"
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
@@ -434,7 +434,7 @@ msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:163
 msgid "Please provide a valid path for the plugin."
-msgstr "KÃ©rlek adj meg Ã©rvÃ©nyes elÃ©rÃ©si utat a pluginhez"
+msgstr "Kérlek adj meg érvényes elérési utat a pluginhez"
 
 #: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
@@ -464,7 +464,7 @@ msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:47
 msgid "Plugin not found."
-msgstr "Plugin nem talÃ¡lhatÃ³"
+msgstr "Plugin nem található"
 
 #: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
@@ -501,7 +501,7 @@ msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "Manual"
-msgstr "ManuÃ¡lis"
+msgstr "Manuális"
 
 #: ../plugins/plugman/cplugs.cpp:209
 #, c-format
@@ -522,7 +522,7 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:316
 msgid "Python interpreter is not loaded."
-msgstr "Nincs betÃ¶ltve a Python fordÃ­tÃ³."
+msgstr "Nincs betöltve a Python fordító."
 
 #: ../plugins/python/cconsole.cpp:86
 msgid "Loaded Python scripts"
@@ -578,35 +578,35 @@ msgstr "Csere ezzel:"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "Ã‰rintett osztÃ¡ly"
+msgstr "Érintett osztály"
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "A '%s' szÃ³ nem lÃ©tezik"
+msgstr "A '%s' szó nem létezik"
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "A '%s' szÃ³ tÃ¶rÃ¶lve"
+msgstr "A '%s' szó törölve"
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "SajnÃ¡lom, a regulÃ¡ris kifejezÃ©s amit megadtÃ¡l nem Ã©rtelmezhetÅ‘"
+msgstr "Sajnálom, a reguláris kifejezés amit megadtál nem értelmezhetõ"
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "A '%s' szÃ³ mÃ¡r lÃ©tezik"
+msgstr "A '%s' szó már létezik"
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "HozzÃ¡adott szÃ³: %s. Ez a szÃ³ filterezve lesz a kÃ¶zÃ¶s chatben azoknÃ¡l a felhasznÃ¡lÃ³knÃ¡l akiknek az osztÃ¡lya kisebb vagy egyenlÅ‘ %d."
+msgstr "Hozzáadott szó: %s. Ez a szó filterezve lesz a közös chatben azoknál a felhasználóknál akiknek az osztálya kisebb vagy egyenlõ %d."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Hiba a '%s' szÃ³ hozzÃ¡adÃ¡s kÃ¶zben"
+msgstr "Hiba a '%s' szó hozzáadás közben"

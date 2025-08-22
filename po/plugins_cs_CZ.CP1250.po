@@ -25,15 +25,15 @@ msgstr ""
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "DodÃ¡ seznam mÃ­stnostÃ­"
+msgstr "Dodá seznam místností"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "DodÃ¡ seznam zakÃ¡zanÃ½ch vÃ½razÅ¯"
+msgstr "Dodá seznam zakázanıch vırazù"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "RegulÃ¡rnÃ­ vÃ½raz nenÃ­ platnÃ½."
+msgstr "Regulární vıraz není platnı."
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
@@ -51,12 +51,12 @@ msgstr ""
 #: ../plugins/iplog/ciplog.cpp:94
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "PoslednÃ­ch %d akcÃ­ uÅ¾ivatele %s:"
+msgstr "Posledních %d akcí uivatele %s:"
 
 #: ../plugins/iplog/ciplog.cpp:96
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "PoslednÃ­ch %d akcÃ­ z IP %s:"
+msgstr "Posledních %d akcí z IP %s:"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "connect"
@@ -64,23 +64,23 @@ msgstr "spojit"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "login"
-msgstr "pÅ™ihlÃ¡Å¡enÃ­"
+msgstr "pøihlášení"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "logout"
-msgstr "odhlÃ¡Å¡enÃ­"
+msgstr "odhlášení"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "disconnect"
-msgstr "odpojenÃ­"
+msgstr "odpojení"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "bad nick or nick temporarily banned"
-msgstr "Å¡patnÃ½ nick nebo nick doÄasnÄ› zabanovÃ¡n"
+msgstr "špatnı nick nebo nick doèasnì zabanován"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "used different nick in chat"
-msgstr "pouÅ¾it jinÃ½ nick v chatu"
+msgstr "pouit jinı nick v chatu"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
@@ -88,7 +88,7 @@ msgstr "vykopnut"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
-msgstr "pÅ™esmÄ›rovÃ¡n"
+msgstr "pøesmìrován"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "exit from the hub"
@@ -104,39 +104,39 @@ msgstr "timeout"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
-msgstr "uÅ¾ivatel neprojevil Å¾Ã¡dnou aktivitu po pÅ™Ã­liÅ¡ dlouhou dobu"
+msgstr "uivatel neprojevil ádnou aktivitu po pøíliš dlouhou dobu"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
-msgstr "hub je plnÃ½"
+msgstr "hub je plnı"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "share limit"
-msgstr "limit sdÃ­lenÃ­"
+msgstr "limit sdílení"
 
 #: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
-msgstr "bez tagu nebo vadnÃ½ tag"
+msgstr "bez tagu nebo vadnı tag"
 
 #: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
-msgstr "tag poruÅ¡uje pravidla hubu"
+msgstr "tag porušuje pravidla hubu"
 
 #: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
-msgstr "Å¡patnÃ© heslo"
+msgstr "špatné heslo"
 
 #: ../plugins/iplog/ciplog.cpp:117
 msgid "error in login sequence"
-msgstr "chyba v pÅ™ihlaÅ¡ovacÃ­ sekvenci"
+msgstr "chyba v pøihlašovací sekvenci"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "syntax error in some messages"
-msgstr "chyba v syntaxi zprÃ¡v"
+msgstr "chyba v syntaxi zpráv"
 
 #: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
-msgstr "nesprÃ¡vnÃ½ klÃ­Ä"
+msgstr "nesprávnı klíè"
 
 #: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
@@ -148,7 +148,7 @@ msgstr "Akce"
 
 #: ../plugins/iplog/ciplog.cpp:125 ../plugins/iplog/ciplog.cpp:167
 msgid "Nickname"
-msgstr "PÅ™ezdÃ­vka"
+msgstr "Pøezdívka"
 
 #: ../plugins/iplog/ciplog.cpp:126
 msgid "Info"
@@ -157,36 +157,36 @@ msgstr "Info"
 #: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Nick %s byl naposled hubu s nÃ¡sledujÃ­cÃ­ IP"
+msgstr "Nick %s byl naposled hubu s následující IP"
 
 #: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "IP %s byla naposled na hubu s nÃ¡sledujÃ­cÃ­mi nicky"
+msgstr "IP %s byla naposled na hubu s následujícími nicky"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "DodÃ¡ seznam ISP"
+msgstr "Dodá seznam ISP"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "NeznÃ¡mÃ½ formÃ¡t rozsahu."
+msgstr "Neznámı formát rozsahu."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "RegulÃ¡rnÃ­ vÃ½raz pro nickname nenÃ­ platnÃ½."
+msgstr "Regulární vıraz pro nickname není platnı."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "RegulÃ¡rnÃ­ vÃ½raz pro typ pÅ™ipojenÃ­ nenÃ­ platnÃ½."
+msgstr "Regulární vıraz pro typ pøipojení není platnı."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Tvoje pÅ™ezdÃ­vka by mÄ›la odpovÃ­dat %[pattern]"
+msgstr "Tvoje pøezdívka by mìla odpovídat %[pattern]"
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "TvÅ¯j typ pÅ™ipojenÃ­ by mÄ›l odpovÃ­dat %[pattern]"
+msgstr "Tvùj typ pøipojení by mìl odpovídat %[pattern]"
 
 #: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
@@ -334,24 +334,24 @@ msgstr ""
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "ZprÃ¡va byla odeslÃ¡na uÅ¾ivateli %s protoÅ¾e je online."
+msgstr "Zpráva byla odeslána uivateli %s protoe je online."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
-msgstr "ZprÃ¡va uloÅ¾ena."
+msgstr "Zpráva uloena."
 
 #: ../plugins/messenger/cconsole.cpp:83
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "MÃ¡Å¡ %d zprÃ¡vu ve schrÃ¡nce."
-msgstr[1] "MÃ¡Å¡ %d zprÃ¡vy ve schrÃ¡nce"
-msgstr[2] "MÃ¡Å¡ %d zprÃ¡v ve schrÃ¡nce."
-msgstr[3] "MÃ¡Å¡ %d zprÃ¡v ve schrÃ¡nce."
+msgstr[0] "Máš %d zprávu ve schránce."
+msgstr[1] "Máš %d zprávy ve schránce"
+msgstr[2] "Máš %d zpráv ve schránce."
+msgstr[3] "Máš %d zpráv ve schránce."
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "NemÃ¡Å¡ Å¾Ã¡dnÃ© zprÃ¡vy ve schrÃ¡nce."
+msgstr "Nemáš ádné zprávy ve schránce."
 
 #: ../plugins/messenger/cmsglist.cpp:212
 #, c-format
@@ -359,7 +359,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "Od: %s Pro: %s\nDatum: %s\nPÅ™edmÄ›t: %s\n"
+msgstr "Od: %s Pro: %s\nDatum: %s\nPøedmìt: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
@@ -369,7 +369,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "Od: %s Pro: %s\nDatum: %s\nPÅ™edmÄ›t: %s\n%s\n----\n"
+msgstr "Od: %s Pro: %s\nDatum: %s\nPøedmìt: %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
@@ -377,7 +377,7 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#OFFLINE ZPRÃVA# [%s]\nPÅ™edmÄ›t: %s -------------------------\n%s"
+msgstr "#OFFLINE ZPRÁVA# [%s]\nPøedmìt: %s -------------------------\n%s"
 
 #: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
@@ -391,32 +391,32 @@ msgstr "Skript %s zastaven."
 #: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Skript #%s nebyl zastaven protoÅ¾e nebyl spuÅ¡tÄ›n."
+msgstr "Skript #%s nebyl zastaven protoe nebyl spuštìn."
 
 #: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Skript %s nebyl zastaven protoÅ¾e nebyl spuÅ¡tÄ›n."
+msgstr "Skript %s nebyl zastaven protoe nebyl spuštìn."
 
 #: ../plugins/perl/cconsole.cpp:138
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "Selhalo nahrÃ¡vÃ¡nÃ­ adresÃ¡Å™e %s."
+msgstr "Selhalo nahrávání adresáøe %s."
 
 #: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
-msgstr "Skript %s uÅ¾ bÄ›Å¾Ã­."
+msgstr "Skript %s u bìí."
 
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
-msgstr "Skript %s je nynÃ­ spuÅ¡tÄ›n."
+msgstr "Skript %s je nyní spuštìn."
 
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Skript %s nezastaven  protoÅ¾e nebÄ›Å¾Ã­."
+msgstr "Skript %s nezastaven  protoe nebìí."
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
@@ -440,7 +440,7 @@ msgstr ""
 
 #: ../plugins/plugman/cconsole.cpp:163
 msgid "Please provide a valid path for the plugin."
-msgstr "Nastav funkÄnÃ­ cestu pro plugin."
+msgstr "Nastav funkèní cestu pro plugin."
 
 #: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
@@ -528,7 +528,7 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:316
 msgid "Python interpreter is not loaded."
-msgstr "Python pÅ™ekladaÄ nebyl nahrÃ¡n."
+msgstr "Python pøekladaè nebyl nahrán."
 
 #: ../plugins/python/cconsole.cpp:86
 msgid "Loaded Python scripts"
@@ -584,7 +584,7 @@ msgstr "Nahradit s"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "OvlivnÄ›na class"
+msgstr "Ovlivnìna class"
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
@@ -594,25 +594,25 @@ msgstr "Slovo '%s' neexistuje."
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Slovo '%s' smazÃ¡no."
+msgstr "Slovo '%s' smazáno."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "RegulÃ©rnÃ­ vÃ½raz kterÃ½ jsi poskytl nelze analyzovat."
+msgstr "Regulérní vıraz kterı jsi poskytl nelze analyzovat."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "Slovo '%s' uÅ¾ existuje."
+msgstr "Slovo '%s' u existuje."
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "VloÅ¾eno slovo %s. Toto sovo bude filtrovÃ¡no na veÅ™ejnÃ©m chatu pro uÅ¾ivatele s class niÅ¾Å¡Ã­ nebo rovno %d."
+msgstr "Vloeno slovo %s. Toto sovo bude filtrováno na veøejném chatu pro uivatele s class niší nebo rovno %d."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Chyba pÅ™i vklÃ¡dÃ¡nÃ­ slova '%s'."
+msgstr "Chyba pøi vkládání slova '%s'."
