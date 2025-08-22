@@ -6,7 +6,7 @@
 # hostpl <zbyszekslyz@hostpl.eu>, 2016
 # Joe Doe, 2021
 # Krzychu <krzychulex@gmail.com>, 2014
-# Przemys≈Çaw Kwiatkowski <kwiatekp@gmail.com>, 2017
+# Przemys≥aw Kwiatkowski <kwiatekp@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
@@ -193,7 +193,7 @@ msgstr "Twoj typ polaczenia powinien pasowac do wzorca %[pattern]"
 
 #: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
-msgstr "Nieprawid≈Çowe has≈Ço"
+msgstr "Nieprawid≥owe has≥o"
 
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
@@ -282,7 +282,7 @@ msgstr "Skrypt %s nie zostal zatrzymany, poniewaz nie byl uruchomiony."
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
-msgstr "Numer %d skryptu jest z poza zakresu. Sprawd≈∫ prawid≈Çowy numer u≈ºywajƒÖc komendy !luafiles lub podaj ≈õcie≈ºkƒô do skryptu."
+msgstr "Numer %d skryptu jest z poza zakresu. Sprawdü prawid≥owy numer uøywajπc komendy !luafiles lub podaj úcieøkÍ do skryptu."
 
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
@@ -292,7 +292,7 @@ msgstr "Skrypt %s juz jest zaladowany."
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
-msgstr "Nie uda≈Ço siƒô przydzieliƒá nowego interpretera Lua do skryptu: %s [ %s ]"
+msgstr "Nie uda≥o siÍ przydzieliÊ nowego interpretera Lua do skryptu: %s [ %s ]"
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
@@ -552,7 +552,7 @@ msgstr "Zatrzymano skrypt #%d: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
-msgstr "Numer %d skryptu jest z poza zakresu. Sprawd≈∫ prawid≈Çowy numer u≈ºywajƒÖc komendy !pyfiles lub podaj ≈õcie≈ºkƒô do skryptu."
+msgstr "Numer %d skryptu jest z poza zakresu. Sprawdü prawid≥owy numer uøywajπc komendy !pyfiles lub podaj úcieøkÍ do skryptu."
 
 #: ../plugins/python/cconsole.cpp:222
 #, c-format
@@ -562,7 +562,7 @@ msgstr "Skrypt #%d juz jest zaladowany: %s"
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr "Nie uda≈Ço siƒô przydzieliƒá nowego interpretera Python do skryptu: %s [ %s ]"
+msgstr "Nie uda≥o siÍ przydzieliÊ nowego interpretera Python do skryptu: %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
@@ -606,7 +606,7 @@ msgstr "Podane wyrazenie regularne jest nieprawidlowe."
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "S≈Çowo '%s' juz istnieje."
+msgstr "S≥owo '%s' juz istnieje."
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format

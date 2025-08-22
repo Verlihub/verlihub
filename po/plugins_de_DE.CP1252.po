@@ -24,20 +24,20 @@ msgstr ""
 
 #: ../plugins/chatroom/cconsole.cpp:53
 msgid "Give a list of chatrooms"
-msgstr "Liste der ChatrÃ¤ume zukommen lassen"
+msgstr "Liste der Chaträume zukommen lassen"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "Liste von verbotenen AusdrÃ¼cken zukommen lassen"
+msgstr "Liste von verbotenen Ausdrücken zukommen lassen"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "Entschuldigung, der von Ihnen angegebene regulÃ¤re Ausdruck ist nicht gÃ¼ltig."
+msgstr "Entschuldigung, der von Ihnen angegebene reguläre Ausdruck ist nicht gültig."
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
 msgid "Forbidden words in %s: %s"
-msgstr "Verbotene WÃ¶rter in %s: %s"
+msgstr "Verbotene Wörter in %s: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "MC"
@@ -99,11 +99,11 @@ msgstr "kritische Hub-Last"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "timeout"
-msgstr "ZeitÃ¼berschreitung"
+msgstr "Zeitüberschreitung"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
-msgstr "Benutzer hat fÃ¼r zu lange Zeit nichts gemacht"
+msgstr "Benutzer hat für zu lange Zeit nichts gemacht"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
@@ -115,7 +115,7 @@ msgstr "Freigabebegrenzung"
 
 #: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
-msgstr "Kein Schlagwort oder nicht gÃ¼ltig"
+msgstr "Kein Schlagwort oder nicht gültig"
 
 #: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
@@ -135,7 +135,7 @@ msgstr "Syntaxfehler in manchen Nachrichten"
 
 #: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
-msgstr "UngÃ¼ltiger SchlÃ¼ssel"
+msgstr "Ungültiger Schlüssel"
 
 #: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
@@ -173,11 +173,11 @@ msgstr "Unbekanntes Bereichsformat."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Entschuldigung, der von Ihnen fÃ¼r den Nicknamen angegebene regulÃ¤re Ausdruck ist nicht gÃ¼ltig."
+msgstr "Entschuldigung, der von Ihnen für den Nicknamen angegebene reguläre Ausdruck ist nicht gültig."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "Entschuldigung, der von Ihnen fÃ¼r die Verbindung angegebene regulÃ¤re Ausdruck ist nicht gÃ¼ltig."
+msgstr "Entschuldigung, der von Ihnen für die Verbindung angegebene reguläre Ausdruck ist nicht gültig."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
@@ -278,7 +278,7 @@ msgstr "Skript nicht gestoppt, weil es nicht geladen ist: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
-msgstr "Die Skriptnummer %d liegt auÃŸerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !luafiles oder geben Sie stattdessen den Skriptpfad an."
+msgstr "Die Skriptnummer %d liegt außerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !luafiles oder geben Sie stattdessen den Skriptpfad an."
 
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
@@ -288,7 +288,7 @@ msgstr "Skript ist bereits geladen: %s"
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
-msgstr "Es konnte kein neuer Lua-Interpreter fÃ¼r das Skript zugewiesen werden: %s [ %s ]"
+msgstr "Es konnte kein neuer Lua-Interpreter für das Skript zugewiesen werden: %s [ %s ]"
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
@@ -388,12 +388,12 @@ msgstr "Skript %s gestoppt."
 #: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Skript #%s nicht gestoppt, weil es nicht lÃ¤uft."
+msgstr "Skript #%s nicht gestoppt, weil es nicht läuft."
 
 #: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Skript %s nicht gestoppt, weil es nicht lÃ¤uft."
+msgstr "Skript %s nicht gestoppt, weil es nicht läuft."
 
 #: ../plugins/perl/cconsole.cpp:138
 #, c-format
@@ -403,17 +403,17 @@ msgstr "Fehler beim Laden des Verzeichnisses %s."
 #: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
-msgstr "Skript %s lÃ¤uft bereits."
+msgstr "Skript %s läuft bereits."
 
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
-msgstr "Skript %s lÃ¤uft jetzt."
+msgstr "Skript %s läuft jetzt."
 
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Skript %s nicht gestoppt, weil es nicht lÃ¤uft."
+msgstr "Skript %s nicht gestoppt, weil es nicht läuft."
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
@@ -437,7 +437,7 @@ msgstr "Erweiterungsname darf maximal 10 Zeichen lang sein, bitte geben Sie eine
 
 #: ../plugins/plugman/cconsole.cpp:163
 msgid "Please provide a valid path for the plugin."
-msgstr "Bitte geben Sie einen gÃ¼ltigen Pfad fÃ¼r die Erweiterung an."
+msgstr "Bitte geben Sie einen gültigen Pfad für die Erweiterung an."
 
 #: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
@@ -471,7 +471,7 @@ msgstr "Erweiterung nicht gefunden."
 
 #: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
-msgstr "Erweiterung unterstÃ¼tzt keine Skripte."
+msgstr "Erweiterung unterstützt keine Skripte."
 
 #: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
@@ -546,7 +546,7 @@ msgstr "Skript #%d gestoppt: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
-msgstr "Die Skriptnummer %d liegt auÃŸerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !pyfiles oder geben Sie stattdessen den Skriptpfad an."
+msgstr "Die Skriptnummer %d liegt außerhalb des Bereichs. Ermitteln Sie die richtige Nummer mit dem Befehl !pyfiles oder geben Sie stattdessen den Skriptpfad an."
 
 #: ../plugins/python/cconsole.cpp:222
 #, c-format
@@ -556,7 +556,7 @@ msgstr "Skript #%d ist bereits geladen: %s"
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr "Es konnte kein neuer Python-Interpreter fÃ¼r das Skript zugewiesen werden: %s [ %s ]"
+msgstr "Es konnte kein neuer Python-Interpreter für das Skript zugewiesen werden: %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
@@ -569,7 +569,7 @@ msgstr "Level muss eine Zahl sein."
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
-msgstr "Ersetzte WÃ¶rter"
+msgstr "Ersetzte Wörter"
 
 #: ../plugins/replacer/cconsole.cpp:69
 msgid "Word"
@@ -591,11 +591,11 @@ msgstr "Wort '%s' ist nicht vorhanden."
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "Wort '%s' gelÃ¶scht."
+msgstr "Wort '%s' gelöscht."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "Entschuldigung, der von Ihnen angegebene regulÃ¤re Ausdruck kann nicht eingelesen werden."
+msgstr "Entschuldigung, der von Ihnen angegebene reguläre Ausdruck kann nicht eingelesen werden."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
@@ -607,9 +607,9 @@ msgstr "Wort '%s' ist bereits vorhanden."
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "Wort %s hinzugefÃ¼gt. Dieses Wort wird im Ã¶ffentlichen Chat fÃ¼r Benutzer gefiltert, deren Klasse kleiner als oder gleich %d ist."
+msgstr "Wort %s hinzugefügt. Dieses Wort wird im öffentlichen Chat für Benutzer gefiltert, deren Klasse kleiner als oder gleich %d ist."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "Fehler beim HinzufÃ¼gen des Wortes '%s'."
+msgstr "Fehler beim Hinzufügen des Wortes '%s'."

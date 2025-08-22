@@ -28,16 +28,16 @@ msgstr "Bir sohbet salonu listesi giriniz"
 
 #: ../plugins/forbid/cconsole.cpp:50
 msgid "Give a list of forbidden expressions"
-msgstr "YasaklanmÄ±ÅŸ ifade listesi giriniz"
+msgstr "Yasaklanmış ifade listesi giriniz"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "Maalesef girdiÄŸiniz dÃ¼zenli ifade geÃ§erli deÄŸildir."
+msgstr "Maalesef girdiğiniz düzenli ifade geçerli değildir."
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
 msgid "Forbidden words in %s: %s"
-msgstr "%s konumunda yasaklÄ± kelimeler: %s"
+msgstr "%s konumunda yasaklı kelimeler: %s"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "MC"
@@ -45,41 +45,41 @@ msgstr "Ana Sohbet"
 
 #: ../plugins/forbid/cforbidden.cpp:75
 msgid "PM"
-msgstr "Ã–zel Mesaj"
+msgstr "Özel Mesaj"
 
 #: ../plugins/iplog/ciplog.cpp:94
 #, c-format
 msgid "Last %d events of nick %s:"
-msgstr "Son %d etkinlik %s rumuzu iÃ§in:"
+msgstr "Son %d etkinlik %s rumuzu için:"
 
 #: ../plugins/iplog/ciplog.cpp:96
 #, c-format
 msgid "Last %d events of IP %s:"
-msgstr "Son %d etkinlik %s Ä°P adresi iÃ§in:"
+msgstr "Son %d etkinlik %s İP adresi için:"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "connect"
-msgstr "baÄŸlan"
+msgstr "bağlan"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "login"
-msgstr "giriÅŸ"
+msgstr "giriş"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "logout"
-msgstr "Ã§Ä±kÄ±ÅŸ"
+msgstr "çıkış"
 
 #: ../plugins/iplog/ciplog.cpp:101
 msgid "disconnect"
-msgstr "baÄŸlantÄ±yÄ± kes"
+msgstr "bağlantıyı kes"
 
 #: ../plugins/iplog/ciplog.cpp:104
 msgid "bad nick or nick temporarily banned"
-msgstr "yanlÄ±ÅŸ rumuz ya da geÃ§ici olarak yasaklÄ±"
+msgstr "yanlış rumuz ya da geçici olarak yasaklı"
 
 #: ../plugins/iplog/ciplog.cpp:105
 msgid "used different nick in chat"
-msgstr "sohbette baÅŸka bir rumuz kullandÄ±"
+msgstr "sohbette başka bir rumuz kullandı"
 
 #: ../plugins/iplog/ciplog.cpp:106
 msgid "kicked"
@@ -87,23 +87,23 @@ msgstr "kovuldu"
 
 #: ../plugins/iplog/ciplog.cpp:107
 msgid "redirected"
-msgstr "yeniden yÃ¶nlendirildi"
+msgstr "yeniden yönlendirildi"
 
 #: ../plugins/iplog/ciplog.cpp:108
 msgid "exit from the hub"
-msgstr "hubdan Ã§Ä±k"
+msgstr "hubdan çık"
 
 #: ../plugins/iplog/ciplog.cpp:109
 msgid "critical hub load"
-msgstr "kritik hub yÃ¼kÃ¼"
+msgstr "kritik hub yükü"
 
 #: ../plugins/iplog/ciplog.cpp:110
 msgid "timeout"
-msgstr "Zaman aÅŸÄ±mÄ±"
+msgstr "Zaman aşımı"
 
 #: ../plugins/iplog/ciplog.cpp:111
 msgid "user did nothing for too long time"
-msgstr "kullanÄ±cÄ± Ã§ok uzun sÃ¼re hiÃ§bir ÅŸey yapmadÄ±"
+msgstr "kullanıcı çok uzun süre hiçbir şey yapmadı"
 
 #: ../plugins/iplog/ciplog.cpp:112
 msgid "hub full"
@@ -111,31 +111,31 @@ msgstr "hub dolu"
 
 #: ../plugins/iplog/ciplog.cpp:113
 msgid "share limit"
-msgstr "paylaÅŸma sÄ±nÄ±rÄ±"
+msgstr "paylaşma sınırı"
 
 #: ../plugins/iplog/ciplog.cpp:114
 msgid "no tag or not valid"
-msgstr "etiketi yok ya da geÃ§ersiz"
+msgstr "etiketi yok ya da geçersiz"
 
 #: ../plugins/iplog/ciplog.cpp:115
 msgid "tag breaks hub rules"
-msgstr "etiket hub kurallarÄ±nÄ± ihlÃ¢l ediyor"
+msgstr "etiket hub kurallarını ihlâl ediyor"
 
 #: ../plugins/iplog/ciplog.cpp:116
 msgid "wrong password"
-msgstr "yanlÄ±ÅŸ parola"
+msgstr "yanlış parola"
 
 #: ../plugins/iplog/ciplog.cpp:117
 msgid "error in login sequence"
-msgstr "GiriÅŸ sÄ±rasÄ± hatasÄ±"
+msgstr "Giriş sırası hatası"
 
 #: ../plugins/iplog/ciplog.cpp:118
 msgid "syntax error in some messages"
-msgstr "BazÄ± mesajlarda sÃ¶z dizimi hatasÄ±"
+msgstr "Bazı mesajlarda söz dizimi hatası"
 
 #: ../plugins/iplog/ciplog.cpp:119
 msgid "invalid key"
-msgstr "yanlÄ±ÅŸ anahtar"
+msgstr "yanlış anahtar"
 
 #: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
 msgid "Date"
@@ -156,40 +156,40 @@ msgstr "Bilgi"
 #: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "%s rumuzu son sÄ±ralarda hubda ÅŸu Ä°P adresiyle bulunuyordu"
+msgstr "%s rumuzu son sıralarda hubda şu İP adresiyle bulunuyordu"
 
 #: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "%s Ä°P adresi son sÄ±ralarda hubda ÅŸu rumuzlarla bulunuyordu"
+msgstr "%s İP adresi son sıralarda hubda şu rumuzlarla bulunuyordu"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
-msgstr "Bir Ä°SS listesi giriniz"
+msgstr "Bir İSS listesi giriniz"
 
 #: ../plugins/isp/cconsole.cpp:133
 msgid "Unknown range format."
-msgstr "Bilinmeyen alan biÃ§imi"
+msgstr "Bilinmeyen alan biçimi"
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "Maalesef rumuz iÃ§in girdiÄŸiniz dÃ¼zenli ifade geÃ§erli deÄŸildir."
+msgstr "Maalesef rumuz için girdiğiniz düzenli ifade geçerli değildir."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "Maalesef baÄŸlantÄ± iÃ§in girdiÄŸiniz dÃ¼zenli ifade geÃ§erli deÄŸildir."
+msgstr "Maalesef bağlantı için girdiğiniz düzenli ifade geçerli değildir."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
-msgstr "Rumuzunuz ÅŸuna denk gelmelidir %[pattern]"
+msgstr "Rumuzunuz şuna denk gelmelidir %[pattern]"
 
 #: ../plugins/isp/cisps.cpp:47
 msgid "Your connection type should match %[pattern]"
-msgstr "BaÄŸlantÄ± tÃ¼rÃ¼nÃ¼z ÅŸuna denk gelmelidir %[pattern]"
+msgstr "Bağlantı türünüz şuna denk gelmelidir %[pattern]"
 
 #: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
-msgstr "YanlÄ±ÅŸ parola"
+msgstr "Yanlış parola"
 
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
@@ -198,36 +198,36 @@ msgstr "Bunu yapma yetkiniz yoktur."
 #: ../plugins/lua/cconsole.cpp:93
 #, c-format
 msgid "Lua version: %s [%s]"
-msgstr "Lua sÃ¼rÃ¼mÃ¼: %s [%s]"
+msgstr "Lua sürümü: %s [%s]"
 
 #: ../plugins/lua/cconsole.cpp:94
 #, c-format
 msgid "Copyright: %s"
-msgstr "Telif hakkÄ±: %s"
+msgstr "Telif hakkı: %s"
 
 #: ../plugins/lua/cconsole.cpp:95
 #, c-format
 msgid "Authors: %s"
-msgstr "GeliÅŸtiriciler: %s"
+msgstr "Geliştiriciler: %s"
 
 #: ../plugins/lua/cconsole.cpp:106
 #, c-format
 msgid "Hub version: %s"
-msgstr "Hub sÃ¼rÃ¼mÃ¼: %s"
+msgstr "Hub sürümü: %s"
 
 #: ../plugins/lua/cconsole.cpp:107
 #, c-format
 msgid "Loaded scripts: %d"
-msgstr "YÃ¼klÃ¼ betikler: %d"
+msgstr "Yüklü betikler: %d"
 
 #: ../plugins/lua/cconsole.cpp:108
 #, c-format
 msgid "Memory used: %s"
-msgstr "KullanÄ±lan bellek: %s"
+msgstr "Kullanılan bellek: %s"
 
 #: ../plugins/lua/cconsole.cpp:114
 msgid "Loaded Lua scripts"
-msgstr "YÃ¼klÃ¼ Lua betikleri"
+msgstr "Yüklü Lua betikleri"
 
 #: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:158
 #: ../plugins/perl/cconsole.cpp:56 ../plugins/python/cconsole.cpp:87
@@ -249,12 +249,12 @@ msgstr "Bellek"
 #: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:187
 #, c-format
 msgid "Failed loading directory: %s"
-msgstr "KlasÃ¶rÃ¼n yÃ¼klenmesi baÅŸarÄ±sÄ±z oldu: %s"
+msgstr "Klasörün yüklenmesi başarısız oldu: %s"
 
 #: ../plugins/lua/cconsole.cpp:157
 #, c-format
 msgid "Lua scripts found in: %s"
-msgstr "Lua betikleri ÅŸurada bulundu: %s"
+msgstr "Lua betikleri şurada bulundu: %s"
 
 #: ../plugins/lua/cconsole.cpp:206 ../plugins/lua/cconsole.cpp:325
 #, c-format
@@ -265,66 +265,66 @@ msgstr "Betik durduruldu: %s"
 #: ../plugins/python/cconsole.cpp:165 ../plugins/python/cconsole.cpp:288
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
-msgstr "Betik durdurulmadÄ± Ã§Ã¼nkÃ¼ yÃ¼klÃ¼ deÄŸil: #%d"
+msgstr "Betik durdurulmadı çünkü yüklü değil: #%d"
 
 #: ../plugins/lua/cconsole.cpp:217 ../plugins/lua/cconsole.cpp:338
 #: ../plugins/python/cconsole.cpp:167 ../plugins/python/cconsole.cpp:290
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
-msgstr "Betik durdurulmadÄ± Ã§Ã¼nkÃ¼ yÃ¼klÃ¼ deÄŸil: %s"
+msgstr "Betik durdurulmadı çünkü yüklü değil: %s"
 
 #: ../plugins/lua/cconsole.cpp:251
 #, c-format
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
-msgstr "%d sayÄ±lÄ± betik aralÄ±k dÄ±ÅŸÄ±ndadÄ±r. !luafiles komutunu kullanarak doÄŸru sayÄ±yÄ± elde ediniz ya da betik yolunu belirtiniz."
+msgstr "%d sayılı betik aralık dışındadır. !luafiles komutunu kullanarak doğru sayıyı elde ediniz ya da betik yolunu belirtiniz."
 
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
 msgid "Script is already loaded: %s"
-msgstr "Betik zaten yÃ¼klÃ¼: %s"
+msgstr "Betik zaten yüklü: %s"
 
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
-msgstr "Åu betik iÃ§in yeni Lua yorumlayÄ±cÄ±sÄ± ayrÄ±lamadÄ±: %s [ %s ]"
+msgstr "Şu betik için yeni Lua yorumlayıcısı ayrılamadı: %s [ %s ]"
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
 msgid "Script is now loaded: %s"
-msgstr "Betik artÄ±k yÃ¼klÃ¼dÃ¼r: %s"
+msgstr "Betik artık yüklüdür: %s"
 
 #: ../plugins/lua/cconsole.cpp:292 ../plugins/lua/cconsole.cpp:361
 #: ../plugins/perl/cconsole.cpp:164 ../plugins/perl/cconsole.cpp:208
 #: ../plugins/python/cconsole.cpp:242 ../plugins/python/cconsole.cpp:307
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
-msgstr "Betik bulunamadÄ± ya da ayrÄ±ÅŸtÄ±rÄ±lamadÄ±: %s"
+msgstr "Betik bulunamadı ya da ayrıştırılamadı: %s"
 
 #: ../plugins/lua/cconsole.cpp:380
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
-msgstr "YapÄ±landÄ±rma %s.%s '%s''den '%s''e gÃ¼ncellenmiÅŸtir."
+msgstr "Yapılandırma %s.%s '%s''den '%s''e güncellenmiştir."
 
 #: ../plugins/lua/cconsole.cpp:382
 #, c-format
 msgid "Current log level: %d"
-msgstr "GÃ¼ncel kÃ¼tÃ¼k seviyesi: %d"
+msgstr "Güncel kütük seviyesi: %d"
 
 #: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:334
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
-msgstr "YapÄ±landÄ±rma gÃ¼ncellendi %s.%s: %s -> %s"
+msgstr "Yapılandırma güncellendi %s.%s: %s -> %s"
 
 #: ../plugins/lua/cconsole.cpp:402
 #, c-format
 msgid "Current error class: %d"
-msgstr "GÃ¼ncel hata sÄ±nÄ±fÄ±: %d"
+msgstr "Güncel hata sınıfı: %d"
 
 #: ../plugins/lua/cluainterpreter.cpp:189
 msgid "Lua error"
-msgstr "Lua hatasÄ±"
+msgstr "Lua hatası"
 
 #: ../plugins/lua/cluainterpreter.cpp:195
 msgid "Unknown error"
@@ -333,7 +333,7 @@ msgstr "Bilinmeyen hata"
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Mesaj %s adlÄ± kullanÄ±cÄ±ya gÃ¶nderildi Ã§Ã¼nkÃ¼ o Ã§evrimiÃ§inde."
+msgstr "Mesaj %s adlı kullanıcıya gönderildi çünkü o çevrimiçinde."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
@@ -343,12 +343,12 @@ msgstr "Mesaj kaydedildi."
 #, c-format
 msgid "You have %d message in your box."
 msgid_plural "You have %d messages in your box."
-msgstr[0] "Kutunuzda %d mesaj bulunmaktadÄ±r."
-msgstr[1] "Kutunuzda %d mesaj bulunmaktadÄ±r."
+msgstr[0] "Kutunuzda %d mesaj bulunmaktadır."
+msgstr[1] "Kutunuzda %d mesaj bulunmaktadır."
 
 #: ../plugins/messenger/cconsole.cpp:87
 msgid "You have no new message in your box."
-msgstr "HiÃ§bir yeni mesajÄ±nÄ±z yok."
+msgstr "Hiçbir yeni mesajınız yok."
 
 #: ../plugins/messenger/cmsglist.cpp:212
 #, c-format
@@ -356,7 +356,7 @@ msgid ""
 "From: %s To: %s\n"
 "Date: %s\n"
 "Subject: %s\n"
-msgstr "Yollayan: %s AlÄ±cÄ±: %s\nTarih: %s\nMevzu: %s\n"
+msgstr "Yollayan: %s Alıcı: %s\nTarih: %s\nMevzu: %s\n"
 
 #: ../plugins/messenger/cmsglist.cpp:215
 #, c-format
@@ -366,7 +366,7 @@ msgid ""
 "Subject: %s\n"
 "%s\n"
 "----\n"
-msgstr "Yollayan: %s AlÄ±cÄ±: %s\nTarih: %s\nMevzu: %s\n%s\n----\n"
+msgstr "Yollayan: %s Alıcı: %s\nTarih: %s\nMevzu: %s\n%s\n----\n"
 
 #: ../plugins/messenger/cmsglist.cpp:218
 #, c-format
@@ -374,56 +374,56 @@ msgid ""
 "#OFFLINE MESSAGE# [%s]\n"
 "Subject: %s -------------------------\n"
 "%s"
-msgstr "#Ã‡EVRÄ°MDISI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
+msgstr "#ÇEVRİMDISI MESAJ# [%s]\nMevzu: %s -------------------------\n%s"
 
 #: ../plugins/perl/cconsole.cpp:55
 msgid "Loaded Perl scripts"
-msgstr "YÃ¼klÃ¼ Perl betikleri"
+msgstr "Yüklü Perl betikleri"
 
 #: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:189
 #, c-format
 msgid "Script %s stopped."
-msgstr "%s adlÄ± betik durduruldu."
+msgstr "%s adlı betik durduruldu."
 
 #: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "#%s sayÄ±lÄ± betik durdurulmadÄ± Ã§Ã¼nkÃ¼ faal deÄŸildi."
+msgstr "#%s sayılı betik durdurulmadı çünkü faal değildi."
 
 #: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "%s adlÄ± betik durdurulmadÄ± Ã§Ã¼nkÃ¼ faal deÄŸildi."
+msgstr "%s adlı betik durdurulmadı çünkü faal değildi."
 
 #: ../plugins/perl/cconsole.cpp:138
 #, c-format
 msgid "Failed loading directory %s."
-msgstr "%s adlÄ± klasÃ¶rÃ¼n yÃ¼klenmesi baÅŸarÄ±sÄ±z oldu."
+msgstr "%s adlı klasörün yüklenmesi başarısız oldu."
 
 #: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
-msgstr "%s adlÄ± betik halihazÄ±rda faaldir."
+msgstr "%s adlı betik halihazırda faaldir."
 
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
-msgstr "%s adlÄ± betik ÅŸimdi faaldir."
+msgstr "%s adlı betik şimdi faaldir."
 
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "%s adlÄ± betik durdurulmadÄ± Ã§Ã¼nkÃ¼ faal deÄŸildi."
+msgstr "%s adlı betik durdurulmadı çünkü faal değildi."
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
 msgid "%s version: %s"
-msgstr "%s sÃ¼rÃ¼mÃ¼: %s"
+msgstr "%s sürümü: %s"
 
 #: ../plugins/plugman/cconsole.cpp:42
 #, c-format
 msgid "%s executable: %s"
-msgstr "%s Ã§alÄ±ÅŸtÄ±rÄ±labiliri: %s"
+msgstr "%s çalıştırılabiliri: %s"
 
 #: ../plugins/plugman/cconsole.cpp:43
 #, c-format
@@ -433,41 +433,41 @@ msgstr "%s derleme vakti: %s"
 #: ../plugins/plugman/cconsole.cpp:158
 msgid ""
 "Plugin name must be max 10 characters long, please provide another one."
-msgstr "Eklentinin ismi azami 10 karakter iÃ§erebilir, baÅŸka bir isim giriniz."
+msgstr "Eklentinin ismi azami 10 karakter içerebilir, başka bir isim giriniz."
 
 #: ../plugins/plugman/cconsole.cpp:163
 msgid "Please provide a valid path for the plugin."
-msgstr "Eklenti iÃ§in geÃ§erli bir yol giriniz."
+msgstr "Eklenti için geçerli bir yol giriniz."
 
 #: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
-msgstr "Eklenti yÃ¼klendi."
+msgstr "Eklenti yüklendi."
 
 #: ../plugins/plugman/cconsole.cpp:200 ../plugins/plugman/cconsole.cpp:223
 #: ../plugins/plugman/cconsole.cpp:246
 #, c-format
 msgid "Plugin not found: %s"
-msgstr "Eklenti bulunamadÄ±: %s"
+msgstr "Eklenti bulunamadı: %s"
 
 #: ../plugins/plugman/cconsole.cpp:215
 msgid "Plugin unloaded."
-msgstr "Eklenti kaldÄ±rÄ±ldÄ±."
+msgstr "Eklenti kaldırıldı."
 
 #: ../plugins/plugman/cconsole.cpp:218
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr "Eklenti kaldÄ±rÄ±lmadÄ±, muhtemelen yÃ¼klenmediÄŸinden."
+msgstr "Eklenti kaldırılmadı, muhtemelen yüklenmediğinden."
 
 #: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
-msgstr "Eklenti tekrar yÃ¼klendi."
+msgstr "Eklenti tekrar yüklendi."
 
 #: ../plugins/plugman/cconsole.cpp:241
 msgid "Plugin not reloaded, probably because it's not loaded."
-msgstr "Eklenti tekrar yÃ¼klenmedi, muhtemelen yÃ¼klenmediÄŸinden."
+msgstr "Eklenti tekrar yüklenmedi, muhtemelen yüklenmediğinden."
 
 #: ../plugins/plugman/cplugs.cpp:47
 msgid "Plugin not found."
-msgstr "Eklenti bulunamadÄ±"
+msgstr "Eklenti bulunamadı"
 
 #: ../plugins/plugman/cplugs.cpp:120
 msgid "Plugin does not support scripts."
@@ -475,28 +475,28 @@ msgstr "Eklenti betikleri desteklemiyor."
 
 #: ../plugins/plugman/cplugs.cpp:126
 msgid "Script loaded."
-msgstr "Betki yÃ¼klendi."
+msgstr "Betki yüklendi."
 
 #: ../plugins/plugman/cplugs.cpp:128
 msgid "Error loading script."
-msgstr "BetiÄŸin yÃ¼klenmesinde hata oluÅŸtu."
+msgstr "Betiğin yüklenmesinde hata oluştu."
 
 #: ../plugins/plugman/cplugs.cpp:157
 msgid "Plugin needs to be recompiled."
-msgstr "Eklentinin yeniden derlenmeye ihtiyacÄ± vardÄ±r."
+msgstr "Eklentinin yeniden derlenmeye ihtiyacı vardır."
 
 #: ../plugins/plugman/cplugs.cpp:208
 #, c-format
 msgid "Name: %s [%s] [%s]"
-msgstr "Ä°sim: %s [%s] [%s]"
+msgstr "İsim: %s [%s] [%s]"
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
-msgstr "AÃ§Ä±k"
+msgstr "Açık"
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
-msgstr "KapalÄ±"
+msgstr "Kapalı"
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "Automated"
@@ -514,7 +514,7 @@ msgstr "Yol: %s"
 #: ../plugins/plugman/cplugs.cpp:212
 #, c-format
 msgid "Description: %s"
-msgstr "TanÄ±mlama: %s"
+msgstr "Tanımlama: %s"
 
 #: ../plugins/plugman/cplugs.cpp:215
 #, c-format
@@ -525,51 +525,51 @@ msgstr "Son hata: %s"
 #: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:316
 msgid "Python interpreter is not loaded."
-msgstr "Python yorumlayÄ±cÄ±sÄ± yÃ¼klenmiÅŸ deÄŸil."
+msgstr "Python yorumlayıcısı yüklenmiş değil."
 
 #: ../plugins/python/cconsole.cpp:86
 msgid "Loaded Python scripts"
-msgstr "YÃ¼klÃ¼ Python betikleri"
+msgstr "Yüklü Python betikleri"
 
 #: ../plugins/python/cconsole.cpp:106
 #, c-format
 msgid "Python scripts found in: %s"
-msgstr "Python betikleri ÅŸurada bulundu: %s"
+msgstr "Python betikleri şurada bulundu: %s"
 
 #: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:278
 #, c-format
 msgid "Script #%d stopped: %s"
-msgstr "#%d betiÄŸi durduruldu: %s"
+msgstr "#%d betiği durduruldu: %s"
 
 #: ../plugins/python/cconsole.cpp:206
 #, c-format
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
-msgstr "%d sayÄ±lÄ± betik aralÄ±k dÄ±ÅŸÄ±ndadÄ±r. !lpyfiles komutunu kullanarak doÄŸru sayÄ±yÄ± elde ediniz ya da betik yolunu belirtiniz."
+msgstr "%d sayılı betik aralık dışındadır. !lpyfiles komutunu kullanarak doğru sayıyı elde ediniz ya da betik yolunu belirtiniz."
 
 #: ../plugins/python/cconsole.cpp:222
 #, c-format
 msgid "Script #%d is already loaded: %s"
-msgstr "#%d betiÄŸi zaten yÃ¼klÃ¼dÃ¼r: %s"
+msgstr "#%d betiği zaten yüklüdür: %s"
 
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr "Åu betik iÃ§in yeni Python yorumlayÄ±cÄ±sÄ± ayrÄ±lamadÄ±: %s [ %s ]"
+msgstr "Şu betik için yeni Python yorumlayıcısı ayrılamadı: %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
 msgid "Script #%d is now loaded: %s"
-msgstr "#%d betiÄŸi artÄ±k yÃ¼klÃ¼dÃ¼r: %s"
+msgstr "#%d betiği artık yüklüdür: %s"
 
 #: ../plugins/python/cconsole.cpp:324
 msgid "Level must be a number."
-msgstr "Seviye bir sayÄ± olmalÄ±dÄ±r."
+msgstr "Seviye bir sayı olmalıdır."
 
 #: ../plugins/replacer/cconsole.cpp:66
 msgid "Replaced words"
-msgstr "DeÄŸiÅŸtirilmiÅŸ kelimeler"
+msgstr "Değiştirilmiş kelimeler"
 
 #: ../plugins/replacer/cconsole.cpp:69
 msgid "Word"
@@ -577,25 +577,25 @@ msgstr "Kelime"
 
 #: ../plugins/replacer/cconsole.cpp:70
 msgid "Replace with"
-msgstr "Bununla deÄŸiÅŸtir:"
+msgstr "Bununla değiştir:"
 
 #: ../plugins/replacer/cconsole.cpp:71
 msgid "Affected class"
-msgstr "Etkilenen sÄ±nÄ±f"
+msgstr "Etkilenen sınıf"
 
 #: ../plugins/replacer/cconsole.cpp:98
 #, c-format
 msgid "Word '%s' does not exist."
-msgstr "'%s' kelimesi mevcut deÄŸildir."
+msgstr "'%s' kelimesi mevcut değildir."
 
 #: ../plugins/replacer/cconsole.cpp:106
 #, c-format
 msgid "Word '%s' deleted."
-msgstr "'%s' kelimesi silinmiÅŸtir."
+msgstr "'%s' kelimesi silinmiştir."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "Maalesef girdiÄŸiniz dÃ¼zenli ifade analiz edilemedi."
+msgstr "Maalesef girdiğiniz düzenli ifade analiz edilemedi."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
@@ -607,9 +607,9 @@ msgstr "'%s' kelimesi zaten mevcuttur."
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "%s kelimesi eklenmiÅŸtir. Bu kelime herkese aÃ§Ä±k sohbette %d sÄ±nÄ±fÄ±na eÅŸit ya da altÄ±ndaki kullanÄ±cÄ±lara gÃ¶sterilmeyecektir. "
+msgstr "%s kelimesi eklenmiştir. Bu kelime herkese açık sohbette %d sınıfına eşit ya da altındaki kullanıcılara gösterilmeyecektir. "
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format
 msgid "Error adding word '%s'."
-msgstr "%s' kelimesinin ilÃ¢vesinde hata."
+msgstr "%s' kelimesinin ilâvesinde hata."

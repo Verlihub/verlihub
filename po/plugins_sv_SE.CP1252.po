@@ -405,7 +405,7 @@ msgstr ""
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
-msgstr "Skript %s Ã¤r nu igÃ¥ng."
+msgstr "Skript %s är nu igång."
 
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
@@ -489,7 +489,7 @@ msgstr ""
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "On"
-msgstr "PÃ¥"
+msgstr "På"
 
 #: ../plugins/plugman/cplugs.cpp:208
 msgid "Off"
