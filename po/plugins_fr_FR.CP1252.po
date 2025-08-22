@@ -283,7 +283,7 @@ msgstr "Le numéro du script %d est faux. Obtenez le bon numéro à l'aide de la co
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
 msgid "Script is already loaded: %s"
-mgstr "Le script est déjà chargé : %s"
+msgstr "Le script est déjà chargé : %s"
 
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
