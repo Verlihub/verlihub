@@ -1097,7 +1097,8 @@ msgstr "%s a été banni de façon définitive par %s sans donner de raison."
 msgid "Added new ban"
 msgstr "Ajout d'un nouveau ban"
 
-#: ../src/cdcconsole.cpp:2032 ../src/cdcconsole.cpp:2047msgid "Removed temporary nick ban"
+#: ../src/cdcconsole.cpp:2032 ../src/cdcconsole.cpp:2047
+msgid "Removed temporary nick ban"
 msgstr "Bannissement temporaire de pseudonyme enlevé"
 
 #: ../src/cdcconsole.cpp:2037 ../src/cdcconsole.cpp:2057
