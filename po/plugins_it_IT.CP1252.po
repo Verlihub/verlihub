@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-12-16 15:16+0100\n"
+"POT-Creation-Date: 2025-08-12 19:36+0200\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: Diego Sgreccia <anarchia99dc@gmail.com>, 2016\n"
 "Language-Team: Italian (Italy) (http://app.transifex.com/feardc/verlihub/language/it_IT/)\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: it_IT\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Poedit 3.4.1\n"
+"X-Generator: Poedit 3.6\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -32,7 +32,7 @@ msgstr "Restituisci una lista di espressioni proibite"
 
 #: ../plugins/forbid/cconsole.cpp:98
 msgid "Sorry the regular expression you provided is not valid."
-msgstr "L'espressione regolare inserita non Ë valida."
+msgstr "L'espressione regolare inserita non √® valida."
 
 #: ../plugins/forbid/cforbidden.cpp:75
 #, c-format
@@ -156,12 +156,12 @@ msgstr "Info"
 #: ../plugins/iplog/ciplog.cpp:158
 #, c-format
 msgid "Nick %s has lately been in the hub with the following IP"
-msgstr "Il nick %s Ë stato recentemente nell'hub con i seguenti IP"
+msgstr "Il nick %s √® stato recentemente nell'hub con i seguenti IP"
 
 #: ../plugins/iplog/ciplog.cpp:160
 #, c-format
 msgid "IP %s has lately been in the hub with following nicknames"
-msgstr "L'IP %s Ë stato recentemente nell'hub con i seguenti nickname"
+msgstr "L'IP %s √® stato recentemente nell'hub con i seguenti nickname"
 
 #: ../plugins/isp/cconsole.cpp:54
 msgid "Give a list of ISPs"
@@ -173,11 +173,11 @@ msgstr "Formato range sconosciuto."
 
 #: ../plugins/isp/cconsole.cpp:140
 msgid "Sorry the regular expression for nickname you provided is not valid."
-msgstr "L'espressione regolare inserita per il nickname non Ë valida."
+msgstr "L'espressione regolare inserita per il nickname non √® valida."
 
 #: ../plugins/isp/cconsole.cpp:148
 msgid "Sorry the regular expression for connection you provided is not valid."
-msgstr "L'espressione regolare inserita per la connessione non Ë valida."
+msgstr "L'espressione regolare inserita per la connessione non √® valida."
 
 #: ../plugins/isp/cisps.cpp:46
 msgid "Your nick should match %[pattern]"
@@ -265,13 +265,13 @@ msgstr "Script interrotto: %s"
 #: ../plugins/python/cconsole.cpp:165 ../plugins/python/cconsole.cpp:288
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
-msgstr "Script non interrotto perchË non caricato: #%d"
+msgstr "Script non interrotto perch√® non caricato: #%d"
 
 #: ../plugins/lua/cconsole.cpp:217 ../plugins/lua/cconsole.cpp:338
 #: ../plugins/python/cconsole.cpp:167 ../plugins/python/cconsole.cpp:290
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
-msgstr "Script non interrotto perchË non caricato: %s"
+msgstr "Script non interrotto perch√® non caricato: %s"
 
 #: ../plugins/lua/cconsole.cpp:251
 #, c-format
@@ -283,7 +283,7 @@ msgstr ""
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
 msgid "Script is already loaded: %s"
-msgstr "Lo script Ë gi‡ caricato: %s"
+msgstr "Lo script √® gi√† caricato: %s"
 
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
@@ -300,7 +300,7 @@ msgstr "Script caricato: %s"
 #: ../plugins/python/cconsole.cpp:242 ../plugins/python/cconsole.cpp:307
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
-msgstr "Lo script non Ë stato trovato o non puÚ essere analizzato: %s"
+msgstr "Lo script non √® stato trovato o non pu√≤ essere analizzato: %s"
 
 #: ../plugins/lua/cconsole.cpp:380
 #, c-format
@@ -333,7 +333,7 @@ msgstr "Errore sconosciuto"
 #: ../plugins/messenger/cconsole.cpp:71
 #, c-format
 msgid "The message has been sent to %s because he is online."
-msgstr "Il messaggio Ë stato inviato ha %s poichË Ë online."
+msgstr "Il messaggio √® stato inviato ha %s poich√® √® online."
 
 #: ../plugins/messenger/cconsole.cpp:74
 msgid "Message saved."
@@ -384,17 +384,17 @@ msgstr ""
 #: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:189
 #, c-format
 msgid "Script %s stopped."
-msgstr "Lo script %s Ë stato terminato."
+msgstr "Lo script %s √® stato terminato."
 
 #: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
 #, c-format
 msgid "Script #%s not stopped because it is not running."
-msgstr "Lo script %s non Ë stato terminato poichË non Ë in esecuzione."
+msgstr "Lo script %s non √® stato terminato poich√® non √® in esecuzione."
 
 #: ../plugins/perl/cconsole.cpp:111
 #, c-format
 msgid "Script %s not stopped because it is not running."
-msgstr "Lo script %s non Ë stato terminato poichË non Ë in esecuzione."
+msgstr "Lo script %s non √® stato terminato poich√® non √® in esecuzione."
 
 #: ../plugins/perl/cconsole.cpp:138
 #, c-format
@@ -404,17 +404,17 @@ msgstr "Errore nell'apertura della cartella %s."
 #: ../plugins/perl/cconsole.cpp:159
 #, c-format
 msgid "Script %s is already running."
-msgstr "Lo script %s Ë ora in esecuzione."
+msgstr "Lo script %s √® ora in esecuzione."
 
 #: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
 #, c-format
 msgid "Script %s is now running."
-msgstr "Lo script %s Ë ora in esecuzione."
+msgstr "Lo script %s √® ora in esecuzione."
 
 #: ../plugins/perl/cconsole.cpp:202
 #, c-format
 msgid "Script %s not stopped  because it is not running."
-msgstr "Lo script %s non Ë stato terminato poichË non Ë in esecuzione."
+msgstr "Lo script %s non √® stato terminato poich√® non √® in esecuzione."
 
 #: ../plugins/plugman/cconsole.cpp:41
 #, c-format
@@ -456,7 +456,7 @@ msgstr "Plugin disabilitato."
 
 #: ../plugins/plugman/cconsole.cpp:218
 msgid "Plugin not unloaded, probably because it's not loaded."
-msgstr "Plugin non disabilitato, probabilmente perchË non caricato."
+msgstr "Plugin non disabilitato, probabilmente perch√® non caricato."
 
 #: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
@@ -526,7 +526,7 @@ msgstr ""
 #: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
 #: ../plugins/python/cconsole.cpp:316
 msgid "Python interpreter is not loaded."
-msgstr "L'interprete Python non Ë caricato."
+msgstr "L'interprete Python non √® caricato."
 
 #: ../plugins/python/cconsole.cpp:86
 msgid "Loaded Python scripts"
@@ -596,19 +596,19 @@ msgstr "Parola '%s' cancellata."
 
 #: ../plugins/replacer/cconsole.cpp:129
 msgid "Sorry the regular expression you provided cannot be parsed."
-msgstr "L'espressione regolare inserita non puÚ essere compilata."
+msgstr "L'espressione regolare inserita non pu√≤ essere compilata."
 
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "La parola '%s' esiste gi‡"
+msgstr "La parola '%s' esiste gi√†"
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
 msgid ""
 "Added word %s. This word will be filtered in public chat for users with "
 "class that is less than or equal to %d."
-msgstr "Parola %s aggiunta. Questa parola sar‡ filtrata nella chat pubblica per gli utenti con classe minore o uguale a %d."
+msgstr "Parola %s aggiunta. Questa parola sar√† filtrata nella chat pubblica per gli utenti con classe minore o uguale a %d."
 
 #: ../plugins/replacer/cconsole.cpp:146
 #, c-format

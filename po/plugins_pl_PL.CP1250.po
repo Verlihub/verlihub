@@ -6,12 +6,12 @@
 # hostpl <zbyszekslyz@hostpl.eu>, 2016
 # Joe Doe, 2021
 # Krzychu <krzychulex@gmail.com>, 2014
-# Przemys≥aw Kwiatkowski <kwiatekp@gmail.com>, 2017
+# Przemys≈Çaw Kwiatkowski <kwiatekp@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2023-12-16 15:16+0100\n"
+"POT-Creation-Date: 2025-08-12 19:36+0200\n"
 "PO-Revision-Date: 2014-06-20 09:10+0000\n"
 "Last-Translator: Joe Doe, 2021\n"
 "Language-Team: Polish (Poland) (http://app.transifex.com/feardc/verlihub/language/pl_PL/)\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Poedit 3.4.1\n"
+"X-Generator: Poedit 3.6\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
@@ -193,7 +193,7 @@ msgstr "Twoj typ polaczenia powinien pasowac do wzorca %[pattern]"
 
 #: ../plugins/lua/callbacks.cpp:1724
 msgid "Incorrect password"
-msgstr "Nieprawid≥owe has≥o"
+msgstr "Nieprawid≈Çowe has≈Ço"
 
 #: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
 msgid "You have no rights to do this."
@@ -282,7 +282,7 @@ msgstr "Skrypt %s nie zostal zatrzymany, poniewaz nie byl uruchomiony."
 msgid ""
 "Script number %d is out of range. Get the right number using !luafiles "
 "command or specify the script path instead."
-msgstr "Numer %d skryptu jest z poza zakresu. Sprawdü prawid≥owy numer uøywajπc komendy !luafiles lub podaj úcieøkÍ do skryptu."
+msgstr "Numer %d skryptu jest z poza zakresu. Sprawd≈∫ prawid≈Çowy numer u≈ºywajƒÖc komendy !luafiles lub podaj ≈õcie≈ºkƒô do skryptu."
 
 #: ../plugins/lua/cconsole.cpp:267
 #, c-format
@@ -292,7 +292,7 @@ msgstr "Skrypt %s juz jest zaladowany."
 #: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
-msgstr "Nie uda≥o siÍ przydzieliÊ nowego interpretera Lua do skryptu: %s [ %s ]"
+msgstr "Nie uda≈Ço siƒô przydzieliƒá nowego interpretera Lua do skryptu: %s [ %s ]"
 
 #: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
 #, c-format
@@ -552,7 +552,7 @@ msgstr "Zatrzymano skrypt #%d: %s"
 msgid ""
 "Script number %d is out of range. Get the right number using !pyfiles "
 "command or specify the script path instead."
-msgstr "Numer %d skryptu jest z poza zakresu. Sprawdü prawid≥owy numer uøywajπc komendy !pyfiles lub podaj úcieøkÍ do skryptu."
+msgstr "Numer %d skryptu jest z poza zakresu. Sprawd≈∫ prawid≈Çowy numer u≈ºywajƒÖc komendy !pyfiles lub podaj ≈õcie≈ºkƒô do skryptu."
 
 #: ../plugins/python/cconsole.cpp:222
 #, c-format
@@ -562,7 +562,7 @@ msgstr "Skrypt #%d juz jest zaladowany: %s"
 #: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
 #, c-format
 msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
-msgstr "Nie uda≥o siÍ przydzieliÊ nowego interpretera Python do skryptu: %s [ %s ]"
+msgstr "Nie uda≈Ço siƒô przydzieliƒá nowego interpretera Python do skryptu: %s [ %s ]"
 
 #: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
 #, c-format
@@ -606,7 +606,7 @@ msgstr "Podane wyrazenie regularne jest nieprawidlowe."
 #: ../plugins/replacer/cconsole.cpp:135
 #, c-format
 msgid "Word '%s' already exists."
-msgstr "S≥owo '%s' juz istnieje."
+msgstr "S≈Çowo '%s' juz istnieje."
 
 #: ../plugins/replacer/cconsole.cpp:144
 #, c-format
