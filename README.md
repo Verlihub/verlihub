@@ -1,5 +1,4 @@
-Verlihub 1.6.0.0
-==============
+# Verlihub 1.6.0.0
 
 Verlihub is a NMDC server for Unix and Linux based operating systems that provides useful high level functionality such as:
 
@@ -16,19 +15,21 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
   * Import users from PtokaX, Aquila or YnHub
   * Plus much more
 
-Links
-==============
+## TLS proxy
+
+How to set up: https://github.com/verlihub/tls-proxy
+
+# Links
 
   * Website: https://github.com/verlihub
   * Wiki: https://github.com/verlihub/verlihub/wiki
   * Crash: https://crash.verlihub.net
-  * Translate: https://transifex.com/feardc/verlihub
+  * Translate: https://explore.transifex.com/feardc/verlihub
   * Ledokol: https://github.com/verlihub/ledokol
   * MMDB: https://ledo.feardc.net/mmdb
   * Support: nmdcs://hub.verlihub.net:7777
   * Hublist: https://te-home.net/?do=hublist
 
-Donation
-==============
+# Donation
 
-  * PayPal: [webmaster@feardc.net](https://www.paypal.com/paypalme/feardc/)
+PayPal: [webmaster@feardc.net](https://www.paypal.com/paypalme/feardc/)

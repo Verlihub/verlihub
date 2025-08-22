@@ -22,8 +22,6 @@ Dependencies and installation
 * Optional dependencies:
 
 	[ --- lib hdr ] Lua			5.2
-	[ --- lib hdr ] Python		2.7
-	[ --- lib hdr ] PERL		5.20
 	[ bin --- --- ] Dialog
 
 * Install dependencies on Debian:
@@ -32,7 +30,7 @@ sudo apt install libpcre3-dev libssl-dev mysql-server mysql-client libmysqlclien
 
  * Optional dependencies
 
- sudo apt install python2.7-dev liblua5.2-dev libperl-dev
+ sudo apt install liblua5.2-dev
 
 * Install dependencies on CentOS:
 
@@ -79,6 +77,9 @@ Supported CMake options
 
 	example:
 		-DPLUGIN_INSTALL_DIR=lib64/vh_plugins
+
+-DUSE_TLS_PROXY=ON (default: OFF)
+	build tls proxy
 
 ===========
 End of file
