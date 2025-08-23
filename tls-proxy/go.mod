@@ -16,6 +16,8 @@
 //	Please see https://www.gnu.org/licenses/ for a copy
 //	of the GNU General Public License.
 
+// TLS Proxy 1.0.0.0
+
 module github.com/verlihub/tls-proxy
 
 go 1.13
