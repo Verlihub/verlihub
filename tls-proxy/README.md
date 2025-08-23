@@ -16,7 +16,7 @@ Minimum required Go version is `1.13` - first version to support TLS `1.3` witho
 
 ## Important to know
 
-Remember to set twice the regular `ulimit` before starting both servers, because there will be twice as many connections than you would usually have.
+Remember to set twice the regular `ulimit` before starting both servers, because there will be twice as many connections than you would usually have - half of them are local connections.
 
 Verlihub does that automatically when using `vh` command line utility.
 
@@ -30,7 +30,7 @@ To stop using TLS proxy, simply set back `tls_listen_port` to `0` and restart th
 
 ## Moving from command line
 
-If you were previously using command line version of TLS proxy, all you need to do is to change `listen_ip` from `127.0.0.1` to your external IP address, shut down command line server and restart your hub.
+If you were previously using command line version of TLS proxy, all you need to do is to change `listen_ip` from `127.0.0.1` to your external IP address, `tls_listen_port` from `0` to any local port, shut down command line server and restart your hub.
 
 ## Required TLS version
 
@@ -63,6 +63,8 @@ You can either generate or buy your own certificates, or let TLS proxy to genera
 `tls_key_file` - Name of private key file in hub configuration directory, default: `hub.key`
 
 `tls_cert_org` - Organisation name for self-signed certificate, default: `Verlihub`
+
+`tls_cert_mail` - Email address for self-signed certificate, default: `verlihub@localhost`
 
 `tls_cert_host` - Hostname for self-signed certificate, default: `localhost`
 
