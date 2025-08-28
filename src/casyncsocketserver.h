@@ -34,6 +34,11 @@
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
 
+#ifdef USE_TLS_PROXY
+	#include "proxy.h"
+	//#include "cworkerthread.h"
+#endif
+
 #include <list>
 
 /*
@@ -47,6 +52,12 @@ using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;
+
+/*
+#ifdef USE_TLS_PROXY
+	using namespace nThread;
+#endif
+*/
 
 	namespace nSocket {
 		/// @addtogroup Core
@@ -208,6 +219,13 @@ namespace nVerliHub {
 				unsigned long mMaxLineLength;
 
 				// tls proxy
+				#ifdef USE_TLS_PROXY
+					//cWorkerThread mProxyThread; // tls proxy thread, todo: protected
+					VH_ProxyConfig *mProxyConfig;
+					int DoStartProxy();
+					int DoStopProxy();
+				#endif
+
 				string mTLSAddr;
 				unsigned int mTLSPort;
 				unsigned int mTLSWait;

@@ -631,8 +631,6 @@ class cServerDC : public cAsyncSocketServer
 		string LastBCNick;
 		// Network output log
 		ofstream mNetOutLog;
-		cWorkerThread mHublistReg; // hublist registration thread
-		cWorkerThread mUpdateCheck; // update check thread
 
 		// traffic frequency for all zones
 		cMeanFrequency<unsigned long, 10> mUploadZone[USER_ZONES + 1];
@@ -697,6 +695,9 @@ class cServerDC : public cAsyncSocketServer
 		bool mReloadNow;
 
 protected: // Protected methods
+	cWorkerThread mHublistReg; // hublist registration thread
+	cWorkerThread mUpdateCheck; // update check thread
+
 	/**
 	* This method is called when user is logged in.
 	*

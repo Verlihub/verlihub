@@ -77,16 +77,20 @@ int cThread::Stop(bool BeHard)
 void *cThread::ThreadFunc(void *obj)
 {
 	cThread *This = (cThread*)obj;
-	This->mRun = 1;
 
-	while (!This->mStop) { // infinite loop, can be stopped only by deleting instance
-		if (This->HasSomethingToDo())
-			This->DoSomething();
-		else
-			usleep(1000);
+	if (This != NULL) {
+		This->mRun = 1;
+
+		while (!This->mStop) { // infinite loop, can be stopped only by deleting instance
+			if (This->HasSomethingToDo())
+				This->DoSomething();
+			else
+				usleep(1000);
+		}
+
+		This->mRun = 0;
 	}
 
-	This->mRun = 0;
 	return obj;
 }
 

@@ -1999,16 +1999,16 @@ unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 
 int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 {
-	unsigned __int64 min_share = mC.min_share; // prepare
+	unsigned __int64 min_share = this->mC.min_share; // prepare
 
-	if (mC.min_share_use_hub > min_share)
-		min_share = mC.min_share_use_hub;
+	if (this->mC.min_share_use_hub > min_share)
+		min_share = this->mC.min_share_use_hub;
 
 	char pipe = '|';
 	size_t pos;
 	ostringstream to_serv, to_user;
 	istringstream is(host);
-	string curhost, lock, key, hubhost = mC.hub_host;
+	string curhost, lock, key, hubhost = this->mC.hub_host;
 
 	if (hubhost.size() > 2) { // remove protocol
 		pos = hubhost.find("://");
@@ -2020,8 +2020,8 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	if (hubhost.size()) {
 		pos = hubhost.find(':');
 
-		if ((pos == hubhost.npos) && (mPort != 411)) // add port
-			hubhost.append(':' + StringFrom(mPort));
+		if ((pos == hubhost.npos) && (this->mPort != 411)) // add port
+			hubhost.append(':' + StringFrom(this->mPort));
 	}
 
 	cHTTPConn *pHubList;
@@ -2030,6 +2030,11 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	while (curhost = "", is >> curhost, curhost.size() > 0) {
 		to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
 		pHubList = new cHTTPConn(curhost, port); // connect
+
+		if (!pHubList) {
+			to_user << _("Error creating socket") << "\r\n";
+			continue;
+		}
 
 		if (!pHubList->mGood) {
 			to_user << _("Connection error") << "\r\n";
@@ -2056,27 +2061,27 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 						cDCProto::Lock2Key(lock, key);
 					}
 
-					mP.Create_Key(lock, key);
+					this->mP.Create_Key(lock, key);
 					to_serv.str("");
 					to_serv.clear();
 					to_serv << lock << pipe; // create registration data
-					to_serv << mC.hub_name << pipe;
+					to_serv << this->mC.hub_name << pipe;
 					to_serv << hubhost << pipe;
 
-					if (mC.hublist_send_minshare)
+					if (this->mC.hublist_send_minshare)
 						to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
 
-					to_serv << mC.hub_desc << pipe;
-					to_serv << mUserList.Size() << pipe;
-					to_serv << mTotalShare << pipe;
+					to_serv << this->mC.hub_desc << pipe;
+					to_serv << this->mUserList.Size() << pipe;
+					to_serv << this->mTotalShare << pipe;
 
-					if (mC.hublist_send_listhost) // hublist host with port
+					if (this->mC.hublist_send_listhost) // hublist host with port
 						to_serv << curhost << ':' << StringFrom(port) << pipe;
 
 					if ((pHubList->Write(to_serv.str()) > 0) && pHubList->mGood) // send it
-						to_user << _("Registration done");
+						to_user << _("Registration done") << "\r\n";
 					else
-						to_user << _("Send error");
+						to_user << _("Send error") << "\r\n";
 				} else {
 					to_user << _("Protocol error") << "\r\n";
 				}
@@ -2093,15 +2098,15 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	}
 
 	if (reply.size()) {
-		cUser *user = mUserList.GetUserByNick(reply);
+		cUser *user = this->mUserList.GetUserByNick(reply);
 
-		if (user && user->mxConn) {
+		if (user && user->mxConn && user->mInList) {
 			to_user << "\r\n" << _("Finished registering in hublists.");
-			DCPublicHS(to_user.str(), user->mxConn);
+			this->DCPublicHS(to_user.str(), user->mxConn);
 		}
 	}
 
-	return 1;
+	return 0; // note: always return 0
 }
 
 int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
@@ -2125,29 +2130,40 @@ int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 	if (conn) {
 		DCPublicHS(_("Registering in hublists, please wait."), conn);
 
-		if (conn->mpUser)
-			reply = conn->mpUser->mNick;
+		if (conn->mpUser && conn->mpUser->mInList)
+			reply.assign(conn->mpUser->mNick);
 	}
 
-	cThreadWork *work = new tThreadWork3T<cServerDC, string, unsigned int, string>(host, port, reply, this, &cServerDC::DoRegisterInHublist);
+	string shost;
+	shost.assign(host);
+	unsigned int sport = port;
+	cThreadWork *work = new tThreadWork3T<cServerDC, string, unsigned int, string>(shost, sport, reply, this, &nVerliHub::nSocket::cServerDC::DoRegisterInHublist);
+
+	if (!work) {
+		if (conn)
+			DCPublicHS(_("Failed to create new working thread."), conn);
+
+		return 0;
+	}
 
 	if (mHublistReg.AddWork(work))
 		return 1;
-	else {
-		delete work;
-		work = NULL;
-		return 0;
-	}
+
+	if (conn)
+		DCPublicHS(_("Failed to start new working thread."), conn);
+
+	delete work;
+	work = NULL;
+	return 0;
 }
 
 int cServerDC::DoCheckForUpdates(bool git, string reply)
 {
-	cHTTPConn *pConn;
-	pConn = new cHTTPConn("ledo.feardc.net", 80); // connect
+	cHTTPConn *pConn = new cHTTPConn("ledo.feardc.net", 80); // connect, todo: move to definition
 	unsigned int code = 0;
 	string ver;
 
-	if (pConn->mGood) {
+	if (pConn && pConn->mGood) {
 		if (pConn->Request("", (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"), "", "")) {
 			string data;
 
@@ -2241,11 +2257,13 @@ int cServerDC::DoCheckForUpdates(bool git, string reply)
 	}
 
 	if (reply.size()) {
-		cUser *user = mUserList.GetUserByNick(reply);
+		cUser *user = this->mUserList.GetUserByNick(reply);
 
-		if (user && user->mxConn) { // only to user
+		if (user && user->mxConn && user->mInList) { // only to user
 			if (code == 50)
 				os << _("Your version of Verlihub is currently up to date.");
+			else if (code == 0)
+				os << _("Failed creating connection socket.");
 			else if (code == 1)
 				os << _("Failed connecting to update server.");
 			else if (code == 2)
@@ -2253,14 +2271,14 @@ int cServerDC::DoCheckForUpdates(bool git, string reply)
 			else if ((code >= 3) && (code < 50))
 				os << autosprintf(_("Failed parsing reply from update server with code: %d"), code);
 
-			DCPublicHS(os.str(), user->mxConn);
+			this->DCPublicHS(os.str(), user->mxConn);
 		}
 
 	} else if ((code == 100) && this->mOpChat) { // only if available
 		this->mOpChat->SendPMToAll(os.str(), NULL);
 	}
 
-	return 1;
+	return 0; // note: always return 0
 }
 
 int cServerDC::CheckForUpdates(bool git, cConnDC *conn)
@@ -2270,14 +2288,25 @@ int cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 	if (conn) {
 		DCPublicHS(_("Checking for updates, please wait."), conn);
 
-		if (conn->mpUser)
-			reply = conn->mpUser->mNick;
+		if (conn->mpUser && conn->mpUser->mInList)
+			reply.assign(conn->mpUser->mNick);
 	}
 
-	cThreadWork *work = new tThreadWork2T<cServerDC, bool, string>(git, reply, this, &cServerDC::DoCheckForUpdates);
+	bool sgit = git;
+	cThreadWork *work = new tThreadWork2T<cServerDC, bool, string>(sgit, reply, this, &nVerliHub::nSocket::cServerDC::DoCheckForUpdates);
+
+	if (!work) {
+		if (conn)
+			DCPublicHS(_("Failed to create new working thread."), conn);
+
+		return 0;
+	}
 
 	if (mUpdateCheck.AddWork(work))
 		return 1;
+
+	if (conn)
+		DCPublicHS(_("Failed to start new working thread."), conn);
 
 	delete work;
 	work = NULL;
@@ -3617,8 +3646,13 @@ void cServerDC::DoStackTrace()
 
 	cHTTPConn *http = new cHTTPConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
 
+	if (!http) {
+		vhErr(0) << "Failed creating connection socket, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl; // todo: add as definition
+		return;
+	}
+
 	if (!http->mGood) {
-		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
+		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl; // todo: add as definition
 		http->Close();
 		delete http;
 		http = NULL;
@@ -3641,8 +3675,8 @@ void cServerDC::DoStackTrace()
 	}
 
 	http->CloseNice(500);
-	delete http;
-	http = NULL;
+	/*delete http; // cant delete when closing nice
+	http = NULL;*/
 }
 
 /*
