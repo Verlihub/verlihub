@@ -52,9 +52,9 @@ template<class T, int max_size=20> class cMeanFrequency
 	cTimePrint mStart, mEnd;
 	/** start (maybe end) of the partly period where we are now */
 	cTimePrint mPart;
-	/** resolution of mesure */
+	/** resolution of measure */
 	int mResolution;
-	/** counts of events in every part of pertiod/resolution */
+	/** counts of events in every part of period/resolution */
 	T mCounts[max_size];
 	int mStartIdx;
 	/** number of filled periods */
@@ -89,9 +89,14 @@ template<class T, int max_size=20> class cMeanFrequency
 
 	cMeanFrequency(const cTimePrint &now, double per, int res):
 		mOverPeriod(per),
-		mPeriodPart(per/res),
+		mPeriodPart(per),
 		mResolution(res)
 	{
+		if (mResolution > 0)
+			mPeriodPart = mOverPeriod / mResolution;
+		else
+			mPeriodPart = mOverPeriod;
+
 		Reset(now);
 	}
 
@@ -99,17 +104,25 @@ template<class T, int max_size=20> class cMeanFrequency
 	void Insert(const cTimePrint &now, T data=1)
 	{
 		Adjust(now);
-		mCounts[(mStartIdx+mNumFill) % mResolution] += data;
+
+		if (mResolution > 0)
+			mCounts[(mStartIdx + mNumFill) % mResolution] += data;
+		else
+			mCounts[mStartIdx + mNumFill] += data;
 	}
 
 	double GetMean(const cTimePrint &now)
 	{
 		T sum = CountAll(now);
 		double Sum = sum;
-		if (! mNumFill) return 0.;
-		Sum *= double(mResolution / mNumFill);
-		Sum /= double(mOverPeriod);
-		return Sum;
+
+		if ((mNumFill > 0) && (mOverPeriod > cTime(0, 0))) {
+			Sum *= double(mResolution / mNumFill);
+			Sum /= double(mOverPeriod);
+			return Sum;
+		}
+
+		return 0.;
 	}
 
 	/** calculate count over all period */
@@ -176,7 +189,11 @@ template<class T, int max_size=20> class cMeanFrequency
 	void SetPeriod(double per)
 	{
 		mOverPeriod = cTimePrint(per);
-		mPeriodPart = mOverPeriod / mResolution;
+
+		if (mResolution > 0)
+			mPeriodPart = mOverPeriod / mResolution;
+		else
+			mPeriodPart = mOverPeriod;
 	}
 
 };

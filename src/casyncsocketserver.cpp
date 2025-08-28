@@ -22,6 +22,7 @@
 
 #ifdef USE_TLS_PROXY
 	#include "proxy.h"
+	//#include "cthreadwork.h"
 #endif
 
 /*
@@ -61,6 +62,9 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mAcceptNum(0),
 	mAcceptTry(0),
 	mMaxLineLength(0),
+#ifdef USE_TLS_PROXY
+	mProxyConfig(NULL),
+#endif
 	mUseDNS(0),
 	mFrequency(mTime, 90.0, 20),
 	mbRun(false),
@@ -115,6 +119,7 @@ cAsyncSocketServer::~cAsyncSocketServer()
 	WSACleanup();
 	#endif
 	*/
+
 	vhLog(1) << "Allocated objects: " << cObj::GetCount() << endl;
 	vhLog(1) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
 }
@@ -236,6 +241,10 @@ void cAsyncSocketServer::close()
 	}
 #endif
 */
+
+#ifdef USE_TLS_PROXY
+	DoStopProxy();
+#endif
 }
 
 /*
@@ -505,10 +514,23 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (!mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
+	mProxyConfig = VH_ProxyCreate();
+
+	if (!mProxyConfig) {
+		if (Log(0))
+			LogStream() << "Failed to create proxy configuration" << endl;
+
+		return false;
+	}
+
 	string haddr, paddr, cdir, kdir, corg, chost;
 	stringstream ss;
+
 	ss << mTLSAddr << ':' << mTLSPort;
 	haddr.assign(ss.str());
+	mProxyConfig->HubAddr = haddr.c_str();
+	mProxyConfig->HubNetwork = "tcp4"; // note: static
+
 	ss.str("");
 	ss << mAddr << ':' << OverrideDefaultPort;
 
@@ -526,49 +548,101 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	}
 
 	paddr.assign(ss.str());
+	mProxyConfig->Hosts = paddr.c_str();
+
 	ss.str("");
 	ss << mConfBaseDir << '/' << mTLSCert;
 	cdir.assign(ss.str());
+	mProxyConfig->Cert = cdir.c_str();
+
 	ss.str("");
 	ss << mConfBaseDir << '/' << mTLSKey;
 	kdir.assign(ss.str());
+	mProxyConfig->Key = kdir.c_str();
+
 	corg.assign(mTLSOrg);
+	mProxyConfig->CertOrg = corg.c_str();
+
 	chost.assign(mTLSHost);
-	VH_ProxyConfig *conf = VH_ProxyCreate();
-	conf->HubAddr = haddr.c_str();
-	conf->HubNetwork = "tcp4"; // note: static
-	conf->Hosts = paddr.c_str();
-	conf->Cert = cdir.c_str();
-	conf->Key = kdir.c_str();
-	conf->CertOrg = corg.c_str();
-	conf->CertHost = chost.c_str();
-	conf->LogErrors = mTLSLog;
-	conf->Wait = mTLSWait;
-	conf->Buffer = mTLSBuf;
-	conf->MinVer = mTLSVer;
-	conf->NoSendIP = false; // note: static
+	mProxyConfig->CertHost = chost.c_str();
 
-	if (Log(0))
-		LogStream() << "Starting TLS proxy: " << paddr << " -> " << haddr << endl;
+	mProxyConfig->LogErrors = mTLSLog;
+	mProxyConfig->Wait = mTLSWait;
+	mProxyConfig->Buffer = mTLSBuf;
+	mProxyConfig->MinVer = mTLSVer;
+	mProxyConfig->NoSendIP = false; // note: static
 
-	if (!VH_ProxyStart(conf)) {
-		char *err = VH_ProxyError();
+	/*
+	cThreadWork *work = new tThreadWork0T<cAsyncSocketServer>(this, &nVerliHub::nSocket::cAsyncSocketServer::DoStartProxy);
 
-		if (err && Log(0)) {
-			LogStream() << "Error starting TLS proxy: " << err << endl;
-			delete err;
-		}
+	if (!work) {
+		if (Log(0))
+			LogStream() << "Failed to create new working thread" << endl;
 
-		delete conf;
 		return false;
 	}
 
-	delete conf;
-	return this->Listen(mTLSPort/*, false*/);
+	if (!mProxyThread.AddWork(work)) {
+		if (Log(0))
+			LogStream() << "Failed to start new working thread" << endl;
+
+		delete work;
+		work = NULL;
+		return false;
+	}
+	*/
+
+	return DoStartProxy() && this->Listen(mTLSPort/*, false*/);
 #else
 	return this->Listen(OverrideDefaultPort/*, false*/);
 #endif
 }
+
+#ifdef USE_TLS_PROXY
+int cAsyncSocketServer::DoStartProxy()
+{
+	if (!mProxyConfig) {
+		if (Log(0))
+			LogStream() << "Failed to read proxy configuration" << endl;
+
+		return 0; // note: always return 0
+	}
+
+	if (Log(0))
+		LogStream() << "Starting TLS proxy: " << mProxyConfig->Hosts << " -> " << mProxyConfig->HubAddr << endl;
+
+	if (!VH_ProxyStart(mProxyConfig)) {
+		char *err = VH_ProxyError();
+
+		if (err) {
+			if (Log(0))
+				LogStream() << "Error starting TLS proxy: " << err << endl;
+
+			delete err;
+
+		} else if (Log(0)) {
+			LogStream() << "Error starting TLS proxy" << endl;
+		}
+	}
+
+	return 0; // note: always return 0
+}
+
+int cAsyncSocketServer::DoStopProxy() // todo: not threaded but we dont need to, commented start code is experimental
+{
+	if (Log(0))
+		LogStream() << "Stopping TLS proxy" << endl;
+
+	VH_ProxyStop();
+
+	if (mProxyConfig) {
+		delete mProxyConfig;
+		mProxyConfig = NULL;
+	}
+
+	return 0; // note: always return 0
+}
+#endif
 
 bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
 {

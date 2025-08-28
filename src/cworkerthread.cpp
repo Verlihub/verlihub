@@ -31,7 +31,7 @@ cWorkerThread::~cWorkerThread()
 {
 	Stop(true);
 
-	if (mWork) {
+	if (mWork != NULL) {
 		delete mWork;
 		mWork = NULL;
 	}
@@ -42,7 +42,7 @@ bool cWorkerThread::AddWork(cThreadWork *theWork)
 	bool Result = false;
 
 	if (TryLock()) {
-		if (!mWork) {
+		if (mWork == NULL) {
 			mWork = theWork;
 			Result = true;
 		}
@@ -68,8 +68,11 @@ void cWorkerThread::DoSomething()
 {
 	if (mWork != NULL) {
 		mWork->DoTheWork();
-		delete mWork;
-		mWork = NULL;
+
+		if (mWork != NULL) {
+			delete mWork;
+			mWork = NULL;
+		}
 	}
 }
 

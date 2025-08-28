@@ -173,6 +173,9 @@ bool cHTTPConn::ParseReply(string &repl)
 
 int cHTTPConn::Write(const string &data)
 {
+	if (!mGood)
+		return -1;
+
 	const size_t dasi = data.size();
 	size_t busi = GetSize() + dasi;
 
@@ -251,6 +254,9 @@ int cHTTPConn::Connect(const string &host, const int port)
 
 int cHTTPConn::Send(const char *buf, size_t &len)
 {
+	if (!mGood)
+		return -1;
+
 	size_t tot = 0, left = len;
 	int res = 0;
 
@@ -319,11 +325,12 @@ int cHTTPConn::Read()
 
 void cHTTPConn::Close()
 {
+	mWrite = false;
+	mGood = false;
+
 	if (mSock <= 0)
 		return;
 
-	mWrite = false;
-	mGood = false;
 	TEMP_FAILURE_RETRY(::close(mSock));
 	mSock = INVALID_SOCKET;
 	mBuf.clear();
