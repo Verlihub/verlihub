@@ -22,7 +22,6 @@
 
 #ifdef USE_TLS_PROXY
 	#include "proxy.h"
-	//#include "cthreadwork.h"
 #endif
 
 /*
@@ -62,11 +61,11 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mAcceptNum(0),
 	mAcceptTry(0),
 	mMaxLineLength(0),
+	mUseDNS(0),
+	mFrequency(mTime, 90.0, 20),
 #ifdef USE_TLS_PROXY
 	mProxyConfig(NULL),
 #endif
-	mUseDNS(0),
-	mFrequency(mTime, 90.0, 20),
 	mbRun(false),
 	mFactory(NULL),
 	mRunResult(0),
@@ -145,7 +144,7 @@ int cAsyncSocketServer::run()
 		SSL_CTX_set_min_proto_version(mSSLCont, TLS1_3_VERSION); // min version 1.3
 		SSL_CTX_set_max_proto_version(mSSLCont, TLS1_3_VERSION); // max version 1.3
 
-		if (SSL_CTX_use_certificate_file(mSSLCont, "/home/rolex/.certs/FearDC.crt", SSL_FILETYPE_PEM) <= 0) { // todo: add config
+		if (SSL_CTX_use_certificate_file(mSSLCont, "/home/user/.certs/hub.crt", SSL_FILETYPE_PEM) <= 0) { // todo: add config
 			vhLog(0) << ("Failed to apply SSL certificate to server SSL context") << endl;
 			SSL_CTX_free(mSSLCont);
 			mSSLCont = NULL;
@@ -153,7 +152,7 @@ int cAsyncSocketServer::run()
 			EVP_cleanup();
 
 		} else {
-			if (SSL_CTX_use_PrivateKey_file(mSSLCont, "/home/rolex/.certs/FearDC.key", SSL_FILETYPE_PEM) <= 0 ) { // todo: add config
+			if (SSL_CTX_use_PrivateKey_file(mSSLCont, "/home/user/.certs/hub.key", SSL_FILETYPE_PEM) <= 0 ) { // todo: add config
 				vhLog(0) << ("Failed to apply SSL key to server SSL context") << endl;
 				SSL_CTX_free(mSSLCont);
 				mSSLCont = NULL;
@@ -243,7 +242,8 @@ void cAsyncSocketServer::close()
 */
 
 #ifdef USE_TLS_PROXY
-	DoStopProxy();
+	if (mTLSPort)
+		StopProxy(); // stop at last
 #endif
 }
 
@@ -572,40 +572,20 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	mProxyConfig->MinVer = mTLSVer;
 	mProxyConfig->NoSendIP = false; // note: static
 
-	/*
-	cThreadWork *work = new tThreadWork0T<cAsyncSocketServer>(this, &nVerliHub::nSocket::cAsyncSocketServer::DoStartProxy);
-
-	if (!work) {
-		if (Log(0))
-			LogStream() << "Failed to create new working thread" << endl;
-
-		return false;
-	}
-
-	if (!mProxyThread.AddWork(work)) {
-		if (Log(0))
-			LogStream() << "Failed to start new working thread" << endl;
-
-		delete work;
-		work = NULL;
-		return false;
-	}
-	*/
-
-	return DoStartProxy() && this->Listen(mTLSPort/*, false*/);
+	return StartProxy() && this->Listen(mTLSPort/*, false*/);
 #else
 	return this->Listen(OverrideDefaultPort/*, false*/);
 #endif
 }
 
 #ifdef USE_TLS_PROXY
-int cAsyncSocketServer::DoStartProxy()
+bool cAsyncSocketServer::StartProxy()
 {
 	if (!mProxyConfig) {
 		if (Log(0))
-			LogStream() << "Failed to read proxy configuration" << endl;
+			LogStream() << "Failed to access proxy configuration" << endl;
 
-		return 0; // note: always return 0
+		return false;
 	}
 
 	if (Log(0))
@@ -623,12 +603,14 @@ int cAsyncSocketServer::DoStartProxy()
 		} else if (Log(0)) {
 			LogStream() << "Error starting TLS proxy" << endl;
 		}
+
+		return false;
 	}
 
-	return 0; // note: always return 0
+	return true;
 }
 
-int cAsyncSocketServer::DoStopProxy() // todo: not threaded but we dont need to, commented start code is experimental
+bool cAsyncSocketServer::StopProxy()
 {
 	if (Log(0))
 		LogStream() << "Stopping TLS proxy" << endl;
@@ -640,7 +622,7 @@ int cAsyncSocketServer::DoStopProxy() // todo: not threaded but we dont need to,
 		mProxyConfig = NULL;
 	}
 
-	return 0; // note: always return 0
+	return true;
 }
 #endif
 

@@ -56,6 +56,8 @@
 
 #define CRASH_SERV_ADDR "crash.verlihub.net"
 #define CRASH_SERV_PORT 80
+#define VER_CHECK_ADDR "ledo.feardc.net"
+#define VER_CHECK_PORT 80
 
 #define DEFAULT_HUB_ENCODING "CP1252"
 
@@ -421,11 +423,11 @@ class cServerDC : public cAsyncSocketServer
 		* @param conn The user connection to send the result.
 		* @return One if the operation can be added and processed by thread or zero otherwise.
 		*/
-		int RegisterInHublist(string host, unsigned int port, cConnDC *conn);
+		bool RegisterInHublist(string host, unsigned int port, cConnDC *conn);
 
 		// update check
 		int DoCheckForUpdates(bool git, string reply = "");
-		int CheckForUpdates(bool git, cConnDC *conn = NULL);
+		bool CheckForUpdates(bool git, cConnDC *conn = NULL);
 
 		/**
 		* Report an user to opchat.

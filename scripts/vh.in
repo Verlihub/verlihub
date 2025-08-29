@@ -18,6 +18,10 @@
 #	Please see http://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
+DB_COUNTRY="https://ledo.feardc.net/mmdb/country.tar.gz"
+DB_CITY="https://ledo.feardc.net/mmdb/city.tar.gz"
+DB_ASN="https://ledo.feardc.net/mmdb/asn.tar.gz"
+
 SCRIPT=$0
 # Include library
 source $(dirname $SCRIPT)/vh_lib
@@ -537,7 +541,7 @@ function update_mmdb() # [mmdb_path]
 	fi
 
 	echo_s "Processing MaxMind Country database.\n" $BOLD # process country database
-	wget "https://ledo.feardc.net/mmdb/country.tar.gz" > /dev/null 2>&1
+	wget $DB_COUNTRY > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind Country database.\n" $RED_BOLD
@@ -565,7 +569,7 @@ function update_mmdb() # [mmdb_path]
 	rm -f "country.tar.gz"
 
 	echo_s "Processing MaxMind City database.\n" $BOLD # process city database
-	wget "https://ledo.feardc.net/mmdb/city.tar.gz" > /dev/null 2>&1
+	wget $DB_CITY > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind City database.\n" $RED_BOLD
@@ -593,7 +597,7 @@ function update_mmdb() # [mmdb_path]
 	rm -f "city.tar.gz"
 
 	echo_s "Processing MaxMind ASN database.\n" $BOLD # process asn database
-	wget "https://ledo.feardc.net/mmdb/asn.tar.gz" > /dev/null 2>&1
+	wget $DB_ASN > /dev/null 2>&1
 
 	if [ $? -ne 0 ]; then
 		echo_s "Error downloading MaxMind ASN database.\n" $RED_BOLD

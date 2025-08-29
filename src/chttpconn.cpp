@@ -123,23 +123,23 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 
 	send << " HTTP/1.1\r\n";
 
-	if (head.find("Host: ") == head.npos)
+	if (head.find("\r\nHost: ") == head.npos)
 		send << "Host: " << mHost << ':' << mPort << "\r\n";
 
-	if (head.find("Accept: ") == head.npos)
+	if (head.find("\r\nAccept: ") == head.npos)
 		send << "Accept: */*\r\n";
 
-	if (head.find("User-Agent: ") == head.npos)
+	if (head.find("\r\nUser-Agent: ") == head.npos)
 		send << "User-Agent: Mozilla/5.0 (compatible; " << HUB_VERSION_NAME << '/' << HUB_VERSION_VERS << "; +https://github.com/verlihub/)\r\n";
 
-	if (head.find("Content-Type: ") == head.npos)
+	if (head.find("\r\nContent-Type: ") == head.npos)
 		send << "Content-Type: " << ((meth == "POST") ? "application/x-www-form-urlencoded" : "text/plain") << "\r\n";
 
-	if (head.find("Content-Length: ") == head.npos)
+	if (head.find("\r\nContent-Length: ") == head.npos)
 		send << "Content-Length: " << data.size() << "\r\n";
 
 	/*
-	if (head.find("Connection: ") == head.npos)
+	if (head.find("\r\nConnection: ") == head.npos)
 		send << "Connection: Close\r\n";
 	*/
 
