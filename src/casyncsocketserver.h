@@ -36,7 +36,6 @@
 
 #ifdef USE_TLS_PROXY
 	#include "proxy.h"
-	//#include "cworkerthread.h"
 #endif
 
 #include <list>
@@ -218,14 +217,6 @@ namespace nVerliHub {
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;
 
-				// tls proxy
-				#ifdef USE_TLS_PROXY
-					//cWorkerThread mProxyThread; // tls proxy thread, todo: protected
-					VH_ProxyConfig *mProxyConfig;
-					int DoStartProxy();
-					int DoStopProxy();
-				#endif
-
 				string mTLSAddr;
 				unsigned int mTLSPort;
 				unsigned int mTLSWait;
@@ -258,6 +249,13 @@ namespace nVerliHub {
 				}
 
 		protected:
+			// tls proxy
+			#ifdef USE_TLS_PROXY
+				VH_ProxyConfig *mProxyConfig;
+				bool StartProxy();
+				bool StopProxy();
+			#endif
+
 			/// Indicate if the main loop is running.
 			bool mbRun;
 

@@ -731,7 +731,7 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind Country > https://ledo.feardc.net/mmdb/country.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind Country > " << DB_COUNTRY << " ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind Country > " << mmdb->filename << endl;
 		}
@@ -782,7 +782,7 @@ MMDB_s *cMaxMindDB::TryCityDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind City > https://ledo.feardc.net/mmdb/city.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind City > " << DB_CITY << " ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind City > " << mmdb->filename << endl;
 		}
@@ -833,7 +833,7 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 		if (ok != MMDB_SUCCESS) {
 			free(mmdb);
 			mmdb = NULL;
-			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind ASN > https://ledo.feardc.net/mmdb/asn.tar.gz ]" << endl;
+			vhLog(0) << "Database error: " << MMDB_strerror(ok) << " [ MaxMind ASN > " << DB_ASN << " ]" << endl;
 		} else {
 			vhLog(0) << "Database loaded: MaxMind ASN > " << mmdb->filename << endl;
 		}

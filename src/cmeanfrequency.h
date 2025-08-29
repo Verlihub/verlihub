@@ -94,8 +94,6 @@ template<class T, int max_size=20> class cMeanFrequency
 	{
 		if (mResolution > 0)
 			mPeriodPart = mOverPeriod / mResolution;
-		else
-			mPeriodPart = mOverPeriod;
 
 		Reset(now);
 	}

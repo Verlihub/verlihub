@@ -49,7 +49,7 @@ cZLib::~cZLib()
 		free(inBuf);
 }
 
-char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level)
+char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level) // todo: do this in separate thread
 {
 	if (!buffer)
 		return NULL;

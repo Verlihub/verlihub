@@ -141,6 +141,11 @@ cDCConsole::~cDCConsole(){
 	mDCClientConsole = NULL;
 }
 
+void cDCConsole::DoCrashTest()
+{
+	*((char*)-1) = '_';
+}
+
 int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 {
 	if (!conn || !conn->mpUser)
@@ -155,6 +160,11 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 
 	switch (conn->mpUser->mClass) {
 		case eUC_MASTER:
+			if (cmdid == "crashtest") {
+				DoCrashTest();
+				return 1;
+			}
+
 			if (cmdid == "quit")
 				return CmdQuit(cmd_line, conn, 0);
 

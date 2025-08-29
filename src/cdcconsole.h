@@ -73,6 +73,9 @@ public:
 	*/
 	virtual ~cDCConsole();
 
+	// crash test
+	void DoCrashTest();
+
 	/**
 	* Handle operator's commands like !restart, !quit, etc.
 	* In case the command does not exist, it is passed to Trigger console

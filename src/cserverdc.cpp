@@ -1997,7 +1997,7 @@ unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 	return u;
 }
 
-int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
+int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply) // note: threaded function
 {
 	unsigned __int64 min_share = this->mC.min_share; // prepare
 
@@ -2109,20 +2109,20 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 	return 0; // note: always return 0
 }
 
-int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
+bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 {
 	if (host.size() < 3) {
 		if (conn)
 			DCPublicHS(_("Hublist host is empty, nothing to do."), conn);
 
-		return 0;
+		return false;
 	}
 
 	if (!CheckPortNumber(port)) {
 		if (conn)
 			DCPublicHS(_("Hublist port number is invalid, nothing to do."), conn);
 
-		return 0;
+		return false;
 	}
 
 	string reply;
@@ -2143,23 +2143,23 @@ int cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 		if (conn)
 			DCPublicHS(_("Failed to create new working thread."), conn);
 
-		return 0;
+		return false;
 	}
 
 	if (mHublistReg.AddWork(work))
-		return 1;
+		return true;
 
 	if (conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
 	delete work;
 	work = NULL;
-	return 0;
+	return false;
 }
 
-int cServerDC::DoCheckForUpdates(bool git, string reply)
+int cServerDC::DoCheckForUpdates(bool git, string reply) // note: threaded function
 {
-	cHTTPConn *pConn = new cHTTPConn("ledo.feardc.net", 80); // connect, todo: move to definition
+	cHTTPConn *pConn = new cHTTPConn(VER_CHECK_ADDR, VER_CHECK_PORT); // connect
 	unsigned int code = 0;
 	string ver;
 
@@ -2281,7 +2281,7 @@ int cServerDC::DoCheckForUpdates(bool git, string reply)
 	return 0; // note: always return 0
 }
 
-int cServerDC::CheckForUpdates(bool git, cConnDC *conn)
+bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 {
 	string reply;
 
@@ -2299,18 +2299,18 @@ int cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 		if (conn)
 			DCPublicHS(_("Failed to create new working thread."), conn);
 
-		return 0;
+		return false;
 	}
 
 	if (mUpdateCheck.AddWork(work))
-		return 1;
+		return true;
 
 	if (conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
 	delete work;
 	work = NULL;
-	return 0;
+	return false;
 }
 
 unsigned int cServerDC::WhoCC(const string &cc, string &dest, const string &sep)
@@ -3647,12 +3647,12 @@ void cServerDC::DoStackTrace()
 	cHTTPConn *http = new cHTTPConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
 
 	if (!http) {
-		vhErr(0) << "Failed creating connection socket, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl; // todo: add as definition
+		vhErr(0) << "Failed creating connection socket, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 		return;
 	}
 
 	if (!http->mGood) {
-		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl; // todo: add as definition
+		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 		http->Close();
 		delete http;
 		http = NULL;

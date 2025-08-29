@@ -29,6 +29,10 @@
 #include <map>
 #include <maxminddb.h>
 
+#define DB_COUNTRY "https://ledo.feardc.net/mmdb/country.tar.gz"
+#define DB_CITY "https://ledo.feardc.net/mmdb/city.tar.gz"
+#define DB_ASN "https://ledo.feardc.net/mmdb/asn.tar.gz"
+
 using std::string;
 
 namespace nVerliHub {

@@ -76,6 +76,9 @@ int cThread::Stop(bool BeHard)
 
 void *cThread::ThreadFunc(void *obj)
 {
+	if (obj == NULL)
+		return NULL;
+
 	cThread *This = (cThread*)obj;
 
 	if (This != NULL) {
