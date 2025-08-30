@@ -76,5 +76,17 @@ void cWorkerThread::DoSomething()
 	}
 }
 
+void cWorkerThread::StopAndDel()
+{
+	if (mWork != NULL) {
+		Stop(true);
+
+		if (mWork != NULL) {
+			delete mWork;
+			mWork = NULL;
+		}
+	}
+}
+
 	}; // namespace nThread
 }; // namespace nVerliHub

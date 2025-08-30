@@ -123,7 +123,7 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 
 	send << " HTTP/1.1\r\n";
 
-	if (head.find("\r\nHost: ") == head.npos)
+	if (head.find("\r\nHost: ") == head.npos) // todo: can be at position 0
 		send << "Host: " << mHost << ':' << mPort << "\r\n";
 
 	if (head.find("\r\nAccept: ") == head.npos)

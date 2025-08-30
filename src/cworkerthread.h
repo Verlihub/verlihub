@@ -57,6 +57,8 @@ public:
 	 * */
 	virtual void DoSomething();
 
+	virtual void StopAndDel();
+
 protected:
 	cThreadWork * mWork;
 };
