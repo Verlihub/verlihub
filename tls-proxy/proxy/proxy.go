@@ -23,6 +23,7 @@ package proxy
 import (
 	"bytes"
 	"crypto/tls"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -332,18 +333,22 @@ func (p *Proxy) stream(c, h io.ReadWriteCloser) error {
 
 	go func() {
 		defer closeBoth()
-		_, err = p.copyBuffer(h, c)
+		_, err := p.copyBuffer(h, c)
 
 		if err != nil {
-			return err
+			/*if p.c.LogErrors {
+				log.Println(err)
+			}*/
+
+			return // stop on error
 		}
 	}()
 
-	_, err = p.copyBuffer(c, h)
+	_, _/*err :*/ = p.copyBuffer(c, h)
 
-	if err != nil {
+	/*if err != nil {
 		return err
-	}
+	}*/
 
 	return nil
 }
@@ -368,9 +373,15 @@ func (p *Proxy) copyBuffer(dst io.Writer, src io.Reader) (written int64, err err
 		if nr > 0 {
 			nw, ew := dst.Write(buf[0:nr])
 
-			if nw > 0 {
-				written += int64(nw)
+			if nw < 0 || nr < nw {
+				nw = 0
+
+				if ew == nil {
+					ew = errors.New("invalid write result")
+				}
 			}
+
+			written += int64(nw)
 
 			if ew != nil {
 				err = ew

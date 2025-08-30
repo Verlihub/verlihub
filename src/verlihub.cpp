@@ -230,8 +230,8 @@ int main(int argc, char *argv[])
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
-			signal(SIGPIPE, mySigPipeHandler); // SIG_IGN
-			signal(SIGIO, mySigIOHandler); // SIG_IGN
+			signal(SIGPIPE, SIG_IGN); // mySigPipeHandler
+			signal(SIGIO, SIG_IGN); // mySigIOHandler
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
