@@ -635,7 +635,9 @@ bool cAsyncSocketServer::StopProxy()
 	if (Log(0))
 		LogStream() << "Stopping TLS proxy" << endl;
 
+	VH_ProxySetLog(false); // prevents log flood
 	VH_ProxyStop();
+	mProxyThread.StopAndDel();
 	return true;
 }
 #endif

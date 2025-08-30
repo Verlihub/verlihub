@@ -233,6 +233,9 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
+	mHublistReg.StopAndDel();
+	mUpdateCheck.StopAndDel();
+
 	CtmToHubClearList(); // ctm2hub
 
 	if (mNetOutLog && mNetOutLog.is_open())
