@@ -85,6 +85,66 @@ protected:
 	Typ2 mPar2;
 };
 
+template<class ClassType, class Typ1, class Typ2, class Typ3, class Typ4, class Typ5, class Typ6, class Typ7, class Typ8, class Typ9, class Typ10, class Typ11> class tThreadWork11T: public cThreadWork
+{
+public:
+	typedef int(ClassType::*tT11Callback)(Typ1, Typ2, Typ3, Typ4, Typ5, Typ6, Typ7, Typ8, Typ9, Typ10, Typ11);
+
+	tThreadWork11T(Typ1 const &par1, Typ2 const &par2, Typ3 const &par3, Typ4 const &par4, Typ5 const &par5, Typ6 const &par6, Typ7 const &par7, Typ8 const &par8, Typ9 const &par9, Typ10 const &par10, Typ11 const &par11, ClassType *object, tT11Callback cb):
+		mCB(cb),
+		mObject(object),
+		mPar1(par1),
+		mPar2(par2),
+		mPar3(par3),
+		mPar4(par4),
+		mPar5(par5),
+		mPar6(par6),
+		mPar7(par7),
+		mPar8(par8),
+		mPar9(par9),
+		mPar10(par10),
+		mPar11(par11)
+	{}
+
+	virtual int DoTheWork()
+	{
+		return (mObject->*mCB)(mPar1, mPar2, mPar3, mPar4, mPar5, mPar6, mPar7, mPar8, mPar9, mPar10, mPar11);
+	}
+protected:
+	tT11Callback mCB;
+	ClassType *mObject;
+	Typ1 mPar1;
+	Typ2 mPar2;
+	Typ3 mPar3;
+	Typ4 mPar4;
+	Typ5 mPar5;
+	Typ6 mPar6;
+	Typ7 mPar7;
+	Typ8 mPar8;
+	Typ9 mPar9;
+	Typ10 mPar10;
+	Typ11 mPar11;
+};
+
+template<class ClassType> class tThreadWork0T: public cThreadWork
+{
+public:
+	typedef int(ClassType::*tT0Callback)();
+
+	tThreadWork0T(ClassType *object, tT0Callback cb):
+		mCB(cb),
+		mObject(object)
+	{}
+
+	virtual int DoTheWork()
+	{
+		return (mObject->*mCB)();
+	}
+protected:
+	tT0Callback mCB;
+	ClassType *mObject;
+};
+
 	}; // namespace nThread
 }; // namespace nVerliHub
 

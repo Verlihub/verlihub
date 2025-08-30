@@ -35,7 +35,7 @@
 #include "cmeanfrequency.h"
 
 #ifdef USE_TLS_PROXY
-	#include "proxy.h"
+	#include "cworkerthread.h"
 #endif
 
 #include <list>
@@ -52,11 +52,9 @@ using namespace std;
 namespace nVerliHub {
 	using namespace nUtils;
 
-/*
 #ifdef USE_TLS_PROXY
 	using namespace nThread;
 #endif
-*/
 
 	namespace nSocket {
 		/// @addtogroup Core
@@ -249,10 +247,9 @@ namespace nVerliHub {
 				}
 
 		protected:
-			// tls proxy
-			#ifdef USE_TLS_PROXY
-				VH_ProxyConfig *mProxyConfig;
-				bool StartProxy();
+			#ifdef USE_TLS_PROXY // tls proxy
+				cWorkerThread mProxyThread; // working thread
+				int DoStartProxy(string, string, string, string, string, string, string, bool, int, int, int);
 				bool StopProxy();
 			#endif
 
