@@ -332,10 +332,19 @@ func (p *Proxy) stream(c, h io.ReadWriteCloser) error {
 
 	go func() {
 		defer closeBoth()
-		_, _ = p.copyBuffer(h, c)
+		_, err = p.copyBuffer(h, c)
+
+		if err != nil {
+			return err
+		}
 	}()
 
-	_, _ = p.copyBuffer(c, h)
+	_, err = p.copyBuffer(c, h)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
