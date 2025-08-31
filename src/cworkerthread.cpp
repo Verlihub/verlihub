@@ -76,6 +76,7 @@ void cWorkerThread::DoSomething()
 	}
 }
 
+/*
 void cWorkerThread::StopAndDel()
 {
 	if (mWork != NULL) {
@@ -87,6 +88,7 @@ void cWorkerThread::StopAndDel()
 		}
 	}
 }
+*/
 
 	}; // namespace nThread
 }; // namespace nVerliHub

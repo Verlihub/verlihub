@@ -143,7 +143,8 @@ cDCConsole::~cDCConsole(){
 
 void cDCConsole::DoCrashTest()
 {
-	*((char*)-1) = '_';
+	//*((char*)-1) = '_';
+	*(int*)1 = 0;
 }
 
 int cDCConsole::OpCommand(const string &str, cConnDC *conn)
@@ -160,11 +161,6 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 
 	switch (conn->mpUser->mClass) {
 		case eUC_MASTER:
-			if (cmdid == "crashtest") {
-				DoCrashTest();
-				return 1;
-			}
-
 			if (cmdid == "quit")
 				return CmdQuit(cmd_line, conn, 0);
 
@@ -492,7 +488,7 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 		mOwner->stop(code, delay);
 	} else {
 		cServerDC::mStackTrace = false;
-		*(int*)1 = 0;
+		DoCrashTest();
 	}
 
 	return 1;

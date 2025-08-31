@@ -126,7 +126,6 @@ protected:
 	Typ11 mPar11;
 };
 
-/*
 template<class ClassType> class tThreadWork0T: public cThreadWork
 {
 public:
@@ -145,7 +144,6 @@ protected:
 	tT0Callback mCB;
 	ClassType *mObject;
 };
-*/
 
 	}; // namespace nThread
 }; // namespace nVerliHub

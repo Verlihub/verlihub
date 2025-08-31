@@ -23,10 +23,10 @@ package proxy
 import (
 	"bytes"
 	"crypto/tls"
-	"errors"
 	"io"
 	"io/ioutil"
 	"log"
+	"strings"
 	"strconv"
 	"net"
 	"os"
@@ -160,8 +160,14 @@ func (p *Proxy) Wait() {
 }
 
 func (p *Proxy) Close() error {
+	log.Println("Stopping TLS proxy")
+
 	for _, l := range p.lis {
-		_ = l.Close()
+		err := l.Close()
+
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	p.lis = nil
@@ -169,6 +175,8 @@ func (p *Proxy) Close() error {
 }
 
 func (p *Proxy) Run() error {
+	log.Println("Starting TLS proxy:", strings.Join(p.c.Hosts[:], " "), "->", p.c.HubAddr)
+
 	for _, host := range p.c.Hosts {
 		l, err := net.Listen("tcp4", host)
 
@@ -183,7 +191,7 @@ func (p *Proxy) Run() error {
 	for i, l := range p.lis {
 		p.wg.Add(1)
 		l := l
-		log.Println("Proxying", p.c.Hosts[i], "to", p.c.HubAddr)
+		log.Println("Proxying", p.c.Hosts[i], "->", p.c.HubAddr)
 
 		go func() {
 			defer p.wg.Done()
@@ -377,7 +385,7 @@ func (p *Proxy) copyBuffer(dst io.Writer, src io.Reader) (written int64, err err
 				nw = 0
 
 				if ew == nil {
-					ew = errors.New("invalid write result")
+					ew = io.ErrClosedPipe // note: fake
 				}
 			}
 

@@ -232,6 +232,11 @@ void cAsyncSocketServer::close()
 		}
 	}
 
+#ifdef USE_TLS_PROXY
+	if (mTLSPort)
+		StopProxy();
+#endif
+
 /*
 #ifdef USE_SSL_CONNECTS
 	if (mSSLCont) {
@@ -242,11 +247,6 @@ void cAsyncSocketServer::close()
 	}
 #endif
 */
-
-#ifdef USE_TLS_PROXY
-	if (mTLSPort)
-		StopProxy(); // stop at last
-#endif
 }
 
 /*
@@ -568,7 +568,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 		return false;
 	}
 
-	if (!mProxyThread.AddWork(work)) {
+	if (!mProxyStartThread.AddWork(work)) {
 		if (Log(0))
 			LogStream() << "Failed to start new working thread" << endl;
 
@@ -630,14 +630,36 @@ int cAsyncSocketServer::DoStartProxy(string shub, string saddr, string scert, st
 	return 0; // note: always return 0
 }
 
-bool cAsyncSocketServer::StopProxy()
+int cAsyncSocketServer::DoStopProxy() // note: threaded function
 {
-	if (Log(0))
-		LogStream() << "Stopping TLS proxy" << endl;
+	if (this->Log(0))
+		this->LogStream() << "Stopping TLS proxy" << endl;
 
 	VH_ProxySetLog(false); // prevents log flood
 	VH_ProxyStop();
-	mProxyThread.StopAndDel();
+	return 0; // note: always return 0
+}
+
+bool cAsyncSocketServer::StopProxy()
+{
+	cThreadWork *work = new tThreadWork0T<cAsyncSocketServer>(this, &nVerliHub::nSocket::cAsyncSocketServer::DoStopProxy);
+
+	if (!work) {
+		if (Log(0))
+			LogStream() << "Failed to create new working thread" << endl;
+
+		return false;
+	}
+
+	if (!mProxyStopThread.AddWork(work)) {
+		if (Log(0))
+			LogStream() << "Failed to start new working thread" << endl;
+
+		delete work;
+		work = NULL;
+		return false;
+	}
+
 	return true;
 }
 #endif

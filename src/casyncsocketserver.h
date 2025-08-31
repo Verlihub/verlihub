@@ -248,8 +248,9 @@ namespace nVerliHub {
 
 		protected:
 			#ifdef USE_TLS_PROXY // tls proxy
-				cWorkerThread mProxyThread; // working thread
+				cWorkerThread mProxyStartThread, mProxyStopThread; // working threads
 				int DoStartProxy(string, string, string, string, string, string, string, bool, int, int, int);
+				int DoStopProxy();
 				bool StopProxy();
 			#endif
 
