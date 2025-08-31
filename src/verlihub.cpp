@@ -56,13 +56,13 @@ cObj mainLogger("main");
 void mySigPipeHandler(int i)
 {
 	signal(SIGPIPE, mySigPipeHandler);
-	MAIN_LOG_NOTICE << "Received SIGPIPE, ignoring it, " << i << endl;
+	//MAIN_LOG_NOTICE << "Received SIGPIPE, ignoring it, " << i << endl;
 }
 
 void mySigIOHandler(int i)
 {
 	signal(SIGIO, mySigIOHandler);
-	MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
+	//MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
 }
 
 void mySigQuitHandler(int i)
@@ -230,8 +230,8 @@ int main(int argc, char *argv[])
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
-			signal(SIGPIPE, SIG_IGN); // mySigPipeHandler
-			signal(SIGIO, SIG_IGN); // mySigIOHandler
+			signal(SIGPIPE, mySigPipeHandler); // SIG_IGN
+			signal(SIGIO, mySigIOHandler); // SIG_IGN
 			signal(SIGQUIT, mySigQuitHandler);
 			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
