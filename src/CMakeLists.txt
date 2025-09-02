@@ -201,7 +201,13 @@ ADD_LIBRARY(libverlihub SHARED ${VERLIHUB_SRCS})
 SET_TARGET_PROPERTIES(libverlihub PROPERTIES OUTPUT_NAME "verlihub")
 #SET_TARGET_PROPERTIES(libverlihub PROPERTIES VERSION ${VERLIHUB_VERSION} SOVERSION ${VERLIHUB_SOVERSION})
 
-target_link_libraries(libverlihub ${VERLIHUB_LIBS}) # pthread dl execinfo
+IF(USE_TLS_PROXY)
+	add_library(proxy SHARED IMPORTED)
+	set_target_properties(proxy PROPERTIES IMPORTED_LOCATION ${VERLIHUB_SOURCE_DIR}/tls-proxy/build/proxy.so)
+	target_link_libraries(libverlihub ${VERLIHUB_LIBS} proxy) # pthread dl execinfo
+ELSE(USE_TLS_PROXY)
+	target_link_libraries(libverlihub ${VERLIHUB_LIBS})
+ENDIF(USE_TLS_PROXY)
 
 ADD_LIBRARY(vhapi SHARED "script_api.cpp")
 #SET_TARGET_PROPERTIES(vhapi PROPERTIES VERSION ${VERLIHUB_VERSION} SOVERSION ${VERLIHUB_SOVERSION})
@@ -209,12 +215,7 @@ TARGET_LINK_LIBRARIES(vhapi libverlihub)
 
 # Link libverlihub against verlihub executable
 ADD_EXECUTABLE(verlihub verlihub.cpp)
-
-IF(USE_TLS_PROXY)
-	TARGET_LINK_LIBRARIES(verlihub libverlihub ${VERLIHUB_SOURCE_DIR}/tls-proxy/build/proxy.a)
-ELSE(USE_TLS_PROXY)
-	TARGET_LINK_LIBRARIES(verlihub libverlihub)
-ENDIF(USE_TLS_PROXY)
+TARGET_LINK_LIBRARIES(verlihub libverlihub)
 
 # ----------------------------------------------------------------------------------------------------
 # Generate verlihub_config

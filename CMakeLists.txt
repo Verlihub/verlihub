@@ -144,30 +144,9 @@ Find_Package(Gettext REQUIRED)
 Find_Package(Gettext-devel REQUIRED)
 Find_Package(Libintl REQUIRED)
 
-OPTION(USE_TLS_PROXY "Build TLS proxy library" OFF)
-
-IF(USE_TLS_PROXY)
-	FIND_PROGRAM(GOLANG_PATH go REQUIRED
-		PATHS
-			/usr/bin
-			/usr/local/bin
-			/var/snap
-	)
-
-	IF(GOLANG_PATH)
-		MESSAGE(STATUS "[ OK ] Building TLS proxy using Go")
-		Execute_Process(COMMAND go build -buildmode=c-archive -o "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.a" "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tls-proxy/")
-		MESSAGE(STATUS "[ OK ] Copying proxy.h")
-		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
-		MESSAGE(STATUS "[ OK ] Copying proxy_types.h")
-		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
-		ADD_DEFINITIONS(-DUSE_TLS_PROXY=1)
-	ELSE(GOLANG_PATH)
-		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
-	ENDIF(GOLANG_PATH)
-ELSE(USE_TLS_PROXY)
-	MESSAGE(STATUS "[ OK ] NOTE: NOT building TLS proxy")
-ENDIF(USE_TLS_PROXY)
+SET(CMAKE_CXX_STANDARD 17) # note: required by icu 75+
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 
 FIND_LIBRARY(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
 OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation?" OFF)
@@ -190,6 +169,9 @@ IF(HAVE_BSD)
 	#Find_Package(LibKVM) # optional
 	SET(CMAKE_CXX_COMPILER "clang++")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+ELSE(HAVE_BSD)
+	set(CMAKE_CXX_COMPILER "g++")
+	set(CMAKE_C_COMPILER "gcc")
 ENDIF(HAVE_BSD)
 
 IF(HAVE_ALPINE)
@@ -198,9 +180,41 @@ IF(HAVE_ALPINE)
 ENDIF(HAVE_ALPINE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DU_USING_ICU_NAMESPACE=1")
-SET(CMAKE_CXX_STANDARD 17) # note: required by icu 75+
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_EXTENSIONS OFF)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -Wno-overloaded-virtual") # todo: -Woverloaded-virtual -pthread
+OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF)
+
+IF(DEFINE_DEBUG)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # -Wextra
+	SET(CMAKE_BUILD_TYPE Debug)
+ELSE(DEFINE_DEBUG)
+	SET(CMAKE_BUILD_TYPE Release)
+ENDIF(DEFINE_DEBUG)
+
+OPTION(USE_TLS_PROXY "Build TLS proxy library" OFF)
+
+IF(USE_TLS_PROXY)
+	FIND_PROGRAM(GOLANG_PATH go REQUIRED
+		PATHS
+			/usr/bin
+			/usr/local/bin
+			/var/snap
+	)
+
+	IF(GOLANG_PATH)
+		MESSAGE(STATUS "[ OK ] Building TLS proxy using Go") # -buildmode c-archive -compiler gccgo -gccgoflags "-static"
+		Execute_Process(COMMAND go build -buildmode c-shared -o "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.so" "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tls-proxy/")
+		MESSAGE(STATUS "[ OK ] Copying proxy.h")
+		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/build/proxy.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
+		MESSAGE(STATUS "[ OK ] Copying proxy_types.h")
+		File(COPY "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" DESTINATION "${CMAKE_SOURCE_DIR}/src/")
+		ADD_DEFINITIONS(-DUSE_TLS_PROXY=1)
+	ELSE(GOLANG_PATH)
+		MESSAGE(FATAL_ERROR "[ ER ] GoLang not found, please install it via your package manager or compile from source: https://go.dev/")
+	ENDIF(GOLANG_PATH)
+ELSE(USE_TLS_PROXY)
+	MESSAGE(STATUS "[ OK ] NOTE: NOT building TLS proxy")
+ENDIF(USE_TLS_PROXY)
 
 IF(HAVE_BSD)
 	#IF(HAVE_LIBKVM)
@@ -245,15 +259,6 @@ ENDIF(HAVE_SYSLOG_H)
 IF(NOT HAVE_GETOPT_H)
 	MESSAGE(FATAL_ERROR "[ ER ] getopt.h header not found, it is required to build Verlihub")
 ENDIF(NOT HAVE_GETOPT_H)
-
-OPTION(DEFINE_DEBUG "Build the project using debugging code" OFF)
-
-IF(DEFINE_DEBUG)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O0 -g") # -Wextra, do not optimize: -O3
-	SET(CMAKE_BUILD_TYPE Debug)
-ELSE(DEFINE_DEBUG)
-	SET(CMAKE_BUILD_TYPE Release)
-ENDIF(DEFINE_DEBUG)
 
 
 #ADD_DEFINITIONS(-DUSE_SSL_CONNECTS)

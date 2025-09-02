@@ -30,6 +30,9 @@ import (
 	"strconv"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
+	//"runtime"
 	"sync"
 	"time"
 
@@ -39,6 +42,7 @@ import (
 func init() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.SetOutput(os.Stdout)
+	//runtime.GOMAXPROCS(1)
 }
 
 type Config struct {
@@ -175,6 +179,7 @@ func (p *Proxy) Close() error {
 }
 
 func (p *Proxy) Run() error {
+	signal.Ignore(syscall.SIGPIPE)
 	log.Println("Starting TLS proxy:", strings.Join(p.c.Hosts[:], " "), "->", p.c.HubAddr)
 
 	for _, host := range p.c.Hosts {
@@ -341,23 +346,10 @@ func (p *Proxy) stream(c, h io.ReadWriteCloser) error {
 
 	go func() {
 		defer closeBoth()
-		_, err := p.copyBuffer(h, c)
-
-		if err != nil {
-			/*if p.c.LogErrors {
-				log.Println(err)
-			}*/
-
-			return // stop on error
-		}
+		_, _ = p.copyBuffer(h, c)
 	}()
 
-	_, _/*err :*/ = p.copyBuffer(c, h)
-
-	/*if err != nil {
-		return err
-	}*/
-
+	_, _ = p.copyBuffer(c, h)
 	return nil
 }
 

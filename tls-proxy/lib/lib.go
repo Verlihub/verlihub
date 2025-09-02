@@ -20,7 +20,10 @@
 
 package main
 
-//#include "proxy_types.h"
+/*
+#include "proxy_types.h"
+#include <stdlib.h>
+*/
 import "C"
 
 import (
@@ -94,13 +97,14 @@ func VH_ProxyStart(conf *C.VH_ProxyConfig) C.int {
 }
 
 //export VH_ProxyStop
-func VH_ProxyStop() {
+func VH_ProxyStop(code C.int) {
 	if curProxy == nil {
 		return
 	}
 
 	_ = curProxy.Close()
 	curProxy = nil
+	C.exit(code) // C.EXIT_SUCCESS, workaround until fixed in go: https://github.com/golang/go/issues/20713
 }
 
 //export VH_ProxySetBuf

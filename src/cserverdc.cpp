@@ -22,6 +22,18 @@
 	#include <config.h>
 #endif
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <stdlib.h> /* for strtoll */
+#include <stdio.h> /* for remove and rename */
+#include <fstream>
+#include <cctype>
+#include <locale.h>
+#include <algorithm>
+#include <execinfo.h>
+#include <cxxabi.h>
+
 #ifdef USE_TLS_PROXY
 	#include "proxy.h"
 #endif
@@ -34,22 +46,11 @@
 #include "cbanlist.h"
 #include "ckicklist.h"
 #include "cpenaltylist.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stdlib.h> /* for strtoll */
-#include <stdio.h> /* for remove and rename */
-#include <fstream>
-#include <cctype>
-#include <algorithm>
-#include <execinfo.h>
-#include <cxxabi.h>
 #include "cthreadwork.h"
 #include "stringutils.h"
 #include "cconntypes.h"
 #include "cdcconsole.h"
 #include "ctriggers.h"
-#include "i18n.h"
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -236,11 +237,7 @@ cServerDC::~cServerDC()
 	//mHublistReg.StopAndDel();
 	//mUpdateCheck.StopAndDel();
 
-	CtmToHubClearList(); // ctm2hub
-
-	if (mNetOutLog && mNetOutLog.is_open())
-		mNetOutLog.close();
-
+	close(); // close all remaining connections
 	cUser *user;
 	cUserCollection::iterator it; // remove all users
 
@@ -264,7 +261,11 @@ cServerDC::~cServerDC()
 		}
 	}
 
-	close(); // close all remaining connections
+	if (mNetOutLog && mNetOutLog.is_open())
+		mNetOutLog.close();
+
+	CtmToHubClearList(); // ctm2hub
+
 	this->OnUnLoad(0); // tell all plugins and their scripts that we are shutting down
 	mPluginManager.UnLoadAll();
 
@@ -332,6 +333,11 @@ cServerDC::~cServerDC()
 		delete mICUConvert;
 		mICUConvert = NULL;
 	}
+
+#ifdef USE_TLS_PROXY
+	if (mTLSPort)
+		StopProxy(mRunResult); // togo: there is a bug in go, stop proxy at last until fixed
+#endif
 }
 
 bool cServerDC::StartListening(int OverrideDefaultPort)

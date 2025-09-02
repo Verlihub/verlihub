@@ -34,10 +34,6 @@
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
 
-#ifdef USE_TLS_PROXY
-	#include "cworkerthread.h"
-#endif
-
 #include <list>
 
 /*
@@ -51,10 +47,6 @@ using namespace std;
 
 namespace nVerliHub {
 	using namespace nUtils;
-
-#ifdef USE_TLS_PROXY
-	using namespace nThread;
-#endif
 
 	namespace nSocket {
 		/// @addtogroup Core
@@ -246,13 +238,11 @@ namespace nVerliHub {
 					return mConnChooser.mConnList.size();
 				}
 
-		protected:
 			#ifdef USE_TLS_PROXY // tls proxy
-				cWorkerThread mProxyStartThread, mProxyStopThread; // working threads
-				int DoStartProxy(string, string, string, string, string, string, string, bool, int, int, int);
-				int DoStopProxy();
-				bool StopProxy();
+				void StopProxy(int code);
 			#endif
+
+		protected:
 
 			/// Indicate if the main loop is running.
 			bool mbRun;
