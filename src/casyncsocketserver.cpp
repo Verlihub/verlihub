@@ -43,10 +43,6 @@ namespace nVerliHub {
 	using namespace nEnums;
 	using namespace nSocket;
 
-#ifdef USE_TLS_PROXY
-	using namespace nThread;
-#endif
-
 	namespace nSocket {
 
 	//bool nSocket::cAsyncSocketServer::WSinitialized = false;
@@ -231,11 +227,6 @@ void cAsyncSocketServer::close()
 			(*it) = NULL;
 		}
 	}
-
-#ifdef USE_TLS_PROXY
-	if (mTLSPort)
-		StopProxy();
-#endif
 
 /*
 #ifdef USE_SSL_CONNECTS
@@ -516,6 +507,15 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (!mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
+	VH_ProxyConfig *conf = VH_ProxyCreate();
+
+	if (!conf) {
+		if (Log(0))
+			LogStream() << "Failed to create proxy configuration" << endl;
+
+		return false;
+	}
+
 	string shub, saddr, scert, skey, sorg, smail, shost;
 	int iwait, ibuf, iver;
 	bool blog;
@@ -559,42 +559,6 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	ibuf = mTLSBuf;
 	iver = mTLSVer;
 
-	cThreadWork *work = new tThreadWork11T<cAsyncSocketServer, string, string, string, string, string, string, string, bool, int, int, int>(shub, saddr, scert, skey, sorg, smail, shost, blog, iwait, ibuf, iver, this, &nVerliHub::nSocket::cAsyncSocketServer::DoStartProxy);
-
-	if (!work) {
-		if (Log(0))
-			LogStream() << "Failed to create new working thread" << endl;
-
-		return false;
-	}
-
-	if (!mProxyStartThread.AddWork(work)) {
-		if (Log(0))
-			LogStream() << "Failed to start new working thread" << endl;
-
-		delete work;
-		work = NULL;
-		return false;
-	}
-
-	return this->Listen(mTLSPort/*, false*/);
-#else
-	return this->Listen(OverrideDefaultPort/*, false*/);
-#endif
-}
-
-#ifdef USE_TLS_PROXY
-int cAsyncSocketServer::DoStartProxy(string shub, string saddr, string scert, string skey, string sorg, string smail, string shost, bool blog, int iwait, int ibuf, int iver) // note: threaded function
-{
-	VH_ProxyConfig *conf = VH_ProxyCreate();
-
-	if (!conf) {
-		if (this->Log(0))
-			this->LogStream() << "Failed to create proxy configuration" << endl;
-
-		return 0; // note: always return 0
-	}
-
 	conf->HubAddr = shub.c_str();
 	conf->HubNetwork = "tcp4"; // note: static
 	conf->Hosts = saddr.c_str();
@@ -609,58 +573,41 @@ int cAsyncSocketServer::DoStartProxy(string shub, string saddr, string scert, st
 	conf->MinVer = iver;
 	conf->NoSendIP = false; // note: static
 
-	if (this->Log(0))
-		this->LogStream() << "Starting TLS proxy: " << saddr << " -> " << shub << endl;
+	if (Log(0))
+		LogStream() << "Starting TLS proxy: " << saddr << " -> " << shub << endl;
 
 	if (!VH_ProxyStart(conf)) {
 		char *err = VH_ProxyError();
 
 		if (err) {
-			if (this->Log(0))
-				this->LogStream() << "Error starting TLS proxy: " << err << endl;
+			if (Log(0))
+				LogStream() << "Error starting TLS proxy: " << err << endl;
 
 			delete err;
 
-		} else if (this->Log(0)) {
-			this->LogStream() << "Error starting TLS proxy" << endl;
+		} else if (Log(0)) {
+			LogStream() << "Error starting TLS proxy" << endl;
 		}
+
+		delete conf;
+		return false;
 	}
 
 	delete conf;
-	return 0; // note: always return 0
+	return this->Listen(mTLSPort/*, false*/);
+#else
+	return this->Listen(OverrideDefaultPort/*, false*/);
+#endif
 }
 
-int cAsyncSocketServer::DoStopProxy() // note: threaded function
+#ifdef USE_TLS_PROXY
+void cAsyncSocketServer::StopProxy(int code)
 {
-	if (this->Log(0))
-		this->LogStream() << "Stopping TLS proxy" << endl;
+	if (Log(0))
+		LogStream() << "Stopping TLS proxy" << endl;
 
 	VH_ProxySetLog(false); // prevents log flood
-	VH_ProxyStop();
-	return 0; // note: always return 0
-}
-
-bool cAsyncSocketServer::StopProxy()
-{
-	cThreadWork *work = new tThreadWork0T<cAsyncSocketServer>(this, &nVerliHub::nSocket::cAsyncSocketServer::DoStopProxy);
-
-	if (!work) {
-		if (Log(0))
-			LogStream() << "Failed to create new working thread" << endl;
-
-		return false;
-	}
-
-	if (!mProxyStopThread.AddWork(work)) {
-		if (Log(0))
-			LogStream() << "Failed to start new working thread" << endl;
-
-		delete work;
-		work = NULL;
-		return false;
-	}
-
-	return true;
+	VH_ProxyStop(code);
 }
 #endif
 

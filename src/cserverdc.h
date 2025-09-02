@@ -31,6 +31,7 @@
 */
 
 #include <fstream>
+
 #include "cuser.h"
 #include "cmessagedc.h"
 #include "cconfigbase.h"
