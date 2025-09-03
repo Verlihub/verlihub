@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(IPLOG_VERSION_MAJOR 1)
@@ -39,6 +39,6 @@ SET(IPLOG_SRCS
 
 ADD_LIBRARY(libiplog_pi MODULE ${IPLOG_SRCS})
 SET_TARGET_PROPERTIES(libiplog_pi PROPERTIES OUTPUT_NAME "iplog_pi")
-TARGET_LINK_LIBRARIES(libiplog_pi libverlihub)
+TARGET_LINK_LIBRARIES(libiplog_pi libverlihub_so)
 
 INSTALL(TARGETS libiplog_pi LIBRARY DESTINATION ${PLUGINDIR})

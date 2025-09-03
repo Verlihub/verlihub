@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(PYTHON_VERSION_MAJOR 1)
@@ -56,7 +56,7 @@ LIST(APPEND PYTHON_SRCS "${CMAKE_CURRENT_BINARY_DIR}/cpipython.cpp")
 
 ADD_LIBRARY(libpython_pi MODULE ${PYTHON_SRCS})
 SET_TARGET_PROPERTIES(libpython_pi PROPERTIES OUTPUT_NAME "python_pi")
-TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub)
+TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub_so)
 
 ADD_LIBRARY(libvh_python_wrapper MODULE ${PYTHON_WRAPPER_SRCS})
 SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wrapper")

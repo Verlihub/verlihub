@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(ISP_VERSION_MAJOR 1)
@@ -39,6 +39,6 @@ SET(ISP_SRCS
 
 ADD_LIBRARY(libisp_pi MODULE ${ISP_SRCS})
 SET_TARGET_PROPERTIES(libisp_pi PROPERTIES OUTPUT_NAME "isp_pi")
-TARGET_LINK_LIBRARIES(libisp_pi libverlihub)
+TARGET_LINK_LIBRARIES(libisp_pi libverlihub_so)
 
 INSTALL(TARGETS libisp_pi LIBRARY DESTINATION ${PLUGINDIR})

@@ -15,7 +15,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 prefix="@CMAKE_INSTALL_PREFIX@"
@@ -41,12 +41,10 @@ fi;
 case "x$1" in
 "x--cflags") echo @VERLIHUB_INCLUDE_DIRS@ -I$prefix/include/verlihub ;;
 "x--include") echo @VERLIHUB_INCLUDE_DIRS@ -I$prefix/include/verlihub ;;
-"x--libs") echo @VERLIHUB_SCRIPTS_LIBS@ -L$prefix/@LIBDIR@ ;;
+"x--libs") echo @VERLIHUB_USE_LIBS@ -L$prefix/@LIBDIR@ ;;
 "x--plugins") echo @PLUGINDIR@ ;;
 "x--prefix") echo $prefix ;;
 "x--datadir") echo @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@ ;;
-"x--version") 
-	echo -n "@VERLIHUB_VERSION@"
-;;
+"x--version") echo @VERLIHUB_VERSION@ ;;
 "x--help") printhelp ;;
 esac
