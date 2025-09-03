@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(MESSENGER_VERSION_MAJOR 1)
@@ -39,6 +39,6 @@ SET(MESSENGER_SRCS
 
 ADD_LIBRARY(libmessenger_pi MODULE ${MESSENGER_SRCS})
 SET_TARGET_PROPERTIES(libmessenger_pi PROPERTIES OUTPUT_NAME "messenger_pi")
-TARGET_LINK_LIBRARIES(libmessenger_pi libverlihub)
+TARGET_LINK_LIBRARIES(libmessenger_pi libverlihub_so)
 
 INSTALL(TARGETS libmessenger_pi LIBRARY DESTINATION ${PLUGINDIR})

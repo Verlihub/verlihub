@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 # todo: cmake 3.16 has FindGettext.cmake, really need this?
@@ -39,6 +39,6 @@ IF(GETTEXT_DEVEL_FOUND)
 	ENDIF(NOT Gettext-devel_FIND_QUIETLY)
 ELSE(GETTEXT_DEVEL_FOUND)
 	IF(Gettext-devel_FIND_REQUIRED)
-		MESSAGE(FATAL_ERROR "[ ER ] GetText headers not found, please install them via your package manager or compile from source: http://ftp.gnu.org/pub/gnu/gettext/")
+		MESSAGE(FATAL_ERROR "[ ER ] GetText headers not found, please install them via your package manager or compile from source: https://ftp.gnu.org/pub/gnu/gettext/")
 	ENDIF(Gettext-devel_FIND_REQUIRED)
 ENDIF(GETTEXT_DEVEL_FOUND)

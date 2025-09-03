@@ -13,9 +13,10 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
+message(STATUS)
 OPTION(WITH_PLUGINS "Whether to build any plugins or not" TRUE)
 
 IF(WITH_PLUGINS)
@@ -40,7 +41,7 @@ IF(WITH_LUA)
 	ADD_PLUGIN(LUA_FOUND lua)
 
 ELSE(WITH_LUA)
-	MESSAGE(STATUS "Not building LUA plugin, to enable please use: -DWITH_LUA=ON")
+	MESSAGE(STATUS "[ !! ] NOT building LUA plugin, to enable please use: -DWITH_LUA=ON")
 ENDIF(WITH_LUA)
 
 # python plugin, deprecated
@@ -51,7 +52,7 @@ IF(WITH_PYTHON)
 	Find_Package(PythonLibs 2.7)
 	ADD_PLUGIN(PYTHONLIBS_FOUND python)
 ELSE(WITH_PYTHON)
-	MESSAGE(STATUS "Not building PYTHON plugin because DEPRECATED, to enable please use: -DWITH_PYTHON=ON")
+	MESSAGE(STATUS "[ !! ] NOT building PYTHON plugin because DEPRECATED, to enable please use: -DWITH_PYTHON=ON")
 ENDIF(WITH_PYTHON)
 
 # perl plugin, deprecated
@@ -72,7 +73,7 @@ IF(WITH_PERL)
 
 	ADD_PLUGIN(PERLLIBS_FOUND perl)
 ELSE(WITH_PERL)
-	MESSAGE(STATUS "Not building PERL plugin because DEPRECATED, to enable please use: -DWITH_PERL=ON")
+	MESSAGE(STATUS "[ !! ] NOT building PERL plugin because DEPRECATED, to enable please use: -DWITH_PERL=ON")
 ENDIF(WITH_PERL)
 
 # other plugins, deprecated
@@ -81,58 +82,60 @@ OPTION(WITH_FORBID "Whether to build FORBID plugin or not" FALSE)
 IF(WITH_FORBID)
 	ADD_PLUGIN(ENABLE_PLUGIN forbid)
 ELSE(WITH_FORBID)
-	MESSAGE(STATUS "Not building FORBID plugin because DEPRECATED, to enable please use: -DWITH_FORBID=ON")
+	MESSAGE(STATUS "[ !! ] NOT building FORBID plugin because DEPRECATED, to enable please use: -DWITH_FORBID=ON")
 ENDIF(WITH_FORBID)
 
 OPTION(WITH_CHATROOM "Whether to build CHATROOM plugin or not" FALSE)
 IF(WITH_CHATROOM)
 	ADD_PLUGIN(ENABLE_PLUGIN chatroom)
 ELSE(WITH_CHATROOM)
-	MESSAGE(STATUS "Not building CHATROOM plugin because DEPRECATED, to enable please use: -DWITH_CHATROOM=ON")
+	MESSAGE(STATUS "[ !! ] NOT building CHATROOM plugin because DEPRECATED, to enable please use: -DWITH_CHATROOM=ON")
 ENDIF(WITH_CHATROOM)
 
 OPTION(WITH_IPLOG "Whether to build IPLOG plugin or not" FALSE)
 IF(WITH_IPLOG)
 	ADD_PLUGIN(ENABLE_PLUGIN iplog)
 ELSE(WITH_IPLOG)
-	MESSAGE(STATUS "Not building IPLOG plugin because DEPRECATED, to enable please use: -DWITH_IPLOG=ON")
+	MESSAGE(STATUS "[ !! ] NOT building IPLOG plugin because DEPRECATED, to enable please use: -DWITH_IPLOG=ON")
 ENDIF(WITH_IPLOG)
 
 OPTION(WITH_ISP "Whether to build ISP plugin or not" FALSE)
 IF(WITH_ISP)
 	ADD_PLUGIN(ENABLE_PLUGIN isp)
 ELSE(WITH_ISP)
-	MESSAGE(STATUS "Not building ISP plugin because DEPRECATED, to enable please use: -DWITH_ISP=ON")
+	MESSAGE(STATUS "[ !! ] NOT building ISP plugin because DEPRECATED, to enable please use: -DWITH_ISP=ON")
 ENDIF(WITH_ISP)
 
 OPTION(WITH_MESSENGER "Whether to build MESSENGER plugin or not" FALSE)
 IF(WITH_MESSENGER)
 	ADD_PLUGIN(ENABLE_PLUGIN messenger)
 ELSE(WITH_MESSENGER)
-	MESSAGE(STATUS "Not building MESSENGER plugin because DEPRECATED, to enable please use: -DWITH_MESSENGER=ON")
+	MESSAGE(STATUS "[ !! ] NOT building MESSENGER plugin because DEPRECATED, to enable please use: -DWITH_MESSENGER=ON")
 ENDIF(WITH_MESSENGER)
 
 OPTION(WITH_STATS "Whether to build STATS plugin or not" FALSE)
 IF(WITH_STATS)
 	ADD_PLUGIN(ENABLE_PLUGIN stats)
 ELSE(WITH_STATS)
-	MESSAGE(STATUS "Not building STATS plugin because DEPRECATED, to enable please use: -DWITH_STATS=ON")
+	MESSAGE(STATUS "[ !! ] NOT building STATS plugin because DEPRECATED, to enable please use: -DWITH_STATS=ON")
 ENDIF(WITH_STATS)
 
 OPTION(WITH_REPLACER "Whether to build REPLACER plugin or not" FALSE)
 IF(WITH_REPLACER)
 	ADD_PLUGIN(ENABLE_PLUGIN replacer)
 ELSE(WITH_REPLACER)
-	MESSAGE(STATUS "Not building REPLACER plugin because DEPRECATED, to enable please use: -DWITH_REPLACER=ON")
+	MESSAGE(STATUS "[ !! ] NOT building REPLACER plugin because DEPRECATED, to enable please use: -DWITH_REPLACER=ON")
 ENDIF(WITH_REPLACER)
 
 OPTION(WITH_FLOODPROT "Whether to build FLOODPROT plugin or not" FALSE)
 IF(WITH_FLOODPROT)
 	ADD_PLUGIN(ENABLE_PLUGIN floodprot)
 ELSE(WITH_FLOODPROT)
-	MESSAGE(STATUS "Not building FLOODPROT plugin because DEPRECATED, to enable please use: -DWITH_FLOODPROT=ON")
+	MESSAGE(STATUS "[ !! ] NOT building FLOODPROT plugin because DEPRECATED, to enable please use: -DWITH_FLOODPROT=ON")
 ENDIF(WITH_FLOODPROT)
 
 ELSE(WITH_PLUGINS)
-	MESSAGE(STATUS "Will not build any plugins, to enable please use: -DWITH_PLUGINS=ON")
+	MESSAGE(STATUS "[ !! ] NOT building any plugins, to enable please use: -DWITH_PLUGINS=ON")
 ENDIF(WITH_PLUGINS)
+
+message(STATUS)

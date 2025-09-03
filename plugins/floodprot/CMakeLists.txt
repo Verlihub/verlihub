@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(FLOODPROT_VERSION_MAJOR 1)
@@ -37,6 +37,6 @@ SET(FLOODPROT_SRCS
 
 ADD_LIBRARY(libfloodprot_pi MODULE ${FLOODPROT_SRCS})
 SET_TARGET_PROPERTIES(libfloodprot_pi PROPERTIES OUTPUT_NAME "floodprot_pi")
-TARGET_LINK_LIBRARIES(libfloodprot_pi libverlihub)
+TARGET_LINK_LIBRARIES(libfloodprot_pi libverlihub_so)
 
 INSTALL(TARGETS libfloodprot_pi LIBRARY DESTINATION ${PLUGINDIR})

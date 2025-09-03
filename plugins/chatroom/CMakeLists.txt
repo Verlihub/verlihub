@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(CHATROOM_VERSION_MAJOR 1)
@@ -39,6 +39,6 @@ SET(CHATROOM_SRCS
 
 ADD_LIBRARY(libchatroom_pi MODULE ${CHATROOM_SRCS})
 SET_TARGET_PROPERTIES(libchatroom_pi PROPERTIES OUTPUT_NAME "chatroom_pi")
-TARGET_LINK_LIBRARIES(libchatroom_pi libverlihub)
+TARGET_LINK_LIBRARIES(libchatroom_pi libverlihub_so)
 
 INSTALL(TARGETS libchatroom_pi LIBRARY DESTINATION ${PLUGINDIR})

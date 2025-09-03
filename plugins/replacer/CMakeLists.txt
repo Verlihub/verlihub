@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(REPLACER_VERSION_MAJOR 1)
@@ -41,6 +41,6 @@ SET(REPLACER_SRCS
 
 ADD_LIBRARY(libreplacer_pi MODULE ${REPLACER_SRCS})
 SET_TARGET_PROPERTIES(libreplacer_pi PROPERTIES OUTPUT_NAME "replacer_pi")
-TARGET_LINK_LIBRARIES(libreplacer_pi libverlihub)
+TARGET_LINK_LIBRARIES(libreplacer_pi libverlihub_so)
 
 INSTALL(TARGETS libreplacer_pi LIBRARY DESTINATION ${PLUGINDIR})

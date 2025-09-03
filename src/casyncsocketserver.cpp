@@ -21,7 +21,7 @@
 #include "casyncsocketserver.h"
 
 #ifdef USE_TLS_PROXY
-	#include "proxy.h"
+	#include "libvhproxy.h"
 #endif
 
 /*

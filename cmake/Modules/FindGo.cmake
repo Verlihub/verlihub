@@ -16,27 +16,23 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-SET(STATS_VERSION_MAJOR 1)
-SET(STATS_VERSION_MINOR 3)
-SET(STATS_VERSION_PATCH 0)
-SET(STATS_VERSION_TWEAK 0)
-SET(STATS_VERSION "${STATS_VERSION_MAJOR}.${STATS_VERSION_MINOR}.${STATS_VERSION_PATCH}.${STATS_VERSION_TWEAK}")
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-ADD_DEFINITIONS(-DSTATS_VERSION="${STATS_VERSION}")
-
-SET(STATS_HDRS
-	cpistats.h
-	cstats.h
+find_program(GOLANG_PATH go
+	HINTS
+		ENV GOROOT
+	PATHS
+		/usr
+		/usr/local
+		/var/snap
+	PATH_SUFFIXES
+		bin
 )
 
-SET(STATS_SRCS
-	cpistats.cpp
-	cstats.cpp
-)
+if(GOLANG_PATH)
+	execute_process(COMMAND ${GOLANG_PATH} version OUTPUT_VARIABLE GOLANG_VERSION)
+	string(STRIP "${GOLANG_VERSION}" GOLANG_VERSION)
+	message(STATUS "[ OK ] Found Go binary: ${GOLANG_PATH} (${GOLANG_VERSION})")
+elseif(GOLANG_PATH)
+	message(FATAL_ERROR "[ ER ] Go not found, please install it via your package manager or compile from source: https://go.dev/")
+endif(GOLANG_PATH)
 
-ADD_LIBRARY(libstats_pi MODULE ${STATS_SRCS})
-SET_TARGET_PROPERTIES(libstats_pi PROPERTIES OUTPUT_NAME "stats_pi")
-TARGET_LINK_LIBRARIES(libstats_pi libverlihub_so)
-
-INSTALL(TARGETS libstats_pi LIBRARY DESTINATION ${PLUGINDIR})
+# end of file

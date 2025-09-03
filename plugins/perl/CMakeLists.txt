@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(PERLSCRIPT_VERSION_MAJOR 1)
@@ -53,6 +53,6 @@ SET(PERLSCRIPT_SRCS
 
 ADD_LIBRARY(libperl_pi MODULE ${PERLSCRIPT_SRCS})
 SET_TARGET_PROPERTIES(libperl_pi PROPERTIES OUTPUT_NAME "perl_pi" INSTALL_RPATH_USE_LINK_PATH TRUE)
-TARGET_LINK_LIBRARIES(libperl_pi ${PERL_LIBRARY} libverlihub)
+TARGET_LINK_LIBRARIES(libperl_pi ${PERL_LIBRARY} libverlihub_so)
 
 INSTALL(TARGETS libperl_pi LIBRARY DESTINATION ${PLUGINDIR})

@@ -13,7 +13,7 @@
 #	a particular purpose. See the GNU General Public
 #	License for more details.
 #
-#	Please see http://www.gnu.org/licenses/ for a copy
+#	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
 SET(PLUGMAN_VERSION_MAJOR 1)
@@ -39,5 +39,5 @@ SET(PLUGMAN_HDRS
 )
 
 ADD_LIBRARY(plug_pi MODULE ${PLUGMAN_SRCS})
-target_link_libraries(plug_pi libverlihub)
+target_link_libraries(plug_pi libverlihub_so)
 INSTALL(TARGETS plug_pi LIBRARY DESTINATION ${PLUGINDIR})
