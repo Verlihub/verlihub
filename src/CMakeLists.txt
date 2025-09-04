@@ -219,9 +219,9 @@ endif(USE_TLS_PROXY AND GOLANG_PATH)
 
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-add_dependencies(libverlihub_so libvhproxy_a libvhproxy_h proxy_types_h)
 
 if(USE_TLS_PROXY)
+	add_dependencies(libverlihub_so libvhproxy_a libvhproxy_h proxy_types_h)
 	add_library(vhproxy SHARED IMPORTED)
 	set_target_properties(vhproxy PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
 	target_link_libraries(libverlihub_so vhproxy)
