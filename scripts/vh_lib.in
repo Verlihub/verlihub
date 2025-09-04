@@ -301,7 +301,7 @@ function _create_mysql_tables() # get_socket, sleep_time
 		fi
 	fi
 
-	$BINDIR/verlihub > $VERLIHUB_CFG/install_log 2>&1 &
+	exec 2>> $VERLIHUB_CFG/install_log && $BINDIR/verlihub 2>&1 >> $VERLIHUB_CFG/install_log &
 	PID=$!
 	sleep $2
 	kill -9 $PID &>/dev/null

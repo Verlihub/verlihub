@@ -42,7 +42,8 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 
 cMySQL::~cMySQL()
 {
-	Close();
+	if (mDBHandle)
+		Close();
 }
 
 void cMySQL::Init()
