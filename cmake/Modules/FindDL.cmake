@@ -38,7 +38,7 @@ IF(DL_FOUND)
 	ENDIF(NOT DL_FIND_QUIETLY)
 ELSE(DL_FOUND)
 	IF(DL_FIND_REQUIRED)
-		MESSAGE(FATAL_ERROR "[ ER ] DL ? not found, please install ? via your package manager or compile from source: ?")
+		MESSAGE(FATAL_ERROR "[ ER ] DL <?> not found, please install ? via your package manager or compile from source: <?>")
 	ENDIF(DL_FIND_REQUIRED)
 ENDIF(DL_FOUND)
 
