@@ -334,8 +334,7 @@ cServerDC::~cServerDC()
 		mICUConvert = NULL;
 	}
 
-	if (mMySQL)
-		mMySQL->Close();
+	mMySQL.Close();
 
 #ifdef USE_TLS_PROXY
 	if (mTLSPort)
