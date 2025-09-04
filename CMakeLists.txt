@@ -179,7 +179,7 @@ Find_Package(DL REQUIRED)
 Find_Package(Pcre REQUIRED)
 Find_Package(Threads REQUIRED)
 Find_Package(Gettext REQUIRED)
-Find_Package(LibIntl REQUIRED)
+Find_Package(Libintl REQUIRED)
 
 if(USE_CUSTOM_AUTOSPRINTF)
 	message(STATUS "[ OK ] Using custom internal autosprintf implementation")
