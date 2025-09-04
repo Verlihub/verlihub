@@ -334,6 +334,9 @@ cServerDC::~cServerDC()
 		mICUConvert = NULL;
 	}
 
+	if (mMySQL)
+		mMySQL->Close();
+
 #ifdef USE_TLS_PROXY
 	if (mTLSPort)
 		StopProxy(mRunResult); // togo: there is a bug in go, stop proxy at last until fixed
