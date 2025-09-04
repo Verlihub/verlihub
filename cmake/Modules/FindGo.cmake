@@ -31,7 +31,7 @@ if(GOLANG_PATH)
 	execute_process(COMMAND ${GOLANG_PATH} version OUTPUT_VARIABLE GOLANG_VERSION)
 	string(STRIP "${GOLANG_VERSION}" GOLANG_VERSION)
 	message(STATUS "[ OK ] Found Go binary: ${GOLANG_PATH} (${GOLANG_VERSION})")
-elseif(GOLANG_PATH)
+else(GOLANG_PATH)
 	message(FATAL_ERROR "[ ER ] Go not found, please install it via your package manager or compile from source: https://go.dev/")
 endif(GOLANG_PATH)
 
