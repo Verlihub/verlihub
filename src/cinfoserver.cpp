@@ -24,15 +24,6 @@
 #include "casyncconn.h"
 #include "cbanlist.h"
 
-/*
-#if defined HAVE_BSD && defined HAVE_LIBKVM
-	//#include <sys/user.h> // todo: does not compile
-	#include <sys/sysctl.h>
-	#include <fcntl.h>
-	#include <kvm.h>
-#endif
-*/
-
 #include <iostream>
 #include <thread>
 #include <unistd.h>
@@ -337,7 +328,7 @@ void cInfoServer::SystemInfo(ostream &os)
 	pid_t mypid;
 	string temp;
 
-#if defined HAVE_BSD //&& defined HAVE_LIBKVM && defined(_SC_PAGESIZE)
+#if defined HAVE_BSD
 
 	mypid = ::getpid(); // get own pid
 	temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
@@ -349,25 +340,6 @@ void cInfoServer::SystemInfo(ostream &os)
 
 	if (temp.size())
 		size_res = StringAsLL(temp);
-
-/*
-	if (mypid > 0) {
-		kvm_t *vm = kvm_open(NULL, NULL, NULL, O_RDONLY, NULL);
-
-		if (vm) {
-			int cnt = 0;
-			struct kinfo_proc *kp = kvm_getprocs(vm, KERN_PROC_PID, mypid, &cnt);
-
-			if ((cnt == 1) && kp) {
-				size_vm = kp->ki_size / 1024;
-				size_res = (kp->ki_rssize * sysconf(_SC_PAGESIZE)) / 1024;
-			}
-
-			kvm_close(vm);
-			vm = NULL;
-		}
-	}
-*/
 
 #elif defined HAVE_LINUX
 

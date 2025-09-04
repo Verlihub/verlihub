@@ -16,8 +16,11 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-cmake_minimum_required(VERSION 3.16...3.50)
-#cmake_policy(VERSION 3.16)
+# ----------------------------------------------------------------------------------------------------
+# version
+
+cmake_minimum_required(VERSION 3.20...3.50)
+#cmake_policy(VERSION 3.20)
 
 PROJECT(VERLIHUB)
 SET(PROJECT_NAME "verlihub")
@@ -27,6 +30,11 @@ SET(VERLIHUB_VERSION_MINOR 6)
 SET(VERLIHUB_VERSION_PATCH 1)
 SET(VERLIHUB_VERSION_TWEAK 0)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
+
+# ----------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------
+# header
 
 message(STATUS)
 message(STATUS "[ ?? ] You can change build options with: -D{OPTION}=ON|OFF")
@@ -40,11 +48,23 @@ message(STATUS "[ ?? ] Plugin names: LUA PYTHON PERL FORBID CHATROOM IPLOG ISP M
 message(STATUS "[ ?? ] If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
 message(STATUS)
 
-SET(OK_PLUGINS_COUNT 0)
-SET(ALL_PLUGINS_COUNT 12)
+# ----------------------------------------------------------------------------------------------------
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+# ----------------------------------------------------------------------------------------------------
+# defaults
+
 OPTION(INSTALL_CMAKE_FILES "Install *.cmake files into CMake root" ON)
+option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
+OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
+option(USE_TLS_PROXY "Build TLS proxy library" OFF)
+
+# ----------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------
+# prepare
+
+SET(PLUGINS_LIST "")
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 if(INSTALL_CMAKE_FILES)
 	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerlihub.cmake" DESTINATION "${CMAKE_ROOT}/Modules")
@@ -55,7 +75,9 @@ INCLUDE(MacroLogFeature)
 INCLUDE(VerlihubMacro)
 
 # ----------------------------------------------------------------------------------------------------
-# detect os
+
+# ----------------------------------------------------------------------------------------------------
+# system
 
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # detect os
 	#ADD_DEFINITIONS(-D_WIN32 1) # WIN32 flag already exists
@@ -120,6 +142,9 @@ ENDIF(EXISTS "/etc/alpine-release")
 
 # ----------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------
+# paths
+
 IF(LIB_INSTALL_DIR)
 	SET(LIBDIR ${LIB_INSTALL_DIR})
 ENDIF(LIB_INSTALL_DIR)
@@ -137,6 +162,8 @@ IF(NOT PLUGINDIR)
 ENDIF(NOT PLUGINDIR)
 
 # ----------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------
 # dependencies
 
 message(STATUS "[ .. ] Looking for dependencies")
@@ -147,15 +174,18 @@ Find_Package(Crypt REQUIRED)
 Find_Package(MySQL REQUIRED)
 Find_Package(ZLIB REQUIRED)
 Find_Package(MaxMindDB REQUIRED)
-#Find_Package(Iconv REQUIRED)
-Find_Package(ICU REQUIRED)
+Find_Package(ICU COMPONENTS data i18n uc io REQUIRED)
 Find_Package(DL REQUIRED)
 Find_Package(Pcre REQUIRED)
 Find_Package(Threads REQUIRED)
 Find_Package(Gettext REQUIRED)
-Find_Package(Gettext-devel REQUIRED)
-Find_Package(Libintl REQUIRED)
-Find_Library(GETTEXT_ASPRINTF_LIBRARY asprintf DOC "Gettext asprintf library")
+Find_Package(Intl REQUIRED)
+
+if(USE_CUSTOM_AUTOSPRINTF)
+	message(STATUS "[ OK ] Using custom internal autosprintf implementation")
+else(USE_CUSTOM_AUTOSPRINTF)
+	find_package(Asprintf REQUIRED)
+endif(USE_CUSTOM_AUTOSPRINTF)
 
 IF(HAVE_BSD OR HAVE_ALPINE)
 	Find_Package(ExecInfo REQUIRED)
@@ -163,7 +193,6 @@ ENDIF(HAVE_BSD OR HAVE_ALPINE)
 
 IF(HAVE_BSD)
 	Find_Package(SysInfo REQUIRED)
-	#Find_Package(LibKVM) # optional
 ENDIF(HAVE_BSD)
 
 if(USE_TLS_PROXY)
@@ -171,12 +200,7 @@ if(USE_TLS_PROXY)
 endif(USE_TLS_PROXY)
 
 IF(UNIX)
-	FIND_PROGRAM(BASH_PATH bash
-		PATHS
-			/usr/bin
-			/usr/local/bin
-	)
-
+	FIND_PROGRAM(BASH_PATH bash PATHS "/usr/bin" "/usr/local/bin")
 	IF(NOT BASH_PATH)
 		MESSAGE(FATAL_ERROR "[ ER ] Bash shell not found, please install it via your package manager or compile from source: https://ftp.gnu.org/gnu/bash/")
 	ENDIF(NOT BASH_PATH)
@@ -206,8 +230,6 @@ ENDIF(HAVE_ALPINE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -Wno-overloaded-virtual") # todo: -Woverloaded-virtual -pthread
 
-OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
-
 IF(DEFINE_DEBUG)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # -Wextra
 	SET(CMAKE_BUILD_TYPE "DEBUG")
@@ -217,31 +239,9 @@ ENDIF(DEFINE_DEBUG)
 
 SET(VERLIHUB_USE_LIBS "-lverlihub -lvhapi")
 
-# ----------------------------------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------------------------------
-# autosprintf
-
-OPTION(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
-
-IF(USE_CUSTOM_AUTOSPRINTF)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
-	SET(GETTEXT_ASPRINTF_LIBRARY "")
-	MESSAGE(STATUS "[ OK ] Using custom internal autosprintf implementation")
-ELSE(USE_CUSTOM_AUTOSPRINTF)
-	IF(GETTEXT_ASPRINTF_LIBRARY)
-		MESSAGE(STATUS "[ OK ] Found asprintf library: ${GETTEXT_ASPRINTF_LIBRARY}")
-	ELSE(GETTEXT_ASPRINTF_LIBRARY)
-		MESSAGE(FATAL_ERROR "[ ER ] asprintf library not found, please install it via your package manager or compile from source, else please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
-	ENDIF(GETTEXT_ASPRINTF_LIBRARY)
-ENDIF(USE_CUSTOM_AUTOSPRINTF)
-
-# ----------------------------------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------------------------------
-# tls proxy
-
-option(USE_TLS_PROXY "Build TLS proxy library" OFF)
+if(USE_CUSTOM_AUTOSPRINTF)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_CUSTOM_AUTOSPRINTF")
+endif(USE_CUSTOM_AUTOSPRINTF)
 
 if(USE_TLS_PROXY)
 	add_definitions(-DUSE_TLS_PROXY=1)
@@ -256,60 +256,113 @@ endif(USE_TLS_PROXY)
 # ----------------------------------------------------------------------------------------------------
 # includes
 
-SET(VERLIHUB_LIBS
-	${OPENSSL_LIBRARIES}
-	${CRYPT_LIBRARIES}
-	${MYSQL_LIBRARIES}
-	${MAXMINDDB_LIBRARIES}
-	${ICU_LIBRARIES}
-	${ZLIB_LIBRARIES}
-	${PCRE_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
-	${GETTEXT_ASPRINTF_LIBRARY}
-	${LIBINTL_LIBRARIES}
-	#${ICONV_LIBRARIES}
-)
+SET(VERLIHUB_LIBS "")
 
-IF(HAVE_BSD OR HAVE_ALPINE)
-	SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${EXECINFO_LIBRARY}")
-ENDIF(HAVE_BSD OR HAVE_ALPINE)
+if(OPENSSL_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${OPENSSL_LIBRARIES}")
+endif(OPENSSL_LIBRARIES)
+
+if(CRYPT_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${CRYPT_LIBRARIES}")
+endif(CRYPT_LIBRARIES)
+
+if(MYSQL_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${MYSQL_LIBRARIES}")
+endif(MYSQL_LIBRARIES)
+
+if(MAXMINDDB_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${MAXMINDDB_LIBRARIES}")
+endif(MAXMINDDB_LIBRARIES)
+
+if(ICU_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${ICU_LIBRARIES}")
+endif(ICU_LIBRARIES)
+
+if(ZLIB_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${ZLIB_LIBRARIES}")
+endif(ZLIB_LIBRARIES)
+
+if(PCRE_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${PCRE_LIBRARIES}")
+endif(PCRE_LIBRARIES)
+
+if(CMAKE_THREAD_LIBS_INIT)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${CMAKE_THREAD_LIBS_INIT}")
+endif(CMAKE_THREAD_LIBS_INIT)
+
+if(INTL_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${INTL_LIBRARIES}")
+endif(INTL_LIBRARIES)
+
+if(GETTEXT_ASPRINTF_LIBRARY)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${GETTEXT_ASPRINTF_LIBRARY}")
+endif(GETTEXT_ASPRINTF_LIBRARY)
+
+if(EXECINFO_LIBRARY)
+	IF(HAVE_BSD OR HAVE_ALPINE)
+		SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${EXECINFO_LIBRARY}")
+	ENDIF(HAVE_BSD OR HAVE_ALPINE)
+endif(EXECINFO_LIBRARY)
+
+if(SYSINFO_LIBRARY)
+	IF(HAVE_BSD)
+		SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${SYSINFO_LIBRARY}")
+	ENDIF(HAVE_BSD)
+endif(SYSINFO_LIBRARY)
+
+STRING(REPLACE ";" " " VERLIHUB_LIBS "${VERLIHUB_LIBS}")
+string(STRIP "${VERLIHUB_LIBS}" VERLIHUB_LIBS)
+SET(VERLIHUB_INCLUDE_DIRS "")
+
+if(OPENSSL_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${OPENSSL_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
+endif(OPENSSL_INCLUDE_DIR)
+
+if(MYSQL_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${MYSQL_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIR})
+endif(MYSQL_INCLUDE_DIR)
+
+if(MAXMINDDB_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${MAXMINDDB_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${MAXMINDDB_INCLUDE_DIR})
+endif(MAXMINDDB_INCLUDE_DIR)
+
+if(ICU_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${ICU_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${ICU_INCLUDE_DIR})
+endif(ICU_INCLUDE_DIR)
+
+if(ZLIB_INCLUDE_DIRS)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${ZLIB_INCLUDE_DIRS}")
+	INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
+endif(ZLIB_INCLUDE_DIRS)
+
+if(PCRE_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${PCRE_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${PCRE_INCLUDE_DIR})
+endif(PCRE_INCLUDE_DIR)
+
+if(INTL_INCLUDE_DIRS)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${INTL_INCLUDE_DIRS}")
+	INCLUDE_DIRECTORIES(${INTL_INCLUDE_DIRS})
+endif(INTL_INCLUDE_DIRS)
 
 IF(HAVE_BSD)
-	SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${SYSINFO_LIBRARY}")
+	if(EXECINFO_INCLUDE_DIR)
+		SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${EXECINFO_INCLUDE_DIR}")
+		INCLUDE_DIRECTORIES(${EXECINFO_INCLUDE_DIR})
+	endif(EXECINFO_INCLUDE_DIR)
 
-	#IF(HAVE_LIBKVM)
-		#SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${LIBKVM_LIBRARY}")
-	#ENDIF(HAVE_LIBKVM)
+	if(SYSINFO_INCLUDE_DIR)
+		SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${SYSINFO_INCLUDE_DIR}")
+		INCLUDE_DIRECTORIES(${SYSINFO_INCLUDE_DIR})
+	endif(SYSINFO_INCLUDE_DIR)
 ENDIF(HAVE_BSD)
 
-SET(VERLIHUB_INCLUDE_DIRS
-	"-I${OPENSSL_INCLUDE_DIR} -I${MYSQL_INCLUDE_DIR} -I${MAXMINDDB_INCLUDE_DIR} -I${ICU_INCLUDE_DIR} -I${ZLIB_INCLUDE_DIRS} -I${PCRE_INCLUDE_DIRS} -I${LIBINTL_INCLUDE_DIR}"
-) # -I${ICONV_INCLUDE_DIR}
-
-INCLUDE_DIRECTORIES(
-	${OPENSSL_INCLUDE_DIR}
-	${MYSQL_INCLUDE_DIR}
-	${ZLIB_INCLUDE_DIR}
-	${MAXMINDDB_INCLUDE_DIR}
-	${ICU_INCLUDE_DIR}
-	${PCRE_INCLUDE_DIR}
-	${LIBINTL_INCLUDE_DIR}
-	# ${ICONV_INCLUDE_DIR}
-	${CMAKE_SOURCE_DIR}
-	"${CMAKE_SOURCE_DIR}/src"
-	${CMAKE_BINARY_DIR}
-	#"${CMAKE_BINARY_DIR}/tls-proxy"
-)
-
-IF(HAVE_BSD)
-	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${EXECINFO_INCLUDE_DIR} -I${SYSINFO_INCLUDE_DIR}")
-	INCLUDE_DIRECTORIES(${EXECINFO_INCLUDE_DIR} ${SYSINFO_INCLUDE_DIR})
-
-	#IF(HAVE_LIBKVM)
-		#SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${LIBKVM_INCLUDE_DIR}")
-		#INCLUDE_DIRECTORIES(${LIBKVM_INCLUDE_DIR})
-	#ENDIF(HAVE_LIBKVM)
-ENDIF(HAVE_BSD)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} "${CMAKE_SOURCE_DIR}/src" ${CMAKE_BINARY_DIR})
+string(STRIP "${VERLIHUB_INCLUDE_DIRS}" VERLIHUB_INCLUDE_DIRS)
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -405,19 +458,39 @@ ADD_SUBDIRECTORY(man)
 
 # ----------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------
+# information
+
+set(LIBS_INFO "${VERLIHUB_LIBS}")
+string(REPLACE " " "\n" LIBS_INFO "${LIBS_INFO}")
+
+set(DIRS_INFO "${VERLIHUB_INCLUDE_DIRS}")
+string(REPLACE " " "\n" DIRS_INFO "${DIRS_INFO}")
+
+string(STRIP "${PLUGINS_LIST}" PLUGINS_LIST)
+
+if(NOT PLUGINS_LIST)
+	set(PLUGINS_LIST "<NONE>")
+endif(NOT PLUGINS_LIST)
+
 message(STATUS)
 message(STATUS "========== Build information ==========")
 message(STATUS)
+MESSAGE(STATUS "[ ** ] Used libraries:\n\n${LIBS_INFO}\n")
+MESSAGE(STATUS "[ ** ] Used includes:\n\n${DIRS_INFO}\n")
 MESSAGE(STATUS "[ ** ] Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "[ ** ] Hub version: ${VERLIHUB_VERSION}")
-message(STATUS "[ ** ] CMake installation prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "[ ** ] Verlihub version: ${VERLIHUB_VERSION}")
+message(STATUS "[ ** ] CMake version: ${CMAKE_VERSION}")
+message(STATUS "[ ** ] Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "[ ** ] Library directory: ${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
-message(STATUS "[ ** ] Building plugins: ${OK_PLUGINS_COUNT} of ${ALL_PLUGINS_COUNT}")
+message(STATUS "[ ** ] Building plugins: ${PLUGINS_LIST}")
 message(STATUS "[ ** ] Building TLS proxy: ${USE_TLS_PROXY}")
 message(STATUS "[ ** ] Now run \"make\" as current user and \"make install\" as super user")
 message(STATUS "[ ** ] Then run \"ldconfig\" as super user to avoid shared library errors")
 message(STATUS)
 message(STATUS "================= End =================")
 message(STATUS)
+
+# ----------------------------------------------------------------------------------------------------
 
 # end of file
