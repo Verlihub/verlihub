@@ -225,7 +225,7 @@ ELSE(HAVE_BSD)
 ENDIF(HAVE_BSD)
 
 IF(HAVE_ALPINE)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wno-deprecated")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld -Wno-deprecated") # todo: needs package gcompat
 ENDIF(HAVE_ALPINE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -Wno-overloaded-virtual") # todo: -Woverloaded-virtual -pthread
