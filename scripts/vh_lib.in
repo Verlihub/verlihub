@@ -97,7 +97,7 @@ function _register() # nickname, class, password, input_password_crypt, reg_date
 	fi;
 
 	MYSQL_QUERY="INSERT INTO reglist ($SQL_FIELDS) VALUES ($SQL_VALUES)";
-	if ! _mysql_query "$MYSQL_QUERY" &>/dev/null ; then
+	if ! _mysql_query "$MYSQL_QUERY" ; then
 		return 1;
 	else
 		return 0;
@@ -241,7 +241,7 @@ function _mysql_import() #path_to_file
 # Check if given table exists in the database
 function _is_table_exists() # table
 { 
-	_mysql_query "desc $1" &> /dev/null || return 1; return 0;
+	_mysql_query "desc $1" || return 1; return 0;
 }
 
 function _does_mysql_account_exists() # host, user, pass
@@ -251,7 +251,7 @@ function _does_mysql_account_exists() # host, user, pass
 	fi
 
 	export MYSQL_PWD="$3"
-	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "show databases" &>/dev/null  && return 0 || return 1
+	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "show databases" && return 0 || return 1
 }
 
 function _does_mysql_db_exists() # host, user, pass, db
@@ -261,7 +261,7 @@ function _does_mysql_db_exists() # host, user, pass, db
 	fi
 
 	export MYSQL_PWD="$3"
-	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "use $4" &>/dev/null  && return 0 || return 1
+	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "use $4" && return 0 || return 1
 }
 
 function _mysql_get_socket()
