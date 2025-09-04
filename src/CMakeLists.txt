@@ -239,7 +239,7 @@ target_link_libraries(verlihub libverlihub_so)
 # ----------------------------------------------------------------------------------------------------
 # generate verlihub_config
 MESSAGE(STATUS "[ .. ] Generating configuration executable: ${CMAKE_BINARY_DIR}/verlihub_config")
-set(VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS} ${VERLIHUB_LIBS}")
+STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_LIBS}")
 CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DIR}/verlihub_config")
 # ----------------------------------------------------------------------------------------------------
 
