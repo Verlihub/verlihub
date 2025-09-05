@@ -31,7 +31,7 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 	cObj("cMySQL"),
 	mDBName(data),
 	mDBHost(host),
-	mDBUser(user)
+	mDBUser(user),
 	mDBPass(pass),
 	mDBChar(charset),
 	mDBHandle(NULL),
