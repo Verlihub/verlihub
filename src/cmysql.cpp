@@ -30,7 +30,12 @@ namespace nVerliHub {
 cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset):
 	cObj("cMySQL"),
 	mDBName(data),
-	mDBHandle(NULL)
+	mDBHost(host),
+	mDBUser(user)
+	mDBPass(pass),
+	mDBChar(charset),
+	mDBHandle(NULL),
+	mReconnect(0)
 {
 	Init();
 
@@ -75,8 +80,10 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 	if (Log(0))
 		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
 
-	bool yes = true;
+	/*
+	bool yes = true; // note: deprecated in mysql 8
 	mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, &yes);
+	*/
 
 	if (charset.size())
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
@@ -91,11 +98,46 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 	return true;
 }
 
-void cMySQL::Error(int level, const string &text)
+bool cMySQL::Error(int level, const string &text)
 {
-	if (ErrLog(level))
-		LogStream() << text << ": " << (mDBHandle ? mysql_error(mDBHandle) : "Unknown error") << endl;
+	if (!mDBHandle) {
+		if (ErrLog(0))
+			LogStream() << "MySQL handle is no longer valid" << endl;
+
+		return false;
+	}
+
+	int err = mysql_errno(mDBHandle);
+
+	if ((err == CR_SERVER_GONE_ERROR) || (err == CR_SERVER_LOST)) { // connection lost
+		if (mReconnect >= 5) { // todo: notify to opchat without flood? admin needs to take action
+			if (ErrLog(0))
+				LogStream() << "MySQL server gone, tried to reconnect " << mReconnect << " times, nothing else to do" << endl;
+
+			return false;
+		}
+
+		mReconnect++;
+
+		if (ErrLog(0))
+			LogStream() << "MySQL server gone, trying to reconnect: #" << mReconnect << endl;
+
+		Close();
+		Init();
+
+		if (Connect(mDBHost, mDBUser, mDBPass, mDBName, mDBChar)) // success
+			return true;
+
+		return false;
+	}
+
+	if (mDBHandle && ErrLog(level))
+		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;
+
+	return false;
 }
 
 	}; // namepspace nMySQL
 }; // namespace nVerliHub
+
+// end of file
