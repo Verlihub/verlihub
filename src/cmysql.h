@@ -60,11 +60,18 @@ class cMySQL: public cObj
 		}
 
 		public:
-			void Error(int level, const string& text);
+			/*
+				note
+					returns true if connection to server is lost
+					will try to autoreconnect and increase counter
+					probably need to resend query after successful reconnect
+			*/
+			bool Error(int level, const string& text);
 
 	private:
-		string mDBName;
+		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;
 		MYSQL *mDBHandle;
+		unsigned int mReconnect;
 };
 
 	}; // namespace nMySQL

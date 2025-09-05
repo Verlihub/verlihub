@@ -55,13 +55,17 @@ int cQuery::Query()
 	const string qstr(mOS.str());
 
 	if (Log(3))
-		LogStream() << "Execute query ~" << qstr << '~' << endl;
+		LogStream() << "Execute query: " << qstr << endl;
 
-	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) {
+	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) { // error
 		if (ErrLog(2))
-			LogStream() << "Error in query ~" << qstr << '~' << endl;
+			LogStream() << "Error on query: " << qstr << endl;
 
-		mMySQL.Error(2, "Query error:");
+		if (mMySQL.Error(2, "Query error:")) { // note: successful reconnect, try again
+			if (!mysql_query(mMySQL.mDBHandle, qstr.c_str())) // success
+				return 1;
+		}
+
 		return -1;
 	}
 
