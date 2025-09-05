@@ -19,8 +19,8 @@
 # ----------------------------------------------------------------------------------------------------
 # version
 
-cmake_minimum_required(VERSION 3.20...3.50)
-#cmake_policy(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16...3.50)
+#cmake_policy(VERSION 3.16)
 
 PROJECT(VERLIHUB)
 SET(PROJECT_NAME "verlihub")
