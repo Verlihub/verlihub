@@ -30,6 +30,8 @@ typedef unsigned int SOCKET;
 */
 
 #include <mysql/mysql.h>
+#include <mysql/errmsg.h>
+
 #include "cobj.h"
 
 namespace nVerliHub {
