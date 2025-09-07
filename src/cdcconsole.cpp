@@ -141,11 +141,23 @@ cDCConsole::~cDCConsole(){
 	mDCClientConsole = NULL;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warray-bounds"
+#elif __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
 void cDCConsole::DoCrashTest()
 {
 	//*((char*)-1) = '_';
 	*(int*)1 = 0;
 }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 {
