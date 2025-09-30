@@ -31,6 +31,10 @@ extern "C" {
 #include <sstream>
 #include <vector>
 
+#if PY_MAJOR_VERSION >= 3
+#include <wchar.h>
+#endif
+
 // user rights
 #define w_UR_CHAT 0x0001
 #define w_UR_PM 0x0002
