@@ -22,6 +22,9 @@
 #include "src/cserverdc.h"
 #include "src/cban.h"
 
+#include <libgen.h>  // for basename, dirname
+#include <cstring>   // for strrchr
+
 using namespace std;
 using namespace nVerliHub::nEnums;
 
@@ -115,7 +118,7 @@ int w_FindStr(const char *s, const char *key, int start)
 	len2 = len - len1 + 1;
 
 	for (int i = start; i < len2; i++) {
-		if ((s[i] == key[0]) && (w_IdentStr(&s[i], key, len1)))  // Fixed typo from prompt (key[1] -> key[0])
+		if ((s[i] == key[0]) && (w_IdentStr(&s[i], key, len1)))
 			return i;
 	}
 
@@ -268,7 +271,6 @@ const char *w_packprint(w_Targs *a)
 int w_Begin(w_Tcallback *callbacks)
 {
 	Py_Initialize();
-	PyEval_InitThreads();
 	w_Python = (w_TScript*)calloc(1, sizeof(w_TScript));
 	if (!w_Python) return 0;
 	w_Python->callbacks = callbacks;
@@ -297,26 +299,43 @@ int w_Load(w_Targs *args)
 {
 	int id;
 	long starttime;
-	char *path, *name, *botname, *opchatname, *config_name;
+	char *path, *botname, *opchatname, *config_dir, *config_name;
 
-	if (!w_unpack(args, "lssssls", &id, &path, &botname, &opchatname, &config_name, &starttime)) return -1;
+	if (!w_unpack(args, "lssssls", &id, &path, &botname, &opchatname, &config_dir, &starttime, &config_name)) return -1;
 
 	w_TScript *script = w_Scripts[id];
 	if (!script) return -1;
 
 	script->path = strdup(path);
-	script->name = strdup(name);
 	script->botname = strdup(botname);
 	script->opchatname = strdup(opchatname);
 	script->config_name = strdup(config_name);
 	script->use_old_ontimer = false;
+
+	// Extract script_dir and module_name
+	char *path_dup = strdup(path);
+	char *script_dir_c = dirname(path_dup);
+	string script_dir = string(script_dir_c);
+	free(path_dup);  // dirname modifies the string, but we dup'ed
+
+	path_dup = strdup(path);
+	char *base_c = basename(path_dup);
+	string module_name = string(base_c);
+	free(path_dup);
+
+	size_t dot = module_name.rfind('.');
+	if (dot != string::npos && module_name.substr(dot) == ".py") {
+		module_name = module_name.substr(0, dot);
+	}
+	script->name = strdup(module_name.c_str());
 
 	script->state = Py_NewInterpreter();
 	if (!script->state) return -1;
 
 	PyEval_AcquireThread(script->state);
 
-	string pypath = string(path) + ":/usr/lib/python:/usr/local/lib/python";  // Adjust based on original, prompt has example
+	// Set sys.path to include script_dir and config_dir/scripts
+	string pypath = script_dir + ":" + string(config_dir) + "/scripts";
 	char *pypath_c = strdup(pypath.c_str());
 
 #if PY_MAJOR_VERSION >= 3
@@ -332,16 +351,13 @@ int w_Load(w_Targs *args)
 #endif
 	free(pypath_c);
 
-	FILE *f = fopen(path, "r");
-	if (!f) return -1;
-
-	int res = PyRun_SimpleFile(f, path);
-	fclose(f);
-
-	if (res != 0) return -1;
-
-	script->module = PyImport_ImportModule(name);
-	if (!script->module) return -1;
+	// Import the module (this executes the script)
+	script->module = PyImport_ImportModule(script->name);
+	if (!script->module) {
+		if (PyErr_Occurred()) PyErr_Print();
+		PyEval_ReleaseThread(script->state);
+		return -1;
+	}
 
 	script->hooks = (char*)calloc(W_MAX_HOOKS, sizeof(char));
 
@@ -367,6 +383,8 @@ int w_Unload(int id)
 	if (!script) return 0;
 
 	PyEval_AcquireThread(script->state);
+
+	Py_XDECREF(script->module);
 
 	Py_EndInterpreter(script->state);
 
