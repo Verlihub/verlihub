@@ -55,7 +55,7 @@ ADD_LIBRARY(libpython_pi MODULE ${PYTHON_SRCS})
 SET_TARGET_PROPERTIES(libpython_pi PROPERTIES OUTPUT_NAME "python_pi")
 TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub_so)
 
-ADD_LIBRARY(libvh_python_wrapper MODULE ${PYTHON_WRAPPER_SRCS})
+ADD_LIBRARY(libvh_python_wrapper SHARED ${PYTHON_WRAPPER_SRCS})
 SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wrapper")
 target_link_libraries(libvh_python_wrapper ${Python3_LIBRARIES})
 
