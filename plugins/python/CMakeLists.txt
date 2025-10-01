@@ -16,8 +16,8 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-SET(PYTHON_PI_VERSION_MAJOR 3)
-SET(PYTHON_PI_VERSION_MINOR 0)
+SET(PYTHON_PI_VERSION_MAJOR 1)
+SET(PYTHON_PI_VERSION_MINOR 6)
 SET(PYTHON_PI_VERSION_PATCH 0)
 SET(PYTHON_PI_VERSION_TWEAK 0)
 SET(PYTHON_PI_VERSION "${PYTHON_PI_VERSION_MAJOR}.${PYTHON_PI_VERSION_MINOR}.${PYTHON_PI_VERSION_PATCH}.${PYTHON_PI_VERSION_TWEAK}")
@@ -61,18 +61,21 @@ target_link_libraries(libvh_python_wrapper ${Python3_LIBRARIES})
 
 INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION ${PLUGINDIR})
 
-# Find GTest (optional, quiet mode)
-find_package(GTest QUIET)
-if(GTEST_FOUND)
-    include_directories(${GTEST_INCLUDE_DIRS})
+# Find GTest libraries manually
+find_library(GTEST_LIBRARY gtest)
+find_library(GTEST_MAIN_LIBRARY gtest_main)
+find_path(GTEST_INCLUDE_DIR gtest/gtest.h)
+
+if(GTEST_LIBRARY AND GTEST_MAIN_LIBRARY AND GTEST_INCLUDE_DIR)
+    include_directories(${GTEST_INCLUDE_DIR})
 
     # Test executable
     add_executable(test_python_wrapper tests/test_wrapper.cpp)
-    target_link_libraries(test_python_wrapper ${GTEST_LIBRARIES} pthread libvh_python_wrapper)
+    target_link_libraries(test_python_wrapper ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libvh_python_wrapper)
 
     # Enable testing
     enable_testing()
     add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
 else()
-    message(STATUS "GTest not found; skipping test build")
+    message(STATUS "GTest libraries not found; skipping test build")
 endif()
