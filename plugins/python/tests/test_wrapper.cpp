@@ -8,13 +8,21 @@
 w_Targs* mock_callback(int id, w_Targs* args) { return nullptr; }
 w_Tcallback mock_callbacks[W_MAX_CALLBACKS] = { mock_callback };
 
-// Test fixture
+// Global test environment for Python init/finalize
+class GlobalPythonEnv : public ::testing::Environment {
+public:
+    void SetUp() override {
+        w_Begin(mock_callbacks);
+    }
+    void TearDown() override {
+        w_End();
+    }
+};
+
+// Test fixture for per-test setup (no Python init here)
 class PythonWrapperTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Initialize Python for each test
-        w_Begin(mock_callbacks);
-
         // Create a test script file
         std::ofstream script_file("test_script.py");
         script_file << "def OnTimer():\n"
@@ -27,15 +35,11 @@ protected:
     void TearDown() override {
         // Remove test script
         std::remove("test_script.py");
-
-        // Finalize Python for each test
-        w_End();
     }
 };
 
-// Test initialization and end (now implicit in setup/teardown, so dummy or remove if not needed)
+// Test dummy for init/end (handled globally)
 TEST_F(PythonWrapperTest, InitAndEnd) {
-    // Since setup/teardown handle init/end, this can be a placeholder
     EXPECT_TRUE(true);
 }
 
@@ -88,4 +92,10 @@ TEST_F(PythonWrapperTest, CallHook) {
     free(res);
 
     w_Unload(id);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    ::testing::AddGlobalTestEnvironment(new GlobalPythonEnv());
+    return RUN_ALL_TESTS();
 }
