@@ -45,8 +45,6 @@ TEST_F(PythonWrapperTest, InitAndEnd) {
 
 // Test script loading and unloading
 TEST_F(PythonWrapperTest, LoadAndUnloadScript) {
-    PyGILState_STATE gil_state = PyGILState_Ensure();
-
     int id = w_ReserveID();
     EXPECT_GE(id, 0);
 
@@ -60,14 +58,10 @@ TEST_F(PythonWrapperTest, LoadAndUnloadScript) {
     EXPECT_TRUE(w_HasHook(id, W_OnParsedMsgChat));
 
     EXPECT_EQ(1, w_Unload(id));
-
-    PyGILState_Release(gil_state);
 }
 
 // Test calling a hook
 TEST_F(PythonWrapperTest, CallHook) {
-    PyGILState_STATE gil_state = PyGILState_Ensure();
-
     int id = w_ReserveID();
     w_Targs* args = w_pack("lssssls", id, "test_script.py", "TestBot", "OpChat", ".", (long)0, "config");
     w_Load(args);
@@ -98,8 +92,6 @@ TEST_F(PythonWrapperTest, CallHook) {
     free(res);
 
     w_Unload(id);
-
-    PyGILState_Release(gil_state);
 }
 
 int main(int argc, char **argv) {
