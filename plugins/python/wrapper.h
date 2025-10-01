@@ -195,6 +195,7 @@ typedef struct {
 	PyThreadState *state;
 	char          *path;
 	char          *name;
+	PyObject      *module;
 	w_Tcallback   *callbacks;
 	char          *hooks;
 	char          *botname;
