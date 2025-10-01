@@ -60,3 +60,19 @@ SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wra
 target_link_libraries(libvh_python_wrapper ${Python3_LIBRARIES})
 
 INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION ${PLUGINDIR})
+
+# Find GTest (optional, quiet mode)
+find_package(GTest QUIET)
+if(GTEST_FOUND)
+    include_directories(${GTEST_INCLUDE_DIRS})
+
+    # Test executable
+    add_executable(test_python_wrapper tests/test_wrapper.cpp)
+    target_link_libraries(test_python_wrapper ${GTEST_LIBRARIES} pthread libvh_python_wrapper)
+
+    # Enable testing
+    enable_testing()
+    add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
+else()
+    message(STATUS "GTest not found; skipping test build")
+endif()
