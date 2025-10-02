@@ -282,7 +282,6 @@ int w_End()
 {
 	PyGILState_STATE gil = PyGILState_Ensure();
 	Py_Finalize();
-	PyGILState_Release(gil);
 	free(w_Python);
 	return 1;
 }
