@@ -73,7 +73,7 @@ SET(PLUGINS_LIST "")
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 if(INSTALL_CMAKE_FILES)
-	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerlihub.cmake" DESTINATION "${CMAKE_ROOT}/Modules")
+	install(FILES "${CMAKE_SOURCE_DIR}/cmake/Modules/FindVerlihub.cmake" DESTINATION "${CMAKE_INSTALL_PREFIX}/cmake/Modules")
 endif(INSTALL_CMAKE_FILES)
 
 INCLUDE(CheckIncludeFiles)
