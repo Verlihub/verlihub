@@ -331,11 +331,11 @@ int w_Load(w_Targs *args)
 	script->name = strdup(module_name.c_str());
 
 	PyGILState_STATE gil = PyGILState_Ensure();
-    PyThreadState *main_state = PyThreadState_Get();  // Capture original thread state
-    script->state = Py_NewInterpreter();
-    PyThreadState_Swap(main_state);  // Swap back to original thread state
-    PyGILState_Release(gil);
-    if (!script->state) return -1;
+	PyThreadState *main_state = PyThreadState_Get();  // Capture original thread state
+	script->state = Py_NewInterpreter();
+	PyThreadState_Swap(main_state);  // Swap back to original thread state
+	PyGILState_Release(gil);
+	if (!script->state) return -1;
 
 	PyEval_AcquireThread(script->state);
 
@@ -370,8 +370,12 @@ int w_Load(w_Targs *args)
 		const char *hname = w_HookName(i);
 		if (hname) {
 			PyObject *func = PyObject_GetAttrString(script->module, hname);
-			if (func && PyCallable_Check(func)) {
-				script->hooks[i] = 1;
+			if (func) {
+				if (PyCallable_Check(func)) {
+					script->hooks[i] = 1;
+				}
+			} else {
+				PyErr_Clear();  // Clear error if attribute not found
 			}
 			Py_XDECREF(func);
 		}
@@ -392,6 +396,7 @@ int w_Unload(int id)
 	Py_XDECREF(script->module);
 
 	Py_EndInterpreter(script->state);
+	PyEval_ReleaseThread();
 
 	free(script->path);
 	free(script->name);
