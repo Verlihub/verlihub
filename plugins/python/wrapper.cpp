@@ -337,7 +337,9 @@ int w_Load(w_Targs *args)
 	PyGILState_Release(gil);
 	if (!script->state) return -1;
 
-	PyEval_AcquireThread(script->state);
+	PyGILState_STATE sub_gil = PyGILState_Ensure();
+	main_state = PyThreadState_Get();
+	PyThreadState_Swap(script->state);
 
 	// Set sys.path to include script_dir and config_dir/scripts
 	string pypath = script_dir + ":" + string(config_dir) + "/scripts";
@@ -360,7 +362,8 @@ int w_Load(w_Targs *args)
 	script->module = PyImport_ImportModule(script->name);
 	if (!script->module) {
 		if (PyErr_Occurred()) PyErr_Print();
-		PyEval_ReleaseThread(script->state);
+		PyThreadState_Swap(main_state);
+		PyGILState_Release(sub_gil);
 		return -1;
 	}
 
@@ -381,7 +384,8 @@ int w_Load(w_Targs *args)
 		}
 	}
 
-	PyEval_ReleaseThread(script->state);
+	PyThreadState_Swap(main_state);
+	PyGILState_Release(sub_gil);
 
 	return id;
 }
@@ -391,12 +395,16 @@ int w_Unload(int id)
 	w_TScript *script = w_Scripts[id];
 	if (!script) return 0;
 
-	PyEval_AcquireThread(script->state);
+	PyGILState_STATE gil = PyGILState_Ensure();
+	PyThreadState *main_state = PyThreadState_Get();
+	PyThreadState_Swap(script->state);
 
 	Py_XDECREF(script->module);
 
 	Py_EndInterpreter(script->state);
-	PyEval_ReleaseThread();
+
+	PyThreadState_Swap(main_state);
+	PyGILState_Release(gil);
 
 	free(script->path);
 	free(script->name);
@@ -425,12 +433,12 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	if (!script) return NULL;
 
 	PyGILState_STATE gstate = PyGILState_Ensure();
-
-	PyThreadState *old_state = PyThreadState_Swap(script->state);
+	PyThreadState *main_state = PyThreadState_Get();
+	PyThreadState_Swap(script->state);
 
 	const char *name = w_HookName(num);
 	if (!name) {
-		PyThreadState_Swap(old_state);
+		PyThreadState_Swap(main_state);
 		PyGILState_Release(gstate);
 		return NULL;
 	}
@@ -438,7 +446,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	PyObject *func = PyObject_GetAttrString(script->module, name);
 	if (!func || !PyCallable_Check(func)) {
 		Py_XDECREF(func);
-		PyThreadState_Swap(old_state);
+		PyThreadState_Swap(main_state);
 		PyGILState_Release(gstate);
 		return NULL;
 	}
@@ -447,7 +455,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	PyObject *args = PyTuple_New(arg_count);
 	if (!args) {
 		Py_DECREF(func);
-		PyThreadState_Swap(old_state);
+		PyThreadState_Swap(main_state);
 		PyGILState_Release(gstate);
 		return NULL;
 	}
@@ -475,7 +483,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			default:
 				Py_DECREF(args);
 				Py_DECREF(func);
-				PyThreadState_Swap(old_state);
+				PyThreadState_Swap(main_state);
 				PyGILState_Release(gstate);
 				return NULL;
 		}
@@ -488,7 +496,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 
 	if (!res) {
 		if (PyErr_Occurred()) PyErr_Print();
-		PyThreadState_Swap(old_state);
+		PyThreadState_Swap(main_state);
 		PyGILState_Release(gstate);
 		return NULL;
 	}
@@ -514,7 +522,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 		if (!ret) {
 			Py_DECREF(res);
-			PyThreadState_Swap(old_state);
+			PyThreadState_Swap(main_state);
 			PyGILState_Release(gstate);
 			return NULL;
 		}
@@ -556,7 +564,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 		if (!ret) {
 			Py_DECREF(res);
-			PyThreadState_Swap(old_state);
+			PyThreadState_Swap(main_state);
 			PyGILState_Release(gstate);
 			return NULL;
 		}
@@ -582,7 +590,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 #endif
 
 	Py_DECREF(res);
-	PyThreadState_Swap(old_state);
+	PyThreadState_Swap(main_state);
 	PyGILState_Release(gstate);
 	return ret;
 }
