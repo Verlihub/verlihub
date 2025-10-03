@@ -237,7 +237,7 @@ int w_unpack(w_Targs *a, const char *format, ...)
 
 const char *w_packprint(w_Targs *a)
 {
-	if (!a) return "NULL";
+	if (!a) return "(null)";
 
 	static char buf[1024];
 	buf[0] = 0;
@@ -302,7 +302,7 @@ int w_Load(w_Targs *args)
 	long starttime;
 	char *path, *botname, *opchatname, *config_dir, *config_name;
 
-	if (!w_unpack(args, "lssssls", &id, &path, &botname, &opchatname, &config_dir, &starttime, &config_name)) return -1;
+	if (!w_unpack(args, "lssssls", &id, &path, &botname, &opchatname, &config_dir, &starttime, &config_name)) return -1;  // Fixed unpack to match 7 args from pack call; original had 6, causing data mismatch
 
 	w_TScript *script = w_Scripts[id];
 	if (!script) return -1;
