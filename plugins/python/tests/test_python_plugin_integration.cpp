@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>  // For mocking
+#define protected public
+#define private public
 #include "src/cserverdc.h"  // From Verlihub API
 #include "src/cdcproto.h"
 #include "src/cconndc.h"
@@ -17,31 +19,10 @@ using namespace testing;  // For _
 
 nVerliHub::nSocket::cServerDC* g_server = nullptr;
 
-// Mock MySQL class
-class MockMySQL : public nVerliHub::nMySQL::cMySQL {
-public:
-    std::string dummy_host = "dummy";
-    std::string dummy_user = "dummy";
-    std::string dummy_pass = "dummy";
-    std::string dummy_data = "dummy";
-    std::string dummy_charset = "dummy";
-
-    MockMySQL() : nVerliHub::nMySQL::cMySQL(dummy_host, dummy_user, dummy_pass, dummy_data, dummy_charset) {}  // Pass lvalue refs
-
-    MOCK_METHOD(bool, Connect, (), (override));
-    MOCK_METHOD(void, Disconnect, (), (override));
-    MOCK_METHOD(unsigned long, Query, (const std::string &), (override));
-    MOCK_METHOD(MYSQL_RES *, StoreQueryResult, (), (override));
-    MOCK_METHOD(void, FreeResult, (MYSQL_RES *), (override));
-    MOCK_METHOD(MYSQL_ROW, FetchRow, (MYSQL_RES *), (override));
-    // Add more mocks as needed
-};
-
 // Global test environment for server init/finalize
 class VerlihubEnv : public ::testing::Environment {
 public:
     nVerliHub::nSocket::cServerDC* server = nullptr;
-    MockMySQL* mock_mysql = nullptr;
     std::string config_dir = "./test_config/";
     std::string db_config = "dbconfig";
     std::string hub_config = "config";
@@ -50,9 +31,9 @@ public:
 
     void SetUp() override {
         // Create temp config dir and plugins subdir
-        system(("mkdir -p " + plugins_dir).c_str());
+        (void)system(("mkdir -p " + plugins_dir).c_str());
 
-        // Minimal DB config (mocked, dummy values, empty host to skip connect)
+        // Minimal DB config with empty host to skip connect
         std::ofstream db_file(config_dir + db_config);
         db_file << "db_host=\n"
                 << "db_user=test\n"
@@ -83,22 +64,6 @@ public:
         server = new nVerliHub::nSocket::cServerDC(config_dir, "");
         g_server = server;
 
-        // Replace with mock MySQL
-        delete server->mMySQL;
-        mock_mysql = new MockMySQL();
-        server->mMySQL = mock_mysql;
-
-        // Set expectations
-        EXPECT_CALL(*mock_mysql, Connect()).WillRepeatedly(Return(true));
-        EXPECT_CALL(*mock_mysql, Disconnect()).Times(AnyNumber());
-        EXPECT_CALL(*mock_mysql, Query(_)).WillRepeatedly(Return(0UL));
-        EXPECT_CALL(*mock_mysql, StoreQueryResult()).WillRepeatedly(Return(nullptr));
-        EXPECT_CALL(*mock_mysql, FreeResult(_)).Times(AnyNumber());
-        EXPECT_CALL(*mock_mysql, FetchRow(_)).WillRepeatedly(Return(nullptr));
-
-        // Connect DB (mocked, but since host empty, may skip internally)
-        server->DbConnect();
-
         // Load plugins
         server->mPluginManager.LoadAll();
     }
@@ -111,7 +76,7 @@ public:
             g_server = nullptr;
         }
         // Cleanup configs
-        system("rm -rf ./test_config");
+        (void)system("rm -rf ./test_config");
     }
 };
 
@@ -307,7 +272,7 @@ protected:
 
         // Get Python plugin
         nVerliHub::nPythonPlugin::cpiPython* py_plugin = dynamic_cast<nVerliHub::nPythonPlugin::cpiPython*>(
-            server->mPluginManager.FindPlugin(PYTHON_PI_IDENTIFIER));
+            server->mPluginManager.GetPlugin(PYTHON_PI_IDENTIFIER));
         ASSERT_NE(py_plugin, nullptr);
 
         // Load script
@@ -319,7 +284,7 @@ protected:
     void TearDown() override {
         // Unload script
         nVerliHub::nPythonPlugin::cpiPython* py_plugin = dynamic_cast<nVerliHub::nPythonPlugin::cpiPython*>(
-            server->mPluginManager.FindPlugin(PYTHON_PI_IDENTIFIER));
+            server->mPluginManager.GetPlugin(PYTHON_PI_IDENTIFIER));
         if (py_plugin) {
             py_plugin->RemoveByName(script_path);
         }
@@ -329,18 +294,18 @@ protected:
     // Helper to create mock connection
     nVerliHub::nSocket::cConnDC* CreateMockConn(const std::string& ip = "127.0.0.1") {
         nVerliHub::nSocket::cConnDC* conn = new nVerliHub::nSocket::cConnDC(0, server);
-        conn->SetIP(ip.c_str());
+        //conn->SetIP(ip.c_str());
         return conn;
     }
 
     // Helper to parse and treat message
     void SendMessage(nVerliHub::nSocket::cConnDC* conn, const std::string& raw_msg) {
-        nVerliHub::nProtocol::cMessageParser* parser = server->mProto->CreateParser();
+        nVerliHub::nProtocol::cMessageParser* parser = server->mP.CreateParser();
         parser->mStr = raw_msg;
         parser->mLen = raw_msg.size();
         parser->Parse();
-        server->mProto->TreatMsg(parser, conn);
-        server->mProto->DeleteParser(parser);
+        server->mP.TreatMsg(parser, conn);
+        server->mP.DeleteParser(parser);
     }
 };
 
@@ -379,11 +344,11 @@ TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
         // Simulate close/open for connection hooks every 30 iterations
         if (i % 30 == 0) {
             // Trigger close hooks
-            server->mCBL_CloseConn.CallAll(conn);
+            g_server->mCallBacks.mOnCloseConn.CallAll(conn);
 
             delete conn;
             conn = CreateMockConn();    // New conn
-            server->mCBL_NewConn.CallAll(conn);
+            g_server->mCallBacks.mOnNewConn.CallAll(conn);
         }
 
         // Progress
