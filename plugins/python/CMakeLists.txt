@@ -16,20 +16,17 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-SET(PYTHON_VERSION_MAJOR 1)
-SET(PYTHON_VERSION_MINOR 6)
-SET(PYTHON_VERSION_PATCH 0)
-SET(PYTHON_VERSION_TWEAK 0)
-SET(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.${PYTHON_VERSION_PATCH}.${PYTHON_VERSION_TWEAK}")
+SET(PYTHON_PI_VERSION_MAJOR 1)
+SET(PYTHON_PI_VERSION_MINOR 6)
+SET(PYTHON_PI_VERSION_PATCH 0)
+SET(PYTHON_PI_VERSION_TWEAK 0)
+SET(PYTHON_PI_VERSION "${PYTHON_PI_VERSION_MAJOR}.${PYTHON_PI_VERSION_MINOR}.${PYTHON_PI_VERSION_PATCH}.${PYTHON_PI_VERSION_TWEAK}")
 
-ADD_DEFINITIONS(-DPYTHON_PI_VERSION=\"${PYTHON_VERSION}\")
+ADD_DEFINITIONS(-DPYTHON_PI_VERSION=\"${PYTHON_PI_VERSION}\")
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} EQUAL 2.6)
-	INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-ELSE(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} EQUAL 2.6)
-	INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
-ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} EQUAL 2.6)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
 
 SET(PYTHON_HDRS
 	cconsole.h
@@ -58,8 +55,33 @@ ADD_LIBRARY(libpython_pi MODULE ${PYTHON_SRCS})
 SET_TARGET_PROPERTIES(libpython_pi PROPERTIES OUTPUT_NAME "python_pi")
 TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub_so)
 
-ADD_LIBRARY(libvh_python_wrapper MODULE ${PYTHON_WRAPPER_SRCS})
+ADD_LIBRARY(libvh_python_wrapper SHARED ${PYTHON_WRAPPER_SRCS})
 SET_TARGET_PROPERTIES(libvh_python_wrapper PROPERTIES OUTPUT_NAME "vh_python_wrapper")
-target_link_libraries(libvh_python_wrapper ${PYTHON_LIBRARIES})
+target_link_libraries(libvh_python_wrapper ${Python3_LIBRARIES})
 
 INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION ${PLUGINDIR})
+
+# Find GTest libraries manually
+find_library(GTEST_LIBRARY gtest)
+find_library(GTEST_MAIN_LIBRARY gtest_main)
+find_path(GTEST_INCLUDE_DIR gtest/gtest.h)
+
+if(GTEST_LIBRARY AND GTEST_MAIN_LIBRARY AND GTEST_INCLUDE_DIR)
+    include_directories(${GTEST_INCLUDE_DIR})
+
+    # Test executable
+    add_executable(test_python_wrapper tests/test_wrapper.cpp)
+    target_link_libraries(test_python_wrapper ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libvh_python_wrapper)
+
+    add_executable(test_python_wrapper_stress tests/test_stress_wrapper.cpp)
+    target_link_libraries(test_python_wrapper_stress ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libvh_python_wrapper)
+
+    add_executable(test_python_wrapper_stress_integration tests/test_python_plugin_integration.cpp)
+    target_link_libraries(test_python_wrapper_stress_integration ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libverlihub_so vhapi_so)
+
+    # Enable testing
+    enable_testing()
+    add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
+else()
+    message(STATUS "GTest libraries not found; skipping test build")
+endif()
