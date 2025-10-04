@@ -77,7 +77,7 @@ if(GTEST_LIBRARY AND GTEST_MAIN_LIBRARY AND GTEST_INCLUDE_DIR)
     target_link_libraries(test_python_wrapper_stress ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libvh_python_wrapper)
 
     add_executable(test_python_wrapper_stress_integration tests/test_python_plugin_integration.cpp)
-    target_link_libraries(test_python_wrapper_stress_integration ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libvh_python_wrapper libverlihub_so vhapi_so)
+    target_link_libraries(test_python_wrapper_stress_integration ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread libverlihub_so vhapi_so)
 
     # Enable testing
     enable_testing()
