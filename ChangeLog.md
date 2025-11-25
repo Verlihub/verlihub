@@ -1,3 +1,7 @@
+# 1.7.0.0
+
+* Replaced: Go TLS proxy with precompiled FearTLS library
+
 # 1.6.1.0
 
 * Fixed: Multithreading got locked by TLS proxy

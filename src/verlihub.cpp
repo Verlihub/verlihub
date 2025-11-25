@@ -73,7 +73,7 @@ void mySigQuitHandler(int i)
 	if (serv)
 		serv->SyncStop();
 
-	//exit(0);
+	exit(EXIT_SUCCESS);
 }
 
 void mySigServHandler(int i)

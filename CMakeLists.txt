@@ -26,8 +26,8 @@ PROJECT(VERLIHUB)
 SET(PROJECT_NAME "verlihub")
 
 SET(VERLIHUB_VERSION_MAJOR 1) # note: these must be numbers
-SET(VERLIHUB_VERSION_MINOR 6)
-SET(VERLIHUB_VERSION_PATCH 1)
+SET(VERLIHUB_VERSION_MINOR 7)
+SET(VERLIHUB_VERSION_PATCH 0)
 SET(VERLIHUB_VERSION_TWEAK 0)
 SET(VERLIHUB_VERSION "${VERLIHUB_VERSION_MAJOR}.${VERLIHUB_VERSION_MINOR}.${VERLIHUB_VERSION_PATCH}.${VERLIHUB_VERSION_TWEAK}")
 
@@ -40,7 +40,7 @@ message(STATUS)
 message(STATUS "[ ?? ] You can change build options with: -D{OPTION}=ON|OFF")
 message(STATUS "[ ?? ] You can enable debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "[ ?? ] You can disable all plugins with: -DWITH_PLUGINS=OFF")
-message(STATUS "[ ?? ] You can build TLS proxy library with: -DUSE_TLS_PROXY=ON")
+message(STATUS "[ ?? ] You can use TLS proxy library with: -DUSE_TLS_PROXY=ON")
 #message(STATUS "[ ?? ] You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
 message(STATUS "[ !! ] NOTE: Plugins other than LUA are now DEPRECATED")
 message(STATUS "[ ?? ] You can enable or disable specific plugin with: -DWITH_{NAME}=[ON/OFF]")
@@ -56,7 +56,7 @@ message(STATUS)
 OPTION(INSTALL_CMAKE_FILES "Install *.cmake files into CMake root" ON)
 option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
 OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
-option(USE_TLS_PROXY "Build TLS proxy library" OFF)
+option(USE_TLS_PROXY "Use TLS proxy library" OFF)
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -196,7 +196,7 @@ IF(HAVE_BSD)
 ENDIF(HAVE_BSD)
 
 if(USE_TLS_PROXY)
-	find_package(Go REQUIRED)
+	find_package(FearTLS REQUIRED)
 endif(USE_TLS_PROXY)
 
 IF(UNIX)
@@ -248,7 +248,7 @@ endif(USE_CUSTOM_AUTOSPRINTF)
 
 if(USE_TLS_PROXY)
 	add_definitions(-DUSE_TLS_PROXY=1)
-	set(VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS} -lvhproxy")
+	set(VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS} -lfeartls")
 endif(USE_TLS_PROXY)
 
 #ADD_DEFINITIONS(-DUSE_SSL_CONNECTS)
@@ -412,10 +412,6 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/c
 # ----------------------------------------------------------------------------------------------------
 # directories
 
-if(USE_TLS_PROXY)
-	make_directory("${CMAKE_BINARY_DIR}/tls-proxy")
-endif(USE_TLS_PROXY)
-
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(share)
@@ -492,7 +488,7 @@ message(STATUS "[ ** ] Verlihub version: ${VERLIHUB_VERSION}")
 MESSAGE(STATUS "[ ** ] Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "[ ** ] Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "[ ** ] Building plugins: ${PLUGINS_LIST}")
-message(STATUS "[ ** ] Building TLS proxy: ${USE_TLS_PROXY}")
+message(STATUS "[ ** ] Using TLS proxy: ${USE_TLS_PROXY}")
 message(STATUS "[ ** ] Now run \"make\" as current user and \"make install\" as super user")
 message(STATUS "[ ** ] Then run \"ldconfig\" as super user to avoid shared library errors")
 message(STATUS)

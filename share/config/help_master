@@ -33,6 +33,8 @@
 	vh -i [sleep]				- Install new hub
 	vh -uh [config]				- Update help files
 	vh -mp <config> <main> [extra]	- Modify hub ports
+	vh -gc <var> <config>			- Get configuration variable
+	vh -sc <var> <val> <config>		- Set configuration variable
 	vh -u <nick> <class> <password> [config]	- Register new user
 	vh -g [config]				- Update free MaxMind databases
 
