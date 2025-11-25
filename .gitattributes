@@ -5,3 +5,4 @@ share/config/ru/* text eol=lf
 *.cpp eol=lf
 *.h eol=lf
 *.txt eol=lf
+*.cmake eol=lf
