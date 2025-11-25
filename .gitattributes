@@ -1,8 +1,17 @@
 # trigger text files must have unix line endings, else they look weird on windows clients
 share/config/* text eol=lf
-share/config/ru/* text eol=lf
-# source too, we are not working with windows yet
+share/config/ru/* text working-tree-encoding=cp1251 eol=lf
+# display translation files correctly
+po/*.CP1250.po text working-tree-encoding=cp1250 eol=lf
+po/*.CP1251.po text working-tree-encoding=cp1251 eol=lf
+po/*.CP1252.po text working-tree-encoding=cp1252 eol=lf
+po/*.CP1254.po text working-tree-encoding=cp1254 eol=lf
+po/*.GB18030.po text working-tree-encoding=gb18030 eol=lf
+*.pot eol=lf
+# source too, we are not working with windows
 *.cpp eol=lf
 *.h eol=lf
 *.txt eol=lf
 *.cmake eol=lf
+# git stuff
+*.gitattributes eol=lf
