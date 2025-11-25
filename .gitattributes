@@ -4,3 +4,4 @@ share/config/ru/* text eol=lf
 # source too, we are not working with windows yet
 *.cpp eol=lf
 *.h eol=lf
+*.txt eol=lf

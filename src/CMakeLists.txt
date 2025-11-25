@@ -179,55 +179,23 @@ SET(VERLIHUB_SRCS
 )
 
 # ----------------------------------------------------------------------------------------------------
-# tls proxy
-
-if(USE_TLS_PROXY AND GOLANG_PATH)
-	add_custom_command(
-		OUTPUT "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a"
-		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go"
-		COMMAND ${GOLANG_PATH} build -buildmode c-archive -o "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a" "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go"
-		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tls-proxy"
-		COMMENT "Building TLS proxy"
-	)
-
-	add_custom_target(libvhproxy_a DEPENDS "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
-
-	add_custom_command(
-		OUTPUT "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
-		DEPENDS "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h"
-		COMMAND cp "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h" "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
-		COMMENT "Copying libvhproxy.h header"
-	)
-
-	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/src/libvhproxy.h")
-	add_dependencies(libvhproxy_h libvhproxy_a)
-
-	add_custom_command(
-		OUTPUT "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
-		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
-		COMMENT "Copying proxy_types.h header"
-	)
-
-	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/src/proxy_types.h")
-	add_dependencies(proxy_types_h libvhproxy_a)
-
-	list(APPEND ${VERLIHUB_HDRS} "libvhproxy.h" "proxy_types.h")
-endif(USE_TLS_PROXY AND GOLANG_PATH)
-
-# ----------------------------------------------------------------------------------------------------
 
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
+# ----------------------------------------------------------------------------------------------------
+# tls proxy
+
 if(USE_TLS_PROXY)
-	add_dependencies(libverlihub_so libvhproxy_a libvhproxy_h proxy_types_h)
-	add_library(vhproxy SHARED IMPORTED)
-	set_target_properties(vhproxy PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
-	target_link_libraries(libverlihub_so vhproxy)
+	add_library(feartls_so SHARED IMPORTED)
+	set_target_properties(feartls_so PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/feartls/libFearTLS.so")
+	install(IMPORTED_RUNTIME_ARTIFACTS feartls_so LIBRARY DESTINATION "lib")
+	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS} feartls_so)
+else(USE_TLS_PROXY)
+	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
 endif(USE_TLS_PROXY)
 
-target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
+# ----------------------------------------------------------------------------------------------------
 
 add_library(vhapi_so SHARED "script_api.cpp")
 set_target_properties(vhapi_so PROPERTIES OUTPUT_NAME "vhapi")
@@ -243,11 +211,6 @@ STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_LIBS}")
 string(STRIP "${VERLIHUB_USE_LIBS}" VERLIHUB_USE_LIBS)
 CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DIR}/verlihub_config")
 # ----------------------------------------------------------------------------------------------------
-
-#if(USE_TLS_PROXY)
-##	#install(FILES "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a" LIBRARY DESTINATION "lib") # old cmake
-#	install(IMPORTED_RUNTIME_ARTIFACTS vhproxy LIBRARY DESTINATION "lib")
-#endif(USE_TLS_PROXY)
 
 install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION "lib")
 

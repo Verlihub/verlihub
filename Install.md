@@ -5,7 +5,7 @@ Dependencies and installation
 * Required dependencies:
 
 	[ bin lib hdr ] GCC			4.8.0
-	[ bin --- hdr ] CMake		3.0
+	[ bin --- hdr ] CMake		3.16
 	[ bin lib hdr ] MySQL		5.7.1
 	[ --- lib hdr ] OpenSSL		1.1.0
 	[ --- lib hdr ] LibICU		55.0
@@ -79,7 +79,7 @@ Supported CMake options
 		-DPLUGIN_INSTALL_DIR=lib64/vh_plugins
 
 -DUSE_TLS_PROXY=ON (default: OFF)
-	build tls proxy
+	use tls proxy
 
 ===========
 End of file

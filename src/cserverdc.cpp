@@ -35,7 +35,7 @@
 #include <cxxabi.h>
 
 #ifdef USE_TLS_PROXY
-	#include "libvhproxy.h"
+	#include "../feartls/feartls.h"
 #endif
 
 #include "cserverdc.h"
@@ -338,7 +338,7 @@ cServerDC::~cServerDC()
 
 #ifdef USE_TLS_PROXY
 	if (mTLSPort)
-		StopProxy(mRunResult); // togo: there is a bug in go, stop proxy at last until fixed
+		StopProxy(mRunResult);
 #endif
 }
 
@@ -3441,38 +3441,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
-			} else if ((svar == "tls_buf_size") && (val_new != val_old)) { // live change
-				if (val_new.empty()) { // dont allow empty
-					ci->ConvertFrom(val_old);
-					return 0;
 				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetBuf(num);
-#endif
-
-			} else if ((svar == "tls_detect_wait") && (val_new != val_old)) { // live change
-				if (val_new.empty()) { // dont allow empty
-					ci->ConvertFrom(val_old);
-					return 0;
-				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetWait(num);
-#endif
-
-			} else if ((svar == "tls_err_log") && (val_new != val_old)) { // live change
-				if (val_new.empty()) { // dont allow empty
-					ci->ConvertFrom(val_old);
-					return 0;
-				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetLog(num); // note: is boolean
-#endif
 
 			} else if (((svar == "ip_zone4_min") || (svar == "ip_zone5_min") || (svar == "ip_zone6_min")) && (val_new != val_old) && val_new.size()) { // validate low zones
 				unsigned long ip = 0;

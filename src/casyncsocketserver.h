@@ -212,11 +212,7 @@ namespace nVerliHub {
 				unsigned int mTLSWait;
 				string mTLSCert;
 				string mTLSKey;
-				string mTLSOrg;
-				string mTLSMail;
-				string mTLSHost;
 				unsigned int mTLSVer;
-				unsigned int mTLSBuf;
 				bool mTLSLog;
 
 				/// Use reverse DNS lookup feature when there is a new connection.

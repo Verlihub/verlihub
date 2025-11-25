@@ -21,7 +21,7 @@
 #include "casyncsocketserver.h"
 
 #ifdef USE_TLS_PROXY
-	#include "libvhproxy.h"
+	#include "../feartls/feartls.h"
 #endif
 
 /*
@@ -507,25 +507,21 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (!mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
-	VH_ProxyConfig *conf = VH_ProxyCreate();
+	string saddr, scert, skey, shost;
+	stringstream sstr;
 
-	if (!conf) {
-		if (Log(0))
-			LogStream() << "Failed to create proxy configuration" << endl;
+	saddr.assign(mTLSAddr);
+	scert.assign(mTLSCert);
 
-		return false;
-	}
+	if (scert.find('/') == string::npos)
+		scert = mConfBaseDir + "/" + scert;
 
-	string shub, saddr, scert, skey, sorg, smail, shost;
-	int iwait, ibuf, iver;
-	bool blog;
-	stringstream ss;
+	skey.assign(mTLSKey);
 
-	ss << mTLSAddr << ':' << mTLSPort;
-	shub.assign(ss.str());
+	if (skey.find('/') == string::npos)
+		skey = mConfBaseDir + "/" + skey;
 
-	ss.str("");
-	ss << mAddr << ':' << OverrideDefaultPort;
+	sstr << mAddr << ':' << OverrideDefaultPort;
 
 	if (mExtra.size()) {
 		istringstream is(mExtra);
@@ -536,64 +532,26 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 			is >> i;
 
 			if ((i >= 1) && (i <= 65535))
-				ss << ' ' << mAddr << ':' << i;
+				sstr << ' ' << mAddr << ':' << i;
 		}
 	}
 
-	saddr.assign(ss.str());
+	shost.assign(sstr.str());
 
-	ss.str("");
-	ss << mConfBaseDir << '/' << mTLSCert;
-	scert.assign(ss.str());
+	VH_FearConf conf;
+	conf.FAddr = saddr.c_str();
+	conf.FPort = mTLSPort;
+	conf.FHost = shost.c_str();
+	conf.FCert = scert.c_str();
+	conf.FKey = skey.c_str();
+	conf.FLog = mTLSLog;
+	conf.FWait = mTLSWait;
+	conf.FVer = mTLSVer;
+	conf.FSend = true; // note: static
 
-	ss.str("");
-	ss << mConfBaseDir << '/' << mTLSKey;
-	skey.assign(ss.str());
-
-	sorg.assign(mTLSOrg);
-	smail.assign(mTLSMail);
-	shost.assign(mTLSHost);
-
-	blog = mTLSLog;
-	iwait = mTLSWait;
-	ibuf = mTLSBuf;
-	iver = mTLSVer;
-
-	conf->HubAddr = shub.c_str();
-	conf->HubNetwork = "tcp4"; // note: static
-	conf->Hosts = saddr.c_str();
-	conf->Cert = scert.c_str();
-	conf->Key = skey.c_str();
-	conf->CertOrg = sorg.c_str();
-	conf->CertMail = smail.c_str();
-	conf->CertHost = shost.c_str();
-	conf->LogErrors = blog;
-	conf->Wait = iwait;
-	conf->Buffer = ibuf;
-	conf->MinVer = iver;
-	conf->NoSendIP = false; // note: static
-
-	if (Log(0))
-		LogStream() << "Starting TLS proxy: " << saddr << " -> " << shub << endl;
-
-	if (!VH_ProxyStart(conf)) {
-		char *err = VH_ProxyError();
-
-		if (err) {
-			if (Log(0))
-				LogStream() << "Error starting TLS proxy: " << err << endl;
-
-			delete err;
-
-		} else if (Log(0)) {
-			LogStream() << "Error starting TLS proxy" << endl;
-		}
-
-		delete conf;
+	if (!VH_FearStart(&conf))
 		return false;
-	}
 
-	delete conf;
 	return this->Listen(mTLSPort/*, false*/);
 #else
 	return this->Listen(OverrideDefaultPort/*, false*/);
@@ -603,11 +561,8 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 #ifdef USE_TLS_PROXY
 void cAsyncSocketServer::StopProxy(int code)
 {
-	if (Log(0))
-		LogStream() << "Stopping TLS proxy" << endl;
-
-	VH_ProxySetLog(false); // prevents log flood
-	VH_ProxyStop(code);
+	VH_FearStop(code);
+	exit(code); // todo: crash hack, dont know what the problem is
 }
 #endif
 
