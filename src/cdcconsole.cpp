@@ -579,7 +579,7 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str() << "\r\n";
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
 
-	if (mOwner->mTLSPort) // client to hub tls
+	if (mOwner->mTLSPort || mOwner->mTLSAddr.size()) // client to hub tls
 		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
 
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client to client tls
