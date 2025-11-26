@@ -187,9 +187,9 @@ set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 # tls proxy
 
 if(USE_TLS_PROXY)
-	add_library(feartls_so SHARED IMPORTED)
-	set_target_properties(feartls_so PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/feartls/libFearTLS.so")
-	install(IMPORTED_RUNTIME_ARTIFACTS feartls_so LIBRARY DESTINATION "lib")
+	add_library(feartls_so SHARED IMPORTED GLOBAL)
+	set_target_properties(feartls_so PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/feartls/libFearTLS.so" IMPORTED_NO_SONAME TRUE)
+	install(IMPORTED_RUNTIME_ARTIFACTS feartls_so LIBRARY DESTINATION ${LIBDIR})
 	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS} feartls_so)
 else(USE_TLS_PROXY)
 	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
@@ -206,13 +206,15 @@ target_link_libraries(verlihub libverlihub_so)
 
 # ----------------------------------------------------------------------------------------------------
 # generate verlihub_config
+
 MESSAGE(STATUS "[ .. ] Generating configuration executable: ${CMAKE_BINARY_DIR}/verlihub_config")
 STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_LIBS}")
 string(STRIP "${VERLIHUB_USE_LIBS}" VERLIHUB_USE_LIBS)
 CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DIR}/verlihub_config")
+
 # ----------------------------------------------------------------------------------------------------
 
-install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION "lib")
+install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR})
 
 INSTALL(
 	FILES "${VERLIHUB_BINARY_DIR}/verlihub_config"
