@@ -1067,7 +1067,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
-	if (mTLSPort) {
+	if (mTLSPort || mTLSAddr.size()) {
 		if (mC.tls_only_mode)
 			conn->mLock.append("TLSONLY_");
 		else
