@@ -19,8 +19,8 @@ Verlihub is a NMDC server for Unix and Linux based operating systems that provid
 
 Currently there are two supported libraries:
 
-  * Build Go TLS library with USE_TLS_PROXY flag: https://github.com/verlihub/tls-proxy
-  * Use FearTLS library with USE_FEARTLS_PROXY flag: https://github.com/rolex/feartls
+  * Build Go TLS library using `USE_TLS_PROXY` flag: https://github.com/verlihub/tls-proxy#readme
+  * Use FearTLS library using `USE_FEARTLS_PROXY` flag: https://github.com/rolex/feartls#readme
 
 # Links
 
