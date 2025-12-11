@@ -178,13 +178,8 @@ SET(VERLIHUB_SRCS
 	#verlihub.cpp
 )
 
-# ----------------------------------------------------------------------------------------------------
-
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
-
-# ----------------------------------------------------------------------------------------------------
-# tls proxy
 
 if(USE_TLS_PROXY AND GOLANG_PATH)
 
@@ -224,7 +219,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 	add_library(vhproxy SHARED IMPORTED)
 	set_target_properties(vhproxy PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
 
-	list(APPEND ${VERLIHUB_LIBS} vhproxy)
+	target_link_libraries(libverlihub_so vhproxy)
 
 elseif(USE_FEARTLS_PROXY)
 
@@ -232,11 +227,9 @@ elseif(USE_FEARTLS_PROXY)
 	set_target_properties(feartls_so PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/feartls/libFearTLS.so" IMPORTED_NO_SONAME TRUE)
 	install(IMPORTED_RUNTIME_ARTIFACTS feartls_so LIBRARY DESTINATION ${LIBDIR})
 
-	list(APPEND ${VERLIHUB_LIBS} feartls_so)
+	target_link_libraries(libverlihub_so feartls_so)
 
 endif()
-
-# ----------------------------------------------------------------------------------------------------
 
 target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
 
