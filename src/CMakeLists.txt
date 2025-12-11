@@ -186,16 +186,59 @@ set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 # ----------------------------------------------------------------------------------------------------
 # tls proxy
 
-if(USE_TLS_PROXY)
+if(USE_TLS_PROXY AND GOLANG_PATH)
+
+	add_custom_command(
+		OUTPUT "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a"
+		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go"
+		COMMAND ${GOLANG_PATH} build -buildmode c-archive -o "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a" "${CMAKE_SOURCE_DIR}/tls-proxy/lib/lib.go"
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tls-proxy"
+		COMMENT "Building TLS proxy"
+	)
+
+	add_custom_target(libvhproxy_a DEPENDS "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
+
+	add_custom_command(
+		OUTPUT "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
+		DEPENDS "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h"
+		COMMAND cp "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h" "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
+		COMMENT "Copying libvhproxy.h header"
+	)
+
+	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/src/libvhproxy.h")
+	add_dependencies(libvhproxy_h libvhproxy_a)
+
+	add_custom_command(
+		OUTPUT "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
+		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h"
+		COMMAND cp "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
+		COMMENT "Copying proxy_types.h header"
+	)
+
+	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/src/proxy_types.h")
+	add_dependencies(proxy_types_h libvhproxy_a)
+
+	list(APPEND ${VERLIHUB_HDRS} "libvhproxy.h" "proxy_types.h")
+
+	add_dependencies(libverlihub_so libvhproxy_a libvhproxy_h proxy_types_h)
+	add_library(vhproxy SHARED IMPORTED)
+	set_target_properties(vhproxy PROPERTIES IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.a")
+
+	list(APPEND ${VERLIHUB_LIBS} vhproxy)
+
+elseif(USE_FEARTLS_PROXY)
+
 	add_library(feartls_so SHARED IMPORTED GLOBAL)
 	set_target_properties(feartls_so PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/feartls/libFearTLS.so" IMPORTED_NO_SONAME TRUE)
 	install(IMPORTED_RUNTIME_ARTIFACTS feartls_so LIBRARY DESTINATION ${LIBDIR})
-	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS} feartls_so)
-else(USE_TLS_PROXY)
-	target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
-endif(USE_TLS_PROXY)
+
+	list(APPEND ${VERLIHUB_LIBS} feartls_so)
+
+endif()
 
 # ----------------------------------------------------------------------------------------------------
+
+target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
 
 add_library(vhapi_so SHARED "script_api.cpp")
 set_target_properties(vhapi_so PROPERTIES OUTPUT_NAME "vhapi")

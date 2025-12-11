@@ -1,6 +1,6 @@
 # 1.7.0.0
 
-* Replaced: Go TLS proxy with precompiled FearTLS library
+* Added: CMake flag USE_FEARTLS_PROXY to use precompiled FearTLS proxy library instead
 
 # 1.6.1.0
 
