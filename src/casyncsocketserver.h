@@ -212,7 +212,11 @@ namespace nVerliHub {
 				unsigned int mTLSWait;
 				string mTLSCert;
 				string mTLSKey;
+				string mTLSOrg;
+				string mTLSMail;
+				string mTLSHost;
 				unsigned int mTLSVer;
+				unsigned int mTLSBuf;
 				bool mTLSLog;
 
 				/// Use reverse DNS lookup feature when there is a new connection.
@@ -234,7 +238,7 @@ namespace nVerliHub {
 					return mConnChooser.mConnList.size();
 				}
 
-			#ifdef USE_TLS_PROXY // tls proxy
+			#if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY) // tls proxy
 				void StopProxy(int code);
 			#endif
 

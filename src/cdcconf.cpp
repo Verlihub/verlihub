@@ -73,7 +73,11 @@ void cDCConf::AddVars()
 	Add("tls_detect_wait", mS.mTLSWait, 500);
 	Add("tls_cert_file", mS.mTLSCert, "hub.crt");
 	Add("tls_key_file", mS.mTLSKey, "hub.key");
+	Add("tls_cert_org", mS.mTLSOrg, "Verlihub");
+	Add("tls_cert_mail", mS.mTLSMail, "verlihub@localhost");
+	Add("tls_cert_host", mS.mTLSHost, "localhost");
 	Add("tls_min_ver", mS.mTLSVer, 2);
+	Add("tls_buf_size", mS.mTLSBuf, 10);
 	Add("tls_err_log", mS.mTLSLog, false);
 	// end of section
 

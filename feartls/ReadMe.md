@@ -4,7 +4,7 @@ FearDC TLS proxy server library for NMDC protocol, written in Pascal, currently 
 
 It is included in source code with ability to use as built-in library with following option:
 
-`cmake -DUSE_TLS_PROXY=ON ..`
+`cmake -DUSE_FEARTLS_PROXY=ON ..`
 
 ## Important to know
 
