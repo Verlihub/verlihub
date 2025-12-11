@@ -50,7 +50,7 @@ You can generate your own self-signed certificates using OpenSSL binary:
 
 `not_tls_redirect` - Redirect address for users who are not TLS-encrypted, default: `<none>`
 
-`tls_detect_wait` - Protocol detection time in milliseconds, default: `600`
+`tls_detect_wait` - Protocol detection time in milliseconds, `0` means encrypted connection only, default: `500`
 
 `tls_cert_file` - Name of public certificate file in hub configuration directory, default: `hub.crt`
 
