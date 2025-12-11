@@ -681,7 +681,7 @@ bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bo
 
 	string addr = mAddr;
 
-#ifdef USE_TLS_PROXY
+#if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY)
 	if (mTLSPort)
 		addr = mTLSAddr;
 #endif
