@@ -25,6 +25,9 @@ cmake_minimum_required(VERSION 3.16...3.50)
 PROJECT(VERLIHUB)
 SET(PROJECT_NAME "verlihub")
 
+# Enable testing at project root for plugin tests
+enable_testing()
+
 SET(VERLIHUB_VERSION_MAJOR 1) # note: these must be numbers
 SET(VERLIHUB_VERSION_MINOR 7)
 SET(VERLIHUB_VERSION_PATCH 0)

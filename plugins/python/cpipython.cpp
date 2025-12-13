@@ -99,12 +99,25 @@ void cpiPython::OnLoad(cServerDC *server)
 	opchatname = server->mC.opchat_name;
 
 	log4("PY: cpiPython::OnLoad   dlopen...\n");
-	if (!lib_handle)
-		lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so",
-			RTLD_LAZY | RTLD_GLOBAL);
+	if (!lib_handle) {
+		// Try build directory first (for tests), then installed location
+		const char* wrapper_paths[] = {
+			"@CMAKE_BINARY_DIR@/plugins/python/libvh_python_wrapper.so",
+			"@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so",
+			NULL
+		};
+		
+		for (int i = 0; wrapper_paths[i] != NULL; i++) {
+			lib_handle = dlopen(wrapper_paths[i], RTLD_LAZY | RTLD_GLOBAL);
+			if (lib_handle) {
+				log4("PY: cpiPython::OnLoad   Loaded wrapper from: %s\n", wrapper_paths[i]);
+				break;
+			}
+		}
+	}
 	// RTLD_GLOBAL exports all symbols from libvh_python_wrapper.so
 	// without RTLD_GLOBAL the lib will fail to import other python modules
-	// because they won't see any symbols from the linked libpython2.5
+	// because they won't see any symbols from the linked libpython
 	if (!lib_handle) {
 		log("PY: cpiPython::OnLoad   Error during dlopen(): %s\n", dlerror());
 		return;

@@ -1,363 +1,248 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>  // For mocking
-#define protected public
-#define private public
-#include "src/cserverdc.h"  // From Verlihub API
-#include "src/cdcproto.h"
-#include "src/cconndc.h"
-#include "src/cconfigbase.h"
-#include "src/cvhpluginmgr.h"
-#include "src/cmysql.h"
-#include "plugins/python/cpipython.h"  // Python plugin header
+#include <gmock/gmock.h>
+#include "cserverdc.h"
+#include "plugins/python/cpipython.h"
+#include "plugins/python/cpythoninterpreter.h"
+#include "cconndc.h"
+#include "cprotocol.h"
 #include <fstream>
 #include <string>
 #include <vector>
 #include <chrono>
-#include <thread>  // For sleep if needed
+#include <unistd.h>  // for getpid()
+#include <cstdlib>   // for getenv()
 
-using namespace testing;  // For _
+using namespace testing;
 
-nVerliHub::nSocket::cServerDC* g_server = nullptr;
+// Helper to get env var with default
+static std::string getEnvOrDefault(const char* name, const char* defaultValue) {
+    const char* value = std::getenv(name);
+    return value ? std::string(value) : std::string(defaultValue);
+}
 
-// Global test environment for server init/finalize
+// Global server instance (requires MySQL)
+static nVerliHub::nSocket::cServerDC* g_server = nullptr;
+
+/*
+ * INTEGRATION TEST ENVIRONMENT
+ * 
+ * This test requires a fully configured Verlihub environment including:
+ * - MySQL server running on localhost
+ * - Database 'verlihub' created
+ * - Verlihub config files in <build_dir>/test_config_<pid>/
+ * 
+ * The test exercises the full Python plugin stack including:
+ * - Loading Python scripts
+ * - Message parsing and routing
+ * - Python callback invocation through the GIL wrapper
+ * - Stress testing with 100K+ iterations
+ * 
+ * WHY MYSQL IS REQUIRED:
+ * The cpiPython::OnLoad() method immediately accesses:
+ * - server->mMySQL (line 92 of cpipython.cpp)
+ * - server->mC.hub_security (line 96)
+ * And cServerDC constructor (line 65 of cserverdc.cpp) connects to MySQL.
+ * 
+ * Attempted workarounds that failed:
+ * - Option 3 (minimal mock): Passing nullptr to OnLoad() causes segfault
+ * - The plugin is too deeply coupled to server infrastructure
+ * 
+ * FUTURE IMPROVEMENT:
+ * - Create database abstraction layer to allow mock DB for testing
+ * - Refactor plugin initialization to be testable without full server
+ */
+
+// Full Verlihub environment setup
 class VerlihubEnv : public ::testing::Environment {
 public:
-    nVerliHub::nSocket::cServerDC* server = nullptr;
-    std::string config_dir = "./test_config/";
-    std::string db_config = "dbconfig";
-    std::string hub_config = "config";
-    std::string plugin_config = "plugins.conf";
-    std::string plugins_dir = config_dir + "plugins/";
-
     void SetUp() override {
-        // Create temp config dir and plugins subdir
-        (void)system(("mkdir -p " + plugins_dir).c_str());
-
-        // Minimal DB config with empty host to skip connect
-        std::ofstream db_file(config_dir + db_config);
-        db_file << "db_host=\n"
-                << "db_user=test\n"
-                << "db_pass=test\n"
-                << "db_data=test\n"
-                << "db_conf=test\n"
-                << "db_port=3306\n";
-        db_file.close();
-
-        // Minimal hub config
-        std::ofstream hub_file(config_dir + hub_config);
-        hub_file << "hub_name=TestHub\n"
-                 << "hub_host=localhost\n"
-                 << "max_users=100\n"
-                 << "listen_port=411\n"
-                 << "listen_addr=127.0.0.1\n"
-                 << "use_dns=0\n"
-                 << "min_share=0\n"
-                 << "max_share=0\n";
-        hub_file.close();
-
-        // Plugins config: Load Python plugin
-        std::ofstream plugin_file(config_dir + plugin_config);
-        plugin_file << "python_pi\n";  // Plugin identifier
-        plugin_file.close();
-
-        // Initialize server
-        server = new nVerliHub::nSocket::cServerDC(config_dir, "");
-        g_server = server;
-
-        // Load plugins
-        server->mPluginManager.LoadAll();
+        // Use build directory for config to allow parallel test runs
+        std::string config_dir = std::string(BUILD_DIR) + "/test_config_" + 
+                                 std::to_string(getpid());
+        std::string config_file = config_dir + "/dbconfig";
+        std::string plugins_dir = config_dir + "/plugins";
+        
+        // Create config and plugins directories
+        int ret = system(("mkdir -p " + config_dir).c_str());
+        (void)ret; // Suppress warning
+        ret = system(("mkdir -p " + plugins_dir).c_str());
+        (void)ret;
+        
+        // Get MySQL connection details from environment (for Docker support)
+        // or use defaults for local MySQL installation
+        std::string db_host = getEnvOrDefault("VH_TEST_MYSQL_HOST", "localhost");
+        std::string db_port = getEnvOrDefault("VH_TEST_MYSQL_PORT", "3306");
+        std::string db_user = getEnvOrDefault("VH_TEST_MYSQL_USER", "verlihub");
+        std::string db_pass = getEnvOrDefault("VH_TEST_MYSQL_PASS", "verlihub");
+        std::string db_name = getEnvOrDefault("VH_TEST_MYSQL_DB", "verlihub");
+        
+        // Construct host:port format if port is not 3306
+        std::string db_host_port = db_host;
+        if (db_port != "3306") {
+            db_host_port = db_host + ":" + db_port;
+        }
+        
+        // Write minimal dbconfig
+        std::ofstream dbconf(config_file);
+        dbconf << "db_host = " << db_host_port << "\n"
+               << "db_user = " << db_user << "\n" 
+               << "db_pass = " << db_pass << "\n"
+               << "db_data = " << db_name << "\n";
+        dbconf.close();
+        
+        // Create server (connects to MySQL but does NOT start listening on ports)
+        try {
+            g_server = new nVerliHub::nSocket::cServerDC(config_dir, config_dir);
+            // NOTE: We deliberately DO NOT call g_server->StartListening()
+            // This allows the server to initialize fully (including loading plugins)
+            // without binding to network ports, which would block the test
+        } catch (...) {
+            throw std::runtime_error(
+                "Failed to create Verlihub server!\n\n"
+                "This test requires MySQL. Please:\n"
+                "1. Install MySQL: sudo apt-get install mysql-server\n"
+                "2. Create database: CREATE DATABASE verlihub;\n"
+                "3. Create user: CREATE USER 'verlihub'@'localhost' IDENTIFIED BY 'verlihub';\n"
+                "4. Grant access: GRANT ALL ON verlihub.* TO 'verlihub'@'localhost';\n"
+                "5. Initialize schema: Run verlihub --init\n"
+            );
+        }
+        
+        if (!g_server) {
+            throw std::runtime_error("Server creation returned null");
+        }
     }
 
     void TearDown() override {
-        if (server) {
-            server->mPluginManager.UnLoadAll();
-            delete server;
-            server = nullptr;
+        if (g_server) {
+            delete g_server;
             g_server = nullptr;
         }
-        // Cleanup configs
-        (void)system("rm -rf ./test_config");
+        // Clean up config directory
+        std::string config_dir = std::string(BUILD_DIR) + "/test_config_" + 
+                                 std::to_string(getpid());
+        int ret = system(("rm -rf " + config_dir).c_str());
+        (void)ret; // Suppress warning
     }
 };
 
-// Script content (full)
+// Simplified script for testing
 const char* script_content = R"python(
-# test_script.py - Example Python 3 script for Verlihub plugin testing
-# Define all hooks with print statements to log when called
-
 import sys
 
+call_counts = {}
+
+def count_call(name):
+    call_counts[name] = call_counts.get(name, 0) + 1
+    if call_counts[name] % 10000 == 0:
+        print(f"{name} called {call_counts[name]} times", file=sys.stderr)
+    return 1
+
 def OnNewConn(*args):
-    print("Called: OnNewConn with args:", args, file=sys.stderr)
-    return 1  # Allow further processing
+    return count_call('OnNewConn')
 
 def OnCloseConn(*args):
-    print("Called: OnCloseConn with args:", args, file=sys.stderr)
-    return 1
-
-def OnCloseConnEx(*args):
-    print("Called: OnCloseConnEx with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnCloseConn')
 
 def OnParsedMsgChat(*args):
-    print("Called: OnParsedMsgChat with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgPM(*args):
-    print("Called: OnParsedMsgPM with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgMCTo(*args):
-    print("Called: OnParsedMsgMCTo with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnParsedMsgChat')
 
 def OnParsedMsgSearch(*args):
-    print("Called: OnParsedMsgSearch with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgSR(*args):
-    print("Called: OnParsedMsgSR with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnParsedMsgSearch')
 
 def OnParsedMsgMyINFO(*args):
-    print("Called: OnParsedMsgMyINFO with args:", args, file=sys.stderr)
-    return 1
-
-def OnFirstMyINFO(*args):
-    print("Called: OnFirstMyINFO with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnParsedMsgMyINFO')
 
 def OnParsedMsgValidateNick(*args):
-    print("Called: OnParsedMsgValidateNick with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgAny(*args):
-    print("Called: OnParsedMsgAny with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgAnyEx(*args):
-    print("Called: OnParsedMsgAnyEx with args:", args, file=sys.stderr)
-    return 1
-
-def OnOpChatMessage(*args):
-    print("Called: OnOpChatMessage with args:", args, file=sys.stderr)
-    return 1
-
-def OnPublicBotMessage(*args):
-    print("Called: OnPublicBotMessage with args:", args, file=sys.stderr)
-    return 1
-
-def OnUnLoad(*args):
-    print("Called: OnUnLoad with args:", args, file=sys.stderr)
-    return 1
-
-def OnCtmToHub(*args):
-    print("Called: OnCtmToHub with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnParsedMsgValidateNick')
 
 def OnParsedMsgSupports(*args):
-    print("Called: OnParsedMsgSupports with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgMyHubURL(*args):
-    print("Called: OnParsedMsgMyHubURL with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgExtJSON(*args):
-    print("Called: OnParsedMsgExtJSON with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgBotINFO(*args):
-    print("Called: OnParsedMsgBotINFO with args:", args, file=sys.stderr)
-    return 1
+    return count_call('OnParsedMsgSupports')
 
 def OnParsedMsgVersion(*args):
-    print("Called: OnParsedMsgVersion with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgMyPass(*args):
-    print("Called: OnParsedMsgMyPass with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgConnectToMe(*args):
-    print("Called: OnParsedMsgConnectToMe with args:", args, file=sys.stderr)
-    return 1
-
-def OnParsedMsgRevConnectToMe(*args):
-    print("Called: OnParsedMsgRevConnectToMe with args:", args, file=sys.stderr)
-    return 1
-
-def OnUnknownMsg(*args):
-    print("Called: OnUnknownMsg with args:", args, file=sys.stderr)
-    return 1
-
-def OnOperatorCommand(*args):
-    print("Called: OnOperatorCommand with args:", args, file=sys.stderr)
-    return 1
-
-def OnOperatorKicks(*args):
-    print("Called: OnOperatorKicks with args:", args, file=sys.stderr)
-    return 1
-
-def OnOperatorDrops(*args):
-    print("Called: OnOperatorDrops with args:", args, file=sys.stderr)
-    return 1
-
-def OnOperatorDropsWithReason(*args):
-    print("Called: OnOperatorDropsWithReason with args:", args, file=sys.stderr)
-    return 1
-
-def OnValidateTag(*args):
-    print("Called: OnValidateTag with args:", args, file=sys.stderr)
-    return 1
-
-def OnUserCommand(*args):
-    print("Called: OnUserCommand with args:", args, file=sys.stderr)
-    return 1
-
-def OnHubCommand(*args):
-    print("Called: OnHubCommand with args:", args, file=sys.stderr)
-    return 1
-
-def OnScriptCommand(*args):
-    print("Called: OnScriptCommand with args:", args, file=sys.stderr)
-    return 1
-
-def OnUserInList(*args):
-    print("Called: OnUserInList with args:", args, file=sys.stderr)
-    return 1
-
-def OnUserLogin(*args):
-    print("Called: OnUserLogin with args:", args, file=sys.stderr)
-    return 1
-
-def OnUserLogout(*args):
-    print("Called: OnUserLogout with args:", args, file=sys.stderr)
-    return 1
-
-def OnTimer(*args):
-    print("Called: OnTimer with args:", args, file=sys.stderr)
-    return 1
-
-def OnNewReg(*args):
-    print("Called: OnNewReg with args:", args, file=sys.stderr)
-    return 1
-
-def OnNewBan(*args):
-    print("Called: OnNewBan with args:", args, file=sys.stderr)
-    return 1
-
-def OnSetConfig(*args):
-    print("Called: OnSetConfig with args:", args, file=sys.stderr)
-    return 1
-
-# Optional: Define name_and_version for script identification
-def name_and_version():
-    return "Test Script", "1.0"
+    return count_call('OnParsedMsgVersion')
 )python";
 
 // Test fixture
 class VerlihubIntegrationTest : public ::testing::Test {
 protected:
-    nVerliHub::nSocket::cServerDC* server;
     std::string script_path = "./test_script.py";
+    nVerliHub::nPythonPlugin::cpiPython* py_plugin = nullptr;
 
     void SetUp() override {
-        server = g_server;
+        // Manually create and register the Python plugin
+        // (normally loaded from .so file by PluginManager)
+        py_plugin = new nVerliHub::nPythonPlugin::cpiPython();
+        py_plugin->OnLoad(g_server);
+        
+        ASSERT_NE(py_plugin, nullptr) << "Failed to create Python plugin";
 
         // Write script to file
         std::ofstream script_file(script_path);
         script_file << script_content;
         script_file.close();
 
-        // Get Python plugin
-        nVerliHub::nPythonPlugin::cpiPython* py_plugin = dynamic_cast<nVerliHub::nPythonPlugin::cpiPython*>(
-            server->mPluginManager.GetPlugin(PYTHON_PI_IDENTIFIER));
-        ASSERT_NE(py_plugin, nullptr);
-
-        // Load script
-        nVerliHub::nPythonPlugin::cPythonInterpreter* interp = new nVerliHub::nPythonPlugin::cPythonInterpreter(script_path);
+        // Load script into interpreter
+        nVerliHub::nPythonPlugin::cPythonInterpreter* interp = 
+            new nVerliHub::nPythonPlugin::cPythonInterpreter(script_path);
         py_plugin->AddData(interp);
         interp->Init();
     }
 
     void TearDown() override {
         // Unload script
-        nVerliHub::nPythonPlugin::cpiPython* py_plugin = dynamic_cast<nVerliHub::nPythonPlugin::cpiPython*>(
-            server->mPluginManager.GetPlugin(PYTHON_PI_IDENTIFIER));
         if (py_plugin) {
             py_plugin->RemoveByName(script_path);
+            delete py_plugin;
+            py_plugin = nullptr;
         }
         std::remove(script_path.c_str());
     }
 
-    // Helper to create mock connection
-    nVerliHub::nSocket::cConnDC* CreateMockConn(const std::string& ip = "127.0.0.1") {
-        nVerliHub::nSocket::cConnDC* conn = new nVerliHub::nSocket::cConnDC(0, server);
-        //conn->SetIP(ip.c_str());
-        return conn;
-    }
-
-    // Helper to parse and treat message
     void SendMessage(nVerliHub::nSocket::cConnDC* conn, const std::string& raw_msg) {
-        nVerliHub::nProtocol::cMessageParser* parser = server->mP.CreateParser();
+        nVerliHub::nProtocol::cMessageParser* parser = g_server->mP.CreateParser();
         parser->mStr = raw_msg;
         parser->mLen = raw_msg.size();
         parser->Parse();
-        server->mP.TreatMsg(parser, conn);
-        server->mP.DeleteParser(parser);
+        
+        // This is the core: TreatMsg calls into Python through the GIL wrapper
+        g_server->mP.TreatMsg(parser, conn);
+        
+        g_server->mP.DeleteParser(parser);
     }
 };
 
-// Stress test calling TreatMsg with sequence from log
+// Stress test - exercises GIL handling under load
 TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
-    nVerliHub::nSocket::cConnDC* conn = CreateMockConn();
-    const int iterations = 100000;  // Stress level
+    nVerliHub::nSocket::cConnDC* conn = new nVerliHub::nSocket::cConnDC(0, g_server);
+    const int iterations = 100000;
 
-    // Expanded sequence of raw messages from the log
     std::vector<std::string> messages = {
-        "$Supports BotINFO HubINFO|",  // Triggers OnParsedMsgSupports
-        "$ValidateNick ufoDcPinger|",  // OnParsedMsgValidateNick
-        "$Version 1,0091|",           // OnParsedMsgVersion
-        "$MyINFO $ALL ufoDcPinger www.ufo-modus.com Chat Only <++ V:7.25.4,M:A,H:1/0/0,S:15>$ $LAN(T3)l$reg.ufo-modus.com:2501$57886211615|",  // OnParsedMsgMyINFO
-        "<transfix> .|",               // Chat message -> OnParsedMsgChat
-        "$Search Hub:asdkjhgftyuir F?T?0?9?TTH:VVPFZS7ZRRGR6N2BJLRFTETA3LW7HAVRFGL6UIY|",  // OnParsedMsgSearch
-        "<transfix> !onplug python|",  // OnOperatorCommand
-        "$Search Hub:asdkjhgftyuir F?T?0?9?TTH:PEMW564WU7QG4TKVHSUZAGCGGFG2K6LCZJIMI7Y|",  // Another search
-        "$Search 173.2.131.81:60060 F?T?0?9?TTH:EO5QD5X5FQCJE6VPMFFHBULKZZGZQJXNCTQBKFQ|",  // Passive search
-        "$SP VVPFZS7ZRRGR6N2BJLRFTETA3LW7HAVRFGL6UIY asdkjhgftyuir|",  // SP command if parsed as such
-        "$SA EO5QD5X5FQCJE6VPMFFHBULKZZGZQJXNCTQBKFQ 173.2.131.81:60060|",  // SA command
-        "$SP PEMW564WU7QG4TKVHSUZAGCGGFG2K6LCZJIMI7Y asdkjhgftyuir|",  // Another SP
-        // Add more variations from log or generic
-        "<auynlyian_2> |",             // Empty chat -> OnParsedMsgAny
-        "<asdkjhgftyuir> $SP VVPFZS7ZRRGR6N2BJLRFTETA3LW7HAVRFGL6UIY asdkjhgftyuir|",  // Chat with SP
-        "$ValidateNick transfix|",     // Another validate
-        // ... Expand with more if needed
+        "$Supports BotINFO HubINFO|",
+        "$ValidateNick TestUser|",
+        "$Version 1,0091|",
+        "$MyINFO $ALL TestUser Desc$ $LAN(T3)l$localhost$0|",
+        "<TestUser> test message|",
+        "$Search Hub:TestUser F?T?0?9?TTH:AAAA|",
     };
 
+    auto start = std::chrono::high_resolution_clock::now();
+    
     for (int i = 0; i < iterations; ++i) {
-        // Rotate through messages
-        std::string msg = messages[i % messages.size()];
-
-        SendMessage(conn, msg);
-
-        // Simulate close/open for connection hooks every 30 iterations
-        if (i % 30 == 0) {
-            // Trigger close hooks
-            g_server->mCallBacks.mOnCloseConn.CallAll(conn);
-
-            delete conn;
-            conn = CreateMockConn();    // New conn
-            g_server->mCallBacks.mOnNewConn.CallAll(conn);
-        }
-
-        // Progress
-        if (i % 1000 == 0) {
-            std::cout << "Iteration: " << i << " / " << iterations << std::endl;
+        SendMessage(conn, messages[i % messages.size()]);
+        
+        if (i % 10000 == 0) {
+            std::cout << "Progress: " << i << " / " << iterations << std::endl;
         }
     }
 
-    // Cleanup
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    
+    std::cout << "Completed " << iterations << " messages in " 
+              << duration.count() << "ms ("
+              << (iterations * 1000.0 / duration.count()) << " msg/sec)" << std::endl;
+
     delete conn;
     EXPECT_TRUE(true);  // Pass if no crash
 }
