@@ -26,13 +26,14 @@ free(result);
 ```
 === Testing Bidirectional Python-C++ API ===
 1. Calling Python function: get_total_calls()
-   ✓ Total Python callbacks: 4279
+   ✓ Total Python callbacks: 250,020
 2. Calling Python function: print_summary()
    ✓ print_summary() succeeded (JSON output to stderr)
 3. Calling by script path lookup
-   ✓ Total callbacks (via path lookup): 4279
+   ✓ Total callbacks (via path lookup): 250,020
 
-Test completed: 200,000 messages in 569ms (351,494 msg/sec)
+Test completed: 1,000,000 messages in 3.9s (256,410 msg/sec)
+Python callbacks: 250,020 (25% of messages - correct for test mix)
 ```
 
 ---
