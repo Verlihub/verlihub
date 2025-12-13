@@ -341,22 +341,28 @@ int w_Load(w_Targs *args)
 	main_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
 
-	// Set sys.path to include script_dir and config_dir/scripts
-	string pypath = script_dir + ":" + string(config_dir) + "/scripts";
-	char *pypath_c = strdup(pypath.c_str());
-
-#if PY_MAJOR_VERSION >= 3
-	wchar_t *wpath = Py_DecodeLocale(pypath_c, NULL);
-	if (wpath) {
-		PySys_SetPath(wpath);
-		PyMem_RawFree(wpath);
+	// Add script_dir and config_dir/scripts to sys.path
+	// Important: Use PySys_GetObject to APPEND to path, not REPLACE it
+	// This preserves access to Python standard library and site-packages
+	PyObject *sys_path = PySys_GetObject("path"); // Borrowed reference, don't DECREF
+	if (sys_path && PyList_Check(sys_path)) {
+		// Prepend script directory (so it takes precedence)
+		PyObject *script_dir_str = PyUnicode_FromString(script_dir.c_str());
+		if (script_dir_str) {
+			PyList_Insert(sys_path, 0, script_dir_str);
+			Py_DECREF(script_dir_str);
+		}
+		
+		// Prepend config_dir/scripts directory
+		string scripts_path = string(config_dir) + "/scripts";
+		PyObject *scripts_path_str = PyUnicode_FromString(scripts_path.c_str());
+		if (scripts_path_str) {
+			PyList_Insert(sys_path, 0, scripts_path_str);
+			Py_DECREF(scripts_path_str);
+		}
 	} else {
-		log("PY: Failed to decode locale for PySys_SetPath\n");
+		log("PY: Warning - could not access sys.path\n");
 	}
-#else
-	PySys_SetPath(pypath_c);
-#endif
-	free(pypath_c);
 
 	// Import the module (this executes the script)
 	script->module = PyImport_ImportModule(script->name);
