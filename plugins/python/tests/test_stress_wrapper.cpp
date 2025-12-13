@@ -294,7 +294,7 @@ TEST_F(PythonWrapperTest, StressTest) {
     int id = LoadScript();
 
     double current_time = 1759447563.749;  // Starting time from log
-    const int iterations = 100000;  // Large number to stress; adjust as needed
+    const int iterations = 1000000;  // Large number to stress; adjust as needed
 
     for (int i = 0; i < iterations; ++i) {
         // OnTimer (most frequent)
