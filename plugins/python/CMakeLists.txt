@@ -90,11 +90,13 @@ if(GTest_FOUND)
         # Integration test - now works with the SHARED library
         add_executable(test_python_plugin_integration tests/test_python_plugin_integration.cpp)
         target_link_libraries(test_python_plugin_integration GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper)
+        # Pass build directory to test for config file location
+        target_compile_definitions(test_python_plugin_integration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
-        # Enable testing
-        enable_testing()
+        # Add tests to CTest (enable_testing is called in root CMakeLists.txt)
         add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
         add_test(NAME PythonWrapperStressTests COMMAND test_python_wrapper_stress)
+        # Integration test exercises full TreatMsg pathway through Python plugin
         add_test(NAME PythonPluginIntegrationTests COMMAND test_python_plugin_integration)
         
         message(STATUS "[ OK ] GTest and GMock found, building Python plugin tests")
