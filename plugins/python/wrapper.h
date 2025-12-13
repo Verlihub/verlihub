@@ -216,6 +216,8 @@ int w_HasHook(int id, int hook);
 
 // w_CallHook's non-empty/non-zero return means further processing by other plugins or the hub
 w_Targs *w_CallHook(int id, int num, w_Targs *params);
+// w_CallFunction calls an arbitrary Python function by name (not just hooks)
+w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params);
 PyObject *w_GetHook(int hook);
 const char *w_HookName(int hook);
 const char *w_CallName(int callback);
@@ -234,6 +236,7 @@ typedef int         (*w_TLoad)(w_Targs *);
 typedef int         (*w_TUnload)(int);
 typedef int         (*w_THasHook)(int, int);
 typedef w_Targs    *(*w_TCallHook)(int, int, w_Targs *);
+typedef w_Targs    *(*w_TCallFunction)(int, const char *, w_Targs *);
 typedef const char *(*w_THookName)(int);
 typedef const char *(*w_TCallName)(int callback);
 typedef w_Targs    *(*w_Tpack)(const char *, ...);
