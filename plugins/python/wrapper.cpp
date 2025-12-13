@@ -601,6 +601,189 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	return ret;
 }
 
+w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
+{
+	w_TScript *script = w_Scripts[id];
+	if (!script) {
+		log("PY: w_CallFunction - invalid script id %d\n", id);
+		return NULL;
+	}
+	
+	if (!func_name || func_name[0] == '\0') {
+		log("PY: w_CallFunction - function name is NULL or empty\n");
+		return NULL;
+	}
+
+	PyGILState_STATE gstate = PyGILState_Ensure();
+	PyThreadState *old_state = PyThreadState_Get();
+	PyThreadState_Swap(script->state);
+
+	PyObject *func = PyObject_GetAttrString(script->module, func_name);
+	if (!func) {
+		log("PY: w_CallFunction - function '%s' not found in script\n", func_name);
+		PyErr_Clear();
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+	
+	if (!PyCallable_Check(func)) {
+		log("PY: w_CallFunction - '%s' is not callable\n", func_name);
+		Py_DECREF(func);
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	size_t arg_count = (params && params->format) ? strlen(params->format) : 0;
+	PyObject *args = PyTuple_New(arg_count);
+	if (!args) {
+		log("PY: w_CallFunction - failed to create argument tuple\n");
+		Py_DECREF(func);
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	for (size_t i = 0; i < arg_count; i++) {
+		switch (params->format[i]) {
+			case 'l':
+				PyTuple_SetItem(args, i, PyLong_FromLong(params->args[i].l));
+				break;
+			case 's': {
+				const char *s = params->args[i].s;
+#if PY_MAJOR_VERSION >= 3
+				PyTuple_SetItem(args, i, s ? PyUnicode_FromString(s) : Py_None);
+#else
+				PyTuple_SetItem(args, i, s ? PyString_FromString(s) : Py_None);
+#endif
+				break;
+			}
+			case 'd':
+				PyTuple_SetItem(args, i, PyFloat_FromDouble(params->args[i].d));
+				break;
+			case 'p':
+				PyTuple_SetItem(args, i, PyLong_FromVoidPtr(params->args[i].p));
+				break;
+			default:
+				log("PY: w_CallFunction - unknown format character '%c'\n", params->format[i]);
+				Py_DECREF(args);
+				Py_DECREF(func);
+				PyThreadState_Swap(old_state);
+				PyGILState_Release(gstate);
+				return NULL;
+		}
+	}
+
+	log2("PY: Calling function '%s' with %zu arguments\n", func_name, arg_count);
+	PyObject *res = PyObject_CallObject(func, args);
+
+	Py_DECREF(args);
+	Py_DECREF(func);
+
+	if (!res) {
+		log("PY: w_CallFunction - call to '%s' failed:\n", func_name);
+		if (PyErr_Occurred()) PyErr_Print();
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	w_Targs *ret = NULL;
+
+#if PY_MAJOR_VERSION >= 3
+	if (PyLong_Check(res)) {
+		long l = PyLong_AsLong(res);
+		ret = w_pack("l", l);
+	} else if (PyFloat_Check(res)) {
+		double d = PyFloat_AsDouble(res);
+		ret = w_pack("d", d);
+	} else if (PyUnicode_Check(res)) {
+		const char *s = PyUnicode_AsUTF8(res);
+		if (!s) s = "";
+		ret = w_pack("s", strdup(s));
+	} else if (res == Py_None) {
+		ret = w_pack("l", (long)0);  // Default to 0 for None
+	} else if (PyTuple_Check(res)) {
+		int len = PyTuple_Size(res);
+		if (len > W_MAX_RETVALS) len = W_MAX_RETVALS;
+		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
+		if (!ret) {
+			Py_DECREF(res);
+			PyThreadState_Swap(old_state);
+			PyGILState_Release(gstate);
+			return NULL;
+		}
+		ret->format = "tab";
+		for (int i = 0; i < len; i++) {
+			PyObject *item = PyTuple_GetItem(res, i);
+			if (PyLong_Check(item)) {
+				ret->args[i].type = 'l';
+				ret->args[i].l = PyLong_AsLong(item);
+			} else if (PyFloat_Check(item)) {
+				ret->args[i].type = 'd';
+				ret->args[i].d = PyFloat_AsDouble(item);
+			} else if (PyUnicode_Check(item)) {
+				const char *s = PyUnicode_AsUTF8(item);
+				if (!s) s = "";
+				ret->args[i].type = 's';
+				ret->args[i].s = strdup(s);
+			} else {
+				ret->args[i].type = 0;
+			}
+		}
+	}
+#else
+	if (PyInt_Check(res) || PyLong_Check(res)) {
+		long l = PyLong_AsLong(res);  // Handles both in Py2
+		ret = w_pack("l", l);
+	} else if (PyFloat_Check(res)) {
+		double d = PyFloat_AsDouble(res);
+		ret = w_pack("d", d);
+	} else if (PyString_Check(res)) {
+		char *s = PyString_AsString(res);
+		if (!s) s = "";
+		ret = w_pack("s", strdup(s));
+	} else if (res == Py_None) {
+		ret = w_pack("l", (long)0);  // Default to 0 for None
+	} else if (PyTuple_Check(res)) {
+		int len = PyTuple_Size(res);
+		if (len > W_MAX_RETVALS) len = W_MAX_RETVALS;
+		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
+		if (!ret) {
+			Py_DECREF(res);
+			PyThreadState_Swap(old_state);
+			PyGILState_Release(gstate);
+			return NULL;
+		}
+		ret->format = "tab";
+		for (int i = 0; i < len; i++) {
+			PyObject *item = PyTuple_GetItem(res, i);
+			if (PyInt_Check(item) || PyLong_Check(item)) {
+				ret->args[i].type = 'l';
+				ret->args[i].l = PyLong_AsLong(item);
+			} else if (PyFloat_Check(item)) {
+				ret->args[i].type = 'd';
+				ret->args[i].d = PyFloat_AsDouble(item);
+			} else if (PyString_Check(item)) {
+				char *s = PyString_AsString(item);
+				if (!s) s = "";
+				ret->args[i].type = 's';
+				ret->args[i].s = strdup(s);
+			} else {
+				ret->args[i].type = 0;
+			}
+		}
+	}
+#endif
+
+	log2("PY: Function '%s' returned successfully\n", func_name);
+	Py_DECREF(res);
+	PyThreadState_Swap(old_state);
+	PyGILState_Release(gstate);
+	return ret;
+}
+
 PyObject *w_GetHook(int hook)
 {
 	// Implementation if needed, but prompt doesn't have it, perhaps not used

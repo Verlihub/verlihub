@@ -119,6 +119,11 @@ public:
 	int char2int(char c);
 	cPythonInterpreter *GetInterpreter(int id);
 	bool CallAll(int func, w_Targs *args, cConnDC *conn = NULL);
+	
+	// Call arbitrary Python function by name (not just hooks)
+	w_Targs *CallPythonFunction(int script_id, const char *func_name, w_Targs *args);
+	w_Targs *CallPythonFunction(const std::string &script_name, const char *func_name, w_Targs *args);
+	
 	unsigned int Size() { return mPython.size(); }
 
 	void Empty()
@@ -177,6 +182,7 @@ public:
 	static w_TUnload    lib_unload;
 	static w_THasHook   lib_hashook;
 	static w_TCallHook  lib_callhook;
+	static w_TCallFunction lib_callfunction;
 	static w_THookName  lib_hookname;
 	static w_Tpack      lib_pack;
 	static w_Tunpack    lib_unpack;

@@ -48,6 +48,7 @@ w_TLoad       cpiPython::lib_load      = NULL;
 w_TUnload     cpiPython::lib_unload    = NULL;
 w_THasHook    cpiPython::lib_hashook   = NULL;
 w_TCallHook   cpiPython::lib_callhook  = NULL;
+w_TCallFunction cpiPython::lib_callfunction = NULL;
 w_THookName   cpiPython::lib_hookname  = NULL;
 w_Tpack       cpiPython::lib_pack      = NULL;
 w_Tunpack     cpiPython::lib_unpack    = NULL;
@@ -130,6 +131,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	*(void **)(&lib_unload)    = dlsym(lib_handle, "w_Unload");
 	*(void **)(&lib_hashook)   = dlsym(lib_handle, "w_HasHook");
 	*(void **)(&lib_callhook)  = dlsym(lib_handle, "w_CallHook");
+	*(void **)(&lib_callfunction) = dlsym(lib_handle, "w_CallFunction");
 	*(void **)(&lib_hookname)  = dlsym(lib_handle, "w_HookName");
 	*(void **)(&lib_pack)      = dlsym(lib_handle, "w_pack");
 	*(void **)(&lib_unpack)    = dlsym(lib_handle, "w_unpack");
@@ -137,7 +139,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	*(void **)(&lib_packprint) = dlsym(lib_handle, "w_packprint");
 
 	if (!lib_begin || !lib_end || !lib_reserveid || !lib_load || !lib_unload || !lib_hashook
-	|| !lib_callhook || !lib_hookname || !lib_pack || !lib_unpack || !lib_loglevel || !lib_packprint) {
+	|| !lib_callhook || !lib_callfunction || !lib_hookname || !lib_pack || !lib_unpack || !lib_loglevel || !lib_packprint) {
 		log("PY: cpiPython::OnLoad   Error locating vh_python_wrapper function symbols: %s\n", dlerror());
 		return;
 	}
@@ -529,6 +531,45 @@ bool cpiPython::CallAll(int func, w_Targs *args, cConnDC *conn) // the default h
 
 	free(args);
 	return ret;
+}
+
+w_Targs *cpiPython::CallPythonFunction(int script_id, const char *func_name, w_Targs *args)
+{
+	if (!online) {
+		log("PY: CallPythonFunction - plugin not online\n");
+		return NULL;
+	}
+	
+	if (!lib_callfunction) {
+		log("PY: CallPythonFunction - lib_callfunction not loaded\n");
+		return NULL;
+	}
+	
+	log2("PY: CallPythonFunction - calling '%s' on script %d with args %s\n", 
+	     func_name, script_id, lib_packprint(args));
+	
+	w_Targs *result = lib_callfunction(script_id, func_name, args);
+	
+	if (result) {
+		log2("PY: CallPythonFunction - '%s' returned %s\n", func_name, lib_packprint(result));
+	} else {
+		log3("PY: CallPythonFunction - '%s' returned NULL\n", func_name);
+	}
+	
+	return result;
+}
+
+w_Targs *cpiPython::CallPythonFunction(const std::string &script_name, const char *func_name, w_Targs *args)
+{
+	// Find script by name
+	for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
+		if ((*it) && (*it)->mScriptName == script_name) {
+			return CallPythonFunction((*it)->id, func_name, args);
+		}
+	}
+	
+	log("PY: CallPythonFunction - script '%s' not found\n", script_name.c_str());
+	return NULL;
 }
 
 bool cpiPython::OnNewConn(cConnDC *conn)
