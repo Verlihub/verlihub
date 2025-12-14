@@ -319,6 +319,571 @@ const char *w_packprint(w_Targs *a)
 	return buf;
 }
 
+//==============================================================================
+// Python 3 vh Module Implementation - Restored from Python 2 version
+//==============================================================================
+
+// Helper: Get script ID from vh.myid attribute
+static long vh_GetScriptID()
+{
+	PyObject *m = PyDict_GetItemString(PyImport_GetModuleDict(), "vh");
+	if (!m) return -1;
+	
+	if (!PyObject_HasAttrString(m, "myid")) return -1;
+	
+	PyObject *f = PyObject_GetAttrString(m, "myid");
+	if (!f) return -1;
+	
+	if (!PyLong_Check(f)) {
+		Py_DECREF(f);
+		return -1;
+	}
+	
+	long id = PyLong_AsLong(f);
+	Py_DECREF(f);
+	
+	if ((id > -1) && ((unsigned long)id < w_Scripts.size()) && w_Scripts[id])
+		return id;
+	
+	return -1;
+}
+
+// Helper: Parse Python args to w_Targs (Python 3 version)
+// Format: l=long, s=string, d=double, |=optional args start
+static int vh_ParseArgs(int func, PyObject *args, const char *in_format, w_Targs **out_args)
+{
+	long id = vh_GetScriptID();
+	if (id < 0) {
+		PyErr_SetString(PyExc_RuntimeError, "Could not determine script ID");
+		return 0;
+	}
+	
+	const char *name = w_Scripts[id]->name;
+	
+	// Parse format string
+	int in_len = strlen(in_format);
+	char *pack_format = (char*)malloc(in_len + 1);
+	if (!pack_format) {
+		PyErr_SetString(PyExc_MemoryError, "Failed to allocate memory");
+		return 0;
+	}
+	
+	int required = -1;
+	int pos2 = 0;
+	
+	for (int pos = 0; pos < in_len; pos++) {
+		switch (in_format[pos]) {
+			case 'l':
+			case 's':
+			case 'd':
+				pack_format[pos2++] = in_format[pos];
+				break;
+			case '|':
+				if (required >= 0) {
+					free(pack_format);
+					PyErr_SetString(PyExc_ValueError, "Multiple '|' in format string");
+					return 0;
+				}
+				required = pos2;
+				break;
+			default:
+				free(pack_format);
+				PyErr_Format(PyExc_ValueError, "Unsupported format character '%c'", in_format[pos]);
+				return 0;
+		}
+	}
+	pack_format[pos2] = '\0';
+	
+	int len = pos2;
+	if (required < 0) required = len;
+	
+	int tlen = PyTuple_Size(args);
+	
+	if (tlen < required) {
+		free(pack_format);
+		PyErr_Format(PyExc_TypeError, "Function requires at least %d arguments, got %d", required, tlen);
+		return 0;
+	}
+	
+	if (tlen > len) {
+		free(pack_format);
+		PyErr_Format(PyExc_TypeError, "Function takes at most %d arguments, got %d", len, tlen);
+		return 0;
+	}
+	
+	// Allocate w_Targs
+	w_Targs *a = (w_Targs*)calloc(len + 1, sizeof(w_Telement));
+	if (!a) {
+		free(pack_format);
+		PyErr_SetString(PyExc_MemoryError, "Failed to allocate argument structure");
+		return 0;
+	}
+	
+	a->format = pack_format;
+	
+	// Parse each argument
+	for (int i = 0; i < len; i++) {
+		if (i >= tlen) {
+			// Optional argument not provided
+			switch (pack_format[i]) {
+				case 'l':
+					a->args[i].type = 'l';
+					a->args[i].l = 0;
+					break;
+				case 's':
+					a->args[i].type = 's';
+					a->args[i].s = NULL;
+					break;
+				case 'd':
+					a->args[i].type = 'd';
+					a->args[i].d = 0.0;
+					break;
+			}
+			continue;
+		}
+		
+		PyObject *p = PyTuple_GetItem(args, i);
+		if (!p) {
+			free(pack_format);
+			free(a);
+			PyErr_Format(PyExc_RuntimeError, "Failed to get argument %d", i);
+			return 0;
+		}
+		
+		switch (pack_format[i]) {
+			case 'l':
+				a->args[i].type = 'l';
+				if (p == Py_None) {
+					a->args[i].l = 0;
+				} else if (PyLong_Check(p)) {
+					a->args[i].l = PyLong_AsLong(p);
+				} else {
+					free(pack_format);
+					free(a);
+					PyErr_Format(PyExc_TypeError, "Argument %d must be int, not %s", i, p->ob_type->tp_name);
+					return 0;
+				}
+				break;
+				
+			case 's':
+				a->args[i].type = 's';
+				if (p == Py_None) {
+					a->args[i].s = NULL;
+				} else if (PyUnicode_Check(p)) {
+					a->args[i].s = (char*)PyUnicode_AsUTF8(p);
+					if (!a->args[i].s) {
+						free(pack_format);
+						free(a);
+						return 0;  // PyUnicode_AsUTF8 set exception
+					}
+				} else {
+					free(pack_format);
+					free(a);
+					PyErr_Format(PyExc_TypeError, "Argument %d must be str, not %s", i, p->ob_type->tp_name);
+					return 0;
+				}
+				break;
+				
+			case 'd':
+				a->args[i].type = 'd';
+				if (p == Py_None) {
+					a->args[i].d = 0.0;
+				} else if (PyFloat_Check(p)) {
+					a->args[i].d = PyFloat_AsDouble(p);
+				} else if (PyLong_Check(p)) {
+					a->args[i].d = (double)PyLong_AsLong(p);
+				} else {
+					free(pack_format);
+					free(a);
+					PyErr_Format(PyExc_TypeError, "Argument %d must be float, not %s", i, p->ob_type->tp_name);
+					return 0;
+				}
+				break;
+		}
+	}
+	
+	*out_args = a;
+	return 1;
+}
+
+// Helper: Call C++ callback and return bool
+static PyObject* vh_CallBool(int func, PyObject *args, const char *in_format)
+{
+	w_Targs *a = NULL;
+	if (!vh_ParseArgs(func, args, in_format, &a))
+		return NULL;
+	
+	// Release GIL while calling C++
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *res = w_Python->callbacks[func](func, a);
+	
+	free((char*)a->format);
+	free(a);
+	
+	PyEval_AcquireThread(state);
+	
+	if (!res) {
+		Py_RETURN_FALSE;
+	}
+	
+	long ret = 0;
+	w_unpack(res, "l", &ret);
+	free(res);
+	
+	if (ret) {
+		Py_RETURN_TRUE;
+	}
+	Py_RETURN_FALSE;
+}
+
+// Helper: Call C++ callback and return string
+static PyObject* vh_CallString(int func, PyObject *args, const char *in_format)
+{
+	w_Targs *a = NULL;
+	if (!vh_ParseArgs(func, args, in_format, &a))
+		return NULL;
+	
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *res = w_Python->callbacks[func](func, a);
+	
+	free((char*)a->format);
+	free(a);
+	
+	PyEval_AcquireThread(state);
+	
+	if (!res) {
+		Py_RETURN_NONE;
+	}
+	
+	char *ret = NULL;
+	w_unpack(res, "s", &ret);
+	
+	PyObject *py_ret;
+	if (ret && ret[0]) {
+		py_ret = PyUnicode_FromString(ret);
+	} else {
+		Py_INCREF(Py_None);
+		py_ret = Py_None;
+	}
+	
+	free(res);
+	return py_ret;
+}
+
+// Helper: Call C++ callback and return long
+static PyObject* vh_CallLong(int func, PyObject *args, const char *in_format)
+{
+	w_Targs *a = NULL;
+	if (!vh_ParseArgs(func, args, in_format, &a))
+		return NULL;
+	
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *res = w_Python->callbacks[func](func, a);
+	
+	free((char*)a->format);
+	free(a);
+	
+	PyEval_AcquireThread(state);
+	
+	if (!res) {
+		Py_RETURN_NONE;
+	}
+	
+	long ret = 0;
+	w_unpack(res, "l", &ret);
+	free(res);
+	
+	return PyLong_FromLong(ret);
+}
+
+//==============================================================================
+// vh Module Functions (53 functions restored from Python 2 version)
+//==============================================================================
+
+static PyObject* vh_SendToOpChat(PyObject *self, PyObject *args)       { return vh_CallBool(W_SendToOpChat, args, "s|s"); }
+static PyObject* vh_SendToActive(PyObject *self, PyObject *args)       { return vh_CallBool(W_SendToActive, args, "s|l"); }
+static PyObject* vh_SendToPassive(PyObject *self, PyObject *args)      { return vh_CallBool(W_SendToPassive, args, "s|l"); }
+static PyObject* vh_SendToActiveClass(PyObject *self, PyObject *args)  { return vh_CallBool(W_SendToActiveClass, args, "sll|l"); }
+static PyObject* vh_SendToPassiveClass(PyObject *self, PyObject *args) { return vh_CallBool(W_SendToPassiveClass, args, "sll|l"); }
+static PyObject* vh_SendDataToUser(PyObject *self, PyObject *args)     { return vh_CallBool(W_SendDataToUser, args, "ss|l"); }
+static PyObject* vh_SendDataToAll(PyObject *self, PyObject *args)      { return vh_CallBool(W_SendDataToAll, args, "sll|l"); }
+static PyObject* vh_SendPMToAll(PyObject *self, PyObject *args)        { return vh_CallBool(W_SendPMToAll, args, "ssll"); }
+static PyObject* vh_CloseConnection(PyObject *self, PyObject *args)    { return vh_CallBool(W_CloseConnection, args, "s|ll"); }
+static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)          { return vh_CallString(W_GetMyINFO, args, "s"); }
+static PyObject* vh_SetMyINFO(PyObject *self, PyObject *args)          { return vh_CallBool(W_SetMyINFO, args, "s|sssss"); }
+static PyObject* vh_GetUserClass(PyObject *self, PyObject *args)       { return vh_CallLong(W_GetUserClass, args, "s"); }
+static PyObject* vh_GetRawNickList(PyObject *self, PyObject *args)     { return vh_CallString(W_GetNickList, args, ""); }
+static PyObject* vh_GetRawOpList(PyObject *self, PyObject *args)       { return vh_CallString(W_GetOpList, args, ""); }
+static PyObject* vh_GetRawBotList(PyObject *self, PyObject *args)      { return vh_CallString(W_GetBotList, args, ""); }
+static PyObject* vh_GetUserHost(PyObject *self, PyObject *args)        { return vh_CallString(W_GetUserHost, args, "s"); }
+static PyObject* vh_GetUserIP(PyObject *self, PyObject *args)          { return vh_CallString(W_GetUserIP, args, "s"); }
+static PyObject* vh_SetUserIP(PyObject *self, PyObject *args)          { return vh_CallBool(W_SetUserIP, args, "ss"); }
+static PyObject* vh_SetMyINFOFlag(PyObject *self, PyObject *args)      { return vh_CallBool(W_SetMyINFOFlag, args, "sl"); }
+static PyObject* vh_UnsetMyINFOFlag(PyObject *self, PyObject *args)    { return vh_CallBool(W_UnsetMyINFOFlag, args, "sl"); }
+static PyObject* vh_GetUserHubURL(PyObject *self, PyObject *args)      { return vh_CallString(W_GetUserHubURL, args, "s"); }
+static PyObject* vh_GetUserExtJSON(PyObject *self, PyObject *args)     { return vh_CallString(W_GetUserExtJSON, args, "s"); }
+static PyObject* vh_GetUserCC(PyObject *self, PyObject *args)          { return vh_CallString(W_GetUserCC, args, "s"); }
+static PyObject* vh_GetIPCC(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCC, args, "s"); }
+static PyObject* vh_GetIPCN(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCN, args, "s"); }
+static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "s"); }
+static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)           { return vh_CallString(W_GetGeoIP, args, "s"); }
+static PyObject* vh_AddRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_AddRegUser, args, "sl|ss"); }
+static PyObject* vh_DelRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_DelRegUser, args, "s"); }
+static PyObject* vh_SetRegClass(PyObject *self, PyObject *args)        { return vh_CallBool(W_SetRegClass, args, "sl"); }
+static PyObject* vh_Ban(PyObject *self, PyObject *args)                { return vh_CallBool(W_Ban, args, "sssll"); }
+static PyObject* vh_KickUser(PyObject *self, PyObject *args)           { return vh_CallBool(W_KickUser, args, "sss|sss"); }
+static PyObject* vh_DelNickTempBan(PyObject *self, PyObject *args)     { return vh_CallBool(W_DelNickTempBan, args, "s"); }
+static PyObject* vh_DelIPTempBan(PyObject *self, PyObject *args)       { return vh_CallBool(W_DelIPTempBan, args, "s"); }
+static PyObject* vh_ParseCommand(PyObject *self, PyObject *args)       { return vh_CallBool(W_ParseCommand, args, "ssl"); }
+static PyObject* vh_ScriptCommand(PyObject *self, PyObject *args)      { return vh_CallString(W_ScriptCommand, args, "sss"); }
+static PyObject* vh_SetConfig(PyObject *self, PyObject *args)          { return vh_CallBool(W_SetConfig, args, "sss"); }
+static PyObject* vh_GetConfig(PyObject *self, PyObject *args)          { return vh_CallString(W_GetConfig, args, "ss"); }
+static PyObject* vh_IsRobotNickBad(PyObject *self, PyObject *args)     { return vh_CallLong(W_IsRobotNickBad, args, "s"); }
+static PyObject* vh_AddRobot(PyObject *self, PyObject *args)           { return vh_CallBool(W_AddRobot, args, "slssss"); }
+static PyObject* vh_DelRobot(PyObject *self, PyObject *args)           { return vh_CallBool(W_DelRobot, args, "s"); }
+static PyObject* vh_SQL(PyObject *self, PyObject *args)                { return vh_CallString(W_SQL, args, "sl"); }
+static PyObject* vh_GetServFreq(PyObject *self, PyObject *args)        { return vh_CallLong(W_GetServFreq, args, ""); }
+static PyObject* vh_GetUsersCount(PyObject *self, PyObject *args)      { return vh_CallLong(W_GetUsersCount, args, ""); }
+static PyObject* vh_GetTotalShareSize(PyObject *self, PyObject *args)  { return vh_CallString(W_GetTotalShareSize, args, ""); }
+static PyObject* vh_usermc(PyObject *self, PyObject *args)             { return vh_CallBool(W_usermc, args, "ss"); }
+static PyObject* vh_pm(PyObject *self, PyObject *args)                 { return vh_CallBool(W_pm, args, "ss"); }
+static PyObject* vh_mc(PyObject *self, PyObject *args)                 { return vh_CallBool(W_mc, args, "s"); }
+static PyObject* vh_classmc(PyObject *self, PyObject *args)            { return vh_CallBool(W_classmc, args, "sll"); }
+static PyObject* vh_Topic(PyObject *self, PyObject *args)              { return vh_CallString(W_Topic, args, "|s"); }
+static PyObject* vh_name_and_version(PyObject *self, PyObject *args)   { return vh_CallString(W_name_and_version, args, ""); }
+static PyObject* vh_StopHub(PyObject *self, PyObject *args)            { return vh_CallBool(W_StopHub, args, "l"); }
+
+// GetNickList, GetOpList, GetBotList - return Python lists
+static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
+{
+	w_Targs *res = w_Python->callbacks[W_GetNickList](W_GetNickList, w_pack(""));
+	if (!res) Py_RETURN_NONE;
+	
+	char **list = NULL;
+	w_unpack(res, "L", &list);
+	
+	PyObject *py_list = PyList_New(0);
+	if (list) {
+		for (int i = 0; list[i]; i++) {
+			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+		}
+	}
+	
+	free(res);
+	return py_list;
+}
+
+static PyObject* vh_GetOpList(PyObject *self, PyObject *args)
+{
+	w_Targs *res = w_Python->callbacks[W_GetOpList](W_GetOpList, w_pack(""));
+	if (!res) Py_RETURN_NONE;
+	
+	char **list = NULL;
+	w_unpack(res, "L", &list);
+	
+	PyObject *py_list = PyList_New(0);
+	if (list) {
+		for (int i = 0; list[i]; i++) {
+			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+		}
+	}
+	
+	free(res);
+	return py_list;
+}
+
+static PyObject* vh_GetBotList(PyObject *self, PyObject *args)
+{
+	w_Targs *res = w_Python->callbacks[W_GetBotList](W_GetBotList, w_pack(""));
+	if (!res) Py_RETURN_NONE;
+	
+	char **list = NULL;
+	w_unpack(res, "L", &list);
+	
+	PyObject *py_list = PyList_New(0);
+	if (list) {
+		for (int i = 0; list[i]; i++) {
+			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+		}
+	}
+	
+	free(res);
+	return py_list;
+}
+
+// UserRestrictions - uses keyword arguments
+static PyObject* vh_UserRestrictions(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	const char *nick;
+	const char *nochat = "";
+	const char *nopm = "";
+	const char *nosearch = "";
+	const char *noctm = "";
+	
+	static char *kwlist[] = {(char*)"nick", (char*)"nochat", (char*)"nopm", (char*)"nosearch", (char*)"noctm", NULL};
+	
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ssss", kwlist,
+	                                  &nick, &nochat, &nopm, &nosearch, &noctm))
+		return NULL;
+	
+	w_Targs *packed = w_pack("sssss", (char*)nick, (char*)nochat, (char*)nopm, (char*)nosearch, (char*)noctm);
+	
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *res = w_Python->callbacks[W_UserRestrictions](W_UserRestrictions, packed);
+	
+	free(packed);
+	PyEval_AcquireThread(state);
+	
+	if (!res) Py_RETURN_FALSE;
+	
+	long ret = 0;
+	w_unpack(res, "l", &ret);
+	free(res);
+	
+	if (ret) Py_RETURN_TRUE;
+	Py_RETURN_FALSE;
+}
+
+// Python 3 method table
+static PyMethodDef vh_methods[] = {
+	{"SendToOpChat",       vh_SendToOpChat,       METH_VARARGS, "Send message to operator chat"},
+	{"SendToActive",       vh_SendToActive,       METH_VARARGS, "Send message to active users"},
+	{"SendToPassive",      vh_SendToPassive,      METH_VARARGS, "Send message to passive users"},
+	{"SendToActiveClass",  vh_SendToActiveClass,  METH_VARARGS, "Send message to active users of class range"},
+	{"SendToPassiveClass", vh_SendToPassiveClass, METH_VARARGS, "Send message to passive users of class range"},
+	{"SendDataToUser",     vh_SendDataToUser,     METH_VARARGS, "Send raw protocol data to user"},
+	{"SendDataToAll",      vh_SendDataToAll,      METH_VARARGS, "Send raw protocol data to all users"},
+	{"SendPMToAll",        vh_SendPMToAll,        METH_VARARGS, "Send PM to all users"},
+	{"CloseConnection",    vh_CloseConnection,    METH_VARARGS, "Close user connection"},
+	{"GetMyINFO",          vh_GetMyINFO,          METH_VARARGS, "Get user MyINFO string"},
+	{"SetMyINFO",          vh_SetMyINFO,          METH_VARARGS, "Set user MyINFO"},
+	{"GetUserClass",       vh_GetUserClass,       METH_VARARGS, "Get user class (0-10)"},
+	{"GetNickList",        vh_GetNickList,        METH_VARARGS, "Get list of all nicknames"},
+	{"GetOpList",          vh_GetOpList,          METH_VARARGS, "Get list of operator nicknames"},
+	{"GetBotList",         vh_GetBotList,         METH_VARARGS, "Get list of bot nicknames"},
+	{"GetRawNickList",     vh_GetRawNickList,     METH_VARARGS, "Get raw $NickList protocol string"},
+	{"GetRawOpList",       vh_GetRawOpList,       METH_VARARGS, "Get raw $OpList protocol string"},
+	{"GetRawBotList",      vh_GetRawBotList,      METH_VARARGS, "Get raw bot list protocol string"},
+	{"GetUserHost",        vh_GetUserHost,        METH_VARARGS, "Get user hostname"},
+	{"GetUserIP",          vh_GetUserIP,          METH_VARARGS, "Get user IP address"},
+	{"SetUserIP",          vh_SetUserIP,          METH_VARARGS, "Set user IP address"},
+	{"SetMyINFOFlag",      vh_SetMyINFOFlag,      METH_VARARGS, "Set MyINFO flag"},
+	{"UnsetMyINFOFlag",    vh_UnsetMyINFOFlag,    METH_VARARGS, "Unset MyINFO flag"},
+	{"GetUserHubURL",      vh_GetUserHubURL,      METH_VARARGS, "Get user hub URL"},
+	{"GetUserExtJSON",     vh_GetUserExtJSON,     METH_VARARGS, "Get user ExtJSON"},
+	{"GetUserCC",          vh_GetUserCC,          METH_VARARGS, "Get user country code"},
+	{"GetIPCC",            vh_GetIPCC,            METH_VARARGS, "Get country code for IP"},
+	{"GetIPCN",            vh_GetIPCN,            METH_VARARGS, "Get country name for IP"},
+	{"GetIPASN",           vh_GetIPASN,           METH_VARARGS, "Get ASN for IP"},
+	{"GetGeoIP",           vh_GetGeoIP,           METH_VARARGS, "Get GeoIP info"},
+	{"AddRegUser",         vh_AddRegUser,         METH_VARARGS, "Register new user"},
+	{"DelRegUser",         vh_DelRegUser,         METH_VARARGS, "Delete registered user"},
+	{"SetRegClass",        vh_SetRegClass,        METH_VARARGS, "Set registered user class"},
+	{"Ban",                vh_Ban,                METH_VARARGS, "Ban user"},
+	{"KickUser",           vh_KickUser,           METH_VARARGS, "Kick user"},
+	{"DelNickTempBan",     vh_DelNickTempBan,     METH_VARARGS, "Delete temporary nick ban"},
+	{"DelIPTempBan",       vh_DelIPTempBan,       METH_VARARGS, "Delete temporary IP ban"},
+	{"ParseCommand",       vh_ParseCommand,       METH_VARARGS, "Parse hub command"},
+	{"ScriptCommand",      vh_ScriptCommand,      METH_VARARGS, "Execute script command"},
+	{"SetConfig",          vh_SetConfig,          METH_VARARGS, "Set configuration value"},
+	{"GetConfig",          vh_GetConfig,          METH_VARARGS, "Get configuration value"},
+	{"IsRobotNickBad",     vh_IsRobotNickBad,     METH_VARARGS, "Check if robot nick is valid"},
+	{"AddRobot",           vh_AddRobot,           METH_VARARGS, "Add bot to hub"},
+	{"DelRobot",           vh_DelRobot,           METH_VARARGS, "Remove bot from hub"},
+	{"SQL",                vh_SQL,                METH_VARARGS, "Execute SQL query"},
+	{"GetServFreq",        vh_GetServFreq,        METH_VARARGS, "Get server frequency"},
+	{"GetUsersCount",      vh_GetUsersCount,      METH_VARARGS, "Get online users count"},
+	{"GetTotalShareSize",  vh_GetTotalShareSize,  METH_VARARGS, "Get total share size"},
+	{"usermc",             vh_usermc,             METH_VARARGS, "Send main chat message to user"},
+	{"pm",                 vh_pm,                 METH_VARARGS, "Send private message"},
+	{"mc",                 vh_mc,                 METH_VARARGS, "Send main chat message"},
+	{"classmc",            vh_classmc,            METH_VARARGS, "Send main chat message to class range"},
+	{"UserRestrictions",   (PyCFunction)vh_UserRestrictions, METH_VARARGS | METH_KEYWORDS, "Set user restrictions"},
+	{"Topic",              vh_Topic,              METH_VARARGS, "Get/set hub topic"},
+	{"name_and_version",   vh_name_and_version,   METH_VARARGS, "Get Verlihub name and version"},
+	{"StopHub",            vh_StopHub,            METH_VARARGS, "Stop the hub"},
+	{NULL, NULL, 0, NULL}
+};
+
+// Python 3 module definition
+static struct PyModuleDef vh_module = {
+	PyModuleDef_HEAD_INIT,
+	"vh",
+	"Verlihub C++ callback interface - Python 3",
+	-1,
+	vh_methods
+};
+
+// Module initializer (called per sub-interpreter)
+static PyObject* vh_CreateModule(long script_id)
+{
+	PyObject *m = PyModule_Create(&vh_module);
+	if (!m) return NULL;
+	
+	w_TScript *script = w_Scripts[script_id];
+	
+	// Add script-specific attributes
+	PyModule_AddIntConstant(m, "myid", script_id);
+	PyModule_AddStringConstant(m, "botname", script->botname ? script->botname : "");
+	PyModule_AddStringConstant(m, "opchatname", script->opchatname ? script->opchatname : "");
+	PyModule_AddStringConstant(m, "name", script->name ? script->name : "");
+	PyModule_AddStringConstant(m, "path", script->path ? script->path : "");
+	PyModule_AddStringConstant(m, "config_name", script->config_name ? script->config_name : "");
+	
+	// Add connection close reason constants (from cserverdc.h)
+	PyModule_AddIntConstant(m, "eCR_DEFAULT", 0);
+	PyModule_AddIntConstant(m, "eCR_INVALID_USER", 1);
+	PyModule_AddIntConstant(m, "eCR_KICKED", 2);
+	PyModule_AddIntConstant(m, "eCR_FORCEMOVE", 3);
+	PyModule_AddIntConstant(m, "eCR_QUIT", 4);
+	PyModule_AddIntConstant(m, "eCR_HUB_LOAD", 5);
+	PyModule_AddIntConstant(m, "eCR_TIMEOUT", 6);
+	PyModule_AddIntConstant(m, "eCR_TO_ANYACTION", 7);
+	PyModule_AddIntConstant(m, "eCR_USERLIMIT", 8);
+	PyModule_AddIntConstant(m, "eCR_SHARE_LIMIT", 9);
+	PyModule_AddIntConstant(m, "eCR_TAG_NONE", 10);
+	PyModule_AddIntConstant(m, "eCR_TAG_INVALID", 11);
+	PyModule_AddIntConstant(m, "eCR_PASSWORD", 12);
+	PyModule_AddIntConstant(m, "eCR_LOGIN_ERR", 13);
+	PyModule_AddIntConstant(m, "eCR_SYNTAX", 14);
+	PyModule_AddIntConstant(m, "eCR_INVALID_KEY", 15);
+	PyModule_AddIntConstant(m, "eCR_RECONNECT", 16);
+	PyModule_AddIntConstant(m, "eCR_CLONE", 17);
+	PyModule_AddIntConstant(m, "eCR_SELF", 18);
+	PyModule_AddIntConstant(m, "eCR_BADNICK", 19);
+	PyModule_AddIntConstant(m, "eCR_NOREDIR", 20);
+	
+	// Bot validation constants
+	PyModule_AddIntConstant(m, "eBOT_OK", 0);
+	PyModule_AddIntConstant(m, "eBOT_EXISTS", 1);
+	PyModule_AddIntConstant(m, "eBOT_WITHOUT_NICK", 2);
+	PyModule_AddIntConstant(m, "eBOT_BAD_CHARS", 3);
+	PyModule_AddIntConstant(m, "eBOT_RESERVED_NICK", 4);
+	PyModule_AddIntConstant(m, "eBOT_API_ERROR", 5);
+	
+	// Ban type constants (from cban.h)
+	PyModule_AddIntConstant(m, "eBF_NICKIP", 0);
+	PyModule_AddIntConstant(m, "eBF_IP", 1);
+	PyModule_AddIntConstant(m, "eBF_NICK", 2);
+	PyModule_AddIntConstant(m, "eBF_RANGE", 3);
+	PyModule_AddIntConstant(m, "eBF_HOST1", 4);
+	PyModule_AddIntConstant(m, "eBF_HOST2", 5);
+	PyModule_AddIntConstant(m, "eBF_HOST3", 6);
+	PyModule_AddIntConstant(m, "eBF_SHARE", 7);
+	PyModule_AddIntConstant(m, "eBF_PREFIX", 8);
+	PyModule_AddIntConstant(m, "eBF_HOSTR1", 9);
+	
+	return m;
+}
+
 int w_Begin(w_Tcallback *callbacks)
 {
 	Py_Initialize();
@@ -391,6 +956,20 @@ int w_Load(w_Targs *args)
 	PyGILState_STATE sub_gil = PyGILState_Ensure();
 	main_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
+
+	// Register vh module for this sub-interpreter
+	PyObject *vh_mod = vh_CreateModule(id);
+	if (vh_mod) {
+		PyObject *modules = PyImport_GetModuleDict();
+		PyDict_SetItemString(modules, "vh", vh_mod);
+		Py_DECREF(vh_mod);
+	} else {
+		log("PY: [%d:%s] Failed to create vh module\n", id, script->name);
+		if (PyErr_Occurred()) PyErr_Print();
+		PyThreadState_Swap(main_state);
+		PyGILState_Release(sub_gil);
+		return -1;
+	}
 
 	// Add script_dir and config_dir/scripts to sys.path
 	// Important: Use PySys_GetObject to APPEND to path, not REPLACE it

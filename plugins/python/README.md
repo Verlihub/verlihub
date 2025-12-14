@@ -8,6 +8,7 @@
 
 - [Overview](#overview)
 - [Quick Start](#quick-start)
+- [⭐ vh Module - Restored Bidirectional API](#-vh-module---restored-bidirectional-api)
 - [Writing Python Scripts](#writing-python-scripts)
   - [Event Hooks](#event-hooks)
   - [Verlihub API](#verlihub-api)
@@ -119,6 +120,189 @@ user_count = vh.GetUsersCount()
 # Database operations
 result = vh.SQL(0, "SELECT * FROM users WHERE class > 1")
 ```
+
+---
+
+## ⭐ vh Module - Restored Bidirectional API
+
+**December 2025**: The `vh` module has been **fully restored** from the Python 2 version! Python scripts can now call C++ functions directly.
+
+### What Was Restored
+
+The original Python 2 plugin (pre-2016) had a complete `vh` module with 56 functions for calling Verlihub C++ code from Python. During the Python 3 migration (September 2025), this module was removed. **We've now restored it** using Python 3's modern `PyModule_Create` API.
+
+### Available Functions (56 total)
+
+```python
+import vh
+
+# Messaging
+vh.SendToOpChat(message, from_nick=None)
+vh.SendDataToAll(data, min_class, max_class, delay=0)
+vh.SendDataToUser(data, nick, delay=0)
+vh.SendPMToAll(message, from_nick, min_class, max_class)
+vh.usermc(nick, message)     # Send main chat to specific user
+vh.pm(nick, message)          # Send PM
+vh.mc(message)                # Send to main chat as bot
+vh.classmc(message, min_class, max_class)  # Send to class range
+
+# User Information
+vh.GetUserClass(nick) → int   # Returns 0-10
+vh.GetUserHost(nick) → str
+vh.GetUserIP(nick) → str
+vh.GetUserCC(nick) → str      # Country code
+vh.GetIPCC(ip) → str
+vh.GetIPCN(ip) → str          # Country name
+vh.GetIPASN(ip) → str         # ASN info
+vh.GetGeoIP(ip) → str
+vh.GetMyINFO(nick) → str      # Full $MyINFO string
+
+# User Lists (Python lists!)
+vh.GetNickList() → list[str]
+vh.GetOpList() → list[str]
+vh.GetBotList() → list[str]
+# Or raw protocol strings:
+vh.GetRawNickList() → str     # $NickList user1$$user2$$
+vh.GetRawOpList() → str
+vh.GetRawBotList() → str
+
+# User Management
+vh.AddRegUser(nick, class, password="", op_note="")
+vh.DelRegUser(nick)
+vh.SetRegClass(nick, class)
+vh.KickUser(op, nick, reason, note="", op_note="", ban_time="")
+vh.Ban(op, nick, reason, duration_sec, ban_type)
+vh.CloseConnection(nick, reason=0, delay=0)
+
+# Configuration
+vh.GetConfig(config_type, variable) → str
+vh.SetConfig(config_type, variable, value) → bool
+
+# Hub Management
+vh.Topic(new_topic=None) → str  # Get or set
+vh.GetUsersCount() → int
+vh.GetTotalShareSize() → str
+vh.GetServFreq() → int
+vh.name_and_version() → str
+vh.StopHub(code)
+
+# Bots
+vh.AddRobot(nick, class, desc, speed, email, share)
+vh.DelRobot(nick)
+vh.IsRobotNickBad(nick) → int
+
+# Advanced
+vh.SetMyINFO(nick, desc="", tag="", speed="", email="", share=0)
+vh.SetUserIP(nick, ip)
+vh.SetMyINFOFlag(nick, flag)
+vh.UnsetMyINFOFlag(nick, flag)
+vh.UserRestrictions(nick, nochat="", nopm="", nosearch="", noctm="")
+vh.ParseCommand(nick, command, is_pm)
+vh.ScriptCommand(cmd, data, plugin)
+vh.SQL(query, limit)
+```
+
+### Module Attributes
+
+Each script's `vh` module has unique attributes:
+
+```python
+import vh
+
+print(vh.myid)         # Script ID (unique per loaded script)
+print(vh.botname)      # Bot nickname for this script
+print(vh.opchatname)   # OpChat nickname
+print(vh.name)         # Script name
+print(vh.path)         # Script file path
+print(vh.config_name)  # Configuration name
+```
+
+### Constants
+
+```python
+# Connection close reasons
+vh.eCR_KICKED, vh.eCR_TIMEOUT, vh.eCR_BANNED, etc.
+
+# Bot validation results
+vh.eBOT_OK, vh.eBOT_EXISTS, vh.eBOT_BAD_CHARS, etc.
+
+# Ban types
+vh.eBF_NICKIP, vh.eBF_IP, vh.eBF_NICK, vh.eBF_RANGE, etc.
+```
+
+### Complete Example
+
+```python
+import vh
+
+def OnParsedMsgChat(nick, message):
+    """User sent a chat message"""
+    
+    if message.startswith("!stats"):
+        # Get user information
+        user_class = vh.GetUserClass(nick)
+        user_ip = vh.GetUserIP(nick)
+        user_cc = vh.GetUserCC(nick)
+        
+        # Get hub information
+        user_count = vh.GetUsersCount()
+        hub_topic = vh.Topic()
+        
+        # Send response
+        response = f"""User Stats for {nick}:
+Class: {user_class}
+IP: {user_ip}
+Country: {user_cc}
+
+Hub Stats:
+Online: {user_count}
+Topic: {hub_topic}"""
+        
+        vh.pm(nick, response)
+        return 1
+    
+    elif message.startswith("!users"):
+        # Get Python list of users
+        nicklist = vh.GetNickList()
+        oplist = vh.GetOpList()
+        
+        response = f"""Total users: {len(nicklist)}
+Operators: {len(oplist)}
+First 5 users: {', '.join(nicklist[:5])}"""
+        
+        vh.pm(nick, response)
+        return 1
+    
+    return 1
+
+def OnUserLogin(nick):
+    """User logged in"""
+    user_class = vh.GetUserClass(nick)
+    
+    if user_class >= 3:  # Operator
+        vh.SendToOpChat(f"{nick} has joined")
+    else:
+        topic = vh.Topic()
+        vh.pm(nick, f"Welcome! Topic: {topic}")
+    
+    return 1
+```
+
+### Sub-Interpreter Isolation
+
+Each script gets its own `vh` module instance with unique `myid`, `botname`, etc. Scripts cannot interfere with each other.
+
+### Type Safety
+
+All functions use the existing type marshaling system:
+- **Input validation**: Proper Python type checking with helpful error messages
+- **NULL handling**: `None` values handled correctly
+- **GIL management**: Thread-safe C++ callbacks
+- **Memory safety**: Proper reference counting
+
+### Testing
+
+See `tests/test_vh_module.cpp` for comprehensive unit tests validating all 56 functions.
 
 ---
 
@@ -528,6 +712,93 @@ def process_user(username, user_id):
     # Process user
     return 1  # Success
 ```
+
+#### Validation: True Bidirectional Communication
+
+The plugin achieves **true bidirectional communication** across three dimensions:
+
+1. **C++ → Python (Event Hooks)**: Traditional callback system
+   - Hub events trigger Python functions (`OnParsedMsgChat`, `OnUserLogin`, etc.)
+   - Python returns values to control processing (1=allow, 0=block)
+
+2. **Python → C++ (Pre-registered Callbacks)**: Python calls Verlihub functions
+   - `vh.SendToAll()`, `vh.GetUserClass()`, `vh.KickUser()`, etc.
+   - Complete hub control from Python scripts
+   - **Current limitation**: Functions must be pre-registered via callback table (enum-based)
+   - Adding new functions requires modifying `wrapper.h` enum and registering in `cpipython.cpp`
+
+3. **C++ → Python (Arbitrary Functions)**: Call any Python function by name
+   - `w_CallFunction()` and `CallPythonFunction()` enable C++ to invoke **any** Python function
+   - Not limited to registered hooks - query script state, trigger actions, retrieve data
+   - Full argument passing and return value handling
+
+**Unit Test Proof**:
+
+This capability is validated by comprehensive unit tests:
+
+**test_python_plugin_integration.cpp** (lines 400-450):
+- Calls `get_total_calls()` → Python returns integer with callback statistics
+- Calls `print_summary()` → Python returns success indicator, prints JSON to stderr
+- Demonstrates script lookup by ID and by path
+- Validates ability to query Python script state from C++ at runtime
+
+**test_python_advanced_types.cpp** (9 tests, 100% pass rate):
+- `PythonReturnsStringList` - Python returns list of strings to C++
+- `CppSendsListToPython` - C++ sends list to Python, receives count
+- `PythonReturnsDict` - Python returns dictionary (as JSON) to C++
+- `CppSendsDictToPython` - C++ sends JSON dict to Python, receives validation
+- `ComplexDictRoundTrip` - Bidirectional data modification (C++ → Python → C++)
+- `CallPythonWithArgs` - C++ calls Python with arguments, receives complex result
+- `GetTestStatistics` - Query Python internal state via function call
+- `LargeListPerformance` - Exchange 1000-element lists bidirectionally
+- `ComplexJSONPerformance` - Nested data structure round-trips
+
+**Example from tests**:
+```cpp
+// C++ calls Python function that doesn't exist as a hook
+w_Targs *result = w_CallFunction(script_id, "get_total_calls", nullptr);
+long total;
+w_unpack(result, "l", &total);  // Python script returned call count
+```
+
+```python
+# Python defines utility function (not a hook!)
+def get_total_calls():
+    return sum(call_counts.values())  # Returns integer to C++
+```
+
+This proves C++ can call **arbitrary Python functions**, not just registered event hooks, enabling powerful runtime introspection, testing, and integration scenarios.
+
+#### Potential Fourth Dimension: Python → C++ (Arbitrary Functions)
+
+**Current Architecture**: Python can only call pre-registered C++ functions through the callback table system. Each function must be:
+1. Added to the `W_*` enum in `wrapper.h`
+2. Implemented as a callback function (e.g., `_GetUserClass`)
+3. Registered in `callbacklist[]` during `OnLoad()`
+
+**Future Enhancement Opportunity**: A fourth dimension could enable Python to register and call **arbitrary C++ functions** dynamically, similar to how C++ can now call arbitrary Python functions. This would require:
+
+- **Dynamic function registration API**: Allow C++ to expose functions to Python at runtime without enum modification
+- **Name-based lookup**: Python calls functions by string name, not enum ID
+- **Template-based exposure**: Simplified syntax for exposing C++ lambdas or functions
+- **Type-safe marshaling**: Automatic argument conversion using existing `w_pack`/`w_unpack` infrastructure
+
+**Example of what could be possible**:
+```cpp
+// C++ exposes arbitrary function
+py_plugin->RegisterFunction("calculate_distance", [](double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x2-x1, 2) + pow(y2-y1, 2));
+});
+```
+
+```python
+# Python calls it by name
+distance = vh.call("calculate_distance", 0.0, 0.0, 3.0, 4.0)  # Returns 5.0
+```
+
+This would complete true bidirectional symmetry: just as C++ can call any Python function, Python could call any C++ function registered at runtime.
+
+**Current Status**: Not implemented. The current callback table system works well for the stable Verlihub API but requires code changes to add new functions. The template wrapper system (for dimension 2) makes this easier but doesn't eliminate the enum requirement.
 
 ### Advanced Type Marshaling
 

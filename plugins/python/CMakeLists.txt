@@ -97,6 +97,10 @@ if(GTest_FOUND)
         add_executable(test_python_advanced_types tests/test_python_advanced_types.cpp)
         target_link_libraries(test_python_advanced_types GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
 
+        # vh Module tests - restored Python bidirectional API
+        add_executable(test_vh_module tests/test_vh_module.cpp)
+        target_link_libraries(test_vh_module GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+
         # Add tests to CTest (enable_testing is called in root CMakeLists.txt)
         add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
         add_test(NAME PythonWrapperStressTests COMMAND test_python_wrapper_stress)
@@ -104,6 +108,8 @@ if(GTest_FOUND)
         add_test(NAME PythonPluginIntegrationTests COMMAND test_python_plugin_integration)
         # Advanced types test exercises Phase 3 list/dict marshaling
         add_test(NAME PythonAdvancedTypesTests COMMAND test_python_advanced_types)
+        # vh Module test - validates restored bidirectional API
+        add_test(NAME VHModuleTests COMMAND test_vh_module)
         
         message(STATUS "[ OK ] GTest and GMock found, building Python plugin tests")
     else()
