@@ -603,6 +603,13 @@ static PyObject* vh_CallLong(int func, PyObject *args, const char *in_format)
 }
 
 //==============================================================================
+// Forward declarations for vh module functions
+//==============================================================================
+static PyObject* vh_Encode(PyObject *self, PyObject *args);
+static PyObject* vh_Decode(PyObject *self, PyObject *args);
+static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args);
+
+//==============================================================================
 // vh Module Functions (53 functions restored from Python 2 version)
 //==============================================================================
 
@@ -752,6 +759,76 @@ static PyObject* vh_UserRestrictions(PyObject *self, PyObject *args, PyObject *k
 	Py_RETURN_FALSE;
 }
 
+// Encode - Pure Python utility function (no C++ callback needed)
+// Converts special DC++ characters to their HTML entities
+static PyObject* vh_Encode(PyObject *self, PyObject *args)
+{
+	const char *input;
+	if (!PyArg_ParseTuple(args, "s", &input))
+		return NULL;
+	
+	// Calculate output size (worst case: all chars need encoding)
+	size_t len = strlen(input);
+	size_t max_output = len * 6 + 1; // Worst case: &#126; = 6 chars
+	char *output = (char*)malloc(max_output);
+	if (!output) Py_RETURN_NONE;
+	
+	size_t j = 0;
+	for (size_t i = 0; i < len; i++) {
+		unsigned char c = input[i];
+		switch (c) {
+			case 5:   strcpy(&output[j], "&#5;");   j += 4; break;  // ^E
+			case '$': strcpy(&output[j], "&#36;");  j += 5; break;
+			case '|': strcpy(&output[j], "&#124;"); j += 6; break;
+			case '`': strcpy(&output[j], "&#96;");  j += 5; break;
+			case '~': strcpy(&output[j], "&#126;"); j += 6; break;
+			default:  output[j++] = c; break;
+		}
+	}
+	output[j] = '\0';
+	
+	PyObject *result = PyUnicode_FromString(output);
+	free(output);
+	return result;
+}
+
+// Decode - Pure Python utility function (no C++ callback needed)
+// Converts HTML entities back to DC++ special characters
+static PyObject* vh_Decode(PyObject *self, PyObject *args)
+{
+	const char *input;
+	if (!PyArg_ParseTuple(args, "s", &input))
+		return NULL;
+	
+	size_t len = strlen(input);
+	char *output = (char*)malloc(len + 1); // Decoded is always <= original
+	if (!output) Py_RETURN_NONE;
+	
+	size_t j = 0;
+	for (size_t i = 0; i < len; i++) {
+		if (input[i] == '&' && input[i+1] == '#') {
+			// Parse &#NNN;
+			int code = 0;
+			size_t k = i + 2;
+			while (k < len && input[k] >= '0' && input[k] <= '9') {
+				code = code * 10 + (input[k] - '0');
+				k++;
+			}
+			if (k < len && input[k] == ';') {
+				output[j++] = (char)code;
+				i = k; // Skip the entity
+				continue;
+			}
+		}
+		output[j++] = input[i];
+	}
+	output[j] = '\0';
+	
+	PyObject *result = PyUnicode_FromString(output);
+	free(output);
+	return result;
+}
+
 // Python 3 method table
 static PyMethodDef vh_methods[] = {
 	{"SendToOpChat",       vh_SendToOpChat,       METH_VARARGS, "Send message to operator chat"},
@@ -810,6 +887,9 @@ static PyMethodDef vh_methods[] = {
 	{"Topic",              vh_Topic,              METH_VARARGS, "Get/set hub topic"},
 	{"name_and_version",   vh_name_and_version,   METH_VARARGS, "Get Verlihub name and version"},
 	{"StopHub",            vh_StopHub,            METH_VARARGS, "Stop the hub"},
+	{"Encode",             vh_Encode,             METH_VARARGS, "Encode DC++ special characters to HTML entities"},
+	{"Decode",             vh_Decode,             METH_VARARGS, "Decode HTML entities back to DC++ special characters"},
+	{"CallDynamicFunction", vh_CallDynamicFunction, METH_VARARGS, "Call a dynamically registered C++ function (Dimension 4)"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -908,6 +988,7 @@ int w_ReserveID()
 	w_TScript *script = (w_TScript*)calloc(1, sizeof(w_TScript));
 	if (!script) return -1;
 	script->id = w_Scripts.size();
+	script->dynamic_funcs = NULL;  // Initialize dynamic function registry
 	w_Scripts.push_back(script);
 	return script->id;
 }
@@ -1041,6 +1122,12 @@ int w_Unload(int id)
 
 	PyThreadState_Swap(main_state);
 	PyGILState_Release(gil);
+
+	// Clean up dynamic function registry
+	if (script->dynamic_funcs) {
+		delete script->dynamic_funcs;
+		script->dynamic_funcs = NULL;
+	}
 
 	free(script->path);
 	free(script->name);
@@ -1533,6 +1620,191 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	PyThreadState_Swap(old_state);
 	PyGILState_Release(gstate);
 	return ret;
+}
+
+// ============================================================================
+// Dimension 4: Dynamic C++ Function Registration
+// ============================================================================
+
+// Register a C++ callback that can be called from Python
+// This allows plugins to expose custom C++ functions to Python scripts
+int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback)
+{
+	if (script_id < 0 || script_id >= (int)w_Scripts.size()) {
+		log("PY: w_RegisterFunction - invalid script_id %d\n", script_id);
+		return 0;
+	}
+	
+	w_TScript *script = w_Scripts[script_id];
+	if (!script) {
+		log("PY: w_RegisterFunction - script %d not loaded\n", script_id);
+		return 0;
+	}
+	
+	if (!func_name || !callback) {
+		log("PY: w_RegisterFunction - NULL func_name or callback\n");
+		return 0;
+	}
+	
+	// Initialize dynamic_funcs map if needed
+	if (!script->dynamic_funcs) {
+		script->dynamic_funcs = new std::map<std::string, w_Tcallback>();
+	}
+	
+	// Register the function
+	(*script->dynamic_funcs)[std::string(func_name)] = callback;
+	
+	log1("PY: Registered dynamic function '%s' for script %d\n", func_name, script_id);
+	return 1;
+}
+
+// Unregister a dynamically registered function
+int w_UnregisterFunction(int script_id, const char *func_name)
+{
+	if (script_id < 0 || script_id >= (int)w_Scripts.size()) {
+		log("PY: w_UnregisterFunction - invalid script_id %d\n", script_id);
+		return 0;
+	}
+	
+	w_TScript *script = w_Scripts[script_id];
+	if (!script || !script->dynamic_funcs) {
+		return 0;
+	}
+	
+	if (!func_name) {
+		log("PY: w_UnregisterFunction - NULL func_name\n");
+		return 0;
+	}
+	
+	auto it = script->dynamic_funcs->find(std::string(func_name));
+	if (it == script->dynamic_funcs->end()) {
+		log("PY: w_UnregisterFunction - function '%s' not found\n", func_name);
+		return 0;
+	}
+	
+	script->dynamic_funcs->erase(it);
+	log1("PY: Unregistered dynamic function '%s' for script %d\n", func_name, script_id);
+	return 1;
+}
+
+// Internal helper: Call a dynamically registered C++ function from Python
+static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
+{
+	// First argument must be the function name (string)
+	if (PyTuple_Size(args) < 1) {
+		PyErr_SetString(PyExc_TypeError, "CallDynamicFunction requires at least function name");
+		return NULL;
+	}
+	
+	PyObject *func_name_obj = PyTuple_GetItem(args, 0);
+	if (!PyUnicode_Check(func_name_obj)) {
+		PyErr_SetString(PyExc_TypeError, "First argument must be function name (string)");
+		return NULL;
+	}
+	
+	const char *func_name = PyUnicode_AsUTF8(func_name_obj);
+	if (!func_name) {
+		PyErr_SetString(PyExc_ValueError, "Invalid function name");
+		return NULL;
+	}
+	
+	// Get script ID from vh.myid
+	long script_id = vh_GetScriptID();
+	if (script_id < 0) {
+		PyErr_SetString(PyExc_RuntimeError, "Could not determine script ID");
+		return NULL;
+	}
+	
+	w_TScript *script = w_Scripts[script_id];
+	if (!script || !script->dynamic_funcs) {
+		PyErr_Format(PyExc_RuntimeError, "No dynamic functions registered for script %ld", script_id);
+		return NULL;
+	}
+	
+	auto it = script->dynamic_funcs->find(std::string(func_name));
+	if (it == script->dynamic_funcs->end()) {
+		PyErr_Format(PyExc_NameError, "Dynamic function '%s' not found", func_name);
+		return NULL;
+	}
+	
+	w_Tcallback callback = it->second;
+	
+	// Parse remaining arguments (skip first arg which is function name)
+	int arg_count = PyTuple_Size(args) - 1;
+	
+	// Build format string for vh_ParseArgs
+	std::string format_str;
+	for (int i = 0; i < arg_count; i++) {
+		PyObject *arg = PyTuple_GetItem(args, i + 1);
+		if (PyLong_Check(arg)) format_str += 'l';
+		else if (PyUnicode_Check(arg)) format_str += 's';
+		else if (PyFloat_Check(arg)) format_str += 'd';
+		else {
+			PyErr_Format(PyExc_TypeError, "Unsupported argument type at position %d", i);
+			return NULL;
+		}
+	}
+	
+	// Create a new tuple without the function name for vh_ParseArgs
+	PyObject *call_args = PyTuple_New(arg_count);
+	for (int i = 0; i < arg_count; i++) {
+		PyObject *arg = PyTuple_GetItem(args, i + 1);
+		Py_INCREF(arg);
+		PyTuple_SetItem(call_args, i, arg);
+	}
+	
+	// Parse arguments using existing infrastructure
+	w_Targs *parsed_args = NULL;
+	int parse_result = vh_ParseArgs(-1, call_args, format_str.c_str(), &parsed_args);
+	Py_DECREF(call_args);
+	
+	if (!parse_result || !parsed_args) {
+		PyErr_SetString(PyExc_ValueError, "Failed to parse arguments");
+		return NULL;
+	}
+	
+	// Release GIL and call C++ callback
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *result = callback(-1, parsed_args);  // Use -1 for dynamic functions
+	
+	free(parsed_args);
+	PyEval_AcquireThread(state);
+	
+	if (!result) Py_RETURN_NONE;
+	
+	// Convert result back to Python (simplified - only handle common cases)
+	if (result->format && strlen(result->format) > 0) {
+		switch (result->format[0]) {
+			case 'l': {
+				long ret_val;
+				w_unpack(result, "l", &ret_val);
+				free(result);
+				return PyLong_FromLong(ret_val);
+			}
+			case 's': {
+				char *ret_val;
+				w_unpack(result, "s", &ret_val);
+				PyObject *py_str = ret_val ? PyUnicode_FromString(ret_val) : Py_None;
+				free(result);
+				if (py_str == Py_None) Py_INCREF(Py_None);
+				return py_str;
+			}
+			case 'd': {
+				double ret_val;
+				w_unpack(result, "d", &ret_val);
+				free(result);
+				return PyFloat_FromDouble(ret_val);
+			}
+			default:
+				free(result);
+				Py_RETURN_NONE;
+		}
+	}
+	
+	free(result);
+	Py_RETURN_NONE;
 }
 
 PyObject *w_GetHook(int hook)
