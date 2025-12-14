@@ -519,8 +519,6 @@ def some_function():
     user_data = {'name': 'Alice', 'age': 30}
     processed_data = vh.CallDynamicFunction('add_field', user_data)
     print(processed_data)  # Output: {'processed': True, 'name': 'Alice', 'age': 30}
-``` reversed_text = vh.CallDynamicFunction('reverse', "Hello")
-    print(reversed_text)  # Output: "olleH"
 ```
 
 ### API Reference
@@ -532,6 +530,16 @@ def some_function():
 int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
 
 // Unregister a dynamic function
+int w_UnregisterFunction(int script_id, const char *func_name);
+```
+
+**Python Function:**
+
+```python
+# Call a dynamically registered C++ function
+result = vh.CallDynamicFunction(func_name, arg1, arg2, ...)
+```
+
 **Supported Types:**
 - Arguments: `long` (int), `str`, `double` (float), `list` (list of strings), `dict` (dictionary)
 - Returns: `long`, `str`, `double`, `list`, `dict`, `None`, or tuple of these types
@@ -541,62 +549,28 @@ int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callbac
 | Python Type | C++ Type | Notes |
 |-------------|----------|-------|
 | `int` | `long` | Standard integer conversion |
-def OnUserCommand(nick, command):
-    """Handle custom commands powered by C++ plugin"""
-    
-    if command.startswith("!stats"):
-        # Call C++ analytics plugin
-        stats = vh.CallDynamicFunction('get_detailed_stats', nick)
-        if stats:
-            messages, searches, downloads = stats
-            vh.pm(nick, f"Your activity: {messages} msgs, {searches} searches, {downloads} downloads")
-        return 0
-    
-    elif command.startswith("!calc"):
-        # Use C++ math library
-        try:
-            _, expression = command.split(" ", 1)
-            result = vh.CallDynamicFunction('evaluate_expression', expression)
-            vh.pm(nick, f"Result: {result}")
-        except:
-            vh.pm(nick, "Usage: !calc <expression>")
-        return 0
-    
-    elif command.startswith("!check"):
-        # Validate using external C++ library
-        _, data = command.split(" ", 1)
-        is_valid = vh.CallDynamicFunction('validate_data', data)
-        vh.pm(nick, "Valid!" if is_valid else "Invalid data")
-        return 0
-    
-    elif command.startswith("!analyze"):
-        # Send list of recent messages to C++ for analysis
-        _, username = command.split(" ", 1)
-        messages = get_user_messages(username)  # Returns list of strings
-        analysis = vh.CallDynamicFunction('analyze_messages', messages)
-        vh.pm(nick, f"Analysis: {analysis}")
-        return 0
-    
-    elif command.startswith("!report"):
-        # Send complex data structure to C++ for processing
-        report_data = {
-            'user': nick,
-            'timestamp': time.time(),
-            'metrics': {
-                'uploads': 42,
-                'downloads': 128,
-                'ratio': 0.33
-            }
-        }
-        result = vh.CallDynamicFunction('generate_report', report_data)
-        if result:
-            vh.pm(nick, f"Report generated: {result}")
-        return 0
-    
-    return 1
-**Supported Types:**
-- Arguments: `long` (int), `str`, `double` (float)
-- Returns: `long`, `str`, `double`, `None`, or tuple of these types
+| `str` | `char*` | UTF-8 strings, automatically copied |
+| `float` | `double` | Double-precision floating point |
+| `list` | `char**` | NULL-terminated array of strings |
+| `dict` | `char*` (JSON) | Serialized as JSON string |
+
+**Complex Type Examples:**
+
+```python
+# List handling
+items = ['item1', 'item2', 'item3']
+result = vh.CallDynamicFunction('process_list', items)
+# C++ receives: char** = {"item1", "item2", "item3", NULL}
+
+# Dictionary handling
+data = {'key1': 'value1', 'key2': 42, 'nested': {'inner': True}}
+result = vh.CallDynamicFunction('process_dict', data)
+# C++ receives: char* = "{\"key1\":\"value1\",\"key2\":42,\"nested\":{\"inner\":true}}"
+
+# Mixed types
+result = vh.CallDynamicFunction('complex_func', 'username', 42, ['a', 'b'], {'status': 'active'})
+# C++ receives all types in order
+```
 
 ### Real-World Example
 
