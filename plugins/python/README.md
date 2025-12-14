@@ -2,7 +2,6 @@
 
 **Version**: 1.6.0.0  
 **Python Version**: 3.12+  
-**Status**: Production Ready ✅
 
 ## Table of Contents
 
