@@ -2167,6 +2167,71 @@ w_Targs *_StopHub(int id, w_Targs *args)
 	return NULL;
 }
 
+// ===== Phase 2: Demonstration of Enhanced C++ Function Exposure =====
+// These are refactored versions using the new template wrappers
+// Showing how the new pattern simplifies callback implementation
+
+// Example 1: String -> Long wrapper (GetUserClass refactored)
+w_Targs *_GetUserClass_v2(int id, w_Targs *args)
+{
+	auto getUserClass = [](const char *nick) -> long {
+		cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+		return u ? u->mClass : -2;
+	};
+	return cpiPython::WrapStringToLong(id, args, getUserClass);
+}
+
+// Example 2: String -> String wrapper (GetUserHost refactored)
+w_Targs *_GetUserHost_v2(int id, w_Targs *args)
+{
+	auto getUserHost = [](const char *nick) -> std::string {
+		cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+		if (!u || !u->mxConn) return "";
+		if (!cpiPython::me->server->mUseDNS)
+			u->mxConn->DNSLookup();
+		return u->mxConn->AddrHost();
+	};
+	return cpiPython::WrapStringToString(id, args, getUserHost);
+}
+
+// Example 3: String -> String wrapper (GetUserIP refactored)
+w_Targs *_GetUserIP_v2(int id, w_Targs *args)
+{
+	auto getUserIP = [](const char *nick) -> std::string {
+		cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
+		if (!u || !u->mxConn) return "";
+		return u->mxConn->AddrIP();
+	};
+	return cpiPython::WrapStringToString(id, args, getUserIP);
+}
+
+// Example 4: String, String -> Bool wrapper (demonstrative only)
+w_Targs *_ValidateUserPair_v2(int id, w_Targs *args)
+{
+	auto validatePair = [](const char *nick1, const char *nick2) -> bool {
+		if (!nick1 || !nick2 || !nick1[0] || !nick2[0]) return false;
+		cUser *u1 = cpiPython::me->server->mUserList.GetUserByNick(nick1);
+		cUser *u2 = cpiPython::me->server->mUserList.GetUserByNick(nick2);
+		return (u1 != nullptr && u2 != nullptr);
+	};
+	return cpiPython::WrapStringStringToBool(id, args, validatePair);
+}
+
+// Example 5: No args -> String wrapper (GetNickList refactored)
+w_Targs *_GetNickList_v2(int id, w_Targs *args)
+{
+	std::string list;
+	cpiPython::me->server->mUserList.GetNickList(list);
+	return cpiPython::lib_pack("s", list.c_str());
+}
+
+// Note: These _v2 functions demonstrate the new pattern but are not registered yet.
+// To use them, replace the registration in OnLoad():
+//   VH_REGISTER_CALLBACK(GetUserClass, GetUserClass_v2);
+// instead of:
+//   callbacklist[W_GetUserClass] = &_GetUserClass;
+
+
 };  // namespace nVerliHub
 
 REGISTER_PLUGIN(nVerliHub::nPythonPlugin::cpiPython);

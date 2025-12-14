@@ -150,9 +150,12 @@ w_Targs *w_vapack(const char *format, va_list ap)
 			case 's':
 			case 'd':
 			case 'p':
+			case 'L':  // Phase 3: List of strings
+			case 'D':  // Phase 3: Dictionary (as JSON string)
+			case 'O':  // Phase 3: PyObject* (advanced)
 				break;
 			default:
-				log1("PY: pack: format string supports 'lsdp' and not '%c'\n", format[i]);
+				log1("PY: pack: format string supports 'lsdpLDO' and not '%c'\n", format[i]);
 				return NULL;
 		}
 	}
@@ -181,6 +184,18 @@ w_Targs *w_vapack(const char *format, va_list ap)
 			case 'p':
 				a->args[i].type = 'p';
 				a->args[i].p = va_arg(ap, void *);
+				break;
+			case 'L':  // Phase 3: List of strings (NULL-terminated char**)
+				a->args[i].type = 'L';
+				a->args[i].L = va_arg(ap, char **);
+				break;
+			case 'D':  // Phase 3: Dict as JSON string (treated as 's' internally)
+				a->args[i].type = 'D';
+				a->args[i].s = va_arg(ap, char *);
+				break;
+			case 'O':  // Phase 3: PyObject* passthrough
+				a->args[i].type = 'O';
+				a->args[i].O = va_arg(ap, PyObject *);
 				break;
 		}
 	}
@@ -225,6 +240,15 @@ int w_unpack(w_Targs *a, const char *format, ...)
 			case 'p':
 				*va_arg(ap, void **) = a->args[i].p;
 				break;
+			case 'L':  // Phase 3: List of strings
+				*va_arg(ap, char ***) = a->args[i].L;
+				break;
+			case 'D':  // Phase 3: Dict as JSON (unpacked as string)
+				*va_arg(ap, char **) = a->args[i].s;
+				break;
+			case 'O':  // Phase 3: PyObject* passthrough
+				*va_arg(ap, PyObject **) = a->args[i].O;
+				break;
 			default:
 				va_end(ap);
 				return 0;
@@ -241,25 +265,52 @@ const char *w_packprint(w_Targs *a)
 
 	static char buf[1024];
 	buf[0] = 0;
-	char tmp[64];
+	char tmp[256];
 	if (a->format) strcat(buf, a->format);
 	strcat(buf, " [ ");
 	for (unsigned int i = 0; i < strlen(a->format); i++) {
 		switch (a->format[i]) {
 			case 'l':
-				snprintf(tmp, 64, "%ld ", a->args[i].l);
+				snprintf(tmp, sizeof(tmp), "%ld ", a->args[i].l);
 				strcat(buf, tmp);
 				break;
 			case 's':
-				snprintf(tmp, 64, "'%s' ", a->args[i].s);
+				snprintf(tmp, sizeof(tmp), "'%s' ", a->args[i].s);
 				strcat(buf, tmp);
 				break;
 			case 'd':
-				snprintf(tmp, 64, "%f ", a->args[i].d);
+				snprintf(tmp, sizeof(tmp), "%f ", a->args[i].d);
 				strcat(buf, tmp);
 				break;
 			case 'p':
-				snprintf(tmp, 64, "%p ", a->args[i].p);
+				snprintf(tmp, sizeof(tmp), "%p ", a->args[i].p);
+				strcat(buf, tmp);
+				break;
+			case 'L':  // Phase 3: List of strings
+				{
+					strcat(buf, "[");
+					if (a->args[i].L) {
+						for (int j = 0; a->args[i].L[j] != NULL; j++) {
+							if (j > 0) strcat(buf, ", ");
+							snprintf(tmp, sizeof(tmp), "'%s'", a->args[i].L[j]);
+							strcat(buf, tmp);
+							if (j >= 4) {  // Limit display to avoid overflow
+								strcat(buf, ", ...");
+								break;
+							}
+						}
+					}
+					strcat(buf, "] ");
+				}
+				break;
+			case 'D':  // Phase 3: Dict as JSON string
+				snprintf(tmp, sizeof(tmp), "JSON:'%.50s%s' ", 
+					a->args[i].s ? a->args[i].s : "",
+					(a->args[i].s && strlen(a->args[i].s) > 50) ? "..." : "");
+				strcat(buf, tmp);
+				break;
+			case 'O':  // Phase 3: PyObject*
+				snprintf(tmp, sizeof(tmp), "PyObject:%p ", a->args[i].O);
 				strcat(buf, tmp);
 				break;
 		}
@@ -665,6 +716,79 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 			case 'p':
 				PyTuple_SetItem(args, i, PyLong_FromVoidPtr(params->args[i].p));
 				break;
+			case 'L': {  // Phase 3: List of strings
+				char **list = params->args[i].L;
+				if (!list) {
+					PyTuple_SetItem(args, i, PyList_New(0));
+					break;
+				}
+				// Count elements
+				int count = 0;
+				while (list[count] != NULL) count++;
+				
+				PyObject *py_list = PyList_New(count);
+				for (int j = 0; j < count; j++) {
+#if PY_MAJOR_VERSION >= 3
+					PyList_SetItem(py_list, j, PyUnicode_FromString(list[j]));
+#else
+					PyList_SetItem(py_list, j, PyString_FromString(list[j]));
+#endif
+				}
+				PyTuple_SetItem(args, i, py_list);
+				break;
+			}
+			case 'D': {  // Phase 3: Dict as JSON string
+				const char *json_str = params->args[i].s;
+				if (!json_str || json_str[0] == '\0') {
+					PyTuple_SetItem(args, i, PyDict_New());
+					break;
+				}
+				// Parse JSON string to Python dict using json module
+				PyObject *json_module = PyImport_ImportModule("json");
+				if (!json_module) {
+					log("PY: w_CallFunction - failed to import json module\n");
+					PyErr_Clear();
+					PyTuple_SetItem(args, i, PyDict_New());
+					break;
+				}
+				
+				PyObject *loads_func = PyObject_GetAttrString(json_module, "loads");
+				if (!loads_func) {
+					log("PY: w_CallFunction - failed to get json.loads\n");
+					PyErr_Clear();
+					Py_DECREF(json_module);
+					PyTuple_SetItem(args, i, PyDict_New());
+					break;
+				}
+				
+#if PY_MAJOR_VERSION >= 3
+				PyObject *json_arg = PyUnicode_FromString(json_str);
+#else
+				PyObject *json_arg = PyString_FromString(json_str);
+#endif
+				PyObject *py_dict = PyObject_CallFunction(loads_func, "O", json_arg);
+				Py_DECREF(json_arg);
+				Py_DECREF(loads_func);
+				Py_DECREF(json_module);
+				
+				if (!py_dict || PyErr_Occurred()) {
+					log("PY: w_CallFunction - failed to parse JSON: %s\n", json_str);
+					PyErr_Clear();
+					PyTuple_SetItem(args, i, PyDict_New());
+				} else {
+					PyTuple_SetItem(args, i, py_dict);
+				}
+				break;
+			}
+			case 'O':  // Phase 3: PyObject* passthrough
+				if (params->args[i].O) {
+					Py_INCREF(params->args[i].O);  // Inc ref for tuple
+					PyTuple_SetItem(args, i, params->args[i].O);
+				} else {
+					Py_INCREF(Py_None);
+					PyTuple_SetItem(args, i, Py_None);
+				}
+				break;
 			default:
 				log("PY: w_CallFunction - unknown format character '%c'\n", params->format[i]);
 				Py_DECREF(args);
@@ -704,6 +828,54 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		ret = w_pack("s", strdup(s));
 	} else if (res == Py_None) {
 		ret = w_pack("l", (long)0);  // Default to 0 for None
+	} else if (PyList_Check(res)) {  // Phase 3: List to 'L' format
+		int len = PyList_Size(res);
+		char **str_array = (char **)malloc((len + 1) * sizeof(char *));
+		if (!str_array) {
+			log("PY: w_CallFunction - failed to allocate memory for list\n");
+		} else {
+			for (int i = 0; i < len; i++) {
+				PyObject *item = PyList_GetItem(res, i);
+				if (PyUnicode_Check(item)) {
+					const char *s = PyUnicode_AsUTF8(item);
+					str_array[i] = s ? strdup(s) : strdup("");
+				} else {
+					str_array[i] = strdup("");
+				}
+			}
+			str_array[len] = NULL;  // NULL-terminate
+			ret = w_pack("L", str_array);
+		}
+	} else if (PyDict_Check(res)) {  // Phase 3: Dict to 'D' format (JSON)
+		// Convert dict to JSON string
+		PyObject *json_module = PyImport_ImportModule("json");
+		if (!json_module) {
+			log("PY: w_CallFunction - failed to import json module for dict return\n");
+			PyErr_Clear();
+			ret = w_pack("D", strdup("{}"));
+		} else {
+			PyObject *dumps_func = PyObject_GetAttrString(json_module, "dumps");
+			if (!dumps_func) {
+				log("PY: w_CallFunction - failed to get json.dumps\n");
+				PyErr_Clear();
+				Py_DECREF(json_module);
+				ret = w_pack("D", strdup("{}"));
+			} else {
+				PyObject *json_str = PyObject_CallFunction(dumps_func, "O", res);
+				Py_DECREF(dumps_func);
+				Py_DECREF(json_module);
+				
+				if (!json_str || PyErr_Occurred()) {
+					log("PY: w_CallFunction - failed to convert dict to JSON\n");
+					PyErr_Clear();
+					ret = w_pack("D", strdup("{}"));
+				} else {
+					const char *s = PyUnicode_AsUTF8(json_str);
+					ret = w_pack("D", s ? strdup(s) : strdup("{}"));
+					Py_DECREF(json_str);
+				}
+			}
+		}
 	} else if (PyTuple_Check(res)) {
 		int len = PyTuple_Size(res);
 		if (len > W_MAX_RETVALS) len = W_MAX_RETVALS;
