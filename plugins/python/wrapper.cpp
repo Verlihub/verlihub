@@ -977,6 +977,49 @@ int w_Begin(w_Tcallback *callbacks)
 int w_End()
 {
 	PyGILState_STATE gil = PyGILState_Ensure();
+	
+	// Clean up all remaining subinterpreters before finalizing Python
+	// We need to track the main state before we start ending subinterpreters
+	PyThreadState *main_state = PyThreadState_Get();
+	
+	for (size_t i = 0; i < w_Scripts.size(); ++i) {
+		w_TScript *script = w_Scripts[i];
+		if (script && script->state) {
+			// Switch to the subinterpreter's thread state
+			PyThreadState_Swap(script->state);
+			
+			// Clean up Python objects in the subinterpreter
+			Py_XDECREF(script->module);
+			script->module = NULL;
+			
+			// End this subinterpreter (this frees script->state)
+			Py_EndInterpreter(script->state);
+			script->state = NULL;
+			
+			// Switch back to main interpreter
+			PyThreadState_Swap(main_state);
+		}
+		
+		// Clean up C++ resources for this script
+		if (script) {
+			// Clean up dynamic function registry
+			if (script->dynamic_funcs) {
+				delete script->dynamic_funcs;
+				script->dynamic_funcs = NULL;
+			}
+			
+			free(script->path);
+			free(script->name);
+			free(script->botname);
+			free(script->opchatname);
+			free(script->hooks);
+			free(script->config_name);
+			free(script);
+			w_Scripts[i] = NULL;
+		}
+	}
+	
+	// Now all subinterpreters are cleaned up, safe to finalize
 	Py_Finalize();
 	// No PyGILState_Release after Py_Finalize
 	free(w_Python);
