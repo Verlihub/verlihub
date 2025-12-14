@@ -8,12 +8,22 @@
 #include "../wrapper.h"
 #include <string>
 #include <vector>
+#include <sstream>
+#include <unistd.h>
+
+// Helper function to generate unique test file paths in build directory
+static std::string GetTestFilePath(const char* base_name) {
+	std::ostringstream oss;
+	oss << "test_vh_" << base_name << "_" << getpid() << "_" << ::testing::UnitTest::GetInstance()->current_test_info()->name() << ".py";
+	return oss.str();
+}
 
 // Test fixture for vh module tests
 class VHModuleTest : public ::testing::Test {
 protected:
 	static w_Tcallback callbacks[W_MAX_CALLBACKS];
 	static std::vector<std::string> call_log;
+	std::vector<std::string> temp_files;  // Track files to clean up
 	
 	void SetUp() override {
 		call_log.clear();
@@ -22,6 +32,17 @@ protected:
 	
 	void TearDown() override {
 		w_End();
+		// Clean up temporary files
+		for (const auto& file : temp_files) {
+			unlink(file.c_str());
+		}
+	}
+	
+	// Helper to create temp file and track it
+	std::string CreateTempFile(const char* base_name) {
+		std::string path = GetTestFilePath(base_name);
+		temp_files.push_back(path);
+		return path;
 	}
 	
 	// Mock callback for testing
@@ -61,7 +82,8 @@ TEST_F(VHModuleTest, ModuleImportable) {
 	ASSERT_GE(id, 0);
 	
 	// Create a minimal Python script that imports vh
-	FILE* f = fopen("/tmp/test_vh_import.py", "w");
+	std::string script_path = CreateTempFile("import");
+	FILE* f = fopen(script_path.c_str(), "w");
 	ASSERT_NE(f, nullptr);
 	fprintf(f, "import vh\n");
 	fprintf(f, "print('vh module imported successfully')\n");
@@ -70,7 +92,7 @@ TEST_F(VHModuleTest, ModuleImportable) {
 	
 	w_Targs* load_args = w_pack("lssssls", 
 		(long)id, 
-		(char*)"/tmp/test_vh_import.py",
+		(char*)script_path.c_str(),
 		(char*)"TestBot",
 		(char*)"OpChat",
 		(char*)"/tmp",
@@ -89,7 +111,8 @@ TEST_F(VHModuleTest, GetUserClassReturnsLong) {
 	callbacks[W_GetUserClass] = MockCallback_ReturnLong;
 	
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_getuserclass.py", "w");
+	std::string script_path = CreateTempFile("getuserclass");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    user_class = vh.GetUserClass('testuser')\n");
@@ -97,8 +120,8 @@ TEST_F(VHModuleTest, GetUserClassReturnsLong) {
 	fprintf(f, "    return user_class\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_getuserclass.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -120,7 +143,8 @@ TEST_F(VHModuleTest, GetConfigReturnsString) {
 	callbacks[W_GetConfig] = MockCallback_ReturnString;
 	
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_getconfig.py", "w");
+	std::string script_path = CreateTempFile("getconfig");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    value = vh.GetConfig('config', 'hub_name')\n");
@@ -128,8 +152,8 @@ TEST_F(VHModuleTest, GetConfigReturnsString) {
 	fprintf(f, "    return value\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_getconfig.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -149,7 +173,8 @@ TEST_F(VHModuleTest, SetConfigReturnsBool) {
 	callbacks[W_SetConfig] = MockCallback_ReturnBool;
 	
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_setconfig.py", "w");
+	std::string script_path = CreateTempFile("setconfig");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    result = vh.SetConfig('config', 'max_users', '100')\n");
@@ -157,8 +182,8 @@ TEST_F(VHModuleTest, SetConfigReturnsBool) {
 	fprintf(f, "    return result\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_setconfig.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -177,7 +202,8 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 	callbacks[W_GetNickList] = MockCallback_ReturnStringList;
 	
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_getnicklist.py", "w");
+	std::string script_path = CreateTempFile("getnicklist");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    nicklist = vh.GetNickList()\n");
@@ -189,8 +215,8 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 	fprintf(f, "    return len(nicklist)\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_getnicklist.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -208,7 +234,8 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 
 TEST_F(VHModuleTest, ModuleHasConstants) {
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_constants.py", "w");
+	std::string script_path = CreateTempFile("constants");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    # Test connection close reason constants\n");
@@ -226,8 +253,8 @@ TEST_F(VHModuleTest, ModuleHasConstants) {
 	fprintf(f, "    return True\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_constants.py",
-		(char*)"TestBot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"TestBot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -243,7 +270,8 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	int id2 = w_ReserveID();
 	
 	// Script 1
-	FILE* f = fopen("/tmp/test_vh_script1.py", "w");
+	std::string script1_path = CreateTempFile("script1");
+	FILE* f = fopen(script1_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def get_my_id():\n");
 	fprintf(f, "    return vh.myid\n");
@@ -252,7 +280,8 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	fclose(f);
 	
 	// Script 2
-	f = fopen("/tmp/test_vh_script2.py", "w");
+	std::string script2_path = CreateTempFile("script2");
+	f = fopen(script2_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def get_my_id():\n");
 	fprintf(f, "    return vh.myid\n");
@@ -260,13 +289,13 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	fprintf(f, "    return vh.botname\n");
 	fclose(f);
 	
-	w_Targs* load1 = w_pack("lssssls", (long)id1, (char*)"/tmp/test_vh_script1.py",
-		(char*)"Bot1", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load1 = w_pack("lssssls", (long)id1, (char*)script1_path.c_str(),
+		(char*)"Bot1", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load1);
 	free(load1);
 	
-	w_Targs* load2 = w_pack("lssssls", (long)id2, (char*)"/tmp/test_vh_script2.py",
-		(char*)"Bot2", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load2 = w_pack("lssssls", (long)id2, (char*)script2_path.c_str(),
+		(char*)"Bot2", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load2);
 	free(load2);
 	
@@ -301,7 +330,8 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 
 TEST_F(VHModuleTest, AllFunctionsExist) {
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_all_functions.py", "w");
+	std::string script_path = CreateTempFile("all_functions");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    functions = [\n");
@@ -329,8 +359,8 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	fprintf(f, "    return len(functions)\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_all_functions.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -347,7 +377,8 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 
 TEST_F(VHModuleTest, EncodeDecodeWorks) {
 	int id = w_ReserveID();
-	FILE* f = fopen("/tmp/test_vh_encode_decode.py", "w");
+	std::string script_path = CreateTempFile("encode_decode");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    # Test encoding special DC++ characters\n");
@@ -372,8 +403,8 @@ TEST_F(VHModuleTest, EncodeDecodeWorks) {
 	fprintf(f, "    return True\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_encode_decode.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
