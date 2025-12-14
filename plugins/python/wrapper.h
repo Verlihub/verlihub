@@ -176,10 +176,12 @@ enum {
 typedef struct {
 	char type;
 	union {
-		long l;
-		char *s;
-		double d;
-		void *p;
+		long l;          // 'l' - long integer
+		char *s;         // 's' - string (char*)
+		double d;        // 'd' - double
+		void *p;         // 'p' - void pointer
+		char **L;        // 'L' - list of strings (NULL-terminated array)
+		PyObject *O;     // 'O' - PyObject* (advanced, for Phase 3)
 	};
 } w_Telement;
 
