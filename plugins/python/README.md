@@ -9,6 +9,7 @@
 - [Overview](#overview)
 - [Quick Start](#quick-start)
 - [⭐ vh Module - Restored Bidirectional API](#-vh-module---restored-bidirectional-api)
+- [🚀 Dimension 4 - Dynamic C++ Function Registration](#-dimension-4---dynamic-c-function-registration)
 - [Writing Python Scripts](#writing-python-scripts)
   - [Event Hooks](#event-hooks)
   - [Verlihub API](#verlihub-api)
@@ -300,9 +301,293 @@ All functions use the existing type marshaling system:
 - **GIL management**: Thread-safe C++ callbacks
 - **Memory safety**: Proper reference counting
 
+### Utility Functions
+
+Two additional utility functions for encoding/decoding DC++ special characters:
+
+**vh.Encode(string)**
+Converts special DC++ characters to HTML entities:
+```python
+import vh
+
+# Encode special characters
+original = "Test$Message|With`Special~Chars"
+encoded = vh.Encode(original)  # "Test&#36;Message&#124;With&#96;Special&#126;Chars"
+
+# Safe to send in protocol messages
+vh.SendDataToUser(encoded, "username")
+```
+
+**vh.Decode(string)**
+Converts HTML entities back to characters:
+```python
+decoded = vh.Decode(encoded)  # Back to original string
+assert decoded == original
+```
+
+Character mappings:
+- `$` ↔ `&#36;`
+- `|` ↔ `&#124;`
+- `` ` `` ↔ `&#96;`
+- `~` ↔ `&#126;`
+- `\x05` (Ctrl+E) ↔ `&#5;`
+
 ### Testing
 
-See `tests/test_vh_module.cpp` for comprehensive unit tests validating all 56 functions.
+See `tests/test_vh_module.cpp` for comprehensive unit tests validating all 58 functions (56 API functions + Encode + Decode).
+
+---
+
+## 🚀 Dimension 4 - Dynamic C++ Function Registration
+
+**NEW**: Runtime registration of C++ functions that can be called from Python scripts!
+
+### Overview
+
+Dimension 4 completes the bidirectional communication model by allowing C++ plugins to dynamically register custom functions that Python scripts can call at runtime. This enables:
+
+- **Plugin-specific APIs**: Each plugin can expose its own custom functions
+- **Runtime extensibility**: Add new functions without recompiling
+- **Third-party extensions**: External C++ libraries can integrate seamlessly
+- **Script isolation**: Each script has its own function registry
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Complete Bidirectional Model                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  C++ Hub Core                    Python Scripts              │
+│  ┌────────────┐                  ┌──────────────┐           │
+│  │            │  1. Event Hooks  │              │           │
+│  │  Verlihub  │ ────────────────>│   script.py  │           │
+│  │            │                  │              │           │
+│  │            │  2. vh Module    │              │           │
+│  │            │<────────────────>│ vh.GetUser() │           │
+│  │            │    (58 funcs)    │ vh.SendMsg() │           │
+│  │            │                  │              │           │
+│  │            │  3. Callbacks    │              │           │
+│  │            │<─────────────────│ return data  │           │
+│  │            │                  │              │           │
+│  └────────────┘                  └──────────────┘           │
+│       ↕                                 ↕                    │
+│  ┌────────────┐                  ┌──────────────┐           │
+│  │  Plugin    │  4. Dynamic Reg  │              │           │
+│  │  (C++)     │ ────────────────>│ CallDynamic  │           │
+│  │            │  Register("fn")  │ Function()   │           │
+│  │ AddPlugin  │<─────────────────│              │           │
+│  │ CalcStats  │  Call C++ func   │              │           │
+│  └────────────┘                  └──────────────┘           │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### C++ Side: Registering Functions
+
+**Step 1**: Implement your C++ function with the callback signature:
+
+```cpp
+// Example: Calculate statistics for a user
+w_Targs* MyPlugin_GetUserStats(int callback_id, w_Targs* args) {
+    char *username;
+    if (!w_unpack(args, "s", &username)) {
+        return w_pack("l", (long)0);
+    }
+    
+    // Your custom C++ logic here
+    long message_count = GetUserMessageCount(username);
+    long login_count = GetUserLoginCount(username);
+    
+    // Return results (can be long, string, double, etc.)
+    return w_pack("ll", message_count, login_count);
+}
+
+// Example: Add two numbers
+w_Targs* MyPlugin_Add(int callback_id, w_Targs* args) {
+    long a, b;
+    if (!w_unpack(args, "ll", &a, &b)) {
+        return w_pack("l", (long)0);
+    }
+    return w_pack("l", a + b);
+}
+
+// Example: Reverse a string
+w_Targs* MyPlugin_Reverse(int callback_id, w_Targs* args) {
+    char *str;
+    if (!w_unpack(args, "s", &str)) {
+        return w_pack("s", (char*)"");
+    }
+    
+    int len = strlen(str);
+    char *reversed = (char*)malloc(len + 1);
+    for (int i = 0; i < len; i++) {
+        reversed[i] = str[len - 1 - i];
+    }
+    reversed[len] = '\0';
+    
+    return w_pack("s", reversed);
+}
+```
+
+**Step 2**: Register the function for a specific script:
+
+```cpp
+// When loading your plugin or when a Python script loads
+int script_id = 0;  // Get from Python plugin
+
+// Register the function (name can be anything)
+w_RegisterFunction(script_id, "get_stats", MyPlugin_GetUserStats);
+w_RegisterFunction(script_id, "add", MyPlugin_Add);
+w_RegisterFunction(script_id, "reverse", MyPlugin_Reverse);
+```
+
+**Step 3**: Optionally unregister when done:
+
+```cpp
+w_UnregisterFunction(script_id, "get_stats");
+```
+
+### Python Side: Calling Dynamic Functions
+
+Once a C++ function is registered, call it from Python using `vh.CallDynamicFunction()`:
+
+```python
+import vh
+
+def OnUserLogin(nick):
+    # Call dynamically registered C++ function
+    msg_count, login_count = vh.CallDynamicFunction('get_stats', nick)
+    
+    vh.pm(nick, f"You have sent {msg_count} messages across {login_count} logins!")
+    
+    # Call simple math function
+    result = vh.CallDynamicFunction('add', 10, 32)
+    assert result == 42
+    
+    # Call string function
+    reversed_nick = vh.CallDynamicFunction('reverse', nick)
+    vh.mc(f"{nick} reversed is {reversed_nick}")
+    
+    return 1
+```
+
+### API Reference
+
+**C++ Functions:**
+
+```cpp
+// Register a dynamic function for a script
+int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
+
+// Unregister a dynamic function
+int w_UnregisterFunction(int script_id, const char *func_name);
+```
+
+**Python Function:**
+
+```python
+# Call a dynamically registered C++ function
+result = vh.CallDynamicFunction(func_name, arg1, arg2, ...)
+```
+
+**Supported argument types:**
+- `long` (Python `int`)
+- `str` (Python `str`)
+- `double` (Python `float`)
+
+**Supported return types:**
+- `long` → Python `int`
+- `str` → Python `str`
+- `double` → Python `float`
+- `None` (no return value)
+
+### Real-World Example: Plugin Integration
+
+**Scenario**: A custom `stats` plugin wants to expose functions to Python scripts.
+
+**stats_plugin.cpp**:
+```cpp
+class StatsPlugin {
+    std::map<std::string, UserStats> user_stats;
+    
+public:
+    static w_Targs* GetTopUsers(int id, w_Targs* args) {
+        long limit;
+        w_unpack(args, "l", &limit);
+        
+        // Get top users by message count
+        std::vector<std::string> top_users = GetTopUsersByMessages(limit);
+        
+        // Convert to NULL-terminated array
+        char **user_list = (char**)malloc((top_users.size() + 1) * sizeof(char*));
+        for (size_t i = 0; i < top_users.size(); i++) {
+            user_list[i] = strdup(top_users[i].c_str());
+        }
+        user_list[top_users.size()] = NULL;
+        
+        return w_pack("L", user_list);
+    }
+    
+    void RegisterWithScript(int script_id) {
+        w_RegisterFunction(script_id, "get_top_users", GetTopUsers);
+        w_RegisterFunction(script_id, "get_user_rank", GetUserRank);
+        w_RegisterFunction(script_id, "reset_stats", ResetStats);
+    }
+};
+```
+
+**Python script using stats plugin**:
+```python
+import vh
+
+def OnParsedMsgChat(nick, message):
+    if message == "!top10":
+        # Call stats plugin function
+        top_users = vh.CallDynamicFunction('get_top_users', 10)
+        
+        if isinstance(top_users, list):
+            response = "Top 10 users:\\n"
+            for i, user in enumerate(top_users, 1):
+                rank = vh.CallDynamicFunction('get_user_rank', user)
+                response += f"{i}. {user} - {rank} messages\\n"
+            
+            vh.pm(nick, response)
+        
+        return 0  # Block original message
+    
+    return 1  # Allow message
+```
+
+### Isolation and Safety
+
+- **Per-script registry**: Each script has its own isolated function registry
+- **No cross-script calls**: Script A cannot call functions registered for Script B
+- **Memory safety**: Proper cleanup when scripts unload
+- **Thread safety**: GIL is properly managed during calls
+- **Error handling**: Python exceptions for missing functions
+
+### Testing
+
+See `tests/test_dynamic_registration.cpp` for comprehensive tests:
+- Function registration and calling
+- Multiple functions per script
+- Registration/unregistration
+- Error handling for missing functions
+- Script isolation verification
+
+```bash
+# Run Dimension 4 tests
+cd /path/to/build
+./plugins/python/test_dynamic_registration
+```
+
+All 5 tests validate:
+✅ Basic registration and calling  
+✅ Multiple functions  
+✅ Unregistration  
+✅ Error handling  
+✅ Script isolation  
 
 ---
 
