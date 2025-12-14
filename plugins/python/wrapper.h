@@ -30,6 +30,7 @@ extern "C" {
 #include <string>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #if PY_MAJOR_VERSION >= 3
 #include <wchar.h>
@@ -204,6 +205,9 @@ typedef struct {
 	char          *opchatname;
 	bool           use_old_ontimer;
 	char          *config_name;
+	
+	// Dynamic function registry (Dimension 4)
+	std::map<std::string, w_Tcallback> *dynamic_funcs;
 } w_TScript;
 
 // the following functions are all you need to use in the plugin that loads this wrapper
@@ -223,6 +227,12 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params);
 PyObject *w_GetHook(int hook);
 const char *w_HookName(int hook);
 const char *w_CallName(int callback);
+
+// Dimension 4: Dynamic function registration
+// Register a C++ function that can be called from Python scripts
+int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
+// Unregister a dynamically registered function
+int w_UnregisterFunction(int script_id, const char *func_name);
 
 w_Targs *w_pack(const char *format, ...);
 int w_unpack(w_Targs *a, const char *format, ...);

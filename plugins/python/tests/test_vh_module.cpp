@@ -321,7 +321,7 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	fprintf(f, "        'AddRobot', 'DelRobot', 'SQL', 'GetServFreq',\n");
 	fprintf(f, "        'GetUsersCount', 'GetTotalShareSize', 'usermc', 'pm',\n");
 	fprintf(f, "        'mc', 'classmc', 'UserRestrictions', 'Topic',\n");
-	fprintf(f, "        'name_and_version', 'StopHub'\n");
+	fprintf(f, "        'name_and_version', 'StopHub', 'Encode', 'Decode'\n");
 	fprintf(f, "    ]\n");
 	fprintf(f, "    missing = [f for f in functions if not hasattr(vh, f)]\n");
 	fprintf(f, "    if missing:\n");
@@ -339,7 +339,46 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	
 	long count;
 	ASSERT_TRUE(w_unpack(result, "l", &count));
-	EXPECT_EQ(count, 56);  // All 56 functions exist (53 original + 3 list-returning variants)
+	EXPECT_EQ(count, 58);  // All 58 functions exist (53 original + 3 list variants + 2 encode/decode)
+	
+	free(result);
+	w_Unload(id);
+}
+
+TEST_F(VHModuleTest, EncodeDecodeWorks) {
+	int id = w_ReserveID();
+	FILE* f = fopen("/tmp/test_vh_encode_decode.py", "w");
+	fprintf(f, "import vh\n");
+	fprintf(f, "def test():\n");
+	fprintf(f, "    # Test encoding special DC++ characters\n");
+	fprintf(f, "    original = 'Hello$World|Test`More~End'\n");
+	fprintf(f, "    encoded = vh.Encode(original)\n");
+	fprintf(f, "    assert '&#36;' in encoded  # $\n");
+	fprintf(f, "    assert '&#124;' in encoded # |\n");
+	fprintf(f, "    assert '&#96;' in encoded  # `\n");
+	fprintf(f, "    assert '&#126;' in encoded # ~\n");
+	fprintf(f, "    \n");
+	fprintf(f, "    # Test decoding back\n");
+	fprintf(f, "    decoded = vh.Decode(encoded)\n");
+	fprintf(f, "    assert decoded == original\n");
+	fprintf(f, "    \n");
+	fprintf(f, "    # Test roundtrip with control char\n");
+	fprintf(f, "    test_str = 'A\\x05B'  # chr(5)\n");
+	fprintf(f, "    enc = vh.Encode(test_str)\n");
+	fprintf(f, "    assert '&#5;' in enc\n");
+	fprintf(f, "    dec = vh.Decode(enc)\n");
+	fprintf(f, "    assert dec == test_str\n");
+	fprintf(f, "    \n");
+	fprintf(f, "    return True\n");
+	fclose(f);
+	
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_vh_encode_decode.py",
+		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Load(load_args);
+	free(load_args);
+	
+	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	ASSERT_NE(result, nullptr);
 	
 	free(result);
 	w_Unload(id);

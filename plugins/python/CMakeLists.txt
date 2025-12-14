@@ -100,6 +100,10 @@ if(GTest_FOUND)
         # vh Module tests - restored Python bidirectional API
         add_executable(test_vh_module tests/test_vh_module.cpp)
         target_link_libraries(test_vh_module GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        
+        # Dimension 4: Dynamic registration tests
+        add_executable(test_dynamic_registration tests/test_dynamic_registration.cpp)
+        target_link_libraries(test_dynamic_registration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
 
         # Add tests to CTest (enable_testing is called in root CMakeLists.txt)
         add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
@@ -110,6 +114,8 @@ if(GTest_FOUND)
         add_test(NAME PythonAdvancedTypesTests COMMAND test_python_advanced_types)
         # vh Module test - validates restored bidirectional API
         add_test(NAME VHModuleTests COMMAND test_vh_module)
+        # Dynamic registration test - validates Dimension 4
+        add_test(NAME DynamicRegistrationTests COMMAND test_dynamic_registration)
         
         message(STATUS "[ OK ] GTest and GMock found, building Python plugin tests")
     else()
