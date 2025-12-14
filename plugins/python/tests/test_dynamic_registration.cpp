@@ -7,11 +7,21 @@
 #include <gtest/gtest.h>
 #include "../wrapper.h"
 #include <string>
+#include <sstream>
+#include <unistd.h>
+
+// Helper function to generate unique test file paths in build directory
+static std::string GetTestFilePath(const char* base_name) {
+	std::ostringstream oss;
+	oss << "test_dyn_" << base_name << "_" << getpid() << "_" << ::testing::UnitTest::GetInstance()->current_test_info()->name() << ".py";
+	return oss.str();
+}
 
 // Test fixture
 class DynamicRegistrationTest : public ::testing::Test {
 protected:
 	static w_Tcallback callbacks[W_MAX_CALLBACKS];
+	std::vector<std::string> temp_files;  // Track files to clean up
 	
 	void SetUp() override {
 		w_Begin(callbacks);
@@ -19,6 +29,17 @@ protected:
 	
 	void TearDown() override {
 		w_End();
+		// Clean up temporary files
+		for (const auto& file : temp_files) {
+			unlink(file.c_str());
+		}
+	}
+	
+	// Helper to create temp file and track it
+	std::string CreateTempFile(const char* base_name) {
+		std::string path = GetTestFilePath(base_name);
+		temp_files.push_back(path);
+		return path;
 	}
 	
 	// Example C++ function that adds two numbers
@@ -68,7 +89,8 @@ TEST_F(DynamicRegistrationTest, RegisterAndCallFunction) {
 	EXPECT_EQ(result, 1);
 	
 	// Create Python script that calls the dynamic function
-	FILE* f = fopen("/tmp/test_dynamic_add.py", "w");
+	std::string script_path = CreateTempFile("add");
+	FILE* f = fopen(script_path.c_str(), "w");
 	ASSERT_NE(f, nullptr);
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
@@ -80,10 +102,10 @@ TEST_F(DynamicRegistrationTest, RegisterAndCallFunction) {
 	// Load the script
 	w_Targs* load_args = w_pack("lssssls", 
 		(long)id, 
-		(char*)"/tmp/test_dynamic_add.py",
+		(char*)script_path.c_str(),
 		(char*)"TestBot",
 		(char*)"OpChat",
-		(char*)"/tmp",
+		(char*)".",
 		(long)1234567890,
 		(char*)"test_config");
 	
@@ -111,7 +133,8 @@ TEST_F(DynamicRegistrationTest, RegisterMultipleFunctions) {
 	EXPECT_EQ(w_RegisterFunction(id, "reverse", ReverseString), 1);
 	EXPECT_EQ(w_RegisterFunction(id, "multiply", MultiplyBy10), 1);
 	
-	FILE* f = fopen("/tmp/test_dynamic_multi.py", "w");
+	std::string script_path = CreateTempFile("multi");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    sum = vh.CallDynamicFunction('add', 10, 20)\n");
@@ -126,8 +149,8 @@ TEST_F(DynamicRegistrationTest, RegisterMultipleFunctions) {
 	fprintf(f, "    return True\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_dynamic_multi.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -142,13 +165,14 @@ TEST_F(DynamicRegistrationTest, UnregisterFunction) {
 	int id = w_ReserveID();
 	
 	// Must load the script first
-	FILE* f = fopen("/tmp/test_dynamic_unreg.py", "w");
+	std::string script_path = CreateTempFile("unreg");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "pass\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_dynamic_unreg.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -168,7 +192,8 @@ TEST_F(DynamicRegistrationTest, UnregisterFunction) {
 TEST_F(DynamicRegistrationTest, CallNonExistentFunction) {
 	int id = w_ReserveID();
 	
-	FILE* f = fopen("/tmp/test_dynamic_nonexist.py", "w");
+	std::string script_path = CreateTempFile("nonexist");
+	FILE* f = fopen(script_path.c_str(), "w");
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    try:\n");
@@ -179,8 +204,8 @@ TEST_F(DynamicRegistrationTest, CallNonExistentFunction) {
 	fprintf(f, "        return True\n");
 	fclose(f);
 	
-	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)"/tmp/test_dynamic_nonexist.py",
-		(char*)"Bot", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load_args = w_pack("lssssls", (long)id, (char*)script_path.c_str(),
+		(char*)"Bot", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load_args);
 	free(load_args);
 	
@@ -200,14 +225,16 @@ TEST_F(DynamicRegistrationTest, IsolatedBetweenScripts) {
 	EXPECT_EQ(w_RegisterFunction(id1, "add", AddNumbers), 1);
 	
 	// Script 1 can call it
-	FILE* f1 = fopen("/tmp/test_dynamic_script1.py", "w");
+	std::string script1_path = CreateTempFile("isolated1");
+	FILE* f1 = fopen(script1_path.c_str(), "w");
 	fprintf(f1, "import vh\n");
 	fprintf(f1, "def test():\n");
 	fprintf(f1, "    return vh.CallDynamicFunction('add', 3, 4)\n");
 	fclose(f1);
 	
 	// Script 2 cannot call it
-	FILE* f2 = fopen("/tmp/test_dynamic_script2.py", "w");
+	std::string script2_path = CreateTempFile("isolated2");
+	FILE* f2 = fopen(script2_path.c_str(), "w");
 	fprintf(f2, "import vh\n");
 	fprintf(f2, "def test():\n");
 	fprintf(f2, "    try:\n");
@@ -217,13 +244,13 @@ TEST_F(DynamicRegistrationTest, IsolatedBetweenScripts) {
 	fprintf(f2, "        return True  # Expected to fail\n");
 	fclose(f2);
 	
-	w_Targs* load1 = w_pack("lssssls", (long)id1, (char*)"/tmp/test_dynamic_script1.py",
-		(char*)"Bot1", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load1 = w_pack("lssssls", (long)id1, (char*)script1_path.c_str(),
+		(char*)"Bot1", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load1);
 	free(load1);
 	
-	w_Targs* load2 = w_pack("lssssls", (long)id2, (char*)"/tmp/test_dynamic_script2.py",
-		(char*)"Bot2", (char*)"OpChat", (char*)"/tmp", (long)123, (char*)"cfg");
+	w_Targs* load2 = w_pack("lssssls", (long)id2, (char*)script2_path.c_str(),
+		(char*)"Bot2", (char*)"OpChat", (char*)".", (long)123, (char*)"cfg");
 	w_Load(load2);
 	free(load2);
 	

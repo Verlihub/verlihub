@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <chrono>  // For timing if needed
+#include <unistd.h>  // For getpid()
 
 // Mock callbacks (empty functions for the callback table)
 w_Targs* mock_callback(int id, w_Targs* args) { return nullptr; }
@@ -204,9 +205,12 @@ def name_and_version():
 // Test fixture for per-test setup
 class PythonWrapperTest : public ::testing::Test {
 protected:
-    std::string script_path = "test_script.py";
+    std::string script_path;
 
     void SetUp() override {
+        // Create unique filename using PID to avoid conflicts in parallel execution
+        script_path = "test_script_" + std::to_string(getpid()) + ".py";
+        
         // Write script content to file
         std::ofstream script_file(script_path);
         script_file << script_content;
