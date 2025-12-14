@@ -422,6 +422,46 @@ w_Targs* MyPlugin_Reverse(int callback_id, w_Targs* args) {
     free(reversed);
     return result;
 }
+
+// Example: Process a list (reverse order)
+w_Targs* MyPlugin_ReverseList(int callback_id, w_Targs* args) {
+    char **items;
+    if (!w_unpack(args, "L", &items)) return NULL;
+    
+    // Count items
+    int count = 0;
+    while (items[count] != NULL) count++;
+    
+    // Create reversed array
+    char **reversed = (char**)malloc((count + 1) * sizeof(char*));
+    for (int i = 0; i < count; i++) {
+        reversed[i] = strdup(items[count - 1 - i]);
+    }
+    reversed[count] = NULL;
+    
+    w_Targs *result = w_pack("L", reversed);
+    
+    // Cleanup
+    for (int i = 0; i < count; i++) free(reversed[i]);
+    free(reversed);
+    
+    return result;
+}
+
+// Example: Process a dictionary (add field)
+w_Targs* MyPlugin_AddField(int callback_id, w_Targs* args) {
+    char *dict_json;
+    if (!w_unpack(args, "D", &dict_json)) return NULL;
+    
+    // Parse JSON, add field, serialize back
+    // (simplified - in production use a proper JSON library)
+    char *modified = (char*)malloc(strlen(dict_json) + 100);
+    sprintf(modified, "{\"processed\":true,%s", dict_json + 1);  // Insert field
+    
+    w_Targs *result = w_pack("D", modified);
+    free(modified);
+    return result;
+}
 ```
 
 **Step 2**: Register functions when scripts load:
@@ -434,6 +474,8 @@ int script_id = 0;  // Obtain from the Python plugin
 w_RegisterFunction(script_id, "get_stats", MyPlugin_GetUserStats);
 w_RegisterFunction(script_id, "add", MyPlugin_Add);
 w_RegisterFunction(script_id, "reverse", MyPlugin_Reverse);
+w_RegisterFunction(script_id, "reverse_list", MyPlugin_ReverseList);
+w_RegisterFunction(script_id, "add_field", MyPlugin_AddField);
 ```
 
 **Step 3**: Optionally unregister when done:
@@ -459,8 +501,6 @@ def OnUserLogin(nick):
     except Exception as e:
         print(f"Error calling get_stats: {e}")
     
-    return 1
-
 def some_function():
     # Call simple math function
     result = vh.CallDynamicFunction('add', 10, 20)
@@ -468,6 +508,18 @@ def some_function():
     
     # Call string function
     reversed_text = vh.CallDynamicFunction('reverse', "Hello")
+    print(reversed_text)  # Output: "olleH"
+    
+    # Call with list argument
+    fruits = ['apple', 'banana', 'cherry']
+    reversed_fruits = vh.CallDynamicFunction('reverse_list', fruits)
+    print(reversed_fruits)  # Output: ['cherry', 'banana', 'apple']
+    
+    # Call with dictionary argument
+    user_data = {'name': 'Alice', 'age': 30}
+    processed_data = vh.CallDynamicFunction('add_field', user_data)
+    print(processed_data)  # Output: {'processed': True, 'name': 'Alice', 'age': 30}
+``` reversed_text = vh.CallDynamicFunction('reverse', "Hello")
     print(reversed_text)  # Output: "olleH"
 ```
 
@@ -480,16 +532,68 @@ def some_function():
 int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
 
 // Unregister a dynamic function
-int w_UnregisterFunction(int script_id, const char *func_name);
-```
+**Supported Types:**
+- Arguments: `long` (int), `str`, `double` (float), `list` (list of strings), `dict` (dictionary)
+- Returns: `long`, `str`, `double`, `list`, `dict`, `None`, or tuple of these types
 
-**Python Function:**
+**Type Conversion Details:**
 
-```python
-# Call a dynamically registered C++ function
-result = vh.CallDynamicFunction(func_name, arg1, arg2, ...)
-```
-
+| Python Type | C++ Type | Notes |
+|-------------|----------|-------|
+| `int` | `long` | Standard integer conversion |
+def OnUserCommand(nick, command):
+    """Handle custom commands powered by C++ plugin"""
+    
+    if command.startswith("!stats"):
+        # Call C++ analytics plugin
+        stats = vh.CallDynamicFunction('get_detailed_stats', nick)
+        if stats:
+            messages, searches, downloads = stats
+            vh.pm(nick, f"Your activity: {messages} msgs, {searches} searches, {downloads} downloads")
+        return 0
+    
+    elif command.startswith("!calc"):
+        # Use C++ math library
+        try:
+            _, expression = command.split(" ", 1)
+            result = vh.CallDynamicFunction('evaluate_expression', expression)
+            vh.pm(nick, f"Result: {result}")
+        except:
+            vh.pm(nick, "Usage: !calc <expression>")
+        return 0
+    
+    elif command.startswith("!check"):
+        # Validate using external C++ library
+        _, data = command.split(" ", 1)
+        is_valid = vh.CallDynamicFunction('validate_data', data)
+        vh.pm(nick, "Valid!" if is_valid else "Invalid data")
+        return 0
+    
+    elif command.startswith("!analyze"):
+        # Send list of recent messages to C++ for analysis
+        _, username = command.split(" ", 1)
+        messages = get_user_messages(username)  # Returns list of strings
+        analysis = vh.CallDynamicFunction('analyze_messages', messages)
+        vh.pm(nick, f"Analysis: {analysis}")
+        return 0
+    
+    elif command.startswith("!report"):
+        # Send complex data structure to C++ for processing
+        report_data = {
+            'user': nick,
+            'timestamp': time.time(),
+            'metrics': {
+                'uploads': 42,
+                'downloads': 128,
+                'ratio': 0.33
+            }
+        }
+        result = vh.CallDynamicFunction('generate_report', report_data)
+        if result:
+            vh.pm(nick, f"Report generated: {result}")
+        return 0
+    
+    return 1
 **Supported Types:**
 - Arguments: `long` (int), `str`, `double` (float)
 - Returns: `long`, `str`, `double`, `None`, or tuple of these types
