@@ -39,12 +39,18 @@ cPythonInterpreter::cPythonInterpreter(string scriptname) : mScriptName(scriptna
 
 cPythonInterpreter::~cPythonInterpreter()
 {
+	fprintf(stderr, "PY: cPythonInterpreter::~cPythonInterpreter() called for id=%d\n", id);
+	
 	if (!cpiPython::lib_unload || !cpiPython::lib_callhook) {
 		log("PY: cPythonInterpreter can't use vh_python_wrapper!\n");
 		return;
 	}
 	online = false;
-	if (id > -1) cpiPython::lib_unload(id);
+	if (id > -1) {
+		fprintf(stderr, "PY: Calling lib_unload(%d)...\n", id);
+		cpiPython::lib_unload(id);
+		fprintf(stderr, "PY: lib_unload(%d) completed\n", id);
+	}
 }
 
 bool cPythonInterpreter::Init()

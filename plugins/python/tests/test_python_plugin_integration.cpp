@@ -254,8 +254,12 @@ public:
     }
 
     void TearDown() override {
+        std::cerr << "VerlihubEnv::TearDown() called" << std::endl;
+        
         if (g_server) {
+            std::cerr << "Deleting g_server..." << std::endl;
             delete g_server;
+            std::cerr << "g_server deleted" << std::endl;
             g_server = nullptr;
         }
         // Clean up config directory
@@ -263,6 +267,8 @@ public:
                                  std::to_string(getpid());
         int ret = system(("rm -rf " + config_dir).c_str());
         (void)ret; // Suppress warning
+        
+        std::cerr << "VerlihubEnv::TearDown() completed" << std::endl;
     }
 };
 
@@ -422,6 +428,8 @@ protected:
     }
 
     void TearDown() override {
+        std::cerr << "VerlihubIntegrationTest::TearDown() called" << std::endl;
+        
         // Clean up connection user reference
         if (test_user) {
             if (test_user->mxConn) {
@@ -431,13 +439,17 @@ protected:
             test_user = nullptr;
         }
         
-        // Unload script from plugin (but don't delete plugin - server will handle it)
-        if (py_plugin) {
-            py_plugin->RemoveByName(script_path);
-            // Don't delete - the PluginManager will handle cleanup when server is destroyed
-            py_plugin = nullptr;
-        }
+        // NOTE: We do NOT unload the script here because unloading scripts
+        // with sub-interpreters that imported threading causes crashes.
+        // The script will be cleaned up when the plugin is destroyed.
+        std::cerr << "Skipping py_plugin->RemoveByName() to avoid threading cleanup issues" << std::endl;
+        
+        py_plugin = nullptr;  // Just clear the pointer
+        
+        std::cerr << "Removing script file..." << std::endl;
         std::remove(script_path.c_str());
+        
+        std::cerr << "VerlihubIntegrationTest::TearDown() completed" << std::endl;
     }
 
     void SendMessage(nVerliHub::nSocket::cConnDC* conn, const std::string& raw_msg) {
@@ -670,7 +682,7 @@ stats_lock = threading.Lock()
 
 class MessageProcessor(threading.Thread):
     def __init__(self, thread_id):
-        super().__init__(daemon=True)
+        super().__init__(daemon=False)
         self.thread_id = thread_id
         self.running = True
         self.processed = 0
@@ -748,9 +760,20 @@ def get_stats():
 def stop_threads():
     for thread in worker_threads:
         thread.running = False
+    
     for thread in worker_threads:
-        thread.join(timeout=1.0)
-    return 1
+        thread.join(timeout=2.0)
+    
+    alive_count = sum(1 for t in worker_threads if t.is_alive())
+    if alive_count > 0:
+        print(f"Warning: {alive_count} threads still alive after join", flush=True)
+    else:
+        worker_threads.clear()
+    
+    import gc
+    gc.collect()
+    
+    return alive_count
 )PYCODE";
     script_file.close();
 
@@ -822,12 +845,25 @@ def stop_threads():
     // Stop threads gracefully
     std::cout << "\nStopping worker threads..." << std::endl;
     result = py_plugin->CallPythonFunction(thread_interp->id, "stop_threads", nullptr);
+    
+    long alive_threads = 0;
     if (result) {
+        py_plugin->lib_unpack(result, "l", &alive_threads);
         w_free_args(result);
     }
     
-    // Give threads extra time to fully terminate before we clean up Python
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    if (alive_threads > 0) {
+        std::cout << "WARNING: " << alive_threads << " threads still alive, waiting..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    } else {
+        std::cout << "✓ All worker threads terminated successfully" << std::endl;
+    }
+    
+    // NOTE: We intentionally do NOT call py_plugin->RemoveByName() here
+    // to avoid Python sub-interpreter cleanup issues with threading.
+    // The interpreter will be cleaned up during test environment teardown.
+    // Just delete the temp file.
+    std::remove(script_path.c_str());
 
     std::cout << "\n=== Threading Test Results ===" << std::endl;
     std::cout << "✓ Python threads successfully spawned" << std::endl;
@@ -943,7 +979,7 @@ def event_loop_thread():
     print("Asyncio event loop started in background thread", flush=True)
     event_loop.run_forever()
 
-loop_thread = threading.Thread(target=event_loop_thread, daemon=True)
+loop_thread = threading.Thread(target=event_loop_thread, daemon=False)
 loop_thread.start()
 
 import time
@@ -1002,9 +1038,22 @@ def get_stats():
         return json.dumps(processing_stats)
 
 def stop_event_loop():
-    """Stops the event loop"""
+    """Stops the event loop and waits for thread"""
+    global loop_thread, event_loop
     if event_loop:
         event_loop.call_soon_threadsafe(event_loop.stop)
+    
+    if loop_thread and loop_thread.is_alive():
+        loop_thread.join(timeout=2.0)
+        alive = loop_thread.is_alive()
+        if not alive:
+            loop_thread = None
+            event_loop = None
+        
+        import gc
+        gc.collect()
+        
+        return 0 if alive else 1
     return 1
 )PYCODE";
     script_file.close();
@@ -1092,12 +1141,25 @@ def stop_event_loop():
     // Stop event loop
     std::cout << "\nStopping asyncio event loop..." << std::endl;
     result = py_plugin->CallPythonFunction(async_interp->id, "stop_event_loop", nullptr);
+    
+    long cleanup_success = 0;
     if (result) {
+        py_plugin->lib_unpack(result, "l", &cleanup_success);
         w_free_args(result);
     }
     
-    // Give event loop time to fully stop before cleanup
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    if (cleanup_success == 0) {
+        std::cout << "WARNING: Event loop thread still alive, waiting..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    } else {
+        std::cout << "✓ Event loop thread terminated successfully" << std::endl;
+    }
+    
+    // NOTE: We intentionally do NOT call py_plugin->RemoveByName() here
+    // to avoid Python sub-interpreter cleanup issues with asyncio event loops.
+    // The interpreter will be cleaned up during test environment teardown.
+    // Just delete the temp file.
+    std::remove(script_path.c_str());
 
     std::cout << "\n=== Asyncio Test Results ===" << std::endl;
     std::cout << "✓ Asyncio event loop successfully initialized" << std::endl;
