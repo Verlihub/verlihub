@@ -45,6 +45,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
 
 # Find RapidJSON for JSON parsing (header-only library)
+# RapidJSON is REQUIRED for Python plugin to function correctly
 find_path(RAPIDJSON_INCLUDE_DIR
     NAMES rapidjson/rapidjson.h
     PATHS /usr/include /usr/local/include
@@ -55,7 +56,13 @@ if(RAPIDJSON_INCLUDE_DIR)
     message(STATUS "[ OK ] RapidJSON found at ${RAPIDJSON_INCLUDE_DIR}")
     add_definitions(-DHAVE_RAPIDJSON)
 else()
-    message(WARNING "[ !! ] RapidJSON not found; advanced JSON features will use fallback")
+    message(FATAL_ERROR "[ !! ] RapidJSON not found - REQUIRED for Python plugin\n"
+            "Please install RapidJSON:\n"
+            "  Ubuntu/Debian: sudo apt-get install rapidjson-dev\n"
+            "  Fedora/RHEL:   sudo dnf install rapidjson-devel\n"
+            "  macOS:         brew install rapidjson\n"
+            "  Or download from: https://github.com/Tencent/rapidjson\n"
+            "To build without Python plugin, use: -DWITH_PYTHON=OFF")
 endif()
 
 SET(PYTHON_HDRS
