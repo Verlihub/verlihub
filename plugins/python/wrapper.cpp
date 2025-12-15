@@ -19,6 +19,7 @@
 */
 
 #include "wrapper.h"
+#include "json_marshal.h"
 #include "src/cserverdc.h"
 #include "src/cban.h"
 
@@ -27,6 +28,7 @@
 
 using namespace std;
 using namespace nVerliHub::nEnums;
+using namespace nVerliHub::nPythonPlugin;
 
 vector<w_TScript *> w_Scripts;
 
@@ -349,6 +351,287 @@ void w_free_args(w_Targs *a)
 	}
 	free(a);
 }
+
+#ifdef HAVE_RAPIDJSON
+//==============================================================================
+// JSON Marshaling Helpers for Python-C++ Bidirectional Communication
+//==============================================================================
+
+namespace nVerliHub {
+namespace nPythonPlugin {
+
+// Convert PyObject to JsonValue (recursive)
+bool PyObjectToJsonValue(PyObject* obj, JsonValue& out_val)
+{
+	if (obj == Py_None) {
+		out_val.type = JsonType::NULL_TYPE;
+		return true;
+	}
+	
+	if (PyBool_Check(obj)) {
+		out_val.type = JsonType::BOOL;
+		out_val.bool_val = (obj == Py_True);
+		return true;
+	}
+	
+	if (PyLong_Check(obj)) {
+		out_val.type = JsonType::INT;
+		out_val.int_val = PyLong_AsLongLong(obj);
+		if (PyErr_Occurred()) {
+			PyErr_Clear();
+			return false;
+		}
+		return true;
+	}
+	
+	if (PyFloat_Check(obj)) {
+		out_val.type = JsonType::DOUBLE;
+		out_val.double_val = PyFloat_AsDouble(obj);
+		return true;
+	}
+	
+	if (PyUnicode_Check(obj)) {
+		out_val.type = JsonType::STRING;
+		const char* s = PyUnicode_AsUTF8(obj);
+		if (!s) {
+			PyErr_Clear();
+			return false;
+		}
+		out_val.string_val = s;
+		return true;
+	}
+	
+	if (PyList_Check(obj)) {
+		out_val.type = JsonType::ARRAY;
+		out_val.array_val.clear();
+		
+		Py_ssize_t size = PyList_Size(obj);
+		out_val.array_val.reserve(size);
+		
+		for (Py_ssize_t i = 0; i < size; i++) {
+			PyObject* item = PyList_GetItem(obj, i);
+			JsonValue elem;
+			if (!PyObjectToJsonValue(item, elem)) {
+				return false;
+			}
+			out_val.array_val.push_back(elem);
+		}
+		return true;
+	}
+	
+	if (PyTuple_Check(obj)) {
+		out_val.type = JsonType::TUPLE;
+		out_val.tuple_val.clear();
+		
+		Py_ssize_t size = PyTuple_Size(obj);
+		out_val.tuple_val.reserve(size);
+		
+		for (Py_ssize_t i = 0; i < size; i++) {
+			PyObject* item = PyTuple_GetItem(obj, i);
+			JsonValue elem;
+			if (!PyObjectToJsonValue(item, elem)) {
+				return false;
+			}
+			out_val.tuple_val.push_back(elem);
+		}
+		return true;
+	}
+	
+	if (PySet_Check(obj) || PyFrozenSet_Check(obj)) {
+		out_val.type = JsonType::SET;
+		out_val.set_val.clear();
+		
+		PyObject* iterator = PyObject_GetIter(obj);
+		if (!iterator) {
+			PyErr_Clear();
+			return false;
+		}
+		
+		PyObject* item;
+		while ((item = PyIter_Next(iterator))) {
+			JsonValue elem;
+			if (!PyObjectToJsonValue(item, elem)) {
+				Py_DECREF(item);
+				Py_DECREF(iterator);
+				return false;
+			}
+			out_val.set_val.insert(elem);
+			Py_DECREF(item);
+		}
+		Py_DECREF(iterator);
+		
+		if (PyErr_Occurred()) {
+			PyErr_Clear();
+			return false;
+		}
+		return true;
+	}
+	
+	if (PyDict_Check(obj)) {
+		out_val.type = JsonType::OBJECT;
+		out_val.object_val.clear();
+		
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+		
+		while (PyDict_Next(obj, &pos, &key, &value)) {
+			// Keys must be strings
+			if (!PyUnicode_Check(key)) {
+				return false;
+			}
+			
+			const char* key_str = PyUnicode_AsUTF8(key);
+			if (!key_str) {
+				PyErr_Clear();
+				return false;
+			}
+			
+			JsonValue elem;
+			if (!PyObjectToJsonValue(value, elem)) {
+				return false;
+			}
+			
+			out_val.object_val[key_str] = elem;
+		}
+		return true;
+	}
+	
+	// Unsupported type
+	return false;
+}
+
+// Convert JsonValue to PyObject (recursive)
+PyObject* JsonValueToPyObject(const JsonValue& val)
+{
+	switch (val.type) {
+		case JsonType::NULL_TYPE:
+			Py_RETURN_NONE;
+		
+		case JsonType::BOOL:
+			if (val.bool_val) {
+				Py_RETURN_TRUE;
+			} else {
+				Py_RETURN_FALSE;
+			}
+		
+		case JsonType::INT:
+			return PyLong_FromLongLong(val.int_val);
+		
+		case JsonType::DOUBLE:
+			return PyFloat_FromDouble(val.double_val);
+		
+		case JsonType::STRING:
+			return PyUnicode_FromString(val.string_val.c_str());
+		
+		case JsonType::ARRAY: {
+			PyObject* list = PyList_New(val.array_val.size());
+			if (!list) return nullptr;
+			
+			for (size_t i = 0; i < val.array_val.size(); i++) {
+				PyObject* item = JsonValueToPyObject(val.array_val[i]);
+				if (!item) {
+					Py_DECREF(list);
+					return nullptr;
+				}
+				PyList_SET_ITEM(list, i, item);  // Steals reference
+			}
+			return list;
+		}
+		
+		case JsonType::TUPLE: {
+			PyObject* tuple = PyTuple_New(val.tuple_val.size());
+			if (!tuple) return nullptr;
+			
+			for (size_t i = 0; i < val.tuple_val.size(); i++) {
+				PyObject* item = JsonValueToPyObject(val.tuple_val[i]);
+				if (!item) {
+					Py_DECREF(tuple);
+					return nullptr;
+				}
+				PyTuple_SET_ITEM(tuple, i, item);  // Steals reference
+			}
+			return tuple;
+		}
+		
+		case JsonType::SET: {
+			PyObject* set = PySet_New(nullptr);
+			if (!set) return nullptr;
+			
+			for (const auto& elem : val.set_val) {
+				PyObject* item = JsonValueToPyObject(elem);
+				if (!item) {
+					Py_DECREF(set);
+					return nullptr;
+				}
+				
+				if (PySet_Add(set, item) < 0) {
+					Py_DECREF(item);
+					Py_DECREF(set);
+					return nullptr;
+				}
+				Py_DECREF(item);
+			}
+			return set;
+		}
+		
+		case JsonType::OBJECT: {
+			PyObject* dict = PyDict_New();
+			if (!dict) return nullptr;
+			
+			for (const auto& pair : val.object_val) {
+				PyObject* key = PyUnicode_FromString(pair.first.c_str());
+				PyObject* value = JsonValueToPyObject(pair.second);
+				
+				if (!key || !value) {
+					Py_XDECREF(key);
+					Py_XDECREF(value);
+					Py_DECREF(dict);
+					return nullptr;
+				}
+				
+				PyDict_SetItem(dict, key, value);
+				Py_DECREF(key);
+				Py_DECREF(value);
+			}
+			return dict;
+		}
+		
+		default:
+			Py_RETURN_NONE;
+	}
+}
+
+// Convert PyObject to JSON string
+char* PyObjectToJsonString(PyObject* obj)
+{
+	JsonValue val;
+	if (!PyObjectToJsonValue(obj, val)) {
+		return nullptr;
+	}
+	
+	std::string json = toJsonString(val);
+	return strdup(json.c_str());
+}
+
+// Convert JSON string to PyObject
+PyObject* JsonStringToPyObject(const char* json_str)
+{
+	if (!json_str) {
+		Py_RETURN_NONE;
+	}
+	
+	JsonValue val;
+	if (!parseJson(json_str, val)) {
+		return nullptr;
+	}
+	
+	return JsonValueToPyObject(val);
+}
+
+} // namespace nPythonPlugin
+} // namespace nVerliHub
+
+#endif // HAVE_RAPIDJSON
 
 //==============================================================================
 // Python 3 vh Module Implementation - Restored from Python 2 version
@@ -1477,13 +1760,24 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				PyTuple_SetItem(args, i, py_list);
 				break;
 			}
-			case 'D': {  // Phase 3: Dict as JSON string
+			case 'D': {  // Phase 3: Dict/complex as JSON string
 				const char *json_str = params->args[i].s;
 				if (!json_str || json_str[0] == '\0') {
 					PyTuple_SetItem(args, i, PyDict_New());
 					break;
 				}
-				// Parse JSON string to Python dict using json module
+#ifdef HAVE_RAPIDJSON
+				// Use RapidJSON-based converter for fast parsing
+				PyObject *py_obj = JsonStringToPyObject(json_str);
+				if (py_obj) {
+					PyTuple_SetItem(args, i, py_obj);
+				} else {
+					log("PY: w_CallFunction - failed to parse JSON: %s\n", json_str);
+					PyErr_Clear();
+					PyTuple_SetItem(args, i, PyDict_New());
+				}
+#else
+				// Fallback to Python json module
 				PyObject *json_module = PyImport_ImportModule("json");
 				if (!json_module) {
 					log("PY: w_CallFunction - failed to import json module\n");
@@ -1491,7 +1785,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 					PyTuple_SetItem(args, i, PyDict_New());
 					break;
 				}
-				
 				PyObject *loads_func = PyObject_GetAttrString(json_module, "loads");
 				if (!loads_func) {
 					log("PY: w_CallFunction - failed to get json.loads\n");
@@ -1500,7 +1793,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 					PyTuple_SetItem(args, i, PyDict_New());
 					break;
 				}
-				
 #if PY_MAJOR_VERSION >= 3
 				PyObject *json_arg = PyUnicode_FromString(json_str);
 #else
@@ -1510,7 +1802,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				Py_DECREF(json_arg);
 				Py_DECREF(loads_func);
 				Py_DECREF(json_module);
-				
 				if (!py_dict || PyErr_Occurred()) {
 					log("PY: w_CallFunction - failed to parse JSON: %s\n", json_str);
 					PyErr_Clear();
@@ -1518,6 +1809,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				} else {
 					PyTuple_SetItem(args, i, py_dict);
 				}
+#endif
 				break;
 			}
 			case 'O':  // Phase 3: PyObject* passthrough
@@ -1568,26 +1860,58 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		ret = w_pack("s", strdup(s));
 	} else if (res == Py_None) {
 		ret = w_pack("l", (long)0);  // Default to 0 for None
-	} else if (PyList_Check(res)) {  // Phase 3: List to 'L' format
-		int len = PyList_Size(res);
-		char **str_array = (char **)malloc((len + 1) * sizeof(char *));
-		if (!str_array) {
-			log("PY: w_CallFunction - failed to allocate memory for list\n");
+	} else if (PyList_Check(res) || PyTuple_Check(res) || PySet_Check(res) || PyFrozenSet_Check(res)) {  // Phase 3: All containers use JSON marshaling
+#ifdef HAVE_RAPIDJSON
+		// Use RapidJSON-based converter for all containers
+		char *json_str = PyObjectToJsonString(res);
+		if (json_str) {
+			ret = w_pack("D", json_str);
 		} else {
-			for (int i = 0; i < len; i++) {
-				PyObject *item = PyList_GetItem(res, i);
-				if (PyUnicode_Check(item)) {
-					const char *s = PyUnicode_AsUTF8(item);
-					str_array[i] = s ? strdup(s) : strdup("");
+			log("PY: w_CallFunction - failed to convert container to JSON\n");
+			ret = w_pack("D", strdup("[]"));
+		}
+#else
+		// Fallback to Python json module
+		PyObject *json_module = PyImport_ImportModule("json");
+		if (!json_module) {
+			log("PY: w_CallFunction - failed to import json module for list return\n");
+			PyErr_Clear();
+			ret = w_pack("D", strdup("[]"));
+		} else {
+			PyObject *dumps_func = PyObject_GetAttrString(json_module, "dumps");
+			if (!dumps_func) {
+				log("PY: w_CallFunction - failed to get json.dumps\n");
+				PyErr_Clear();
+				Py_DECREF(json_module);
+				ret = w_pack("D", strdup("[]"));
+			} else {
+				PyObject *json_str = PyObject_CallFunction(dumps_func, "O", res);
+				Py_DECREF(dumps_func);
+				Py_DECREF(json_module);
+				if (!json_str || PyErr_Occurred()) {
+					log("PY: w_CallFunction - failed to convert list to JSON\n");
+					PyErr_Clear();
+					ret = w_pack("D", strdup("[]"));
 				} else {
-					str_array[i] = strdup("");
+					const char *s = PyUnicode_AsUTF8(json_str);
+					ret = w_pack("D", s ? strdup(s) : strdup("[]"));
+					Py_DECREF(json_str);
 				}
 			}
-			str_array[len] = NULL;  // NULL-terminate
-			ret = w_pack("L", str_array);
 		}
+#endif
 	} else if (PyDict_Check(res)) {  // Phase 3: Dict to 'D' format (JSON)
-		// Convert dict to JSON string
+#ifdef HAVE_RAPIDJSON
+		// Use RapidJSON-based converter for fast serialization
+		char *json_str = PyObjectToJsonString(res);
+		if (json_str) {
+			ret = w_pack("D", json_str);
+		} else {
+			log("PY: w_CallFunction - failed to convert dict to JSON\n");
+			ret = w_pack("D", strdup("{}"));
+		}
+#else
+		// Fallback to Python json module
 		PyObject *json_module = PyImport_ImportModule("json");
 		if (!json_module) {
 			log("PY: w_CallFunction - failed to import json module for dict return\n");
@@ -1604,7 +1928,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				PyObject *json_str = PyObject_CallFunction(dumps_func, "O", res);
 				Py_DECREF(dumps_func);
 				Py_DECREF(json_module);
-				
 				if (!json_str || PyErr_Occurred()) {
 					log("PY: w_CallFunction - failed to convert dict to JSON\n");
 					PyErr_Clear();
@@ -1616,6 +1939,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				}
 			}
 		}
+#endif
 	} else if (PyTuple_Check(res)) {
 		int len = PyTuple_Size(res);
 		if (len > W_MAX_RETVALS) len = W_MAX_RETVALS;
@@ -1840,43 +2164,27 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			parsed_args->args[i].type = 'd';
 			parsed_args->args[i].d = PyFloat_AsDouble(arg);
 		}
-		else if (PyList_Check(arg)) {
-			// Convert Python list to NULL-terminated char** array
-			format_str[i] = 'L';
-			parsed_args->args[i].type = 'L';
-			
-			int list_size = PyList_Size(arg);
-			char **str_array = (char**)malloc((list_size + 1) * sizeof(char*));
-			if (!str_array) {
-				// Cleanup
-				format_str[i] = '\0';
-				parsed_args->format = format_str;
-				w_free_args(parsed_args);
-				PyErr_SetString(PyExc_MemoryError, "Failed to allocate list array");
-				return NULL;
-			}
-			
-			for (int j = 0; j < list_size; j++) {
-				PyObject *item = PyList_GetItem(arg, j);
-				if (PyUnicode_Check(item)) {
-					const char *s = PyUnicode_AsUTF8(item);
-					str_array[j] = s ? strdup(s) : strdup("");
-				} else {
-					str_array[j] = strdup("");
-				}
-			}
-			str_array[list_size] = NULL;
-			parsed_args->args[i].L = str_array;
-		}
-		else if (PyDict_Check(arg)) {
-			// Convert Python dict to JSON string
+		else if (PyList_Check(arg) || PyDict_Check(arg) || PySet_Check(arg) || PyFrozenSet_Check(arg) || PyTuple_Check(arg)) {
+			// All container types use JSON marshaling ('D' format)
 			format_str[i] = 'D';
 			parsed_args->args[i].type = 'D';
 			
-			// Import json module
+#ifdef HAVE_RAPIDJSON
+			char *json_str = PyObjectToJsonString(arg);
+			if (json_str) {
+				parsed_args->args[i].s = json_str;
+			} else {
+				// Fallback defaults based on type
+				if (PyDict_Check(arg)) {
+					parsed_args->args[i].s = strdup("{}");
+				} else {
+					parsed_args->args[i].s = strdup("[]");
+				}
+			}
+#else
+			// Fallback to Python json module
 			PyObject *json_module = PyImport_ImportModule("json");
 			if (!json_module) {
-				// Cleanup
 				format_str[i] = '\0';
 				parsed_args->format = format_str;
 				w_free_args(parsed_args);
@@ -1888,7 +2196,6 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			Py_DECREF(json_module);
 			
 			if (!dumps_func) {
-				// Cleanup
 				format_str[i] = '\0';
 				parsed_args->format = format_str;
 				w_free_args(parsed_args);
@@ -1900,17 +2207,17 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			Py_DECREF(dumps_func);
 			
 			if (!json_str) {
-				// Cleanup
 				format_str[i] = '\0';
 				parsed_args->format = format_str;
 				w_free_args(parsed_args);
-				PyErr_SetString(PyExc_ValueError, "Failed to serialize dict to JSON");
+				PyErr_SetString(PyExc_ValueError, "Failed to serialize to JSON");
 				return NULL;
 			}
 			
 			const char *s = PyUnicode_AsUTF8(json_str);
-			parsed_args->args[i].s = s ? strdup(s) : strdup("{}");
+			parsed_args->args[i].s = s ? strdup(s) : (PyList_Check(arg) ? strdup("[]") : strdup("{}"));
 			Py_DECREF(json_str);
+#endif
 		}
 		else {
 			// Cleanup
@@ -1985,14 +2292,23 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			break;
 		}
 		case 'D': {
-			// Dict as JSON string - parse and return Python dict
+			// Dict/complex as JSON string - parse and return Python object
 			char *json_str;
 			w_unpack(result, "D", &json_str);
 			
 			if (!json_str || strlen(json_str) == 0) {
 				py_result = PyDict_New();
 			} else {
-				// Import json module
+#ifdef HAVE_RAPIDJSON
+				// Use RapidJSON-based converter for fast parsing
+				py_result = JsonStringToPyObject(json_str);
+				if (!py_result) {
+					log("PY: vh_CallDynamicFunction - failed to parse JSON\n");
+					PyErr_Clear();
+					py_result = PyDict_New();
+				}
+#else
+				// Fallback to Python json module
 				PyObject *json_module = PyImport_ImportModule("json");
 				if (!json_module) {
 					log("PY: vh_CallDynamicFunction - failed to import json\n");
@@ -2021,6 +2337,7 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 				} else {
 					py_result = parsed_dict;
 				}
+#endif
 			}
 			break;
 		}

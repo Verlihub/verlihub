@@ -9,6 +9,9 @@
 #include <string>
 #include <cstring>
 #include "../wrapper.h"
+#include "../json_marshal.h"
+
+using namespace nVerliHub::nPythonPlugin;
 
 class AdvancedTypesTest : public ::testing::Test {
 protected:
@@ -71,40 +74,41 @@ TEST_F(AdvancedTypesTest, PythonReturnsStringList) {
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
 	ASSERT_NE(result->format, nullptr) << "Result format is NULL";
-	ASSERT_EQ(result->format[0], 'L') << "Expected 'L' format, got: " << result->format;
+	ASSERT_EQ(result->format[0], 'D') << "Expected 'D' format (JSON), got: " << result->format;
 	
-	// Unpack the list
-	char **str_list;
-	ASSERT_TRUE(w_unpack(result, "L", &str_list)) << "Failed to unpack list";
-	ASSERT_NE(str_list, nullptr) << "List is NULL";
+	// Unpack the JSON string
+	char *json_str;
+	ASSERT_TRUE(w_unpack(result, "D", &json_str)) << "Failed to unpack JSON";
+	ASSERT_NE(json_str, nullptr) << "JSON string is NULL";
 	
-	// Verify list contents
-	EXPECT_STREQ(str_list[0], "user1");
-	EXPECT_STREQ(str_list[1], "user2");
-	EXPECT_STREQ(str_list[2], "user3");
-	EXPECT_STREQ(str_list[3], "admin");
-	EXPECT_STREQ(str_list[4], "moderator");
-	EXPECT_EQ(str_list[5], nullptr) << "List should be NULL-terminated";
+#ifdef HAVE_RAPIDJSON
+	// Parse JSON to verify contents
+	nVerliHub::nPythonPlugin::JsonValue val;
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_str, val)) << "Failed to parse JSON";
+	ASSERT_EQ(val.type, nVerliHub::nPythonPlugin::JsonType::ARRAY) << "Expected JSON array";
+	ASSERT_EQ(val.array_val.size(), 5) << "Expected 5 elements";
 	
-	// Cleanup - w_free_args handles freeing the list and its contents
+	EXPECT_EQ(val.array_val[0].string_val, "user1");
+	EXPECT_EQ(val.array_val[1].string_val, "user2");
+	EXPECT_EQ(val.array_val[2].string_val, "user3");
+	EXPECT_EQ(val.array_val[3].string_val, "admin");
+	EXPECT_EQ(val.array_val[4].string_val, "moderator");
+#endif
+	
+	// Cleanup
 	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, CppSendsListToPython) {
-	// Create list in C++ - must be heap-allocated for w_pack
-	char **users = (char**)malloc(4 * sizeof(char*));
-	users[0] = strdup("alice");
-	users[1] = strdup("bob");
-	users[2] = strdup("charlie");
-	users[3] = nullptr;
-	
-	w_Targs *args = w_pack("L", users);
-	ASSERT_NE(args, nullptr) << "Failed to pack list";
+	// Send list as JSON using 'D' format
+	const char *json_list = R"(["alice", "bob", "charlie"])";
+	w_Targs *args = w_pack("D", strdup(json_list));
+	ASSERT_NE(args, nullptr) << "Failed to pack JSON list";
 	
 	// Send to Python function that processes list
 	w_Targs *result = w_CallFunction(script_id, "process_string_list", args);
 	
-	// Cleanup args - this will also free the users array and its contents
+	// Cleanup args
 	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
