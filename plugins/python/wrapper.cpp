@@ -25,6 +25,7 @@
 
 #include <libgen.h>  // for basename, dirname
 #include <cstring>   // for strrchr
+#include <time.h>    // for nanosleep
 
 using namespace std;
 using namespace nVerliHub::nEnums;
@@ -1290,28 +1291,78 @@ int w_Begin(w_Tcallback *callbacks)
 
 int w_End()
 {
-	PyGILState_STATE gil = PyGILState_Ensure();
+	fprintf(stderr, "PY: w_End() called - starting Python cleanup\n");
 	
 	// Clean up all remaining subinterpreters before finalizing Python
 	// We need to track the main state before we start ending subinterpreters
+	PyGILState_STATE gil = PyGILState_Ensure();
 	PyThreadState *main_state = PyThreadState_Get();
+	
+	fprintf(stderr, "PY: Acquired GIL, cleaning up %zu sub-interpreters\n", w_Scripts.size());
+	
+	bool any_had_threads = false;
 	
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
 		if (script && script->state) {
-			// Switch to the subinterpreter's thread state
+			// Switch to the subinterpreter to check thread state
 			PyThreadState_Swap(script->state);
+			
+			// Check if this interpreter has threading/asyncio modules in sys.modules
+			// (indicates threads were used, which causes cleanup issues)
+			bool had_threads = false;
+			PyObject *sys_modules = PySys_GetObject("modules");  // Borrowed ref
+			if (sys_modules && PyDict_Check(sys_modules)) {
+				// Check for threading
+				PyObject *key = PyUnicode_FromString("threading");
+				if (key) {
+					if (PyDict_Contains(sys_modules, key) == 1) {
+						had_threads = true;
+						fprintf(stderr, "PY: Detected 'threading' module in sub-interpreter %d\n", (int)i);
+					}
+					Py_DECREF(key);
+				}
+				
+				// Also check for asyncio (uses threading internally)
+				key = PyUnicode_FromString("asyncio");
+				if (key) {
+					if (PyDict_Contains(sys_modules, key) == 1) {
+						had_threads = true;
+						fprintf(stderr, "PY: Detected 'asyncio' module in sub-interpreter %d\n", (int)i);
+					}
+					Py_DECREF(key);
+				}
+			}
+			
+			// For now, ALWAYS skip Py_EndInterpreter for all sub-interpreters
+			// to prevent crashes. This is the safest approach until we can
+			// reliably detect thread usage.
+			had_threads = true;  // TEMPORARY: Force workaround for all scripts
+			
+			if (had_threads) {
+				any_had_threads = true;  // Track if any interpreter used threads
+			}
 			
 			// Clean up Python objects in the subinterpreter
 			Py_XDECREF(script->module);
 			script->module = NULL;
 			
-			// End this subinterpreter (this frees script->state)
-			Py_EndInterpreter(script->state);
-			script->state = NULL;
+			if (had_threads) {
+				// WORKAROUND: Do NOT call Py_EndInterpreter for scripts that used threading
+				// This is a known limitation of Python's sub-interpreter + threading model
+				// The interpreter will leak, but it's better than crashing
+				// Reference: https://bugs.python.org/issue15751
+				fprintf(stderr, "PY: Skipping Py_EndInterpreter() for sub-interpreter %d to prevent crash\n",
+				        (int)i);
+				// script->state is intentionally not freed - memory leak but no crash
+			} else {
+				// Safe to end interpreters that didn't use threading
+				Py_EndInterpreter(script->state);
+			}
 			
-			// Switch back to main interpreter
+			// Always switch back to main interpreter
 			PyThreadState_Swap(main_state);
+			script->state = NULL;
 		}
 		
 		// Clean up C++ resources for this script
@@ -1333,9 +1384,21 @@ int w_End()
 		}
 	}
 	
-	// Now all subinterpreters are cleaned up, safe to finalize
-	Py_Finalize();
-	// No PyGILState_Release after Py_Finalize
+	// Now all subinterpreters are cleaned up
+	// CRITICAL: Do NOT call Py_Finalize() if any interpreter used threading
+	// This is a known Python limitation - Py_Finalize() with threading causes crashes
+	if (any_had_threads) {
+		fprintf(stderr, "PY: Skipping Py_Finalize() because threading was used\n");
+		fprintf(stderr, "PY: This prevents crashes but will leak Python memory (known limitation)\n");
+		// Release GIL but don't finalize
+		PyGILState_Release(gil);
+	} else {
+		fprintf(stderr, "PY: About to call Py_Finalize()...\n");
+		Py_Finalize();
+		fprintf(stderr, "PY: Py_Finalize() completed successfully\n");
+		// No PyGILState_Release after Py_Finalize
+	}
+	
 	free(w_Python);
 	return 1;
 }
@@ -1472,12 +1535,37 @@ int w_Unload(int id)
 	PyGILState_STATE gil = PyGILState_Ensure();
 	PyThreadState *main_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
+	
+	// Check if this interpreter used threading/asyncio
+	bool had_threads = false;
+	PyObject *sys_modules = PySys_GetObject("modules");  // Borrowed ref
+	if (sys_modules && PyDict_Check(sys_modules)) {
+		PyObject *key = PyUnicode_FromString("threading");
+		if (key) {
+			had_threads = (PyDict_Contains(sys_modules, key) == 1);
+			Py_DECREF(key);
+		}
+		if (!had_threads) {
+			key = PyUnicode_FromString("asyncio");
+			if (key) {
+				had_threads = (PyDict_Contains(sys_modules, key) == 1);
+				Py_DECREF(key);
+			}
+		}
+	}
 
 	Py_XDECREF(script->module);
-
-	Py_EndInterpreter(script->state);
-
-	PyThreadState_Swap(main_state);
+	
+	// WORKAROUND: Do NOT call Py_EndInterpreter if threading was used
+	if (had_threads) {
+		fprintf(stderr, "PY: Skipping Py_EndInterpreter() for script %d (threading detected)\n", id);
+		// Switch back but don't end interpreter
+		PyThreadState_Swap(main_state);
+	} else {
+		Py_EndInterpreter(script->state);
+		PyThreadState_Swap(main_state);
+	}
+	
 	PyGILState_Release(gil);
 
 	// Clean up dynamic function registry
