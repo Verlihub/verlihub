@@ -88,11 +88,11 @@ static bool parseValue(const Value& json_val, JsonValue& out_val) {
 }
 
 // Public API: Parse JSON string
-bool parseJson(const char* json_str, JsonValue& out_value) {
-	if (!json_str) return false;
+bool parseJson(const std::string& json_str, JsonValue& out_value) {
+	if (json_str.empty()) return false;
 	
 	Document doc;
-	doc.Parse(json_str);
+	doc.Parse(json_str.c_str());
 	
 	if (doc.HasParseError()) {
 		// Log parse error if needed
@@ -100,10 +100,6 @@ bool parseJson(const char* json_str, JsonValue& out_value) {
 	}
 	
 	return parseValue(doc, out_value);
-}
-
-bool parseJson(const std::string& json_str, JsonValue& out_value) {
-	return parseJson(json_str.c_str(), out_value);
 }
 
 // Forward declaration
@@ -187,17 +183,13 @@ std::string toJsonString(const JsonValue& value, bool pretty) {
 }
 
 // Helper: Convert string list to JSON array
-std::string stringListToJson(char** string_list) {
-	if (!string_list) {
-		return "[]";
-	}
-	
+std::string stringListToJson(const std::vector<std::string>& string_list) {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
 	
 	writer.StartArray();
-	for (int i = 0; string_list[i] != nullptr; i++) {
-		writer.String(string_list[i]);
+	for (const auto& str : string_list) {
+		writer.String(str.c_str());
 	}
 	writer.EndArray();
 	
@@ -205,32 +197,30 @@ std::string stringListToJson(char** string_list) {
 }
 
 // Helper: Parse JSON array to string list
-char** jsonToStringList(const char* json_str) {
-	if (!json_str) return nullptr;
+std::vector<std::string> jsonToStringList(const std::string& json_str) {
+	if (json_str.empty()) return {};
 	
 	Document doc;
-	doc.Parse(json_str);
+	doc.Parse(json_str.c_str());
 	
 	if (doc.HasParseError() || !doc.IsArray()) {
-		return nullptr;
+		return {};
 	}
 	
-	size_t count = doc.Size();
-	char** result = (char**)malloc((count + 1) * sizeof(char*));
-	if (!result) return nullptr;
+	std::vector<std::string> result;
+	result.reserve(doc.Size());
 	
-	for (size_t i = 0; i < count; i++) {
+	for (size_t i = 0; i < doc.Size(); i++) {
 		if (doc[i].IsString()) {
-			result[i] = strdup(doc[i].GetString());
+			result.push_back(doc[i].GetString());
 		} else {
 			// Convert non-string to string representation
 			StringBuffer buffer;
 			Writer<StringBuffer> writer(buffer);
 			doc[i].Accept(writer);
-			result[i] = strdup(buffer.GetString());
+			result.push_back(buffer.GetString());
 		}
 	}
-	result[count] = nullptr;
 	
 	return result;
 }
@@ -251,11 +241,11 @@ std::string stringMapToJson(const std::map<std::string, std::string>& map) {
 }
 
 // Helper: Parse JSON object to map
-bool jsonToStringMap(const char* json_str, std::map<std::string, std::string>& out_map) {
-	if (!json_str) return false;
+bool jsonToStringMap(const std::string& json_str, std::map<std::string, std::string>& out_map) {
+	if (json_str.empty()) return false;
 	
 	Document doc;
-	doc.Parse(json_str);
+	doc.Parse(json_str.c_str());
 	
 	if (doc.HasParseError() || !doc.IsObject()) {
 		return false;

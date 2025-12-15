@@ -99,23 +99,22 @@ struct JsonValue {
 #ifdef HAVE_RAPIDJSON
 
 // Parse JSON string into JsonValue structure
-bool parseJson(const char* json_str, JsonValue& out_value);
 bool parseJson(const std::string& json_str, JsonValue& out_value);
 
 // Convert JsonValue back to JSON string
 std::string toJsonString(const JsonValue& value, bool pretty = false);
 
 // Helper to convert string list to JSON array
-std::string stringListToJson(char** string_list);
+std::string stringListToJson(const std::vector<std::string>& string_list);
 
-// Helper to parse JSON array back to string list (caller must free)
-char** jsonToStringList(const char* json_str);
+// Helper to parse JSON array back to string list
+std::vector<std::string> jsonToStringList(const std::string& json_str);
 
 // Helper to convert map<string,string> to JSON object
 std::string stringMapToJson(const std::map<std::string, std::string>& map);
 
 // Helper to parse JSON object to map<string,string>
-bool jsonToStringMap(const char* json_str, std::map<std::string, std::string>& out_map);
+bool jsonToStringMap(const std::string& json_str, std::map<std::string, std::string>& out_map);
 
 #endif // HAVE_RAPIDJSON
 
