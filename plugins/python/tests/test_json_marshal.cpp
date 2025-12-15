@@ -256,64 +256,32 @@ TEST_F(JsonMarshalTest, RoundTripComplex) {
 // ===== Helper Function Tests =====
 
 TEST_F(JsonMarshalTest, StringListToJsonHelper) {
-	char* list[] = {
-		strdup("user1"),
-		strdup("user2"),
-		strdup("user3"),
-		nullptr
-	};
+	std::vector<std::string> list = {"user1", "user2", "user3"};
 	
 	std::string json = stringListToJson(list);
 	EXPECT_EQ(json, "[\"user1\",\"user2\",\"user3\"]");
-	
-	// Cleanup
-	for (int i = 0; list[i]; i++) {
-		free(list[i]);
-	}
 }
 
 TEST_F(JsonMarshalTest, JsonToStringListHelper) {
 	const char* json = "[\"apple\", \"banana\", \"cherry\"]";
-	char** list = jsonToStringList(json);
+	auto list = jsonToStringList(json);
 	
-	ASSERT_NE(list, nullptr);
-	EXPECT_STREQ(list[0], "apple");
-	EXPECT_STREQ(list[1], "banana");
-	EXPECT_STREQ(list[2], "cherry");
-	EXPECT_EQ(list[3], nullptr);
-	
-	// Cleanup
-	for (int i = 0; list[i]; i++) {
-		free(list[i]);
-	}
-	free(list);
+	ASSERT_EQ(list.size(), 3);
+	EXPECT_EQ(list[0], "apple");
+	EXPECT_EQ(list[1], "banana");
+	EXPECT_EQ(list[2], "cherry");
 }
 
 TEST_F(JsonMarshalTest, StringListRoundTrip) {
-	char* original[] = {
-		strdup("alpha"),
-		strdup("beta"),
-		strdup("gamma"),
-		nullptr
-	};
+	std::vector<std::string> original = {"alpha", "beta", "gamma"};
 	
 	std::string json = stringListToJson(original);
-	char** restored = jsonToStringList(json.c_str());
+	auto restored = jsonToStringList(json);
 	
-	ASSERT_NE(restored, nullptr);
-	EXPECT_STREQ(restored[0], "alpha");
-	EXPECT_STREQ(restored[1], "beta");
-	EXPECT_STREQ(restored[2], "gamma");
-	EXPECT_EQ(restored[3], nullptr);
-	
-	// Cleanup
-	for (int i = 0; original[i]; i++) {
-		free(original[i]);
-	}
-	for (int i = 0; restored[i]; i++) {
-		free(restored[i]);
-	}
-	free(restored);
+	ASSERT_EQ(restored.size(), 3);
+	EXPECT_EQ(restored[0], "alpha");
+	EXPECT_EQ(restored[1], "beta");
+	EXPECT_EQ(restored[2], "gamma");
 }
 
 TEST_F(JsonMarshalTest, StringMapToJsonHelper) {
@@ -367,20 +335,12 @@ TEST_F(JsonMarshalTest, ParseInvalidJson) {
 	EXPECT_FALSE(parseJson("", value));
 }
 
-TEST_F(JsonMarshalTest, ParseNullPointer) {
-	JsonValue value;
-	EXPECT_FALSE(parseJson((const char*)nullptr, value));
-	
-	char** list = jsonToStringList(nullptr);
-	EXPECT_EQ(list, nullptr);
-}
-
 TEST_F(JsonMarshalTest, JsonToStringListInvalidJson) {
-	char** list = jsonToStringList("{\"not\":\"an array\"}");
-	EXPECT_EQ(list, nullptr);
+	auto list = jsonToStringList("{\"not\":\"an array\"}");
+	EXPECT_TRUE(list.empty());
 	
 	list = jsonToStringList("[broken");
-	EXPECT_EQ(list, nullptr);
+	EXPECT_TRUE(list.empty());
 }
 
 TEST_F(JsonMarshalTest, JsonToStringMapInvalidJson) {

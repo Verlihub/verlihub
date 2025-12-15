@@ -975,6 +975,236 @@ result = vh.CallDynamicFunction('analyze',
 - Use Python's `tuple()` or `set()` constructors if you need to convert after receiving
 - All container types can be arbitrarily nested: sets of tuples, lists of dicts, etc.
 
+#### C++ JSON Marshaling Utilities
+
+For C++ plugin developers working with complex nested data, the `json_marshal.h` header provides utilities for serializing and deserializing JSON without directly using RapidJSON.
+
+**API Functions:**
+
+```cpp
+#include "json_marshal.h"
+
+// Core JSON parsing and serialization
+bool parseJson(const std::string& json_str, JsonValue& out_value);
+std::string toJsonString(const JsonValue& value, bool pretty = false);
+
+// Helper utilities for common types
+std::string stringListToJson(const std::vector<std::string>& string_list);
+std::vector<std::string> jsonToStringList(const std::string& json_str);
+std::string stringMapToJson(const std::map<std::string, std::string>& map);
+bool jsonToStringMap(const std::string& json_str, std::map<std::string, std::string>& out_map);
+```
+
+**Note**: All functions use modern C++ types (`std::string`, `std::vector`, `std::map`). When calling from C code with `char*` pointers, they are automatically converted to `std::string` (temporary objects are created). No manual memory management required for return values.
+
+**JsonValue Structure:**
+
+```cpp
+#include "json_marshal.h"
+
+using namespace nVerliHub::nPythonPlugin;
+
+// Create JSON values
+JsonValue null_val;  // Default constructor = null
+JsonValue bool_val(true);
+JsonValue int_val((int64_t)42);
+JsonValue float_val(3.14159);
+JsonValue str_val("hello");
+
+// Arrays
+JsonValue array;
+array.type = JsonType::ARRAY;
+array.array_val.push_back(JsonValue((int64_t)1));
+array.array_val.push_back(JsonValue((int64_t)2));
+array.array_val.push_back(JsonValue((int64_t)3));
+
+// Objects (maps)
+JsonValue object;
+object.type = JsonType::OBJECT;
+object.object_val["name"] = JsonValue("Alice");
+object.object_val["age"] = JsonValue((int64_t)30);
+object.object_val["score"] = JsonValue(95.5);
+
+// Nested structures
+JsonValue nested_obj;
+nested_obj.type = JsonType::OBJECT;
+nested_obj.object_val["users"] = array;
+nested_obj.object_val["metadata"] = object;
+```
+
+**Parsing JSON Strings:**
+
+```cpp
+#include "json_marshal.h"
+
+// Parse JSON from Python
+w_Targs* MyCallback(int id, w_Targs* args) {
+    char *json_str;
+    if (!w_unpack(args, "D", &json_str)) return NULL;
+    
+    // Parse into JsonValue structure
+    JsonValue value;
+    if (!parseJson(json_str, value)) {
+        // Parse failed
+        return w_pack("s", "Error: Invalid JSON");
+    }
+    
+    // Access parsed data
+    if (value.isObject()) {
+        if (value.object_val.count("name")) {
+            std::string name = value.object_val["name"].string_val;
+            // Process name...
+        }
+        
+        if (value.object_val.count("scores") && 
+            value.object_val["scores"].isArray()) {
+            for (const auto& score : value.object_val["scores"].array_val) {
+                if (score.isDouble()) {
+                    double val = score.double_val;
+                    // Process score...
+                }
+            }
+        }
+    }
+    
+    return w_pack("s", "Success");
+}
+```
+
+**Serializing to JSON:**
+
+```cpp
+#include "json_marshal.h"
+
+w_Targs* GetUserStats(int id, w_Targs* args) {
+    char *username;
+    if (!w_unpack(args, "s", &username)) return NULL;
+    
+    // Build response object
+    JsonValue response;
+    response.type = JsonType::OBJECT;
+    response.object_val["username"] = JsonValue(username);
+    response.object_val["message_count"] = JsonValue((int64_t)1234);
+    response.object_val["online_time"] = JsonValue(56789.12);
+    
+    // Add array of recent actions
+    JsonValue actions;
+    actions.type = JsonType::ARRAY;
+    actions.array_val.push_back(JsonValue("login"));
+    actions.array_val.push_back(JsonValue("search"));
+    actions.array_val.push_back(JsonValue("download"));
+    response.object_val["recent_actions"] = actions;
+    
+    // Serialize to JSON string
+    std::string json_str = toJsonString(response);
+    
+    // Return to Python (Python will deserialize back to dict)
+    return w_pack("D", strdup(json_str.c_str()));
+}
+```
+
+**Helper Functions:**
+
+```cpp
+// Convert string list to JSON array
+std::vector<std::string> colors = {"apple", "banana", "cherry"};
+std::string json = stringListToJson(colors);
+// Result: '["apple","banana","cherry"]'
+
+// Parse JSON array to string list
+auto list = jsonToStringList("[\"red\",\"green\",\"blue\"]");
+// list[0] = "red", list[1] = "green", list[2] = "blue"
+// No manual memory management needed!
+
+// Convert map to JSON object
+std::map<std::string, std::string> config;
+config["theme"] = "dark";
+config["language"] = "en";
+std::string json = stringMapToJson(config);
+// Result: '{"theme":"dark","language":"en"}'
+
+// Parse JSON object to map
+std::map<std::string, std::string> result;
+bool ok = jsonToStringMap("{\"key\":\"value\"}", result);
+```
+
+**Type Checking:**
+
+```cpp
+JsonValue value;
+if (parseJson(json_str, value)) {
+    if (value.isNull())   { /* handle null */ }
+    if (value.isBool())   { bool b = value.bool_val; }
+    if (value.isInt())    { int64_t i = value.int_val; }
+    if (value.isDouble()) { double d = value.double_val; }
+    if (value.isString()) { std::string s = value.string_val; }
+    if (value.isArray())  { /* iterate value.array_val */ }
+    if (value.isObject()) { /* iterate value.object_val */ }
+    if (value.isSet())    { /* handle set */ }
+    if (value.isTuple())  { /* handle tuple */ }
+}
+```
+
+**Complete Example - Processing Complex Data:**
+
+```cpp
+w_Targs* ProcessUserData(int id, w_Targs* args) {
+    char *user_json;
+    if (!w_unpack(args, "D", &user_json)) return NULL;
+    
+    JsonValue user;
+    if (!parseJson(user_json, user) || !user.isObject()) {
+        return w_pack("s", "Invalid user data");
+    }
+    
+    // Extract user information
+    std::string name = "Unknown";
+    if (user.object_val.count("name") && user.object_val["name"].isString()) {
+        name = user.object_val["name"].string_val;
+    }
+    
+    // Process nested preferences
+    if (user.object_val.count("preferences") && 
+        user.object_val["preferences"].isObject()) {
+        JsonValue& prefs = user.object_val["preferences"];
+        
+        if (prefs.object_val.count("notifications") && 
+            prefs.object_val["notifications"].isBool()) {
+            bool notify = prefs.object_val["notifications"].bool_val;
+            // Handle notification preference...
+        }
+    }
+    
+    // Process array of tags
+    if (user.object_val.count("tags") && user.object_val["tags"].isArray()) {
+        for (const auto& tag : user.object_val["tags"].array_val) {
+            if (tag.isString()) {
+                std::string tag_name = tag.string_val;
+                // Process tag...
+            }
+        }
+    }
+    
+    // Build and return response
+    JsonValue response;
+    response.type = JsonType::OBJECT;
+    response.object_val["status"] = JsonValue("processed");
+    response.object_val["user"] = JsonValue(name);
+    response.object_val["timestamp"] = JsonValue((int64_t)time(NULL));
+    
+    std::string response_json = toJsonString(response);
+    return w_pack("D", strdup(response_json.c_str()));
+}
+```
+
+**Benefits:**
+- **No RapidJSON knowledge required** - Simple C++ API
+- **Type-safe** - Explicit type checking with `isInt()`, `isString()`, etc.
+- **64-bit integers** - Full Python int range support (`int64_t`)
+- **UTF-8 strings** - Proper Unicode handling
+- **Arbitrary nesting** - Objects in arrays, arrays in objects, etc.
+- **Automatic conversion** - Python dicts/lists ↔ JSON ↔ C++ structures
+
 **Examples:**
 
 ```python
