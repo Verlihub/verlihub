@@ -205,6 +205,7 @@ typedef struct {
 	char          *opchatname;
 	bool           use_old_ontimer;
 	char          *config_name;
+	bool           had_threads;  // Track if this interpreter used threading/asyncio
 	
 	// Dynamic function registry (Dimension 4)
 	std::map<std::string, w_Tcallback> *dynamic_funcs;

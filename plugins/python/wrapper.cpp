@@ -32,6 +32,7 @@ using namespace nVerliHub::nEnums;
 using namespace nVerliHub::nPythonPlugin;
 
 vector<w_TScript *> w_Scripts;
+static vector<bool> w_Scripts_had_threads;  // Track which scripts used threading (persists after w_Unload)
 
 static int log_level = 0;
 
@@ -1302,52 +1303,29 @@ int w_End()
 	
 	bool any_had_threads = false;
 	
+	// First pass: check which scripts had threading (check persistent tracking vector)
+	for (size_t i = 0; i < w_Scripts_had_threads.size(); ++i) {
+		if (w_Scripts_had_threads[i]) {
+			any_had_threads = true;
+			fprintf(stderr, "PY: Script %d had threading/asyncio\n", (int)i);
+		}
+	}
+	
+	// Second pass: clean up remaining interpreters
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
 		if (script && script->state) {
-			// Switch to the subinterpreter to check thread state
+			// Switch to the subinterpreter to clean up
 			PyThreadState_Swap(script->state);
-			
-			// Check if this interpreter has threading/asyncio modules in sys.modules
-			// (indicates threads were used, which causes cleanup issues)
-			bool had_threads = false;
-			PyObject *sys_modules = PySys_GetObject("modules");  // Borrowed ref
-			if (sys_modules && PyDict_Check(sys_modules)) {
-				// Check for threading
-				PyObject *key = PyUnicode_FromString("threading");
-				if (key) {
-					if (PyDict_Contains(sys_modules, key) == 1) {
-						had_threads = true;
-						fprintf(stderr, "PY: Detected 'threading' module in sub-interpreter %d\n", (int)i);
-					}
-					Py_DECREF(key);
-				}
-				
-				// Also check for asyncio (uses threading internally)
-				key = PyUnicode_FromString("asyncio");
-				if (key) {
-					if (PyDict_Contains(sys_modules, key) == 1) {
-						had_threads = true;
-						fprintf(stderr, "PY: Detected 'asyncio' module in sub-interpreter %d\n", (int)i);
-					}
-					Py_DECREF(key);
-				}
-			}
-			
-			// For now, ALWAYS skip Py_EndInterpreter for all sub-interpreters
-			// to prevent crashes. This is the safest approach until we can
-			// reliably detect thread usage.
-			had_threads = true;  // TEMPORARY: Force workaround for all scripts
-			
-			if (had_threads) {
-				any_had_threads = true;  // Track if any interpreter used threads
-			}
 			
 			// Clean up Python objects in the subinterpreter
 			Py_XDECREF(script->module);
 			script->module = NULL;
 			
-			if (had_threads) {
+			// Always switch back to main interpreter before cleanup
+			PyThreadState_Swap(main_state);
+			
+			if (script->had_threads) {
 				// WORKAROUND: Do NOT call Py_EndInterpreter for scripts that used threading
 				// This is a known limitation of Python's sub-interpreter + threading model
 				// The interpreter will leak, but it's better than crashing
@@ -1355,14 +1333,13 @@ int w_End()
 				fprintf(stderr, "PY: Skipping Py_EndInterpreter() for sub-interpreter %d to prevent crash\n",
 				        (int)i);
 				// script->state is intentionally not freed - memory leak but no crash
+				script->state = NULL;  // Clear the pointer but don't end the interpreter
 			} else {
 				// Safe to end interpreters that didn't use threading
+				fprintf(stderr, "PY: Calling Py_EndInterpreter() for sub-interpreter %d\n", (int)i);
 				Py_EndInterpreter(script->state);
+				script->state = NULL;
 			}
-			
-			// Always switch back to main interpreter
-			PyThreadState_Swap(main_state);
-			script->state = NULL;
 		}
 		
 		// Clean up C++ resources for this script
@@ -1390,14 +1367,18 @@ int w_End()
 	if (any_had_threads) {
 		fprintf(stderr, "PY: Skipping Py_Finalize() because threading was used\n");
 		fprintf(stderr, "PY: This prevents crashes but will leak Python memory (known limitation)\n");
-		// Release GIL but don't finalize
-		PyGILState_Release(gil);
+		fprintf(stderr, "PY: Also skipping PyGILState_Release() to avoid thread state corruption\n");
+		// Do NOT release GIL or finalize - just leave Python in current state
+		// This leaks memory but prevents crashes
 	} else {
 		fprintf(stderr, "PY: About to call Py_Finalize()...\n");
 		Py_Finalize();
 		fprintf(stderr, "PY: Py_Finalize() completed successfully\n");
 		// No PyGILState_Release after Py_Finalize
 	}
+	
+	// Clear tracking vectors
+	w_Scripts_had_threads.clear();
 	
 	free(w_Python);
 	return 1;
@@ -1409,7 +1390,9 @@ int w_ReserveID()
 	if (!script) return -1;
 	script->id = w_Scripts.size();
 	script->dynamic_funcs = NULL;  // Initialize dynamic function registry
+	script->had_threads = false;   // Initialize threading flag
 	w_Scripts.push_back(script);
+	w_Scripts_had_threads.push_back(false);  // Initialize tracking vector
 	return script->id;
 }
 
@@ -1555,6 +1538,10 @@ int w_Unload(int id)
 	}
 
 	Py_XDECREF(script->module);
+	
+	// Store the threading flag in both places
+	script->had_threads = had_threads;
+	w_Scripts_had_threads[id] = had_threads;  // Persist even after script is freed
 	
 	// WORKAROUND: Do NOT call Py_EndInterpreter if threading was used
 	if (had_threads) {
