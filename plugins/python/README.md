@@ -1013,66 +1013,217 @@ def process_user_data(user_id, metadata, tags, coordinates):
 
 ### Event Hooks Reference
 
-Full list of available hooks with their signatures:
+Python scripts react to hub events by defining hook functions. Return `0` or `False` to block an event, `1`, `True`, or `None` to allow it to proceed.
 
+**Note**: All Python scripts receive events in the order they appear in `!pylist`. Returning `0` only blocks further processing by the hub and other plugins, not other Python scripts.
+
+#### Special Events
+
+##### `OnTimer(milliseconds=0)`
+Called approximately every second (configurable via `timer_serv_period`). The `milliseconds` argument is optional for backwards compatibility.
+
+**Example - Periodic tasks:**
 ```python
-# Connection Management
-OnNewConn(ip: str) → int
-OnCloseConn(ip: str) → int
-OnCloseConnEx(ip: str, reason: int, nick: str) → int
+import vh, time
 
-# Protocol Messages
-OnParsedMsgSupports(ip: str, supports: str, hubinfo: str) → int
-OnParsedMsgMyHubURL(nick: str, url: str) → int
-OnParsedMsgExtJSON(nick: str, json_data: str) → int
-OnParsedMsgBotINFO(nick: str, info: str) → int
-OnParsedMsgVersion(ip: str, version: str) → int
-OnParsedMsgMyPass(nick: str, password: str) → int
-OnParsedMsgValidateNick(nick: str) → int
-OnParsedMsgMyINFO(nick: str, desc: str, tag: str, speed: str, email: str, share: int) → int
-OnFirstMyINFO(nick: str, desc: str, tag: str, speed: str, email: str, share: int) → int
-OnParsedMsgChat(nick: str, message: str) → int
-OnParsedMsgPM(nick: str, message: str, target: str) → int
-OnParsedMsgMCTo(nick: str, message: str, target: str) → int
-OnParsedMsgSearch(nick: str, query: str) → int
-OnParsedMsgSR(nick: str, result: str) → int
-OnParsedMsgConnectToMe(nick: str, target: str, address: str) → int
-OnParsedMsgRevConnectToMe(nick: str, target: str) → int
-OnUnknownMsg(nick: str, message: str) → int
-
-# User Events
-OnUserLogin(nick: str) → int
-OnUserLogout(nick: str) → int
-OnUserInList(nick: str) → int
-OnValidateTag(nick: str, tag: str) → int
-
-# Operator Actions
-OnOperatorCommand(nick: str, command: str) → int
-OnOperatorKicks(op_nick: str, target_nick: str, reason: str) → int
-OnOperatorDrops(op_nick: str, target_nick: str) → int
-OnOperatorDropsWithReason(op_nick: str, target_nick: str, reason: str) → int
-OnUserCommand(nick: str, command: str) → int
-OnHubCommand(nick: str, command: str, is_pm: int) → int
-
-# Hub Events
-OnTimer(milliseconds: float) → int
-OnNewReg(nick: str, user_class: int, op_nick: str) → int
-OnNewBan(ip: str, nick: str, op_nick: str, reason: str) → int
-OnSetConfig(config: str, variable: str, value: str) → int
-
-# Chat Events
-OnOpChatMessage(nick: str, message: str) → int
-OnPublicBotMessage(nick: str, message: str, min_class: int, max_class: int) → int
-
-# Other Events
-OnCtmToHub(nick: str, target: str) → int
-OnScriptCommand(cmd: str, data: str, plugin: str, script: str) → int
-OnUnLoad() → int
+last_check = 0
+def OnTimer(msec=0):
+    global last_check
+    now = time.time()
+    
+    # Run every 60 seconds
+    if now - last_check >= 60:
+        count = vh.GetUsersCount()
+        if count > 100:
+            vh.SendToOpChat(f"High load: {count} users")
+        last_check = now
+    
+    return 1
 ```
+
+##### `UnLoad()`
+Called before script removal (`!pyunload`, `!pyreload`, hub shutdown). Use for cleanup: close sockets, save config, remove bots.
+
+##### `OnUnLoad(error_code)`
+Called when hub is shutting down. `error_code` is normally `0`, except on SEGV signal. Perform cleanup only when `error_code == 0`.
+
+##### `OnScriptCommand(command, data, plugin, script)`
+Generated when any script calls `vh.ScriptCommand()`. All scripts receive it (including caller), so check `script` against `vh.path`. Return value ignored.
+
+**Example - Inter-script communication:**
+```python
+import vh
+
+blacklist = set()
+
+def OnScriptCommand(cmd, data, plug, script):
+    if cmd == "add_to_blacklist" and script != vh.path:
+        blacklist.add(data)
+        vh.SendToOpChat(f"Blacklist updated by {script}")
+```
+
+##### `OnScriptQuery(command, data, plugin, script)`
+Like `OnScriptCommand` but you can return a string back to the caller.
+
+##### `OnSetConfig(nick, conf, var, val_new, val_old, val_type)`
+Triggered when configuration variable is about to change. Return `0` to block. `val_type` constants: `vh.eIT_BOOL`, `vh.eIT_INT`, `vh.eIT_STRING`, etc.
+
+#### Connection Events
+
+##### `OnNewConn(ip)`
+First stage of client connection. Return `0` to disconnect.
+
+##### `OnCloseConn(ip)`
+Connection closed. Cannot be blocked.
+
+##### `OnCloseConnEx(ip, close_reason, nick)`
+Extended version with close reason and nick (empty if closed before login). Reasons: `vh.eCR_KICKED`, `vh.eCR_TIMEOUT`, `vh.eCR_PASSWORD`, `vh.eCR_BANNED`, etc.
+
+**Example - Log failed logins:**
+```python
+def OnCloseConnEx(ip, reason, nick):
+    if reason == vh.eCR_PASSWORD:
+        vh.SendToOpChat(f"Failed login as {nick} from {ip}")
+```
+
+#### User Events
+
+##### `OnUserLogin(nick)`
+User successfully validated and received hub info. Return `0` to disconnect.
+
+##### `OnUserLogout(nick)`
+User disconnected. Cannot be blocked.
+
+##### `OnUserInList(nick)`
+User added to user list.
+
+##### `OnNewReg(op, nick, uclass)`
+Operator `op` registering user `nick` with class `uclass`. Return `0` to abort.
+
+##### `OnValidateTag(nick, data)`
+Check user's client tag. Return `0` to reject: `data` like `"<++ V:0.761,M:A,H:16/0/1,S:17>"`.
+
+##### `OnParsedMsgValidateNick(data)`
+Client verifying nick availability. Return `0` to reject: `data` like `"$ValidateNick Mario"`.
+
+#### Commands
+
+##### `OnUserCommand(nick, command)`
+User command received. Check `command[1:]` (skip trigger char) not full command. Return `0` if handled.
+
+##### `OnOperatorCommand(nick, command)`
+Operator (class ≥3) command. Works like `OnUserCommand`.
+
+##### `OnHubCommand(nick, clean_command, user_class, in_pm, prefix)`
+Unified command handler (called after above two). Benefits:
+- `clean_command` has trigger char removed
+- `user_class` for permission checking
+- `in_pm` tells you context (0=main chat, 1=PM)
+- `prefix` is the trigger char used
+
+**Example:**
+```python
+def OnHubCommand(nick, command, uclass, in_pm, prefix):
+    write = vh.pm if in_pm else vh.usermc
+    
+    if command == "myip":
+        write(f"Your IP: {vh.GetUserIP(nick)}", nick)
+        return 0
+    
+    if command == "stats" and uclass >= 3:
+        write(f"Users: {vh.GetUsersCount()}", nick)
+        return 0
+```
+
+#### Chat Messages
+
+##### `OnParsedMsgChat(nick, msg)`
+Main chat message. Return `0` to block, or `(nick, message)` tuple to substitute.
+
+**Example - Filter and transform:**
+```python
+import re
+
+banned_words = re.compile(r'\b(badword1|badword2)\b', re.I)
+
+def OnParsedMsgChat(nick, msg):
+    if banned_words.search(msg):
+        vh.usermc("Message blocked", nick)
+        return 0  # Block
+    
+    # Substitute message for specific users
+    if nick in leet_users:
+        return nick, make_leet(msg)
+    
+    return 1  # Allow
+```
+
+##### `OnParsedMsgPM(nick, msg, to_nick)`
+Private message from `nick` to `to_nick`. Return `0` to block.
+
+##### `OnParsedMsgMCTo(nick, msg, to_nick)`
+Private main chat message.
+
+##### `OnOpChatMessage(nick, msg)`
+Operator chat message. Return `0` to block.
+
+#### Kicks & Bans
+
+##### `OnOperatorKicks(op, nick, reason)`
+Operator `op` kicking `nick`. Return `0` to prevent.
+
+##### `OnOperatorDrops(op, nick)`
+Operator dropping user (no reason). Return `0` to prevent.
+
+##### `OnOperatorDropsWithReason(op, nick, reason)`
+Operator dropping with reason. Prefer this over `OnOperatorDrops` (both are called for compatibility).
+
+##### `OnNewBan(op, ip, nick, reason)`
+Operator banning user. Return `0` to prevent.
+
+#### Protocol Messages
+
+##### `OnParsedMsgSearch(nick, data)`
+User searching. `data` like `"$Search ip:port F?T?0?9?TTH:hash"`. Return `0` to block.
+
+##### `OnParsedMsgSR(nick, data)`
+Search result to passive user. `data` like `"$SR nick path_bytes (ip:port)target"`.
+
+##### `OnParsedMsgMyINFO(nick, desc, tag, speed, mail, sharesize)`
+User updating MyINFO. Return `0` to block, or `(desc, tag, speed, mail, sharesize)` tuple to substitute (use `None` for unchanged fields).
+
+##### `OnFirstMyINFO(nick, desc, tag, speed, mail, sharesize)`
+First MyINFO from user. Return `0` to disconnect user.
+
+##### `OnParsedMsgAny(nick, data)`
+Every message from logged-in client.
+
+##### `OnParsedMsgAnyEx(ip, data)`
+Every message at initial connection stage (before nick known).
+
+##### `OnParsedMsgMyPass(nick, data)`
+Login attempt. `data` like `"$MyPass password"`. Return `0` to disconnect.
+
+##### `OnParsedMsgConnectToMe(nick, other_nick, ip, port)`
+User wants other_nick to connect. Return `0` to block.
+
+##### `OnParsedMsgRevConnectToMe(nick, other_nick)`
+Passive user wants connection. Return `0` to block.
+
+##### `OnParsedMsgSupports(ip, data, filtered)`
+Client capability negotiation. `data` is original, `filtered` is processed by hub.
+
+##### `OnParsedMsgMyHubURL(nick, data)`, `OnParsedMsgExtJSON(nick, data)`, `OnParsedMsgBotINFO(nick, data)`, `OnParsedMsgVersion(ip, data)`
+Various protocol messages (mostly from bots/pingers).
+
+##### `OnUnknownMsg(nick, data)`
+Message not part of NMDC protocol.
+
+**Complete reference**: See [Verlihub Wiki - API Python Events](https://github.com/verlihub/verlihub/wiki/api-python-events) for full details and examples.
 
 ### Callback Functions Reference
 
-Functions available through the `vh` module are backed by C++ callbacks. See the [vh Module API](#vh-module-api) section for the complete list.
+Functions available through the `vh` module are backed by C++ callbacks. See the [vh Module API](#vh-module-api) section for complete details and [Verlihub Wiki - API Python Methods](https://github.com/verlihub/verlihub/wiki/api-python-methods) for additional documentation.
 
 ---
 
