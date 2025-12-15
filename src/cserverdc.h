@@ -21,6 +21,7 @@
 #ifndef CSERVERDC_H
 #define CSERVERDC_H
 
+#include <signal.h>
 #include "casyncsocketserver.h"
 #include "cmysql.h"
 
@@ -31,6 +32,12 @@
 */
 
 #include <fstream>
+
+// Deferred signal handling - global flags set by signal handlers in verlihub.cpp
+// Declared here so cServerDC can check them in OnTimer()
+extern volatile sig_atomic_t pending_signal_quit;   // SIGQUIT, SIGTERM
+extern volatile sig_atomic_t pending_signal_hup;    // SIGHUP (reload)
+extern volatile sig_atomic_t pending_signal_crash;  // SIGSEGV and other crashes
 
 #include "cuser.h"
 #include "cmessagedc.h"

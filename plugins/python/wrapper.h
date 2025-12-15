@@ -221,9 +221,6 @@ int w_Load(w_Targs *args);
 int w_Unload(int id);
 int w_HasHook(int id, int hook);
 
-// Signal safety functions
-void w_SetSignalContext(int is_signal);  // Mark when entering/exiting signal handler
-
 // w_CallHook's non-empty/non-zero return means further processing by other plugins or the hub
 w_Targs *w_CallHook(int id, int num, w_Targs *params);
 // w_CallFunction calls an arbitrary Python function by name (not just hooks)
