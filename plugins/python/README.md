@@ -696,39 +696,6 @@ def OnSetConfig(config, variable, value): pass
 - `0` or `False`: Block the action/event
 - `None`: Equivalent to returning `1`
 
-**Important: Hook Function Naming Convention**
-
-In your Python scripts, hook functions are named **without** the `VH_` prefix:
-
-```python
-# ✅ CORRECT - Python script hooks (no VH_ prefix)
-def OnUserLogin(nick):
-    return 1
-
-def OnParsedMsgChat(nick, message):
-    return 1
-
-def OnTimer(msec):
-    return 1
-```
-
-```python
-# ❌ WRONG - Don't use VH_ prefix in Python scripts
-def VH_OnUserLogin(nick):  # This won't be called!
-    return 1
-```
-
-**Why the confusion?**
-
-The `VH_` prefix appears in C++ plugin registration code (e.g., `RegisterCallBack("VH_OnUserLogin")`), which is the C++ API convention for registering with Verlihub's plugin manager. However, Python scripts use the simpler, unprefixed names directly.
-
-**Summary:**
-- **C++ plugins**: Use `VH_OnUserLogin` when registering callbacks
-- **Python scripts**: Use `OnUserLogin` for hook function names
-- **Documentation**: Both forms may appear; Python scripters only need the unprefixed version
-
-This design keeps Python scripts clean and readable while maintaining backwards compatibility with Verlihub's C++ plugin architecture.
-
 ### Script Structure
 
 ```python
