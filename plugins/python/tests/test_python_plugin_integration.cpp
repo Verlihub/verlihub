@@ -278,15 +278,27 @@ public:
         }
         
         // Clean up Python plugin ONCE at the end of all tests
-        // Note: We cannot safely clean up Python if threading was used
-        // This is a known limitation of Python's sub-interpreter model
+#ifdef PYTHON_SINGLE_INTERPRETER
+        // Single interpreter mode: Safe to clean up even with threading
         if (g_py_plugin) {
-            std::cerr << "Skipping Python cleanup (threading/asyncio was used)" << std::endl;
+            std::cerr << "Cleaning up Python plugin (single interpreter mode - safe)" << std::endl;
+            g_py_plugin->Empty();
+            delete g_py_plugin;
+            g_py_plugin = nullptr;
+            std::cerr << "Python plugin cleaned up successfully" << std::endl;
+        }
+#else
+        // Sub-interpreter mode: Cannot safely clean up if threading was used
+        // This is a known limitation of Python's sub-interpreter model (bug #15751)
+        if (g_py_plugin) {
+            std::cerr << "Skipping Python cleanup (sub-interpreter mode with threading)" << std::endl;
             std::cerr << "Python memory will leak, but this prevents crashes" << std::endl;
+            std::cerr << "Reference: https://bugs.python.org/issue15751" << std::endl;
             // DO NOT call Empty() or delete - just leak the memory
             // Calling any cleanup functions hangs or crashes when daemon threads exist
             g_py_plugin = nullptr;
         }
+#endif
         // Clean up config directory
         std::string config_dir = std::string(BUILD_DIR) + "/test_config_" + 
                                  std::to_string(getpid());
