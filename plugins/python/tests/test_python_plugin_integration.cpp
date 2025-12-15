@@ -751,12 +751,13 @@ for i in range(5):
     thread.start()
     worker_threads.append(thread)
 
-def VH_OnParsedMsgAny(user, data):
+def OnParsedMsgAny(nick, message):
+    """Hook receives (nick: str, message: str)"""
     try:
         msg_data = {
-            'username': user.get('nick', 'unknown'),
+            'username': nick,
             'type': 'protocol_msg',
-            'data': str(data)[:100],
+            'data': message[:100],
             'timestamp': time.time()
         }
         message_queue.append(msg_data)
@@ -767,13 +768,14 @@ def VH_OnParsedMsgAny(user, data):
     except Exception as e:
         with stats_lock:
             processing_stats['processing_errors'] += 1
-        print(f"VH_OnParsedMsgAny error: {e}", flush=True)
+        print(f"OnParsedMsgAny error: {e}", flush=True)
     return 1
 
-def VH_OnUserLogin(user):
+def OnUserLogin(nick):
+    """Hook receives (nick: str)"""
     try:
         msg_data = {
-            'username': user.get('nick', 'unknown'),
+            'username': nick,
             'type': 'user_login',
             'timestamp': time.time()
         }
@@ -1024,13 +1026,13 @@ loop_thread.start()
 import time
 time.sleep(0.1)
 
-def VH_OnParsedMsgAny(user, data):
-    """Feeds data to async tasks"""
+def OnParsedMsgAny(nick, message):
+    """Feeds data to async tasks. Hook receives (nick: str, message: str)"""
     try:
         msg_data = {
-            'username': user.get('nick', 'unknown'),
+            'username': nick,
             'event': 'parsed_msg',
-            'data_preview': str(data)[:50]
+            'data_preview': message[:50]
         }
         event_queue.append(msg_data)
         with stats_lock:
@@ -1040,11 +1042,11 @@ def VH_OnParsedMsgAny(user, data):
             processing_stats['errors'] += 1
     return 1
 
-def VH_OnUserLogin(user):
-    """Feeds login events to async tasks"""
+def OnUserLogin(nick):
+    """Feeds login events to async tasks. Hook receives (nick: str)"""
     try:
         msg_data = {
-            'username': user.get('nick', 'unknown'),
+            'username': nick,
             'event': 'user_login'
         }
         event_queue.append(msg_data)
