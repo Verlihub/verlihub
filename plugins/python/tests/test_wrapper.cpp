@@ -51,7 +51,7 @@ TEST_F(PythonWrapperTest, LoadAndUnloadScript) {
     // Mock args: id, path, botname, opchatname, config_dir, starttime, config_name
     w_Targs* args = w_pack("lssssls", id, "test_script.py", "TestBot", "OpChat", ".", (long)0, "config");
     EXPECT_EQ(id, w_Load(args));
-    free(args);
+    w_free_args(args);
 
     // Check hooks
     EXPECT_TRUE(w_HasHook(id, W_OnTimer));
@@ -65,12 +65,12 @@ TEST_F(PythonWrapperTest, CallHook) {
     int id = w_ReserveID();
     w_Targs* args = w_pack("lssssls", id, "test_script.py", "TestBot", "OpChat", ".", (long)0, "config");
     w_Load(args);
-    free(args);
+    w_free_args(args);
 
     // Call OnTimer (no params)
     w_Targs* params = w_pack("");
     w_Targs* res = w_CallHook(id, W_OnTimer, params);
-    free(params);
+    w_free_args(params);
 
     ASSERT_NE(res, nullptr);
     long ret_val;
@@ -82,7 +82,7 @@ TEST_F(PythonWrapperTest, CallHook) {
     void* mock_user = nullptr;  // Mock user
     params = w_pack("ps", mock_user, "hello");
     res = w_CallHook(id, W_OnParsedMsgChat, params);
-    free(params);
+    w_free_args(params);
 
     ASSERT_NE(res, nullptr);
     char* ret_str;

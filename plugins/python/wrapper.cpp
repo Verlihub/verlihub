@@ -319,6 +319,37 @@ const char *w_packprint(w_Targs *a)
 	return buf;
 }
 
+// Free a w_Targs structure and all dynamically allocated memory within it
+void w_free_args(w_Targs *a)
+{
+	if (!a) return;
+	
+	if (a->format) {
+		for (size_t i = 0; i < strlen(a->format); i++) {
+			switch (a->format[i]) {
+				case 's':  // String
+				case 'D':  // Dict (as JSON string)
+					if (a->args[i].s) {
+						free(a->args[i].s);
+						a->args[i].s = NULL;
+					}
+					break;
+				case 'L':  // List of strings
+					if (a->args[i].L) {
+						for (int j = 0; a->args[i].L[j] != NULL; j++) {
+							free(a->args[i].L[j]);
+						}
+						free(a->args[i].L);
+						a->args[i].L = NULL;
+					}
+					break;
+				// Other types (l, d, p, O) don't need cleanup
+			}
+		}
+	}
+	free(a);
+}
+
 //==============================================================================
 // Python 3 vh Module Implementation - Restored from Python 2 version
 //==============================================================================
@@ -1818,17 +1849,9 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			char **str_array = (char**)malloc((list_size + 1) * sizeof(char*));
 			if (!str_array) {
 				// Cleanup
-				for (int j = 0; j < i; j++) {
-					if (format_str[j] == 's') free(parsed_args->args[j].s);
-					else if (format_str[j] == 'L') {
-						for (int k = 0; parsed_args->args[j].L && parsed_args->args[j].L[k]; k++)
-							free(parsed_args->args[j].L[k]);
-						free(parsed_args->args[j].L);
-					}
-					else if (format_str[j] == 'D') free(parsed_args->args[j].s);
-				}
-				free(format_str);
-				free(parsed_args);
+				format_str[i] = '\0';
+				parsed_args->format = format_str;
+				w_free_args(parsed_args);
 				PyErr_SetString(PyExc_MemoryError, "Failed to allocate list array");
 				return NULL;
 			}
@@ -1854,17 +1877,9 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			PyObject *json_module = PyImport_ImportModule("json");
 			if (!json_module) {
 				// Cleanup
-				for (int j = 0; j < i; j++) {
-					if (format_str[j] == 's') free(parsed_args->args[j].s);
-					else if (format_str[j] == 'L') {
-						for (int k = 0; parsed_args->args[j].L && parsed_args->args[j].L[k]; k++)
-							free(parsed_args->args[j].L[k]);
-						free(parsed_args->args[j].L);
-					}
-					else if (format_str[j] == 'D') free(parsed_args->args[j].s);
-				}
-				free(format_str);
-				free(parsed_args);
+				format_str[i] = '\0';
+				parsed_args->format = format_str;
+				w_free_args(parsed_args);
 				PyErr_SetString(PyExc_ImportError, "Failed to import json module");
 				return NULL;
 			}
@@ -1874,17 +1889,9 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			
 			if (!dumps_func) {
 				// Cleanup
-				for (int j = 0; j < i; j++) {
-					if (format_str[j] == 's') free(parsed_args->args[j].s);
-					else if (format_str[j] == 'L') {
-						for (int k = 0; parsed_args->args[j].L && parsed_args->args[j].L[k]; k++)
-							free(parsed_args->args[j].L[k]);
-						free(parsed_args->args[j].L);
-					}
-					else if (format_str[j] == 'D') free(parsed_args->args[j].s);
-				}
-				free(format_str);
-				free(parsed_args);
+				format_str[i] = '\0';
+				parsed_args->format = format_str;
+				w_free_args(parsed_args);
 				PyErr_SetString(PyExc_AttributeError, "Failed to get json.dumps");
 				return NULL;
 			}
@@ -1894,17 +1901,9 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			
 			if (!json_str) {
 				// Cleanup
-				for (int j = 0; j < i; j++) {
-					if (format_str[j] == 's') free(parsed_args->args[j].s);
-					else if (format_str[j] == 'L') {
-						for (int k = 0; parsed_args->args[j].L && parsed_args->args[j].L[k]; k++)
-							free(parsed_args->args[j].L[k]);
-						free(parsed_args->args[j].L);
-					}
-					else if (format_str[j] == 'D') free(parsed_args->args[j].s);
-				}
-				free(format_str);
-				free(parsed_args);
+				format_str[i] = '\0';
+				parsed_args->format = format_str;
+				w_free_args(parsed_args);
 				PyErr_SetString(PyExc_ValueError, "Failed to serialize dict to JSON");
 				return NULL;
 			}
@@ -1915,17 +1914,9 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 		}
 		else {
 			// Cleanup
-			for (int j = 0; j < i; j++) {
-				if (format_str[j] == 's') free(parsed_args->args[j].s);
-				else if (format_str[j] == 'L') {
-					for (int k = 0; parsed_args->args[j].L && parsed_args->args[j].L[k]; k++)
-						free(parsed_args->args[j].L[k]);
-					free(parsed_args->args[j].L);
-				}
-				else if (format_str[j] == 'D') free(parsed_args->args[j].s);
-			}
-			free(format_str);
-			free(parsed_args);
+			format_str[i] = '\0';
+			parsed_args->format = format_str;
+			w_free_args(parsed_args);
 			PyErr_Format(PyExc_TypeError, "Unsupported argument type at position %d: %s", 
 				i, arg->ob_type->tp_name);
 			return NULL;
@@ -1942,23 +1933,7 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 	w_Targs *result = callback(-1, parsed_args);  // Use -1 for dynamic functions
 	
 	// Cleanup parsed_args
-	if (parsed_args) {
-		if (parsed_args->format) {
-			for (int i = 0; parsed_args->format[i]; i++) {
-				if (parsed_args->format[i] == 's' && parsed_args->args[i].s)
-					free(parsed_args->args[i].s);
-				else if (parsed_args->format[i] == 'L' && parsed_args->args[i].L) {
-					for (int j = 0; parsed_args->args[i].L[j]; j++)
-						free(parsed_args->args[i].L[j]);
-					free(parsed_args->args[i].L);
-				}
-				else if (parsed_args->format[i] == 'D' && parsed_args->args[i].s)
-					free(parsed_args->args[i].s);
-			}
-			free((void*)parsed_args->format);
-		}
-		free(parsed_args);
-	}
+	w_free_args(parsed_args);
 	
 	PyEval_AcquireThread(state);
 	
@@ -1966,7 +1941,7 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 	
 	// Convert result back to Python - support all types
 	if (!result->format || strlen(result->format) == 0) {
-		free(result);
+		w_free_args(result);
 		Py_RETURN_NONE;
 	}
 	
@@ -2056,7 +2031,7 @@ static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args)
 			break;
 	}
 	
-	free(result);
+	w_free_args(result);
 	return py_result ? py_result : Py_None;
 }
 

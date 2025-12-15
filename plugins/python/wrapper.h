@@ -236,6 +236,7 @@ int w_UnregisterFunction(int script_id, const char *func_name);
 
 w_Targs *w_pack(const char *format, ...);
 int w_unpack(w_Targs *a, const char *format, ...);
+void w_free_args(w_Targs *a);  // Free a w_Targs structure and all owned strings
 void w_LogLevel(int level);
 const char *w_packprint(w_Targs *a);
 }
