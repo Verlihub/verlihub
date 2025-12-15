@@ -1205,42 +1205,6 @@ w_Targs* ProcessUserData(int id, w_Targs* args) {
 - **Arbitrary nesting** - Objects in arrays, arrays in objects, etc.
 - **Automatic conversion** - Python dicts/lists ↔ JSON ↔ C++ structures
 
-**Examples:**
-
-```python
-# Hook receiving multiple argument types
-def OnParsedMsgMyINFO(nick, desc, tag, speed, email, share):
-    # nick: str, desc: str, tag: str, speed: str, email: str, share: int
-    print(f"{nick} has {share} bytes shared")
-    return 1
-
-# Hook with different types
-def OnCloseConnEx(ip, reason_code, nick):
-    # ip: str, reason_code: int, nick: str
-    if reason_code == vh.eCR_KICKED:
-        print(f"{nick} was kicked")
-    return 1
-
-# Complex nested data structures with sets and tuples
-def process_user_data(user_id, metadata, tags, coordinates):
-    # user_id: int
-    # metadata: dict with arbitrary nesting
-    # tags: set of strings
-    # coordinates: tuple of floats
-    if metadata.get('settings', {}).get('notifications'):
-        notify_user(user_id, metadata['preferences']['theme'])
-    
-    # Tags received as list (from JSON array), convert to set if needed
-    unique_tags = set(tags)
-    
-    return {
-        'processed': True,
-        'timestamp': time.time(),
-        'tag_count': len(unique_tags),
-        'location': coordinates
-    }
-```
-
 ### Event Hooks Reference
 
 Python scripts react to hub events by defining hook functions. Return `0` or `False` to block an event, `1`, `True`, or `None` to allow it to proceed.
