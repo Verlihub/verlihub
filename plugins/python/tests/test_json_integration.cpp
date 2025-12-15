@@ -60,11 +60,11 @@ TEST_F(JsonIntegrationTest, NestedDictRoundTrip) {
 	
 	// Parse JSON to JsonValue
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	// Convert to JSON string
-	std::string json_str = toJsonString(val);
+	std::string json_str = nVerliHub::nPythonPlugin::toJsonString(val);
 	ASSERT_FALSE(json_str.empty());
 	
 	// Pack as 'D' format
@@ -79,7 +79,7 @@ TEST_F(JsonIntegrationTest, NestedDictRoundTrip) {
 	
 	// Parse unpacked JSON
 	JsonValue val2;
-	ASSERT_TRUE(parseJson(unpacked_json, val2));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(unpacked_json, val2));
 	ASSERT_EQ(val2.type, JsonType::OBJECT);
 	
 	// Verify nested structure
@@ -120,7 +120,7 @@ TEST_F(JsonIntegrationTest, NestedListMixedTypes) {
 	])";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::ARRAY);
 	ASSERT_EQ(val.array_val.size(), 8);
 	
@@ -149,7 +149,7 @@ TEST_F(JsonIntegrationTest, NestedListMixedTypes) {
 	ASSERT_EQ(val.array_val[7].object_val.size(), 2);
 	
 	// Pack and verify
-	std::string json_str = toJsonString(val);
+	std::string json_str = nVerliHub::nPythonPlugin::toJsonString(val);
 	w_Targs *args = w_pack("D", strdup(json_str.c_str()));
 	ASSERT_NE(args, nullptr);
 	
@@ -158,7 +158,7 @@ TEST_F(JsonIntegrationTest, NestedListMixedTypes) {
 	ASSERT_NE(unpacked_json, nullptr);
 	
 	JsonValue val2;
-	ASSERT_TRUE(parseJson(unpacked_json, val2));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(unpacked_json, val2));
 	ASSERT_EQ(val2.type, JsonType::ARRAY);
 	ASSERT_EQ(val2.array_val.size(), 8);
 	
@@ -254,7 +254,7 @@ TEST_F(JsonIntegrationTest, PyObjectJsonStringConversion) {
 	
 	// Parse back
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_str, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_str, val));
 	ASSERT_EQ(val.type, JsonType::ARRAY);
 	ASSERT_EQ(val.array_val.size(), 5);
 	ASSERT_EQ(val.array_val[0].string_val, "hello");
@@ -294,7 +294,7 @@ TEST_F(JsonIntegrationTest, DeeplyNestedStructure) {
 	})";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	// Navigate to level 5
@@ -317,9 +317,9 @@ TEST_F(JsonIntegrationTest, DeeplyNestedStructure) {
 	ASSERT_EQ(l5.object_val["number"].int_val, 12345);
 	
 	// Round-trip through string
-	std::string json_str = toJsonString(val);
+	std::string json_str = nVerliHub::nPythonPlugin::toJsonString(val);
 	JsonValue val2 ;
-	ASSERT_TRUE(parseJson(json_str.c_str(), val2));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_str.c_str(), val2));
 	
 	auto& l5_2 = val2.object_val["level1"].object_val["level2"]
 		.object_val["level3"].object_val["level4"].object_val["level5"];
@@ -342,12 +342,12 @@ TEST_F(JsonIntegrationTest, LargeArrayPerformance) {
 	}
 	
 	// Serialize
-	std::string json_str = toJsonString(val);
+	std::string json_str = nVerliHub::nPythonPlugin::toJsonString(val);
 	ASSERT_FALSE(json_str.empty());
 	
 	// Deserialize
 	JsonValue val2 ;
-	ASSERT_TRUE(parseJson(json_str.c_str(), val2));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_str.c_str(), val2));
 	ASSERT_EQ(val2.type, JsonType::ARRAY);
 	ASSERT_EQ(val2.array_val.size(), 1000);
 	
@@ -373,7 +373,7 @@ TEST_F(JsonIntegrationTest, UnicodeStrings) {
 	})";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	// Verify all strings present
@@ -385,9 +385,9 @@ TEST_F(JsonIntegrationTest, UnicodeStrings) {
 	ASSERT_FALSE(val.object_val["arabic"].string_val.empty());
 	
 	// Round-trip
-	std::string json_str = toJsonString(val);
+	std::string json_str = nVerliHub::nPythonPlugin::toJsonString(val);
 	JsonValue val2 ;
-	ASSERT_TRUE(parseJson(json_str.c_str(), val2));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_str.c_str(), val2));
 	ASSERT_EQ(val2.object_val["english"].string_val, "Hello World");
 }
 
@@ -402,7 +402,7 @@ TEST_F(JsonIntegrationTest, SpecialCharactersEscaping) {
 	})";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	ASSERT_EQ(val.object_val["quotes"].string_val, "He said \"hello\"");
@@ -421,7 +421,7 @@ TEST_F(JsonIntegrationTest, LargeIntegerValues) {
 	})";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	ASSERT_EQ(val.object_val["small"].int_val, 42);
@@ -445,7 +445,7 @@ TEST_F(JsonIntegrationTest, MixedListDictNesting) {
 	})";
 	
 	JsonValue val;
-	ASSERT_TRUE(parseJson(json_input, val));
+	ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(json_input, val));
 	ASSERT_EQ(val.type, JsonType::OBJECT);
 	
 	auto& users = val.object_val["users"];
