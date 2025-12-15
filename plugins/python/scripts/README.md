@@ -8,6 +8,7 @@ This directory contains example Python scripts demonstrating the capabilities of
 - [Scripts](#scripts)
   - [hub_api.py - REST API Server](#hub_apipy---rest-api-server)
   - [matterbridge.py - Chat Bridge Connector](#matterbridgepy---chat-bridge-connector)
+  - [email_digest.py - Email Digest Reporter](#email_digestpy---email-digest-reporter)
 - [Installation](#installation)
   - [Using Virtual Environment (Recommended)](#using-virtual-environment-recommended)
   - [System-wide Installation](#system-wide-installation)
@@ -237,12 +238,11 @@ Bidirectional chat bridge connecting Verlihub with Matterbridge, enabling integr
 
 **Features:**
 - Bidirectional message relay (Hub ↔ Matterbridge)
-- Real-time message streaming via HTTP API
+- Thread-safe queue-based message passing
+- HTTP streaming for real-time updates
 - Automatic reconnection with exponential backoff
-- Message filtering and formatting
-- Support for multiple protocols simultaneously
-- Thread-safe background operation
-- Graceful error handling and recovery
+- User class filtering (only relay messages from certain user levels)
+- Nickname filtering (ignore messages from specific users)
 - Configurable message formats
 
 **Supported Platforms (via Matterbridge):**
@@ -294,19 +294,6 @@ enable=true
 [[gateway.inout]]
 account="api.verlihub"
 channel="api"
-
-[[gateway.inout]]
-account="mattermost.yourserver"
-channel="#sublevels"
-
-# Add other platforms as needed
-[[gateway.inout]]
-account="slack.yourworkspace"
-channel="general"
-
-[[gateway.inout]]
-account="irc.libera"
-channel="#mychannel"
 ```
 
 **Usage:**
@@ -314,35 +301,16 @@ channel="#mychannel"
 # Load the script
 !pyload /path/to/scripts/matterbridge.py
 
-# Configure (optional, if defaults don't match)
-!bridge config http://localhost:4242
+# Configure connection
+!bridge config http://localhost:4242/api/messages
 !bridge gateway verlihub
-!bridge channel #sublevels
+!bridge channel api
 
-# Start the bridge
+# Start bridging
 !bridge start
 ```
 
-**Message Flow:**
-
-Hub chat:
-```
-<UserNick> Hello everyone!
-```
-
-Appears on all bridged platforms as:
-```
-<UserNick> Hello everyone!
-```
-
-Messages from other platforms appear in hub:
-```
-[Bridge] [slack] <john.doe> Hey from Slack!
-[Bridge] [irc] <alice> IRC checking in
-[Bridge] [mattermost] <bob> Message from Mattermost
-```
-
-**Configuration Options:**
+**Script Configuration:**
 
 The script has a `CONFIG` dictionary at the top that you can customize:
 
@@ -361,6 +329,162 @@ CONFIG = {
     "ignore_nicks": [],                         # Nicks to filter
     "min_class_to_send": 0,                     # Min user class (0=all)
 }
+```
+
+---
+
+### email_digest.py - Email Digest Reporter
+
+Sends periodic email digests containing chat logs and client connection statistics. Perfect for hub administrators who want to monitor activity without being online 24/7.
+
+**Features:**
+- **Chat Digest**: Buffer chat messages and email after inactivity period
+- **Client Statistics**: Track joins/quits and send periodic reports  
+- **Dual Digest System**: Separate recipient lists for chat vs stats
+- **Inactivity-based Sending**: Only emails chat logs after configurable quiet period
+- **Activity-based Sending**: Only emails stats if there was client activity
+- **Thread-safe Buffering**: Safe concurrent access to message buffers
+- **HTML Email Formatting**: Professional formatted reports
+- **SMTP Authentication**: Supports TLS and authentication
+- **Admin Commands**: Manual trigger, status checks, and configuration
+
+**Chat Digest Behavior:**
+- Buffers all main chat messages with timestamps and nicknames
+- After N minutes of inactivity (no new messages), sends email digest
+- Clears buffer after sending
+- If buffer is empty, doesn't send anything
+- Configurable message limit to prevent memory issues
+
+**Client Statistics Behavior:**
+- Tracks every user join and quit event
+- Counts multiple joins/quits per user
+- Collects geographic information (country codes)
+- Records client software versions
+- Tracks share sizes (total and average)
+- Optionally includes IP addresses
+- After N minutes, sends statistics email and resets counters
+- Only sends if there was activity (joins or quits)
+- Shows last seen timestamp for each client
+- Aggregates data: unique countries, client versions, total share
+
+**Admin Commands:**
+```
+!digest status             - Show current buffer status
+!digest chat send          - Immediately send chat digest
+!digest chat clear         - Clear chat buffer without sending
+!digest stats send         - Immediately send client statistics
+!digest stats clear        - Clear client statistics
+!digest config             - Show SMTP and timing configuration
+!digest test <email>       - Send test email to verify setup
+```
+
+**Requirements:**
+```bash
+# Built-in Python modules only (smtplib, email.mime)
+# No additional dependencies needed
+```
+
+**Configuration:**
+
+Edit the `CONFIG` dictionary at the top of the script:
+
+```python
+CONFIG = {
+    # Email server settings
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_use_tls": True,
+    "smtp_username": "your-email@gmail.com",
+    "smtp_password": "your-app-password",      # Use app password for Gmail
+    "from_address": "your-email@gmail.com",
+    
+    # Recipients
+    "chat_recipients": ["admin@example.com", "moderator@example.com"],
+    "stats_recipients": ["admin@example.com"],
+    
+    # Chat digest settings
+    "chat_inactivity_minutes": 15,   # Email after 15 min of quiet chat
+    "chat_max_messages": 1000,       # Buffer size limit
+    
+    # Client stats settings
+    "stats_interval_minutes": 60,    # Email stats every 60 minutes
+    "stats_include_ips": False,      # Include IP addresses in report
+    "stats_include_geo": True,       # Include country codes
+    "stats_include_clients": True,   # Include client software versions
+    "stats_include_share": True,     # Include share size information
+    "stats_detailed": False,         # Show all data vs just latest values
+    
+    # General settings
+    "hub_name": "My Verlihub Hub",
+    "timezone": "UTC",
+}
+```
+
+**Gmail Setup:**
+
+For Gmail SMTP, you need an "App Password" (not your regular password):
+
+1. Enable 2-factor authentication on your Google account
+2. Go to: https://myaccount.google.com/apppasswords
+3. Generate an app password for "Mail"
+4. Use this password in the `smtp_password` field
+
+**Usage:**
+```bash
+# Load the script
+!pyload /path/to/scripts/email_digest.py
+
+# Check status
+!digest status
+
+# Test email delivery
+!digest test your-email@example.com
+
+# Manually trigger digests
+!digest chat send
+!digest stats send
+```
+
+**Example Chat Digest Email:**
+```
+Subject: [My Hub] Chat Digest - 45 messages
+
+Chat Digest for My Hub
+Period: 2025-12-15 10:00:00 to 2025-12-15 10:14:30
+Messages: 45
+
+================================================================================
+
+[2025-12-15 10:00:15] <Alice> Hey everyone!
+[2025-12-15 10:00:42] <Bob> Hi Alice, how's it going?
+[2025-12-15 10:01:05] <Alice> Great! Just sharing some files
+...
+```
+
+**Example Client Statistics Email:**
+```
+Subject: [My Hub] Client Statistics - 12 clients
+
+Client Statistics for My Hub  
+Period: 2025-12-15 09:00:00 to 2025-12-15 10:00:00
+Duration: 60.0 minutes
+
+Total Joins: 18
+Total Quits: 15
+Unique Clients: 12
+Countries: 5 (DE, FR, GB, NL, US)
+Client Software: 8 different versions
+Total Share: 15.3 TB
+Average Share: 1.28 TB
+
+================================================================================
+
+Client               Joins   Quits   Country  Share        Client Version                 Last Seen           
+----------------------------------------------------------------------------------------------------------------------------
+Alice                3       2       US       2.5 TB       DC++ 0.868                     2025-12-15 09:55:23
+Bob                  2       2       GB       1.8 TB       AirDC++ 4.21                   2025-12-15 09:48:10
+Charlie              1       1       DE       850 GB       EiskaltDC++ 2.4.2              2025-12-15 09:30:45
+...
 ```
 
 ---
