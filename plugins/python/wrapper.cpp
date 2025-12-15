@@ -1652,6 +1652,15 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	
 	// Acquire GIL and switch to script's interpreter
 	PyGILState_STATE gstate = PyGILState_Ensure();
+	
+	// CRITICAL: Re-check script validity after acquiring GIL
+	// Script may have been unloaded by another thread between our first check and now
+	script = w_Scripts[id];
+	if (!script || !script->state) {
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+	
 	PyThreadState *old_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
 
@@ -1828,6 +1837,16 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	}
 
 	PyGILState_STATE gstate = PyGILState_Ensure();
+	
+	// CRITICAL: Re-check script validity after acquiring GIL
+	// Script may have been unloaded by another thread between our first check and now
+	script = w_Scripts[id];
+	if (!script || !script->state) {
+		log("PY: w_CallFunction - script %d was unloaded\n", id);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+	
 	PyThreadState *old_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
 
