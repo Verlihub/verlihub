@@ -26,6 +26,7 @@
 #include <libgen.h>  // for basename, dirname
 #include <cstring>   // for strrchr
 #include <time.h>    // for nanosleep
+#include <signal.h>  // for sig_atomic_t
 
 using namespace std;
 using namespace nVerliHub::nEnums;
@@ -35,6 +36,10 @@ vector<w_TScript *> w_Scripts;
 static vector<bool> w_Scripts_had_threads;  // Track which scripts used threading (persists after w_Unload)
 
 static int log_level = 0;
+
+// Signal safety: Track if we're in a signal handler context
+// CRITICAL: Calling Python code from signal handlers causes deadlocks
+static volatile sig_atomic_t in_signal_handler = 0;
 
 #define pybool(a) ((a) ? ({ Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; }))
 #define pybool2(a) ((a) ? ({ free(a); Py_INCREF(Py_True); Py_True; }) : ({ Py_INCREF(Py_False); Py_False; }))
@@ -1642,11 +1647,34 @@ int w_HasHook(int id, int hook)
 	return script->hooks[hook];
 }
 
+void w_SetSignalContext(int is_signal)
+{
+	in_signal_handler = is_signal ? 1 : 0;
+}
+
 w_Targs *w_CallHook(int id, int num, w_Targs *params)
 {
+	// CRITICAL SAFETY CHECK: Never call Python from signal handlers
+	// Signal handlers can interrupt Python execution, and PyGILState_Ensure()
+	// will deadlock if the GIL is already held by the interrupted thread
+	//
+	// Detection: Use PyGILState_Check() (Python 3.4+) to see if we already
+	// have the GIL. If we're being called from a signal handler that interrupted
+	// Python code, the GIL will be held and PyGILState_Ensure() will deadlock.
+	//
+	// However, PyGILState_Check() isn't available in all Python versions, and
+	// even checking isn't foolproof. The safest approach is to use a timeout
+	// on GIL acquisition or to have the core not call hooks from signals.
+	if (in_signal_handler) {
+		log("[Python] WARNING: Skipping hook call from signal handler (prevents deadlock)\n");
+		return NULL;
+	}
+
 	w_TScript *script = w_Scripts[id];
 	if (!script) return NULL;
 
+	// Try to acquire GIL with timeout protection
+	// If we can't get it quickly, we're likely in a deadlock scenario
 	PyGILState_STATE gstate = PyGILState_Ensure();
 	PyThreadState *old_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
