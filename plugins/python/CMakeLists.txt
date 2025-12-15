@@ -25,6 +25,22 @@ SET(PYTHON_PI_VERSION "${PYTHON_PI_VERSION_MAJOR}.${PYTHON_PI_VERSION_MINOR}.${P
 ADD_DEFINITIONS(-DPYTHON_PI_VERSION=\"${PYTHON_PI_VERSION}\")
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
+# Advanced option: Use single interpreter instead of sub-interpreters
+# WARNING: This mode has security implications - scripts can access each other's data
+# Only enable if you need complex threading/daemon threads and accept the risks
+option(PYTHON_USE_SINGLE_INTERPRETER 
+    "Use single Python interpreter (allows threading but scripts can see each other)" 
+    OFF)
+
+if(PYTHON_USE_SINGLE_INTERPRETER)
+    message(STATUS "[ !! ] Python single interpreter mode ENABLED")
+    message(STATUS "       WARNING: Scripts can access each other's data")
+    message(STATUS "       This mode enables threading but has security implications")
+    add_definitions(-DPYTHON_SINGLE_INTERPRETER)
+else()
+    message(STATUS "[ OK ] Python sub-interpreter mode (default, secure isolation)")
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
 
@@ -132,6 +148,13 @@ if(GTest_FOUND)
         # Sets and tuples marshaling tests
         add_executable(test_sets_tuples tests/test_sets_tuples.cpp)
         target_link_libraries(test_sets_tuples GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+
+        # Single interpreter mode tests (only built when option is enabled)
+        if(PYTHON_USE_SINGLE_INTERPRETER)
+            add_executable(test_single_interpreter tests/test_single_interpreter.cpp)
+            target_link_libraries(test_single_interpreter GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+            add_test(NAME SingleInterpreterTests COMMAND test_single_interpreter)
+        endif()
 
         # Add tests to CTest (enable_testing is called in root CMakeLists.txt)
         add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)

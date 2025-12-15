@@ -1294,12 +1294,12 @@ int w_End()
 {
 	fprintf(stderr, "PY: w_End() called - starting Python cleanup\n");
 	
-	// Clean up all remaining subinterpreters before finalizing Python
-	// We need to track the main state before we start ending subinterpreters
+	// Clean up all remaining interpreters before finalizing Python
+	// We need to track the main state before we start ending interpreters
 	PyGILState_STATE gil = PyGILState_Ensure();
 	PyThreadState *main_state = PyThreadState_Get();
 	
-	fprintf(stderr, "PY: Acquired GIL, cleaning up %zu sub-interpreters\n", w_Scripts.size());
+	fprintf(stderr, "PY: Acquired GIL, cleaning up %zu script(s)\n", w_Scripts.size());
 	
 	bool any_had_threads = false;
 	
@@ -1311,7 +1311,46 @@ int w_End()
 		}
 	}
 	
-	// Second pass: clean up remaining interpreters
+#ifdef PYTHON_SINGLE_INTERPRETER
+	// Single interpreter mode: all scripts shared the same interpreter
+	// Just clean up the script objects, not the interpreter itself
+	fprintf(stderr, "PY: Single interpreter mode - cleaning up shared interpreter\n");
+	
+	for (size_t i = 0; i < w_Scripts.size(); ++i) {
+		w_TScript *script = w_Scripts[i];
+		if (script) {
+			// Clean up Python objects
+			Py_XDECREF(script->module);
+			script->module = NULL;
+			
+			// Clean up dynamic function registry
+			if (script->dynamic_funcs) {
+				delete script->dynamic_funcs;
+				script->dynamic_funcs = NULL;
+			}
+			
+			free(script->path);
+			free(script->name);
+			free(script->botname);
+			free(script->opchatname);
+			free(script->hooks);
+			free(script->config_name);
+			free(script);
+			w_Scripts[i] = NULL;
+		}
+	}
+	
+	// In single interpreter mode, we can safely call Py_Finalize even with threading
+	// because there are no sub-interpreters to corrupt
+	fprintf(stderr, "PY: Calling Py_Finalize() (safe in single interpreter mode)\n");
+	// Note: Do NOT release GIL before Py_Finalize - Python docs say finalize handles it
+	Py_Finalize();
+	// GIL is automatically released by Py_Finalize
+	
+#else
+	// Sub-interpreter mode: each script had its own isolated interpreter
+	fprintf(stderr, "PY: Sub-interpreter mode - cleaning up %zu sub-interpreters\n", w_Scripts.size());
+	
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
 		if (script && script->state) {
@@ -1364,6 +1403,7 @@ int w_End()
 	// Now all subinterpreters are cleaned up
 	// CRITICAL: Do NOT call Py_Finalize() if any interpreter used threading
 	// This is a known Python limitation - Py_Finalize() with threading causes crashes
+	// Reference: https://bugs.python.org/issue15751
 	if (any_had_threads) {
 		fprintf(stderr, "PY: Skipping Py_Finalize() because threading was used\n");
 		fprintf(stderr, "PY: This prevents crashes but will leak Python memory (known limitation)\n");
@@ -1376,6 +1416,7 @@ int w_End()
 		fprintf(stderr, "PY: Py_Finalize() completed successfully\n");
 		// No PyGILState_Release after Py_Finalize
 	}
+#endif
 	
 	// Clear tracking vectors
 	w_Scripts_had_threads.clear();
@@ -1432,16 +1473,26 @@ int w_Load(w_Targs *args)
 
 	PyGILState_STATE gil = PyGILState_Ensure();
 	PyThreadState *main_state = PyThreadState_Get();
+#ifdef PYTHON_SINGLE_INTERPRETER
+	// Single interpreter mode: all scripts share the same interpreter
+	// No need to create a new interpreter or swap states
+	script->state = main_state;
+	log("PY: [%d:%s] Using SINGLE interpreter mode (threading-safe, data shared)\n", id, script->name);
+#else
+	// Sub-interpreter mode: create isolated interpreter and swap back to main
 	script->state = Py_NewInterpreter();
 	PyThreadState_Swap(main_state);
+	log("PY: [%d:%s] Created SUB-interpreter (isolated, threading limited)\n", id, script->name);
+#endif
 	PyGILState_Release(gil);
 	if (!script->state) return -1;
 
+	// Acquire GIL and swap to script's interpreter (same as main in single mode)
 	PyGILState_STATE sub_gil = PyGILState_Ensure();
 	main_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
 
-	// Register vh module for this sub-interpreter
+	// Register vh module for this interpreter
 	PyObject *vh_mod = vh_CreateModule(id);
 	if (vh_mod) {
 		PyObject *modules = PyImport_GetModuleDict();
@@ -1543,7 +1594,15 @@ int w_Unload(int id)
 	script->had_threads = had_threads;
 	w_Scripts_had_threads[id] = had_threads;  // Persist even after script is freed
 	
+#ifdef PYTHON_SINGLE_INTERPRETER
+	// Single interpreter mode: never end the interpreter, just clean the module
+	// All scripts share the same interpreter, so we can't end it per-script
+	fprintf(stderr, "PY: Single interpreter mode - skipping Py_EndInterpreter()\n");
+	PyThreadState_Swap(main_state);
+#else
+	// Sub-interpreter mode: end interpreter only if no threading was used
 	// WORKAROUND: Do NOT call Py_EndInterpreter if threading was used
+	// Reference: https://bugs.python.org/issue15751
 	if (had_threads) {
 		fprintf(stderr, "PY: Skipping Py_EndInterpreter() for script %d (threading detected)\n", id);
 		// Switch back but don't end interpreter
@@ -1552,6 +1611,7 @@ int w_Unload(int id)
 		Py_EndInterpreter(script->state);
 		PyThreadState_Swap(main_state);
 	}
+#endif
 	
 	PyGILState_Release(gil);
 
