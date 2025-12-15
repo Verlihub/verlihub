@@ -28,15 +28,31 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
 
+# Find RapidJSON for JSON parsing (header-only library)
+find_path(RAPIDJSON_INCLUDE_DIR
+    NAMES rapidjson/rapidjson.h
+    PATHS /usr/include /usr/local/include
+)
+
+if(RAPIDJSON_INCLUDE_DIR)
+    include_directories(${RAPIDJSON_INCLUDE_DIR})
+    message(STATUS "[ OK ] RapidJSON found at ${RAPIDJSON_INCLUDE_DIR}")
+    add_definitions(-DHAVE_RAPIDJSON)
+else()
+    message(WARNING "[ !! ] RapidJSON not found; advanced JSON features will use fallback")
+endif()
+
 SET(PYTHON_HDRS
 	cconsole.h
 	cpipython.h
 	cpythoninterpreter.h
 	wrapper.h
+	json_marshal.h
 )
 
 SET(PYTHON_WRAPPER_SRCS
 	wrapper.cpp
+	json_marshal.cpp
 )
 
 SET(PYTHON_CORE_SRCS
@@ -105,6 +121,18 @@ if(GTest_FOUND)
         add_executable(test_dynamic_registration tests/test_dynamic_registration.cpp)
         target_link_libraries(test_dynamic_registration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
 
+        # JSON marshaling tests
+        add_executable(test_json_marshal tests/test_json_marshal.cpp)
+        target_link_libraries(test_json_marshal GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+
+        # JSON integration tests - comprehensive nested structure tests
+        add_executable(test_json_integration tests/test_json_integration.cpp)
+        target_link_libraries(test_json_integration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+
+        # Sets and tuples marshaling tests
+        add_executable(test_sets_tuples tests/test_sets_tuples.cpp)
+        target_link_libraries(test_sets_tuples GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+
         # Add tests to CTest (enable_testing is called in root CMakeLists.txt)
         add_test(NAME PythonWrapperTests COMMAND test_python_wrapper)
         add_test(NAME PythonWrapperStressTests COMMAND test_python_wrapper_stress)
@@ -116,6 +144,12 @@ if(GTest_FOUND)
         add_test(NAME VHModuleTests COMMAND test_vh_module)
         # Dynamic registration test - validates Dimension 4
         add_test(NAME DynamicRegistrationTests COMMAND test_dynamic_registration)
+        # JSON marshaling test - validates RapidJSON integration
+        add_test(NAME JsonMarshalTests COMMAND test_json_marshal)
+        # JSON integration test - validates complex nested structures
+        add_test(NAME JsonIntegrationTests COMMAND test_json_integration)
+        # Sets and tuples test - validates Python set/tuple marshaling
+        add_test(NAME SetsTuplesTests COMMAND test_sets_tuples)
         
         message(STATUS "[ OK ] GTest and GMock found, building Python plugin tests")
     else()

@@ -6,10 +6,13 @@
 
 #include <gtest/gtest.h>
 #include "../wrapper.h"
+#include "../json_marshal.h"
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
+
+using namespace nVerliHub::nPythonPlugin;
 
 // Helper function to generate unique test file paths in build directory
 static std::string GetTestFilePath(const char* base_name) {
@@ -276,23 +279,31 @@ TEST_F(DynamicRegistrationTest, IsolatedBetweenScripts) {
 TEST_F(DynamicRegistrationTest, ListArgumentAndReturn) {
 	// C++ function that takes a list and returns it reversed
 	auto ReverseList = [](int id, w_Targs* args) -> w_Targs* {
-		char **list;
-		if (!w_unpack(args, "L", &list)) {
-			return w_pack("L", (char**)NULL);
+		char *json_str;
+		if (!w_unpack(args, "D", &json_str)) {
+			return w_pack("D", strdup("[]"));
 		}
 		
-		// Count items
-		int count = 0;
-		while (list && list[count]) count++;
-		
-		// Create reversed list
-		char **reversed = (char**)malloc((count + 1) * sizeof(char*));
-		for (int i = 0; i < count; i++) {
-			reversed[i] = strdup(list[count - 1 - i]);
+#ifdef HAVE_RAPIDJSON
+		// Parse JSON array
+		nVerliHub::nPythonPlugin::JsonValue val;
+		if (!nVerliHub::nPythonPlugin::parseJson(json_str, val) || val.type != nVerliHub::nPythonPlugin::JsonType::ARRAY) {
+			return w_pack("D", strdup("[]"));
 		}
-		reversed[count] = NULL;
 		
-		return w_pack("L", reversed);
+		// Reverse the array
+		nVerliHub::nPythonPlugin::JsonValue reversed;
+		reversed.type = nVerliHub::nPythonPlugin::JsonType::ARRAY;
+		for (auto it = val.array_val.rbegin(); it != val.array_val.rend(); ++it) {
+			reversed.array_val.push_back(*it);
+		}
+		
+		// Serialize back to JSON
+		std::string result_json_str = nVerliHub::nPythonPlugin::toJsonString(reversed);
+		return w_pack("D", strdup(result_json_str.c_str()));
+#else
+		return w_pack("D", strdup("[]"));
+#endif
 	};
 	
 	int id = w_ReserveID();
@@ -393,16 +404,25 @@ TEST_F(DynamicRegistrationTest, MixedComplexTypes) {
 	auto ProcessData = [](int id, w_Targs* args) -> w_Targs* {
 		char *name;
 		long count;
-		char **items;
+		char *items_json;  // Now receives JSON for list
 		char *metadata_json;
 		
-		if (!w_unpack(args, "slLD", &name, &count, &items, &metadata_json)) {
+		if (!w_unpack(args, "slDD", &name, &count, &items_json, &metadata_json)) {
 			return w_pack("s", strdup("error"));
 		}
 		
-		// Count list items
+		// Parse items JSON to count elements
 		int item_count = 0;
-		while (items && items[item_count]) item_count++;
+#ifdef HAVE_RAPIDJSON
+		if (items_json) {
+			nVerliHub::nPythonPlugin::JsonValue items_val;
+			if (nVerliHub::nPythonPlugin::parseJson(items_json, items_val)) {
+				if (items_val.type == nVerliHub::nPythonPlugin::JsonType::ARRAY) {
+					item_count = items_val.array_val.size();
+				}
+			}
+		}
+#endif
 		
 		// Build result string
 		std::ostringstream result;
