@@ -785,7 +785,55 @@ import sqlite3
 
 ### Virtual Environments
 
-Each Python script runs in an isolated sub-interpreter. Scripts cannot directly access variables or functions from other scripts, but they can share data through the hub (via vh.GetConfig/SetConfig).
+You can use Python virtual environments to install script dependencies without polluting the system-wide Python installation.
+
+**Create a virtual environment:**
+
+```bash
+# Create a venv in your scripts directory
+cd /path/to/verlihub/scripts
+python3 -m venv venv
+
+# Activate the virtual environment
+source venv/bin/activate
+
+# Install packages
+pip install requests beautifulsoup4 sqlalchemy
+
+# Deactivate when done
+deactivate
+```
+
+**Use packages from the venv in your scripts:**
+
+```python
+#!/usr/bin/env python3
+import sys
+import os
+
+# Add venv site-packages to the import path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+venv_path = os.path.join(script_dir, 'venv', 'lib', 'python3.12', 'site-packages')
+sys.path.insert(0, venv_path)
+
+# Now you can import packages from the venv
+import requests
+import vh
+
+def OnUserLogin(nick):
+    """Example: Fetch user stats from external API"""
+    try:
+        response = requests.get(f'https://api.example.com/user/{nick}')
+        if response.status_code == 200:
+            data = response.json()
+            vh.pm(nick, f"Welcome back! Your rank: {data['rank']}")
+    except Exception as e:
+        print(f"API error: {e}")
+    
+    return 1
+```
+
+**Note:** Adjust the Python version in the venv path (`python3.12`) to match your system's Python version.
 
 ### Module Import Path
 
@@ -794,6 +842,7 @@ The script's directory is automatically added to `sys.path`, so you can import l
 ```
 /path/to/scripts/
   ├── main_script.py     # Your hub script
+  ├── venv/              # Virtual environment (optional)
   └── utils/
       ├── __init__.py
       └── helpers.py     # import utils.helpers works!
@@ -1136,7 +1185,7 @@ Main Python Interpreter
 **Benefits:**
 - Scripts cannot interfere with each other's global state
 - Each script has its own `vh.myid`, `vh.botname`, etc.
-- Memory corruption in one script doesn't affect others
+- Errors in one script doesn't affect others
 - Scripts can be loaded/unloaded independently
 
 **Limitations:**
