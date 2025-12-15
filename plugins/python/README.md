@@ -2033,6 +2033,32 @@ make test_python_plugin_integration test_single_interpreter -j$(nproc)
 - Check for NULL pointers before dereferencing
 - Run under valgrind to detect memory errors
 
+### Deadlock on Signal (SIGTERM, SIGHUP, etc.)
+
+**Problem**: Hub hangs/deadlocks when receiving signals, backtrace shows `PyGILState_Ensure()` waiting
+
+**Root Cause**: Signal handlers must NOT call Python code. When a signal interrupts Python execution, the GIL is already held. Calling `PyGILState_Ensure()` from the signal handler creates a deadlock.
+
+**Solutions**:
+1. **Recommended**: Ensure Verlihub core does not call plugin hooks from signal handlers
+2. **Workaround**: The Python plugin now automatically skips hook calls during signal context to prevent deadlocks
+3. **For Plugin Developers**: If you control the signal handler, call `w_SetSignalContext(1)` on entry and `w_SetSignalContext(0)` on exit:
+   ```cpp
+   void my_signal_handler(int sig) {
+       w_SetSignalContext(1);  // Mark signal context
+       // ... signal handling (don't call Python!)  ...
+       w_SetSignalContext(0);  // Clear signal context
+   }
+   ```
+
+**Why This Happens**:
+- Signal handler interrupts running Python code (GIL held by thread A)
+- Signal handler tries to call Python hook
+- `PyGILState_Ensure()` in hook tries to acquire GIL
+- Deadlock: thread A has GIL and is interrupted, signal handler waits for GIL that will never be released
+
+**Best Practice**: Use deferred signal handling - set a flag in the signal handler and check it in the main loop, then call plugin hooks from the main loop, not from the signal handler itself.
+
 ### Performance Issues
 
 **Problem**: Hub slows down with Python scripts
