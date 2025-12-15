@@ -72,12 +72,21 @@ cpiPython::cpiPython() : mConsole(this), mQuery(NULL)
 
 cpiPython::~cpiPython()
 {
+	fprintf(stderr, "PY: cpiPython::~cpiPython() destructor called\n");
+	
 	ostringstream o;
 	o << log_level;
 	SetConfig("pi_python", "log_level", o.str().c_str());
+	
+	fprintf(stderr, "PY: Calling Empty()...\n");
 	this->Empty();
+	
+	fprintf(stderr, "PY: Calling lib_end()...\n");
 	if (lib_end) (*lib_end)();
+	
+	fprintf(stderr, "PY: Calling dlclose()...\n");
 	if (lib_handle) dlclose(lib_handle);
+	
 	log1("PY: cpiPython::destructor   Plugin ready to be unloaded\n");
 
 	if (mQuery) {
