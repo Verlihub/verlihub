@@ -230,7 +230,7 @@ protected:
         // Mock args: id, path, botname, opchatname, config_dir, starttime, config_name
         w_Targs* args = w_pack("lssssls", id, script_path.c_str(), "TestBot", "OpChat", ".", (long)0, "config");
         EXPECT_EQ(id, w_Load(args));
-        free(args);
+        w_free_args(args);
         return id;
     }
 
@@ -245,7 +245,7 @@ protected:
                 free(res);
             }
         }
-        free(params);
+        w_free_args(params);
     }
 };
 
@@ -272,7 +272,7 @@ TEST_F(PythonWrapperTest, CallHook) {
     // Call OnTimer (expects double, but script returns 1)
     w_Targs* params = w_pack("d", 123.456);
     w_Targs* res = w_CallHook(id, W_OnTimer, params);
-    free(params);
+    w_free_args(params);
 
     ASSERT_NE(res, nullptr);
     long ret_val;
@@ -283,7 +283,7 @@ TEST_F(PythonWrapperTest, CallHook) {
     // Call OnParsedMsgChat (ss: nick, data)
     params = w_pack("ss", "test_user", "hello");
     res = w_CallHook(id, W_OnParsedMsgChat, params);
-    free(params);
+    w_free_args(params);
 
     ASSERT_NE(res, nullptr);
     w_unpack(res, "l", &ret_val);

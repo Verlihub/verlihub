@@ -122,7 +122,7 @@ TEST_F(DynamicRegistrationTest, RegisterAndCallFunction) {
 	ASSERT_TRUE(w_unpack(ret, "l", &value));
 	EXPECT_EQ(value, 12);
 	
-	free(ret);
+	w_free_args(ret);
 	w_Unload(id);
 }
 
@@ -158,7 +158,7 @@ TEST_F(DynamicRegistrationTest, RegisterMultipleFunctions) {
 	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
 	ASSERT_NE(result, nullptr);
 	
-	free(result);
+	w_free_args(result);
 	w_Unload(id);
 }
 
@@ -214,7 +214,7 @@ TEST_F(DynamicRegistrationTest, CallNonExistentFunction) {
 	// Note: result might be NULL if exception propagated, that's OK for this test
 	// The important thing is the script handled it
 	
-	if (result) free(result);
+	if (result) w_free_args(result);
 	w_Unload(id);
 }
 

@@ -86,22 +86,17 @@ TEST_F(AdvancedTypesTest, PythonReturnsStringList) {
 	EXPECT_STREQ(str_list[4], "moderator");
 	EXPECT_EQ(str_list[5], nullptr) << "List should be NULL-terminated";
 	
-	// Cleanup
-	for (int i = 0; str_list[i] != nullptr; i++) {
-		free(str_list[i]);
-	}
-	free(str_list);
-	free(result);
+	// Cleanup - w_free_args handles freeing the list and its contents
+	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, CppSendsListToPython) {
-	// Create list in C++
-	char *users[] = {
-		strdup("alice"),
-		strdup("bob"),
-		strdup("charlie"),
-		nullptr
-	};
+	// Create list in C++ - must be heap-allocated for w_pack
+	char **users = (char**)malloc(4 * sizeof(char*));
+	users[0] = strdup("alice");
+	users[1] = strdup("bob");
+	users[2] = strdup("charlie");
+	users[3] = nullptr;
 	
 	w_Targs *args = w_pack("L", users);
 	ASSERT_NE(args, nullptr) << "Failed to pack list";
@@ -109,10 +104,8 @@ TEST_F(AdvancedTypesTest, CppSendsListToPython) {
 	// Send to Python function that processes list
 	w_Targs *result = w_CallFunction(script_id, "process_string_list", args);
 	
-	free(args);
-	for (int i = 0; users[i] != nullptr; i++) {
-		free(users[i]);
-	}
+	// Cleanup args - this will also free the users array and its contents
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
 	
@@ -121,7 +114,7 @@ TEST_F(AdvancedTypesTest, CppSendsListToPython) {
 	ASSERT_TRUE(w_unpack(result, "l", &count)) << "Failed to unpack count";
 	EXPECT_EQ(count, 3) << "Expected 3 users";
 	
-	free(result);
+	w_free_args(result);
 }
 
 // ===== Phase 3: Dict/JSON Marshaling Tests =====
@@ -146,13 +139,12 @@ TEST_F(AdvancedTypesTest, PythonReturnsDict) {
 	
 	std::cout << "Returned JSON: " << json_str << std::endl;
 	
-	free(json_str);
-	free(result);
+	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, CppSendsDictToPython) {
-	// Create JSON string in C++
-	const char *json_config = "{\"hub_name\":\"MyHub\",\"max_users\":100}";
+	// Create JSON string in C++ - must be heap-allocated for w_pack
+	char *json_config = strdup("{\"hub_name\":\"MyHub\",\"max_users\":100}");
 	
 	w_Targs *args = w_pack("D", json_config);
 	ASSERT_NE(args, nullptr) << "Failed to pack dict";
@@ -160,7 +152,7 @@ TEST_F(AdvancedTypesTest, CppSendsDictToPython) {
 	// Send to Python function that processes dict
 	w_Targs *result = w_CallFunction(script_id, "process_dict", args);
 	
-	free(args);
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
 	
@@ -174,18 +166,17 @@ TEST_F(AdvancedTypesTest, CppSendsDictToPython) {
 	
 	std::cout << "Validation response: " << response_json << std::endl;
 	
-	free(response_json);
-	free(result);
+	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, ComplexDictRoundTrip) {
-	// Create complex JSON
-	const char *json_in = "{\"count\":5,\"items\":[\"a\",\"b\",\"c\"]}";
+	// Create complex JSON - must be heap-allocated for w_pack
+	char *json_in = strdup("{\"count\":5,\"items\":[\"a\",\"b\",\"c\"]}");
 	
 	w_Targs *args = w_pack("D", json_in);
 	w_Targs *result = w_CallFunction(script_id, "complex_round_trip", args);
 	
-	free(args);
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
 	
@@ -199,20 +190,19 @@ TEST_F(AdvancedTypesTest, ComplexDictRoundTrip) {
 	
 	std::cout << "Round-trip result: " << json_out << std::endl;
 	
-	free(json_out);
-	free(result);
+	w_free_args(result);
 }
 
 // ===== Phase 4: Bidirectional API Tests =====
 
 TEST_F(AdvancedTypesTest, CallPythonWithArgs) {
-	// Test calling Python with arguments
-	const char *test_nick = "TestUser123";
+	// Test calling Python with arguments - must be heap-allocated for w_pack
+	char *test_nick = strdup("TestUser123");
 	w_Targs *args = w_pack("s", test_nick);
 	
 	w_Targs *result = w_CallFunction(script_id, "get_user_info", args);
 	
-	free(args);
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Function call failed";
 	
@@ -220,14 +210,13 @@ TEST_F(AdvancedTypesTest, CallPythonWithArgs) {
 	char *user_info_json;
 	ASSERT_TRUE(w_unpack(result, "D", &user_info_json)) << "Failed to unpack user info";
 	
-	EXPECT_NE(strstr(user_info_json, test_nick), nullptr) << "Nick not in result";
+	EXPECT_NE(strstr(user_info_json, "TestUser123"), nullptr) << "Nick not in result";
 	EXPECT_NE(strstr(user_info_json, "class"), nullptr) << "Missing class field";
 	EXPECT_NE(strstr(user_info_json, "share_size"), nullptr) << "Missing share_size field";
 	
 	std::cout << "User info: " << user_info_json << std::endl;
 	
-	free(user_info_json);
-	free(result);
+	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, GetTestStatistics) {
@@ -248,8 +237,7 @@ TEST_F(AdvancedTypesTest, GetTestStatistics) {
 	
 	std::cout << "Test statistics: " << stats_json << std::endl;
 	
-	free(stats_json);
-	free(result);
+	w_free_args(result);
 }
 
 // ===== Stress Tests =====
@@ -269,12 +257,8 @@ TEST_F(AdvancedTypesTest, LargeListPerformance) {
 	w_Targs *args = w_pack("L", large_list);
 	w_Targs *result = w_CallFunction(script_id, "process_string_list", args);
 	
-	// Cleanup input list
-	free(args);
-	for (int i = 0; i < LIST_SIZE; i++) {
-		free(large_list[i]);
-	}
-	free(large_list);
+	// Cleanup - w_free_args handles freeing the list and all its contents
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Large list processing failed";
 	
@@ -282,21 +266,21 @@ TEST_F(AdvancedTypesTest, LargeListPerformance) {
 	ASSERT_TRUE(w_unpack(result, "l", &count)) << "Failed to unpack count";
 	EXPECT_EQ(count, LIST_SIZE) << "Count mismatch";
 	
-	free(result);
+	w_free_args(result);
 }
 
 TEST_F(AdvancedTypesTest, ComplexJSONPerformance) {
-	// Create complex nested JSON
-	const char *complex_json = "{"
+	// Create complex nested JSON - must be heap-allocated for w_pack
+	char *complex_json = strdup("{"
 		"\"users\":{\"total\":100,\"active\":50},"
 		"\"config\":{\"max_upload\":1000000,\"timeouts\":[30,60,120]},"
 		"\"metadata\":{\"version\":\"1.6.0\",\"build\":\"release\"}"
-	"}";
+	"}");
 	
 	w_Targs *args = w_pack("D", complex_json);
 	w_Targs *result = w_CallFunction(script_id, "complex_round_trip", args);
 	
-	free(args);
+	w_free_args(args);
 	
 	ASSERT_NE(result, nullptr) << "Complex JSON processing failed";
 	
@@ -308,8 +292,7 @@ TEST_F(AdvancedTypesTest, ComplexJSONPerformance) {
 	EXPECT_NE(strstr(result_json, "config"), nullptr);
 	EXPECT_NE(strstr(result_json, "processed"), nullptr);
 	
-	free(result_json);
-	free(result);
+	w_free_args(result);
 }
 
 int main(int argc, char **argv) {

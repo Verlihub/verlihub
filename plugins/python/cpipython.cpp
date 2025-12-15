@@ -525,7 +525,7 @@ bool cpiPython::CallAll(int func, w_Targs *args, cConnDC *conn) // the default h
 				log1("PY: CallAll %s: unexpected return value %s\n", lib_hookname(func), lib_packprint(result));
 			}
 
-			free(result);
+			w_free_args(result);
 		}
 	}
 
@@ -673,7 +673,7 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
 
-				free(result);
+				w_free_args(result);
 			}
 		}
 
@@ -914,7 +914,7 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
 
-				free(result);
+				w_free_args(result);
 			}
 		}
 
