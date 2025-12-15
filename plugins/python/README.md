@@ -1068,10 +1068,10 @@ The Python plugin supports complete bidirectional communication between C++ and 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                 Bidirectional Communication                  │
+│                 Bidirectional Communication                 │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  C++ Hub Core                    Python Scripts              │
+│                                                             │
+│  C++ Hub Core                    Python Scripts             │
 │  ┌────────────┐                  ┌──────────────┐           │
 │  │            │  Event Hooks     │              │           │
 │  │  Verlihub  │ ────────────────>│   script.py  │           │
@@ -1086,14 +1086,14 @@ The Python plugin supports complete bidirectional communication between C++ and 
 │  │            │<─────────────────│ return data  │           │
 │  │            │  (by name)       │              │           │
 │  └────────────┘                  └──────────────┘           │
-│       ↕                                 ↕                    │
+│       ↕                                 ↕                   │
 │  ┌────────────┐                  ┌──────────────┐           │
 │  │  C++ Plugin│  Dynamic Reg     │              │           │
 │  │            │ ────────────────>│ CallDynamic  │           │
 │  │ MyPlugin:: │  Register("fn")  │ Function()   │           │
 │  │ GetStats   │<─────────────────│              │           │
 │  └────────────┘  Call C++ func   └──────────────┘           │
-│                                                               │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1149,13 +1149,13 @@ The plugin uses the Global Interpreter Lock (GIL) for thread safety:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      GIL Management                          │
+│                      GIL Management                         │
 ├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  Hub Thread                         Python Sub-Interpreter   │
+│                                                             │
+│  Hub Thread                         Python Sub-Interpreter  │
 │  ┌────────────┐                     ┌──────────────┐        │
 │  │            │                     │              │        │
-│  │ C++ Code   │ 1. Acquire GIL     │              │        │
+│  │ C++ Code   │ 1. Acquire GIL      │              │        │
 │  │            │ ──────────────────> │              │        │
 │  │            │                     │ Python Code  │        │
 │  │            │ 2. Execute Python   │   Executing  │        │
@@ -1170,7 +1170,7 @@ The plugin uses the Global Interpreter Lock (GIL) for thread safety:
 │  │            │ 5. Return to Python │              │        │
 │  │            │                     │              │        │
 │  └────────────┘                     └──────────────┘        │
-│                                                               │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1444,13 +1444,33 @@ void cpiPython::OnLoad(cServerDC *server) {
 
 ```cpp
 TEST_F(VHModuleTest, YourNewFunctionWorks) {
-    std::string script = R"python(
-import vh
-result = vh.YourNewFunction("test", 42)
-assert result == expected_value
-)python";
+    // Create a test script file
+    int id = w_ReserveID();
+    std::string script_path = CreateTempFile("test_new_function");
+    FILE* f = fopen(script_path.c_str(), "w");
+    ASSERT_NE(f, nullptr);
+    fprintf(f, "import vh\n");
+    fprintf(f, "result = vh.YourNewFunction('test', 42)\n");
+    fprintf(f, "assert result == expected_value\n");
+    fclose(f);
     
-    ExecutePythonScript(script);
+    // Load and execute the script
+    w_Targs* load_args = w_pack("lssssls", 
+        (long)id, 
+        (char*)script_path.c_str(),
+        (char*)"TestBot",
+        (char*)"OpChat",
+        (char*)"/tmp",
+        (long)1234567890,
+        (char*)"test_config");
+    
+    int result = w_Load(load_args);
+    free(load_args);
+    
+    EXPECT_EQ(result, id);
+    
+    // Cleanup
+    w_Unload(id);
 }
 ```
 
@@ -1502,8 +1522,7 @@ make
 The Python plugin includes comprehensive tests in `plugins/python/tests/`:
 
 1. **test_python_wrapper** - Low-level C wrapper tests
-   - ⚠️ Currently has a pre-existing GIL state management bug causing crashes
-   - Not a regression from recent work, existed before single interpreter implementation
+   - ✅ All tests passing
 
 2. **test_python_plugin_integration** - Full integration tests
    - ✅ StressTreatMsg: 1M messages, 250K callbacks, throughput ~250K msg/sec
@@ -1553,7 +1572,7 @@ make -j$(nproc)
 | Threading | ⚠️ Limited (bug #15751) | ✅ Full threading support |
 | Cleanup | ✅ Leaks memory (safe) | ⚠️ May hang with threads |
 | Performance | ✅ Normal | ✅ Same |
-| Data Sharing | ❌ Scripts isolated | ✅ Scripts see each other |
+| Data Sharing | ✅ Scripts isolated | ⚠️ Scripts see each other |
 | Production | ✅ Recommended | ⚠️ Use with caution |
 
 ### Known Issues
