@@ -54,10 +54,24 @@ The Python plugin enables extensible scripting for Verlihub DC++ hub servers. It
 
 ## Quick Start
 
-### 1. Enable the Plugin
+### 1. Load the Python Plugin
+
+First, register and load the Python plugin using plugman:
 
 ```bash
+# Register the plugin (one-time setup, replace path as needed)
+!addplug python -p /usr/local/lib/libpython_pi.so -a 1
+
 # Load the plugin
+!onplug python
+```
+
+### 2. Load Python Scripts
+
+Once the plugin is loaded, you can load Python scripts:
+
+```bash
+# Load a script
 !pyload /path/to/script.py
 
 # List loaded scripts
@@ -70,7 +84,7 @@ The Python plugin enables extensible scripting for Verlihub DC++ hub servers. It
 !pyunload script_name
 ```
 
-### 2. Basic Python Script
+### 3. Basic Python Script
 
 ```python
 #!/usr/bin/env python3
