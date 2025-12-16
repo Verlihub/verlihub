@@ -554,13 +554,20 @@ def OnTimer(msec=0):
 
 def OnHubCommand(nick, command, user_class, in_pm, prefix):
     """Handle admin commands"""
+    # Debug output
+    print(f"[Email Digest] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
+    
     if user_class < 10:  # Only ops and above
         return 0
     
     args = command.split()
+    if not args:
+        return 0
+    
     cmd = args[0].lower()
     
-    if cmd == "!digest":
+    # The prefix (! + etc) is stripped, so command is just "digest ..."
+    if cmd == "digest":
         if len(args) < 2:
             vh.pm(nick, "\n".join([
                 "Email Digest Commands:",
