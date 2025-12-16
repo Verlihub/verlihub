@@ -440,8 +440,12 @@ def OnTimer(msec=0):
 
 def OnHubCommand(nick, command, user_class, in_pm, prefix):
     """Handle hub commands"""
+    # Debug output
+    print(f"[Hub API] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
+    
     parts = command.split()
     
+    # The prefix (! + etc) is stripped, so command is just "api ..."
     if not parts or parts[0] != "api":
         return 1
     
