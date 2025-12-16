@@ -439,7 +439,14 @@ def OnTimer(msec=0):
     return 1
 
 def OnHubCommand(nick, command, user_class, in_pm, prefix):
-    """Handle hub commands"""
+    """Handle hub commands
+    
+    IMPORTANT: Return value logic (Python -> C++ -> Verlihub core):
+    - return 1 → C++ returns true → Command is ALLOWED (passes through)
+    - return 0 → C++ returns false → Command is BLOCKED (consumed/handled)
+    
+    So: return 1 for commands we DON'T handle, return 0 for commands we DO handle
+    """
     # Debug output
     print(f"[Hub API] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
     
@@ -447,25 +454,25 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     # The prefix (! + etc) is stripped, so command is just "api ..."
     if not parts or parts[0] != "api":
-        return 0  # Not our command, let other handlers try
+        return 1  # Not our command, allow it (true in C++)
     
     # Check permissions (operators only)
     if user_class < 3:
         vh.pm(nick, "Permission denied. Operators only.")
-        return 1  # We handled it (with error), stop processing
+        return 0  # Block this command (false in C++)
     
     write = vh.pm if in_pm else vh.usermc
     
     if len(parts) < 2:
         write(nick, "Usage: !api [start|stop|status|help] [port]")
-        return 1  # We handled it (showed usage), stop processing
+        return 0  # Block command, we handled it
     
     subcmd = parts[1].lower()
     
     if subcmd == "start":
         if not FASTAPI_AVAILABLE:
             write(nick, "ERROR: FastAPI not installed. Run: pip install fastapi uvicorn")
-            return 1  # We handled it (with error), stop processing
+            return 0  # Block command, we handled it
         
         port = 8000
         if len(parts) > 2:
@@ -473,10 +480,10 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 port = int(parts[2])
                 if port < 1024 or port > 65535:
                     write(nick, "ERROR: Port must be between 1024 and 65535")
-                    return 1  # We handled it (with error), stop processing
+                    return 0  # Block command, we handled it
             except ValueError:
                 write(nick, "ERROR: Invalid port number")
-                return 1  # We handled it (with error), stop processing
+                return 0  # Block command, we handled it
         
         if is_api_running():
             write(nick, f"API server already running on port {api_port}")
@@ -531,7 +538,7 @@ Requirements:
         write(nick, f"Unknown subcommand: {subcmd}")
         write(nick, "Use: !api help")
     
-    return 1  # We handled this command, stop processing
+    return 0  # Block command, we handled it
 
 def UnLoad():
     """Cleanup when script unloads"""

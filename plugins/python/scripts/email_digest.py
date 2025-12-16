@@ -553,22 +553,33 @@ def OnTimer(msec=0):
     return 1
 
 def OnHubCommand(nick, command, user_class, in_pm, prefix):
-    """Handle admin commands"""
+    """Handle admin commands
+    
+    IMPORTANT: Return value logic (Python -> C++ -> Verlihub core):
+    - return 1 → C++ returns true → Command is ALLOWED (passes through)
+    - return 0 → C++ returns false → Command is BLOCKED (consumed/handled)
+    
+    So: return 1 for commands we DON'T handle, return 0 for commands we DO handle
+    """
     # Debug output
     print(f"[Email Digest] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
     
-    if user_class < 10:  # Only ops and above
-        return 0
-    
     args = command.split()
     if not args:
-        return 0  # Empty command, let other handlers try
+        return 1  # Empty command, allow it through
     
     cmd = args[0].lower()
     
     # The prefix (! + etc) is stripped, so command is just "digest ..."
-    if cmd == "digest":
-        if len(args) < 2:
+    if cmd != "digest":
+        return 1  # Not our command, allow it through
+    
+    # Check permissions
+    if user_class < 10:  # Only ops and above
+        vh.pm(nick, "Permission denied. Operators only.")
+        return 0  # Block this command
+    
+    if len(args) < 2:
             vh.pm(nick, "\n".join([
                 "Email Digest Commands:",
                 "  !digest status            - Show current status",
@@ -579,7 +590,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 "  !digest config            - Show configuration",
                 "  !digest test <email>      - Send test email",
             ]))
-            return 1  # We handled it (showed help), stop processing
+            return 0  # Block command, we handled it
         
         subcmd = args[1].lower()
         
@@ -607,7 +618,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 f"  Chat Recipients: {len(CONFIG['chat_recipients'])}",
                 f"  Stats Recipients: {len(CONFIG['stats_recipients'])}",
             ]))
-            return 1  # We handled it, stop processing
+            return 0  # Block command, we handled it
         
         elif subcmd == "chat" and len(args) > 2:
             action = args[2].lower()
@@ -619,7 +630,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                     count = len(chat_buffer)
                     chat_buffer.clear()
                 vh.pm(nick, f"Cleared {count} messages from chat buffer")
-            return 1  # We handled it, stop processing
+            return 0  # Block command, we handled it
         
         elif subcmd == "stats" and len(args) > 2:
             action = args[2].lower()
@@ -631,7 +642,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                     count = len(client_stats)
                     client_stats.clear()
                 vh.pm(nick, f"Cleared statistics for {count} clients")
-            return 1  # We handled it, stop processing
+            return 0  # Block command, we handled it
         
         elif subcmd == "config":
             vh.pm(nick, "\n".join([
@@ -643,7 +654,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 f"  Chat Recipients: {', '.join(CONFIG['chat_recipients']) or 'None'}",
                 f"  Stats Recipients: {', '.join(CONFIG['stats_recipients']) or 'None'}",
             ]))
-            return 1  # We handled it, stop processing
+            return 0  # Block command, we handled it
         
         elif subcmd == "test" and len(args) > 2:
             test_email = args[2]
@@ -653,9 +664,9 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 vh.pm(nick, f"Test email sent to {test_email}")
             else:
                 vh.pm(nick, "Failed to send test email - check console for errors")
-            return 1  # We handled it, stop processing
+            return 0  # Block command, we handled it
     
-    return 0  # Not our command, let other handlers try
+    return 1  # Not our command (or unrecognized subcommand), allow it through
 
 def UnLoad():
     """Cleanup when script unloads"""
