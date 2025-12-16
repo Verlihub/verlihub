@@ -408,86 +408,91 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     # Check permissions (operators only)
     if user_class < 3:
-        vh.pm(nick, "Permission denied. Operators only.")
+        vh.pm("Permission denied. Operators only.", nick)
         return 0
     
-    write = vh.pm if in_pm else vh.usermc
+    # Helper function to send messages (handles the correct vh.pm/vh.usermc signature)
+    def send_message(msg):
+        if in_pm:
+            vh.pm(msg, nick)  # pm(message, destination_nick, [from_nick], [bot_nick])
+        else:
+            vh.usermc(msg, nick)  # usermc(message, destination_nick, [bot_nick])
     
     if len(parts) < 2:
-        write(nick, "Usage: !bridge [start|stop|status|config|token|gateway|channel|help]")
+        send_message("Usage: !bridge [start|stop|status|config|token|gateway|channel|help]")
         return 0
     
     subcmd = parts[1].lower()
     
     if subcmd == "start":
         if not REQUESTS_AVAILABLE:
-            write(nick, "ERROR: requests library not installed. Run: pip install requests")
+            send_message("ERROR: requests library not installed. Run: pip install requests")
             return 0
         
         if is_bridge_running():
-            write(nick, "Bridge is already running")
+            send_message("Bridge is already running")
         else:
             if start_bridge():
-                write(nick, f"Bridge starting... Connecting to {CONFIG['api_url']}")
-                write(nick, f"Gateway: {CONFIG['gateway']}, Channel: {CONFIG['channel']}")
+                send_message(f"Bridge starting... Connecting to {CONFIG['api_url']}")
+                send_message(f"Gateway: {CONFIG['gateway']}, Channel: {CONFIG['channel']}")
             else:
-                write(nick, "ERROR: Failed to start bridge")
+                send_message("ERROR: Failed to start bridge")
     
     elif subcmd == "stop":
         if is_bridge_running():
             stop_bridge()
-            write(nick, "Bridge stopped")
+            send_message("Bridge stopped")
         else:
-            write(nick, "Bridge is not running")
+            send_message("Bridge is not running")
     
     elif subcmd == "status":
         if is_bridge_running():
             status = "CONNECTED" if is_bridge_connected() else "CONNECTING"
-            write(nick, f"Bridge is {status}")
-            write(nick, f"API: {CONFIG['api_url']}")
-            write(nick, f"Gateway: {CONFIG['gateway']}")
-            write(nick, f"Channel: {CONFIG['channel']}")
+            send_message(f"Bridge is {status}")
+            send_message(f"API: {CONFIG['api_url']}")
+            send_message(f"Gateway: {CONFIG['gateway']}")
+            send_message(f"Channel: {CONFIG['channel']}")
             if last_error and not is_bridge_connected():
-                write(nick, f"Last error: {last_error}")
+                send_message(f"Last error: {last_error}")
         else:
-            write(nick, "Bridge is STOPPED")
+            send_message("Bridge is STOPPED")
     
     elif subcmd == "config":
         if len(parts) < 3:
-            write(nick, f"Current API URL: {CONFIG['api_url']}")
-            write(nick, "Usage: !bridge config <url>")
+            send_message(f"Current API URL: {CONFIG['api_url']}")
+            send_message("Usage: !bridge config <url>")
         else:
             CONFIG["api_url"] = parts[2].rstrip('/')
-            write(nick, f"API URL set to: {CONFIG['api_url']}")
+            send_message(f"API URL set to: {CONFIG['api_url']}")
             if is_bridge_running():
-                write(nick, "Restart bridge for changes to take effect")
+                send_message("Restart bridge for changes to take effect")
     
     elif subcmd == "token":
         if len(parts) < 3:
             has_token = "SET" if CONFIG["api_token"] else "NOT SET"
-            write(nick, f"API token: {has_token}")
-            write(nick, "Usage: !bridge token <token>")
+            send_message(f"API token: {has_token}")
+            send_message("Usage: !bridge token <token>")
         else:
             CONFIG["api_token"] = parts[2]
-            write(nick, "API token updated")
+            send_message("API token updated")
             if is_bridge_running():
-                write(nick, "Restart bridge for changes to take effect")
+                send_message("Restart bridge for changes to take effect")
     
     elif subcmd == "gateway":
         if len(parts) < 3:
-            write(nick, f"Current gateway: {CONFIG['gateway']}")
-            write(nick, "Usage: !bridge gateway <name>")
+            send_message(f"Current gateway: {CONFIG['gateway']}")
+            send_message("Usage: !bridge gateway <name>")
         else:
             CONFIG["gateway"] = parts[2]
-            write(nick, f"Gateway set to: {CONFIG['gateway']}")
+            send_message(f"Gateway set to: {CONFIG['gateway']}")
     
     elif subcmd == "channel":
         if len(parts) < 3:
-            write(nick, f"Current channel: {CONFIG['channel']}")
-            write(nick, "Usage: !bridge channel <name>")
+            send_message(f"Current channel: {CONFIG['channel']}")
+            send_message("Usage: !bridge channel <name>")
         else:
             CONFIG["channel"] = parts[2]
-            write(nick, f"Channel set to: {CONFIG['channel']}")
+            send_message(f"Channel set to: {CONFIG['channel']}")
     
     elif subcmd == "help":
         help_text = """
@@ -532,11 +537,11 @@ Matterbridge Configuration Example:
 """.format(**CONFIG)
         
         for line in help_text.strip().split('\n'):
-            write(nick, line)
+            send_message(line)
     
     else:
-        write(nick, f"Unknown subcommand: {subcmd}")
-        write(nick, "Use: !bridge help")
+        send_message(f"Unknown subcommand: {subcmd}")
+        send_message("Use: !bridge help")
     
     return 0  # Command handled
 
