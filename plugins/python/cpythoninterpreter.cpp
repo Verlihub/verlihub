@@ -39,7 +39,9 @@ cPythonInterpreter::cPythonInterpreter(string scriptname) : mScriptName(scriptna
 
 cPythonInterpreter::~cPythonInterpreter()
 {
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: cPythonInterpreter::~cPythonInterpreter() called for id=%d\n", id);
+	#endif
 	
 	if (!cpiPython::lib_unload || !cpiPython::lib_callhook) {
 		log("PY: cPythonInterpreter can't use vh_python_wrapper!\n");
@@ -47,9 +49,13 @@ cPythonInterpreter::~cPythonInterpreter()
 	}
 	online = false;
 	if (id > -1) {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: Calling lib_unload(%d)...\n", id);
+		#endif
 		cpiPython::lib_unload(id);
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: lib_unload(%d) completed\n", id);
+		#endif
 	}
 }
 

@@ -1295,14 +1295,18 @@ int w_Begin(w_Tcallback *callbacks)
 
 int w_End()
 {
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: w_End() called - starting Python cleanup\n");
+	#endif
 	
 	// Clean up all remaining interpreters before finalizing Python
 	// We need to track the main state before we start ending interpreters
 	PyGILState_STATE gil = PyGILState_Ensure();
 	PyThreadState *main_state = PyThreadState_Get();
 	
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: Acquired GIL, cleaning up %zu script(s)\n", w_Scripts.size());
+	#endif
 	
 	bool any_had_threads = false;
 	
@@ -1310,14 +1314,18 @@ int w_End()
 	for (size_t i = 0; i < w_Scripts_had_threads.size(); ++i) {
 		if (w_Scripts_had_threads[i]) {
 			any_had_threads = true;
+			#ifdef DEBUG_WRAPPER
 			fprintf(stderr, "PY: Script %d had threading/asyncio\n", (int)i);
+			#endif
 		}
 	}
 	
 #ifdef PYTHON_SINGLE_INTERPRETER
 	// Single interpreter mode: all scripts shared the same interpreter
 	// Just clean up the script objects, not the interpreter itself
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: Single interpreter mode - cleaning up shared interpreter\n");
+	#endif
 	
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
@@ -1345,14 +1353,18 @@ int w_End()
 	
 	// In single interpreter mode, we can safely call Py_Finalize even with threading
 	// because there are no sub-interpreters to corrupt
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: Calling Py_Finalize() (safe in single interpreter mode)\n");
+	#endif
 	// Note: Do NOT release GIL before Py_Finalize - Python docs say finalize handles it
 	Py_Finalize();
 	// GIL is automatically released by Py_Finalize
 	
 #else
 	// Sub-interpreter mode: each script had its own isolated interpreter
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: Sub-interpreter mode - cleaning up %zu sub-interpreters\n", w_Scripts.size());
+	#endif
 	
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
@@ -1372,13 +1384,17 @@ int w_End()
 				// This is a known limitation of Python's sub-interpreter + threading model
 				// The interpreter will leak, but it's better than crashing
 				// Reference: https://bugs.python.org/issue15751
+				#ifdef DEBUG_WRAPPER
 				fprintf(stderr, "PY: Skipping Py_EndInterpreter() for sub-interpreter %d to prevent crash\n",
 				        (int)i);
+				#endif
 				// script->state is intentionally not freed - memory leak but no crash
 				script->state = NULL;  // Clear the pointer but don't end the interpreter
 			} else {
 				// Safe to end interpreters that didn't use threading
+				#ifdef DEBUG_WRAPPER
 				fprintf(stderr, "PY: Calling Py_EndInterpreter() for sub-interpreter %d\n", (int)i);
+				#endif
 				Py_EndInterpreter(script->state);
 				script->state = NULL;
 			}
@@ -1408,15 +1424,21 @@ int w_End()
 	// This is a known Python limitation - Py_Finalize() with threading causes crashes
 	// Reference: https://bugs.python.org/issue15751
 	if (any_had_threads) {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: Skipping Py_Finalize() because threading was used\n");
 		fprintf(stderr, "PY: This prevents crashes but will leak Python memory (known limitation)\n");
 		fprintf(stderr, "PY: Also skipping PyGILState_Release() to avoid thread state corruption\n");
+		#endif
 		// Do NOT release GIL or finalize - just leave Python in current state
 		// This leaks memory but prevents crashes
 	} else {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: About to call Py_Finalize()...\n");
+		#endif
 		Py_Finalize();
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: Py_Finalize() completed successfully\n");
+		#endif
 		// No PyGILState_Release after Py_Finalize
 	}
 #endif
@@ -1600,14 +1622,18 @@ int w_Unload(int id)
 #ifdef PYTHON_SINGLE_INTERPRETER
 	// Single interpreter mode: never end the interpreter, just clean the module
 	// All scripts share the same interpreter, so we can't end it per-script
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: Single interpreter mode - skipping Py_EndInterpreter()\n");
+	#endif
 	PyThreadState_Swap(main_state);
 #else
 	// Sub-interpreter mode: end interpreter only if no threading was used
 	// WORKAROUND: Do NOT call Py_EndInterpreter if threading was used
 	// Reference: https://bugs.python.org/issue15751
 	if (had_threads) {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: Skipping Py_EndInterpreter() for script %d (threading detected)\n", id);
+		#endif
 		// Switch back but don't end interpreter
 		PyThreadState_Swap(main_state);
 	} else {
@@ -1710,7 +1736,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			case 'l': {
 				PyObject *long_obj = PyLong_FromLong(params->args[i].l);
 				if (!long_obj) {
+					#ifdef DEBUG_WRAPPER
 					fprintf(stderr, "PY: w_CallHook - PyLong_FromLong failed\n");
+					#endif
 					PyErr_Clear();
 					Py_DECREF(args);
 					Py_DECREF(func);
@@ -1728,7 +1756,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 					PyObject *str_obj = PyUnicode_FromString(s);
 					if (!str_obj) {
 						// Invalid UTF-8 or allocation failure
+						#ifdef DEBUG_WRAPPER
 						fprintf(stderr, "PY: w_CallHook - PyUnicode_FromString failed for hook %d\n", num);
+						#endif
 						PyErr_Clear();
 						Py_DECREF(args);
 						Py_DECREF(func);
@@ -1747,7 +1777,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			case 'd': {
 				PyObject *float_obj = PyFloat_FromDouble(params->args[i].d);
 				if (!float_obj) {
+					#ifdef DEBUG_WRAPPER
 					fprintf(stderr, "PY: w_CallHook - PyFloat_FromDouble failed\n");
+					#endif
 					PyErr_Clear();
 					Py_DECREF(args);
 					Py_DECREF(func);
@@ -1762,7 +1794,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			case 'p': {
 				PyObject *ptr_obj = PyLong_FromVoidPtr(params->args[i].p);
 				if (!ptr_obj) {
+					#ifdef DEBUG_WRAPPER
 					fprintf(stderr, "PY: w_CallHook - PyLong_FromVoidPtr failed\n");
+					#endif
 					PyErr_Clear();
 					Py_DECREF(args);
 					Py_DECREF(func);
@@ -1788,7 +1822,10 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	for (size_t i = 0; i < arg_count; i++) {
 		PyObject *item = PyTuple_GetItem(args, i);
 		if (!item) {
+			#ifdef DEBUG_WRAPPER
 			fprintf(stderr, "PY: w_CallHook - NULL item in args tuple at index %zu\n", i);
+			#endif
+
 			Py_DECREF(args);
 			Py_DECREF(func);
 			Py_XDECREF(module);
@@ -1800,7 +1837,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 
 	// Validate func and args before calling
 	if (!PyCallable_Check(func)) {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: w_CallHook - func is not callable\n");
+		#endif
 		Py_DECREF(args);
 		Py_DECREF(func);
 		Py_XDECREF(module);
@@ -1810,7 +1849,9 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	}
 
 	if (!PyTuple_Check(args)) {
+		#ifdef DEBUG_WRAPPER
 		fprintf(stderr, "PY: w_CallHook - args is not a tuple\n");
+		#endif
 		Py_DECREF(args);
 		Py_DECREF(func);
 		Py_XDECREF(module);
@@ -1819,9 +1860,13 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		return NULL;
 	}
 
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: w_CallHook - About to call hook %d with %zu args\n", num, arg_count);
+	#endif
 	PyObject *res = PyObject_CallObject(func, args);
+	#ifdef DEBUG_WRAPPER
 	fprintf(stderr, "PY: w_CallHook - Returned from PyObject_CallObject, res=%p\n", (void*)res);
+	#endif
 
 	Py_DECREF(args);
 	Py_DECREF(func);
