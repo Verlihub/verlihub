@@ -1706,21 +1706,12 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 				break;
 			case 's': {
 				const char *s = params->args[i].s;
-#if PY_MAJOR_VERSION >= 3
 				if (s) {
 					PyTuple_SetItem(args, i, PyUnicode_FromString(s));
 				} else {
 					Py_INCREF(Py_None);
 					PyTuple_SetItem(args, i, Py_None);
 				}
-#else
-				if (s) {
-					PyTuple_SetItem(args, i, PyString_FromString(s));
-				} else {
-					Py_INCREF(Py_None);
-					PyTuple_SetItem(args, i, Py_None);
-				}
-#endif
 				break;
 			}
 			case 'd':
@@ -1754,7 +1745,6 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 
 	w_Targs *ret = NULL;
 
-#if PY_MAJOR_VERSION >= 3
 	if (PyLong_Check(res)) {
 		long l = PyLong_AsLong(res);
 		ret = w_pack("l", l);
@@ -1797,49 +1787,6 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			}
 		}
 	}
-#else
-	if (PyInt_Check(res) || PyLong_Check(res)) {
-		long l = PyLong_AsLong(res);  // Handles both in Py2
-		ret = w_pack("l", l);
-	} else if (PyFloat_Check(res)) {
-		double d = PyFloat_AsDouble(res);
-		ret = w_pack("d", d);
-	} else if (PyString_Check(res)) {
-		char *s = PyString_AsString(res);
-		if (!s) s = "";
-		ret = w_pack("s", strdup(s));
-	} else if (res == Py_None) {
-		ret = w_pack("l", (long)0);  // Default to 0 for None
-	} else if (PyTuple_Check(res)) {
-		int len = PyTuple_Size(res);
-		if (len > W_MAX_RETVALS) len = W_MAX_RETVALS;
-		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
-		if (!ret) {
-			Py_DECREF(res);
-			PyThreadState_Swap(old_state);
-			PyGILState_Release(gstate);
-			return NULL;
-		}
-		ret->format = "tab";
-		for (int i = 0; i < len; i++) {
-			PyObject *item = PyTuple_GetItem(res, i);
-			if (PyInt_Check(item) || PyLong_Check(item)) {
-				ret->args[i].type = 'l';
-				ret->args[i].l = PyLong_AsLong(item);
-			} else if (PyFloat_Check(item)) {
-				ret->args[i].type = 'd';
-				ret->args[i].d = PyFloat_AsDouble(item);
-			} else if (PyString_Check(item)) {
-				char *s = PyString_AsString(item);
-				if (!s) s = "";
-				ret->args[i].type = 's';
-				ret->args[i].s = strdup(s);
-			} else {
-				ret->args[i].type = 0;
-			}
-		}
-	}
-#endif
 
 	Py_DECREF(res);
 	Py_XDECREF(module);
@@ -1921,21 +1868,12 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				break;
 			case 's': {
 				const char *s = params->args[i].s;
-#if PY_MAJOR_VERSION >= 3
 				if (s) {
 					PyTuple_SetItem(args, i, PyUnicode_FromString(s));
 				} else {
 					Py_INCREF(Py_None);
 					PyTuple_SetItem(args, i, Py_None);
 				}
-#else
-				if (s) {
-					PyTuple_SetItem(args, i, PyString_FromString(s));
-				} else {
-					Py_INCREF(Py_None);
-					PyTuple_SetItem(args, i, Py_None);
-				}
-#endif
 				break;
 			}
 			case 'd':
@@ -1956,11 +1894,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				
 				PyObject *py_list = PyList_New(count);
 				for (int j = 0; j < count; j++) {
-#if PY_MAJOR_VERSION >= 3
 					PyList_SetItem(py_list, j, PyUnicode_FromString(list[j]));
-#else
-					PyList_SetItem(py_list, j, PyString_FromString(list[j]));
-#endif
 				}
 				PyTuple_SetItem(args, i, py_list);
 				break;
@@ -1998,11 +1932,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 					PyTuple_SetItem(args, i, PyDict_New());
 					break;
 				}
-#if PY_MAJOR_VERSION >= 3
 				PyObject *json_arg = PyUnicode_FromString(json_str);
-#else
-				PyObject *json_arg = PyString_FromString(json_str);
-#endif
 				PyObject *py_dict = PyObject_CallFunction(loads_func, "O", json_arg);
 				Py_DECREF(json_arg);
 				Py_DECREF(loads_func);
@@ -2052,7 +1982,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 
 	w_Targs *ret = NULL;
 
-#if PY_MAJOR_VERSION >= 3
 	if (PyLong_Check(res)) {
 		long l = PyLong_AsLong(res);
 		ret = w_pack("l", l);
@@ -2075,36 +2004,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 			log("PY: w_CallFunction - failed to convert container to JSON\n");
 			ret = w_pack("D", strdup("[]"));
 		}
-#else
-		// Fallback to Python json module
-		PyObject *json_module = PyImport_ImportModule("json");
-		if (!json_module) {
-			log("PY: w_CallFunction - failed to import json module for list return\n");
-			PyErr_Clear();
-			ret = w_pack("D", strdup("[]"));
-		} else {
-			PyObject *dumps_func = PyObject_GetAttrString(json_module, "dumps");
-			if (!dumps_func) {
-				log("PY: w_CallFunction - failed to get json.dumps\n");
-				PyErr_Clear();
-				Py_DECREF(json_module);
-				ret = w_pack("D", strdup("[]"));
-			} else {
-				PyObject *json_str = PyObject_CallFunction(dumps_func, "O", res);
-				Py_DECREF(dumps_func);
-				Py_DECREF(json_module);
-				if (!json_str || PyErr_Occurred()) {
-					log("PY: w_CallFunction - failed to convert list to JSON\n");
-					PyErr_Clear();
-					ret = w_pack("D", strdup("[]"));
-				} else {
-					const char *s = PyUnicode_AsUTF8(json_str);
-					ret = w_pack("D", s ? strdup(s) : strdup("[]"));
-					Py_DECREF(json_str);
-				}
-			}
-		}
-#endif
 	} else if (PyDict_Check(res)) {  // Phase 3: Dict to 'D' format (JSON)
 #ifdef HAVE_RAPIDJSON
 		// Use RapidJSON-based converter for fast serialization
