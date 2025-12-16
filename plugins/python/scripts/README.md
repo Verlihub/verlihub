@@ -437,13 +437,22 @@ For Gmail SMTP, you need an "App Password" (not your regular password):
 # Check status
 !digest status
 
-# Test email delivery
+# Test email delivery (replace with your actual email)
 !digest test your-email@example.com
 
 # Manually trigger digests
 !digest chat send
 !digest stats send
 ```
+
+**Troubleshooting:**
+
+If commands don't work:
+1. Check you have operator privileges (class 10+): `!myinfo`
+2. Check the script loaded: `!pylist`
+3. Look for debug output in hub console showing command received
+4. Verify command prefix matches hub config (usually `!` or `+`)
+5. Try reloading: `!pyreload email_digest`
 
 **Example Chat Digest Email:**
 ```

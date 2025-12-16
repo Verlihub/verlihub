@@ -447,25 +447,25 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     # The prefix (! + etc) is stripped, so command is just "api ..."
     if not parts or parts[0] != "api":
-        return 1
+        return 0  # Not our command, let other handlers try
     
     # Check permissions (operators only)
     if user_class < 3:
         vh.pm(nick, "Permission denied. Operators only.")
-        return 0
+        return 1  # We handled it (with error), stop processing
     
     write = vh.pm if in_pm else vh.usermc
     
     if len(parts) < 2:
         write(nick, "Usage: !api [start|stop|status|help] [port]")
-        return 0
+        return 1  # We handled it (showed usage), stop processing
     
     subcmd = parts[1].lower()
     
     if subcmd == "start":
         if not FASTAPI_AVAILABLE:
             write(nick, "ERROR: FastAPI not installed. Run: pip install fastapi uvicorn")
-            return 0
+            return 1  # We handled it (with error), stop processing
         
         port = 8000
         if len(parts) > 2:
@@ -473,10 +473,10 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 port = int(parts[2])
                 if port < 1024 or port > 65535:
                     write(nick, "ERROR: Port must be between 1024 and 65535")
-                    return 0
+                    return 1  # We handled it (with error), stop processing
             except ValueError:
                 write(nick, "ERROR: Invalid port number")
-                return 0
+                return 1  # We handled it (with error), stop processing
         
         if is_api_running():
             write(nick, f"API server already running on port {api_port}")
@@ -531,7 +531,7 @@ Requirements:
         write(nick, f"Unknown subcommand: {subcmd}")
         write(nick, "Use: !api help")
     
-    return 0  # Command handled
+    return 1  # We handled this command, stop processing
 
 def UnLoad():
     """Cleanup when script unloads"""

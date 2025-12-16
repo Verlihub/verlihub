@@ -562,7 +562,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     args = command.split()
     if not args:
-        return 0
+        return 0  # Empty command, let other handlers try
     
     cmd = args[0].lower()
     
@@ -579,7 +579,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 "  !digest config            - Show configuration",
                 "  !digest test <email>      - Send test email",
             ]))
-            return 1
+            return 1  # We handled it (showed help), stop processing
         
         subcmd = args[1].lower()
         
@@ -607,7 +607,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 f"  Chat Recipients: {len(CONFIG['chat_recipients'])}",
                 f"  Stats Recipients: {len(CONFIG['stats_recipients'])}",
             ]))
-            return 1
+            return 1  # We handled it, stop processing
         
         elif subcmd == "chat" and len(args) > 2:
             action = args[2].lower()
@@ -619,7 +619,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                     count = len(chat_buffer)
                     chat_buffer.clear()
                 vh.pm(nick, f"Cleared {count} messages from chat buffer")
-            return 1
+            return 1  # We handled it, stop processing
         
         elif subcmd == "stats" and len(args) > 2:
             action = args[2].lower()
@@ -631,7 +631,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                     count = len(client_stats)
                     client_stats.clear()
                 vh.pm(nick, f"Cleared statistics for {count} clients")
-            return 1
+            return 1  # We handled it, stop processing
         
         elif subcmd == "config":
             vh.pm(nick, "\n".join([
@@ -643,7 +643,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 f"  Chat Recipients: {', '.join(CONFIG['chat_recipients']) or 'None'}",
                 f"  Stats Recipients: {', '.join(CONFIG['stats_recipients']) or 'None'}",
             ]))
-            return 1
+            return 1  # We handled it, stop processing
         
         elif subcmd == "test" and len(args) > 2:
             test_email = args[2]
@@ -653,9 +653,9 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 vh.pm(nick, f"Test email sent to {test_email}")
             else:
                 vh.pm(nick, "Failed to send test email - check console for errors")
-            return 1
+            return 1  # We handled it, stop processing
     
-    return 0
+    return 0  # Not our command, let other handlers try
 
 def UnLoad():
     """Cleanup when script unloads"""
