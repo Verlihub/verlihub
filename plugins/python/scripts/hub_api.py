@@ -18,13 +18,58 @@ Admin commands:
 Requirements:
   pip install fastapi uvicorn
 
-IMPORTANT: This script requires Verlihub to be compiled with single-interpreter mode:
+IMPORTANT COMPILATION REQUIREMENT:
+===================================
+This script REQUIRES Verlihub to be compiled with single-interpreter mode:
+
   cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
-  
-FastAPI/Pydantic use C extensions (PyO3/Rust) that don't support Python subinterpreters.
-The default subinterpreter mode will fail to load FastAPI with errors like:
+  make
+
+Why Single-Interpreter Mode is Required:
+-----------------------------------------
+FastAPI, Pydantic, and many modern Python packages use C extensions built with:
+  - PyO3 (Rust bindings for Python)
+  - pybind11 with global state
+  - Cython modules with static/global variables
+
+These C extensions are fundamentally incompatible with Python's sub-interpreter mode
+because they:
+  1. Store global state that's shared across all interpreters
+  2. Use CPython APIs that don't support interpreter isolation
+  3. Cache module imports at the C level
+
+Attempting to use these packages in sub-interpreter mode will fail with:
   - "PyO3 modules do not yet support subinterpreters"
   - "Interpreter change detected - this module can only be loaded into one interpreter"
+  - ImportError or segmentation faults
+
+Single-Interpreter vs Sub-Interpreter Mode:
+--------------------------------------------
+SUB-INTERPRETER MODE (default):
+  + Each script runs in isolated Python environment
+  + Scripts cannot interfere with each other's globals
+  + Memory leak in one script doesn't affect others
+  - Incompatible with FastAPI, Pydantic, uvicorn, PyO3-based packages
+  - Incompatible with many popular packages (numpy, pandas, torch, etc.)
+  
+SINGLE-INTERPRETER MODE (required for this script):
+  + All modern Python packages work (FastAPI, asyncio, threading, etc.)
+  + Full threading and async/await support
+  + Better performance (no interpreter switching overhead)
+  - All scripts share same Python environment (use unique names!)
+  - Global variables are shared between scripts (use proper namespacing)
+
+Thread Safety Note:
+-------------------
+This script uses threading (uvicorn runs FastAPI in background threads).
+The vh module is NOT thread-safe - it can only be called from the main
+Verlihub thread. This script uses a cache pattern to work around this:
+
+  1. OnTimer() hook (main thread) updates data cache from vh module
+  2. FastAPI endpoints (background threads) read from the cache
+  3. Never call vh.* functions from background threads!
+
+See scripts/README.md for detailed thread-safety patterns and best practices.
 
 Author: Verlihub Team
 Version: 1.0.0

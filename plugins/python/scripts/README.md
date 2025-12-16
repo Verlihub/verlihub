@@ -21,11 +21,68 @@ This directory contains example Python scripts demonstrating the capabilities of
 
 ---
 
-## Important: Thread Safety
+## Important: Interpreter Modes and Threading
+
+### Compilation Modes: Single vs Sub-Interpreter
+
+Verlihub's Python plugin supports two interpreter modes, controlled at compile time:
+
+**SUB-INTERPRETER MODE** (default - `cmake` without flags):
+```bash
+cmake ..
+make
+```
+- Each Python script runs in its own isolated interpreter
+- Scripts cannot interfere with each other's global variables
+- Memory leaks in one script don't affect others
+- Scripts can be reloaded without affecting other scripts
+- **LIMITATION**: Incompatible with many modern Python packages
+
+**SINGLE-INTERPRETER MODE** (required for modern packages):
+```bash
+cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
+make
+```
+- All Python scripts share one Python interpreter
+- Full compatibility with modern Python ecosystem
+- All threading, asyncio, and concurrent.futures work perfectly
+- **TRADE-OFF**: Scripts share global namespace (use proper namespacing!)
+
+### Package Compatibility Issues
+
+Many popular Python packages **will not work** in sub-interpreter mode due to:
+
+1. **PyO3/Rust Extensions** (most modern packages):
+   - FastAPI, Pydantic, uvicorn
+   - cryptography, tokenizers, polars
+   - **Error**: "PyO3 modules do not yet support subinterpreters"
+
+2. **Packages with Global C State**:
+   - numpy, pandas, scipy
+   - torch, tensorflow
+   - **Error**: "Interpreter change detected" or segfaults
+
+3. **Cached Module Imports**:
+   - asyncio event loops
+   - threading module state
+   - **Error**: Threading crashes or import failures
+
+**Decision Matrix:**
+
+| Use Case | Recommended Mode | Reason |
+|----------|------------------|--------|
+| Simple event hooks only | Sub-interpreter | Better isolation |
+| Using FastAPI/web servers | Single-interpreter | Package compatibility |
+| Using numpy/pandas/ML libs | Single-interpreter | Package compatibility |
+| Heavy threading/asyncio | Single-interpreter | Threading stability |
+| Need script isolation | Sub-interpreter | Namespace safety |
+| Multiple users editing scripts | Sub-interpreter | Independent reload |
+
+### Thread Safety
 
 **⚠️ CRITICAL: The `vh` module is NOT thread-safe and must only be called from the main Verlihub thread.**
 
-### The Problem
+#### The Problem
 
 The Verlihub C++ API was not designed with thread-safety in mind. When Python scripts create background threads (for HTTP servers, network I/O, etc.), calling `vh` module functions from these threads can cause:
 
@@ -153,6 +210,60 @@ When creating scripts with background threads:
            worker_thread.join(timeout=2)  # Wait for cleanup
    ```
 
+### Real-World Experience: Threading Issues in Single-Interpreter Mode
+
+During stress testing with the hub_api.py script (5 tests, 600 concurrent commands, 5000 messages), we discovered critical threading issues even in single-interpreter mode:
+
+**Problem**: Race condition crashes in `_PyEval_EvalFrameDefault`
+- When FastAPI/uvicorn created background threads for HTTP requests
+- Concurrent calls to Python hooks from Verlihub main thread
+- `PyThreadState_Swap()` operations corrupted thread state
+- **Result**: Segfaults in Python eval loop after ~10 seconds
+
+**Root Cause**: In single-interpreter mode, all scripts share the same `PyThreadState`, making state-swapping unnecessary and dangerous. When background threads are running:
+1. Main thread calls hook → swaps to script state (which is same as main state)
+2. Background thread holds GIL → PyThreadState_Get() may return NULL
+3. Main thread tries to swap back → NULL pointer or invalid state → crash
+
+**Solution**: Conditional PyThreadState management
+```cpp
+#ifndef PYTHON_SINGLE_INTERPRETER
+    // Sub-interpreter mode: need to swap to script's interpreter
+    PyThreadState *old_state = PyThreadState_Get();
+    PyThreadState_Swap(script->state);
+#endif
+
+// ... call Python function ...
+
+#ifndef PYTHON_SINGLE_INTERPRETER
+    // Sub-interpreter mode: swap back to original state
+    PyThreadState_Swap(old_state);
+#endif
+```
+
+In single-interpreter mode:
+- All scripts use `main_state` (set during w_Load)
+- No state swapping occurs (already in correct state)
+- GIL acquisition/release still happens (thread-safe)
+- Background threads can run concurrently with hook calls
+
+**Test Results After Fix**:
+- All 5 stress tests pass consistently
+- 600 rapid commands processed without crashes
+- 5000 concurrent messages handled correctly  
+- Clean shutdown with no destructor crashes
+- Memory leak: 544 KB over entire test suite (negligible)
+
+### Debugging Tips
+
+If you encounter crashes or strange behavior with threading/asyncio:
+
+1. **Check interpreter mode**: `grep PYTHON_SINGLE_INTERPRETER build/config.h`
+2. **Enable Python thread debugging**: Set `PYTHONTHREADDEBUG=1` environment variable
+3. **Check for PyThreadState errors**: Look for NULL in gdb backtraces
+4. **Verify GIL acquisition**: Background threads MUST acquire GIL before any Python API calls
+5. **Use OnTimer for hub calls**: Never call `vh.*` from background threads - use queue/cache pattern
+
 ### Future Improvements
 
 This limitation exists because the Verlihub C++ core was designed for single-threaded operation. Potential future solutions:
@@ -161,8 +272,9 @@ This limitation exists because the Verlihub C++ core was designed for single-thr
 - **Thread-local contexts**: Per-thread hub connection instances
 - **Mutex protection**: Add fine-grained locking to C++ API
 - **Async C++ API**: Redesign for concurrent access
+- **Python sub-interpreter v2**: CPython 3.12+ has experimental per-interpreter GIL (PEP 684)
 
-Until then, use the queue/cache patterns demonstrated in these example scripts.
+Until then, use the queue/cache patterns demonstrated in these example scripts, and compile with `-DPYTHON_USE_SINGLE_INTERPRETER=ON` when using modern Python packages.
 
 ---
 
