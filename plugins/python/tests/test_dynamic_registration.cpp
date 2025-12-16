@@ -221,6 +221,9 @@ TEST_F(DynamicRegistrationTest, CallNonExistentFunction) {
 	w_Unload(id);
 }
 
+#ifndef PYTHON_SINGLE_INTERPRETER
+// This test expects dynamic function isolation between scripts
+// In single-interpreter mode, all scripts share the same vh module and can call each other's functions
 TEST_F(DynamicRegistrationTest, IsolatedBetweenScripts) {
 	int id1 = w_ReserveID();
 	int id2 = w_ReserveID();
@@ -274,6 +277,7 @@ TEST_F(DynamicRegistrationTest, IsolatedBetweenScripts) {
 	w_Unload(id1);
 	w_Unload(id2);
 }
+#endif // PYTHON_SINGLE_INTERPRETER
 
 // Test complex type: list argument and return
 TEST_F(DynamicRegistrationTest, ListArgumentAndReturn) {

@@ -82,12 +82,12 @@ def OnUserLogin(nick):
 
 	// Load both scripts
 	int id1 = w_ReserveID();
-	w_Targs* args1 = w_pack("lssssls", id1, script1_path, "TestBot1", "OpChat", ".", (long)0, "config");
+	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path), strdup("TestBot1"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id1, w_Load(args1)) << "Failed to load script 1";
 	w_free_args(args1);
 	
 	int id2 = w_ReserveID();
-	w_Targs* args2 = w_pack("lssssls", id2, script2_path, "TestBot2", "OpChat", ".", (long)0, "config");
+	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path), strdup("TestBot2"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id2, w_Load(args2)) << "Failed to load script 2";
 	w_free_args(args2);
 
@@ -173,7 +173,7 @@ def OnUserLogin(nick):
 
 	// Load first script
 	int id1 = w_ReserveID();
-	w_Targs* args1 = w_pack("lssssls", id1, script1_path, "TestBot1", "OpChat", ".", (long)0, "config");
+	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id1, w_Load(args1));
 	w_free_args(args1);
 
@@ -187,7 +187,7 @@ def OnUserLogin(nick):
 
 	// Load second script
 	int id2 = w_ReserveID();
-	w_Targs* args2 = w_pack("lssssls", id2, script2_path, "TestBot2", "OpChat", ".", (long)0, "config");
+	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id2, w_Load(args2));
 	w_free_args(args2);
 
@@ -244,7 +244,7 @@ def OnUserLogin(nick):
 
 	// Load script
 	int id = w_ReserveID();
-	w_Targs* args = w_pack("lssssls", id, script_path, "TestBot", "OpChat", ".", (long)0, "config");
+	w_Targs* args = w_pack("lssssls", id, strdup(script_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id, w_Load(args));
 	w_free_args(args);
 

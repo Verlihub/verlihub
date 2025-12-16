@@ -1043,6 +1043,10 @@ static PyObject* vh_StopHub(PyObject *self, PyObject *args)            { return 
 // GetNickList, GetOpList, GetBotList - return Python lists
 static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
 {
+	fprintf(stderr, "vh_GetNickList called, w_Python=%p, callbacks=%p, callback[W_GetNickList]=%p\n",
+		w_Python, w_Python ? w_Python->callbacks : NULL,
+		(w_Python && w_Python->callbacks) ? w_Python->callbacks[W_GetNickList] : NULL);
+	
 	w_Targs *res = w_Python->callbacks[W_GetNickList](W_GetNickList, w_pack(""));
 	if (!res) Py_RETURN_NONE;
 	
@@ -1436,6 +1440,15 @@ int w_End()
 	fprintf(stderr, "PY: Single interpreter mode - cleaning up shared interpreter\n");
 	#endif
 	
+	// Remove vh module from sys.modules so next w_Begin() gets fresh callbacks
+	PyObject *modules = PyImport_GetModuleDict();
+	if (modules && PyDict_Contains(modules, PyUnicode_FromString("vh"))) {
+		PyDict_DelItemString(modules, "vh");
+		#ifdef DEBUG_WRAPPER
+		fprintf(stderr, "PY: Removed vh module from sys.modules (will be recreated with fresh callbacks)\n");
+		#endif
+	}
+	
 	for (size_t i = 0; i < w_Scripts.size(); ++i) {
 		w_TScript *script = w_Scripts[i];
 		if (script) {
@@ -1663,7 +1676,52 @@ int w_Load(w_Targs *args)
 		log("PY: Warning - could not access sys.path\n");
 	}
 
-	// Import the module (this executes the script)
+#ifdef PYTHON_SINGLE_INTERPRETER
+	// Single interpreter mode: Execute script in __main__ namespace so scripts share globals
+	PyObject *main_module = PyImport_AddModule("__main__");
+	if (!main_module) {
+		log("PY: [%d:%s] Failed to get __main__ module\n", id, script->name);
+		if (PyErr_Occurred()) PyErr_Print();
+		PyThreadState_Swap(main_state);
+		PyGILState_Release(sub_gil);
+		return -1;
+	}
+	Py_INCREF(main_module);
+	script->module = main_module;
+	
+	// Execute the script file in __main__'s namespace
+	PyObject *main_dict = PyModule_GetDict(main_module);  // Borrowed ref
+	
+	// Set __file__ so scripts can use it (e.g., os.path.dirname(__file__))
+	PyObject *file_str = PyUnicode_FromString(script->path);
+	if (file_str) {
+		PyDict_SetItemString(main_dict, "__file__", file_str);
+		Py_DECREF(file_str);
+	}
+	
+	FILE *script_file = fopen(script->path, "r");
+	if (!script_file) {
+		log("PY: [%d:%s] Failed to open script file for execution: %s\n", id, script->name, script->path);
+		Py_DECREF(main_module);
+		PyThreadState_Swap(main_state);
+		PyGILState_Release(sub_gil);
+		return -1;
+	}
+	
+	PyObject *result = PyRun_File(script_file, script->path, Py_file_input, main_dict, main_dict);
+	fclose(script_file);
+	
+	if (!result) {
+		log("PY: [%d:%s] Failed to execute script in __main__ namespace\n", id, script->name);
+		if (PyErr_Occurred()) PyErr_Print();
+		Py_DECREF(main_module);
+		PyThreadState_Swap(main_state);
+		PyGILState_Release(sub_gil);
+		return -1;
+	}
+	Py_DECREF(result);
+#else
+	// Sub-interpreter mode: Import as separate module (isolated namespace)
 	script->module = PyImport_ImportModule(script->name);
 	if (!script->module) {
 		if (PyErr_Occurred()) PyErr_Print();
@@ -1671,6 +1729,7 @@ int w_Load(w_Targs *args)
 		PyGILState_Release(sub_gil);
 		return -1;
 	}
+#endif
 
 	script->hooks = (char*)calloc(W_MAX_HOOKS, sizeof(char));
 
