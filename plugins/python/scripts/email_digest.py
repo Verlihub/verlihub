@@ -580,91 +580,91 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
         return 0  # Block this command
     
     if len(args) < 2:
-            vh.pm(nick, "\n".join([
-                "Email Digest Commands:",
-                "  !digest status            - Show current status",
-                "  !digest chat send         - Send chat digest now",
-                "  !digest chat clear        - Clear chat buffer",
-                "  !digest stats send        - Send client stats now",
-                "  !digest stats clear       - Clear client stats",
-                "  !digest config            - Show configuration",
-                "  !digest test <email>      - Send test email",
-            ]))
-            return 0  # Block command, we handled it
-        
-        subcmd = args[1].lower()
-        
-        if subcmd == "status":
-            with chat_buffer_lock:
-                chat_count = len(chat_buffer)
-                if chat_buffer:
-                    chat_age = time.time() - last_chat_time
-                    chat_status = f"{chat_count} messages, {chat_age:.0f}s since last"
-                else:
-                    chat_status = "Empty"
-            
-            with client_stats_lock:
-                stats_count = len(client_stats)
-                if stats_count > 0:
-                    total_activity = sum(s["joins"] + s["quits"] for s in client_stats.values())
-                    stats_status = f"{stats_count} clients, {total_activity} events"
-                else:
-                    stats_status = "No activity"
-            
-            vh.pm(nick, "\n".join([
-                "Email Digest Status:",
-                f"  Chat Buffer: {chat_status}",
-                f"  Client Stats: {stats_status}",
-                f"  Chat Recipients: {len(CONFIG['chat_recipients'])}",
-                f"  Stats Recipients: {len(CONFIG['stats_recipients'])}",
-            ]))
-            return 0  # Block command, we handled it
-        
-        elif subcmd == "chat" and len(args) > 2:
-            action = args[2].lower()
-            if action == "send":
-                send_chat_digest()
-                vh.pm(nick, "Chat digest sent")
-            elif action == "clear":
-                with chat_buffer_lock:
-                    count = len(chat_buffer)
-                    chat_buffer.clear()
-                vh.pm(nick, f"Cleared {count} messages from chat buffer")
-            return 0  # Block command, we handled it
-        
-        elif subcmd == "stats" and len(args) > 2:
-            action = args[2].lower()
-            if action == "send":
-                send_client_stats()
-                vh.pm(nick, "Client statistics sent")
-            elif action == "clear":
-                with client_stats_lock:
-                    count = len(client_stats)
-                    client_stats.clear()
-                vh.pm(nick, f"Cleared statistics for {count} clients")
-            return 0  # Block command, we handled it
-        
-        elif subcmd == "config":
-            vh.pm(nick, "\n".join([
-                "Email Digest Configuration:",
-                f"  SMTP Server: {CONFIG['smtp_server']}:{CONFIG['smtp_port']}",
-                f"  From: {CONFIG['from_address'] or CONFIG['smtp_username']}",
-                f"  Chat Inactivity: {CONFIG['chat_inactivity_minutes']} minutes",
-                f"  Stats Interval: {CONFIG['stats_interval_minutes']} minutes",
-                f"  Chat Recipients: {', '.join(CONFIG['chat_recipients']) or 'None'}",
-                f"  Stats Recipients: {', '.join(CONFIG['stats_recipients']) or 'None'}",
-            ]))
-            return 0  # Block command, we handled it
-        
-        elif subcmd == "test" and len(args) > 2:
-            test_email = args[2]
-            subject = f"[{CONFIG['hub_name']}] Test Email"
-            body = f"This is a test email from the Verlihub Email Digest script.\n\nSent at: {datetime.now()}"
-            if send_email(subject, body, [test_email]):
-                vh.pm(nick, f"Test email sent to {test_email}")
+        vh.pm(nick, "\n".join([
+            "Email Digest Commands:",
+            "  !digest status            - Show current status",
+            "  !digest chat send         - Send chat digest now",
+            "  !digest chat clear        - Clear chat buffer",
+            "  !digest stats send        - Send client stats now",
+            "  !digest stats clear       - Clear client stats",
+            "  !digest config            - Show configuration",
+            "  !digest test <email>      - Send test email",
+        ]))
+        return 0  # Block command, we handled it
+    
+    subcmd = args[1].lower()
+    
+    if subcmd == "status":
+        with chat_buffer_lock:
+            chat_count = len(chat_buffer)
+            if chat_buffer:
+                chat_age = time.time() - last_chat_time
+                chat_status = f"{chat_count} messages, {chat_age:.0f}s since last"
             else:
-                vh.pm(nick, "Failed to send test email - check console for errors")
-            return 0  # Block command, we handled it
+                chat_status = "Empty"
+        
+        with client_stats_lock:
+            stats_count = len(client_stats)
+            if stats_count > 0:
+                total_activity = sum(s["joins"] + s["quits"] for s in client_stats.values())
+                stats_status = f"{stats_count} clients, {total_activity} events"
+            else:
+                stats_status = "No activity"
+        
+        vh.pm(nick, "\n".join([
+            "Email Digest Status:",
+            f"  Chat Buffer: {chat_status}",
+            f"  Client Stats: {stats_status}",
+            f"  Chat Recipients: {len(CONFIG['chat_recipients'])}",
+            f"  Stats Recipients: {len(CONFIG['stats_recipients'])}",
+        ]))
+        return 0  # Block command, we handled it
+    
+    elif subcmd == "chat" and len(args) > 2:
+        action = args[2].lower()
+        if action == "send":
+            send_chat_digest()
+            vh.pm(nick, "Chat digest sent")
+        elif action == "clear":
+            with chat_buffer_lock:
+                count = len(chat_buffer)
+                chat_buffer.clear()
+            vh.pm(nick, f"Cleared {count} messages from chat buffer")
+        return 0  # Block command, we handled it
+    
+    elif subcmd == "stats" and len(args) > 2:
+        action = args[2].lower()
+        if action == "send":
+            send_client_stats()
+            vh.pm(nick, "Client statistics sent")
+        elif action == "clear":
+            with client_stats_lock:
+                count = len(client_stats)
+                client_stats.clear()
+            vh.pm(nick, f"Cleared statistics for {count} clients")
+        return 0  # Block command, we handled it
+    
+    elif subcmd == "config":
+        vh.pm(nick, "\n".join([
+            "Email Digest Configuration:",
+            f"  SMTP Server: {CONFIG['smtp_server']}:{CONFIG['smtp_port']}",
+            f"  From: {CONFIG['from_address'] or CONFIG['smtp_username']}",
+            f"  Chat Inactivity: {CONFIG['chat_inactivity_minutes']} minutes",
+            f"  Stats Interval: {CONFIG['stats_interval_minutes']} minutes",
+            f"  Chat Recipients: {', '.join(CONFIG['chat_recipients']) or 'None'}",
+            f"  Stats Recipients: {', '.join(CONFIG['stats_recipients']) or 'None'}",
+        ]))
+        return 0  # Block command, we handled it
+    
+    elif subcmd == "test" and len(args) > 2:
+        test_email = args[2]
+        subject = f"[{CONFIG['hub_name']}] Test Email"
+        body = f"This is a test email from the Verlihub Email Digest script.\n\nSent at: {datetime.now()}"
+        if send_email(subject, body, [test_email]):
+            vh.pm(nick, f"Test email sent to {test_email}")
+        else:
+            vh.pm(nick, "Failed to send test email - check console for errors")
+        return 0  # Block command, we handled it
     
     return 1  # Not our command (or unrecognized subcommand), allow it through
 
