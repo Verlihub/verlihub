@@ -116,6 +116,9 @@ if(GTest_FOUND)
     # Also check for gmock
     find_path(GMOCK_INCLUDE_DIR gmock/gmock.h PATHS /usr/include /usr/src/googletest/googlemock/include)
     
+    # Check for libcurl (needed for API stress test)
+    find_package(CURL)
+    
     if(GMOCK_INCLUDE_DIR)
         include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIR})
         
@@ -156,6 +159,17 @@ if(GTest_FOUND)
         add_executable(test_sets_tuples tests/test_sets_tuples.cpp)
         target_link_libraries(test_sets_tuples GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
 
+        # Hub API stress test - tests FastAPI server with concurrent message processing
+        if(CURL_FOUND)
+            add_executable(test_hub_api_stress tests/test_hub_api_stress.cpp)
+            target_link_libraries(test_hub_api_stress GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper ${CURL_LIBRARIES})
+            target_compile_definitions(test_hub_api_stress PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}" SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+            target_include_directories(test_hub_api_stress PRIVATE ${CURL_INCLUDE_DIRS})
+            message(STATUS "[ OK ] libcurl found, building hub_api stress test")
+        else()
+            message(STATUS "[ !! ] libcurl not found; skipping hub_api stress test (install libcurl4-openssl-dev)")
+        endif()
+
         # Single interpreter mode tests (only built when option is enabled)
         if(PYTHON_USE_SINGLE_INTERPRETER)
             add_executable(test_single_interpreter tests/test_single_interpreter.cpp)
@@ -180,6 +194,11 @@ if(GTest_FOUND)
         add_test(NAME JsonIntegrationTests COMMAND test_json_integration)
         # Sets and tuples test - validates Python set/tuple marshaling
         add_test(NAME SetsTuplesTests COMMAND test_sets_tuples)
+        
+        # Hub API stress test - validates concurrent API calls with message processing
+        if(CURL_FOUND)
+            add_test(NAME HubApiStressTests COMMAND test_hub_api_stress)
+        endif()
         
         message(STATUS "[ OK ] GTest and GMock found, building Python plugin tests")
     else()
