@@ -672,10 +672,6 @@ TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
     delete conn;
 }
 
-#ifndef PYTHON_SINGLE_INTERPRETER
-// This test loads multiple scripts that define functions with the same names (get_stats)
-// In single-interpreter mode, scripts share __main__ namespace, causing function conflicts
-
 // Test Python threading with event hooks - demonstrates that Python threads
 // can process data collected from C++ event hooks without blocking
 TEST_F(VerlihubIntegrationTest, ThreadedDataProcessing) {
@@ -755,7 +751,7 @@ for i in range(5):
     thread.start()
     worker_threads.append(thread)
 
-def OnParsedMsgAny(nick, message):
+def threaded_OnParsedMsgAny(nick, message):
     """Hook receives (nick: str, message: str)"""
     try:
         msg_data = {
@@ -775,7 +771,10 @@ def OnParsedMsgAny(nick, message):
         print(f"OnParsedMsgAny error: {e}", flush=True)
     return 1
 
-def OnUserLogin(nick):
+# Alias for hook compatibility
+OnParsedMsgAny = threaded_OnParsedMsgAny
+
+def threaded_OnUserLogin(nick):
     """Hook receives (nick: str)"""
     try:
         msg_data = {
@@ -792,11 +791,14 @@ def OnUserLogin(nick):
             processing_stats['processing_errors'] += 1
     return 1
 
-def get_stats():
+# Alias for hook compatibility
+OnUserLogin = threaded_OnUserLogin
+
+def threaded_get_stats():
     with stats_lock:
         return json.dumps(processing_stats)
 
-def stop_threads():
+def threaded_stop_threads():
     for thread in worker_threads:
         thread.running = False
     
@@ -862,7 +864,7 @@ def stop_threads():
 
     // Get statistics from Python (use the thread_interp we just created)
     std::cout << "\nRetrieving processing statistics..." << std::endl;
-    w_Targs *result = g_py_plugin->CallPythonFunction(thread_interp->id, "get_stats", nullptr);
+    w_Targs *result = g_py_plugin->CallPythonFunction(thread_interp->id, "threaded_get_stats", nullptr);
     ASSERT_NE(result, nullptr);
 
     char *stats_json = nullptr;
@@ -883,7 +885,7 @@ def stop_threads():
 
     // Stop threads gracefully
     std::cout << "\nStopping worker threads..." << std::endl;
-    result = g_py_plugin->CallPythonFunction(thread_interp->id, "stop_threads", nullptr);
+    result = g_py_plugin->CallPythonFunction(thread_interp->id, "threaded_stop_threads", nullptr);
     
     long alive_threads = 0;
     if (result) {
@@ -919,12 +921,6 @@ def stop_threads():
     delete conn;
     delete user;
 }
-#endif // PYTHON_SINGLE_INTERPRETER
-
-#ifndef PYTHON_SINGLE_INTERPRETER
-// These tests load multiple scripts that define functions with the same names (get_stats, etc.)
-// In single-interpreter mode, scripts share __main__ namespace, causing function conflicts
-// TODO: Rewrite these tests to use unique function names per script
 
 // Test Python asyncio with event hooks - demonstrates async coroutines
 // can process data from C++ event hooks without blocking
@@ -1025,10 +1021,22 @@ async def run_async_tasks():
 def event_loop_thread():
     """Runs event loop in background thread"""
     global event_loop
-    event_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(event_loop)
-    print("Asyncio event loop started in background thread", flush=True)
-    event_loop.run_forever()
+    import sys
+    import os
+    # Redirect stdout/stderr to devnull during thread operation to avoid cleanup errors
+    devnull = open(os.devnull, 'w')
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    try:
+        event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(event_loop)
+        sys.stdout = devnull
+        sys.stderr = devnull
+        event_loop.run_forever()
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        devnull.close()
 
 loop_thread = threading.Thread(target=event_loop_thread, daemon=False)
 loop_thread.start()
@@ -1036,7 +1044,7 @@ loop_thread.start()
 import time
 time.sleep(0.1)
 
-def OnParsedMsgAny(nick, message):
+def async_OnParsedMsgAny(nick, message):
     """Feeds data to async tasks. Hook receives (nick: str, message: str)"""
     try:
         msg_data = {
@@ -1052,7 +1060,10 @@ def OnParsedMsgAny(nick, message):
             processing_stats['errors'] += 1
     return 1
 
-def OnUserLogin(nick):
+# Alias for hook compatibility
+OnParsedMsgAny = async_OnParsedMsgAny
+
+def async_OnUserLogin(nick):
     """Feeds login events to async tasks. Hook receives (nick: str)"""
     try:
         msg_data = {
@@ -1067,7 +1078,10 @@ def OnUserLogin(nick):
             processing_stats['errors'] += 1
     return 1
 
-def start_async_processing():
+# Alias for hook compatibility
+OnUserLogin = async_OnUserLogin
+
+def async_start_async_processing():
     """Called from C++ to start async tasks"""
     if event_loop is None:
         return json.dumps({'error': 'Event loop not ready'})
@@ -1083,12 +1097,12 @@ def start_async_processing():
             'error': str(e)
         })
 
-def get_stats():
+def async_get_stats():
     """Returns processing statistics"""
     with stats_lock:
         return json.dumps(processing_stats)
 
-def stop_event_loop():
+def async_stop_event_loop():
     """Stops the event loop and waits for thread"""
     global loop_thread, event_loop
     if event_loop:
@@ -1152,7 +1166,7 @@ def stop_event_loop():
     std::cout << "\nStarting async processing tasks..." << std::endl;
     
     // Start async processing (use async_interp we just created)
-    w_Targs *result = g_py_plugin->CallPythonFunction(async_interp->id, "start_async_processing", nullptr);
+    w_Targs *result = g_py_plugin->CallPythonFunction(async_interp->id, "async_start_async_processing", nullptr);
     ASSERT_NE(result, nullptr);
 
     char *async_result_json = nullptr;
@@ -1171,7 +1185,7 @@ def stop_event_loop():
 
     // Get final statistics
     std::cout << "\nRetrieving final statistics..." << std::endl;
-    result = g_py_plugin->CallPythonFunction(async_interp->id, "get_stats", nullptr);
+    result = g_py_plugin->CallPythonFunction(async_interp->id, "async_get_stats", nullptr);
     ASSERT_NE(result, nullptr);
 
     char *stats_json = nullptr;
@@ -1191,7 +1205,7 @@ def stop_event_loop():
 
     // Stop event loop
     std::cout << "\nStopping asyncio event loop..." << std::endl;
-    result = g_py_plugin->CallPythonFunction(async_interp->id, "stop_event_loop", nullptr);
+    result = g_py_plugin->CallPythonFunction(async_interp->id, "async_stop_event_loop", nullptr);
     
     long cleanup_success = 0;
     if (result) {
@@ -1228,7 +1242,6 @@ def stop_event_loop():
     delete conn;
     delete user;
 }
-#endif // PYTHON_SINGLE_INTERPRETER
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
