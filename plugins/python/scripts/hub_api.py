@@ -467,12 +467,17 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
         return 0  # Block this command (false in C++)
     
     print(f"[Hub API] Permission OK, processing command...")
-    write = vh.pm if in_pm else vh.usermc
-    print(f"[Hub API] Using write function: {'vh.pm' if in_pm else 'vh.usermc'}")
+    
+    # Helper function to send messages (handles the correct vh.pm/vh.usermc signature)
+    def send_message(msg):
+        if in_pm:
+            vh.pm(msg, nick)  # pm(message, destination_nick, [from_nick], [bot_nick])
+        else:
+            vh.usermc(msg, nick)  # usermc(message, destination_nick, [bot_nick])
     
     if len(parts) < 2:
         print(f"[Hub API] No subcommand, showing usage")
-        write(nick, "Usage: !api [start|stop|status|help] [port]")
+        send_message("Usage: !api [start|stop|status|help] [port]")
         return 0  # Block command, we handled it
     
     subcmd = parts[1].lower()
@@ -480,7 +485,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     if subcmd == "start":
         if not FASTAPI_AVAILABLE:
-            write(nick, "ERROR: FastAPI not installed. Run: pip install fastapi uvicorn")
+            send_message("ERROR: FastAPI not installed. Run: pip install fastapi uvicorn")
             return 0  # Block command, we handled it
         
         port = 8000
@@ -488,37 +493,38 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             try:
                 port = int(parts[2])
                 if port < 1024 or port > 65535:
-                    write(nick, "ERROR: Port must be between 1024 and 65535")
+                    send_message("ERROR: Port must be between 1024 and 65535")
                     return 0  # Block command, we handled it
             except ValueError:
-                write(nick, "ERROR: Invalid port number")
+                send_message("ERROR: Invalid port number")
                 return 0  # Block command, we handled it
         
         if is_api_running():
-            write(nick, f"API server already running on port {api_port}")
+            send_message(f"API server already running on port {api_port}")
         else:
             if start_api_server(port):
-                write(nick, f"API server starting on http://0.0.0.0:{port}")
-                write(nick, f"Documentation: http://localhost:{port}/docs")
+                send_message(f"API server starting on http://0.0.0.0:{port}")
+                send_message(f"Documentation: http://localhost:{port}/docs")
             else:
-                write(nick, "ERROR: Failed to start API server")
+                send_message("ERROR: Failed to start API server")
     
     elif subcmd == "stop":
         if is_api_running():
             stop_api_server()
-            write(nick, "API server stopping...")
+            send_message("API server stopping...")
         else:
-            write(nick, "API server is not running")
+            send_message("API server is not running")
     
     elif subcmd == "status":
         if is_api_running():
-            write(nick, f"API server is RUNNING on port {api_port}")
-            write(nick, f"Endpoints: http://localhost:{api_port}/")
-            write(nick, f"Docs: http://localhost:{api_port}/docs")
+            send_message(f"API server is RUNNING on port {api_port}")
+            send_message(f"Endpoints: http://localhost:{api_port}/")
+            send_message(f"Docs: http://localhost:{api_port}/docs")
         else:
-            write(nick, "API server is STOPPED")
+            send_message("API server is STOPPED")
     
     elif subcmd == "help":
+        print(f"[Hub API] Showing help, in_pm={in_pm}, write function={'vh.pm' if in_pm else 'vh.usermc'}")
         help_text = """
 Hub API Commands:
   !api start [port]  - Start API server (default: 8000)
@@ -540,12 +546,21 @@ API Endpoints:
 Requirements:
   pip install fastapi uvicorn
 """
-        for line in help_text.strip().split('\n'):
-            write(nick, line)
+        lines = help_text.strip().split('\n')
+        print(f"[Hub API] Sending {len(lines)} help lines")
+        for i, line in enumerate(lines):
+            print(f"[Hub API] Sending line {i}: write({repr(nick)}, {repr(line)})")
+            try:
+                result = send_message(line)
+                print(f"[Hub API] Line {i} result: {result}")
+            except Exception as e:
+                print(f"[Hub API] ERROR on line {i}: {e}")
+                import traceback
+                traceback.print_exc()
     
     else:
-        write(nick, f"Unknown subcommand: {subcmd}")
-        write(nick, "Use: !api help")
+        send_message(f"Unknown subcommand: {subcmd}")
+        send_message("Use: !api help")
     
     return 0  # Block command, we handled it
 
