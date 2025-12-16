@@ -62,9 +62,12 @@ protected:
 	}
 	
 	static w_Targs* MockCallback_ReturnStringList(int id, w_Targs* args) {
+		fprintf(stderr, "MockCallback_ReturnStringList called! id=%d\n", id);
 		call_log.push_back("MockCallback_ReturnStringList");
-		static const char* list[] = {"user1", "user2", "user3", NULL};
-		return w_pack("L", (char**)list);
+		// vh.GetNickList() expects JSON, not a string list
+		w_Targs* result = w_pack("D", strdup("[\"user1\", \"user2\", \"user3\"]"));
+		fprintf(stderr, "MockCallback_ReturnStringList returning result=%p\n", result);
+		return result;
 	}
 	
 	static w_Targs* MockCallback_EchoArgs(int id, w_Targs* args) {
@@ -207,8 +210,9 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 	fprintf(f, "import vh\n");
 	fprintf(f, "def test():\n");
 	fprintf(f, "    nicklist = vh.GetNickList()\n");
-	fprintf(f, "    assert isinstance(nicklist, list)\n");
-	fprintf(f, "    assert len(nicklist) == 3\n");
+	fprintf(f, "    print(f'DEBUG: nicklist type={type(nicklist)}, len={len(nicklist)}, value={nicklist}')\n");
+	fprintf(f, "    assert isinstance(nicklist, list), f'Expected list, got {type(nicklist)}'\n");
+	fprintf(f, "    assert len(nicklist) == 3, f'Expected length 3, got {len(nicklist)}'\n");
 	fprintf(f, "    assert nicklist[0] == 'user1'\n");
 	fprintf(f, "    assert nicklist[1] == 'user2'\n");
 	fprintf(f, "    assert nicklist[2] == 'user3'\n");
@@ -226,6 +230,10 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 	long count;
 	ASSERT_TRUE(w_unpack(result, "l", &count));
 	EXPECT_EQ(count, 3);
+	std::cout << "call_log.size()=" << call_log.size() << std::endl;
+	for (size_t i = 0; i < call_log.size(); ++i) {
+		std::cout << "  call_log[" << i << "]=" << call_log[i] << std::endl;
+	}
 	EXPECT_EQ(call_log.size(), 1);
 	
 	w_free_args(result);
@@ -265,6 +273,9 @@ TEST_F(VHModuleTest, ModuleHasConstants) {
 	w_Unload(id);
 }
 
+#ifndef PYTHON_SINGLE_INTERPRETER
+// This test expects script isolation, which is incompatible with single-interpreter mode
+// In single-interpreter mode, all scripts share the same vh module instance
 TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	int id1 = w_ReserveID();
 	int id2 = w_ReserveID();
@@ -327,6 +338,7 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	w_Unload(id1);
 	w_Unload(id2);
 }
+#endif // PYTHON_SINGLE_INTERPRETER
 
 TEST_F(VHModuleTest, AllFunctionsExist) {
 	int id = w_ReserveID();
