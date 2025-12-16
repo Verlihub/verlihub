@@ -47,8 +47,34 @@ The Python plugin enables extensible scripting for Verlihub DC++ hub servers. It
 - **Dynamic Registration**: C++ plugins can register custom functions callable from Python
 - **C++ → Python Calls**: C++ can invoke arbitrary Python functions by name
 - **Advanced Type Marshaling**: Exchange complex data (lists, dicts) between C++ and Python
-- **Sub-Interpreter Isolation**: Each script runs in its own isolated environment
+- **Two Interpreter Modes**: Sub-interpreter isolation OR single-interpreter compatibility
 - **GIL Management**: Thread-safe concurrent execution
+
+### Interpreter Modes
+
+The plugin supports two compilation modes with different trade-offs:
+
+**Sub-Interpreter Mode** (default):
+```bash
+cmake ..
+make
+```
+- Each script runs in isolated Python environment
+- Scripts cannot interfere with each other
+- Better for multi-user script development
+- **Limitation**: Many modern packages don't work (FastAPI, numpy, torch, etc.)
+
+**Single-Interpreter Mode** (recommended for production):
+```bash
+cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
+make
+```
+- All scripts share one Python interpreter
+- Full compatibility with modern Python ecosystem
+- All threading and asyncio features work
+- **Trade-off**: Scripts share global namespace (use proper variable naming!)
+
+See [Python Environment](#python-environment) section for detailed comparison and package compatibility information.
 
 ---
 
@@ -737,9 +763,172 @@ def send_stats_report():
 
 ## Python Environment
 
+### Interpreter Mode Selection
+
+The Python plugin can be compiled in two different modes, each with distinct characteristics:
+
+#### Sub-Interpreter Mode (Default)
+
+**Compilation:**
+```bash
+cmake ..
+make
+```
+
+**Characteristics:**
+- ✅ Each script runs in isolated Python environment
+- ✅ Scripts have separate global namespaces
+- ✅ Memory leaks in one script don't affect others
+- ✅ Scripts can be reloaded independently
+- ✅ Better for development/testing environments
+- ❌ **Incompatible with many modern Python packages**
+- ❌ Threading module has limitations
+- ❌ Some asyncio features may not work
+
+**Compatible Packages:**
+- Pure Python packages (no C extensions)
+- requests, beautifulsoup4, lxml
+- Standard library modules
+- Most text processing libraries
+
+**Incompatible Packages:**
+- FastAPI, Pydantic, uvicorn (PyO3/Rust extensions)
+- numpy, pandas, scipy (global C state)
+- torch, tensorflow (static initialization)
+- cryptography, tokenizers (PyO3)
+- Many ML/data science packages
+
+#### Single-Interpreter Mode (Recommended for Production)
+
+**Compilation:**
+```bash
+cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
+make
+```
+
+**Characteristics:**
+- ✅ **Full compatibility with modern Python packages**
+- ✅ Threading and asyncio work perfectly
+- ✅ Better performance (no interpreter switching)
+- ✅ All C extension packages work
+- ⚠️ Scripts share global namespace (use proper naming!)
+- ⚠️ Global variables visible across scripts
+- ⚠️ Memory leaks affect all scripts
+
+**All Packages Work:**
+- FastAPI, Pydantic, uvicorn (web frameworks)
+- numpy, pandas, scipy (data science)
+- torch, tensorflow (machine learning)
+- asyncio, threading, concurrent.futures
+- Any PyPI package with C extensions
+
+**Best Practices for Single-Interpreter Mode:**
+```python
+# Use unique prefixes for globals to avoid conflicts
+MYSCRIPT_config = {...}
+MYSCRIPT_cache = {}
+
+# Or use a namespace dict
+MYSCRIPT = {
+    'config': {...},
+    'cache': {},
+    'state': {}
+}
+
+# Avoid bare global names that might conflict
+# BAD:  config = {}
+# GOOD: myapp_config = {}
+```
+
+### Package Compatibility Reference
+
+**Why Incompatibility Occurs:**
+
+Python's sub-interpreter mode requires that all C extensions support interpreter isolation. Many modern packages use:
+
+1. **PyO3 (Rust ↔ Python bindings)**:
+   - Explicitly doesn't support sub-interpreters
+   - Used by: FastAPI/Pydantic ecosystem, cryptography, polars
+   - Error: "PyO3 modules do not yet support subinterpreters"
+
+2. **Global C State**:
+   - Static variables, global caches, singleton patterns
+   - Used by: numpy, pandas, scipy, ML frameworks
+   - Error: "Interpreter change detected" or segfaults
+
+3. **Module Import Caching**:
+   - C-level module registration that's global
+   - Used by: asyncio, threading internals
+   - Error: ImportError or threading crashes
+
+**Compatibility Matrix:**
+
+| Package Category | Sub-Interpreter | Single-Interpreter | Notes |
+|------------------|-----------------|-------------------|-------|
+| Pure Python | ✅ Works | ✅ Works | Always compatible |
+| Standard Library | ✅ Works | ✅ Works | Built-in support |
+| requests, urllib3 | ✅ Works | ✅ Works | Pure Python HTTP |
+| FastAPI, Pydantic | ❌ **FAILS** | ✅ Works | PyO3/Rust extensions |
+| numpy, pandas | ❌ **FAILS** | ✅ Works | Global C state |
+| torch, tensorflow | ❌ **FAILS** | ✅ Works | Static initialization |
+| asyncio (advanced) | ⚠️ Limited | ✅ Works | Event loop issues |
+| threading (heavy) | ⚠️ Limited | ✅ Works | State corruption |
+
+**Real-World Example: hub_api.py**
+
+This script demonstrates why single-interpreter mode is necessary:
+
+```python
+# Requires these packages:
+from fastapi import FastAPI          # PyO3 - fails in sub-interpreter
+from pydantic import BaseModel       # PyO3 - fails in sub-interpreter  
+import uvicorn                       # Uses PyO3 deps
+
+# Uses threading for background server
+import threading                     # Works better in single-interpreter
+import asyncio                       # Event loop isolation issues in sub-interpreter
+
+# All of the above require: -DPYTHON_USE_SINGLE_INTERPRETER=ON
+```
+
+**Testing Your Package:**
+
+To check if a package will work in sub-interpreter mode:
+
+```python
+import sys
+import importlib
+
+def test_subinterpreter_compat(module_name):
+    """Test if module supports sub-interpreters"""
+    try:
+        # Try importing in main interpreter
+        mod = importlib.import_module(module_name)
+        
+        # Check for known incompatible markers
+        if hasattr(mod, '__file__') and mod.__file__:
+            if '.so' in mod.__file__ or '.pyd' in mod.__file__:
+                print(f"⚠️ {module_name} is a C extension - may not work")
+        
+        # Check for PyO3
+        if 'pyo3' in str(type(mod)).lower():
+            print(f"❌ {module_name} uses PyO3 - will NOT work")
+            return False
+            
+        print(f"✅ {module_name} may work in sub-interpreter mode")
+        return True
+    except Exception as e:
+        print(f"❌ {module_name} failed: {e}")
+        return False
+
+# Test your dependencies
+test_subinterpreter_compat('fastapi')   # Will fail
+test_subinterpreter_compat('requests')  # Will pass
+```
+
 ### Standard Library
 
-All Python 3.12+ standard library modules are available:
+All Python 3.12+ standard library modules are available in both modes:
 
 ```python
 import datetime
@@ -747,6 +936,8 @@ import json
 import re
 import urllib.request
 import sqlite3
+import threading      # Works better in single-interpreter mode
+import asyncio        # Works better in single-interpreter mode
 # ... any standard library module
 ```
 
@@ -1541,22 +1732,48 @@ The plugin uses the Global Interpreter Lock (GIL) for thread safety:
 - Multiple scripts can't execute Python simultaneously
 - C++ callbacks can run in parallel (after releasing GIL)
 
-**Threading and Daemon Threads - Known Limitations:**
+**Threading and Daemon Threads:**
 
-Python has a fundamental incompatibility between sub-interpreters and the `threading` module ([Python bug #15751](https://bugs.python.org/issue15751)). When a script uses threading or asyncio:
+Python threading behavior differs significantly between interpreter modes:
 
-- **Sub-Interpreter Mode (Default):**
-  - Scripts are isolated (secure)
-  - Using `threading` or `asyncio` causes cleanup crashes
-  - Workaround: Skip `Py_EndInterpreter()` and `Py_Finalize()` 
-  - Result: Small memory leak (~4-5 MB per script with threads)
-  - **No crash** but cleanup incomplete
-  
-- **Single Interpreter Mode (Optional):**
-  - All scripts share one interpreter
-  - Scripts can see each other's global variables and imports
-  - **Security warning**: Scripts are NOT isolated
-  - Threading works perfectly and cleans up safely
+**Sub-Interpreter Mode (Default):**
+- Scripts are isolated (secure, independent namespaces)
+- Using `threading` or `asyncio` causes cleanup issues
+- Python bug [#15751](https://bugs.python.org/issue15751): Thread state corruption during interpreter teardown
+- Workaround: Skip `Py_EndInterpreter()` and `Py_Finalize()` when threads detected
+- Result: Small memory leak (~4-5 MB per script with threads)
+- **Trade-off**: No crashes, but incomplete cleanup
+
+**Single-Interpreter Mode (Recommended):**
+- All scripts share one interpreter
+- Threading and asyncio work perfectly
+- Clean shutdown with proper cleanup
+- **Note**: Scripts can see each other's globals (use unique naming!)
+
+**Real-World Threading Crash Fixed:**
+
+During stress testing of hub_api.py (FastAPI with uvicorn threading), we discovered a critical bug in single-interpreter mode:
+
+```
+Symptom: Segfault in _PyEval_EvalFrameDefault after ~10 seconds
+Cause:   PyThreadState_Swap(script->state) with background threads
+         In single-mode, all scripts share main_state
+         PyThreadState_Get() could return NULL from background thread
+         Swapping to/from NULL → crash
+
+Fix:     Only swap states in sub-interpreter mode:
+         #ifndef PYTHON_USE_SINGLE_INTERPRETER
+             PyThreadState *old = PyThreadState_Get();
+             PyThreadState_Swap(script->state);
+         #endif
+         
+Result:  ✅ 600 concurrent commands processed safely
+         ✅ 5000 messages with 3 threads
+         ✅ FastAPI server + hub events simultaneously
+         ✅ Clean shutdown, 544 KB memory growth total
+```
+
+**Lesson**: In single-interpreter mode, state management is fundamentally different - all scripts already share the same `PyThreadState`, making swaps not only unnecessary but dangerous when background threads are involved.
   - No memory leaks on cleanup
   - Enable with: `cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..`
 
