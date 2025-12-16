@@ -18,6 +18,14 @@ Admin commands:
 Requirements:
   pip install fastapi uvicorn
 
+IMPORTANT: This script requires Verlihub to be compiled with single-interpreter mode:
+  cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
+  
+FastAPI/Pydantic use C extensions (PyO3/Rust) that don't support Python subinterpreters.
+The default subinterpreter mode will fail to load FastAPI with errors like:
+  - "PyO3 modules do not yet support subinterpreters"
+  - "Interpreter change detected - this module can only be loaded into one interpreter"
+
 Author: Verlihub Team
 Version: 1.0.0
 """
@@ -31,20 +39,66 @@ import time
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-# Add venv to path if it exists
+# Try to find and add venv site-packages to path
 script_dir = os.path.dirname(os.path.abspath(__file__))
-venv_path = os.path.join(script_dir, 'venv', 'lib', 'python3.12', 'site-packages')
-if os.path.exists(venv_path):
-    sys.path.insert(0, venv_path)
+
+# Look for venv in multiple locations
+venv_locations = [
+    # Script's own directory
+    os.path.join(script_dir, 'venv'),
+    # Parent directory (for installed scripts)
+    os.path.join(os.path.dirname(script_dir), 'venv'),
+    # Build directory (for tests)
+    os.path.join(script_dir, '..', '..', 'venv'),
+]
+
+# Also check environment variable
+if 'VERLIHUB_PYTHON_VENV' in os.environ:
+    venv_locations.insert(0, os.environ['VERLIHUB_PYTHON_VENV'])
+
+# Try each location and find site-packages
+venv_found = False
+for venv_base in venv_locations:
+    if not os.path.exists(venv_base):
+        continue
+    
+    # Try different Python version patterns
+    lib_dir = os.path.join(venv_base, 'lib')
+    if os.path.exists(lib_dir):
+        for item in os.listdir(lib_dir):
+            if item.startswith('python'):
+                site_packages = os.path.join(lib_dir, item, 'site-packages')
+                if os.path.exists(site_packages):
+                    print(f"[Hub API] Found venv at: {venv_base}")
+                    print(f"[Hub API] Adding to path: {site_packages}")
+                    sys.path.insert(0, site_packages)
+                    venv_found = True
+                    break
+    if venv_found:
+        break
+
+if not venv_found:
+    print("[Hub API] No venv found, using system Python packages")
+
+# Debug: Print current sys.path
+print(f"[Hub API] Current sys.path: {sys.path[:3]}...")  # First 3 entries
 
 try:
+    print("[Hub API] Attempting to import FastAPI...")
     from fastapi import FastAPI, HTTPException
     from fastapi.responses import JSONResponse
+    print("[Hub API] FastAPI imported successfully!")
+    print("[Hub API] Attempting to import uvicorn...")
     import uvicorn
+    print("[Hub API] uvicorn imported successfully!")
     FASTAPI_AVAILABLE = True
-except ImportError:
+    print("[Hub API] ✓ All dependencies loaded")
+except ImportError as e:
     FASTAPI_AVAILABLE = False
-    print("WARNING: FastAPI not installed. Run: pip install fastapi uvicorn")
+    print(f"[Hub API] ✗ ImportError: {e}")
+    print(f"[Hub API] sys.path when import failed: {sys.path[:5]}")
+    import traceback
+    traceback.print_exc()
 
 # Global state
 api_server = None
