@@ -76,9 +76,9 @@ cpiPython::~cpiPython()
 {
 	fprintf(stderr, "PY: cpiPython::~cpiPython() destructor called\n");
 	
-	ostringstream o;
-	o << log_level;
-	SetConfig("pi_python", "log_level", o.str().c_str());
+	// Skip saving config during destruction - the config system may already be torn down
+	// This is especially true during test cleanup when objects are destroyed in reverse order
+	// The log_level is not critical to save during shutdown anyway
 	
 	fprintf(stderr, "PY: Calling Empty()...\n");
 	this->Empty();
