@@ -451,23 +451,32 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     print(f"[Hub API] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
     
     parts = command.split()
+    print(f"[Hub API] parts={parts}")
     
     # The prefix (! + etc) is stripped, so command is just "api ..."
     if not parts or parts[0] != "api":
+        print(f"[Hub API] Not our command, returning 1 to allow through")
         return 1  # Not our command, allow it (true in C++)
+    
+    print(f"[Hub API] This is our command! Checking permissions...")
     
     # Check permissions (operators only)
     if user_class < 3:
+        print(f"[Hub API] Permission denied for user_class={user_class}")
         vh.pm(nick, "Permission denied. Operators only.")
         return 0  # Block this command (false in C++)
     
+    print(f"[Hub API] Permission OK, processing command...")
     write = vh.pm if in_pm else vh.usermc
+    print(f"[Hub API] Using write function: {'vh.pm' if in_pm else 'vh.usermc'}")
     
     if len(parts) < 2:
+        print(f"[Hub API] No subcommand, showing usage")
         write(nick, "Usage: !api [start|stop|status|help] [port]")
         return 0  # Block command, we handled it
     
     subcmd = parts[1].lower()
+    print(f"[Hub API] Processing subcommand: {subcmd}")
     
     if subcmd == "start":
         if not FASTAPI_AVAILABLE:
