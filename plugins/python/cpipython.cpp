@@ -19,6 +19,7 @@
 */
 
 #include "cpipython.h"
+#include "json_marshal.h"
 #include "src/stringutils.h"
 #include "src/cbanlist.h"
 #include "src/cdcproto.h"
@@ -30,6 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 namespace nVerliHub {
 using namespace nUtils;
@@ -1508,21 +1510,51 @@ w_Targs *_GetNickList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mUserList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	
+	// Convert space-separated string to JSON array
+	std::vector<std::string> nicks;
+	std::istringstream iss(list);
+	std::string nick;
+	while (iss >> nick) {
+		nicks.push_back(nick);
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mOpList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	
+	// Convert space-separated string to JSON array
+	std::vector<std::string> nicks;
+	std::istringstream iss(list);
+	std::string nick;
+	while (iss >> nick) {
+		nicks.push_back(nick);
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
 	string list;
 	cpiPython::me->server->mRobotList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	
+	// Convert space-separated string to JSON array
+	std::vector<std::string> nicks;
+	std::istringstream iss(list);
+	std::string nick;
+	while (iss >> nick) {
+		nicks.push_back(nick);
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetUserHost(int id, w_Targs *args)
@@ -1954,8 +1986,8 @@ w_Targs *_SetConfig(int id, w_Targs *args)
 
 w_Targs *_GetConfig(int id, w_Targs *args)
 {
-	const char *conf, *var, *def_val;
-	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &def_val)) return NULL;
+	const char *conf, *var, *def_val = NULL;
+	if (!cpiPython::lib_unpack(args, "ss|s", &conf, &var, &def_val)) return NULL;
 	if (!conf || !var) return NULL;
 	const char *val = GetConfig(conf, var, def_val);
 	if (!val) return NULL;

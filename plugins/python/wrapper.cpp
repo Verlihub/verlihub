@@ -224,42 +224,97 @@ int w_unpack(w_Targs *a, const char *format, ...)
 	if (!a)
 		return 0;
 
-	if (a->format && (strcmp(a->format, format) != 0)) {
-		log1("PY: unpack: format strings don't match: '%s' vs. '%s'\n", a->format, format);
-		return 0;
+	//TODO: make this more generic instead of handling just this one case.
+	// Handle optional parameters: "ss|s" means 2 required + 1 optional
+	// Check if formats match, considering optional params
+	if (a->format && format) {
+		const char *pipe_pos = strchr(format, '|');
+		if (pipe_pos) {
+			// Format has optional params: "ss|s"
+			// a->format might be "ss" (2 args) or "sss" (3 args)
+			size_t required_len = pipe_pos - format;
+			size_t actual_len = strlen(a->format);
+			size_t total_len = strlen(format) - 1; // -1 for the '|'
+			
+			if (actual_len < required_len || actual_len > total_len) {
+				log1("PY: unpack: format strings don't match: '%s' vs. '%s'\n", a->format, format);
+				return 0;
+			}
+		} else if (strcmp(a->format, format) != 0) {
+			log1("PY: unpack: format strings don't match: '%s' vs. '%s'\n", a->format, format);
+			return 0;
+		}
 	}
 
 	unsigned int flen = strlen(format);
 	va_list ap;
 	va_start(ap, format);
 
+	// Calculate actual number of args from a->format (without '|')
+	unsigned int actual_args = a->format ? strlen(a->format) : 0;
+	
+	// Track actual arg index (format may have '|' which doesn't consume an arg)
+	unsigned int arg_idx = 0;
 	for (unsigned int i = 0; i < flen; i++) {
+		// Skip the '|' separator for optional params
+		if (format[i] == '|') {
+			continue;
+		}
+		
+		// Check if we're trying to access an arg that wasn't provided
+		if (arg_idx >= actual_args) {
+			// Optional param not provided - write NULL/0 to the pointer
+			switch (format[i]) {
+				case 'l':
+					*va_arg(ap, long *) = 0;
+					break;
+				case 's':
+				case 'D':
+					*va_arg(ap, char **) = NULL;
+					break;
+				case 'd':
+					*va_arg(ap, double *) = 0.0;
+					break;
+				case 'p':
+					*va_arg(ap, void **) = NULL;
+					break;
+				case 'L':
+					*va_arg(ap, char ***) = NULL;
+					break;
+				case 'O':
+					*va_arg(ap, PyObject **) = NULL;
+					break;
+			}
+			continue;
+		}
+		
 		switch (format[i]) {
 			case 'l':
-				*va_arg(ap, long *) = a->args[i].l;
+				*va_arg(ap, long *) = a->args[arg_idx].l;
 				break;
 			case 's':
-				*va_arg(ap, char **) = a->args[i].s;
+				*va_arg(ap, char **) = a->args[arg_idx].s;
 				break;
 			case 'd':
-				*va_arg(ap, double *) = a->args[i].d;
+				*va_arg(ap, double *) = a->args[arg_idx].d;
 				break;
 			case 'p':
-				*va_arg(ap, void **) = a->args[i].p;
+				*va_arg(ap, void **) = a->args[arg_idx].p;
 				break;
 			case 'L':  // Phase 3: List of strings
-				*va_arg(ap, char ***) = a->args[i].L;
+				*va_arg(ap, char ***) = a->args[arg_idx].L;
 				break;
 			case 'D':  // Phase 3: Dict as JSON (unpacked as string)
-				*va_arg(ap, char **) = a->args[i].s;
+				*va_arg(ap, char **) = a->args[arg_idx].s;
 				break;
 			case 'O':  // Phase 3: PyObject* passthrough
-				*va_arg(ap, PyObject **) = a->args[i].O;
+				*va_arg(ap, PyObject **) = a->args[arg_idx].O;
 				break;
 			default:
 				va_end(ap);
 				return 0;
 		}
+		arg_idx++;
 	}
 
 	va_end(ap);
@@ -969,7 +1024,7 @@ static PyObject* vh_DelIPTempBan(PyObject *self, PyObject *args)       { return 
 static PyObject* vh_ParseCommand(PyObject *self, PyObject *args)       { return vh_CallBool(W_ParseCommand, args, "ssl"); }
 static PyObject* vh_ScriptCommand(PyObject *self, PyObject *args)      { return vh_CallString(W_ScriptCommand, args, "sss"); }
 static PyObject* vh_SetConfig(PyObject *self, PyObject *args)          { return vh_CallBool(W_SetConfig, args, "sss"); }
-static PyObject* vh_GetConfig(PyObject *self, PyObject *args)          { return vh_CallString(W_GetConfig, args, "ss"); }
+static PyObject* vh_GetConfig(PyObject *self, PyObject *args)          { return vh_CallString(W_GetConfig, args, "ss|s"); }
 static PyObject* vh_IsRobotNickBad(PyObject *self, PyObject *args)     { return vh_CallLong(W_IsRobotNickBad, args, "s"); }
 static PyObject* vh_AddRobot(PyObject *self, PyObject *args)           { return vh_CallBool(W_AddRobot, args, "slssss"); }
 static PyObject* vh_DelRobot(PyObject *self, PyObject *args)           { return vh_CallBool(W_DelRobot, args, "s"); }
@@ -991,15 +1046,33 @@ static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
 	w_Targs *res = w_Python->callbacks[W_GetNickList](W_GetNickList, w_pack(""));
 	if (!res) Py_RETURN_NONE;
 	
-	char **list = NULL;
-	w_unpack(res, "L", &list);
+	char *json_str = NULL;
+	w_unpack(res, "D", &json_str);
 	
+#ifdef HAVE_RAPIDJSON
+	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
+	if (!py_list) py_list = PyList_New(0);
+#else
+	// Fallback: parse JSON with Python json module
 	PyObject *py_list = PyList_New(0);
-	if (list) {
-		for (int i = 0; list[i]; i++) {
-			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+	if (json_str) {
+		PyObject *json_module = PyImport_ImportModule("json");
+		if (json_module) {
+			PyObject *loads_func = PyObject_GetAttrString(json_module, "loads");
+			if (loads_func) {
+				PyObject *result = PyObject_CallFunction(loads_func, "s", json_str);
+				if (result && PyList_Check(result)) {
+					Py_DECREF(py_list);
+					py_list = result;
+				} else {
+					Py_XDECREF(result);
+				}
+				Py_DECREF(loads_func);
+			}
+			Py_DECREF(json_module);
 		}
 	}
+#endif
 	
 	free(res);
 	return py_list;
@@ -1010,15 +1083,33 @@ static PyObject* vh_GetOpList(PyObject *self, PyObject *args)
 	w_Targs *res = w_Python->callbacks[W_GetOpList](W_GetOpList, w_pack(""));
 	if (!res) Py_RETURN_NONE;
 	
-	char **list = NULL;
-	w_unpack(res, "L", &list);
+	char *json_str = NULL;
+	w_unpack(res, "D", &json_str);
 	
+#ifdef HAVE_RAPIDJSON
+	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
+	if (!py_list) py_list = PyList_New(0);
+#else
+	// Fallback: parse JSON with Python json module
 	PyObject *py_list = PyList_New(0);
-	if (list) {
-		for (int i = 0; list[i]; i++) {
-			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+	if (json_str) {
+		PyObject *json_module = PyImport_ImportModule("json");
+		if (json_module) {
+			PyObject *loads_func = PyObject_GetAttrString(json_module, "loads");
+			if (loads_func) {
+				PyObject *result = PyObject_CallFunction(loads_func, "s", json_str);
+				if (result && PyList_Check(result)) {
+					Py_DECREF(py_list);
+					py_list = result;
+				} else {
+					Py_XDECREF(result);
+				}
+				Py_DECREF(loads_func);
+			}
+			Py_DECREF(json_module);
 		}
 	}
+#endif
 	
 	free(res);
 	return py_list;
@@ -1029,15 +1120,33 @@ static PyObject* vh_GetBotList(PyObject *self, PyObject *args)
 	w_Targs *res = w_Python->callbacks[W_GetBotList](W_GetBotList, w_pack(""));
 	if (!res) Py_RETURN_NONE;
 	
-	char **list = NULL;
-	w_unpack(res, "L", &list);
+	char *json_str = NULL;
+	w_unpack(res, "D", &json_str);
 	
+#ifdef HAVE_RAPIDJSON
+	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
+	if (!py_list) py_list = PyList_New(0);
+#else
+	// Fallback: parse JSON with Python json module
 	PyObject *py_list = PyList_New(0);
-	if (list) {
-		for (int i = 0; list[i]; i++) {
-			PyList_Append(py_list, PyUnicode_FromString(list[i]));
+	if (json_str) {
+		PyObject *json_module = PyImport_ImportModule("json");
+		if (json_module) {
+			PyObject *loads_func = PyObject_GetAttrString(json_module, "loads");
+			if (loads_func) {
+				PyObject *result = PyObject_CallFunction(loads_func, "s", json_str);
+				if (result && PyList_Check(result)) {
+					Py_DECREF(py_list);
+					py_list = result;
+				} else {
+					Py_XDECREF(result);
+				}
+				Py_DECREF(loads_func);
+			}
+			Py_DECREF(json_module);
 		}
 	}
+#endif
 	
 	free(res);
 	return py_list;

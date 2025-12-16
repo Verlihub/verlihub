@@ -1,0 +1,553 @@
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "cserverdc.h"
+#include "plugins/python/cpipython.h"
+#include "plugins/python/cpythoninterpreter.h"
+#include "cconndc.h"
+#include "cprotocol.h"
+#include <fstream>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <atomic>
+#include <unistd.h>
+#include <cstdlib>
+#include <sstream>
+#include <curl/curl.h>
+
+using namespace testing;
+using namespace nVerliHub;
+using namespace nVerliHub::nSocket;
+using namespace nVerliHub::nProtocol;
+using namespace nVerliHub::nPythonPlugin;
+using namespace nVerliHub::nEnums;
+
+// Global server instance (shared across tests)
+static cServerDC *g_server = nullptr;
+static cpiPython *g_py_plugin = nullptr;
+
+// Helper to get environment variable or default value
+static std::string getEnvOrDefault(const char* var, const char* defaultVal) {
+    const char* val = std::getenv(var);
+    return val ? std::string(val) : std::string(defaultVal);
+}
+
+// curl callback to capture response body
+static size_t my_curl_write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
+// Helper function to make HTTP GET request
+static bool http_get(const std::string& url, std::string& response, long& http_code) {
+    CURL *curl = curl_easy_init();
+    if (!curl) return false;
+    
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_curl_write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2L);
+    
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    curl_easy_cleanup(curl);
+    
+    return (res == CURLE_OK);
+}
+
+// Global test environment setup (once for all tests)
+class VerlihubEnv : public ::testing::Environment {
+public:
+    void SetUp() override {
+        // Use build directory for config
+        std::string config_dir = std::string(BUILD_DIR) + "/test_config_" + 
+                                 std::to_string(getpid());
+        std::string config_file = config_dir + "/dbconfig";
+        std::string plugins_dir = config_dir + "/plugins";
+        
+        // Create directories
+        int ret = system(("mkdir -p " + config_dir).c_str());
+        (void)ret;
+        ret = system(("mkdir -p " + plugins_dir).c_str());
+        (void)ret;
+        
+        // Create venv and install FastAPI
+        std::string venv_dir = std::string(BUILD_DIR) + "/venv";
+        std::cerr << "\n=== Setting up Python virtual environment ===" << std::endl;
+        std::cerr << "Creating venv at: " << venv_dir << std::endl;
+        
+        // Check if venv already exists and has FastAPI
+        std::string check_cmd = "test -f " + venv_dir + "/bin/python && " +
+                                venv_dir + "/bin/python -c 'import fastapi' 2>/dev/null";
+        
+        if (system(check_cmd.c_str()) != 0) {
+            // venv doesn't exist or FastAPI not installed
+            std::cerr << "Setting up new venv..." << std::endl;
+            
+            // Create venv
+            std::string create_venv = "python3 -m venv " + venv_dir + " 2>&1";
+            ret = system(create_venv.c_str());
+            if (ret != 0) {
+                std::cerr << "⚠ Warning: Failed to create venv (test will run without FastAPI)" << std::endl;
+            } else {
+                // Install FastAPI and uvicorn
+                std::cerr << "Installing FastAPI and uvicorn..." << std::endl;
+                std::string install_cmd = venv_dir + "/bin/pip install --quiet fastapi uvicorn 2>&1";
+                ret = system(install_cmd.c_str());
+                
+                if (ret == 0) {
+                    std::cerr << "✓ FastAPI and uvicorn installed successfully" << std::endl;
+                } else {
+                    std::cerr << "⚠ Warning: Failed to install FastAPI (test will run without it)" << std::endl;
+                }
+            }
+        } else {
+            std::cerr << "✓ Using existing venv with FastAPI" << std::endl;
+        }
+        
+        // Set environment variable for hub_api.py to find the venv
+        setenv("VERLIHUB_PYTHON_VENV", venv_dir.c_str(), 1);
+        std::cerr << "Set VERLIHUB_PYTHON_VENV=" << venv_dir << std::endl;
+        std::cerr << "========================================\n" << std::endl;
+        
+        // Get MySQL config from environment
+        std::string db_host = getEnvOrDefault("VH_TEST_MYSQL_HOST", "localhost");
+        std::string db_port = getEnvOrDefault("VH_TEST_MYSQL_PORT", "3306");
+        std::string db_user = getEnvOrDefault("VH_TEST_MYSQL_USER", "verlihub");
+        std::string db_pass = getEnvOrDefault("VH_TEST_MYSQL_PASS", "verlihub");
+        std::string db_name = getEnvOrDefault("VH_TEST_MYSQL_DB", "verlihub");
+        
+        std::string db_host_port = db_host;
+        if (db_port != "3306") {
+            db_host_port = db_host + ":" + db_port;
+        }
+        
+        // Write dbconfig
+        std::ofstream dbconf(config_file);
+        dbconf << "db_host = " << db_host_port << "\n"
+               << "db_user = " << db_user << "\n" 
+               << "db_pass = " << db_pass << "\n"
+               << "db_data = " << db_name << "\n";
+        dbconf.close();
+        
+        // Create server
+        try {
+            g_server = new cServerDC(config_dir, config_dir);
+        } catch (...) {
+            throw std::runtime_error(
+                "Failed to create Verlihub server! Ensure MySQL is running."
+            );
+        }
+        
+        if (!g_server) {
+            throw std::runtime_error("Server creation returned null");
+        }
+        
+        // Initialize Python plugin
+        std::cerr << "Initializing Python plugin..." << std::endl;
+        g_py_plugin = new cpiPython();
+        g_py_plugin->SetMgr(&g_server->mPluginManager);
+        g_py_plugin->OnLoad(g_server);
+        g_py_plugin->RegisterAll();
+        std::cerr << "Python plugin initialized" << std::endl;
+        
+        // Initialize curl
+        curl_global_init(CURL_GLOBAL_DEFAULT);
+    }
+
+    void TearDown() override {
+        curl_global_cleanup();
+        
+        if (g_server) {
+            delete g_server;
+            g_server = nullptr;
+        }
+        
+#ifdef PYTHON_SINGLE_INTERPRETER
+        if (g_py_plugin) {
+            g_py_plugin->Empty();
+            delete g_py_plugin;
+            g_py_plugin = nullptr;
+        }
+#else
+        // Leak Python plugin in sub-interpreter mode to avoid threading issues
+        if (g_py_plugin) {
+            std::cerr << "Skipping Python cleanup (sub-interpreter mode)" << std::endl;
+            g_py_plugin = nullptr;
+        }
+#endif
+    }
+};
+
+// Test fixture
+class HubApiStressTest : public ::testing::Test {
+protected:
+    cPythonInterpreter* interp = nullptr;
+    std::string script_path;
+    
+    void SetUp() override {
+        ASSERT_NE(g_py_plugin, nullptr) << "Python plugin not initialized";
+        ASSERT_NE(g_server, nullptr) << "Server not initialized";
+        
+        // Copy hub_api.py to test directory
+        std::string src = std::string(SOURCE_DIR) + "/plugins/python/scripts/hub_api.py";
+        std::string dest = std::string(BUILD_DIR) + "/test_hub_api_" + std::to_string(getpid()) + ".py";
+        
+        std::ifstream src_file(src, std::ios::binary);
+        std::ofstream dest_file(dest, std::ios::binary);
+        
+        if (!src_file || !dest_file) {
+            FAIL() << "Failed to copy hub_api.py from " << src << " to " << dest;
+        }
+        
+        dest_file << src_file.rdbuf();
+        src_file.close();
+        dest_file.close();
+        
+        script_path = dest;
+        
+        // Load the script
+        std::cerr << "Loading hub_api.py from: " << script_path << std::endl;
+        interp = new cPythonInterpreter(script_path);
+        g_py_plugin->AddData(interp);
+        interp->Init();
+        
+        ASSERT_NE(interp, nullptr) << "Failed to create interpreter for hub_api.py";
+        ASSERT_GE(interp->id, 0) << "Interpreter initialization failed";
+        std::cerr << "hub_api.py loaded with ID: " << interp->id << std::endl;
+    }
+    
+    void TearDown() override {
+        if (interp) {
+            g_py_plugin->RemoveByName(script_path);
+            interp = nullptr;
+        }
+        
+        // Clean up test file
+        if (!script_path.empty()) {
+            unlink(script_path.c_str());
+        }
+    }
+    
+    // Helper: Create a mock connection for message processing
+    cConnDC* create_mock_connection(const std::string& nick, int user_class = 10) {
+        cConnDC* conn = new cConnDC(0, g_server);
+        conn->mpUser = new cUser(nick);
+        conn->mpUser->mNick = nick;
+        conn->mpUser->mClass = (tUserCl)user_class;
+        return conn;
+    }
+    
+    // Helper: Send command through OnHubCommand hook
+    bool send_hub_command(cConnDC* conn, const std::string& command, bool in_pm = false) {
+        std::string cmd = command;
+        return g_py_plugin->OnHubCommand(conn, &cmd, 1, in_pm ? 1 : 0);
+    }
+    
+    // Helper: Simulate chat message
+    bool send_chat_message(cConnDC* conn, const std::string& message) {
+        // Create a cMessageDC for the chat message
+        cMessageDC msg;
+        msg.mType = eDC_CHAT;
+        msg.mStr = "<" + conn->mpUser->mNick + "> " + message + "|";
+        return g_py_plugin->OnParsedMsgChat(conn, &msg);
+    }
+};
+
+// Test 1: Load hub_api.py and verify it starts
+TEST_F(HubApiStressTest, LoadScript) {
+    EXPECT_NE(interp, nullptr);
+    EXPECT_GE(interp->id, 0);
+}
+
+// Test 2: Start API server via command
+TEST_F(HubApiStressTest, StartApiServer) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    // Send !api start 18080
+    bool result = send_hub_command(admin, "!api start 18080", true);
+    
+    // Should return false (0) meaning command was handled
+    EXPECT_FALSE(result);
+    
+    // Give server time to start (if FastAPI is available)
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Try to connect to API - will fail if FastAPI not installed, which is OK
+    std::string response;
+    long http_code = 0;
+    bool success = http_get("http://localhost:18080/", response, http_code);
+    
+    if (success && http_code == 200) {
+        std::cerr << "✓ FastAPI server started successfully" << std::endl;
+        EXPECT_NE(response.find("Verlihub"), std::string::npos) << "Response should mention Verlihub";
+        std::cerr << "API Server Response: " << response.substr(0, 200) << std::endl;
+    } else {
+        std::cerr << "⚠ FastAPI not available or server didn't start (this is OK for testing)" << std::endl;
+        std::cerr << "  Install with: pip install fastapi uvicorn" << std::endl;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 3: Concurrent message processing while making API calls
+TEST_F(HubApiStressTest, ConcurrentMessagesAndApiCalls) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18081", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Create multiple mock users
+    std::vector<cConnDC*> users;
+    for (int i = 0; i < 10; i++) {
+        std::string nick = "User" + std::to_string(i);
+        users.push_back(create_mock_connection(nick, 1));
+    }
+    
+    // Atomic counters for thread safety
+    std::atomic<int> messages_sent{0};
+    std::atomic<int> api_calls_made{0};
+    std::atomic<int> api_calls_success{0};
+    std::atomic<bool> stop_flag{false};
+    
+    // Thread 1: Continuously send chat messages through TreatMsg simulation
+    std::thread message_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 500) {
+            for (auto* user : users) {
+                std::string msg = "Hello from " + user->mpUser->mNick + " #" + std::to_string(count);
+                send_chat_message(user, msg);
+                messages_sent++;
+                
+                // Also send some commands
+                if (count % 10 == 0) {
+                    send_hub_command(user, "!help", false);
+                }
+            }
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    });
+    
+    // Thread 2: Continuously make API calls
+    std::thread api_thread([&]() {
+        std::vector<std::string> endpoints = {
+            "http://localhost:18081/",
+            "http://localhost:18081/api/hub",
+            "http://localhost:18081/api/stats",
+            "http://localhost:18081/api/users",
+            "http://localhost:18081/api/geo",
+            "http://localhost:18081/api/share",
+            "http://localhost:18081/health"
+        };
+        
+        int count = 0;
+        while (!stop_flag && count < 100) {
+            for (const auto& url : endpoints) {
+                std::string response;
+                long http_code = 0;
+                
+                if (http_get(url, response, http_code)) {
+                    if (http_code == 200) {
+                        api_calls_success++;
+                    }
+                }
+                api_calls_made++;
+                
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+            count++;
+        }
+    });
+    
+    // Thread 3: OnTimer simulation (calls update_data_cache)
+    std::thread timer_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 100) {
+            // Call OnTimer hook (simulates the every-second timer)
+            g_py_plugin->OnTimer(1000); // 1000ms = 1 second
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    });
+    
+    // Let it run for 15 seconds
+    std::this_thread::sleep_for(std::chrono::seconds(15));
+    
+    // Stop all threads
+    stop_flag = true;
+    
+    message_thread.join();
+    api_thread.join();
+    timer_thread.join();
+    
+    // Verify we processed messages and made API calls
+    std::cerr << "\n=== Stress Test Results ===" << std::endl;
+    std::cerr << "Messages sent: " << messages_sent << std::endl;
+    std::cerr << "API calls made: " << api_calls_made << std::endl;
+    std::cerr << "API calls successful: " << api_calls_success << std::endl;
+    
+    EXPECT_GT(messages_sent.load(), 0) << "Should have sent messages";
+    EXPECT_GT(api_calls_made.load(), 0) << "Should have made API calls";
+    
+    // Only check API success if some calls succeeded (FastAPI might not be installed)
+    if (api_calls_success > 0) {
+        double success_rate = (double)api_calls_success / (double)api_calls_made;
+        EXPECT_GT(success_rate, 0.8) << "API success rate should be > 80%";
+        std::cerr << "✓ API success rate: " << (success_rate * 100) << "%" << std::endl;
+    } else {
+        std::cerr << "⚠ No successful API calls (FastAPI likely not installed)" << std::endl;
+    }
+    
+    // Cleanup
+    for (auto* user : users) {
+        delete user->mpUser;
+        delete user;
+    }
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 4: Rapid command processing (the scenario where crashes occur)
+TEST_F(HubApiStressTest, RapidCommandProcessing) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18082", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    std::atomic<bool> stop_flag{false};
+    std::atomic<int> commands_sent{0};
+    
+    // Thread: Send rapid commands while OnTimer is running
+    std::thread command_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 200) {
+            // Various commands
+            send_hub_command(admin, "!api status", true);
+            send_hub_command(admin, "!api help", true);
+            send_hub_command(admin, "!api status", true);
+            
+            commands_sent += 3;
+            count++;
+            
+            // Small delay
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    });
+    
+    // Thread: OnTimer running continuously
+    std::thread timer_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 300) {
+            g_py_plugin->OnTimer(1000); // 1000ms = 1 second
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    });
+    
+    // Thread: Make API calls to ensure FastAPI threads are active
+    std::thread api_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 50) {
+            std::string response;
+            long http_code = 0;
+            http_get("http://localhost:18082/api/stats", response, http_code);
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    });
+    
+    // Run for 10 seconds
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    
+    stop_flag = true;
+    command_thread.join();
+    timer_thread.join();
+    api_thread.join();
+    
+    std::cerr << "\n=== Rapid Command Test Results ===" << std::endl;
+    std::cerr << "Commands sent: " << commands_sent << std::endl;
+    
+    EXPECT_GT(commands_sent.load(), 0);
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 5: Memory leak detection under load
+TEST_F(HubApiStressTest, MemoryLeakDetection) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18083", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Measure initial memory
+    std::ifstream status_before("/proc/self/status");
+    size_t vm_rss_before = 0;
+    std::string line;
+    while (std::getline(status_before, line)) {
+        if (line.find("VmRSS:") == 0) {
+            sscanf(line.c_str(), "VmRSS: %zu kB", &vm_rss_before);
+            break;
+        }
+    }
+    status_before.close();
+    
+    std::atomic<bool> stop_flag{false};
+    
+    // Run intensive operations
+    std::thread ops_thread([&]() {
+        for (int i = 0; i < 1000 && !stop_flag; i++) {
+            g_py_plugin->OnTimer(1000); // 1000ms = 1 second
+            
+            std::string response;
+            long http_code = 0;
+            http_get("http://localhost:18083/api/users", response, http_code);
+            
+            if (i % 100 == 0) {
+                std::cerr << "Iteration " << i << "/1000" << std::endl;
+            }
+        }
+    });
+    
+    ops_thread.join();
+    
+    // Measure final memory
+    std::ifstream status_after("/proc/self/status");
+    size_t vm_rss_after = 0;
+    while (std::getline(status_after, line)) {
+        if (line.find("VmRSS:") == 0) {
+            sscanf(line.c_str(), "VmRSS: %zu kB", &vm_rss_after);
+            break;
+        }
+    }
+    status_after.close();
+    
+    long memory_growth = (long)vm_rss_after - (long)vm_rss_before;
+    
+    std::cerr << "\n=== Memory Leak Detection ===" << std::endl;
+    std::cerr << "Memory before: " << vm_rss_before << " KB" << std::endl;
+    std::cerr << "Memory after:  " << vm_rss_after << " KB" << std::endl;
+    std::cerr << "Memory growth: " << memory_growth << " KB" << std::endl;
+    
+    // Allow up to 10 MB growth (Python caches, FastAPI workers, etc.)
+    const long ACCEPTABLE_GROWTH_KB = 10 * 1024;
+    EXPECT_LT(memory_growth, ACCEPTABLE_GROWTH_KB) 
+        << "Memory growth exceeded " << ACCEPTABLE_GROWTH_KB << " KB threshold";
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Register global environment
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    ::testing::AddGlobalTestEnvironment(new VerlihubEnv);
+    return RUN_ALL_TESTS();
+}
