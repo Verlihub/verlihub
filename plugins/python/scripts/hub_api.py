@@ -463,7 +463,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     # Check permissions (operators only)
     if user_class < 3:
         print(f"[Hub API] Permission denied for user_class={user_class}")
-        vh.pm(nick, "Permission denied. Operators only.")
+        vh.pm("Permission denied. Operators only.", nick)
         return 0  # Block this command (false in C++)
     
     print(f"[Hub API] Permission OK, processing command...")
