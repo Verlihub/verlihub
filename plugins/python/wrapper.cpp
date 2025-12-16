@@ -1208,7 +1208,7 @@ static PyMethodDef vh_methods[] = {
 	{"StopHub",            vh_StopHub,            METH_VARARGS, "Stop the hub"},
 	{"Encode",             vh_Encode,             METH_VARARGS, "Encode DC++ special characters to HTML entities"},
 	{"Decode",             vh_Decode,             METH_VARARGS, "Decode HTML entities back to DC++ special characters"},
-	{"CallDynamicFunction", vh_CallDynamicFunction, METH_VARARGS, "Call a dynamically registered C++ function (Dimension 4)"},
+	{"CallDynamicFunction", vh_CallDynamicFunction, METH_VARARGS, "Call a dynamically registered C++ function"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -1671,9 +1671,19 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		return NULL;
 	}
 
-	PyObject *func = PyObject_GetAttrString(script->module, name);
+	// CRITICAL: Increment module reference to protect from concurrent Py_XDECREF in w_Unload
+	PyObject *module = script->module;
+	Py_XINCREF(module);
+	if (!module) {
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	PyObject *func = PyObject_GetAttrString(module, name);
 	if (!func || !PyCallable_Check(func)) {
 		Py_XDECREF(func);
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1683,6 +1693,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 	PyObject *args = PyTuple_New(arg_count);
 	if (!args) {
 		Py_DECREF(func);
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1711,6 +1722,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 			default:
 				Py_DECREF(args);
 				Py_DECREF(func);
+				Py_XDECREF(module);
 				PyThreadState_Swap(old_state);
 				PyGILState_Release(gstate);
 				return NULL;
@@ -1724,6 +1736,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 
 	if (!res) {
 		if (PyErr_Occurred()) PyErr_Print();
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1750,6 +1763,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 		if (!ret) {
 			Py_DECREF(res);
+			Py_XDECREF(module);
 			PyThreadState_Swap(old_state);
 			PyGILState_Release(gstate);
 			return NULL;
@@ -1818,6 +1832,7 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 #endif
 
 	Py_DECREF(res);
+	Py_XDECREF(module);
 	PyThreadState_Swap(old_state);
 	PyGILState_Release(gstate);
 	return ret;
@@ -1850,10 +1865,20 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	PyThreadState *old_state = PyThreadState_Get();
 	PyThreadState_Swap(script->state);
 
-	PyObject *func = PyObject_GetAttrString(script->module, func_name);
+	// CRITICAL: Increment module reference to protect from concurrent Py_XDECREF in w_Unload
+	PyObject *module = script->module;
+	Py_XINCREF(module);
+	if (!module) {
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	PyObject *func = PyObject_GetAttrString(module, func_name);
 	if (!func) {
 		log("PY: w_CallFunction - function '%s' not found in script\n", func_name);
 		PyErr_Clear();
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1862,6 +1887,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	if (!PyCallable_Check(func)) {
 		log("PY: w_CallFunction - '%s' is not callable\n", func_name);
 		Py_DECREF(func);
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1872,6 +1898,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	if (!args) {
 		log("PY: w_CallFunction - failed to create argument tuple\n");
 		Py_DECREF(func);
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -1979,17 +2006,16 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 					PyTuple_SetItem(args, i, Py_None);
 				}
 				break;
-			default:
-				log("PY: w_CallFunction - unknown format character '%c'\n", params->format[i]);
-				Py_DECREF(args);
-				Py_DECREF(func);
-				PyThreadState_Swap(old_state);
-				PyGILState_Release(gstate);
-				return NULL;
+		default:
+			log("PY: w_CallFunction - unknown format character '%c'\n", params->format[i]);
+			Py_DECREF(args);
+			Py_DECREF(func);
+			Py_XDECREF(module);
+			PyThreadState_Swap(old_state);
+			PyGILState_Release(gstate);
+			return NULL;
 		}
-	}
-
-	log2("PY: Calling function '%s' with %zu arguments\n", func_name, arg_count);
+	}	log2("PY: Calling function '%s' with %zu arguments\n", func_name, arg_count);
 	PyObject *res = PyObject_CallObject(func, args);
 
 	Py_DECREF(args);
@@ -1998,6 +2024,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 	if (!res) {
 		log("PY: w_CallFunction - call to '%s' failed:\n", func_name);
 		if (PyErr_Occurred()) PyErr_Print();
+		Py_XDECREF(module);
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
@@ -2104,6 +2131,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 		if (!ret) {
 			Py_DECREF(res);
+			Py_XDECREF(module);
 			PyThreadState_Swap(old_state);
 			PyGILState_Release(gstate);
 			return NULL;
@@ -2146,6 +2174,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		ret = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 		if (!ret) {
 			Py_DECREF(res);
+			Py_XDECREF(module);
 			PyThreadState_Swap(old_state);
 			PyGILState_Release(gstate);
 			return NULL;
@@ -2173,13 +2202,14 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 
 	log2("PY: Function '%s' returned successfully\n", func_name);
 	Py_DECREF(res);
+	Py_XDECREF(module);
 	PyThreadState_Swap(old_state);
 	PyGILState_Release(gstate);
 	return ret;
 }
 
 // ============================================================================
-// Dimension 4: Dynamic C++ Function Registration
+// Dynamic C++ Function Registration
 // ============================================================================
 
 // Register a C++ callback that can be called from Python
