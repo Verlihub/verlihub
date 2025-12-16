@@ -1699,27 +1699,81 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		return NULL;
 	}
 
+	// Initialize all tuple slots to None to avoid double-free on error paths
+	for (size_t i = 0; i < arg_count; i++) {
+		Py_INCREF(Py_None);
+		PyTuple_SetItem(args, i, Py_None);
+	}
+
 	for (size_t i = 0; i < arg_count; i++) {
 		switch (params->format[i]) {
-			case 'l':
-				PyTuple_SetItem(args, i, PyLong_FromLong(params->args[i].l));
+			case 'l': {
+				PyObject *long_obj = PyLong_FromLong(params->args[i].l);
+				if (!long_obj) {
+					fprintf(stderr, "PY: w_CallHook - PyLong_FromLong failed\n");
+					PyErr_Clear();
+					Py_DECREF(args);
+					Py_DECREF(func);
+					Py_XDECREF(module);
+					PyThreadState_Swap(old_state);
+					PyGILState_Release(gstate);
+					return NULL;
+				}
+				PyTuple_SetItem(args, i, long_obj);
 				break;
+			}
 			case 's': {
 				const char *s = params->args[i].s;
 				if (s) {
-					PyTuple_SetItem(args, i, PyUnicode_FromString(s));
+					PyObject *str_obj = PyUnicode_FromString(s);
+					if (!str_obj) {
+						// Invalid UTF-8 or allocation failure
+						fprintf(stderr, "PY: w_CallHook - PyUnicode_FromString failed for hook %d\n", num);
+						PyErr_Clear();
+						Py_DECREF(args);
+						Py_DECREF(func);
+						Py_XDECREF(module);
+						PyThreadState_Swap(old_state);
+						PyGILState_Release(gstate);
+						return NULL;
+					}
+					PyTuple_SetItem(args, i, str_obj);
 				} else {
 					Py_INCREF(Py_None);
 					PyTuple_SetItem(args, i, Py_None);
 				}
 				break;
 			}
-			case 'd':
-				PyTuple_SetItem(args, i, PyFloat_FromDouble(params->args[i].d));
+			case 'd': {
+				PyObject *float_obj = PyFloat_FromDouble(params->args[i].d);
+				if (!float_obj) {
+					fprintf(stderr, "PY: w_CallHook - PyFloat_FromDouble failed\n");
+					PyErr_Clear();
+					Py_DECREF(args);
+					Py_DECREF(func);
+					Py_XDECREF(module);
+					PyThreadState_Swap(old_state);
+					PyGILState_Release(gstate);
+					return NULL;
+				}
+				PyTuple_SetItem(args, i, float_obj);
 				break;
-			case 'p':
-				PyTuple_SetItem(args, i, PyLong_FromVoidPtr(params->args[i].p));
+			}
+			case 'p': {
+				PyObject *ptr_obj = PyLong_FromVoidPtr(params->args[i].p);
+				if (!ptr_obj) {
+					fprintf(stderr, "PY: w_CallHook - PyLong_FromVoidPtr failed\n");
+					PyErr_Clear();
+					Py_DECREF(args);
+					Py_DECREF(func);
+					Py_XDECREF(module);
+					PyThreadState_Swap(old_state);
+					PyGILState_Release(gstate);
+					return NULL;
+				}
+				PyTuple_SetItem(args, i, ptr_obj);
 				break;
+			}
 			default:
 				Py_DECREF(args);
 				Py_DECREF(func);
@@ -1730,7 +1784,44 @@ w_Targs *w_CallHook(int id, int num, w_Targs *params)
 		}
 	}
 
+	// Validate that args tuple is fully populated
+	for (size_t i = 0; i < arg_count; i++) {
+		PyObject *item = PyTuple_GetItem(args, i);
+		if (!item) {
+			fprintf(stderr, "PY: w_CallHook - NULL item in args tuple at index %zu\n", i);
+			Py_DECREF(args);
+			Py_DECREF(func);
+			Py_XDECREF(module);
+			PyThreadState_Swap(old_state);
+			PyGILState_Release(gstate);
+			return NULL;
+		}
+	}
+
+	// Validate func and args before calling
+	if (!PyCallable_Check(func)) {
+		fprintf(stderr, "PY: w_CallHook - func is not callable\n");
+		Py_DECREF(args);
+		Py_DECREF(func);
+		Py_XDECREF(module);
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	if (!PyTuple_Check(args)) {
+		fprintf(stderr, "PY: w_CallHook - args is not a tuple\n");
+		Py_DECREF(args);
+		Py_DECREF(func);
+		Py_XDECREF(module);
+		PyThreadState_Swap(old_state);
+		PyGILState_Release(gstate);
+		return NULL;
+	}
+
+	fprintf(stderr, "PY: w_CallHook - About to call hook %d with %zu args\n", num, arg_count);
 	PyObject *res = PyObject_CallObject(func, args);
+	fprintf(stderr, "PY: w_CallHook - Returned from PyObject_CallObject, res=%p\n", (void*)res);
 
 	Py_DECREF(args);
 	Py_DECREF(func);
@@ -1859,6 +1950,12 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		PyThreadState_Swap(old_state);
 		PyGILState_Release(gstate);
 		return NULL;
+	}
+
+	// Initialize all tuple slots to None to avoid double-free on error paths
+	for (size_t i = 0; i < arg_count; i++) {
+		Py_INCREF(Py_None);
+		PyTuple_SetItem(args, i, Py_None);
 	}
 
 	for (size_t i = 0; i < arg_count; i++) {
