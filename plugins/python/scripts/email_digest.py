@@ -576,7 +576,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     # Check permissions
     if user_class < 10:  # Only ops and above
-        vh.pm("Permission denied. Operators only.")
+        vh.pm("Permission denied. Operators only.", nick)
         return 0  # Block this command
     
     if len(args) < 2:
@@ -589,7 +589,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             "  !digest stats clear       - Clear client stats",
             "  !digest config            - Show configuration",
             "  !digest test <email>      - Send test email",
-        ]))
+        ]), nick)
         return 0  # Block command, we handled it
     
     subcmd = args[1].lower()
@@ -617,31 +617,31 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             f"  Client Stats: {stats_status}",
             f"  Chat Recipients: {len(CONFIG['chat_recipients'])}",
             f"  Stats Recipients: {len(CONFIG['stats_recipients'])}",
-        ]))
+        ]), nick)
         return 0  # Block command, we handled it
     
     elif subcmd == "chat" and len(args) > 2:
         action = args[2].lower()
         if action == "send":
             send_chat_digest()
-            vh.pm("Chat digest sent")
+            vh.pm("Chat digest sent", nick)
         elif action == "clear":
             with chat_buffer_lock:
                 count = len(chat_buffer)
                 chat_buffer.clear()
-            vh.pm(f"Cleared {count} messages from chat buffer")
+            vh.pm(f"Cleared {count} messages from chat buffer", nick)
         return 0  # Block command, we handled it
     
     elif subcmd == "stats" and len(args) > 2:
         action = args[2].lower()
         if action == "send":
             send_client_stats()
-            vh.pm("Client statistics sent")
+            vh.pm("Client statistics sent", nick)
         elif action == "clear":
             with client_stats_lock:
                 count = len(client_stats)
                 client_stats.clear()
-            vh.pm(f"Cleared statistics for {count} clients")
+            vh.pm(f"Cleared statistics for {count} clients", nick)
         return 0  # Block command, we handled it
     
     elif subcmd == "config":
@@ -653,7 +653,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             f"  Stats Interval: {CONFIG['stats_interval_minutes']} minutes",
             f"  Chat Recipients: {', '.join(CONFIG['chat_recipients']) or 'None'}",
             f"  Stats Recipients: {', '.join(CONFIG['stats_recipients']) or 'None'}",
-        ]))
+        ]), nick)
         return 0  # Block command, we handled it
     
     elif subcmd == "test" and len(args) > 2:
@@ -661,9 +661,9 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
         subject = f"[{CONFIG['hub_name']}] Test Email"
         body = f"This is a test email from the Verlihub Email Digest script.\n\nSent at: {datetime.now()}"
         if send_email(subject, body, [test_email]):
-            vh.pm(f"Test email sent to {test_email}")
+            vh.pm(f"Test email sent to {test_email}", nick)
         else:
-            vh.pm("Failed to send test email - check console for errors")
+            vh.pm("Failed to send test email - check console for errors", nick)
         return 0  # Block command, we handled it
     
     return 1  # Not our command (or unrecognized subcommand), allow it through
