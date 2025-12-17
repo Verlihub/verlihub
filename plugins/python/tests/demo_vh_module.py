@@ -1,7 +1,3 @@
-# demo_vh_module.py
-# Demonstration of restored vh module bidirectional API
-# This script shows Python calling C++ functions
-
 import vh
 
 print(f"=== vh Module Demonstration ===")
@@ -14,7 +10,6 @@ print()
 def OnParsedMsgChat(nick, message):
     print(f"[Hook] OnParsedMsgChat: {nick}: {message}")
     
-    # Python calling C++ functions (dimension 2 - RESTORED!)
     if message.startswith("!stats"):
         # Get user information
         user_class = vh.GetUserClass(nick)
