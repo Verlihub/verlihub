@@ -18,42 +18,14 @@ Admin commands:
 Requirements:
   pip install fastapi uvicorn
 
-IMPORTANT COMPILATION REQUIREMENT:
-===================================
-This script REQUIRES Verlihub to be compiled with single-interpreter mode:
-
-  cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
-  make
-
-Why Single-Interpreter Mode is Required:
------------------------------------------
-FastAPI, Pydantic, and many modern Python packages use C extensions built with:
-  - PyO3 (Rust bindings for Python)
-  - pybind11 with global state
-  - Cython modules with static/global variables
-
-These C extensions are fundamentally incompatible with Python's sub-interpreter mode
-because they:
-  1. Store global state that's shared across all interpreters
-  2. Use CPython APIs that don't support interpreter isolation
-  3. Cache module imports at the C level
-
-Attempting to use these packages in sub-interpreter mode will fail with:
-  - "PyO3 modules do not yet support subinterpreters"
-  - "Interpreter change detected - this module can only be loaded into one interpreter"
-  - ImportError or segmentation faults
-
 Single-Interpreter vs Sub-Interpreter Mode:
 --------------------------------------------
 SUB-INTERPRETER MODE (default):
   + Each script runs in isolated Python environment
   + Scripts cannot interfere with each other's globals
   + Memory leak in one script doesn't affect others
-  - Incompatible with FastAPI, Pydantic, uvicorn, PyO3-based packages
-  - Incompatible with many popular packages (numpy, pandas, torch, etc.)
   
 SINGLE-INTERPRETER MODE (required for this script):
-  + All modern Python packages work (FastAPI, asyncio, threading, etc.)
   + Full threading and async/await support
   + Better performance (no interpreter switching overhead)
   - All scripts share same Python environment (use unique names!)
