@@ -186,10 +186,6 @@ static nVerliHub::nPythonPlugin::cpiPython* g_py_plugin = nullptr;
  * - server->mC.hub_security (line 96)
  * And cServerDC constructor (line 65 of cserverdc.cpp) connects to MySQL.
  * 
- * Attempted workarounds that failed:
- * - Option 3 (minimal mock): Passing nullptr to OnLoad() causes segfault
- * - The plugin is too deeply coupled to server infrastructure
- * 
  * FUTURE IMPROVEMENT:
  * - Create database abstraction layer to allow mock DB for testing
  * - Refactor plugin initialization to be testable without full server
@@ -487,7 +483,7 @@ protected:
         parser->mLen = raw_msg.size();
         parser->Parse();
         
-        // This is the core: TreatMsg calls into Python through the GIL wrapper
+        // This is the core: TreatMsg calls into Python through the wrapper
         g_server->mP.TreatMsg(parser, conn);
         
         g_server->mP.DeleteParser(parser);
@@ -537,7 +533,7 @@ TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
     // - This is correct Verlihub protocol behavior, not a bug
     //
     // TEST OBJECTIVES:
-    // 1. High-volume stress test (1M messages) - verify GIL wrapper stability
+    // 1. High-volume stress test (1M messages) - verify no deadlocks or crashes
     // 2. Protocol parser exercise - ensure parsing doesn't crash under load  
     // 3. Bidirectional API validation - C++ calling Python utility functions
     // 4. Performance measurement - throughput and overhead quantification
@@ -594,7 +590,7 @@ TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
               << (iterations * 1000.0 / duration.count()) << " msg/sec)" << std::endl;
 
     // ====================================================================
-    // NEW: Demonstrate bidirectional Python-C++ communication
+    // Demonstrate bidirectional Python-C++ communication
     // ====================================================================
     std::cout << "\n=== Testing Bidirectional Python-C++ API ===" << std::endl;
     
@@ -656,13 +652,13 @@ TEST_F(VerlihubIntegrationTest, StressTreatMsg) {
     std::cout << "\n=== Python GIL Integration Test Results ===" << std::endl;
     std::cout << "✓ Test completed successfully without crashes" << std::endl;
     std::cout << "✓ Python callbacks invoked (see output above)" << std::endl;
-    std::cout << "✓ GIL wrapper working correctly under load" << std::endl;
+    std::cout << "✓ Python wrapper working correctly under load" << std::endl;
     std::cout << "✓ Bidirectional communication functional" << std::endl;
     std::cout << "\n=== Note on Callback Counts ===" << std::endl;
     std::cout << "Callback count is ~25% of message count (250K of 1M) - this is CORRECT." << std::endl;
     std::cout << "Not all messages trigger Python callbacks (only registered hook types)." << std::endl;
     std::cout << "$MyPass processes every time (~250K), $MyINFO has some filtering." << std::endl;
-    std::cout << "This test exercises: GIL threading, protocol parser, and bidirectional API." << std::endl;
+    std::cout << "This test exercises: GIL semantics, threading, protocol parser, and bidirectional API." << std::endl;
 
     // Print memory usage report
     mem_tracker.print_report();
@@ -688,7 +684,7 @@ TEST_F(VerlihubIntegrationTest, ThreadedDataProcessing) {
     std::cout << "  3. GIL is properly managed across threads" << std::endl;
     std::cout << "  4. No race conditions or crashes under load" << std::endl;
 
-    // Create a Python script that uses threading (in build dir, not /tmp)
+    // Create a Python script that uses threading
     const ::testing::TestInfo* const test_info =
         ::testing::UnitTest::GetInstance()->current_test_info();
     std::string thread_script_path = std::string(BUILD_DIR) + "/test_" + 

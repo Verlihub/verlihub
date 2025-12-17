@@ -412,7 +412,7 @@ TEST_F(HubApiStressTest, ConcurrentMessagesAndApiCalls) {
     delete admin;
 }
 
-// Test 4: Rapid command processing (the scenario where crashes occur)
+// Test 4: Rapid command processing
 TEST_F(HubApiStressTest, RapidCommandProcessing) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     
