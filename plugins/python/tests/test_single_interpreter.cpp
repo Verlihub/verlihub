@@ -42,8 +42,8 @@ protected:
 
 TEST_F(SingleInterpreterTest, ScriptsShareGlobalNamespace) {
 	// Create first script that defines a global variable
-	const char* script1_path = "test_single_interp_script1.py";
-	FILE* f1 = fopen(script1_path, "w");
+	std::string script1_path = std::string(BUILD_DIR) + "/test_single_interp_script1.py";
+	FILE* f1 = fopen(script1_path.c_str(), "w");
 	ASSERT_NE(f1, nullptr);
 	fprintf(f1, R"python(
 # Script 1: Define a global variable
@@ -58,8 +58,8 @@ def OnUserLogin(nick):
 	fclose(f1);
 
 	// Create second script that reads the global variable
-	const char* script2_path = "test_single_interp_script2.py";
-	FILE* f2 = fopen(script2_path, "w");
+	std::string script2_path = std::string(BUILD_DIR) + "/test_single_interp_script2.py";
+	FILE* f2 = fopen(script2_path.c_str(), "w");
 	ASSERT_NE(f2, nullptr);
 	fprintf(f2, R"python(
 # Script 2: Access the global variable from script 1
@@ -82,12 +82,12 @@ def OnUserLogin(nick):
 
 	// Load both scripts
 	int id1 = w_ReserveID();
-	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path), strdup("TestBot1"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
+	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path.c_str()), strdup("TestBot1"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id1, w_Load(args1)) << "Failed to load script 1";
 	w_free_args(args1);
 	
 	int id2 = w_ReserveID();
-	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path), strdup("TestBot2"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
+	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path.c_str()), strdup("TestBot2"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id2, w_Load(args2)) << "Failed to load script 2";
 	w_free_args(args2);
 
@@ -123,14 +123,14 @@ def OnUserLogin(nick):
 	// Clean up
 	w_Unload(id1);
 	w_Unload(id2);
-	unlink(script1_path);
-	unlink(script2_path);
+	unlink(script1_path.c_str());
+	unlink(script2_path.c_str());
 }
 
 TEST_F(SingleInterpreterTest, ScriptsShareImportedModules) {
 	// Create first script that imports a module
-	const char* script1_path = "test_single_interp_imports1.py";
-	FILE* f1 = fopen(script1_path, "w");
+	std::string script1_path = std::string(BUILD_DIR) + "/test_single_interp_imports1.py";
+	FILE* f1 = fopen(script1_path.c_str(), "w");
 	ASSERT_NE(f1, nullptr);
 	fprintf(f1, R"python(
 import json
@@ -148,8 +148,8 @@ def OnUserLogin(nick):
 	fclose(f1);
 
 	// Create second script that checks if module is already imported
-	const char* script2_path = "test_single_interp_imports2.py";
-	FILE* f2 = fopen(script2_path, "w");
+	std::string script2_path = std::string(BUILD_DIR) + "/test_single_interp_imports2.py";
+	FILE* f2 = fopen(script2_path.c_str(), "w");
 	ASSERT_NE(f2, nullptr);
 	fprintf(f2, R"python(
 import sys
@@ -173,7 +173,7 @@ def OnUserLogin(nick):
 
 	// Load first script
 	int id1 = w_ReserveID();
-	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
+	w_Targs* args1 = w_pack("lssssls", id1, strdup(script1_path.c_str()), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id1, w_Load(args1));
 	w_free_args(args1);
 
@@ -187,7 +187,7 @@ def OnUserLogin(nick):
 
 	// Load second script
 	int id2 = w_ReserveID();
-	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
+	w_Targs* args2 = w_pack("lssssls", id2, strdup(script2_path.c_str()), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id2, w_Load(args2));
 	w_free_args(args2);
 
@@ -212,14 +212,14 @@ def OnUserLogin(nick):
 	// Clean up
 	w_Unload(id1);
 	w_Unload(id2);
-	unlink(script1_path);
-	unlink(script2_path);
+	unlink(script1_path.c_str());
+	unlink(script2_path.c_str());
 }
 
 TEST_F(SingleInterpreterTest, ThreadingWorksAndCleansUp) {
 	// Create a script with threading
-	const char* script_path = "test_single_interp_threading.py";
-	FILE* f = fopen(script_path, "w");
+	std::string script_path = std::string(BUILD_DIR) + "/test_single_interp_threading.py";
+	FILE* f = fopen(script_path.c_str(), "w");
 	ASSERT_NE(f, nullptr);
 	fprintf(f, R"python(
 import threading
@@ -244,7 +244,7 @@ def OnUserLogin(nick):
 
 	// Load script
 	int id = w_ReserveID();
-	w_Targs* args = w_pack("lssssls", id, strdup(script_path), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
+	w_Targs* args = w_pack("lssssls", id, strdup(script_path.c_str()), strdup("TestBot"), strdup("OpChat"), strdup("."), (long)0, strdup("config"));
 	ASSERT_EQ(id, w_Load(args));
 	w_free_args(args);
 
@@ -261,7 +261,7 @@ def OnUserLogin(nick):
 	// even though threading was used
 	w_Unload(id);
 	
-	unlink(script_path);
+	unlink(script_path.c_str());
 	
 	// If we got here without crashing, the test passed
 	SUCCEED() << "Threading cleanup succeeded in single interpreter mode";

@@ -209,7 +209,7 @@ protected:
 
     void SetUp() override {
         // Create unique filename using PID to avoid conflicts in parallel execution
-        script_path = "test_script_" + std::to_string(getpid()) + ".py";
+        script_path = std::string(BUILD_DIR) + "/test_script_stress_" + std::to_string(getpid()) + ".py";
         
         // Write script content to file
         std::ofstream script_file(script_path);

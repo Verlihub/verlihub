@@ -125,9 +125,11 @@ if(GTest_FOUND)
         # Test executable for wrapper only
         add_executable(test_python_wrapper tests/test_wrapper.cpp)
         target_link_libraries(test_python_wrapper GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_python_wrapper PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         add_executable(test_python_wrapper_stress tests/test_stress_wrapper.cpp)
         target_link_libraries(test_python_wrapper_stress GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_python_wrapper_stress PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # Integration test - now works with the SHARED library
         add_executable(test_python_plugin_integration tests/test_python_plugin_integration.cpp)
@@ -138,26 +140,32 @@ if(GTest_FOUND)
         # Phase 3 & 4: Advanced type marshaling tests
         add_executable(test_python_advanced_types tests/test_python_advanced_types.cpp)
         target_link_libraries(test_python_advanced_types GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_python_advanced_types PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}" SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
         # vh Module tests - restored Python bidirectional API
         add_executable(test_vh_module tests/test_vh_module.cpp)
         target_link_libraries(test_vh_module GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_vh_module PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
         
         # Dimension 4: Dynamic registration tests
         add_executable(test_dynamic_registration tests/test_dynamic_registration.cpp)
         target_link_libraries(test_dynamic_registration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_dynamic_registration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # JSON marshaling tests
         add_executable(test_json_marshal tests/test_json_marshal.cpp)
         target_link_libraries(test_json_marshal GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_json_marshal PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # JSON integration tests - comprehensive nested structure tests
         add_executable(test_json_integration tests/test_json_integration.cpp)
         target_link_libraries(test_json_integration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_json_integration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # Sets and tuples marshaling tests
         add_executable(test_sets_tuples tests/test_sets_tuples.cpp)
         target_link_libraries(test_sets_tuples GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_compile_definitions(test_sets_tuples PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # Hub API stress test - tests FastAPI server with concurrent message processing
         if(CURL_FOUND)
@@ -174,6 +182,7 @@ if(GTest_FOUND)
         if(PYTHON_USE_SINGLE_INTERPRETER)
             add_executable(test_single_interpreter tests/test_single_interpreter.cpp)
             target_link_libraries(test_single_interpreter GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+            target_compile_definitions(test_single_interpreter PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
             add_test(NAME SingleInterpreterTests COMMAND test_single_interpreter)
         endif()
 
