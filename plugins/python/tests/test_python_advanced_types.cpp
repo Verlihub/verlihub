@@ -20,13 +20,8 @@ protected:
 	static bool initialized;
 
 	static void SetUpTestSuite() {
-		// Load test script once for all tests
-		script_path = std::string(__FILE__);
-		size_t pos = script_path.find_last_of("/\\");
-		if (pos != std::string::npos) {
-			script_path = script_path.substr(0, pos + 1);
-		}
-		script_path += "test_script_advanced_types.py";
+		// Use the test script from source directory
+		script_path = std::string(SOURCE_DIR) + "/plugins/python/tests/test_script_advanced_types.py";
 		
 		// Initialize wrapper
 		w_Tcallback callbacks[W_MAX_HOOKS] = {nullptr};

@@ -22,12 +22,7 @@ protected:
 
 	static void SetUpTestSuite() {
 		// Load test script once for all tests
-		script_path = std::string(__FILE__);
-		size_t pos = script_path.find_last_of("/\\");
-		if (pos != std::string::npos) {
-			script_path = script_path.substr(0, pos + 1);
-		}
-		script_path += "test_script_sets_tuples.py";
+		script_path = std::string(BUILD_DIR) + "/test_script_sets_tuples.py";
 		
 		// Initialize wrapper
 		w_Tcallback callbacks[W_MAX_HOOKS] = {nullptr};

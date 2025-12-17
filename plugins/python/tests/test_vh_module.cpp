@@ -14,7 +14,7 @@
 // Helper function to generate unique test file paths in build directory
 static std::string GetTestFilePath(const char* base_name) {
 	std::ostringstream oss;
-	oss << "test_vh_" << base_name << "_" << getpid() << "_" << ::testing::UnitTest::GetInstance()->current_test_info()->name() << ".py";
+	oss << BUILD_DIR << "/test_vh_" << base_name << "_" << getpid() << "_" << ::testing::UnitTest::GetInstance()->current_test_info()->name() << ".py";
 	return oss.str();
 }
 

@@ -19,12 +19,14 @@ public:
     }
 };
 
-// Test fixture for per-test setup (no Python init here)
 class PythonWrapperTest : public ::testing::Test {
 protected:
+    std::string script_path;
+    
     void SetUp() override {
-        // Create a test script file
-        std::ofstream script_file("test_script.py");
+        // Create a test script file in build directory
+        script_path = std::string(BUILD_DIR) + "/test_script_" + std::to_string(getpid()) + ".py";
+        std::ofstream script_file(script_path);
         script_file << "def OnTimer():\n"
                     << "    return 42\n"
                     << "def OnParsedMsgChat(user, data):\n"
@@ -34,7 +36,7 @@ protected:
 
     void TearDown() override {
         // Remove test script
-        std::remove("test_script.py");
+        std::remove(script_path.c_str());
     }
 };
 
@@ -49,7 +51,7 @@ TEST_F(PythonWrapperTest, LoadAndUnloadScript) {
     EXPECT_GE(id, 0);
 
     // Mock args: id, path, botname, opchatname, config_dir, starttime, config_name
-    w_Targs* args = w_pack("lssssls", id, "test_script.py", "TestBot", "OpChat", ".", (long)0, "config");
+    w_Targs* args = w_pack("lssssls", id, script_path.c_str(), "TestBot", "OpChat", ".", (long)0, "config");
     EXPECT_EQ(id, w_Load(args));
     free(args);  // Use free(), not w_free_args() - w_Load() copies strings with strdup()
 
@@ -63,7 +65,7 @@ TEST_F(PythonWrapperTest, LoadAndUnloadScript) {
 // Test calling a hook
 TEST_F(PythonWrapperTest, CallHook) {
     int id = w_ReserveID();
-    w_Targs* args = w_pack("lssssls", id, "test_script.py", "TestBot", "OpChat", ".", (long)0, "config");
+    w_Targs* args = w_pack("lssssls", id, script_path.c_str(), "TestBot", "OpChat", ".", (long)0, "config");
     w_Load(args);
     free(args);  // Use free(), not w_free_args() - w_Load() copies strings with strdup()
 
