@@ -1,7 +1,7 @@
 /*
 	Copyright (C) 2025 Verlihub Team
 
-	Test suite for Dimension 4: Dynamic C++ Function Registration
+	Test suite for Dynamic C++ Function Registration
 */
 
 #include <gtest/gtest.h>
