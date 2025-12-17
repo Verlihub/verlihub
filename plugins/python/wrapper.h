@@ -207,7 +207,7 @@ typedef struct {
 	char          *config_name;
 	bool           had_threads;  // Track if this interpreter used threading/asyncio
 	
-	// Dynamic function registry (Dimension 4)
+	// Dynamic function registry
 	std::map<std::string, w_Tcallback> *dynamic_funcs;
 } w_TScript;
 
@@ -229,7 +229,7 @@ PyObject *w_GetHook(int hook);
 const char *w_HookName(int hook);
 const char *w_CallName(int callback);
 
-// Dimension 4: Dynamic function registration
+// Dynamic function registration
 // Register a C++ function that can be called from Python scripts
 int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
 // Unregister a dynamically registered function

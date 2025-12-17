@@ -147,7 +147,7 @@ if(GTest_FOUND)
         target_link_libraries(test_vh_module GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
         target_compile_definitions(test_vh_module PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
         
-        # Dimension 4: Dynamic registration tests
+        # Dynamic registration tests
         add_executable(test_dynamic_registration tests/test_dynamic_registration.cpp)
         target_link_libraries(test_dynamic_registration GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
         target_compile_definitions(test_dynamic_registration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
@@ -195,7 +195,7 @@ if(GTest_FOUND)
         add_test(NAME PythonAdvancedTypesTests COMMAND test_python_advanced_types)
         # vh Module test - validates restored bidirectional API
         add_test(NAME VHModuleTests COMMAND test_vh_module)
-        # Dynamic registration test - validates Dimension 4
+        # Dynamic registration test - validates runtime function registration
         add_test(NAME DynamicRegistrationTests COMMAND test_dynamic_registration)
         # JSON marshaling test - validates RapidJSON integration
         add_test(NAME JsonMarshalTests COMMAND test_json_marshal)
