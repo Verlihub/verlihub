@@ -1900,20 +1900,53 @@ TEST(MyFeatureTest, BasicFunctionality) {
 
 ```bash
 # Prerequisites
-sudo apt-get install cmake g++ python3-dev libmysqlclient-dev
+sudo apt-get install cmake g++ python3-dev libmysqlclient-dev libicu-dev
+
+# For running tests (optional)
+sudo apt-get install libgtest-dev libcurl4-openssl-dev
 
 # Clone repository
 git clone https://github.com/verlihub/verlihub.git
 cd verlihub
 
-# Build
+# Build (default: tests enabled)
 mkdir build && cd build
 cmake ..
+make -j$(nproc)
+
+# Build without tests (if you don't need them)
+cmake -DBUILD_PYTHON_TESTS=OFF ..
 make -j$(nproc)
 
 # Install
 sudo make install
 ```
+
+#### Build Options
+
+**Single Interpreter Mode** (enables full Python ecosystem compatibility):
+```bash
+cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..
+```
+Allows FastAPI, numpy, torch, and other modern packages. Trade-off: scripts share global namespace.
+
+**Disable Python Tests** (skip test dependencies):
+```bash
+cmake -DBUILD_PYTHON_TESTS=OFF ..
+```
+Tests are enabled by default. Disable to avoid needing GTest/GMock/libcurl development packages.
+
+#### Build Dependencies Explained
+
+**Required for compilation:**
+- `cmake` - Build system generator
+- `python3-dev` - Python development headers (Python.h)
+- `libmysqlclient-dev` - MySQL client library headers
+- `libicu-dev` - ICU library for character encoding conversion (supports legacy encodings like CP1251, ISO-8859-1, etc.)
+
+**Optional for tests** (only needed if `BUILD_PYTHON_TESTS=ON`, which is default):
+- `libgtest-dev` - Google Test framework for unit/integration testing
+- `libcurl4-openssl-dev` - CURL library with development headers (required by test_hub_api_stress for HTTP API testing)
 
 ### Adding New Callbacks
 

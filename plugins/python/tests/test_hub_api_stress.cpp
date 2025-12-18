@@ -293,7 +293,120 @@ TEST_F(HubApiStressTest, StartApiServer) {
     delete admin;
 }
 
-// Test 3: Concurrent message processing while making API calls
+// Test 3: Validate API endpoints return correct data
+TEST_F(HubApiStressTest, ValidateApiEndpoints) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    // Set some test hub configuration values
+    std::string hub_name = "Test Hub API";
+    std::string hub_desc = "Testing API Endpoints";
+    std::string topic = "Welcome to the test!";
+    
+    g_server->mC.hub_name = hub_name;
+    g_server->mC.hub_desc = hub_desc;
+    g_server->mC.hub_topic = topic;
+    g_server->mC.max_users_total = 500;
+    
+    // Create some test users
+    std::vector<cConnDC*> users;
+    for (int i = 0; i < 5; i++) {
+        std::string nick = "TestUser" + std::to_string(i);
+        cConnDC* user = create_mock_connection(nick, 1);
+        users.push_back(user);
+        
+        // Add users to the hub's user list
+        g_server->mUserList.Add(user->mpUser);
+        user->mpUser->mInList = true;
+    }
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18085", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Test /api/hub endpoint
+    std::string response;
+    long http_code = 0;
+    
+    if (http_get("http://localhost:18085/api/hub", response, http_code)) {
+        std::cout << "\n=== /api/hub Response ===" << std::endl;
+        std::cout << response << std::endl;
+        
+        if (http_code == 200) {
+            // Validate hub name is in response
+            EXPECT_NE(response.find(hub_name), std::string::npos) 
+                << "Hub name should be in /api/hub response";
+            
+            // Validate hub description is in response
+            EXPECT_NE(response.find(hub_desc), std::string::npos)
+                << "Hub description should be in /api/hub response";
+            
+            // Validate topic is in response
+            EXPECT_NE(response.find(topic), std::string::npos)
+                << "Topic should be in /api/hub response";
+            
+            // Validate max_users is in response
+            EXPECT_NE(response.find("\"max_users\": 500"), std::string::npos)
+                << "Max users should be in /api/hub response";
+            
+            std::cout << "✓ /api/hub endpoint validated successfully" << std::endl;
+        } else {
+            std::cerr << "⚠ /api/hub returned HTTP " << http_code << std::endl;
+        }
+    }
+    
+    // Test /api/users endpoint
+    if (http_get("http://localhost:18085/api/users", response, http_code)) {
+        std::cout << "\n=== /api/users Response ===" << std::endl;
+        std::cout << response.substr(0, 500) << "..." << std::endl;
+        
+        if (http_code == 200) {
+            // Check that user count matches
+            EXPECT_NE(response.find("\"count\": 5"), std::string::npos)
+                << "User count should be 5 (excluding admin)";
+            
+            // Check that each test user appears in the list
+            for (int i = 0; i < 5; i++) {
+                std::string nick = "TestUser" + std::to_string(i);
+                EXPECT_NE(response.find(nick), std::string::npos)
+                    << "User " << nick << " should be in user list";
+            }
+            
+            std::cout << "✓ /api/users endpoint validated successfully" << std::endl;
+        } else {
+            std::cerr << "⚠ /api/users returned HTTP " << http_code << std::endl;
+        }
+    }
+    
+    // Test /api/stats endpoint
+    if (http_get("http://localhost:18085/api/stats", response, http_code)) {
+        std::cout << "\n=== /api/stats Response ===" << std::endl;
+        std::cout << response << std::endl;
+        
+        if (http_code == 200) {
+            // Validate response has expected fields
+            EXPECT_NE(response.find("\"users_online\""), std::string::npos)
+                << "Stats should have users_online field";
+            EXPECT_NE(response.find("\"total_share\""), std::string::npos)
+                << "Stats should have total_share field";
+            
+            std::cout << "✓ /api/stats endpoint validated successfully" << std::endl;
+        } else {
+            std::cerr << "⚠ /api/stats returned HTTP " << http_code << std::endl;
+        }
+    }
+    
+    // Cleanup
+    for (auto* user : users) {
+        g_server->mUserList.Remove(user->mpUser);
+        delete user->mpUser;
+        delete user;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 4: Concurrent message processing while making API calls
 TEST_F(HubApiStressTest, ConcurrentMessagesAndApiCalls) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     
@@ -412,7 +525,7 @@ TEST_F(HubApiStressTest, ConcurrentMessagesAndApiCalls) {
     delete admin;
 }
 
-// Test 4: Rapid command processing
+// Test 5: Rapid command processing
 TEST_F(HubApiStressTest, RapidCommandProcessing) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     
@@ -479,7 +592,7 @@ TEST_F(HubApiStressTest, RapidCommandProcessing) {
     delete admin;
 }
 
-// Test 5: Memory leak detection under load
+// Test 6: Memory leak detection under load
 TEST_F(HubApiStressTest, MemoryLeakDetection) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     
@@ -545,7 +658,7 @@ TEST_F(HubApiStressTest, MemoryLeakDetection) {
     delete admin;
 }
 
-// Test 6: Encoding conversion with weird characters and API interaction
+// Test 7: Encoding conversion with weird characters and API interaction
 TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     

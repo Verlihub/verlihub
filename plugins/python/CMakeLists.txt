@@ -32,6 +32,11 @@ option(PYTHON_USE_SINGLE_INTERPRETER
     "Use single Python interpreter (allows threading but scripts can see each other)" 
     OFF)
 
+# Option to build Python plugin tests (requires GTest, GMock, and optionally libcurl)
+option(BUILD_PYTHON_TESTS
+    "Build Python plugin unit and integration tests"
+    ON)
+
 if(PYTHON_USE_SINGLE_INTERPRETER)
     message(STATUS "[ !! ] Python single interpreter mode ENABLED")
     message(STATUS "       WARNING: Scripts can access each other's data")
@@ -109,17 +114,19 @@ TARGET_LINK_LIBRARIES(libpython_pi ${DL_LIBRARIES} libverlihub_so libvh_python_w
 
 INSTALL(TARGETS libpython_pi libvh_python_wrapper LIBRARY DESTINATION ${PLUGINDIR})
 
-# Find GTest using modern CMake approach
-find_package(GTest)
+# Only build tests if requested (enabled by default)
+if(BUILD_PYTHON_TESTS)
+    # Find GTest using modern CMake approach
+    find_package(GTest)
 
-if(GTest_FOUND)
-    # Also check for gmock
-    find_path(GMOCK_INCLUDE_DIR gmock/gmock.h PATHS /usr/include /usr/src/googletest/googlemock/include)
-    
-    # Check for libcurl (needed for API stress test)
-    find_package(CURL)
-    
-    if(GMOCK_INCLUDE_DIR)
+    if(GTest_FOUND)
+        # Also check for gmock
+        find_path(GMOCK_INCLUDE_DIR gmock/gmock.h PATHS /usr/include /usr/src/googletest/googlemock/include)
+        
+        # Check for libcurl (needed for API stress test)
+        find_package(CURL)
+        
+        if(GMOCK_INCLUDE_DIR)
         include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIR})
         
         # Test executable for wrapper only
@@ -215,4 +222,7 @@ if(GTest_FOUND)
     endif()
 else()
     message(STATUS "[ !! ] GTest not found; skipping test build")
+endif()
+else()
+    message(STATUS "[ .. ] Python plugin tests disabled (use -DBUILD_PYTHON_TESTS=ON to enable)")
 endif()

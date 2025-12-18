@@ -1510,33 +1510,26 @@ w_Targs *_GetNickList(int id, w_Targs *args)
 {
 	std::vector<std::string> nicks;
 	
-
-	// Helper: sanitize string to valid UTF-8 (replace invalid bytes with '?')
-	auto sanitize_utf8 = [](const std::string& s) -> std::string {
-		std::string out;
-		size_t i = 0, len = s.size();
-		while (i < len) {
-			unsigned char c = (unsigned char)s[i];
-			if (c < 0x80) {
-				out += c; i++;
-			} else if ((c & 0xE0) == 0xC0 && i+1 < len && (s[i+1] & 0xC0) == 0x80) {
-				out += s.substr(i,2); i+=2;
-			} else if ((c & 0xF0) == 0xE0 && i+2 < len && (s[i+1] & 0xC0) == 0x80 && (s[i+2] & 0xC0) == 0x80) {
-				out += s.substr(i,3); i+=3;
-			} else if ((c & 0xF8) == 0xF0 && i+3 < len && (s[i+1] & 0xC0) == 0x80 && (s[i+2] & 0xC0) == 0x80 && (s[i+3] & 0xC0) == 0x80) {
-				out += s.substr(i,4); i+=4;
-			} else {
-				out += '?'; i++;
-			}
-		}
-		return out;
-	};
-
-	// Iterate through users directly instead of using cached protocol string
+	// Iterate through users and convert nicknames from hub encoding to UTF-8
 	for (cUserCollection::iterator it = cpiPython::me->server->mUserList.begin();
 		 it != cpiPython::me->server->mUserList.end(); ++it) {
 		if (*it && (*it)->mNick.size() > 0) {
-			nicks.push_back(sanitize_utf8((*it)->mNick));
+			// Convert nick from hub encoding to UTF-8 using ICU
+			std::string utf8_nick;
+			if (cpiPython::server && cpiPython::server->mICUConvert) {
+				if (!cpiPython::server->mICUConvert->ConvertReverse(
+					(*it)->mNick.c_str(), 
+					(*it)->mNick.size(), 
+					utf8_nick, 
+					"UTF-8")) {
+					// Conversion failed, use original (might be ASCII or already UTF-8)
+					utf8_nick = (*it)->mNick;
+				}
+			} else {
+				// No converter, assume already UTF-8
+				utf8_nick = (*it)->mNick;
+			}
+			nicks.push_back(utf8_nick);
 		}
 	}
 	
@@ -1551,11 +1544,23 @@ w_Targs *_GetOpList(int id, w_Targs *args)
 {
 	std::vector<std::string> nicks;
 	
-	// Iterate through operators directly
+	// Iterate through operators and convert nicknames from hub encoding to UTF-8
 	for (cUserCollection::iterator it = cpiPython::me->server->mOpList.begin();
 	     it != cpiPython::me->server->mOpList.end(); ++it) {
 		if (*it && (*it)->mNick.size() > 0) {
-			nicks.push_back((*it)->mNick);
+			std::string utf8_nick;
+			if (cpiPython::server && cpiPython::server->mICUConvert) {
+				if (!cpiPython::server->mICUConvert->ConvertReverse(
+					(*it)->mNick.c_str(), 
+					(*it)->mNick.size(), 
+					utf8_nick, 
+					"UTF-8")) {
+					utf8_nick = (*it)->mNick;
+				}
+			} else {
+				utf8_nick = (*it)->mNick;
+			}
+			nicks.push_back(utf8_nick);
 		}
 	}
 	
@@ -1567,11 +1572,23 @@ w_Targs *_GetBotList(int id, w_Targs *args)
 {
 	std::vector<std::string> nicks;
 	
-	// Iterate through bots directly
+	// Iterate through bots and convert nicknames from hub encoding to UTF-8
 	for (cUserCollection::iterator it = cpiPython::me->server->mRobotList.begin();
 	     it != cpiPython::me->server->mRobotList.end(); ++it) {
 		if (*it && (*it)->mNick.size() > 0) {
-			nicks.push_back((*it)->mNick);
+			std::string utf8_nick;
+			if (cpiPython::server && cpiPython::server->mICUConvert) {
+				if (!cpiPython::server->mICUConvert->ConvertReverse(
+					(*it)->mNick.c_str(), 
+					(*it)->mNick.size(), 
+					utf8_nick, 
+					"UTF-8")) {
+					utf8_nick = (*it)->mNick;
+				}
+			} else {
+				utf8_nick = (*it)->mNick;
+			}
+			nicks.push_back(utf8_nick);
 		}
 	}
 	
