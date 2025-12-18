@@ -1356,7 +1356,7 @@ def test_string_operations(text):
     
     for (const auto& nick : weird_nicks_utf8) {
         // Call echo_nick to test round-trip
-        w_Targs* args = w_pack("s", nick.c_str());
+        w_Targs* args = w_pack("s", strdup(nick.c_str()));
         w_Targs* result = g_py_plugin->CallPythonFunction(encoding_interp->id, "echo_nick", args);
         w_free_args(args);
         
@@ -1373,11 +1373,10 @@ def test_string_operations(text):
             << " got: " << returned_nick;
         std::cout << "  UTF-8 round-trip OK: \"" << nick << "\" -> \"" << returned_nick << "\"" << std::endl;
         
-        free(returned_nick);
         w_free_args(result);
         
         // Test string operations
-        args = w_pack("s", nick.c_str());
+        args = w_pack("s", strdup(nick.c_str()));
         result = g_py_plugin->CallPythonFunction(encoding_interp->id, "test_string_operations", args);
         w_free_args(args);
         
@@ -1399,7 +1398,6 @@ def test_string_operations(text):
         EXPECT_NE(ops_str.find("\"original\""), std::string::npos)
             << "Missing 'original' field in ops result";
         
-        free(ops_json);
         w_free_args(result);
     }
 
@@ -1422,7 +1420,7 @@ def test_string_operations(text):
     };
     
     for (const auto& nick : cp1251_test_nicks) {
-        w_Targs* args = w_pack("s", nick.c_str());
+        w_Targs* args = w_pack("s", strdup(nick.c_str()));
         w_Targs* result = g_py_plugin->CallPythonFunction(encoding_interp->id, "echo_nick", args);
         w_free_args(args);
         
@@ -1447,7 +1445,6 @@ def test_string_operations(text):
                 << "Cyrillic text should produce non-empty result in CP1251";
         }
         
-        free(returned_nick);
         w_free_args(result);
     }
 
@@ -1470,7 +1467,7 @@ def test_string_operations(text):
     };
     
     for (const auto& nick : latin1_test_nicks) {
-        w_Targs* args = w_pack("s", nick.c_str());
+        w_Targs* args = w_pack("s", strdup(nick.c_str()));
         w_Targs* result = g_py_plugin->CallPythonFunction(encoding_interp->id, "test_string_operations", args);
         w_free_args(args);
         
@@ -1492,7 +1489,6 @@ def test_string_operations(text):
         EXPECT_NE(ops_str.find("\"length\""), std::string::npos)
             << "Missing length field for: " << nick;
         
-        free(ops_json);
         w_free_args(result);
     }
 
@@ -1514,7 +1510,7 @@ def test_string_operations(text):
     };
     
     for (const auto& nick : cp1250_test_nicks) {
-        w_Targs* args = w_pack("s", nick.c_str());
+        w_Targs* args = w_pack("s", strdup(nick.c_str()));
         w_Targs* result = g_py_plugin->CallPythonFunction(encoding_interp->id, "echo_nick", args);
         w_free_args(args);
         
@@ -1538,7 +1534,6 @@ def test_string_operations(text):
                 << "Central European text should survive in CP1250: " << nick;
         }
         
-        free(returned_nick);
         w_free_args(result);
     }
 
@@ -1554,7 +1549,7 @@ def test_string_operations(text):
             g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
         }
         
-        w_Targs* args = w_pack("s", test_nick.c_str());
+        w_Targs* args = w_pack("s", strdup(test_nick.c_str()));
         w_Targs* result = g_py_plugin->CallPythonFunction(encoding_interp->id, "echo_nick", args);
         w_free_args(args);
         
@@ -1574,7 +1569,6 @@ def test_string_operations(text):
         // Result should not be empty
         EXPECT_GT(strlen(returned_nick), 0) << "Result should not be empty for " << encoding;
         
-        free(returned_nick);
         w_free_args(result);
     }
 
@@ -1600,7 +1594,6 @@ def test_string_operations(text):
     EXPECT_NE(stats_str.find("\"errors\":"), std::string::npos)
         << "Missing 'errors' count in statistics";
     
-    free(stats_json);
     w_free_args(result);
 
     std::cout << "\n=== Encoding Conversion Test Results ===" << std::endl;
