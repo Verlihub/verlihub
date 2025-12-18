@@ -1094,20 +1094,16 @@ static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)
 	if (!vh_ParseArgs(W_GetMyINFO, args, "s", &a))
 		return NULL;
 	
-	// Free allocated strings from vh_ParseArgs
-	for (int i = 0; a->format && a->format[i]; i++) {
-		if (a->format[i] == 's' && a->args[i].s) {
-			free(a->args[i].s);
-		}
-	}
+	// Don't free the strings yet - they're needed by the callback!
+	// The callback will handle freeing via w_free_args()
 	
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
 	
 	w_Targs *res = w_Python->callbacks[W_GetMyINFO](W_GetMyINFO, a);
 	
-	free((char*)a->format);
-	free(a);
+	// Now free the input args
+	w_free_args(a);
 	
 	PyEval_AcquireThread(state);
 	

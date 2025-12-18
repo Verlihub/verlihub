@@ -1431,18 +1431,56 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
+	
+	printf("PY: _GetMyINFO called for nick='%s'\n", nick);
+	fflush(stdout);
+	
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (!u) return NULL;
+	if (!u) {
+		printf("PY: _GetMyINFO - user '%s' NOT FOUND in mUserList\n", nick);
+		fflush(stdout);
+		return NULL;
+	}
+	
+	printf("PY: _GetMyINFO - user '%s' found, mMyINFO.length()=%zu, mFakeMyINFO.length()=%zu, mShare=%lld\n",
+		nick, u->mMyINFO.length(), u->mFakeMyINFO.length(), u->mShare);
+	fflush(stdout);
 	
 	// Use real MyINFO (mMyINFO) which has the actual client data
 	// Fall back to mFakeMyINFO only if mMyINFO is empty (e.g., for bots)
 	const string& myinfo_str = u->mMyINFO.empty() ? u->mFakeMyINFO : u->mMyINFO;
+	
+	// If both MyINFO strings are empty, construct from user object fields
+	if (myinfo_str.empty()) {
+		ostringstream share_str;
+		share_str << u->mShare;
+		
+		w_Targs *res = cpiPython::lib_pack("ssssss", 
+			strdup(u->mNick.c_str()),     // nick
+			strdup(""),                     // desc (not available without MyINFO)
+			strdup(""),                     // tag (not available without MyINFO)
+			strdup(""),                     // speed (not available without MyINFO) 
+			strdup(""),                     // email (not available without MyINFO)
+			strdup(share_str.str().c_str()) // share from mShare field
+		);
+		log1("PY: GetMyINFO for %s - both MyINFO strings empty, using mShare=%lld\n", nick, u->mShare);
+		return res;
+	}
+	
+	log1("PY: GetMyINFO for %s - mMyINFO.empty()=%d, using %s, value: %.200s\n", 
+		nick, u->mMyINFO.empty() ? 1 : 0, 
+		u->mMyINFO.empty() ? "mFakeMyINFO" : "mMyINFO",
+		myinfo_str.c_str());
 	
 	char *n, *desc, *tag, *speed, *mail, *size;
 	if (!cpiPython::me->SplitMyINFO(myinfo_str.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
 		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", myinfo_str.c_str());
 		return NULL;
 	}
+	
+	log1("PY: GetMyINFO parsed - desc='%.50s', tag='%.50s', email='%.50s', size='%s'\n",
+		desc ? desc : "(null)", tag ? tag : "(null)", mail ? mail : "(null)", size ? size : "(null)");
+	
 	w_Targs *res = cpiPython::lib_pack("ssssss", n, desc, tag, speed, mail, size);
 	return res;
 }

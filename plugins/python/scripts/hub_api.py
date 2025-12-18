@@ -249,15 +249,22 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         email = ""
         speed = ""
         
+        # Debug logging
+        print(f"[Hub API DEBUG] GetMyINFO({nick}) returned: {myinfo!r}")
+        
         if myinfo and isinstance(myinfo, tuple) and len(myinfo) >= 6:
             # Tuple format: (nick, desc, tag, speed, email, sharesize)
             _, desc, tag, speed, email, size_str = myinfo[:6]
+            print(f"[Hub API DEBUG] Parsed for {nick}: desc='{desc}', tag='{tag}', email='{email}', size_str='{size_str}'")
             try:
                 # Share size is in bytes as a string
                 share = int(size_str) if size_str else 0
+                print(f"[Hub API DEBUG] Converted share for {nick}: {share}")
             except (ValueError, TypeError):
                 print(f"[Hub API] Warning: Failed to parse share size for {nick}: '{size_str}'")
                 share = 0
+        else:
+            print(f"[Hub API DEBUG] GetMyINFO for {nick} failed validation: myinfo={myinfo!r}, is_tuple={isinstance(myinfo, tuple)}, len={len(myinfo) if myinfo else 'N/A'}")
         
         return {
             "nick": nick,
