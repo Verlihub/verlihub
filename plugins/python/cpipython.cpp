@@ -1433,9 +1433,14 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	if (!nick) return NULL;
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
 	if (!u) return NULL;
+	
+	// Use real MyINFO (mMyINFO) which has the actual client data
+	// Fall back to mFakeMyINFO only if mMyINFO is empty (e.g., for bots)
+	const string& myinfo_str = u->mMyINFO.empty() ? u->mFakeMyINFO : u->mMyINFO;
+	
 	char *n, *desc, *tag, *speed, *mail, *size;
-	if (!cpiPython::me->SplitMyINFO(u->mFakeMyINFO.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
-		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", u->mFakeMyINFO.c_str());
+	if (!cpiPython::me->SplitMyINFO(myinfo_str.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
+		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", myinfo_str.c_str());
 		return NULL;
 	}
 	w_Targs *res = cpiPython::lib_pack("ssssss", n, desc, tag, speed, mail, size);
