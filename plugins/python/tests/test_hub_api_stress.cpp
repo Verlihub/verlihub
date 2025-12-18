@@ -583,7 +583,7 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
         // Send chat message with weird characters
         std::string msg = "Hello from " + nick + "! Testing 🎉";
         bool msg_result = send_chat_message(user, msg);
-        std::cout << "  Message from \"" << nick << \"\": " 
+        std::cout << "  Message from \"" << nick << "\": " 
                  << (msg_result ? "processed" : "handled") << std::endl;
         
         // Send command - verify it doesn't crash
@@ -639,7 +639,7 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
         // Send messages that might have encoding issues
         std::string msg = "Сообщение от " + nick;
         bool result = send_chat_message(user, msg);
-        std::cout << "  CP1251 message from \"" << nick << \"\": " 
+        std::cout << "  CP1251 message from \"" << nick << "\": " 
                  << (result ? "processed" : "handled") << std::endl;
         
         // Verify user was created successfully
@@ -686,7 +686,7 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
         
         std::string msg = "Message from " + nick + " in Latin-1";
         bool result = send_chat_message(user, msg);
-        std::cout << "  Latin-1 message from \"" << nick << \"\": " 
+        std::cout << "  Latin-1 message from \"" << nick << "\": " 
                  << (result ? "processed" : "handled") << std::endl;
         
         // Verify nick was set correctly
