@@ -57,7 +57,8 @@ Many popular Python packages **will not work** in sub-interpreter mode due to:
 1. **PyO3/Rust Extensions** (most modern packages):
    - FastAPI, Pydantic, uvicorn
    - cryptography, tokenizers, polars
-   - **Error**: "PyO3 modules do not yet support subinterpreters"
+   - **Error**: `ImportError: PyO3 modules do not yet support subinterpreters, see https://github.com/PyO3/pyo3/issues/576`
+   - **Root cause**: PyO3 (Rust-Python bindings) has fundamental architectural limitations preventing subinterpreter support
 
 2. **Packages with Global C State**:
    - numpy, pandas, scipy

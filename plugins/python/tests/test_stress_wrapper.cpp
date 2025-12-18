@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "wrapper.h"
+#include "test_utils.h"
 #include <fstream>
 #include <string>
 #include <vector>
@@ -297,6 +298,12 @@ TEST_F(PythonWrapperTest, CallHook) {
 TEST_F(PythonWrapperTest, StressTest) {
     int id = LoadScript();
 
+    // Start memory tracking
+    MemoryTracker tracker;
+    tracker.start();
+    std::cout << "\n=== Stress Test Memory Tracking Started ===" << std::endl;
+    std::cout << "Initial: " << tracker.initial.to_string() << std::endl;
+
     double current_time = 1759447563.749;  // Starting time from log
     const int iterations = 1000000;  // Large number to stress; adjust as needed
 
@@ -375,11 +382,18 @@ TEST_F(PythonWrapperTest, StressTest) {
             CallAndFree(id, W_OnParsedMsgSearch, params);
         }
 
-        // Print progress every 1000 iterations
-        if (i % 1000 == 0) {
+        // Sample memory every 10,000 iterations
+        if (i % 10000 == 0) {
+            tracker.sample();
             std::cout << "Stress test iteration: " << i << " / " << iterations << std::endl;
         }
     }
+
+    // Final memory sample
+    tracker.sample();
+    
+    // Print comprehensive memory report
+    tracker.print_report();
 
     w_Unload(id);
     EXPECT_TRUE(true);  // If no crash, test passes

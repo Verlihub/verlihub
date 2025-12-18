@@ -135,12 +135,12 @@ if(BUILD_PYTHON_TESTS)
         target_compile_definitions(test_python_wrapper PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         add_executable(test_python_wrapper_stress tests/test_stress_wrapper.cpp)
-        target_link_libraries(test_python_wrapper_stress GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
+        target_link_libraries(test_python_wrapper_stress test_utils GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
         target_compile_definitions(test_python_wrapper_stress PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         # Integration test - now works with the SHARED library
         add_executable(test_python_plugin_integration tests/test_python_plugin_integration.cpp)
-        target_link_libraries(test_python_plugin_integration GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper)
+        target_link_libraries(test_python_plugin_integration test_utils GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper)
         # Pass build directory to test for config file location
         target_compile_definitions(test_python_plugin_integration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
@@ -149,9 +149,13 @@ if(BUILD_PYTHON_TESTS)
         target_link_libraries(test_python_advanced_types GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
         target_compile_definitions(test_python_advanced_types PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}" SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+        # Test utilities library (for memory tracking)
+        add_library(test_utils STATIC tests/test_utils.cpp)
+        target_include_directories(test_utils PUBLIC tests)
+
         # vh Module tests - restored Python bidirectional API
         add_executable(test_vh_module tests/test_vh_module.cpp)
-        target_link_libraries(test_vh_module GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
+        target_link_libraries(test_vh_module test_utils GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
         target_compile_definitions(test_vh_module PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
         
         # Dynamic registration tests
@@ -177,7 +181,7 @@ if(BUILD_PYTHON_TESTS)
         # Hub API stress test - tests FastAPI server with concurrent message processing
         if(CURL_FOUND)
             add_executable(test_hub_api_stress tests/test_hub_api_stress.cpp)
-            target_link_libraries(test_hub_api_stress GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper ${CURL_LIBRARIES})
+            target_link_libraries(test_hub_api_stress test_utils GTest::gtest GTest::gtest_main pthread libverlihub_so vhapi_so libpython_pi_core libvh_python_wrapper ${CURL_LIBRARIES})
             target_compile_definitions(test_hub_api_stress PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}" SOURCE_DIR="${CMAKE_SOURCE_DIR}")
             target_include_directories(test_hub_api_stress PRIVATE ${CURL_INCLUDE_DIRS})
             message(STATUS "[ OK ] libcurl found, building hub_api stress test")
