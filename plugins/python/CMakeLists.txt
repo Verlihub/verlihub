@@ -124,7 +124,7 @@ if(GTest_FOUND)
         
         # Test executable for wrapper only
         add_executable(test_python_wrapper tests/test_wrapper.cpp)
-        target_link_libraries(test_python_wrapper GTest::gtest GTest::gtest_main pthread libvh_python_wrapper)
+        target_link_libraries(test_python_wrapper GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
         target_compile_definitions(test_python_wrapper PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
         add_executable(test_python_wrapper_stress tests/test_stress_wrapper.cpp)

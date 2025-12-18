@@ -22,6 +22,7 @@
 #include "json_marshal.h"
 #include "src/cserverdc.h"
 #include "src/cban.h"
+#include "cpipython.h"  // For cpiPython::me->server
 
 #include <libgen.h>  // for basename, dirname
 #include <cstring>   // for strrchr
@@ -55,6 +56,60 @@ static int log_level = 0;
 #define log6(...)  if (log_level > 5) { printf( __VA_ARGS__ ); fflush(stdout); }
 
 void w_LogLevel(int level) { log_level = level; }
+
+//==============================================================================
+// Encoding Conversion Helpers (Hub encoding <-> UTF-8 for Python)
+//==============================================================================
+
+// Note: Verlihub's cICUConvert::Convert() converts FROM UTF-8 TO hub_encoding
+// and cICUConvert::ConvertReverse() converts FROM hub_encoding TO UTF-8.
+// This provides full round-trip conversion for the Python/C++ boundary.
+
+// Helper: Convert string from UTF-8 (from Python) to hub encoding
+static std::string Utf8ToHub(const std::string& utf8_str) {
+	if (utf8_str.empty())
+		return utf8_str;
+	
+	// Check if we have a server and ICU converter
+	if (!cpiPython::me || !cpiPython::me->server || !cpiPython::me->server->mICUConvert)
+		return utf8_str; // Return as-is if no converter available
+	
+	std::string hub_enc = cpiPython::me->server->mC.hub_encoding;
+	if (hub_enc.empty() || hub_enc == "UTF-8" || hub_enc == "utf-8")
+		return utf8_str; // Already UTF-8
+	
+	// Use Verlihub's existing ICU converter: Convert(UTF-8 input) -> hub encoding output
+	std::string converted;
+	if (cpiPython::me->server->mICUConvert->Convert(utf8_str.c_str(), utf8_str.length(), converted)) {
+		return converted;
+	}
+	
+	// Fallback to original string if conversion fails
+	return utf8_str;
+}
+
+// Helper: Convert string from hub encoding to UTF-8 (for returning to Python)
+static std::string HubToUtf8(const std::string& hub_str) {
+	if (hub_str.empty())
+		return hub_str;
+	
+	// Check if we have a server and ICU converter
+	if (!cpiPython::me || !cpiPython::me->server || !cpiPython::me->server->mICUConvert)
+		return hub_str; // Return as-is if no converter available
+	
+	std::string hub_enc = cpiPython::me->server->mC.hub_encoding;
+	if (hub_enc.empty() || hub_enc == "UTF-8" || hub_enc == "utf-8")
+		return hub_str; // Already UTF-8
+	
+	// Use Verlihub's ICU converter: ConvertReverse(hub encoding input) -> UTF-8 output
+	std::string converted;
+	if (cpiPython::me->server->mICUConvert->ConvertReverse(hub_str.c_str(), hub_str.length(), converted)) {
+		return converted;
+	}
+	
+	// Fallback to original string if conversion fails
+	return hub_str;
+}
 
 // Function is similar to Python's [_start:_end] slice
 char *w_SubStr(const char *s, int _start, int _end)
@@ -457,7 +512,8 @@ bool PyObjectToJsonValue(PyObject* obj, JsonValue& out_val)
 			PyErr_Clear();
 			return false;
 		}
-		out_val.string_val = s;
+		// Convert from UTF-8 (Python) to hub encoding (C++)
+		out_val.string_val = Utf8ToHub(s);
 		return true;
 	}
 	
@@ -580,8 +636,11 @@ PyObject* JsonValueToPyObject(const JsonValue& val)
 		case JsonType::DOUBLE:
 			return PyFloat_FromDouble(val.double_val);
 		
-		case JsonType::STRING:
-			return PyUnicode_FromString(val.string_val.c_str());
+		case JsonType::STRING: {
+			// Convert from hub encoding to UTF-8 for Python
+			std::string utf8_str = HubToUtf8(val.string_val);
+			return PyUnicode_FromString(utf8_str.c_str());
+		}
 		
 		case JsonType::ARRAY: {
 			PyObject* list = PyList_New(val.array_val.size());
@@ -844,12 +903,16 @@ static int vh_ParseArgs(int func, PyObject *args, const char *in_format, w_Targs
 				if (p == Py_None) {
 					a->args[i].s = NULL;
 				} else if (PyUnicode_Check(p)) {
-					a->args[i].s = (char*)PyUnicode_AsUTF8(p);
-					if (!a->args[i].s) {
+					const char* utf8_str = PyUnicode_AsUTF8(p);
+					if (!utf8_str) {
 						free(pack_format);
 						free(a);
 						return 0;  // PyUnicode_AsUTF8 set exception
 					}
+					// Convert from UTF-8 to hub encoding
+					std::string hub_str = Utf8ToHub(utf8_str);
+					// Allocate and copy converted string (will be freed by callback handler)
+					a->args[i].s = strdup(hub_str.c_str());
 				} else {
 					free(pack_format);
 					free(a);
@@ -887,6 +950,13 @@ static PyObject* vh_CallBool(int func, PyObject *args, const char *in_format)
 	if (!vh_ParseArgs(func, args, in_format, &a))
 		return NULL;
 	
+	// Free allocated strings from vh_ParseArgs
+	for (int i = 0; a->format && a->format[i]; i++) {
+		if (a->format[i] == 's' && a->args[i].s) {
+			free(a->args[i].s);
+		}
+	}
+	
 	// Release GIL while calling C++
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
@@ -919,6 +989,13 @@ static PyObject* vh_CallString(int func, PyObject *args, const char *in_format)
 	if (!vh_ParseArgs(func, args, in_format, &a))
 		return NULL;
 	
+	// Free allocated strings from vh_ParseArgs
+	for (int i = 0; a->format && a->format[i]; i++) {
+		if (a->format[i] == 's' && a->args[i].s) {
+			free(a->args[i].s);
+		}
+	}
+	
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
 	
@@ -938,7 +1015,9 @@ static PyObject* vh_CallString(int func, PyObject *args, const char *in_format)
 	
 	PyObject *py_ret;
 	if (ret && ret[0]) {
-		py_ret = PyUnicode_FromString(ret);
+		// Convert from hub encoding to UTF-8 for Python
+		std::string utf8_str = HubToUtf8(ret);
+		py_ret = PyUnicode_FromString(utf8_str.c_str());
 	} else {
 		Py_INCREF(Py_None);
 		py_ret = Py_None;
@@ -954,6 +1033,13 @@ static PyObject* vh_CallLong(int func, PyObject *args, const char *in_format)
 	w_Targs *a = NULL;
 	if (!vh_ParseArgs(func, args, in_format, &a))
 		return NULL;
+	
+	// Free allocated strings from vh_ParseArgs
+	for (int i = 0; a->format && a->format[i]; i++) {
+		if (a->format[i] == 's' && a->args[i].s) {
+			free(a->args[i].s);
+		}
+	}
 	
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
@@ -1004,6 +1090,13 @@ static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)
 	if (!vh_ParseArgs(W_GetMyINFO, args, "s", &a))
 		return NULL;
 	
+	// Free allocated strings from vh_ParseArgs
+	for (int i = 0; a->format && a->format[i]; i++) {
+		if (a->format[i] == 's' && a->args[i].s) {
+			free(a->args[i].s);
+		}
+	}
+	
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
 	
@@ -1029,9 +1122,10 @@ static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)
 		return NULL;
 	}
 	
-	// Helper macro to safely create PyUnicode with error checking
+	// Helper macro to safely create PyUnicode with encoding conversion
 	#define SET_TUPLE_STRING(index, str) do { \
-		PyObject *py_str = (str) ? PyUnicode_FromString(str) : PyUnicode_FromString(""); \
+		std::string utf8_str = (str) ? HubToUtf8(str) : ""; \
+		PyObject *py_str = PyUnicode_FromString(utf8_str.c_str()); \
 		if (!py_str) { \
 			Py_DECREF(tuple); \
 			free(res); \
@@ -1246,7 +1340,15 @@ static PyObject* vh_UserRestrictions(PyObject *self, PyObject *args, PyObject *k
 	                                  &nick, &nochat, &nopm, &nosearch, &noctm))
 		return NULL;
 	
-	w_Targs *packed = w_pack("sssss", (char*)nick, (char*)nochat, (char*)nopm, (char*)nosearch, (char*)noctm);
+	// Convert all strings from UTF-8 to hub encoding
+	std::string nick_hub = Utf8ToHub(nick);
+	std::string nochat_hub = Utf8ToHub(nochat);
+	std::string nopm_hub = Utf8ToHub(nopm);
+	std::string nosearch_hub = Utf8ToHub(nosearch);
+	std::string noctm_hub = Utf8ToHub(noctm);
+	
+	w_Targs *packed = w_pack("sssss", (char*)nick_hub.c_str(), (char*)nochat_hub.c_str(), 
+	                          (char*)nopm_hub.c_str(), (char*)nosearch_hub.c_str(), (char*)noctm_hub.c_str());
 	
 	PyThreadState *state = PyThreadState_Get();
 	PyEval_ReleaseThread(state);
