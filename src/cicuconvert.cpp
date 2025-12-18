@@ -162,6 +162,47 @@ bool cICUConvert::Convert(const char *udat, unsigned int ulen, string &conv, con
 	return true;
 }
 
+bool cICUConvert::ConvertReverse(const char *hdat, unsigned int hlen, string &conv, const string &tset)
+{
+	if (!mConv) // converter unavailable
+		return false;
+
+	UErrorCode ok = U_ZERO_ERROR;
+
+	if (tset.size() && (mCharSet != tset)) {
+		vhLog(0) << "Recreating ICU converter due to changed character set: " << mCharSet << " > " << tset << endl;
+		mCharSet = tset;
+		ucnv_close(mConv);
+		mConv = ucnv_open(mCharSet.c_str(), &ok);
+
+		if (U_FAILURE(ok)) {
+			vhLog(0) << "Failed to create ICU converter using '" << mCharSet << "', conversion will be disabled: " << u_errorName(ok) << endl;
+
+			if (mConv) {
+				ucnv_close(mConv);
+				mConv = NULL;
+			}
+
+			if (!mTran)
+				u_cleanup();
+
+			return false;
+		}
+	}
+
+	// Convert from hub encoding to UTF-16 UnicodeString
+	UnicodeString ustr(hdat, hlen, mConv, ok);
+
+	if (U_FAILURE(ok)) {
+		return false;
+	}
+
+	// Convert from UTF-16 to UTF-8
+	conv.clear();
+	ustr.toUTF8String(conv);
+	return true;
+}
+
 bool cICUConvert::Translit(const char *udat, unsigned int ulen, string &tran)
 {
 	if (!mTran) // transliterator unavailable
