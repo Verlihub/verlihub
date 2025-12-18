@@ -755,7 +755,7 @@ PyObject* JsonStringToPyObject(const char* json_str)
 #endif // HAVE_RAPIDJSON
 
 //==============================================================================
-// Python 3 vh Module Implementation - Restored from Python 2 version
+// vh Module Implementation
 //==============================================================================
 
 // Helper: Get script ID from vh.myid attribute
@@ -1074,7 +1074,7 @@ static PyObject* vh_Decode(PyObject *self, PyObject *args);
 static PyObject* vh_CallDynamicFunction(PyObject *self, PyObject *args);
 
 //==============================================================================
-// vh Module Functions (53 functions restored from Python 2 version)
+// vh Module Functions
 //==============================================================================
 
 static PyObject* vh_SendToOpChat(PyObject *self, PyObject *args)       { return vh_CallBool(W_SendToOpChat, args, "s|s"); }
@@ -1199,14 +1199,10 @@ static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
 	char *json_str = NULL;
 	w_unpack(res, "D", &json_str);
 	
-	fprintf(stderr, "PY-WRAPPER: vh_GetNickList received JSON: %s\n", json_str ? json_str : "(null)");
-	
 	PyObject *py_list = NULL;
 	
 #ifdef HAVE_RAPIDJSON
 	py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
-	fprintf(stderr, "PY-WRAPPER: JsonStringToPyObject returned %s, PyList_Check=%d\n", 
-	        py_list ? "object" : "null", py_list ? PyList_Check(py_list) : -1);
 	if (!py_list) {
 		// Clear any exception set by JsonStringToPyObject before returning fallback
 		PyErr_Clear();
