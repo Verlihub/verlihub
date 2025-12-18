@@ -1815,30 +1815,6 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 
 int cServerDC::OnTimer(const cTime &now)
 {
-	// DEFERRED SIGNAL HANDLING: Process signals set by signal handlers
-	// This runs in main loop, NOT in signal context - safe to call any function
-	
-	// Check for SIGHUP (reload configuration)
-	if (pending_signal_hup) {
-		pending_signal_hup = 0; // Clear flag
-		if (Log(1))
-			LogStream() << "Processing deferred SIGHUP - reloading configuration" << endl;
-		SyncReload();
-	}
-	
-	// Check for SIGQUIT/SIGTERM (graceful shutdown)
-	if (pending_signal_quit) {
-		int sig = pending_signal_quit;
-		pending_signal_quit = 0; // Clear flag
-		if (Log(1))
-			LogStream() << "Processing deferred signal " << sig << " - initiating shutdown" << endl;
-		SyncStop();
-		// Note: SyncStop() will cause main loop to exit cleanly
-	}
-	
-	// Note: pending_signal_crash is handled by immediate exit() in signal handler
-	// because we can't safely continue after SIGSEGV
-	
 	mUserList.FlushCache();
 	//mOpList.FlushCache(); // we are not sending anything to operators, only nicks are used
 	mOpchatList.FlushCache();
@@ -1985,6 +1961,31 @@ int cServerDC::OnTimer(const cTime &now)
 		if (!mCallBacks.mOnTimer.CallAll(this->mTime.MiliSec()))
 			return false;
 	#endif
+
+	// DEFERRED SIGNAL HANDLING: Process signals set by signal handlers
+	// This runs in main loop, NOT in signal context - safe to call any function
+	
+	// Check for SIGHUP (reload configuration)
+	if (pending_signal_hup) {
+		pending_signal_hup = 0;
+		if (Log(1))
+			LogStream() << "Processing deferred SIGHUP - reloading configuration" << endl;
+		SyncReload();
+	}
+	
+	// Check for SIGQUIT/SIGTERM (graceful shutdown)
+	if (pending_signal_quit) {
+		int sig = pending_signal_quit;
+		pending_signal_quit = 0;
+		if (Log(1))
+			LogStream() << "Processing deferred signal " << sig << " - initiating shutdown" << endl;
+		SyncStop();
+		
+		exit(EXIT_SUCCESS);
+	}
+	
+	// Note: pending_signal_crash is handled by immediate exit() in signal handler
+	// because we can't safely continue after SIGSEGV
 
 	return true;
 }
