@@ -188,19 +188,38 @@ def get_cached_data(key: str) -> Any:
 def _get_hub_info_unsafe() -> Dict[str, Any]:
     """Get basic hub information (UNSAFE - call only from main thread)"""
     try:
-        hub_name = vh.GetConfig("config", "hub_name") or "Verlihub"
-        hub_desc = vh.GetConfig("config", "hub_desc") or "DC++ Hub"
-        topic = vh.Topic() or ""
-        max_users = vh.GetConfig("config", "max_users") or "0"
+        # GetConfig returns None if config value is not set, use third param for default
+        hub_name = vh.GetConfig("config", "hub_name", "Verlihub")
+        hub_desc = vh.GetConfig("config", "hub_desc", "DC++ Hub")
+        topic = vh.Topic()
+        max_users_str = vh.GetConfig("config", "max_users", "0")
+        
+        # name_and_version returns string like "Verlihub 1.x.x.x"
+        version_info = vh.name_and_version()
+        
+        # Ensure we have valid strings (GetConfig might return None)
+        if hub_name is None:
+            hub_name = "Verlihub"
+        if hub_desc is None:
+            hub_desc = "DC++ Hub"
+        if topic is None:
+            topic = ""
+        if max_users_str is None:
+            max_users_str = "0"
+        if version_info is None:
+            version_info = "Unknown"
         
         return {
             "name": hub_name,
             "description": hub_desc,
             "topic": topic,
-            "max_users": int(max_users) if max_users.isdigit() else 0,
-            "version": vh.name_and_version()
+            "max_users": int(max_users_str) if max_users_str.isdigit() else 0,
+            "version": version_info
         }
     except Exception as e:
+        import traceback
+        print(f"[Hub API] Error in _get_hub_info_unsafe: {e}")
+        print(f"[Hub API] Traceback:\n{traceback.format_exc()}")
         return {
             "name": "Verlihub",
             "description": "DC++ Hub",
