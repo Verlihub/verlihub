@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Verlihub Dashboard</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+        #tabs { margin-bottom: 20px; }
+        .tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; }
+        .tab.active { background: #fff; border-bottom: none; font-weight: bold; }
+        #content { padding: 20px; border: 1px solid #ccc; border-radius: 0 5px 5px 5px; background: #fff; min-height: 300px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f5f5f5; font-size: 1em; cursor: pointer; user-select: none; }
+        th:hover { background: #e9e9e9; }
+        tr:nth-child(even) { background: #fafafa; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        #user-detail { position: fixed; top: 15%; left: 15%; width: 70%; max-height: 70%; overflow-y: auto; background: #fff; border: 1px solid #aaa; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: none; z-index: 1000; border-radius: 8px; }
+        #user-detail button { float: right; padding: 8px 12px; cursor: pointer; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .flag { font-size: 2em; text-align: center; }
+        .count { text-align: center; font-weight: bold; font-size: 1.2em; }
+        .total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+        .section { margin-bottom: 30px; }
+        .section h2 { margin: 0 0 15px 0; font-size: 1.4em; }
+        .sort-arrow { margin-left: 6px; opacity: 0.5; }
+        .sort-arrow.active { opacity: 1; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Verlihub Hub Dashboard</h1>
+    <div id="tabs">
+        <span class="tab active" data-tab="hub">Hub & Share</span>
+        <span class="tab" data-tab="stats">Statistics</span>
+        <span class="tab" data-tab="users">Online Users</span>
+        <span class="tab" data-tab="geo">Geography</span>
+    </div>
+    <div id="content">Loading...</div>
+
+    <div id="user-detail">
+        <button onclick="closeUserDetail()">Close ×</button>
+        <h2>User Details</h2>
+        <div id="user-content"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/verlihub-api';
+
+        let currentTab = 'hub';
+        let pollInterval;
+
+        // Sorting state
+        const sortState = {
+            users: { key: 'share', asc: false }, // default: share descending
+            geo: { key: 'users', asc: false }   // default: users descending
+        };
+
+        function fetchData(endpoint) {
+            return fetch(API_BASE + endpoint)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+                    return res.json();
+                });
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === undefined || bytes === null) return 'N/A';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+            let i = 0;
+            while (bytes >= 1024 && i < units.length - 1) {
+                bytes /= 1024;
+                i++;
+            }
+            return `${bytes.toFixed(2)} ${units[i]}`;
+        }
+
+        function getFlagEmoji(cc) {
+            if (!cc || cc.length !== 2) return '🌐';
+            return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+        }
+
+        function renderKeyValue(obj) {
+            if (!obj || typeof obj !== 'object') return '<p>No data available</p>';
+            let html = '<ul>';
+            for (const [key, value] of Object.entries(obj)) {
+                const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                html += `<li><strong>${formattedKey}:</strong> ${value ?? 'N/A'}</li>`;
+            }
+            html += '</ul>';
+            return html;
+        }
+
+        function renderUsersTable(rows, sortKey, asc) {
+            if (!Array.isArray(rows) || rows.length === 0) return '<p>No users currently online</p>';
+
+            // Sort rows
+            const sortedRows = [...rows].sort((a, b) => {
+                let aVal, bVal;
+
+                switch (sortKey) {
+                    case 'nick':
+                        aVal = (a.nick || a.Nick || '').toLowerCase();
+                        bVal = (b.nick || b.Nick || '').toLowerCase();
+                        return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'class':
+                        aVal = a.class_name || a.class || a.Class || '';
+                        bVal = b.class_name || b.class || b.Class || '';
+                        return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'country':
+                        aVal = (a.country_code || a.country || a.cc || a.CC || '').toUpperCase();
+                        bVal = (b.country_code || b.country || b.cc || b.CC || '').toUpperCase();
+                        return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'share':
+                    default:
+                        aVal = Number(a.share_size || a.share || a.Share || 0);
+                        bVal = Number(b.share_size || b.share || b.Share || 0);
+                        return asc ? aVal - bVal : bVal - aVal;
+                }
+            });
+
+            let html = '<table><thead><tr>';
+            const headers = [
+                { text: 'Nick', key: 'nick' },
+                { text: 'Class', key: 'class' },
+                { text: 'Country', key: 'country' },
+                { text: 'Share', key: 'share' }
+            ];
+
+            headers.forEach(h => {
+                const arrow = sortState.users.key === h.key 
+                    ? (sortState.users.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('users', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.users.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            sortedRows.forEach(row => {
+                const nick = row.nick || row.Nick || 'Unknown';
+                const className = row.class_name || row.class || row.Class || 'N/A';
+                const countryCode = row.country_code || row.country || row.Country || row.cc || row.CC || '';
+                const shareBytes = row.share_size || row.share || row.Share || 0;
+
+                html += '<tr>';
+                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${nick}</a></td>`;
+                html += `<td>${className}</td>`;
+                html += `<td><span class="flag">${getFlagEmoji(countryCode)}</span></td>`;
+                html += `<td>${formatBytes(shareBytes)}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function renderGeo(data) {
+            if (!data || !Array.isArray(data.distribution)) return '<p>No geographic data available</p>';
+
+            const totalCountries = data.total_countries || data.distribution.length;
+
+            // Sort distribution
+            const sortedDist = [...data.distribution].sort((a, b) => {
+                if (sortState.geo.key === 'country') {
+                    return sortState.geo.asc 
+                        ? a.country_code.localeCompare(b.country_code)
+                        : b.country_code.localeCompare(a.country_code);
+                } else { // users
+                    return sortState.geo.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total countries represented: ${totalCountries}</div>`;
+            html += '<table><thead><tr>';
+            
+            const geoHeaders = [
+                { text: 'Flag', key: 'country' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            geoHeaders.forEach(h => {
+                const arrow = sortState.geo.key === h.key 
+                    ? (sortState.geo.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('geo', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.geo.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedDist) {
+                const flag = getFlagEmoji(item.country_code);
+                html += `<tr><td class="flag">${flag}</td><td class="count">${item.users}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function setSort(tab, key) {
+            if (sortState[tab].key === key) {
+                sortState[tab].asc = !sortState[tab].asc;
+            } else {
+                sortState[tab].key = key;
+                sortState[tab].asc = (tab === 'geo' && key === 'users') || (tab === 'users' && key === 'share') ? false : true;
+            }
+            loadTab(currentTab);
+        }
+
+        async function loadTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById('content').innerHTML = 'Loading...';
+
+            try {
+                switch (tab) {
+                    case 'hub':
+                        const [hubData, shareData] = await Promise.all([
+                            fetchData('/hub'),
+                            fetchData('/share')
+                        ]);
+
+                        let html = '<div class="section"><h2>Hub Information</h2>' + renderKeyValue(hubData) + '</div>';
+                        html += '<div class="section"><h2>Share Statistics</h2><ul>';
+                        
+                        const total = shareData.total_share ?? shareData.total ?? shareData.share_total ?? 'N/A';
+                        const avg = shareData.average_share ?? shareData.avg_share ?? shareData.average ?? 'N/A';
+
+                        html += `<li><strong>Total Share:</strong> ${typeof total === 'number' ? formatBytes(total) : total}</li>`;
+                        html += `<li><strong>Average Share:</strong> ${typeof avg === 'number' ? formatBytes(avg) : avg}</li>`;
+                        html += '</ul></div>';
+
+                        document.getElementById('content').innerHTML = html;
+                        break;
+                    case 'stats':
+                        const statsData = await fetchData('/stats');
+                        document.getElementById('content').innerHTML = renderKeyValue(statsData);
+                        break;
+                    case 'users':
+                        let response = await fetchData('/users?limit=500');
+                        let rows = [];
+
+                        if (Array.isArray(response)) {
+                            rows = response;
+                        } else if (response && response.users && Array.isArray(response.users)) {
+                            rows = response.users;
+                        } else if (response && response.data && Array.isArray(response.data)) {
+                            rows = response.data;
+                        }
+
+                        document.getElementById('content').innerHTML = renderUsersTable(rows, sortState.users.key, sortState.users.asc);
+                        break;
+                    case 'geo':
+                        const geoData = await fetchData('/geo');
+                        document.getElementById('content').innerHTML = renderGeo(geoData);
+                        break;
+                }
+            } catch (err) {
+                document.getElementById('content').innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+                console.error('API error:', err);
+            }
+        }
+
+        async function showUser(encodedNick) {
+            const nick = decodeURIComponent(encodedNick);
+            try {
+                const data = await fetchData(`/user/${encodedNick}`);
+                document.getElementById('user-content').innerHTML = renderKeyValue(data);
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load user ${nick}: ${err.message}`);
+            }
+        }
+
+        function closeUserDetail() {
+            document.getElementById('user-detail').style.display = 'none';
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                loadTab(tab.dataset.tab);
+            });
+        });
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(() => loadTab(currentTab), 30000);
+        }
+
+        loadTab('hub');
+        startPolling();
+    </script>
+</body>
+</html>
