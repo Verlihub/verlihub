@@ -53,7 +53,7 @@ protected:
 	
 	static w_Targs* MockCallback_ReturnString(int id, w_Targs* args) {
 		call_log.push_back("MockCallback_ReturnString");
-		return w_pack("s", (char*)"test_result");
+		return w_pack("s", strdup("test_result"));
 	}
 	
 	static w_Targs* MockCallback_ReturnBool(int id, w_Targs* args) {
@@ -129,7 +129,7 @@ TEST_F(VHModuleTest, GetUserClassReturnsLong) {
 	free(load_args);
 	
 	// Call the test function
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	long ret;
@@ -160,7 +160,7 @@ TEST_F(VHModuleTest, GetConfigReturnsString) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	char* ret;
@@ -190,7 +190,7 @@ TEST_F(VHModuleTest, SetConfigReturnsBool) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	// Python True converts to PyObject*, check if callback was called
@@ -224,7 +224,7 @@ TEST_F(VHModuleTest, GetNickListReturnsPythonList) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	long count;
@@ -266,7 +266,7 @@ TEST_F(VHModuleTest, ModuleHasConstants) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	w_free_args(result);
@@ -311,25 +311,25 @@ TEST_F(VHModuleTest, MultipleScriptsHaveIsolatedModules) {
 	free(load2);
 	
 	// Each script should see its own ID and botname
-	w_Targs* res1 = w_CallFunction(id1, "get_my_id", w_pack(""));
+	w_Targs* p1 = w_pack(""); w_Targs* res1 = w_CallFunction(id1, "get_my_id", p1); free(p1);
 	long script1_id;
 	w_unpack(res1, "l", &script1_id);
 	EXPECT_EQ(script1_id, id1);
 	free(res1);
 	
-	w_Targs* res2 = w_CallFunction(id2, "get_my_id", w_pack(""));
+	w_Targs* p2 = w_pack(""); w_Targs* res2 = w_CallFunction(id2, "get_my_id", p2); free(p2);
 	long script2_id;
 	w_unpack(res2, "l", &script2_id);
 	EXPECT_EQ(script2_id, id2);
 	free(res2);
 	
-	w_Targs* name1 = w_CallFunction(id1, "get_botname", w_pack(""));
+	w_Targs* p3 = w_pack(""); w_Targs* name1 = w_CallFunction(id1, "get_botname", p3); free(p3);
 	char* botname1;
 	w_unpack(name1, "s", &botname1);
 	EXPECT_STREQ(botname1, "Bot1");
 	free(name1);
 	
-	w_Targs* name2 = w_CallFunction(id2, "get_botname", w_pack(""));
+	w_Targs* p4 = w_pack(""); w_Targs* name2 = w_CallFunction(id2, "get_botname", p4); free(p4);
 	char* botname2;
 	w_unpack(name2, "s", &botname2);
 	EXPECT_STREQ(botname2, "Bot2");
@@ -376,7 +376,7 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	long count;
@@ -420,7 +420,7 @@ TEST_F(VHModuleTest, EncodeDecodeWorks) {
 	w_Load(load_args);
 	free(load_args);
 	
-	w_Targs* result = w_CallFunction(id, "test", w_pack(""));
+	w_Targs* params = w_pack(""); w_Targs* result = w_CallFunction(id, "test", params); free(params);
 	ASSERT_NE(result, nullptr);
 	
 	w_free_args(result);
