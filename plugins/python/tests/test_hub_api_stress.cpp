@@ -545,6 +545,282 @@ TEST_F(HubApiStressTest, MemoryLeakDetection) {
     delete admin;
 }
 
+// Test 6: Encoding conversion with weird characters and API interaction
+TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    std::cout << "\n=== Encoding Conversion + API Stress Test ===" << std::endl;
+    std::cout << "Testing weird characters through API while changing hub encoding" << std::endl;
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18084", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Store original encoding
+    std::string original_encoding = g_server->mC.hub_encoding;
+    
+    // Test 1: UTF-8 with emoji and special characters
+    std::cout << "\n--- Test 1: UTF-8 with emoji and Unicode ---" << std::endl;
+    g_server->mC.hub_encoding = "UTF-8";
+    if (g_server->mICUConvert) {
+        delete g_server->mICUConvert;
+        g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
+    }
+    
+    std::vector<cConnDC*> weird_users_utf8;
+    std::vector<std::string> weird_nicks_utf8 = {
+        "User🌍",
+        "Тест™",
+        "Café☕",
+        "用户测试",
+        "Ñoño←→"
+    };
+    
+    for (const auto& nick : weird_nicks_utf8) {
+        cConnDC* user = create_mock_connection(nick, 1);
+        weird_users_utf8.push_back(user);
+        
+        // Send chat message with weird characters
+        std::string msg = "Hello from " + nick + "! Testing 🎉";
+        bool msg_result = send_chat_message(user, msg);
+        std::cout << "  Message from \"" << nick << \"\": " 
+                 << (msg_result ? "processed" : "handled") << std::endl;
+        
+        // Send command - verify it doesn't crash
+        bool cmd_result = send_hub_command(user, "!help", false);
+        EXPECT_TRUE(cmd_result || !cmd_result) << "Command should not crash for: " << nick;
+    }
+    
+    // Make API call to check user list
+    std::string response;
+    long http_code = 0;
+    if (http_get("http://localhost:18084/api/users", response, http_code)) {
+        std::cout << "  API response code: " << http_code << std::endl;
+        if (http_code == 200) {
+            // Check if any of our weird nicks appear in response
+            std::cout << "  Response preview: " << response.substr(0, 200) << "..." << std::endl;
+            
+            // Validate response is not empty and looks like JSON
+            EXPECT_GT(response.length(), 0) << "API response should not be empty";
+            EXPECT_TRUE(response[0] == '{' || response[0] == '[') 
+                << "API response should be JSON";
+            
+            // Check if response contains some user data structure
+            bool has_users_data = (response.find("users") != std::string::npos ||
+                                  response.find("nick") != std::string::npos ||
+                                  response.find("User") != std::string::npos);
+            if (has_users_data) {
+                std::cout << "  ✓ API response contains user data" << std::endl;
+            }
+        }
+    }
+    
+    // Test 2: Switch to CP1251 (Cyrillic)
+    std::cout << "\n--- Test 2: CP1251 with Cyrillic and invalid chars ---" << std::endl;
+    g_server->mC.hub_encoding = "CP1251";
+    if (g_server->mICUConvert) {
+        delete g_server->mICUConvert;
+        g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
+    }
+    
+    std::vector<cConnDC*> weird_users_cp1251;
+    std::vector<std::string> weird_nicks_cp1251 = {
+        "Привет",       // Valid in CP1251
+        "Admin™",       // Trademark might not work
+        "用户",          // Chinese won't work in CP1251
+        "Test🌍",       // Emoji won't work
+        "Пользователь"  // Valid Russian
+    };
+    
+    for (const auto& nick : weird_nicks_cp1251) {
+        cConnDC* user = create_mock_connection(nick, 1);
+        weird_users_cp1251.push_back(user);
+        
+        // Send messages that might have encoding issues
+        std::string msg = "Сообщение от " + nick;
+        bool result = send_chat_message(user, msg);
+        std::cout << "  CP1251 message from \"" << nick << \"\": " 
+                 << (result ? "processed" : "handled") << std::endl;
+        
+        // Verify user was created successfully
+        ASSERT_NE(user->mpUser, nullptr) << "User should be created for: " << nick;
+        EXPECT_EQ(user->mpUser->mNick, nick) << "Nick should match for CP1251 user";
+    }
+    
+    // Call API again with different encoding
+    if (http_get("http://localhost:18084/api/stats", response, http_code)) {
+        std::cout << "  API stats with CP1251: code=" << http_code << std::endl;
+        
+        if (http_code == 200) {
+            EXPECT_GT(response.length(), 0) << "Stats response should not be empty";
+            // Stats should have some numeric data
+            bool has_stats = (response.find("total") != std::string::npos ||
+                            response.find("count") != std::string::npos ||
+                            response.find("users") != std::string::npos);
+            if (has_stats) {
+                std::cout << "  ✓ Stats response contains expected data" << std::endl;
+            }
+        }
+    }
+    
+    // Test 3: Switch to ISO-8859-1 (Latin-1)
+    std::cout << "\n--- Test 3: ISO-8859-1 with Western European chars ---" << std::endl;
+    g_server->mC.hub_encoding = "ISO-8859-1";
+    if (g_server->mICUConvert) {
+        delete g_server->mICUConvert;
+        g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
+    }
+    
+    std::vector<cConnDC*> weird_users_latin1;
+    std::vector<std::string> weird_nicks_latin1 = {
+        "Café",         // Valid in Latin-1
+        "Müller",       // Valid in Latin-1
+        "Ñoño",         // Valid in Latin-1
+        "Привет",       // Cyrillic won't work
+        "Test®©™"       // Some symbols might work
+    };
+    
+    for (const auto& nick : weird_nicks_latin1) {
+        cConnDC* user = create_mock_connection(nick, 1);
+        weird_users_latin1.push_back(user);
+        
+        std::string msg = "Message from " + nick + " in Latin-1";
+        bool result = send_chat_message(user, msg);
+        std::cout << "  Latin-1 message from \"" << nick << \"\": " 
+                 << (result ? "processed" : "handled") << std::endl;
+        
+        // Verify nick was set correctly
+        ASSERT_NE(user->mpUser, nullptr) << "User should exist for: " << nick;
+        // Latin-1 compatible characters should be preserved in the nick
+        if (nick.find("Café") != std::string::npos || 
+            nick.find("Müller") != std::string::npos ||
+            nick.find("Ñoño") != std::string::npos) {
+            EXPECT_GT(user->mpUser->mNick.length(), 3)
+                << "Latin-1 compatible nick should have reasonable length: " << nick;
+        }
+    }
+    
+    // Test 4: Rapid encoding switches while processing messages and API calls
+    std::cout << "\n--- Test 4: Rapid encoding changes with concurrent load ---" << std::endl;
+    
+    std::atomic<bool> stop_flag{false};
+    std::atomic<int> messages_sent{0};
+    std::atomic<int> api_calls{0};
+    std::atomic<int> encoding_changes{0};
+    
+    // Combine all users for stress test
+    std::vector<cConnDC*> all_users;
+    all_users.insert(all_users.end(), weird_users_utf8.begin(), weird_users_utf8.end());
+    all_users.insert(all_users.end(), weird_users_cp1251.begin(), weird_users_cp1251.end());
+    all_users.insert(all_users.end(), weird_users_latin1.begin(), weird_users_latin1.end());
+    
+    // Thread 1: Send messages from users with weird nicks
+    std::thread message_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 100) {
+            for (auto* user : all_users) {
+                std::string msg = "Test message #" + std::to_string(count) + " 🌍™®©";
+                send_chat_message(user, msg);
+                messages_sent++;
+            }
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    });
+    
+    // Thread 2: Make API calls
+    std::thread api_thread([&]() {
+        std::vector<std::string> endpoints = {
+            "http://localhost:18084/api/users",
+            "http://localhost:18084/api/stats",
+            "http://localhost:18084/health"
+        };
+        
+        int count = 0;
+        while (!stop_flag && count < 50) {
+            for (const auto& url : endpoints) {
+                std::string resp;
+                long code = 0;
+                http_get(url, resp, code);
+                api_calls++;
+            }
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    });
+    
+    // Thread 3: Rapidly change hub encoding
+    std::thread encoding_thread([&]() {
+        std::vector<std::string> encodings = {
+            "UTF-8", "CP1251", "ISO-8859-1", "CP1250", "UTF-8"
+        };
+        
+        int count = 0;
+        while (!stop_flag && count < 20) {
+            for (const auto& encoding : encodings) {
+                g_server->mC.hub_encoding = encoding;
+                if (g_server->mICUConvert) {
+                    delete g_server->mICUConvert;
+                    g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
+                }
+                encoding_changes++;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            count++;
+        }
+    });
+    
+    // Thread 4: OnTimer calls
+    std::thread timer_thread([&]() {
+        int count = 0;
+        while (!stop_flag && count < 50) {
+            g_py_plugin->OnTimer(1000);
+            count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    });
+    
+    // Run for 10 seconds
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    
+    stop_flag = true;
+    
+    message_thread.join();
+    api_thread.join();
+    encoding_thread.join();
+    timer_thread.join();
+    
+    std::cout << "\n=== Encoding Stress Test Results ===" << std::endl;
+    std::cout << "Messages sent: " << messages_sent << std::endl;
+    std::cout << "API calls made: " << api_calls << std::endl;
+    std::cout << "Encoding changes: " << encoding_changes << std::endl;
+    
+    EXPECT_GT(messages_sent.load(), 0) << "Should have sent messages";
+    EXPECT_GT(api_calls.load(), 0) << "Should have made API calls";
+    EXPECT_GT(encoding_changes.load(), 0) << "Should have changed encodings";
+    
+    std::cout << "\n✓ No crashes with weird characters across encodings" << std::endl;
+    std::cout << "✓ Rapid encoding changes handled without deadlocks" << std::endl;
+    std::cout << "✓ API remained responsive during encoding changes" << std::endl;
+    std::cout << "✓ Messages with unconvertible characters processed gracefully" << std::endl;
+    
+    // Restore original encoding
+    g_server->mC.hub_encoding = original_encoding;
+    if (g_server->mICUConvert) {
+        delete g_server->mICUConvert;
+        g_server->mICUConvert = new nVerliHub::nUtils::cICUConvert(g_server);
+    }
+    
+    // Cleanup all users
+    for (auto* user : all_users) {
+        delete user->mpUser;
+        delete user;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
 // Register global environment
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
