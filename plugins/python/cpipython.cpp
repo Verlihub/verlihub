@@ -1436,10 +1436,6 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	if (!u)
 		return NULL;
 	
-	printf("PY: _GetMyINFO - user '%s' found, mMyINFO.length()=%zu, mFakeMyINFO.length()=%zu, mShare=%lld\n",
-		nick, u->mMyINFO.length(), u->mFakeMyINFO.length(), u->mShare);
-	fflush(stdout);
-	
 	// Use real MyINFO (mMyINFO) which has the actual client data
 	// Fall back to mFakeMyINFO only if mMyINFO is empty (e.g., for bots)
 	const string& myinfo_str = u->mMyINFO.empty() ? u->mFakeMyINFO : u->mMyINFO;
