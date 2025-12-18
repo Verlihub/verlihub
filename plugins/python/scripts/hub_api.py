@@ -132,7 +132,8 @@ data_cache = {
     "last_update": 0
 }
 data_cache_lock = threading.Lock()
-CACHE_TTL = 1.0  # Cache time-to-live in seconds
+CACHE_UPDATE_INTERVAL = 5.0  # Update cache every 5 seconds (not every timer tick!)
+last_cache_update = 0  # Track when cache was last updated
 
 # Initialize FastAPI app
 if FASTAPI_AVAILABLE:
@@ -155,9 +156,16 @@ def update_data_cache():
     try:
         # Gather all data
         hub_info = _get_hub_info_unsafe()
+        print(f"[Hub API] Cache update: hub_info retrieved")
+        
         users = _get_all_users_unsafe()
+        print(f"[Hub API] Cache update: users retrieved, count={len(users)}")
+        
         geo_stats = _get_geographic_stats_unsafe()
-        share_stats = _get_share_stats_unsafe()
+        print(f"[Hub API] Cache update: geo_stats retrieved, countries={len(geo_stats)}")
+        
+        share_stats = _get_share_stats_unsafe(users)
+        print(f"[Hub API] Cache update: share_stats retrieved")
         
         # Update cache atomically
         with data_cache_lock:
@@ -166,8 +174,11 @@ def update_data_cache():
             data_cache["geo_stats"] = geo_stats
             data_cache["share_stats"] = share_stats
             data_cache["last_update"] = time.time()
+        print(f"[Hub API] Cache update completed successfully")
     except Exception as e:
-        print(f"Error updating data cache: {e}")
+        import traceback
+        print(f"[Hub API] Error updating data cache: {e}")
+        print(f"[Hub API] Traceback:\n{traceback.format_exc()}")
 
 def get_cached_data(key: str) -> Any:
     """Get cached data (thread-safe)"""
@@ -211,33 +222,23 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         cc = vh.GetUserCC(nick)
         country = vh.GetIPCN(ip) if ip else ""
         
-        # Parse MyINFO for additional details
+        # GetMyINFO returns tuple: (nick, desc, tag, speed, email, sharesize)
         myinfo = vh.GetMyINFO(nick)
         share = 0
         desc = ""
         tag = ""
         email = ""
+        speed = ""
         
-        if myinfo:
-            # $MyINFO format: $ALL nick desc<tag>$ $conn$email$sharesize$
-            parts = myinfo.split('$')
-            if len(parts) >= 4:
-                # Extract description and tag
-                info_part = parts[2] if len(parts) > 2 else ""
-                if '<' in info_part and '>' in info_part:
-                    desc = info_part[:info_part.index('<')]
-                    tag = info_part[info_part.index('<')+1:info_part.index('>')]
-                else:
-                    desc = info_part
-                
-                # Extract email and share
-                if len(parts) >= 5:
-                    email = parts[3]
-                if len(parts) >= 6:
-                    try:
-                        share = int(parts[4])
-                    except ValueError:
-                        pass
+        if myinfo and isinstance(myinfo, tuple) and len(myinfo) >= 6:
+            # Tuple format: (nick, desc, tag, speed, email, sharesize)
+            _, desc, tag, speed, email, size_str = myinfo[:6]
+            try:
+                # Share size is in bytes as a string
+                share = int(size_str) if size_str else 0
+            except (ValueError, TypeError):
+                print(f"[Hub API] Warning: Failed to parse share size for {nick}: '{size_str}'")
+                share = 0
         
         return {
             "nick": nick,
@@ -254,8 +255,11 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
             "share_formatted": format_bytes(share)
         }
     except Exception as e:
-        print(f"Error getting user info for {nick}: {e}")
+        print(f"[Hub API] Error getting user info for {nick}: {e}")
+        import traceback
+        traceback.print_exc()
         return None
+
 
 def get_class_name(user_class: int) -> str:
     """Convert user class number to name"""
@@ -282,13 +286,23 @@ def format_bytes(size: int) -> str:
 def _get_all_users_unsafe() -> List[Dict[str, Any]]:
     """Get list of all users with their information (UNSAFE - call only from main thread)"""
     users = []
+    print(f"[Hub API] _get_all_users_unsafe: Calling vh.GetNickList()...")
     nick_list = vh.GetNickList()
+    print(f"[Hub API] _get_all_users_unsafe: GetNickList returned type={type(nick_list)}, value={nick_list}")
     
+    if not isinstance(nick_list, list):
+        print(f"[Hub API] WARNING: GetNickList returned non-list type: {type(nick_list)}")
+        return users
+    
+    print(f"[Hub API] Processing {len(nick_list)} nicks...")
     for nick in nick_list:
         user_info = _get_user_info_unsafe(nick)
         if user_info:
             users.append(user_info)
+        else:
+            print(f"[Hub API] Failed to get info for nick: {nick}")
     
+    print(f"[Hub API] _get_all_users_unsafe returning {len(users)} users")
     return users
 
 def _get_geographic_stats_unsafe() -> Dict[str, int]:
@@ -306,10 +320,11 @@ def _get_geographic_stats_unsafe() -> Dict[str, int]:
     
     return stats
 
-def _get_share_stats_unsafe() -> Dict[str, Any]:
+def _get_share_stats_unsafe(users: List[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Get share size statistics (UNSAFE - call only from main thread)"""
     total_share = 0
-    users = _get_all_users_unsafe()
+    if users is None:
+        users = _get_all_users_unsafe()
     
     for user in users:
         total_share += user.get("share", 0)
@@ -372,6 +387,7 @@ if FASTAPI_AVAILABLE:
         """Get list of online users"""
         try:
             all_users = get_cached_data("users") or []
+            print(f"[Hub API] /api/users endpoint: Retrieved {len(all_users)} users from cache")
             
             # Apply pagination
             if limit:
@@ -381,12 +397,17 @@ if FASTAPI_AVAILABLE:
             else:
                 paginated = all_users
             
-            return {
+            result = {
                 "count": len(paginated),
                 "total": len(all_users),
                 "users": paginated
             }
+            print(f"[Hub API] /api/users endpoint: Returning {len(paginated)} users")
+            return result
         except Exception as e:
+            print(f"[Hub API] /api/users endpoint ERROR: {e}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/api/user/{nick}")
@@ -446,7 +467,7 @@ def run_server(port: int):
     global server_running
     
     try:
-        server_running = True
+        print(f"[Hub API] run_server: Starting uvicorn on port {port}")
         config = uvicorn.Config(
             app,
             host="0.0.0.0",
@@ -459,9 +480,12 @@ def run_server(port: int):
         # Run in the current thread (which is already a separate thread)
         asyncio.run(server.serve())
     except Exception as e:
-        print(f"API server error: {e}")
+        print(f"[Hub API] API server error: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         server_running = False
+        print("[Hub API] run_server: Server stopped, server_running=False")
 
 def start_api_server(port: int = 8000) -> bool:
     """Start the API server"""
@@ -473,12 +497,17 @@ def start_api_server(port: int = 8000) -> bool:
     if api_thread and api_thread.is_alive():
         return False  # Already running
     
+    # Set server_running BEFORE starting thread so OnTimer will update cache
+    server_running = True
+    
     # Initialize cache before starting server
+    print("[Hub API] start_api_server: Initializing cache...")
     update_data_cache()
     
     api_port = port
     api_thread = threading.Thread(target=run_server, args=(port,), daemon=True)
     api_thread.start()
+    print(f"[Hub API] start_api_server: Server thread started on port {port}")
     
     return True
 
@@ -504,8 +533,33 @@ def is_api_running() -> bool:
 
 def OnTimer(msec=0):
     """Update data cache periodically (runs in main thread)"""
+    global last_cache_update
+    
     # Only update if API server is running
+    if not server_running:
+        return 1
+    
+    # Throttle updates - only update every CACHE_UPDATE_INTERVAL seconds
+    current_time = time.time()
+    if current_time - last_cache_update < CACHE_UPDATE_INTERVAL:
+        return 1
+    
+    print(f"[Hub API] OnTimer: Updating cache (interval={current_time - last_cache_update:.1f}s)")
+    last_cache_update = current_time
+    update_data_cache()
+    return 1
+
+def OnUserLogin(nick):
+    """Update cache when user logs in (runs in main thread)"""
     if server_running:
+        print(f"[Hub API] User logged in: {nick}, triggering cache update")
+        update_data_cache()
+    return 1
+
+def OnUserLogout(nick):
+    """Update cache when user logs out (runs in main thread)"""
+    if server_running:
+        print(f"[Hub API] User logged out: {nick}, triggering cache update")
         update_data_cache()
     return 1
 

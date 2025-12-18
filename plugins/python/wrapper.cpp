@@ -996,7 +996,63 @@ static PyObject* vh_SendDataToUser(PyObject *self, PyObject *args)     { return 
 static PyObject* vh_SendDataToAll(PyObject *self, PyObject *args)      { return vh_CallBool(W_SendDataToAll, args, "sll|l"); }
 static PyObject* vh_SendPMToAll(PyObject *self, PyObject *args)        { return vh_CallBool(W_SendPMToAll, args, "ssll"); }
 static PyObject* vh_CloseConnection(PyObject *self, PyObject *args)    { return vh_CallBool(W_CloseConnection, args, "s|ll"); }
-static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)          { return vh_CallString(W_GetMyINFO, args, "s"); }
+
+// GetMyINFO - returns tuple of (nick, desc, tag, speed, email, sharesize)
+static PyObject* vh_GetMyINFO(PyObject *self, PyObject *args)
+{
+	w_Targs *a = NULL;
+	if (!vh_ParseArgs(W_GetMyINFO, args, "s", &a))
+		return NULL;
+	
+	PyThreadState *state = PyThreadState_Get();
+	PyEval_ReleaseThread(state);
+	
+	w_Targs *res = w_Python->callbacks[W_GetMyINFO](W_GetMyINFO, a);
+	
+	free((char*)a->format);
+	free(a);
+	
+	PyEval_AcquireThread(state);
+	
+	if (!res) {
+		Py_RETURN_NONE;
+	}
+	
+	// Unpack all 6 strings: nick, desc, tag, speed, email, sharesize
+	char *nick = NULL, *desc = NULL, *tag = NULL, *speed = NULL, *email = NULL, *size = NULL;
+	w_unpack(res, "ssssss", &nick, &desc, &tag, &speed, &email, &size);
+	
+	// Create Python tuple
+	PyObject *tuple = PyTuple_New(6);
+	if (!tuple) {
+		free(res);
+		return NULL;
+	}
+	
+	// Helper macro to safely create PyUnicode with error checking
+	#define SET_TUPLE_STRING(index, str) do { \
+		PyObject *py_str = (str) ? PyUnicode_FromString(str) : PyUnicode_FromString(""); \
+		if (!py_str) { \
+			Py_DECREF(tuple); \
+			free(res); \
+			return NULL; \
+		} \
+		PyTuple_SetItem(tuple, index, py_str); \
+	} while(0)
+	
+	SET_TUPLE_STRING(0, nick);
+	SET_TUPLE_STRING(1, desc);
+	SET_TUPLE_STRING(2, tag);
+	SET_TUPLE_STRING(3, speed);
+	SET_TUPLE_STRING(4, email);
+	SET_TUPLE_STRING(5, size);
+	
+	#undef SET_TUPLE_STRING
+	
+	free(res);
+	return tuple;
+}
+
 static PyObject* vh_SetMyINFO(PyObject *self, PyObject *args)          { return vh_CallBool(W_SetMyINFO, args, "s|sssss"); }
 static PyObject* vh_GetUserClass(PyObject *self, PyObject *args)       { return vh_CallLong(W_GetUserClass, args, "s"); }
 static PyObject* vh_GetRawNickList(PyObject *self, PyObject *args)     { return vh_CallString(W_GetNickList, args, ""); }
@@ -1043,22 +1099,28 @@ static PyObject* vh_StopHub(PyObject *self, PyObject *args)            { return 
 // GetNickList, GetOpList, GetBotList - return Python lists
 static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
 {
-	fprintf(stderr, "vh_GetNickList called, w_Python=%p, callbacks=%p, callback[W_GetNickList]=%p\n",
-		w_Python, w_Python ? w_Python->callbacks : NULL,
-		(w_Python && w_Python->callbacks) ? w_Python->callbacks[W_GetNickList] : NULL);
-	
 	w_Targs *res = w_Python->callbacks[W_GetNickList](W_GetNickList, w_pack(""));
 	if (!res) Py_RETURN_NONE;
 	
 	char *json_str = NULL;
 	w_unpack(res, "D", &json_str);
 	
+	fprintf(stderr, "PY-WRAPPER: vh_GetNickList received JSON: %s\n", json_str ? json_str : "(null)");
+	
+	PyObject *py_list = NULL;
+	
 #ifdef HAVE_RAPIDJSON
-	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
-	if (!py_list) py_list = PyList_New(0);
+	py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
+	fprintf(stderr, "PY-WRAPPER: JsonStringToPyObject returned %s, PyList_Check=%d\n", 
+	        py_list ? "object" : "null", py_list ? PyList_Check(py_list) : -1);
+	if (!py_list) {
+		// Clear any exception set by JsonStringToPyObject before returning fallback
+		PyErr_Clear();
+		py_list = PyList_New(0);
+	}
 #else
 	// Fallback: parse JSON with Python json module
-	PyObject *py_list = PyList_New(0);
+	py_list = PyList_New(0);
 	if (json_str) {
 		PyObject *json_module = PyImport_ImportModule("json");
 		if (json_module) {
@@ -1078,6 +1140,7 @@ static PyObject* vh_GetNickList(PyObject *self, PyObject *args)
 	}
 #endif
 	
+	// Free res AFTER using json_str (which points into res)
 	free(res);
 	return py_list;
 }
@@ -1092,7 +1155,11 @@ static PyObject* vh_GetOpList(PyObject *self, PyObject *args)
 	
 #ifdef HAVE_RAPIDJSON
 	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
-	if (!py_list) py_list = PyList_New(0);
+	if (!py_list) {
+		// Clear any exception set by JsonStringToPyObject before returning fallback
+		PyErr_Clear();
+		py_list = PyList_New(0);
+	}
 #else
 	// Fallback: parse JSON with Python json module
 	PyObject *py_list = PyList_New(0);
@@ -1106,6 +1173,8 @@ static PyObject* vh_GetOpList(PyObject *self, PyObject *args)
 					Py_DECREF(py_list);
 					py_list = result;
 				} else {
+					// Clear exception if parsing failed
+					PyErr_Clear();
 					Py_XDECREF(result);
 				}
 				Py_DECREF(loads_func);
@@ -1129,7 +1198,11 @@ static PyObject* vh_GetBotList(PyObject *self, PyObject *args)
 	
 #ifdef HAVE_RAPIDJSON
 	PyObject *py_list = json_str ? JsonStringToPyObject(json_str) : PyList_New(0);
-	if (!py_list) py_list = PyList_New(0);
+	if (!py_list) {
+		// Clear any exception set by JsonStringToPyObject before returning fallback
+		PyErr_Clear();
+		py_list = PyList_New(0);
+	}
 #else
 	// Fallback: parse JSON with Python json module
 	PyObject *py_list = PyList_New(0);
@@ -1143,6 +1216,8 @@ static PyObject* vh_GetBotList(PyObject *self, PyObject *args)
 					Py_DECREF(py_list);
 					py_list = result;
 				} else {
+					// Clear exception if parsing failed
+					PyErr_Clear();
 					Py_XDECREF(result);
 				}
 				Py_DECREF(loads_func);
@@ -1272,7 +1347,7 @@ static PyMethodDef vh_methods[] = {
 	{"SendDataToAll",      vh_SendDataToAll,      METH_VARARGS, "Send raw protocol data to all users"},
 	{"SendPMToAll",        vh_SendPMToAll,        METH_VARARGS, "Send PM to all users"},
 	{"CloseConnection",    vh_CloseConnection,    METH_VARARGS, "Close user connection"},
-	{"GetMyINFO",          vh_GetMyINFO,          METH_VARARGS, "Get user MyINFO string"},
+	{"GetMyINFO",          vh_GetMyINFO,          METH_VARARGS, "Get user MyINFO tuple (nick, desc, tag, speed, email, sharesize)"},
 	{"SetMyINFO",          vh_SetMyINFO,          METH_VARARGS, "Set user MyINFO"},
 	{"GetUserClass",       vh_GetUserClass,       METH_VARARGS, "Get user class (0-10)"},
 	{"GetNickList",        vh_GetNickList,        METH_VARARGS, "Get list of all nicknames"},
