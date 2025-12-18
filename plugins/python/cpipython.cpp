@@ -1508,32 +1508,55 @@ w_Targs *_GetUserClass(int id, w_Targs *args)
 
 w_Targs *_GetNickList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mUserList.GetNickList(list);
-	
-	// Convert space-separated string to JSON array
 	std::vector<std::string> nicks;
-	std::istringstream iss(list);
-	std::string nick;
-	while (iss >> nick) {
-		nicks.push_back(nick);
+	
+
+	// Helper: sanitize string to valid UTF-8 (replace invalid bytes with '?')
+	auto sanitize_utf8 = [](const std::string& s) -> std::string {
+		std::string out;
+		size_t i = 0, len = s.size();
+		while (i < len) {
+			unsigned char c = (unsigned char)s[i];
+			if (c < 0x80) {
+				out += c; i++;
+			} else if ((c & 0xE0) == 0xC0 && i+1 < len && (s[i+1] & 0xC0) == 0x80) {
+				out += s.substr(i,2); i+=2;
+			} else if ((c & 0xF0) == 0xE0 && i+2 < len && (s[i+1] & 0xC0) == 0x80 && (s[i+2] & 0xC0) == 0x80) {
+				out += s.substr(i,3); i+=3;
+			} else if ((c & 0xF8) == 0xF0 && i+3 < len && (s[i+1] & 0xC0) == 0x80 && (s[i+2] & 0xC0) == 0x80 && (s[i+3] & 0xC0) == 0x80) {
+				out += s.substr(i,4); i+=4;
+			} else {
+				out += '?'; i++;
+			}
+		}
+		return out;
+	};
+
+	// Iterate through users directly instead of using cached protocol string
+	for (cUserCollection::iterator it = cpiPython::me->server->mUserList.begin();
+		 it != cpiPython::me->server->mUserList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back(sanitize_utf8((*it)->mNick));
+		}
 	}
 	
+	log1("PY: _GetNickList returning %zu nicks\n", nicks.size());
+	
 	std::string json = stringListToJson(nicks);
+	log1("PY: _GetNickList JSON length: %zu, first 100 chars: %.100s\n", json.length(), json.c_str());
 	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mOpList.GetNickList(list);
-	
-	// Convert space-separated string to JSON array
 	std::vector<std::string> nicks;
-	std::istringstream iss(list);
-	std::string nick;
-	while (iss >> nick) {
-		nicks.push_back(nick);
+	
+	// Iterate through operators directly
+	for (cUserCollection::iterator it = cpiPython::me->server->mOpList.begin();
+	     it != cpiPython::me->server->mOpList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back((*it)->mNick);
+		}
 	}
 	
 	std::string json = stringListToJson(nicks);
@@ -1542,15 +1565,14 @@ w_Targs *_GetOpList(int id, w_Targs *args)
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mRobotList.GetNickList(list);
-	
-	// Convert space-separated string to JSON array
 	std::vector<std::string> nicks;
-	std::istringstream iss(list);
-	std::string nick;
-	while (iss >> nick) {
-		nicks.push_back(nick);
+	
+	// Iterate through bots directly
+	for (cUserCollection::iterator it = cpiPython::me->server->mRobotList.begin();
+	     it != cpiPython::me->server->mRobotList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back((*it)->mNick);
+		}
 	}
 	
 	std::string json = stringListToJson(nicks);
