@@ -275,8 +275,9 @@ protected:
         conn->mpUser->mxServer = g_server;
         conn->mpUser->mxConn = conn;
         
-        // Set basic user info fields
-        conn->mpUser->mMyINFO = "$MyINFO $ALL " + nick + " test<++ V:0.777,M:A,H:1/0/0,S:2>$ $0.01$$0$";
+        // Set realistic MyINFO with actual share amount (10 MB = 10485760 bytes)
+        // Format: $MyINFO $ALL <nick> <desc><tag>$ $<speed><flag>$<email>$<sharesize>$
+        conn->mpUser->mMyINFO = "$MyINFO $ALL " + nick + " Test Description<++ V:0.777,M:A,H:1/0/0,S:2>$ $0.01\x01$test@example.com$10485760$";
         conn->mpUser->mShare = 10485760;  // 10 MB
         
         return conn;
@@ -402,7 +403,7 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
     // Test /api/users endpoint
     if (http_get("http://localhost:18085/api/users", response, http_code)) {
         std::cout << "\n=== /api/users Response ===" << std::endl;
-        std::cout << response.substr(0, 500) << "..." << std::endl;
+        std::cout << response.substr(0, 800) << "..." << std::endl;
         
         if (http_code == 200) {
             // Check that response has the expected structure
@@ -411,6 +412,20 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
             
             EXPECT_NE(response.find("\"users\":"), std::string::npos)
                 << "/api/users should return users array";
+            
+            // Validate that at least one user has non-zero share
+            EXPECT_NE(response.find("\"share\": 10485760"), std::string::npos)
+                << "/api/users should return correct share amounts (not zero)";
+            
+            // Validate that user info fields are populated
+            EXPECT_NE(response.find("\"description\": \"Test Description\""), std::string::npos)
+                << "/api/users should return user descriptions";
+            
+            EXPECT_NE(response.find("\"email\": \"test@example.com\""), std::string::npos)
+                << "/api/users should return user email addresses";
+            
+            EXPECT_NE(response.find("\"tag\": \"<++ V:0.777,M:A,H:1/0/0,S:2>\""), std::string::npos)
+                << "/api/users should return user client tags";
             
             std::cout << "✓ /api/users endpoint validated successfully" << std::endl;
         } else {
@@ -429,6 +444,10 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
                 << "Stats should have users_online field";
             EXPECT_NE(response.find("\"total_share\""), std::string::npos)
                 << "Stats should have total_share field";
+            
+            // Validate that total_share is not "0.00 B" (should show actual share)
+            EXPECT_EQ(response.find("\"total_share\": \"0.00 B\""), std::string::npos)
+                << "Stats total_share should not be zero when users have share";
             
             std::cout << "✓ /api/stats endpoint validated successfully" << std::endl;
         } else {
