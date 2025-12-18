@@ -156,16 +156,9 @@ def update_data_cache():
     try:
         # Gather all data
         hub_info = _get_hub_info_unsafe()
-        print(f"[Hub API] Cache update: hub_info retrieved")
-        
         users = _get_all_users_unsafe()
-        print(f"[Hub API] Cache update: users retrieved, count={len(users)}")
-        
         geo_stats = _get_geographic_stats_unsafe()
-        print(f"[Hub API] Cache update: geo_stats retrieved, countries={len(geo_stats)}")
-        
         share_stats = _get_share_stats_unsafe(users)
-        print(f"[Hub API] Cache update: share_stats retrieved")
         
         # Update cache atomically
         with data_cache_lock:
@@ -174,7 +167,6 @@ def update_data_cache():
             data_cache["geo_stats"] = geo_stats
             data_cache["share_stats"] = share_stats
             data_cache["last_update"] = time.time()
-        print(f"[Hub API] Cache update completed successfully")
     except Exception as e:
         import traceback
         print(f"[Hub API] Error updating data cache: {e}")
@@ -249,22 +241,14 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         email = ""
         speed = ""
         
-        # Debug logging
-        print(f"[Hub API DEBUG] GetMyINFO({nick}) returned: {myinfo!r}")
-        
         if myinfo and isinstance(myinfo, tuple) and len(myinfo) >= 6:
             # Tuple format: (nick, desc, tag, speed, email, sharesize)
             _, desc, tag, speed, email, size_str = myinfo[:6]
-            print(f"[Hub API DEBUG] Parsed for {nick}: desc='{desc}', tag='{tag}', email='{email}', size_str='{size_str}'")
             try:
                 # Share size is in bytes as a string
                 share = int(size_str) if size_str else 0
-                print(f"[Hub API DEBUG] Converted share for {nick}: {share}")
             except (ValueError, TypeError):
-                print(f"[Hub API] Warning: Failed to parse share size for {nick}: '{size_str}'")
                 share = 0
-        else:
-            print(f"[Hub API DEBUG] GetMyINFO for {nick} failed validation: myinfo={myinfo!r}, is_tuple={isinstance(myinfo, tuple)}, len={len(myinfo) if myinfo else 'N/A'}")
         
         return {
             "nick": nick,
@@ -312,23 +296,16 @@ def format_bytes(size: int) -> str:
 def _get_all_users_unsafe() -> List[Dict[str, Any]]:
     """Get list of all users with their information (UNSAFE - call only from main thread)"""
     users = []
-    print(f"[Hub API] _get_all_users_unsafe: Calling vh.GetNickList()...")
     nick_list = vh.GetNickList()
-    print(f"[Hub API] _get_all_users_unsafe: GetNickList returned type={type(nick_list)}, value={nick_list}")
     
     if not isinstance(nick_list, list):
-        print(f"[Hub API] WARNING: GetNickList returned non-list type: {type(nick_list)}")
         return users
     
-    print(f"[Hub API] Processing {len(nick_list)} nicks...")
     for nick in nick_list:
         user_info = _get_user_info_unsafe(nick)
         if user_info:
             users.append(user_info)
-        else:
-            print(f"[Hub API] Failed to get info for nick: {nick}")
     
-    print(f"[Hub API] _get_all_users_unsafe returning {len(users)} users")
     return users
 
 def _get_geographic_stats_unsafe() -> Dict[str, int]:
@@ -413,7 +390,6 @@ if FASTAPI_AVAILABLE:
         """Get list of online users"""
         try:
             all_users = get_cached_data("users") or []
-            print(f"[Hub API] /api/users endpoint: Retrieved {len(all_users)} users from cache")
             
             # Apply pagination
             if limit:
@@ -493,7 +469,6 @@ def run_server(port: int):
     global server_running
     
     try:
-        print(f"[Hub API] run_server: Starting uvicorn on port {port}")
         config = uvicorn.Config(
             app,
             host="0.0.0.0",
@@ -511,7 +486,6 @@ def run_server(port: int):
         traceback.print_exc()
     finally:
         server_running = False
-        print("[Hub API] run_server: Server stopped, server_running=False")
 
 def start_api_server(port: int = 8000) -> bool:
     """Start the API server"""
@@ -527,13 +501,11 @@ def start_api_server(port: int = 8000) -> bool:
     server_running = True
     
     # Initialize cache before starting server
-    print("[Hub API] start_api_server: Initializing cache...")
     update_data_cache()
     
     api_port = port
     api_thread = threading.Thread(target=run_server, args=(port,), daemon=True)
     api_thread.start()
-    print(f"[Hub API] start_api_server: Server thread started on port {port}")
     
     return True
 
@@ -570,7 +542,6 @@ def OnTimer(msec=0):
     if current_time - last_cache_update < CACHE_UPDATE_INTERVAL:
         return 1
     
-    print(f"[Hub API] OnTimer: Updating cache (interval={current_time - last_cache_update:.1f}s)")
     last_cache_update = current_time
     update_data_cache()
     return 1
@@ -578,14 +549,12 @@ def OnTimer(msec=0):
 def OnUserLogin(nick):
     """Update cache when user logs in (runs in main thread)"""
     if server_running:
-        print(f"[Hub API] User logged in: {nick}, triggering cache update")
         update_data_cache()
     return 1
 
 def OnUserLogout(nick):
     """Update cache when user logs out (runs in main thread)"""
     if server_running:
-        print(f"[Hub API] User logged out: {nick}, triggering cache update")
         update_data_cache()
     return 1
 
@@ -598,26 +567,15 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     So: return 1 for commands we DON'T handle, return 0 for commands we DO handle
     """
-    # Debug output
-    print(f"[Hub API] OnHubCommand called: nick={nick}, command='{command}', user_class={user_class}, prefix='{prefix}'")
-    
     parts = command.split()
-    print(f"[Hub API] parts={parts}")
     
     # The prefix (! + etc) is stripped, so command is just "api ..."
     if not parts or parts[0] != "api":
-        print(f"[Hub API] Not our command, returning 1 to allow through")
         return 1  # Not our command, allow it (true in C++)
-    
-    print(f"[Hub API] This is our command! Checking permissions...")
     
     # Check permissions (operators only)
     if user_class < 3:
-        print(f"[Hub API] Permission denied for user_class={user_class}")
-        vh.pm("Permission denied. Operators only.", nick)
         return 0  # Block this command (false in C++)
-    
-    print(f"[Hub API] Permission OK, processing command...")
     
     # Helper function to send messages (handles the correct vh.pm/vh.usermc signature)
     def send_message(msg):
@@ -675,7 +633,6 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             send_message("API server is STOPPED")
     
     elif subcmd == "help":
-        print(f"[Hub API] Showing help, in_pm={in_pm}, write function={'vh.pm' if in_pm else 'vh.usermc'}")
         help_text = """
 Hub API Commands:
   !api start [port]  - Start API server (default: 8000)
