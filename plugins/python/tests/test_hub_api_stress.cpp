@@ -365,77 +365,77 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
     g_py_plugin->OnTimer(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     
-    // Test /api/hub endpoint
+    // Test /hub endpoint
     std::string response;
     long http_code = 0;
     
-    if (http_get("http://localhost:18085/api/hub", response, http_code)) {
-        std::cout << "\n=== /api/hub Response ===" << std::endl;
+    if (http_get("http://localhost:18085/hub", response, http_code)) {
+        std::cout << "\n=== /hub Response ===" << std::endl;
         std::cout << response << std::endl;
         
         if (http_code == 200) {
             // Validate response has expected JSON structure (no UTF-8 errors)
             EXPECT_EQ(response.find("\"error\":"), std::string::npos)
-                << "/api/hub should not contain encoding errors";
+                << "/hub should not contain encoding errors";
             
             EXPECT_NE(response.find("\"name\":"), std::string::npos) 
-                << "/api/hub should return hub name field";
+                << "/hub should return hub name field";
             
             EXPECT_NE(response.find("\"description\":"), std::string::npos)
-                << "/api/hub should return description field";
+                << "/hub should return description field";
             
             EXPECT_NE(response.find("\"topic\":"), std::string::npos)
-                << "/api/hub should return topic field";
+                << "/hub should return topic field";
             
             EXPECT_NE(response.find("\"max_users\":"), std::string::npos)
-                << "/api/hub should return max_users field";
+                << "/hub should return max_users field";
             
             // Verify the hub name matches what we set
             EXPECT_NE(response.find("Test Hub API"), std::string::npos)
-                << "/api/hub should return the configured hub name";
+                << "/hub should return the configured hub name";
             
-            std::cout << "✓ /api/hub endpoint validated successfully" << std::endl;
+            std::cout << "✓ /hub endpoint validated successfully" << std::endl;
         } else {
             std::cerr << "⚠ /api/hub returned HTTP " << http_code << std::endl;
         }
     }
     
-    // Test /api/users endpoint
-    if (http_get("http://localhost:18085/api/users", response, http_code)) {
-        std::cout << "\n=== /api/users Response ===" << std::endl;
+    // Test /users endpoint
+    if (http_get("http://localhost:18085/users", response, http_code)) {
+        std::cout << "\n=== /users Response ===" << std::endl;
         std::cout << response.substr(0, 800) << "..." << std::endl;
         
         if (http_code == 200) {
             // Check that response has the expected structure
             EXPECT_NE(response.find("\"count\":"), std::string::npos)
-                << "/api/users should return count field";
+                << "/users should return count field";
             
             EXPECT_NE(response.find("\"users\":"), std::string::npos)
-                << "/api/users should return users array";
+                << "/users should return users array";
             
             // Validate that at least one user has non-zero share
             EXPECT_NE(response.find("\"share\": 10485760"), std::string::npos)
-                << "/api/users should return correct share amounts (not zero)";
+                << "/users should return correct share amounts (not zero)";
             
             // Validate that user info fields are populated
             EXPECT_NE(response.find("\"description\": \"Test Description\""), std::string::npos)
-                << "/api/users should return user descriptions";
+                << "/users should return user descriptions";
             
             EXPECT_NE(response.find("\"email\": \"test@example.com\""), std::string::npos)
-                << "/api/users should return user email addresses";
+                << "/users should return user email addresses";
             
             EXPECT_NE(response.find("\"tag\": \"<++ V:0.777,M:A,H:1/0/0,S:2>\""), std::string::npos)
-                << "/api/users should return user client tags";
+                << "/users should return user client tags";
             
-            std::cout << "✓ /api/users endpoint validated successfully" << std::endl;
+            std::cout << "✓ /users endpoint validated successfully" << std::endl;
         } else {
             std::cerr << "⚠ /api/users returned HTTP " << http_code << std::endl;
         }
     }
     
-    // Test /api/stats endpoint
-    if (http_get("http://localhost:18085/api/stats", response, http_code)) {
-        std::cout << "\n=== /api/stats Response ===" << std::endl;
+    // Test /stats endpoint
+    if (http_get("http://localhost:18085/stats", response, http_code)) {
+        std::cout << "\n=== /stats Response ===" << std::endl;
         std::cout << response << std::endl;
         
         if (http_code == 200) {
@@ -449,9 +449,9 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
             EXPECT_EQ(response.find("\"total_share\": \"0.00 B\""), std::string::npos)
                 << "Stats total_share should not be zero when users have share";
             
-            std::cout << "✓ /api/stats endpoint validated successfully" << std::endl;
+            std::cout << "✓ /stats endpoint validated successfully" << std::endl;
         } else {
-            std::cerr << "⚠ /api/stats returned HTTP " << http_code << std::endl;
+            std::cerr << "⚠ /stats returned HTTP " << http_code << std::endl;
         }
     }
     
@@ -510,11 +510,11 @@ TEST_F(HubApiStressTest, ConcurrentMessagesAndApiCalls) {
     std::thread api_thread([&]() {
         std::vector<std::string> endpoints = {
             "http://localhost:18081/",
-            "http://localhost:18081/api/hub",
-            "http://localhost:18081/api/stats",
-            "http://localhost:18081/api/users",
-            "http://localhost:18081/api/geo",
-            "http://localhost:18081/api/share",
+            "http://localhost:18081/hub",
+            "http://localhost:18081/stats",
+            "http://localhost:18081/users",
+            "http://localhost:18081/geo",
+            "http://localhost:18081/share",
             "http://localhost:18081/health"
         };
         
@@ -640,7 +640,7 @@ TEST_F(HubApiStressTest, RapidCommandProcessing) {
         while (!stop_flag && count < 50) {
             std::string response;
             long http_code = 0;
-            http_get("http://localhost:18082/api/stats", response, http_code);
+            http_get("http://localhost:18082/stats", response, http_code);
             count++;
             
             // Sample memory every 10 API calls
@@ -698,7 +698,7 @@ TEST_F(HubApiStressTest, MemoryLeakDetection) {
             
             std::string response;
             long http_code = 0;
-            http_get("http://localhost:18083/api/users", response, http_code);
+            http_get("http://localhost:18083/users", response, http_code);
             
             // Sample memory every 100 iterations
             if (i % 100 == 0) {
@@ -776,7 +776,7 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
     // Make API call to check user list
     std::string response;
     long http_code = 0;
-    if (http_get("http://localhost:18084/api/users", response, http_code)) {
+    if (http_get("http://localhost:18084/users", response, http_code)) {
         std::cout << "  API response code: " << http_code << std::endl;
         if (http_code == 200) {
             // Check if any of our weird nicks appear in response
@@ -830,7 +830,7 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
     }
     
     // Call API again with different encoding
-    if (http_get("http://localhost:18084/api/stats", response, http_code)) {
+    if (http_get("http://localhost:18084/stats", response, http_code)) {
         std::cout << "  API stats with CP1251: code=" << http_code << std::endl;
         
         if (http_code == 200) {
@@ -913,8 +913,8 @@ TEST_F(HubApiStressTest, EncodingConversionWithWeirdCharactersAndApi) {
     // Thread 2: Make API calls
     std::thread api_thread([&]() {
         std::vector<std::string> endpoints = {
-            "http://localhost:18084/api/users",
-            "http://localhost:18084/api/stats",
+            "http://localhost:18084/users",
+            "http://localhost:18084/stats",
             "http://localhost:18084/health"
         };
         

@@ -351,21 +351,21 @@ if FASTAPI_AVAILABLE:
             "service": "Verlihub REST API",
             "version": "1.0.0",
             "endpoints": {
-                "hub_info": "/api/hub",
-                "statistics": "/api/stats",
-                "users": "/api/users",
-                "user_detail": "/api/user/{nick}",
-                "geography": "/api/geo",
-                "share": "/api/share"
+                "hub_info": "/hub",
+                "statistics": "/stats",
+                "users": "/users",
+                "user_detail": "/user/{nick}",
+                "geography": "/geo",
+                "share": "/share"
             }
         }
 
-    @app.get("/api/hub")
+    @app.get("/hub")
     async def hub_info():
         """Get hub information"""
         return get_cached_data("hub_info") or {}
 
-    @app.get("/api/stats")
+    @app.get("/stats")
     async def statistics():
         """Get hub statistics"""
         try:
@@ -385,7 +385,7 @@ if FASTAPI_AVAILABLE:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    @app.get("/api/users")
+    @app.get("/users")
     async def users(limit: Optional[int] = None, offset: int = 0):
         """Get list of online users"""
         try:
@@ -412,7 +412,7 @@ if FASTAPI_AVAILABLE:
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
 
-    @app.get("/api/user/{nick}")
+    @app.get("/user/{nick}")
     async def user_detail(nick: str):
         """Get detailed information about a specific user"""
         all_users = get_cached_data("users") or []
@@ -425,7 +425,7 @@ if FASTAPI_AVAILABLE:
         
         return user_info
 
-    @app.get("/api/geo")
+    @app.get("/geo")
     async def geography():
         """Get geographic distribution of users"""
         try:
@@ -444,7 +444,7 @@ if FASTAPI_AVAILABLE:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    @app.get("/api/share")
+    @app.get("/share")
     async def share_statistics():
         """Get share size statistics"""
         try:
@@ -642,12 +642,12 @@ Hub API Commands:
 
 API Endpoints:
   GET /              - API overview
-  GET /api/hub       - Hub information
-  GET /api/stats     - Hub statistics
-  GET /api/users     - List all users
-  GET /api/user/{nick} - User details
-  GET /api/geo       - Geographic distribution
-  GET /api/share     - Share statistics
+  GET /hub           - Hub information
+  GET /stats         - Hub statistics
+  GET /users         - List all users
+  GET /user/{nick}   - User details
+  GET /geo           - Geographic distribution
+  GET /share         - Share statistics
   GET /health        - Health check
   GET /docs          - Interactive API docs
 
