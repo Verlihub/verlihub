@@ -119,6 +119,7 @@ enum {
 	W_GetUserCC,
 	W_GetIPCC,
 	W_GetIPCN,
+	W_GetIPCity,
 	W_GetIPASN,
 	W_GetGeoIP,
 	W_GetNickList,

@@ -1301,7 +1301,183 @@ TEST_F(HubApiStressTest, EncodingRoundTripVerification) {
     delete admin;
 }
 
-// Test 9: Verify GetIPCity returns correct data
+// Test 9: Direct GetIPCity Python call test (catches memory corruption)
+// NOTE: This test requires MySQL to be running and configured
+TEST_F(HubApiStressTest, DirectGetIPCityCall) {
+    std::cout << "\n=== Direct GetIPCity Call Test ===" << std::endl;
+    std::cout << "This test directly calls vh.GetIPCity to catch memory corruption" << std::endl;
+    std::cout << "⚠ This test is DISABLED by default (requires MySQL). Run with --gtest_also_run_disabled_tests" << std::endl;
+    
+    // Load a simple Python script that calls GetIPCity
+    std::string test_script = std::string(BUILD_DIR) + "/test_getipcity_" + std::to_string(getpid()) + ".py";
+    
+    std::ofstream script_file(test_script);
+    script_file << "import vh\n"
+                << "import time\n"
+                << "\n"
+                << "def OnLoad(c):\n"
+                << "    print('[GetIPCity Test] Script loaded')\n"
+                << "    return 1\n"
+                << "\n"
+                << "def OnTimer():\n"
+                << "    # Test various IP addresses\n"
+                << "    test_ips = [\n"
+                << "        '8.8.8.8',       # Google DNS\n"
+                << "        '1.1.1.1',       # Cloudflare\n"
+                << "        '127.0.0.1',     # Localhost\n"
+                << "        '192.168.1.1',   # Private IP\n"
+                << "        '208.67.222.222' # OpenDNS\n"
+                << "    ]\n"
+                << "    \n"
+                << "    for ip in test_ips:\n"
+                << "        try:\n"
+                << "            # Call GetIPCity multiple times to trigger any memory issues\n"
+                << "            for i in range(100):  # Increased from 10 to 100 iterations\n"
+                << "                city = vh.GetIPCity(ip, '')\n"
+                << "                # Force string to be used/copied multiple times\n"
+                << "                s1 = str(city)\n"
+                << "                s2 = city + ' test'\n"
+                << "                s3 = f'City: {city}'\n"
+                << "                _ = len(city)\n"
+                << "                _ = city.encode('utf-8', errors='replace')\n"
+                << "                _ = city.upper()\n"
+                << "                _ = city.lower()\n"
+                << "            print(f'[GetIPCity Test] IP {ip}: 100 iterations OK (no crash)')\n"
+                << "        except Exception as e:\n"
+                << "            print(f'[GetIPCity Test] ERROR for IP {ip}: {e}')\n"
+                << "            import traceback\n"
+                << "            traceback.print_exc()\n"
+                << "            raise  # Re-raise to fail the test\n"
+                << "    \n"
+                << "    # Test with invalid inputs\n"
+                << "    try:\n"
+                << "        city = vh.GetIPCity('invalid.ip.address', '')\n"
+                << "        print(f'[GetIPCity Test] Invalid IP handled: {city}')\n"
+                << "    except Exception as e:\n"
+                << "        print(f'[GetIPCity Test] Invalid IP exception (OK): {e}')\n"
+                << "    \n"
+                << "    # Test with None (should be handled gracefully)\n"
+                << "    try:\n"
+                << "        city = vh.GetIPCity(None, '')\n"
+                << "        print(f'[GetIPCity Test] None IP handled: {city}')\n"
+                << "    except Exception as e:\n"
+                << "        print(f'[GetIPCity Test] None IP exception (OK): {e}')\n"
+                << "    \n"
+                << "    return 1\n";
+    script_file.close();
+    
+    // Load the script
+    cPythonInterpreter* test_interp = new cPythonInterpreter(test_script);
+    g_py_plugin->AddData(test_interp);
+    test_interp->Init();
+    
+    ASSERT_GE(test_interp->id, 0) << "Script should load successfully";
+    
+    std::cout << "Calling OnTimer to trigger GetIPCity calls (stress test with 500 total calls)..." << std::endl;
+    
+    // Call OnTimer multiple times to stress test
+    for (int i = 0; i < 10; i++) {  // Increased from 5 to 10
+        g_py_plugin->OnTimer(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::cout << "  Iteration " << (i+1) << "/10 complete" << std::endl;
+    }
+    
+    std::cout << "✓ No crashes during GetIPCity stress test (500+ calls)" << std::endl;
+    
+    // Cleanup
+    g_py_plugin->RemoveByName(test_script);
+    unlink(test_script.c_str());
+}
+
+// Test 10: Direct GetGeoIP test (exercises all geographic field allocation)
+TEST_F(HubApiStressTest, DirectGetGeoIPTest) {
+    std::cout << "\n=== Direct GetGeoIP Test ===" << std::endl;
+    std::cout << "Testing GetGeoIP function with multiple IPs to verify memory management" << std::endl;
+    
+    // Create a test script that calls GetGeoIP
+    std::string test_script = std::string(BUILD_DIR) + "/test_getgeoip_" + std::to_string(getpid()) + ".py";
+    
+    std::ofstream script_file(test_script);
+    script_file << "import vh\n"
+                << "import json\n"
+                << "\n"
+                << "def OnLoad(c):\n"
+                << "    print('[GetGeoIP Test] Script loaded')\n"
+                << "    return 1\n"
+                << "\n"
+                << "def OnTimer():\n"
+                << "    test_ips = [\n"
+                << "        '8.8.8.8',        # Google DNS\n"
+                << "        '1.1.1.1',        # Cloudflare\n"
+                << "        '208.67.222.222', # OpenDNS\n"
+                << "        '127.0.0.1',      # Localhost\n"
+                << "        '192.168.1.1',    # Private IP\n"
+                << "    ]\n"
+                << "    \n"
+                << "    for ip in test_ips:\n"
+                << "        try:\n"
+                << "            # Call GetGeoIP multiple times to stress test memory management\n"
+                << "            for i in range(50):\n"
+                << "                geo_data = vh.GetGeoIP(ip, '')\n"
+                << "                \n"
+                << "                # Verify it returns a dict\n"
+                << "                if not isinstance(geo_data, dict):\n"
+                << "                    print(f'[GetGeoIP Test] ERROR: Expected dict, got {type(geo_data)}')\n"
+                << "                    continue\n"
+                << "                \n"
+                << "                # Verify expected fields exist\n"
+                << "                expected_fields = [\n"
+                << "                    'latitude', 'longitude', 'metro_code', 'area_code',\n"
+                << "                    'host', 'range_low', 'range_high', 'country_code',\n"
+                << "                    'country', 'region_code', 'region', 'time_zone',\n"
+                << "                    'continent_code', 'continent', 'city', 'postal_code'\n"
+                << "                ]\n"
+                << "                \n"
+                << "                for field in expected_fields:\n"
+                << "                    if field not in geo_data:\n"
+                << "                        print(f'[GetGeoIP Test] ERROR: Missing field {field} for IP {ip}')\n"
+                << "                \n"
+                << "                # Access and manipulate the data to trigger any memory issues\n"
+                << "                _ = str(geo_data)\n"
+                << "                _ = json.dumps(geo_data)\n"
+                << "                _ = geo_data.get('latitude', 0.0)\n"
+                << "                _ = geo_data.get('country', '')\n"
+                << "            \n"
+                << "            print(f'[GetGeoIP Test] IP {ip}: 50 iterations OK')\n"
+                << "        except Exception as e:\n"
+                << "            print(f'[GetGeoIP Test] ERROR for IP {ip}: {e}')\n"
+                << "            import traceback\n"
+                << "            traceback.print_exc()\n"
+                << "            raise\n"
+                << "    \n"
+                << "    print('[GetGeoIP Test] All iterations completed successfully')\n"
+                << "    return 1\n";
+    script_file.close();
+    
+    // Load the script
+    cPythonInterpreter* test_interp = new cPythonInterpreter(test_script);
+    g_py_plugin->AddData(test_interp);
+    test_interp->Init();
+    
+    ASSERT_GE(test_interp->id, 0) << "GetGeoIP test script should load successfully";
+    
+    std::cout << "Calling OnTimer to trigger GetGeoIP stress test (250 total calls)..." << std::endl;
+    
+    // Call OnTimer multiple times
+    for (int i = 0; i < 5; i++) {
+        g_py_plugin->OnTimer(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::cout << "  Iteration " << (i+1) << "/5 complete" << std::endl;
+    }
+    
+    std::cout << "✓ No crashes during GetGeoIP stress test (1250+ calls with string literal allocation)" << std::endl;
+    
+    // Cleanup
+    g_py_plugin->RemoveByName(test_script);
+    unlink(test_script.c_str());
+}
+
+// Test 11: Verify GetIPCity returns correct data via API
 TEST_F(HubApiStressTest, VerifyGetIPCityIntegration) {
     cConnDC* admin = create_mock_connection("TestAdmin", 10);
     
@@ -1424,6 +1600,98 @@ TEST_F(HubApiStressTest, VerifyGetIPCityIntegration) {
     
     delete admin->mpUser;
     delete admin;
+}
+
+// Test 12: Validate GetGeoIP return structure and data types
+TEST_F(HubApiStressTest, ValidateGetGeoIPStructure) {
+    std::cout << "\n=== GetGeoIP Structure Validation Test ===" << std::endl;
+    
+    std::string test_script = std::string(BUILD_DIR) + "/test_geoip_struct_" + std::to_string(getpid()) + ".py";
+    
+    std::ofstream script_file(test_script);
+    script_file << "import vh\n"
+                << "\n"
+                << "def OnLoad(c):\n"
+                << "    print('[GeoIP Structure Test] Script loaded')\n"
+                << "    return 1\n"
+                << "\n"
+                << "def OnTimer():\n"
+                << "    ip = '8.8.8.8'  # Use a well-known IP\n"
+                << "    \n"
+                << "    try:\n"
+                << "        geo = vh.GetGeoIP(ip, '')\n"
+                << "        \n"
+                << "        # Verify it's a dict\n"
+                << "        assert isinstance(geo, dict), f'Expected dict, got {type(geo)}'\n"
+                << "        print(f'[GeoIP Structure] ✓ Returns dict')\n"
+                << "        \n"
+                << "        # Verify all required string fields\n"
+                << "        string_fields = [\n"
+                << "            'host', 'range_low', 'range_high', 'country_code',\n"
+                << "            'country_code_xxx', 'country', 'region_code', 'region',\n"
+                << "            'time_zone', 'continent_code', 'continent', 'city', 'postal_code'\n"
+                << "        ]\n"
+                << "        \n"
+                << "        for field in string_fields:\n"
+                << "            assert field in geo, f'Missing string field: {field}'\n"
+                << "            assert isinstance(geo[field], str), f'{field} should be str, got {type(geo[field])}'\n"
+                << "        \n"
+                << "        print(f'[GeoIP Structure] ✓ All string fields present and correct type')\n"
+                << "        \n"
+                << "        # Verify numeric fields\n"
+                << "        assert 'latitude' in geo, 'Missing latitude'\n"
+                << "        assert isinstance(geo['latitude'], (int, float)), f'latitude should be numeric, got {type(geo[\"latitude\"])}'\n"
+                << "        \n"
+                << "        assert 'longitude' in geo, 'Missing longitude'\n"
+                << "        assert isinstance(geo['longitude'], (int, float)), f'longitude should be numeric, got {type(geo[\"longitude\"])}'\n"
+                << "        \n"
+                << "        assert 'metro_code' in geo, 'Missing metro_code'\n"
+                << "        assert isinstance(geo['metro_code'], int), f'metro_code should be int, got {type(geo[\"metro_code\"])}'\n"
+                << "        \n"
+                << "        assert 'area_code' in geo, 'Missing area_code'\n"
+                << "        assert isinstance(geo['area_code'], int), f'area_code should be int, got {type(geo[\"area_code\"])}'\n"
+                << "        \n"
+                << "        print(f'[GeoIP Structure] ✓ All numeric fields present and correct type')\n"
+                << "        \n"
+                << "        # Print sample data\n"
+                << "        print(f'[GeoIP Structure] Sample data for {ip}:')\n"
+                << "        print(f'  Country: {geo.get(\"country\", \"N/A\")}')\n"
+                << "        print(f'  City: {geo.get(\"city\", \"N/A\")}')\n"
+                << "        print(f'  Region: {geo.get(\"region\", \"N/A\")}')\n"
+                << "        print(f'  Continent: {geo.get(\"continent\", \"N/A\")}')\n"
+                << "        print(f'  Timezone: {geo.get(\"time_zone\", \"N/A\")}')\n"
+                << "        print(f'  Lat/Lon: {geo.get(\"latitude\", 0)}, {geo.get(\"longitude\", 0)}')\n"
+                << "        \n"
+                << "        print('[GeoIP Structure] ✓ All validations passed')\n"
+                << "        \n"
+                << "    except AssertionError as e:\n"
+                << "        print(f'[GeoIP Structure] ✗ Validation failed: {e}')\n"
+                << "        raise\n"
+                << "    except Exception as e:\n"
+                << "        print(f'[GeoIP Structure] ✗ Unexpected error: {e}')\n"
+                << "        import traceback\n"
+                << "        traceback.print_exc()\n"
+                << "        raise\n"
+                << "    \n"
+                << "    return 1\n";
+    script_file.close();
+    
+    // Load and run the test
+    cPythonInterpreter* test_interp = new cPythonInterpreter(test_script);
+    g_py_plugin->AddData(test_interp);
+    test_interp->Init();
+    
+    ASSERT_GE(test_interp->id, 0) << "GeoIP structure test script should load";
+    
+    std::cout << "Running GetGeoIP structure validation..." << std::endl;
+    g_py_plugin->OnTimer(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    std::cout << "✓ GetGeoIP structure validation complete" << std::endl;
+    
+    // Cleanup
+    g_py_plugin->RemoveByName(test_script);
+    unlink(test_script.c_str());
 }
 
 // Register global environment

@@ -320,23 +320,28 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         if ip:
             try:
                 country = vh.GetIPCN(ip) or ""
-                city = vh.GetIPCity(ip, "") or ""
-                asn = vh.GetIPASN(ip, "") or ""
+                city_raw = vh.GetIPCity(ip, "")
+                city = city_raw if (city_raw and city_raw not in ("--", "")) else ""
+                asn_raw = vh.GetIPASN(ip, "")
+                asn = asn_raw if (asn_raw and asn_raw not in ("--", "")) else ""
                 
                 # GetGeoIP returns a dict with all geographic details
                 geo_data = vh.GetGeoIP(ip, "")
+                print(f"[Hub API] DEBUG geo_data for {ip}: type={type(geo_data)}, value={geo_data!r}")
                 if geo_data and isinstance(geo_data, dict):
-                    region = geo_data.get("region", "")
-                    region_code = geo_data.get("region_code", "")
-                    timezone = geo_data.get("timezone", "")
-                    continent = geo_data.get("continent", "")
-                    continent_code = geo_data.get("continent_code", "")
-                    postal_code = geo_data.get("postal_code", "")
+                    region = geo_data.get("region", "") or ""
+                    region_code = geo_data.get("region_code", "") or ""
+                    timezone = geo_data.get("time_zone", "") or ""  # Note: key is "time_zone" not "timezone"
+                    continent = geo_data.get("continent", "") or ""
+                    continent_code = geo_data.get("continent_code", "") or ""
+                    postal_code = geo_data.get("postal_code", "") or ""
                     # Override with GeoIP values if available
                     if not country and geo_data.get("country"):
                         country = geo_data.get("country")
                     if not city and geo_data.get("city"):
                         city = geo_data.get("city")
+                else:
+                    print(f"[Hub API] WARNING: GetGeoIP returned non-dict for {ip}: {geo_data!r}")
             except Exception as e:
                 print(f"[Hub API] Error getting geo info for {ip}: {e}")
         
