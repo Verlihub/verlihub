@@ -41,6 +41,8 @@
         a:hover { text-decoration: underline; }
         #user-detail { position: fixed; top: 15%; left: 15%; width: 70%; max-height: 70%; overflow-y: auto; background: #fff; border: 1px solid #aaa; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: none; z-index: 1000; border-radius: 8px; }
         #user-detail button { float: right; padding: 8px 12px; cursor: pointer; }
+        #user-detail h3 { color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
+        #user-detail h3:first-of-type { margin-top: 10px; }
         .info-list { list-style: none; padding: 0; margin: 15px 0; }
         .info-list li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
         .flag { font-size: 2em; text-align: center; }
@@ -433,7 +435,87 @@
             const nick = decodeURIComponent(encodedNick);
             try {
                 const data = await fetchData(`/user/${encodedNick}`);
-                document.getElementById('user-content').innerHTML = renderKeyValue(data, ['share_formatted']);
+                
+                // Create enhanced field name mapping for better display
+                const fieldRenames = {
+                    nick: 'Nickname',
+                    class_name: 'User Class',
+                    ip: 'IP Address',
+                    host: 'Hostname',
+                    country_code: 'Country Code',
+                    country: 'Country',
+                    city: 'City',
+                    region: 'Region/State',
+                    region_code: 'Region Code',
+                    timezone: 'Time Zone',
+                    continent: 'Continent',
+                    continent_code: 'Continent Code',
+                    postal_code: 'Postal Code',
+                    asn: 'ASN',
+                    hub_url: 'Hub URL',
+                    ext_json: 'Extensions',
+                    description: 'Description',
+                    tag: 'Client Tag',
+                    email: 'Email',
+                    share: 'Share Size'
+                };
+                
+                // Group fields for organized display
+                const basicInfo = {};
+                const geoInfo = {};
+                const connectionInfo = {};
+                const otherInfo = {};
+                
+                const geoFields = ['country_code', 'country', 'city', 'region', 'region_code', 
+                                   'timezone', 'continent', 'continent_code', 'postal_code', 'asn'];
+                const connectionFields = ['ip', 'host', 'hub_url'];
+                const basicFields = ['nick', 'class', 'class_name', 'description', 'tag', 'email', 'share'];
+                
+                for (const [key, value] of Object.entries(data)) {
+                    if (key === 'share_formatted') continue;
+                    
+                    if (geoFields.includes(key) && value && value !== '' && value !== 'N/A') {
+                        geoInfo[key] = value;
+                    } else if (connectionFields.includes(key) && value && value !== '') {
+                        connectionInfo[key] = value;
+                    } else if (basicFields.includes(key)) {
+                        basicInfo[key] = value;
+                    } else if (value && value !== '' && value !== 'N/A') {
+                        otherInfo[key] = value;
+                    }
+                }
+                
+                let html = '';
+                
+                // Basic Information Section
+                if (Object.keys(basicInfo).length > 0) {
+                    html += '<h3>Basic Information</h3>';
+                    html += renderKeyValue(basicInfo, [], fieldRenames);
+                }
+                
+                // Geographic Information Section
+                if (Object.keys(geoInfo).length > 0) {
+                    html += '<h3>Geographic Information</h3>';
+                    // Add flag if we have country code
+                    if (geoInfo.country_code) {
+                        html += `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${getFlagEmoji(geoInfo.country_code)}</div>`;
+                    }
+                    html += renderKeyValue(geoInfo, [], fieldRenames);
+                }
+                
+                // Connection Information Section
+                if (Object.keys(connectionInfo).length > 0) {
+                    html += '<h3>Connection Information</h3>';
+                    html += renderKeyValue(connectionInfo, [], fieldRenames);
+                }
+                
+                // Other Information Section
+                if (Object.keys(otherInfo).length > 0) {
+                    html += '<h3>Additional Information</h3>';
+                    html += renderKeyValue(otherInfo, [], fieldRenames);
+                }
+                
+                document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load user ${nick}: ${err.message}`);
