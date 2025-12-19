@@ -6,6 +6,7 @@
 #include "cconndc.h"
 #include "cprotocol.h"
 #include "test_utils.h"
+#include "plugins/python/json_marshal.h"
 #include <fstream>
 #include <string>
 #include <vector>
@@ -44,6 +45,8 @@ static size_t my_curl_write_callback(void *contents, size_t size, size_t nmemb, 
 static bool http_get(const std::string& url, std::string& response, long& http_code) {
     CURL *curl = curl_easy_init();
     if (!curl) return false;
+    
+    response.clear();  // Clear response before making request
     
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_curl_write_callback);
@@ -164,7 +167,11 @@ public:
         g_server->SetConfig("config", "hub_icon_url", "https://example.com/icon.png", val_new, val_old);
         g_server->SetConfig("config", "hub_logo_url", "https://example.com/logo.png", val_new, val_old);
         
-        // Create MOTD file
+        // Set config_dir so hub_api.py can find MOTD file
+        g_server->SetConfig("config", "config_dir", config_dir.c_str(), val_new, val_old);
+        g_server->mDBConf.config_name = "config";
+        
+        // Create MOTD file in the config directory
         std::string motd_path = config_dir + "/motd";
         std::ofstream motd_file(motd_path);
         motd_file << "Welcome to Test Hub API!\nThis is the message of the day for testing.";
@@ -379,89 +386,135 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
     
     if (http_get("http://localhost:18085/hub", response, http_code)) {
         std::cout << "\n=== /hub Response ===" << std::endl;
-        std::cout << response << std::endl;
+        std::cout << response.substr(0, 500) << "..." << std::endl;
         
         if (http_code == 200) {
-            // Validate response has expected JSON structure (no UTF-8 errors)
-            EXPECT_EQ(response.find("\"error\":"), std::string::npos)
-                << "/hub should not contain encoding errors";
+            // Parse JSON using our JSON marshaling utilities
+            nVerliHub::nPythonPlugin::JsonValue hub_data;
+            ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(response, hub_data))
+                << "/hub should return valid JSON";
             
-            // Validate actual field values instead of just presence
-            EXPECT_NE(response.find("\"name\": \"Test Hub API\""), std::string::npos)
-                << "/hub should return correct hub name: Test Hub API";
+            ASSERT_TRUE(hub_data.isObject()) << "/hub should return JSON object";
             
-            EXPECT_NE(response.find("\"description\": \"Testing API Endpoints\""), std::string::npos)
-                << "/hub should return correct description: Testing API Endpoints";
+            // Validate actual field values
+            ASSERT_TRUE(hub_data.object_val.count("name") > 0);
+            EXPECT_EQ(hub_data.object_val["name"].string_val, "Test Hub API")
+                << "/hub should return correct hub name";
             
-            EXPECT_NE(response.find("\"topic\": \"Welcome to the test!\""), std::string::npos)
-                << "/hub should return correct topic: Welcome to the test!";
+            ASSERT_TRUE(hub_data.object_val.count("description") > 0);
+            EXPECT_EQ(hub_data.object_val["description"].string_val, "Testing API Endpoints")
+                << "/hub should return correct description";
             
-            EXPECT_NE(response.find("\"max_users\": 500"), std::string::npos)
-                << "/hub should return correct max_users: 500";
+            ASSERT_TRUE(hub_data.object_val.count("topic") > 0);
+            EXPECT_EQ(hub_data.object_val["topic"].string_val, "Welcome to the test!")
+                << "/hub should return correct topic";
             
-            EXPECT_NE(response.find("Welcome to Test Hub API!"), std::string::npos)
-                << "/hub should return MOTD content from file";
+            ASSERT_TRUE(hub_data.object_val.count("max_users") > 0);
+            EXPECT_EQ(hub_data.object_val["max_users"].int_val, 500)
+                << "/hub should return correct max_users";
             
-            EXPECT_NE(response.find("\"icon_url\": \"https://example.com/icon.png\""), std::string::npos)
-                << "/hub should return correct icon_url: https://example.com/icon.png";
+            ASSERT_TRUE(hub_data.object_val.count("motd") > 0);
+            EXPECT_NE(hub_data.object_val["motd"].string_val.find("Welcome to Test Hub API!"), std::string::npos)
+                << "/hub should return MOTD from test file";
             
-            EXPECT_NE(response.find("\"logo_url\": \"https://example.com/logo.png\""), std::string::npos)
-                << "/hub should return correct logo_url: https://example.com/logo.png";
+            ASSERT_TRUE(hub_data.object_val.count("icon_url") > 0);
+            EXPECT_EQ(hub_data.object_val["icon_url"].string_val, "https://example.com/icon.png")
+                << "/hub should return correct icon_url";
+            
+            ASSERT_TRUE(hub_data.object_val.count("logo_url") > 0);
+            EXPECT_EQ(hub_data.object_val["logo_url"].string_val, "https://example.com/logo.png")
+                << "/hub should return correct logo_url";
             
             std::cout << "✓ /hub endpoint validated with correct values" << std::endl;
         } else {
-            std::cerr << "⚠ /api/hub returned HTTP " << http_code << std::endl;
+            std::cerr << "⚠ /hub returned HTTP " << http_code << std::endl;
         }
     }
     
     // Test /users endpoint
     if (http_get("http://localhost:18085/users", response, http_code)) {
         std::cout << "\n=== /users Response ===" << std::endl;
-        std::cout << response.substr(0, 800) << "..." << std::endl;
+        std::cout << response.substr(0, 500) << "..." << std::endl;
         
         if (http_code == 200) {
-            // Check that response has the expected structure
-            EXPECT_NE(response.find("\"count\":"), std::string::npos)
-                << "/users should return count field";
+            // Parse JSON
+            nVerliHub::nPythonPlugin::JsonValue users_data;
+            ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(response, users_data))
+                << "/users should return valid JSON";
             
-            EXPECT_NE(response.find("\"users\":"), std::string::npos)
+            ASSERT_TRUE(users_data.isObject()) << "/users should return JSON object";
+            
+            // Check structure
+            ASSERT_TRUE(users_data.object_val.count("count") > 0);
+            EXPECT_GT(users_data.object_val["count"].int_val, 0)
+                << "/users should return user count";
+            
+            ASSERT_TRUE(users_data.object_val.count("users") > 0);
+            ASSERT_TRUE(users_data.object_val["users"].isArray())
                 << "/users should return users array";
             
-            // Validate that at least one user has non-zero share
-            EXPECT_NE(response.find("\"share\": 10485760"), std::string::npos)
-                << "/users should return correct share amounts (not zero)";
+            // Find a test user and validate fields
+            bool found_test_user = false;
+            for (const auto& user : users_data.object_val["users"].array_val) {
+                if (user.isObject() && user.object_val.count("nick") > 0) {
+                    std::string nick = user.object_val.at("nick").string_val;
+                    if (nick.find("TestUser") == 0) {
+                        found_test_user = true;
+                        
+                        EXPECT_EQ(user.object_val.at("share").int_val, 10485760)
+                            << "Test user should have correct share";
+                        
+                        EXPECT_EQ(user.object_val.at("description").string_val, "Test Description")
+                            << "Test user should have description";
+                        
+                        EXPECT_EQ(user.object_val.at("email").string_val, "test@example.com")
+                            << "Test user should have email";
+                        
+                        EXPECT_EQ(user.object_val.at("tag").string_val, "<++ V:0.777,M:A,H:1/0/0,S:2>")
+                            << "Test user should have tag";
+                        
+                        break;
+                    }
+                }
+            }
             
-            // Validate that user info fields are populated
-            EXPECT_NE(response.find("\"description\": \"Test Description\""), std::string::npos)
-                << "/users should return user descriptions";
-            
-            EXPECT_NE(response.find("\"email\": \"test@example.com\""), std::string::npos)
-                << "/users should return user email addresses";
-            
-            EXPECT_NE(response.find("\"tag\": \"<++ V:0.777,M:A,H:1/0/0,S:2>\""), std::string::npos)
-                << "/users should return user client tags";
+            EXPECT_TRUE(found_test_user) << "Should find at least one test user";
             
             std::cout << "✓ /users endpoint validated successfully" << std::endl;
         } else {
-            std::cerr << "⚠ /api/users returned HTTP " << http_code << std::endl;
+            std::cerr << "⚠ /users returned HTTP " << http_code << std::endl;
         }
     }
     
     // Test /stats endpoint
     if (http_get("http://localhost:18085/stats", response, http_code)) {
         std::cout << "\n=== /stats Response ===" << std::endl;
-        std::cout << response << std::endl;
+        std::cout << response.substr(0, 500) << "..." << std::endl;
         
         if (http_code == 200) {
-            // Validate response has expected fields
-            EXPECT_NE(response.find("\"users_online\""), std::string::npos)
-                << "Stats should have users_online field";
-            EXPECT_NE(response.find("\"total_share\""), std::string::npos)
-                << "Stats should have total_share field";
+            // Parse JSON
+            nVerliHub::nPythonPlugin::JsonValue stats_data;
+            ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(response, stats_data))
+                << "/stats should return valid JSON";
             
-            // Validate that total_share is not "0.00 B" (should show actual share)
-            EXPECT_EQ(response.find("\"total_share\": \"0.00 B\""), std::string::npos)
-                << "Stats total_share should not be zero when users have share";
+            ASSERT_TRUE(stats_data.isObject()) << "/stats should return JSON object";
+            
+            // Validate structure and values
+            ASSERT_TRUE(stats_data.object_val.count("users_online") > 0);
+            EXPECT_GT(stats_data.object_val["users_online"].int_val, 0)
+                << "/stats should return users_online > 0";
+            
+            ASSERT_TRUE(stats_data.object_val.count("max_users") > 0);
+            EXPECT_EQ(stats_data.object_val["max_users"].int_val, 500)
+                << "/stats should return correct max_users";
+            
+            ASSERT_TRUE(stats_data.object_val.count("total_share") > 0);
+            EXPECT_TRUE(stats_data.object_val["total_share"].isString())
+                << "/stats should return total_share as formatted string";
+            
+            ASSERT_TRUE(stats_data.object_val.count("hub_name") > 0);
+            EXPECT_EQ(stats_data.object_val["hub_name"].string_val, "Test Hub API")
+                << "/stats should return correct hub_name";
             
             std::cout << "✓ /stats endpoint validated successfully" << std::endl;
         } else {
