@@ -46,12 +46,28 @@
         .count { text-align: center; font-weight: bold; font-size: 1.2em; }
         .total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
         .total-users { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
-        .hub-topic { font-size: 1.4em; font-weight: bold; margin: 0 0 20px 0; text-align: center; }
-        .hub-main { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
-        .hub-left { flex: 1 1 300px; }
-        .hub-right { flex: 0 1 250px; text-align: center; }
-        .hub-logo img { max-width: 200px; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .motd { background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 30px; }
+        .hub-topic { font-size: 1.4em; font-weight: bold; margin: 0 0 30px 0; text-align: center; }
+        .hub-upper { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; margin-bottom: 30px; }
+        .hub-logo-wrapper { 
+            flex: 0 0 auto; 
+            text-align: center; 
+            width: 256px; 
+            height: 256px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .hub-logo img { 
+            max-width: 256px; 
+            max-height: 256px; 
+            width: auto; 
+            height: auto; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: block;
+        }
+        .hub-info { flex: 1 1 300px; }
+        .motd { background: #f0f0f0; padding: 15px; border-radius: 8px; }
         .motd pre { margin: 0; white-space: pre-wrap; font-family: monospace; font-size: 0.95em; }
         .sort-arrow { margin-left: 6px; opacity: 0.5; }
         .sort-arrow.active { opacity: 1; font-weight: bold; }
@@ -86,6 +102,9 @@
         let pollInterval;
         let currentUsers = [];
         let currentGeo = [];
+        let lastHubHtml = '';
+        let lastUsersHtml = '';
+        let lastGeoHtml = '';
         let isFirstLoad = { users: true, geo: true };
 
         const sortState = {
@@ -282,6 +301,8 @@
 
             try {
                 let html = '';
+                let shouldUpdate = true;
+
                 switch (tab) {
                     case 'hub':
                         const [hubData, shareData, statsData] = await Promise.all([
@@ -290,7 +311,6 @@
                             fetchData('/stats')
                         ]);
 
-                        // Set page title and header
                         const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
                         const hubDesc = (hubData.description || hubData.Description || '').trim();
                         document.getElementById('page-title').textContent = hubName;
@@ -302,17 +322,17 @@
                         const motd = hubData.motd || hubData.Motd || '';
                         const topic = (hubData.topic || hubData.Topic || '').trim();
 
-                        // Topic at the top
                         html += `<div class="hub-topic">${topic || 'No topic set'}</div>`;
 
-                        html += '<div class="hub-main">';
-                        html += '<div class="hub-left">';
+                        html += '<div class="hub-upper">';
+                        if (hasLogo) {
+                            html += `<div class="hub-logo-wrapper"><div class="hub-logo"><img src="${logoUrl}" alt="Hub Logo" onerror="this.style.display='none'"></div></div>`;
+                        }
+                        html += '<div class="hub-info">';
 
-                        // Hub info (exclude name, description, logo_url, motd, topic, icon_url)
                         const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon'];
                         html += renderKeyValue(hubData, hubExclude);
 
-                        // Share data
                         const shareRename = {
                             total_formatted: 'Total Share',
                             average_formatted: 'Average Share',
@@ -321,28 +341,20 @@
                         };
                         html += renderKeyValue(shareData, ['total', 'average'], shareRename);
 
-                        // Live stats
                         const liveStats = {
                             Timestamp: statsData.timestamp || statsData.Timestamp || 'N/A',
                             'Users Online': statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A'
                         };
                         html += renderKeyValue(liveStats);
 
-                        html += '</div>'; // .hub-left
+                        html += '</div>';  // Close hub-info
+                        html += '</div>';  // Close hub-upper
 
-                        html += '<div class="hub-right">';
-                        if (hasLogo) {
-                            html += `<div class="hub-logo"><img src="${logoUrl}" alt="Hub Logo" onerror="this.style.display='none'"></div>`;
-                        }
-                        html += '</div>'; // .hub-right
-
-                        html += '</div>'; // .hub-main
-
-                        // MOTD last
                         if (motd && motd.trim() !== '') {
                             html += '<div class="motd"><pre>' + motd.trim() + '</pre></div>';
                         }
 
+                        lastHubHtml = html;
                         break;
                     case 'users':
                         let response = await fetchData('/users?limit=500');
@@ -350,18 +362,33 @@
                         if (Array.isArray(response)) rows = response;
                         else if (response && response.users && Array.isArray(response.users)) rows = response.users;
                         else if (response && response.data && Array.isArray(response.data)) rows = response.data;
+
                         html = renderUsersTable(rows);
+
+                        if (html === lastUsersHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastUsersHtml = html;
+                        }
                         break;
                     case 'geo':
                         const geoData = await fetchData('/geo');
                         html = renderGeo(geoData);
+
+                        if (html === lastGeoHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastGeoHtml = html;
+                        }
                         break;
                 }
 
-                contentEl.innerHTML = html;
-                contentEl.classList.remove('loading');
+                if (shouldUpdate) {
+                    contentEl.innerHTML = html;
+                    void contentEl.offsetHeight;
+                }
 
-                void contentEl.offsetHeight;
+                contentEl.classList.remove('loading');
 
             } catch (err) {
                 contentEl.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
