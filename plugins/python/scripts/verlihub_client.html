@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-        #tabs { margin-bottom: 20px; }
-        .tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; }
+        #tabs { margin-bottom: 20px; position: relative; z-index: 100; }
+        .tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; position: relative; z-index: 101; }
         .tab.active { background: #fff; border-bottom: none; font-weight: bold; }
-        #content { padding: 20px; border: 1px solid #ccc; border-radius: 0 5px 5px 5px; background: #fff; min-height: 300px; position: relative; }
+        #content { padding: 20px; border: 1px solid #ccc; border-radius: 0 5px 5px 5px; background: #fff; min-height: 300px; position: relative; z-index: 1; }
         #content::before {
             content: "Loading...";
             position: absolute;
@@ -47,7 +47,7 @@
         .total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
         .total-users { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
         .hub-topic { font-size: 1.4em; font-weight: bold; margin: 0 0 30px 0; text-align: center; }
-        .hub-upper { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; margin-bottom: 30px; }
+        .hub-upper { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; margin-bottom: 30px; justify-content: center; }
         .hub-logo-wrapper { 
             flex: 0 0 auto; 
             text-align: center; 
@@ -67,7 +67,8 @@
             display: block;
         }
         .hub-info { flex: 1 1 300px; }
-        .motd { background: #f0f0f0; padding: 15px; border-radius: 8px; }
+        .motd-wrapper { text-align: center; margin-top: 20px; }
+        .motd { background: #f0f0f0; padding: 15px; border-radius: 8px; display: inline-block; text-align: left; }
         .motd pre { margin: 0; white-space: pre-wrap; font-family: monospace; font-size: 0.95em; }
         .sort-arrow { margin-left: 6px; opacity: 0.5; }
         .sort-arrow.active { opacity: 1; font-weight: bold; }
@@ -99,6 +100,7 @@
         const API_BASE = '/verlihub-api';
 
         let currentTab = 'hub';
+        let previousTab = '';
         let pollInterval;
         let currentUsers = [];
         let currentGeo = [];
@@ -286,6 +288,9 @@
         }
 
         async function loadTab(tab) {
+            console.log('loadTab called with:', tab, 'currentTab was:', currentTab);
+            const isTabSwitch = (currentTab !== tab);
+            console.log('isTabSwitch:', isTabSwitch);
             currentTab = tab;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
@@ -305,65 +310,74 @@
 
                 switch (tab) {
                     case 'hub':
-                        const [hubData, shareData, statsData] = await Promise.all([
-                            fetchData('/hub'),
-                            fetchData('/share'),
-                            fetchData('/stats')
-                        ]);
+                        console.log('Loading hub tab...');
+                        try {
+                            const [hubData, shareData, statsData] = await Promise.all([
+                                fetchData('/hub'),
+                                fetchData('/share'),
+                                fetchData('/stats')
+                            ]);
 
-                        const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
-                        const hubDesc = (hubData.description || hubData.Description || '').trim();
-                        document.getElementById('page-title').textContent = hubName;
-                        document.getElementById('hub-name-header').textContent = hubName;
-                        document.getElementById('hub-desc-header').textContent = hubDesc;
+                            const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
+                            const hubDesc = (hubData.description || hubData.Description || '').trim();
+                            document.getElementById('page-title').textContent = hubName;
+                            document.getElementById('hub-name-header').textContent = hubName;
+                            document.getElementById('hub-desc-header').textContent = hubDesc;
 
-                        const logoUrl = hubData.logo_url || hubData.LogoUrl || '';
-                        const hasLogo = logoUrl && logoUrl.trim() !== '';
-                        const motd = hubData.motd || hubData.Motd || '';
-                        const topic = (hubData.topic || hubData.Topic || '').trim();
+                            const logoUrl = hubData.logo_url || hubData.LogoUrl || '';
+                            const hasLogo = logoUrl && logoUrl.trim() !== '';
+                            const motd = hubData.motd || hubData.Motd || '';
+                            const topic = (hubData.topic || hubData.Topic || '').trim();
 
-                        html += `<div class="hub-topic">${topic || 'No topic set'}</div>`;
+                            html += `<div class="hub-topic">${topic || 'No topic set'}</div>`;
 
-                        html += '<div class="hub-upper">';
-                        if (hasLogo) {
-                            html += `<div class="hub-logo-wrapper"><div class="hub-logo"><img src="${logoUrl}" alt="Hub Logo" onerror="this.style.display='none'"></div></div>`;
+                            html += '<div class="hub-upper">';
+                            if (hasLogo) {
+                                html += `<div class="hub-logo-wrapper"><div class="hub-logo"><img src="${logoUrl}" alt="Hub Logo" onerror="this.style.display='none'"></div></div>`;
+                            }
+                            html += '<div class="hub-info">';
+
+                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon'];
+                            html += renderKeyValue(hubData, hubExclude);
+
+                            const shareRename = {
+                                total_formatted: 'Total Share',
+                                average_formatted: 'Average Share',
+                                total: 'Total Share',
+                                average: 'Average Share'
+                            };
+                            html += renderKeyValue(shareData, ['total', 'average'], shareRename);
+
+                            const liveStats = {
+                                Timestamp: statsData.timestamp || statsData.Timestamp || 'N/A',
+                                'Users Online': statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A'
+                            };
+                            html += renderKeyValue(liveStats);
+
+                            html += '</div>';  // Close hub-info
+                            html += '</div>';  // Close hub-upper
+
+                            if (motd && motd.trim() !== '') {
+                                html += '<div class="motd-wrapper"><div class="motd"><pre>' + motd.trim() + '</pre></div></div>';
+                            }
+
+                            lastHubHtml = html;
+                        } catch (hubError) {
+                            console.error('Hub tab error:', hubError);
+                            html = `<p style="color:red;">Error loading hub data: ${hubError.message}</p>`;
                         }
-                        html += '<div class="hub-info">';
-
-                        const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon'];
-                        html += renderKeyValue(hubData, hubExclude);
-
-                        const shareRename = {
-                            total_formatted: 'Total Share',
-                            average_formatted: 'Average Share',
-                            total: 'Total Share',
-                            average: 'Average Share'
-                        };
-                        html += renderKeyValue(shareData, ['total', 'average'], shareRename);
-
-                        const liveStats = {
-                            Timestamp: statsData.timestamp || statsData.Timestamp || 'N/A',
-                            'Users Online': statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A'
-                        };
-                        html += renderKeyValue(liveStats);
-
-                        html += '</div>';  // Close hub-info
-                        html += '</div>';  // Close hub-upper
-
-                        if (motd && motd.trim() !== '') {
-                            html += '<div class="motd"><pre>' + motd.trim() + '</pre></div>';
-                        }
-
-                        lastHubHtml = html;
                         break;
                     case 'users':
+                        console.log('Loading users tab...');
                         let response = await fetchData('/users?limit=500');
+                        console.log('Users response:', response);
                         let rows = [];
                         if (Array.isArray(response)) rows = response;
                         else if (response && response.users && Array.isArray(response.users)) rows = response.users;
                         else if (response && response.data && Array.isArray(response.data)) rows = response.data;
 
                         html = renderUsersTable(rows);
+                        console.log('Users HTML length:', html.length, 'shouldUpdate:', shouldUpdate);
 
                         if (html === lastUsersHtml) {
                             shouldUpdate = false;
@@ -372,6 +386,7 @@
                         }
                         break;
                     case 'geo':
+                        console.log('Loading geo tab...');
                         const geoData = await fetchData('/geo');
                         html = renderGeo(geoData);
 
@@ -383,12 +398,19 @@
                         break;
                 }
 
-                if (shouldUpdate) {
+                console.log('After switch - shouldUpdate:', shouldUpdate, 'HTML length:', html.length);
+
+                // Always update when switching tabs, even if content hasn't changed
+                if (shouldUpdate || isTabSwitch) {
+                    console.log('Updating content...');
                     contentEl.innerHTML = html;
                     void contentEl.offsetHeight;
+                } else {
+                    console.log('Skipping update (content unchanged)');
                 }
 
                 contentEl.classList.remove('loading');
+                console.log('Finished loading tab:', tab);
 
             } catch (err) {
                 contentEl.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
@@ -413,7 +435,10 @@
         }
 
         document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', (e) => {
+                console.log('Tab clicked:', tab.dataset.tab, 'Current tab:', currentTab);
+                e.preventDefault();
+                e.stopPropagation();
                 loadTab(tab.dataset.tab);
             });
         });
