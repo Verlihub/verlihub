@@ -1461,9 +1461,6 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	if (!cpiPython::me->SplitMyINFO(myinfo_str.c_str(), &n, &desc, &tag, &speed, &mail, &size))
 		return NULL;
 	
-	log1("PY: GetMyINFO parsed - desc='%.50s', tag='%.50s', email='%.50s', size='%s'\n",
-		desc ? desc : "(null)", tag ? tag : "(null)", mail ? mail : "(null)", size ? size : "(null)");
-	
 	w_Targs *res = cpiPython::lib_pack("ssssss", n, desc, tag, speed, mail, size);
 	return res;
 }
