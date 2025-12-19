@@ -287,10 +287,37 @@ A FastAPI-based HTTP REST API server that exposes Verlihub hub information throu
 
 **Admin Commands:**
 ```
-!api start [port]  - Start API server (default port: 8000)
-!api stop          - Stop API server
-!api status        - Check server status
-!api help          - Show help
+!api start [port] [origins...]  - Start API server (default port: 8000)
+                                   Optional: Add CORS origins (space-separated URLs)
+!api stop                        - Stop API server
+!api status                      - Check server status
+!api help                        - Show help
+```
+
+**CORS Configuration:**
+
+The API automatically configures CORS (Cross-Origin Resource Sharing) to allow requests from different domains. When you start the server, it includes default localhost origins based on the port you specify:
+
+```bash
+# Basic start - includes localhost:8000, 127.0.0.1:8000, 0.0.0.0:8000
+!api start
+
+# Custom port - includes localhost:30000, 127.0.0.1:30000, 0.0.0.0:30000
+!api start 30000
+
+# With additional origins - includes defaults PLUS your specified domains
+!api start 30000 https://example.com https://www.example.com https://app.example.com
+```
+
+This allows you to:
+- Access the API from web browsers on different domains
+- Embed the API in WordPress or other web platforms
+- Call the API from JavaScript running on external websites
+- Use the API with mobile apps or desktop clients
+
+**Example with WordPress:**
+```bash
+!api start 8000 https://yourwordpress.com https://www.yourwordpress.com
 ```
 
 **Requirements:**
@@ -303,13 +330,19 @@ pip install fastapi uvicorn
 # Load the script
 !pyload /path/to/scripts/hub_api.py
 
-# Start the API server
+# Start the API server (basic - localhost only)
 !api start 8000
+
+# Start with custom CORS origins for external access
+!api start 8000 https://yoursite.com https://www.yoursite.com
 
 # Access the API
 # Browse to: http://localhost:8000/
 # Documentation: http://localhost:8000/docs
 # Example query: curl http://localhost:8000/api/stats
+
+# The API will confirm CORS origins when started:
+# "CORS origins: http://localhost:8000, http://127.0.0.1:8000, http://0.0.0.0:8000, https://yoursite.com, ..."
 ```
 
 **Example Response:**
@@ -412,7 +445,7 @@ CONFIG = {
     "api_url": "http://localhost:4242",        # Matterbridge API URL
     "api_token": "",                            # Optional authentication
     "gateway": "verlihub",                      # Gateway name
-    "channel": "#sublevels",                    # Channel name
+    "channel": "#general",                      # Channel name
     "bot_nick": "[Bridge]",                     # Bot display name
     "hub_to_bridge_format": "<{nick}> {message}",
     "bridge_to_hub_format": "[{protocol}] <{username}> {text}",

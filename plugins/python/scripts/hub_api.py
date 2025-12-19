@@ -104,6 +104,7 @@ try:
     print("[Hub API] Attempting to import FastAPI...")
     from fastapi import FastAPI, HTTPException
     from fastapi.responses import JSONResponse, RedirectResponse
+    from fastapi.middleware.cors import CORSMiddleware
     print("[Hub API] FastAPI imported successfully!")
     print("[Hub API] Attempting to import uvicorn...")
     import uvicorn
@@ -122,6 +123,7 @@ api_server = None
 api_thread = None
 api_port = 8000
 server_running = False
+cors_origins = []  # Will be populated when server starts
 
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
@@ -143,6 +145,9 @@ if FASTAPI_AVAILABLE:
         description="REST API for Verlihub DC++ Hub",
         version="1.0.0"
     )
+    
+    # CORS middleware will be configured dynamically when server starts
+    # (see start_api_server function)
 
 def name_and_version():
     """Script metadata"""
@@ -297,7 +302,6 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         
         user_class = vh.GetUserClass(nick)
         if user_class < 0:  # User not found
-            print(f"[Hub API] WARNING: GetUserClass returned -1 for nick: {nick!r}")
             return None
         
         ip = vh.GetUserIP(nick)
@@ -327,11 +331,10 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
                 
                 # GetGeoIP returns a dict with all geographic details
                 geo_data = vh.GetGeoIP(ip, "")
-                print(f"[Hub API] DEBUG geo_data for {ip}: type={type(geo_data)}, value={geo_data!r}")
                 if geo_data and isinstance(geo_data, dict):
                     region = geo_data.get("region", "") or ""
                     region_code = geo_data.get("region_code", "") or ""
-                    timezone = geo_data.get("time_zone", "") or ""  # Note: key is "time_zone" not "timezone"
+                    timezone = geo_data.get("time_zone", "") or ""
                     continent = geo_data.get("continent", "") or ""
                     continent_code = geo_data.get("continent_code", "") or ""
                     postal_code = geo_data.get("postal_code", "") or ""
@@ -340,8 +343,6 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
                         country = geo_data.get("country")
                     if not city and geo_data.get("city"):
                         city = geo_data.get("city")
-                else:
-                    print(f"[Hub API] WARNING: GetGeoIP returned non-dict for {ip}: {geo_data!r}")
             except Exception as e:
                 print(f"[Hub API] Error getting geo info for {ip}: {e}")
         
@@ -535,15 +536,12 @@ if FASTAPI_AVAILABLE:
             else:
                 paginated = all_users
             
-            result = {
+            return {
                 "count": len(paginated),
                 "total": len(all_users),
                 "users": paginated
             }
-            print(f"[Hub API] /api/users endpoint: Returning {len(paginated)} users")
-            return result
         except Exception as e:
-            print(f"[Hub API] /api/users endpoint ERROR: {e}")
             import traceback
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
@@ -634,15 +632,42 @@ def run_server(port: int):
     finally:
         server_running = False
 
-def start_api_server(port: int = 8000) -> bool:
-    """Start the API server"""
-    global api_thread, api_port, server_running
+def start_api_server(port: int = 8000, additional_origins: List[str] = None) -> bool:
+    """Start the API server with dynamic CORS configuration
+    
+    Args:
+        port: Port to run the server on
+        additional_origins: Additional CORS origins to allow (beyond defaults)
+    """
+    global api_thread, api_port, server_running, cors_origins
     
     if not FASTAPI_AVAILABLE:
         return False
     
     if api_thread and api_thread.is_alive():
         return False  # Already running
+    
+    # Build CORS origins list
+    cors_origins = [
+        f"http://localhost:{port}",
+        f"http://127.0.0.1:{port}",
+        f"http://0.0.0.0:{port}",
+    ]
+    
+    # Add additional origins if provided
+    if additional_origins:
+        cors_origins.extend(additional_origins)
+    
+    # Configure CORS middleware dynamically
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+        max_age=3600,
+    )
     
     # Set server_running BEFORE starting thread so OnTimer will update cache
     server_running = True
@@ -745,6 +770,9 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
             return 0  # Block command, we handled it
         
         port = 8000
+        additional_origins = []
+        
+        # Parse port (parts[2]) and optional CORS origins (parts[3:])
         if len(parts) > 2:
             try:
                 port = int(parts[2])
@@ -755,12 +783,19 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
                 send_message("ERROR: Invalid port number")
                 return 0  # Block command, we handled it
         
+        # Parse additional CORS origins
+        if len(parts) > 3:
+            additional_origins = parts[3:]
+            send_message(f"Adding CORS origins: {', '.join(additional_origins)}")
+        
         if is_api_running():
             send_message(f"API server already running on port {api_port}")
         else:
-            if start_api_server(port):
+            if start_api_server(port, additional_origins):
                 send_message(f"API server starting on http://0.0.0.0:{port}")
                 send_message(f"Documentation: http://localhost:{port}/docs")
+                if cors_origins:
+                    send_message(f"CORS origins: {', '.join(cors_origins)}")
             else:
                 send_message("ERROR: Failed to start API server")
     
@@ -782,10 +817,12 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     elif subcmd == "help":
         help_text = """
 Hub API Commands:
-  !api start [port]  - Start API server (default: 8000)
-  !api stop          - Stop API server
-  !api status        - Check server status
-  !api help          - Show this help
+  !api start [port] [origins...]  - Start API server (default port: 8000)
+                                     Optional: Add CORS origins (space-separated URLs)
+                                     Example: !api start 30000 https://example.com https://other.com
+  !api stop                        - Stop API server
+  !api status                      - Check server status
+  !api help                        - Show this help
 
 API Endpoints:
   GET /              - API overview
@@ -802,16 +839,8 @@ Requirements:
   pip install fastapi uvicorn
 """
         lines = help_text.strip().split('\n')
-        print(f"[Hub API] Sending {len(lines)} help lines")
-        for i, line in enumerate(lines):
-            print(f"[Hub API] Sending line {i}: write({repr(nick)}, {repr(line)})")
-            try:
-                result = send_message(line)
-                print(f"[Hub API] Line {i} result: {result}")
-            except Exception as e:
-                print(f"[Hub API] ERROR on line {i}: {e}")
-                import traceback
-                traceback.print_exc()
+        for line in lines:
+            send_message(line)
     
     else:
         send_message(f"Unknown subcommand: {subcmd}")
