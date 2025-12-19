@@ -119,7 +119,6 @@ enum {
 	W_GetUserCC,
 	W_GetIPCC,
 	W_GetIPCN,
-	W_GetIPCity,
 	W_GetIPASN,
 	W_GetGeoIP,
 	W_GetNickList,
@@ -206,6 +205,7 @@ typedef struct {
 	char          *opchatname;
 	bool           use_old_ontimer;
 	char          *config_name;
+	char          *config_dir;
 	bool           had_threads;  // Track if this interpreter used threading/asyncio
 	
 	// Dynamic function registry
@@ -229,10 +229,6 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params);
 PyObject *w_GetHook(int hook);
 const char *w_HookName(int hook);
 const char *w_CallName(int callback);
-
-// Encoding conversion helpers (Hub encoding <-> UTF-8 for Python)
-std::string HubToUtf8(const std::string& hub_str);
-std::string Utf8ToHub(const std::string& utf8_str);
 
 // Dynamic function registration
 // Register a C++ function that can be called from Python scripts

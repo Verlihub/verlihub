@@ -191,7 +191,6 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
-	callbacklist[W_GetIPCity]          = &_GetIPCity;
 	callbacklist[W_GetIPASN]           = &_GetIPASN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 	callbacklist[W_AddRegUser]         = &_AddRegUser;
@@ -1759,27 +1758,6 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 
 	string cnstr = GetIPCN(ip); // use script api, it has new optimizations
 	return cpiPython::lib_pack("s", strdup(cnstr.c_str()));
-}
-
-w_Targs *_GetIPCity(int id, w_Targs *args)
-{
-	const char *ip, *db;
-
-	if (!cpiPython::lib_unpack(args, "ss", &ip, &db))
-		return NULL;
-
-	if (!ip)
-		return NULL;
-
-	if (!db)
-		db = "";
-
-	string s_ip(ip), s_db(db), city_name;
-
-	if (!cpiPython::me->server->mMaxMindDB->GetCity(city_name, s_ip, s_db))
-		return NULL;
-
-	return cpiPython::lib_pack("s", strdup(city_name.c_str()));
 }
 
 w_Targs *_GetIPASN(int id, w_Targs *args)
