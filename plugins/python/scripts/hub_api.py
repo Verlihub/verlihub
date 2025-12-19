@@ -150,7 +150,7 @@ if FASTAPI_AVAILABLE:
     # (see start_api_server function)
 
 def name_and_version():
-    """Script metadata"""
+    """Script metadata for Verlihub plugin system"""
     return "HubAPI", "1.0.0"
 
 # =============================================================================
@@ -233,8 +233,10 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         hub_icon_url = vh.GetConfig("config", "hub_icon_url", "")
         hub_logo_url = vh.GetConfig("config", "hub_logo_url", "")
         
-        # name_and_version returns string like "Verlihub 1.x.x.x"
-        version_info = vh.name_and_version()
+        # Get Verlihub version from config
+        version_info = vh.GetConfig("config", "hub_version", "Verlihub")
+        if not version_info:
+            version_info = "Verlihub"
         
         # Ensure we have valid strings (GetConfig might return None)
         if hub_name is None:
