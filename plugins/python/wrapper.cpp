@@ -224,12 +224,16 @@ w_Targs *w_vapack(const char *format, va_list ap)
 		}
 	}
 
-	a = (w_Targs*)calloc(flen + 1, sizeof(w_Telement));
+	// Allocate w_Targs with flexible array member
+	// Need sizeof(w_Targs) for the header + space for 'flen' elements
+	a = (w_Targs*)calloc(1, sizeof(w_Targs) + flen * sizeof(w_Telement));
 
 	if (!a)
 		return NULL;
 
-	a->format = format;
+	// Make a copy of the format string since it might be a string literal
+	// This copy will be freed by w_free_args()
+	a->format = strdup(format);
 
 	for (unsigned int i = 0; i < flen; i++) {
 		switch (format[i]) {
@@ -465,6 +469,7 @@ void w_free_args(w_Targs *a)
 				// Other types (l, d, p, O) don't need cleanup
 			}
 		}
+		free((char*)a->format);
 	}
 	free(a);
 }
@@ -846,8 +851,9 @@ static int vh_ParseArgs(int func, PyObject *args, const char *in_format, w_Targs
 		return 0;
 	}
 	
-	// Allocate w_Targs
-	w_Targs *a = (w_Targs*)calloc(len + 1, sizeof(w_Telement));
+	// Allocate w_Targs with flexible array member
+	// Need sizeof(w_Targs) for the header + space for 'len' elements
+	w_Targs *a = (w_Targs*)calloc(1, sizeof(w_Targs) + len * sizeof(w_Telement));
 	if (!a) {
 		free(pack_format);
 		PyErr_SetString(PyExc_MemoryError, "Failed to allocate argument structure");
@@ -1162,8 +1168,9 @@ static PyObject* vh_GetUserExtJSON(PyObject *self, PyObject *args)     { return 
 static PyObject* vh_GetUserCC(PyObject *self, PyObject *args)          { return vh_CallString(W_GetUserCC, args, "s"); }
 static PyObject* vh_GetIPCC(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCC, args, "s"); }
 static PyObject* vh_GetIPCN(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCN, args, "s"); }
-static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "s"); }
-static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)           { return vh_CallString(W_GetGeoIP, args, "s"); }
+static PyObject* vh_GetIPCity(PyObject *self, PyObject *args)          { return vh_CallString(W_GetIPCity, args, "ss"); }
+static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "ss"); }
+static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)           { return vh_CallString(W_GetGeoIP, args, "ss"); }
 static PyObject* vh_AddRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_AddRegUser, args, "sl|ss"); }
 static PyObject* vh_DelRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_DelRegUser, args, "s"); }
 static PyObject* vh_SetRegClass(PyObject *self, PyObject *args)        { return vh_CallBool(W_SetRegClass, args, "sl"); }
@@ -1469,6 +1476,7 @@ static PyMethodDef vh_methods[] = {
 	{"GetUserCC",          vh_GetUserCC,          METH_VARARGS, "Get user country code"},
 	{"GetIPCC",            vh_GetIPCC,            METH_VARARGS, "Get country code for IP"},
 	{"GetIPCN",            vh_GetIPCN,            METH_VARARGS, "Get country name for IP"},
+	{"GetIPCity",          vh_GetIPCity,          METH_VARARGS, "Get city for IP"},
 	{"GetIPASN",           vh_GetIPASN,           METH_VARARGS, "Get ASN for IP"},
 	{"GetGeoIP",           vh_GetGeoIP,           METH_VARARGS, "Get GeoIP info"},
 	{"AddRegUser",         vh_AddRegUser,         METH_VARARGS, "Register new user"},
