@@ -297,6 +297,7 @@ extern "C" w_Targs *_GetUserExtJSON    (int id, w_Targs *args);
 extern "C" w_Targs *_GetUserCC         (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCC           (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPCN           (int id, w_Targs *args);
+extern "C" w_Targs *_GetIPCity         (int id, w_Targs *args);
 extern "C" w_Targs *_GetIPASN          (int id, w_Targs *args);
 extern "C" w_Targs *_GetGeoIP          (int id, w_Targs *args);
 extern "C" w_Targs *_AddRegUser        (int id, w_Targs *args);

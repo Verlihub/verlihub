@@ -356,7 +356,7 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	fprintf(f, "        'GetUserHost', 'GetUserIP', 'SetUserIP',\n");
 	fprintf(f, "        'SetMyINFOFlag', 'UnsetMyINFOFlag', 'GetUserHubURL',\n");
 	fprintf(f, "        'GetUserExtJSON', 'GetUserCC', 'GetIPCC', 'GetIPCN',\n");
-	fprintf(f, "        'GetIPASN', 'GetGeoIP', 'AddRegUser', 'DelRegUser',\n");
+	fprintf(f, "        'GetIPCity', 'GetIPASN', 'GetGeoIP', 'AddRegUser', 'DelRegUser',\n");
 	fprintf(f, "        'SetRegClass', 'Ban', 'KickUser', 'DelNickTempBan',\n");
 	fprintf(f, "        'DelIPTempBan', 'ParseCommand', 'ScriptCommand',\n");
 	fprintf(f, "        'SetConfig', 'GetConfig', 'IsRobotNickBad',\n");
@@ -381,7 +381,7 @@ TEST_F(VHModuleTest, AllFunctionsExist) {
 	
 	long count;
 	ASSERT_TRUE(w_unpack(result, "l", &count));
-	EXPECT_EQ(count, 58);  // All 58 functions exist (53 original + 3 list variants + 2 encode/decode)
+	EXPECT_EQ(count, 59);  // All 59 functions exist (53 original + 3 list variants + 2 encode/decode + 1 GetIPCity)
 	
 	w_free_args(result);
 	w_Unload(id);

@@ -4,7 +4,8 @@
     <title id="page-title">Verlihub Dashboard</title>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; }
+        .page-wrapper { max-width: 1024px; width: 100%; }
         #tabs { margin-bottom: 20px; position: relative; z-index: 100; }
         .tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; position: relative; z-index: 101; }
         .tab.active { background: #fff; border-bottom: none; font-weight: bold; }
@@ -75,20 +76,26 @@
         .page-header { text-align: center; margin-bottom: 20px; }
         .hub-name { font-size: 2em; margin: 0; }
         .hub-desc { font-size: 1.1em; color: #555; margin: 10px 0 0 0; }
+        
+        @media (max-width: 768px) {
+            .page-wrapper { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="page-header">
-        <h1 id="hub-name-header" class="hub-name">Verlihub Dashboard</h1>
-        <p id="hub-desc-header" class="hub-desc"></p>
-    </div>
+    <div class="page-wrapper">
+        <div class="page-header">
+            <h1 id="hub-name-header" class="hub-name">Verlihub Dashboard</h1>
+            <p id="hub-desc-header" class="hub-desc"></p>
+        </div>
 
-    <div id="tabs">
-        <span class="tab active" data-tab="hub">Hub</span>
-        <span class="tab" data-tab="users">Online Users</span>
-        <span class="tab" data-tab="geo">Geography</span>
+        <div id="tabs">
+            <span class="tab active" data-tab="hub">Hub</span>
+            <span class="tab" data-tab="users">Online Users</span>
+            <span class="tab" data-tab="geo">Geography</span>
+        </div>
+        <div id="content">Loading...</div>
     </div>
-    <div id="content">Loading...</div>
 
     <div id="user-detail">
         <button onclick="closeUserDetail()">Close ×</button>
@@ -147,6 +154,9 @@
                 let formattedValue = value ?? 'N/A';
                 if (typeof value === 'number' && (key.toLowerCase().includes('share') || key.toLowerCase().includes('size'))) {
                     formattedValue = formatBytes(value);
+                } else if (typeof value === 'string') {
+                    // Escape HTML to prevent < > from being interpreted as tags
+                    formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 }
                 html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
             }
@@ -423,7 +433,7 @@
             const nick = decodeURIComponent(encodedNick);
             try {
                 const data = await fetchData(`/user/${encodedNick}`);
-                document.getElementById('user-content').innerHTML = renderKeyValue(data);
+                document.getElementById('user-content').innerHTML = renderKeyValue(data, ['share_formatted']);
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load user ${nick}: ${err.message}`);

@@ -129,6 +129,7 @@ data_cache = {
     "users": [],
     "geo_stats": {},
     "share_stats": {},
+    "hub_encoding": "cp1251",  # Default to CP1251 (common for DC++ hubs)
     "last_update": 0
 }
 data_cache_lock = threading.Lock()
@@ -151,12 +152,50 @@ def name_and_version():
 # Helper Functions
 # =============================================================================
 
+def safe_decode(text: str, encoding: str = "cp1251") -> str:
+    """Safely decode text from hub encoding to UTF-8 for JSON/web display
+    
+    Args:
+        text: String in hub encoding (may already be Python str if ASCII-compatible)
+        encoding: Hub encoding (cp1251, iso-8859-1, etc.)
+    
+    Returns:
+        UTF-8 string safe for JSON, with problematic chars replaced
+    """
+    if not text:
+        return text
+    
+    try:
+        # If text is already a proper Unicode string (all chars < 128), return as-is
+        if all(ord(c) < 128 for c in text):
+            return text
+        
+        # Try to encode back to bytes using latin-1 (which preserves byte values)
+        # then decode using the actual hub encoding
+        try:
+            # Python strings from C++ are decoded as latin-1 by default when they
+            # contain bytes > 127. We need to reverse that and use the real encoding.
+            byte_data = text.encode('latin-1', errors='replace')
+            return byte_data.decode(encoding, errors='replace')
+        except (UnicodeDecodeError, UnicodeEncodeError, LookupError):
+            # If that fails, just replace problematic characters
+            return text.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
+    except Exception as e:
+        print(f"[Hub API] Encoding error for text '{text[:50]}...': {e}")
+        # Last resort: keep what we have
+        return text
+
 def update_data_cache():
     """Update cached data from vh module (called from main thread only)"""
     try:
+        # Get hub encoding first
+        hub_encoding = vh.GetConfig("config", "hub_encoding", "cp1251")
+        if not hub_encoding or hub_encoding.lower() == "utf-8":
+            hub_encoding = "utf-8"  # No conversion needed
+        
         # Gather all data
         hub_info = _get_hub_info_unsafe()
-        users = _get_all_users_unsafe()
+        users = _get_all_users_unsafe(hub_encoding)
         geo_stats = _get_geographic_stats_unsafe()
         share_stats = _get_share_stats_unsafe(users)
         
@@ -166,6 +205,7 @@ def update_data_cache():
             data_cache["users"] = users
             data_cache["geo_stats"] = geo_stats
             data_cache["share_stats"] = share_stats
+            data_cache["hub_encoding"] = hub_encoding
             data_cache["last_update"] = time.time()
     except Exception as e:
         import traceback
@@ -246,16 +286,59 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         }
 
 def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
-    """Get detailed information about a user (UNSAFE - call only from main thread)"""
+    """Get detailed information about a user (UNSAFE - call only from main thread)
+    
+    Args:
+        nick: User nickname in hub encoding (exactly as returned by GetNickList)
+    """
     try:
+        # Get hub encoding for proper display conversion
+        hub_encoding = data_cache.get("hub_encoding", "cp1251")
+        
         user_class = vh.GetUserClass(nick)
         if user_class < 0:  # User not found
+            print(f"[Hub API] WARNING: GetUserClass returned -1 for nick: {nick!r}")
             return None
         
         ip = vh.GetUserIP(nick)
         host = vh.GetUserHost(nick)
         cc = vh.GetUserCC(nick)
-        country = vh.GetIPCN(ip) if ip else ""
+        hub_url = vh.GetUserHubURL(nick) or ""
+        ext_json = vh.GetUserExtJSON(nick) or ""
+        
+        # Get comprehensive geographic info
+        country = ""
+        city = ""
+        region = ""
+        region_code = ""
+        timezone = ""
+        continent = ""
+        continent_code = ""
+        postal_code = ""
+        asn = ""
+        
+        if ip:
+            try:
+                country = vh.GetIPCN(ip) or ""
+                city = vh.GetIPCity(ip, "") or ""
+                asn = vh.GetIPASN(ip, "") or ""
+                
+                # GetGeoIP returns a dict with all geographic details
+                geo_data = vh.GetGeoIP(ip, "")
+                if geo_data and isinstance(geo_data, dict):
+                    region = geo_data.get("region", "")
+                    region_code = geo_data.get("region_code", "")
+                    timezone = geo_data.get("timezone", "")
+                    continent = geo_data.get("continent", "")
+                    continent_code = geo_data.get("continent_code", "")
+                    postal_code = geo_data.get("postal_code", "")
+                    # Override with GeoIP values if available
+                    if not country and geo_data.get("country"):
+                        country = geo_data.get("country")
+                    if not city and geo_data.get("city"):
+                        city = geo_data.get("city")
+            except Exception as e:
+                print(f"[Hub API] Error getting geo info for {ip}: {e}")
         
         # GetMyINFO returns tuple: (nick, desc, tag, speed, email, sharesize)
         myinfo = vh.GetMyINFO(nick)
@@ -268,20 +351,39 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         if myinfo and isinstance(myinfo, tuple) and len(myinfo) >= 6:
             # Tuple format: (nick, desc, tag, speed, email, sharesize)
             _, desc, tag, speed, email, size_str = myinfo[:6]
+            
+            # Convert desc, tag, email from hub encoding to UTF-8 for display
+            desc = safe_decode(desc, hub_encoding)
+            tag = safe_decode(tag, hub_encoding)
+            email = safe_decode(email, hub_encoding)
+            
             try:
                 # Share size is in bytes as a string
                 share = int(size_str) if size_str else 0
             except (ValueError, TypeError):
                 share = 0
         
+        # Convert nick for display (but keep original for lookups)
+        nick_display = safe_decode(nick, hub_encoding)
+        
         return {
-            "nick": nick,
+            "nick": nick_display,  # Converted for display
             "class": user_class,
             "class_name": get_class_name(user_class),
             "ip": ip,
             "host": host,
             "country_code": cc,
             "country": country,
+            "city": city,
+            "region": region,
+            "region_code": region_code,
+            "timezone": timezone,
+            "continent": continent,
+            "continent_code": continent_code,
+            "postal_code": postal_code,
+            "asn": asn,
+            "hub_url": hub_url,
+            "ext_json": ext_json,
             "description": desc,
             "tag": tag,
             "email": email,
@@ -317,8 +419,12 @@ def format_bytes(size: int) -> str:
         size /= 1024.0
     return f"{size:.2f} EB"
 
-def _get_all_users_unsafe() -> List[Dict[str, Any]]:
-    """Get list of all users with their information (UNSAFE - call only from main thread)"""
+def _get_all_users_unsafe(hub_encoding: str = "cp1251") -> List[Dict[str, Any]]:
+    """Get list of all users with their information (UNSAFE - call only from main thread)
+    
+    Args:
+        hub_encoding: The hub's character encoding for proper display conversion
+    """
     users = []
     nick_list = vh.GetNickList()
     
@@ -326,6 +432,7 @@ def _get_all_users_unsafe() -> List[Dict[str, Any]]:
         return users
     
     for nick in nick_list:
+        # nick is in hub encoding - use it as-is for lookups
         user_info = _get_user_info_unsafe(nick)
         if user_info:
             users.append(user_info)
