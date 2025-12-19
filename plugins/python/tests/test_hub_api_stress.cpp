@@ -161,6 +161,14 @@ public:
         g_server->SetConfig("config", "hub_desc", "Testing API Endpoints", val_new, val_old);
         g_server->SetConfig("config", "hub_topic", "Welcome to the test!", val_new, val_old);
         g_server->SetConfig("config", "max_users_total", "500", val_new, val_old);
+        g_server->SetConfig("config", "hub_icon_url", "https://example.com/icon.png", val_new, val_old);
+        g_server->SetConfig("config", "hub_logo_url", "https://example.com/logo.png", val_new, val_old);
+        
+        // Create MOTD file
+        std::string motd_path = config_dir + "/motd";
+        std::ofstream motd_file(motd_path);
+        motd_file << "Welcome to Test Hub API!\nThis is the message of the day for testing.";
+        motd_file.close();
         
         // Also set in memory
         g_server->mC.hub_name = "Test Hub API";
@@ -378,23 +386,29 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
             EXPECT_EQ(response.find("\"error\":"), std::string::npos)
                 << "/hub should not contain encoding errors";
             
-            EXPECT_NE(response.find("\"name\":"), std::string::npos) 
-                << "/hub should return hub name field";
+            // Validate actual field values instead of just presence
+            EXPECT_NE(response.find("\"name\": \"Test Hub API\""), std::string::npos)
+                << "/hub should return correct hub name: Test Hub API";
             
-            EXPECT_NE(response.find("\"description\":"), std::string::npos)
-                << "/hub should return description field";
+            EXPECT_NE(response.find("\"description\": \"Testing API Endpoints\""), std::string::npos)
+                << "/hub should return correct description: Testing API Endpoints";
             
-            EXPECT_NE(response.find("\"topic\":"), std::string::npos)
-                << "/hub should return topic field";
+            EXPECT_NE(response.find("\"topic\": \"Welcome to the test!\""), std::string::npos)
+                << "/hub should return correct topic: Welcome to the test!";
             
-            EXPECT_NE(response.find("\"max_users\":"), std::string::npos)
-                << "/hub should return max_users field";
+            EXPECT_NE(response.find("\"max_users\": 500"), std::string::npos)
+                << "/hub should return correct max_users: 500";
             
-            // Verify the hub name matches what we set
-            EXPECT_NE(response.find("Test Hub API"), std::string::npos)
-                << "/hub should return the configured hub name";
+            EXPECT_NE(response.find("Welcome to Test Hub API!"), std::string::npos)
+                << "/hub should return MOTD content from file";
             
-            std::cout << "✓ /hub endpoint validated successfully" << std::endl;
+            EXPECT_NE(response.find("\"icon_url\": \"https://example.com/icon.png\""), std::string::npos)
+                << "/hub should return correct icon_url: https://example.com/icon.png";
+            
+            EXPECT_NE(response.find("\"logo_url\": \"https://example.com/logo.png\""), std::string::npos)
+                << "/hub should return correct logo_url: https://example.com/logo.png";
+            
+            std::cout << "✓ /hub endpoint validated with correct values" << std::endl;
         } else {
             std::cerr << "⚠ /api/hub returned HTTP " << http_code << std::endl;
         }

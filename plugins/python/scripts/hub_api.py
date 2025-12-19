@@ -103,7 +103,7 @@ print(f"[Hub API] Current sys.path: {sys.path[:3]}...")  # First 3 entries
 try:
     print("[Hub API] Attempting to import FastAPI...")
     from fastapi import FastAPI, HTTPException
-    from fastapi.responses import JSONResponse
+    from fastapi.responses import JSONResponse, RedirectResponse
     print("[Hub API] FastAPI imported successfully!")
     print("[Hub API] Attempting to import uvicorn...")
     import uvicorn
@@ -185,6 +185,8 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         hub_desc = vh.GetConfig("config", "hub_desc", "DC++ Hub")
         topic = vh.Topic()
         max_users_str = vh.GetConfig("config", "max_users", "0")
+        hub_icon_url = vh.GetConfig("config", "hub_icon_url", "")
+        hub_logo_url = vh.GetConfig("config", "hub_logo_url", "")
         
         # name_and_version returns string like "Verlihub 1.x.x.x"
         version_info = vh.name_and_version()
@@ -200,13 +202,32 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             max_users_str = "0"
         if version_info is None:
             version_info = "Unknown"
+        if hub_icon_url is None:
+            hub_icon_url = ""
+        if hub_logo_url is None:
+            hub_logo_url = ""
+        
+        # Read MOTD file
+        motd = ""
+        try:
+            # Get config directory from vh module (it's available as vh.config_name attribute)
+            config_dir = getattr(vh, 'basedir', '/etc/verlihub')
+            motd_file = os.path.join(config_dir, 'motd')
+            if os.path.exists(motd_file):
+                with open(motd_file, 'r', encoding='utf-8', errors='replace') as f:
+                    motd = f.read().strip()
+        except Exception as e:
+            print(f"[Hub API] Could not read MOTD file: {e}")
         
         return {
             "name": hub_name,
             "description": hub_desc,
             "topic": topic,
+            "motd": motd,
             "max_users": int(max_users_str) if max_users_str.isdigit() else 0,
-            "version": version_info
+            "version": version_info,
+            "icon_url": hub_icon_url,
+            "logo_url": hub_logo_url
         }
     except Exception as e:
         import traceback
@@ -216,8 +237,11 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "name": "Verlihub",
             "description": "DC++ Hub",
             "topic": "",
+            "motd": "",
             "max_users": 0,
             "version": "Unknown",
+            "icon_url": "",
+            "logo_url": "",
             "error": str(e)
         }
 
@@ -459,6 +483,17 @@ if FASTAPI_AVAILABLE:
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat()
         }
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        """Favicon endpoint - redirects to hub icon URL if available"""
+        hub_info = get_cached_data("hub_info") or {}
+        icon_url = hub_info.get("icon_url", "")
+        
+        if icon_url:
+            return RedirectResponse(url=icon_url)
+        else:
+            raise HTTPException(status_code=404, detail="No hub icon configured")
 
 # =============================================================================
 # Server Management
