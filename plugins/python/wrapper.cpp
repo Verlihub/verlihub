@@ -66,7 +66,7 @@ void w_LogLevel(int level) { log_level = level; }
 // This provides full round-trip conversion for the Python/C++ boundary.
 
 // Helper: Convert string from UTF-8 (from Python) to hub encoding
-static std::string Utf8ToHub(const std::string& utf8_str) {
+std::string Utf8ToHub(const std::string& utf8_str) {
 	if (utf8_str.empty())
 		return utf8_str;
 	
@@ -89,7 +89,7 @@ static std::string Utf8ToHub(const std::string& utf8_str) {
 }
 
 // Helper: Convert string from hub encoding to UTF-8 (for returning to Python)
-static std::string HubToUtf8(const std::string& hub_str) {
+std::string HubToUtf8(const std::string& hub_str) {
 	if (hub_str.empty())
 		return hub_str;
 	
@@ -106,11 +106,30 @@ static std::string HubToUtf8(const std::string& hub_str) {
 	// Use Verlihub's ICU converter: ConvertReverse(hub encoding input) -> UTF-8 output
 	std::string converted;
 	if (cpiPython::me->server->mICUConvert->ConvertReverse(hub_str.c_str(), hub_str.length(), converted)) {
+		log3("PY: HubToUtf8: ConvertReverse succeeded, result_len=%zu\n", converted.length());
+		if (converted.empty()) {
+			log("PY: Warning: ConvertReverse returned empty string for input: %.50s\n", hub_str.c_str());
+		}
 		return converted;
 	}
 	
-	// Fallback to original string if conversion fails
-	return hub_str;
+	// Conversion failed - replace unconvertible bytes with '?' to preserve the user
+	log("PY: Warning: Failed to convert string from hub encoding to UTF-8, using fallback: %.50s\n", 
+		hub_str.c_str());
+	
+	// Create a fallback version with '?' for bad bytes
+	std::string fallback;
+	for (size_t i = 0; i < hub_str.length(); i++) {
+		unsigned char c = hub_str[i];
+		// ASCII printable characters (0x20-0x7E) are safe
+		if (c >= 0x20 && c <= 0x7E) {
+			fallback += c;
+		} else {
+			// Replace non-ASCII or non-printable with '?'
+			fallback += '?';
+		}
+	}
+	return fallback;
 }
 
 // Function is similar to Python's [_start:_end] slice
@@ -1162,6 +1181,7 @@ static PyObject* vh_GetUserExtJSON(PyObject *self, PyObject *args)     { return 
 static PyObject* vh_GetUserCC(PyObject *self, PyObject *args)          { return vh_CallString(W_GetUserCC, args, "s"); }
 static PyObject* vh_GetIPCC(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCC, args, "s"); }
 static PyObject* vh_GetIPCN(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCN, args, "s"); }
+static PyObject* vh_GetIPCity(PyObject *self, PyObject *args)          { return vh_CallString(W_GetIPCity, args, "ss"); }
 static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "s"); }
 static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)           { return vh_CallString(W_GetGeoIP, args, "s"); }
 static PyObject* vh_AddRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_AddRegUser, args, "sl|ss"); }
@@ -1469,6 +1489,7 @@ static PyMethodDef vh_methods[] = {
 	{"GetUserCC",          vh_GetUserCC,          METH_VARARGS, "Get user country code"},
 	{"GetIPCC",            vh_GetIPCC,            METH_VARARGS, "Get country code for IP"},
 	{"GetIPCN",            vh_GetIPCN,            METH_VARARGS, "Get country name for IP"},
+	{"GetIPCity",          vh_GetIPCity,          METH_VARARGS, "Get city for IP"},
 	{"GetIPASN",           vh_GetIPASN,           METH_VARARGS, "Get ASN for IP"},
 	{"GetGeoIP",           vh_GetGeoIP,           METH_VARARGS, "Get GeoIP info"},
 	{"AddRegUser",         vh_AddRegUser,         METH_VARARGS, "Register new user"},
