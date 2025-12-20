@@ -94,7 +94,7 @@
         <div id="tabs">
             <span class="tab active" data-tab="hub">Hub</span>
             <span class="tab" data-tab="users">Online Users</span>
-            <span class="tab" data-tab="geo">Geography</span>
+            <span class="tab" data-tab="geo">Countries</span>
         </div>
         <div id="content">Loading...</div>
     </div>
@@ -345,7 +345,11 @@
                 const highlightClass = shouldHighlight ? ' update-highlight' : '';
 
                 const flag = getFlagEmoji(item.country_code);
-                html += `<tr class="${highlightClass}"><td class="flag">${flag}</td><td class="count">${item.users}</td></tr>`;
+                const countryCode = item.country_code || '??';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showCountryUsers('${countryCode}')">`;
+                html += `<td class="flag">${flag}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
             }
             html += '</tbody></table>';
 
@@ -707,6 +711,59 @@
         function toggleHideClones(checked) {
             hideClones = checked;
             loadTab('users');
+        }
+        
+        async function showCountryUsers(countryCode) {
+            try {
+                // Fetch all users and filter by country code
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by country code
+                const countryUsers = allUsers.filter(u => {
+                    const cc = (u.country_code || u.country || u.cc || u.CC || '').toUpperCase();
+                    return cc === countryCode.toUpperCase();
+                });
+                
+                if (countryUsers.length === 0) {
+                    alert(`No users found from country: ${countryCode}`);
+                    return;
+                }
+                
+                // Build HTML for country users popup
+                const flag = getFlagEmoji(countryCode);
+                let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
+                html += `<h3>Users from ${countryCode} (${countryUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                countryUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of countryUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load users from ${countryCode}: ${err.message}`);
+            }
         }
 
         document.querySelectorAll('.tab').forEach(tab => {
