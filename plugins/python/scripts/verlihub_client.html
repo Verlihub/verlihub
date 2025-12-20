@@ -95,6 +95,7 @@
             <span class="tab active" data-tab="hub">Hub</span>
             <span class="tab" data-tab="users">Online Users</span>
             <span class="tab" data-tab="geo">Countries</span>
+            <span class="tab" data-tab="cities">Cities</span>
         </div>
         <div id="content">Loading...</div>
     </div>
@@ -113,10 +114,12 @@
         let pollInterval;
         let currentUsers = [];
         let currentGeo = [];
+        let currentCities = [];
         let lastHubHtml = '';
         let lastUsersHtml = '';
         let lastGeoHtml = '';
-        let isFirstLoad = { users: true, geo: true };
+        let lastCitiesHtml = '';
+        let isFirstLoad = { users: true, geo: true, cities: true };
         let hideClones = false;
         let opsList = [];
         let botsList = [];
@@ -125,7 +128,8 @@
 
         const sortState = {
             users: { key: 'share', asc: false },
-            geo: { key: 'users', asc: false }
+            geo: { key: 'users', asc: false },
+            cities: { key: 'users', asc: false }
         };
 
         function fetchData(endpoint) {
@@ -403,6 +407,81 @@
             return html;
         }
 
+        function renderCities(users) {
+            if (!users || !Array.isArray(users)) return '<p>No city data available</p>';
+
+            // Build city statistics: key is "city, country_code", value is count
+            const cityStats = new Map();
+            
+            for (const user of users) {
+                const city = user.city || '';
+                const countryCode = user.country_code || user.country || user.cc || user.CC || '';
+                
+                if (!city || city === 'N/A' || !countryCode) continue;
+                
+                const cityKey = `${city}|||${countryCode.toUpperCase()}`;
+                
+                if (!cityStats.has(cityKey)) {
+                    cityStats.set(cityKey, { city: city, country_code: countryCode.toUpperCase(), users: 0 });
+                }
+                cityStats.get(cityKey).users++;
+            }
+            
+            const cityArray = Array.from(cityStats.values());
+            const totalCities = cityArray.length;
+
+            const sortedCities = [...cityArray].sort((a, b) => {
+                if (sortState.cities.key === 'city') {
+                    return sortState.cities.asc 
+                        ? a.city.localeCompare(b.city)
+                        : b.city.localeCompare(a.city);
+                } else {
+                    return sortState.cities.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total cities represented: ${totalCities}</div>`;
+            html += '<table id="cities-table"><thead><tr>';
+            
+            const cityHeaders = [
+                { text: 'City', key: 'city' },
+                { text: 'Flag', key: 'country' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            cityHeaders.forEach(h => {
+                const arrow = sortState.cities.key === h.key 
+                    ? (sortState.cities.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('cities', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.cities.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedCities) {
+                const prev = currentCities.find(c => c.city === item.city && c.country_code === item.country_code);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.cities && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const flag = getFlagEmoji(item.country_code);
+                const cityName = item.city || '??';
+                const cityKey = `${item.city}|||${item.country_code}`;
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showCityUsers('${encodeURIComponent(cityKey)}')">`;
+                html += `<td>${cityName}</td>`;
+                html += `<td class="flag">${flag}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentCities = [...cityArray];
+            isFirstLoad.cities = false;
+
+            return html;
+        }
+
         function setSort(tab, key) {
             if (sortState[tab].key === key) {
                 sortState[tab].asc = !sortState[tab].asc;
@@ -592,6 +671,22 @@
                             shouldUpdate = false;
                         } else {
                             lastGeoHtml = html;
+                        }
+                        break;
+                    case 'cities':
+                        console.log('Loading cities tab...');
+                        let citiesResponse = await fetchData('/users?limit=500');
+                        let citiesUsers = [];
+                        if (Array.isArray(citiesResponse)) citiesUsers = citiesResponse;
+                        else if (citiesResponse && citiesResponse.users && Array.isArray(citiesResponse.users)) citiesUsers = citiesResponse.users;
+                        else if (citiesResponse && citiesResponse.data && Array.isArray(citiesResponse.data)) citiesUsers = citiesResponse.data;
+
+                        html = renderCities(citiesUsers);
+
+                        if (html === lastCitiesHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastCitiesHtml = html;
                         }
                         break;
                 }
@@ -851,6 +946,97 @@
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load users from ${countryCode}: ${err.message}`);
+            }
+        }
+        
+        async function showCityUsers(encodedCityKey) {
+            try {
+                const cityKey = decodeURIComponent(encodedCityKey);
+                const [cityName, countryCode] = cityKey.split('|||');
+                
+                // Fetch all users and filter by city
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by city and country
+                const cityUsers = allUsers.filter(u => {
+                    const city = u.city || '';
+                    const cc = (u.country_code || u.country || u.cc || u.CC || '').toUpperCase();
+                    return city === cityName && cc === countryCode;
+                });
+                
+                if (cityUsers.length === 0) {
+                    alert(`No users found in ${cityName}, ${countryCode}`);
+                    return;
+                }
+                
+                // Build HTML for city users popup
+                const flag = getFlagEmoji(countryCode);
+                let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
+                html += `<h3>Users from ${cityName}, ${countryCode} (${cityUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                cityUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of cityUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load city users: ${err.message}`);
             }
         }
 
