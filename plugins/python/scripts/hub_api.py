@@ -129,6 +129,18 @@ except ImportError as e:
     print(f"[Hub API] ✗ gufo.traceroute not available: {e}")
     print("[Hub API] Install with: pip install gufo-traceroute")
 
+# Try to import python-nmap for OS detection
+try:
+    print("[Hub API] Attempting to import python-nmap...")
+    import nmap
+    print("[Hub API] python-nmap imported successfully!")
+    NMAP_AVAILABLE = True
+except ImportError as e:
+    NMAP_AVAILABLE = False
+    print(f"[Hub API] ✗ python-nmap not available: {e}")
+    print("[Hub API] Install with: pip install python-nmap")
+    print("[Hub API] Note: Also requires nmap system package (apt install nmap)")
+
 # Global state
 api_server = None
 api_thread = None
@@ -149,6 +161,15 @@ traceroute_in_progress = set()  # IPs currently being traced
 TRACEROUTE_TTL = 3600  # Cache traceroute results for 1 hour
 TRACEROUTE_INTERVAL = 300  # Re-trace every 5 minutes if user still online
 MAX_CONCURRENT_TRACEROUTES = 5  # Limit concurrent traceroutes
+
+# OS detection cache (ip -> OS detection result)
+os_detection_cache = {}
+os_detection_lock = threading.Lock()
+os_detection_threads = {}  # ip -> thread object
+os_detection_in_progress = set()  # IPs currently being scanned
+OS_DETECTION_TTL = 7200  # Cache OS detection for 2 hours (longer than traceroute)
+OS_DETECTION_INTERVAL = 3600  # Re-scan every 1 hour if user still online
+MAX_CONCURRENT_OS_SCANS = 3  # Limit concurrent OS scans (lower than traceroute, more resource intensive)
 
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
@@ -438,6 +459,187 @@ def update_traceroutes_for_users():
     
     if scheduled > 0:
         print(f"[Hub API] Scheduled {scheduled} traceroutes")
+
+def get_os_detection_result(ip: str) -> Optional[Dict[str, Any]]:
+    """Get cached OS detection result for an IP (thread-safe)
+    
+    Args:
+        ip: IP address
+    
+    Returns:
+        OS detection result dict or None if not available/expired
+    """
+    with os_detection_lock:
+        if ip in os_detection_cache:
+            result = os_detection_cache[ip]
+            # Check if result is still fresh
+            if time.time() - result.get("timestamp", 0) < OS_DETECTION_TTL:
+                return result
+            else:
+                # Expired, remove it
+                del os_detection_cache[ip]
+        return None
+
+def perform_os_detection(ip: str):
+    """Perform OS detection scan on an IP address
+    
+    Args:
+        ip: IP address to scan
+    """
+    if not NMAP_AVAILABLE:
+        return
+    
+    try:
+        print(f"[Hub API] Starting OS detection scan for {ip}")
+        
+        # Create nmap scanner
+        nm = nmap.PortScanner()
+        
+        # Perform OS detection scan
+        # -O: Enable OS detection
+        # -sV: Service version detection
+        # --osscan-limit: Limit OS detection to promising targets
+        # -T4: Faster timing template (aggressive)
+        # --max-retries 2: Limit retries
+        nm.scan(ip, arguments='-O -sV --osscan-limit -T4 --max-retries 2')
+        
+        os_matches = []
+        
+        if ip in nm.all_hosts():
+            host_data = nm[ip]
+            
+            # Extract OS match information
+            if 'osmatch' in host_data:
+                for match in host_data['osmatch']:
+                    os_info = {
+                        "name": match.get('name', 'Unknown'),
+                        "accuracy": int(match.get('accuracy', 0)),
+                        "line": match.get('line', 0)
+                    }
+                    
+                    # Include OS class details if available
+                    if 'osclass' in match and match['osclass']:
+                        os_class = match['osclass'][0] if isinstance(match['osclass'], list) else match['osclass']
+                        os_info["os_family"] = os_class.get('osfamily', '')
+                        os_info["os_gen"] = os_class.get('osgen', '')
+                        os_info["vendor"] = os_class.get('vendor', '')
+                        os_info["type"] = os_class.get('type', '')
+                    
+                    os_matches.append(os_info)
+            
+            # Sort by accuracy (highest first)
+            os_matches.sort(key=lambda x: x.get('accuracy', 0), reverse=True)
+        
+        # Store result in cache
+        result = {
+            "ip": ip,
+            "os_matches": os_matches,
+            "timestamp": time.time(),
+            "success": len(os_matches) > 0,
+            "best_match": os_matches[0] if os_matches else None,
+            "completed": True  # Scan completed (even if no matches found)
+        }
+        
+        with os_detection_lock:
+            os_detection_cache[ip] = result
+            os_detection_in_progress.discard(ip)
+            if ip in os_detection_threads:
+                del os_detection_threads[ip]
+        
+        if os_matches:
+            best = os_matches[0]
+            print(f"[Hub API] OS detection for {ip} completed: {best['name']} ({best['accuracy']}% accuracy)")
+        else:
+            print(f"[Hub API] OS detection for {ip} completed: No OS match found")
+        
+    except Exception as e:
+        print(f"[Hub API] OS detection for {ip} failed: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Store error result with failure flag
+        with os_detection_lock:
+            os_detection_cache[ip] = {
+                "ip": ip,
+                "error": str(e),
+                "timestamp": time.time(),
+                "success": False,
+                "failed": True,  # Explicit failure flag for frontend
+                "os_matches": [],
+                "best_match": None
+            }
+            os_detection_in_progress.discard(ip)
+            if ip in os_detection_threads:
+                del os_detection_threads[ip]
+
+def schedule_os_detection(ip: str) -> bool:
+    """Schedule an OS detection scan for an IP address if not already in progress
+    
+    Args:
+        ip: IP address to scan
+    
+    Returns:
+        True if scan was scheduled, False if already in progress or limit reached
+    """
+    if not NMAP_AVAILABLE:
+        return False
+    
+    if not ip or ip == "127.0.0.1" or ip.startswith("192.168.") or ip.startswith("10."):
+        return False  # Skip localhost and private IPs
+    
+    with os_detection_lock:
+        # Check if already in progress
+        if ip in os_detection_in_progress:
+            return False
+        
+        # Check concurrent limit
+        if len(os_detection_in_progress) >= MAX_CONCURRENT_OS_SCANS:
+            return False
+        
+        # Check if we have a recent result
+        if ip in os_detection_cache:
+            result = os_detection_cache[ip]
+            age = time.time() - result.get("timestamp", 0)
+            if age < OS_DETECTION_INTERVAL:
+                return False  # Too recent, don't re-scan yet
+        
+        # Mark as in progress
+        os_detection_in_progress.add(ip)
+    
+    # Start OS detection in background thread
+    thread = threading.Thread(target=perform_os_detection, args=(ip,), daemon=True)
+    thread.start()
+    
+    with os_detection_lock:
+        os_detection_threads[ip] = thread
+    
+    return True
+
+def update_os_detection_for_users():
+    """Update OS detection scans for online users (called periodically)"""
+    if not NMAP_AVAILABLE or not server_running:
+        return
+    
+    users = get_cached_data("users") or []
+    
+    # Get unique IPs from online users
+    user_ips = set()
+    for user in users:
+        ip = user.get("ip")
+        if ip and ip != "127.0.0.1":
+            user_ips.add(ip)
+    
+    # Schedule OS detection for IPs that need updates
+    scheduled = 0
+    for ip in user_ips:
+        if schedule_os_detection(ip):
+            scheduled += 1
+            # Don't start too many at once (OS detection is more resource intensive)
+            if scheduled >= 2:
+                break
+    
+    if scheduled > 0:
+        print(f"[Hub API] Scheduled {scheduled} OS detection scans")
 
 def format_uptime(seconds: float) -> str:
     """Format uptime in human-readable format"""
@@ -1047,6 +1249,57 @@ if FASTAPI_AVAILABLE:
                 "traceroutes": list(active_results.values()),
                 "in_progress": list(traceroute_in_progress)
             }
+    
+    @app.get("/os/{ip}")
+    async def os_detection_result(ip: str):
+        """Get OS detection result for an IP address
+        
+        This endpoint returns cached OS detection results. OS scans are performed
+        automatically for online users in the background using nmap.
+        """
+        if not NMAP_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="OS detection functionality not available. Install python-nmap package and nmap system utility."
+            )
+        
+        result = get_os_detection_result(ip)
+        
+        if not result:
+            # Try to schedule an OS scan if not already cached
+            scheduled = schedule_os_detection(ip)
+            
+            raise HTTPException(
+                status_code=404,
+                detail=f"No OS detection data available for {ip}" +
+                       (" - OS scan scheduled, try again in 10-30 seconds" if scheduled else "")
+            )
+        
+        return result
+    
+    @app.get("/os-detections")
+    async def all_os_detections():
+        """Get all cached OS detection results"""
+        if not NMAP_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="OS detection functionality not available. Install python-nmap package and nmap system utility."
+            )
+        
+        with os_detection_lock:
+            # Filter out expired results
+            current_time = time.time()
+            active_results = {
+                ip: result
+                for ip, result in os_detection_cache.items()
+                if current_time - result.get("timestamp", 0) < OS_DETECTION_TTL
+            }
+            
+            return {
+                "count": len(active_results),
+                "os_detections": list(active_results.values()),
+                "in_progress": list(os_detection_in_progress)
+            }
 
     @app.get("/favicon.ico")
     async def favicon():
@@ -1220,6 +1473,14 @@ def OnTimer(msec=0):
         except Exception as e:
             print(f"[Hub API] Error updating traceroutes: {e}")
     
+    # Periodically update OS detection for online users
+    # Do this even less frequently (every 60 seconds) as it's more resource intensive
+    if int(current_time) % 60 == 0:
+        try:
+            update_os_detection_for_users()
+        except Exception as e:
+            print(f"[Hub API] Error updating OS detections: {e}")
+    
     return 1
 
 def OnUserLogin(nick):
@@ -1376,6 +1637,17 @@ def UnLoad():
             thread.join(timeout=2.0)  # Wait max 2 seconds per thread
         
         print(f"Cleaned up {len(threads_to_wait)} traceroute threads")
+    
+    # Wait for OS detection threads to finish (with timeout)
+    if NMAP_AVAILABLE:
+        print("Waiting for OS detection threads to finish...")
+        with os_detection_lock:
+            threads_to_wait = list(os_detection_threads.values())
+        
+        for thread in threads_to_wait:
+            thread.join(timeout=3.0)  # Wait max 3 seconds per thread (OS scans may take longer)
+        
+        print(f"Cleaned up {len(threads_to_wait)} OS detection threads")
     
     print("Hub API script unloaded")
 
