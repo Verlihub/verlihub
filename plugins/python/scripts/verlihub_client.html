@@ -117,6 +117,7 @@
         let lastUsersHtml = '';
         let lastGeoHtml = '';
         let isFirstLoad = { users: true, geo: true };
+        let hideClones = false;
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -170,7 +171,52 @@
             const userCount = rows.length;
             if (userCount === 0) return '<p>No users currently online</p>';
 
-            const sortedRows = [...rows].sort((a, b) => {
+            // Calculate clone statistics
+            let cloneCount = 0;
+            const uniqueUsers = new Set();
+            const cloneGroups = new Map(); // key: "ip:share", value: array of user objects
+            const nickToCloneKey = new Map(); // nick -> cloneKey for quick lookup
+            
+            for (const row of rows) {
+                const nick = (row.nick || row.Nick || '').toString();
+                const ip = row.ip || '';
+                const share = Number(row.share_size || row.share || row.Share || 0);
+                const cloneKey = `${ip}:${share}`;
+                
+                if (!cloneGroups.has(cloneKey)) {
+                    cloneGroups.set(cloneKey, []);
+                }
+                cloneGroups.get(cloneKey).push(row);
+                nickToCloneKey.set(nick, cloneKey);
+            }
+            
+            // Count unique users (each clone group counts as 1)
+            for (const [key, users] of cloneGroups) {
+                uniqueUsers.add(key);
+                if (users.length > 1) {
+                    cloneCount += users.length - 1; // All but one are clones
+                }
+            }
+            
+            const trueUserCount = uniqueUsers.size;
+            const clonePercent = userCount > 0 ? ((cloneCount / userCount) * 100).toFixed(1) : 0;
+            
+            // Filter rows if hiding clones
+            let displayRows = rows;
+            if (hideClones) {
+                const seenCloneKeys = new Set();
+                displayRows = rows.filter(row => {
+                    const nick = (row.nick || row.Nick || '').toString();
+                    const cloneKey = nickToCloneKey.get(nick);
+                    if (seenCloneKeys.has(cloneKey)) {
+                        return false; // Hide this clone
+                    }
+                    seenCloneKeys.add(cloneKey);
+                    return true;
+                });
+            }
+
+            const sortedRows = [...displayRows].sort((a, b) => {
                 let aVal, bVal;
                 switch (sortState.users.key) {
                     case 'nick':
@@ -193,7 +239,20 @@
                 }
             });
 
-            let html = `<div class="total-users">Online users: ${userCount}</div>`;
+            let html = `
+                <div style="margin-bottom: 10px;">
+                    <label style="cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="hide-clones-checkbox" ${hideClones ? 'checked' : ''} 
+                               onchange="toggleHideClones(this.checked)" style="margin-right: 8px;">
+                        Hide clones
+                    </label>
+                </div>
+                <div class="total-users">
+                    Online users: ${userCount} | 
+                    True users: ${trueUserCount} | 
+                    Clones: ${cloneCount} (${clonePercent}%)
+                </div>
+            `;
             html += '<table id="users-table"><thead><tr>';
             const headers = [
                 { text: 'Nick', key: 'nick' },
@@ -222,9 +281,16 @@
                 const className = row.class_name || row.class || row.Class || 'N/A';
                 const countryCode = row.country_code || row.country || row.Country || row.cc || row.CC || '';
                 const shareBytes = Number(row.share_size || row.share || row.Share || 0);
+                
+                // Check if this user has clones
+                const cloneKey = nickToCloneKey.get(nick);
+                const cloneGroupUsers = cloneGroups.get(cloneKey) || [];
+                const hasClones = cloneGroupUsers.length > 1;
+                const cloneCountStr = hasClones ? ` (${cloneGroupUsers.length})` : '';
+                const warningEmoji = hasClones ? '⚠️ ' : '';
 
                 html += `<tr class="${highlightClass}">`;
-                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${nick}</a></td>`;
+                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${warningEmoji}${nick}${cloneCountStr}</a></td>`;
                 html += `<td>${className}</td>`;
                 html += `<td><span class="flag">${getFlagEmoji(countryCode)}</span></td>`;
                 html += `<td>${formatBytes(shareBytes)}</td>`;
@@ -324,11 +390,53 @@
                     case 'hub':
                         console.log('Loading hub tab...');
                         try {
-                            const [hubData, shareData, statsData] = await Promise.all([
+                            const [hubData, shareData, statsData, usersData] = await Promise.all([
                                 fetchData('/hub'),
                                 fetchData('/share'),
-                                fetchData('/stats')
+                                fetchData('/stats'),
+                                fetchData('/users?limit=500')
                             ]);
+                            
+                            // Calculate clone-adjusted share statistics
+                            let userRows = [];
+                            if (Array.isArray(usersData)) userRows = usersData;
+                            else if (usersData && usersData.users && Array.isArray(usersData.users)) userRows = usersData.users;
+                            else if (usersData && usersData.data && Array.isArray(usersData.data)) userRows = usersData.data;
+                            
+                            const cloneGroups = new Map();
+                            for (const row of userRows) {
+                                const ip = row.ip || '';
+                                const share = Number(row.share_size || row.share || row.Share || 0);
+                                const cloneKey = `${ip}:${share}`;
+                                
+                                if (!cloneGroups.has(cloneKey)) {
+                                    cloneGroups.set(cloneKey, { share: share, count: 0 });
+                                }
+                                cloneGroups.get(cloneKey).count++;
+                            }
+                            
+                            // Calculate raw total (count one from each clone group) and cloned share
+                            let rawTotalShare = 0;
+                            let clonedShare = 0;
+                            
+                            for (const [key, data] of cloneGroups) {
+                                rawTotalShare += data.share; // Count one from each group
+                                if (data.count > 1) {
+                                    // Add the duplicates to cloned share
+                                    clonedShare += data.share * (data.count - 1);
+                                }
+                            }
+                            
+                            const trueUserCount = cloneGroups.size;
+                            const rawAvgShare = trueUserCount > 0 ? rawTotalShare / trueUserCount : 0;
+                            
+                            // Calculate what percentage of the average is from clones
+                            // When we have clones, they dilute the average
+                            // Example: 100GB shared by 1 real user = 100GB avg
+                            //          But if there are 3 clones, it appears as 100GB / 3 = 33GB avg
+                            // So the cloned percentage represents the inflation of user count
+                            const totalUserCount = userRows.length;
+                            const cloneUserCount = totalUserCount - trueUserCount;
 
                             const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
                             const hubDesc = (hubData.description || hubData.Description || '').trim();
@@ -349,16 +457,33 @@
                             }
                             html += '<div class="hub-info">';
 
-                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon'];
+                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon', 'uptime_seconds'];
                             html += renderKeyValue(hubData, hubExclude);
 
-                            const shareRename = {
-                                total_formatted: 'Total Share',
-                                average_formatted: 'Average Share',
-                                total: 'Total Share',
-                                average: 'Average Share'
+                            // Calculate clone statistics for share display
+                            const hasSignificantClones = clonedShare > 0;
+                            const clonePercent = rawTotalShare > 0 ? ((clonedShare / rawTotalShare) * 100).toFixed(1) : 0;
+                            // For average, show what % of users are clones (inflating the user count)
+                            const avgClonePercent = totalUserCount > 0 ? ((cloneUserCount / totalUserCount) * 100).toFixed(1) : 0;
+                            
+                            const warningEmoji = '⚠️';
+                            
+                            // Build share display
+                            let totalShareDisplay = formatBytes(rawTotalShare);
+                            if (hasSignificantClones) {
+                                totalShareDisplay += ` ${warningEmoji} (${clonePercent}% cloned)`;
+                            }
+                            
+                            let avgShareDisplay = formatBytes(rawAvgShare);
+                            if (hasSignificantClones) {
+                                avgShareDisplay += ` ${warningEmoji} (${avgClonePercent}% cloned)`;
+                            }
+                            
+                            const shareDisplayData = {
+                                'Total Share': totalShareDisplay,
+                                'Average Share': avgShareDisplay
                             };
-                            html += renderKeyValue(shareData, ['total', 'average'], shareRename);
+                            html += renderKeyValue(shareDisplayData);
 
                             const liveStats = {
                                 Timestamp: statsData.timestamp || statsData.Timestamp || 'N/A',
@@ -464,12 +589,16 @@
                 const basicInfo = {};
                 const geoInfo = {};
                 const connectionInfo = {};
+                const networkInfo = {};
+                const clientInfo = {};
                 const otherInfo = {};
                 
                 const geoFields = ['country_code', 'country', 'city', 'region', 'region_code', 
                                    'timezone', 'continent', 'continent_code', 'postal_code', 'asn'];
                 const connectionFields = ['ip', 'host', 'hub_url'];
                 const basicFields = ['nick', 'class', 'class_name', 'description', 'tag', 'email', 'share'];
+                const networkFields = ['cloned', 'clone_group', 'same_ip_users', 'same_asn_users'];
+                const clientFields = ['support_flags'];
                 
                 for (const [key, value] of Object.entries(data)) {
                     if (key === 'share_formatted') continue;
@@ -478,6 +607,10 @@
                         geoInfo[key] = value;
                     } else if (connectionFields.includes(key) && value && value !== '') {
                         connectionInfo[key] = value;
+                    } else if (networkFields.includes(key)) {
+                        networkInfo[key] = value;
+                    } else if (clientFields.includes(key)) {
+                        clientInfo[key] = value;
                     } else if (basicFields.includes(key)) {
                         basicInfo[key] = value;
                     } else if (value && value !== '' && value !== 'N/A') {
@@ -509,6 +642,51 @@
                     html += renderKeyValue(connectionInfo, [], fieldRenames);
                 }
                 
+                // Network/Clone Detection Section
+                if (Object.keys(networkInfo).length > 0) {
+                    const hasClones = networkInfo.clone_group && Array.isArray(networkInfo.clone_group) && networkInfo.clone_group.length > 0;
+                    const hasSameIP = networkInfo.same_ip_users && Array.isArray(networkInfo.same_ip_users) && networkInfo.same_ip_users.length > 0;
+                    const hasSameASN = networkInfo.same_asn_users && Array.isArray(networkInfo.same_asn_users) && networkInfo.same_asn_users.length > 0;
+                    
+                    if (hasClones || hasSameIP || hasSameASN) {
+                        html += '<h3>Network Groups</h3>';
+                        html += '<ul class="info-list">';
+                        
+                        if (hasClones) {
+                            html += '<li><strong>Clone Group (Same IP + Share):</strong> ';
+                            html += networkInfo.clone_group.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        if (hasSameIP) {
+                            html += '<li><strong>Same IP Users (NAT Group):</strong> ';
+                            html += networkInfo.same_ip_users.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        if (hasSameASN) {
+                            html += '<li><strong>Same ASN Users (Network Group):</strong> ';
+                            html += networkInfo.same_asn_users.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        html += '</ul>';
+                    }
+                }
+                
+                // Client Capabilities Section
+                if (Object.keys(clientInfo).length > 0) {
+                    const supportFlags = clientInfo.support_flags;
+                    if (supportFlags && Array.isArray(supportFlags) && supportFlags.length > 0) {
+                        html += '<h3>Client Support Flags</h3>';
+                        html += '<ul class="info-list">';
+                        html += '<li><strong>Supported Features:</strong> ';
+                        html += supportFlags.map(flag => `<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; margin: 2px;">${flag}</code>`).join(' ');
+                        html += '</li>';
+                        html += '</ul>';
+                    }
+                }
+                
                 // Other Information Section
                 if (Object.keys(otherInfo).length > 0) {
                     html += '<h3>Additional Information</h3>';
@@ -524,6 +702,11 @@
 
         function closeUserDetail() {
             document.getElementById('user-detail').style.display = 'none';
+        }
+        
+        function toggleHideClones(checked) {
+            hideClones = checked;
+            loadTab('users');
         }
 
         document.querySelectorAll('.tab').forEach(tab => {
