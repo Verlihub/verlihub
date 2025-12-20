@@ -118,6 +118,8 @@
         let lastGeoHtml = '';
         let isFirstLoad = { users: true, geo: true };
         let hideClones = false;
+        let opsList = [];
+        let botsList = [];
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -171,7 +173,7 @@
             const userCount = rows.length;
             if (userCount === 0) return '<p>No users currently online</p>';
 
-            // Calculate clone statistics
+            // Calculate clone statistics (excluding bots)
             let cloneCount = 0;
             const uniqueUsers = new Set();
             const cloneGroups = new Map(); // key: "ip:share", value: array of user objects
@@ -179,6 +181,11 @@
             
             for (const row of rows) {
                 const nick = (row.nick || row.Nick || '').toString();
+                const isBot = botsList.some(bot => bot.nick === nick);
+                
+                // Skip bots when counting clones
+                if (isBot) continue;
+                
                 const ip = row.ip || '';
                 const share = Number(row.share_size || row.share || row.Share || 0);
                 const cloneKey = `${ip}:${share}`;
@@ -288,9 +295,15 @@
                 const hasClones = cloneGroupUsers.length > 1;
                 const cloneCountStr = hasClones ? ` (${cloneGroupUsers.length})` : '';
                 const warningEmoji = hasClones ? '⚠️ ' : '';
+                
+                // Check if user is an op or bot
+                const isOp = opsList.some(op => op.nick === nick);
+                const isBot = botsList.some(bot => bot.nick === nick);
+                const botEmoji = isBot ? '🤖 ' : '';
+                const opEmoji = isOp ? '🔑 ' : '';
 
                 html += `<tr class="${highlightClass}">`;
-                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${warningEmoji}${nick}${cloneCountStr}</a></td>`;
+                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${botEmoji}${opEmoji}${warningEmoji}${nick}${cloneCountStr}</a></td>`;
                 html += `<td>${className}</td>`;
                 html += `<td><span class="flag">${getFlagEmoji(countryCode)}</span></td>`;
                 html += `<td>${formatBytes(shareBytes)}</td>`;
@@ -586,7 +599,9 @@
                     description: 'Description',
                     tag: 'Client Tag',
                     email: 'Email',
-                    share: 'Share Size'
+                    share: 'Share Size',
+                    op_user: 'Operator',
+                    bot_user: 'Bot'
                 };
                 
                 // Group fields for organized display
@@ -603,6 +618,10 @@
                 const basicFields = ['nick', 'class', 'class_name', 'description', 'tag', 'email', 'share'];
                 const networkFields = ['cloned', 'clone_group', 'same_ip_users', 'same_asn_users'];
                 const clientFields = ['support_flags'];
+                
+                // Determine if user is op or bot
+                const isOp = opsList.some(op => op.nick === nick);
+                const isBot = botsList.some(bot => bot.nick === nick);
                 
                 for (const [key, value] of Object.entries(data)) {
                     if (key === 'share_formatted') continue;
@@ -622,7 +641,22 @@
                     }
                 }
                 
+                // Add op_user and bot_user flags to basic info
+                basicInfo.op_user = isOp;
+                basicInfo.bot_user = isBot;
+                
                 let html = '';
+                
+                // Check if user is in a clone group
+                const hasClones = networkInfo.clone_group && Array.isArray(networkInfo.clone_group) && networkInfo.clone_group.length > 0;
+                const warningEmoji = hasClones ? '\u26a0\ufe0f ' : '';
+                const botEmoji = isBot ? '\ud83e\udd16 ' : '';
+                const opEmoji = isOp ? '\ud83d\udd11 ' : '';
+                
+                // Update the nickname in basicInfo to include emojis
+                if (basicInfo.nick) {
+                    basicInfo.nick = botEmoji + opEmoji + warningEmoji + basicInfo.nick;
+                }
                 
                 // Basic Information Section
                 if (Object.keys(basicInfo).length > 0) {
@@ -713,6 +747,22 @@
             loadTab('users');
         }
         
+        async function fetchOpsAndBots() {
+            try {
+                const [opsData, botsData] = await Promise.all([
+                    fetchData('/ops'),
+                    fetchData('/bots')
+                ]);
+                
+                opsList = opsData.operators || [];
+                botsList = botsData.bots || [];
+            } catch (err) {
+                console.error('Failed to fetch ops/bots:', err);
+                opsList = [];
+                botsList = [];
+            }
+        }
+        
         async function showCountryUsers(countryCode) {
             try {
                 // Fetch all users and filter by country code
@@ -777,11 +827,16 @@
 
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(() => loadTab(currentTab), 30000);
+            pollInterval = setInterval(() => {
+                fetchOpsAndBots().then(() => loadTab(currentTab));
+            }, 30000);
         }
 
-        loadTab('hub');
-        startPolling();
+        // Initial load
+        fetchOpsAndBots().then(() => {
+            loadTab('hub');
+            startPolling();
+        });
     </script>
 </body>
 </html>
