@@ -1157,10 +1157,12 @@
                     return;
                 }
                 
+                // Get country name from first user
+                const countryName = countryUsers.length > 0 ? (countryUsers[0].country || countryCode) : countryCode;
+                
                 // Build HTML for country users popup
                 const flag = getFlagEmoji(countryCode);
                 let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
-                html += `<h3>Country Info: ${countryCode}</h3>`;
                 html += `<h3>Users List (${countryUsers.length})</h3>`;
                 html += '<ul class="info-list">';
                 
@@ -1218,7 +1220,7 @@
                 
                 html += '</ul>';
                 
-                document.getElementById('user-detail-title').textContent = countryCode;
+                document.getElementById('user-detail-title').textContent = countryName;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
@@ -1401,6 +1403,46 @@
                 
                 html += '</ul>';
                 
+                // Build list of unique IP addresses for this ASN
+                const ipSet = new Set();
+                const ipInfoMap = new Map(); // Map IP to { hostname, userCount }
+                
+                for (const user of asnUsers) {
+                    const ip = user.ip || '';
+                    if (ip && ip !== 'N/A' && ip !== '') {
+                        ipSet.add(ip);
+                        
+                        if (!ipInfoMap.has(ip)) {
+                            ipInfoMap.set(ip, {
+                                hostname: user.host || 'N/A',
+                                userCount: 0
+                            });
+                        }
+                        ipInfoMap.get(ip).userCount++;
+                    }
+                }
+                
+                // Show IP addresses if any exist
+                if (ipSet.size > 0) {
+                    const ipArray = Array.from(ipSet).sort();
+                    html += `<h3>IP Addresses (${ipArray.length})</h3>`;
+                    html += '<ul class="info-list">';
+                    
+                    for (const ip of ipArray) {
+                        const info = ipInfoMap.get(ip);
+                        const userCountStr = info.userCount > 1 ? ` (${info.userCount} users)` : '';
+                        html += `<li>`;
+                        html += `<a href="#" onclick="showIPUsers('${encodeURIComponent(ip)}'); return false;" style="font-weight: bold; color: #0066cc; text-decoration: underline;">${ip}</a>`;
+                        if (info.hostname !== 'N/A' && info.hostname !== ip) {
+                            html += ` - ${info.hostname}`;
+                        }
+                        html += userCountStr;
+                        html += `</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
                 document.getElementById('user-detail-title').textContent = asn;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
@@ -1442,7 +1484,14 @@
                     
                     html += '<ul class="info-list">';
                     html += `<li><strong>Hostname:</strong> ${hostname}</li>`;
-                    html += `<li><strong>ASN:</strong> ${asn}</li>`;
+                    
+                    // Make ASN clickable if available
+                    if (asn && asn !== 'N/A') {
+                        html += `<li><strong>ASN:</strong> <a href="#" onclick="showASNUsers('${encodeURIComponent(asn)}'); return false;" style="color: #0066cc; text-decoration: underline;">${asn}</a></li>`;
+                    } else {
+                        html += `<li><strong>ASN:</strong> ${asn}</li>`;
+                    }
+                    
                     html += '</ul>';
                 }
                 
