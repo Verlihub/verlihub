@@ -297,9 +297,20 @@ async def perform_traceroute_async(ip: str):
                     # Use the first valid hop's IP and average RTT
                     hop_ip = valid_hops[0].addr
                     avg_rtt = sum(h.rtt for h in valid_hops) / len(valid_hops)
+                    
+                    # Try reverse DNS lookup for the hop IP
+                    hop_hostname = None
+                    try:
+                        import socket
+                        hop_hostname = socket.gethostbyaddr(hop_ip)[0]
+                    except (socket.herror, socket.gaierror, OSError):
+                        # No reverse DNS or lookup failed
+                        pass
+                    
                     hop_data = {
                         "hop": hop_count,
                         "ip": hop_ip,
+                        "hostname": hop_hostname,
                         "rtt_ms": round(avg_rtt * 1000, 2),  # Convert to ms
                     }
                     hops.append(hop_data)
@@ -312,6 +323,7 @@ async def perform_traceroute_async(ip: str):
                     hop_data = {
                         "hop": hop_count,
                         "ip": None,
+                        "hostname": None,
                         "rtt_ms": None,
                     }
                     hops.append(hop_data)
