@@ -1694,6 +1694,393 @@ TEST_F(HubApiStressTest, ValidateGetGeoIPStructure) {
     unlink(test_script.c_str());
 }
 
+// Test 13: Verify uptime tracking in hub info endpoint
+TEST_F(HubApiStressTest, VerifyUptimeTracking) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    std::cout << "\n=== Uptime Tracking Test ===" << std::endl;
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18088", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Trigger cache update
+    g_py_plugin->OnTimer(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    // Make initial request to /hub endpoint
+    std::string response;
+    long http_code = 0;
+    
+    if (http_get("http://localhost:18088/hub", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "Initial /hub response:" << std::endl;
+            std::cout << response << std::endl;
+            
+            // Verify uptime fields exist
+            EXPECT_NE(response.find("\"uptime_seconds\""), std::string::npos)
+                << "Hub info should contain uptime_seconds field";
+            
+            EXPECT_NE(response.find("\"uptime\""), std::string::npos)
+                << "Hub info should contain uptime (formatted) field";
+            
+            // Extract uptime_seconds value
+            size_t uptime_pos = response.find("\"uptime_seconds\":");
+            if (uptime_pos != std::string::npos) {
+                size_t value_start = response.find_first_of("0123456789", uptime_pos);
+                size_t value_end = response.find_first_of(",}", value_start);
+                if (value_start != std::string::npos && value_end != std::string::npos) {
+                    std::string uptime_str = response.substr(value_start, value_end - value_start);
+                    double uptime1 = std::stod(uptime_str);
+                    std::cout << "Initial uptime_seconds: " << uptime1 << std::endl;
+                    
+                    // Wait a few seconds
+                    std::cout << "Waiting 3 seconds..." << std::endl;
+                    std::this_thread::sleep_for(std::chrono::seconds(3));
+                    
+                    // Trigger cache update again
+                    g_py_plugin->OnTimer(0);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    
+                    // Make second request
+                    if (http_get("http://localhost:18088/hub", response, http_code)) {
+                        if (http_code == 200) {
+                            uptime_pos = response.find("\"uptime_seconds\":");
+                            if (uptime_pos != std::string::npos) {
+                                value_start = response.find_first_of("0123456789", uptime_pos);
+                                value_end = response.find_first_of(",}", value_start);
+                                if (value_start != std::string::npos && value_end != std::string::npos) {
+                                    uptime_str = response.substr(value_start, value_end - value_start);
+                                    double uptime2 = std::stod(uptime_str);
+                                    std::cout << "Second uptime_seconds: " << uptime2 << std::endl;
+                                    
+                                    // Verify uptime increased
+                                    double delta = uptime2 - uptime1;
+                                    std::cout << "Uptime delta: " << delta << " seconds" << std::endl;
+                                    
+                                    EXPECT_GE(delta, 2.5)
+                                        << "Uptime should increase by at least 2.5 seconds (we waited 3)";
+                                    EXPECT_LE(delta, 5.0)
+                                        << "Uptime delta should be reasonable (< 5 seconds)";
+                                    
+                                    std::cout << "✓ Uptime tracking working correctly" << std::endl;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Verify formatted uptime contains expected format (e.g., "5s" or "1m 5s")
+            size_t formatted_pos = response.find("\"uptime\":");
+            if (formatted_pos != std::string::npos) {
+                size_t quote_start = response.find("\"", formatted_pos + 10);
+                size_t quote_end = response.find("\"", quote_start + 1);
+                if (quote_start != std::string::npos && quote_end != std::string::npos) {
+                    std::string uptime_formatted = response.substr(quote_start + 1, quote_end - quote_start - 1);
+                    std::cout << "Formatted uptime: " << uptime_formatted << std::endl;
+                    
+                    // Should contain 's' for seconds (at minimum)
+                    EXPECT_NE(uptime_formatted.find("s"), std::string::npos)
+                        << "Formatted uptime should contain seconds indicator";
+                    
+                    std::cout << "✓ Formatted uptime looks correct" << std::endl;
+                }
+            }
+            
+        } else {
+            std::cout << "✗ API returned HTTP " << http_code << std::endl;
+        }
+    }
+    
+    // Cleanup
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 14: Verify clone detection in user list
+TEST_F(HubApiStressTest, VerifyCloneDetection) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    std::cout << "\n=== Clone Detection Test ===" << std::endl;
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18089", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Create users with specific IPs and shares to test clone detection logic
+    std::vector<cConnDC*> test_users;
+    
+    // Group 1: Exact clones - same IP (192.168.1.100) + same share (50000000 = 50MB) + same ASN (AS1234)
+    cConnDC* clone1 = create_mock_connection("Clone1", 1);
+    cConnDC* clone2 = create_mock_connection("Clone2", 1);
+    clone1->mpUser->mShare = 50000000;
+    clone2->mpUser->mShare = 50000000;
+    clone1->mpUser->mxMyInfos.sIP = "192.168.1.100";
+    clone2->mpUser->mxMyInfos.sIP = "192.168.1.100";
+    
+    // Group 2: Same IP as clones (192.168.1.100) but different share (30000000 = 30MB), same ASN (AS1234)
+    cConnDC* nat_user = create_mock_connection("NATUser", 1);
+    nat_user->mpUser->mShare = 30000000;
+    nat_user->mpUser->mxMyInfos.sIP = "192.168.1.100";
+    
+    // Group 3: Different IP (192.168.1.200) but same ASN as Group 1 (AS1234)
+    cConnDC* different_user = create_mock_connection("DifferentUser", 1);
+    different_user->mpUser->mShare = 20000000;
+    different_user->mpUser->mxMyInfos.sIP = "192.168.1.200";
+    
+    // Group 4: Another set of exact clones - same IP (10.0.0.50) + same share (40000000 = 40MB) + different ASN (AS5678)
+    cConnDC* clone3 = create_mock_connection("Clone3", 1);
+    cConnDC* clone4 = create_mock_connection("Clone4", 1);
+    clone3->mpUser->mShare = 40000000;
+    clone4->mpUser->mShare = 40000000;
+    clone3->mpUser->mxMyInfos.sIP = "10.0.0.50";
+    clone4->mpUser->mxMyInfos.sIP = "10.0.0.50";
+    
+    test_users.push_back(clone1);
+    test_users.push_back(clone2);
+    test_users.push_back(nat_user);
+    test_users.push_back(different_user);
+    test_users.push_back(clone3);
+    test_users.push_back(clone4);
+    
+    // Add users to server
+    for (auto* user : test_users) {
+        g_server->mUserList.Add(user->mpUser);
+        user->mpUser->mInList = true;
+    }
+    
+    std::cout << "\nCreated test users:" << std::endl;
+    std::cout << "  Clone1: IP=192.168.1.100, Share=50MB, ASN=AS1234 (exact clone of Clone2)" << std::endl;
+    std::cout << "  Clone2: IP=192.168.1.100, Share=50MB, ASN=AS1234 (exact clone of Clone1)" << std::endl;
+    std::cout << "  NATUser: IP=192.168.1.100, Share=30MB, ASN=AS1234 (same IP+ASN, different share)" << std::endl;
+    std::cout << "  DifferentUser: IP=192.168.1.200, Share=20MB, ASN=AS1234 (different IP, same ASN as Group 1)" << std::endl;
+    std::cout << "  Clone3: IP=10.0.0.50, Share=40MB, ASN=AS5678 (exact clone of Clone4, different network)" << std::endl;
+    std::cout << "  Clone4: IP=10.0.0.50, Share=40MB, ASN=AS5678 (exact clone of Clone3, different network)" << std::endl;
+    
+    // Trigger cache update
+    g_py_plugin->OnTimer(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    // Helper lambda to check if array contains a string value
+    auto array_contains = [](const JsonValue& arr, const std::string& value) -> bool {
+        if (!arr.isArray()) return false;
+        for (const auto& elem : arr.array_val) {
+            if (elem.isString() && elem.string_val == value) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    // Test Clone1 - should be marked as cloned with Clone2 in clone_group
+    std::string response;
+    long http_code = 0;
+    
+    if (http_get("http://localhost:18089/user/Clone1", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "\n=== Clone1 User Data ===" << std::endl;
+            
+            JsonValue clone1_data;
+            ASSERT_TRUE(parseJson(response, clone1_data)) << "Failed to parse Clone1 JSON response";
+            ASSERT_TRUE(clone1_data.isObject()) << "Clone1 response should be a JSON object";
+            
+            // Verify Clone1 is marked as cloned
+            ASSERT_TRUE(clone1_data.object_val.count("cloned") > 0) << "Clone1 should have 'cloned' field";
+            EXPECT_TRUE(clone1_data.object_val["cloned"].isBool()) << "'cloned' should be boolean";
+            EXPECT_TRUE(clone1_data.object_val["cloned"].bool_val) 
+                << "Clone1 should be marked as cloned (has same IP+share as Clone2)";
+            
+            // Verify Clone2 is in clone_group
+            ASSERT_TRUE(clone1_data.object_val.count("clone_group") > 0) << "Clone1 should have 'clone_group' field";
+            EXPECT_TRUE(clone1_data.object_val["clone_group"].isArray()) << "'clone_group' should be array";
+            EXPECT_TRUE(array_contains(clone1_data.object_val["clone_group"], "Clone2"))
+                << "Clone1's clone_group should contain Clone2";
+            
+            // Verify same_ip_users contains Clone2 and NATUser
+            ASSERT_TRUE(clone1_data.object_val.count("same_ip_users") > 0) << "Clone1 should have 'same_ip_users' field";
+            EXPECT_TRUE(clone1_data.object_val["same_ip_users"].isArray()) << "'same_ip_users' should be array";
+            EXPECT_TRUE(array_contains(clone1_data.object_val["same_ip_users"], "Clone2"))
+                << "Clone1's same_ip_users should contain Clone2";
+            EXPECT_TRUE(array_contains(clone1_data.object_val["same_ip_users"], "NATUser"))
+                << "Clone1's same_ip_users should contain NATUser (same IP 192.168.1.100)";
+            
+            // Verify same_asn_users contains Clone2, NATUser, and DifferentUser (all share AS1234)
+            ASSERT_TRUE(clone1_data.object_val.count("same_asn_users") > 0) << "Clone1 should have 'same_asn_users' field";
+            EXPECT_TRUE(clone1_data.object_val["same_asn_users"].isArray()) << "'same_asn_users' should be array";
+            // Note: same_asn_users will only be populated if ASN data is available from GeoIP
+            // The field should exist but may be empty if GeoIP database is not configured
+            
+            std::cout << "✓ Clone1 has correct clone detection data" << std::endl;
+        }
+    }
+    
+    // Test NATUser - should NOT be marked as cloned (different share) but should have same_ip_users
+    if (http_get("http://localhost:18089/user/NATUser", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "\n=== NATUser User Data ===" << std::endl;
+            
+            JsonValue nat_data;
+            ASSERT_TRUE(parseJson(response, nat_data)) << "Failed to parse NATUser JSON response";
+            ASSERT_TRUE(nat_data.isObject()) << "NATUser response should be a JSON object";
+            
+            // Verify NATUser is NOT marked as cloned
+            ASSERT_TRUE(nat_data.object_val.count("cloned") > 0) << "NATUser should have 'cloned' field";
+            EXPECT_TRUE(nat_data.object_val["cloned"].isBool()) << "'cloned' should be boolean";
+            EXPECT_FALSE(nat_data.object_val["cloned"].bool_val)
+                << "NATUser should NOT be marked as cloned (different share than Clone1/Clone2)";
+            
+            // Verify same_ip_users contains Clone1 and Clone2
+            ASSERT_TRUE(nat_data.object_val.count("same_ip_users") > 0) << "NATUser should have 'same_ip_users' field";
+            EXPECT_TRUE(nat_data.object_val["same_ip_users"].isArray()) << "'same_ip_users' should be array";
+            EXPECT_TRUE(array_contains(nat_data.object_val["same_ip_users"], "Clone1"))
+                << "NATUser's same_ip_users should contain Clone1";
+            EXPECT_TRUE(array_contains(nat_data.object_val["same_ip_users"], "Clone2"))
+                << "NATUser's same_ip_users should contain Clone2";
+            
+            // Verify same_asn_users field exists
+            ASSERT_TRUE(nat_data.object_val.count("same_asn_users") > 0) << "NATUser should have 'same_asn_users' field";
+            EXPECT_TRUE(nat_data.object_val["same_asn_users"].isArray()) << "'same_asn_users' should be array";
+            
+            std::cout << "✓ NATUser has correct clone detection data (not cloned, but shares IP)" << std::endl;
+        }
+    }
+    
+    // Test DifferentUser - should NOT be cloned and should have empty same_ip_users
+    if (http_get("http://localhost:18089/user/DifferentUser", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "\n=== DifferentUser User Data ===" << std::endl;
+            
+            JsonValue diff_data;
+            ASSERT_TRUE(parseJson(response, diff_data)) << "Failed to parse DifferentUser JSON response";
+            ASSERT_TRUE(diff_data.isObject()) << "DifferentUser response should be a JSON object";
+            
+            // Verify DifferentUser is NOT marked as cloned
+            ASSERT_TRUE(diff_data.object_val.count("cloned") > 0) << "DifferentUser should have 'cloned' field";
+            EXPECT_TRUE(diff_data.object_val["cloned"].isBool()) << "'cloned' should be boolean";
+            EXPECT_FALSE(diff_data.object_val["cloned"].bool_val)
+                << "DifferentUser should NOT be marked as cloned (unique IP+share)";
+            
+            // Verify same_ip_users is empty
+            ASSERT_TRUE(diff_data.object_val.count("same_ip_users") > 0) << "DifferentUser should have 'same_ip_users' field";
+            EXPECT_TRUE(diff_data.object_val["same_ip_users"].isArray()) << "'same_ip_users' should be array";
+            EXPECT_EQ(diff_data.object_val["same_ip_users"].array_val.size(), 0)
+                << "DifferentUser's same_ip_users should be empty (unique IP)";
+            
+            // Verify clone_group is empty
+            ASSERT_TRUE(diff_data.object_val.count("clone_group") > 0) << "DifferentUser should have 'clone_group' field";
+            EXPECT_TRUE(diff_data.object_val["clone_group"].isArray()) << "'clone_group' should be array";
+            EXPECT_EQ(diff_data.object_val["clone_group"].array_val.size(), 0)
+                << "DifferentUser's clone_group should be empty";
+            
+            // Verify same_asn_users field exists (may contain Clone1, Clone2, NATUser if they share ASN)
+            ASSERT_TRUE(diff_data.object_val.count("same_asn_users") > 0) << "DifferentUser should have 'same_asn_users' field";
+            EXPECT_TRUE(diff_data.object_val["same_asn_users"].isArray()) << "'same_asn_users' should be array";
+            // If GeoIP ASN data is available and DifferentUser shares ASN with Group 1, this array would be populated
+            
+            std::cout << "✓ DifferentUser has correct clone detection data (unique user)" << std::endl;
+        }
+    }
+    
+    // Test Clone3 - should be cloned with Clone4
+    if (http_get("http://localhost:18089/user/Clone3", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "\n=== Clone3 User Data ===" << std::endl;
+            
+            JsonValue clone3_data;
+            ASSERT_TRUE(parseJson(response, clone3_data)) << "Failed to parse Clone3 JSON response";
+            ASSERT_TRUE(clone3_data.isObject()) << "Clone3 response should be a JSON object";
+            
+            // Verify Clone3 is marked as cloned
+            ASSERT_TRUE(clone3_data.object_val.count("cloned") > 0) << "Clone3 should have 'cloned' field";
+            EXPECT_TRUE(clone3_data.object_val["cloned"].isBool()) << "'cloned' should be boolean";
+            EXPECT_TRUE(clone3_data.object_val["cloned"].bool_val)
+                << "Clone3 should be marked as cloned (has same IP+share as Clone4)";
+            
+            // Verify Clone4 is in clone_group
+            ASSERT_TRUE(clone3_data.object_val.count("clone_group") > 0) << "Clone3 should have 'clone_group' field";
+            EXPECT_TRUE(clone3_data.object_val["clone_group"].isArray()) << "'clone_group' should be array";
+            EXPECT_TRUE(array_contains(clone3_data.object_val["clone_group"], "Clone4"))
+                << "Clone3's clone_group should contain Clone4";
+            
+            // Verify same_ip_users contains only Clone4 (not Clone1/Clone2 from different IP)
+            ASSERT_TRUE(clone3_data.object_val.count("same_ip_users") > 0) << "Clone3 should have 'same_ip_users' field";
+            EXPECT_TRUE(clone3_data.object_val["same_ip_users"].isArray()) << "'same_ip_users' should be array";
+            EXPECT_TRUE(array_contains(clone3_data.object_val["same_ip_users"], "Clone4"))
+                << "Clone3's same_ip_users should contain Clone4";
+            EXPECT_FALSE(array_contains(clone3_data.object_val["same_ip_users"], "Clone1"))
+                << "Clone3's same_ip_users should NOT contain Clone1 (different IP)";
+            
+            // Verify same_asn_users contains only Clone4 (different ASN from Group 1)
+            ASSERT_TRUE(clone3_data.object_val.count("same_asn_users") > 0) << "Clone3 should have 'same_asn_users' field";
+            EXPECT_TRUE(clone3_data.object_val["same_asn_users"].isArray()) << "'same_asn_users' should be array";
+            // If GeoIP data is available, Clone3 and Clone4 share AS5678 but not AS1234
+            // So same_asn_users should NOT contain Clone1, Clone2, NATUser, or DifferentUser
+            if (clone3_data.object_val["same_asn_users"].array_val.size() > 0) {
+                EXPECT_FALSE(array_contains(clone3_data.object_val["same_asn_users"], "Clone1"))
+                    << "Clone3's same_asn_users should NOT contain Clone1 (different ASN)";
+                EXPECT_FALSE(array_contains(clone3_data.object_val["same_asn_users"], "DifferentUser"))
+                    << "Clone3's same_asn_users should NOT contain DifferentUser (different ASN)";
+            }
+            
+            std::cout << "✓ Clone3 has correct clone detection data (separate clone pair)" << std::endl;
+        }
+    }
+    
+    // Test /users endpoint - verify overall structure
+    if (http_get("http://localhost:18089/users", response, http_code)) {
+        if (http_code == 200) {
+            std::cout << "\n=== All Users Response ===" << std::endl;
+            
+            JsonValue users_data;
+            ASSERT_TRUE(parseJson(response, users_data)) << "Failed to parse /users JSON response";
+            ASSERT_TRUE(users_data.isObject()) << "/users response should be a JSON object";
+            
+            // Get users array
+            ASSERT_TRUE(users_data.object_val.count("users") > 0) << "Response should have 'users' field";
+            const JsonValue& users_array = users_data.object_val["users"];
+            ASSERT_TRUE(users_array.isArray()) << "'users' should be an array";
+            
+            // Count how many users are marked as cloned (should be 4: Clone1, Clone2, Clone3, Clone4)
+            int cloned_count = 0;
+            for (const auto& user : users_array.array_val) {
+                if (user.isObject() && user.object_val.count("cloned") > 0) {
+                    if (user.object_val.at("cloned").isBool() && user.object_val.at("cloned").bool_val) {
+                        cloned_count++;
+                    }
+                }
+            }
+            
+            EXPECT_EQ(cloned_count, 4)
+                << "Should have exactly 4 users marked as cloned (Clone1, Clone2, Clone3, Clone4)";
+            
+            std::cout << "✓ Found " << cloned_count << " cloned users (expected 4)" << std::endl;
+            
+            // Verify all users have required clone detection fields
+            for (const auto& user : users_array.array_val) {
+                if (user.isObject()) {
+                    EXPECT_TRUE(user.object_val.count("cloned") > 0) << "User should have 'cloned' field";
+                    EXPECT_TRUE(user.object_val.count("clone_group") > 0) << "User should have 'clone_group' field";
+                    EXPECT_TRUE(user.object_val.count("same_ip_users") > 0) << "User should have 'same_ip_users' field";
+                    EXPECT_TRUE(user.object_val.count("same_asn_users") > 0) << "User should have 'same_asn_users' field";
+                }
+            }
+            
+            std::cout << "✓ All clone detection fields present in users list" << std::endl;
+        }
+    }
+    
+    // Cleanup
+    for (auto* user : test_users) {
+        g_server->mUserList.Remove(user->mpUser);
+        delete user->mpUser;
+        delete user;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
 // Register global environment
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

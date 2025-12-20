@@ -124,6 +124,7 @@ api_thread = None
 api_port = 8000
 server_running = False
 cors_origins = []  # Will be populated when server starts
+hub_start_time = None  # Track when hub started (or when script loaded)
 
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
@@ -222,6 +223,24 @@ def get_cached_data(key: str) -> Any:
     with data_cache_lock:
         return data_cache.get(key)
 
+def format_uptime(seconds: float) -> str:
+    """Format uptime in human-readable format"""
+    days = int(seconds // 86400)
+    hours = int((seconds % 86400) // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0 or days > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0 or hours > 0 or days > 0:
+        parts.append(f"{minutes}m")
+    parts.append(f"{secs}s")
+    
+    return " ".join(parts)
+
 def _get_hub_info_unsafe() -> Dict[str, Any]:
     """Get basic hub information (UNSAFE - call only from main thread)"""
     try:
@@ -237,6 +256,13 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         version_info = vh.GetConfig("config", "hub_version", "Verlihub")
         if not version_info:
             version_info = "Verlihub"
+        
+        # Calculate uptime
+        uptime_seconds = 0
+        uptime_formatted = "Unknown"
+        if hub_start_time:
+            uptime_seconds = time.time() - hub_start_time
+            uptime_formatted = format_uptime(uptime_seconds)
         
         # Ensure we have valid strings (GetConfig might return None)
         if hub_name is None:
@@ -274,7 +300,9 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "max_users": int(max_users_str) if max_users_str.isdigit() else 0,
             "version": version_info,
             "icon_url": hub_icon_url,
-            "logo_url": hub_logo_url
+            "logo_url": hub_logo_url,
+            "uptime_seconds": uptime_seconds,
+            "uptime": uptime_formatted
         }
     except Exception as e:
         import traceback
@@ -289,6 +317,8 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "version": "Unknown",
             "icon_url": "",
             "logo_url": "",
+            "uptime_seconds": 0,
+            "uptime": "Unknown",
             "error": str(e)
         }
 
@@ -445,7 +475,73 @@ def _get_all_users_unsafe(hub_encoding: str = "cp1251") -> List[Dict[str, Any]]:
         if user_info:
             users.append(user_info)
     
+    # Add clone detection information
+    _add_clone_detection(users)
+    
     return users
+
+def _add_clone_detection(users: List[Dict[str, Any]]):
+    """Add clone detection fields to user list (modifies in place)
+    
+    Adds fields:
+    - cloned: boolean indicating if user is part of a clone group (same IP + share)
+    - clone_group: list of nicks with same IP and share size
+    - same_ip_users: list of nicks with same IP (NAT group)
+    - same_asn_users: list of nicks with same ASN (network group)
+    """
+    # Build lookup tables
+    ip_to_users = {}  # ip -> list of user dicts
+    asn_to_users = {}  # asn -> list of user dicts
+    ip_share_to_users = {}  # (ip, share) -> list of user dicts
+    
+    for user in users:
+        ip = user.get("ip", "")
+        asn = user.get("asn", "")
+        share = user.get("share", 0)
+        nick = user.get("nick", "")
+        
+        # Group by IP
+        if ip:
+            if ip not in ip_to_users:
+                ip_to_users[ip] = []
+            ip_to_users[ip].append(user)
+        
+        # Group by ASN
+        if asn:
+            if asn not in asn_to_users:
+                asn_to_users[asn] = []
+            asn_to_users[asn].append(user)
+        
+        # Group by IP + share (clones)
+        if ip:
+            key = (ip, share)
+            if key not in ip_share_to_users:
+                ip_share_to_users[key] = []
+            ip_share_to_users[key].append(user)
+    
+    # Add clone detection fields to each user
+    for user in users:
+        ip = user.get("ip", "")
+        asn = user.get("asn", "")
+        share = user.get("share", 0)
+        nick = user.get("nick", "")
+        
+        # Clone group (same IP + share)
+        clone_key = (ip, share)
+        clone_group = ip_share_to_users.get(clone_key, [])
+        clone_nicks = [u.get("nick") for u in clone_group if u.get("nick") != nick]
+        user["cloned"] = len(clone_group) > 1
+        user["clone_group"] = clone_nicks
+        
+        # Same IP users (NAT group)
+        same_ip = ip_to_users.get(ip, [])
+        same_ip_nicks = [u.get("nick") for u in same_ip if u.get("nick") != nick]
+        user["same_ip_users"] = same_ip_nicks
+        
+        # Same ASN users (network group)
+        same_asn = asn_to_users.get(asn, []) if asn else []
+        same_asn_nicks = [u.get("nick") for u in same_asn if u.get("nick") != nick]
+        user["same_asn_users"] = same_asn_nicks
 
 def _get_geographic_stats_unsafe() -> Dict[str, int]:
     """Get user distribution by country (UNSAFE - call only from main thread)"""
@@ -864,6 +960,9 @@ def UnLoad():
 # =============================================================================
 # Initialization
 # =============================================================================
+
+# Track hub start time
+hub_start_time = time.time()
 
 if FASTAPI_AVAILABLE:
     print("Hub API script loaded successfully")
