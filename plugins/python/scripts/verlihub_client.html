@@ -133,6 +133,7 @@
         let uptimeUpdateInterval = null;
         let traceroutePollingInterval = null;
         let osDetectionPollingInterval = null;
+        let pingPollingInterval = null;
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -1127,6 +1128,10 @@
                 clearInterval(osDetectionPollingInterval);
                 osDetectionPollingInterval = null;
             }
+            if (pingPollingInterval) {
+                clearInterval(pingPollingInterval);
+                pingPollingInterval = null;
+            }
             // Add future polling cleanup here as needed
         }
         
@@ -1580,6 +1585,17 @@
                 
                 html += '</ul>';
                 
+                // Add checkbox for showing ping quality
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-ping-checkbox" onchange="togglePing('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show ping quality
+                        </label>
+                    </div>
+                    <div id="ping-section" style="display: none;"></div>
+                `;
+                
                 // Add checkbox for showing OS detection
                 html += `
                     <div style="margin: 20px 0;">
@@ -1607,6 +1623,153 @@
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load IP users: ${err.message}`);
+            }
+        }
+        
+        async function togglePing(encodedIP) {
+            const checkbox = document.getElementById('show-ping-checkbox');
+            const section = document.getElementById('ping-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                section.innerHTML = '<p>Loading ping quality data...</p>';
+                
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Clear any existing polling interval
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                    pingPollingInterval = null;
+                }
+                
+                // Function to fetch and display ping quality
+                const fetchAndDisplayPing = async () => {
+                    const currentSection = document.getElementById('ping-section');
+                    if (!currentSection) return;
+                    
+                    try {
+                        const response = await fetch(`${API_BASE}/ping/${encodeURIComponent(ip)}`);
+                        
+                        if (!response.ok && response.status !== 404) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        
+                        let pingData = null;
+                        if (response.ok) {
+                            pingData = await response.json();
+                        }
+                        
+                        let html = '<h3>Ping Quality</h3>';
+                        
+                        if (pingData && pingData.completed) {
+                            // Check if host is alive
+                            if (!pingData.is_alive) {
+                                html += `
+                                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                                        <strong>⚠️ Host Unreachable</strong>
+                                        <p style="margin: 5px 0 0 0;">No response from ${ip}</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
+                                            Packets: ${pingData.packets_sent} sent, ${pingData.packets_received} received (${(pingData.packet_loss * 100).toFixed(1)}% loss)
+                                        </p>
+                                    </div>
+                                `;
+                                // Stop polling if host is unreachable
+                                if (pingPollingInterval) {
+                                    clearInterval(pingPollingInterval);
+                                    pingPollingInterval = null;
+                                }
+                            } else {
+                                // Format RTT values (handle infinity)
+                                const formatRTT = (val) => val === Infinity || val === -Infinity || isNaN(val) ? 'N/A' : `${val.toFixed(3)} ms`;
+                                
+                                // Determine quality color based on average RTT and packet loss
+                                let qualityColor = '#28a745'; // Green (good)
+                                let qualityText = 'Excellent';
+                                
+                                if (pingData.packet_loss > 0.05 || pingData.avg_rtt > 100) {
+                                    qualityColor = '#ffc107'; // Yellow (acceptable)
+                                    qualityText = 'Acceptable';
+                                }
+                                if (pingData.packet_loss > 0.1 || pingData.avg_rtt > 200) {
+                                    qualityColor = '#dc3545'; // Red (poor)
+                                    qualityText = 'Poor';
+                                }
+                                
+                                html += `
+                                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                            <strong style="color: ${qualityColor};">● ${qualityText}</strong>
+                                            <span style="margin-left: 10px; font-size: 0.9em; color: #666;">to ${ip}</span>
+                                        </div>
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Min RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.min_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Avg RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.avg_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Max RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.max_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Jitter</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.jitter)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Packet Loss</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${(pingData.packet_loss * 100).toFixed(1)}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px;"><strong>Packets</strong></td>
+                                                <td style="padding: 5px; text-align: right;">${pingData.packets_sent} sent, ${pingData.packets_received} received</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                `;
+                                // Stop polling once we have completed results
+                                if (pingPollingInterval) {
+                                    clearInterval(pingPollingInterval);
+                                    pingPollingInterval = null;
+                                }
+                            }
+                        } else {
+                            // No data yet - still pinging
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">Pinging... Results will appear here when available.</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                        
+                    } catch (err) {
+                        const currentSection = document.getElementById('ping-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = `<h3>Ping Quality</h3><p style="color: #ff6600;">⚠️ ${err.message}</p><p style="margin-top: 10px; font-size: 0.9em; color: #666;">Ping scheduled. Results will appear here when available...</p>`;
+                        }
+                    }
+                };
+                
+                // Initial fetch
+                await fetchAndDisplayPing();
+                
+                // Poll every 5 seconds for updates
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                }
+                pingPollingInterval = setInterval(fetchAndDisplayPing, 5000);
+                
+            } else {
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                // Stop polling
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                    pingPollingInterval = null;
+                }
             }
         }
         
