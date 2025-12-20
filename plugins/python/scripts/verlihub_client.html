@@ -96,6 +96,7 @@
             <span class="tab" data-tab="users">Online Users</span>
             <span class="tab" data-tab="geo">Countries</span>
             <span class="tab" data-tab="cities">Cities</span>
+            <span class="tab" data-tab="asns">ASNs</span>
         </div>
         <div id="content">Loading...</div>
     </div>
@@ -115,11 +116,13 @@
         let currentUsers = [];
         let currentGeo = [];
         let currentCities = [];
+        let currentASNs = [];
         let lastHubHtml = '';
         let lastUsersHtml = '';
         let lastGeoHtml = '';
         let lastCitiesHtml = '';
-        let isFirstLoad = { users: true, geo: true, cities: true };
+        let lastASNsHtml = '';
+        let isFirstLoad = { users: true, geo: true, cities: true, asns: true };
         let hideClones = false;
         let opsList = [];
         let botsList = [];
@@ -129,7 +132,8 @@
         const sortState = {
             users: { key: 'share', asc: false },
             geo: { key: 'users', asc: false },
-            cities: { key: 'users', asc: false }
+            cities: { key: 'users', asc: false },
+            asns: { key: 'users', asc: false }
         };
 
         function fetchData(endpoint) {
@@ -482,6 +486,74 @@
             return html;
         }
 
+        function renderASNs(users) {
+            if (!users || !Array.isArray(users)) return '<p>No ASN data available</p>';
+
+            // Build ASN statistics: key is ASN number, value is count
+            const asnStats = new Map();
+            
+            for (const user of users) {
+                const asn = user.asn || '';
+                
+                if (!asn || asn === 'N/A' || asn === '') continue;
+                
+                if (!asnStats.has(asn)) {
+                    asnStats.set(asn, { asn: asn, users: 0 });
+                }
+                asnStats.get(asn).users++;
+            }
+            
+            const asnArray = Array.from(asnStats.values());
+            const totalASNs = asnArray.length;
+
+            const sortedASNs = [...asnArray].sort((a, b) => {
+                if (sortState.asns.key === 'asn') {
+                    return sortState.asns.asc 
+                        ? a.asn.localeCompare(b.asn)
+                        : b.asn.localeCompare(a.asn);
+                } else {
+                    return sortState.asns.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total ASNs represented: ${totalASNs}</div>`;
+            html += '<table id="asns-table"><thead><tr>';
+            
+            const asnHeaders = [
+                { text: 'ASN', key: 'asn' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            asnHeaders.forEach(h => {
+                const arrow = sortState.asns.key === h.key 
+                    ? (sortState.asns.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('asns', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.asns.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedASNs) {
+                const prev = currentASNs.find(a => a.asn === item.asn);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.asns && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const asnName = item.asn || '??';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showASNUsers('${encodeURIComponent(asnName)}')">`;
+                html += `<td>${asnName}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentASNs = [...asnArray];
+            isFirstLoad.asns = false;
+
+            return html;
+        }
+
         function setSort(tab, key) {
             if (sortState[tab].key === key) {
                 sortState[tab].asc = !sortState[tab].asc;
@@ -687,6 +759,22 @@
                             shouldUpdate = false;
                         } else {
                             lastCitiesHtml = html;
+                        }
+                        break;
+                    case 'asns':
+                        console.log('Loading ASNs tab...');
+                        let asnsResponse = await fetchData('/users?limit=500');
+                        let asnsUsers = [];
+                        if (Array.isArray(asnsResponse)) asnsUsers = asnsResponse;
+                        else if (asnsResponse && asnsResponse.users && Array.isArray(asnsResponse.users)) asnsUsers = asnsResponse.users;
+                        else if (asnsResponse && asnsResponse.data && Array.isArray(asnsResponse.data)) asnsUsers = asnsResponse.data;
+
+                        html = renderASNs(asnsUsers);
+
+                        if (html === lastASNsHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastASNsHtml = html;
                         }
                         break;
                 }
@@ -1037,6 +1125,93 @@
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load city users: ${err.message}`);
+            }
+        }
+        
+        async function showASNUsers(encodedASN) {
+            try {
+                const asn = decodeURIComponent(encodedASN);
+                
+                // Fetch all users and filter by ASN
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by ASN
+                const asnUsers = allUsers.filter(u => {
+                    const userASN = u.asn || '';
+                    return userASN === asn;
+                });
+                
+                if (asnUsers.length === 0) {
+                    alert(`No users found for ASN: ${asn}`);
+                    return;
+                }
+                
+                // Build HTML for ASN users popup
+                let html = `<h3>Users on ASN ${asn} (${asnUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                asnUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of asnUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load ASN users: ${err.message}`);
             }
         }
 
