@@ -132,6 +132,7 @@
         let hubStartTime = null;
         let uptimeUpdateInterval = null;
         let traceroutePollingInterval = null;
+        let osDetectionPollingInterval = null;
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -1122,6 +1123,10 @@
                 clearInterval(traceroutePollingInterval);
                 traceroutePollingInterval = null;
             }
+            if (osDetectionPollingInterval) {
+                clearInterval(osDetectionPollingInterval);
+                osDetectionPollingInterval = null;
+            }
             // Add future polling cleanup here as needed
         }
         
@@ -1575,6 +1580,17 @@
                 
                 html += '</ul>';
                 
+                // Add checkbox for showing OS detection
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-os-detection-checkbox" onchange="toggleOSDetection('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show OS detection
+                        </label>
+                    </div>
+                    <div id="os-detection-section" style="display: none;"></div>
+                `;
+                
                 // Add checkbox for showing traceroute
                 html += `
                     <div style="margin: 20px 0;">
@@ -1591,6 +1607,127 @@
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load IP users: ${err.message}`);
+            }
+        }
+        
+        async function toggleOSDetection(encodedIP) {
+            const checkbox = document.getElementById('show-os-detection-checkbox');
+            const section = document.getElementById('os-detection-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                
+                // Define inner function that can re-fetch DOM elements
+                async function fetchAndDisplayOSDetection() {
+                    const currentSection = document.getElementById('os-detection-section');
+                    if (!currentSection) {
+                        // Modal closed, stop polling
+                        if (osDetectionPollingInterval) {
+                            clearInterval(osDetectionPollingInterval);
+                            osDetectionPollingInterval = null;
+                        }
+                        return;
+                    }
+                    
+                    const ip = decodeURIComponent(encodedIP);
+                    
+                    try {
+                        const osData = await fetchData(`/os/${encodedIP}`);
+                        
+                        let html = '<h3>OS Detection</h3>';
+                        
+                        if (osData && osData.success && osData.os_matches && osData.os_matches.length > 0) {
+                            html += '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+                            html += '<thead><tr>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">OS Name</th>';
+                            html += '<th style="text-align: center; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Accuracy</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Family</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Vendor</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Type</th>';
+                            html += '</tr></thead><tbody>';
+                            
+                            for (const match of osData.os_matches) {
+                                const isBestMatch = osData.best_match && match.name === osData.best_match.name && match.accuracy === osData.best_match.accuracy;
+                                const rowStyle = isBestMatch ? 'background: #e8f5e9; font-weight: bold;' : '';
+                                
+                                html += `<tr style="${rowStyle}">`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.name || 'Unknown'}</td>`;
+                                html += `<td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${match.accuracy || 0}%</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.os_family || 'N/A'}</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.vendor || 'N/A'}</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.type || 'N/A'}</td>`;
+                                html += '</tr>';
+                            }
+                            
+                            html += '</tbody></table>';
+                            
+                            if (osData.best_match) {
+                                html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Best match (highlighted):</strong> ' + osData.best_match.name + ' (' + osData.best_match.accuracy + '% accuracy)</p>';
+                            }
+                        } else if (osData && osData.completed && !osData.success) {
+                            // Scan completed but no OS matches found
+                            html += `<div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 4px; padding: 12px; margin-top: 10px;">`;
+                            html += `<p style="color: #1565c0; margin: 0; font-weight: bold;">ℹ️ No OS Match Found</p>`;
+                            html += `<p style="color: #1565c0; margin: 8px 0 0 0; font-size: 0.9em;">The target did not respond with sufficient information for OS detection.</p>`;
+                            html += `</div>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.85em; color: #999;">This can happen if the host has OS fingerprinting protections enabled or doesn\'t respond to the scan packets.</p>';
+                            
+                            // Stop polling when completed with no matches
+                            if (osDetectionPollingInterval) {
+                                clearInterval(osDetectionPollingInterval);
+                                osDetectionPollingInterval = null;
+                            }
+                        } else if (osData && osData.failed) {
+                            // Explicit failure - stop polling and show error
+                            html += `<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-top: 10px;">`;
+                            html += `<p style="color: #856404; margin: 0; font-weight: bold;">❌ OS Detection Failed</p>`;
+                            html += `<p style="color: #856404; margin: 8px 0 0 0; font-size: 0.9em;">${osData.error || 'Unknown error occurred'}</p>`;
+                            html += `</div>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.85em; color: #999;">Note: OS detection requires nmap with root privileges. The scan may have been blocked or the target may not respond to OS fingerprinting.</p>';
+                            
+                            // Stop polling on explicit failure
+                            if (osDetectionPollingInterval) {
+                                clearInterval(osDetectionPollingInterval);
+                                osDetectionPollingInterval = null;
+                            }
+                        } else if (osData && osData.error) {
+                            // Error but not explicitly failed - might still be in progress
+                            html += `<p style="color: #ff6600; margin-top: 10px;">⚠️ ${osData.error}</p>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">OS detection scan scheduled. Results will appear here when available...</p>';
+                        } else {
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">Scanning... Results will appear here when available.</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                        
+                    } catch (err) {
+                        const currentSection = document.getElementById('os-detection-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = `<h3>OS Detection</h3><p style="color: #ff6600;">⚠️ ${err.message}</p><p style="margin-top: 10px; font-size: 0.9em; color: #666;">OS detection scan scheduled. Results will appear here when available...</p>`;
+                        }
+                    }
+                }
+                
+                // Initial fetch
+                await fetchAndDisplayOSDetection();
+                
+                // Poll every 5 seconds for updates
+                if (osDetectionPollingInterval) {
+                    clearInterval(osDetectionPollingInterval);
+                }
+                osDetectionPollingInterval = setInterval(fetchAndDisplayOSDetection, 5000);
+                
+            } else {
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                // Stop polling
+                if (osDetectionPollingInterval) {
+                    clearInterval(osDetectionPollingInterval);
+                    osDetectionPollingInterval = null;
+                }
             }
         }
         
