@@ -1022,8 +1022,42 @@
                     const share = Number(user.share_size || user.share || user.Share || 0);
                     const className = user.class_name || user.class || user.Class || 'N/A';
                     
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
                     html += `<li>`;
-                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${nick}</a> - `;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
                     html += `${formatBytes(share)} (${className})`;
                     html += `</li>`;
                 }
