@@ -141,6 +141,18 @@ except ImportError as e:
     print("[Hub API] Install with: pip install python-nmap")
     print("[Hub API] Note: Also requires nmap system package (apt install nmap)")
 
+# Try to import icmplib for network quality monitoring
+try:
+    print("[Hub API] Attempting to import icmplib...")
+    from icmplib import ping, multiping
+    print("[Hub API] icmplib imported successfully!")
+    ICMPLIB_AVAILABLE = True
+except ImportError as e:
+    ICMPLIB_AVAILABLE = False
+    print(f"[Hub API] ✗ icmplib not available: {e}")
+    print("[Hub API] Install with: pip install icmplib")
+    print("[Hub API] Note: ICMP ping requires root privileges")
+
 # Global state
 api_server = None
 api_thread = None
@@ -170,6 +182,17 @@ os_detection_in_progress = set()  # IPs currently being scanned
 OS_DETECTION_TTL = 7200  # Cache OS detection for 2 hours (longer than traceroute)
 OS_DETECTION_INTERVAL = 3600  # Re-scan every 1 hour if user still online
 MAX_CONCURRENT_OS_SCANS = 3  # Limit concurrent OS scans (lower than traceroute, more resource intensive)
+
+# ICMP ping cache (ip -> ping quality result)
+ping_cache = {}
+ping_lock = threading.Lock()
+ping_threads = {}  # batch_id -> thread object
+ping_in_progress = set()  # IPs currently being pinged
+PING_TTL = 300  # Cache ping results for 5 minutes (network conditions change frequently)
+PING_INTERVAL = 60  # Re-ping every 1 minute if user still online
+MAX_CONCURRENT_PINGS = 10  # Limit concurrent ping operations
+PING_COUNT = 10  # Number of ICMP packets to send per ping
+PING_INTERVAL_MS = 0.2  # Interval between packets in seconds
 
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
@@ -640,6 +663,171 @@ def update_os_detection_for_users():
     
     if scheduled > 0:
         print(f"[Hub API] Scheduled {scheduled} OS detection scans")
+
+def get_ping_result(ip: str) -> Optional[Dict[str, Any]]:
+    """Get cached ping result for an IP (thread-safe)
+    
+    Args:
+        ip: IP address
+    
+    Returns:
+        Ping result dict or None if not available/expired
+    """
+    with ping_lock:
+        if ip in ping_cache:
+            result = ping_cache[ip]
+            age = time.time() - result.get("timestamp", 0)
+            if age < PING_TTL:
+                return result
+        return None
+
+def perform_ping_batch(ips: List[str]):
+    """Perform ICMP ping on a batch of IP addresses
+    
+    Args:
+        ips: List of IP addresses to ping
+    """
+    if not ICMPLIB_AVAILABLE:
+        print("[Hub API] ICMP ping skipped - icmplib not available")
+        return
+    
+    batch_id = f"batch_{int(time.time())}"
+    
+    try:
+        print(f"[Hub API] Starting ping batch for {len(ips)} IPs: {ips}")
+        
+        # Use multiping for efficiency (can ping multiple hosts simultaneously)
+        # Note: privileged=True requires root/sudo
+        hosts = multiping(ips, count=PING_COUNT, interval=PING_INTERVAL_MS, timeout=2, privileged=True)
+        
+        # Convert to list to avoid consuming iterator multiple times
+        hosts_list = list(hosts)
+        print(f"[Hub API] Ping batch completed, processing {len(hosts_list)} results")
+        
+        # Store results in cache
+        with ping_lock:
+            for host in hosts_list:
+                result = {
+                    "ip": host.address,
+                    "min_rtt": round(host.min_rtt, 3) if host.min_rtt < float('inf') else None,
+                    "avg_rtt": round(host.avg_rtt, 3) if host.avg_rtt < float('inf') else None,
+                    "max_rtt": round(host.max_rtt, 3) if host.max_rtt < float('inf') else None,
+                    "packets_sent": host.packets_sent,
+                    "packets_received": host.packets_received,
+                    "packet_loss": round(host.packet_loss, 3),
+                    "jitter": round(host.jitter, 3) if host.jitter < float('inf') else None,
+                    "is_alive": host.is_alive,
+                    "timestamp": time.time(),
+                    "success": host.is_alive,
+                    "completed": True
+                }
+                
+                ping_cache[host.address] = result
+                ping_in_progress.discard(host.address)
+                
+                print(f"[Hub API] Cached ping result for {host.address}: alive={host.is_alive}, avg_rtt={result['avg_rtt']}ms")
+            
+            # Remove batch thread
+            if batch_id in ping_threads:
+                del ping_threads[batch_id]
+        
+        alive_count = sum(1 for h in hosts_list if h.is_alive)
+        print(f"[Hub API] Ping batch stored in cache: {len(hosts_list)} hosts, {alive_count} alive")
+        
+    except Exception as e:
+        print(f"[Hub API] Ping batch failed: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Store error results for all IPs in batch
+        with ping_lock:
+            for ip in ips:
+                ping_cache[ip] = {
+                    "ip": ip,
+                    "error": str(e),
+                    "timestamp": time.time(),
+                    "success": False,
+                    "failed": True,
+                    "completed": True
+                }
+                ping_in_progress.discard(ip)
+            
+            if batch_id in ping_threads:
+                del ping_threads[batch_id]
+
+def schedule_ping(ip: str) -> bool:
+    """Schedule a ping for an IP address if not already in progress
+    
+    Args:
+        ip: IP address to ping
+    
+    Returns:
+        True if ping was scheduled, False if already in progress or limit reached
+    """
+    if not ICMPLIB_AVAILABLE:
+        return False
+    
+    if not ip or ip == "127.0.0.1":
+        return False  # Skip localhost
+    
+    with ping_lock:
+        # Check if already in progress
+        if ip in ping_in_progress:
+            return False
+        
+        # Check concurrent limit
+        if len(ping_in_progress) >= MAX_CONCURRENT_PINGS:
+            return False
+        
+        # Check if we have a recent result
+        if ip in ping_cache:
+            result = ping_cache[ip]
+            age = time.time() - result.get("timestamp", 0)
+            if age < PING_INTERVAL:
+                return False  # Still fresh
+        
+        # Mark as in progress
+        ping_in_progress.add(ip)
+    
+    return True
+
+def update_pings_for_users():
+    """Update ping results for online users (called periodically)"""
+    if not ICMPLIB_AVAILABLE or not server_running:
+        return
+    
+    users = get_cached_data("users") or []
+    
+    # Get unique IPs from online users
+    user_ips = set()
+    for user in users:
+        ip = user.get("ip")
+        if ip and ip != "127.0.0.1" and not ip.startswith("192.168.") and not ip.startswith("10."):
+            user_ips.add(ip)
+    
+    print(f"[Hub API] update_pings_for_users: Found {len(user_ips)} unique user IPs")
+    
+    # Filter IPs that need updates
+    ips_to_ping = []
+    for ip in user_ips:
+        if schedule_ping(ip):
+            ips_to_ping.append(ip)
+    
+    print(f"[Hub API] update_pings_for_users: {len(ips_to_ping)} IPs need pinging")
+    
+    if ips_to_ping:
+        # Ping in batch for efficiency (limit batch size)
+        batch_size = min(len(ips_to_ping), MAX_CONCURRENT_PINGS)
+        batch = ips_to_ping[:batch_size]
+        
+        batch_id = f"batch_{int(time.time())}"
+        thread = threading.Thread(target=perform_ping_batch, args=(batch,), daemon=True)
+        thread.start()
+        
+        with ping_lock:
+            ping_threads[batch_id] = thread
+        
+        print(f"[Hub API] Scheduled ping batch: {len(batch)} IPs, thread started")
 
 def format_uptime(seconds: float) -> str:
     """Format uptime in human-readable format"""
@@ -1300,6 +1488,66 @@ if FASTAPI_AVAILABLE:
                 "os_detections": list(active_results.values()),
                 "in_progress": list(os_detection_in_progress)
             }
+    
+    @app.get("/ping/{ip}")
+    async def ping_result(ip: str):
+        """Get ping quality result for an IP address
+        
+        This endpoint returns cached ICMP ping results. Pings are performed
+        automatically for online users in the background.
+        """
+        if not ICMPLIB_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="Ping functionality not available. Install icmplib package. Note: ICMP ping requires root privileges."
+            )
+        
+        result = get_ping_result(ip)
+        
+        if not result:
+            # Try to schedule a ping if not already cached
+            scheduled = schedule_ping(ip)
+            
+            if scheduled:
+                # Actually launch the ping in a background thread
+                thread = threading.Thread(target=perform_ping_batch, args=([ip],), daemon=True)
+                thread.start()
+                
+                batch_id = f"single_{ip}_{int(time.time())}"
+                with ping_lock:
+                    ping_threads[batch_id] = thread
+            
+            raise HTTPException(
+                status_code=404,
+                detail=f"No ping data available for {ip}" +
+                       (" - ping scheduled, try again in a few seconds" if scheduled else "")
+            )
+        
+        return result
+    
+    @app.get("/pings")
+    async def all_pings():
+        """Get all cached ping results"""
+        if not ICMPLIB_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="Ping functionality not available. Install icmplib package."
+            )
+        
+        with ping_lock:
+            # Filter out expired results
+            current_time = time.time()
+            active_results = {
+                ip: result
+                for ip, result in ping_cache.items()
+                if current_time - result.get("timestamp", 0) < PING_TTL
+            }
+            
+            return {
+                "count": len(active_results),
+                "pings": list(active_results.values()),
+                "in_progress": list(ping_in_progress)
+            }
 
     @app.get("/favicon.ico")
     async def favicon():
@@ -1464,6 +1712,14 @@ def OnTimer(msec=0):
     
     last_cache_update = current_time
     update_data_cache()
+    
+    # Periodically update pings for online users
+    # Do this frequently (every 15 seconds) as network conditions change quickly
+    if int(current_time) % 15 == 0:
+        try:
+            update_pings_for_users()
+        except Exception as e:
+            print(f"[Hub API] Error updating pings: {e}")
     
     # Periodically update traceroutes for online users
     # Do this less frequently (every 30 seconds)
@@ -1649,6 +1905,17 @@ def UnLoad():
         
         print(f"Cleaned up {len(threads_to_wait)} OS detection threads")
     
+    # Wait for ping threads to finish (with timeout)
+    if ICMPLIB_AVAILABLE:
+        print("Waiting for ping threads to finish...")
+        with ping_lock:
+            threads_to_wait = list(ping_threads.values())
+        
+        for thread in threads_to_wait:
+            thread.join(timeout=1.0)  # Wait max 1 second per thread (pings are fast)
+        
+        print(f"Cleaned up {len(threads_to_wait)} ping threads")
+    
     print("Hub API script unloaded")
 
 # =============================================================================
@@ -1668,6 +1935,22 @@ if FASTAPI_AVAILABLE:
         print(f"  - Re-trace interval: {TRACEROUTE_INTERVAL} seconds")
     else:
         print("Traceroute functionality disabled (install with: pip install gufo-traceroute)")
+    
+    if NMAP_AVAILABLE:
+        print("OS detection functionality enabled")
+        print(f"  - Max concurrent scans: {MAX_CONCURRENT_OS_SCANS}")
+        print(f"  - Cache TTL: {OS_DETECTION_TTL} seconds")
+    else:
+        print("OS detection functionality disabled (install with: pip install python-nmap)")
+    
+    if ICMPLIB_AVAILABLE:
+        print("ICMP ping functionality enabled")
+        print(f"  - Max concurrent pings: {MAX_CONCURRENT_PINGS}")
+        print(f"  - Cache TTL: {PING_TTL} seconds")
+        print(f"  - Ping count: {PING_COUNT} packets")
+    else:
+        print("ICMP ping functionality disabled (install with: pip install icmplib)")
+        print("Note: ICMP ping requires root privileges")
 else:
     print("Hub API script loaded with LIMITED functionality")
     print("Install dependencies: pip install fastapi uvicorn")
