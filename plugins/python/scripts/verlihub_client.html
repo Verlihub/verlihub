@@ -97,6 +97,7 @@
             <span class="tab" data-tab="geo">Countries</span>
             <span class="tab" data-tab="cities">Cities</span>
             <span class="tab" data-tab="asns">ASNs</span>
+            <span class="tab" data-tab="ips">IPs</span>
         </div>
         <div id="content">Loading...</div>
     </div>
@@ -117,12 +118,14 @@
         let currentGeo = [];
         let currentCities = [];
         let currentASNs = [];
+        let currentIPs = [];
         let lastHubHtml = '';
         let lastUsersHtml = '';
         let lastGeoHtml = '';
         let lastCitiesHtml = '';
         let lastASNsHtml = '';
-        let isFirstLoad = { users: true, geo: true, cities: true, asns: true };
+        let lastIPsHtml = '';
+        let isFirstLoad = { users: true, geo: true, cities: true, asns: true, ips: true };
         let hideClones = false;
         let opsList = [];
         let botsList = [];
@@ -133,7 +136,8 @@
             users: { key: 'share', asc: false },
             geo: { key: 'users', asc: false },
             cities: { key: 'users', asc: false },
-            asns: { key: 'users', asc: false }
+            asns: { key: 'users', asc: false },
+            ips: { key: 'users', asc: false }
         };
 
         function fetchData(endpoint) {
@@ -554,6 +558,90 @@
             return html;
         }
 
+        function renderIPs(users) {
+            if (!users || !Array.isArray(users)) return '<p>No IP data available</p>';
+
+            // Build IP statistics: key is IP address, value is { ip, hostname, asn, users count }
+            const ipStats = new Map();
+            
+            for (const user of users) {
+                const ip = user.ip || '';
+                const asn = user.asn || 'N/A';
+                const hostname = user.host || '';
+                
+                if (!ip || ip === 'N/A' || ip === '') continue;
+                
+                if (!ipStats.has(ip)) {
+                    ipStats.set(ip, { ip: ip, hostname: hostname, asn: asn, users: 0 });
+                }
+                ipStats.get(ip).users++;
+            }
+            
+            const ipArray = Array.from(ipStats.values());
+            const totalIPs = ipArray.length;
+
+            const sortedIPs = [...ipArray].sort((a, b) => {
+                if (sortState.ips.key === 'ip') {
+                    return sortState.ips.asc 
+                        ? a.ip.localeCompare(b.ip)
+                        : b.ip.localeCompare(a.ip);
+                } else if (sortState.ips.key === 'hostname') {
+                    return sortState.ips.asc 
+                        ? a.hostname.localeCompare(b.hostname)
+                        : b.hostname.localeCompare(a.hostname);
+                } else if (sortState.ips.key === 'asn') {
+                    return sortState.ips.asc 
+                        ? a.asn.localeCompare(b.asn)
+                        : b.asn.localeCompare(a.asn);
+                } else {
+                    return sortState.ips.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total IP addresses: ${totalIPs}</div>`;
+            html += '<table id="ips-table"><thead><tr>';
+            
+            const ipHeaders = [
+                { text: 'IP Address', key: 'ip' },
+                { text: 'Hostname', key: 'hostname' },
+                { text: 'ASN', key: 'asn' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            ipHeaders.forEach(h => {
+                const arrow = sortState.ips.key === h.key 
+                    ? (sortState.ips.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('ips', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.ips.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedIPs) {
+                const prev = currentIPs.find(i => i.ip === item.ip);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.ips && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const ipAddr = item.ip || '??';
+                const hostName = item.hostname || 'N/A';
+                const asnName = item.asn || 'N/A';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showIPUsers('${encodeURIComponent(ipAddr)}')">`;
+                html += `<td>${ipAddr}</td>`;
+                html += `<td>${hostName}</td>`;
+                html += `<td>${asnName}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentIPs = [...ipArray];
+            isFirstLoad.ips = false;
+
+            return html;
+        }
+
         function setSort(tab, key) {
             if (sortState[tab].key === key) {
                 sortState[tab].asc = !sortState[tab].asc;
@@ -656,10 +744,14 @@
                             }
                             html += '<div class="hub-info">';
 
-                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon', 'uptime_seconds', 'uptime'];
-                            html += renderKeyValue(hubData, hubExclude);
-
-                            // Handle uptime separately with live updates
+                            // Build ordered hub info display
+                            html += '<ul class="info-list">';
+                            
+                            // 1. Version
+                            const version = hubData.version || hubData.Version || 'N/A';
+                            html += `<li><strong>Version:</strong> ${version}</li>`;
+                            
+                            // 2. Uptime (with live updates)
                             const uptimeSeconds = hubData.uptime_seconds || 0;
                             if (uptimeSeconds > 0) {
                                 hubStartTime = Date.now() - (uptimeSeconds * 1000);
@@ -668,11 +760,9 @@
                                 if (uptimeUpdateInterval) clearInterval(uptimeUpdateInterval);
                                 uptimeUpdateInterval = setInterval(updateUptimeDisplay, 1000);
                                 
-                                html += '<ul class="info-list">';
                                 html += '<li><strong>Uptime:</strong> <span id="hub-uptime">' + formatUptime(uptimeSeconds) + '</span></li>';
-                                html += '</ul>';
                             }
-
+                            
                             // Calculate clone statistics for share display
                             const hasSignificantClones = clonedShare > 0;
                             const clonePercent = rawTotalShare > 0 ? ((clonedShare / rawTotalShare) * 100).toFixed(1) : 0;
@@ -681,27 +771,30 @@
                             
                             const warningEmoji = '⚠️';
                             
-                            // Build share display
+                            // 3. Total Share
                             let totalShareDisplay = formatBytes(rawTotalShare);
                             if (hasSignificantClones) {
                                 totalShareDisplay += ` ${warningEmoji} (${clonePercent}% cloned)`;
                             }
+                            html += `<li><strong>Total Share:</strong> ${totalShareDisplay}</li>`;
                             
+                            // 4. Average Share
                             let avgShareDisplay = formatBytes(rawAvgShare);
                             if (hasSignificantClones) {
                                 avgShareDisplay += ` ${warningEmoji} (${avgClonePercent}% cloned)`;
                             }
+                            html += `<li><strong>Average Share:</strong> ${avgShareDisplay}</li>`;
                             
-                            const shareDisplayData = {
-                                'Total Share': totalShareDisplay,
-                                'Average Share': avgShareDisplay
-                            };
-                            html += renderKeyValue(shareDisplayData);
-
-                            const liveStats = {
-                                'Users Online': statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A'
-                            };
-                            html += renderKeyValue(liveStats);
+                            // 5. Users Online / Max Users
+                            const usersOnline = statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A';
+                            const maxUsers = hubData.max_users || hubData.MaxUsers || hubData.max_users_total || '';
+                            let usersDisplay = usersOnline;
+                            if (maxUsers && maxUsers !== '' && maxUsers !== 'N/A') {
+                                usersDisplay += ` / ${maxUsers}`;
+                            }
+                            html += `<li><strong>Users Online:</strong> ${usersDisplay}</li>`;
+                            
+                            html += '</ul>';
 
                             html += '</div>';  // Close hub-info
                             html += '</div>';  // Close hub-upper
@@ -777,6 +870,22 @@
                             lastASNsHtml = html;
                         }
                         break;
+                    case 'ips':
+                        console.log('Loading IPs tab...');
+                        let ipsResponse = await fetchData('/users?limit=500');
+                        let ipsUsers = [];
+                        if (Array.isArray(ipsResponse)) ipsUsers = ipsResponse;
+                        else if (ipsResponse && ipsResponse.users && Array.isArray(ipsResponse.users)) ipsUsers = ipsResponse.users;
+                        else if (ipsResponse && ipsResponse.data && Array.isArray(ipsResponse.data)) ipsUsers = ipsResponse.data;
+
+                        html = renderIPs(ipsUsers);
+
+                        if (html === lastIPsHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastIPsHtml = html;
+                        }
+                        break;
                 }
 
                 console.log('After switch - shouldUpdate:', shouldUpdate, 'HTML length:', html.length);
@@ -848,10 +957,20 @@
                 const isOp = opsList.some(op => op.nick === nick);
                 const isBot = botsList.some(bot => bot.nick === nick);
                 
+                // Store ASN and IP for making them clickable later
+                let userASN = '';
+                let userIP = '';
+                
                 for (const [key, value] of Object.entries(data)) {
                     if (key === 'share_formatted') continue;
                     
-                    if (geoFields.includes(key) && value && value !== '' && value !== 'N/A') {
+                    if (key === 'asn' && value && value !== '' && value !== 'N/A') {
+                        userASN = value;
+                        geoInfo[key] = value;
+                    } else if (key === 'ip' && value && value !== '') {
+                        userIP = value;
+                        connectionInfo[key] = value;
+                    } else if (geoFields.includes(key) && value && value !== '' && value !== 'N/A') {
                         geoInfo[key] = value;
                     } else if (connectionFields.includes(key) && value && value !== '') {
                         connectionInfo[key] = value;
@@ -892,13 +1011,46 @@
                     if (geoInfo.country_code) {
                         html += `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${getFlagEmoji(geoInfo.country_code)}</div>`;
                     }
-                    html += renderKeyValue(geoInfo, [], fieldRenames);
+                    
+                    html += '<ul class="info-list">';
+                    
+                    for (const [key, value] of Object.entries(geoInfo)) {
+                        const displayKey = fieldRenames[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let formattedValue = value ?? 'N/A';
+                        
+                        // Make ASN clickable
+                        if (key === 'asn' && userASN && userASN !== 'N/A') {
+                            formattedValue = `<a href="#" onclick="showASNUsers('${encodeURIComponent(userASN)}'); return false;" style="color: #0066cc; text-decoration: underline;">${value}</a>`;
+                        } else if (typeof value === 'string') {
+                            formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        }
+                        
+                        html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
+                    }
+                    
+                    html += '</ul>';
                 }
                 
                 // Connection Information Section
                 if (Object.keys(connectionInfo).length > 0) {
                     html += '<h3>Connection Information</h3>';
-                    html += renderKeyValue(connectionInfo, [], fieldRenames);
+                    html += '<ul class="info-list">';
+                    
+                    for (const [key, value] of Object.entries(connectionInfo)) {
+                        const displayKey = fieldRenames[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let formattedValue = value ?? 'N/A';
+                        
+                        // Make IP address clickable
+                        if (key === 'ip' && userIP && userIP !== 'N/A') {
+                            formattedValue = `<a href="#" onclick="showIPUsers('${encodeURIComponent(userIP)}'); return false;" style="color: #0066cc; text-decoration: underline;">${value}</a>`;
+                        } else if (typeof value === 'string') {
+                            formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        }
+                        
+                        html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
+                    }
+                    
+                    html += '</ul>';
                 }
                 
                 // Network/Clone Detection Section
@@ -1246,6 +1398,159 @@
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load ASN users: ${err.message}`);
+            }
+        }
+        
+        async function showIPUsers(encodedIP) {
+            try {
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Fetch all users and filter by IP
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by IP
+                const ipUsers = allUsers.filter(u => {
+                    const userIP = u.ip || '';
+                    return userIP === ip;
+                });
+                
+                if (ipUsers.length === 0) {
+                    alert(`No users found for IP: ${ip}`);
+                    return;
+                }
+                
+                // Build HTML for IP users popup
+                let html = `<h3>Users on IP ${ip} (${ipUsers.length})</h3>`;
+                
+                // Get hostname and ASN from first user (should be same for all)
+                if (ipUsers.length > 0) {
+                    const firstUser = ipUsers[0];
+                    const hostname = firstUser.host || 'N/A';
+                    const asn = firstUser.asn || 'N/A';
+                    
+                    html += '<ul class="info-list">';
+                    html += `<li><strong>Hostname:</strong> ${hostname}</li>`;
+                    html += `<li><strong>ASN:</strong> ${asn}</li>`;
+                    html += '</ul>';
+                }
+                
+                // Try to fetch traceroute data for this IP
+                try {
+                    const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
+                    console.log('Traceroute data for', ip, ':', tracerouteData);
+                    
+                    if (tracerouteData && tracerouteData.success) {
+                        html += '<h3>Network Path (Traceroute)</h3>';
+                        html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
+                        
+                        if (tracerouteData.hops && tracerouteData.hops.length > 0) {
+                            html += '<table><thead><tr>';
+                            html += '<th style="width: 80px;">Hop</th>';
+                            html += '<th>IP Address</th>';
+                            html += '<th style="width: 120px;">RTT (ms)</th>';
+                            html += '</tr></thead><tbody>';
+                            
+                            for (const hop of tracerouteData.hops) {
+                                const hopNum = hop.hop || '?';
+                                const hopIP = hop.ip || '*';
+                                const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
+                                    ? hop.rtt_ms.toFixed(2) 
+                                    : '*';
+                                
+                                html += '<tr>';
+                                html += `<td style="text-align: center;">${hopNum}</td>`;
+                                html += `<td>${hopIP}</td>`;
+                                html += `<td style="text-align: center;">${rtt}</td>`;
+                                html += '</tr>';
+                            }
+                            
+                            html += '</tbody></table>';
+                        }
+                        
+                        // Show when the traceroute was performed
+                        if (tracerouteData.timestamp) {
+                            const traceDate = new Date(tracerouteData.timestamp * 1000);
+                            const now = new Date();
+                            const ageSeconds = Math.floor((now - traceDate) / 1000);
+                            const ageMinutes = Math.floor(ageSeconds / 60);
+                            const ageStr = ageMinutes > 0 
+                                ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                            html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
+                        }
+                    }
+                    // If not successful or in progress, don't show anything (silently skip)
+                } catch (traceErr) {
+                    // Traceroute failed or not available - silently skip
+                    console.log('Traceroute not available for IP:', ip, traceErr);
+                }
+                
+                // User list section
+                html += '<h3>Users List</h3>';
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                ipUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of ipUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const userIp = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${userIp}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load IP users: ${err.message}`);
             }
         }
 
