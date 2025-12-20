@@ -170,6 +170,7 @@ traceroute_cache = {}
 traceroute_lock = threading.Lock()
 traceroute_threads = {}  # ip -> thread object
 traceroute_in_progress = set()  # IPs currently being traced
+traceroute_priority_queue = {}  # ip -> priority (1=on-demand, 2=periodic, 3=background)
 TRACEROUTE_TTL = 3600  # Cache traceroute results for 1 hour
 TRACEROUTE_INTERVAL = 300  # Re-trace every 5 minutes if user still online
 MAX_CONCURRENT_TRACEROUTES = 5  # Limit concurrent traceroutes
@@ -179,6 +180,7 @@ os_detection_cache = {}
 os_detection_lock = threading.Lock()
 os_detection_threads = {}  # ip -> thread object
 os_detection_in_progress = set()  # IPs currently being scanned
+os_detection_priority_queue = {}  # ip -> priority (1=on-demand, 2=periodic, 3=background)
 OS_DETECTION_TTL = 7200  # Cache OS detection for 2 hours (longer than traceroute)
 OS_DETECTION_INTERVAL = 3600  # Re-scan every 1 hour if user still online
 MAX_CONCURRENT_OS_SCANS = 3  # Limit concurrent OS scans (lower than traceroute, more resource intensive)
@@ -188,6 +190,7 @@ ping_cache = {}
 ping_lock = threading.Lock()
 ping_threads = {}  # batch_id -> thread object
 ping_in_progress = set()  # IPs currently being pinged
+ping_priority_queue = {}  # ip -> priority (1=on-demand, 2=periodic, 3=background)
 PING_TTL = 300  # Cache ping results for 5 minutes (network conditions change frequently)
 PING_INTERVAL = 60  # Re-ping every 1 minute if user still online
 MAX_CONCURRENT_PINGS = 10  # Limit concurrent ping operations
@@ -414,11 +417,12 @@ def perform_traceroute(ip: str):
     """
     asyncio.run(perform_traceroute_async(ip))
 
-def schedule_traceroute(ip: str) -> bool:
+def schedule_traceroute(ip: str, priority: int = 3) -> bool:
     """Schedule a traceroute for an IP address if not already in progress
     
     Args:
         ip: IP address to trace
+        priority: Priority level (1=on-demand/highest, 2=periodic, 3=background/lowest)
     
     Returns:
         True if traceroute was scheduled, False if already in progress or limit reached
@@ -432,10 +436,18 @@ def schedule_traceroute(ip: str) -> bool:
     with traceroute_lock:
         # Check if already in progress
         if ip in traceroute_in_progress:
+            # Update priority if new request has higher priority (lower number)
+            if ip in traceroute_priority_queue:
+                traceroute_priority_queue[ip] = min(traceroute_priority_queue[ip], priority)
             return False
         
         # Check concurrent limit
         if len(traceroute_in_progress) >= MAX_CONCURRENT_TRACEROUTES:
+            # Queue it with priority for later
+            if ip not in traceroute_priority_queue:
+                traceroute_priority_queue[ip] = priority
+            else:
+                traceroute_priority_queue[ip] = min(traceroute_priority_queue[ip], priority)
             return False
         
         # Check if we have a recent result
@@ -443,10 +455,16 @@ def schedule_traceroute(ip: str) -> bool:
             result = traceroute_cache[ip]
             age = time.time() - result.get("timestamp", 0)
             if age < TRACEROUTE_INTERVAL:
-                return False  # Too recent, don't re-trace yet
+                # For on-demand requests (priority 1), ignore cache if it's old
+                if priority == 1 and age > 60:  # On-demand requests want fresh data after 1 min
+                    pass  # Continue to schedule
+                else:
+                    return False  # Too recent, don't re-trace yet
         
         # Mark as in progress
         traceroute_in_progress.add(ip)
+        # Remove from queue if it was there
+        traceroute_priority_queue.pop(ip, None)
     
     # Start traceroute in background thread
     thread = threading.Thread(target=perform_traceroute, args=(ip,), daemon=True)
@@ -595,11 +613,12 @@ def perform_os_detection(ip: str):
             if ip in os_detection_threads:
                 del os_detection_threads[ip]
 
-def schedule_os_detection(ip: str) -> bool:
+def schedule_os_detection(ip: str, priority: int = 3) -> bool:
     """Schedule an OS detection scan for an IP address if not already in progress
     
     Args:
         ip: IP address to scan
+        priority: Priority level (1=on-demand/highest, 2=periodic, 3=background/lowest)
     
     Returns:
         True if scan was scheduled, False if already in progress or limit reached
@@ -613,10 +632,18 @@ def schedule_os_detection(ip: str) -> bool:
     with os_detection_lock:
         # Check if already in progress
         if ip in os_detection_in_progress:
+            # Update priority if new request has higher priority
+            if ip in os_detection_priority_queue:
+                os_detection_priority_queue[ip] = min(os_detection_priority_queue[ip], priority)
             return False
         
         # Check concurrent limit
         if len(os_detection_in_progress) >= MAX_CONCURRENT_OS_SCANS:
+            # Queue it with priority for later
+            if ip not in os_detection_priority_queue:
+                os_detection_priority_queue[ip] = priority
+            else:
+                os_detection_priority_queue[ip] = min(os_detection_priority_queue[ip], priority)
             return False
         
         # Check if we have a recent result
@@ -624,10 +651,16 @@ def schedule_os_detection(ip: str) -> bool:
             result = os_detection_cache[ip]
             age = time.time() - result.get("timestamp", 0)
             if age < OS_DETECTION_INTERVAL:
-                return False  # Too recent, don't re-scan yet
+                # For on-demand requests, ignore cache if it's old
+                if priority == 1 and age > 300:  # On-demand wants fresh data after 5 min
+                    pass  # Continue to schedule
+                else:
+                    return False  # Too recent, don't re-scan yet
         
         # Mark as in progress
         os_detection_in_progress.add(ip)
+        # Remove from queue if it was there
+        os_detection_priority_queue.pop(ip, None)
     
     # Start OS detection in background thread
     thread = threading.Thread(target=perform_os_detection, args=(ip,), daemon=True)
@@ -755,11 +788,12 @@ def perform_ping_batch(ips: List[str]):
             if batch_id in ping_threads:
                 del ping_threads[batch_id]
 
-def schedule_ping(ip: str) -> bool:
+def schedule_ping(ip: str, priority: int = 3) -> bool:
     """Schedule a ping for an IP address if not already in progress
     
     Args:
         ip: IP address to ping
+        priority: Priority level (1=on-demand/highest, 2=periodic, 3=background/lowest)
     
     Returns:
         True if ping was scheduled, False if already in progress or limit reached
@@ -773,10 +807,18 @@ def schedule_ping(ip: str) -> bool:
     with ping_lock:
         # Check if already in progress
         if ip in ping_in_progress:
+            # Update priority if new request has higher priority
+            if ip in ping_priority_queue:
+                ping_priority_queue[ip] = min(ping_priority_queue[ip], priority)
             return False
         
         # Check concurrent limit
         if len(ping_in_progress) >= MAX_CONCURRENT_PINGS:
+            # Queue it with priority for later
+            if ip not in ping_priority_queue:
+                ping_priority_queue[ip] = priority
+            else:
+                ping_priority_queue[ip] = min(ping_priority_queue[ip], priority)
             return False
         
         # Check if we have a recent result
@@ -784,10 +826,16 @@ def schedule_ping(ip: str) -> bool:
             result = ping_cache[ip]
             age = time.time() - result.get("timestamp", 0)
             if age < PING_INTERVAL:
-                return False  # Still fresh
+                # For on-demand requests, accept slightly older cache
+                if priority == 1 and age > 30:  # On-demand wants fresh data after 30 sec
+                    pass  # Continue to schedule
+                else:
+                    return False  # Still fresh
         
         # Mark as in progress
         ping_in_progress.add(ip)
+        # Remove from queue if it was there
+        ping_priority_queue.pop(ip, None)
     
     return True
 
@@ -1403,13 +1451,13 @@ if FASTAPI_AVAILABLE:
         result = get_traceroute_result(ip)
         
         if not result:
-            # Try to schedule a traceroute if not already cached
-            scheduled = schedule_traceroute(ip)
+            # Try to schedule a traceroute if not already cached (priority 1 = on-demand)
+            scheduled = schedule_traceroute(ip, priority=1)
             
             raise HTTPException(
-                status_code=404, 
-                detail=f"No traceroute data available for {ip}" + 
-                       (" - traceroute scheduled, try again in a few seconds" if scheduled else "")
+                status_code=404,
+                detail=f"No traceroute data available for {ip}" +
+                       (" - high-priority traceroute scheduled, try again in a few seconds" if scheduled else "")
             )
         
         return result
@@ -1505,8 +1553,8 @@ if FASTAPI_AVAILABLE:
         result = get_ping_result(ip)
         
         if not result:
-            # Try to schedule a ping if not already cached
-            scheduled = schedule_ping(ip)
+            # Try to schedule a ping if not already cached (priority 1 = on-demand)
+            scheduled = schedule_ping(ip, priority=1)
             
             if scheduled:
                 # Actually launch the ping in a background thread
@@ -1520,7 +1568,7 @@ if FASTAPI_AVAILABLE:
             raise HTTPException(
                 status_code=404,
                 detail=f"No ping data available for {ip}" +
-                       (" - ping scheduled, try again in a few seconds" if scheduled else "")
+                       (" - high-priority ping scheduled, try again in a few seconds" if scheduled else "")
             )
         
         return result
@@ -1740,9 +1788,36 @@ def OnTimer(msec=0):
     return 1
 
 def OnUserLogin(nick):
-    """Update cache when user logs in (runs in main thread)"""
+    """Update cache when user logs in (runs in main thread)
+    
+    Also proactively schedules network diagnostics for the user's IP
+    """
     if server_running:
         update_data_cache()
+        
+        # Proactively gather network diagnostics for new user (background priority)
+        try:
+            ip = vh.GetUserIP(nick)
+            if ip and ip != "127.0.0.1" and not ip.startswith("192.168.") and not ip.startswith("10."):
+                # Schedule all diagnostics with priority 3 (background)
+                # This ensures data is ready when/if user clicks on it
+                scheduled_ping = schedule_ping(ip, priority=3)
+                scheduled_trace = schedule_traceroute(ip, priority=3)
+                scheduled_os = schedule_os_detection(ip, priority=3)
+                
+                # Actually launch ping if scheduled (pings are quick)
+                if scheduled_ping:
+                    thread = threading.Thread(target=perform_ping_batch, args=([ip],), daemon=True)
+                    thread.start()
+                    batch_id = f"login_{ip}_{int(time.time())}"
+                    with ping_lock:
+                        ping_threads[batch_id] = thread
+                
+                if any([scheduled_ping, scheduled_trace, scheduled_os]):
+                    print(f"[Hub API] Proactive diagnostics scheduled for new user {nick} ({ip}): ping={scheduled_ping}, trace={scheduled_trace}, os={scheduled_os}")
+        except Exception as e:
+            print(f"[Hub API] Error scheduling proactive diagnostics for {nick}: {e}")
+    
     return 1
 
 def OnUserLogout(nick):
