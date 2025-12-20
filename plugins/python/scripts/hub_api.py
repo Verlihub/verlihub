@@ -13,6 +13,7 @@ Admin commands:
   !api start [port]  - Start the API server (default port: 8000)
   !api stop          - Stop the API server
   !api status        - Check API server status
+  !api update        - Force cache refresh
   !api help          - Show help
 
 Requirements:
@@ -1033,26 +1034,24 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         
         if ip:
             try:
-                country = vh.GetIPCN(ip) or ""
-                city_raw = vh.GetIPCity(ip, "")
-                city = city_raw if (city_raw and city_raw not in ("--", "")) else ""
-                asn_raw = vh.GetIPASN(ip, "")
-                asn = asn_raw if (asn_raw and asn_raw not in ("--", "")) else ""
-                
-                # GetGeoIP returns a dict with all geographic details
+                # GetGeoIP returns a dict with all geographic details including city
                 geo_data = vh.GetGeoIP(ip, "")
                 if geo_data and isinstance(geo_data, dict):
+                    country = geo_data.get("country", "") or ""
+                    city = geo_data.get("city", "") or ""
                     region = geo_data.get("region", "") or ""
                     region_code = geo_data.get("region_code", "") or ""
                     timezone = geo_data.get("time_zone", "") or ""
                     continent = geo_data.get("continent", "") or ""
                     continent_code = geo_data.get("continent_code", "") or ""
                     postal_code = geo_data.get("postal_code", "") or ""
-                    # Override with GeoIP values if available
-                    if not country and geo_data.get("country"):
-                        country = geo_data.get("country")
-                    if not city and geo_data.get("city"):
-                        city = geo_data.get("city")
+                else:
+                    # Fallback to individual calls if GetGeoIP doesn't return full data
+                    country = vh.GetIPCN(ip) or ""
+                
+                # Get ASN separately
+                asn_raw = vh.GetIPASN(ip, "")
+                asn = asn_raw if (asn_raw and asn_raw not in ("--", "")) else ""
             except Exception as e:
                 print(f"[Hub API] Error getting geo info for {ip}: {e}")
         
@@ -1745,7 +1744,7 @@ def OnParsedMsgSupports(ip, msg, back):
     
     return 1  # Allow message to be processed
 
-def OnTimer(msec=0):
+def OnTimer(msec):
     """Update data cache periodically (runs in main thread)"""
     global last_cache_update
     
@@ -1859,7 +1858,7 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     
     if len(parts) < 2:
         print(f"[Hub API] No subcommand, showing usage")
-        send_message("Usage: !api [start|stop|status|help] [port]")
+        send_message("Usage: !api [start|stop|status|update|help] [port]")
         return 0  # Block command, we handled it
     
     subcmd = parts[1].lower()
@@ -1915,6 +1914,16 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
         else:
             send_message("API server is STOPPED")
     
+    elif subcmd == "update":
+        # Force immediate cache refresh (bypasses throttle)
+        if server_running:
+            global last_cache_update
+            last_cache_update = 0  # Reset throttle timer
+            update_data_cache()
+            send_message("Cache updated successfully")
+        else:
+            send_message("API server is not running")
+    
     elif subcmd == "help":
         help_text = """
 Hub API Commands:
@@ -1923,6 +1932,7 @@ Hub API Commands:
                                      Example: !api start 30000 https://example.com https://other.com
   !api stop                        - Stop API server
   !api status                      - Check server status
+  !api update                      - Force cache refresh
   !api help                        - Show this help
 
 API Endpoints:

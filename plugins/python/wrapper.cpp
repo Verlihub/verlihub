@@ -1168,9 +1168,70 @@ static PyObject* vh_GetUserExtJSON(PyObject *self, PyObject *args)     { return 
 static PyObject* vh_GetUserCC(PyObject *self, PyObject *args)          { return vh_CallString(W_GetUserCC, args, "s"); }
 static PyObject* vh_GetIPCC(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCC, args, "s"); }
 static PyObject* vh_GetIPCN(PyObject *self, PyObject *args)            { return vh_CallString(W_GetIPCN, args, "s"); }
-static PyObject* vh_GetIPCity(PyObject *self, PyObject *args)          { return vh_CallString(W_GetIPCity, args, "ss"); }
-static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "ss"); }
-static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)           { return vh_CallString(W_GetGeoIP, args, "ss"); }
+static PyObject* vh_GetIPASN(PyObject *self, PyObject *args)           { return vh_CallString(W_GetIPASN, args, "s|s"); }
+
+// GetGeoIP returns a dictionary with geographic data
+static PyObject* vh_GetGeoIP(PyObject *self, PyObject *args)
+{
+	// Parse Python arguments (IP required, DB optional)
+	const char *ip = NULL, *db = NULL;
+	if (!PyArg_ParseTuple(args, "s|s", &ip, &db))
+		return NULL;
+
+	// Pack arguments for callback
+	w_Targs *call_args = w_pack(db ? "ss" : "s", ip, db);
+	if (!call_args)
+		Py_RETURN_NONE;
+
+	// Call the C++ callback
+	w_Targs *res = w_Python->callbacks[W_GetGeoIP](W_GetGeoIP, call_args);
+	if (!res)
+		Py_RETURN_NONE;
+
+	// Unpack the complex structure: 'sdsdslslp'
+	// Format: latitude(s,d) longitude(s,d) metro_code(s,l) area_code(s,l) data(p)
+	char *lat_key, *lon_key, *metro_key, *area_key;
+	double latitude, longitude;
+	long metro_code, area_code;
+	void *data_ptr;
+
+	if (!w_unpack(res, "sdsdslslp", 
+	              &lat_key, &latitude,
+	              &lon_key, &longitude,
+	              &metro_key, &metro_code,
+	              &area_key, &area_code,
+	              &data_ptr)) {
+		free(res);
+		Py_RETURN_NONE;
+	}
+
+	// Create Python dictionary
+	PyObject *dict = PyDict_New();
+	if (!dict) {
+		free(res);
+		return NULL;
+	}
+
+	// Add numeric fields
+	PyDict_SetItemString(dict, "latitude", PyFloat_FromDouble(latitude));
+	PyDict_SetItemString(dict, "longitude", PyFloat_FromDouble(longitude));
+	PyDict_SetItemString(dict, "metro_code", PyLong_FromLong(metro_code));
+	PyDict_SetItemString(dict, "area_code", PyLong_FromLong(area_code));
+
+	// Extract string fields from vector
+	if (data_ptr) {
+		std::vector<std::string> *data = static_cast<std::vector<std::string>*>(data_ptr);
+		// Vector contains key-value pairs as consecutive strings
+		for (size_t i = 0; i + 1 < data->size(); i += 2) {
+			const char *key = (*data)[i].c_str();
+			const char *value = (*data)[i + 1].c_str();
+			PyDict_SetItemString(dict, key, PyUnicode_FromString(HubToUtf8(value).c_str()));
+		}
+	}
+
+	free(res);
+	return dict;
+}
 static PyObject* vh_AddRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_AddRegUser, args, "sl|ss"); }
 static PyObject* vh_DelRegUser(PyObject *self, PyObject *args)         { return vh_CallBool(W_DelRegUser, args, "s"); }
 static PyObject* vh_SetRegClass(PyObject *self, PyObject *args)        { return vh_CallBool(W_SetRegClass, args, "sl"); }
@@ -1476,10 +1537,10 @@ static PyMethodDef vh_methods[] = {
 	{"GetUserCC",          vh_GetUserCC,          METH_VARARGS, "Get user country code"},
 	{"GetIPCC",            vh_GetIPCC,            METH_VARARGS, "Get country code for IP"},
 	{"GetIPCN",            vh_GetIPCN,            METH_VARARGS, "Get country name for IP"},
-	{"GetIPCity",          vh_GetIPCity,          METH_VARARGS, "Get city for IP"},
 	{"GetIPASN",           vh_GetIPASN,           METH_VARARGS, "Get ASN for IP"},
 	{"GetGeoIP",           vh_GetGeoIP,           METH_VARARGS, "Get GeoIP info"},
 	{"AddRegUser",         vh_AddRegUser,         METH_VARARGS, "Register new user"},
+
 	{"DelRegUser",         vh_DelRegUser,         METH_VARARGS, "Delete registered user"},
 	{"SetRegClass",        vh_SetRegClass,        METH_VARARGS, "Set registered user class"},
 	{"Ban",                vh_Ban,                METH_VARARGS, "Ban user"},
