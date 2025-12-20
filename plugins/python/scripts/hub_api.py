@@ -118,6 +118,17 @@ except ImportError as e:
     import traceback
     traceback.print_exc()
 
+# Try to import gufo.traceroute
+try:
+    print("[Hub API] Attempting to import gufo.traceroute...")
+    from gufo.traceroute import Traceroute
+    print("[Hub API] gufo.traceroute imported successfully!")
+    TRACEROUTE_AVAILABLE = True
+except ImportError as e:
+    TRACEROUTE_AVAILABLE = False
+    print(f"[Hub API] ✗ gufo.traceroute not available: {e}")
+    print("[Hub API] Install with: pip install gufo-traceroute")
+
 # Global state
 api_server = None
 api_thread = None
@@ -129,6 +140,15 @@ hub_start_time = None  # Track when hub started (or when script loaded)
 # Support flags tracking (nick -> list of support flags)
 support_flags_cache = {}
 support_flags_lock = threading.Lock()
+
+# Traceroute cache (ip -> traceroute result)
+traceroute_cache = {}
+traceroute_lock = threading.Lock()
+traceroute_threads = {}  # ip -> thread object
+traceroute_in_progress = set()  # IPs currently being traced
+TRACEROUTE_TTL = 3600  # Cache traceroute results for 1 hour
+TRACEROUTE_INTERVAL = 300  # Re-trace every 5 minutes if user still online
+MAX_CONCURRENT_TRACEROUTES = 5  # Limit concurrent traceroutes
 
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
@@ -229,6 +249,183 @@ def get_cached_data(key: str) -> Any:
     """Get cached data (thread-safe)"""
     with data_cache_lock:
         return data_cache.get(key)
+
+def get_traceroute_result(ip: str) -> Optional[Dict[str, Any]]:
+    """Get cached traceroute result for an IP (thread-safe)
+    
+    Args:
+        ip: IP address
+    
+    Returns:
+        Traceroute result dict or None if not available/expired
+    """
+    with traceroute_lock:
+        if ip in traceroute_cache:
+            result = traceroute_cache[ip]
+            # Check if result is still fresh
+            if time.time() - result.get("timestamp", 0) < TRACEROUTE_TTL:
+                return result
+            else:
+                # Expired, remove it
+                del traceroute_cache[ip]
+        return None
+
+async def perform_traceroute_async(ip: str):
+    """Perform traceroute to an IP address asynchronously
+    
+    Args:
+        ip: IP address to trace
+    """
+    if not TRACEROUTE_AVAILABLE:
+        return
+    
+    try:
+        print(f"[Hub API] Starting traceroute to {ip}")
+        
+        # Perform the traceroute using async context manager
+        hops = []
+        hop_count = 0
+        
+        async with Traceroute() as tr:
+            async for hop_info in tr.traceroute(ip, tries=3):
+                hop_count += 1
+                # HopInfo has ttl and hops (list of Hop objects)
+                # Each Hop has addr (IP), rtt (seconds), and asn
+                # Pick the first valid hop from the list (or use average RTT)
+                valid_hops = [h for h in hop_info.hops if h is not None]
+                if valid_hops:
+                    # Use the first valid hop's IP and average RTT
+                    hop_ip = valid_hops[0].addr
+                    avg_rtt = sum(h.rtt for h in valid_hops) / len(valid_hops)
+                    hop_data = {
+                        "hop": hop_count,
+                        "ip": hop_ip,
+                        "rtt_ms": round(avg_rtt * 1000, 2),  # Convert to ms
+                    }
+                    hops.append(hop_data)
+                    
+                    # Stop if we reached the destination
+                    if hop_ip == ip:
+                        break
+                else:
+                    # Timeout - no response for this hop
+                    hop_data = {
+                        "hop": hop_count,
+                        "ip": None,
+                        "rtt_ms": None,
+                    }
+                    hops.append(hop_data)
+        
+        # Store result in cache
+        result = {
+            "ip": ip,
+            "hops": hops,
+            "hop_count": hop_count,
+            "timestamp": time.time(),
+            "success": len(hops) > 0
+        }
+        
+        with traceroute_lock:
+            traceroute_cache[ip] = result
+            traceroute_in_progress.discard(ip)
+            if ip in traceroute_threads:
+                del traceroute_threads[ip]
+        
+        print(f"[Hub API] Traceroute to {ip} completed: {hop_count} hops")
+        
+    except Exception as e:
+        print(f"[Hub API] Traceroute to {ip} failed: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Store error result
+        with traceroute_lock:
+            traceroute_cache[ip] = {
+                "ip": ip,
+                "error": str(e),
+                "timestamp": time.time(),
+                "success": False
+            }
+            traceroute_in_progress.discard(ip)
+            if ip in traceroute_threads:
+                del traceroute_threads[ip]
+
+def perform_traceroute(ip: str):
+    """Wrapper to run async traceroute in a thread
+    
+    Args:
+        ip: IP address to trace
+    """
+    asyncio.run(perform_traceroute_async(ip))
+
+def schedule_traceroute(ip: str) -> bool:
+    """Schedule a traceroute for an IP address if not already in progress
+    
+    Args:
+        ip: IP address to trace
+    
+    Returns:
+        True if traceroute was scheduled, False if already in progress or limit reached
+    """
+    if not TRACEROUTE_AVAILABLE:
+        return False
+    
+    if not ip or ip == "127.0.0.1" or ip.startswith("192.168.") or ip.startswith("10."):
+        return False  # Skip localhost and private IPs
+    
+    with traceroute_lock:
+        # Check if already in progress
+        if ip in traceroute_in_progress:
+            return False
+        
+        # Check concurrent limit
+        if len(traceroute_in_progress) >= MAX_CONCURRENT_TRACEROUTES:
+            return False
+        
+        # Check if we have a recent result
+        if ip in traceroute_cache:
+            result = traceroute_cache[ip]
+            age = time.time() - result.get("timestamp", 0)
+            if age < TRACEROUTE_INTERVAL:
+                return False  # Too recent, don't re-trace yet
+        
+        # Mark as in progress
+        traceroute_in_progress.add(ip)
+    
+    # Start traceroute in background thread
+    thread = threading.Thread(target=perform_traceroute, args=(ip,), daemon=True)
+    thread.start()
+    
+    with traceroute_lock:
+        traceroute_threads[ip] = thread
+    
+    return True
+
+def update_traceroutes_for_users():
+    """Update traceroutes for online users (called periodically)"""
+    if not TRACEROUTE_AVAILABLE or not server_running:
+        return
+    
+    users = get_cached_data("users") or []
+    
+    # Get unique IPs from online users
+    user_ips = set()
+    for user in users:
+        ip = user.get("ip")
+        if ip and ip != "127.0.0.1" and not ip.startswith("192.168.") and not ip.startswith("10."):
+            user_ips.add(ip)
+    
+    # Schedule traceroutes for IPs that need updates
+    scheduled = 0
+    for ip in user_ips:
+        if schedule_traceroute(ip):
+            scheduled += 1
+            # Don't start too many at once
+            if scheduled >= 3:
+                break
+    
+    if scheduled > 0:
+        print(f"[Hub API] Scheduled {scheduled} traceroutes")
 
 def format_uptime(seconds: float) -> str:
     """Format uptime in human-readable format"""
@@ -787,6 +984,57 @@ if FASTAPI_AVAILABLE:
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat()
         }
+    
+    @app.get("/traceroute/{ip}")
+    async def traceroute_result(ip: str):
+        """Get traceroute result for an IP address
+        
+        This endpoint returns cached traceroute results. Traceroutes are performed
+        automatically for online users in the background.
+        """
+        if not TRACEROUTE_AVAILABLE:
+            raise HTTPException(
+                status_code=503, 
+                detail="Traceroute functionality not available. Install gufo-traceroute package."
+            )
+        
+        result = get_traceroute_result(ip)
+        
+        if not result:
+            # Try to schedule a traceroute if not already cached
+            scheduled = schedule_traceroute(ip)
+            
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No traceroute data available for {ip}" + 
+                       (" - traceroute scheduled, try again in a few seconds" if scheduled else "")
+            )
+        
+        return result
+    
+    @app.get("/traceroutes")
+    async def all_traceroutes():
+        """Get all cached traceroute results"""
+        if not TRACEROUTE_AVAILABLE:
+            raise HTTPException(
+                status_code=503,
+                detail="Traceroute functionality not available. Install gufo-traceroute package."
+            )
+        
+        with traceroute_lock:
+            # Filter out expired results
+            current_time = time.time()
+            active_results = {
+                ip: result 
+                for ip, result in traceroute_cache.items()
+                if current_time - result.get("timestamp", 0) < TRACEROUTE_TTL
+            }
+            
+            return {
+                "count": len(active_results),
+                "traceroutes": list(active_results.values()),
+                "in_progress": list(traceroute_in_progress)
+            }
 
     @app.get("/favicon.ico")
     async def favicon():
@@ -951,6 +1199,15 @@ def OnTimer(msec=0):
     
     last_cache_update = current_time
     update_data_cache()
+    
+    # Periodically update traceroutes for online users
+    # Do this less frequently (every 30 seconds)
+    if int(current_time) % 30 == 0:
+        try:
+            update_traceroutes_for_users()
+        except Exception as e:
+            print(f"[Hub API] Error updating traceroutes: {e}")
+    
     return 1
 
 def OnUserLogin(nick):
@@ -1097,6 +1354,17 @@ def UnLoad():
         stop_api_server()
         server_running = False
     
+    # Wait for traceroute threads to finish (with timeout)
+    if TRACEROUTE_AVAILABLE:
+        print("Waiting for traceroute threads to finish...")
+        with traceroute_lock:
+            threads_to_wait = list(traceroute_threads.values())
+        
+        for thread in threads_to_wait:
+            thread.join(timeout=2.0)  # Wait max 2 seconds per thread
+        
+        print(f"Cleaned up {len(threads_to_wait)} traceroute threads")
+    
     print("Hub API script unloaded")
 
 # =============================================================================
@@ -1109,6 +1377,13 @@ hub_start_time = time.time()
 if FASTAPI_AVAILABLE:
     print("Hub API script loaded successfully")
     print("Use !api help to see available commands")
+    if TRACEROUTE_AVAILABLE:
+        print("Traceroute functionality enabled")
+        print(f"  - Max concurrent traceroutes: {MAX_CONCURRENT_TRACEROUTES}")
+        print(f"  - Cache TTL: {TRACEROUTE_TTL} seconds")
+        print(f"  - Re-trace interval: {TRACEROUTE_INTERVAL} seconds")
+    else:
+        print("Traceroute functionality disabled (install with: pip install gufo-traceroute)")
 else:
     print("Hub API script loaded with LIMITED functionality")
     print("Install dependencies: pip install fastapi uvicorn")
