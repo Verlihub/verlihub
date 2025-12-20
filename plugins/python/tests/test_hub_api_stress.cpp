@@ -2206,6 +2206,222 @@ TEST_F(HubApiStressTest, VerifySupportFlags) {
     delete admin;
 }
 
+// Test 16: Verify /ops endpoint returns only operators
+TEST_F(HubApiStressTest, VerifyOpsEndpoint) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    std::cout << "\n=== Operators Endpoint Test ===" << std::endl;
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18091", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Create mix of users with different classes
+    std::vector<cConnDC*> users;
+    
+    // Regular users (class < 3)
+    for (int i = 0; i < 3; i++) {
+        cConnDC* user = create_mock_connection("RegularUser" + std::to_string(i), 1);
+        g_server->mUserList.Add(user->mpUser);
+        users.push_back(user);
+    }
+    
+    // Operators (class >= 3)
+    std::vector<std::string> op_nicks;
+    for (int i = 0; i < 4; i++) {
+        int op_class = 3 + i; // Classes 3, 4, 5, 6
+        std::string nick = "Operator" + std::to_string(i);
+        cConnDC* op = create_mock_connection(nick, op_class);
+        g_server->mUserList.Add(op->mpUser);
+        users.push_back(op);
+        op_nicks.push_back(nick);
+    }
+    
+    // Trigger cache update
+    g_py_plugin->OnTimer(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    // Fetch operators from API
+    std::string response;
+    long http_code = 0;
+    
+    if (http_get("http://localhost:18091/ops", response, http_code)) {
+        ASSERT_EQ(http_code, 200) << "API should return 200 OK for /ops";
+        
+        // Parse JSON response
+        nVerliHub::nPythonPlugin::JsonValue json_result;
+        ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(response, json_result)) 
+            << "Failed to parse /ops JSON response";
+        
+        ASSERT_TRUE(json_result.isObject()) << "Response should be a JSON object";
+        
+        std::cout << "\n--- Validating /ops endpoint response ---" << std::endl;
+        
+        // Check structure
+        ASSERT_TRUE(json_result.object_val.count("operators") > 0) 
+            << "Response should have 'operators' field";
+        ASSERT_TRUE(json_result.object_val.count("total") > 0) 
+            << "Response should have 'total' field";
+        
+        ASSERT_TRUE(json_result.object_val["operators"].isArray()) 
+            << "'operators' should be an array";
+        
+        auto& ops_array = json_result.object_val["operators"].array_val;
+        
+        // Should have 4 operators (excluding TestAdmin who is not in the users list)
+        EXPECT_EQ(ops_array.size(), 4) << "Should return 4 operators";
+        
+        // Verify all returned users are operators
+        for (const auto& op_user : ops_array) {
+            ASSERT_TRUE(op_user.isObject()) << "Each operator should be an object";
+            
+            ASSERT_TRUE(op_user.object_val.count("nick") > 0) << "Operator should have 'nick' field";
+            ASSERT_TRUE(op_user.object_val.count("class") > 0) << "Operator should have 'class' field";
+            
+            int user_class = (int)op_user.object_val.at("class").int_val;
+            EXPECT_GE(user_class, 3) << "All users in /ops should have class >= 3";
+            
+            std::string nick = op_user.object_val.at("nick").string_val;
+            std::cout << "Found operator: " << nick << " (class " << user_class << ")" << std::endl;
+            
+            // Verify this nick is in our expected operators list
+            bool found = false;
+            for (const auto& expected_nick : op_nicks) {
+                if (nick == expected_nick) {
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_TRUE(found) << "Operator " << nick << " should be in expected list";
+        }
+        
+        std::cout << "✓ /ops endpoint returns only operators" << std::endl;
+        std::cout << "✓ All operators have class >= 3" << std::endl;
+        std::cout << "✓ Response structure is correct" << std::endl;
+    } else {
+        std::cout << "API server not responding (FastAPI might not be installed)" << std::endl;
+    }
+    
+    // Cleanup
+    for (auto* user : users) {
+        g_server->mUserList.Remove(user->mpUser);
+        delete user->mpUser;
+        delete user;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
+// Test 17: Verify /bots endpoint returns bot users
+TEST_F(HubApiStressTest, VerifyBotsEndpoint) {
+    cConnDC* admin = create_mock_connection("TestAdmin", 10);
+    
+    std::cout << "\n=== Bots Endpoint Test ===" << std::endl;
+    
+    // Start API server
+    send_hub_command(admin, "!api start 18092", true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    
+    // Create regular users
+    std::vector<cConnDC*> users;
+    for (int i = 0; i < 3; i++) {
+        cConnDC* user = create_mock_connection("RegularUser" + std::to_string(i), 1);
+        g_server->mUserList.Add(user->mpUser);
+        users.push_back(user);
+    }
+    
+    // Create bot users
+    std::vector<std::string> bot_nicks = {"HubBot", "StatsBot", "ServiceBot"};
+    for (const auto& bot_nick : bot_nicks) {
+        cConnDC* bot = create_mock_connection(bot_nick, 1);
+        g_server->mUserList.Add(bot->mpUser);
+        
+        // Register bot in server's bot list
+        g_server->mRobotList.Add(bot->mpUser);
+        
+        users.push_back(bot);
+    }
+    
+    // Trigger cache update
+    g_py_plugin->OnTimer(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    // Fetch bots from API
+    std::string response;
+    long http_code = 0;
+    
+    if (http_get("http://localhost:18092/bots", response, http_code)) {
+        ASSERT_EQ(http_code, 200) << "API should return 200 OK for /bots";
+        
+        // Parse JSON response
+        nVerliHub::nPythonPlugin::JsonValue json_result;
+        ASSERT_TRUE(nVerliHub::nPythonPlugin::parseJson(response, json_result)) 
+            << "Failed to parse /bots JSON response";
+        
+        ASSERT_TRUE(json_result.isObject()) << "Response should be a JSON object";
+        
+        std::cout << "\n--- Validating /bots endpoint response ---" << std::endl;
+        
+        // Check structure
+        ASSERT_TRUE(json_result.object_val.count("bots") > 0) 
+            << "Response should have 'bots' field";
+        ASSERT_TRUE(json_result.object_val.count("total") > 0) 
+            << "Response should have 'total' field";
+        
+        ASSERT_TRUE(json_result.object_val["bots"].isArray()) 
+            << "'bots' should be an array";
+        
+        auto& bots_array = json_result.object_val["bots"].array_val;
+        
+        // Should have 3 bots
+        EXPECT_EQ(bots_array.size(), 3) << "Should return 3 bots";
+        
+        // Verify all returned users are bots
+        for (const auto& bot_user : bots_array) {
+            ASSERT_TRUE(bot_user.isObject()) << "Each bot should be an object";
+            
+            ASSERT_TRUE(bot_user.object_val.count("nick") > 0) << "Bot should have 'nick' field";
+            
+            std::string nick = bot_user.object_val.at("nick").string_val;
+            std::cout << "Found bot: " << nick << std::endl;
+            
+            // Verify this nick is in our expected bots list
+            bool found = false;
+            for (const auto& expected_nick : bot_nicks) {
+                if (nick == expected_nick) {
+                    found = true;
+                    break;
+                }
+            }
+            EXPECT_TRUE(found) << "Bot " << nick << " should be in expected list";
+            
+            // Verify bot has all standard user fields
+            EXPECT_TRUE(bot_user.object_val.count("class") > 0) << "Bot should have 'class' field";
+            EXPECT_TRUE(bot_user.object_val.count("ip") > 0) << "Bot should have 'ip' field";
+            EXPECT_TRUE(bot_user.object_val.count("share") > 0) << "Bot should have 'share' field";
+        }
+        
+        std::cout << "✓ /bots endpoint returns only bots" << std::endl;
+        std::cout << "✓ All bots are in the bot list" << std::endl;
+        std::cout << "✓ Response structure is correct" << std::endl;
+        std::cout << "✓ Bots have complete user information" << std::endl;
+    } else {
+        std::cout << "API server not responding (FastAPI might not be installed)" << std::endl;
+    }
+    
+    // Cleanup
+    for (auto* user : users) {
+        g_server->mUserList.Remove(user->mpUser);
+        g_server->mRobotList.Remove(user->mpUser);
+        delete user->mpUser;
+        delete user;
+    }
+    
+    delete admin->mpUser;
+    delete admin;
+}
+
 // Register global environment
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

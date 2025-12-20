@@ -134,6 +134,7 @@ support_flags_lock = threading.Lock()
 data_cache = {
     "hub_info": {},
     "users": [],
+    "bots": [],
     "geo_stats": {},
     "share_stats": {},
     "hub_encoding": "cp1251",  # Default to CP1251 (common for DC++ hubs)
@@ -206,6 +207,7 @@ def update_data_cache():
         # Gather all data
         hub_info = _get_hub_info_unsafe()
         users = _get_all_users_unsafe(hub_encoding)
+        bots = _get_bot_list_unsafe()
         geo_stats = _get_geographic_stats_unsafe()
         share_stats = _get_share_stats_unsafe(users)
         
@@ -213,6 +215,7 @@ def update_data_cache():
         with data_cache_lock:
             data_cache["hub_info"] = hub_info
             data_cache["users"] = users
+            data_cache["bots"] = bots
             data_cache["geo_stats"] = geo_stats
             data_cache["share_stats"] = share_stats
             data_cache["hub_encoding"] = hub_encoding
@@ -575,6 +578,17 @@ def _add_clone_detection(users: List[Dict[str, Any]]):
         same_asn_nicks = [u.get("nick") for u in same_asn if u.get("nick") != nick]
         user["same_asn_users"] = same_asn_nicks
 
+def _get_bot_list_unsafe() -> List[str]:
+    """Get list of bot nicknames (UNSAFE - call only from main thread)"""
+    try:
+        bot_list = vh.GetBotList()
+        if isinstance(bot_list, list):
+            return bot_list
+        return []
+    except Exception as e:
+        print(f"[Hub API] Error getting bot list: {e}")
+        return []
+
 def _get_geographic_stats_unsafe() -> Dict[str, int]:
     """Get user distribution by country (UNSAFE - call only from main thread)"""
     stats = {}
@@ -621,6 +635,8 @@ if FASTAPI_AVAILABLE:
                 "hub_info": "/hub",
                 "statistics": "/stats",
                 "users": "/users",
+                "operators": "/ops",
+                "bots": "/bots",
                 "user_detail": "/user/{nick}",
                 "geography": "/geo",
                 "share": "/share"
@@ -674,6 +690,54 @@ if FASTAPI_AVAILABLE:
         except Exception as e:
             import traceback
             traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/ops")
+    async def operators(limit: Optional[int] = None, offset: int = 0):
+        """Get list of online operators"""
+        try:
+            all_users = get_cached_data("users") or []
+            
+            # Filter for operators (class >= 3)
+            op_users = [u for u in all_users if u.get("class", -1) >= 3]
+            
+            # Apply pagination
+            total = len(op_users)
+            if limit is not None:
+                op_users = op_users[offset:offset + limit]
+            
+            return {
+                "operators": op_users,
+                "total": total,
+                "limit": limit,
+                "offset": offset
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    @app.get("/bots")
+    async def bots(limit: Optional[int] = None, offset: int = 0):
+        """Get list of bots"""
+        try:
+            # Get bot list from vh module (cached)
+            bot_list = get_cached_data("bots") or []
+            
+            # Get detailed info for each bot from users cache
+            all_users = get_cached_data("users") or []
+            bot_users = [u for u in all_users if u.get("nick") in bot_list]
+            
+            # Apply pagination
+            total = len(bot_users)
+            if limit is not None:
+                bot_users = bot_users[offset:offset + limit]
+            
+            return {
+                "bots": bot_users,
+                "total": total,
+                "limit": limit,
+                "offset": offset
+            }
+        except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/user/{nick}")
