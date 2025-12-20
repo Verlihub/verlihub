@@ -126,6 +126,10 @@ server_running = False
 cors_origins = []  # Will be populated when server starts
 hub_start_time = None  # Track when hub started (or when script loaded)
 
+# Support flags tracking (nick -> list of support flags)
+support_flags_cache = {}
+support_flags_lock = threading.Lock()
+
 # Thread-safe cache for hub data (updated by OnTimer in main thread)
 data_cache = {
     "hub_info": {},
@@ -241,6 +245,18 @@ def format_uptime(seconds: float) -> str:
     
     return " ".join(parts)
 
+def _get_support_flags(nick: str) -> List[str]:
+    """Get support flags for a user (thread-safe)
+    
+    Args:
+        nick: User nickname
+    
+    Returns:
+        List of support flag strings
+    """
+    with support_flags_lock:
+        return support_flags_cache.get(nick, [])
+
 def _get_hub_info_unsafe() -> Dict[str, Any]:
     """Get basic hub information (UNSAFE - call only from main thread)"""
     try:
@@ -321,6 +337,18 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "uptime": "Unknown",
             "error": str(e)
         }
+
+def _get_support_flags(nick: str) -> List[str]:
+    """Get support flags for a user (thread-safe)
+    
+    Args:
+        nick: User nickname
+    
+    Returns:
+        List of support flag strings
+    """
+    with support_flags_lock:
+        return support_flags_cache.get(nick, [])
 
 def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
     """Get detailed information about a user (UNSAFE - call only from main thread)
@@ -404,6 +432,9 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         # Convert nick for display (but keep original for lookups)
         nick_display = safe_decode(nick, hub_encoding)
         
+        # Get support flags
+        support_flags = _get_support_flags(nick)
+        
         return {
             "nick": nick_display,  # Converted for display
             "class": user_class,
@@ -426,7 +457,8 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
             "tag": tag,
             "email": email,
             "share": share,
-            "share_formatted": format_bytes(share)
+            "share_formatted": format_bytes(share),
+            "support_flags": support_flags
         }
     except Exception as e:
         print(f"[Hub API] Error getting user info for {nick}: {e}")
@@ -799,6 +831,47 @@ def is_api_running() -> bool:
 # Verlihub Event Hooks
 # =============================================================================
 
+def OnParsedMsgSupports(ip, msg, back):
+    """Called when user sends $Supports message
+    
+    Args:
+        ip: User IP address
+        msg: The full $Supports message string
+        back: Response string (unused)
+    
+    Returns:
+        1 to allow the message to be processed normally
+    """
+    try:
+        # Extract nick from connection by IP (use GetNickList to find user)
+        nick_list = vh.GetNickList()
+        user_nick = None
+        
+        # Find the user with this IP
+        for nick in nick_list:
+            if vh.GetUserIP(nick) == ip:
+                user_nick = nick
+                break
+        
+        if user_nick:
+            # Parse support flags from message
+            # $Supports format: "$Supports FLAG1 FLAG2 FLAG3 ..."
+            if msg.startswith("$Supports "):
+                flags_str = msg[10:]  # Skip "$Supports "
+                flags = [f.strip() for f in flags_str.split() if f.strip()]
+                
+                # Store in cache
+                with support_flags_lock:
+                    support_flags_cache[user_nick] = flags
+                
+                print(f"[Hub API] Captured {len(flags)} support flags for {user_nick}: {flags}")
+    except Exception as e:
+        print(f"[Hub API] Error in OnParsedMsgSupports: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    return 1  # Allow message to be processed
+
 def OnTimer(msec=0):
     """Update data cache periodically (runs in main thread)"""
     global last_cache_update
@@ -824,6 +897,11 @@ def OnUserLogin(nick):
 
 def OnUserLogout(nick):
     """Update cache when user logs out (runs in main thread)"""
+    # Clean up support flags cache
+    with support_flags_lock:
+        if nick in support_flags_cache:
+            del support_flags_cache[nick]
+    
     if server_running:
         update_data_cache()
     return 1
@@ -832,10 +910,10 @@ def OnHubCommand(nick, command, user_class, in_pm, prefix):
     """Handle hub commands
     
     IMPORTANT: Return value logic (Python -> C++ -> Verlihub core):
-    - return 1 → C++ returns true → Command is ALLOWED (passes through)
-    - return 0 → C++ returns false → Command is BLOCKED (consumed/handled)
+    - return 1 -> C++ returns true -> Command is ALLOWED (passes through)
+    - return 0 -> C++ returns false -> Command is BLOCKED (consumed/handled)
     
-    So: return 1 for commands we DON'T handle, return 0 for commands we DO handle
+    So: return 1 for commands we DO NOT handle, return 0 for commands we DO handle
     """
     parts = command.split()
     

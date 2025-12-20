@@ -298,6 +298,16 @@ protected:
         return conn;
     }
     
+    // Helper: Set IP address on connection (accesses protected member for testing)
+    void set_connection_ip(cConnDC* conn, const std::string& ip) {
+        // Access protected mAddrIP member using pointer arithmetic
+        // This is safe in test context as we control the object lifecycle
+        struct ConnectionIPSetter : public nVerliHub::nSocket::cAsyncConn {
+            void SetIP(const std::string& ip) { mAddrIP = ip; }
+        };
+        static_cast<ConnectionIPSetter*>(static_cast<nVerliHub::nSocket::cAsyncConn*>(conn))->SetIP(ip);
+    }
+    
     // Helper: Send command through OnHubCommand hook
     bool send_hub_command(cConnDC* conn, const std::string& command, bool in_pm = false) {
         std::string cmd = command;
@@ -1816,26 +1826,26 @@ TEST_F(HubApiStressTest, VerifyCloneDetection) {
     cConnDC* clone2 = create_mock_connection("Clone2", 1);
     clone1->mpUser->mShare = 50000000;
     clone2->mpUser->mShare = 50000000;
-    clone1->mpUser->mxMyInfos.sIP = "192.168.1.100";
-    clone2->mpUser->mxMyInfos.sIP = "192.168.1.100";
+    set_connection_ip(clone1, "192.168.1.100");
+    set_connection_ip(clone2, "192.168.1.100");
     
     // Group 2: Same IP as clones (192.168.1.100) but different share (30000000 = 30MB), same ASN (AS1234)
     cConnDC* nat_user = create_mock_connection("NATUser", 1);
     nat_user->mpUser->mShare = 30000000;
-    nat_user->mpUser->mxMyInfos.sIP = "192.168.1.100";
+    set_connection_ip(nat_user, "192.168.1.100");
     
     // Group 3: Different IP (192.168.1.200) but same ASN as Group 1 (AS1234)
     cConnDC* different_user = create_mock_connection("DifferentUser", 1);
     different_user->mpUser->mShare = 20000000;
-    different_user->mpUser->mxMyInfos.sIP = "192.168.1.200";
+    set_connection_ip(different_user, "192.168.1.200");
     
     // Group 4: Another set of exact clones - same IP (10.0.0.50) + same share (40000000 = 40MB) + different ASN (AS5678)
     cConnDC* clone3 = create_mock_connection("Clone3", 1);
     cConnDC* clone4 = create_mock_connection("Clone4", 1);
     clone3->mpUser->mShare = 40000000;
     clone4->mpUser->mShare = 40000000;
-    clone3->mpUser->mxMyInfos.sIP = "10.0.0.50";
-    clone4->mpUser->mxMyInfos.sIP = "10.0.0.50";
+    set_connection_ip(clone3, "10.0.0.50");
+    set_connection_ip(clone4, "10.0.0.50");
     
     test_users.push_back(clone1);
     test_users.push_back(clone2);
