@@ -104,7 +104,7 @@
 
     <div id="user-detail">
         <button onclick="closeUserDetail()">Close ×</button>
-        <h2>User Details</h2>
+        <h2 id="user-detail-title">Details</h2>
         <div id="user-content"></div>
     </div>
 
@@ -1104,6 +1104,7 @@
                     html += renderKeyValue(otherInfo, [], fieldRenames);
                 }
                 
+                document.getElementById('user-detail-title').textContent = nick;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
@@ -1159,7 +1160,8 @@
                 // Build HTML for country users popup
                 const flag = getFlagEmoji(countryCode);
                 let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
-                html += `<h3>Users from ${countryCode} (${countryUsers.length})</h3>`;
+                html += `<h3>Country Info: ${countryCode}</h3>`;
+                html += `<h3>Users List (${countryUsers.length})</h3>`;
                 html += '<ul class="info-list">';
                 
                 // Sort by share size descending
@@ -1216,6 +1218,7 @@
                 
                 html += '</ul>';
                 
+                document.getElementById('user-detail-title').textContent = countryCode;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
@@ -1247,10 +1250,13 @@
                     return;
                 }
                 
+                // Get country name from first user
+                const countryName = cityUsers.length > 0 ? (cityUsers[0].country || countryCode) : countryCode;
+                
                 // Build HTML for city users popup
                 const flag = getFlagEmoji(countryCode);
                 let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
-                html += `<h3>Users from ${cityName}, ${countryCode} (${cityUsers.length})</h3>`;
+                html += `<h3>Users List (${cityUsers.length})</h3>`;
                 html += '<ul class="info-list">';
                 
                 // Sort by share size descending
@@ -1307,6 +1313,7 @@
                 
                 html += '</ul>';
                 
+                document.getElementById('user-detail-title').textContent = `${cityName}, ${countryName}`;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
@@ -1337,7 +1344,7 @@
                 }
                 
                 // Build HTML for ASN users popup
-                let html = `<h3>Users on ASN ${asn} (${asnUsers.length})</h3>`;
+                let html = `<h3>Users List (${asnUsers.length})</h3>`;
                 html += '<ul class="info-list">';
                 
                 // Sort by share size descending
@@ -1394,6 +1401,7 @@
                 
                 html += '</ul>';
                 
+                document.getElementById('user-detail-title').textContent = asn;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
@@ -1424,7 +1432,7 @@
                 }
                 
                 // Build HTML for IP users popup
-                let html = `<h3>Users on IP ${ip} (${ipUsers.length})</h3>`;
+                let html = '';
                 
                 // Get hostname and ASN from first user (should be same for all)
                 if (ipUsers.length > 0) {
@@ -1438,62 +1446,8 @@
                     html += '</ul>';
                 }
                 
-                // Try to fetch traceroute data for this IP
-                try {
-                    const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
-                    console.log('Traceroute data for', ip, ':', tracerouteData);
-                    
-                    if (tracerouteData && tracerouteData.success) {
-                        html += '<h3>Network Path (Traceroute)</h3>';
-                        html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
-                        
-                        if (tracerouteData.hops && tracerouteData.hops.length > 0) {
-                            html += '<table><thead><tr>';
-                            html += '<th style="width: 80px;">Hop</th>';
-                            html += '<th>IP Address</th>';
-                            html += '<th>Hostname</th>';
-                            html += '<th style="width: 120px;">RTT (ms)</th>';
-                            html += '</tr></thead><tbody>';
-                            
-                            for (const hop of tracerouteData.hops) {
-                                const hopNum = hop.hop || '?';
-                                const hopIP = hop.ip || '*';
-                                const hopHostname = hop.hostname || '';
-                                const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
-                                    ? hop.rtt_ms.toFixed(2) 
-                                    : '*';
-                                
-                                html += '<tr>';
-                                html += `<td style="text-align: center;">${hopNum}</td>`;
-                                html += `<td>${hopIP}</td>`;
-                                html += `<td style="font-size: 0.9em; color: #666;">${hopHostname}</td>`;
-                                html += `<td style="text-align: center;">${rtt}</td>`;
-                                html += '</tr>';
-                            }
-                            
-                            html += '</tbody></table>';
-                        }
-                        
-                        // Show when the traceroute was performed
-                        if (tracerouteData.timestamp) {
-                            const traceDate = new Date(tracerouteData.timestamp * 1000);
-                            const now = new Date();
-                            const ageSeconds = Math.floor((now - traceDate) / 1000);
-                            const ageMinutes = Math.floor(ageSeconds / 60);
-                            const ageStr = ageMinutes > 0 
-                                ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
-                                : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
-                            html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
-                        }
-                    }
-                    // If not successful or in progress, don't show anything (silently skip)
-                } catch (traceErr) {
-                    // Traceroute failed or not available - silently skip
-                    console.log('Traceroute not available for IP:', ip, traceErr);
-                }
-                
                 // User list section
-                html += '<h3>Users List</h3>';
+                html += `<h3>Users List (${ipUsers.length})</h3>`;
                 html += '<ul class="info-list">';
                 
                 // Sort by share size descending
@@ -1550,6 +1504,61 @@
                 
                 html += '</ul>';
                 
+                // Try to fetch traceroute data for this IP (after user list)
+                try {
+                    const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
+                    console.log('Traceroute data for', ip, ':', tracerouteData);
+                    
+                    if (tracerouteData && tracerouteData.success) {
+                        html += '<h3>Network Path (Traceroute)</h3>';
+                        html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
+                        
+                        if (tracerouteData.hops && tracerouteData.hops.length > 0) {
+                            html += '<table><thead><tr>';
+                            html += '<th style="width: 80px;">Hop</th>';
+                            html += '<th>IP Address</th>';
+                            html += '<th>Hostname</th>';
+                            html += '<th style="width: 120px;">RTT (ms)</th>';
+                            html += '</tr></thead><tbody>';
+                            
+                            for (const hop of tracerouteData.hops) {
+                                const hopNum = hop.hop || '?';
+                                const hopIP = hop.ip || '*';
+                                const hopHostname = hop.hostname || '';
+                                const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
+                                    ? hop.rtt_ms.toFixed(2) 
+                                    : '*';
+                                
+                                html += '<tr>';
+                                html += `<td style="text-align: center;">${hopNum}</td>`;
+                                html += `<td>${hopIP}</td>`;
+                                html += `<td style="font-size: 0.9em; color: #666;">${hopHostname}</td>`;
+                                html += `<td style="text-align: center;">${rtt}</td>`;
+                                html += '</tr>';
+                            }
+                            
+                            html += '</tbody></table>';
+                        }
+                        
+                        // Show when the traceroute was performed
+                        if (tracerouteData.timestamp) {
+                            const traceDate = new Date(tracerouteData.timestamp * 1000);
+                            const now = new Date();
+                            const ageSeconds = Math.floor((now - traceDate) / 1000);
+                            const ageMinutes = Math.floor(ageSeconds / 60);
+                            const ageStr = ageMinutes > 0 
+                                ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                            html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
+                        }
+                    }
+                    // If not successful or in progress, don't show anything (silently skip)
+                } catch (traceErr) {
+                    // Traceroute failed or not available - silently skip
+                    console.log('Traceroute not available for IP:', ip, traceErr);
+                }
+                
+                document.getElementById('user-detail-title').textContent = ip;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
