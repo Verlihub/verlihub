@@ -120,6 +120,8 @@
         let hideClones = false;
         let opsList = [];
         let botsList = [];
+        let hubStartTime = null;
+        let uptimeUpdateInterval = null;
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -148,6 +150,35 @@
         function getFlagEmoji(cc) {
             if (!cc || cc.length !== 2) return '🌐';
             return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0 || days > 0) parts.push(`${hours}h`);
+            if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`);
+            parts.push(`${secs}s`);
+            
+            return parts.join(' ');
+        }
+
+        function updateUptimeDisplay() {
+            if (!hubStartTime) return;
+            
+            const now = Date.now();
+            const uptimeSeconds = (now - hubStartTime) / 1000;
+            const formattedUptime = formatUptime(uptimeSeconds);
+            
+            // Find and update the uptime element
+            const uptimeElement = document.getElementById('hub-uptime');
+            if (uptimeElement) {
+                uptimeElement.textContent = formattedUptime;
+            }
         }
 
         function renderKeyValue(obj, excludeKeys = [], renameMap = {}) {
@@ -474,8 +505,22 @@
                             }
                             html += '<div class="hub-info">';
 
-                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon', 'uptime_seconds'];
+                            const hubExclude = ['name', 'Name', 'description', 'Description', 'logo_url', 'LogoUrl', 'motd', 'Motd', 'topic', 'Topic', 'icon_url', 'IconUrl', 'icon', 'Icon', 'uptime_seconds', 'uptime'];
                             html += renderKeyValue(hubData, hubExclude);
+
+                            // Handle uptime separately with live updates
+                            const uptimeSeconds = hubData.uptime_seconds || 0;
+                            if (uptimeSeconds > 0) {
+                                hubStartTime = Date.now() - (uptimeSeconds * 1000);
+                                
+                                // Start uptime update interval (clear existing first)
+                                if (uptimeUpdateInterval) clearInterval(uptimeUpdateInterval);
+                                uptimeUpdateInterval = setInterval(updateUptimeDisplay, 1000);
+                                
+                                html += '<ul class="info-list">';
+                                html += '<li><strong>Uptime:</strong> <span id="hub-uptime">' + formatUptime(uptimeSeconds) + '</span></li>';
+                                html += '</ul>';
+                            }
 
                             // Calculate clone statistics for share display
                             const hasSignificantClones = clonedShare > 0;
@@ -503,7 +548,6 @@
                             html += renderKeyValue(shareDisplayData);
 
                             const liveStats = {
-                                Timestamp: statsData.timestamp || statsData.Timestamp || 'N/A',
                                 'Users Online': statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A'
                             };
                             html += renderKeyValue(liveStats);
@@ -599,9 +643,7 @@
                     description: 'Description',
                     tag: 'Client Tag',
                     email: 'Email',
-                    share: 'Share Size',
-                    op_user: 'Operator',
-                    bot_user: 'Bot'
+                    share: 'Share Size'
                 };
                 
                 // Group fields for organized display
@@ -641,15 +683,11 @@
                     }
                 }
                 
-                // Add op_user and bot_user flags to basic info
-                basicInfo.op_user = isOp;
-                basicInfo.bot_user = isBot;
-                
                 let html = '';
                 
-                // Check if user is in a clone group
+                // Check if user is in a clone group (but don't show warning for bots)
                 const hasClones = networkInfo.clone_group && Array.isArray(networkInfo.clone_group) && networkInfo.clone_group.length > 0;
-                const warningEmoji = hasClones ? '\u26a0\ufe0f ' : '';
+                const warningEmoji = (hasClones && !isBot) ? '\u26a0\ufe0f ' : '';
                 const botEmoji = isBot ? '\ud83e\udd16 ' : '';
                 const opEmoji = isOp ? '\ud83d\udd11 ' : '';
                 
