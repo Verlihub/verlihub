@@ -131,6 +131,7 @@
         let botsList = [];
         let hubStartTime = null;
         let uptimeUpdateInterval = null;
+        let traceroutePollingInterval = null;
 
         const sortState = {
             users: { key: 'share', asc: false },
@@ -766,8 +767,9 @@
                             // Calculate clone statistics for share display
                             const hasSignificantClones = clonedShare > 0;
                             const clonePercent = rawTotalShare > 0 ? ((clonedShare / rawTotalShare) * 100).toFixed(1) : 0;
-                            // For average, show what % of users are clones (inflating the user count)
-                            const avgClonePercent = totalUserCount > 0 ? ((cloneUserCount / totalUserCount) * 100).toFixed(1) : 0;
+                            // For average share: (total - cloned) / total users including clones
+                            const totalShareIncludingClones = rawTotalShare + clonedShare;
+                            const avgClonePercent = totalUserCount > 0 ? ((totalShareIncludingClones - rawTotalShare) / totalUserCount * 100 / rawAvgShare).toFixed(1) : 0;
                             
                             const warningEmoji = '⚠️';
                             
@@ -910,6 +912,8 @@
         }
 
         async function showUser(encodedNick) {
+            cleanupModalPolling();
+            
             const nick = decodeURIComponent(encodedNick);
             try {
                 const data = await fetchData(`/user/${encodedNick}`);
@@ -1112,8 +1116,18 @@
             }
         }
 
+        function cleanupModalPolling() {
+            // Clear all modal-related polling intervals
+            if (traceroutePollingInterval) {
+                clearInterval(traceroutePollingInterval);
+                traceroutePollingInterval = null;
+            }
+            // Add future polling cleanup here as needed
+        }
+        
         function closeUserDetail() {
             document.getElementById('user-detail').style.display = 'none';
+            cleanupModalPolling();
         }
         
         function toggleHideClones(checked) {
@@ -1138,6 +1152,8 @@
         }
         
         async function showCountryUsers(countryCode) {
+            cleanupModalPolling();
+            
             try {
                 // Fetch all users and filter by country code
                 const response = await fetchData('/users?limit=500');
@@ -1229,6 +1245,8 @@
         }
         
         async function showCityUsers(encodedCityKey) {
+            cleanupModalPolling();
+            
             try {
                 const cityKey = decodeURIComponent(encodedCityKey);
                 const [cityName, countryCode] = cityKey.split('|||');
@@ -1324,6 +1342,8 @@
         }
         
         async function showASNUsers(encodedASN) {
+            cleanupModalPolling();
+            
             try {
                 const asn = decodeURIComponent(encodedASN);
                 
@@ -1452,6 +1472,8 @@
         }
         
         async function showIPUsers(encodedIP) {
+            cleanupModalPolling();
+            
             try {
                 const ip = decodeURIComponent(encodedIP);
                 
@@ -1553,65 +1575,138 @@
                 
                 html += '</ul>';
                 
-                // Try to fetch traceroute data for this IP (after user list)
-                try {
-                    const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
-                    console.log('Traceroute data for', ip, ':', tracerouteData);
-                    
-                    if (tracerouteData && tracerouteData.success) {
-                        html += '<h3>Network Path (Traceroute)</h3>';
-                        html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
-                        
-                        if (tracerouteData.hops && tracerouteData.hops.length > 0) {
-                            html += '<table><thead><tr>';
-                            html += '<th style="width: 80px;">Hop</th>';
-                            html += '<th>IP Address</th>';
-                            html += '<th>Hostname</th>';
-                            html += '<th style="width: 120px;">RTT (ms)</th>';
-                            html += '</tr></thead><tbody>';
-                            
-                            for (const hop of tracerouteData.hops) {
-                                const hopNum = hop.hop || '?';
-                                const hopIP = hop.ip || '*';
-                                const hopHostname = hop.hostname || '';
-                                const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
-                                    ? hop.rtt_ms.toFixed(2) 
-                                    : '*';
-                                
-                                html += '<tr>';
-                                html += `<td style="text-align: center;">${hopNum}</td>`;
-                                html += `<td>${hopIP}</td>`;
-                                html += `<td style="font-size: 0.9em; color: #666;">${hopHostname}</td>`;
-                                html += `<td style="text-align: center;">${rtt}</td>`;
-                                html += '</tr>';
-                            }
-                            
-                            html += '</tbody></table>';
-                        }
-                        
-                        // Show when the traceroute was performed
-                        if (tracerouteData.timestamp) {
-                            const traceDate = new Date(tracerouteData.timestamp * 1000);
-                            const now = new Date();
-                            const ageSeconds = Math.floor((now - traceDate) / 1000);
-                            const ageMinutes = Math.floor(ageSeconds / 60);
-                            const ageStr = ageMinutes > 0 
-                                ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
-                                : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
-                            html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
-                        }
-                    }
-                    // If not successful or in progress, don't show anything (silently skip)
-                } catch (traceErr) {
-                    // Traceroute failed or not available - silently skip
-                    console.log('Traceroute not available for IP:', ip, traceErr);
-                }
+                // Add checkbox for showing traceroute
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-traceroute-checkbox" onchange="toggleTraceroute('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show traceroute
+                        </label>
+                    </div>
+                    <div id="traceroute-section" style="display: none;"></div>
+                `;
                 
                 document.getElementById('user-detail-title').textContent = ip;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
             } catch (err) {
                 alert(`Failed to load IP users: ${err.message}`);
+            }
+        }
+        
+        async function toggleTraceroute(encodedIP) {
+            const checkbox = document.getElementById('show-traceroute-checkbox');
+            const section = document.getElementById('traceroute-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                // Show loading message
+                section.style.display = 'block';
+                section.innerHTML = '<p>Loading traceroute data...</p>';
+                
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Clear any existing polling interval
+                if (traceroutePollingInterval) {
+                    clearInterval(traceroutePollingInterval);
+                    traceroutePollingInterval = null;
+                }
+                
+                // Function to fetch and display traceroute
+                const fetchAndDisplayTraceroute = async () => {
+                    // Re-fetch the section element in case DOM was updated
+                    const currentSection = document.getElementById('traceroute-section');
+                    if (!currentSection) return;
+                    
+                    try {
+                        const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
+                        console.log('Traceroute data for', ip, ':', tracerouteData);
+                        
+                        let html = '';
+                        
+                        if (tracerouteData && tracerouteData.success) {
+                            html += '<h3>Network Path (Traceroute)</h3>';
+                            html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
+                            
+                            if (tracerouteData.hops && tracerouteData.hops.length > 0) {
+                                html += '<table><thead><tr>';
+                                html += '<th style="width: 80px;">Hop</th>';
+                                html += '<th>IP Address</th>';
+                                html += '<th>Hostname</th>';
+                                html += '<th style="width: 120px;">RTT (ms)</th>';
+                                html += '</tr></thead><tbody>';
+                                
+                                for (const hop of tracerouteData.hops) {
+                                    const hopNum = hop.hop || '?';
+                                    const hopIP = hop.ip || '*';
+                                    const hopHostname = hop.hostname || '';
+                                    const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
+                                        ? hop.rtt_ms.toFixed(2) 
+                                        : '*';
+                                    
+                                    html += '<tr>';
+                                    html += `<td style="text-align: center;">${hopNum}</td>`;
+                                    html += `<td>${hopIP}</td>`;
+                                    html += `<td style="font-size: 0.9em; color: #666;">${hopHostname}</td>`;
+                                    html += `<td style="text-align: center;">${rtt}</td>`;
+                                    html += '</tr>';
+                                }
+                                
+                                html += '</tbody></table>';
+                            }
+                            
+                            // Show when the traceroute was performed
+                            if (tracerouteData.timestamp) {
+                                const traceDate = new Date(tracerouteData.timestamp * 1000);
+                                const now = new Date();
+                                const ageSeconds = Math.floor((now - traceDate) / 1000);
+                                const ageMinutes = Math.floor(ageSeconds / 60);
+                                const ageStr = ageMinutes > 0 
+                                    ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                    : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
+                            }
+                        } else {
+                            html = '<p style="color: #999;">Traceroute data not available yet. Waiting for results...</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                    } catch (traceErr) {
+                        console.log('Traceroute not available for IP:', ip, traceErr);
+                        const currentSection = document.getElementById('traceroute-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = '<p style="color: #999;">Traceroute data not available yet. Waiting for results...</p>';
+                        }
+                    }
+                };
+                
+                // Fetch immediately
+                await fetchAndDisplayTraceroute();
+                
+                // Poll every 5 seconds while checkbox is checked
+                traceroutePollingInterval = setInterval(async () => {
+                    const checkboxStillChecked = document.getElementById('show-traceroute-checkbox');
+                    if (checkboxStillChecked && checkboxStillChecked.checked) {
+                        await fetchAndDisplayTraceroute();
+                    } else {
+                        // Stop polling if checkbox is unchecked
+                        if (traceroutePollingInterval) {
+                            clearInterval(traceroutePollingInterval);
+                            traceroutePollingInterval = null;
+                        }
+                    }
+                }, 5000);
+                
+            } else {
+                // Hide the section and stop polling
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                if (traceroutePollingInterval) {
+                    clearInterval(traceroutePollingInterval);
+                    traceroutePollingInterval = null;
+                }
             }
         }
 
