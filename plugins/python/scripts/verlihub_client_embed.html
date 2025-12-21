@@ -3,7 +3,7 @@
 <!-- IMPORTANT: Update the API_BASE constant below to point to your Verlihub API endpoint -->
 
 <style>
-    .vh-dashboard-wrapper { font-family: Arial, sans-serif; max-width: 1024px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+    .vh-dashboard-wrapper { font-family: 'Courier New', Courier, monospace; font-size: 12px; max-width: 1024px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px; }
     .vh-tabs { margin-bottom: 20px; position: relative; z-index: 100; }
     .vh-tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; position: relative; z-index: 101; }
     .vh-tab.active { background: #fff; border-bottom: none; font-weight: bold; }
@@ -21,12 +21,12 @@
     }
     .vh-content.loading::before { display: block; }
     .vh-content.loading > * { opacity: 0.3; pointer-events: none; }
-    .vh-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-    .vh-table th, .vh-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    .vh-table th { background: #f5f5f5; font-size: 1em; cursor: pointer; user-select: none; }
-    .vh-table th:hover { background: #e9e9e9; }
-    .vh-table tr:nth-child(even) { background: #fafafa; }
-    .vh-table tr.update-highlight {
+    .vh-content table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .vh-content table th, .vh-content table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .vh-content table th { background: #f5f5f5; font-size: 1em; cursor: pointer; user-select: none; }
+    .vh-content table th:hover { background: #e9e9e9; }
+    .vh-content table tr:nth-child(even) { background: #fafafa; }
+    .vh-content table tr.update-highlight, .vh-content table tr.vh-update-highlight {
         background: #ffffd0 !important;
         animation: vh-highlightFade 4s ease-out forwards;
     }
@@ -37,7 +37,7 @@
     }
     .vh-link { color: #0066cc; text-decoration: none; }
     .vh-link:hover { text-decoration: underline; }
-    .vh-user-detail { position: fixed; top: 15%; left: 15%; width: 70%; max-height: 70%; overflow-y: auto; background: #fff; border: 1px solid #aaa; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: none; z-index: 10000; border-radius: 8px; }
+    .vh-user-detail { font-family: 'Courier New', Courier, monospace; font-size: 12px; position: fixed; top: 15%; left: 15%; width: 70%; max-height: 70%; overflow-y: auto; background: #fff; border: 1px solid #aaa; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: none; z-index: 10000; border-radius: 8px; }
     .vh-user-detail button { float: right; padding: 8px 12px; cursor: pointer; background: #0066cc; color: white; border: none; border-radius: 4px; }
     .vh-user-detail button:hover { background: #0052a3; }
     .vh-user-detail h2 { margin-top: 0; color: #333; }
@@ -49,6 +49,8 @@
     .vh-count { text-align: center; font-weight: bold; font-size: 1.2em; }
     .vh-total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
     .vh-total-users { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+    .total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+    .total-users { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
     .vh-hub-topic { font-size: 1.4em; font-weight: bold; margin: 0 0 30px 0; text-align: center; }
     .vh-hub-upper { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; margin-bottom: 30px; justify-content: center; }
     .vh-hub-logo-wrapper { 
@@ -75,9 +77,13 @@
     .vh-motd pre { margin: 0; white-space: pre-wrap; font-family: monospace; font-size: 0.95em; }
     .vh-sort-arrow { margin-left: 6px; opacity: 0.5; }
     .vh-sort-arrow.active { opacity: 1; font-weight: bold; }
+    .sort-arrow { margin-left: 6px; opacity: 0.5; }
+    .sort-arrow.active { opacity: 1; font-weight: bold; }
     .vh-page-header { text-align: center; margin-bottom: 20px; }
     .vh-hub-name { font-size: 2em; margin: 0; }
     .vh-hub-desc { font-size: 1.1em; color: #555; margin: 10px 0 0 0; }
+    .flag { font-size: 2em; text-align: center; }
+    .count { text-align: center; font-weight: bold; font-size: 1.2em; }
     
     @media (max-width: 768px) {
         .vh-dashboard-wrapper { padding: 10px; }
@@ -2029,6 +2035,19 @@
                 fetchOpsAndBots().then(() => loadTab(currentTab));
             }, 30000);
         }
+
+        // Expose functions to global scope for onclick handlers
+        window.vhShowUser = vhShowUser;
+        window.vhCloseUserDetail = vhCloseUserDetail;
+        window.vhToggleHideClones = vhToggleHideClones;
+        window.vhShowCountryUsers = vhShowCountryUsers;
+        window.vhShowCityUsers = vhShowCityUsers;
+        window.vhShowASNUsers = vhShowASNUsers;
+        window.vhShowIPUsers = vhShowIPUsers;
+        window.vhTogglePing = vhTogglePing;
+        window.vhToggleOSDetection = vhToggleOSDetection;
+        window.vhToggleTraceroute = vhToggleTraceroute;
+        window.vhSetSort = vhSetSort;
 
         // Initial load
         fetchOpsAndBots().then(() => {
