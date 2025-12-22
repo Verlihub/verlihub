@@ -914,6 +914,7 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         # GetConfig returns None if config value is not set, use third param for default
         hub_name = vh.GetConfig("config", "hub_name", "Verlihub")
         hub_desc = vh.GetConfig("config", "hub_desc", "DC++ Hub")
+        hub_host = vh.GetConfig("config", "hub_host", "")
         topic = vh.Topic()
         max_users_str = vh.GetConfig("config", "max_users", "0")
         hub_icon_url = vh.GetConfig("config", "hub_icon_url", "")
@@ -936,6 +937,8 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             hub_name = "Verlihub"
         if hub_desc is None:
             hub_desc = "DC++ Hub"
+        if hub_host is None:
+            hub_host = ""
         if topic is None:
             topic = ""
         if max_users_str is None:
@@ -962,6 +965,7 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         return {
             "name": hub_name,
             "description": hub_desc,
+            "host": hub_host,
             "topic": topic,
             "motd": motd,
             "max_users": int(max_users_str) if max_users_str.isdigit() else 0,
@@ -978,6 +982,7 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         return {
             "name": "Verlihub",
             "description": "DC++ Hub",
+            "host": "",
             "topic": "",
             "motd": "",
             "max_users": 0,

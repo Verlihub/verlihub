@@ -766,6 +766,12 @@
                                 html += '<li><strong>Uptime:</strong> <span id="hub-uptime">' + formatUptime(uptimeSeconds) + '</span></li>';
                             }
                             
+                            // 3. Hub Host
+                            const hubHost = hubData.host || hubData.Host || '';
+                            if (hubHost && hubHost.trim() !== '') {
+                                html += `<li><strong>Host:</strong> ${hubHost}</li>`;
+                            }
+                            
                             // Calculate clone statistics for share display
                             const hasSignificantClones = clonedShare > 0;
                             const clonePercent = rawTotalShare > 0 ? ((clonedShare / rawTotalShare) * 100).toFixed(1) : 0;
