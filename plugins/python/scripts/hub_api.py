@@ -941,10 +941,8 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             # Use API server address as fallback if hub_host not configured
             if server_running and api_port:
                 hub_host = f"http://localhost:{api_port}/"
-                print(f"[Hub API] Using fallback hub_host: {hub_host}")
             else:
                 hub_host = ""
-                print(f"[Hub API] hub_host empty - server_running={server_running}, api_port={api_port}")
         if topic is None:
             topic = ""
         if max_users_str is None:
@@ -981,8 +979,6 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "uptime_seconds": uptime_seconds,
             "uptime": uptime_formatted
         }
-        
-        print(f"[Hub API] _get_hub_info_unsafe returning host='{hub_host}'")
         
         return result
     except Exception as e:
@@ -1049,8 +1045,9 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
         
         if ip:
             try:
-                # GetGeoIP returns a dict with all geographic details including city
+                # Try GetGeoIP first (returns dict with all geographic details)
                 geo_data = vh.GetGeoIP(ip, "")
+                
                 if geo_data and isinstance(geo_data, dict):
                     country = geo_data.get("country", "") or ""
                     city = geo_data.get("city", "") or ""
@@ -1061,14 +1058,26 @@ def _get_user_info_unsafe(nick: str) -> Optional[Dict[str, Any]]:
                     continent_code = geo_data.get("continent_code", "") or ""
                     postal_code = geo_data.get("postal_code", "") or ""
                 else:
-                    # Fallback to individual calls if GetGeoIP doesn't return full data
-                    country = vh.GetIPCN(ip) or ""
+                    # Fallback to individual geo functions if GetGeoIP fails
+                    try:
+                        country = vh.GetIPCN(ip) or ""
+                    except Exception:
+                        country = ""
+                    
+                    try:
+                        city = vh.GetIPCity(ip, "") or ""
+                        # Filter out placeholder values
+                        if city == "--":
+                            city = ""
+                    except Exception:
+                        city = ""
                 
                 # Get ASN separately
                 asn_raw = vh.GetIPASN(ip, "")
                 asn = asn_raw if (asn_raw and asn_raw not in ("--", "")) else ""
             except Exception as e:
                 print(f"[Hub API] Error getting geo info for {ip}: {e}")
+                traceback.print_exc()
         
         # GetMyINFO returns tuple: (nick, desc, tag, speed, email, sharesize)
         myinfo = vh.GetMyINFO(nick)
