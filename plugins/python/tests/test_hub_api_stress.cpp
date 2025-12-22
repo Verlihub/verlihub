@@ -162,6 +162,7 @@ public:
         g_server->SetConfig("config", "hub_encoding", "UTF-8", val_new, val_old);
         g_server->SetConfig("config", "hub_name", "Test Hub API", val_new, val_old);
         g_server->SetConfig("config", "hub_desc", "Testing API Endpoints", val_new, val_old);
+        g_server->SetConfig("config", "hub_host", "hub.example.com:411", val_new, val_old);
         g_server->SetConfig("config", "hub_topic", "Welcome to the test!", val_new, val_old);
         g_server->SetConfig("config", "max_users_total", "500", val_new, val_old);
         g_server->SetConfig("config", "hub_icon_url", "https://example.com/icon.png", val_new, val_old);
@@ -474,6 +475,10 @@ TEST_F(HubApiStressTest, ValidateApiEndpoints) {
             ASSERT_TRUE(hub_data.object_val.count("description") > 0);
             EXPECT_EQ(hub_data.object_val["description"].string_val, "Testing API Endpoints")
                 << "/hub should return correct description";
+            
+            ASSERT_TRUE(hub_data.object_val.count("host") > 0);
+            EXPECT_EQ(hub_data.object_val["host"].string_val, "hub.example.com:411")
+                << "/hub should return correct hub_host value";
             
             ASSERT_TRUE(hub_data.object_val.count("topic") > 0);
             EXPECT_EQ(hub_data.object_val["topic"].string_val, "Welcome to the test!")
