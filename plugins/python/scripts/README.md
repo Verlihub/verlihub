@@ -263,27 +263,51 @@ The thread safety limitation (vh module not callable from background threads) ex
 
 ### hub_api.py - REST API Server
 
-A FastAPI-based HTTP REST API server that exposes Verlihub hub information through HTTP endpoints.
+A comprehensive FastAPI-based HTTP REST API server that exposes Verlihub hub information through HTTP endpoints with advanced network diagnostics capabilities.
 
 **Features:**
-- Real-time hub statistics (users online, total share)
+- Real-time hub statistics (users online, total share, uptime)
 - User information queries (by nickname or list all)
 - Geographic distribution of users by country
 - Share size statistics with human-readable formatting
+- Clone detection (users with same IP/share, NAT groups, ASN groups)
+- Network diagnostics (traceroute, OS detection, ICMP ping quality)
 - Interactive API documentation (Swagger/OpenAPI)
 - Background server operation (non-blocking)
 - Admin commands to start/stop the API
+- **HTML/JavaScript Dashboard** - Full-featured web interface
 
-**API Endpoints:**
+**Core API Endpoints:**
 - `GET /` - API overview with endpoint listing
-- `GET /api/hub` - Hub information (name, description, topic, max users, version)
-- `GET /api/stats` - Real-time statistics (users online, total share)
-- `GET /api/users` - List all online users (supports pagination with `?limit=N&offset=N`)
-- `GET /api/user/{nick}` - Detailed information for specific user
-- `GET /api/geo` - Geographic distribution by country code
-- `GET /api/share` - Share statistics (total, average, formatted)
+- `GET /hub` - Hub information (name, description, topic, max users, version)
+- `GET /stats` - Real-time statistics (users online, total share, uptime)
+- `GET /users` - List all online users with clone detection (supports pagination `?limit=N&offset=N`)
+- `GET /ops` - List operator users only
+- `GET /bots` - List bot users only
+- `GET /user/{nick}` - Detailed information for specific user
+- `GET /geo` - Geographic distribution by country code
+- `GET /share` - Share statistics (total, average, formatted)
 - `GET /health` - Health check endpoint
-- `GET /docs` - Interactive Swagger/OpenAPI documentation
+
+**Network Diagnostics Endpoints:**
+- `GET /traceroute/{ip}` - Traceroute to specific IP (on-demand or cached)
+- `GET /traceroutes` - All cached traceroute results
+- `GET /os/{ip}` - OS detection for specific IP via nmap
+- `GET /os-detections` - All cached OS detection results
+- `GET /ping/{ip}` - ICMP ping quality metrics for specific IP
+- `GET /pings` - All cached ping results
+
+**Optional Dependencies for Network Diagnostics:**
+```bash
+# Traceroute support
+pip install gufo-traceroute
+
+# OS detection support (also requires: apt install nmap)
+pip install python-nmap
+
+# ICMP ping quality monitoring (requires root for raw sockets)
+pip install icmplib
+```
 
 **Admin Commands:**
 ```
@@ -291,6 +315,7 @@ A FastAPI-based HTTP REST API server that exposes Verlihub hub information throu
                                    Optional: Add CORS origins (space-separated URLs)
 !api stop                        - Stop API server
 !api status                      - Check server status
+!api update                      - Force cache refresh
 !api help                        - Show help
 ```
 
@@ -309,16 +334,194 @@ The API automatically configures CORS (Cross-Origin Resource Sharing) to allow r
 !api start 30000 https://example.com https://www.example.com https://app.example.com
 ```
 
-This allows you to:
-- Access the API from web browsers on different domains
-- Embed the API in WordPress or other web platforms
-- Call the API from JavaScript running on external websites
-- Use the API with mobile apps or desktop clients
+**Important for Web Browsers**: When accessing the API from a web page (like the dashboard), you **must** include the page's origin in the CORS configuration, otherwise browsers will block the requests with CORS errors.
 
-**Example with WordPress:**
+**Example - Serving dashboard from same server:**
 ```bash
-!api start 8000 https://yourwordpress.com https://www.yourwordpress.com
+# If you're serving verlihub_client.html from http://yourhub.com
+!api start 8000 http://yourhub.com
+
+# The dashboard can now call the API without CORS errors
 ```
+
+**HTML/JavaScript Dashboard:**
+
+A complete web-based dashboard is included as `verlihub_client.html`. This provides a full-featured interface for monitoring your hub through a web browser.
+
+**Dashboard Features:**
+- **Overview Tab**: Hub stats, user count, share size, uptime
+- **Users Tab**: Sortable user list with clone detection, search/filter
+- **Operators Tab**: List of online operators
+- **Bots Tab**: List of hub bots
+- **Geography Tab**: Visual distribution by country with flags
+- **Network Diagnostics Tab**: Traceroute, OS detection, ping quality
+- **Auto-refresh**: Configurable update interval (5-60 seconds)
+- **User Details Modal**: Click any user for detailed information
+- **Clone Detection**: Visual indicators for users sharing IP/share
+- **Responsive Design**: Works on desktop and mobile browsers
+
+**Setting up the Dashboard:**
+
+1. **Configure API_BASE in the HTML file:**
+
+   Edit `verlihub_client.html` and update the `API_BASE` constant to point to your API endpoint:
+
+   ```javascript
+   // Line ~112 in verlihub_client.html
+   const API_BASE = 'http://localhost:8000';  // Change this!
+   ```
+
+   Examples:
+   ```javascript
+   // Local testing
+   const API_BASE = 'http://localhost:8000';
+   
+   // Remote server (direct access)
+   const API_BASE = 'http://yourhub.com:8000';
+   
+   // Behind reverse proxy (recommended for production)
+   const API_BASE = 'https://yourhub.com/verlihub-api';
+   ```
+
+2. **Start the API server with CORS origins:**
+
+   ```bash
+   # Allow dashboard to access API
+   !api start 8000 http://yourhub.com
+   ```
+
+3. **Open the dashboard in your browser:**
+
+   ```
+   file:///path/to/verlihub_client.html
+   ```
+   
+   Or serve it via web server:
+   ```
+   http://yourhub.com/verlihub_client.html
+   ```
+
+**Using a Reverse Proxy (Recommended for Production):**
+
+For production deployments, it's recommended to use a reverse proxy (Apache or Nginx) to:
+- Add SSL/TLS encryption (HTTPS)
+- Avoid exposing the Python API port directly
+- Provide professional domain-based URLs
+- Handle rate limiting and caching
+- Manage multiple services on one domain
+
+**Apache Configuration Example:**
+
+```apache
+# Enable required modules
+# a2enmod proxy proxy_http headers ssl
+
+<VirtualHost *:443>
+    ServerName yourhub.com
+    
+    # SSL Configuration
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/yourhub.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/yourhub.com/privkey.pem
+    
+    # Serve static dashboard
+    DocumentRoot /var/www/verlihub
+    <Directory /var/www/verlihub>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+    
+    # Proxy API requests to Python backend
+    ProxyPreserveHost On
+    ProxyPass /verlihub-api http://127.0.0.1:8000
+    ProxyPassReverse /verlihub-api http://127.0.0.1:8000
+    
+    # Add CORS headers if needed
+    Header set Access-Control-Allow-Origin "https://yourhub.com"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</VirtualHost>
+
+# Redirect HTTP to HTTPS
+<VirtualHost *:80>
+    ServerName yourhub.com
+    Redirect permanent / https://yourhub.com/
+</VirtualHost>
+```
+
+**Nginx Configuration Example:**
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name yourhub.com;
+    
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/yourhub.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourhub.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    
+    # Serve static dashboard
+    root /var/www/verlihub;
+    index verlihub_client.html;
+    
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    
+    # Proxy API requests to Python backend
+    location /verlihub-api {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # CORS headers (if needed)
+        add_header Access-Control-Allow-Origin "https://yourhub.com" always;
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type" always;
+    }
+}
+
+# Redirect HTTP to HTTPS
+server {
+    listen 80;
+    server_name yourhub.com;
+    return 301 https://$server_name$request_uri;
+}
+```
+
+**After Setting Up Reverse Proxy:**
+
+1. Update `API_BASE` in `verlihub_client.html`:
+   ```javascript
+   const API_BASE = 'https://yourhub.com/verlihub-api';
+   ```
+
+2. Start the API (no CORS needed - same origin):
+   ```bash
+   !api start 8000
+   ```
+
+3. Copy dashboard to web root:
+   ```bash
+   sudo cp verlihub_client.html /var/www/verlihub/
+   sudo chown www-data:www-data /var/www/verlihub/verlihub_client.html
+   ```
+
+4. Access dashboard:
+   ```
+   https://yourhub.com/verlihub_client.html
+   ```
+
+This allows you to:
+- Access the API and dashboard over HTTPS (encrypted)
+- Use a professional URL without port numbers
+- Avoid CORS issues (same origin)
+- Keep the Python API port (8000) internal and not exposed to internet
 
 **Requirements:**
 ```bash
@@ -339,20 +542,63 @@ pip install fastapi uvicorn
 # Access the API
 # Browse to: http://localhost:8000/
 # Documentation: http://localhost:8000/docs
-# Example query: curl http://localhost:8000/api/stats
+# Example query: curl http://localhost:8000/stats
 
-# The API will confirm CORS origins when started:
-# "CORS origins: http://localhost:8000, http://127.0.0.1:8000, http://0.0.0.0:8000, https://yoursite.com, ..."
+# Open the dashboard in your browser
+# file:///path/to/verlihub_client.html
+# (Make sure API_BASE points to http://localhost:8000)
 ```
 
-**Example Response:**
+**Example API Response (Stats Endpoint):**
 ```json
 {
-  "timestamp": "2025-12-15T12:00:00",
+  "timestamp": "2025-12-22T12:00:00",
   "users_online": 42,
   "max_users": 100,
   "total_share": "15.3 TB",
-  "hub_name": "My Hub"
+  "hub_name": "My Hub",
+  "uptime": "5d 12h 34m 56s",
+  "hub_version": "1.2.0"
+}
+```
+
+**Example User Response (with Clone Detection):**
+```json
+{
+  "nick": "Alice",
+  "ip": "203.0.113.45",
+  "country": "US",
+  "share": "2.5 TB",
+  "class": "Regular",
+  "client": "DC++ 0.868",
+  "cloned": true,
+  "clone_group": ["Alice", "Bob"],
+  "same_ip_users": ["Alice", "Bob", "Charlie"],
+  "same_asn_users": ["Alice", "Bob", "Charlie", "David"]
+}
+```
+
+**Example Network Diagnostics Response:**
+```json
+{
+  "ip": "203.0.113.45",
+  "traceroute": {
+    "hops": 12,
+    "path": ["10.0.0.1", "192.0.2.1", "...", "203.0.113.45"],
+    "latency_ms": [1.2, 5.4, 12.1, "...", 45.6]
+  },
+  "os_detection": {
+    "os": "Linux 3.x",
+    "accuracy": 95,
+    "device_type": "general purpose"
+  },
+  "ping_quality": {
+    "min_rtt": 44.2,
+    "avg_rtt": 45.8,
+    "max_rtt": 48.1,
+    "packet_loss": 0.0,
+    "jitter": 1.2
+  }
 }
 ```
 
