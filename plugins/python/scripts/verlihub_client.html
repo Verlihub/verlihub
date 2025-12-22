@@ -728,6 +728,8 @@
                             const totalUserCount = userRows.length;
                             const cloneUserCount = totalUserCount - trueUserCount;
 
+                            console.log('Hub data received:', hubData);
+                            
                             const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
                             const hubDesc = (hubData.description || hubData.Description || '').trim();
                             document.getElementById('page-title').textContent = hubName;
@@ -767,9 +769,13 @@
                             }
                             
                             // 3. Hub Host
-                            const hubHost = hubData.host || hubData.Host || '';
+                            const hubHost = hubData.host || '';
+                            console.log('Hub host value:', hubHost, 'Type:', typeof hubHost);
                             if (hubHost && hubHost.trim() !== '') {
                                 html += `<li><strong>Host:</strong> ${hubHost}</li>`;
+                                console.log('Host field added to HTML');
+                            } else {
+                                console.log('Host field NOT added - empty or missing');
                             }
                             
                             // Calculate clone statistics for share display
