@@ -937,8 +937,14 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             hub_name = "Verlihub"
         if hub_desc is None:
             hub_desc = "DC++ Hub"
-        if hub_host is None:
-            hub_host = ""
+        if hub_host is None or hub_host == "":
+            # Use API server address as fallback if hub_host not configured
+            if server_running and api_port:
+                hub_host = f"http://localhost:{api_port}/"
+                print(f"[Hub API] Using fallback hub_host: {hub_host}")
+            else:
+                hub_host = ""
+                print(f"[Hub API] hub_host empty - server_running={server_running}, api_port={api_port}")
         if topic is None:
             topic = ""
         if max_users_str is None:
@@ -962,7 +968,7 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
         except Exception as e:
             print(f"[Hub API] Could not read MOTD file: {e}")
         
-        return {
+        result = {
             "name": hub_name,
             "description": hub_desc,
             "host": hub_host,
@@ -975,6 +981,10 @@ def _get_hub_info_unsafe() -> Dict[str, Any]:
             "uptime_seconds": uptime_seconds,
             "uptime": uptime_formatted
         }
+        
+        print(f"[Hub API] _get_hub_info_unsafe returning host='{hub_host}'")
+        
+        return result
     except Exception as e:
         import traceback
         print(f"[Hub API] Error in _get_hub_info_unsafe: {e}")
