@@ -1259,6 +1259,54 @@
                 
                 html += '</ul>';
                 
+                // Build list of unique IP addresses for this country
+                const ipSet = new Set();
+                const ipInfoMap = new Map(); // Map IP to { hostname, asn, userCount }
+                
+                for (const user of countryUsers) {
+                    const ip = user.ip || user.IP || '';
+                    
+                    if (ip && ip !== 'N/A' && ip !== '') {
+                        ipSet.add(ip);
+                        
+                        if (!ipInfoMap.has(ip)) {
+                            ipInfoMap.set(ip, {
+                                hostname: user.host || user.hostname || '',
+                                asn: user.asn || user.ASN || 'N/A',
+                                userCount: 0
+                            });
+                        }
+                        ipInfoMap.get(ip).userCount++;
+                    }
+                }
+                
+                // Show IP addresses if any exist
+                if (ipSet.size > 0) {
+                    const ipArray = Array.from(ipSet).sort();
+                    html += `<h3>IP Addresses (${ipArray.length})</h3>`;
+                    html += '<ul class="info-list">';
+                    
+                    for (const ip of ipArray) {
+                        const info = ipInfoMap.get(ip);
+                        const hostname = info.hostname || 'N/A';
+                        const asn = info.asn || 'N/A';
+                        const userCount = info.userCount;
+                        
+                        html += `<li>`;
+                        html += `<a href="#" onclick="showIPUsers('${encodeURIComponent(ip)}'); return false;" style="font-weight: bold;">${ip}</a>`;
+                        if (hostname && hostname !== 'N/A') {
+                            html += ` - ${hostname}`;
+                        }
+                        if (asn && asn !== 'N/A') {
+                            html += ` (<a href="#" onclick="showASNUsers('${encodeURIComponent(asn)}'); return false;">${asn}</a>)`;
+                        }
+                        html += ` - ${userCount} user${userCount !== 1 ? 's' : ''}`;
+                        html += `</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
                 document.getElementById('user-detail-title').textContent = countryName;
                 document.getElementById('user-content').innerHTML = html;
                 document.getElementById('user-detail').style.display = 'block';
