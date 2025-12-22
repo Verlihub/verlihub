@@ -1,2 +1,0 @@
-!onplug python
-!api start 30000 https://sublevels.net https://www.sublevels.net https://wintermute.sublevels.net
