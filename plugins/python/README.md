@@ -1,6 +1,6 @@
 # Verlihub Python Plugin
 
-**Version**: 1.6.0.0  
+**Version**: 1.7.0.0  
 **Python Version**: 3.12+  
 
 ## Table of Contents
@@ -1750,33 +1750,6 @@ Python threading behavior differs significantly between interpreter modes:
 - Clean shutdown with proper cleanup
 - **Note**: Scripts can see each other's globals (use unique naming!)
 
-**Real-World Threading Crash Fixed:**
-
-During stress testing of hub_api.py (FastAPI with uvicorn threading), we discovered a critical bug in single-interpreter mode:
-
-```
-Symptom: Segfault in _PyEval_EvalFrameDefault after ~10 seconds
-Cause:   PyThreadState_Swap(script->state) with background threads
-         In single-mode, all scripts share main_state
-         PyThreadState_Get() could return NULL from background thread
-         Swapping to/from NULL → crash
-
-Fix:     Only swap states in sub-interpreter mode:
-         #ifndef PYTHON_USE_SINGLE_INTERPRETER
-             PyThreadState *old = PyThreadState_Get();
-             PyThreadState_Swap(script->state);
-         #endif
-         
-Result:  ✅ 600 concurrent commands processed safely
-         ✅ 5000 messages with 3 threads
-         ✅ FastAPI server + hub events simultaneously
-         ✅ Clean shutdown, 544 KB memory growth total
-```
-
-**Lesson**: In single-interpreter mode, state management is fundamentally different - all scripts already share the same `PyThreadState`, making swaps not only unnecessary but dangerous when background threads are involved.
-  - No memory leaks on cleanup
-  - Enable with: `cmake -DPYTHON_USE_SINGLE_INTERPRETER=ON ..`
-
 **When to Use Single Interpreter Mode:**
 
 ✅ **Use when:**
@@ -1900,7 +1873,7 @@ TEST(MyFeatureTest, BasicFunctionality) {
 
 ```bash
 # Prerequisites
-sudo apt-get install cmake g++ python3-dev libmysqlclient-dev libicu-dev
+sudo apt-get install cmake g++ python3-dev libmysqlclient-dev libicu-dev rapidjson-dev
 
 # For running tests (optional)
 sudo apt-get install libgtest-dev libcurl4-openssl-dev
@@ -1943,6 +1916,7 @@ Tests are enabled by default. Disable to avoid needing GTest/GMock/libcurl devel
 - `python3-dev` - Python development headers (Python.h)
 - `libmysqlclient-dev` - MySQL client library headers
 - `libicu-dev` - ICU library for character encoding conversion (supports legacy encodings like CP1251, ISO-8859-1, etc.)
+- `rapidjson-dev` - RapidJSON headers for high-performance JSON marshaling between C++ and Python
 
 **Optional for tests** (only needed if `BUILD_PYTHON_TESTS=ON`, which is default):
 - `libgtest-dev` - Google Test framework for unit/integration testing
@@ -2057,15 +2031,15 @@ TEST_F(VHModuleTest, YourNewFunctionWorks) {
     // Load and execute the script
     w_Targs* load_args = w_pack("lssssls", 
         (long)id, 
-        (char*)script_path.c_str(),
-        (char*)"TestBot",
-        (char*)"OpChat",
-        (char*)"/tmp",
+        strdup(script_path.c_str()),
+        strdup("TestBot"),
+        strdup("OpChat"),
+        strdup("/tmp"),
         (long)1234567890,
-        (char*)"test_config");
+        strdup("test_config"));
     
     int result = w_Load(load_args);
-    free(load_args);
+    w_free_args(load_args);
     
     EXPECT_EQ(result, id);
     
