@@ -124,61 +124,6 @@ public:
 	w_Targs *CallPythonFunction(int script_id, const char *func_name, w_Targs *args);
 	w_Targs *CallPythonFunction(const std::string &script_name, const char *func_name, w_Targs *args);
 	
-	// ===== Phase 2: Enhanced C++ Function Exposure =====
-	// Template-based wrappers for common callback patterns
-	
-	// Helper: String -> Bool
-	template<typename Func>
-	static w_Targs *WrapStringToBool(int id, w_Targs *args, Func func) {
-		const char *str;
-		if (!lib_unpack(args, "s", &str) || !str) return NULL;
-		return func(str) ? w_ret1 : NULL;
-	}
-	
-	// Helper: String -> String
-	template<typename Func>
-	static w_Targs *WrapStringToString(int id, w_Targs *args, Func func) {
-		const char *str;
-		if (!lib_unpack(args, "s", &str) || !str) return NULL;
-		std::string result = func(str);
-		return lib_pack("s", result.c_str());
-	}
-	
-	// Helper: String -> Long
-	template<typename Func>
-	static w_Targs *WrapStringToLong(int id, w_Targs *args, Func func) {
-		const char *str;
-		if (!lib_unpack(args, "s", &str) || !str) return NULL;
-		long result = func(str);
-		return lib_pack("l", result);
-	}
-	
-	// Helper: String, Long -> Bool
-	template<typename Func>
-	static w_Targs *WrapStringLongToBool(int id, w_Targs *args, Func func) {
-		const char *str;
-		long val;
-		if (!lib_unpack(args, "sl", &str, &val) || !str) return NULL;
-		return func(str, val) ? w_ret1 : NULL;
-	}
-	
-	// Helper: String, String -> Bool
-	template<typename Func>
-	static w_Targs *WrapStringStringToBool(int id, w_Targs *args, Func func) {
-		const char *str1, *str2;
-		if (!lib_unpack(args, "ss", &str1, &str2) || !str1 || !str2) return NULL;
-		return func(str1, str2) ? w_ret1 : NULL;
-	}
-	
-	// Helper: String, String -> String
-	template<typename Func>
-	static w_Targs *WrapStringStringToString(int id, w_Targs *args, Func func) {
-		const char *str1, *str2;
-		if (!lib_unpack(args, "ss", &str1, &str2) || !str1 || !str2) return NULL;
-		std::string result = func(str1, str2);
-		return lib_pack("s", result.c_str());
-	}
-	
 	unsigned int Size() { return mPython.size(); }
 
 	void Empty()
