@@ -2191,31 +2191,6 @@ ctest  # 11/11 tests pass
 | Memory Management | ⚠️ Small leak with threads | ✅ Clean |
 | Use Case | Multi-user dev environments | Production with modern packages |
 
-### Known Issues - All Resolved! ✅
-
-**Previous Issues (Now Fixed):**
-
-~~**Python Bug #15751:**~~ ✅ **RESOLVED**
-- ~~Sub-interpreters + threading = cleanup crashes~~
-- **Fix**: Conditional PyThreadState management - no state swapping in single-interpreter mode
-- **Result**: All threading tests pass in both modes, no crashes, minimal memory overhead
-
-~~**Single Interpreter Mode Crashes:**~~ ✅ **RESOLVED**  
-- ~~`Py_Finalize()` segfaults, cleanup crashes~~
-- **Fix**: Fixed memory management (strdup for string literals), proper PyThreadState handling
-- **Result**: All 11/11 tests pass, clean shutdown, no segfaults
-
-~~**Integration Test Failures:**~~ ✅ **RESOLVED**
-- ~~ThreadedDataProcessing/AsyncDataProcessing failed in single-interpreter mode~~
-- **Fix**: Rewrote scripts with unique function names (e.g., `threaded_get_stats()`) and hook aliases
-- **Result**: Integration tests pass in both modes
-
-**Current Status:**
-- ✅ No known bugs or limitations
-- ✅ All tests passing in both configurations
-- ✅ Both modes are production-ready
-- ✅ Memory management verified safe
-
 ### Running Tests
 
 **Sub-Interpreter Mode (Default):**
