@@ -144,7 +144,7 @@ if(BUILD_PYTHON_TESTS)
         # Pass build directory to test for config file location
         target_compile_definitions(test_python_plugin_integration PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}")
 
-        # Phase 3 & 4: Advanced type marshaling tests
+        # Advanced type marshaling tests
         add_executable(test_python_advanced_types tests/test_python_advanced_types.cpp)
         target_link_libraries(test_python_advanced_types GTest::gtest GTest::gtest_main pthread libverlihub_so -Wl,--no-as-needed libpython_pi_core -Wl,--as-needed libvh_python_wrapper vhapi_so)
         target_compile_definitions(test_python_advanced_types PRIVATE BUILD_DIR="${CMAKE_BINARY_DIR}" SOURCE_DIR="${CMAKE_SOURCE_DIR}")
@@ -202,7 +202,7 @@ if(BUILD_PYTHON_TESTS)
         add_test(NAME PythonWrapperStressTests COMMAND test_python_wrapper_stress)
         # Integration test exercises full TreatMsg pathway through Python plugin
         add_test(NAME PythonPluginIntegrationTests COMMAND test_python_plugin_integration)
-        # Advanced types test exercises Phase 3 list/dict marshaling
+        # Advanced types test exercises list/dict marshaling
         add_test(NAME PythonAdvancedTypesTests COMMAND test_python_advanced_types)
         # vh Module test - validates restored bidirectional API
         add_test(NAME VHModuleTests COMMAND test_vh_module)
