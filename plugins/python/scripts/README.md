@@ -7,8 +7,6 @@ This directory contains example Python scripts demonstrating the capabilities of
 - [Important: Thread Safety](#important-thread-safety)
 - [Scripts](#scripts)
   - [hub_api.py - REST API Server](#hub_apipy---rest-api-server)
-  - [matterbridge.py - Chat Bridge Connector](#matterbridgepy---chat-bridge-connector)
-  - [email_digest.py - Email Digest Reporter](#email_digestpy---email-digest-reporter)
 - [Installation](#installation)
   - [Using Virtual Environment (Recommended)](#using-virtual-environment-recommended)
   - [System-wide Installation](#system-wide-installation)
@@ -103,9 +101,9 @@ The Verlihub C++ API was not designed with thread-safety in mind. When Python sc
 
 ### Safe Patterns
 
-Both example scripts demonstrate thread-safe patterns to work around this limitation:
+The hub_api.py example script demonstrates thread-safe patterns to work around this limitation:
 
-#### Pattern 1: Queue-Based Message Passing (matterbridge.py)
+#### Pattern 1: Queue-Based Message Passing
 
 ```python
 from queue import Queue
@@ -945,272 +943,6 @@ def robust_decode(text, primary_encoding='cp1251'):
 
 ---
 
-### matterbridge.py - Chat Bridge Connector
-
-Bidirectional chat bridge connecting Verlihub with Matterbridge, enabling integration with Mattermost, Slack, IRC, Discord, Telegram, Matrix, and many other platforms.
-
-**Features:**
-- Bidirectional message relay (Hub ↔ Matterbridge)
-- Thread-safe queue-based message passing
-- HTTP streaming for real-time updates
-- Automatic reconnection with exponential backoff
-- User class filtering (only relay messages from certain user levels)
-- Nickname filtering (ignore messages from specific users)
-- Configurable message formats
-
-**Supported Platforms (via Matterbridge):**
-- Mattermost
-- Slack
-- Discord
-- IRC
-- Telegram
-- Matrix
-- Microsoft Teams
-- Rocket.Chat
-- Gitter
-- XMPP
-- Zulip
-- And many more...
-
-**Admin Commands:**
-```
-!bridge start              - Start Matterbridge connection
-!bridge stop               - Stop Matterbridge connection
-!bridge status             - Check connection status
-!bridge config <url>       - Set Matterbridge API URL
-!bridge token <token>      - Set API authentication token
-!bridge gateway <name>     - Set gateway name
-!bridge channel <name>     - Set channel name
-!bridge help               - Show help with config examples
-```
-
-**Requirements:**
-```bash
-pip install requests
-```
-
-**Matterbridge Configuration:**
-
-Add to your `matterbridge.toml`:
-
-```toml
-[api.verlihub]
-BindAddress="127.0.0.1:4242"
-Buffer=1000
-RemoteNickFormat="{NICK}"
-# Optional: Token="your_secret_token"
-
-[[gateway]]
-name="verlihub"
-enable=true
-
-[[gateway.inout]]
-account="api.verlihub"
-channel="api"
-```
-
-**Usage:**
-```bash
-# Load the script
-!pyload /path/to/scripts/matterbridge.py
-
-# Configure connection
-!bridge config http://localhost:4242/api/messages
-!bridge gateway verlihub
-!bridge channel api
-
-# Start bridging
-!bridge start
-```
-
-**Script Configuration:**
-
-The script has a `CONFIG` dictionary at the top that you can customize:
-
-```python
-CONFIG = {
-    "api_url": "http://localhost:4242",        # Matterbridge API URL
-    "api_token": "",                            # Optional authentication
-    "gateway": "verlihub",                      # Gateway name
-    "channel": "#general",                      # Channel name
-    "bot_nick": "[Bridge]",                     # Bot display name
-    "hub_to_bridge_format": "<{nick}> {message}",
-    "bridge_to_hub_format": "[{protocol}] <{username}> {text}",
-    "poll_interval": 0.5,                       # Polling frequency
-    "retry_interval": 5,                        # Retry delay
-    "max_retries": 10,                          # Max reconnection attempts
-    "ignore_nicks": [],                         # Nicks to filter
-    "min_class_to_send": 0,                     # Min user class (0=all)
-}
-```
-
----
-
-### email_digest.py - Email Digest Reporter
-
-Sends periodic email digests containing chat logs and client connection statistics. Perfect for hub administrators who want to monitor activity without being online 24/7.
-
-**Features:**
-- **Chat Digest**: Buffer chat messages and email after inactivity period
-- **Client Statistics**: Track joins/quits and send periodic reports  
-- **Dual Digest System**: Separate recipient lists for chat vs stats
-- **Inactivity-based Sending**: Only emails chat logs after configurable quiet period
-- **Activity-based Sending**: Only emails stats if there was client activity
-- **Thread-safe Buffering**: Safe concurrent access to message buffers
-- **HTML Email Formatting**: Professional formatted reports
-- **SMTP Authentication**: Supports TLS and authentication
-- **Admin Commands**: Manual trigger, status checks, and configuration
-
-**Chat Digest Behavior:**
-- Buffers all main chat messages with timestamps and nicknames
-- After N minutes of inactivity (no new messages), sends email digest
-- Clears buffer after sending
-- If buffer is empty, doesn't send anything
-- Configurable message limit to prevent memory issues
-
-**Client Statistics Behavior:**
-- Tracks every user join and quit event
-- Counts multiple joins/quits per user
-- Collects geographic information (country codes)
-- Records client software versions
-- Tracks share sizes (total and average)
-- Optionally includes IP addresses
-- After N minutes, sends statistics email and resets counters
-- Only sends if there was activity (joins or quits)
-- Shows last seen timestamp for each client
-- Aggregates data: unique countries, client versions, total share
-
-**Admin Commands:**
-```
-!digest status             - Show current buffer status
-!digest chat send          - Immediately send chat digest
-!digest chat clear         - Clear chat buffer without sending
-!digest stats send         - Immediately send client statistics
-!digest stats clear        - Clear client statistics
-!digest config             - Show SMTP and timing configuration
-!digest test <email>       - Send test email to verify setup
-```
-
-**Requirements:**
-```bash
-# Built-in Python modules only (smtplib, email.mime)
-# No additional dependencies needed
-```
-
-**Configuration:**
-
-Edit the `CONFIG` dictionary at the top of the script:
-
-```python
-CONFIG = {
-    # Email server settings
-    "smtp_server": "smtp.gmail.com",
-    "smtp_port": 587,
-    "smtp_use_tls": True,
-    "smtp_username": "your-email@gmail.com",
-    "smtp_password": "your-app-password",      # Use app password for Gmail
-    "from_address": "your-email@gmail.com",
-    
-    # Recipients
-    "chat_recipients": ["admin@example.com", "moderator@example.com"],
-    "stats_recipients": ["admin@example.com"],
-    
-    # Chat digest settings
-    "chat_inactivity_minutes": 15,   # Email after 15 min of quiet chat
-    "chat_max_messages": 1000,       # Buffer size limit
-    
-    # Client stats settings
-    "stats_interval_minutes": 60,    # Email stats every 60 minutes
-    "stats_include_ips": False,      # Include IP addresses in report
-    "stats_include_geo": True,       # Include country codes
-    "stats_include_clients": True,   # Include client software versions
-    "stats_include_share": True,     # Include share size information
-    "stats_detailed": False,         # Show all data vs just latest values
-    
-    # General settings
-    "hub_name": "My Verlihub Hub",
-    "timezone": "UTC",
-}
-```
-
-**Gmail Setup:**
-
-For Gmail SMTP, you need an "App Password" (not your regular password):
-
-1. Enable 2-factor authentication on your Google account
-2. Go to: https://myaccount.google.com/apppasswords
-3. Generate an app password for "Mail"
-4. Use this password in the `smtp_password` field
-
-**Usage:**
-```bash
-# Load the script
-!pyload /path/to/scripts/email_digest.py
-
-# Check status
-!digest status
-
-# Test email delivery (replace with your actual email)
-!digest test your-email@example.com
-
-# Manually trigger digests
-!digest chat send
-!digest stats send
-```
-
-**Troubleshooting:**
-
-If commands don't work:
-1. Check you have operator privileges (class 10+): `!myinfo`
-2. Check the script loaded: `!pylist`
-3. Look for debug output in hub console showing command received
-4. Verify command prefix matches hub config (usually `!` or `+`)
-5. Try reloading: `!pyreload email_digest`
-
-**Example Chat Digest Email:**
-```
-Subject: [My Hub] Chat Digest - 45 messages
-
-Chat Digest for My Hub
-Period: 2025-12-15 10:00:00 to 2025-12-15 10:14:30
-Messages: 45
-
-================================================================================
-
-[2025-12-15 10:00:15] <Alice> Hey everyone!
-[2025-12-15 10:00:42] <Bob> Hi Alice, how's it going?
-[2025-12-15 10:01:05] <Alice> Great! Just sharing some files
-...
-```
-
-**Example Client Statistics Email:**
-```
-Subject: [My Hub] Client Statistics - 12 clients
-
-Client Statistics for My Hub  
-Period: 2025-12-15 09:00:00 to 2025-12-15 10:00:00
-Duration: 60.0 minutes
-
-Total Joins: 18
-Total Quits: 15
-Unique Clients: 12
-Countries: 5 (DE, FR, GB, NL, US)
-Client Software: 8 different versions
-Total Share: 15.3 TB
-Average Share: 1.28 TB
-
-================================================================================
-
-Client               Joins   Quits   Country  Share        Client Version                 Last Seen           
-----------------------------------------------------------------------------------------------------------------------------
-Alice                3       2       US       2.5 TB       DC++ 0.868                     2025-12-15 09:55:23
-Bob                  2       2       GB       1.8 TB       AirDC++ 4.21                   2025-12-15 09:48:10
-Charlie              1       1       DE       850 GB       EiskaltDC++ 2.4.2              2025-12-15 09:30:45
-...
-```
-
----
-
 ## Installation
 
 ### Using Virtual Environment (Recommended)
@@ -1225,8 +957,11 @@ python3 -m venv venv
 # Activate virtual environment
 source venv/bin/activate
 
-# Install dependencies
-pip install fastapi uvicorn requests
+# Install dependencies for hub_api.py
+pip install fastapi uvicorn
+
+# Optional: Install network diagnostics dependencies
+pip install gufo-traceroute python-nmap icmplib
 
 # Deactivate when done
 deactivate
@@ -1237,7 +972,10 @@ The scripts automatically detect and use the virtual environment if present.
 ### System-wide Installation
 
 ```bash
-pip install fastapi uvicorn requests
+pip install fastapi uvicorn
+
+# Optional: Install network diagnostics dependencies
+pip install gufo-traceroute python-nmap icmplib
 ```
 
 ## Development
@@ -1322,7 +1060,6 @@ When creating new Python scripts for Verlihub:
 
 For complete Python plugin documentation, see:
 - [Main README](../README.md) - Full Python plugin documentation
-- [Verlihub Wiki](https://github.com/42wim/matterbridge/wiki) - Matterbridge documentation
 - [FastAPI Docs](https://fastapi.tiangolo.com/) - FastAPI documentation
 
 ## Contributing
