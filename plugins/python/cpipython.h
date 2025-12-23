@@ -198,11 +198,6 @@ public:
 
 };  // namespace nPythonPlugin
 
-// ===== Phase 2: Simplified Registration Macro =====
-// Simplifies callback registration - reduces boilerplate
-#define VH_REGISTER_CALLBACK(enum_name, func_ptr) \
-	callbacklist[W_##enum_name] = &_##func_ptr
-
 inline bool EndsWithPipe(const char *data)
 {
 	return data && data[0] != 0 && data[strlen(data) - 1] == '|';
