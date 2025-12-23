@@ -344,7 +344,12 @@ The API automatically configures CORS (Cross-Origin Resource Sharing) to allow r
 
 **HTML/JavaScript Dashboard:**
 
-A complete web-based dashboard is included as `verlihub_client.html`. This provides a full-featured interface for monitoring your hub through a web browser.
+Two dashboard versions are included:
+
+- **`verlihub_client.html`** - Standalone HTML file that can be opened directly in a browser
+- **`verlihub_client_embed.html`** - Embeddable version that can be pasted into a webpage or web application without requiring an iframe. Works exactly the same as the standalone version.
+
+Both provide a full-featured interface for monitoring your hub through a web browser.
 
 **Dashboard Features:**
 - **Overview Tab**: Hub stats, user count, share size, uptime
@@ -362,11 +367,14 @@ A complete web-based dashboard is included as `verlihub_client.html`. This provi
 
 1. **Configure API_BASE in the HTML file:**
 
-   Edit `verlihub_client.html` and update the `API_BASE` constant to point to your API endpoint:
+   Edit the dashboard file and update the `API_BASE` (or `VH_API_BASE` for embed version) constant to point to your API endpoint:
 
    ```javascript
-   // Line ~112 in verlihub_client.html
+   // In verlihub_client.html (line ~112)
    const API_BASE = 'http://localhost:8000';  // Change this!
+   
+   // In verlihub_client_embed.html (line ~119)
+   const VH_API_BASE = '/verlihub-api';  // Change this!
    ```
 
    Examples:
@@ -390,13 +398,21 @@ A complete web-based dashboard is included as `verlihub_client.html`. This provi
 
 3. **Open the dashboard in your browser:**
 
+   **Standalone version (`verlihub_client.html`):**
    ```
+   # Open directly from filesystem
    file:///path/to/verlihub_client.html
+   
+   # Or serve via web server
+   http://yourhub.com/verlihub_client.html
    ```
    
-   Or serve it via web server:
-   ```
-   http://yourhub.com/verlihub_client.html
+   **Embeddable version (`verlihub_client_embed.html`):**
+   ```html
+   <!-- Paste the entire contents into your webpage -->
+   <div id="hub-dashboard-container">
+     <!-- Paste verlihub_client_embed.html contents here -->
+   </div>
    ```
 
 **Using a Reverse Proxy (Recommended for Production):**
