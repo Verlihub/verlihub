@@ -214,9 +214,9 @@ w_Targs *w_vapack(const char *format, va_list ap)
 			case 's':
 			case 'd':
 			case 'p':
-			case 'L':  // Phase 3: List of strings
-			case 'D':  // Phase 3: Dictionary (as JSON string)
-			case 'O':  // Phase 3: PyObject* (advanced)
+			case 'L':  //  List of strings
+			case 'D':  //  Dictionary (as JSON string)
+			case 'O':  //  PyObject* (advanced)
 				break;
 			default:
 				log1("PY: pack: format string supports 'lsdpLDO' and not '%c'\n", format[i]);
@@ -253,15 +253,15 @@ w_Targs *w_vapack(const char *format, va_list ap)
 				a->args[i].type = 'p';
 				a->args[i].p = va_arg(ap, void *);
 				break;
-			case 'L':  // Phase 3: List of strings (NULL-terminated char**)
+			case 'L':  //  List of strings (NULL-terminated char**)
 				a->args[i].type = 'L';
 				a->args[i].L = va_arg(ap, char **);
 				break;
-			case 'D':  // Phase 3: Dict as JSON string (treated as 's' internally)
+			case 'D':  //  Dict as JSON string (treated as 's' internally)
 				a->args[i].type = 'D';
 				a->args[i].s = va_arg(ap, char *);
 				break;
-			case 'O':  // Phase 3: PyObject* passthrough
+			case 'O':  //  PyObject* passthrough
 				a->args[i].type = 'O';
 				a->args[i].O = va_arg(ap, PyObject *);
 				break;
@@ -362,13 +362,13 @@ int w_unpack(w_Targs *a, const char *format, ...)
 			case 'p':
 				*va_arg(ap, void **) = a->args[arg_idx].p;
 				break;
-			case 'L':  // Phase 3: List of strings
+			case 'L':  //  List of strings
 				*va_arg(ap, char ***) = a->args[arg_idx].L;
 				break;
-			case 'D':  // Phase 3: Dict as JSON (unpacked as string)
+			case 'D':  //  Dict as JSON (unpacked as string)
 				*va_arg(ap, char **) = a->args[arg_idx].s;
 				break;
-			case 'O':  // Phase 3: PyObject* passthrough
+			case 'O':  //  PyObject* passthrough
 				*va_arg(ap, PyObject **) = a->args[arg_idx].O;
 				break;
 			default:
@@ -409,7 +409,7 @@ const char *w_packprint(w_Targs *a)
 				snprintf(tmp, sizeof(tmp), "%p ", a->args[i].p);
 				strcat(buf, tmp);
 				break;
-			case 'L':  // Phase 3: List of strings
+			case 'L':  //  List of strings
 				{
 					strcat(buf, "[");
 					if (a->args[i].L) {
@@ -426,13 +426,13 @@ const char *w_packprint(w_Targs *a)
 					strcat(buf, "] ");
 				}
 				break;
-			case 'D':  // Phase 3: Dict as JSON string
+			case 'D':  //  Dict as JSON string
 				snprintf(tmp, sizeof(tmp), "JSON:'%.50s%s' ", 
 					a->args[i].s ? a->args[i].s : "",
 					(a->args[i].s && strlen(a->args[i].s) > 50) ? "..." : "");
 				strcat(buf, tmp);
 				break;
-			case 'O':  // Phase 3: PyObject*
+			case 'O':  //  PyObject*
 				snprintf(tmp, sizeof(tmp), "PyObject:%p ", a->args[i].O);
 				strcat(buf, tmp);
 				break;
@@ -2486,7 +2486,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 			case 'p':
 				PyTuple_SetItem(args, i, PyLong_FromVoidPtr(params->args[i].p));
 				break;
-			case 'L': {  // Phase 3: List of strings
+			case 'L': {  //  List of strings
 				char **list = params->args[i].L;
 				if (!list) {
 					PyTuple_SetItem(args, i, PyList_New(0));
@@ -2503,7 +2503,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 				PyTuple_SetItem(args, i, py_list);
 				break;
 			}
-			case 'D': {  // Phase 3: Dict/complex as JSON string
+			case 'D': {  //  Dict/complex as JSON string
 				const char *json_str = params->args[i].s;
 				if (!json_str || json_str[0] == '\0') {
 					PyTuple_SetItem(args, i, PyDict_New());
@@ -2551,7 +2551,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 #endif
 				break;
 			}
-			case 'O':  // Phase 3: PyObject* passthrough
+			case 'O':  //  PyObject* passthrough
 				if (params->args[i].O) {
 					Py_INCREF(params->args[i].O);  // Inc ref for tuple
 					PyTuple_SetItem(args, i, params->args[i].O);
@@ -2602,7 +2602,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 		ret = w_pack("s", strdup(s));
 	} else if (res == Py_None) {
 		ret = w_pack("l", (long)0);  // Default to 0 for None
-	} else if (PyList_Check(res) || PyTuple_Check(res) || PySet_Check(res) || PyFrozenSet_Check(res)) {  // Phase 3: All containers use JSON marshaling
+	} else if (PyList_Check(res) || PyTuple_Check(res) || PySet_Check(res) || PyFrozenSet_Check(res)) {  //  All containers use JSON marshaling
 #ifdef HAVE_RAPIDJSON
 		// Use RapidJSON-based converter for all containers
 		char *json_str = PyObjectToJsonString(res);
@@ -2612,7 +2612,7 @@ w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params)
 			log("PY: w_CallFunction - failed to convert container to JSON\n");
 			ret = w_pack("D", strdup("[]"));
 		}
-	} else if (PyDict_Check(res)) {  // Phase 3: Dict to 'D' format (JSON)
+	} else if (PyDict_Check(res)) {  //  Dict to 'D' format (JSON)
 #ifdef HAVE_RAPIDJSON
 		// Use RapidJSON-based converter for fast serialization
 		char *json_str = PyObjectToJsonString(res);
