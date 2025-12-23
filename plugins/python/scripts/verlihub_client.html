@@ -1569,11 +1569,14 @@
                 // Build HTML for IP users popup
                 let html = '';
                 
-                // Get hostname and ASN from first user (should be same for all)
+                // Get hostname, ASN, city, and country from first user (should be same for all)
                 if (ipUsers.length > 0) {
                     const firstUser = ipUsers[0];
                     const hostname = firstUser.host || 'N/A';
                     const asn = firstUser.asn || 'N/A';
+                    const city = firstUser.city || '';
+                    const countryCode = firstUser.country_code || firstUser.country || firstUser.cc || firstUser.CC || '';
+                    const countryName = firstUser.country || countryCode;
                     
                     html += '<ul class="info-list">';
                     html += `<li><strong>Hostname:</strong> ${hostname}</li>`;
@@ -1583,6 +1586,20 @@
                         html += `<li><strong>ASN:</strong> <a href="#" onclick="showASNUsers('${encodeURIComponent(asn)}'); return false;" style="color: #0066cc; text-decoration: underline;">${asn}</a></li>`;
                     } else {
                         html += `<li><strong>ASN:</strong> ${asn}</li>`;
+                    }
+                    
+                    // Make city clickable if available
+                    if (city && city !== 'N/A' && city !== '' && countryCode) {
+                        const cityKey = `${city}|||${countryCode.toUpperCase()}`;
+                        html += `<li><strong>City:</strong> <a href="#" onclick="showCityUsers('${encodeURIComponent(cityKey)}'); return false;" style="color: #0066cc; text-decoration: underline;">${city}</a></li>`;
+                    } else if (city && city !== 'N/A' && city !== '') {
+                        html += `<li><strong>City:</strong> ${city}</li>`;
+                    }
+                    
+                    // Make country clickable if available
+                    if (countryCode && countryCode !== 'N/A' && countryCode !== '') {
+                        const flag = getFlagEmoji(countryCode);
+                        html += `<li><strong>Country:</strong> <a href="#" onclick="showCountryUsers('${encodeURIComponent(countryCode)}'); return false;" style="color: #0066cc; text-decoration: underline;">${flag} ${countryName}</a></li>`;
                     }
                     
                     html += '</ul>';
@@ -1792,6 +1809,19 @@
                                         </table>
                                     </div>
                                 `;
+                                
+                                // Show when the ping was performed
+                                if (pingData.timestamp) {
+                                    const pingDate = new Date(pingData.timestamp * 1000);
+                                    const now = new Date();
+                                    const ageSeconds = Math.floor((now - pingDate) / 1000);
+                                    const ageMinutes = Math.floor(ageSeconds / 60);
+                                    const ageStr = ageMinutes > 0 
+                                        ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                        : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                    html += `<p style="font-size: 0.9em; color: #666;"><em>Ping performed ${ageStr}</em></p>`;
+                                }
+                                
                                 // Stop polling once we have completed results
                                 if (pingPollingInterval) {
                                     clearInterval(pingPollingInterval);
@@ -1889,6 +1919,18 @@
                             
                             if (osData.best_match) {
                                 html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Best match (highlighted):</strong> ' + osData.best_match.name + ' (' + osData.best_match.accuracy + '% accuracy)</p>';
+                            }
+                            
+                            // Show when the OS detection was performed
+                            if (osData.timestamp) {
+                                const osDate = new Date(osData.timestamp * 1000);
+                                const now = new Date();
+                                const ageSeconds = Math.floor((now - osDate) / 1000);
+                                const ageMinutes = Math.floor(ageSeconds / 60);
+                                const ageStr = ageMinutes > 0 
+                                    ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                    : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                html += `<p style="font-size: 0.9em; color: #666;"><em>OS detection performed ${ageStr}</em></p>`;
                             }
                         } else if (osData && osData.completed && !osData.success) {
                             // Scan completed but no OS matches found
