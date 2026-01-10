@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -16,68 +16,21 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
-# file Copyright.txt or https://cmake.org/licensing for details.
-
-#[=======================================================================[.rst:
-FindLua
--------
-
-Locate Lua library.
-
-.. versionadded:: 3.18
-  Support for Lua 5.4.
-
-This module defines:
-
-``LUA_FOUND``
-  if false, do not try to link to Lua
-``LUA_LIBRARIES``
-  both lua and lualib
-``LUA_INCLUDE_DIR``
-  where to find lua.h
-``LUA_VERSION_STRING``
-  the version of Lua found
-``LUA_VERSION_MAJOR``
-  the major version of Lua
-``LUA_VERSION_MINOR``
-  the minor version of Lua
-``LUA_VERSION_PATCH``
-  the patch version of Lua
-
-Note that the expected include convention is
-
-::
-
-  #include "lua.h"
-
-and not
-
-::
-
-  #include <lua/lua.h>
-
-This is because, the lua location is not standardized and may exist in
-locations other than lua/
-#]=======================================================================]
-
-cmake_policy(PUSH)  # Policies apply to functions at definition-time
-cmake_policy(SET CMP0012 NEW)  # For while(TRUE)
+cmake_policy(PUSH)
+cmake_policy(SET CMP0012 NEW)
 
 unset(_lua_include_subdirs)
 unset(_lua_library_names)
 unset(_lua_append_versions)
 
-# this is a function only to have all the variables inside go away automatically
 function(_lua_get_versions)
-    set(LUA_VERSIONS5 5.4 5.3 5.2 5.1 5.0)
+    set(LUA_VERSIONS5 5.5 5.4 5.3 5.2 5.1 5.0)
 
     if (Lua_FIND_VERSION_EXACT)
         if (Lua_FIND_VERSION_COUNT GREATER 1)
             set(_lua_append_versions ${Lua_FIND_VERSION_MAJOR}.${Lua_FIND_VERSION_MINOR})
         endif ()
     elseif (Lua_FIND_VERSION)
-        # once there is a different major version supported this should become a loop
         if (NOT Lua_FIND_VERSION_MAJOR GREATER 5)
             if (Lua_FIND_VERSION_COUNT EQUAL 1)
                 set(_lua_append_versions ${LUA_VERSIONS5})
@@ -87,14 +40,12 @@ function(_lua_get_versions)
                         list(APPEND _lua_append_versions ${subver})
                     endif ()
                 endforeach ()
-                # New version -> Search for it (heuristic only! Defines in include might have changed)
                 if (NOT _lua_append_versions)
                     set(_lua_append_versions ${Lua_FIND_VERSION_MAJOR}.${Lua_FIND_VERSION_MINOR})
                 endif()
             endif ()
         endif ()
     else ()
-        # once there is a different major version supported this should become a loop
         set(_lua_append_versions ${LUA_VERSIONS5})
     endif ()
 
@@ -117,7 +68,6 @@ function(_lua_set_version_vars)
         )
   endforeach ()
 
-  # Prepend "include/" to each path directly after the path
   set(_lua_include_subdirs "include")
   foreach (dir IN LISTS _lua_include_subdirs_raw)
     list(APPEND _lua_include_subdirs "${dir}" "include/${dir}")
@@ -134,9 +84,6 @@ function(_lua_get_header_version)
     return()
   endif ()
 
-  # At least 5.[012] have different ways to express the version
-  # so all of them need to be tested. Lua 5.2 defines LUA_VERSION
-  # and LUA_RELEASE as joined by the C preprocessor, so avoid those.
   file(STRINGS "${_hdr_file}" lua_version_strings
        REGEX "^#define[ \t]+LUA_(RELEASE[ \t]+\"Lua [0-9]|VERSION([ \t]+\"Lua [0-9]|_[MR])).*")
 
@@ -168,12 +115,8 @@ endfunction(_lua_get_header_version)
 function(_lua_find_header)
   _lua_set_version_vars()
 
-  # Initialize as local variable
   set(CMAKE_IGNORE_PATH ${CMAKE_IGNORE_PATH})
   while (TRUE)
-    # Find the next header to test. Check each possible subdir in order
-    # This prefers e.g. higher versions as they are earlier in the list
-    # It is also consistent with previous versions of FindLua
     foreach (subdir IN LISTS _lua_include_subdirs)
       find_path(LUA_INCLUDE_DIR lua.h
         HINTS ENV LUA_DIR
@@ -183,19 +126,16 @@ function(_lua_find_header)
         break()
       endif()
     endforeach()
-    # Did not found header -> Fail
     if (NOT LUA_INCLUDE_DIR)
       return()
     endif()
     _lua_get_header_version()
-    # Found accepted version -> Ok
     if (LUA_VERSION_STRING)
       if (LUA_Debug)
         message(STATUS "Found suitable version ${LUA_VERSION_STRING} in ${LUA_INCLUDE_DIR}/lua.h")
       endif()
       return()
     endif()
-    # Found wrong version -> Ignore this path and retry
     if (LUA_Debug)
       message(STATUS "Ignoring unsuitable version in ${LUA_INCLUDE_DIR}")
     endif()
@@ -230,27 +170,23 @@ find_library(LUA_LIBRARY
 unset(_lua_library_names)
 
 if (LUA_LIBRARY)
-  # include the math library for Unix
   if (UNIX AND NOT APPLE AND NOT BEOS)
     find_library(LUA_MATH_LIBRARY m)
     mark_as_advanced(LUA_MATH_LIBRARY)
     set(LUA_LIBRARIES "${LUA_LIBRARY};${LUA_MATH_LIBRARY}")
 
-    # include dl library for statically-linked Lua library
     get_filename_component(LUA_LIB_EXT ${LUA_LIBRARY} EXT)
     if(LUA_LIB_EXT STREQUAL CMAKE_STATIC_LIBRARY_SUFFIX)
       list(APPEND LUA_LIBRARIES ${CMAKE_DL_LIBS})
     endif()
 
-  # For Windows and Mac, don't need to explicitly include the math library
   else ()
     set(LUA_LIBRARIES "${LUA_LIBRARY}")
   endif ()
 endif ()
 
-include(FindPackageHandleStandardArgs) # ${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake
-# handle the QUIETLY and REQUIRED arguments and set LUA_FOUND to TRUE if
-# all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Lua
                                   REQUIRED_VARS LUA_LIBRARIES LUA_INCLUDE_DIR
                                   VERSION_VAR LUA_VERSION_STRING)

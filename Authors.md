@@ -10,6 +10,7 @@ Authors:
 
 Contributors:
 
+* Transfix, Python 3
 * Frog, Python and Core
 * Eco-Logical, Manual
 * Intruder, Support
