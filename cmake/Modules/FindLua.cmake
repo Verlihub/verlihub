@@ -156,6 +156,7 @@ project target:
 #]=======================================================================]
 
 cmake_policy(PUSH)  # Policies apply to functions at definition-time
+cmake_policy(SET CMP0012 NEW)  # For while(TRUE)
 #cmake_policy(SET CMP0140 NEW)
 #cmake_policy(SET CMP0159 NEW)  # file(STRINGS) with REGEX updates CMAKE_MATCH_<n>
 
