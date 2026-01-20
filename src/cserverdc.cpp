@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -339,7 +339,7 @@ cServerDC::~cServerDC()
 	mMySQL.Close();
 
 #if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY)
-	if (mTLSPort)
+	if (mTLSAddr.size() && mTLSPort)
 		StopProxy(mRunResult); // todo: there is a bug in go, stop proxy at last until fixed
 #endif
 }
@@ -1069,7 +1069,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
-	if (mTLSPort) {
+	if (mTLSAddr.size() && (mTLSPort || (mTLSAddr == mAddr))) {
 		if (mC.tls_only_mode)
 			conn->mLock.append("TLSONLY_");
 		else
@@ -3220,7 +3220,7 @@ void cServerDC::GetHubURLs(string &url, string &urls)
 		url.append(host);
 	}
 
-	if (mTLSPort && host.size()) {
+	if (mTLSAddr.size() && (mTLSPort || (mTLSAddr == mAddr)) && host.size()) {
 		urls = "nmdcs://";
 		urls.append(host);
 

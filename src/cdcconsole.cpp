@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -579,11 +579,10 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str() << "\r\n";
 	os << " [*] " << _("City") << ": " << ci.c_str() << "\r\n";
 
-	if (mOwner->mTLSPort || mOwner->mTLSAddr.size()) // client to hub tls
-		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Hub TLS: %s"), ((conn->mTLSVer.size() && (conn->mTLSVer != "0.0")) ? conn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
+	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls
+	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
 
-	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client to client tls
-	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client to client nat
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
 }

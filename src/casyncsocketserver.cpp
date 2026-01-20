@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -273,7 +273,7 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 	tCLIt it = mConnList.insert(mConnList.begin(), new_conn);
 	new_conn->mIterator = it;
 
-	if ((mTLSPort || mTLSAddr.size()) && (new_conn->AddrIP() == mTLSAddr)) // tls proxy, wait for myip command
+	if (mTLSAddr.size() && (mTLSPort || (mTLSAddr == mAddr)) && (new_conn->AddrIP() == mTLSAddr)) // tls proxy, wait for myip command
 		return;
 
 	if (0 > OnNewConn(new_conn))
@@ -507,7 +507,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 
 #if defined(USE_TLS_PROXY)
 
-	if (!mTLSPort) // disabled
+	if (mTLSAddr.empty() || !mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
 	VH_ProxyConfig *conf = VH_ProxyCreate();
@@ -596,7 +596,7 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 
 #elif defined(USE_FEARTLS_PROXY)
 
-	if (!mTLSPort) // disabled
+	if (mTLSAddr.empty() || !mTLSPort) // disabled
 		return this->Listen(OverrideDefaultPort/*, false*/);
 
 	string saddr, scert, skey, shost;
@@ -682,7 +682,7 @@ bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bo
 	string addr = mAddr;
 
 #if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY)
-	if (mTLSPort)
+	if (mTLSAddr.size() && mTLSPort)
 		addr = mTLSAddr;
 #endif
 

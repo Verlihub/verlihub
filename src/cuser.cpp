@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -218,9 +218,7 @@ void cUser::DisplayInfo(ostream &os)
 	if (ci.size() && (ci != "--"))
 		os << " [*] " << autosprintf(_("City: %s"), ci.c_str()) << "\r\n";
 
-	if (mxServer->mTLSPort || mxServer->mTLSAddr.size())
-		os << " [*] " << autosprintf(_("Hub TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
-
+	os << " [*] " << autosprintf(_("Hub TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (this->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls
 	os << " [*] " << autosprintf(_("Client NAT: %s"), (this->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
 
