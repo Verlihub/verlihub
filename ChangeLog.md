@@ -1,6 +1,10 @@
 # 1.7.0.0
 
 * Added: CMake flag USE_FEARTLS_PROXY to use precompiled FearTLS proxy library instead
+* Added: Try to detect external TLS proxy
+* Added: Lua 5.5 support
+* Updated: Translation files
+* Testing: Python plugin with version 3.x support
 
 # 1.6.1.0
 
