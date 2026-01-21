@@ -3432,6 +3432,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
+			/*
 			} else if ((svar == "tls_listen_ip") && (val_new != val_old)) { // validate proxy ip, todo: tls_min_ver - 0-3
 				unsigned long ip = 0;
 
@@ -3442,6 +3443,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					ci->ConvertFrom(val_old);
 					return 0;
 				}
+			*/
 
 			} else if ((svar == "tls_buf_size") && (val_new != val_old)) { // live change
 				if (val_new.empty()) { // dont allow empty
