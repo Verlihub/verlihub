@@ -3,6 +3,7 @@
 * Added: CMake flag USE_FEARTLS_PROXY to use precompiled FearTLS proxy library instead
 * Added: Try to detect external TLS proxy
 * Added: Lua 5.5 support
+* Added: Consider users with hidden chat on welcome message
 * Updated: Translation files
 * Testing: Python plugin with version 3.x support
 
