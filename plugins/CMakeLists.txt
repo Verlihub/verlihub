@@ -44,14 +44,14 @@ ELSE(WITH_LUA)
 	MESSAGE(STATUS "[ !! ] NOT building LUA plugin, to enable please use: -DWITH_LUA=ON")
 ENDIF(WITH_LUA)
 
-# python plugin, deprecated
+# python plugin
 
 OPTION(WITH_PYTHON "Whether to build PYTHON plugin or not" TRUE)
 IF(WITH_PYTHON)
 	find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 	ADD_PLUGIN(Python3_FOUND python)
 ELSE(WITH_PYTHON)
-	MESSAGE(STATUS "[ !! ] NOT building PYTHON plugin because DEPRECATED, to enable please use: -DWITH_PYTHON=ON")
+	MESSAGE(STATUS "[ !! ] NOT building PYTHON plugin, to enable please use: -DWITH_PYTHON=ON")
 ENDIF(WITH_PYTHON)
 
 # perl plugin, deprecated
