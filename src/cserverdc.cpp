@@ -459,11 +459,16 @@ int cServerDC::DCPublicHS(const string &text, cConnDC *conn)
 	return DCPublic(mC.hub_security, text, conn);
 }
 
-void cServerDC::DCPublicHSToAll(const string &text, bool delay)
+void cServerDC::DCPublicHSToAll(const string &text, bool delay, bool chat)
 {
 	string msg, nick(mC.hub_security), data(text);
 	mP.Create_Chat(msg, nick, text);
-	mUserList.SendToAll(msg, delay, true);
+
+	if (chat)
+		mChatUsers.SendToAll(msg, delay, true);
+	else
+		mUserList.SendToAll(msg, delay, true);
+
 	this->OnPublicBotMessage(&nick, &data, int(eUC_NORMUSER), int(eUC_MASTER)); // todo: make it discardable if needed
 }
 
@@ -1321,7 +1326,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 			}
 		}
 
-		DCPublicHSToAll(omsg, mC.delayed_chat);
+		DCPublicHSToAll(omsg, mC.delayed_chat, true); // consider hidden chat
 	}
 
 	conn->mpUser->mLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip

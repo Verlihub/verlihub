@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -383,7 +383,7 @@ class cServerDC : public cAsyncSocketServer
 		* Send a public message to all users as hub security.
 		* @param text  The message to send
 		*/
-		void DCPublicHSToAll(const string &text, bool delay = true);
+		void DCPublicHSToAll(const string &text, bool delay = true, bool chat = false);
 
 		/**
 		* Send a message in mainchat to everyone.
