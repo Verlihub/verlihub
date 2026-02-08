@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -30,7 +30,7 @@ typedef unsigned int SOCKET;
 */
 
 #include <mysql/mysql.h>
-#include <mysql/errmsg.h>
+//#include <mysql/errmsg.h>
 
 #include "cobj.h"
 
@@ -53,7 +53,7 @@ class cMySQL: public cObj
 		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
 		~cMySQL();
 		void Init();
-		bool Connect(string &host, string &user, string &passwd, string &db, string &charset);
+		bool Connect();
 		void Close();
 
 		string GetDBName()
@@ -68,12 +68,13 @@ class cMySQL: public cObj
 					will try to autoreconnect and increase counter
 					probably need to resend query after successful reconnect
 			*/
-			bool Error(int level, const string& text);
+			//bool Error(int level, const string& text);
+			void Error(int level, const string& text);
 
 	private:
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;
 		MYSQL *mDBHandle;
-		unsigned int mReconnect;
+		//unsigned int mReconnect;
 };
 
 	}; // namespace nMySQL

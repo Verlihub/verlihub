@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -61,11 +61,14 @@ int cQuery::Query()
 		if (ErrLog(2))
 			LogStream() << "Error on query: " << qstr << endl;
 
-		if (mMySQL.Error(2, "Query error:")) { // note: successful reconnect, try again
+		/*
+		if (mMySQL.Error(2, "Query error: ")) { // note: successful reconnect, try again
 			if (!mysql_query(mMySQL.mDBHandle, qstr.c_str())) // success
 				return 1;
 		}
+		*/
 
+		mMySQL.Error(2, "Query error: ");
 		return -1;
 	}
 

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -34,12 +34,12 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 	mDBUser(user),
 	mDBPass(pass),
 	mDBChar(charset),
-	mDBHandle(NULL),
-	mReconnect(0)
+	mDBHandle(NULL)//,
+	//mReconnect(0)
 {
 	Init();
 
-	if (!Connect(host, user, pass, data, charset)) {
+	if (!Connect()) {
 		Close();
 		throw "Exiting due to unavailable MySQL connection";
 	}
@@ -75,22 +75,20 @@ void cMySQL::Close()
 	mysql_library_end();
 }
 
-bool cMySQL::Connect(string &host, string &user, string &pass, string &data, string &charset)
+bool cMySQL::Connect()
 {
 	if (Log(0))
-		LogStream() << "Connecting to MySQL server " << user << " @ " << host << " / " << data << " using charset " << ((charset.size()) ? charset : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
+		LogStream() << "Connecting to MySQL/MariaDB server " << mDBUser << " @ " << mDBHost << " / " << mDBName << " using charset " << ((mDBChar.size()) ? mDBChar : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
 
-	/*
-	bool yes = true; // note: deprecated in mysql 8
+	bool yes = true; // todo: deprecated in mysql 8, use mariadb instead
 	mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, &yes);
-	*/
 
-	if (charset.size())
-		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, charset.c_str());
+	if (mDBChar.size())
+		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, mDBChar.c_str());
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
-	if (!mysql_real_connect(mDBHandle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), 0, NULL, 0)) {
+	if (!mysql_real_connect(mDBHandle, mDBHost.c_str(), mDBUser.c_str(), mDBPass.c_str(), mDBName.c_str(), 0, NULL, 0)) {
 		Error(0, mysql_error(mDBHandle));
 		return false;
 	}
@@ -98,8 +96,10 @@ bool cMySQL::Connect(string &host, string &user, string &pass, string &data, str
 	return true;
 }
 
-bool cMySQL::Error(int level, const string &text)
+//bool cMySQL::Error(int level, const string &text)
+void cMySQL::Error(int level, const string &text)
 {
+	/*
 	if (!mDBHandle) {
 		if (ErrLog(0))
 			LogStream() << "MySQL handle is no longer valid" << endl;
@@ -132,12 +132,14 @@ bool cMySQL::Error(int level, const string &text)
 	}
 
 	if (mDBHandle && ErrLog(level))
-		LogStream() << text << ": " << mysql_error(mDBHandle) << endl;
+		LogStream() << text << mysql_error(mDBHandle) << endl;
 
 	return false;
+	*/
+
+	if (ErrLog(level))
+		LogStream() << text << (mDBHandle ? mysql_error(mDBHandle) : "Unknown error") << endl;
 }
 
 	}; // namepspace nMySQL
 }; // namespace nVerliHub
-
-// end of file
