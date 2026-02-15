@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title id="page-title">Verlihub Dashboard</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; }
+        .page-wrapper { max-width: 1024px; width: 100%; }
+        #tabs { margin-bottom: 20px; position: relative; z-index: 100; }
+        .tab { cursor: pointer; display: inline-block; padding: 10px 15px; background: #eee; border: 1px solid #ccc; margin-right: 5px; border-radius: 5px 5px 0 0; position: relative; z-index: 101; }
+        .tab.active { background: #fff; border-bottom: none; font-weight: bold; }
+        #content { padding: 20px; border: 1px solid #ccc; border-radius: 0 5px 5px 5px; background: #fff; min-height: 300px; position: relative; z-index: 1; }
+        #content::before {
+            content: "Loading...";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: #666;
+            display: none;
+            z-index: 10;
+        }
+        #content.loading::before { display: block; }
+        #content.loading > * { opacity: 0.3; pointer-events: none; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f5f5f5; font-size: 1em; cursor: pointer; user-select: none; }
+        th:hover { background: #e9e9e9; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr.update-highlight {
+            background: #ffffd0 !important;
+            animation: highlightFade 4s ease-out forwards;
+        }
+        @keyframes highlightFade {
+            0%   { background: #ffffd0 !important; }
+            50%  { background: #ffffd0 !important; }
+            100% { background: transparent; }
+        }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        #user-detail { position: fixed; top: 15%; left: 15%; width: 70%; max-height: 70%; overflow-y: auto; background: #fff; border: 1px solid #aaa; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: none; z-index: 1000; border-radius: 8px; }
+        #user-detail button { float: right; padding: 8px 12px; cursor: pointer; }
+        #user-detail h3 { color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
+        #user-detail h3:first-of-type { margin-top: 10px; }
+        .info-list { list-style: none; padding: 0; margin: 15px 0; }
+        .info-list li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .hub-info .info-list { margin-top: 0; }
+        .flag { font-size: 2em; text-align: center; }
+        .count { text-align: center; font-weight: bold; font-size: 1.2em; }
+        .total-countries { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+        .total-users { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; }
+        .hub-topic { font-size: 1.4em; font-weight: bold; margin: 0 0 30px 0; text-align: center; }
+        .hub-upper { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; margin-bottom: 30px; justify-content: center; }
+        .hub-logo-wrapper { 
+            flex: 0 0 auto; 
+            text-align: center; 
+            width: 256px; 
+            height: 256px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .hub-logo img { 
+            max-width: 256px; 
+            max-height: 256px; 
+            width: auto; 
+            height: auto; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            display: block;
+        }
+        .hub-info { flex: 1 1 300px; }
+        .motd-wrapper { text-align: center; margin-top: 20px; }
+        .motd { background: #f0f0f0; padding: 15px; border-radius: 8px; display: block; text-align: left; width: 100%; box-sizing: border-box; }
+        .motd pre { margin: 0; white-space: pre-wrap; font-family: monospace; font-size: 0.95em; }
+        .sort-arrow { margin-left: 6px; opacity: 0.5; }
+        .sort-arrow.active { opacity: 1; font-weight: bold; }
+        .page-header { text-align: center; margin-bottom: 20px; }
+        .hub-name { font-size: 2em; margin: 0; }
+        .hub-desc { font-size: 1.1em; color: #555; margin: 10px 0 0 0; }
+        
+        @media (max-width: 768px) {
+            .page-wrapper { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="page-header">
+            <h1 id="hub-name-header" class="hub-name">Verlihub Dashboard</h1>
+            <p id="hub-desc-header" class="hub-desc"></p>
+        </div>
+
+        <div id="tabs">
+            <span class="tab active" data-tab="hub">Hub</span>
+            <span class="tab" data-tab="users">Online Users</span>
+            <span class="tab" data-tab="geo">Countries</span>
+            <span class="tab" data-tab="cities">Cities</span>
+            <span class="tab" data-tab="asns">ASNs</span>
+            <span class="tab" data-tab="ips">IPs</span>
+        </div>
+        <div id="content">Loading...</div>
+    </div>
+
+    <div id="user-detail">
+        <button onclick="closeUserDetail()">Close ×</button>
+        <h2 id="user-detail-title">Details</h2>
+        <div id="user-content"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/verlihub-api';
+
+        let currentTab = 'hub';
+        let previousTab = '';
+        let pollInterval;
+        let currentUsers = [];
+        let currentGeo = [];
+        let currentCities = [];
+        let currentASNs = [];
+        let currentIPs = [];
+        let lastHubHtml = '';
+        let lastUsersHtml = '';
+        let lastGeoHtml = '';
+        let lastCitiesHtml = '';
+        let lastASNsHtml = '';
+        let lastIPsHtml = '';
+        let isFirstLoad = { users: true, geo: true, cities: true, asns: true, ips: true };
+        let hideClones = false;
+        let opsList = [];
+        let botsList = [];
+        let hubStartTime = null;
+        let uptimeUpdateInterval = null;
+        let traceroutePollingInterval = null;
+        let osDetectionPollingInterval = null;
+        let pingPollingInterval = null;
+
+        const sortState = {
+            users: { key: 'share', asc: false },
+            geo: { key: 'users', asc: false },
+            cities: { key: 'users', asc: false },
+            asns: { key: 'users', asc: false },
+            ips: { key: 'users', asc: false }
+        };
+
+        function fetchData(endpoint) {
+            return fetch(API_BASE + endpoint)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+                    return res.json();
+                });
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === undefined || bytes === null) return 'N/A';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+            let i = 0;
+            while (bytes >= 1024 && i < units.length - 1) {
+                bytes /= 1024;
+                i++;
+            }
+            return `${bytes.toFixed(2)} ${units[i]}`;
+        }
+
+        function getFlagEmoji(cc) {
+            if (!cc || cc.length !== 2) return '🌐';
+            return String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0 || days > 0) parts.push(`${hours}h`);
+            if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`);
+            parts.push(`${secs}s`);
+            
+            return parts.join(' ');
+        }
+
+        function updateUptimeDisplay() {
+            if (!hubStartTime) return;
+            
+            const now = Date.now();
+            const uptimeSeconds = (now - hubStartTime) / 1000;
+            const formattedUptime = formatUptime(uptimeSeconds);
+            
+            // Find and update the uptime element
+            const uptimeElement = document.getElementById('hub-uptime');
+            if (uptimeElement) {
+                uptimeElement.textContent = formattedUptime;
+            }
+        }
+
+        function renderKeyValue(obj, excludeKeys = [], renameMap = {}) {
+            if (!obj || typeof obj !== 'object') return '<p>No data available</p>';
+            let html = '<ul class="info-list">';
+            for (const [key, value] of Object.entries(obj)) {
+                if (excludeKeys.includes(key)) continue;
+                let displayKey = renameMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let formattedValue = value ?? 'N/A';
+                if (typeof value === 'number' && (key.toLowerCase().includes('share') || key.toLowerCase().includes('size'))) {
+                    formattedValue = formatBytes(value);
+                } else if (typeof value === 'string') {
+                    // Escape HTML to prevent < > from being interpreted as tags
+                    formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                }
+                html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
+            }
+            html += '</ul>';
+            return html;
+        }
+
+        function renderUsersTable(rows) {
+            const userCount = rows.length;
+            if (userCount === 0) return '<p>No users currently online</p>';
+
+            // Calculate clone statistics (excluding bots)
+            let cloneCount = 0;
+            const uniqueUsers = new Set();
+            const cloneGroups = new Map(); // key: "ip:share", value: array of user objects
+            const nickToCloneKey = new Map(); // nick -> cloneKey for quick lookup
+            
+            for (const row of rows) {
+                const nick = (row.nick || row.Nick || '').toString();
+                const isBot = botsList.some(bot => bot.nick === nick);
+                
+                // Skip bots when counting clones
+                if (isBot) continue;
+                
+                const ip = row.ip || '';
+                const share = Number(row.share_size || row.share || row.Share || 0);
+                const cloneKey = `${ip}:${share}`;
+                
+                if (!cloneGroups.has(cloneKey)) {
+                    cloneGroups.set(cloneKey, []);
+                }
+                cloneGroups.get(cloneKey).push(row);
+                nickToCloneKey.set(nick, cloneKey);
+            }
+            
+            // Count unique users (each clone group counts as 1)
+            for (const [key, users] of cloneGroups) {
+                uniqueUsers.add(key);
+                if (users.length > 1) {
+                    cloneCount += users.length - 1; // All but one are clones
+                }
+            }
+            
+            const trueUserCount = uniqueUsers.size;
+            const clonePercent = userCount > 0 ? ((cloneCount / userCount) * 100).toFixed(1) : 0;
+            
+            // Filter rows if hiding clones
+            let displayRows = rows;
+            if (hideClones) {
+                const seenCloneKeys = new Set();
+                displayRows = rows.filter(row => {
+                    const nick = (row.nick || row.Nick || '').toString();
+                    const cloneKey = nickToCloneKey.get(nick);
+                    if (seenCloneKeys.has(cloneKey)) {
+                        return false; // Hide this clone
+                    }
+                    seenCloneKeys.add(cloneKey);
+                    return true;
+                });
+            }
+
+            const sortedRows = [...displayRows].sort((a, b) => {
+                let aVal, bVal;
+                switch (sortState.users.key) {
+                    case 'nick':
+                        aVal = (a.nick || a.Nick || '').toString().toLowerCase();
+                        bVal = (b.nick || b.Nick || '').toString().toLowerCase();
+                        return sortState.users.asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'class':
+                        aVal = (a.class_name || a.class || a.Class || '').toString();
+                        bVal = (b.class_name || b.class || b.Class || '').toString();
+                        return sortState.users.asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'country':
+                        aVal = (a.country_code || a.country || a.cc || a.CC || '').toUpperCase();
+                        bVal = (b.country_code || b.country || b.cc || b.CC || '').toUpperCase();
+                        return sortState.users.asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    case 'share':
+                    default:
+                        aVal = Number(a.share_size || a.share || a.Share || 0);
+                        bVal = Number(b.share_size || b.share || b.Share || 0);
+                        return sortState.users.asc ? aVal - bVal : bVal - aVal;
+                }
+            });
+
+            let html = `
+                <div style="margin-bottom: 10px;">
+                    <label style="cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="hide-clones-checkbox" ${hideClones ? 'checked' : ''} 
+                               onchange="toggleHideClones(this.checked)" style="margin-right: 8px;">
+                        Hide clones
+                    </label>
+                </div>
+                <div class="total-users">
+                    Online users: ${userCount} | 
+                    True users: ${trueUserCount} | 
+                    Clones: ${cloneCount} (${clonePercent}%)
+                </div>
+            `;
+            html += '<table id="users-table"><thead><tr>';
+            const headers = [
+                { text: 'Nick', key: 'nick' },
+                { text: 'Class', key: 'class' },
+                { text: 'Country', key: 'country' },
+                { text: 'Share', key: 'share' }
+            ];
+
+            headers.forEach(h => {
+                const arrow = sortState.users.key === h.key 
+                    ? (sortState.users.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('users', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.users.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            sortedRows.forEach(row => {
+                const nick = (row.nick || row.Nick || 'Unknown').toString();
+                const prevUser = currentUsers.find(u => (u.nick || u.Nick || '').toString() === nick);
+                const shareChanged = prevUser && Number(row.share_size || row.share || row.Share || 0) !== Number(prevUser.share_size || prevUser.share || prevUser.Share || 0);
+                const isNew = !prevUser;
+
+                const shouldHighlight = !isFirstLoad.users && (isNew || shareChanged);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const className = row.class_name || row.class || row.Class || 'N/A';
+                const countryCode = row.country_code || row.country || row.Country || row.cc || row.CC || '';
+                const shareBytes = Number(row.share_size || row.share || row.Share || 0);
+                
+                // Check if this user has clones
+                const cloneKey = nickToCloneKey.get(nick);
+                const cloneGroupUsers = cloneGroups.get(cloneKey) || [];
+                const hasClones = cloneGroupUsers.length > 1;
+                const cloneCountStr = hasClones ? ` (${cloneGroupUsers.length})` : '';
+                const warningEmoji = hasClones ? '⚠️ ' : '';
+                
+                // Check if user is an op or bot
+                const isOp = opsList.some(op => op.nick === nick);
+                const isBot = botsList.some(bot => bot.nick === nick);
+                const botEmoji = isBot ? '🤖 ' : '';
+                const opEmoji = isOp ? '🔑 ' : '';
+
+                html += `<tr class="${highlightClass}">`;
+                html += `<td><a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;">${botEmoji}${opEmoji}${warningEmoji}${nick}${cloneCountStr}</a></td>`;
+                html += `<td>${className}</td>`;
+                html += `<td><span class="flag">${getFlagEmoji(countryCode)}</span></td>`;
+                html += `<td>${formatBytes(shareBytes)}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            currentUsers = [...rows];
+            isFirstLoad.users = false;
+
+            return html;
+        }
+
+        function renderGeo(data) {
+            if (!data || !Array.isArray(data.distribution)) return '<p>No geographic data available</p>';
+
+            const totalCountries = data.total_countries || data.distribution.length;
+
+            const sortedDist = [...data.distribution].sort((a, b) => {
+                if (sortState.geo.key === 'country') {
+                    return sortState.geo.asc 
+                        ? a.country_code.localeCompare(b.country_code)
+                        : b.country_code.localeCompare(a.country_code);
+                } else {
+                    return sortState.geo.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total countries represented: ${totalCountries}</div>`;
+            html += '<table id="geo-table"><thead><tr>';
+            
+            const geoHeaders = [
+                { text: 'Flag', key: 'country' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            geoHeaders.forEach(h => {
+                const arrow = sortState.geo.key === h.key 
+                    ? (sortState.geo.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('geo', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.geo.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedDist) {
+                const prev = currentGeo.find(g => g.country_code === item.country_code);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.geo && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const flag = getFlagEmoji(item.country_code);
+                const countryCode = item.country_code || '??';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showCountryUsers('${countryCode}')">`;
+                html += `<td class="flag">${flag}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentGeo = [...data.distribution];
+            isFirstLoad.geo = false;
+
+            return html;
+        }
+
+        function renderCities(users) {
+            if (!users || !Array.isArray(users)) return '<p>No city data available</p>';
+
+            // Build city statistics: key is "city, country_code", value is count
+            const cityStats = new Map();
+            
+            for (const user of users) {
+                const city = user.city || '';
+                const countryCode = user.country_code || user.country || user.cc || user.CC || '';
+                
+                if (!city || city === 'N/A' || !countryCode) continue;
+                
+                const cityKey = `${city}|||${countryCode.toUpperCase()}`;
+                
+                if (!cityStats.has(cityKey)) {
+                    cityStats.set(cityKey, { city: city, country_code: countryCode.toUpperCase(), users: 0 });
+                }
+                cityStats.get(cityKey).users++;
+            }
+            
+            const cityArray = Array.from(cityStats.values());
+            const totalCities = cityArray.length;
+
+            const sortedCities = [...cityArray].sort((a, b) => {
+                if (sortState.cities.key === 'city') {
+                    return sortState.cities.asc 
+                        ? a.city.localeCompare(b.city)
+                        : b.city.localeCompare(a.city);
+                } else {
+                    return sortState.cities.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total cities represented: ${totalCities}</div>`;
+            html += '<table id="cities-table"><thead><tr>';
+            
+            const cityHeaders = [
+                { text: 'City', key: 'city' },
+                { text: 'Flag', key: 'country' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            cityHeaders.forEach(h => {
+                const arrow = sortState.cities.key === h.key 
+                    ? (sortState.cities.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('cities', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.cities.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedCities) {
+                const prev = currentCities.find(c => c.city === item.city && c.country_code === item.country_code);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.cities && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const flag = getFlagEmoji(item.country_code);
+                const cityName = item.city || '??';
+                const cityKey = `${item.city}|||${item.country_code}`;
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showCityUsers('${encodeURIComponent(cityKey)}')">`;
+                html += `<td>${cityName}</td>`;
+                html += `<td class="flag">${flag}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentCities = [...cityArray];
+            isFirstLoad.cities = false;
+
+            return html;
+        }
+
+        function renderASNs(users) {
+            if (!users || !Array.isArray(users)) return '<p>No ASN data available</p>';
+
+            // Build ASN statistics: key is ASN number, value is count
+            const asnStats = new Map();
+            
+            for (const user of users) {
+                const asn = user.asn || '';
+                
+                if (!asn || asn === 'N/A' || asn === '') continue;
+                
+                if (!asnStats.has(asn)) {
+                    asnStats.set(asn, { asn: asn, users: 0 });
+                }
+                asnStats.get(asn).users++;
+            }
+            
+            const asnArray = Array.from(asnStats.values());
+            const totalASNs = asnArray.length;
+
+            const sortedASNs = [...asnArray].sort((a, b) => {
+                if (sortState.asns.key === 'asn') {
+                    return sortState.asns.asc 
+                        ? a.asn.localeCompare(b.asn)
+                        : b.asn.localeCompare(a.asn);
+                } else {
+                    return sortState.asns.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total ASNs represented: ${totalASNs}</div>`;
+            html += '<table id="asns-table"><thead><tr>';
+            
+            const asnHeaders = [
+                { text: 'ASN', key: 'asn' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            asnHeaders.forEach(h => {
+                const arrow = sortState.asns.key === h.key 
+                    ? (sortState.asns.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('asns', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.asns.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedASNs) {
+                const prev = currentASNs.find(a => a.asn === item.asn);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.asns && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const asnName = item.asn || '??';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showASNUsers('${encodeURIComponent(asnName)}')">`;
+                html += `<td>${asnName}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentASNs = [...asnArray];
+            isFirstLoad.asns = false;
+
+            return html;
+        }
+
+        function renderIPs(users) {
+            if (!users || !Array.isArray(users)) return '<p>No IP data available</p>';
+
+            // Build IP statistics: key is IP address, value is { ip, hostname, asn, users count }
+            const ipStats = new Map();
+            
+            for (const user of users) {
+                const ip = user.ip || '';
+                const asn = user.asn || 'N/A';
+                const hostname = user.host || '';
+                
+                if (!ip || ip === 'N/A' || ip === '') continue;
+                
+                if (!ipStats.has(ip)) {
+                    ipStats.set(ip, { ip: ip, hostname: hostname, asn: asn, users: 0 });
+                }
+                ipStats.get(ip).users++;
+            }
+            
+            const ipArray = Array.from(ipStats.values());
+            const totalIPs = ipArray.length;
+
+            const sortedIPs = [...ipArray].sort((a, b) => {
+                if (sortState.ips.key === 'ip') {
+                    return sortState.ips.asc 
+                        ? a.ip.localeCompare(b.ip)
+                        : b.ip.localeCompare(a.ip);
+                } else if (sortState.ips.key === 'hostname') {
+                    return sortState.ips.asc 
+                        ? a.hostname.localeCompare(b.hostname)
+                        : b.hostname.localeCompare(a.hostname);
+                } else if (sortState.ips.key === 'asn') {
+                    return sortState.ips.asc 
+                        ? a.asn.localeCompare(b.asn)
+                        : b.asn.localeCompare(a.asn);
+                } else {
+                    return sortState.ips.asc ? a.users - b.users : b.users - a.users;
+                }
+            });
+
+            let html = `<div class="total-countries">Total IP addresses: ${totalIPs}</div>`;
+            html += '<table id="ips-table"><thead><tr>';
+            
+            const ipHeaders = [
+                { text: 'IP Address', key: 'ip' },
+                { text: 'Hostname', key: 'hostname' },
+                { text: 'ASN', key: 'asn' },
+                { text: 'Users', key: 'users' }
+            ];
+
+            ipHeaders.forEach(h => {
+                const arrow = sortState.ips.key === h.key 
+                    ? (sortState.ips.asc ? '↑' : '↓') 
+                    : '↕';
+                html += `<th onclick="setSort('ips', '${h.key}')">${h.text} <span class="sort-arrow ${sortState.ips.key === h.key ? 'active' : ''}">${arrow}</span></th>`;
+            });
+
+            html += '</tr></thead><tbody>';
+            for (const item of sortedIPs) {
+                const prev = currentIPs.find(i => i.ip === item.ip);
+                const changed = prev && prev.users !== item.users;
+                const isNew = !prev;
+
+                const shouldHighlight = !isFirstLoad.ips && (isNew || changed);
+                const highlightClass = shouldHighlight ? ' update-highlight' : '';
+
+                const ipAddr = item.ip || '??';
+                const hostName = item.hostname || 'N/A';
+                const asnName = item.asn || 'N/A';
+                html += `<tr class="${highlightClass}" style="cursor: pointer;" onclick="showIPUsers('${encodeURIComponent(ipAddr)}')">`;
+                html += `<td>${ipAddr}</td>`;
+                html += `<td>${hostName}</td>`;
+                html += `<td>${asnName}</td>`;
+                html += `<td class="count">${item.users}</td>`;
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            currentIPs = [...ipArray];
+            isFirstLoad.ips = false;
+
+            return html;
+        }
+
+        function setSort(tab, key) {
+            if (sortState[tab].key === key) {
+                sortState[tab].asc = !sortState[tab].asc;
+            } else {
+                sortState[tab].key = key;
+                sortState[tab].asc = (tab === 'geo' && key === 'users') || (tab === 'users' && key === 'share') ? false : true;
+            }
+            loadTab(currentTab);
+        }
+
+        async function loadTab(tab) {
+            console.log('loadTab called with:', tab, 'currentTab was:', currentTab);
+            const isTabSwitch = (currentTab !== tab);
+            console.log('isTabSwitch:', isTabSwitch);
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+
+            const contentEl = document.getElementById('content');
+
+            if (contentEl.innerHTML.trim() === '' || contentEl.innerHTML === 'Loading...') {
+                contentEl.innerHTML = 'Loading...';
+                contentEl.classList.add('loading');
+            } else {
+                contentEl.classList.add('loading');
+            }
+
+            try {
+                let html = '';
+                let shouldUpdate = true;
+
+                switch (tab) {
+                    case 'hub':
+                        console.log('Loading hub tab...');
+                        try {
+                            const [hubData, shareData, statsData, usersData] = await Promise.all([
+                                fetchData('/hub'),
+                                fetchData('/share'),
+                                fetchData('/stats'),
+                                fetchData('/users?limit=500')
+                            ]);
+                            
+                            // Calculate clone-adjusted share statistics
+                            let userRows = [];
+                            if (Array.isArray(usersData)) userRows = usersData;
+                            else if (usersData && usersData.users && Array.isArray(usersData.users)) userRows = usersData.users;
+                            else if (usersData && usersData.data && Array.isArray(usersData.data)) userRows = usersData.data;
+                            
+                            const cloneGroups = new Map();
+                            for (const row of userRows) {
+                                const ip = row.ip || '';
+                                const share = Number(row.share_size || row.share || row.Share || 0);
+                                const cloneKey = `${ip}:${share}`;
+                                
+                                if (!cloneGroups.has(cloneKey)) {
+                                    cloneGroups.set(cloneKey, { share: share, count: 0 });
+                                }
+                                cloneGroups.get(cloneKey).count++;
+                            }
+                            
+                            // Calculate raw total (count one from each clone group) and cloned share
+                            let rawTotalShare = 0;
+                            let clonedShare = 0;
+                            
+                            for (const [key, data] of cloneGroups) {
+                                rawTotalShare += data.share; // Count one from each group
+                                if (data.count > 1) {
+                                    // Add the duplicates to cloned share
+                                    clonedShare += data.share * (data.count - 1);
+                                }
+                            }
+                            
+                            const trueUserCount = cloneGroups.size;
+                            const rawAvgShare = trueUserCount > 0 ? rawTotalShare / trueUserCount : 0;
+                            
+                            // Calculate what percentage of the average is from clones
+                            // When we have clones, they dilute the average
+                            // Example: 100GB shared by 1 real user = 100GB avg
+                            //          But if there are 3 clones, it appears as 100GB / 3 = 33GB avg
+                            // So the cloned percentage represents the inflation of user count
+                            const totalUserCount = userRows.length;
+                            const cloneUserCount = totalUserCount - trueUserCount;
+
+                            console.log('Hub data received:', hubData);
+                            
+                            const hubName = (hubData.name || hubData.Name || '').trim() || 'Unknown Hub';
+                            const hubDesc = (hubData.description || hubData.Description || '').trim();
+                            document.getElementById('page-title').textContent = hubName;
+                            document.getElementById('hub-name-header').textContent = hubName;
+                            document.getElementById('hub-desc-header').textContent = hubDesc;
+
+                            const logoUrl = hubData.logo_url || hubData.LogoUrl || '';
+                            const hasLogo = logoUrl && logoUrl.trim() !== '';
+                            const motd = hubData.motd || hubData.Motd || '';
+                            const topic = (hubData.topic || hubData.Topic || '').trim();
+
+                            html += `<div class="hub-topic">${topic || 'No topic set'}</div>`;
+
+                            html += '<div class="hub-upper">';
+                            if (hasLogo) {
+                                html += `<div class="hub-logo-wrapper"><div class="hub-logo"><img src="${logoUrl}" alt="Hub Logo" onerror="this.style.display='none'"></div></div>`;
+                            }
+                            html += '<div class="hub-info">';
+
+                            // Build ordered hub info display
+                            html += '<ul class="info-list">';
+                            
+                            // 1. Version
+                            const version = hubData.version || hubData.Version || 'N/A';
+                            html += `<li><strong>Version:</strong> ${version}</li>`;
+                            
+                            // 2. Uptime (with live updates)
+                            const uptimeSeconds = hubData.uptime_seconds || 0;
+                            if (uptimeSeconds > 0) {
+                                hubStartTime = Date.now() - (uptimeSeconds * 1000);
+                                
+                                // Start uptime update interval (clear existing first)
+                                if (uptimeUpdateInterval) clearInterval(uptimeUpdateInterval);
+                                uptimeUpdateInterval = setInterval(updateUptimeDisplay, 1000);
+                                
+                                html += '<li><strong>Uptime:</strong> <span id="hub-uptime">' + formatUptime(uptimeSeconds) + '</span></li>';
+                            }
+                            
+                            // 3. Hub Host
+                            const hubHost = hubData.host || '';
+                            console.log('Hub host value:', hubHost, 'Type:', typeof hubHost);
+                            if (hubHost && hubHost.trim() !== '') {
+                                html += `<li><strong>Host:</strong> ${hubHost}</li>`;
+                                console.log('Host field added to HTML');
+                            } else {
+                                console.log('Host field NOT added - empty or missing');
+                            }
+                            
+                            // Calculate clone statistics for share display
+                            const hasSignificantClones = clonedShare > 0;
+                            const clonePercent = rawTotalShare > 0 ? ((clonedShare / rawTotalShare) * 100).toFixed(1) : 0;
+                            // For average share: (total - cloned) / total users including clones
+                            const totalShareIncludingClones = rawTotalShare + clonedShare;
+                            const avgClonePercent = totalUserCount > 0 ? ((totalShareIncludingClones - rawTotalShare) / totalUserCount * 100 / rawAvgShare).toFixed(1) : 0;
+                            
+                            const warningEmoji = '⚠️';
+                            
+                            // 3. Total Share
+                            let totalShareDisplay = formatBytes(rawTotalShare);
+                            if (hasSignificantClones) {
+                                totalShareDisplay += ` ${warningEmoji} (${clonePercent}% cloned)`;
+                            }
+                            html += `<li><strong>Total Share:</strong> ${totalShareDisplay}</li>`;
+                            
+                            // 4. Average Share
+                            let avgShareDisplay = formatBytes(rawAvgShare);
+                            if (hasSignificantClones) {
+                                avgShareDisplay += ` ${warningEmoji} (${avgClonePercent}% cloned)`;
+                            }
+                            html += `<li><strong>Average Share:</strong> ${avgShareDisplay}</li>`;
+                            
+                            // 5. Users Online / Max Users
+                            const usersOnline = statsData.users_online || statsData.users || statsData.UsersOnline || 'N/A';
+                            const maxUsers = hubData.max_users || hubData.MaxUsers || hubData.max_users_total || '';
+                            let usersDisplay = usersOnline;
+                            if (maxUsers && maxUsers !== '' && maxUsers !== 'N/A') {
+                                usersDisplay += ` / ${maxUsers}`;
+                            }
+                            html += `<li><strong>Users Online:</strong> ${usersDisplay}</li>`;
+                            
+                            html += '</ul>';
+
+                            html += '</div>';  // Close hub-info
+                            html += '</div>';  // Close hub-upper
+
+                            if (motd && motd.trim() !== '') {
+                                html += '<div class="motd-wrapper"><div class="motd"><pre>' + motd.trim() + '</pre></div></div>';
+                            }
+
+                            lastHubHtml = html;
+                        } catch (hubError) {
+                            console.error('Hub tab error:', hubError);
+                            html = `<p style="color:red;">Error loading hub data: ${hubError.message}</p>`;
+                        }
+                        break;
+                    case 'users':
+                        console.log('Loading users tab...');
+                        let response = await fetchData('/users?limit=500');
+                        console.log('Users response:', response);
+                        let rows = [];
+                        if (Array.isArray(response)) rows = response;
+                        else if (response && response.users && Array.isArray(response.users)) rows = response.users;
+                        else if (response && response.data && Array.isArray(response.data)) rows = response.data;
+
+                        html = renderUsersTable(rows);
+                        console.log('Users HTML length:', html.length, 'shouldUpdate:', shouldUpdate);
+
+                        if (html === lastUsersHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastUsersHtml = html;
+                        }
+                        break;
+                    case 'geo':
+                        console.log('Loading geo tab...');
+                        const geoData = await fetchData('/geo');
+                        html = renderGeo(geoData);
+
+                        if (html === lastGeoHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastGeoHtml = html;
+                        }
+                        break;
+                    case 'cities':
+                        console.log('Loading cities tab...');
+                        let citiesResponse = await fetchData('/users?limit=500');
+                        let citiesUsers = [];
+                        if (Array.isArray(citiesResponse)) citiesUsers = citiesResponse;
+                        else if (citiesResponse && citiesResponse.users && Array.isArray(citiesResponse.users)) citiesUsers = citiesResponse.users;
+                        else if (citiesResponse && citiesResponse.data && Array.isArray(citiesResponse.data)) citiesUsers = citiesResponse.data;
+
+                        html = renderCities(citiesUsers);
+
+                        if (html === lastCitiesHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastCitiesHtml = html;
+                        }
+                        break;
+                    case 'asns':
+                        console.log('Loading ASNs tab...');
+                        let asnsResponse = await fetchData('/users?limit=500');
+                        let asnsUsers = [];
+                        if (Array.isArray(asnsResponse)) asnsUsers = asnsResponse;
+                        else if (asnsResponse && asnsResponse.users && Array.isArray(asnsResponse.users)) asnsUsers = asnsResponse.users;
+                        else if (asnsResponse && asnsResponse.data && Array.isArray(asnsResponse.data)) asnsUsers = asnsResponse.data;
+
+                        html = renderASNs(asnsUsers);
+
+                        if (html === lastASNsHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastASNsHtml = html;
+                        }
+                        break;
+                    case 'ips':
+                        console.log('Loading IPs tab...');
+                        let ipsResponse = await fetchData('/users?limit=500');
+                        let ipsUsers = [];
+                        if (Array.isArray(ipsResponse)) ipsUsers = ipsResponse;
+                        else if (ipsResponse && ipsResponse.users && Array.isArray(ipsResponse.users)) ipsUsers = ipsResponse.users;
+                        else if (ipsResponse && ipsResponse.data && Array.isArray(ipsResponse.data)) ipsUsers = ipsResponse.data;
+
+                        html = renderIPs(ipsUsers);
+
+                        if (html === lastIPsHtml) {
+                            shouldUpdate = false;
+                        } else {
+                            lastIPsHtml = html;
+                        }
+                        break;
+                }
+
+                console.log('After switch - shouldUpdate:', shouldUpdate, 'HTML length:', html.length);
+
+                // Always update when switching tabs, even if content hasn't changed
+                if (shouldUpdate || isTabSwitch) {
+                    console.log('Updating content...');
+                    contentEl.innerHTML = html;
+                    void contentEl.offsetHeight;
+                } else {
+                    console.log('Skipping update (content unchanged)');
+                }
+
+                contentEl.classList.remove('loading');
+                console.log('Finished loading tab:', tab);
+
+            } catch (err) {
+                contentEl.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+                contentEl.classList.remove('loading');
+                console.error('API error:', err);
+            }
+        }
+
+        async function showUser(encodedNick) {
+            cleanupModalPolling();
+            
+            const nick = decodeURIComponent(encodedNick);
+            try {
+                const data = await fetchData(`/user/${encodedNick}`);
+                
+                // Create enhanced field name mapping for better display
+                const fieldRenames = {
+                    nick: 'Nickname',
+                    class_name: 'User Class',
+                    ip: 'IP Address',
+                    host: 'Hostname',
+                    country_code: 'Country Code',
+                    country: 'Country',
+                    city: 'City',
+                    region: 'Region/State',
+                    region_code: 'Region Code',
+                    timezone: 'Time Zone',
+                    continent: 'Continent',
+                    continent_code: 'Continent Code',
+                    postal_code: 'Postal Code',
+                    asn: 'ASN',
+                    hub_url: 'Hub URL',
+                    ext_json: 'Extensions',
+                    description: 'Description',
+                    tag: 'Client Tag',
+                    email: 'Email',
+                    share: 'Share Size'
+                };
+                
+                // Group fields for organized display
+                const basicInfo = {};
+                const geoInfo = {};
+                const connectionInfo = {};
+                const networkInfo = {};
+                const clientInfo = {};
+                const otherInfo = {};
+                
+                const geoFields = ['country_code', 'country', 'city', 'region', 'region_code', 
+                                   'timezone', 'continent', 'continent_code', 'postal_code', 'asn'];
+                const connectionFields = ['ip', 'host', 'hub_url'];
+                const basicFields = ['nick', 'class', 'class_name', 'description', 'tag', 'email', 'share'];
+                const networkFields = ['cloned', 'clone_group', 'same_ip_users', 'same_asn_users'];
+                const clientFields = ['support_flags'];
+                
+                // Determine if user is op or bot
+                const isOp = opsList.some(op => op.nick === nick);
+                const isBot = botsList.some(bot => bot.nick === nick);
+                
+                // Store ASN and IP for making them clickable later
+                let userASN = '';
+                let userIP = '';
+                
+                for (const [key, value] of Object.entries(data)) {
+                    if (key === 'share_formatted') continue;
+                    
+                    if (key === 'asn' && value && value !== '' && value !== 'N/A') {
+                        userASN = value;
+                        geoInfo[key] = value;
+                    } else if (key === 'ip' && value && value !== '') {
+                        userIP = value;
+                        connectionInfo[key] = value;
+                    } else if (geoFields.includes(key) && value && value !== '' && value !== 'N/A') {
+                        geoInfo[key] = value;
+                    } else if (connectionFields.includes(key) && value && value !== '') {
+                        connectionInfo[key] = value;
+                    } else if (networkFields.includes(key)) {
+                        networkInfo[key] = value;
+                    } else if (clientFields.includes(key)) {
+                        clientInfo[key] = value;
+                    } else if (basicFields.includes(key)) {
+                        basicInfo[key] = value;
+                    } else if (value && value !== '' && value !== 'N/A') {
+                        otherInfo[key] = value;
+                    }
+                }
+                
+                let html = '';
+                
+                // Check if user is in a clone group (but don't show warning for bots)
+                const hasClones = networkInfo.clone_group && Array.isArray(networkInfo.clone_group) && networkInfo.clone_group.length > 0;
+                const warningEmoji = (hasClones && !isBot) ? '\u26a0\ufe0f ' : '';
+                const botEmoji = isBot ? '\ud83e\udd16 ' : '';
+                const opEmoji = isOp ? '\ud83d\udd11 ' : '';
+                
+                // Update the nickname in basicInfo to include emojis
+                if (basicInfo.nick) {
+                    basicInfo.nick = botEmoji + opEmoji + warningEmoji + basicInfo.nick;
+                }
+                
+                // Basic Information Section
+                if (Object.keys(basicInfo).length > 0) {
+                    html += '<h3>Basic Information</h3>';
+                    html += renderKeyValue(basicInfo, [], fieldRenames);
+                }
+                
+                // Geographic Information Section
+                if (Object.keys(geoInfo).length > 0) {
+                    html += '<h3>Geographic Information</h3>';
+                    // Add flag if we have country code
+                    if (geoInfo.country_code) {
+                        html += `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${getFlagEmoji(geoInfo.country_code)}</div>`;
+                    }
+                    
+                    html += '<ul class="info-list">';
+                    
+                    for (const [key, value] of Object.entries(geoInfo)) {
+                        const displayKey = fieldRenames[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let formattedValue = value ?? 'N/A';
+                        
+                        // Make ASN clickable
+                        if (key === 'asn' && userASN && userASN !== 'N/A') {
+                            formattedValue = `<a href="#" onclick="showASNUsers('${encodeURIComponent(userASN)}'); return false;" style="color: #0066cc; text-decoration: underline;">${value}</a>`;
+                        } else if (typeof value === 'string') {
+                            formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        }
+                        
+                        html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
+                // Connection Information Section
+                if (Object.keys(connectionInfo).length > 0) {
+                    html += '<h3>Connection Information</h3>';
+                    html += '<ul class="info-list">';
+                    
+                    for (const [key, value] of Object.entries(connectionInfo)) {
+                        const displayKey = fieldRenames[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let formattedValue = value ?? 'N/A';
+                        
+                        // Make IP address clickable
+                        if (key === 'ip' && userIP && userIP !== 'N/A') {
+                            formattedValue = `<a href="#" onclick="showIPUsers('${encodeURIComponent(userIP)}'); return false;" style="color: #0066cc; text-decoration: underline;">${value}</a>`;
+                        } else if (typeof value === 'string') {
+                            formattedValue = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        }
+                        
+                        html += `<li><strong>${displayKey}:</strong> ${formattedValue}</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
+                // Network/Clone Detection Section
+                if (Object.keys(networkInfo).length > 0) {
+                    const hasClones = networkInfo.clone_group && Array.isArray(networkInfo.clone_group) && networkInfo.clone_group.length > 0;
+                    const hasSameIP = networkInfo.same_ip_users && Array.isArray(networkInfo.same_ip_users) && networkInfo.same_ip_users.length > 0;
+                    const hasSameASN = networkInfo.same_asn_users && Array.isArray(networkInfo.same_asn_users) && networkInfo.same_asn_users.length > 0;
+                    
+                    if (hasClones || hasSameIP || hasSameASN) {
+                        html += '<h3>Network Groups</h3>';
+                        html += '<ul class="info-list">';
+                        
+                        if (hasClones) {
+                            html += '<li><strong>Clone Group (Same IP + Share):</strong> ';
+                            html += networkInfo.clone_group.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        if (hasSameIP) {
+                            html += '<li><strong>Same IP Users (NAT Group):</strong> ';
+                            html += networkInfo.same_ip_users.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        if (hasSameASN) {
+                            html += '<li><strong>Same ASN Users (Network Group):</strong> ';
+                            html += networkInfo.same_asn_users.map(n => `<a href="#" onclick="showUser('${encodeURIComponent(n)}'); return false;">${n}</a>`).join(', ');
+                            html += '</li>';
+                        }
+                        
+                        html += '</ul>';
+                    }
+                }
+                
+                // Client Capabilities Section
+                if (Object.keys(clientInfo).length > 0) {
+                    const supportFlags = clientInfo.support_flags;
+                    if (supportFlags && Array.isArray(supportFlags) && supportFlags.length > 0) {
+                        html += '<h3>Client Support Flags</h3>';
+                        html += '<ul class="info-list">';
+                        html += '<li><strong>Supported Features:</strong> ';
+                        html += supportFlags.map(flag => `<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; margin: 2px;">${flag}</code>`).join(' ');
+                        html += '</li>';
+                        html += '</ul>';
+                    }
+                }
+                
+                // Other Information Section
+                if (Object.keys(otherInfo).length > 0) {
+                    html += '<h3>Additional Information</h3>';
+                    html += renderKeyValue(otherInfo, [], fieldRenames);
+                }
+                
+                document.getElementById('user-detail-title').textContent = nick;
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load user ${nick}: ${err.message}`);
+            }
+        }
+
+        function cleanupModalPolling() {
+            // Clear all modal-related polling intervals
+            if (traceroutePollingInterval) {
+                clearInterval(traceroutePollingInterval);
+                traceroutePollingInterval = null;
+            }
+            if (osDetectionPollingInterval) {
+                clearInterval(osDetectionPollingInterval);
+                osDetectionPollingInterval = null;
+            }
+            if (pingPollingInterval) {
+                clearInterval(pingPollingInterval);
+                pingPollingInterval = null;
+            }
+            // Add future polling cleanup here as needed
+        }
+        
+        function closeUserDetail() {
+            document.getElementById('user-detail').style.display = 'none';
+            cleanupModalPolling();
+        }
+        
+        function toggleHideClones(checked) {
+            hideClones = checked;
+            loadTab('users');
+        }
+        
+        async function fetchOpsAndBots() {
+            try {
+                const [opsData, botsData] = await Promise.all([
+                    fetchData('/ops'),
+                    fetchData('/bots')
+                ]);
+                
+                opsList = opsData.operators || [];
+                botsList = botsData.bots || [];
+            } catch (err) {
+                console.error('Failed to fetch ops/bots:', err);
+                opsList = [];
+                botsList = [];
+            }
+        }
+        
+        async function showCountryUsers(countryCode) {
+            cleanupModalPolling();
+            
+            try {
+                // Fetch all users and filter by country code
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by country code
+                const countryUsers = allUsers.filter(u => {
+                    const cc = (u.country_code || u.country || u.cc || u.CC || '').toUpperCase();
+                    return cc === countryCode.toUpperCase();
+                });
+                
+                if (countryUsers.length === 0) {
+                    alert(`No users found from country: ${countryCode}`);
+                    return;
+                }
+                
+                // Get country name from first user
+                const countryName = countryUsers.length > 0 ? (countryUsers[0].country || countryCode) : countryCode;
+                
+                // Build HTML for country users popup
+                const flag = getFlagEmoji(countryCode);
+                let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
+                html += `<h3>Users List (${countryUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                countryUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of countryUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                // Build list of unique IP addresses for this country
+                const ipSet = new Set();
+                const ipInfoMap = new Map(); // Map IP to { hostname, asn, userCount }
+                
+                for (const user of countryUsers) {
+                    const ip = user.ip || user.IP || '';
+                    
+                    if (ip && ip !== 'N/A' && ip !== '') {
+                        ipSet.add(ip);
+                        
+                        if (!ipInfoMap.has(ip)) {
+                            ipInfoMap.set(ip, {
+                                hostname: user.host || user.hostname || '',
+                                asn: user.asn || user.ASN || 'N/A',
+                                userCount: 0
+                            });
+                        }
+                        ipInfoMap.get(ip).userCount++;
+                    }
+                }
+                
+                // Show IP addresses if any exist
+                if (ipSet.size > 0) {
+                    const ipArray = Array.from(ipSet).sort();
+                    html += `<h3>IP Addresses (${ipArray.length})</h3>`;
+                    html += '<ul class="info-list">';
+                    
+                    for (const ip of ipArray) {
+                        const info = ipInfoMap.get(ip);
+                        const hostname = info.hostname || 'N/A';
+                        const asn = info.asn || 'N/A';
+                        const userCount = info.userCount;
+                        
+                        html += `<li>`;
+                        html += `<a href="#" onclick="showIPUsers('${encodeURIComponent(ip)}'); return false;" style="font-weight: bold;">${ip}</a>`;
+                        if (hostname && hostname !== 'N/A') {
+                            html += ` - ${hostname}`;
+                        }
+                        if (asn && asn !== 'N/A') {
+                            html += ` (<a href="#" onclick="showASNUsers('${encodeURIComponent(asn)}'); return false;">${asn}</a>)`;
+                        }
+                        html += ` - ${userCount} user${userCount !== 1 ? 's' : ''}`;
+                        html += `</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
+                document.getElementById('user-detail-title').textContent = countryName;
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load users from ${countryCode}: ${err.message}`);
+            }
+        }
+        
+        async function showCityUsers(encodedCityKey) {
+            cleanupModalPolling();
+            
+            try {
+                const cityKey = decodeURIComponent(encodedCityKey);
+                const [cityName, countryCode] = cityKey.split('|||');
+                
+                // Fetch all users and filter by city
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by city and country
+                const cityUsers = allUsers.filter(u => {
+                    const city = u.city || '';
+                    const cc = (u.country_code || u.country || u.cc || u.CC || '').toUpperCase();
+                    return city === cityName && cc === countryCode;
+                });
+                
+                if (cityUsers.length === 0) {
+                    alert(`No users found in ${cityName}, ${countryCode}`);
+                    return;
+                }
+                
+                // Get country name from first user
+                const countryName = cityUsers.length > 0 ? (cityUsers[0].country || countryCode) : countryCode;
+                
+                // Build HTML for city users popup
+                const flag = getFlagEmoji(countryCode);
+                let html = `<div style="text-align: center; font-size: 3em; margin: 10px 0;">${flag}</div>`;
+                html += `<h3>Users List (${cityUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                cityUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of cityUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                document.getElementById('user-detail-title').textContent = `${cityName}, ${countryName}`;
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load city users: ${err.message}`);
+            }
+        }
+        
+        async function showASNUsers(encodedASN) {
+            cleanupModalPolling();
+            
+            try {
+                const asn = decodeURIComponent(encodedASN);
+                
+                // Fetch all users and filter by ASN
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by ASN
+                const asnUsers = allUsers.filter(u => {
+                    const userASN = u.asn || '';
+                    return userASN === asn;
+                });
+                
+                if (asnUsers.length === 0) {
+                    alert(`No users found for ASN: ${asn}`);
+                    return;
+                }
+                
+                // Build HTML for ASN users popup
+                let html = `<h3>Users List (${asnUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                asnUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of asnUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const ip = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${ip}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                // Build list of unique IP addresses for this ASN
+                const ipSet = new Set();
+                const ipInfoMap = new Map(); // Map IP to { hostname, userCount }
+                
+                for (const user of asnUsers) {
+                    const ip = user.ip || '';
+                    if (ip && ip !== 'N/A' && ip !== '') {
+                        ipSet.add(ip);
+                        
+                        if (!ipInfoMap.has(ip)) {
+                            ipInfoMap.set(ip, {
+                                hostname: user.host || 'N/A',
+                                userCount: 0
+                            });
+                        }
+                        ipInfoMap.get(ip).userCount++;
+                    }
+                }
+                
+                // Show IP addresses if any exist
+                if (ipSet.size > 0) {
+                    const ipArray = Array.from(ipSet).sort();
+                    html += `<h3>IP Addresses (${ipArray.length})</h3>`;
+                    html += '<ul class="info-list">';
+                    
+                    for (const ip of ipArray) {
+                        const info = ipInfoMap.get(ip);
+                        const userCountStr = info.userCount > 1 ? ` (${info.userCount} users)` : '';
+                        html += `<li>`;
+                        html += `<a href="#" onclick="showIPUsers('${encodeURIComponent(ip)}'); return false;" style="font-weight: bold; color: #0066cc; text-decoration: underline;">${ip}</a>`;
+                        if (info.hostname !== 'N/A' && info.hostname !== ip) {
+                            html += ` - ${info.hostname}`;
+                        }
+                        html += userCountStr;
+                        html += `</li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
+                document.getElementById('user-detail-title').textContent = asn;
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load ASN users: ${err.message}`);
+            }
+        }
+        
+        async function showIPUsers(encodedIP) {
+            cleanupModalPolling();
+            
+            try {
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Fetch all users and filter by IP
+                const response = await fetchData('/users?limit=500');
+                let allUsers = [];
+                if (Array.isArray(response)) allUsers = response;
+                else if (response && response.users && Array.isArray(response.users)) allUsers = response.users;
+                else if (response && response.data && Array.isArray(response.data)) allUsers = response.data;
+                
+                // Filter users by IP
+                const ipUsers = allUsers.filter(u => {
+                    const userIP = u.ip || '';
+                    return userIP === ip;
+                });
+                
+                if (ipUsers.length === 0) {
+                    alert(`No users found for IP: ${ip}`);
+                    return;
+                }
+                
+                // Build HTML for IP users popup
+                let html = '';
+                
+                // Get hostname, ASN, city, and country from first user (should be same for all)
+                if (ipUsers.length > 0) {
+                    const firstUser = ipUsers[0];
+                    const hostname = firstUser.host || 'N/A';
+                    const asn = firstUser.asn || 'N/A';
+                    const city = firstUser.city || '';
+                    const countryCode = firstUser.country_code || firstUser.country || firstUser.cc || firstUser.CC || '';
+                    const countryName = firstUser.country || countryCode;
+                    
+                    html += '<ul class="info-list">';
+                    html += `<li><strong>Hostname:</strong> ${hostname}</li>`;
+                    
+                    // Make ASN clickable if available
+                    if (asn && asn !== 'N/A') {
+                        html += `<li><strong>ASN:</strong> <a href="#" onclick="showASNUsers('${encodeURIComponent(asn)}'); return false;" style="color: #0066cc; text-decoration: underline;">${asn}</a></li>`;
+                    } else {
+                        html += `<li><strong>ASN:</strong> ${asn}</li>`;
+                    }
+                    
+                    // Make city clickable if available
+                    if (city && city !== 'N/A' && city !== '' && countryCode) {
+                        const cityKey = `${city}|||${countryCode.toUpperCase()}`;
+                        html += `<li><strong>City:</strong> <a href="#" onclick="showCityUsers('${encodeURIComponent(cityKey)}'); return false;" style="color: #0066cc; text-decoration: underline;">${city}</a></li>`;
+                    } else if (city && city !== 'N/A' && city !== '') {
+                        html += `<li><strong>City:</strong> ${city}</li>`;
+                    }
+                    
+                    // Make country clickable if available
+                    if (countryCode && countryCode !== 'N/A' && countryCode !== '') {
+                        const flag = getFlagEmoji(countryCode);
+                        html += `<li><strong>Country:</strong> <a href="#" onclick="showCountryUsers('${encodeURIComponent(countryCode)}'); return false;" style="color: #0066cc; text-decoration: underline;">${flag} ${countryName}</a></li>`;
+                    }
+                    
+                    html += '</ul>';
+                }
+                
+                // User list section
+                html += `<h3>Users List (${ipUsers.length})</h3>`;
+                html += '<ul class="info-list">';
+                
+                // Sort by share size descending
+                ipUsers.sort((a, b) => {
+                    const aShare = Number(a.share_size || a.share || a.Share || 0);
+                    const bShare = Number(b.share_size || b.share || b.Share || 0);
+                    return bShare - aShare;
+                });
+                
+                for (const user of ipUsers) {
+                    const nick = (user.nick || user.Nick || 'Unknown').toString();
+                    const share = Number(user.share_size || user.share || user.Share || 0);
+                    const className = user.class_name || user.class || user.Class || 'N/A';
+                    
+                    // Determine emojis for this user
+                    const isOp = opsList.some(op => op.nick === nick);
+                    const isBot = botsList.some(bot => bot.nick === nick);
+                    
+                    // Check if user is in a clone group (need to rebuild clone detection for display)
+                    const cloneGroups = new Map();
+                    for (const row of allUsers) {
+                        const n = (row.nick || row.Nick || '').toString();
+                        const b = botsList.some(bot => bot.nick === n);
+                        if (b) continue; // Skip bots in clone detection
+                        
+                        const userIp = row.ip || '';
+                        const s = Number(row.share_size || row.share || row.Share || 0);
+                        const cloneKey = `${userIp}:${s}`;
+                        
+                        if (!cloneGroups.has(cloneKey)) {
+                            cloneGroups.set(cloneKey, []);
+                        }
+                        cloneGroups.get(cloneKey).push(n);
+                    }
+                    
+                    // Find this user's clone group
+                    let hasClones = false;
+                    for (const [key, nicks] of cloneGroups) {
+                        if (nicks.includes(nick) && nicks.length > 1) {
+                            hasClones = true;
+                            break;
+                        }
+                    }
+                    
+                    const botEmoji = isBot ? '🤖 ' : '';
+                    const opEmoji = isOp ? '🔑 ' : '';
+                    const warningEmoji = (hasClones && !isBot) ? '⚠️ ' : '';
+                    
+                    html += `<li>`;
+                    html += `<a href="#" onclick="showUser('${encodeURIComponent(nick)}'); return false;" style="font-weight: bold;">${botEmoji}${opEmoji}${warningEmoji}${nick}</a> - `;
+                    html += `${formatBytes(share)} (${className})`;
+                    html += `</li>`;
+                }
+                
+                html += '</ul>';
+                
+                // Add checkbox for showing ping quality
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-ping-checkbox" onchange="togglePing('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show ping quality
+                        </label>
+                    </div>
+                    <div id="ping-section" style="display: none;"></div>
+                `;
+                
+                // Add checkbox for showing OS detection
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-os-detection-checkbox" onchange="toggleOSDetection('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show OS detection
+                        </label>
+                    </div>
+                    <div id="os-detection-section" style="display: none;"></div>
+                `;
+                
+                // Add checkbox for showing traceroute
+                html += `
+                    <div style="margin: 20px 0;">
+                        <label style="cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="show-traceroute-checkbox" onchange="toggleTraceroute('${encodeURIComponent(ip)}')" style="margin-right: 8px;">
+                            Show traceroute
+                        </label>
+                    </div>
+                    <div id="traceroute-section" style="display: none;"></div>
+                `;
+                
+                document.getElementById('user-detail-title').textContent = ip;
+                document.getElementById('user-content').innerHTML = html;
+                document.getElementById('user-detail').style.display = 'block';
+            } catch (err) {
+                alert(`Failed to load IP users: ${err.message}`);
+            }
+        }
+        
+        async function togglePing(encodedIP) {
+            const checkbox = document.getElementById('show-ping-checkbox');
+            const section = document.getElementById('ping-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                section.innerHTML = '<p>Loading ping quality data...</p>';
+                
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Clear any existing polling interval
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                    pingPollingInterval = null;
+                }
+                
+                // Function to fetch and display ping quality
+                const fetchAndDisplayPing = async () => {
+                    const currentSection = document.getElementById('ping-section');
+                    if (!currentSection) return;
+                    
+                    try {
+                        const response = await fetch(`${API_BASE}/ping/${encodeURIComponent(ip)}`);
+                        
+                        if (!response.ok && response.status !== 404) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        
+                        let pingData = null;
+                        if (response.ok) {
+                            pingData = await response.json();
+                        }
+                        
+                        let html = '<h3>Ping Quality</h3>';
+                        
+                        if (pingData && pingData.completed) {
+                            // Check if host is alive
+                            if (!pingData.is_alive) {
+                                html += `
+                                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                                        <strong>⚠️ Host Unreachable</strong>
+                                        <p style="margin: 5px 0 0 0;">No response from ${ip}</p>
+                                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #666;">
+                                            Packets: ${pingData.packets_sent} sent, ${pingData.packets_received} received (${(pingData.packet_loss * 100).toFixed(1)}% loss)
+                                        </p>
+                                    </div>
+                                `;
+                                // Stop polling if host is unreachable
+                                if (pingPollingInterval) {
+                                    clearInterval(pingPollingInterval);
+                                    pingPollingInterval = null;
+                                }
+                            } else {
+                                // Format RTT values (handle infinity)
+                                const formatRTT = (val) => val === Infinity || val === -Infinity || isNaN(val) ? 'N/A' : `${val.toFixed(3)} ms`;
+                                
+                                // Determine quality color based on average RTT and packet loss
+                                let qualityColor = '#28a745'; // Green (good)
+                                let qualityText = 'Excellent';
+                                
+                                if (pingData.packet_loss > 0.05 || pingData.avg_rtt > 100) {
+                                    qualityColor = '#ffc107'; // Yellow (acceptable)
+                                    qualityText = 'Acceptable';
+                                }
+                                if (pingData.packet_loss > 0.1 || pingData.avg_rtt > 200) {
+                                    qualityColor = '#dc3545'; // Red (poor)
+                                    qualityText = 'Poor';
+                                }
+                                
+                                html += `
+                                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                            <strong style="color: ${qualityColor};">● ${qualityText}</strong>
+                                            <span style="margin-left: 10px; font-size: 0.9em; color: #666;">to ${ip}</span>
+                                        </div>
+                                        <table style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Min RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.min_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Avg RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.avg_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Max RTT</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.max_rtt)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Jitter</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${formatRTT(pingData.jitter)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6;"><strong>Packet Loss</strong></td>
+                                                <td style="padding: 5px; border-bottom: 1px solid #dee2e6; text-align: right;">${(pingData.packet_loss * 100).toFixed(1)}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px;"><strong>Packets</strong></td>
+                                                <td style="padding: 5px; text-align: right;">${pingData.packets_sent} sent, ${pingData.packets_received} received</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                `;
+                                
+                                // Show when the ping was performed
+                                if (pingData.timestamp) {
+                                    const pingDate = new Date(pingData.timestamp * 1000);
+                                    const now = new Date();
+                                    const ageSeconds = Math.floor((now - pingDate) / 1000);
+                                    const ageMinutes = Math.floor(ageSeconds / 60);
+                                    const ageStr = ageMinutes > 0 
+                                        ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                        : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                    html += `<p style="font-size: 0.9em; color: #666;"><em>Ping performed ${ageStr}</em></p>`;
+                                }
+                                
+                                // Stop polling once we have completed results
+                                if (pingPollingInterval) {
+                                    clearInterval(pingPollingInterval);
+                                    pingPollingInterval = null;
+                                }
+                            }
+                        } else {
+                            // No data yet - still pinging
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">Pinging... Results will appear here when available.</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                        
+                    } catch (err) {
+                        const currentSection = document.getElementById('ping-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = `<h3>Ping Quality</h3><p style="color: #ff6600;">⚠️ ${err.message}</p><p style="margin-top: 10px; font-size: 0.9em; color: #666;">Ping scheduled. Results will appear here when available...</p>`;
+                        }
+                    }
+                };
+                
+                // Initial fetch
+                await fetchAndDisplayPing();
+                
+                // Poll every 5 seconds for updates
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                }
+                pingPollingInterval = setInterval(fetchAndDisplayPing, 5000);
+                
+            } else {
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                // Stop polling
+                if (pingPollingInterval) {
+                    clearInterval(pingPollingInterval);
+                    pingPollingInterval = null;
+                }
+            }
+        }
+        
+        async function toggleOSDetection(encodedIP) {
+            const checkbox = document.getElementById('show-os-detection-checkbox');
+            const section = document.getElementById('os-detection-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                
+                // Define inner function that can re-fetch DOM elements
+                async function fetchAndDisplayOSDetection() {
+                    const currentSection = document.getElementById('os-detection-section');
+                    if (!currentSection) {
+                        // Modal closed, stop polling
+                        if (osDetectionPollingInterval) {
+                            clearInterval(osDetectionPollingInterval);
+                            osDetectionPollingInterval = null;
+                        }
+                        return;
+                    }
+                    
+                    const ip = decodeURIComponent(encodedIP);
+                    
+                    try {
+                        const osData = await fetchData(`/os/${encodedIP}`);
+                        
+                        let html = '<h3>OS Detection</h3>';
+                        
+                        if (osData && osData.success && osData.os_matches && osData.os_matches.length > 0) {
+                            html += '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+                            html += '<thead><tr>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">OS Name</th>';
+                            html += '<th style="text-align: center; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Accuracy</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Family</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Vendor</th>';
+                            html += '<th style="text-align: left; padding: 8px; border: 1px solid #ddd; background: #f5f5f5;">Type</th>';
+                            html += '</tr></thead><tbody>';
+                            
+                            for (const match of osData.os_matches) {
+                                const isBestMatch = osData.best_match && match.name === osData.best_match.name && match.accuracy === osData.best_match.accuracy;
+                                const rowStyle = isBestMatch ? 'background: #e8f5e9; font-weight: bold;' : '';
+                                
+                                html += `<tr style="${rowStyle}">`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.name || 'Unknown'}</td>`;
+                                html += `<td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${match.accuracy || 0}%</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.os_family || 'N/A'}</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.vendor || 'N/A'}</td>`;
+                                html += `<td style="padding: 8px; border: 1px solid #ddd;">${match.type || 'N/A'}</td>`;
+                                html += '</tr>';
+                            }
+                            
+                            html += '</tbody></table>';
+                            
+                            if (osData.best_match) {
+                                html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Best match (highlighted):</strong> ' + osData.best_match.name + ' (' + osData.best_match.accuracy + '% accuracy)</p>';
+                            }
+                            
+                            // Show when the OS detection was performed
+                            if (osData.timestamp) {
+                                const osDate = new Date(osData.timestamp * 1000);
+                                const now = new Date();
+                                const ageSeconds = Math.floor((now - osDate) / 1000);
+                                const ageMinutes = Math.floor(ageSeconds / 60);
+                                const ageStr = ageMinutes > 0 
+                                    ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                    : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                html += `<p style="font-size: 0.9em; color: #666;"><em>OS detection performed ${ageStr}</em></p>`;
+                            }
+                        } else if (osData && osData.completed && !osData.success) {
+                            // Scan completed but no OS matches found
+                            html += `<div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 4px; padding: 12px; margin-top: 10px;">`;
+                            html += `<p style="color: #1565c0; margin: 0; font-weight: bold;">ℹ️ No OS Match Found</p>`;
+                            html += `<p style="color: #1565c0; margin: 8px 0 0 0; font-size: 0.9em;">The target did not respond with sufficient information for OS detection.</p>`;
+                            html += `</div>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.85em; color: #999;">This can happen if the host has OS fingerprinting protections enabled or doesn\'t respond to the scan packets.</p>';
+                            
+                            // Stop polling when completed with no matches
+                            if (osDetectionPollingInterval) {
+                                clearInterval(osDetectionPollingInterval);
+                                osDetectionPollingInterval = null;
+                            }
+                        } else if (osData && osData.failed) {
+                            // Explicit failure - stop polling and show error
+                            html += `<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-top: 10px;">`;
+                            html += `<p style="color: #856404; margin: 0; font-weight: bold;">❌ OS Detection Failed</p>`;
+                            html += `<p style="color: #856404; margin: 8px 0 0 0; font-size: 0.9em;">${osData.error || 'Unknown error occurred'}</p>`;
+                            html += `</div>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.85em; color: #999;">Note: OS detection requires nmap with root privileges. The scan may have been blocked or the target may not respond to OS fingerprinting.</p>';
+                            
+                            // Stop polling on explicit failure
+                            if (osDetectionPollingInterval) {
+                                clearInterval(osDetectionPollingInterval);
+                                osDetectionPollingInterval = null;
+                            }
+                        } else if (osData && osData.error) {
+                            // Error but not explicitly failed - might still be in progress
+                            html += `<p style="color: #ff6600; margin-top: 10px;">⚠️ ${osData.error}</p>`;
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">OS detection scan scheduled. Results will appear here when available...</p>';
+                        } else {
+                            html += '<p style="margin-top: 10px; font-size: 0.9em; color: #666;">Scanning... Results will appear here when available.</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                        
+                    } catch (err) {
+                        const currentSection = document.getElementById('os-detection-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = `<h3>OS Detection</h3><p style="color: #ff6600;">⚠️ ${err.message}</p><p style="margin-top: 10px; font-size: 0.9em; color: #666;">OS detection scan scheduled. Results will appear here when available...</p>`;
+                        }
+                    }
+                }
+                
+                // Initial fetch
+                await fetchAndDisplayOSDetection();
+                
+                // Poll every 5 seconds for updates
+                if (osDetectionPollingInterval) {
+                    clearInterval(osDetectionPollingInterval);
+                }
+                osDetectionPollingInterval = setInterval(fetchAndDisplayOSDetection, 5000);
+                
+            } else {
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                // Stop polling
+                if (osDetectionPollingInterval) {
+                    clearInterval(osDetectionPollingInterval);
+                    osDetectionPollingInterval = null;
+                }
+            }
+        }
+        
+        async function toggleTraceroute(encodedIP) {
+            const checkbox = document.getElementById('show-traceroute-checkbox');
+            const section = document.getElementById('traceroute-section');
+            
+            if (!checkbox || !section) return;
+            
+            if (checkbox.checked) {
+                // Show loading message
+                section.style.display = 'block';
+                section.innerHTML = '<p>Loading traceroute data...</p>';
+                
+                const ip = decodeURIComponent(encodedIP);
+                
+                // Clear any existing polling interval
+                if (traceroutePollingInterval) {
+                    clearInterval(traceroutePollingInterval);
+                    traceroutePollingInterval = null;
+                }
+                
+                // Function to fetch and display traceroute
+                const fetchAndDisplayTraceroute = async () => {
+                    // Re-fetch the section element in case DOM was updated
+                    const currentSection = document.getElementById('traceroute-section');
+                    if (!currentSection) return;
+                    
+                    try {
+                        const tracerouteData = await fetchData(`/traceroute/${encodeURIComponent(ip)}`);
+                        console.log('Traceroute data for', ip, ':', tracerouteData);
+                        
+                        let html = '';
+                        
+                        if (tracerouteData && tracerouteData.success) {
+                            html += '<h3>Network Path (Traceroute)</h3>';
+                            html += `<p><strong>Hop count:</strong> ${tracerouteData.hop_count}</p>`;
+                            
+                            if (tracerouteData.hops && tracerouteData.hops.length > 0) {
+                                html += '<table><thead><tr>';
+                                html += '<th style="width: 80px;">Hop</th>';
+                                html += '<th>IP Address</th>';
+                                html += '<th>Hostname</th>';
+                                html += '<th style="width: 120px;">RTT (ms)</th>';
+                                html += '</tr></thead><tbody>';
+                                
+                                for (const hop of tracerouteData.hops) {
+                                    const hopNum = hop.hop || '?';
+                                    const hopIP = hop.ip || '*';
+                                    const hopHostname = hop.hostname || '';
+                                    const rtt = hop.rtt_ms !== null && hop.rtt_ms !== undefined 
+                                        ? hop.rtt_ms.toFixed(2) 
+                                        : '*';
+                                    
+                                    html += '<tr>';
+                                    html += `<td style="text-align: center;">${hopNum}</td>`;
+                                    html += `<td>${hopIP}</td>`;
+                                    html += `<td style="font-size: 0.9em; color: #666;">${hopHostname}</td>`;
+                                    html += `<td style="text-align: center;">${rtt}</td>`;
+                                    html += '</tr>';
+                                }
+                                
+                                html += '</tbody></table>';
+                            }
+                            
+                            // Show when the traceroute was performed
+                            if (tracerouteData.timestamp) {
+                                const traceDate = new Date(tracerouteData.timestamp * 1000);
+                                const now = new Date();
+                                const ageSeconds = Math.floor((now - traceDate) / 1000);
+                                const ageMinutes = Math.floor(ageSeconds / 60);
+                                const ageStr = ageMinutes > 0 
+                                    ? `${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago`
+                                    : `${ageSeconds} second${ageSeconds !== 1 ? 's' : ''} ago`;
+                                html += `<p style="font-size: 0.9em; color: #666;"><em>Traceroute performed ${ageStr}</em></p>`;
+                            }
+                        } else {
+                            html = '<p style="color: #999;">Traceroute data not available yet. Waiting for results...</p>';
+                        }
+                        
+                        currentSection.innerHTML = html;
+                    } catch (traceErr) {
+                        console.log('Traceroute not available for IP:', ip, traceErr);
+                        const currentSection = document.getElementById('traceroute-section');
+                        if (currentSection) {
+                            currentSection.innerHTML = '<p style="color: #999;">Traceroute data not available yet. Waiting for results...</p>';
+                        }
+                    }
+                };
+                
+                // Fetch immediately
+                await fetchAndDisplayTraceroute();
+                
+                // Poll every 5 seconds while checkbox is checked
+                traceroutePollingInterval = setInterval(async () => {
+                    const checkboxStillChecked = document.getElementById('show-traceroute-checkbox');
+                    if (checkboxStillChecked && checkboxStillChecked.checked) {
+                        await fetchAndDisplayTraceroute();
+                    } else {
+                        // Stop polling if checkbox is unchecked
+                        if (traceroutePollingInterval) {
+                            clearInterval(traceroutePollingInterval);
+                            traceroutePollingInterval = null;
+                        }
+                    }
+                }, 5000);
+                
+            } else {
+                // Hide the section and stop polling
+                section.style.display = 'none';
+                section.innerHTML = '';
+                
+                if (traceroutePollingInterval) {
+                    clearInterval(traceroutePollingInterval);
+                    traceroutePollingInterval = null;
+                }
+            }
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                console.log('Tab clicked:', tab.dataset.tab, 'Current tab:', currentTab);
+                e.preventDefault();
+                e.stopPropagation();
+                loadTab(tab.dataset.tab);
+            });
+        });
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(() => {
+                fetchOpsAndBots().then(() => loadTab(currentTab));
+            }, 30000);
+        }
+
+        // Initial load
+        fetchOpsAndBots().then(() => {
+            loadTab('hub');
+            startPolling();
+        });
+    </script>
+</body>
+</html>
