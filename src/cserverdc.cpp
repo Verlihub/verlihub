@@ -1074,7 +1074,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
-	if (mTLSAddr.size() && (mTLSPort || (mTLSAddr == mAddr))) {
+	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr))) {
 		if (mC.tls_only_mode)
 			conn->mLock.append("TLSONLY_");
 		else
@@ -3225,7 +3225,7 @@ void cServerDC::GetHubURLs(string &url, string &urls)
 		url.append(host);
 	}
 
-	if (mTLSAddr.size() && (mTLSPort || (mTLSAddr == mAddr)) && host.size()) {
+	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr)) && host.size()) {
 		urls = "nmdcs://";
 		urls.append(host);
 

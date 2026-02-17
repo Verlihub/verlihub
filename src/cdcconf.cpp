@@ -78,6 +78,7 @@ void cDCConf::AddVars()
 	Add("tls_cert_host", mS.mTLSHost, "localhost");
 	Add("tls_min_ver", mS.mTLSVer, 2);
 	Add("tls_buf_size", mS.mTLSBuf, 10);
+	Add("tls_force_myip", mS.mTLSForce, false);
 	Add("tls_err_log", mS.mTLSLog, false);
 	// end of section
 

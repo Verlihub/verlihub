@@ -3455,10 +3455,13 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 {
-	if (mS->mTLSAddr.empty() || (!mS->mTLSPort && (mS->mTLSAddr != mS->mAddr)))
+	if (mS->mTLSAddr.empty()) // must have
 		return this->DCU_Unknown(msg, conn);
 
-	if (conn->AddrIP() != mS->mTLSAddr)
+	if (!mS->mTLSForce && !mS->mTLSPort && (mS->mTLSAddr != mS->mAddr))
+		return this->DCU_Unknown(msg, conn);
+
+	if (conn->AddrIP() != mS->mTLSAddr) // todo: use ip integer instead
 		return this->DCU_Unknown(msg, conn);
 
 	if ((msg->mLen < 17) || (msg->mLen > 25)) {
@@ -3497,6 +3500,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		if (mS->mC.not_tls_redirect.size()) {
 			Create_ForceMove(data, mS->mC.not_tls_redirect, false);
 			os << data << '|';
+
 		} else if (url.size()) {
 			Create_ForceMove(data, url, false);
 			os << data << '|';

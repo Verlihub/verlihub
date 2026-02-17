@@ -1,7 +1,9 @@
 # 1.7.0.0
 
 * Added: CMake flag USE_FEARTLS_PROXY to use precompiled FearTLS proxy library instead
-* Added: Try to detect external TLS proxy
+* Added: Try to detect external TLS proxy when running on same server
+* Added: Configuration tls_force_myip to force external TLS proxy
+* Added: Built-in TLS proxy regenerates certificates on expiration
 * Added: Lua 5.5 support
 * Added: Consider users with hidden chat on welcome message
 * Updated: Translation files
