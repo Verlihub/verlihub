@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2019-2021 Dexo, dexo at verlihub dot net
-	Copyright (C) 2019-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2019-2026 Verlihub Team, info at verlihub dot net
 
 	This is free software; You can redistribute it
 	and modify it under the terms of the GNU General

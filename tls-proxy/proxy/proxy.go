@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2019-2021 Dexo, dexo at verlihub dot net
-	Copyright (C) 2019-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2019-2026 Verlihub Team, info at verlihub dot net
 
 	This is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -23,6 +23,8 @@ package proxy
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"io"
 	"io/ioutil"
 	"log"
@@ -87,6 +89,7 @@ func New(c Config) (*Proxy, error) {
 	if c.HubAddr == "" {
 		c.HubNetwork = "tcp4"
 		c.HubAddr = "127.0.0.1:411"
+
 	} else if c.HubNetwork == "" {
 		c.HubNetwork = "tcp4"
 	}
@@ -97,13 +100,61 @@ func New(c Config) (*Proxy, error) {
 
 	p := &Proxy{c: c}
 
-	if c.Cert == "" && c.Key == "" {
+	if c.Cert == "" {
 		c.Cert = "hub.crt"
+	}
+
+	if c.Key == "" {
 		c.Key = "hub.key"
 	}
 
-	if _, err := os.Stat(c.Key); os.IsNotExist(err) {
-		log.Println("Generating certificates:", c.Cert, c.Key)
+	var need = false
+
+	if _, err := os.Stat(c.Cert); os.IsNotExist(err) {
+		log.Println("Certificate not found:", c.Cert)
+		need = true
+
+	} else if _, err := os.Stat(c.Key); os.IsNotExist(err) {
+		log.Println("Key not found:", c.Key)
+		need = true
+
+	} else {
+		log.Println("Validating certificate:", c.Cert)
+		data, err := ioutil.ReadFile(c.Cert)
+
+		if err != nil {
+			log.Println("Error reading file:", err.Error())
+			need = true
+
+		} else {
+			block, _ := pem.Decode([]byte(data))
+
+			if block == nil {
+				log.Println("Error decoding PEM data")
+				need = true
+
+			} else {
+				cert, err := x509.ParseCertificate(block.Bytes)
+
+				if err != nil {
+					log.Println("Error parsing certificate:", err.Error())
+					need = true
+
+				} else if time.Now().After(cert.NotAfter) { // Add(time.Day * 7)
+					log.Println("Certificate has expired:", cert.NotAfter.String())
+					need = true
+
+				} else {
+					log.Println("Certificate is valid:", cert.NotAfter.String())
+				}
+			}
+		}
+	}
+
+	if need {
+		if c.CertHost == "" {
+			c.CertHost = "localhost"
+		}
 
 		if c.CertOrg == "" {
 			c.CertOrg = "Verlihub"
@@ -113,10 +164,7 @@ func New(c Config) (*Proxy, error) {
 			c.CertMail = "verlihub@localhost"
 		}
 
-		if c.CertHost == "" {
-			c.CertHost = "localhost"
-		}
-
+		log.Println("Generating certificates:", c.Cert, c.Key)
 		cert, key, err := certs.GenerateCerts(c.CertHost, c.CertOrg, c.CertMail)
 
 		if err != nil {
