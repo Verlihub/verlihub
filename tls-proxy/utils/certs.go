@@ -21,98 +21,160 @@
 package certs
 
 import (
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"errors"
-	"fmt"
 	"math/big"
 	"net"
+	"os"
 	"time"
+	"strings"
+	"errors"
 )
 
-func GenerateCerts(host, org, mail string) (cert, key []byte, _ error) {
-	// generate a new key-pair
-	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
-
-	if err != nil {
-		return nil, nil, err
+func keyType(priv any) any {
+	switch key := priv.(type) {
+		case *rsa.PrivateKey:
+			return &key.PublicKey
+		case *ecdsa.PrivateKey:
+			return &key.PublicKey
+		case ed25519.PrivateKey:
+			return key.Public().(ed25519.PublicKey)
+		default:
+			return nil
 	}
-
-	rootCertTmpl, err := certTemplate(org)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// describe what the certificate will be used for
-	rootCertTmpl.IsCA = true
-	rootCertTmpl.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature
-	rootCertTmpl.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
-
-	if ip := net.ParseIP(host); ip != nil {
-		rootCertTmpl.IPAddresses = []net.IP{ip}
-	} else {
-		rootCertTmpl.DNSNames = []string{host}
-	}
-
-	rootCertTmpl.EmailAddresses = []string{mail}
-	_, rootCertPEM, err := createCert(rootCertTmpl, rootCertTmpl, &rootKey.PublicKey, rootKey)
-
-	if err != nil {
-		return nil, nil, fmt.Errorf("Error creating certificate: %v", err)
-	}
-
-	// pem encode the private key
-	rootKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootKey),
-	})
-
-	return rootCertPEM, rootKeyPEM, nil
 }
 
-// helper function to create a cert template with a serial number and other required fields
-func certTemplate(org string) (*x509.Certificate, error) {
-	// generate a random serial number, a real cert authority would have some logic behind this
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
-
-	if err != nil {
-		return nil, errors.New("Failed to generate serial number: " + err.Error())
+func makeCerts(cert, key, host, org, mail string) (_ error) {
+	if len(cert) == 0 {
+		return errors.New("Missing certificate file name")
 	}
 
-	tmpl := x509.Certificate{
-		SerialNumber: serialNumber,
+	if len(key) == 0 {
+		return errors.New("Missing private key file name")
+	}
+
+	if len(host) == 0 {
+		return errors.New("Missing required host name")
+	}
+
+	var curve = "" // defaults
+	var bits = 2048
+	var ised = false
+	var isca = false
+	var valid = 5 * 365 * 24 * time.Hour // 5 years
+
+	var priv any
+	var err error
+
+	switch curve {
+		case "":
+			if ised {
+				_, priv, err = ed25519.GenerateKey(rand.Reader)
+			} else {
+				priv, err = rsa.GenerateKey(rand.Reader, bits)
+			}
+		case "P224":
+			priv, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+		case "P256":
+			priv, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		case "P384":
+			priv, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+		case "P521":
+			priv, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+		default:
+			return errors.New("Unknown elliptic curve: " + curve)
+	}
+
+	if err != nil {
+		return errors.New("Failed to generate private key: " + err.Error())
+	}
+
+	limit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serial, err := rand.Int(rand.Reader, limit)
+
+	if err != nil {
+		return errors.New("Failed to generate serial number: " + err.Error())
+	}
+
+	usage := x509.KeyUsageDigitalSignature
+
+	if _, isrsa := priv.(*rsa.PrivateKey); isrsa {
+		usage |= x509.KeyUsageKeyEncipherment
+	}
+
+	templ := x509.Certificate{
+		SerialNumber: serial,
 		Subject: pkix.Name{Organization: []string{org}},
-		SignatureAlgorithm: x509.SHA256WithRSA,
+		EmailAddresses: []string{mail},
 		NotBefore: time.Now(),
-		NotAfter: time.Now().Add(time.Hour * 24 * 356 * 5), // 5 years
+		NotAfter: time.Now().Add(valid),
+		KeyUsage: usage,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
 
-	return &tmpl, nil
-}
+	hosts := strings.Split(host, ",")
 
-func createCert(template, parent *x509.Certificate, pub interface{}, parentPriv interface{}) (cert *x509.Certificate, certPEM []byte, err error) {
-	certDER, err := x509.CreateCertificate(rand.Reader, template, parent, pub, parentPriv)
-
-	if err != nil {
-		return
+	for _, dns := range hosts {
+		if ip := net.ParseIP(dns); ip != nil {
+			templ.IPAddresses = append(templ.IPAddresses, ip)
+		} else {
+			templ.DNSNames = append(templ.DNSNames, dns)
+		}
 	}
 
-	// parse the resulting certificate so we can use it again
-	cert, err = x509.ParseCertificate(certDER)
-
-	if err != nil {
-		return
+	if isca {
+		templ.IsCA = true
+		templ.KeyUsage |= x509.KeyUsageCertSign
 	}
 
-	// pem encode the certificate, this is a standard tls encoding
-	b := pem.Block{Type: "CERTIFICATE", Bytes: certDER}
-	certPEM = pem.EncodeToMemory(&b)
-	return
+	der, err := x509.CreateCertificate(rand.Reader, &templ, &templ, keyType(priv), priv)
+
+	if err != nil {
+		return errors.New("Failed to create certificate: " + err.Error())
+	}
+
+	certfile, err := os.Create(cert)
+
+	if err != nil {
+		return errors.New("Failed to open " + cert + " for writing: " + err.Error())
+	}
+
+	if err := pem.Encode(certfile, &pem.Block{Type: "CERTIFICATE", Bytes: der}); err != nil {
+		return errors.New("Failed to write to " + cert + ": " + err.Error())
+	}
+
+	if err := certfile.Close(); err != nil {
+		return errors.New("Failed to close " + cert + ": " + err.Error())
+	}
+
+	keyfile, err := os.OpenFile(key, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0600)
+
+	if err != nil {
+		return errors.New("Failed to open " + key + " for writing: " + err.Error())
+	}
+
+	pk, err := x509.MarshalPKCS8PrivateKey(priv)
+
+	if err != nil {
+		return errors.New("Failed to marshal private key: " + err.Error())
+	}
+
+	if err := pem.Encode(keyfile, &pem.Block{Type: "PRIVATE KEY", Bytes: pk}); err != nil {
+		return errors.New("Failed to write to " + key + ": " + err.Error())
+	}
+
+	if err := keyfile.Close(); err != nil {
+		return errors.New("Failed to close " + key + ": " + err.Error())
+	}
+
+	return nil
 }
 
 // end of file

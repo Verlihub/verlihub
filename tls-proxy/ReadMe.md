@@ -12,7 +12,7 @@ Debian based distributions:
 
 `sudo apt install golang-go`
 
-Minimum required Go version is `1.13` - first version to support TLS `1.3` without hacks.
+Minimum required Go version is `1.18`.
 
 ## Important to know
 

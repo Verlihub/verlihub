@@ -1,5 +1,5 @@
 //	Copyright (C) 2019-2021 Dexo, dexo at verlihub dot net
-//	Copyright (C) 2019-2025 Verlihub Team, info at verlihub dot net
+//	Copyright (C) 2019-2026 Verlihub Team, info at verlihub dot net
 //
 //	This is free software; You can redistribute it
 //	and modify it under the terms of the GNU General
@@ -16,11 +16,11 @@
 //	Please see https://www.gnu.org/licenses/ for a copy
 //	of the GNU General Public License.
 
-// TLS Proxy 1.1.0.0
+// TLS Proxy 1.1.1.0
 
 module github.com/verlihub/tls-proxy
 
-go 1.13
+go 1.18
 
 replace github.com/verlihub/tls-proxy => ./
 
