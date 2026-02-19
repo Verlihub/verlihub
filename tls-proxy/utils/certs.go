@@ -18,6 +18,8 @@
 	of the GNU General Public License.
 */
 
+// todo: https://github.com/xe0r/selfsign/blob/de9e55ae15c0/selfsign.go
+
 package certs
 
 import (
@@ -110,7 +112,7 @@ func MakeCerts(cert, key, host, org, mail string) (_ error) {
 
 	templ := x509.Certificate{
 		SerialNumber: serial,
-		Subject: pkix.Name{Organization: []string{org}},
+		Subject: pkix.Name{CommonName: org, Organization: []string{org}},
 		EmailAddresses: []string{mail},
 		NotBefore: time.Now(),
 		NotAfter: time.Now().Add(valid),
