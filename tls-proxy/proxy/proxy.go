@@ -165,7 +165,7 @@ func New(c Config) (*Proxy, error) {
 		}
 
 		log.Println("Generating certificates:", c.Cert, c.Key)
-		err := certs.makeCerts(c.Cert, c.Key, c.CertHost, c.CertOrg, c.CertMail)
+		err := certs.MakeCerts(c.Cert, c.Key, c.CertHost, c.CertOrg, c.CertMail)
 
 		if err != nil {
 			return nil, err

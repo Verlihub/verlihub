@@ -50,7 +50,7 @@ func keyType(priv any) any {
 	}
 }
 
-func makeCerts(cert, key, host, org, mail string) (_ error) {
+func MakeCerts(cert, key, host, org, mail string) (_ error) {
 	if len(cert) == 0 {
 		return errors.New("Missing certificate file name")
 	}
