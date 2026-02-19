@@ -40,6 +40,10 @@ By default TLS proxy requires TLS version `1.2` and higher, to change that use `
 
 You can either generate or buy your own certificates, or let TLS proxy to generate self-signed certificates that are valid in `5` years.
 
+If you prefer using OpenSSL command line utility instead:
+
+`openssl req -new -newkey rsa:2048 -x509 -sha256 -days 1800 -nodes -out "hub.crt" -keyout "hub.key"`
+
 ## Configuration variables
 
 `listen_ip` - Listening address either for hub or proxy, default: `0.0.0.0`
