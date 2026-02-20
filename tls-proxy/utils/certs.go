@@ -18,11 +18,10 @@
 	of the GNU General Public License.
 */
 
-// todo: https://github.com/xe0r/selfsign/blob/de9e55ae15c0/selfsign.go
-
 package certs
 
 import (
+	"crypto/sha256"
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
@@ -31,13 +30,59 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"encoding/base32"
 	"math/big"
 	"net"
 	"os"
+	"io"
+	"io/ioutil"
 	"time"
 	"strings"
 	"errors"
 )
+
+var base32enc = base32.StdEncoding.WithPadding(base32.NoPadding)
+
+func fromBytes(data []byte) string {
+	const pref = "SHA256/"
+	hash := sha256.Sum256(data)
+	out := make([]byte, len(pref) + base32enc.EncodedLen(len(hash)))
+	copy(out, pref)
+	base32enc.Encode(out[len(pref):], hash[:])
+	return string(out)
+}
+
+func fromFile(read io.Reader) ([]string, error) {
+	hash, err := ioutil.ReadAll(read)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var out []string
+
+	for {
+		data, rest := pem.Decode(hash)
+
+		if data == nil {
+			break
+		}
+
+		hash = rest
+
+		if data.Type != "CERTIFICATE" {
+			continue
+		}
+
+		out = append(out, fromBytes(data.Bytes))
+	}
+
+	if len(out) == 0 {
+		return nil, errors.New("Error decoding PEM data")
+	}
+
+	return out, nil
+}
 
 func keyType(priv any) any {
 	switch key := priv.(type) {
@@ -52,17 +97,17 @@ func keyType(priv any) any {
 	}
 }
 
-func MakeCerts(cert, key, host, org, mail string) (_ error) {
+func MakeCerts(cert, key, host, org, mail string) ([]string, error) {
 	if len(cert) == 0 {
-		return errors.New("Missing certificate file name")
+		return nil, errors.New("Missing certificate file name")
 	}
 
 	if len(key) == 0 {
-		return errors.New("Missing private key file name")
+		return nil, errors.New("Missing private key file name")
 	}
 
 	if len(host) == 0 {
-		return errors.New("Missing required host name")
+		return nil, errors.New("Missing required host name")
 	}
 
 	var curve = "" // defaults
@@ -90,18 +135,18 @@ func MakeCerts(cert, key, host, org, mail string) (_ error) {
 		case "P521":
 			priv, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 		default:
-			return errors.New("Unknown elliptic curve: " + curve)
+			return nil, errors.New("Unknown elliptic curve: " + curve)
 	}
 
 	if err != nil {
-		return errors.New("Failed to generate private key: " + err.Error())
+		return nil, errors.New("Failed to generate private key: " + err.Error())
 	}
 
 	limit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serial, err := rand.Int(rand.Reader, limit)
 
 	if err != nil {
-		return errors.New("Failed to generate serial number: " + err.Error())
+		return nil, errors.New("Failed to generate serial number: " + err.Error())
 	}
 
 	usage := x509.KeyUsageDigitalSignature
@@ -139,44 +184,55 @@ func MakeCerts(cert, key, host, org, mail string) (_ error) {
 	der, err := x509.CreateCertificate(rand.Reader, &templ, &templ, keyType(priv), priv)
 
 	if err != nil {
-		return errors.New("Failed to create certificate: " + err.Error())
+		return nil, errors.New("Failed to create certificate: " + err.Error())
 	}
 
 	certfile, err := os.Create(cert)
 
 	if err != nil {
-		return errors.New("Failed to open " + cert + " for writing: " + err.Error())
+		return nil, errors.New("Failed to open " + cert + " for writing: " + err.Error())
 	}
 
 	if err := pem.Encode(certfile, &pem.Block{Type: "CERTIFICATE", Bytes: der}); err != nil {
-		return errors.New("Failed to write to " + cert + ": " + err.Error())
+		certfile.Close()
+		return nil, errors.New("Failed to write to " + cert + ": " + err.Error())
+	}
+
+	var read io.Reader = certfile
+	hash, err := fromFile(read)
+
+	if err != nil {
+		certfile.Close()
+		return nil, err
 	}
 
 	if err := certfile.Close(); err != nil {
-		return errors.New("Failed to close " + cert + ": " + err.Error())
+		return nil, errors.New("Failed to close " + cert + ": " + err.Error())
 	}
 
 	keyfile, err := os.OpenFile(key, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0600)
 
 	if err != nil {
-		return errors.New("Failed to open " + key + " for writing: " + err.Error())
+		return nil, errors.New("Failed to open " + key + " for writing: " + err.Error())
 	}
 
 	pk, err := x509.MarshalPKCS8PrivateKey(priv)
 
 	if err != nil {
-		return errors.New("Failed to marshal private key: " + err.Error())
+		keyfile.Close()
+		return nil, errors.New("Failed to marshal private key: " + err.Error())
 	}
 
 	if err := pem.Encode(keyfile, &pem.Block{Type: "PRIVATE KEY", Bytes: pk}); err != nil {
-		return errors.New("Failed to write to " + key + ": " + err.Error())
+		keyfile.Close()
+		return nil, errors.New("Failed to write to " + key + ": " + err.Error())
 	}
 
 	if err := keyfile.Close(); err != nil {
-		return errors.New("Failed to close " + key + ": " + err.Error())
+		return nil, errors.New("Failed to close " + key + ": " + err.Error())
 	}
 
-	return nil
+	return hash, nil
 }
 
 // end of file
