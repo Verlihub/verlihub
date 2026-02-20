@@ -198,6 +198,7 @@ func MakeCerts(cert, key, host, org, mail string) ([]string, error) {
 		return nil, errors.New("Failed to write to " + cert + ": " + err.Error())
 	}
 
+	certfile.Seek(0, io.SeekStart)
 	var read io.Reader = certfile
 	hash, err := fromFile(read)
 
