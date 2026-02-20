@@ -25,6 +25,7 @@ package certs
 import (
 	"testing"
 	"fmt"
+	"os"
 )
 
 func TestCerts(t *testing.T) {
