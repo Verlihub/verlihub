@@ -30,6 +30,9 @@ extern "C" {
 #include <string>
 #include <sstream>
 #include <vector>
+#include <map>
+
+#include <wchar.h>
 
 // user rights
 #define w_UR_CHAT 0x0001
@@ -114,6 +117,7 @@ enum {
 	W_GetUserCC,
 	W_GetIPCC,
 	W_GetIPCN,
+	W_GetIPCity,
 	W_GetIPASN,
 	W_GetGeoIP,
 	W_GetNickList,
@@ -172,10 +176,12 @@ enum {
 typedef struct {
 	char type;
 	union {
-		long l;
-		char *s;
-		double d;
-		void *p;
+		long l;          // 'l' - long integer
+		char *s;         // 's' - string (char*)
+		double d;        // 'd' - double
+		void *p;         // 'p' - void pointer
+		char **L;        // 'L' - list of strings (NULL-terminated array)
+		PyObject *O;     // 'O' - PyObject*
 	};
 } w_Telement;
 
@@ -191,12 +197,18 @@ typedef struct {
 	PyThreadState *state;
 	char          *path;
 	char          *name;
+	PyObject      *module;
 	w_Tcallback   *callbacks;
 	char          *hooks;
 	char          *botname;
 	char          *opchatname;
 	bool           use_old_ontimer;
 	char          *config_name;
+	char          *config_dir;
+	bool           had_threads;  // Track if this interpreter used threading/asyncio
+	
+	// Dynamic function registry
+	std::map<std::string, w_Tcallback> *dynamic_funcs;
 } w_TScript;
 
 // the following functions are all you need to use in the plugin that loads this wrapper
@@ -211,12 +223,21 @@ int w_HasHook(int id, int hook);
 
 // w_CallHook's non-empty/non-zero return means further processing by other plugins or the hub
 w_Targs *w_CallHook(int id, int num, w_Targs *params);
+// w_CallFunction calls an arbitrary Python function by name (not just hooks)
+w_Targs *w_CallFunction(int id, const char *func_name, w_Targs *params);
 PyObject *w_GetHook(int hook);
 const char *w_HookName(int hook);
 const char *w_CallName(int callback);
 
+// Dynamic function registration
+// Register a C++ function that can be called from Python scripts
+int w_RegisterFunction(int script_id, const char *func_name, w_Tcallback callback);
+// Unregister a dynamically registered function
+int w_UnregisterFunction(int script_id, const char *func_name);
+
 w_Targs *w_pack(const char *format, ...);
 int w_unpack(w_Targs *a, const char *format, ...);
+void w_free_args(w_Targs *a);  // Free a w_Targs structure and all owned strings
 void w_LogLevel(int level);
 const char *w_packprint(w_Targs *a);
 }
@@ -229,6 +250,7 @@ typedef int         (*w_TLoad)(w_Targs *);
 typedef int         (*w_TUnload)(int);
 typedef int         (*w_THasHook)(int, int);
 typedef w_Targs    *(*w_TCallHook)(int, int, w_Targs *);
+typedef w_Targs    *(*w_TCallFunction)(int, const char *, w_Targs *);
 typedef const char *(*w_THookName)(int);
 typedef const char *(*w_TCallName)(int callback);
 typedef w_Targs    *(*w_Tpack)(const char *, ...);
