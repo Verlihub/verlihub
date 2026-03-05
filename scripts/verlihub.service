@@ -1,0 +1,63 @@
+# Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
+#
+# Verlihub autostart service
+#
+# Depends on online network and MariaDB/MySQL
+# Tested with Ubuntu 24.04
+#
+# Copy service file into system as super user:
+# $ sudo cp ./scripts/verlihub.service /etc/systemd/system/verlihub.service
+#
+# Enable service as super user:
+# $ sudo systemctl enable verlihub.service
+#
+# Disable service as super user:
+# $ sudo systemctl disable verlihub.service
+#
+# Show service status:
+# $ service verlihub status
+#
+# Manually start hubs:
+# $ sudo service verlihub start
+#
+# Manually stop hubs:
+# $ sudo service verlihub stop
+#
+# Add more ExecStart and ExecStop if you need to start multiple hubs
+# Remember that hubs started outside service cannot be stopped with service
+
+[Unit]
+# dont touch below
+Description=Verlihub
+After=network-online.target mysql.service
+Wants=network-online.target mysql.service
+
+[Service]
+# not needed
+#EnvironmentFile=
+
+# start hub 1 using vhm
+ExecStart=/usr/local/bin/vhm -r 1
+
+# start hub 2 using vhm
+#ExecStart=/usr/local/bin/vhm -r 2
+
+# start hub 1 using vh
+#ExecStart=/usr/local/bin/vh -r /path/to/dbconfig
+
+# stop hub 1 using vhm
+ExecStop=/usr/local/bin/vhm -s 1
+
+# stop hub 2 using vhm
+#ExecStop=/usr/local/bin/vhm -s 2
+
+# stop hub 1 using vh
+#ExecStop=/usr/local/bin/vh -r /path/to/dbconfig
+
+# dont touch below
+Restart=on-failure
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
