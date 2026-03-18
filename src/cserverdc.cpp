@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <signal.h>
 
 #if defined(USE_TLS_PROXY)
 	#include "libvhproxy.h"
@@ -50,6 +51,12 @@
 #include "cpenaltylist.h"
 #include "cthreadwork.h"
 #include "stringutils.h"
+
+// Deferred signal handling flags (defined here, declared in cserverdc.h)
+// Signal handlers in verlihub.cpp set these, OnTimer() checks them
+volatile sig_atomic_t pending_signal_quit = 0;
+volatile sig_atomic_t pending_signal_hup = 0;
+volatile sig_atomic_t pending_signal_crash = 0;
 #include "cconntypes.h"
 #include "cdcconsole.h"
 #include "ctriggers.h"
@@ -1959,6 +1966,31 @@ int cServerDC::OnTimer(const cTime &now)
 		if (!mCallBacks.mOnTimer.CallAll(this->mTime.MiliSec()))
 			return false;
 	#endif
+
+	// DEFERRED SIGNAL HANDLING: Process signals set by signal handlers
+	// This runs in main loop, NOT in signal context - safe to call any function
+	
+	// Check for SIGHUP (reload configuration)
+	if (pending_signal_hup) {
+		pending_signal_hup = 0;
+		if (Log(1))
+			LogStream() << "Processing deferred SIGHUP - reloading configuration" << endl;
+		SyncReload();
+	}
+	
+	// Check for SIGQUIT/SIGTERM (graceful shutdown)
+	if (pending_signal_quit) {
+		int sig = pending_signal_quit;
+		pending_signal_quit = 0;
+		if (Log(1))
+			LogStream() << "Processing deferred signal " << sig << " - initiating shutdown" << endl;
+		SyncStop();
+		
+		exit(EXIT_SUCCESS);
+	}
+	
+	// Note: pending_signal_crash is handled by immediate exit() in signal handler
+	// because we can't safely continue after SIGSEGV
 
 	return true;
 }
