@@ -933,7 +933,7 @@ tConnType cAsyncConn::GetType()
 
 int cAsyncConn::OnTimerBase(const cTime &now)
 {
-	if (bool(mCloseAfter) && (mCloseAfter > now)) {
+	if (bool(mCloseAfter) && (mCloseAfter < now)) {
 		CloseNow();
 		return 0;
 	}
