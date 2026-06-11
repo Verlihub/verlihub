@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -87,6 +87,52 @@ int _SendToUser(lua_State *L)
 		delay = (int(lua_tonumber(L, 4)) > 0);
 
 	if (!SendDataToUser(data.c_str(), nick.c_str(), delay)) {
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
+int _SendRawToUser(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+
+	if (args < 2) {
+		luaL_error(L, "Error calling VH:SendRawToUser, expected atleast 2 arguments but got %d.", args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4))) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	size_t data_len = 0;
+	const char *data_raw = lua_tolstring(L, 2, &data_len);
+
+	if (!data_raw || (data_len == 0)) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	string data(data_raw, data_len), nick = lua_tostring(L, 3);
+
+	if (nick.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	bool delay = false;
+
+	if (args >= 3)
+		delay = (int(lua_tonumber(L, 4)) > 0);
+
+	if (!SendRawDataToUser(data.c_str(), data_len, nick.c_str(), delay)) {
 		luaerror(L, ERR_CALL);
 		return 2;
 	}
