@@ -67,35 +67,31 @@ void mySigIOHandler(int i)
 
 void mySigQuitHandler(int i)
 {
-	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
-
-	if (serv)
-		serv->SyncStop();
-
-	exit(EXIT_SUCCESS);
+	// SIGNAL HANDLER: Only set flag, do NOT call complex functions
+	// Actual shutdown will be processed in main loop
+	pending_signal_quit = i;
+	// Re-register signal handler for systems that reset it
+	signal(i, mySigQuitHandler);
 }
 
 void mySigServHandler(int i)
 {
-	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
-
-	if (serv) { // note: this is a crash, i dont think we can actually perform a proper stop()
-		serv->DoStackTrace();
-		serv->OnUnLoad(9); // try to unload as much as possible
-	}
-
-	exit(128 + i); // proper exit code for this signal
+	// SIGNAL HANDLER: Only set flag for crash signals
+	// Note: For SIGSEGV, we can't safely continue execution
+	// Just set flag and exit - no plugin callbacks from signal context!
+	pending_signal_crash = i;
+	// For crash signals, we must exit immediately
+	// Do NOT call DoStackTrace or OnUnLoad - they're not async-signal-safe
+	exit(128 + i);
 }
 
 void mySigHupHandler(int i)
 {
-	MAIN_LOG_NOTICE << "Received a " << i << " signal, reloading" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
-
-	if (serv)
-		serv->SyncReload();
+	// SIGNAL HANDLER: Only set flag, do NOT call SyncReload
+	// Actual reload will be processed in main loop
+	pending_signal_hup = 1;
+	// Re-register signal handler for systems that reset it
+	signal(SIGHUP, mySigHupHandler);
 }
 //#endif
 

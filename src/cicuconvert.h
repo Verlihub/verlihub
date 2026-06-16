@@ -38,13 +38,14 @@ namespace nVerliHub {
 		class cICUConvert: public cObj
 		{
 			public:
-				cICUConvert(nSocket::cServerDC *);
-				~cICUConvert();
+			cICUConvert(nSocket::cServerDC *);
+			~cICUConvert();
 
-				bool Convert(const char *udat, unsigned int ulen, string &conv, const string &tset = ""); // hub default character set
-				bool Translit(const char *udat, unsigned int ulen, string &tran);
+			bool Convert(const char *udat, unsigned int ulen, string &conv, const string &tset = ""); // UTF-8 to hub encoding
+			bool ConvertReverse(const char *hdat, unsigned int hlen, string &conv, const string &tset = ""); // hub encoding to UTF-8
+			bool Translit(const char *udat, unsigned int ulen, string &tran);
 
-				virtual string GetICUVersion() const
+			virtual string GetICUVersion() const
 				{
 					return mICUVer;
 				}

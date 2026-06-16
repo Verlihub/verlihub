@@ -19,6 +19,7 @@
 */
 
 #include "cpipython.h"
+#include "json_marshal.h"
 #include "src/stringutils.h"
 #include "src/cbanlist.h"
 #include "src/cdcproto.h"
@@ -30,6 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 namespace nVerliHub {
 using namespace nUtils;
@@ -48,6 +50,7 @@ w_TLoad       cpiPython::lib_load      = NULL;
 w_TUnload     cpiPython::lib_unload    = NULL;
 w_THasHook    cpiPython::lib_hashook   = NULL;
 w_TCallHook   cpiPython::lib_callhook  = NULL;
+w_TCallFunction cpiPython::lib_callfunction = NULL;
 w_THookName   cpiPython::lib_hookname  = NULL;
 w_Tpack       cpiPython::lib_pack      = NULL;
 w_Tunpack     cpiPython::lib_unpack    = NULL;
@@ -71,12 +74,21 @@ cpiPython::cpiPython() : mConsole(this), mQuery(NULL)
 
 cpiPython::~cpiPython()
 {
-	ostringstream o;
-	o << log_level;
-	SetConfig("pi_python", "log_level", o.str().c_str());
+	fprintf(stderr, "PY: cpiPython::~cpiPython() destructor called\n");
+	
+	// Skip saving config during destruction - the config system may already be torn down
+	// This is especially true during test cleanup when objects are destroyed in reverse order
+	// The log_level is not critical to save during shutdown anyway
+	
+	fprintf(stderr, "PY: Calling Empty()...\n");
 	this->Empty();
+	
+	fprintf(stderr, "PY: Calling lib_end()...\n");
 	if (lib_end) (*lib_end)();
+	
+	fprintf(stderr, "PY: Calling dlclose()...\n");
 	if (lib_handle) dlclose(lib_handle);
+	
 	log1("PY: cpiPython::destructor   Plugin ready to be unloaded\n");
 
 	if (mQuery) {
@@ -99,12 +111,25 @@ void cpiPython::OnLoad(cServerDC *server)
 	opchatname = server->mC.opchat_name;
 
 	log4("PY: cpiPython::OnLoad   dlopen...\n");
-	if (!lib_handle)
-		lib_handle = dlopen("@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so",
-			RTLD_LAZY | RTLD_GLOBAL);
+	if (!lib_handle) {
+		// Try build directory first (for tests), then installed location
+		const char* wrapper_paths[] = {
+			"@CMAKE_BINARY_DIR@/plugins/python/libvh_python_wrapper.so",
+			"@CMAKE_INSTALL_PREFIX@/@PLUGINDIR@/libvh_python_wrapper.so",
+			NULL
+		};
+		
+		for (int i = 0; wrapper_paths[i] != NULL; i++) {
+			lib_handle = dlopen(wrapper_paths[i], RTLD_LAZY | RTLD_GLOBAL);
+			if (lib_handle) {
+				log4("PY: cpiPython::OnLoad   Loaded wrapper from: %s\n", wrapper_paths[i]);
+				break;
+			}
+		}
+	}
 	// RTLD_GLOBAL exports all symbols from libvh_python_wrapper.so
 	// without RTLD_GLOBAL the lib will fail to import other python modules
-	// because they won't see any symbols from the linked libpython2.5
+	// because they won't see any symbols from the linked libpython
 	if (!lib_handle) {
 		log("PY: cpiPython::OnLoad   Error during dlopen(): %s\n", dlerror());
 		return;
@@ -117,6 +142,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	*(void **)(&lib_unload)    = dlsym(lib_handle, "w_Unload");
 	*(void **)(&lib_hashook)   = dlsym(lib_handle, "w_HasHook");
 	*(void **)(&lib_callhook)  = dlsym(lib_handle, "w_CallHook");
+	*(void **)(&lib_callfunction) = dlsym(lib_handle, "w_CallFunction");
 	*(void **)(&lib_hookname)  = dlsym(lib_handle, "w_HookName");
 	*(void **)(&lib_pack)      = dlsym(lib_handle, "w_pack");
 	*(void **)(&lib_unpack)    = dlsym(lib_handle, "w_unpack");
@@ -124,7 +150,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	*(void **)(&lib_packprint) = dlsym(lib_handle, "w_packprint");
 
 	if (!lib_begin || !lib_end || !lib_reserveid || !lib_load || !lib_unload || !lib_hashook
-	|| !lib_callhook || !lib_hookname || !lib_pack || !lib_unpack || !lib_loglevel || !lib_packprint) {
+	|| !lib_callhook || !lib_callfunction || !lib_hookname || !lib_pack || !lib_unpack || !lib_loglevel || !lib_packprint) {
 		log("PY: cpiPython::OnLoad   Error locating vh_python_wrapper function symbols: %s\n", dlerror());
 		return;
 	}
@@ -165,6 +191,7 @@ void cpiPython::OnLoad(cServerDC *server)
 	callbacklist[W_GetUserCC]          = &_GetUserCC;
 	callbacklist[W_GetIPCC]            = &_GetIPCC;
 	callbacklist[W_GetIPCN]            = &_GetIPCN;
+	callbacklist[W_GetIPCity]          = &_GetIPCity;
 	callbacklist[W_GetIPASN]           = &_GetIPASN;
 	callbacklist[W_GetGeoIP]           = &_GetGeoIP;
 	callbacklist[W_AddRegUser]         = &_AddRegUser;
@@ -510,12 +537,51 @@ bool cpiPython::CallAll(int func, w_Targs *args, cConnDC *conn) // the default h
 				log1("PY: CallAll %s: unexpected return value %s\n", lib_hookname(func), lib_packprint(result));
 			}
 
-			free(result);
+			w_free_args(result);
 		}
 	}
 
 	free(args);
 	return ret;
+}
+
+w_Targs *cpiPython::CallPythonFunction(int script_id, const char *func_name, w_Targs *args)
+{
+	if (!online) {
+		log("PY: CallPythonFunction - plugin not online\n");
+		return NULL;
+	}
+	
+	if (!lib_callfunction) {
+		log("PY: CallPythonFunction - lib_callfunction not loaded\n");
+		return NULL;
+	}
+	
+	log2("PY: CallPythonFunction - calling '%s' on script %d with args %s\n", 
+	     func_name, script_id, lib_packprint(args));
+	
+	w_Targs *result = lib_callfunction(script_id, func_name, args);
+	
+	if (result) {
+		log2("PY: CallPythonFunction - '%s' returned %s\n", func_name, lib_packprint(result));
+	} else {
+		log3("PY: CallPythonFunction - '%s' returned NULL\n", func_name);
+	}
+	
+	return result;
+}
+
+w_Targs *cpiPython::CallPythonFunction(const std::string &script_name, const char *func_name, w_Targs *args)
+{
+	// Find script by name
+	for (tvPythonInterpreter::iterator it = mPython.begin(); it != mPython.end(); ++it) {
+		if ((*it) && (*it)->mScriptName == script_name) {
+			return CallPythonFunction((*it)->id, func_name, args);
+		}
+	}
+	
+	log("PY: CallPythonFunction - script '%s' not found\n", script_name.c_str());
+	return NULL;
 }
 
 bool cpiPython::OnNewConn(cConnDC *conn)
@@ -619,7 +685,7 @@ bool cpiPython::OnParsedMsgChat(cConnDC *conn, cMessageDC *msg)
 					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
 
-				free(result);
+				w_free_args(result);
 			}
 		}
 
@@ -860,7 +926,7 @@ bool cpiPython::OnParsedMsgMyINFO__(cConnDC *conn, cMessageDC *msg, int func, co
 					log1("PY: Call %s: unexpected return value: %s\n", lib_hookname(func), lib_packprint(result));
 				}
 
-				free(result);
+				w_free_args(result);
 			}
 		}
 
@@ -1366,13 +1432,35 @@ w_Targs *_GetMyINFO(int id, w_Targs *args)
 	const char *nick;
 	if (!cpiPython::lib_unpack(args, "s", &nick)) return NULL;
 	if (!nick) return NULL;
+	
 	cUser *u = cpiPython::me->server->mUserList.GetUserByNick(nick);
-	if (!u) return NULL;
-	char *n, *desc, *tag, *speed, *mail, *size;
-	if (!cpiPython::me->SplitMyINFO(u->mFakeMyINFO.c_str(), &n, &desc, &tag, &speed, &mail, &size)) {
-		log1("PY: Call GetMyINFO   malformed myinfo message: %s\n", u->mFakeMyINFO.c_str());
+	if (!u)
 		return NULL;
+	
+	// Use real MyINFO (mMyINFO) which has the actual client data
+	// Fall back to mFakeMyINFO only if mMyINFO is empty (e.g., for bots)
+	const string& myinfo_str = u->mMyINFO.empty() ? u->mFakeMyINFO : u->mMyINFO;
+	
+	// If both MyINFO strings are empty, construct from user object fields
+	if (myinfo_str.empty()) {
+		ostringstream share_str;
+		share_str << u->mShare;
+		
+		w_Targs *res = cpiPython::lib_pack("ssssss", 
+			strdup(u->mNick.c_str()),     // nick
+			strdup(""),                     // desc (not available without MyINFO)
+			strdup(""),                     // tag (not available without MyINFO)
+			strdup(""),                     // speed (not available without MyINFO) 
+			strdup(""),                     // email (not available without MyINFO)
+			strdup(share_str.str().c_str()) // share from mShare field
+		);
+		return res;
 	}
+	
+	char *n, *desc, *tag, *speed, *mail, *size;
+	if (!cpiPython::me->SplitMyINFO(myinfo_str.c_str(), &n, &desc, &tag, &speed, &mail, &size))
+		return NULL;
+	
 	w_Targs *res = cpiPython::lib_pack("ssssss", n, desc, tag, speed, mail, size);
 	return res;
 }
@@ -1443,23 +1531,51 @@ w_Targs *_GetUserClass(int id, w_Targs *args)
 
 w_Targs *_GetNickList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mUserList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	std::vector<std::string> nicks;
+	
+	// Return nicknames in hub encoding (no conversion)
+	// Python will handle encoding conversion as needed
+	for (cUserCollection::iterator it = cpiPython::me->server->mUserList.begin();
+		 it != cpiPython::me->server->mUserList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back((*it)->mNick);
+		}
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetOpList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mOpList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	std::vector<std::string> nicks;
+	
+	// Return nicknames in hub encoding (no conversion)
+	for (cUserCollection::iterator it = cpiPython::me->server->mOpList.begin();
+	     it != cpiPython::me->server->mOpList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back((*it)->mNick);
+		}
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetBotList(int id, w_Targs *args)
 {
-	string list;
-	cpiPython::me->server->mRobotList.GetNickList(list);
-	return cpiPython::lib_pack("s", strdup(list.c_str()));
+	std::vector<std::string> nicks;
+	
+	// Return nicknames in hub encoding (no conversion)
+	for (cUserCollection::iterator it = cpiPython::me->server->mRobotList.begin();
+	     it != cpiPython::me->server->mRobotList.end(); ++it) {
+		if (*it && (*it)->mNick.size() > 0) {
+			nicks.push_back((*it)->mNick);
+		}
+	}
+	
+	std::string json = stringListToJson(nicks);
+	return cpiPython::lib_pack("D", strdup(json.c_str()));
 }
 
 w_Targs *_GetUserHost(int id, w_Targs *args)
@@ -1638,7 +1754,22 @@ w_Targs *_GetIPCN(int id, w_Targs *args)
 	return cpiPython::lib_pack("s", strdup(cnstr.c_str()));
 }
 
-// todo: add GetIPCity call
+w_Targs *_GetIPCity(int id, w_Targs *args)
+{
+	const char *ip, *db;
+
+	if (!cpiPython::lib_unpack(args, "ss", &ip, &db))
+		return NULL;
+
+	if (!ip)
+		return NULL;
+
+	if (!db)
+		db = "";
+
+	string citystr = GetIPCity(ip, db);
+	return cpiPython::lib_pack("s", strdup(citystr.c_str()));
+}
 
 w_Targs *_GetIPASN(int id, w_Targs *args)
 {
@@ -1727,7 +1858,14 @@ w_Targs *_GetGeoIP(int id, w_Targs *args)
 	data->push_back("postal_code");
 	data->push_back(geo_post);
 
-	return cpiPython::lib_pack("sdsdslslp", "latitude", geo_lat, "longitude", geo_lon, "metro_code", geo_met, "area_code", geo_area, (void*)data); // todo: geo_lat and geo_lon are double but packed as signed long
+	// All strings passed to lib_pack MUST be heap-allocated (w_free_args will free them)
+	// String literals must be strdup'd
+	return cpiPython::lib_pack("sdsdslslp", 
+	                            strdup("latitude"), geo_lat, 
+	                            strdup("longitude"), geo_lon, 
+	                            strdup("metro_code"), geo_met, 
+	                            strdup("area_code"), geo_area, 
+	                            (void*)data);
 }
 
 w_Targs *_AddRegUser(int id, w_Targs *args)
@@ -1891,8 +2029,8 @@ w_Targs *_SetConfig(int id, w_Targs *args)
 
 w_Targs *_GetConfig(int id, w_Targs *args)
 {
-	const char *conf, *var, *def_val;
-	if (!cpiPython::lib_unpack(args, "sss", &conf, &var, &def_val)) return NULL;
+	const char *conf, *var, *def_val = NULL;
+	if (!cpiPython::lib_unpack(args, "ss|s", &conf, &var, &def_val)) return NULL;
 	if (!conf || !var) return NULL;
 	const char *val = GetConfig(conf, var, def_val);
 	if (!val) return NULL;
