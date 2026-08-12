@@ -11,7 +11,7 @@
 #include "cadcpolicy.h"
 #include "cadcsession.h"
 #include "cmessageadc.h"
-#include "cconndc.h"
+#include "cconnadc.h"
 #include "cpenaltylist.h"
 #include "creguserinfo.h"
 #include "cserverdc.h"
@@ -95,7 +95,7 @@ bool cADCPolicy::ParseUInt64(const std::string &value,
 }
 
 bool cADCPolicy::AllowNormal(nSocket::cServerDC *server,
-	nSocket::cConnDC *conn, const sADCSession &session,
+	nSocket::cConnADC *conn, const sADCSession &session,
 	const cMessageADC &msg, std::string &reason)
 {
 	reason.clear();
