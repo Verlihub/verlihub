@@ -58,6 +58,7 @@ class cServerADC : public cServerDC
 		bool SendHubINF(cAsyncConn *conn);
 		bool TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn);
 		bool TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn);
+		bool TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn);
 		bool EnterNormal(cConnDC *conn);
 		bool BroadcastINF(cConnDC *conn);
 		bool UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn);
