@@ -13,10 +13,14 @@
 #include "cban.h"
 #include "cbanlist.h"
 #include "creguserinfo.h"
+#include "stringutils.h"
+
+#include <sstream>
 
 namespace nVerliHub {
 	using namespace nEnums;
 	using namespace nTables;
+	using namespace nUtils;
 
 	namespace nSocket {
 
@@ -27,6 +31,49 @@ bool cServerADC::ValidateADCIdentity(cAsyncConn *raw, const string &nick,
 
 	if (!conn || nick.empty() || !mBanList)
 		return false;
+
+	// Keep configurable hub nickname policy, but do not inherit NMDC wire
+	// delimiters such as '$' and '|' as implicit forbidden characters. ADC
+	// framing/escaping has its own syntax and adc_valid_nick() handles controls.
+	if (!registered && !mC.nick_chars.empty()) {
+		for (size_t i = 0; i < nick.size(); ++i) {
+			if (mC.nick_chars.find(nick[i]) == string::npos) {
+				if (conn->Log(1))
+					conn->LogStream() << "ADC identity rejected by configured nick_chars" << endl;
+
+				return false;
+			}
+		}
+	}
+
+	// Prefix restrictions are a hub policy rather than an NMDC framing rule.
+	// Match the historical semantics for unregistered users while keeping
+	// registered accounts exempt from a prefix intended for guests.
+	if (!registered && !mC.nick_prefix.empty()) {
+		istringstream prefixes(mC.nick_prefix);
+		string prefix;
+		const string candidate = mC.nick_prefix_nocase ?
+			toLower(nick, true) : nick;
+		bool matched = false;
+
+		while (prefixes >> prefix) {
+			if (mC.nick_prefix_nocase)
+				prefix = toLower(prefix, true);
+
+			if (candidate.size() >= prefix.size() &&
+				candidate.compare(0, prefix.size(), prefix) == 0) {
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched) {
+			if (conn->Log(1))
+				conn->LogStream() << "ADC identity rejected by configured nick prefix" << endl;
+
+			return false;
+		}
+	}
 
 	const long now = mTime.Sec();
 
