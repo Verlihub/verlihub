@@ -61,6 +61,18 @@ nSocket::cAsyncConn *cADCSessionManager::FindBySID(const std::string &sid) const
 	return (it == mSIDIndex.end()) ? NULL : it->second;
 }
 
+void cADCSessionManager::NormalConnections(
+	std::vector<nSocket::cAsyncConn*> &dest) const
+{
+	dest.clear();
+
+	for (tSessionMap::const_iterator it = mSessions.begin();
+		it != mSessions.end(); ++it) {
+		if (it->first && it->second.mState == eADC_STATE_NORMAL)
+			dest.push_back(it->first);
+	}
+}
+
 std::string cADCSessionManager::SIDFromNumber(unsigned int value)
 {
 	static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
