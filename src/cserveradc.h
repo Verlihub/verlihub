@@ -28,6 +28,20 @@ namespace nVerliHub {
 class cADCServerMessage : public nProtocol::cMessageADC
 {
 	private:
+		static bool ValidFeatureCode(const std::string &feature)
+		{
+			if (feature.size() != 4)
+				return false;
+
+			for (size_t i = 0; i < 3; ++i) {
+				if (feature[i] < 'A' || feature[i] > 'Z')
+					return false;
+			}
+
+			return (feature[3] >= 'A' && feature[3] <= 'Z') ||
+				(feature[3] >= '0' && feature[3] <= '9');
+		}
+
 		static bool IsUTF8NFC(const std::string &text)
 		{
 			bool ascii = true;
@@ -52,7 +66,7 @@ class cADCServerMessage : public nProtocol::cMessageADC
 
 			error = U_ZERO_ERROR;
 			std::vector<UChar> utf16(static_cast<size_t>(length) + 1);
-		u_strFromUTF8(&utf16[0], static_cast<int32_t>(utf16.size()), &length,
+			u_strFromUTF8(&utf16[0], static_cast<int32_t>(utf16.size()), &length,
 				text.data(), static_cast<int32_t>(text.size()), &error);
 
 			if (U_FAILURE(error))
@@ -69,16 +83,53 @@ class cADCServerMessage : public nProtocol::cMessageADC
 			return U_SUCCESS(error) && normalized;
 		}
 
+		void Invalidate()
+		{
+			mError = true;
+			mType = nEnums::eADC_INVALID;
+		}
+
 	public:
 		virtual int Parse()
 		{
 			if (!IsUTF8NFC(mStr)) {
-				mError = true;
-				mType = nEnums::eADC_INVALID;
+				Invalidate();
 				return mType;
 			}
 
-			return nProtocol::cMessageADC::Parse();
+			const int parsed = nProtocol::cMessageADC::Parse();
+
+			if (mError || parsed == nEnums::eADC_INVALID)
+				return parsed;
+
+			if (mType == nEnums::eADC_SUP) {
+				const std::vector<std::string> &parameters = Parameters();
+
+				for (size_t i = 0; i < parameters.size(); ++i) {
+					if (parameters[i].size() != 6 ||
+						(parameters[i].compare(0, 2, "AD") != 0 &&
+						 parameters[i].compare(0, 2, "RM") != 0) ||
+						!ValidFeatureCode(parameters[i].substr(2, 4))) {
+						Invalidate();
+						return mType;
+					}
+				}
+			}
+
+			if (HeaderType() == 'F') {
+				const std::vector<std::string> &features = Features();
+
+				for (size_t i = 0; i < features.size(); ++i) {
+					if (features[i].size() != 5 ||
+						(features[i][0] != '+' && features[i][0] != '-') ||
+						!ValidFeatureCode(features[i].substr(1, 4))) {
+						Invalidate();
+						return mType;
+					}
+				}
+			}
+
+			return parsed;
 		}
 };
 
