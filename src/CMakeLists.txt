@@ -32,6 +32,7 @@ SET(VERLIHUB_HDRS
 	cadchash.h
 	cadcplugin.h
 	cadcpluginbridge.h
+	cadcpluginhost.h
 	cadcpolicy.h
 	cadcproto.h
 	cadcsession.h
@@ -181,6 +182,7 @@ SET(VERLIHUB_SRCS
 	creguserinfo.cpp
 	cserveradc.cpp
 	cserveradcinput.cpp
+	cserveradctimer.cpp
 	cserverdc.cpp
 	csetuplist.cpp
 	ctempfunctionbase.cpp
