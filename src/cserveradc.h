@@ -17,13 +17,7 @@
 namespace nVerliHub {
 	namespace nSocket {
 
-/**
- * ADC connection factory.
- *
- * Client connections are created directly and are attached to cADCProto from
- * the first byte received. cConnDC is currently retained only as the common
- * Verlihub connection/account container while that class is being generalized.
- */
+/** ADC connection factory. */
 class cADCConnFactory : public cConnFactory
 {
 	public:
@@ -47,7 +41,7 @@ class cADCConnFactory : public cConnFactory
  *
  * cServerDC is temporarily retained as the business layer for configuration,
  * users, bans, database and plugins. Client sockets themselves are ADC framed
- * from creation and no legacy greeting or legacy parser is used on the wire.
+ * from creation and no legacy greeting or parser is used on the wire.
  */
 class cServerADC : public cServerDC
 {
@@ -61,7 +55,19 @@ class cServerADC : public cServerDC
 		nProtocol::cADCProto &ADCProtocol() { return mADCProto; }
 
 	private:
+		bool SendFrame(cAsyncConn *conn, const string &frame, bool flush = true);
+		bool SendStatus(cAsyncConn *conn, const string &code,
+			const string &description, const vector<string> &flags,
+			bool close = false);
 		bool SendHubINF(cAsyncConn *conn);
+		bool TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn);
+		bool TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn);
+		bool EnterNormal(cConnDC *conn);
+		bool BroadcastINF(cConnDC *conn);
+		bool UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn);
+		bool PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
+			vector<string> &sanitized, string &nick, string &cid, string &pid);
+
 		nProtocol::cADCProto mADCProto;
 };
 
