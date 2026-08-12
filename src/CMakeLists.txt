@@ -29,7 +29,9 @@ endif()
 SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
+	cadcbanpolicy.h
 	cadchash.h
+	cadcidentityhost.h
 	cadcplugin.h
 	cadcpluginbridge.h
 	cadcpluginhost.h
@@ -123,6 +125,7 @@ SET(VERLIHUB_HDRS
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
+	cadcbanpolicy.cpp
 	cadchash.cpp
 	cadcpluginbridge.cpp
 	cadcpolicy.cpp
@@ -181,6 +184,7 @@ SET(VERLIHUB_SRCS
 	creglist.cpp
 	creguserinfo.cpp
 	cserveradc.cpp
+	cserveradcban.cpp
 	cserveradcinput.cpp
 	cserveradctimer.cpp
 	cserverdc.cpp
