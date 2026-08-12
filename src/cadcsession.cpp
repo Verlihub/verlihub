@@ -83,8 +83,12 @@ bool cADCSessionManager::AssignSID(nSocket::cAsyncConn *conn, std::string &sid)
 
 	sADCSession &session = Attach(conn);
 
+	if (session.mState != eADC_STATE_PROTOCOL)
+		return false;
+
 	if (!session.mSID.empty()) {
 		sid = session.mSID;
+		session.mState = eADC_STATE_IDENTIFY;
 		return true;
 	}
 
@@ -98,6 +102,7 @@ bool cADCSessionManager::AssignSID(nSocket::cAsyncConn *conn, std::string &sid)
 
 		session.mSID = encoded;
 		mSIDIndex[encoded] = conn;
+		session.mState = eADC_STATE_IDENTIFY;
 		sid = encoded;
 		return true;
 	}
