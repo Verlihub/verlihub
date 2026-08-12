@@ -56,10 +56,12 @@ class cServerADC : public cServerDC
 		virtual ~cServerADC();
 
 		virtual int OnNewConn(cAsyncConn *conn);
+		virtual void OnNewMessage(cAsyncConn *conn, string *msg);
 
 		nProtocol::cADCProto &ADCProtocol() { return mADCProto; }
 
 	private:
+		bool SendHubINF(cAsyncConn *conn);
 		nProtocol::cADCProto mADCProto;
 };
 
