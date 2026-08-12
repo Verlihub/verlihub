@@ -204,7 +204,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 		COMMENT "Copying libvhproxy.h header"
 	)
 
-	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/libvhproxy.h")
+	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/src/libvhproxy.h")
 	add_dependencies(libvhproxy_h libvhproxy_a)
 
 	add_custom_command(
