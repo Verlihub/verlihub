@@ -14,6 +14,7 @@ public:
 	static bool OnMessage(cPluginManager *manager, nSocket::cConnADC *conn,
 		const nProtocol::cMessageADC *msg);
 	static void OnDisconnect(cPluginManager *manager, nSocket::cConnADC *conn);
+	static bool OnTimer(cPluginManager *manager, long long msec);
 };
 
 } // namespace nPlugin
