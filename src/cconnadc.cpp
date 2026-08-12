@@ -9,6 +9,9 @@
 */
 
 #include "cconnadc.h"
+#include "cadcpluginbridge.h"
+#include "cadcpluginhost.h"
+#include "cpluginmanager.h"
 #include "creguserinfo.h"
 
 namespace nVerliHub {
@@ -16,14 +19,32 @@ namespace nVerliHub {
 
 cConnADC::cConnADC(int sd, cAsyncSocketServer *server):
 	cAsyncConn(sd, server),
-	mRegInfo(NULL)
+	mRegInfo(NULL),
+	mADCPluginConnected(false)
 {
 	SetClassName("ConnADC");
 	ClearLine(); // ADC client-hub framing is LF from the first byte.
+
+	nPlugin::cADCPluginHost *host =
+		dynamic_cast<nPlugin::cADCPluginHost*>(server);
+
+	if (host && host->ADCPluginManager()) {
+		mADCPluginConnected = nPlugin::cADCPluginBridge::OnConnect(
+			host->ADCPluginManager(), this);
+
+		if (!mADCPluginConnected)
+			ok = false;
+	}
 }
 
 cConnADC::~cConnADC()
 {
+	nPlugin::cADCPluginHost *host =
+		dynamic_cast<nPlugin::cADCPluginHost*>(mxServer);
+
+	if (mADCPluginConnected && host && host->ADCPluginManager())
+		nPlugin::cADCPluginBridge::OnDisconnect(host->ADCPluginManager(), this);
+
 	if (mRegInfo) {
 		delete mRegInfo;
 		mRegInfo = NULL;
