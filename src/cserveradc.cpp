@@ -65,6 +65,56 @@ static bool adc_is_ipv6_address(const string &address)
 	return address.find(':') != string::npos;
 }
 
+static bool adc_valid_tcp_port(const string &value)
+{
+	if (value.empty() || value.size() > 5)
+		return false;
+
+	unsigned int port = 0;
+
+	for (size_t i = 0; i < value.size(); ++i) {
+		if (value[i] < '0' || value[i] > '9')
+			return false;
+
+		port = (port * 10) + static_cast<unsigned int>(value[i] - '0');
+	}
+
+	return port > 0 && port <= 65535;
+}
+
+static bool adc_valid_normal_command(const nProtocol::cMessageADC &msg)
+{
+	const vector<string> &parameters = msg.Parameters();
+
+	switch (msg.mType) {
+		case eADC_MSG:
+			return !parameters.empty();
+
+		case eADC_CTM:
+			return (msg.HeaderType() == 'D' || msg.HeaderType() == 'E') &&
+				parameters.size() == 3 && !parameters[0].empty() &&
+				adc_valid_tcp_port(parameters[1]) && !parameters[2].empty();
+
+		case eADC_RCM:
+			return (msg.HeaderType() == 'D' || msg.HeaderType() == 'E') &&
+				parameters.size() == 2 && !parameters[0].empty() &&
+				!parameters[1].empty();
+
+		case eADC_STA:
+			return parameters.size() >= 2 && parameters[0].size() == 3 &&
+				parameters[0][0] >= '0' && parameters[0][0] <= '2' &&
+				parameters[0][1] >= '0' && parameters[0][1] <= '9' &&
+				parameters[0][2] >= '0' && parameters[0][2] <= '9';
+
+		case eADC_SCH:
+		case eADC_RES:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
 static int adc_account_type(const cRegUserInfo *reg)
 {
 	if (!reg || !reg->mEnabled)
@@ -585,6 +635,13 @@ bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
 		vector<string> flags;
 		flags.push_back("FC" + msg->Command());
 		SendStatus(conn, "244", "Command requires NORMAL state", flags, false);
+		return false;
+	}
+
+	if (!adc_valid_normal_command(*msg)) {
+		vector<string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendStatus(conn, "240", "Invalid ADC command syntax", flags, false);
 		return false;
 	}
 
