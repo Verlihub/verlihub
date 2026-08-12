@@ -23,30 +23,26 @@ cADCConnFactory::cADCConnFactory(cServerDC *server, nProtocol::cADCProto *protoc
 	cConnFactory(protocol),
 	mServer(server),
 	mADCProtocol(protocol),
-	mLegacyFactory(new cDCConnFactory(server))
+	mCleanupFactory(new cDCConnFactory(server))
 {}
 
 cADCConnFactory::~cADCConnFactory()
 {
-	if (mLegacyFactory) {
-		delete mLegacyFactory;
-		mLegacyFactory = NULL;
+	if (mCleanupFactory) {
+		delete mCleanupFactory;
+		mCleanupFactory = NULL;
 	}
 }
 
 cAsyncConn *cADCConnFactory::CreateConn(tSocket sd)
 {
-	if (!mServer || !mADCProtocol || !mLegacyFactory)
+	if (!mServer || !mADCProtocol)
 		return NULL;
 
-	cAsyncConn *conn = mLegacyFactory->CreateConn(sd);
-
-	if (!conn)
-		return NULL;
-
-	// cAsyncConn historically starts with the NMDC '|' separator. ClearLine()
-	// resets the framing delimiter to LF, which is the ADC message terminator.
-	conn->ClearLine();
+	// Create the common Verlihub connection container directly. Do not use the
+	// old protocol factory here: the connection belongs to ADC from byte zero.
+	cConnDC *conn = new cConnDC(sd, mServer);
+	conn->ClearLine(); // LF framing required by ADC.
 	conn->mxMyFactory = this;
 	conn->mxProtocol = mADCProtocol;
 	return conn;
@@ -57,8 +53,11 @@ void cADCConnFactory::DeleteConn(cAsyncConn *&connection)
 	if (mADCProtocol && connection)
 		mADCProtocol->OnDisconnect(connection);
 
-	if (mLegacyFactory)
-		mLegacyFactory->DeleteConn(connection);
+	// cDCConnFactory still owns account/plugin cleanup that has not yet been
+	// extracted from cServerDC. It is deliberately used only on disconnect;
+	// it never creates an ADC connection and never binds the wire protocol.
+	if (mCleanupFactory)
+		mCleanupFactory->DeleteConn(connection);
 	else
 		cConnFactory::DeleteConn(connection);
 }
@@ -67,8 +66,8 @@ cServerADC::cServerADC(string CfgBase, const string &ExecPath):
 	cServerDC(CfgBase, ExecPath),
 	mADCProto()
 {
-	// cServerDC creates an NMDC-bound factory in its constructor. Replace it
-	// before StartListening() so all accepted client sockets use ADC instead.
+	// The business-layer constructor installs its historical connection
+	// factory. Replace it before listening so every accepted socket is ADC.
 	if (mFactory) {
 		delete mFactory;
 		mFactory = NULL;
@@ -87,8 +86,9 @@ int cServerADC::OnNewConn(cAsyncConn *nc)
 	if (!conn)
 		return -1;
 
-	// ADC is client-initiated: the client sends HSUP first. In particular, do
-	// not call cServerDC::OnNewConn(), because it sends the NMDC $Lock greeting.
+	// ADC is client-initiated: the client sends HSUP first. Do not call the
+	// business-layer OnNewConn(), because its historical wire handshake is not
+	// part of ADC.
 	conn->SetGeoZone();
 	mADCProto.Sessions().Attach(conn);
 
