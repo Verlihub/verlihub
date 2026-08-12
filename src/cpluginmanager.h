@@ -43,6 +43,8 @@ the plugin manager, let's you to load, and unload plugins
 class cPluginManager : public cObj
 {
 public:
+	typedef bool (*tPluginVisitor)(cPluginBase *plugin, void *data);
+
 	cPluginManager(const string &dir);
 	~cPluginManager();
 	bool LoadAll();
@@ -53,6 +55,13 @@ public:
 	bool SetCallBack(string id, cCallBackList*);
 	bool RegisterCallBack(string id, cPluginBase *pi);
 	bool UnregisterCallBack(string id, cPluginBase *pi);
+
+	/**
+	 * Visit every currently loaded plugin without coupling the caller to the
+	 * internal loader container. Iteration stops when visitor returns false.
+	 */
+	bool ForEachPlugin(tPluginVisitor visitor, void *data = NULL);
+
 	void List(ostream &os);
 	void ListAll(ostream &os);
 	virtual void OnPluginLoad(cPluginBase *) = 0;
