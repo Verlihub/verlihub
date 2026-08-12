@@ -18,8 +18,11 @@ namespace nVerliHub {
 	namespace nSocket {
 
 /**
- * Connection factory that reuses cConnDC as Verlihub's connection/account
- * container while replacing the attached wire protocol with ADC.
+ * ADC connection factory.
+ *
+ * Client connections are created directly and are attached to cADCProto from
+ * the first byte received. cConnDC is currently retained only as the common
+ * Verlihub connection/account container while that class is being generalized.
  */
 class cADCConnFactory : public cConnFactory
 {
@@ -33,15 +36,18 @@ class cADCConnFactory : public cConnFactory
 	private:
 		cServerDC *mServer;
 		nProtocol::cADCProto *mADCProtocol;
-		cDCConnFactory *mLegacyFactory;
+
+		// Temporary cleanup bridge only. It is never used to create or bind
+		// client connections; ADC owns the complete live wire path.
+		cDCConnFactory *mCleanupFactory;
 };
 
 /**
  * ADC-facing Verlihub server.
  *
- * cServerDC is retained as the business layer (configuration, users, bans,
- * database and plugins). New client sockets are ADC framed and are not sent
- * the NMDC $Lock greeting.
+ * cServerDC is temporarily retained as the business layer for configuration,
+ * users, bans, database and plugins. Client sockets themselves are ADC framed
+ * from creation and no legacy greeting or legacy parser is used on the wire.
  */
 class cServerADC : public cServerDC
 {
