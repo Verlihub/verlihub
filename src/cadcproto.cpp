@@ -334,22 +334,17 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 		case eADC_SUP:
 			return TreatSUP(msg, conn);
 
+		case eADC_INF:
+		case eADC_PAS:
 		case eADC_MSG:
 		case eADC_SCH:
 		case eADC_RES:
 		case eADC_CTM:
-		case eADC_RCM: {
-			const int routed = RouteNormal(msg, conn);
-			return (routed == 1) ? 1 : routed;
-		}
-
-		case eADC_STA: {
-			const int routed = RouteNormal(msg, conn);
-			return (routed == 1) ? 0 : routed;
-		}
-
-		case eADC_INF:
-		case eADC_PAS:
+		case eADC_RCM:
+		case eADC_STA:
+			// Application policy and routing are handled by cServerADC. Keeping
+			// that decision outside cADCProto prevents protocol framing from
+			// bypassing account/plugin/permission checks.
 			return 1;
 
 		default:
