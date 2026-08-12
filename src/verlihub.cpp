@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -9,9 +9,9 @@
 	your option any later version.
 
 	Verlihub is distributed in the hope that it will be
-	useful, but without any warranty, without even the
-	implied warranty of merchantability or fitness for
-	a particular purpose. See the GNU General Public
+	useful, but WITHOUT ANY WARRANTY; without even the
+	implied warranty of MERCHANTABILITY or FITNESS FOR
+	a PARTICULAR PURPOSE. See the GNU General Public
 	License for more details.
 
 	Please see http://www.gnu.org/licenses/ for a copy
@@ -68,7 +68,7 @@ void mySigIOHandler(int i)
 void mySigQuitHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv)
 		serv->SyncStop();
@@ -79,7 +79,7 @@ void mySigQuitHandler(int i)
 void mySigServHandler(int i)
 {
 	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv) { // note: this is a crash, i dont think we can actually perform a proper stop()
 		serv->DoStackTrace();
@@ -92,7 +92,7 @@ void mySigServHandler(int i)
 void mySigHupHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, reloading" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv)
 		serv->SyncReload();
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
 	//try { // todo: whole process is running inside try?
-		cServerADC server(ConfigBase, argv[0]); // create ADC server
+		cServerADC server(ConfigBase, argv[0]);
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
