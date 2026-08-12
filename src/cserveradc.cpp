@@ -53,7 +53,7 @@ void cADCConnFactory::DeleteConn(cAsyncConn *&connection)
 	if (mADCProtocol && connection)
 		mADCProtocol->OnDisconnect(connection);
 
-	// cDCConnFactory still owns account/plugin cleanup that has not yet been
+	// The old factory still owns account/plugin cleanup that has not yet been
 	// extracted from cServerDC. It is deliberately used only on disconnect;
 	// it never creates an ADC connection and never binds the wire protocol.
 	if (mCleanupFactory)
@@ -78,6 +78,32 @@ cServerADC::cServerADC(string CfgBase, const string &ExecPath):
 
 cServerADC::~cServerADC()
 {}
+
+bool cServerADC::SendHubINF(cAsyncConn *conn)
+{
+	if (!conn)
+		return false;
+
+	std::vector<std::string> parameters;
+	parameters.push_back("CT32"); // ADC hub type.
+
+	if (!mC.hub_name.empty())
+		parameters.push_back("NI" + mC.hub_name);
+
+	if (!mC.hub_desc.empty())
+		parameters.push_back("DE" + mC.hub_desc);
+
+	if (!mC.hub_version.empty())
+		parameters.push_back("VE" + mC.hub_version);
+
+	std::string frame;
+
+	if (!nProtocol::cADCProto::CreateInfo(frame, "INF", parameters))
+		return false;
+
+	frame.push_back('\n');
+	return conn->Write(frame, true) >= 0;
+}
 
 int cServerADC::OnNewConn(cAsyncConn *nc)
 {
@@ -130,6 +156,39 @@ int cServerADC::OnNewConn(cAsyncConn *nc)
 	}
 
 	return 0;
+}
+
+void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
+{
+	if (!conn || !str || !conn->mpMsgParser || !conn->mxProtocol)
+		return;
+
+	const size_t len = str->size() + 1; // include ADC LF terminator.
+	mDownloadZone.Insert(mTime, len);
+	mProtoTotal[0] += len;
+
+	if (conn->Log(4))
+		conn->LogStream() << "ADC IN [" << len << "]: " << (*str) << endl;
+
+	conn->mpMsgParser->Parse();
+	const int result = conn->mxProtocol->TreatMsg(conn->mpMsgParser, conn);
+	nProtocol::cMessageADC *msg =
+		dynamic_cast<nProtocol::cMessageADC*>(conn->mpMsgParser);
+
+	if (!msg)
+		return;
+
+	if ((msg->mType == eADC_SUP) && (result == 0)) {
+		const nProtocol::sADCSession *session = mADCProto.Sessions().Find(conn);
+
+		// Hub INF may be sent in IDENTIFY. Sending it here gives clients hub
+		// identity immediately after ISUP/ISID without involving old helpers.
+		if (session && session->mState == nProtocol::eADC_STATE_IDENTIFY)
+			SendHubINF(conn);
+	}
+
+	if (msg->mType == eADC_QUI)
+		conn->CloseNice(0, eCR_QUIT);
 }
 
 	}; // namespace nSocket
