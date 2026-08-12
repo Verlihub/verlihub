@@ -14,6 +14,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace nVerliHub {
 	namespace nSocket {
@@ -46,10 +47,8 @@ struct sADCSession
 };
 
 /**
- * Keeps ADC state separate from the legacy cConnDC login flags.
- *
- * This lets the existing Verlihub connection/server layer be reused while the
- * NMDC wire protocol is removed. The manager owns no socket objects.
+ * Owns ADC session state independently from the historical connection login
+ * flags. The manager owns no socket objects.
  */
 class cADCSessionManager
 {
@@ -62,6 +61,7 @@ class cADCSessionManager
 		sADCSession *Find(nSocket::cAsyncConn *conn);
 		const sADCSession *Find(nSocket::cAsyncConn *conn) const;
 		nSocket::cAsyncConn *FindBySID(const std::string &sid) const;
+		void NormalConnections(std::vector<nSocket::cAsyncConn*> &dest) const;
 
 		bool AssignSID(nSocket::cAsyncConn *conn, std::string &sid);
 		bool ApplySUP(nSocket::cAsyncConn *conn, const std::set<std::string> &add,
