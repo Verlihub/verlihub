@@ -14,6 +14,7 @@
 #include "cadcidentityhost.h"
 #include "cadcpluginhost.h"
 #include "cadcproto.h"
+#include "cadcsessionhost.h"
 #include "cconnadc.h"
 #include "cserverdc.h"
 
@@ -44,6 +45,7 @@ class cADCConnFactory : public cConnFactory
  */
 class cServerADC : public cServerDC,
 	public cADCIdentityHost,
+	public cADCSessionHost,
 	public nPlugin::cADCPluginHost
 {
 	public:
@@ -55,6 +57,10 @@ class cServerADC : public cServerDC,
 		virtual int OnTimer(const cTime &now);
 		virtual bool ValidateADCIdentity(cAsyncConn *conn,
 			const string &nick, bool registered);
+		virtual void OnADCSessionNormal(cAsyncConn *conn,
+			const nProtocol::sADCSession &session);
+		virtual void OnADCSessionDetach(cAsyncConn *conn,
+			const nProtocol::sADCSession &session);
 
 		virtual nPlugin::cPluginManager *ADCPluginManager()
 		{
