@@ -11,6 +11,8 @@
 #ifndef CADCSESSIONHOST_H
 #define CADCSESSIONHOST_H
 
+#include "casyncsocketserver.h"
+
 namespace nVerliHub {
 	namespace nProtocol {
 		struct sADCSession;
