@@ -74,6 +74,7 @@ SET(VERLIHUB_HDRS
 	cquery.h
 	creglist.h
 	creguserinfo.h
+	cserveradc.h
 	cserverdc.h
 	csetuplist.h
 	ctempfunctionbase.h
@@ -160,6 +161,7 @@ SET(VERLIHUB_SRCS
 	cquery.cpp
 	creglist.cpp
 	creguserinfo.cpp
+	cserveradc.cpp
 	cserverdc.cpp
 	csetuplist.cpp
 	ctempfunctionbase.cpp
