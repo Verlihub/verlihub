@@ -303,12 +303,13 @@ bool cADCSessionManager::ClientCommandAllowed(nSocket::cAsyncConn *conn,
 			return command == "PAS" || command == "QUI";
 
 		case eADC_STATE_NORMAL:
+			// This manager represents the client-hub TCP session. GET/GFI/SND
+			// are BASE client-client (C-context) commands and must be handled on
+			// the separate transfer connection, never by the hub adapter.
 			return command == "SUP" || command == "INF" ||
 				command == "MSG" || command == "SCH" ||
 				command == "RES" || command == "CTM" ||
-				command == "RCM" || command == "QUI" ||
-				command == "GET" || command == "GFI" ||
-				command == "SND";
+				command == "RCM" || command == "QUI";
 	}
 
 	return false;
