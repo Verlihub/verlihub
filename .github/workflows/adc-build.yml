@@ -1,0 +1,43 @@
+name: ADC migration build
+
+on:
+  push:
+    branches:
+      - agent/replace-nmdc-with-adc
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            g++ \
+            make \
+            gettext \
+            libasprintf-dev \
+            libcrypt-dev \
+            libicu-dev \
+            libmaxminddb-dev \
+            default-libmysqlclient-dev \
+            libpcre3-dev \
+            librhash-dev \
+            libssl-dev \
+            zlib1g-dev
+
+      - name: Configure
+        run: cmake -S . -B build -DUSE_TLS_PROXY=OFF -DUSE_FEARTLS_PROXY=OFF
+
+      - name: Build
+        run: cmake --build build --parallel 2
