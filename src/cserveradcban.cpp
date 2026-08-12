@@ -12,6 +12,7 @@
 #include "cadcbanpolicy.h"
 #include "cban.h"
 #include "cbanlist.h"
+#include "cmaxminddb.h"
 #include "creguserinfo.h"
 #include "stringutils.h"
 
@@ -72,6 +73,26 @@ bool cServerADC::ValidateADCIdentity(cAsyncConn *raw, const string &nick,
 				conn->LogStream() << "ADC identity rejected by configured nick prefix" << endl;
 
 			return false;
+		}
+	}
+
+	// Country-prefix policy is also independent from the old NMDC framing.
+	// Resolve the country directly from the shared MaxMind service instead of
+	// relying on cConnDC's geo cache/SetGeoZone lifecycle.
+	if (!registered && mC.nick_prefix_cc && mMaxMindDB) {
+		string cc;
+
+		if (mMaxMindDB->GetCC(conn->AddrIP(), cc) && cc.size() == 2 && cc != "--") {
+			const string required = "[" + cc + "]";
+
+			if (nick.size() < required.size() ||
+				nick.compare(0, required.size(), required) != 0) {
+				if (conn->Log(1))
+					conn->LogStream() << "ADC identity rejected by country nick prefix: "
+						<< required << endl;
+
+				return false;
+			}
 		}
 	}
 
