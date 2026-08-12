@@ -30,6 +30,8 @@ SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
 	cadchash.h
+	cadcplugin.h
+	cadcpluginbridge.h
 	cadcpolicy.h
 	cadcproto.h
 	cadcsession.h
@@ -121,6 +123,7 @@ SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
 	cadchash.cpp
+	cadcpluginbridge.cpp
 	cadcpolicy.cpp
 	cadcproto.cpp
 	cadcsession.cpp
@@ -170,6 +173,7 @@ SET(VERLIHUB_SRCS
 	cpluginbase.cpp
 	cpluginloader.cpp
 	cpluginmanager.cpp
+	cpluginmanagervisit.cpp
 	cprotocol.cpp
 	cprotocommand.cpp
 	cquery.cpp
@@ -268,7 +272,7 @@ target_link_libraries(verlihub libverlihub_so)
 # generate verlihub_config
 
 MESSAGE(STATUS "[ .. ] Generating configuration executable: ${CMAKE_BINARY_DIR}/verlihub_config")
-STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_LIBS}")
+STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS}")
 string(STRIP "${VERLIHUB_USE_LIBS}" VERLIHUB_USE_LIBS)
 CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DIR}/verlihub_config")
 
