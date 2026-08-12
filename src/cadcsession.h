@@ -58,6 +58,8 @@ class cADCSessionManager
 		const sADCSession *Find(nSocket::cAsyncConn *conn) const;
 		nSocket::cAsyncConn *FindBySID(const std::string &sid) const;
 		void NormalConnections(std::vector<nSocket::cAsyncConn*> &dest) const;
+		/** Sessions that have reserved an identity slot, including VERIFY. */
+		void IdentifiedConnections(std::vector<nSocket::cAsyncConn*> &dest) const;
 		void FeatureConnections(const std::vector<std::string> &selectors,
 			std::vector<nSocket::cAsyncConn*> &dest) const;
 		bool IdentityInUse(const std::string &nick, const std::string &cid,
