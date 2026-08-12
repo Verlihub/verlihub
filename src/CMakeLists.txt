@@ -176,6 +176,7 @@ SET(VERLIHUB_SRCS
 	creglist.cpp
 	creguserinfo.cpp
 	cserveradc.cpp
+	cserveradcinput.cpp
 	cserverdc.cpp
 	csetuplist.cpp
 	ctempfunctionbase.cpp
