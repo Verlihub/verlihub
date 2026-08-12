@@ -11,6 +11,7 @@
 #ifndef CSERVERADC_H
 #define CSERVERADC_H
 
+#include "cadcidentityhost.h"
 #include "cadcpluginhost.h"
 #include "cadcproto.h"
 #include "cconnadc.h"
@@ -41,7 +42,9 @@ class cADCConnFactory : public cConnFactory
  * Live client sockets are cConnADC objects and therefore carry no NMDC login,
  * framing, supports, timeout or redirect state.
  */
-class cServerADC : public cServerDC, public nPlugin::cADCPluginHost
+class cServerADC : public cServerDC,
+	public cADCIdentityHost,
+	public nPlugin::cADCPluginHost
 {
 	public:
 		cServerADC(string CfgBase = "./.verlihub", const string &ExecPath = "");
@@ -50,6 +53,8 @@ class cServerADC : public cServerDC, public nPlugin::cADCPluginHost
 		virtual int OnNewConn(cAsyncConn *conn);
 		virtual void OnNewMessage(cAsyncConn *conn, string *msg);
 		virtual int OnTimer(const cTime &now);
+		virtual bool ValidateADCIdentity(cAsyncConn *conn,
+			const string &nick, bool registered);
 
 		virtual nPlugin::cPluginManager *ADCPluginManager()
 		{
