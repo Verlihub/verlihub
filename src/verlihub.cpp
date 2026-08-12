@@ -33,7 +33,7 @@
 	#include <config.h>
 #endif
 
-#include "cserverdc.h"
+#include "cserveradc.h"
 #include <iostream>
 #include <stdlib.h>
 #include <sstream>
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
 	//try { // todo: whole process is running inside try?
-		cServerDC server(ConfigBase, argv[0]); // create server
+		cServerADC server(ConfigBase, argv[0]); // create ADC server
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32
