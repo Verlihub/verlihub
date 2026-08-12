@@ -133,6 +133,69 @@ bool cADCProto::ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn)
 	return true;
 }
 
+int cADCProto::RouteNormal(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn)
+		return -1;
+
+	const sADCSession *source = mSessions.Find(conn);
+
+	if (!source || source->mState != eADC_STATE_NORMAL)
+		return 1;
+
+	// INF must be sanitized by the hub before distribution because PD is
+	// private. Feature broadcasts also need the user's INF/SU feature set, so
+	// both remain in the server adapter until those handlers are complete.
+	if ((msg->mType != eADC_MSG) && (msg->mType != eADC_SCH) &&
+		(msg->mType != eADC_RES) && (msg->mType != eADC_CTM) &&
+		(msg->mType != eADC_RCM) && (msg->mType != eADC_STA))
+		return 1;
+
+	const char type = msg->HeaderType();
+
+	if ((type != 'B') && (type != 'D') && (type != 'E'))
+		return 1;
+
+	std::string wire(msg->mStr);
+	wire.push_back('\n');
+
+	if (type == 'B') {
+		std::vector<nSocket::cAsyncConn*> recipients;
+		mSessions.NormalConnections(recipients);
+
+		// ADC B messages are broadcast to every connected client, including the
+		// sender. This also makes the hub authoritative for the displayed echo.
+		for (size_t i = 0; i < recipients.size(); ++i) {
+			if (!recipients[i] || !recipients[i]->ok)
+				continue;
+
+			if (recipients[i]->Write(wire, true) < 0)
+				return -1;
+		}
+
+		return 0;
+	}
+
+	nSocket::cAsyncConn *target = mSessions.FindBySID(msg->TargetSID());
+	const sADCSession *targetSession = target ? mSessions.Find(target) : NULL;
+
+	if (!target || !target->ok || !targetSession ||
+		targetSession->mState != eADC_STATE_NORMAL) {
+		std::vector<std::string> flags;
+		flags.push_back("ID" + msg->TargetSID());
+		SendSTA(conn, "110", "Target SID is not connected", flags);
+		return -1;
+	}
+
+	if (target->Write(wire, true) < 0)
+		return -1;
+
+	if ((type == 'E') && (target != conn) && (conn->Write(wire, true) < 0))
+		return -1;
+
+	return 0;
+}
+
 int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 {
 	if (!msg || !conn || msg->HeaderType() != 'H')
@@ -234,22 +297,28 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 			mSessions.Detach(conn);
 			return 0;
 
-		case eADC_INF:
-		case eADC_PAS:
 		case eADC_MSG:
 		case eADC_SCH:
 		case eADC_RES:
 		case eADC_CTM:
-		case eADC_RCM:
+		case eADC_RCM: {
+			const int routed = RouteNormal(msg, conn);
+			return (routed == 1) ? 1 : routed;
+		}
+
+		case eADC_STA: {
+			const int routed = RouteNormal(msg, conn);
+			return (routed == 1) ? 0 : routed;
+		}
+
+		case eADC_INF:
+		case eADC_PAS:
 		case eADC_GET:
 		case eADC_GFI:
 		case eADC_SND:
 			// Valid ADC message. The Verlihub adapter performs account/login,
-			// permissions, routing and plugin callbacks for these commands.
+			// permissions and application-specific handling for these commands.
 			return 1;
-
-		case eADC_STA:
-			return 0;
 
 		default:
 			return 1;
