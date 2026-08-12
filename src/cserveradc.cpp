@@ -203,53 +203,63 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 
 	if (!msg->GetNamed("NI", nick)) {
 		flags.push_back("FMNI");
-		return SendStatus(conn, "243", "Required INF field NI missing", flags, true) && false;
+		SendStatus(conn, "243", "Required INF field NI missing", flags, true);
+		return false;
 	}
 
 	if (!msg->GetNamed("ID", cid)) {
 		flags.push_back("FMID");
-		return SendStatus(conn, "243", "Required INF field ID missing", flags, true) && false;
+		SendStatus(conn, "243", "Required INF field ID missing", flags, true);
+		return false;
 	}
 
 	if (!msg->GetNamed("PD", pid)) {
 		flags.push_back("FMPD");
-		return SendStatus(conn, "243", "Required INF field PD missing", flags, true) && false;
+		SendStatus(conn, "243", "Required INF field PD missing", flags, true);
+		return false;
 	}
 
 	if (!msg->GetNamed("SU", features)) {
 		flags.push_back("FMSU");
-		return SendStatus(conn, "243", "Required INF field SU missing", flags, true) && false;
+		SendStatus(conn, "243", "Required INF field SU missing", flags, true);
+		return false;
 	}
 
 	if (!adc_valid_nick(nick, mC.min_nick, mC.max_nick)) {
 		flags.push_back("FBNI");
-		return SendStatus(conn, "221", "Invalid ADC nickname", flags, true) && false;
+		SendStatus(conn, "221", "Invalid ADC nickname", flags, true);
+		return false;
 	}
 
 	if (!adc_has_feature(features, "BASE")) {
 		flags.push_back("FCBASE");
-		return SendStatus(conn, "245", "BASE missing from INF SU", flags, true) && false;
+		SendStatus(conn, "245", "BASE missing from INF SU", flags, true);
+		return false;
 	}
 
 	if (!nProtocol::cADCHash::IsTigerID(cid)) {
 		flags.push_back("FBID");
-		return SendStatus(conn, "243", "Invalid TIGR CID", flags, true) && false;
+		SendStatus(conn, "243", "Invalid TIGR CID", flags, true);
+		return false;
 	}
 
 	if (!nProtocol::cADCHash::IsTigerID(pid) ||
 		!nProtocol::cADCHash::VerifyTigerCID(pid, cid)) {
 		flags.push_back("FBPD");
-		return SendStatus(conn, "227", "Invalid PID supplied", flags, true) && false;
+		SendStatus(conn, "227", "Invalid PID supplied", flags, true);
+		return false;
 	}
 
 	if (mADCProto.Sessions().IdentityInUse(nick, "", conn)) {
 		flags.push_back("FBNI");
-		return SendStatus(conn, "222", "Nickname is already in use", flags, true) && false;
+		SendStatus(conn, "222", "Nickname is already in use", flags, true);
+		return false;
 	}
 
 	if (mADCProto.Sessions().IdentityInUse("", cid, conn)) {
 		flags.push_back("FBID");
-		return SendStatus(conn, "224", "CID is already in use", flags, true) && false;
+		SendStatus(conn, "224", "CID is already in use", flags, true);
+		return false;
 	}
 
 	string suppliedIP;
@@ -258,7 +268,8 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 	if (hasI4 && !suppliedIP.empty() && suppliedIP != "0.0.0.0" &&
 		suppliedIP != conn->AddrIP()) {
 		flags.push_back("I4" + conn->AddrIP());
-		return SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, true) && false;
+		SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, true);
+		return false;
 	}
 
 	bool emittedI4 = false;
@@ -270,7 +281,8 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 		if (parameter.size() < 2) {
 			flags.clear();
 			flags.push_back("FBINF");
-			return SendStatus(conn, "243", "Invalid INF parameter", flags, true) && false;
+			SendStatus(conn, "243", "Invalid INF parameter", flags, true);
+			return false;
 		}
 
 		const string key = parameter.substr(0, 2);
@@ -353,9 +365,13 @@ bool cServerADC::BroadcastINF(cConnDC *conn)
 
 bool cServerADC::EnterNormal(cConnDC *conn)
 {
-	if (!mADCProto.Sessions().EnterNormal(conn))
+	if (!conn || !mADCProto.Sessions().EnterNormal(conn))
 		return false;
 
+	// cConnDC is still the shared socket container and starts the historical
+	// login timer in its constructor. ADC has completed login now, so disable
+	// that timer; otherwise a valid NORMAL session would later be disconnected.
+	conn->ClearTimeOut(eTO_LOGIN);
 	return BroadcastINF(conn);
 }
 
@@ -378,7 +394,8 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	if ((msg->HeaderType() != 'B') && (msg->HeaderType() != 'H')) {
 		vector<string> flags;
 		flags.push_back("FCINF");
-		return SendStatus(conn, "244", "INF has invalid routing type", flags, true) && false;
+		SendStatus(conn, "244", "INF has invalid routing type", flags, true);
+		return false;
 	}
 
 	vector<string> sanitized;
@@ -389,14 +406,16 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 
 	if (!SetUserRegInfo(conn, nick)) {
 		vector<string> flags;
-		return SendStatus(conn, "220", "Unable to load account information", flags, true) && false;
+		SendStatus(conn, "220", "Unable to load account information", flags, true);
+		return false;
 	}
 
 	const bool registered = conn->mRegInfo && conn->mRegInfo->mEnabled;
 
 	if (!mADCProto.Sessions().SetIdentity(conn, nick, cid, pid, registered)) {
 		vector<string> flags;
-		return SendStatus(conn, "220", "Unable to establish ADC identity", flags, true) && false;
+		SendStatus(conn, "220", "Unable to establish ADC identity", flags, true);
+		return false;
 	}
 
 	session = mADCProto.Sessions().Find(conn);
@@ -418,16 +437,18 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	if (!conn->mRegInfo || conn->mRegInfo->mPWCrypt != cRegUserInfo::eCRYPT_NONE ||
 		conn->mRegInfo->mPasswd.empty() || conn->mRegInfo->mPwdChange) {
 		vector<string> flags;
-		return SendStatus(conn, "220",
+		SendStatus(conn, "220",
 			"Registered account requires ADC-compatible password storage",
-			flags, true) && false;
+			flags, true);
+		return false;
 	}
 
 	if (!nProtocol::cADCHash::CreateTigerSalt(session->mGPA) ||
 		!mADCProto.Sessions().EnterVerify(conn)) {
 		vector<string> flags;
-		return SendStatus(conn, "220", "Unable to start password verification",
-			flags, true) && false;
+		SendStatus(conn, "220", "Unable to start password verification",
+			flags, true);
+		return false;
 	}
 
 	string frame;
@@ -452,14 +473,16 @@ bool cServerADC::TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn)
 		!conn->mRegInfo || conn->mRegInfo->mPWCrypt != cRegUserInfo::eCRYPT_NONE) {
 		vector<string> flags;
 		flags.push_back("FCPAS");
-		return SendStatus(conn, "223", "Invalid password response", flags, true) && false;
+		SendStatus(conn, "223", "Invalid password response", flags, true);
+		return false;
 	}
 
 	if (!nProtocol::cADCHash::VerifyTigerPassword(conn->mRegInfo->mPasswd,
 		session->mGPA, msg->Parameters()[0])) {
 		vector<string> flags;
 		flags.push_back("FCPAS");
-		return SendStatus(conn, "223", "Invalid password", flags, true) && false;
+		SendStatus(conn, "223", "Invalid password", flags, true);
+		return false;
 	}
 
 	return EnterNormal(conn);
@@ -484,7 +507,8 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 
 		if (parameter.size() < 2) {
 			flags.push_back("FBINF");
-			return SendStatus(conn, "243", "Invalid INF update", flags, false) && false;
+			SendStatus(conn, "243", "Invalid INF update", flags, false);
+			return false;
 		}
 
 		const string key = parameter.substr(0, 2);
@@ -496,7 +520,8 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		if (key == "ID") {
 			if (value != session->mCID) {
 				flags.push_back("FBID");
-				return SendStatus(conn, "243", "CID cannot change during session", flags, false) && false;
+				SendStatus(conn, "243", "CID cannot change during session", flags, false);
+				return false;
 			}
 
 			continue;
@@ -505,32 +530,37 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		if (key == "NI") {
 			if (value.empty() || !adc_valid_nick(value, mC.min_nick, mC.max_nick)) {
 				flags.push_back("FBNI");
-				return SendStatus(conn, "221", "Invalid ADC nickname", flags, false) && false;
+				SendStatus(conn, "221", "Invalid ADC nickname", flags, false);
+				return false;
 			}
 
 			if (session->mRegistered && value != session->mNick) {
 				flags.push_back("FCINF");
-				return SendStatus(conn, "225", "Registered nickname cannot change", flags, false) && false;
+				SendStatus(conn, "225", "Registered nickname cannot change", flags, false);
+				return false;
 			}
 
 			if (value != session->mNick &&
 				mADCProto.Sessions().IdentityInUse(value, "", conn)) {
 				flags.push_back("FBNI");
-				return SendStatus(conn, "222", "Nickname is already in use", flags, false) && false;
+				SendStatus(conn, "222", "Nickname is already in use", flags, false);
+				return false;
 			}
 
 			session->mNick = value;
 		}
 
-		if (key == "SU" && (!value.empty() && !adc_has_feature(value, "BASE"))) {
+		if (key == "SU" && (value.empty() || !adc_has_feature(value, "BASE"))) {
 			flags.push_back("FCBASE");
-			return SendStatus(conn, "245", "BASE missing from INF SU", flags, false) && false;
+			SendStatus(conn, "245", "BASE missing from INF SU", flags, false);
+			return false;
 		}
 
 		if (key == "I4") {
 			if (!value.empty() && value != "0.0.0.0" && value != conn->AddrIP()) {
 				flags.push_back("I4" + conn->AddrIP());
-				return SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, false) && false;
+				SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, false);
+				return false;
 			}
 
 			parameter = "I4" + conn->AddrIP();
