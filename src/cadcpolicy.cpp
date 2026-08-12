@@ -9,6 +9,7 @@
 */
 
 #include "cadcpolicy.h"
+#include "cadcpluginbridge.h"
 #include "cadcsession.h"
 #include "cmessageadc.h"
 #include "cconnadc.h"
@@ -102,6 +103,12 @@ bool cADCPolicy::AllowNormal(nSocket::cServerDC *server,
 
 	if (!server || !conn) {
 		reason = "Invalid ADC policy context";
+		return false;
+	}
+
+	if (!nPlugin::cADCPluginBridge::OnMessage(&server->mPluginManager,
+		conn, &msg)) {
+		reason = "Command rejected by ADC plugin";
 		return false;
 	}
 
