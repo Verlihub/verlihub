@@ -25,9 +25,9 @@ namespace nVerliHub {
 /**
  * Core ADC protocol framing, state and routing support.
  *
- * The class deliberately owns ADC wire/state concerns. Verlihub-specific
- * account, ban, plugin and permission checks can be attached at the INF/PAS
- * transition without reintroducing legacy wire framing.
+ * The class deliberately owns ADC wire/state mechanics. Verlihub-specific
+ * account, ban, plugin and permission policy lives in cServerADC and invokes
+ * RouteNormal only after the application layer has accepted a command.
  */
 class cADCProto : public cProtocol
 {
@@ -42,6 +42,13 @@ class cADCProto : public cProtocol
 		void OnDisconnect(nSocket::cAsyncConn *conn);
 		cADCSessionManager &Sessions() { return mSessions; }
 		const cADCSessionManager &Sessions() const { return mSessions; }
+
+		/**
+		 * Route an already validated NORMAL-state ADC message.
+		 * Returns 0 when routed/handled, 1 when the command is not a routable
+		 * hub message, and -1 on a routing or transport error.
+		 */
+		int RouteNormal(cMessageADC *msg, nSocket::cAsyncConn *conn);
 
 		static bool CreateHub(std::string &dest, const std::string &command,
 			const std::vector<std::string> &parameters);
@@ -78,7 +85,6 @@ class cADCProto : public cProtocol
 		static bool SendSTA(nSocket::cAsyncConn *conn, const std::string &code,
 			const std::string &description, const std::vector<std::string> &flags);
 		bool ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn);
-		int RouteNormal(cMessageADC *msg, nSocket::cAsyncConn *conn);
 		int TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn);
 
 		cADCSessionManager mSessions;
