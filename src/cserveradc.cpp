@@ -12,7 +12,7 @@
 #include "cadchash.h"
 #include "cadcpolicy.h"
 #include "cbanlist.h"
-#include "cconndc.h"
+#include "creglist.h"
 #include "creguserinfo.h"
 #include "i18n.h"
 
@@ -52,8 +52,6 @@ static bool adc_valid_nick(const string &nick, unsigned int minLen,
 	for (size_t i = 0; i < nick.size(); ++i) {
 		const unsigned char c = static_cast<unsigned char>(nick[i]);
 
-		// UTF-8 continuation/lead bytes are > 127. ADC nick characters must be
-		// above Unicode code point 32; reject ASCII controls/space and DEL here.
 		if (c <= 32 || c == 127)
 			return false;
 	}
@@ -121,7 +119,7 @@ static int adc_account_type(const cRegUserInfo *reg)
 	if (!reg || !reg->mEnabled)
 		return 0;
 
-	int type = 2; // registered user
+	int type = 2;
 
 	if (reg->mClass >= eUC_OPERATOR)
 		type |= 4;
@@ -171,10 +169,7 @@ cAsyncConn *cADCConnFactory::CreateConn(tSocket sd)
 	if (!mServer || !mADCProtocol)
 		return NULL;
 
-	// Create the common Verlihub connection container directly. The old
-	// protocol factory is not involved in connection creation or binding.
-	cConnDC *conn = new cConnDC(sd, mServer);
-	conn->ClearLine(); // LF framing required by ADC.
+	cConnADC *conn = new cConnADC(sd, mServer);
 	conn->mxMyFactory = this;
 	conn->mxProtocol = mADCProtocol;
 	return conn;
@@ -185,9 +180,6 @@ void cADCConnFactory::DeleteConn(cAsyncConn *&connection)
 	if (mADCProtocol && connection)
 		mADCProtocol->OnDisconnect(connection);
 
-	// ADC sessions do not create the historical cUser object, so the generic
-	// socket cleanup is sufficient here. This removes cDCConnFactory from the
-	// active ADC lifecycle completely.
 	cConnFactory::DeleteConn(connection);
 }
 
@@ -202,9 +194,8 @@ cServerADC::cServerADC(string CfgBase, const string &ExecPath):
 
 	mFactory = new cADCConnFactory(this, &mADCProto);
 
-	// The base business layer still constructs its historical robots before the
-	// ADC adapter is installed. Do not retain their serialized NMDC $MyINFO
-	// payloads: ADC publishes identity with IINF/BINF instead.
+	// The inherited business layer still creates historical robot identities.
+	// Never keep their serialized NMDC $MyINFO representation in the ADC server.
 	if (mHubSec) {
 		mHubSec->mMyINFO.clear();
 		mHubSec->mFakeMyINFO.clear();
@@ -240,7 +231,7 @@ bool cServerADC::SendStatus(cAsyncConn *conn, const string &code,
 	const bool sent = SendFrame(conn, frame, true);
 
 	if (close && conn)
-		conn->CloseNice(1000, eCR_LOGIN_ERR);
+		conn->CloseNice(1000);
 
 	return sent;
 }
@@ -267,7 +258,27 @@ bool cServerADC::SendHubINF(cAsyncConn *conn)
 		SendFrame(conn, frame, true);
 }
 
-bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
+bool cServerADC::SetADCRegInfo(cConnADC *conn, const string &nick)
+{
+	if (!conn || nick.empty() || !mR)
+		return false;
+
+	if (conn->mRegInfo) {
+		delete conn->mRegInfo;
+		conn->mRegInfo = NULL;
+	}
+
+	cRegUserInfo *info = new cRegUserInfo;
+
+	if (mR->FindRegInfo(*info, nick))
+		conn->mRegInfo = info;
+	else
+		delete info;
+
+	return true;
+}
+
+bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnADC *conn,
 	vector<string> &sanitized, string &nick, string &cid, string &pid)
 {
 	sanitized.clear();
@@ -357,9 +368,6 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 			return false;
 		}
 
-		// A client connected over IPv6 cannot assert an unrelated public IPv4
-		// address unless it is trusted. This adapter currently has no such trust
-		// override, so only the zero placeholder is accepted.
 		if (hasI4 && !suppliedI4.empty() && suppliedI4 != "0.0.0.0") {
 			flags.push_back("I6" + peerIP);
 			SendStatus(conn, "246", "Untrusted IPv4 address in INF", flags, true);
@@ -396,10 +404,10 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 		const string key = parameter.substr(0, 2);
 
 		if (key == "PD")
-			continue; // PID is private and must never leave the hub.
+			continue;
 
 		if (key == "CT")
-			continue; // Hub determines account/client type.
+			continue;
 
 		if (key == "I4") {
 			if (!peerIPv6) {
@@ -428,7 +436,7 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 	return true;
 }
 
-bool cServerADC::BroadcastINF(cConnDC *conn)
+bool cServerADC::BroadcastINF(cConnADC *conn)
 {
 	if (!conn)
 		return false;
@@ -442,15 +450,13 @@ bool cServerADC::BroadcastINF(cConnDC *conn)
 	vector<cAsyncConn*> recipients;
 	mADCProto.Sessions().NormalConnections(recipients);
 
-	// The newly connected client receives the already connected users first.
 	for (size_t i = 0; i < recipients.size(); ++i) {
 		cAsyncConn *other = recipients[i];
 
 		if (!other || other == conn || !other->ok)
 			continue;
 
-		const nProtocol::sADCSession *otherSession =
-			mADCProto.Sessions().Find(other);
+		const nProtocol::sADCSession *otherSession = mADCProto.Sessions().Find(other);
 
 		if (!otherSession || otherSession->mINF.empty())
 			continue;
@@ -462,8 +468,6 @@ bool cServerADC::BroadcastINF(cConnDC *conn)
 			SendFrame(conn, frame, false);
 	}
 
-	// The connecting client's own INF is last and is broadcast to everyone,
-	// including itself, as required for B messages.
 	string own;
 
 	if (!nProtocol::cADCProto::CreateBroadcast(own, "INF",
@@ -483,19 +487,15 @@ bool cServerADC::BroadcastINF(cConnDC *conn)
 	return ok;
 }
 
-bool cServerADC::EnterNormal(cConnDC *conn)
+bool cServerADC::EnterNormal(cConnADC *conn)
 {
 	if (!conn || !mADCProto.Sessions().EnterNormal(conn))
 		return false;
 
-	// cConnDC is still the shared socket container and starts the historical
-	// login timer in its constructor. ADC has completed login now, so disable
-	// that timer; otherwise a valid NORMAL session would later be disconnected.
-	conn->ClearTimeOut(eTO_LOGIN);
 	return BroadcastINF(conn);
 }
 
-bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
+bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnADC *conn)
 {
 	if (!msg || !conn)
 		return false;
@@ -524,7 +524,7 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	if (!PrepareInitialINF(msg, conn, sanitized, nick, cid, pid))
 		return false;
 
-	if (!SetUserRegInfo(conn, nick)) {
+	if (!SetADCRegInfo(conn, nick)) {
 		vector<string> flags;
 		SendStatus(conn, "220", "Unable to load account information", flags, true);
 		return false;
@@ -568,9 +568,6 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	if (!registered)
 		return EnterNormal(conn);
 
-	// ADC challenge-response needs the actual UTF-8 password. Legacy one-way
-	// crypt()/MD5 password records cannot produce PAS(password || salt), so they
-	// must be migrated rather than silently bypassed.
 	if (!conn->mRegInfo || conn->mRegInfo->mPWCrypt != cRegUserInfo::eCRYPT_NONE ||
 		conn->mRegInfo->mPasswd.empty() || conn->mRegInfo->mPwdChange) {
 		vector<string> flags;
@@ -598,7 +595,7 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	return SendFrame(conn, frame, true);
 }
 
-bool cServerADC::TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn)
+bool cServerADC::TreatPAS(nProtocol::cMessageADC *msg, cConnADC *conn)
 {
 	if (!msg || !conn || msg->HeaderType() != 'H')
 		return false;
@@ -625,7 +622,7 @@ bool cServerADC::TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn)
 	return EnterNormal(conn);
 }
 
-bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
+bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnADC *conn)
 {
 	if (!msg || !conn)
 		return false;
@@ -656,16 +653,13 @@ bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
 		return false;
 	}
 
-	// Wire routing happens only after the application policy accepted the ADC
-	// command. This replaces the old cDCProto pattern where parsing, policy and
-	// NMDC routing were intertwined in one handler.
 	const int routed = mADCProto.RouteNormal(msg, conn);
 
 	if (routed == 0)
 		return true;
 
 	if (routed == 1 && msg->mType == eADC_STA)
-		return true; // HSTA is status information for the hub, not user traffic.
+		return true;
 
 	if (routed == 1) {
 		vector<string> flags;
@@ -676,7 +670,7 @@ bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
 	return false;
 }
 
-bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
+bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnADC *conn)
 {
 	if (!msg || !conn)
 		return false;
@@ -705,7 +699,7 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		const string value = parameter.substr(2);
 
 		if (key == "PD")
-			continue; // never retain or broadcast PID after IDENTIFY.
+			continue;
 
 		if (key == "ID") {
 			if (value != session->mCID) {
@@ -787,7 +781,7 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		}
 
 		if (key == "CT")
-			continue; // client cannot elevate its own account type.
+			continue;
 
 		adc_merge_inf(session->mINF, parameter);
 		delta.push_back(parameter);
@@ -815,14 +809,11 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 
 int cServerADC::OnNewConn(cAsyncConn *nc)
 {
-	cConnDC *conn = dynamic_cast<cConnDC*>(nc);
+	cConnADC *conn = dynamic_cast<cConnADC*>(nc);
 
 	if (!conn)
 		return -1;
 
-	// ADC is client-initiated: the client sends HSUP first. No legacy greeting
-	// or lock/key negotiation is performed.
-	conn->SetGeoZone();
 	mADCProto.Sessions().Attach(conn);
 
 	if (mSysLoad >= eSL_RECOVERY) {
@@ -869,9 +860,9 @@ void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
 	if (!msg)
 		return;
 
-	cConnDC *dcConn = dynamic_cast<cConnDC*>(conn);
+	cConnADC *adcConn = dynamic_cast<cConnADC*>(conn);
 
-	if (!dcConn)
+	if (!adcConn)
 		return;
 
 	if ((msg->mType == eADC_SUP) && (result == 0)) {
@@ -888,11 +879,11 @@ void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
 
 	switch (msg->mType) {
 		case eADC_INF:
-			TreatINF(msg, dcConn);
+			TreatINF(msg, adcConn);
 			return;
 
 		case eADC_PAS:
-			TreatPAS(msg, dcConn);
+			TreatPAS(msg, adcConn);
 			return;
 
 		case eADC_MSG:
@@ -901,7 +892,7 @@ void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
 		case eADC_CTM:
 		case eADC_RCM:
 		case eADC_STA:
-			TreatNormalMessage(msg, dcConn);
+			TreatNormalMessage(msg, adcConn);
 			return;
 
 		default:
