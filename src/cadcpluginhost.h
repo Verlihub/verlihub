@@ -11,6 +11,8 @@
 #ifndef CADCPLUGINHOST_H
 #define CADCPLUGINHOST_H
 
+#include "casyncsocketserver.h"
+
 namespace nVerliHub {
 	namespace nPlugin {
 		class cPluginManager;
