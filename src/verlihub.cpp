@@ -33,7 +33,7 @@
 	#include <config.h>
 #endif
 
-#include "cserverdc.h"
+#include "cserveradc.h"
 #include <iostream>
 #include <stdlib.h>
 #include <sstream>
@@ -68,7 +68,7 @@ void mySigIOHandler(int i)
 void mySigQuitHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv)
 		serv->SyncStop();
@@ -79,7 +79,7 @@ void mySigQuitHandler(int i)
 void mySigServHandler(int i)
 {
 	MAIN_LOG_ERROR << "Received a " << i << " signal, doing stacktrace and quiting" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv) { // note: this is a crash, i dont think we can actually perform a proper stop()
 		serv->DoStackTrace();
@@ -92,7 +92,7 @@ void mySigServHandler(int i)
 void mySigHupHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, reloading" << endl;
-	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+	cServerADC *serv = static_cast<cServerADC*>(cServerDC::sCurrentServer);
 
 	if (serv)
 		serv->SyncReload();
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
 	//try { // todo: whole process is running inside try?
-		cServerDC server(ConfigBase, argv[0]); // create server
+		cServerADC server(ConfigBase, argv[0]);
 		cObj::msLogLevel += verbosity;
 
 		//#ifndef _WIN32

@@ -1,0 +1,516 @@
+/*
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
+
+	Verlihub is free software; You can redistribute it
+	and modify it under the terms of the GNU General
+	Public License as published by the Free Software
+	Foundation, either version 3 of the license, or at
+	your option any later version.
+*/
+
+#include "cadcproto.h"
+#include "casyncconn.h"
+
+namespace nVerliHub {
+	using namespace nEnums;
+
+	namespace nProtocol {
+
+static bool adc_proto_alpha(const char c)
+{
+	return (c >= 'A') && (c <= 'Z');
+}
+
+static bool adc_proto_alphanum(const char c)
+{
+	return adc_proto_alpha(c) || ((c >= '0') && (c <= '9'));
+}
+
+cADCProto::cADCProto():
+	cProtocol()
+{
+	SetClassName("ADCProto");
+}
+
+cADCProto::~cADCProto()
+{}
+
+cMessageParser *cADCProto::CreateParser()
+{
+	return new cMessageADC();
+}
+
+void cADCProto::DeleteParser(cMessageParser *parser)
+{
+	if (parser)
+		delete parser;
+}
+
+void cADCProto::OnDisconnect(nSocket::cAsyncConn *conn)
+{
+	const sADCSession *session = mSessions.Find(conn);
+
+	if (session && session->mState == eADC_STATE_NORMAL &&
+		!session->mSID.empty()) {
+		std::vector<std::string> parameters;
+		parameters.push_back(session->mSID);
+		std::string frame;
+
+		if (CreateInfo(frame, "QUI", parameters)) {
+			std::vector<nSocket::cAsyncConn*> recipients;
+			mSessions.NormalConnections(recipients);
+
+			for (size_t i = 0; i < recipients.size(); ++i) {
+				if (!recipients[i] || recipients[i] == conn || !recipients[i]->ok)
+					continue;
+
+				SendFrame(recipients[i], frame, true);
+			}
+		}
+	}
+
+	mSessions.Detach(conn);
+}
+
+bool cADCProto::SendFrame(nSocket::cAsyncConn *conn, const std::string &frame,
+	bool flush)
+{
+	if (!conn || frame.empty())
+		return false;
+
+	std::string wire(frame);
+	wire.push_back('\n');
+	return conn->Write(wire, flush) >= 0;
+}
+
+bool cADCProto::SendSTA(nSocket::cAsyncConn *conn, const std::string &code,
+	const std::string &description, const std::vector<std::string> &flags)
+{
+	std::string frame;
+	return CreateSTA(frame, code, description, flags) && SendFrame(conn, frame);
+}
+
+bool cADCProto::ParseSUPFeatures(const cMessageADC &msg,
+	std::set<std::string> &add, std::set<std::string> &remove)
+{
+	add.clear();
+	remove.clear();
+
+	const std::vector<std::string> &parameters = msg.Parameters();
+
+	for (size_t i = 0; i < parameters.size(); ++i) {
+		const std::string &parameter = parameters[i];
+
+		if (parameter.size() != 6)
+			return false;
+
+		const std::string action = parameter.substr(0, 2);
+		const std::string feature = parameter.substr(2, 4);
+
+		for (size_t p = 0; p < feature.size(); ++p) {
+			if (!adc_proto_alphanum(feature[p]))
+				return false;
+		}
+
+		if (action == "AD")
+			add.insert(feature);
+		else if (action == "RM")
+			remove.insert(feature);
+		else
+			return false;
+	}
+
+	return true;
+}
+
+bool cADCProto::ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn)
+		return false;
+
+	const char type = msg->HeaderType();
+	const sADCSession *session = mSessions.Find(conn);
+
+	// I/U/C are not valid incoming message types on a client->hub TCP
+	// connection. C is reserved for the separate client-client connection.
+	if ((type == 'I') || (type == 'U') || (type == 'C')) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "240", "Invalid ADC routing context", flags);
+		return false;
+	}
+
+	if ((type == 'B') || (type == 'D') || (type == 'E') || (type == 'F')) {
+		if (!session || session->mSID.empty() || msg->SourceSID() != session->mSID) {
+			std::vector<std::string> flags;
+			flags.push_back("FC" + msg->Command());
+			SendSTA(conn, "240", "Source SID does not match connection", flags);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+int cADCProto::RouteNormal(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn)
+		return -1;
+
+	const sADCSession *source = mSessions.Find(conn);
+
+	if (!source || source->mState != eADC_STATE_NORMAL)
+		return 1;
+
+	if ((msg->mType != eADC_MSG) && (msg->mType != eADC_SCH) &&
+		(msg->mType != eADC_RES) && (msg->mType != eADC_CTM) &&
+		(msg->mType != eADC_RCM) && (msg->mType != eADC_STA))
+		return 1;
+
+	const char type = msg->HeaderType();
+
+	if ((type != 'B') && (type != 'D') && (type != 'E') && (type != 'F'))
+		return 1;
+
+	std::string wire(msg->mStr);
+	wire.push_back('\n');
+
+	if (type == 'B') {
+		std::vector<nSocket::cAsyncConn*> recipients;
+		mSessions.NormalConnections(recipients);
+
+		for (size_t i = 0; i < recipients.size(); ++i) {
+			if (!recipients[i] || !recipients[i]->ok)
+				continue;
+
+			if (recipients[i]->Write(wire, true) < 0)
+				return -1;
+		}
+
+		return 0;
+	}
+
+	if (type == 'F') {
+		std::vector<nSocket::cAsyncConn*> recipients;
+		mSessions.FeatureConnections(msg->Features(), recipients);
+
+		for (size_t i = 0; i < recipients.size(); ++i) {
+			if (!recipients[i] || !recipients[i]->ok)
+				continue;
+
+			if (recipients[i]->Write(wire, true) < 0)
+				return -1;
+		}
+
+		return 0;
+	}
+
+	nSocket::cAsyncConn *target = mSessions.FindBySID(msg->TargetSID());
+	const sADCSession *targetSession = target ? mSessions.Find(target) : NULL;
+
+	if (!target || !target->ok || !targetSession ||
+		targetSession->mState != eADC_STATE_NORMAL) {
+		std::vector<std::string> flags;
+		flags.push_back("ID" + msg->TargetSID());
+		SendSTA(conn, "110", "Target SID is not connected", flags);
+		return -1;
+	}
+
+	if (target->Write(wire, true) < 0)
+		return -1;
+
+	if ((type == 'E') && (target != conn) && (conn->Write(wire, true) < 0))
+		return -1;
+
+	return 0;
+}
+
+int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn || msg->HeaderType() != 'H')
+		return -1;
+
+	std::set<std::string> add;
+	std::set<std::string> remove;
+
+	if (!ParseSUPFeatures(*msg, add, remove)) {
+		std::vector<std::string> flags;
+		flags.push_back("FCSUP");
+		SendSTA(conn, "240", "Invalid SUP syntax", flags);
+		return -1;
+	}
+
+	// TIGR is the selected session hash in this implementation. Dynamic SUP
+	// updates must not remove it after negotiation. Check the future state
+	// before ApplySUP commits any feature changes.
+	const sADCSession *before = mSessions.Find(conn);
+	bool hasTIGR = before && before->mFeatures.find("TIGR") != before->mFeatures.end();
+
+	if (remove.find("TIGR") != remove.end())
+		hasTIGR = false;
+
+	if (add.find("TIGR") != add.end())
+		hasTIGR = true;
+
+	if (!hasTIGR) {
+		std::vector<std::string> flags;
+		flags.push_back("FCTIGR");
+		SendSTA(conn, "247", "No supported session hash overlap", flags);
+		return -1;
+	}
+
+	if (!mSessions.ApplySUP(conn, add, remove)) {
+		std::vector<std::string> flags;
+		flags.push_back("FCBASE");
+		SendSTA(conn, "245", "Required BASE feature missing", flags);
+		return -1;
+	}
+
+	const sADCSession *session = mSessions.Find(conn);
+
+	if (!session)
+		return -1;
+
+	if (session->mState == eADC_STATE_NORMAL)
+		return 0;
+
+	std::string sid;
+
+	if (!mSessions.AssignSID(conn, sid)) {
+		SendSTA(conn, "210", "Unable to allocate session ID",
+			std::vector<std::string>());
+		return -1;
+	}
+
+	std::vector<std::string> hubFeatures;
+	hubFeatures.push_back("ADBASE");
+	hubFeatures.push_back("ADTIGR");
+
+	std::string frame;
+
+	if (!CreateSUP(frame, true, hubFeatures) || !SendFrame(conn, frame, false))
+		return -1;
+
+	if (!CreateSID(frame, sid) || !SendFrame(conn, frame, true))
+		return -1;
+
+	return 0;
+}
+
+int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
+{
+	if (!parser || !conn)
+		return -1;
+
+	cMessageADC *msg = dynamic_cast<cMessageADC*>(parser);
+
+	if (!msg)
+		return -1;
+
+	if (msg->mType == eMSG_UNPARSED)
+		msg->Parse();
+
+	if (msg->mType == eADC_INVALID || msg->mError) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "240", "Protocol syntax error", flags);
+		return -1;
+	}
+
+	if (!msg->SplitChunks())
+		return -1;
+
+	if (!mSessions.ClientCommandAllowed(conn, msg->Command())) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "244", "Command not valid on client-hub session", flags);
+		return -1;
+	}
+
+	if (!ValidateRouting(msg, conn))
+		return -1;
+
+	switch (msg->mType) {
+		case eADC_SUP:
+			return TreatSUP(msg, conn);
+
+		case eADC_INF:
+		case eADC_PAS:
+		case eADC_MSG:
+		case eADC_SCH:
+		case eADC_RES:
+		case eADC_CTM:
+		case eADC_RCM:
+		case eADC_STA:
+			// Application policy and routing are handled by cServerADC. Keeping
+			// that decision outside cADCProto prevents protocol framing from
+			// bypassing account/plugin/permission checks.
+			return 1;
+
+		default:
+			return 1;
+	}
+}
+
+bool cADCProto::ValidCommand(const std::string &command)
+{
+	return command.size() == 3 && adc_proto_alpha(command[0]) &&
+		adc_proto_alphanum(command[1]) && adc_proto_alphanum(command[2]);
+}
+
+bool cADCProto::Build(std::string &dest, char type, const std::string &command,
+	const std::vector<std::string> &header,
+	const std::vector<std::string> &parameters)
+{
+	dest.clear();
+
+	if (!ValidCommand(command))
+		return false;
+
+	switch (type) {
+		case 'B':
+			if (header.size() != 1 || !cMessageADC::IsSID(header[0]))
+				return false;
+			break;
+		case 'D':
+		case 'E':
+			if (header.size() != 2 || !cMessageADC::IsSID(header[0]) ||
+				!cMessageADC::IsSID(header[1]))
+				return false;
+			break;
+		case 'F':
+			if (header.size() != 2 || !cMessageADC::IsSID(header[0]) ||
+				!cMessageADC::IsFeatureSelector(header[1]))
+				return false;
+			break;
+		case 'U':
+			if (header.size() != 1 || !cMessageADC::IsCID(header[0]))
+				return false;
+			break;
+		case 'C':
+		case 'H':
+		case 'I':
+			if (!header.empty())
+				return false;
+			break;
+		default:
+			return false;
+	}
+
+	dest.push_back(type);
+	dest.append(command);
+
+	for (size_t i = 0; i < header.size(); ++i) {
+		dest.push_back(' ');
+		dest.append(header[i]);
+	}
+
+	for (size_t i = 0; i < parameters.size(); ++i) {
+		std::string escaped;
+
+		if (!cMessageADC::Escape(parameters[i], escaped)) {
+			dest.clear();
+			return false;
+		}
+
+		dest.push_back(' ');
+		dest.append(escaped);
+	}
+
+	return true;
+}
+
+bool cADCProto::CreateHub(std::string &dest, const std::string &command,
+	const std::vector<std::string> &parameters)
+{
+	return Build(dest, 'H', command, std::vector<std::string>(), parameters);
+}
+
+bool cADCProto::CreateInfo(std::string &dest, const std::string &command,
+	const std::vector<std::string> &parameters)
+{
+	return Build(dest, 'I', command, std::vector<std::string>(), parameters);
+}
+
+bool cADCProto::CreateClient(std::string &dest, const std::string &command,
+	const std::vector<std::string> &parameters)
+{
+	return Build(dest, 'C', command, std::vector<std::string>(), parameters);
+}
+
+bool cADCProto::CreateBroadcast(std::string &dest, const std::string &command,
+	const std::string &sourceSID, const std::vector<std::string> &parameters)
+{
+	std::vector<std::string> header;
+	header.push_back(sourceSID);
+	return Build(dest, 'B', command, header, parameters);
+}
+
+bool cADCProto::CreateDirect(std::string &dest, const std::string &command,
+	const std::string &sourceSID, const std::string &targetSID,
+	const std::vector<std::string> &parameters, bool echo)
+{
+	std::vector<std::string> header;
+	header.push_back(sourceSID);
+	header.push_back(targetSID);
+	return Build(dest, echo ? 'E' : 'D', command, header, parameters);
+}
+
+bool cADCProto::CreateFeature(std::string &dest, const std::string &command,
+	const std::string &sourceSID, const std::string &features,
+	const std::vector<std::string> &parameters)
+{
+	std::vector<std::string> header;
+	header.push_back(sourceSID);
+	header.push_back(features);
+	return Build(dest, 'F', command, header, parameters);
+}
+
+bool cADCProto::CreateUDP(std::string &dest, const std::string &command,
+	const std::string &sourceCID, const std::vector<std::string> &parameters)
+{
+	std::vector<std::string> header;
+	header.push_back(sourceCID);
+	return Build(dest, 'U', command, header, parameters);
+}
+
+bool cADCProto::CreateSUP(std::string &dest, bool fromHub,
+	const std::vector<std::string> &features)
+{
+	return Build(dest, fromHub ? 'I' : 'H', "SUP",
+		std::vector<std::string>(), features);
+}
+
+bool cADCProto::CreateSID(std::string &dest, const std::string &sid)
+{
+	if (!cMessageADC::IsSID(sid)) {
+		dest.clear();
+		return false;
+	}
+
+	std::vector<std::string> parameters;
+	parameters.push_back(sid);
+	return Build(dest, 'I', "SID", std::vector<std::string>(), parameters);
+}
+
+bool cADCProto::CreateSTA(std::string &dest, const std::string &code,
+	const std::string &description, const std::vector<std::string> &flags)
+{
+	if (code.size() != 3 || code[0] < '0' || code[0] > '2' ||
+		code[1] < '0' || code[1] > '9' || code[2] < '0' || code[2] > '9') {
+		dest.clear();
+		return false;
+	}
+
+	std::vector<std::string> parameters;
+	parameters.push_back(code);
+	parameters.push_back(description);
+
+	for (size_t i = 0; i < flags.size(); ++i)
+		parameters.push_back(flags[i]);
+
+	return Build(dest, 'I', "STA", std::vector<std::string>(), parameters);
+}
+
+	}; // namespace nProtocol
+}; // namespace nVerliHub

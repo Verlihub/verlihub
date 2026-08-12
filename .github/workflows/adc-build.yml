@@ -1,0 +1,89 @@
+name: ADC migration build
+
+on:
+  push:
+    branches:
+      - agent/replace-nmdc-with-adc
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Fetch source archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/tarball/${GITHUB_SHA}" \
+            --output source.tar.gz
+          tar --extract --gzip --file source.tar.gz --strip-components=1
+          rm source.tar.gz
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            g++ \
+            make \
+            gettext \
+            libasprintf-dev \
+            libcrypt-dev \
+            libicu-dev \
+            libmaxminddb-dev \
+            default-libmysqlclient-dev \
+            libpcre3-dev \
+            librhash-dev \
+            libssl-dev \
+            zlib1g-dev
+
+      - name: Configure
+        shell: bash
+        run: |
+          set +e
+          cmake -S . -B build \
+            -DWITH_PLUGINS=OFF \
+            -DUSE_TLS_PROXY=OFF \
+            -DUSE_FEARTLS_PROXY=OFF \
+            2>&1 | tee cmake-configure.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "${status}" -ne 0 ]; then
+            echo "::group::CMake configure output"
+            cat cmake-configure.log
+            echo "::endgroup::"
+            if [ -f build/CMakeFiles/CMakeConfigureLog.yaml ]; then
+              echo "::group::CMakeConfigureLog tail"
+              tail -n 120 build/CMakeFiles/CMakeConfigureLog.yaml
+              echo "::endgroup::"
+            fi
+            if [ -f build/CMakeFiles/CMakeError.log ]; then
+              echo "::group::CMakeError.log"
+              tail -n 120 build/CMakeFiles/CMakeError.log
+              echo "::endgroup::"
+            fi
+            detail=$(tail -n 20 cmake-configure.log | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+            echo "::error file=CMakeLists.txt,line=1::CMake configure failed: ${detail}"
+            exit "${status}"
+          fi
+
+      - name: Build
+        shell: bash
+        run: |
+          set +e
+          cmake --build build --parallel 2 2>&1 | tee cmake-build.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "${status}" -ne 0 ]; then
+            detail=$(tail -n 30 cmake-build.log | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+            echo "::error file=src/CMakeLists.txt,line=1::Build failed: ${detail}"
+            exit "${status}"
+          fi

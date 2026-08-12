@@ -66,20 +66,21 @@ namespace nVerliHub {
 		{
 			friend class nVerliHub::nSocket::cServerDC;
 
-			struct sTempBan // temporary ban structure
-			{
-				sTempBan(long until, const string &reason, unsigned bantype):
-					mUntil(until),
-					mReason(reason),
-					mType(bantype)
-				{}
-
-				long mUntil; // expiration time
-				string mReason; // reason
-				unsigned mType; // type
-			};
-
 			public:
+				/** Temporary ban entry exposed together with the public temp-ban containers. */
+				struct sTempBan
+				{
+					sTempBan(long until, const string &reason, unsigned bantype):
+						mUntil(until),
+						mReason(reason),
+						mType(bantype)
+					{}
+
+					long mUntil; // expiration time
+					string mReason; // reason
+					unsigned mType; // type
+				};
+
 				/**
 				 * Class constructor.
 				 * @param server Pointer to a cServerDC instance.
@@ -210,7 +211,7 @@ namespace nVerliHub {
 				 * user connection.
 				 * If connection is valid, the cBan instance will contain the
 				 * IP address, host, reason of the ban, the banner nickname,
-				 * the nickname of the user and the start and end date of the ban.
+				 * nickname of the user and the start and end date of the ban.
 				 * @param ban cBan instance where to store the result.
 				 * @param connection The user connection.
 				 * @param nick_op The banner nickname.
@@ -228,8 +229,8 @@ namespace nVerliHub {
 				* reason of the ban, the banner nickname, the nickname,
 				* email address and share of the user and the start and
 				* end date of the ban.
-				* @param ban cBan instance where to store the result.
-				* @param kick cKick instance.
+				* @param ban cBan instance.
+				* @param kick cKick class instance.
 				* @param length The time of the ban.
 				* @param mask The bit-mask for ban type.
 				* @see tBanFlags
@@ -323,7 +324,7 @@ namespace nVerliHub {
 		};
 
 		/**
-		 * The unbanlist manager that has the same feature of banlist manager.
+		 * The unbanlist manager that has the same feature of cBanList class.
 		 * The same table of cBanList class is used to store a list of unban entries.
 		 * Every unban entity is an instance of cUnBan class
 		 * and it interacts with banlist table in a MySQL database.

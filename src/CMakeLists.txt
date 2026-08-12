@@ -18,9 +18,27 @@
 
 INCLUDE_DIRECTORIES(${VERLIHUB_BINARY_DIR} ${VERLIHUB_SOURCE_DIR}/src)
 
+# ADC TIGR identity verification uses LibRHash's Tiger implementation.
+find_path(RHASH_INCLUDE_DIR rhash.h)
+find_library(RHASH_LIBRARY NAMES rhash)
+
+if(NOT RHASH_INCLUDE_DIR OR NOT RHASH_LIBRARY)
+	message(FATAL_ERROR "[ ER ] LibRHash is required for ADC TIGR PID/CID verification (install librhash-dev / rhash-devel)")
+endif()
+
 SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
+	cadcbanpolicy.h
+	cadchash.h
+	cadcidentityhost.h
+	cadcplugin.h
+	cadcpluginbridge.h
+	cadcpluginhost.h
+	cadcpolicy.h
+	cadcproto.h
+	cadcsession.h
+	cadcsessionhost.h
 	cban.h
 	cbanlist.h
 	ccallbacklist.h
@@ -31,6 +49,7 @@ SET(VERLIHUB_HDRS
 	cconfigfile.h
 	cconfigitembase.h
 	cconfmysql.h
+	cconnadc.h
 	cconnbase.h
 	cconnchoose.h
 	cconndc.h
@@ -50,6 +69,7 @@ SET(VERLIHUB_HDRS
 	cfreqlimiter.h
 	chttpconn.h
 	cicuconvert.h
+	clegacytransportbridge.h
 	cmaxminddb.h
 	cinfoserver.h
 	cinterpolexp.h
@@ -57,6 +77,7 @@ SET(VERLIHUB_HDRS
 	ckicklist.h
 	clog.h
 	cmeanfrequency.h
+	cmessageadc.h
 	cmessagedc.h
 	cmutex.h
 	cmysql.h
@@ -71,6 +92,7 @@ SET(VERLIHUB_HDRS
 	cquery.h
 	creglist.h
 	creguserinfo.h
+	cserveradc.h
 	cserverdc.h
 	csetuplist.h
 	ctempfunctionbase.h
@@ -105,6 +127,13 @@ SET(VERLIHUB_HDRS
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
+	cadcbanpolicy.cpp
+	cadchash.cpp
+	cadcpluginbridge.cpp
+	cadcpolicy.cpp
+	cadcproto.cpp
+	cadcsession.cpp
+	cadcsessiontimeout.cpp
 	cban.cpp
 	cbanlist.cpp
 	ccallbacklist.cpp
@@ -115,6 +144,7 @@ SET(VERLIHUB_SRCS
 	cconfigfile.cpp
 	cconfigitembase.cpp
 	cconfmysql.cpp
+	cconnadc.cpp
 	cconnchoose.cpp
 	cconndc.cpp
 	cconnpoll.cpp
@@ -133,6 +163,7 @@ SET(VERLIHUB_SRCS
 	cfreqlimiter.cpp
 	chttpconn.cpp
 	cicuconvert.cpp
+	clegacytransportbridge.cpp
 	cmaxminddb.cpp
 	cinfoserver.cpp
 	cinterpolexp.cpp
@@ -140,6 +171,7 @@ SET(VERLIHUB_SRCS
 	ckicklist.cpp
 	clog.cpp
 	cmeanfrequency.cpp
+	cmessageadc.cpp
 	cmessagedc.cpp
 	cmutex.cpp
 	cmysql.cpp
@@ -149,11 +181,17 @@ SET(VERLIHUB_SRCS
 	cpluginbase.cpp
 	cpluginloader.cpp
 	cpluginmanager.cpp
+	cpluginmanagervisit.cpp
 	cprotocol.cpp
 	cprotocommand.cpp
 	cquery.cpp
 	creglist.cpp
 	creguserinfo.cpp
+	cserveradc.cpp
+	cserveradcban.cpp
+	cserveradcinput.cpp
+	cserveradcsession.cpp
+	cserveradctimer.cpp
 	cserverdc.cpp
 	csetuplist.cpp
 	ctempfunctionbase.cpp
@@ -180,6 +218,7 @@ SET(VERLIHUB_SRCS
 
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+target_include_directories(libverlihub_so PRIVATE ${RHASH_INCLUDE_DIR})
 
 if(USE_TLS_PROXY AND GOLANG_PATH)
 
@@ -231,7 +270,7 @@ elseif(USE_FEARTLS_PROXY)
 
 endif()
 
-target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
+target_link_libraries(libverlihub_so ${VERLIHUB_LIBS} ${RHASH_LIBRARY}) # pthread dl execinfo rhash
 
 add_library(vhapi_so SHARED "script_api.cpp")
 set_target_properties(vhapi_so PROPERTIES OUTPUT_NAME "vhapi")
