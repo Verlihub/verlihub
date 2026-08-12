@@ -84,3 +84,16 @@ jobs:
             echo "::error file=src/CMakeLists.txt,line=1::Build failed: ${detail}"
             exit "${status}"
           fi
+
+      - name: ADC core smoke test
+        shell: bash
+        run: |
+          g++ -std=c++11 \
+            -I"${GITHUB_WORKSPACE}/src" \
+            -I"${GITHUB_WORKSPACE}/build" \
+            "${GITHUB_WORKSPACE}/tests/adc_core_smoke.cpp" \
+            -L"${GITHUB_WORKSPACE}/build/src" \
+            -Wl,-rpath,"${GITHUB_WORKSPACE}/build/src" \
+            -lverlihub -licuuc -licui18n \
+            -o "${GITHUB_WORKSPACE}/build/adc_core_smoke"
+          "${GITHUB_WORKSPACE}/build/adc_core_smoke"
