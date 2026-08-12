@@ -15,9 +15,18 @@
 #include <string>
 
 namespace nVerliHub {
+	namespace nProtocol {
+		class cMessageParser;
+	};
+
 	namespace nSocket {
 		class cAsyncConn;
 		class cAsyncSocketServer;
+
+		// cAsyncConn's implementation historically got this type into scope
+		// transitively through cServerDC. Keep the generic protocol type explicit
+		// without reintroducing the server/NMDC include into the transport core.
+		using nProtocol::cMessageParser;
 
 /**
  * Protocol-neutral transport hooks backed by the current cServerDC business
