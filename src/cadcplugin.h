@@ -11,7 +11,7 @@ class cADCPlugin
 public:
 	virtual ~cADCPlugin() {}
 	virtual bool OnADCConnect(nSocket::cConnADC *conn) { return true; }
-	virtual bool OnADCMessage(nSocket::cConnADC *conn, nProtocol::cMessageADC *msg) { return true; }
+	virtual bool OnADCMessage(nSocket::cConnADC *conn, const nProtocol::cMessageADC *msg) { return true; }
 	virtual bool OnADCDisconnect(nSocket::cConnADC *conn) { return true; }
 };
 
