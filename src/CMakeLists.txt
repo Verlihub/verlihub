@@ -69,6 +69,7 @@ SET(VERLIHUB_HDRS
 	cfreqlimiter.h
 	chttpconn.h
 	cicuconvert.h
+	clegacytransportbridge.h
 	cmaxminddb.h
 	cinfoserver.h
 	cinterpolexp.h
@@ -162,6 +163,7 @@ SET(VERLIHUB_SRCS
 	cfreqlimiter.cpp
 	chttpconn.cpp
 	cicuconvert.cpp
+	clegacytransportbridge.cpp
 	cmaxminddb.cpp
 	cinfoserver.cpp
 	cinterpolexp.cpp
@@ -247,7 +249,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 		COMMENT "Copying proxy_types.h header"
 	)
 
-	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/src/proxy_types.h")
+	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/libvhproxy.a")
 	add_dependencies(proxy_types_h libvhproxy_a)
 
 	list(APPEND ${VERLIHUB_HDRS} "libvhproxy.h" "proxy_types.h")
