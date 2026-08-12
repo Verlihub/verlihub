@@ -62,6 +62,7 @@ class cADCSessionManager
 			std::vector<nSocket::cAsyncConn*> &dest) const;
 		bool IdentityInUse(const std::string &nick, const std::string &cid,
 			nSocket::cAsyncConn *except = NULL) const;
+		void CheckTimeouts(long long nowMsec);
 
 		bool AssignSID(nSocket::cAsyncConn *conn, std::string &sid);
 		bool ApplySUP(nSocket::cAsyncConn *conn, const std::set<std::string> &add,
