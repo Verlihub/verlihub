@@ -52,6 +52,9 @@ class cServerADC : public cServerDC
 		nProtocol::cADCProto &ADCProtocol() { return mADCProto; }
 
 	private:
+		/** ADC overrides the legacy socket reader so frames terminate on LF. */
+		virtual int input(cAsyncConn *conn);
+
 		bool SendFrame(cAsyncConn *conn, const string &frame, bool flush = true);
 		bool SendStatus(cAsyncConn *conn, const string &code,
 			const string &description, const vector<string> &flags,
