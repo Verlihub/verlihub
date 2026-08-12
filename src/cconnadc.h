@@ -36,6 +36,9 @@ class cConnADC : public cAsyncConn
 
 		/** Registration record loaded for the ADC nickname, if any. */
 		nTables::cRegUserInfo *mRegInfo;
+
+	private:
+		bool mADCPluginConnected;
 };
 
 	}; // namespace nSocket
