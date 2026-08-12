@@ -49,7 +49,11 @@ jobs:
         shell: bash
         run: |
           set +e
-          cmake -S . -B build -DUSE_TLS_PROXY=OFF -DUSE_FEARTLS_PROXY=OFF 2>&1 | tee cmake-configure.log
+          cmake -S . -B build \
+            -DWITH_PLUGINS=OFF \
+            -DUSE_TLS_PROXY=OFF \
+            -DUSE_FEARTLS_PROXY=OFF \
+            2>&1 | tee cmake-configure.log
           status=${PIPESTATUS[0]}
           set -e
           if [ "${status}" -ne 0 ]; then
