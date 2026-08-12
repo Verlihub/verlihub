@@ -101,6 +101,11 @@ int cServerADC::OnTimer(const cTime &now)
 		mBanList->mTempIPBanlist.AutoResize();
 	}
 
+	// Protocol/identify/verify timeouts are ADC session state, not cConnDC
+	// timeout flags. NORMAL deliberately has no synthetic idle timeout here.
+	mADCProto.Sessions().CheckTimeouts(
+		static_cast<long long>(mTime.MiliSec()));
+
 	// Do not run cServerDC's NMDC hublist registration, OpChat DDoS reports,
 	// trigger output or legacy timer callbacks. ADC plugins get their own event.
 	return nPlugin::cADCPluginBridge::OnTimer(&mPluginManager,
