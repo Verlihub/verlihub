@@ -132,6 +132,7 @@ SET(VERLIHUB_SRCS
 	cadcpolicy.cpp
 	cadcproto.cpp
 	cadcsession.cpp
+	cadcsessiontimeout.cpp
 	cban.cpp
 	cbanlist.cpp
 	ccallbacklist.cpp
