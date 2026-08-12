@@ -215,18 +215,23 @@ bool cADCSessionManager::ApplySUP(nSocket::cAsyncConn *conn,
 		(session.mState != eADC_STATE_NORMAL))
 		return false;
 
+	std::set<std::string> next(session.mFeatures);
+
 	for (std::set<std::string>::const_iterator it = remove.begin();
 		it != remove.end(); ++it)
-		session.mFeatures.erase(*it);
+		next.erase(*it);
 
 	for (std::set<std::string>::const_iterator it = add.begin();
 		it != add.end(); ++it)
-		session.mFeatures.insert(*it);
+		next.insert(*it);
 
-	if (session.mState == eADC_STATE_PROTOCOL &&
-		session.mFeatures.find("BASE") == session.mFeatures.end())
+	// BASE is mandatory for the whole ADC session, not only during the first
+	// SUP. Validate before committing so an invalid RMBASE does not corrupt the
+	// negotiated feature set.
+	if (next.find("BASE") == next.end())
 		return false;
 
+	session.mFeatures.swap(next);
 	return true;
 }
 
