@@ -42,7 +42,9 @@ struct sADCSession
 	std::string mCID;
 	std::string mPID;
 	std::string mNick;
+	std::string mGPA;
 	std::set<std::string> mFeatures;
+	std::vector<std::string> mINF;
 	bool mRegistered;
 };
 
@@ -62,6 +64,8 @@ class cADCSessionManager
 		const sADCSession *Find(nSocket::cAsyncConn *conn) const;
 		nSocket::cAsyncConn *FindBySID(const std::string &sid) const;
 		void NormalConnections(std::vector<nSocket::cAsyncConn*> &dest) const;
+		bool IdentityInUse(const std::string &nick, const std::string &cid,
+			nSocket::cAsyncConn *except = NULL) const;
 
 		bool AssignSID(nSocket::cAsyncConn *conn, std::string &sid);
 		bool ApplySUP(nSocket::cAsyncConn *conn, const std::set<std::string> &add,
