@@ -21,6 +21,12 @@ struct sADCMessageCall
 	bool mAllowed;
 };
 
+struct sADCTimerCall
+{
+	long long mMsec;
+	bool mAllowed;
+};
+
 bool VisitADCConnect(cPluginBase *base, void *data)
 {
 	sADCConnectCall *call = static_cast<sADCConnectCall*>(data);
@@ -63,6 +69,22 @@ bool VisitADCDisconnect(cPluginBase *base, void *data)
 	return true;
 }
 
+bool VisitADCTimer(cPluginBase *base, void *data)
+{
+	sADCTimerCall *call = static_cast<sADCTimerCall*>(data);
+	cADCPlugin *plugin = dynamic_cast<cADCPlugin*>(base);
+
+	if (!plugin)
+		return true;
+
+	if (!plugin->OnADCTimer(call->mMsec)) {
+		call->mAllowed = false;
+		return false;
+	}
+
+	return true;
+}
+
 } // namespace
 
 bool cADCPluginBridge::OnConnect(cPluginManager *manager,
@@ -92,6 +114,16 @@ void cADCPluginBridge::OnDisconnect(cPluginManager *manager,
 {
 	if (manager && conn)
 		manager->ForEachPlugin(&VisitADCDisconnect, conn);
+}
+
+bool cADCPluginBridge::OnTimer(cPluginManager *manager, long long msec)
+{
+	if (!manager)
+		return true;
+
+	sADCTimerCall call = {msec, true};
+	manager->ForEachPlugin(&VisitADCTimer, &call);
+	return call.mAllowed;
 }
 
 } // namespace nPlugin
