@@ -9,6 +9,7 @@
 */
 
 #include "cadcproto.h"
+#include "casyncconn.h"
 
 namespace nVerliHub {
 	using namespace nEnums;
@@ -45,11 +46,115 @@ void cADCProto::DeleteParser(cMessageParser *parser)
 		delete parser;
 }
 
+void cADCProto::OnDisconnect(nSocket::cAsyncConn *conn)
+{
+	mSessions.Detach(conn);
+}
+
+bool cADCProto::SendFrame(nSocket::cAsyncConn *conn, const std::string &frame,
+	bool flush)
+{
+	if (!conn || frame.empty())
+		return false;
+
+	std::string wire(frame);
+	wire.push_back('\n');
+	return conn->Write(wire, flush) >= 0;
+}
+
+bool cADCProto::SendSTA(nSocket::cAsyncConn *conn, const std::string &code,
+	const std::string &description, const std::vector<std::string> &flags)
+{
+	std::string frame;
+	return CreateSTA(frame, code, description, flags) && SendFrame(conn, frame);
+}
+
+bool cADCProto::ParseSUPFeatures(const cMessageADC &msg,
+	std::set<std::string> &add, std::set<std::string> &remove)
+{
+	add.clear();
+	remove.clear();
+
+	const std::vector<std::string> &parameters = msg.Parameters();
+
+	for (size_t i = 0; i < parameters.size(); ++i) {
+		const std::string &parameter = parameters[i];
+
+		if (parameter.size() != 6)
+			return false;
+
+		const std::string action = parameter.substr(0, 2);
+		const std::string feature = parameter.substr(2, 4);
+
+		for (size_t p = 0; p < feature.size(); ++p) {
+			if (!adc_proto_alphanum(feature[p]))
+				return false;
+		}
+
+		if (action == "AD")
+			add.insert(feature);
+		else if (action == "RM")
+			remove.insert(feature);
+		else
+			return false;
+	}
+
+	return true;
+}
+
+int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn || msg->HeaderType() != 'H')
+		return -1;
+
+	std::set<std::string> add;
+	std::set<std::string> remove;
+
+	if (!ParseSUPFeatures(*msg, add, remove)) {
+		std::vector<std::string> flags;
+		flags.push_back("FCSUP");
+		SendSTA(conn, "240", "Invalid SUP syntax", flags);
+		return -1;
+	}
+
+	if (!mSessions.ApplySUP(conn, add, remove)) {
+		std::vector<std::string> flags;
+		flags.push_back("FCBASE");
+		SendSTA(conn, "245", "Required BASE feature missing", flags);
+		return -1;
+	}
+
+	const sADCSession *session = mSessions.Find(conn);
+
+	// A SUP received in NORMAL only updates the negotiated feature set.
+	if (session && session->mState == eADC_STATE_NORMAL)
+		return 0;
+
+	std::string sid;
+
+	if (!mSessions.AssignSID(conn, sid)) {
+		SendSTA(conn, "210", "Unable to allocate session ID",
+			std::vector<std::string>());
+		return -1;
+	}
+
+	std::vector<std::string> hubFeatures;
+	hubFeatures.push_back("ADBASE");
+
+	std::string frame;
+
+	if (!CreateSUP(frame, true, hubFeatures) || !SendFrame(conn, frame, false))
+		return -1;
+
+	if (!CreateSID(frame, sid) || !SendFrame(conn, frame, true))
+		return -1;
+
+	return 0;
+}
+
 int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 {
-	(void)conn;
-
-	if (!parser)
+	if (!parser || !conn)
 		return -1;
 
 	cMessageADC *msg = dynamic_cast<cMessageADC*>(parser);
@@ -60,13 +165,51 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 	if (msg->mType == eMSG_UNPARSED)
 		msg->Parse();
 
-	if (msg->mType == eADC_INVALID || msg->mError)
+	if (msg->mType == eADC_INVALID || msg->mError) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "240", "Protocol syntax error", flags);
 		return -1;
+	}
 
 	if (!msg->SplitChunks())
 		return -1;
 
-	return 0;
+	if (!mSessions.ClientCommandAllowed(conn, msg->Command())) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "244", "Command not valid in current state", flags);
+		return -1;
+	}
+
+	switch (msg->mType) {
+		case eADC_SUP:
+			return TreatSUP(msg, conn);
+
+		case eADC_QUI:
+			mSessions.Detach(conn);
+			return 0;
+
+		case eADC_INF:
+		case eADC_PAS:
+		case eADC_MSG:
+		case eADC_SCH:
+		case eADC_RES:
+		case eADC_CTM:
+		case eADC_RCM:
+		case eADC_GET:
+		case eADC_GFI:
+		case eADC_SND:
+			// Valid ADC message. The Verlihub adapter performs account/login,
+			// permissions, routing and plugin callbacks for these commands.
+			return 1;
+
+		case eADC_STA:
+			return 0;
+
+		default:
+			return 1;
+	}
 }
 
 bool cADCProto::ValidCommand(const std::string &command)
