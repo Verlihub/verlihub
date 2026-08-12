@@ -126,8 +126,17 @@ int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 
 	const sADCSession *session = mSessions.Find(conn);
 
+	// This implementation currently supports TIGR as its session hash. ADC
+	// requires a common hash before CID/PID verification can proceed.
+	if (!session || session->mFeatures.find("TIGR") == session->mFeatures.end()) {
+		std::vector<std::string> flags;
+		flags.push_back("FCTIGR");
+		SendSTA(conn, "247", "No supported session hash overlap", flags);
+		return -1;
+	}
+
 	// A SUP received in NORMAL only updates the negotiated feature set.
-	if (session && session->mState == eADC_STATE_NORMAL)
+	if (session->mState == eADC_STATE_NORMAL)
 		return 0;
 
 	std::string sid;
@@ -140,6 +149,7 @@ int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 
 	std::vector<std::string> hubFeatures;
 	hubFeatures.push_back("ADBASE");
+	hubFeatures.push_back("ADTIGR");
 
 	std::string frame;
 
