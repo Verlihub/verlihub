@@ -49,6 +49,7 @@ class cServerADC : public cServerDC, public nPlugin::cADCPluginHost
 
 		virtual int OnNewConn(cAsyncConn *conn);
 		virtual void OnNewMessage(cAsyncConn *conn, string *msg);
+		virtual int OnTimer(const cTime &now);
 
 		virtual nPlugin::cPluginManager *ADCPluginManager()
 		{
