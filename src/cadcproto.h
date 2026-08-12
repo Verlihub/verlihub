@@ -23,9 +23,9 @@ namespace nVerliHub {
 	namespace nProtocol {
 
 /**
- * Core ADC protocol framing and login-state support.
+ * Core ADC protocol framing, state and routing support.
  *
- * The class deliberately owns only ADC wire/state concerns. Verlihub-specific
+ * The class deliberately owns ADC wire/state concerns. Verlihub-specific
  * account, ban, plugin and permission checks can be attached at the INF/PAS
  * transition without reintroducing legacy wire framing.
  */
@@ -78,6 +78,7 @@ class cADCProto : public cProtocol
 		static bool SendSTA(nSocket::cAsyncConn *conn, const std::string &code,
 			const std::string &description, const std::vector<std::string> &flags);
 		bool ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn);
+		int RouteNormal(cMessageADC *msg, nSocket::cAsyncConn *conn);
 		int TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn);
 
 		cADCSessionManager mSessions;
