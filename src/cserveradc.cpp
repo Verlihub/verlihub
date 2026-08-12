@@ -85,17 +85,11 @@ static void adc_merge_inf(vector<string> &stored, const string &parameter)
 cADCConnFactory::cADCConnFactory(cServerDC *server, nProtocol::cADCProto *protocol):
 	cConnFactory(protocol),
 	mServer(server),
-	mADCProtocol(protocol),
-	mCleanupFactory(new cDCConnFactory(server))
+	mADCProtocol(protocol)
 {}
 
 cADCConnFactory::~cADCConnFactory()
-{
-	if (mCleanupFactory) {
-		delete mCleanupFactory;
-		mCleanupFactory = NULL;
-	}
-}
+{}
 
 cAsyncConn *cADCConnFactory::CreateConn(tSocket sd)
 {
@@ -116,12 +110,10 @@ void cADCConnFactory::DeleteConn(cAsyncConn *&connection)
 	if (mADCProtocol && connection)
 		mADCProtocol->OnDisconnect(connection);
 
-	// Temporary cleanup bridge: the historical factory still owns private
-	// account/plugin cleanup. It is never used for the live ADC wire path.
-	if (mCleanupFactory)
-		mCleanupFactory->DeleteConn(connection);
-	else
-		cConnFactory::DeleteConn(connection);
+	// ADC sessions do not create the historical cUser object, so the generic
+	// socket cleanup is sufficient here. This removes cDCConnFactory from the
+	// active ADC lifecycle completely.
+	cConnFactory::DeleteConn(connection);
 }
 
 cServerADC::cServerADC(string CfgBase, const string &ExecPath):
