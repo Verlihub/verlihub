@@ -21,7 +21,7 @@ void cADCSessionManager::CheckTimeouts(long long nowMsec)
 		it != mSessions.end(); ++it) {
 		nSocket::cAsyncConn *conn = it->first;
 
-		if (!conn || !conn->ok || !conn->mxServer)
+		if (!conn || !conn->ok || !conn->mWritable || !conn->mxServer)
 			continue;
 
 		nSocket::cADCSessionHost *host =
