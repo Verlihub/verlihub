@@ -29,6 +29,7 @@ endif()
 SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
+	cadcauthpolicy.h
 	cadcbanpolicy.h
 	cadchash.h
 	cadcidentityhost.h
@@ -127,6 +128,7 @@ SET(VERLIHUB_HDRS
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
+	cadcauthpolicy.cpp
 	cadcbanpolicy.cpp
 	cadchash.cpp
 	cadcpluginbridge.cpp
@@ -245,7 +247,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 	add_custom_command(
 		OUTPUT "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
 		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
+		COMMAND cp "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h" "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
 		COMMENT "Copying proxy_types.h header"
 	)
 
