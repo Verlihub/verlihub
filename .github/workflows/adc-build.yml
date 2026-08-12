@@ -46,7 +46,40 @@ jobs:
             zlib1g-dev
 
       - name: Configure
-        run: cmake -S . -B build -DUSE_TLS_PROXY=OFF -DUSE_FEARTLS_PROXY=OFF
+        shell: bash
+        run: |
+          set +e
+          cmake -S . -B build -DUSE_TLS_PROXY=OFF -DUSE_FEARTLS_PROXY=OFF 2>&1 | tee cmake-configure.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "${status}" -ne 0 ]; then
+            echo "::group::CMake configure output"
+            cat cmake-configure.log
+            echo "::endgroup::"
+            if [ -f build/CMakeFiles/CMakeConfigureLog.yaml ]; then
+              echo "::group::CMakeConfigureLog tail"
+              tail -n 120 build/CMakeFiles/CMakeConfigureLog.yaml
+              echo "::endgroup::"
+            fi
+            if [ -f build/CMakeFiles/CMakeError.log ]; then
+              echo "::group::CMakeError.log"
+              tail -n 120 build/CMakeFiles/CMakeError.log
+              echo "::endgroup::"
+            fi
+            detail=$(tail -n 20 cmake-configure.log | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+            echo "::error file=CMakeLists.txt,line=1::CMake configure failed: ${detail}"
+            exit "${status}"
+          fi
 
       - name: Build
-        run: cmake --build build --parallel 2
+        shell: bash
+        run: |
+          set +e
+          cmake --build build --parallel 2 2>&1 | tee cmake-build.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "${status}" -ne 0 ]; then
+            detail=$(tail -n 30 cmake-build.log | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+            echo "::error file=src/CMakeLists.txt,line=1::Build failed: ${detail}"
+            exit "${status}"
+          fi
