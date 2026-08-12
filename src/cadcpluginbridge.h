@@ -3,7 +3,7 @@
 
 namespace nVerliHub {
 namespace nSocket { class cConnADC; }
-namespace nProtocol { class cMessageADC; }
+namespace nProtocol { class cMessageADC; struct sADCSession; }
 namespace nPlugin {
 class cPluginManager;
 
@@ -14,6 +14,10 @@ public:
 	static bool OnMessage(cPluginManager *manager, nSocket::cConnADC *conn,
 		const nProtocol::cMessageADC *msg);
 	static void OnDisconnect(cPluginManager *manager, nSocket::cConnADC *conn);
+	static void OnLogin(cPluginManager *manager, nSocket::cConnADC *conn,
+		const nProtocol::sADCSession *session);
+	static void OnLogout(cPluginManager *manager, nSocket::cConnADC *conn,
+		const nProtocol::sADCSession *session);
 	static bool OnTimer(cPluginManager *manager, long long msec);
 };
 
