@@ -8,9 +8,9 @@
 #	your option any later version.
 #
 #	Verlihub is distributed in the hope that it will be
-#	useful, but WITHOUT ANY WARRANTY; without even the
-#	implied warranty of MERCHANTABILITY or FITNESS FOR
-#	a PARTICULAR PURPOSE. See the GNU General Public
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
 #	License for more details.
 #
 #	Please see https://www.gnu.org/licenses/ for a copy
@@ -22,6 +22,7 @@ SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
 	cadcproto.h
+	cadcsession.h
 	cban.h
 	cbanlist.h
 	ccallbacklist.h
@@ -108,6 +109,7 @@ SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
 	cadcproto.cpp
+	cadcsession.cpp
 	cban.cpp
 	cbanlist.cpp
 	ccallbacklist.cpp
