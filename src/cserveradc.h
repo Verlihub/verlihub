@@ -11,6 +11,7 @@
 #ifndef CSERVERADC_H
 #define CSERVERADC_H
 
+#include "cadcauthpolicy.h"
 #include "cadcidentityhost.h"
 #include "cadcpluginhost.h"
 #include "cadcproto.h"
@@ -136,11 +137,12 @@ class cADCServerMessage : public nProtocol::cMessageADC
 /**
  * Server-side ADC protocol guard.
  *
- * ADC permits INF updates in NORMAL state, but a nickname change can alter
- * account identity and therefore requires a fresh authentication flow. Until
- * a dedicated re-authenticated rename transaction exists, reject NI changes
- * before cServerADC applies the INF delta. Other NORMAL INF updates continue
- * through the standard ADC application path.
+ * Authentication-side security policy is observed before server-level PAS
+ * handling closes a failed session. ADC permits INF updates in NORMAL state,
+ * but a nickname change can alter account identity and therefore requires a
+ * fresh authentication flow. Until a dedicated re-authenticated rename
+ * transaction exists, reject NI changes before cServerADC applies the INF
+ * delta. Other NORMAL INF updates continue through the standard ADC path.
  */
 class cADCServerProto : public nProtocol::cADCProto
 {
@@ -160,10 +162,16 @@ class cADCServerProto : public nProtocol::cADCProto
 			nProtocol::cMessageADC *msg =
 				dynamic_cast<nProtocol::cMessageADC*>(parser);
 
-			if (!msg || msg->Command() != "INF")
+			if (!msg)
 				return result;
 
 			const nProtocol::sADCSession *session = Sessions().Find(conn);
+
+			if (session && msg->Command() == "PAS")
+				nProtocol::cADCAuthPolicy::ObservePasswordFailure(conn, *msg, *session);
+
+			if (msg->Command() != "INF")
+				return result;
 
 			if (!session || session->mState != nProtocol::eADC_STATE_NORMAL)
 				return result;
