@@ -11,6 +11,7 @@
 #include "clegacytransportbridge.h"
 #include "casyncconn.h"
 #include "casyncsocketserver.h"
+#include "cconndc.h"
 #include "cserverdc.h"
 #include "czlib.h"
 
@@ -84,9 +85,10 @@ void TransportLogOutput(cAsyncSocketServer *server, const std::string &message)
 void TransportUserIPChanged(cAsyncSocketServer *server, cAsyncConn *conn)
 {
 	cServerDC *legacy = LegacyTransportServer(server);
+	cConnDC *legacyConn = dynamic_cast<cConnDC*>(conn);
 
-	if (legacy && conn)
-		legacy->ShowUserIP(conn);
+	if (legacy && legacyConn)
+		legacy->ShowUserIP(legacyConn);
 }
 
 	}; // namespace nSocket
