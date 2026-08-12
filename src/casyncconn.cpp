@@ -23,20 +23,10 @@
 #endif
 
 #include <ostream>
+#include <sstream>
 #include "casyncsocketserver.h"
-#include "cserverdc.h"
+#include "clegacytransportbridge.h"
 #include "cbanlist.h"
-
-/*
-#if defined _WIN32
-	#include <Winsock2.h>
-	#define ECONNRESET WSAECONNRESET
-	#define ETIMEDOUT WSAETIMEDOUT
-	#define EHOSTUNREACH WSAEHOSTUNREACH
-	#define socklen_t int
-	#define sockoptval_t char
-#endif
-*/
 
 #if HAVE_ERRNO_H
 	#include <errno.h>
@@ -45,27 +35,22 @@
 #include "casyncconn.h"
 #include "cprotocol.h"
 
-//#if !defined _WIN32
-	#include <arpa/inet.h>
-	#include <netinet/in.h> // sockaddr_in
-	#include <sys/socket.h> // AF_INET
-	#include <netdb.h> // gethostbyaddr
-//#endif
-
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
 #include "ctime.h"
 #include "stringutils.h"
 
-//#if !defined _WIN32
-	#define sockoptval_t int
+#define sockoptval_t int
 
-	inline int closesocket(int s)
-	{
-		return ::close(s);
-	}
-//#endif
+inline int closesocket(int s)
+{
+	return ::close(s);
+}
 
 #ifndef MSG_NOSIGNAL
 	#define MSG_NOSIGNAL 0
@@ -79,10 +64,10 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-vector<char> cAsyncConn::msBuffer(MAX_MESS_SIZE + 1); // todo: use dynamic grow
+vector<char> cAsyncConn::msBuffer(MAX_MESS_SIZE + 1);
 unsigned long cAsyncConn::sSocketCounter = 0;
 
-cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
+cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct):
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
 	mTLSVer(""),
@@ -103,20 +88,13 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 	mLineSizeMax(0),
 	mType(ct),
 	mxLine(NULL),
-/*
-#ifdef USE_SSL_CONNECTS
-	mSSLConn(NULL),
-#endif
-*/
 	meLineStatus(AC_LS_NO_LINE),
 	mBufEnd(0),
 	mBufReadPos(0),
 	mCloseAfter(0, 0)
 {
-	if (mxServer) {
-		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		mMaxBuffer = serv->mC.max_outbuf_size;
-	}
+	if (mxServer)
+		mMaxBuffer = TransportMaxOutputBuffer(mxServer);
 
 	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 
@@ -124,25 +102,24 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 		struct sockaddr saddr;
 		socklen_t addr_size = sizeof(saddr);
 
-		if (0 > getpeername(mSockDesc, &saddr, &addr_size)) {
+		if (getpeername(mSockDesc, &saddr, &addr_size) < 0) {
 			if (Log(2))
 				LogStream() << "Error getting peer name: " << mSockDesc << endl;
 
-			CloseNow(); // note: this uses mCloseAfter
-
+			CloseNow();
 		} else {
 			struct sockaddr_in *addr_in = (struct sockaddr_in*)&saddr;
-			mIP = addr_in->sin_addr.s_addr; // copy ip
+			mIP = addr_in->sin_addr.s_addr;
 			char *temp = inet_ntoa(addr_in->sin_addr);
-			mAddrIP = temp; // ip address
-			cBanList::Ip2Num(mAddrIP, mNumIP); // not validated
+			mAddrIP = temp;
+			nTables::cBanList::Ip2Num(mAddrIP, mNumIP);
 
-			if (mxServer && mxServer->mUseDNS) // host name
+			if (mxServer && mxServer->mUseDNS)
 				DNSLookup();
 
-			mAddrPort = ntohs(addr_in->sin_port); // port number
+			mAddrPort = ntohs(addr_in->sin_port);
 
-			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
+			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) {
 				addr_in = (struct sockaddr_in*)&saddr;
 				temp = inet_ntoa(addr_in->sin_addr);
 				mServAddr = temp;
@@ -151,13 +128,12 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 				LogStream() << "Error getting socket name" << endl;
 			}
 		}
-
 	} else {
 		CloseNow();
 	}
 }
 
-cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing connection
+cAsyncConn::cAsyncConn(const string &host, int port):
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
 	ok(false),
@@ -166,13 +142,7 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing 
 	mxMyFactory(NULL),
 	mxProtocol(NULL),
 	mpMsgParser(NULL),
-//#if !defined _WIN32
 	mSockDesc(-1),
-/*
-#else
-	mSockDesc(0),
-#endif
-*/
 	mSeparator('|'),
 	mLineSize(0),
 	mIP(0),
@@ -189,24 +159,16 @@ cAsyncConn::cAsyncConn(const string &host, int port/*, bool udp*/): // outgoing 
 	mCloseAfter(0, 0)
 {
 	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
-
-	/*
-	if (udp) {
-		mType = eCT_SERVERUDP;
-		SetupUDP(host, port);
-	} else {
-	*/
-		Connect(host, port);
-	//}
+	Connect(host, port);
 }
 
 cAsyncConn::~cAsyncConn()
 {
 	if (mpMsgParser)
-		this->DeleteParser(mpMsgParser);
+		DeleteParser(mpMsgParser);
 
 	mpMsgParser = NULL;
-	this->Close();
+	Close();
 }
 
 void cAsyncConn::Close()
@@ -216,16 +178,6 @@ void cAsyncConn::Close()
 
 	mWritable = false;
 	ok = false;
-
-/*
-#ifdef USE_SSL_CONNECTS
-	if (mSSLConn) {
-		SSL_shutdown(mSSLConn);
-		SSL_free(mSSLConn);
-		mSSLConn = NULL;
-	}
-#endif
-*/
 
 	if (mxServer)
 		mxServer->OnConnClose(this);
@@ -250,7 +202,7 @@ void cAsyncConn::Flush()
 		return;
 
 	string empty;
-	Write(empty, true); // write buffers
+	Write(empty, true);
 }
 
 int cAsyncConn::ReadLineLocal()
@@ -258,7 +210,8 @@ int cAsyncConn::ReadLineLocal()
 	if (!mxLine)
 		throw "ReadLine with null line pointer";
 
-	char *pos, *buf = msBuffer.data() + mBufReadPos;
+	char *pos;
+	char *buf = msBuffer.data() + mBufReadPos;
 	int len = mBufEnd - mBufReadPos;
 
 	if (NULL == (pos = (char*)memchr(buf, mSeparator, len))) {
@@ -267,14 +220,14 @@ int cAsyncConn::ReadLineLocal()
 			return 0;
 		}
 
-		mxLine->append((char*)buf, len);
+		mxLine->append(buf, len);
 		mBufEnd = 0;
 		mBufReadPos = 0;
 		return len;
 	}
 
 	len = pos - buf;
-	mxLine->append((char*)buf, len);
+	mxLine->append(buf, len);
 	mBufReadPos += len + 1;
 	meLineStatus = AC_LS_LINE_DONE;
 	return len + 1;
@@ -304,14 +257,14 @@ void cAsyncConn::ClearLine()
 	mxLine = NULL;
 }
 
-string* cAsyncConn::GetLine()
+string *cAsyncConn::GetLine()
 {
 	return mxLine;
 }
 
 void cAsyncConn::CloseNice(int msec)
 {
-	OnCloseNice(); // must be first
+	OnCloseNice();
 	mWritable = false;
 
 	if ((msec <= 0) || (!GetFlushSize() && !GetBufferSize())) {
@@ -343,165 +296,56 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 	if (!ok || !mWritable)
 		return -1;
 
-	int buf_len = 0; //addr_len = sizeof(struct sockaddr)
+	int buf_len = 0;
 	unsigned int i = 0;
 	mBufReadPos = 0;
 	mBufEnd = 0;
-	//bool udp = (this->GetType() == eCT_CLIENTUDP);
 
-	//if (!udp) {
-/*
-#ifdef USE_SSL_CONNECTS
-		if (mSSLConn) {
-			int err = 0;
-
-			do {
-				buf_len = SSL_read(mSSLConn, msBuffer.data(), MAX_MESS_SIZE);
-				err = SSL_get_error(mSSLConn, buf_len);
-
-				if (err == SSL_ERROR_WANT_READ)
-					mxServer->mConnChooser.OptIn(this, eCC_INPUT);
-
-				::usleep(sleep);
-			} while ((err == SSL_ERROR_WANT_READ) && (i++ <= tries));
-
-		} else {
-#endif
-*/
-			while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
-			//#if !defined _WIN32
-				::usleep(sleep);
-			//#endif
-			}
-/*
-#ifdef USE_SSL_CONNECTS
-		}
-#endif
-*/
-	/*
-	} else {
-		while (((buf_len = recvfrom(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
-	#if !defined _WIN32
+	while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) &&
+		((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries))
 		::usleep(sleep);
-	#endif
-		}
-	}
-	*/
 
 	if (buf_len <= 0) {
-		//if (!udp) {
-			if (buf_len == 0) {
-				if (Log(2)) // connection hung up
-					LogStream() << "User hung up" << endl;
-
-			} else {
-				if (Log(2))
-					LogStream() << "Read IO error: " << errno << " = " << strerror(errno) << endl;
-
-				/*
-				switch (errno) {
-					case ECONNRESET: // connection reset by peer
-						break;
-					case ETIMEDOUT: // connection timed out
-						break;
-					case EHOSTUNREACH: // no route to host
-						break;
-					default:
-						break;
-				}
-				*/
-			}
-
-			CloseNow();
-			return -1;
-		//}
-
-	} else { // received data
-		if ((buf_len > 2) && (msBuffer[0] == 0x16) && (msBuffer[1] == 0x03)) { // detect tls connection
+		if (buf_len == 0) {
 			if (Log(2))
-				LogStream() << "Closing TLS connection" << endl;
-
-			CloseNow(); // todo: eCR_TLS_SESS
-			return -1;
+				LogStream() << "User hung up" << endl;
+		} else if (Log(2)) {
+			LogStream() << "Read IO error: " << errno << " = " << strerror(errno) << endl;
 		}
 
-		mBufEnd = buf_len;
-		msBuffer[mBufEnd] = '\0'; // end string
-
-		if (mxServer)
-			mTimeLastIOAction = mxServer->mTime;
-		else
-			mTimeLastIOAction.Get();
+		CloseNow();
+		return -1;
 	}
+
+	if ((buf_len > 2) && (msBuffer[0] == 0x16) && (msBuffer[1] == 0x03)) {
+		if (Log(2))
+			LogStream() << "Closing TLS connection" << endl;
+
+		CloseNow();
+		return -1;
+	}
+
+	mBufEnd = buf_len;
+	msBuffer[mBufEnd] = '\0';
+
+	if (mxServer)
+		mTimeLastIOAction = mxServer->mTime;
+	else
+		mTimeLastIOAction.Get();
 
 	return buf_len;
 }
 
 int cAsyncConn::SendAll(const char *buf, size_t &len)
 {
-	size_t total = 0; // how many bytes weve sent
-	size_t bytesleft = len; // how many we have left to send
-	int n = 0; //, err = 0;
-	//int repetitions = 0;
-	//bool udp = (this->GetType() == eCT_SERVERUDP);
+	size_t total = 0;
+	size_t bytesleft = len;
+	int n = 0;
 
 #ifndef QUICK_SEND
 	while (total < len) {
-		//try {
-			//if (!udp) {
-//#if !defined _WIN32
-/*
-#ifdef USE_SSL_CONNECTS
-				if (mSSLConn) {
-					do {
-						n = SSL_write(mSSLConn, buf + total, bytesleft);
-						err = SSL_get_error(mSSLConn, n);
-						//sleep(1);
-					} while (err == SSL_ERROR_WANT_WRITE);
-
-				} else {
-#endif
-*/
-					n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
-/*
-#else
-				int RetryCount = 0;
-
-				do {
-					if ((n = send(mSockDesc, buf + total, (int)bytesleft, 0)) != SOCKET_ERROR)
-						break;
-
-					if (WSAGetLastError() == WSAEWOULDBLOCK) {
-						if (ErrLog(3))
-							LogStream() << "cAsynConn Warning, resource unavailable, retrying" << ++RetryCount <<endl;
-
-						::Sleep(50);
-					}
-				} while (WSAGetLastError() == WSAEWOULDBLOCK);
-*/
-/*
-#ifdef USE_SSL_CONNECTS
-				}
-#endif
-*/
-/*
-#endif
-*/
-			/*
-			} else {
-				n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
-			}
-			*/
-			/*
-		} catch (...) {
-			if (ErrLog(2))
-				LogStream() << "Exception in SendAll(buf, " << len << ") total=" << total << " left=" << bytesleft << " rep=" << repetitions << " n=" << n << endl;
-
-			return -1;
-		}
-
-		repetitions++;
-		*/
+		n = send(mSockDesc, buf + total, bytesleft,
+			MSG_NOSIGNAL | MSG_DONTWAIT);
 
 		if (n == -1)
 			break;
@@ -510,76 +354,13 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		bytesleft -= n;
 	}
 #else
-	//if (!udp)
-/*
-#ifdef USE_SSL_CONNECTS
-		if (mSSLConn) {
-			do {
-				n = SSL_write(mSSLConn, buf + total, bytesleft);
-				err = SSL_get_error(mSSLConn, n);
-				//sleep(1);
-			} while (err == SSL_ERROR_WANT_WRITE);
-
-		} else {
-#endif
-*/
-			n = send(mSockDesc, buf + total, bytesleft, 0);
-/*
-#ifdef USE_SSL_CONNECTS
-		}
-#endif
-*/
-	/*
-	else
-		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
-	*/
+	n = send(mSockDesc, buf + total, bytesleft, 0);
 	total = n;
 #endif
 
-	len = total; // number of bytes actually sent
-	return ((n == -1) ? -1 : 0); // -1 on failure, 0 on success
+	len = total;
+	return ((n == -1) ? -1 : 0);
 }
-
-/*
-int cAsyncConn::SetupUDP(const string &host, int port)
-{
-	mSockDesc = CreateSock(true);
-
-	if(mSockDesc == INVALID_SOCKET) {
-		vhErr(1) << "Error getting socket." << endl;
-		ok = false;
-		return -1;
-	}
-
-	struct hostent *he = gethostbyname(host.c_str());
-	if(he != NULL) {
-		memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
-		mAddrIN.sin_family = AF_INET;
-		mAddrIN.sin_port = htons(port);
-		mAddrIN.sin_addr = *((struct in_addr *)he->h_addr);
-		memset(&(mAddrIN.sin_zero), '\0', 8);
-		ok = true;
-		return 0;
-	} else {
-		vhErr(2) << "Error resolving host " << host << endl;
-		ok = false;
-		return -1;
-	}
-}
-
-int cAsyncConn::SendUDPMsg(const string &host, int port, const string &data)
-{
-	int result;
-	cAsyncConn conn(host, port, true);
-	if (conn.ok)
-		result = conn.Write(data, true);
-	else
-		return -1;
-	if(conn.mSockDesc != INVALID_SOCKET)
-		conn.Close();
-	return result;
-}
-*/
 
 int cAsyncConn::Connect(const string &host, int port)
 {
@@ -597,69 +378,49 @@ int cAsyncConn::Connect(const string &host, int port)
 
 	struct hostent *he = gethostbyname(host.c_str());
 
-	if (he) {
-		struct sockaddr_in dest_addr;
-		dest_addr.sin_family = AF_INET;
-		dest_addr.sin_port = htons(port);
-		dest_addr.sin_addr.s_addr = *(unsigned*)(he->h_addr_list[0]); //inet_addr(host.c_str())
-		memset(&(dest_addr.sin_zero), '\0', 8);
-		int s = connect(mSockDesc, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr));
-
-		if (s == -1) {
-			vhErr(1) << "Error connecting to " << host << ':' << port << endl;
-			ok = false;
-			return -1;
-		}
-
-		ok = true;
-		return 0;
-
-	} else {
+	if (!he) {
 		vhErr(2) << "Error resolving host " << host << endl;
 		ok = false;
 		return -1;
 	}
+
+	struct sockaddr_in dest_addr;
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(port);
+	dest_addr.sin_addr.s_addr = *(unsigned*)(he->h_addr_list[0]);
+	memset(&(dest_addr.sin_zero), '\0', 8);
+	int s = connect(mSockDesc, (struct sockaddr*)&dest_addr,
+		sizeof(struct sockaddr));
+
+	if (s == -1) {
+		vhErr(1) << "Error connecting to " << host << ':' << port << endl;
+		ok = false;
+		return -1;
+	}
+
+	ok = true;
+	return 0;
 }
 
 int cAsyncConn::SetSockOpt(int optname, const void *optval, int optlen)
 {
-	//#ifndef _WIN32
-		return setsockopt(this->mSockDesc, SOL_SOCKET, optname, optval, optlen);
-	/*
-	#else
-		return 0;
-	#endif
-	*/
+	return setsockopt(mSockDesc, SOL_SOCKET, optname, optval, optlen);
 }
 
-/*
-int cAsyncConn::GetSockOpt(int optname, void *optval, int &optlen)
+tSocket cAsyncConn::CreateSock()
 {
-	socklen_t _optlen; // int &optlen ?
-	return getsockopt(this->mSockDesc, SOL_SOCKET, optname, optval, &_optlen);
-}
-*/
+	tSocket sock = socket(AF_INET, SOCK_STREAM, 0);
 
-tSocket cAsyncConn::CreateSock(/*bool udp*/)
-{
-	tSocket sock;
+	if (sock == INVALID_SOCKET)
+		return INVALID_SOCKET;
 
-	//if (!udp) {
-		if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) // create tcp socket
-			return INVALID_SOCKET;
+	sockoptval_t yes = 1;
 
-		sockoptval_t yes = 1;
-
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(sockoptval_t)) == INVALID_SOCKET) { // fix the address already in use error
-			closesocket(sock);
-			return INVALID_SOCKET;
-		}
-	/*
-	} else {
-		if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) // create udp socket
-			return INVALID_SOCKET;
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes,
+		sizeof(sockoptval_t)) == INVALID_SOCKET) {
+		closesocket(sock);
+		return INVALID_SOCKET;
 	}
-	*/
 
 	sSocketCounter++;
 
@@ -675,22 +436,15 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 		return INVALID_SOCKET;
 
 	mAddrIN.sin_family = AF_INET;
-	mAddrIN.sin_addr.s_addr = INADDR_ANY; // default listen address
+	mAddrIN.sin_addr.s_addr = INADDR_ANY;
 
-	if (ia && (ia[0] != '\0')) {
-	//#if !defined _WIN32
-		inet_aton(ia, &mAddrIN.sin_addr); // override it
-	/*
-	#else
-		mAddrIN.sin_addr.s_addr = inet_addr(ia);
-	#endif
-	*/
-	}
+	if (ia && ia[0] != '\0')
+		inet_aton(ia, &mAddrIN.sin_addr);
 
 	mAddrIN.sin_port = htons(port);
 	memset(&(mAddrIN.sin_zero), '\0', 8);
 
-	if (::bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1) // bind socket to port
+	if (::bind(sock, (struct sockaddr*)&mAddrIN, sizeof(mAddrIN)) == -1)
 		return INVALID_SOCKET;
 
 	return sock;
@@ -701,7 +455,7 @@ int cAsyncConn::ListenSock(int sock, const unsigned int blog)
 	if (sock < 0)
 		return INVALID_SOCKET;
 
-	if (listen(sock, blog) == -1) { // note: this is backlog
+	if (listen(sock, blog) == -1) {
 		vhErr(0) << "Error listening" << endl;
 		return INVALID_SOCKET;
 	}
@@ -714,32 +468,24 @@ tSocket cAsyncConn::NonBlockSock(int sock)
 	if (sock < 0)
 		return INVALID_SOCKET;
 
-	//#if !defined _WIN32
-		int flags;
+	int flags = fcntl(sock, F_GETFL, 0);
 
-		if ((flags = fcntl(sock, F_GETFL, 0)) < 0)
-			return INVALID_SOCKET;
+	if (flags < 0)
+		return INVALID_SOCKET;
 
-		if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
-			return INVALID_SOCKET;
-	/*
-	#else
-		unsigned long one = 1;
-
-		if (SOCKET_ERROR == ioctlsocket(sock, FIONBIO, &one))
-			return INVALID_SOCKET;
-	#endif
-	*/
+	if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
+		return INVALID_SOCKET;
 
 	return sock;
 }
 
-bool cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int blog/*, bool udp*/)
+bool cAsyncConn::ListenOnPort(int port, const char *address,
+	const unsigned int blog)
 {
 	if (mSockDesc)
 		return false;
 
-	mSockDesc = CreateSock(/*udp*/);
+	mSockDesc = CreateSock();
 
 	if (mSockDesc == INVALID_SOCKET)
 		return false;
@@ -749,122 +495,46 @@ bool cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int 
 	if (mSockDesc == INVALID_SOCKET)
 		return false;
 
-	//if (!udp) {
-	    mSockDesc = ListenSock(mSockDesc, blog);
+	mSockDesc = ListenSock(mSockDesc, blog);
 
-		if (mSockDesc == INVALID_SOCKET)
-			return false;
+	if (mSockDesc == INVALID_SOCKET)
+		return false;
 
-	    mSockDesc = NonBlockSock(mSockDesc);
+	mSockDesc = NonBlockSock(mSockDesc);
 
-		if (mSockDesc == INVALID_SOCKET)
-			return false;
-
-	//}
+	if (mSockDesc == INVALID_SOCKET)
+		return false;
 
 	ok = mSockDesc > 0;
 	return ok;
 }
 
-tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int tries)
+tSocket cAsyncConn::AcceptSock(const unsigned int sleep,
+	const unsigned int tries)
 {
-	//#if !defined _WIN32
-		struct sockaddr_in client;
-	/*
-	#else
-		struct sockaddr client;
-	#endif
-	*/
-
-	socklen_t namelen = sizeof(client); // get a socket for the connected user
+	struct sockaddr_in client;
+	socklen_t namelen = sizeof(client);
 	memset(&client, 0, namelen);
-
-	//#if !defined _WIN32
-		tSocket socknum = ::accept(mSockDesc, (struct sockaddr*)&client, &namelen);
-	/*
-	#else
-		tSocket socknum = accept(mSockDesc, (struct sockaddr*)&client, &namelen);
-	#endif
-	*/
-
+	tSocket socknum = ::accept(mSockDesc, (struct sockaddr*)&client, &namelen);
 	unsigned int i = 0;
 
-	while ((socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < tries)) {
-		//#if !defined _WIN32
-			socknum = ::accept(mSockDesc, (struct sockaddr*)&client, (socklen_t*)&namelen);
-		/*
-		#else
-			socknum = accept(mSockDesc, (struct sockaddr*)&client, &namelen);
-		#endif
-		*/
-
-		//#if !defined _WIN32
-			::usleep(sleep);
-		/*
-		#else
-			::Sleep(1);
-		#endif
-		*/
+	while ((socknum == INVALID_SOCKET) &&
+		((errno == EAGAIN) || (errno == EINTR)) && (i++ < tries)) {
+		socknum = ::accept(mSockDesc, (struct sockaddr*)&client, &namelen);
+		::usleep(sleep);
 	}
 
-	if (socknum == INVALID_SOCKET) {
-		/*
-		#ifdef _WIN32
-			vhErr(1) << WSAGetLastError() << "  " << sizeof(fd_set) << endl;
-		#endif
-		*/
-
+	if (socknum == INVALID_SOCKET)
 		return INVALID_SOCKET;
-	}
 
 	if (Log(3))
 		LogStream() << "Accepted socket: " << socknum << endl;
 
-/*
-#ifdef USE_SSL_CONNECTS
-	if (mxServer && mxServer->mSSLCont) {
-		mSSLConn = SSL_new(mxServer->mSSLCont);
-
-		if (mSSLConn) {
-			int ret = 0, err = 0;
-
-			if ((ret = SSL_set_fd(mSSLConn, socknum)) == 1) {
-				i = 0;
-
-				do {
-					ret = SSL_accept(mSSLConn);
-					err = SSL_get_error(mSSLConn, ret);
-
-					if (err == SSL_ERROR_WANT_READ)
-						mxServer->mConnChooser.OptIn(this, eCC_INPUT);
-				} while (((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) && (i++ < tries));
-
-				if (ret != 1) {
-					if (Log(0))
-						LogStream() << "Failed to accept client SSL socket: " << socknum << " (" << err << '/' << ret << ')' << endl;
-
-					SSL_free(mSSLConn);
-					mSSLConn = NULL;
-				}
-
-			} else {
-				if (Log(0))
-					LogStream() << "Failed to set SSL file descriptor: " << socknum << " (" << SSL_get_error(mSSLConn, ret) << '/' << ret << ')' << endl;
-			}
-
-		} else {
-			if (Log(0))
-				LogStream() << "Failed to create client SSL socket: " << socknum << endl;
-		}
-	}
-#endif
-*/
-
 	sSocketCounter++;
 	sockoptval_t yes = 1;
 
-	//#ifndef _WIN32
-	if (setsockopt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(int)) == SOCKET_ERROR) {
+	if (setsockopt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes,
+		sizeof(int)) == SOCKET_ERROR) {
 		TEMP_FAILURE_RETRY(closesocket(socknum));
 
 		if (errno != EINTR) {
@@ -872,14 +542,12 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 
 			if (Log(3))
 				LogStream() << "Closing socket: " << socknum << endl;
-
 		} else if (ErrLog(1)) {
 			LogStream() << "Socket not closed: " << socknum << endl;
 		}
 
 		return INVALID_SOCKET;
 	}
-	//#endif
 
 	if ((socknum = NonBlockSock(socknum)) == INVALID_SOCKET)
 		return INVALID_SOCKET;
@@ -887,7 +555,7 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 	return socknum;
 }
 
-cConnFactory* cAsyncConn::GetAcceptingFactory()
+cConnFactory *cAsyncConn::GetAcceptingFactory()
 {
 	if (mxServer && mxServer->mFactory)
 		return mxServer->mFactory;
@@ -895,7 +563,7 @@ cConnFactory* cAsyncConn::GetAcceptingFactory()
 	return NULL;
 }
 
-cAsyncConn* cAsyncConn::Accept(const unsigned int sleep, const unsigned int tries)
+cAsyncConn *cAsyncConn::Accept(const unsigned int sleep, const unsigned int tries)
 {
 	tSocket sd = AcceptSock(sleep, tries);
 
@@ -907,24 +575,17 @@ cAsyncConn* cAsyncConn::Accept(const unsigned int sleep, const unsigned int trie
 	else
 		mTimeLastIOAction.Get();
 
-	cConnFactory *AcceptingFactory = this->GetAcceptingFactory();
-	cAsyncConn *new_conn = NULL;
+	cConnFactory *acceptingFactory = GetAcceptingFactory();
+	cAsyncConn *newConn = NULL;
 
-	if (AcceptingFactory)
-		new_conn = AcceptingFactory->CreateConn(sd);
+	if (acceptingFactory)
+		newConn = acceptingFactory->CreateConn(sd);
 
-	if (!new_conn)
+	if (!newConn)
 		throw "Unable to create connection";
 
-	return new_conn;
+	return newConn;
 }
-
-/*
-const tConnType& cAsyncConn::getType()
-{
-	return mType;
-}
-*/
 
 tConnType cAsyncConn::GetType()
 {
@@ -948,101 +609,102 @@ int cAsyncConn::OnTimer(const cTime &now)
 	return 0;
 }
 
-/*
-void cAsyncConn::OnFlushDone()
-{}
-*/
-
-int cAsyncConn::Write(const string &data, bool flush) // note: data can actually be empty when we perform a timed flush
+int cAsyncConn::Write(const string &data, bool flush)
 {
-	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = data.size();
+	size_t flush_size = GetFlushSize();
+	size_t buf_size = GetBufferSize();
+	const size_t data_size = data.size();
 	size_t calc_size = flush_size + buf_size + data_size;
 
-	if (calc_size > mMaxBuffer) { // disconnect user who is receiving too slow and his buffer is overfilled, we cant waste memory forever
-		if (Log(2))
-			LogStream() << "Output buffer is too big, closing: " << flush_size << " + " << buf_size << " + " << data_size << " = " << calc_size << " of " << mMaxBuffer << endl;
+	if (calc_size > mMaxBuffer) {
+		if (Log(2)) {
+			LogStream() << "Output buffer is too big, closing: " << flush_size
+				<< " + " << buf_size << " + " << data_size << " = "
+				<< calc_size << " of " << mMaxBuffer << endl;
+		}
 
 		CloseNow();
 		return -1;
 	}
 
-	if (data_size) { // we have something new to append
+	if (data_size) {
 		mBufFlush.append(data.data(), data_size);
 		flush_size += data_size;
 	}
 
 	buf_size += flush_size;
-	flush = (flush || (buf_size > (mMaxBuffer >> 1))); // force flush if required
+	flush = flush || (buf_size > (mMaxBuffer >> 1));
 
-	if (!buf_size || !flush) // nothing to send or send it later
+	if (!buf_size || !flush)
 		return 0;
 
-	nVerliHub::cServerDC *serv = NULL;
+	cAsyncSocketServer *serv = mxServer;
 
-	if (mxServer)
-		serv = (nVerliHub::cServerDC*)mxServer;
-	else if (Log(5))
+	if (!serv && Log(5))
 		LogStream() << "Server not available for write operations" << endl;
 
-	const char *send_buf = mBufFlush.data(); // pointer to flush buffer
+	const char *send_buf = mBufFlush.data();
 
-	if (flush_size) { // check if there is something to flush, else send old remaining data
-		if (mZLibFlag && serv && !serv->mC.disable_zlib && (flush_size >= serv->mC.zlib_min_len)) { // compress data only when flushing or we will destroy everything, only if minimum length is reached
+	if (flush_size) {
+		if (mZLibFlag && serv &&
+			TransportCompressionEnabled(serv, flush_size)) {
 			if (send_buf[flush_size - 1] == '|') {
-				calc_size = 0; // we dont use it anymore
+				string compressed;
+				size_t candidate_size = 0;
 				int comp_err = 0;
-				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
+				const int comp = TransportCompressOutput(serv, send_buf,
+					flush_size, compressed, candidate_size, comp_err);
 
-				if (calc_size && zlib_buf) { // compression successful
-					buf_size -= flush_size; // recalculate final send buffer size
-					buf_size += calc_size;
-					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
-					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
+				if (comp == 1) {
+					buf_size -= flush_size;
+					buf_size += compressed.size();
+					mBufSend.append(compressed);
+				} else {
+					mBufSend.append(send_buf, flush_size);
 
-				} else { // compression is larger than initial data or something failed
-					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
-
-					if (calc_size) {
-						if (Log(5))
-							LogStream() << "Compressed ZLib data is larger, fall back: " << calc_size << " vs " << flush_size << endl;
-					} else {
-						if (comp_err > -100) { // note: special message
-							if (Log(0)) // todo: see if this happens too often, we dont want to flood in logs eigther
-								LogStream() << "Reallocation of ZLib buffer failed, fall back: " << comp_err << endl;
+					if (comp < 0) {
+						if (candidate_size) {
+							if (Log(5)) {
+								LogStream() << "Compressed ZLib data is larger, fall back: "
+									<< candidate_size << " vs " << flush_size << endl;
+							}
+						} else if (comp_err > -100) {
+							if (Log(0))
+								LogStream() << "Reallocation of ZLib buffer failed, fall back: "
+									<< comp_err << endl;
 						} else {
-							LogStream() << "Failed compressing data with ZLib, fall back: " << comp_err << endl;
+							LogStream() << "Failed compressing data with ZLib, fall back: "
+								<< comp_err << endl;
 						}
 					}
 				}
 
-				mBufFlush.clear(); // clean up flush buffer in both cases
+				mBufFlush.clear();
 				ShrinkStringToFit(mBufFlush);
-
-			} else if (Log(1)) { // client will fail to decompress when pipe is missing, this happens when we are flushing incomplete data, todo: not sure if wait or do something already here
-				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
+			} else if (Log(1)) {
+				LogStream() << "Missing ending pipe in compress data: "
+					<< mBufFlush << endl;
 			}
-
-		} else { // compression is disabled or data too short for good result
-			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
-			mBufFlush.clear(); // clean up flush buffer
+		} else {
+			mBufSend.append(send_buf, flush_size);
+			mBufFlush.clear();
 			ShrinkStringToFit(mBufFlush);
 		}
 	}
 
-	send_buf = mBufSend.data(); // pointer to send buffer
+	send_buf = mBufSend.data();
+	calc_size = buf_size;
 
-	/*
-	if (!send_buf)
-		return 0;
-	*/
+	if (SendAll(send_buf, calc_size) == -1) {
+		if (Log(6) && serv) {
+			ostringstream os;
+			os << '[' << AddrIP() << "] Failed sending all data, "
+				<< calc_size << " of " << buf_size << ", " << errno << '='
+				<< strerror(errno) << ": " << mBufSend << endl;
+			TransportLogOutput(serv, os.str());
+		}
 
-	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
-
-	if (SendAll(send_buf, calc_size) == -1) { // try to send as much data as possible
-		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << errno << '=' << strerror(errno) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
-
-		if ((errno != EAGAIN) && (errno != EINTR)) { // analyse the error if any
+		if ((errno != EAGAIN) && (errno != EINTR)) {
 			if (Log(2))
 				LogStream() << "Error during writing, closing: " << errno << endl;
 
@@ -1050,50 +712,55 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			return -1;
 		}
 
-		if (calc_size > 0) { // some data was sent, update the buffer
+		if (calc_size > 0) {
 			if (serv)
 				mTimeLastIOAction = serv->mTime;
 			else
 				mTimeLastIOAction.Get();
 
-			StrCutLeft(mBufSend, calc_size); // this is supposed to actually reduce the size of buffer, it does a copy so it is slower but memory usage is important
+			StrCutLeft(mBufSend, calc_size);
 			buf_size -= calc_size;
-
-		} else if (bool(mCloseAfter)) { // we must close nice the connection
+		} else if (bool(mCloseAfter)) {
 			CloseNow();
 		}
 
-		if (serv && ok) { // buffer overfill protection, only on registered connections
-			serv->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
+		if (serv && ok) {
+			serv->mConnChooser.OptIn(this, eCC_OUTPUT);
+			const unsigned long unblock = TransportMaxUnblockSize(serv);
+			const unsigned long outfill = TransportMaxOutfillSize(serv);
 
-			if (buf_size < serv->mC.max_unblock_size) { // if buffer size is smaller than unblock size, allow read operation on the connection
+			if (buf_size < unblock) {
 				serv->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
-					if (serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Unblocking read operation on socket: " << buf_size << " of " << serv->mC.max_unblock_size << endl;
-
-					LogStream() << "Unblocking input: " << buf_size << " of " << serv->mC.max_unblock_size << endl;
+					ostringstream os;
+					os << "Unblocking read operation on socket: " << buf_size
+						<< " of " << unblock << endl;
+					TransportLogOutput(serv, os.str());
+					LogStream() << "Unblocking input: " << buf_size
+						<< " of " << unblock << endl;
 				}
-			} else if (buf_size >= serv->mC.max_outfill_size) { // if buffer is bigger than maximum send size, block read operation
+			} else if (buf_size >= outfill) {
 				serv->mConnChooser.OptOut(this, eCC_INPUT);
 
 				if (Log(5)) {
-					if (serv->mNetOutLog && serv->mNetOutLog.is_open())
-						serv->mNetOutLog << "Blocking read operation on socket: " << buf_size << " of " << serv->mC.max_outfill_size << endl;
-
-					LogStream() << "Blocking input: " << buf_size << " of " << serv->mC.max_outfill_size << endl;
+					ostringstream os;
+					os << "Blocking read operation on socket: " << buf_size
+						<< " of " << outfill << endl;
+					TransportLogOutput(serv, os.str());
+					LogStream() << "Blocking input: " << buf_size
+						<< " of " << outfill << endl;
 				}
 			}
 		}
-	} else { // all data was sent
-		mBufSend.clear(); // clean up send buffer
+	} else {
+		mBufSend.clear();
 		ShrinkStringToFit(mBufSend);
 
-		if (bool(mCloseAfter)) // close nice the connection
+		if (bool(mCloseAfter))
 			CloseNow();
 
-		if (serv && ok) { // unregister connection for write operation
+		if (serv && ok) {
 			serv->mConnChooser.OptOut(this, eCC_OUTPUT);
 
 			if (Log(5))
@@ -1104,8 +771,6 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			mTimeLastIOAction = serv->mTime;
 		else
 			mTimeLastIOAction.Get();
-
-		//OnFlushDone(); // report that flush is done
 	}
 
 	return calc_size;
@@ -1116,30 +781,30 @@ int cAsyncConn::OnCloseNice(void)
 	return 0;
 }
 
-cMessageParser* cAsyncConn::CreateParser()
+cMessageParser *cAsyncConn::CreateParser()
 {
-	if (this->mxProtocol)
-		return this->mxProtocol->CreateParser();
-	else
-		return NULL;
+	if (mxProtocol)
+		return mxProtocol->CreateParser();
+
+	return NULL;
 }
 
-void cAsyncConn::DeleteParser(cMessageParser *OldParser)
+void cAsyncConn::DeleteParser(cMessageParser *oldParser)
 {
-	if (this->mxProtocol) {
-		this->mxProtocol->DeleteParser(OldParser);
-	} else {
-		delete OldParser;
-		OldParser = NULL;
+	if (mxProtocol)
+		mxProtocol->DeleteParser(oldParser);
+	else {
+		delete oldParser;
+		oldParser = NULL;
 	}
 }
 
-string* cAsyncConn::FactoryString()
+string *cAsyncConn::FactoryString()
 {
-	if (mpMsgParser == NULL)
-		mpMsgParser = this->CreateParser();
+	if (!mpMsgParser)
+		mpMsgParser = CreateParser();
 
-	if (mpMsgParser == NULL)
+	if (!mpMsgParser)
 		return NULL;
 
 	mpMsgParser->ReInit();
@@ -1153,14 +818,15 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 
 	unsigned long num = 0;
 
-	if (!cBanList::Ip2Num(addr, num, false)) // validate ip
+	if (!nTables::cBanList::Ip2Num(addr, num, false))
 		return false;
 
 	mNumIP = num;
 	mAddrIP = addr;
 	mIP = inet_addr(addr.c_str());
 
-	if (mxServer && mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
+	if (mxServer && mxServer->mUseDNS &&
+		(mAddrHost.empty() || (mAddrHost == "localhost"))) {
 		mAddrHost.clear();
 		DNSLookup();
 	}
@@ -1180,10 +846,10 @@ bool cAsyncConn::SetUserIP(const string &addr)
 {
 	unsigned long num = 0;
 
-	if (!cBanList::Ip2Num(addr, num, false)) // validate ip
+	if (!nTables::cBanList::Ip2Num(addr, num, false))
 		return false;
 
-	if (mNumIP == num) // same ip, valid
+	if (mNumIP == num)
 		return true;
 
 	mNumIP = num;
@@ -1191,12 +857,10 @@ bool cAsyncConn::SetUserIP(const string &addr)
 	mIP = inet_addr(addr.c_str());
 
 	if (mxServer) {
-		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
+		TransportUserIPChanged(mxServer, this);
 
-		if (serv) // send userip to operators
-			serv->ShowUserIP(this);
-
-		if (mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
+		if (mxServer->mUseDNS &&
+			(mAddrHost.empty() || (mAddrHost == "localhost"))) {
 			mAddrHost.clear();
 			DNSLookup();
 		}
@@ -1210,59 +874,42 @@ bool cAsyncConn::DNSLookup()
 	if (mAddrHost.size())
 		return true;
 
-	struct hostent *hp;
+	struct hostent *hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET);
 
-	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET)))
+	if (hp)
 		mAddrHost = hp->h_name;
 
-	return (hp != NULL);
+	return hp != NULL;
 }
 
 unsigned long cAsyncConn::DNSResolveHost(const string &host)
 {
-	struct sockaddr_in AddrIN;
-	memset(&AddrIN, 0, sizeof(sockaddr_in));
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(sockaddr_in));
 	struct hostent *he = gethostbyname(host.c_str());
 
-	if (he != NULL)
-		AddrIN.sin_addr = *((struct in_addr*)he->h_addr);
+	if (he)
+		addr.sin_addr = *((struct in_addr*)he->h_addr);
 
-	return AddrIN.sin_addr.s_addr;
+	return addr.sin_addr.s_addr;
 }
 
 bool cAsyncConn::DNSResolveReverse(const string &ip, string &host)
 {
 	struct in_addr addr;
 
-//#ifndef _WIN32
 	if (!inet_aton(ip.c_str(), &addr))
 		return false;
-/*
-#else
-	addr.s_addr = inet_addr(ip.c_str());
-#endif
-*/
 
-	struct hostent *hp;
+	struct hostent *hp = gethostbyaddr((char*)&addr, sizeof(addr), AF_INET);
 
-	if ((hp = gethostbyaddr((char*)&addr, sizeof(addr), AF_INET)))
+	if (hp)
 		host = hp->h_name;
 
-	return (hp != NULL);
+	return hp != NULL;
 }
 
-/*
-string cAsyncConn::IPAsString(unsigned long addr) // todo: pavel talked about this, use it instead of AddrToNumber?
-{
-	struct in_addr in;
-	in.s_addr = addr;
-	char ip[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, (const void*) &in, ip, INET_ADDRSTRLEN);
-	return string(ip, INET_ADDRSTRLEN);
-}
-*/
-
-cAsyncConn* cConnFactory::CreateConn(tSocket sd)
+cAsyncConn *cConnFactory::CreateConn(tSocket sd)
 {
 	cAsyncConn *conn = new cAsyncConn(sd);
 	conn->mxMyFactory = this;
