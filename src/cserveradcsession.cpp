@@ -12,6 +12,8 @@
 #include "cadcpluginbridge.h"
 
 namespace nVerliHub {
+	using namespace nEnums;
+
 	namespace nSocket {
 
 void cServerADC::OnADCSessionNormal(cAsyncConn *raw,
@@ -34,6 +36,52 @@ void cServerADC::OnADCSessionDetach(cAsyncConn *raw,
 		return;
 
 	nPlugin::cADCPluginBridge::OnLogout(&mPluginManager, conn, &session);
+}
+
+double cServerADC::ADCSessionTimeoutSeconds(
+	const nProtocol::sADCSession &session) const
+{
+	switch (session.mState) {
+		case nProtocol::eADC_STATE_PROTOCOL:
+		case nProtocol::eADC_STATE_IDENTIFY:
+			return mC.timeout_length[eTO_LOGIN];
+
+		case nProtocol::eADC_STATE_VERIFY:
+			return mC.timeout_length[eTO_SETPASS];
+
+		case nProtocol::eADC_STATE_NORMAL:
+			return 0.0;
+	}
+
+	return 0.0;
+}
+
+void cServerADC::OnADCSessionTimeout(cAsyncConn *raw,
+	const nProtocol::sADCSession &session)
+{
+	if (!raw || !raw->ok || !raw->mWritable)
+		return;
+
+	vector<string> flags;
+
+	switch (session.mState) {
+		case nProtocol::eADC_STATE_PROTOCOL:
+			flags.push_back("FCSUP");
+			break;
+
+		case nProtocol::eADC_STATE_IDENTIFY:
+			flags.push_back("FCINF");
+			break;
+
+		case nProtocol::eADC_STATE_VERIFY:
+			flags.push_back("FCPAS");
+			break;
+
+		case nProtocol::eADC_STATE_NORMAL:
+			return;
+	}
+
+	SendStatus(raw, "220", "ADC login timed out", flags, true);
 }
 
 	}; // namespace nSocket
