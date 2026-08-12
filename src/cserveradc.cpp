@@ -60,6 +60,30 @@ static bool adc_valid_nick(const string &nick, unsigned int minLen,
 	return true;
 }
 
+static bool adc_is_ipv6_address(const string &address)
+{
+	return address.find(':') != string::npos;
+}
+
+static int adc_account_type(const cRegUserInfo *reg)
+{
+	if (!reg || !reg->mEnabled)
+		return 0;
+
+	int type = 2; // registered user
+
+	if (reg->mClass >= eUC_OPERATOR)
+		type |= 4;
+
+	if (reg->mClass >= eUC_ADMIN)
+		type |= 8;
+
+	if (reg->mClass >= eUC_MASTER)
+		type |= 16;
+
+	return type;
+}
+
 static void adc_merge_inf(vector<string> &stored, const string &parameter)
 {
 	if (parameter.size() < 2)
@@ -126,6 +150,19 @@ cServerADC::cServerADC(string CfgBase, const string &ExecPath):
 	}
 
 	mFactory = new cADCConnFactory(this, &mADCProto);
+
+	// The base business layer still constructs its historical robots before the
+	// ADC adapter is installed. Do not retain their serialized NMDC $MyINFO
+	// payloads: ADC publishes identity with IINF/BINF instead.
+	if (mHubSec) {
+		mHubSec->mMyINFO.clear();
+		mHubSec->mFakeMyINFO.clear();
+	}
+
+	if (mOpChat) {
+		mOpChat->mMyINFO.clear();
+		mOpChat->mFakeMyINFO.clear();
+	}
 }
 
 cServerADC::~cServerADC()
@@ -254,17 +291,45 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 		return false;
 	}
 
-	string suppliedIP;
-	const bool hasI4 = msg->GetNamed("I4", suppliedIP);
+	const string peerIP = conn->AddrIP();
+	const bool peerIPv6 = adc_is_ipv6_address(peerIP);
+	string suppliedI4;
+	string suppliedI6;
+	const bool hasI4 = msg->GetNamed("I4", suppliedI4);
+	const bool hasI6 = msg->GetNamed("I6", suppliedI6);
 
-	if (hasI4 && !suppliedIP.empty() && suppliedIP != "0.0.0.0" &&
-		suppliedIP != conn->AddrIP()) {
-		flags.push_back("I4" + conn->AddrIP());
-		SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, true);
-		return false;
+	if (peerIPv6) {
+		if (hasI6 && !suppliedI6.empty() && suppliedI6 != "::" &&
+			suppliedI6 != peerIP) {
+			flags.push_back("I6" + peerIP);
+			SendStatus(conn, "246", "Invalid IPv6 address in INF", flags, true);
+			return false;
+		}
+
+		// A client connected over IPv6 cannot assert an unrelated public IPv4
+		// address unless it is trusted. This adapter currently has no such trust
+		// override, so only the zero placeholder is accepted.
+		if (hasI4 && !suppliedI4.empty() && suppliedI4 != "0.0.0.0") {
+			flags.push_back("I6" + peerIP);
+			SendStatus(conn, "246", "Untrusted IPv4 address in INF", flags, true);
+			return false;
+		}
+	} else {
+		if (hasI4 && !suppliedI4.empty() && suppliedI4 != "0.0.0.0" &&
+			suppliedI4 != peerIP) {
+			flags.push_back("I4" + peerIP);
+			SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, true);
+			return false;
+		}
+
+		if (hasI6 && !suppliedI6.empty() && suppliedI6 != "::") {
+			flags.push_back("I4" + peerIP);
+			SendStatus(conn, "246", "Untrusted IPv6 address in INF", flags, true);
+			return false;
+		}
 	}
 
-	bool emittedI4 = false;
+	bool emittedPeerIP = false;
 	const vector<string> &parameters = msg->Parameters();
 
 	for (size_t i = 0; i < parameters.size(); ++i) {
@@ -286,16 +351,28 @@ bool cServerADC::PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
 			continue; // Hub determines account/client type.
 
 		if (key == "I4") {
-			sanitized.push_back("I4" + conn->AddrIP());
-			emittedI4 = true;
+			if (!peerIPv6) {
+				sanitized.push_back("I4" + peerIP);
+				emittedPeerIP = true;
+			}
+
+			continue;
+		}
+
+		if (key == "I6") {
+			if (peerIPv6) {
+				sanitized.push_back("I6" + peerIP);
+				emittedPeerIP = true;
+			}
+
 			continue;
 		}
 
 		sanitized.push_back(parameter);
 	}
 
-	if (!emittedI4)
-		sanitized.push_back("I4" + conn->AddrIP());
+	if (!emittedPeerIP)
+		sanitized.push_back(string(peerIPv6 ? "I6" : "I4") + peerIP);
 
 	return true;
 }
@@ -402,7 +479,22 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		return false;
 	}
 
-	const bool registered = conn->mRegInfo && conn->mRegInfo->mEnabled;
+	if (conn->mRegInfo && !conn->mRegInfo->mEnabled) {
+		vector<string> flags;
+		flags.push_back("FCINF");
+		SendStatus(conn, "225", "Registered account is disabled", flags, true);
+		return false;
+	}
+
+	if (conn->mRegInfo && !conn->mRegInfo->mAuthIP.empty() &&
+		conn->mRegInfo->mAuthIP != conn->AddrIP()) {
+		vector<string> flags;
+		flags.push_back("FCINF");
+		SendStatus(conn, "225", "Account is not authorized from this IP", flags, true);
+		return false;
+	}
+
+	const bool registered = conn->mRegInfo != NULL;
 
 	if (!mADCProto.Sessions().SetIdentity(conn, nick, cid, pid, registered)) {
 		vector<string> flags;
@@ -415,8 +507,10 @@ bool cServerADC::TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	if (!session)
 		return false;
 
-	if (registered)
-		sanitized.push_back("CT2");
+	const int clientType = adc_account_type(conn->mRegInfo);
+
+	if (clientType)
+		sanitized.push_back("CT" + StringFrom(clientType));
 
 	session->mINF = sanitized;
 
@@ -493,6 +587,8 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 	vector<string> delta;
 	vector<string> flags;
 	const vector<string> &parameters = msg->Parameters();
+	const string peerIP = conn->AddrIP();
+	const bool peerIPv6 = adc_is_ipv6_address(peerIP);
 
 	for (size_t i = 0; i < parameters.size(); ++i) {
 		string parameter = parameters[i];
@@ -549,13 +645,43 @@ bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 		}
 
 		if (key == "I4") {
-			if (!value.empty() && value != "0.0.0.0" && value != conn->AddrIP()) {
-				flags.push_back("I4" + conn->AddrIP());
+			if (peerIPv6) {
+				if (!value.empty() && value != "0.0.0.0") {
+					flags.push_back("I6" + peerIP);
+					SendStatus(conn, "246", "Untrusted IPv4 address in INF", flags, false);
+					return false;
+				}
+
+				continue;
+			}
+
+			if (!value.empty() && value != "0.0.0.0" && value != peerIP) {
+				flags.push_back("I4" + peerIP);
 				SendStatus(conn, "246", "Invalid IPv4 address in INF", flags, false);
 				return false;
 			}
 
-			parameter = "I4" + conn->AddrIP();
+			parameter = "I4" + peerIP;
+		}
+
+		if (key == "I6") {
+			if (!peerIPv6) {
+				if (!value.empty() && value != "::") {
+					flags.push_back("I4" + peerIP);
+					SendStatus(conn, "246", "Untrusted IPv6 address in INF", flags, false);
+					return false;
+				}
+
+				continue;
+			}
+
+			if (!value.empty() && value != "::" && value != peerIP) {
+				flags.push_back("I6" + peerIP);
+				SendStatus(conn, "246", "Invalid IPv6 address in INF", flags, false);
+				return false;
+			}
+
+			parameter = "I6" + peerIP;
 		}
 
 		if (key == "CT")
@@ -666,9 +792,6 @@ void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
 			return;
 		}
 	}
-
-	if (msg->mType == eADC_QUI)
-		conn->CloseNice(0, eCR_QUIT);
 }
 
 	}; // namespace nSocket
