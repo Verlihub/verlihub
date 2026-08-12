@@ -30,10 +30,6 @@ class cADCConnFactory : public cConnFactory
 	private:
 		cServerDC *mServer;
 		nProtocol::cADCProto *mADCProtocol;
-
-		// Temporary cleanup bridge only. It is never used to create or bind
-		// client connections; ADC owns the complete live wire path.
-		cDCConnFactory *mCleanupFactory;
 };
 
 /**
