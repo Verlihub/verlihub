@@ -18,8 +18,69 @@
 #include "cconnadc.h"
 #include "cserverdc.h"
 
+#include <unicode/unorm2.h>
+#include <unicode/ustring.h>
+
 namespace nVerliHub {
 	namespace nSocket {
+
+/** ADC parser used on the live hub-client path. */
+class cADCServerMessage : public nProtocol::cMessageADC
+{
+	private:
+		static bool IsUTF8NFC(const std::string &text)
+		{
+			bool ascii = true;
+
+			for (size_t i = 0; i < text.size(); ++i) {
+				if (static_cast<unsigned char>(text[i]) >= 0x80) {
+					ascii = false;
+					break;
+				}
+			}
+
+			if (ascii)
+				return true;
+
+			UErrorCode error = U_ZERO_ERROR;
+			int32_t length = 0;
+			u_strFromUTF8(NULL, 0, &length, text.data(),
+				static_cast<int32_t>(text.size()), &error);
+
+			if (error != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(error))
+				return false;
+
+			error = U_ZERO_ERROR;
+			std::vector<UChar> utf16(static_cast<size_t>(length) + 1);
+		u_strFromUTF8(&utf16[0], static_cast<int32_t>(utf16.size()), &length,
+				text.data(), static_cast<int32_t>(text.size()), &error);
+
+			if (U_FAILURE(error))
+				return false;
+
+			error = U_ZERO_ERROR;
+			const UNormalizer2 *nfc = unorm2_getNFCInstance(&error);
+
+			if (U_FAILURE(error) || !nfc)
+				return false;
+
+			const UBool normalized = unorm2_isNormalized(nfc, &utf16[0],
+				length, &error);
+			return U_SUCCESS(error) && normalized;
+		}
+
+	public:
+		virtual int Parse()
+		{
+			if (!IsUTF8NFC(mStr)) {
+				mError = true;
+				mType = nEnums::eADC_INVALID;
+				return mType;
+			}
+
+			return nProtocol::cMessageADC::Parse();
+		}
+};
 
 /**
  * Server-side ADC protocol guard.
@@ -33,6 +94,11 @@ namespace nVerliHub {
 class cADCServerProto : public nProtocol::cADCProto
 {
 	public:
+		virtual nProtocol::cMessageParser *CreateParser()
+		{
+			return new cADCServerMessage();
+		}
+
 		virtual int TreatMsg(nProtocol::cMessageParser *parser, cAsyncConn *conn)
 		{
 			const int result = nProtocol::cADCProto::TreatMsg(parser, conn);
