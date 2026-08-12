@@ -1,9 +1,6 @@
 name: ADC migration build
 
 on:
-  push:
-    branches:
-      - agent/replace-nmdc-with-adc
   pull_request:
     branches:
       - master
