@@ -29,6 +29,13 @@ class cADCHash
 		static bool VerifyTigerCID(const std::string &pid,
 			const std::string &cid);
 
+		/** Create a 24-byte random GPA challenge encoded as ADC Base32. */
+		static bool CreateTigerSalt(std::string &salt);
+
+		/** Verify PAS = Tiger(UTF-8 password || raw GPA challenge). */
+		static bool VerifyTigerPassword(const std::string &password,
+			const std::string &salt, const std::string &response);
+
 		static bool IsTigerID(const std::string &value);
 
 	private:
