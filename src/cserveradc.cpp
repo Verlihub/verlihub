@@ -574,6 +574,40 @@ bool cServerADC::TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn)
 	return EnterNormal(conn);
 }
 
+bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
+{
+	if (!msg || !conn)
+		return false;
+
+	const nProtocol::sADCSession *session = mADCProto.Sessions().Find(conn);
+
+	if (!session || session->mState != nProtocol::eADC_STATE_NORMAL) {
+		vector<string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendStatus(conn, "244", "Command requires NORMAL state", flags, false);
+		return false;
+	}
+
+	// This is the ADC application-policy boundary. Permission, plugin and flood
+	// checks belong here before RouteNormal; the wire protocol no longer routes
+	// messages by itself as the historical cDCProto did.
+	const int routed = mADCProto.RouteNormal(msg, conn);
+
+	if (routed == 0)
+		return true;
+
+	if (routed == 1 && msg->mType == eADC_STA)
+		return true; // HSTA is status information for the hub, not user traffic.
+
+	if (routed == 1) {
+		vector<string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendStatus(conn, "244", "Unsupported ADC routing context", flags, false);
+	}
+
+	return false;
+}
+
 bool cServerADC::UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn)
 {
 	if (!msg || !conn)
@@ -781,16 +815,29 @@ void cServerADC::OnNewMessage(cAsyncConn *conn, string *str)
 		return;
 	}
 
-	if (result == 1) {
-		if (msg->mType == eADC_INF) {
+	if (result != 1)
+		return;
+
+	switch (msg->mType) {
+		case eADC_INF:
 			TreatINF(msg, dcConn);
 			return;
-		}
 
-		if (msg->mType == eADC_PAS) {
+		case eADC_PAS:
 			TreatPAS(msg, dcConn);
 			return;
-		}
+
+		case eADC_MSG:
+		case eADC_SCH:
+		case eADC_RES:
+		case eADC_CTM:
+		case eADC_RCM:
+		case eADC_STA:
+			TreatNormalMessage(msg, dcConn);
+			return;
+
+		default:
+			return;
 	}
 }
 
