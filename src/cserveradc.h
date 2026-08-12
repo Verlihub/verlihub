@@ -12,6 +12,7 @@
 #define CSERVERADC_H
 
 #include "cadcproto.h"
+#include "cconnadc.h"
 #include "cserverdc.h"
 
 namespace nVerliHub {
@@ -35,9 +36,9 @@ class cADCConnFactory : public cConnFactory
 /**
  * ADC-facing Verlihub server.
  *
- * cServerDC is temporarily retained as the business layer for configuration,
- * users, bans, database and plugins. Client sockets themselves are ADC framed
- * from creation and no legacy greeting or parser is used on the wire.
+ * cServerDC is temporarily retained as the business/configuration provider.
+ * Live client sockets are cConnADC objects and therefore carry no NMDC login,
+ * framing, supports, timeout or redirect state.
  */
 class cServerADC : public cServerDC
 {
@@ -56,13 +57,14 @@ class cServerADC : public cServerDC
 			const string &description, const vector<string> &flags,
 			bool close = false);
 		bool SendHubINF(cAsyncConn *conn);
-		bool TreatINF(nProtocol::cMessageADC *msg, cConnDC *conn);
-		bool TreatPAS(nProtocol::cMessageADC *msg, cConnDC *conn);
-		bool TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn);
-		bool EnterNormal(cConnDC *conn);
-		bool BroadcastINF(cConnDC *conn);
-		bool UpdateNormalINF(nProtocol::cMessageADC *msg, cConnDC *conn);
-		bool PrepareInitialINF(nProtocol::cMessageADC *msg, cConnDC *conn,
+		bool SetADCRegInfo(cConnADC *conn, const string &nick);
+		bool TreatINF(nProtocol::cMessageADC *msg, cConnADC *conn);
+		bool TreatPAS(nProtocol::cMessageADC *msg, cConnADC *conn);
+		bool TreatNormalMessage(nProtocol::cMessageADC *msg, cConnADC *conn);
+		bool EnterNormal(cConnADC *conn);
+		bool BroadcastINF(cConnADC *conn);
+		bool UpdateNormalINF(nProtocol::cMessageADC *msg, cConnADC *conn);
+		bool PrepareInitialINF(nProtocol::cMessageADC *msg, cConnADC *conn,
 			vector<string> &sanitized, string &nick, string &cid, string &pid);
 
 		nProtocol::cADCProto mADCProto;
