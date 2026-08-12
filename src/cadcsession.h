@@ -23,7 +23,6 @@ namespace nVerliHub {
 
 	namespace nProtocol {
 
-/** Server-side ADC login state. */
 enum tADCSessionState
 {
 	eADC_STATE_PROTOCOL = 0,
@@ -32,7 +31,6 @@ enum tADCSessionState
 	eADC_STATE_NORMAL
 };
 
-/** Per-connection ADC identity and negotiated feature state. */
 struct sADCSession
 {
 	sADCSession();
@@ -48,10 +46,6 @@ struct sADCSession
 	bool mRegistered;
 };
 
-/**
- * Owns ADC session state independently from the historical connection login
- * flags. The manager owns no socket objects.
- */
 class cADCSessionManager
 {
 	public:
@@ -64,6 +58,8 @@ class cADCSessionManager
 		const sADCSession *Find(nSocket::cAsyncConn *conn) const;
 		nSocket::cAsyncConn *FindBySID(const std::string &sid) const;
 		void NormalConnections(std::vector<nSocket::cAsyncConn*> &dest) const;
+		void FeatureConnections(const std::vector<std::string> &selectors,
+			std::vector<nSocket::cAsyncConn*> &dest) const;
 		bool IdentityInUse(const std::string &nick, const std::string &cid,
 			nSocket::cAsyncConn *except = NULL) const;
 
@@ -81,6 +77,10 @@ class cADCSessionManager
 
 	private:
 		static std::string SIDFromNumber(unsigned int value);
+		static bool HasINFSupport(const sADCSession &session,
+			const std::string &feature);
+		static bool MatchesSelectors(const sADCSession &session,
+			const std::vector<std::string> &selectors);
 
 		typedef std::map<nSocket::cAsyncConn*, sADCSession> tSessionMap;
 		typedef std::map<std::string, nSocket::cAsyncConn*> tSIDMap;
