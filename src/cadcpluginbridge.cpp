@@ -21,6 +21,13 @@ struct sADCMessageCall
 	bool mAllowed;
 };
 
+struct sADCSessionCall
+{
+	nSocket::cConnADC *mConn;
+	const nProtocol::sADCSession *mSession;
+	bool mLogin;
+};
+
 struct sADCTimerCall
 {
 	long long mMsec;
@@ -65,6 +72,22 @@ bool VisitADCDisconnect(cPluginBase *base, void *data)
 
 	if (plugin)
 		plugin->OnADCDisconnect(static_cast<nSocket::cConnADC*>(data));
+
+	return true;
+}
+
+bool VisitADCSession(cPluginBase *base, void *data)
+{
+	sADCSessionCall *call = static_cast<sADCSessionCall*>(data);
+	cADCPlugin *plugin = dynamic_cast<cADCPlugin*>(base);
+
+	if (!plugin)
+		return true;
+
+	if (call->mLogin)
+		plugin->OnADCLogin(call->mConn, call->mSession);
+	else
+		plugin->OnADCLogout(call->mConn, call->mSession);
 
 	return true;
 }
@@ -114,6 +137,26 @@ void cADCPluginBridge::OnDisconnect(cPluginManager *manager,
 {
 	if (manager && conn)
 		manager->ForEachPlugin(&VisitADCDisconnect, conn);
+}
+
+void cADCPluginBridge::OnLogin(cPluginManager *manager,
+	nSocket::cConnADC *conn, const nProtocol::sADCSession *session)
+{
+	if (!manager || !conn || !session)
+		return;
+
+	sADCSessionCall call = {conn, session, true};
+	manager->ForEachPlugin(&VisitADCSession, &call);
+}
+
+void cADCPluginBridge::OnLogout(cPluginManager *manager,
+	nSocket::cConnADC *conn, const nProtocol::sADCSession *session)
+{
+	if (!manager || !conn || !session)
+		return;
+
+	sADCSessionCall call = {conn, session, false};
+	manager->ForEachPlugin(&VisitADCSession, &call);
 }
 
 bool cADCPluginBridge::OnTimer(cPluginManager *manager, long long msec)
