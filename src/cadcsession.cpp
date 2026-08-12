@@ -9,6 +9,8 @@
 */
 
 #include "cadcsession.h"
+#include "cadcidentityhost.h"
+#include "casyncconn.h"
 
 namespace nVerliHub {
 	namespace nProtocol {
@@ -247,6 +249,14 @@ bool cADCSessionManager::SetIdentity(nSocket::cAsyncConn *conn,
 
 	if (IdentityInUse(nick, cid, conn))
 		return false;
+
+	if (conn->mxServer) {
+		nSocket::cADCIdentityHost *host =
+			dynamic_cast<nSocket::cADCIdentityHost*>(conn->mxServer);
+
+		if (host && !host->ValidateADCIdentity(conn, nick, registered))
+			return false;
+	}
 
 	session->mNick = nick;
 	session->mCID = cid;
