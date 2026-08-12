@@ -38,6 +38,7 @@ SET(VERLIHUB_HDRS
 	cadcpolicy.h
 	cadcproto.h
 	cadcsession.h
+	cadcsessionhost.h
 	cban.h
 	cbanlist.h
 	ccallbacklist.h
@@ -186,6 +187,7 @@ SET(VERLIHUB_SRCS
 	cserveradc.cpp
 	cserveradcban.cpp
 	cserveradcinput.cpp
+	cserveradcsession.cpp
 	cserveradctimer.cpp
 	cserverdc.cpp
 	csetuplist.cpp
