@@ -15,7 +15,7 @@
 
 namespace nVerliHub {
 	namespace nSocket {
-		class cConnDC;
+		class cConnADC;
 		class cServerDC;
 	};
 
@@ -38,7 +38,7 @@ class cADCPolicy
 		 * On denial, reason contains a user-facing explanation suitable for STA.
 		 */
 		static bool AllowNormal(nSocket::cServerDC *server,
-			nSocket::cConnDC *conn, const sADCSession &session,
+			nSocket::cConnADC *conn, const sADCSession &session,
 			const cMessageADC &msg, std::string &reason);
 
 	private:
