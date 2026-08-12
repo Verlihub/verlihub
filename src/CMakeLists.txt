@@ -43,6 +43,7 @@ SET(VERLIHUB_HDRS
 	cconfigfile.h
 	cconfigitembase.h
 	cconfmysql.h
+	cconnadc.h
 	cconnbase.h
 	cconnchoose.h
 	cconndc.h
@@ -133,6 +134,7 @@ SET(VERLIHUB_SRCS
 	cconfigfile.cpp
 	cconfigitembase.cpp
 	cconfmysql.cpp
+	cconnadc.cpp
 	cconnchoose.cpp
 	cconndc.cpp
 	cconnpoll.cpp
@@ -227,8 +229,8 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 	add_custom_command(
 		OUTPUT "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
 		DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/tls-proxy/lib/proxy_types.h" "${CMAKE_SOURCE_DIR}/src/proxy_types.h"
-		COMMENT "Copying proxy_types.h header"
+		COMMAND cp "${CMAKE_BINARY_DIR}/tls-proxy/libvhproxy.h" "${CMAKE_SOURCE_DIR}/src/libvhproxy.h"
+		COMMENT "Copying libvhproxy.h header"
 	)
 
 	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/src/proxy_types.h")
