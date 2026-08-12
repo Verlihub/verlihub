@@ -21,6 +21,56 @@
 namespace nVerliHub {
 	namespace nSocket {
 
+/**
+ * Server-side ADC protocol guard.
+ *
+ * ADC permits INF updates in NORMAL state, but a nickname change can alter
+ * account identity and therefore requires a fresh authentication flow. Until
+ * a dedicated re-authenticated rename transaction exists, reject NI changes
+ * before cServerADC applies the INF delta. Other NORMAL INF updates continue
+ * through the standard ADC application path.
+ */
+class cADCServerProto : public nProtocol::cADCProto
+{
+	public:
+		virtual int TreatMsg(nProtocol::cMessageParser *parser, cAsyncConn *conn)
+		{
+			const int result = nProtocol::cADCProto::TreatMsg(parser, conn);
+
+			if (result != 1 || !parser || !conn)
+				return result;
+
+			nProtocol::cMessageADC *msg =
+				dynamic_cast<nProtocol::cMessageADC*>(parser);
+
+			if (!msg || msg->Command() != "INF")
+				return result;
+
+			const nProtocol::sADCSession *session = Sessions().Find(conn);
+
+			if (!session || session->mState != nProtocol::eADC_STATE_NORMAL)
+				return result;
+
+			std::string nick;
+
+			if (!msg->GetNamed("NI", nick) || nick == session->mNick)
+				return result;
+
+			std::vector<std::string> flags;
+			flags.push_back("FCINF");
+			std::string frame;
+
+			if (nProtocol::cADCProto::CreateSTA(frame, "225",
+				"Nickname changes require a new authenticated ADC session",
+				flags)) {
+				frame.push_back('\n');
+				conn->Write(frame, true);
+			}
+
+			return -1;
+		}
+};
+
 /** ADC connection factory. */
 class cADCConnFactory : public cConnFactory
 {
@@ -92,7 +142,7 @@ class cServerADC : public cServerDC,
 		bool PrepareInitialINF(nProtocol::cMessageADC *msg, cConnADC *conn,
 			vector<string> &sanitized, string &nick, string &cid, string &pid);
 
-		nProtocol::cADCProto mADCProto;
+		cADCServerProto mADCProto;
 };
 
 	}; // namespace nSocket
