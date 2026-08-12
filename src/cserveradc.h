@@ -61,6 +61,10 @@ class cServerADC : public cServerDC,
 			const nProtocol::sADCSession &session);
 		virtual void OnADCSessionDetach(cAsyncConn *conn,
 			const nProtocol::sADCSession &session);
+		virtual double ADCSessionTimeoutSeconds(
+			const nProtocol::sADCSession &session) const;
+		virtual void OnADCSessionTimeout(cAsyncConn *conn,
+			const nProtocol::sADCSession &session);
 
 		virtual nPlugin::cPluginManager *ADCPluginManager()
 		{
