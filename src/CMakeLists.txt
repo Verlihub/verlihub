@@ -249,7 +249,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 		COMMENT "Copying proxy_types.h header"
 	)
 
-	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/tls-proxy/libvhproxy.a")
+	add_custom_target(proxy_types_h DEPENDS "${CMAKE_SOURCE_DIR}/src/proxy_types.h")
 	add_dependencies(proxy_types_h libvhproxy_a)
 
 	list(APPEND ${VERLIHUB_HDRS} "libvhproxy.h" "proxy_types.h")
