@@ -30,6 +30,7 @@ SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
 	cadchash.h
+	cadcpolicy.h
 	cadcproto.h
 	cadcsession.h
 	cban.h
@@ -119,6 +120,7 @@ SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
 	cadchash.cpp
+	cadcpolicy.cpp
 	cadcproto.cpp
 	cadcsession.cpp
 	cban.cpp
