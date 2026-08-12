@@ -1,16 +1,15 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
-#	and modify it under the terms of the GNU General
-#	Public License as published by the Free Software
+#	and modify it under the terms of the GNU General Public License as published by the Free Software
 #	Foundation, either version 3 of the license, or at
 #	your option any later version.
 #
 #	Verlihub is distributed in the hope that it will be
-#	useful, but without any warranty, without even the
-#	implied warranty of merchantability or fitness for
-#	a particular purpose. See the GNU General Public
+#	useful, but WITHOUT ANY WARRANTY; without even the
+#	implied warranty of MERCHANTABILITY or FITNESS FOR
+#	a PARTICULAR PURPOSE. See the GNU General Public
 #	License for more details.
 #
 #	Please see https://www.gnu.org/licenses/ for a copy
@@ -18,9 +17,18 @@
 
 INCLUDE_DIRECTORIES(${VERLIHUB_BINARY_DIR} ${VERLIHUB_SOURCE_DIR}/src)
 
+# ADC TIGR identity verification uses LibRHash's Tiger implementation.
+find_path(RHASH_INCLUDE_DIR rhash.h)
+find_library(RHASH_LIBRARY NAMES rhash)
+
+if(NOT RHASH_INCLUDE_DIR OR NOT RHASH_LIBRARY)
+	message(FATAL_ERROR "[ ER ] LibRHash is required for ADC TIGR PID/CID verification (install librhash-dev / rhash-devel)")
+endif()
+
 SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
+	cadchash.h
 	cadcproto.h
 	cadcsession.h
 	cban.h
@@ -109,6 +117,7 @@ SET(VERLIHUB_HDRS
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
+	cadchash.cpp
 	cadcproto.cpp
 	cadcsession.cpp
 	cban.cpp
@@ -188,6 +197,7 @@ SET(VERLIHUB_SRCS
 
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+target_include_directories(libverlihub_so PRIVATE ${RHASH_INCLUDE_DIR})
 
 if(USE_TLS_PROXY AND GOLANG_PATH)
 
@@ -239,7 +249,7 @@ elseif(USE_FEARTLS_PROXY)
 
 endif()
 
-target_link_libraries(libverlihub_so ${VERLIHUB_LIBS}) # pthread dl execinfo
+target_link_libraries(libverlihub_so ${VERLIHUB_LIBS} ${RHASH_LIBRARY}) # pthread dl execinfo rhash
 
 add_library(vhapi_so SHARED "script_api.cpp")
 set_target_properties(vhapi_so PROPERTIES OUTPUT_NAME "vhapi")
