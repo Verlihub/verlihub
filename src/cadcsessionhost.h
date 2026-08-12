@@ -28,7 +28,7 @@ class cADCSessionHost
 			const nProtocol::sADCSession &session) = 0;
 		virtual void OnADCSessionDetach(cAsyncConn *conn,
 			const nProtocol::sADCSession &session) = 0;
-		virtual unsigned long ADCSessionTimeoutSeconds(
+		virtual double ADCSessionTimeoutSeconds(
 			const nProtocol::sADCSession &session) const = 0;
 		virtual void OnADCSessionTimeout(cAsyncConn *conn,
 			const nProtocol::sADCSession &session) = 0;
