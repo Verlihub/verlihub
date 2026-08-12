@@ -131,6 +131,8 @@ bool cADCProto::ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn)
 	const char type = msg->HeaderType();
 	const sADCSession *session = mSessions.Find(conn);
 
+	// I/U/C are not valid incoming message types on a client->hub TCP
+	// connection. C is reserved for the separate client-client connection.
 	if ((type == 'I') || (type == 'U') || (type == 'C')) {
 		std::vector<std::string> flags;
 		flags.push_back("FC" + msg->Command());
@@ -238,6 +240,25 @@ int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 		return -1;
 	}
 
+	// TIGR is the selected session hash in this implementation. Dynamic SUP
+	// updates must not remove it after negotiation. Check the future state
+	// before ApplySUP commits any feature changes.
+	const sADCSession *before = mSessions.Find(conn);
+	bool hasTIGR = before && before->mFeatures.find("TIGR") != before->mFeatures.end();
+
+	if (remove.find("TIGR") != remove.end())
+		hasTIGR = false;
+
+	if (add.find("TIGR") != add.end())
+		hasTIGR = true;
+
+	if (!hasTIGR) {
+		std::vector<std::string> flags;
+		flags.push_back("FCTIGR");
+		SendSTA(conn, "247", "No supported session hash overlap", flags);
+		return -1;
+	}
+
 	if (!mSessions.ApplySUP(conn, add, remove)) {
 		std::vector<std::string> flags;
 		flags.push_back("FCBASE");
@@ -247,12 +268,8 @@ int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 
 	const sADCSession *session = mSessions.Find(conn);
 
-	if (!session || session->mFeatures.find("TIGR") == session->mFeatures.end()) {
-		std::vector<std::string> flags;
-		flags.push_back("FCTIGR");
-		SendSTA(conn, "247", "No supported session hash overlap", flags);
+	if (!session)
 		return -1;
-	}
 
 	if (session->mState == eADC_STATE_NORMAL)
 		return 0;
@@ -306,7 +323,7 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 	if (!mSessions.ClientCommandAllowed(conn, msg->Command())) {
 		std::vector<std::string> flags;
 		flags.push_back("FC" + msg->Command());
-		SendSTA(conn, "244", "Command not valid in current state", flags);
+		SendSTA(conn, "244", "Command not valid on client-hub session", flags);
 		return -1;
 	}
 
@@ -316,9 +333,6 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 	switch (msg->mType) {
 		case eADC_SUP:
 			return TreatSUP(msg, conn);
-
-		case eADC_QUI:
-			return 0;
 
 		case eADC_MSG:
 		case eADC_SCH:
@@ -336,9 +350,6 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 
 		case eADC_INF:
 		case eADC_PAS:
-		case eADC_GET:
-		case eADC_GFI:
-		case eADC_SND:
 			return 1;
 
 		default:
