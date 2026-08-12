@@ -73,6 +73,67 @@ void cADCSessionManager::NormalConnections(
 	}
 }
 
+bool cADCSessionManager::HasINFSupport(const sADCSession &session,
+	const std::string &feature)
+{
+	for (size_t i = 0; i < session.mINF.size(); ++i) {
+		const std::string &parameter = session.mINF[i];
+
+		if (parameter.size() < 2 || parameter.compare(0, 2, "SU") != 0)
+			continue;
+
+		const std::string supports = parameter.substr(2);
+		size_t start = 0;
+
+		while (start <= supports.size()) {
+			const size_t end = supports.find(',', start);
+			const std::string current = supports.substr(start,
+				(end == std::string::npos) ? std::string::npos : end - start);
+
+			if (current == feature)
+				return true;
+
+			if (end == std::string::npos)
+				break;
+
+			start = end + 1;
+		}
+	}
+
+	return false;
+}
+
+bool cADCSessionManager::MatchesSelectors(const sADCSession &session,
+	const std::vector<std::string> &selectors)
+{
+	for (size_t i = 0; i < selectors.size(); ++i) {
+		if (selectors[i].size() != 5)
+			return false;
+
+		const bool present = HasINFSupport(session, selectors[i].substr(1, 4));
+
+		if ((selectors[i][0] == '+' && !present) ||
+			(selectors[i][0] == '-' && present))
+			return false;
+	}
+
+	return true;
+}
+
+void cADCSessionManager::FeatureConnections(
+	const std::vector<std::string> &selectors,
+	std::vector<nSocket::cAsyncConn*> &dest) const
+{
+	dest.clear();
+
+	for (tSessionMap::const_iterator it = mSessions.begin();
+		it != mSessions.end(); ++it) {
+		if (it->first && it->second.mState == eADC_STATE_NORMAL &&
+			MatchesSelectors(it->second, selectors))
+			dest.push_back(it->first);
+	}
+}
+
 bool cADCSessionManager::IdentityInUse(const std::string &nick,
 	const std::string &cid, nSocket::cAsyncConn *except) const
 {
@@ -120,7 +181,6 @@ bool cADCSessionManager::AssignSID(nSocket::cAsyncConn *conn, std::string &sid)
 		return true;
 	}
 
-	// A SID is 20 bits. Walk the space and skip identifiers still in use.
 	for (unsigned int attempts = 0; attempts < 0x00100000; ++attempts) {
 		const unsigned int candidate = mNextSID++ & 0x000fffff;
 		const std::string encoded = SIDFromNumber(candidate);
