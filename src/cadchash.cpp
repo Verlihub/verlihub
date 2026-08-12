@@ -10,6 +10,8 @@
 
 #include "cadchash.h"
 
+#include <openssl/crypto.h>
+#include <openssl/rand.h>
 #include <rhash.h>
 
 namespace nVerliHub {
@@ -130,7 +132,52 @@ bool cADCHash::VerifyTigerCID(const std::string &pid,
 	if (rhash_msg(RHASH_TIGER, &rawPID[0], rawPID.size(), digest) < 0)
 		return false;
 
-	return EncodeBase32(digest, sizeof(digest)) == cid;
+	std::vector<unsigned char> rawCID;
+
+	if (!DecodeBase32(cid, rawCID) || rawCID.size() != sizeof(digest))
+		return false;
+
+	return CRYPTO_memcmp(digest, &rawCID[0], sizeof(digest)) == 0;
+}
+
+bool cADCHash::CreateTigerSalt(std::string &salt)
+{
+	unsigned char raw[24];
+
+	if (RAND_bytes(raw, sizeof(raw)) != 1) {
+		salt.clear();
+		return false;
+	}
+
+	salt = EncodeBase32(raw, sizeof(raw));
+	return IsTigerID(salt);
+}
+
+bool cADCHash::VerifyTigerPassword(const std::string &password,
+	const std::string &salt, const std::string &response)
+{
+	if (password.empty() || !IsTigerID(salt) || !IsTigerID(response))
+		return false;
+
+	std::vector<unsigned char> rawSalt;
+	std::vector<unsigned char> rawResponse;
+
+	if (!DecodeBase32(salt, rawSalt) || rawSalt.size() != 24 ||
+		!DecodeBase32(response, rawResponse) || rawResponse.size() != 24)
+		return false;
+
+	std::vector<unsigned char> input;
+	input.reserve(password.size() + rawSalt.size());
+	input.insert(input.end(), password.begin(), password.end());
+	input.insert(input.end(), rawSalt.begin(), rawSalt.end());
+
+	unsigned char digest[24];
+	rhash_library_init();
+
+	if (rhash_msg(RHASH_TIGER, &input[0], input.size(), digest) < 0)
+		return false;
+
+	return CRYPTO_memcmp(digest, &rawResponse[0], sizeof(digest)) == 0;
 }
 
 	}; // namespace nProtocol
