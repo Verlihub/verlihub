@@ -17,7 +17,7 @@ struct sADCConnectCall
 struct sADCMessageCall
 {
 	nSocket::cConnADC *mConn;
-	nProtocol::cMessageADC *mMsg;
+	const nProtocol::cMessageADC *mMsg;
 	bool mAllowed;
 };
 
@@ -77,7 +77,7 @@ bool cADCPluginBridge::OnConnect(cPluginManager *manager,
 }
 
 bool cADCPluginBridge::OnMessage(cPluginManager *manager,
-	nSocket::cConnADC *conn, nProtocol::cMessageADC *msg)
+	nSocket::cConnADC *conn, const nProtocol::cMessageADC *msg)
 {
 	if (!manager || !conn || !msg)
 		return true;
