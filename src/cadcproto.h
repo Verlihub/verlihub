@@ -12,8 +12,10 @@
 #define CADCPROTO_H
 
 #include "cmessageadc.h"
+#include "cadcsession.h"
 #include "cprotocol.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,11 +23,11 @@ namespace nVerliHub {
 	namespace nProtocol {
 
 /**
- * Core ADC protocol framing support.
+ * Core ADC protocol framing and login-state support.
  *
- * Server-specific command handling is intentionally kept out of this class so
- * the old NMDC handlers can be removed incrementally without contaminating ADC
- * framing with legacy '$...|' messages.
+ * The class deliberately owns only ADC wire/state concerns. Verlihub-specific
+ * account, ban, plugin and permission checks can be attached at the INF/PAS
+ * transition without reintroducing NMDC framing.
  */
 class cADCProto : public cProtocol
 {
@@ -36,6 +38,10 @@ class cADCProto : public cProtocol
 		virtual cMessageParser *CreateParser();
 		virtual void DeleteParser(cMessageParser *parser);
 		virtual int TreatMsg(cMessageParser *msg, nSocket::cAsyncConn *conn);
+
+		void OnDisconnect(nSocket::cAsyncConn *conn);
+		cADCSessionManager &Sessions() { return mSessions; }
+		const cADCSessionManager &Sessions() const { return mSessions; }
 
 		static bool CreateHub(std::string &dest, const std::string &command,
 			const std::vector<std::string> &parameters);
@@ -65,6 +71,15 @@ class cADCProto : public cProtocol
 		static bool Build(std::string &dest, char type, const std::string &command,
 			const std::vector<std::string> &header,
 			const std::vector<std::string> &parameters);
+		static bool ParseSUPFeatures(const cMessageADC &msg,
+			std::set<std::string> &add, std::set<std::string> &remove);
+		static bool SendFrame(nSocket::cAsyncConn *conn, const std::string &frame,
+			bool flush = true);
+		static bool SendSTA(nSocket::cAsyncConn *conn, const std::string &code,
+			const std::string &description, const std::vector<std::string> &flags);
+		int TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn);
+
+		cADCSessionManager mSessions;
 };
 
 	}; // namespace nProtocol
