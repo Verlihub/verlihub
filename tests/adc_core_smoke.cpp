@@ -49,6 +49,20 @@ bool TestParser()
 		"invalid ADC feature code was accepted"))
 		return false;
 
+	cADCServerMessage goodSelector;
+	goodSelector.GetStr() = "FMSG AAAA +TCP4 hello";
+
+	if (!Check(goodSelector.Parse() == eADC_MSG,
+		"valid ADC feature selector was rejected"))
+		return false;
+
+	cADCServerMessage badSelector;
+	badSelector.GetStr() = "FMSG AAAA +1ABC hello";
+
+	if (!Check(badSelector.Parse() == eADC_INVALID,
+		"invalid ADC feature selector was accepted"))
+		return false;
+
 	cADCServerMessage escaped;
 	escaped.GetStr() = "BMSG AAAA hello\\sworld";
 
@@ -66,8 +80,15 @@ bool TestParser()
 	cADCServerMessage nfd;
 	nfd.GetStr() = std::string("BMSG AAAA Cafe") + "\xCC\x81";
 
-	return Check(nfd.Parse() == eADC_INVALID,
-		"non-NFC UTF-8 was accepted");
+	if (!Check(nfd.Parse() == eADC_INVALID,
+		"non-NFC UTF-8 was accepted"))
+		return false;
+
+	cADCServerMessage badUtf8;
+	badUtf8.GetStr() = std::string("BMSG AAAA bad") + "\xC3\x28";
+
+	return Check(badUtf8.Parse() == eADC_INVALID,
+		"invalid UTF-8 was accepted");
 }
 
 bool TestFrames()
