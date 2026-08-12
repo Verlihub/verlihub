@@ -102,6 +102,37 @@ bool cADCProto::ParseSUPFeatures(const cMessageADC &msg,
 	return true;
 }
 
+bool cADCProto::ValidateRouting(cMessageADC *msg, nSocket::cAsyncConn *conn)
+{
+	if (!msg || !conn)
+		return false;
+
+	const char type = msg->HeaderType();
+	const sADCSession *session = mSessions.Find(conn);
+
+	// I-messages belong to the hub side of a client-hub connection and U is a
+	// datagram context. Neither is accepted from this TCP client connection.
+	if ((type == 'I') || (type == 'U')) {
+		std::vector<std::string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendSTA(conn, "240", "Invalid ADC routing context", flags);
+		return false;
+	}
+
+	// Routed client messages must carry the SID assigned to this connection.
+	// This prevents a client from forging B/D/E/F traffic as another session.
+	if ((type == 'B') || (type == 'D') || (type == 'E') || (type == 'F')) {
+		if (!session || session->mSID.empty() || msg->SourceSID() != session->mSID) {
+			std::vector<std::string> flags;
+			flags.push_back("FC" + msg->Command());
+			SendSTA(conn, "240", "Source SID does not match connection", flags);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int cADCProto::TreatSUP(cMessageADC *msg, nSocket::cAsyncConn *conn)
 {
 	if (!msg || !conn || msg->HeaderType() != 'H')
@@ -191,6 +222,9 @@ int cADCProto::TreatMsg(cMessageParser *parser, nSocket::cAsyncConn *conn)
 		SendSTA(conn, "244", "Command not valid in current state", flags);
 		return -1;
 	}
+
+	if (!ValidateRouting(msg, conn))
+		return -1;
 
 	switch (msg->mType) {
 		case eADC_SUP:
