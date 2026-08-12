@@ -73,6 +73,22 @@ void cADCSessionManager::NormalConnections(
 	}
 }
 
+bool cADCSessionManager::IdentityInUse(const std::string &nick,
+	const std::string &cid, nSocket::cAsyncConn *except) const
+{
+	for (tSessionMap::const_iterator it = mSessions.begin();
+		it != mSessions.end(); ++it) {
+		if (it->first == except)
+			continue;
+
+		if ((!nick.empty() && it->second.mNick == nick) ||
+			(!cid.empty() && it->second.mCID == cid))
+			return true;
+	}
+
+	return false;
+}
+
 std::string cADCSessionManager::SIDFromNumber(unsigned int value)
 {
 	static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -164,6 +180,9 @@ bool cADCSessionManager::SetIdentity(nSocket::cAsyncConn *conn,
 		nick.empty() || cid.empty() || pid.empty())
 		return false;
 
+	if (IdentityInUse(nick, cid, conn))
+		return false;
+
 	session->mNick = nick;
 	session->mCID = cid;
 	session->mPID = pid;
@@ -198,6 +217,7 @@ bool cADCSessionManager::EnterNormal(nSocket::cAsyncConn *conn)
 	}
 
 	session->mState = eADC_STATE_NORMAL;
+	session->mGPA.clear();
 	return true;
 }
 
