@@ -10,6 +10,7 @@
 
 #include "cserveradc.h"
 #include "cadchash.h"
+#include "cadcpolicy.h"
 #include "cbanlist.h"
 #include "cconndc.h"
 #include "creguserinfo.h"
@@ -645,9 +646,19 @@ bool cServerADC::TreatNormalMessage(nProtocol::cMessageADC *msg, cConnDC *conn)
 		return false;
 	}
 
-	// This is the ADC application-policy boundary. Permission, plugin and flood
-	// checks belong here before RouteNormal; the wire protocol no longer routes
-	// messages by itself as the historical cDCProto did.
+	string denialReason;
+
+	if (!nProtocol::cADCPolicy::AllowNormal(this, conn, *session, *msg,
+		denialReason)) {
+		vector<string> flags;
+		flags.push_back("FC" + msg->Command());
+		SendStatus(conn, "125", denialReason, flags, false);
+		return false;
+	}
+
+	// Wire routing happens only after the application policy accepted the ADC
+	// command. This replaces the old cDCProto pattern where parsing, policy and
+	// NMDC routing were intertwined in one handler.
 	const int routed = mADCProto.RouteNormal(msg, conn);
 
 	if (routed == 0)
