@@ -11,6 +11,7 @@
 #ifndef CADCHASH_H
 #define CADCHASH_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,7 @@ class cADCHash
 	public:
 		static bool DecodeBase32(const std::string &src,
 			std::vector<unsigned char> &dest);
-		static std::string EncodeBase32(const unsigned char *src, size_t len);
+		static std::string EncodeBase32(const unsigned char *src, std::size_t len);
 
 		/** Verify TIGR CID = Tiger(raw PID). */
 		static bool VerifyTigerCID(const std::string &pid,
