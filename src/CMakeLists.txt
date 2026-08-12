@@ -8,9 +8,9 @@
 #	your option any later version.
 #
 #	Verlihub is distributed in the hope that it will be
-#	useful, but without any warranty, without even the
-#	implied warranty of merchantability or fitness for
-#	a particular purpose. See the GNU General Public
+#	useful, but WITHOUT ANY WARRANTY; without even the
+#	implied warranty of MERCHANTABILITY or FITNESS FOR
+#	a PARTICULAR PURPOSE. See the GNU General Public
 #	License for more details.
 #
 #	Please see https://www.gnu.org/licenses/ for a copy
@@ -21,6 +21,7 @@ INCLUDE_DIRECTORIES(${VERLIHUB_BINARY_DIR} ${VERLIHUB_SOURCE_DIR}/src)
 SET(VERLIHUB_HDRS
 	casyncconn.h
 	casyncsocketserver.h
+	cadcproto.h
 	cban.h
 	cbanlist.h
 	ccallbacklist.h
@@ -57,6 +58,7 @@ SET(VERLIHUB_HDRS
 	ckicklist.h
 	clog.h
 	cmeanfrequency.h
+	cmessageadc.h
 	cmessagedc.h
 	cmutex.h
 	cmysql.h
@@ -105,6 +107,7 @@ SET(VERLIHUB_HDRS
 SET(VERLIHUB_SRCS
 	casyncconn.cpp
 	casyncsocketserver.cpp
+	cadcproto.cpp
 	cban.cpp
 	cbanlist.cpp
 	ccallbacklist.cpp
@@ -140,6 +143,7 @@ SET(VERLIHUB_SRCS
 	ckicklist.cpp
 	clog.cpp
 	cmeanfrequency.cpp
+	cmessageadc.cpp
 	cmessagedc.cpp
 	cmutex.cpp
 	cmysql.cpp
@@ -200,7 +204,7 @@ if(USE_TLS_PROXY AND GOLANG_PATH)
 		COMMENT "Copying libvhproxy.h header"
 	)
 
-	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/src/libvhproxy.h")
+	add_custom_target(libvhproxy_h DEPENDS "${CMAKE_SOURCE_DIR}/libvhproxy.h")
 	add_dependencies(libvhproxy_h libvhproxy_a)
 
 	add_custom_command(
