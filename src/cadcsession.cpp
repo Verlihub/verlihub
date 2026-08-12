@@ -10,6 +10,7 @@
 
 #include "cadcsession.h"
 #include "cadcidentityhost.h"
+#include "cadcsessionhost.h"
 #include "casyncconn.h"
 
 namespace nVerliHub {
@@ -38,6 +39,14 @@ void cADCSessionManager::Detach(nSocket::cAsyncConn *conn)
 
 	if (it == mSessions.end())
 		return;
+
+	if (it->second.mState == eADC_STATE_NORMAL && conn && conn->mxServer) {
+		nSocket::cADCSessionHost *host =
+			dynamic_cast<nSocket::cADCSessionHost*>(conn->mxServer);
+
+		if (host)
+			host->OnADCSessionDetach(conn, it->second);
+	}
 
 	if (!it->second.mSID.empty())
 		mSIDIndex.erase(it->second.mSID);
@@ -293,6 +302,15 @@ bool cADCSessionManager::EnterNormal(nSocket::cAsyncConn *conn)
 
 	session->mState = eADC_STATE_NORMAL;
 	session->mGPA.clear();
+
+	if (conn && conn->mxServer) {
+		nSocket::cADCSessionHost *host =
+			dynamic_cast<nSocket::cADCSessionHost*>(conn->mxServer);
+
+		if (host)
+			host->OnADCSessionNormal(conn, *session);
+	}
+
 	return true;
 }
 
