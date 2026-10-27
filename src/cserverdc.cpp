@@ -109,6 +109,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mChatUsers(false, false, false),
 	mRobotList(true, false, false),
 	mReloadNow(false),
+	mStopRequest(0),
 	mUserCountTot(0),
 	mTotalShare(0),
 	mTotalSharePeak(0),
@@ -1914,6 +1915,13 @@ int cServerDC::OnTimer(const cTime &now)
 
 	if (mReloadNow) // reload now
 		this->ReloadNow();
+
+	int stop_req = 1;
+
+	if (mStopRequest.compare_exchange_strong(stop_req, 2)) { // note: stop asked from other thread, like windows console handler
+		vhLog(0) << "Stop requested by system, stopping hub" << endl;
+		this->SyncStop();
+	}
 
 	if (bool(mReloadcfgTimer.mMinDelay) && (mReloadcfgTimer.Check(mTime, 1) == 0)) {
 		mC.Load();
@@ -3902,6 +3910,12 @@ void cServerDC::SyncStop()
 void cServerDC::SyncReload()
 {
 	mReloadNow = true;
+}
+
+bool cServerDC::RequestStop()
+{
+	int none = 0;
+	return mStopRequest.compare_exchange_strong(none, 1);
 }
 
 void cServerDC::ReloadNow()

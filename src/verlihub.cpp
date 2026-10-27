@@ -36,6 +36,10 @@
 #include "cserverdc.h"
 #include "csocketapi.h"
 #include <iostream>
+
+#ifdef _WIN32
+	#include <windows.h>
+#endif
 #include <stdlib.h>
 #include <sstream>
 #include <signal.h>
@@ -99,6 +103,37 @@ void mySigHupHandler(int i)
 
 	if (serv)
 		serv->SyncReload();
+}
+#else
+static HANDLE sStopDone = NULL; // note: set when main is done, console close waits for it
+
+BOOL WINAPI myConsoleHandler(DWORD type) // note: windows runs it on its own thread, so it only asks main loop to stop
+{
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (!serv || !serv->RequestStop()) // note: hub is not running or stop was already requested, so second ctrl+c ends process at once like before
+		return FALSE;
+
+	if ((type == CTRL_CLOSE_EVENT) || (type == CTRL_LOGOFF_EVENT) || (type == CTRL_SHUTDOWN_EVENT)) { // note: windows ends process when this returns, so wait for clean stop, it waits only few seconds
+		if (sStopDone)
+			WaitForSingleObject(sStopDone, INFINITE);
+	}
+
+	return TRUE;
+}
+
+LONG WINAPI myCrashHandler(EXCEPTION_POINTERS *info) // note: crash in any thread, replaces handler of mingw runtime that calls sigsegv handler
+{
+	const DWORD code = ((info && info->ExceptionRecord) ? info->ExceptionRecord->ExceptionCode : 0);
+	MAIN_LOG_ERROR << "Received exception 0x" << std::hex << code << std::dec << ", doing stacktrace and quiting" << endl;
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (serv) { // note: this is a crash, same as signal handler
+		serv->DoStackTrace();
+		serv->OnUnLoad(9); // try to unload as much as possible
+	}
+
+	return EXCEPTION_EXECUTE_HANDLER; // note: ends process with exception code
 }
 #endif
 
@@ -240,6 +275,18 @@ int main(int argc, char *argv[])
 		}
 	} sock_cleanup; // note: declared before server, so it runs after server is destroyed
 
+#ifdef _WIN32
+	sStopDone = CreateEventA(NULL, TRUE, FALSE, NULL);
+
+	struct sStopSignal {
+		~sStopSignal()
+		{
+			if (sStopDone)
+				SetEvent(sStopDone);
+		}
+	} stop_signal; // note: declared before server, so console close handler continues after server is destroyed
+#endif
+
 	//try { // todo: whole process is running inside try?
 		cServerDC server(ConfigBase, argv[0]); // create server
 		cObj::msLogLevel += verbosity;
@@ -248,10 +295,12 @@ int main(int argc, char *argv[])
 			signal(SIGPIPE, mySigPipeHandler);
 			signal(SIGIO, mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
+			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
+		#else
+			SetConsoleCtrlHandler(myConsoleHandler, TRUE); // note: ctrl+c, ctrl+break and closing console window stop hub cleanly
+			SetUnhandledExceptionFilter(myCrashHandler); // note: crash in any thread, not only main thread
 		#endif
-
-			signal(SIGSEGV, mySigServHandler); // todo: windows crash handler with SetUnhandledExceptionFilter, and console close handler for quit
 
 		if (!server.StartListening(port))
 			return 0;

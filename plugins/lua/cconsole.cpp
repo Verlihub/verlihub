@@ -188,7 +188,7 @@ bool cConsole::cfDelLuaScript::operator()()
 	if (IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
 		number = true;
-	} else if (scriptfile.find_first_of('/') == string::npos) {
+	} else if (!HasPathSeparator(scriptfile)) {
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
@@ -253,7 +253,7 @@ bool cConsole::cfAddLuaScript::operator()()
 		}
 
 		scriptfile = GetPI()->mScriptDir + filenames[num];
-	} else if (scriptfile.find_first_of('/') == string::npos) {
+	} else if (!HasPathSeparator(scriptfile)) {
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
@@ -306,7 +306,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 	if (IsNumber(scriptfile.c_str())) {
 		num = atoi(scriptfile.c_str());
 		number = true;
-	} else if (scriptfile.find_first_of('/') == string::npos) {
+	} else if (!HasPathSeparator(scriptfile)) {
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 

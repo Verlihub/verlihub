@@ -20,6 +20,7 @@
 
 #include "casyncsocketserver.h"
 #include "csocketapi.h"
+#include "stringutils.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -853,10 +854,10 @@ bool cAsyncSocketServer::CheckTLS(bool force, string *report)
 
 	string cert(mTLSCert), key(mTLSKey), info, err;
 
-	if (cert.size() && (cert.find('/') == string::npos)) // note: file name only, look in config directory
+	if (cert.size() && !HasPathSeparator(cert)) // note: file name only, look in config directory
 		cert = mConfBaseDir + "/" + cert;
 
-	if (key.size() && (key.find('/') == string::npos))
+	if (key.size() && !HasPathSeparator(key))
 		key = mConfBaseDir + "/" + key;
 
 	cTLSContext::tCertState state = cTLSContext::CertState(cert, info);

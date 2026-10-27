@@ -29,6 +29,14 @@
 #include "stringutils.h"
 #include "i18n.h"
 
+#ifdef _WIN32
+	static const char sPluginExt[] = ".dll"; // note: plugins are loaded with dlopen of dlfcn-win32 there
+#else
+	static const char sPluginExt[] = ".so";
+#endif
+
+static const size_t sPluginExtLen = sizeof(sPluginExt) - 1;
+
 namespace nVerliHub {
 	using namespace nUtils;
 
@@ -64,7 +72,7 @@ bool cPluginManager::LoadAll()
 		filename = ent->d_name;
 		if(Log(3))
 			LogStream() << "filename: " << filename << endl;
-		if((filename.size() > 3) && (0 == StrCompare(filename,filename.size()-3,3,".so"))) {
+		if ((filename.size() > sPluginExtLen) && (0 == StrCompare(filename, filename.size() - sPluginExtLen, sPluginExtLen, sPluginExt))) {
 			pathname = mPluginDir+filename;
 			LoadPlugin(pathname);
 		}

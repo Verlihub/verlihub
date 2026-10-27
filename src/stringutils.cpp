@@ -193,6 +193,15 @@ void GetPath(const string &FileName, string &Path, string &File)
 	File = FileName.substr(i+1);
 }
 
+bool HasPathSeparator(const string &Path)
+{
+#ifdef _WIN32
+	return (Path.find_first_of("/\\:") != string::npos);
+#else
+	return (Path.find('/') != string::npos);
+#endif
+}
+
 void FilterPath(string &Path)
 {
 #ifdef _WIN32

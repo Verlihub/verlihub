@@ -35,8 +35,13 @@
 
 #ifdef _WIN32
 	#include <ws2tcpip.h> // inet_pton
+	#include <windows.h> // MoveFileExA
 #else
 	#include <arpa/inet.h> // inet_pton
+#endif
+
+#ifndef O_BINARY
+	#define O_BINARY 0 // note: windows opens files in text mode by default, that changes new lines
 #endif
 
 using namespace std;
@@ -260,9 +265,18 @@ static bool AddExt(X509 *cert, int nid, const string &value)
 	return res;
 }
 
+static int MoveOver(const string &from, const string &to) // note: like rename, also on windows where rename does not replace existing file
+{
+#ifdef _WIN32
+	return (MoveFileExA(from.c_str(), to.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) ? 0 : -1);
+#else
+	return rename(from.c_str(), to.c_str());
+#endif
+}
+
 static bool WriteFile(const string &path, mode_t mode, const string &data, string &err)
 {
-	const int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode); // note: key must not be readable by others
+	const int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode); // note: key must not be readable by others
 
 	if (fd < 0) {
 		err = "Failed to open " + path + " for writing";
@@ -402,7 +416,7 @@ bool cTLSContext::Generate(const string &cert, const string &key, const string &
 		return false;
 	}
 
-	if ((rename(key_tmp.c_str(), key.c_str()) != 0) || (rename(cert_tmp.c_str(), cert.c_str()) != 0)) { // note: on posix rename replaces old file at once, todo: windows needs MoveFileEx with replace
+	if ((MoveOver(key_tmp, key) != 0) || (MoveOver(cert_tmp, cert) != 0)) { // note: old file is replaced at once
 		err = "Failed to replace " + cert + " or " + key;
 		unlink(key_tmp.c_str());
 		unlink(cert_tmp.c_str());

@@ -9,6 +9,10 @@
 * Added: Database thread with its own connection for writes and background reads, queued writes are done before hub stops
 * Added: Configuration use_banlist_cache, ban check on login without database query
 * Added: Epoll connection chooser when available, CMake flag USE_EPOLL, poll stays as fallback
+* Added: Windows support using MinGW-w64, see Install.md
+* Added: On Windows Ctrl+C, Ctrl+Break or closing console window stops hub cleanly, second Ctrl+C ends it at once
+* Added: On Windows crash in any thread writes stack backtrace, plugins are loaded from DLL files
+* Added: Epoll connection chooser on Windows using bundled wepoll library, select stays as fallback, see ThirdParty.md
 * Added: Native TLS using OpenSSL instead of separate proxy, plain and encrypted clients on same port, CMake flag USE_TLS, configuration tls_enable (enabled by default)
 * Added: TLS handshakes run on worker threads, one per CPU core, so many connecting users dont block the hub
 * Added: TLS versions 1.0 and 1.1 still work when allowed with tls_min_ver, also on systems where OpenSSL disables them by default

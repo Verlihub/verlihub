@@ -31,6 +31,7 @@
 */
 
 #include <fstream>
+#include <atomic>
 
 #include "cuser.h"
 #include "cmessagedc.h"
@@ -688,7 +689,11 @@ class cServerDC : public cAsyncSocketServer
 		void SyncStop();
 		void SyncReload();
 		void ReloadNow();
-		bool mReloadNow;
+		std::atomic<bool> mReloadNow; // note: set from signal handler
+
+		// any thread, asks main loop to stop like SyncStop, returns false when stop was already requested
+		bool RequestStop();
+		std::atomic<int> mStopRequest; // note: 0 = none, 1 = requested, 2 = done by main loop
 
 protected: // Protected methods
 	/*
