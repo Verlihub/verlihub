@@ -19,6 +19,7 @@
 */
 
 #include "cconfigbase.h"
+#include <cstdint>
 
 namespace nVerliHub {
 	namespace nConfig {
@@ -85,7 +86,7 @@ void cConfigBaseBase::SetBaseTo(void *new_base)
 {
 	if (mBasePtr) {
 		for (tIVIt it = mvItems.begin(); it != mvItems.end(); ++it)
-			mhItems.GetByHash(*it)->mAddr = (void*)(long(mhItems.GetByHash(*it)->mAddr) + (long(new_base) - long(mBasePtr)));
+			mhItems.GetByHash(*it)->mAddr = (void*)(intptr_t(mhItems.GetByHash(*it)->mAddr) + (intptr_t(new_base) - intptr_t(mBasePtr))); // note: long is 32 bit on windows, pointer is not
 	}
 
 	mBasePtr = new_base;

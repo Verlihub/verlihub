@@ -227,7 +227,7 @@ namespace nVerliHub {
 				 * @param sd Socket identifier of the connection.
 				 * @param server Pointer to cAsyncSocketServer instance.
 				 */
-				cConnDC(int sd = 0, cAsyncSocketServer *server=NULL);
+				cConnDC(tSocket sd = 0, cAsyncSocketServer *server=NULL);
 
 				/**
 				 * Class destructor.

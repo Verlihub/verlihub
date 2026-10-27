@@ -34,6 +34,7 @@
 #endif
 
 #include "cserverdc.h"
+#include "csocketapi.h"
 #include <iostream>
 #include <stdlib.h>
 #include <sstream>
@@ -52,7 +53,7 @@ cObj mainLogger("main");
 #define MAIN_LOG_NOTICE if (mainLogger.Log(0)) mainLogger.LogStream()
 #define MAIN_LOG_ERROR if (mainLogger.ErrLog(0)) mainLogger.LogStream()
 
-//#if ! defined _WIN32
+#ifndef _WIN32 // note: windows has no sigpipe, sigio, sigquit and sighup
 void mySigPipeHandler(int i)
 {
 	signal(SIGPIPE, mySigPipeHandler);
@@ -64,6 +65,7 @@ void mySigIOHandler(int i)
 	signal(SIGIO, mySigIOHandler);
 	MAIN_LOG_NOTICE << endl << "Received SIGIO, ignoring it, " << i << endl;
 }
+#endif
 
 void mySigQuitHandler(int i)
 {
@@ -89,6 +91,7 @@ void mySigServHandler(int i)
 	exit(128 + i); // proper exit code for this signal
 }
 
+#ifndef _WIN32
 void mySigHupHandler(int i)
 {
 	MAIN_LOG_NOTICE << "Received a " << i << " signal, reloading" << endl;
@@ -97,7 +100,7 @@ void mySigHupHandler(int i)
 	if (serv)
 		serv->SyncReload();
 }
-//#endif
+#endif
 
 bool DirExists(const char *dirname)
 {
@@ -225,17 +228,30 @@ int main(int argc, char *argv[])
 
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
+	if (!SockStartup()) { // note: windows needs it before any socket is created
+		MAIN_LOG_ERROR << "Failed to start socket library" << endl;
+		return 1;
+	}
+
+	struct sSockCleanup {
+		~sSockCleanup()
+		{
+			SockCleanup();
+		}
+	} sock_cleanup; // note: declared before server, so it runs after server is destroyed
+
 	//try { // todo: whole process is running inside try?
 		cServerDC server(ConfigBase, argv[0]); // create server
 		cObj::msLogLevel += verbosity;
 
-		//#ifndef _WIN32
+		#ifndef _WIN32
 			signal(SIGPIPE, mySigPipeHandler);
 			signal(SIGIO, mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
-			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
-		//#endif
+		#endif
+
+			signal(SIGSEGV, mySigServHandler); // todo: windows crash handler with SetUnhandledExceptionFilter, and console close handler for quit
 
 		if (!server.StartListening(port))
 			return 0;

@@ -65,6 +65,10 @@
 #include "ctime.h"
 #include "cconnbase.h"
 
+#if defined(_WIN32) && !defined(USE_OLD_CONNLIST)
+	#define USE_OLD_CONNLIST // note: windows sockets are handles, so connection list must be hashed instead of indexed by socket
+#endif
+
 //#ifndef _WIN32
 	#ifndef USE_OLD_CONNLIST
 		#include <vector>

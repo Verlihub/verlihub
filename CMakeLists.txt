@@ -78,9 +78,12 @@ INCLUDE(VerlihubMacro)
 # ----------------------------------------------------------------------------------------------------
 # system
 
-#IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # detect os
-	#ADD_DEFINITIONS(-D_WIN32 1) # WIN32 flag already exists
-#ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+IF(WIN32) # note: also when building with mingw from msys2 shell
+	ADD_DEFINITIONS(-DHAVE_WINDOWS -D_WIN32_WINNT=0x0601 -DWIN32_LEAN_AND_MEAN -DNOMINMAX -DNOGDI) # note: windows 7 and later, small windows headers, no min and max macros that break std::min and std::max, no gdi macros like DEFAULT_CHARSET
+	ADD_DEFINITIONS(-DFD_SETSIZE=4096) # note: windows select handles only 64 sockets by default, it must be set before winsock2.h everywhere
+	ADD_DEFINITIONS(-D_POSIX_THREAD_SAFE_FUNCTIONS=200112L) # note: mingw time.h gives localtime_r and gmtime_r only with this
+	SET(HAVE_WINDOWS TRUE)
+ENDIF(WIN32)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	ADD_DEFINITIONS(-DHAVE_LINUX)
@@ -169,12 +172,15 @@ message(STATUS "[ .. ] Looking for dependencies")
 message(STATUS)
 
 Find_Package(OpenSSL 1.1.0 REQUIRED)
-Find_Package(Crypt REQUIRED)
+IF(NOT WIN32) # note: windows has no crypt, openssl does the same there
+	Find_Package(Crypt REQUIRED)
+ENDIF(NOT WIN32)
+
 Find_Package(MySQL REQUIRED)
 Find_Package(ZLIB REQUIRED)
 Find_Package(MaxMindDB REQUIRED)
 Find_Package(ICU COMPONENTS data i18n uc io REQUIRED)
-Find_Package(DL REQUIRED)
+Find_Package(DL REQUIRED) # note: on windows this is dlfcn library
 Find_Package(Pcre REQUIRED)
 Find_Package(Threads REQUIRED)
 Find_Package(Gettext REQUIRED)
@@ -299,6 +305,14 @@ if(SYSINFO_LIBRARY)
 	ENDIF(HAVE_BSD)
 endif(SYSINFO_LIBRARY)
 
+if(DL_LIBRARIES) # note: newer glibc has it built in, but windows needs it
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${DL_LIBRARIES}")
+endif(DL_LIBRARIES)
+
+IF(WIN32)
+	SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ws2_32 dbghelp") # note: sockets and stack backtrace
+ENDIF(WIN32)
+
 string(STRIP "${VERLIHUB_LIBS}" VERLIHUB_LIBS)
 STRING(REPLACE " " ";" VERLIHUB_LIBS "${VERLIHUB_LIBS}")
 STRING(REPLACE ";;" ";" VERLIHUB_LIBS "${VERLIHUB_LIBS}")
@@ -413,9 +427,15 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/c
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(share)
-ADD_SUBDIRECTORY(scripts)
+IF(NOT WIN32) # note: bash scripts and man pages are not for windows
+	ADD_SUBDIRECTORY(scripts)
+ENDIF(NOT WIN32)
+
 ADD_SUBDIRECTORY(po)
-ADD_SUBDIRECTORY(man)
+
+IF(NOT WIN32)
+	ADD_SUBDIRECTORY(man)
+ENDIF(NOT WIN32)
 
 # ----------------------------------------------------------------------------------------------------
 # todo: build a cpack driven installer package
@@ -486,8 +506,12 @@ if(USE_TLS)
 else()
 	message(STATUS "[ ** ] TLS support: OFF")
 endif()
-message(STATUS "[ ** ] Now run \"make\" as current user and \"make install\" as super user")
-message(STATUS "[ ** ] Then run \"ldconfig\" as super user to avoid shared library errors")
+if(WIN32)
+	message(STATUS "[ ** ] Now run \"mingw32-make\" and then \"mingw32-make install\"")
+else()
+	message(STATUS "[ ** ] Now run \"make\" as current user and \"make install\" as super user")
+	message(STATUS "[ ** ] Then run \"ldconfig\" as super user to avoid shared library errors")
+endif()
 message(STATUS)
 message(STATUS "================= End =================")
 message(STATUS)

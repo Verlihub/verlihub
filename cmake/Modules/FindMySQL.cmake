@@ -20,6 +20,8 @@ if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 	set(MYSQL_FOUND TRUE)
 else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
 	find_path(MYSQL_INCLUDE_DIR mysql.h
+		PATH_SUFFIXES mysql mariadb # note: for compiler search paths, for example on windows
+		PATHS
 		/usr/include/mysql
 		/usr/local/include/mysql
 		/usr/pkg/include/mysql

@@ -31,8 +31,14 @@
 #include <cctype>
 #include <locale.h>
 #include <algorithm>
-#include <execinfo.h>
 #include <cxxabi.h>
+
+#ifdef _WIN32
+	#include <windows.h>
+	#include <dbghelp.h> // note: must come after windows.h
+#else
+	#include <execinfo.h>
+#endif
 
 
 #include "cserverdc.h"
@@ -48,6 +54,24 @@
 #include "cdcconsole.h"
 #include "ctriggers.h"
 
+static int SetEnv(const char *name, const char *value) // note: windows has no setenv and unsetenv
+{
+#ifdef _WIN32
+	return _putenv_s(name, value);
+#else
+	return setenv(name, value, 1);
+#endif
+}
+
+static int UnsetEnv(const char *name)
+{
+#ifdef _WIN32
+	return _putenv_s(name, ""); // note: empty value removes variable on windows
+#else
+	return unsetenv(name);
+#endif
+}
+
 namespace nVerliHub {
 	using namespace nUtils;
 	using namespace nEnums;
@@ -56,7 +80,7 @@ namespace nVerliHub {
 
 	namespace nSocket {
 		cServerDC* cServerDC::sCurrentServer = NULL;
-		bool cServerDC::mStackTrace = true;
+		bool cServerDC::mCrashReport = true;
 
 cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	cAsyncSocketServer(CfgBase), // create parent class
@@ -99,8 +123,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
-		vhLog(1) << "Setting environment variable LANG: " << ((setenv("LANG", mDBConf.locale.c_str(), 1) == 0) ? "OK" : "Error") << endl;
-		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((unsetenv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
+		vhLog(1) << "Setting environment variable LANG: " << ((SetEnv("LANG", mDBConf.locale.c_str()) == 0) ? "OK" : "Error") << endl;
+		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((UnsetEnv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
 		char *res = setlocale(LC_MESSAGES/*LC_ALL*/, mDBConf.locale.c_str()); // note: only messages, else we break double decimal separator when saving and reading from db
 		vhLog(0) << "Setting hub locale: " << ((res) ? res : "Error") << endl;
 
@@ -3653,9 +3677,58 @@ char* cServerDC::GetConfig(const char *conf, const char *var, const char *def)
 
 void cServerDC::DoStackTrace()
 {
-	if (!mStackTrace)
-		return;
+#ifdef _WIN32
+	void* addrlist[62]; // note: older windows can not capture more frames at once
+	const int addrlen = CaptureStackBackTrace(1, sizeof(addrlist) / sizeof(void*), addrlist, NULL); // note: skip this function, like linux loop below
 
+	if (!addrlen) {
+		vhErr(0) << "Stack backtrace is empty, possibly corrupt" << endl;
+		return;
+	}
+
+	const HANDLE proc = GetCurrentProcess();
+	SymSetOptions(SYMOPT_DEFERRED_LOADS); // note: no msvc undecorating, gcc names are demangled below
+	const bool sym = SymInitialize(proc, NULL, TRUE); // note: mingw makes no pdb files, so names come only from exported symbols of dlls
+	char symbuf[sizeof(SYMBOL_INFO) + 256];
+	size_t funcnamesize = 256;
+	char* funcname = (char*)malloc(funcnamesize);
+	ostringstream bt;
+
+	for (int i = 0; i < addrlen; i++) {
+		const DWORD64 addr = (DWORD64)addrlist[i];
+		HMODULE mod = NULL;
+		char path[MAX_PATH] = "?";
+
+		if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)addrlist[i], &mod) && mod)
+			GetModuleFileNameA(mod, path, sizeof(path));
+
+		bt << path << " [+0x" << std::hex << (addr - (DWORD64)mod) << std::dec << ']'; // note: offset in module, it can be resolved with addr2line
+		SYMBOL_INFO *info = (SYMBOL_INFO*)symbuf;
+		memset(symbuf, 0, sizeof(symbuf));
+		info->SizeOfStruct = sizeof(SYMBOL_INFO);
+		info->MaxNameLen = 256;
+		DWORD64 disp = 0;
+
+		if (sym && SymFromAddr(proc, addr, &disp, info)) {
+			int status;
+			char* ret = abi::__cxa_demangle(info->Name, funcname, &funcnamesize, &status);
+
+			if (!status) {
+				funcname = ret;
+				bt << ": " << funcname << " +0x" << std::hex << disp << std::dec;
+			} else {
+				bt << ": " << info->Name << "() +0x" << std::hex << disp << std::dec;
+			}
+		}
+
+		bt << endl;
+	}
+
+	if (sym)
+		SymCleanup(proc);
+
+	free(funcname);
+#else
 	void* addrlist[64];
 	int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
 
@@ -3703,7 +3776,14 @@ void cServerDC::DoStackTrace()
 
 	free(funcname);
 	free(symbollist);
+#endif
+
 	vhErr(0) << "Stack backtrace:" << endl << endl << bt.str() << endl;
+
+	if (!mCrashReport) { // note: intentional crash, dont flood crash server with useless reports
+		vhErr(0) << "Not sending stack backtrace of intentional crash to crash server" << endl;
+		return;
+	}
 
 	if (!mC.send_crash_report)
 		return;

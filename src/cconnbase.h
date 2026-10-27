@@ -21,19 +21,20 @@
 #ifndef NSERVERCCONNBASE_H
 #define NSERVERCCONNBASE_H
 
+#ifdef _WIN32
+	#include <winsock2.h>
+#endif
+
 namespace nVerliHub {
 	namespace nSocket {
 
-//#if !defined _WIN32
+#ifdef _WIN32
+	typedef SOCKET tSocket; // note: windows socket is handle, not small number, so it can not be used as index
+#else
 	typedef int tSocket;
 	#define INVALID_SOCKET -1
 	#define SOCKET_ERROR -1
-/*
-#else
-	#include <winsock2.h>
-	typedef SOCKET tSocket;
 #endif
-*/
 
 /** a Base class for cConnChoose Usage - for connections
 	provides pure virtual conversion to a tSocket (uint or SOCKET) type

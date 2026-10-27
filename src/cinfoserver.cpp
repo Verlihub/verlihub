@@ -27,11 +27,17 @@
 #include <iostream>
 #include <thread>
 #include <unistd.h>
-#include <sys/utsname.h>
-#include <sys/sysinfo.h>
 #include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/times.h>
+
+#ifdef _WIN32
+	#include <windows.h>
+	#include <psapi.h>
+#else
+	#include <sys/utsname.h>
+	#include <sys/sysinfo.h>
+	#include <sys/resource.h>
+	#include <sys/times.h>
+#endif
 
 #include "i18n.h"
 
@@ -41,15 +47,40 @@ namespace nVerliHub {
 	using namespace nSocket;
 	using namespace nEnums;
 
+#ifdef _WIN32
+	static unsigned __int64 last_cpu, last_proc_cpu; // cpu usage values, in 100 ns units
+
+	static unsigned __int64 FileTime64(const FILETIME &time)
+	{
+		return (((unsigned __int64)time.dwHighDateTime) << 32) | time.dwLowDateTime;
+	}
+
+	static void CpuSample(unsigned __int64 &wall, unsigned __int64 &proc) // note: wall clock and cpu time of own process, kernel and user together
+	{
+		FILETIME now, create, leave, kern, user;
+		GetSystemTimeAsFileTime(&now);
+		wall = FileTime64(now);
+		proc = 0;
+
+		if (GetProcessTimes(GetCurrentProcess(), &create, &leave, &kern, &user))
+			proc = FileTime64(kern) + FileTime64(user);
+	}
+#else
 	static clock_t last_cpu, last_sys_cpu, last_user_cpu; // cpu usage values
+#endif
 
 cInfoServer::cInfoServer()
 {
 	mServer = NULL;
+
+#ifdef _WIN32
+	CpuSample(last_cpu, last_proc_cpu);
+#else
 	struct tms time_sample;
 	last_cpu = times(&time_sample);
 	last_sys_cpu = time_sample.tms_stime;
 	last_user_cpu = time_sample.tms_utime;
+#endif
 }
 
 cInfoServer::~cInfoServer()
@@ -273,6 +304,55 @@ void cInfoServer::BufferInfo(ostream &os)
 
 void cInfoServer::SystemInfo(ostream &os)
 {
+#ifdef _WIN32
+	MEMORYSTATUSEX mem;
+	mem.dwLength = sizeof(mem);
+
+	if (!GlobalMemoryStatusEx(&mem)) {
+		os << _("Unable to get system information.");
+		return;
+	}
+
+	os << _("System information") << ":\r\n\r\n";
+	typedef LONG (WINAPI *tRtlGetVersion)(PRTL_OSVERSIONINFOW);
+	const HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	const tRtlGetVersion get_ver = (ntdll ? (tRtlGetVersion)(void*)GetProcAddress(ntdll, "RtlGetVersion") : NULL); // note: GetVersionEx reports wrong version to programs without manifest
+	RTL_OSVERSIONINFOW ver;
+	memset(&ver, 0, sizeof(ver));
+	ver.dwOSVersionInfoSize = sizeof(ver);
+
+	if (get_ver && (get_ver(&ver) == 0)) {
+		SYSTEM_INFO sys;
+		GetNativeSystemInfo(&sys);
+		const char *arch = "unknown";
+
+		switch (sys.wProcessorArchitecture) {
+			case PROCESSOR_ARCHITECTURE_AMD64:
+				arch = "x86_64";
+				break;
+			case PROCESSOR_ARCHITECTURE_ARM64:
+				arch = "aarch64";
+				break;
+			case PROCESSOR_ARCHITECTURE_INTEL:
+				arch = "i686";
+				break;
+		}
+
+		const string kern = std::to_string(ver.dwMajorVersion) + '.' + std::to_string(ver.dwMinorVersion) + '.' + std::to_string(ver.dwBuildNumber);
+		os << " [*] " << autosprintf(_("OS: %s"), "Windows") << "\r\n";
+		os << " [*] " << autosprintf(_("Kernel: %s [%s]"), kern.c_str(), arch) << "\r\n\r\n";
+	}
+
+	os << " [*] " << autosprintf(_("Uptime: %s"), cTimePrint((long)(GetTickCount64() / 1000)).AsPeriod().AsString().c_str()) << "\r\n";
+	PERFORMANCE_INFORMATION perf;
+
+	if (GetPerformanceInfo(&perf, sizeof(perf)))
+		os << " [*] " << autosprintf(_("Total processes inclusive threads: %d"), (int)perf.ThreadCount) << "\r\n";
+
+	os << "\r\n";
+	os << " [*] " << autosprintf(_("Total RAM: %s"), convertByte(mem.ullTotalPhys).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Free RAM: %s"), convertByte(mem.ullAvailPhys).c_str()) << "\r\n\r\n"; // note: windows has no load averages, shared ram, buffers or separate swap numbers
+#else
 	struct sysinfo serverInfo;
 
 	if (sysinfo(&serverInfo)) {
@@ -322,13 +402,26 @@ void cInfoServer::SystemInfo(ostream &os)
 	size_val = (unsigned __int64)serverInfo.freeswap;
 	size_val *= (unsigned __int64)serverInfo.mem_unit;
 	os << " [*] " << autosprintf(_("Free swap: %s"), convertByte(size_val).c_str()) << "\r\n\r\n";
+#endif
 
 	unsigned __int64 size_vm = 0, size_res = 0; // self memory sizes and cpu usage
 	double perc_cpu;
+
+#ifndef _WIN32
 	pid_t mypid;
 	string temp;
+#endif
 
-#if defined HAVE_BSD
+#if defined _WIN32
+
+	PROCESS_MEMORY_COUNTERS pmc;
+
+	if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) { // note: sizes are in kb below
+		size_vm = pmc.PagefileUsage / 1024; // note: committed private memory
+		size_res = pmc.WorkingSetSize / 1024;
+	}
+
+#elif defined HAVE_BSD
 
 	mypid = ::getpid(); // get own pid
 	temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
@@ -368,9 +461,26 @@ void cInfoServer::SystemInfo(ostream &os)
 
 #endif
 
+	const unsigned int num_cpu = std::thread::hardware_concurrency(); // note: c++11
+
+#ifdef _WIN32
+	unsigned __int64 now, proc_cpu;
+	CpuSample(now, proc_cpu);
+
+	if ((now <= last_cpu) || (proc_cpu < last_proc_cpu)) { // note: clock was changed
+		perc_cpu = .0;
+
+	} else { // calculate cpu usage
+		perc_cpu = double(proc_cpu - last_proc_cpu);
+		perc_cpu /= double(now - last_cpu);
+		perc_cpu *= 100;
+	}
+
+	last_cpu = now;
+	last_proc_cpu = proc_cpu;
+#else
 	struct tms time_sample;
 	clock_t now = times(&time_sample);
-	const unsigned int num_cpu = std::thread::hardware_concurrency(); // note: c++11
 
 	if ((now <= last_cpu) || (time_sample.tms_stime < last_sys_cpu) || (time_sample.tms_utime < last_user_cpu)) { // overflow detection
 		perc_cpu = .0;
@@ -385,6 +495,7 @@ void cInfoServer::SystemInfo(ostream &os)
 	last_cpu = now;
 	last_sys_cpu = time_sample.tms_stime;
 	last_user_cpu = time_sample.tms_utime;
+#endif
 
 	os << " [*] " << autosprintf(_("Virtual RAM usage: %s"), convertByte(size_vm * 1024).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Resident RAM usage: %s"), convertByte(size_res * 1024).c_str()) << "\r\n\r\n";
@@ -392,6 +503,7 @@ void cInfoServer::SystemInfo(ostream &os)
 	os << " [*] " << autosprintf(_("CPU cores: %d"), num_cpu) << "\r\n";
 	os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n";
 
+#ifndef _WIN32 // todo: windows has no ps and pgrep, find database server process another way
 	mypid = 0;
 	temp = ParsePsLine(0, "mysqld", "pid"); // try mysql
 	string name;
@@ -425,6 +537,7 @@ void cInfoServer::SystemInfo(ostream &os)
 		os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), name.c_str(), convertByte(size_vm * 1024).c_str()) << "\r\n";
 		os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), name.c_str(), convertByte(size_res * 1024).c_str()) << "\r\n";
 	}
+#endif
 }
 
 unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)

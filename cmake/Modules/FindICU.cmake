@@ -34,13 +34,15 @@ macro(declare_icu_component _NAME) # <icu component name> <library name 1> ... <
 endmacro(declare_icu_component)
 
 
-#if(WIN32)
-	#declare_icu_component(data icudt)
-	#declare_icu_component(i18n icuin) # internationalization library
-#else()
+if(WIN32) # note: different library names on windows
+	declare_icu_component(data icudt)
+	declare_icu_component(i18n icuin) # internationalization library
+	declare_icu_component(dt icudt) # note: names that pkg-config gives on windows
+	declare_icu_component(in icuin)
+else()
 	declare_icu_component(data icudata)
 	declare_icu_component(i18n icui18n) # internationalization library
-#endif ()
+endif()
 
 declare_icu_component(uc icuuc) # common and data libraries
 declare_icu_component(io icuio) # stream and i/o library
@@ -110,7 +112,7 @@ foreach(_icu_component ${IcuComponents}) # check libraries
 
 	string(TOUPPER "${_icu_component}" _icu_upper_component)
 
-	if(_icu_lib STREQUAL _icu_lib-NOTFOUND)
+	if(NOT _icu_lib_${_icu_component}) # note: was comparing wrong variable, missing library was never detected
 		set("ICU_${_icu_upper_component}_FOUND" FALSE)
 		set(ICU_FOUND FALSE)
 	else()

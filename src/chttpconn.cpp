@@ -22,24 +22,14 @@
 	#include <config.h>
 #endif
 
-#if HAVE_ERRNO_H
-	#include <errno.h>
-#endif
-
 #include "chttpconn.h"
 #include "cconnchoose.h"
+#include "csocketapi.h"
 #include <ostream>
-#include <arpa/inet.h>
-#include <netinet/in.h> // sockaddr_in
-#include <sys/socket.h> // AF_INET
-#include <netdb.h> // getaddrinfo
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include "ctime.h"
 #include "stringutils.h"
 
-#define sockoptval_t int
 #define MAX_DATA 524288 // 0.5 mb
 #define MAX_SEND 2097152 // 2.0 mb
 
@@ -75,22 +65,25 @@ cHTTPConn::~cHTTPConn()
 tSocket cHTTPConn::Create()
 {
 	tSocket sock;
-	sockoptval_t yes = 1;
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
 		return INVALID_SOCKET;
 
-	if (SetOpt(SO_REUSEADDR, &yes, sizeof(sockoptval_t), sock) == INVALID_SOCKET) {
-		::close(sock);
+#ifndef _WIN32 // note: see cAsyncConn::CreateSock
+	const int yes = 1;
+
+	if (SetOpt(SO_REUSEADDR, &yes, sizeof(yes), sock) == SOCKET_ERROR) {
+		SockClose(sock);
 		return INVALID_SOCKET;
 	}
+#endif
 
 	return sock;
 }
 
-int cHTTPConn::SetOpt(int name, const void *val, int len, int sock)
+int cHTTPConn::SetOpt(int name, const void *val, int len, tSocket sock)
 {
-	return setsockopt((sock ? sock : mSock), SOL_SOCKET, name, val, len);
+	return SockSetOpt((sock ? sock : mSock), SOL_SOCKET, name, val, len);
 }
 
 bool cHTTPConn::Request(const string &meth, const string &req, const string &head, const string &data)
@@ -193,9 +186,8 @@ int cHTTPConn::Connect(const string &host, const int port)
 	if (mCancel && !mCancel->Attach(mSock)) // note: already cancelled, dont even start
 		return -1;
 
-	cTime tout(5.0);
-	SetOpt(SO_RCVTIMEO, &tout, sizeof(timeval));
-	SetOpt(SO_SNDTIMEO, &tout, sizeof(timeval));
+	SockSetTimeout(mSock, SO_RCVTIMEO, 5000);
+	SockSetTimeout(mSock, SO_SNDTIMEO, 5000);
 	struct addrinfo hints, *res = NULL;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET; // note: socket is ipv4
@@ -223,10 +215,10 @@ int cHTTPConn::Send(const char *buf, size_t &len)
 	size_t tot = 0;
 
 	while (tot < len) {
-		const ssize_t res = send(mSock, buf + tot, len - tot, MSG_NOSIGNAL);
+		const int res = send(mSock, buf + tot, (int)(len - tot), MSG_NOSIGNAL);
 
 		if (res < 0) {
-			if (errno == EINTR) // note: interrupted by signal, try again
+			if (SockInterrupted()) // note: interrupted by signal, try again
 				continue;
 
 			break; // note: error or send timeout expired
@@ -250,7 +242,7 @@ int cHTTPConn::Read()
 
 	do { // note: socket is blocking with receive timeout, eagain means timeout expired, so retry only when interrupted by signal
 		len = recv(mSock, mBuf.data(), MAX_DATA, 0);
-	} while ((len == -1) && (errno == EINTR));
+	} while ((len == -1) && SockInterrupted());
 
 	if (len <= 0) {
 		/*
@@ -283,13 +275,13 @@ void cHTTPConn::Close()
 	mWrite = false;
 	mGood = false;
 
-	if (mSock <= 0)
+	if (!SockValid(mSock))
 		return;
 
 	if (mCancel) // note: must be detached before closing, so cancel can not shut down reused descriptor
 		mCancel->Detach();
 
-	TEMP_FAILURE_RETRY(::close(mSock));
+	SockClose(mSock);
 	mSock = INVALID_SOCKET;
 	mBuf.clear();
 }

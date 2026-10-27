@@ -24,13 +24,9 @@
 #include "cconnchoose.h"
 
 #if USE_SELECT
-/*
-#if defined _WIN32
-#include "Winsock2.h"
-#else
-*/
-#include <sys/select.h>
-//#endif
+#ifndef _WIN32
+	#include <sys/select.h> // note: windows has select in winsock2.h, which comes with cconnbase.h
+#endif
 
 #include "thasharray.h"
 
@@ -62,14 +58,16 @@ public:
 	* @param conn The connection.
 	* @param event Bitwise OR list of I/O operation.
 	*/
-	virtual void OptIn(tSocket sock, tChEvent events);
+	virtual void OptIn(tSocket sock, nEnums::tChEvent events);
+	using cConnChoose::OptIn;
 
 	/**
 	* Unregister the connection for the given I/O operation.
 	* @param conn The connection.
 	* @param event Bitwise OR list of I/O operation.
 	*/
-	virtual void OptOut(tSocket, tChEvent);
+	virtual void OptOut(tSocket, nEnums::tChEvent);
+	using cConnChoose::OptOut;
 
 	/**
 	* Return I/O operations for the given connection.
@@ -78,6 +76,7 @@ public:
 	* @see OptIn(tSocket sock, tChEvent events)
 	*/
 	virtual int OptGet(tSocket sock);
+	using cConnChoose::OptGet;
 	/// \brief get the result after Choose operation
 	virtual int RevGet(tSocket sock);
 	/// \brief test wheather the choose result is non-nul
@@ -92,14 +91,7 @@ public:
 		sFDSet(){ FD_ZERO(this);}
 		sFDSet & operator=(const sFDSet &set)
 		{
-			/*
-			#ifdef _WIN32
-			fd_count=set.fd_count;
-			memcpy(&fd_array,&(set.fd_array), sizeof (fd_array));
-			#else
-			*/
-			memcpy(&fds_bits,&(set.fds_bits), sizeof(fds_bits));
-			//#endif
+			static_cast<fd_set&>(*this) = set; // note: windows fd_set is array of sockets with count, not bits
 			return *this;
 		}
 		bool IsSet(tSocket sock){ return FD_ISSET(sock, this) != 0;}
@@ -113,7 +105,15 @@ public:
 	typedef tHashArray<sChooseRes *> tFDs;
 	struct iterator;
 
-	iterator begin() { return iterator(this, mFDs.begin()); }
+	iterator begin()
+	{
+		iterator it(this, mFDs.begin());
+
+		if (!it.mIT.IsEnd() && (!(*it.mIT) || !(*it.mIT)->mRevent)) // note: start at first socket with result, like other choosers
+			it.Advance();
+
+		return it;
+	}
 
 	iterator end() { return iterator(this, mFDs.end()); }
 
@@ -148,16 +148,8 @@ public:
 
 		iterator & operator ++(){ Advance(); return *this;}
 
-		private:
-
-		iterator(const iterator &it);
-
-		iterator &operator=(const iterator &it)
-		{
-			mSel= it.mSel;
-			mIT = it.mIT;
-			return *this;
-		}
+		iterator(const iterator &it) = default; // note: main loop copies and assigns it
+		iterator &operator=(const iterator &it) = default;
 	};
 
 protected:

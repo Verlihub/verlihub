@@ -649,8 +649,8 @@ class cServerDC : public cAsyncSocketServer
 		cUserCollection mChatUsers; // users who receive main chat
 		cUserCollection mRobotList; // bot list
 
-		// prevent stack trace on core dump
-		static bool mStackTrace;
+		// dont send stack trace of intentional crash to crash server, it is still written to log
+		static bool mCrashReport;
 
 		// stack trace
 		void DoStackTrace();

@@ -31,6 +31,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef _WIN32 // note: windows has no crypt, openssl gives same classic des crypt
+	#define OPENSSL_SUPPRESS_DEPRECATED // note: des is deprecated since openssl 3.0, but it is still there
+	#include <openssl/des.h>
+#endif
+
 #include "creguserinfo.h"
 #include "stringutils.h"
 #include "cuser.h"
@@ -67,6 +72,18 @@ cRegUserInfo::cRegUserInfo():
 cRegUserInfo::~cRegUserInfo()
 {}
 
+static string CryptPass(const string &pass, const string &salt)
+{
+#ifdef _WIN32
+	char buf[14]; // note: 13 chars and null
+	const char *res = DES_fcrypt(pass.c_str(), salt.c_str(), buf); // note: only classic des, not $1$, $5$ or $6$ like system crypt
+#else
+	const char *res = crypt(pass.c_str(), salt.c_str());
+#endif
+
+	return (res ? res : ""); // note: crypt can return null on unsupported salt
+}
+
 bool cRegUserInfo::PWVerify(const string &pass)
 {
 	if (!mPasswd.size() || !pass.size()) // check both password lengths
@@ -76,7 +93,7 @@ bool cRegUserInfo::PWVerify(const string &pass)
 
 	switch (mPWCrypt) {
 		case eCRYPT_ENCRYPT:
-			comp = crypt(pass.c_str(), mPasswd.c_str());
+			comp = CryptPass(pass, mPasswd);
 			break;
 
 		case eCRYPT_MD5:
@@ -150,7 +167,7 @@ void cRegUserInfo::SetPass(const string &str, tCryptMethods crypt_method)
 			dec[0] = arr[dec[0] % 64];
 			dec[1] = arr[dec[1] % 64];
 			out.assign((char*)dec, 2);
-			mPasswd = crypt(pass.c_str(), out.c_str());
+			mPasswd = CryptPass(pass, out);
 			mPWCrypt = eCRYPT_ENCRYPT;
 			break;
 

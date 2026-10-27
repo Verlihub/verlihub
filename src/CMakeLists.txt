@@ -85,6 +85,7 @@ SET(VERLIHUB_HDRS
 	cworkerpool.h
 	cwakeup.h
 	csocketcancel.h
+	csocketapi.h
 	ctlssession.h
 	cmysqlworker.h
 	czlib.h
@@ -170,6 +171,7 @@ SET(VERLIHUB_SRCS
 	cworkerpool.cpp
 	cwakeup.cpp
 	csocketcancel.cpp
+	csocketapi.cpp
 	ctlssession.cpp
 	cmysqlworker.cpp
 	czlib.cpp
@@ -204,7 +206,7 @@ CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DI
 
 # ----------------------------------------------------------------------------------------------------
 
-install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR})
+install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR}) # note: on windows dll goes to bin and its import library to lib
 
 INSTALL(
 	FILES "${VERLIHUB_BINARY_DIR}/verlihub_config"

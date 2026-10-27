@@ -27,49 +27,13 @@
 #include "cserverdc.h"
 #include "cbanlist.h"
 
-/*
-#if defined _WIN32
-	#include <Winsock2.h>
-	#define ECONNRESET WSAECONNRESET
-	#define ETIMEDOUT WSAETIMEDOUT
-	#define EHOSTUNREACH WSAEHOSTUNREACH
-	#define socklen_t int
-	#define sockoptval_t char
-#endif
-*/
-
-#if HAVE_ERRNO_H
-	#include <errno.h>
-#endif
-
 #include "casyncconn.h"
 #include "cprotocol.h"
-
-//#if !defined _WIN32
-	#include <arpa/inet.h>
-	#include <netinet/in.h> // sockaddr_in
-	#include <sys/socket.h> // AF_INET
-	#include <netdb.h> // gethostbyaddr
-//#endif
-
+#include "csocketapi.h"
 #include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include "ctime.h"
 #include "stringutils.h"
-
-//#if !defined _WIN32
-	#define sockoptval_t int
-
-	inline int closesocket(int s)
-	{
-		return ::close(s);
-	}
-//#endif
-
-#ifndef MSG_NOSIGNAL
-	#define MSG_NOSIGNAL 0
-#endif
 
 using namespace std;
 
@@ -83,11 +47,11 @@ vector<char> cAsyncConn::msBuffer(MAX_MESS_SIZE + 1); // todo: use dynamic grow
 unsigned long cAsyncConn::sSocketCounter = 0;
 std::atomic<unsigned long long> cAsyncConn::sConnIDCounter{0};
 
-cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
+cAsyncConn::cAsyncConn(tSocket desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
 	cObj("cAsyncConn"),
 	mZLibFlag(false),
 	mTLSVer(""),
-	ok(desc > 0),
+	ok(SockValid(desc)),
 	mWritable(true),
 	mxServer(s),
 	mxMyFactory(NULL),
@@ -116,7 +80,7 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 
 	memset(&mAddrIN, 0, sizeof(struct sockaddr_in));
 
-	if (mSockDesc) {
+	if (SockValid(mSockDesc)) {
 		struct sockaddr saddr;
 		socklen_t addr_size = sizeof(saddr);
 
@@ -203,7 +167,7 @@ cAsyncConn::~cAsyncConn()
 
 void cAsyncConn::Close()
 {
-	if (mSockDesc <= 0)
+	if (!SockValid(mSockDesc))
 		return;
 
 	mWritable = false;
@@ -213,15 +177,14 @@ void cAsyncConn::Close()
 	if (mxServer)
 		mxServer->OnConnClose(this);
 
-	TEMP_FAILURE_RETRY(closesocket(mSockDesc));
+	sSocketCounter--; // note: socket is released even when close reports error, it must not be closed again
 
-	if (errno != EINTR) {
-		sSocketCounter--;
-
+	if (SockClose(mSockDesc) == 0) {
 		if (Log(3))
 			LogStream() << "Closing socket: " << mSockDesc << endl;
 	} else if (ErrLog(1)) {
-		LogStream() << "Socket not closed: " << mSockDesc << endl;
+		const int err = SockError();
+		LogStream() << "Error closing socket: " << mSockDesc << ", " << err << " = " << SockErrorText(err) << endl;
 	}
 
 	mSockDesc = 0;
@@ -351,7 +314,7 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 			const size_t max_len = MAX_MESS_SIZE;
 		#endif
 
-			while (((buf_len = recv(mSockDesc, msBuffer.data(), max_len, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
+			while (((buf_len = recv(mSockDesc, msBuffer.data(), (int)max_len, 0)) == -1) && SockTryAgain() && (i++ <= tries)) {
 			//#if !defined _WIN32
 				::usleep(sleep);
 			//#endif
@@ -373,8 +336,10 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 					LogStream() << "User hung up" << endl;
 
 			} else {
-				if (Log(2))
-					LogStream() << "Read IO error: " << errno << " = " << strerror(errno) << endl;
+				if (Log(2)) {
+					const int err = SockError();
+					LogStream() << "Read IO error: " << err << " = " << SockErrorText(err) << endl;
+				}
 
 				/*
 				switch (errno) {
@@ -633,7 +598,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		//try {
 			//if (!udp) {
 //#if !defined _WIN32
-					n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
+					n = send(mSockDesc, buf + total, (int)bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
 				int RetryCount = 0;
@@ -677,7 +642,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	}
 #else
 	//if (!udp)
-			n = send(mSockDesc, buf + total, bytesleft, 0);
+			n = send(mSockDesc, buf + total, (int)bytesleft, 0);
 	/*
 	else
 		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
@@ -740,9 +705,8 @@ int cAsyncConn::Connect(const string &host, int port)
 		return -1;
 	}
 
-	cTime timeout(5.0);
-	SetSockOpt(SO_RCVTIMEO, &timeout, sizeof(timeval));
-	SetSockOpt(SO_SNDTIMEO, &timeout, sizeof(timeval));
+	SockSetTimeout(mSockDesc, SO_RCVTIMEO, 5000);
+	SockSetTimeout(mSockDesc, SO_SNDTIMEO, 5000);
 
 	struct hostent *he = gethostbyname(host.c_str());
 
@@ -772,13 +736,7 @@ int cAsyncConn::Connect(const string &host, int port)
 
 int cAsyncConn::SetSockOpt(int optname, const void *optval, int optlen)
 {
-	//#ifndef _WIN32
-		return setsockopt(this->mSockDesc, SOL_SOCKET, optname, optval, optlen);
-	/*
-	#else
-		return 0;
-	#endif
-	*/
+	return SockSetOpt(this->mSockDesc, SOL_SOCKET, optname, optval, optlen);
 }
 
 /*
@@ -797,12 +755,14 @@ tSocket cAsyncConn::CreateSock(/*bool udp*/)
 		if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) // create tcp socket
 			return INVALID_SOCKET;
 
-		sockoptval_t yes = 1;
+	#ifndef _WIN32 // note: on windows it allows other process to bind same port and steal connections, and windows has no address already in use problem after restart
+		const int yes = 1;
 
-		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(sockoptval_t)) == INVALID_SOCKET) { // fix the address already in use error
-			closesocket(sock);
+		if (SockSetOpt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == SOCKET_ERROR) { // fix the address already in use error
+			SockClose(sock);
 			return INVALID_SOCKET;
 		}
+	#endif
 	/*
 	} else {
 		if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET) // create udp socket
@@ -818,23 +778,16 @@ tSocket cAsyncConn::CreateSock(/*bool udp*/)
 	return sock;
 }
 
-int cAsyncConn::BindSocket(int sock, int port, const char *ia)
+tSocket cAsyncConn::BindSocket(tSocket sock, int port, const char *ia)
 {
-	if (sock < 0)
+	if (!SockValid(sock))
 		return INVALID_SOCKET;
 
 	mAddrIN.sin_family = AF_INET;
 	mAddrIN.sin_addr.s_addr = INADDR_ANY; // default listen address
 
-	if (ia && (ia[0] != '\0')) {
-	//#if !defined _WIN32
-		inet_aton(ia, &mAddrIN.sin_addr); // override it
-	/*
-	#else
-		mAddrIN.sin_addr.s_addr = inet_addr(ia);
-	#endif
-	*/
-	}
+	if (ia && (ia[0] != '\0'))
+		inet_pton(AF_INET, ia, &mAddrIN.sin_addr); // override it
 
 	mAddrIN.sin_port = htons(port);
 	memset(&(mAddrIN.sin_zero), '\0', 8);
@@ -845,9 +798,9 @@ int cAsyncConn::BindSocket(int sock, int port, const char *ia)
 	return sock;
 }
 
-int cAsyncConn::ListenSock(int sock, const unsigned int blog)
+tSocket cAsyncConn::ListenSock(tSocket sock, const unsigned int blog)
 {
-	if (sock < 0)
+	if (!SockValid(sock))
 		return INVALID_SOCKET;
 
 	if (listen(sock, blog) == -1) { // note: this is backlog
@@ -858,60 +811,35 @@ int cAsyncConn::ListenSock(int sock, const unsigned int blog)
 	return sock;
 }
 
-tSocket cAsyncConn::NonBlockSock(int sock)
+tSocket cAsyncConn::NonBlockSock(tSocket sock)
 {
-	if (sock < 0)
+	if (!SockValid(sock) || !SockNonBlock(sock))
 		return INVALID_SOCKET;
-
-	//#if !defined _WIN32
-		int flags;
-
-		if ((flags = fcntl(sock, F_GETFL, 0)) < 0)
-			return INVALID_SOCKET;
-
-		if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
-			return INVALID_SOCKET;
-	/*
-	#else
-		unsigned long one = 1;
-
-		if (SOCKET_ERROR == ioctlsocket(sock, FIONBIO, &one))
-			return INVALID_SOCKET;
-	#endif
-	*/
 
 	return sock;
 }
 
 bool cAsyncConn::ListenOnPort(int port, const char *address, const unsigned int blog/*, bool udp*/)
 {
-	if (mSockDesc)
+	if (SockValid(mSockDesc))
 		return false;
 
-	mSockDesc = CreateSock(/*udp*/);
+	const tSocket sock = CreateSock(/*udp*/);
 
-	if (mSockDesc == INVALID_SOCKET)
+	if (sock == INVALID_SOCKET) {
+		mSockDesc = 0;
 		return false;
+	}
 
-	mSockDesc = BindSocket(mSockDesc, port, address);
-
-	if (mSockDesc == INVALID_SOCKET)
+	if ((BindSocket(sock, port, address) == INVALID_SOCKET) || (ListenSock(sock, blog) == INVALID_SOCKET) || (NonBlockSock(sock) == INVALID_SOCKET)) { // note: dont leak socket on failure
+		SockClose(sock);
+		sSocketCounter--;
+		mSockDesc = 0;
 		return false;
+	}
 
-	//if (!udp) {
-	    mSockDesc = ListenSock(mSockDesc, blog);
-
-		if (mSockDesc == INVALID_SOCKET)
-			return false;
-
-	    mSockDesc = NonBlockSock(mSockDesc);
-
-		if (mSockDesc == INVALID_SOCKET)
-			return false;
-
-	//}
-
-	ok = mSockDesc > 0;
+	mSockDesc = sock;
+	ok = true;
 	return ok;
 }
 
@@ -938,7 +866,7 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 
 	unsigned int i = 0;
 
-	while ((socknum == INVALID_SOCKET) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ < tries)) {
+	while ((socknum == INVALID_SOCKET) && SockTryAgain() && (i++ < tries)) {
 		//#if !defined _WIN32
 			socknum = ::accept(mSockDesc, (struct sockaddr*)&client, (socklen_t*)&namelen);
 		/*
@@ -971,28 +899,17 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 
 
 	sSocketCounter++;
-	sockoptval_t yes = 1;
+	const int yes = 1;
 
-	//#ifndef _WIN32
-	if (setsockopt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(int)) == SOCKET_ERROR) {
-		TEMP_FAILURE_RETRY(closesocket(socknum));
+	if ((SockSetOpt(socknum, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(yes)) == SOCKET_ERROR) || (NonBlockSock(socknum) == INVALID_SOCKET)) { // note: dont leak socket on failure
+		SockClose(socknum);
+		sSocketCounter--;
 
-		if (errno != EINTR) {
-			sSocketCounter--;
-
-			if (Log(3))
-				LogStream() << "Closing socket: " << socknum << endl;
-
-		} else if (ErrLog(1)) {
-			LogStream() << "Socket not closed: " << socknum << endl;
-		}
+		if (Log(3))
+			LogStream() << "Closing socket: " << socknum << endl;
 
 		return INVALID_SOCKET;
 	}
-	//#endif
-
-	if ((socknum = NonBlockSock(socknum)) == INVALID_SOCKET)
-		return INVALID_SOCKET;
 
 	return socknum;
 }
@@ -1159,17 +1076,19 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
 
 	const int send_res = SendAll(send_buf, calc_size); // try to send as much data as possible
+	const int send_err = ((send_res == -1) ? SockError() : 0); // note: take error before anything else can change it
+	const bool send_again = ((send_res == -1) && SockTryAgain());
 
 	if (calc_size) // note: bytes that really went to socket, after compression and encryption
 		OnSent(calc_size);
 
 	if (send_res == -1) {
 		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << errno << '=' << strerror(errno) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
+			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << send_err << '=' << SockErrorText(send_err) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
 
-		if ((errno != EAGAIN) && (errno != EINTR)) { // analyse the error if any
+		if (!send_again) { // analyse the error if any
 			if (Log(2))
-				LogStream() << "Error during writing, closing: " << errno << endl;
+				LogStream() << "Error during writing, closing: " << send_err << endl;
 
 			CloseNow();
 			return -1;

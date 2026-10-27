@@ -38,7 +38,10 @@
 #include "cdcclients.h"
 #include "i18n.h"
 #include <algorithm>
-#include <sys/resource.h>
+
+#ifndef _WIN32
+	#include <sys/resource.h>
+#endif
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -582,7 +585,7 @@ int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)
 	if (code >= 0) {
 		mOwner->stop(code, delay);
 	} else {
-		cServerDC::mStackTrace = false;
+		cServerDC::mCrashReport = false; // note: backtrace still goes to log
 		DoCrashTest();
 	}
 
@@ -2505,10 +2508,12 @@ bool cDCConsole::cfSetVar::operator()()
 			return false;
 	}
 
+#ifndef _WIN32 // note: windows has no such limit for sockets
 	struct rlimit userLimit;
 
 	if (!getrlimit(RLIMIT_NOFILE, &userLimit) && userLimit.rlim_cur < mS->mC.max_users_total) // get maximum file descriptor number
 		(*mOS) << "\r\n" << autosprintf(_("Warning: %s allows maximum %d users, but current resource limit is %d, so consider running ulimit -n <max_users> and restarting the hub."), HUB_VERSION_NAME, mS->mC.max_users_total, int(userLimit.rlim_cur));
+#endif
 
 	return true;
 }

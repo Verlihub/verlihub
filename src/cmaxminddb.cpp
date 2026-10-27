@@ -1010,7 +1010,7 @@ void cMaxMindDB::MMDBCacheClean()
 	unsigned int del = 0;
 
 	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end();) {
-		if ((mServ->mTime.Sec() - it->second.mLT.Sec()) >= (mServ->mC.mmdb_cache_mins * 60)) { // delete outdated items
+		if ((mServ->mTime.Sec() - it->second.mLT.Sec()) >= (long(mServ->mC.mmdb_cache_mins) * 60)) { // delete outdated items, note: long is 32 bit on windows, so unsigned is not promoted
 			mMMDBCacheList.erase(it++);
 			del++;
 		} else {

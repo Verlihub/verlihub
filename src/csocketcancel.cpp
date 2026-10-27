@@ -19,7 +19,7 @@
 */
 
 #include "csocketcancel.h"
-#include <sys/socket.h>
+#include "csocketapi.h" // note: shutdown and SHUT_RDWR
 
 using namespace std;
 

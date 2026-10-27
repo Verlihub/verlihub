@@ -151,52 +151,25 @@ bool LoadFileInString(const string &FileName, string &dest)
 void ExpandPath(string &Path)
 {
 	if (Path.substr(0, 2) == "./") {
-		string tmp = Path;
+		char *cPath = getcwd(NULL, 0); // note: allocates as needed on linux, bsd, apple and windows
 
-		/*
-		#ifdef _WIN32
-			char *cPath = new char[35];
-			int size = GetCurrentDirectory(35, cPath);
-
-			if (!size) {
-				delete[] cPath;
-				return;
-			} else if (size > 35) {
-				delete[] cPath;
-				cPath = new char[size];
-				GetCurrentDirectory(35, cPath);
-			}
-
-			Path = string(cPath);
-			delete[] cPath;
-		#elif defined HAVE_BSD
-		*/
-		#if defined HAVE_BSD
-			char *cPath = getcwd(NULL, PATH_MAX);
+		if (cPath) {
+			const string tmp = Path;
 			Path = cPath;
 			free(cPath);
-		#elif defined HAVE_APPLE
-			char *cPath = getcwd(NULL, PATH_MAX);
-			Path = cPath;
-			free(cPath);
-		#else
-			char *cPath = get_current_dir_name();
-			Path = cPath;
-			free(cPath);
-		#endif
-
-		Path += '/' + tmp.substr(2, tmp.length());
+			Path += '/' + tmp.substr(2, tmp.length());
+		}
 	}
 
 	size_t pos;
+	pos = Path.find('~');
 
-	//#if ! defined _WIN32
-		pos = Path.find('~');
+	if (pos != Path.npos) {
+		const char *home = getenv("HOME"); // note: windows usually has no home variable
 
-		if (pos != Path.npos) {
-			Path.replace(pos, 2, getenv("HOME"));
-		}
-	//#endif
+		if (home)
+			Path.replace(pos, 2, home);
+	}
 
 	pos = Path.find("../"); // todo: doesnt work on windows
 
@@ -222,6 +195,10 @@ void GetPath(const string &FileName, string &Path, string &File)
 
 void FilterPath(string &Path)
 {
+#ifdef _WIN32
+	std::replace(Path.begin(), Path.end(), '\\', '/'); // note: windows also takes backslash as separator, so ..\ would get out of configuration folder
+#endif
+
 	size_t pos = Path.find("../");
 	while (pos != Path.npos) {
 		Path.replace(pos, 3, "");

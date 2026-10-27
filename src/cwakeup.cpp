@@ -19,12 +19,18 @@
 */
 
 #include "cwakeup.h"
-#include <cerrno>
-#include <fcntl.h>
-#include <unistd.h>
+#include "csocketapi.h"
+
+#ifndef _WIN32
+	#include <cerrno>
+	#include <fcntl.h>
+	#include <unistd.h>
+#endif
 
 namespace nVerliHub {
 	namespace nSocket {
+
+#ifndef _WIN32
 
 static bool SetNonBlockExec(int fd)
 {
@@ -36,6 +42,8 @@ static bool SetNonBlockExec(int fd)
 	return (fcntl(fd, F_SETFD, FD_CLOEXEC) == 0);
 }
 
+#endif
+
 cWakeup::~cWakeup()
 {
 	Close();
@@ -46,6 +54,12 @@ bool cWakeup::Open()
 	if (IsOpen())
 		return true;
 
+#ifdef _WIN32
+	tSocket fds[2]; // note: windows can not wait on pipe together with sockets, socket pair is used there
+
+	if (!SockPair(fds))
+		return false;
+#else
 	int fds[2];
 
 	if (pipe(fds) != 0)
@@ -56,6 +70,7 @@ bool cWakeup::Open()
 		::close(fds[1]);
 		return false;
 	}
+#endif
 
 	mRead = fds[0];
 	mWrite = fds[1];
@@ -66,12 +81,20 @@ bool cWakeup::Open()
 void cWakeup::Close()
 {
 	if (mRead != INVALID_SOCKET) {
+	#ifdef _WIN32
+		SockClose(mRead);
+	#else
 		::close(mRead);
+	#endif
 		mRead = INVALID_SOCKET;
 	}
 
 	if (mWrite != INVALID_SOCKET) {
+	#ifdef _WIN32
+		SockClose(mWrite);
+	#else
 		::close(mWrite);
+	#endif
 		mWrite = INVALID_SOCKET;
 	}
 
@@ -84,6 +107,10 @@ void cWakeup::Signal()
 		return;
 
 	const char byte = 1;
+
+#ifdef _WIN32
+	send(mWrite, &byte, 1, 0); // note: would block means buffer is full, which means main loop will wake up anyway
+#else
 	ssize_t res;
 
 	do {
@@ -91,17 +118,24 @@ void cWakeup::Signal()
 	} while ((res < 0) && (errno == EINTR));
 
 	// note: eagain means pipe is full, which means main loop will wake up anyway
+#endif
 }
 
 void cWakeup::Clear()
 {
 	if (mRead != INVALID_SOCKET) {
 		char buf[64];
+
+	#ifdef _WIN32
+		while (recv(mRead, buf, sizeof(buf), 0) > 0)
+		{}
+	#else
 		ssize_t res;
 
 		do {
 			res = ::read(mRead, buf, sizeof(buf));
 		} while ((res > 0) || ((res < 0) && (errno == EINTR)));
+	#endif
 	}
 
 	/*

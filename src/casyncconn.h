@@ -32,10 +32,7 @@
 #include "cconnbase.h"
 #include "cprotocol.h"
 #include "ctlssession.h"
-
-//#ifndef _WIN32
-	#include <netinet/in.h>
-//#endif
+#include "csocketapi.h"
 
 
 #include <string>
@@ -156,7 +153,7 @@ namespace nVerliHub {
 				 * @param ct The type of connection. See tConnType for more information.
 				 * @see tConnType
 				 */
-				cAsyncConn(int sd = 0, cAsyncSocketServer *s = NULL, tConnType ct = nEnums::eCT_CLIENT);
+				cAsyncConn(tSocket sd = 0, cAsyncSocketServer *s = NULL, tConnType ct = nEnums::eCT_CLIENT);
 
 				/**
 				 * Class constructor.
@@ -651,7 +648,7 @@ namespace nVerliHub {
 				 * @param port The port.
 				 * @param add The address.
 				 */
-				int BindSocket(int sock, int port, const char *addr);
+				tSocket BindSocket(tSocket sock, int port, const char *addr);
 
 				/**
 				 * Create a new socket connection.
@@ -673,14 +670,14 @@ namespace nVerliHub {
 				 * @param sock The identifier of the socket to listen on.
 				 * @return A negative value if the operation failed or the identifier of the socket.
 				 */
-				int ListenSock(int sock, const unsigned int blog);
+				tSocket ListenSock(tSocket sock, const unsigned int blog);
 
 				/**
 				 * Set socket in non-blocking mode.
 				 * @param sock The identifier of the socket.
 				 * @return A negative value if the operation failed or the identifier of the socket.
 				 */
-				tSocket NonBlockSock(int sock);
+				tSocket NonBlockSock(tSocket sock);
 
 				/**
 				 * Event handler function called before the connection is closed.

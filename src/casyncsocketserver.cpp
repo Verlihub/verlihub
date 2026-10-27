@@ -19,19 +19,7 @@
 */
 
 #include "casyncsocketserver.h"
-
-
-/*
-#if defined _WIN32
-#  include <Winsock2.h>
-#else
-*/
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-//#endif
-
+#include "csocketapi.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +27,6 @@
 #include <cerrno>
 #include <cstring>
 #include <chrono>
-#include <poll.h>
 #include <sstream>
 #include <sys/stat.h>
 
@@ -189,10 +176,10 @@ void cAsyncSocketServer::StepWait(unsigned int msec)
 		pfd.fd = (tSocket)mWakeup;
 		pfd.events = POLLIN;
 		pfd.revents = 0;
-		const int res = ::poll(&pfd, 1, (int)left);
+		const int res = SockPoll(&pfd, 1, (int)left);
 
 		if (res < 0) {
-			if (errno == EINTR) // note: signal, continue sleeping
+			if (SockInterrupted()) // note: signal, continue sleeping
 				continue;
 
 			::usleep(left * 1000); // note: should not happen, sleep like before
@@ -226,7 +213,8 @@ bool cAsyncSocketServer::StartWorkers()
 {
 	if (!mWakeup.IsOpen()) {
 		if (!mWakeup.Open()) {
-			vhLog(0) << "Failed to create wakeup pipe, worker threads are disabled: " << errno << " = " << strerror(errno) << endl;
+			const int err = SockError();
+			vhLog(0) << "Failed to create wakeup pipe, worker threads are disabled: " << err << " = " << SockErrorText(err) << endl;
 			return false;
 		}
 

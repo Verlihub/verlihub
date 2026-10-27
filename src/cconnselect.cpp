@@ -124,7 +124,7 @@ int cConnSelect::Select( cTime &tmout )
 	mResReadFS = mReadFS;
 	mResWriteFS = mWriteFS;
 	mResExceptFS = mExceptFS;
-	int size = mLastSock;//mFDs.size();
+	int size = mLastSock + 1; // note: highest socket plus one, windows ignores it
 	int ret = select(size, &mResReadFS, &mResWriteFS, &mResExceptFS, (timeval *)(&tmout));
 	if( ret == SOCKET_ERROR ) return -1;
 	ClearRevents();
@@ -147,48 +147,30 @@ void cConnSelect::FDSet2HashRevents(sFDSet &fdset, unsigned mask)
 {
 	unsigned i;
 	tSocket sock;
-	/*
-	#ifdef _WIN32
-	for(i = 0; i < fdset.fd_count; i++)
-	{
+
+#ifdef _WIN32
+	for (i = 0; i < fdset.fd_count; i++) { // note: windows fd_set holds only set sockets
 		sock = fdset.fd_array[i];
+#else
+	for (i = 0; i < FD_SETSIZE; i++) {
+		sock = i;
+
+		if (!FD_ISSET(sock, &fdset))
+			continue;
+#endif
+
 		sChooseRes *FD = mFDs.GetByHash(sock);
-		if (!FD)
-		{
+
+		if (!FD) {
 			FD = new sChooseRes;
 			FD->mSock = sock;
 			FD->mEvent = 0;
 			FD->mRevent = mask;
-			mFDs.AddWithHash(FD , sock );
-		}
-		else
-		{
+			mFDs.AddWithHash(FD, sock);
+		} else {
 			FD->mRevent |= mask;
 		}
 	}
-	#else
-	*/
-	for(i = 0; i < FD_SETSIZE; i++)
-	{
-		sock = i;
-		if (FD_ISSET(sock,&fdset))
-		{
-			sChooseRes *FD = mFDs.GetByHash(sock);
-			if (!FD)
-			{
-				FD = new sChooseRes;
-				FD->mSock = sock;
-				FD->mEvent = 0;
-				FD->mRevent = mask;
-				mFDs.AddWithHash(FD , sock );
-			}
-			else
-			{
-				FD->mRevent |= mask;
-			}
-		}
-	}
-	//#endif
 }
 
 	}; // namespace nSocket

@@ -32,7 +32,7 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-cConnDC::cConnDC(int sd, cAsyncSocketServer *server):
+cConnDC::cConnDC(tSocket sd, cAsyncSocketServer *server):
 	cAsyncConn(sd, server)
 {
 	mpUser = NULL;

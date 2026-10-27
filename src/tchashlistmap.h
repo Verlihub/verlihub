@@ -67,7 +67,7 @@ public:
 	typedef typename tUserHash::iterator tUHIt;
 
 
-	size_t size(){ return mUserHash.size();}
+	size_t size() const { return mUserHash.size();}
 	tcHashListMap():cObj("tcHashListMap"){}
 	~tcHashListMap(){}
 
