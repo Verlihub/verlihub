@@ -35,18 +35,19 @@ namespace nVerliHub {
  		class cHTTPConn;
 		using namespace nUtils;
 
-		class cHTTPConn:
-			public cConnBase
+		/*
+			small blocking tcp client, http request and reply are used only by update check and crash report
+			note: hublist registration also uses it, but only as plain tcp connection with nmdc protocol, no http there
+			note: it is not part of main loop, every call blocks until data is sent or received or timeout expires
+		*/
+		class cHTTPConn
 		{
 			public:
-				cHTTPConn(int sock = 0);
 				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL); // note: cancel lets other thread abort blocking connection
-				virtual ~cHTTPConn();
+				~cHTTPConn();
 
-				size_t GetSize() const
-				{
-					return mSend.size();
-				}
+				cHTTPConn(const cHTTPConn&) = delete;
+				cHTTPConn& operator=(const cHTTPConn&) = delete;
 
 				unsigned int GetBuf(string &buf)
 				{
@@ -65,31 +66,22 @@ namespace nVerliHub {
 				bool ParseReply(string &repl);
 				int Read();
 				void Close();
-				void CloseNice(int msec = 0);
 				void CloseNow();
-				int OnTimerBase(const cTime &now);
 
-				cTime mLast;
 				bool mGood;
 				bool mWrite;
 				tSocket mSock;
 
 			protected:
-				virtual operator tSocket() const
-				{
-					return mSock;
-				}
-
 				tSocket Create();
 				int Send(const char *buf, size_t &len);
 
-				string mSend, mHost;
+				string mHost;
 				unsigned int mPort;
 
 			private:
-				vector<char> mBuf; // note: http connections dont share same buffer
+				vector<char> mBuf;
 				unsigned int mEnd;
-				cTime mClose;
 				cSocketCancel *mCancel = NULL;
 		};
 

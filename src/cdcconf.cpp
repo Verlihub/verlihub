@@ -374,6 +374,7 @@ void cDCConf::AddVars()
 	Add("timer_reloadcfg_period", mS.mReloadcfgTimer.mMinDelay.tv_sec, (__typeof__( mS.mReloadcfgTimer.mMinDelay.tv_sec))300); // 5 minutes
 	Add("use_reglist_cache", use_reglist_cache, true);
 	Add("use_penlist_cache", use_penlist_cache, true);
+	Add("use_banlist_cache", use_banlist_cache, true); // note: ban check on login without database query
 	Add("delayed_myinfo", delayed_myinfo, true);
 	Add("drop_invalid_key", drop_invalid_key, false);
 	Add("delayed_ping", delayed_ping, 60);

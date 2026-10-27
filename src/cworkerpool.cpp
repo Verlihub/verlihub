@@ -76,7 +76,9 @@ void cWorkerPool::RequestStop()
 			return;
 
 		mStop = true;
-		mJobs.clear();
+
+		if (!mDrain) // note: in drain mode queued jobs are still done before threads exit
+			mJobs.clear();
 	}
 
 	if (mOnStop) // note: abort blocking work of running jobs
@@ -161,6 +163,20 @@ void cWorkerPool::SetOnStop(tNotify on_stop)
 		mOnStop = std::move(on_stop);
 }
 
+void cWorkerPool::SetThreadHooks(tNotify start, tNotify stop)
+{
+	if (!mRunning) {
+		mThreadStart = std::move(start);
+		mThreadStop = std::move(stop);
+	}
+}
+
+void cWorkerPool::SetDrain(bool drain)
+{
+	lock_guard<mutex> lock(mJobLock);
+	mDrain = drain;
+}
+
 size_t cWorkerPool::JobsQueued() const
 {
 	lock_guard<mutex> lock(mJobLock);
@@ -181,6 +197,9 @@ bool cWorkerPool::IsIdle() const
 
 void cWorkerPool::WorkerLoop()
 {
+	if (mThreadStart)
+		mThreadStart();
+
 	while (true) {
 		tJob job;
 
@@ -188,8 +207,8 @@ void cWorkerPool::WorkerLoop()
 			unique_lock<mutex> lock(mJobLock);
 			mJobCond.wait(lock, [this] { return (mStop || !mJobs.empty()); });
 
-			if (mStop)
-				return;
+			if (mStop && (!mDrain || mJobs.empty())) // note: in drain mode thread exits only when all jobs are done
+				break;
 
 			job = std::move(mJobs.front());
 			mJobs.pop_front();
@@ -221,6 +240,9 @@ void cWorkerPool::WorkerLoop()
 		if (first && mNotify)
 			mNotify();
 	}
+
+	if (mThreadStop)
+		mThreadStop();
 }
 
 	}; // namespace nThread

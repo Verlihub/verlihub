@@ -26,6 +26,8 @@
 #include <string>
 #include <iostream>
 #include "thasharray.h"
+#include <unordered_map>
+#include <vector>
 
 using std::string;
 using std::ostream;
@@ -297,6 +299,24 @@ namespace nVerliHub {
 				 */
 				int Unban(ostream &os, const string &value, const string &reason, const string &nickOp, int mask, bool deleteEntry = true);
 
+				/*
+					in-memory copy of active bans, used by TestBan() instead of database query when use_banlist_cache is enabled
+					changes made by hub itself are applied to cache at once, changes made by others, for example web interface or script, are seen after reload
+					first load blocks, later reloads run on database thread and cache is replaced when they are done
+				*/
+				bool LoadCache();
+				void ReloadCache();
+
+				bool IsCacheLoaded() const
+				{
+					return mCacheLoaded;
+				}
+
+				size_t GetCacheSize() const
+				{
+					return mCache.size();
+				}
+
 				/**
 				 * Syncronize the given cBan instance with the
 				 * ban entry in banlis table.
@@ -320,6 +340,46 @@ namespace nVerliHub {
 				/// Pointer to cServerDC instance.
 				nSocket::cServerDC* mS;
 
+				// active ban in cache, same fields as in database
+				struct sCacheBan
+				{
+					string mIP;
+					string mNick;
+					unsigned mType = 0;
+					string mHost;
+					unsigned long mRangeMin = 0;
+					unsigned long mRangeMax = 0;
+					long mDateStart = 0;
+					long mDateEnd = 0; // note: 0 or null means permanent
+					long mLastHit = 0;
+					string mNickOp;
+					string mReason;
+					string mNoteOp;
+					string mNoteUsr;
+					string mShare; // note: string, because database compares it as string
+				};
+
+				std::vector<sCacheBan> mCache;
+				std::unordered_multimap<string, size_t> mCacheByIP; // note: by ip column
+				std::unordered_multimap<string, size_t> mCacheByNick; // note: by lower case nick column, also host bans keep host part in nick column
+				std::vector<size_t> mCacheOther; // note: range, share and prefix bans, they are not found by key
+				bool mCacheLoaded = false;
+				bool mCacheReloading = false;
+				unsigned long mCacheChanges = 0; // note: increased on every change, background reload that started before change is loaded again
+
+				string CacheQuery();
+				static void CacheFromRow(sCacheBan &dest, const std::vector<string> &row);
+				static void CacheFromBan(sCacheBan &dest, const cBan &ban);
+				static void CacheToBan(const sCacheBan &src, cBan &dest);
+				static string CacheKey(const string &text);
+				static bool SameText(const string &one, const string &two);
+				void CacheSet(std::vector<sCacheBan> &list);
+				void CacheIndex();
+				void CacheSave(const cBan &ban);
+				void CacheErase(const string &value, int mask);
+				void CacheEraseKey(const string &ip, const string &nick);
+				bool CacheMatch(const sCacheBan &item, const string &value, int mask);
+				unsigned int TestBanCache(cBan &ban, nSocket::cConnDC *conn, const string &nick, unsigned mask);
 		};
 
 		/**

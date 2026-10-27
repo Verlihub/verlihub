@@ -60,7 +60,7 @@ class cWorkerPool
 		// start given number of threads, 0 = number of cpu cores, max_jobs limits job queue, 0 = unlimited
 		bool Start(unsigned int threads, std::size_t max_jobs = 0);
 
-		// running jobs finish, queued jobs and unprocessed results are dropped, must be called from main thread
+		// running jobs finish, queued jobs and unprocessed results are dropped unless drain is set, must be called from main thread
 		void Stop();
 
 		// same as Stop() but without waiting for threads, call Stop() later to wait, used to stop many pools at once
@@ -84,6 +84,12 @@ class cWorkerPool
 			must be set before Start(), must not block
 		*/
 		void SetOnStop(tNotify on_stop);
+
+		// called on each worker thread when it starts and before it exits, for libraries that need per thread setup, must be set before Start()
+		void SetThreadHooks(tNotify start, tNotify stop);
+
+		// when set, stop does not drop queued jobs, threads exit only after all of them are done, used for database writes
+		void SetDrain(bool drain);
 
 		bool IsRunning() const
 		{
@@ -123,8 +129,11 @@ class cWorkerPool
 		std::condition_variable mJobCond;
 		tNotify mNotify;
 		tNotify mOnStop;
+		tNotify mThreadStart;
+		tNotify mThreadStop;
 		std::size_t mMaxJobs = 0;
 		bool mStop = false; // note: guarded by mJobLock
+		bool mDrain = false; // note: guarded by mJobLock
 		std::atomic<bool> mRunning{false};
 		std::atomic<unsigned int> mBusy{0};
 		std::atomic<unsigned long> mFailed{0};

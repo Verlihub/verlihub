@@ -63,6 +63,7 @@ public:
 	bool Logout(const string &nick);
 	/** log that user logged in with wrong passwd*/
 	bool LoginError(nSocket::cConnDC *conn, const string &nick);
+	bool WriteStats(const string &nick, const string &fields); // note: update login statistics on database thread
 	bool DelReg(const string &nick);
 	void ReloadCache(){mCache.Clear(); mCache.LoadAll();}
 	void UpdateCache(){mCache.Update();}

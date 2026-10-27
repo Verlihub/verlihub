@@ -31,6 +31,10 @@
 #include "stringutils.h"
 
 #include <stdio.h>
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <sstream>
 
 namespace nVerliHub {
 	using namespace nUtils;
@@ -92,9 +96,20 @@ cUnBanList::~cUnBanList()
 
 void cBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_limit` is not null and `date_limit` < " << (mS->mTime.Sec() - (3600 * 24 * 7));
+	const long before = (mS->mTime.Sec() - (3600 * 24 * 7));
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_limit` is not null and `date_limit` < " << before;
 	mQuery.Query();
 	mQuery.Clear();
+
+	if (mCacheLoaded) { // note: same as above, these bans are not active anyway
+		const size_t was = mCache.size();
+		mCache.erase(remove_if(mCache.begin(), mCache.end(), [before](const sCacheBan &item) { return (item.mDateEnd && (item.mDateEnd < before)); }), mCache.end());
+
+		if (mCache.size() != was) {
+			mCacheChanges++;
+			CacheIndex();
+		}
+	}
 }
 
 void cUnBanList::Cleanup()
@@ -237,10 +252,16 @@ void cBanList::AddBan(cBan &ban)
 		UpdatePK();
 	else
 		SavePK(false);
+
+	if (mCacheLoaded)
+		CacheSave(mModel);
 }
 
 unsigned int cBanList::TestBan(cBan &ban, cConnDC *conn, const string &nick, unsigned mask)
 {
+	if (mCacheLoaded && mS->mC.use_banlist_cache) // note: no database query
+		return TestBanCache(ban, conn, nick, mask);
+
 	ostringstream query;
 	SelectFields(query);
 	query << " where (";
@@ -332,11 +353,18 @@ void cBanList::DelBan(cBan &Ban)
 {
 	SetBaseTo(&Ban);
 	DeletePK();
+
+	if (mCacheLoaded)
+		CacheEraseKey(Ban.mIP, Ban.mNick);
 }
 
 int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 {
-	mQuery.OStream() << "delete from " << mMySQLTable.mName << " where";
+	if (!(mask & (eBF_IP | eBF_NICK))) // note: nothing to match
+		return 0;
+
+	mQuery.Clear();
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where";
 
 	if (mask & eBF_IP) {
 		mQuery.OStream() << " `ip` = '";
@@ -344,7 +372,7 @@ int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 		mQuery.OStream() << '\'';
 	}
 
-	if (mask & (eBF_IP | eBF_NICK))
+	if ((mask & eBF_IP) && (mask & eBF_NICK)) // note: and only between two conditions
 		mQuery.OStream() << " and";
 
 	if (mask & eBF_NICK) {
@@ -353,7 +381,22 @@ int cBanList::DeleteAllBansBy(const string &ip, const string &nick, int mask)
 		mQuery.OStream() << '\'';
 	}
 
-	return mQuery.Query();
+	const int res = mQuery.Query();
+	mQuery.Clear();
+
+	if (mCacheLoaded) {
+		const size_t was = mCache.size();
+		mCache.erase(remove_if(mCache.begin(), mCache.end(), [&ip, &nick, mask](const sCacheBan &item) {
+			return ((!(mask & eBF_IP) || (item.mIP == ip)) && (!(mask & eBF_NICK) || SameText(item.mNick, nick)));
+		}), mCache.end());
+
+		if (mCache.size() != was) {
+			mCacheChanges++;
+			CacheIndex();
+		}
+	}
+
+	return res;
 }
 
 void cBanList::NewBan(cBan &ban, const cKick &kick, long period, int mask)
@@ -407,6 +450,9 @@ int cBanList::Unban(ostream &os, const string &value, const string &reason, cons
 		AddTestCondition(mQuery.OStream() , value, mask);
 		mQuery.Query();
 		mQuery.Clear();
+
+		if (mCacheLoaded)
+			CacheErase(value, mask);
 	}
 	return i;
 }
@@ -851,5 +897,371 @@ int cBanList::RemoveOldShortTempBans(long before)
 	}
 	return n;
 }
+
+/*
+	ban cache
+*/
+
+string cBanList::CacheQuery()
+{
+	ostringstream os; // note: only active bans, column order is used by CacheFromRow()
+	os << "select `ip`, `nick`, `ban_type`, `host`, `range_fr`, `range_to`, `date_start`, `date_limit`, `last_hit`, `nick_op`, `reason`, `note_op`, `note_usr`, `share_size` from `" << mMySQLTable.mName << '`';
+	os << " where (`date_limit` is null) or (`date_limit` = 0) or (`date_limit` >= " << mS->mTime.Sec() << ')';
+	return os.str();
+}
+
+void cBanList::CacheFromRow(sCacheBan &dest, const vector<string> &row)
+{
+	if (row.size() < 14)
+		return;
+
+	dest.mIP = row[0];
+	dest.mNick = row[1];
+	dest.mType = strtoul(row[2].c_str(), NULL, 10);
+	dest.mHost = row[3];
+	dest.mRangeMin = strtoul(row[4].c_str(), NULL, 10);
+	dest.mRangeMax = strtoul(row[5].c_str(), NULL, 10);
+	dest.mDateStart = strtol(row[6].c_str(), NULL, 10);
+	dest.mDateEnd = strtol(row[7].c_str(), NULL, 10); // note: null is empty string, that is 0 and permanent like in database query
+	dest.mLastHit = strtol(row[8].c_str(), NULL, 10);
+	dest.mNickOp = row[9];
+	dest.mReason = row[10];
+	dest.mNoteOp = row[11];
+	dest.mNoteUsr = row[12];
+	dest.mShare = row[13];
+}
+
+void cBanList::CacheFromBan(sCacheBan &dest, const cBan &ban)
+{
+	dest.mIP = ban.mIP;
+	dest.mNick = ban.mNick;
+	dest.mType = ban.mType;
+	dest.mHost = ban.mHost;
+	dest.mRangeMin = ban.mRangeMin;
+	dest.mRangeMax = ban.mRangeMax;
+	dest.mDateStart = ban.mDateStart;
+	dest.mDateEnd = ban.mDateEnd;
+	dest.mLastHit = ban.mLastHit;
+	dest.mNickOp = ban.mNickOp;
+	dest.mReason = ban.mReason;
+	dest.mNoteOp = ban.mNoteOp;
+	dest.mNoteUsr = ban.mNoteUsr;
+	ostringstream os;
+	os << ban.mShare; // note: same as it is written to database
+	dest.mShare = os.str();
+}
+
+void cBanList::CacheToBan(const sCacheBan &src, cBan &dest)
+{
+	dest.mIP = src.mIP;
+	dest.mNick = src.mNick;
+	dest.mType = src.mType;
+	dest.mHost = src.mHost;
+	dest.mRangeMin = src.mRangeMin;
+	dest.mRangeMax = src.mRangeMax;
+	dest.mDateStart = src.mDateStart;
+	dest.mDateEnd = src.mDateEnd;
+	dest.mLastHit = src.mLastHit;
+	dest.mNickOp = src.mNickOp;
+	dest.mReason = src.mReason;
+	dest.mNoteOp = src.mNoteOp;
+	dest.mNoteUsr = src.mNoteUsr;
+	dest.mShare = strtoull(src.mShare.c_str(), NULL, 10);
+}
+
+string cBanList::CacheKey(const string &text)
+{
+	string key(text);
+
+	for (auto &c: key) // note: database compares case insensitive, only ascii here
+		c = tolower((unsigned char)c);
+
+	return key;
+}
+
+bool cBanList::SameText(const string &one, const string &two)
+{
+	if (one.size() != two.size())
+		return false;
+
+	for (size_t i = 0; i < one.size(); i++) {
+		if (tolower((unsigned char)one[i]) != tolower((unsigned char)two[i]))
+			return false;
+	}
+
+	return true;
+}
+
+bool cBanList::LoadCache()
+{
+	mQuery.Clear();
+	mQuery.OStream() << CacheQuery();
+
+	if (mQuery.Query() <= 0) {
+		mQuery.Clear();
+		return false;
+	}
+
+	vector<sCacheBan> list;
+	mQuery.StoreResult();
+	const int cols = (mQuery.GetResult() ? mQuery.Cols() : 0);
+	MYSQL_ROW row;
+	vector<string> values;
+
+	while ((row = mQuery.Row())) {
+		values.clear();
+
+		for (int col = 0; col < cols; col++)
+			values.emplace_back(row[col] ? row[col] : "");
+
+		list.emplace_back();
+		CacheFromRow(list.back(), values);
+	}
+
+	mQuery.Clear();
+	CacheSet(list);
+	return true;
+}
+
+void cBanList::ReloadCache()
+{
+	if (!mS->mC.use_banlist_cache) { // note: cache was disabled
+		if (mCacheLoaded) {
+			vector<sCacheBan> none;
+			CacheSet(none);
+			mCacheLoaded = false;
+		}
+
+		return;
+	}
+
+	if (!mCacheLoaded) { // note: first load blocks, like other caches
+		LoadCache();
+		return;
+	}
+
+	if (mCacheReloading) // note: already on its way
+		return;
+
+	const unsigned long changes = mCacheChanges;
+	mCacheReloading = true;
+
+	const bool queued = mS->mMySQLWorker.Select(CacheQuery(), [this, changes](bool ok, const nMySQL::cMySQLWorker::tRows &rows) { // note: runs on main thread
+		mCacheReloading = false;
+
+		if (!ok || !mS->mC.use_banlist_cache) // note: keep old cache, error is already logged
+			return;
+
+		if (changes != mCacheChanges) { // note: cache was changed meanwhile, result might be older than that change
+			ReloadCache();
+			return;
+		}
+
+		vector<sCacheBan> list(rows.size());
+
+		for (size_t i = 0; i < rows.size(); i++)
+			CacheFromRow(list[i], rows[i]);
+
+		CacheSet(list);
+	});
+
+	if (!queued) { // note: database thread is not available, reload on main connection
+		mCacheReloading = false;
+		LoadCache();
+	}
+}
+
+void cBanList::CacheSet(vector<sCacheBan> &list)
+{
+	mCache.swap(list);
+	mCacheLoaded = true;
+	mCacheChanges++;
+	CacheIndex();
+}
+
+void cBanList::CacheIndex()
+{
+	mCacheByIP.clear();
+	mCacheByNick.clear();
+	mCacheOther.clear();
+	mCacheByIP.reserve(mCache.size());
+	mCacheByNick.reserve(mCache.size());
+
+	for (size_t i = 0; i < mCache.size(); i++) {
+		const sCacheBan &item = mCache[i];
+		mCacheByIP.emplace(item.mIP, i);
+		mCacheByNick.emplace(CacheKey(item.mNick), i);
+
+		if (SameText(item.mNick, "_rangeban_") || SameText(item.mNick, "_shareban_") || SameText(item.mIP, "_prefixban_"))
+			mCacheOther.push_back(i);
+	}
+}
+
+void cBanList::CacheSave(const cBan &ban)
+{
+	sCacheBan item;
+	CacheFromBan(item, ban);
+	bool found = false;
+
+	for (auto &old: mCache) { // note: same primary key as in database
+		if ((old.mIP == item.mIP) && SameText(old.mNick, item.mNick)) {
+			old = item;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found)
+		mCache.push_back(item);
+
+	mCacheChanges++;
+	CacheIndex();
+}
+
+void cBanList::CacheErase(const string &value, int mask)
+{
+	const size_t was = mCache.size();
+	mCache.erase(remove_if(mCache.begin(), mCache.end(), [this, &value, mask](const sCacheBan &item) { return CacheMatch(item, value, mask); }), mCache.end());
+
+	if (mCache.size() != was) {
+		mCacheChanges++;
+		CacheIndex();
+	}
+}
+
+void cBanList::CacheEraseKey(const string &ip, const string &nick)
+{
+	const size_t was = mCache.size();
+	mCache.erase(remove_if(mCache.begin(), mCache.end(), [&ip, &nick](const sCacheBan &item) { return ((item.mIP == ip) && SameText(item.mNick, nick)); }), mCache.end());
+
+	if (mCache.size() != was) {
+		mCacheChanges++;
+		CacheIndex();
+	}
+}
+
+bool cBanList::CacheMatch(const sCacheBan &item, const string &value, int mask)
+{
+	// note: same conditions as AddTestCondition() builds for database
+	string host;
+	unsigned long num = 0;
+
+	switch (mask) {
+		case eBF_NICK:
+			return SameText(item.mNick, value);
+
+		case eBF_IP:
+			return (item.mIP == value);
+
+		case eBF_RANGE:
+			if (!Ip2Num(value, num, false))
+				return false;
+
+			return (SameText(item.mNick, "_rangeban_") && (num >= item.mRangeMin) && (num <= item.mRangeMax));
+
+		case eBF_SHARE:
+			return (SameText(item.mNick, "_shareban_") && (item.mShare == value));
+
+		case eBF_HOST1:
+			return (GetHostSubstring(value, host, 1) && SameText(item.mIP, "_host1ban_") && SameText(item.mNick, host));
+
+		case eBF_HOST2:
+			return (GetHostSubstring(value, host, 2) && SameText(item.mIP, "_host2ban_") && SameText(item.mNick, host));
+
+		case eBF_HOST3:
+			return (GetHostSubstring(value, host, 3) && SameText(item.mIP, "_host3ban_") && SameText(item.mNick, host));
+
+		case eBF_HOSTR1:
+			return (GetHostSubstring(value, host, -1) && SameText(item.mIP, "_hostr1ban_") && SameText(item.mNick, host));
+
+		case eBF_PREFIX: // note: nick starts with banned prefix
+			return (SameText(item.mIP, "_prefixban_") && (item.mNick.size() <= value.size()) && SameText(item.mNick, value.substr(0, item.mNick.size())));
+
+		default:
+			return false;
+	}
+}
+
+unsigned int cBanList::TestBanCache(cBan &ban, cConnDC *conn, const string &nick, unsigned mask)
+{
+	string addr, host, share;
+
+	if (conn) {
+		addr = conn->AddrIP();
+		host = conn->AddrHost();
+
+		if (conn->mpUser) {
+			ostringstream os;
+			os << conn->mpUser->mShare; // note: same as database query
+			share = os.str();
+		}
+	}
+
+	const long now = mS->mTime.Sec();
+	size_t best = mCache.size(); // note: none
+
+	auto check = [&](size_t index, const string &value, int type) {
+		const sCacheBan &item = mCache[index];
+
+		if (item.mDateEnd && (item.mDateEnd < now)) // note: expired
+			return;
+
+		if (!CacheMatch(item, value, type))
+			return;
+
+		if ((best == mCache.size()) || (item.mDateEnd > mCache[best].mDateEnd)) // note: same order as database query, latest end date first, permanent last
+			best = index;
+	};
+
+	auto by_key = [&](const unordered_multimap<string, size_t> &map, const string &key, const string &value, int type) {
+		const auto range = map.equal_range(key);
+
+		for (auto it = range.first; it != range.second; ++it)
+			check(it->second, value, type);
+	};
+
+	if ((mask & (eBF_NICKIP | eBF_IP)) && conn)
+		by_key(mCacheByIP, addr, addr, eBF_IP);
+
+	if ((mask & (eBF_NICKIP | eBF_NICK)) && nick.size())
+		by_key(mCacheByNick, CacheKey(nick), nick, eBF_NICK);
+
+	if (conn && host.size()) { // note: host bans keep host part in nick column
+		const int levels[4][2] = {{eBF_HOST1, 1}, {eBF_HOST2, 2}, {eBF_HOST3, 3}, {eBF_HOSTR1, -1}};
+		string part;
+
+		for (const auto &level: levels) {
+			if ((mask & level[0]) && GetHostSubstring(host, part, level[1]))
+				by_key(mCacheByNick, CacheKey(part), host, level[0]);
+		}
+	}
+
+	for (const size_t index: mCacheOther) {
+		if ((mask & eBF_RANGE) && conn)
+			check(index, addr, eBF_RANGE);
+
+		if ((mask & eBF_SHARE) && share.size())
+			check(index, share, eBF_SHARE);
+
+		if ((mask & eBF_PREFIX) && nick.size())
+			check(index, nick, eBF_PREFIX);
+	}
+
+	if (best == mCache.size())
+		return 0;
+
+	sCacheBan &item = mCache[best];
+	item.mLastHit = now;
+	CacheToBan(item, ban);
+	ostringstream query; // note: only last hit changes, write it on database thread
+	query << "update `" << mMySQLTable.mName << "` set `last_hit` = " << now << " where `ip` = '";
+	cConfMySQL::WriteStringConstant(query, item.mIP);
+	query << "' and `nick` = '";
+	cConfMySQL::WriteStringConstant(query, item.mNick);
+	query << '\'';
+	mS->mMySQLWorker.Write(query.str());
+	return (item.mDateEnd ? 1 : 2); // note: 1 = temporary ban, 2 = permanent ban
+}
+
 	}; // namespace nTables
 }; // namespace nVerliHub

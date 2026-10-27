@@ -365,45 +365,57 @@ int cDCConsole::CmdGetip(istringstream &cmd_line, cConnDC *conn)
 
 int cDCConsole::CmdGethost(istringstream &cmd_line, cConnDC *conn)
 {
-	ostringstream os, o;
+	tHostRows rows;
 	string s;
-	cUser *user;
-	int c = 0;
 
 	while (cmd_line.good()) {
 		cmd_line >> s;
-		if (cmd_line.fail()) break;
-		user = mOwner->mUserList.GetUserByNick(s);
 
-		if (user && user->mxConn) {
-			if (!mOwner->mUseDNS) user->mxConn->DNSLookup();
+		if (cmd_line.fail())
+			break;
 
-			if (!user->mxConn->AddrHost().empty()) {
-				os << "\r\n [*] " << _("User") << ": " << user->mNick.c_str();
-				os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
-			} else
-				os << "\r\n [*] " << autosprintf(_("Unable to resolve hostname of user: %s"), user->mNick.c_str());
-		} else
-			os << "\r\n [*] " << autosprintf(_("User not found: %s"), s.c_str());
+		sHostRow row;
+		cUser *user = mOwner->mUserList.GetUserByNick(s);
 
-		c++;
+		if (user && user->mxConn)
+			SetHostRow(row, user);
+		else
+			row.mText = s;
+
+		rows.push_back(row);
 	}
 
-	if (c == 0)
-		o << _("Please specify one or more nicks separated by space.");
-	else
-		o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ':' << os.str();
+	ReplyWithHosts(conn, rows, [](const tHostRows &list) {
+		ostringstream os, o;
 
-	mOwner->DCPublicHS(o.str().c_str(), conn);
+		for (const auto &row: list) {
+			if (row.mNick.empty()) {
+				os << "\r\n [*] " << autosprintf(_("User not found: %s"), row.mText.c_str());
+			} else if (row.mHost.size()) {
+				os << "\r\n [*] " << _("User") << ": " << row.mNick;
+				os << " ][ " << _("Host") << ": " << row.mHost;
+			} else {
+				os << "\r\n [*] " << autosprintf(_("Unable to resolve hostname of user: %s"), row.mNick.c_str());
+			}
+		}
+
+		const int c = (int)list.size();
+
+		if (c == 0)
+			o << _("Please specify one or more nicks separated by space.");
+		else
+			o << autosprintf(ngettext("Showing %d result", "Showing %d results", c), c) << ':' << os.str();
+
+		return o.str();
+	});
+
 	return 1;
 }
 
 int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 {
-	ostringstream os, out;
-	string nick, cc, cn, ci;
-	cUser *user;
-	unsigned int tot = 0;
+	tHostRows rows;
+	string nick;
 
 	while (cmd_line.good()) {
 		cmd_line >> nick;
@@ -411,37 +423,108 @@ int cDCConsole::CmdGetinfo(istringstream &cmd_line, cConnDC *conn)
 		if (cmd_line.fail())
 			break;
 
-		user = mOwner->mUserList.GetUserByNick(nick);
+		sHostRow row;
+		cUser *user = mOwner->mUserList.GetUserByNick(nick);
 
 		if (user && user->mxConn) {
-			cc = user->mxConn->GetGeoCC();
-			cn = user->mxConn->GetGeoCN();
-			ci = user->mxConn->GetGeoCI();
-
-			if (!mOwner->mUseDNS)
-				user->mxConn->DNSLookup();
-
+			SetHostRow(row, user);
+			ostringstream os;
 			os << "\r\n [*] " << _("User") << ": " << user->mNick.c_str();
 			os << " ][ " << _("IP") << ": " << user->mxConn->AddrIP().c_str();
-			os << " ][ " << _("Country") << ": " << cc.c_str() << '=' << cn.c_str();
-			os << " ][ " << _("City") << ": " << ci.c_str();
-
-			if (!user->mxConn->AddrHost().empty())
-				os << " ][ " << _("Host") << ": " << user->mxConn->AddrHost().c_str();
+			os << " ][ " << _("Country") << ": " << user->mxConn->GetGeoCC().c_str() << '=' << user->mxConn->GetGeoCN().c_str();
+			os << " ][ " << _("City") << ": " << user->mxConn->GetGeoCI().c_str();
+			row.mText = os.str();
 		} else {
-			os << "\r\n [*] " << autosprintf(_("User not found: %s"), nick.c_str());
+			row.mText = nick;
 		}
 
-		tot++;
+		rows.push_back(row);
 	}
 
-	if (tot == 0)
-		out << _("Please specify one or more nicks separated by space.");
-	else
-		out << autosprintf(ngettext("Showing %d result", "Showing %d results", tot), tot) << ':' << os.str();
+	ReplyWithHosts(conn, rows, [](const tHostRows &list) {
+		ostringstream os, out;
 
-	mOwner->DCPublicHS(out.str().c_str(), conn);
+		for (const auto &row: list) {
+			if (row.mNick.empty()) {
+				os << "\r\n [*] " << autosprintf(_("User not found: %s"), row.mText.c_str());
+			} else {
+				os << row.mText;
+
+				if (row.mHost.size())
+					os << " ][ " << _("Host") << ": " << row.mHost;
+			}
+		}
+
+		const int tot = (int)list.size();
+
+		if (tot == 0)
+			out << _("Please specify one or more nicks separated by space.");
+		else
+			out << autosprintf(ngettext("Showing %d result", "Showing %d results", tot), tot) << ':' << os.str();
+
+		return out.str();
+	});
+
 	return 1;
+}
+
+void cDCConsole::SetHostRow(sHostRow &row, cUser *user)
+{
+	row.mNick = user->mNick;
+	row.mAddr = user->mxConn->AddrIP();
+	row.mHost = user->mxConn->AddrHost();
+	row.mSock = (tSocket)(*user->mxConn);
+	row.mID = user->mxConn->mConnID;
+}
+
+void cDCConsole::ReplyWithHosts(cConnDC *conn, tHostRows &rows, tHostFormat format)
+{
+	cServerDC *serv = mOwner;
+	vector<string> addrs;
+	vector<size_t> missing;
+
+	if (!serv->mUseDNS) { // note: with dns_lookup enabled host is already known or it was not found
+		for (size_t i = 0; i < rows.size(); i++) {
+			if (rows[i].mNick.size() && rows[i].mHost.empty()) {
+				addrs.push_back(rows[i].mAddr);
+				missing.push_back(i);
+			}
+		}
+	}
+
+	auto fill = [serv](tHostRows &list, const vector<size_t> &index, const vector<string> &hosts) {
+		for (size_t i = 0; i < index.size(); i++) {
+			sHostRow &row = list[index[i]];
+			row.mHost = hosts[i];
+			cAsyncConn *found = serv->FindConn(row.mSock, row.mID);
+
+			if (found && hosts[i].size() && (found->AddrIP() == row.mAddr) && found->AddrHost().empty()) // note: remember host like before
+				found->SetAddrHost(hosts[i]);
+		}
+	};
+
+	if (addrs.size()) {
+		const tSocket sock = (tSocket)(*conn);
+		const unsigned long long id = conn->mConnID;
+
+		if (serv->LookupHosts(addrs, [serv, sock, id, rows, missing, format, fill](const vector<string> &hosts) mutable { // note: reply is sent when hosts are known
+			fill(rows, missing, hosts);
+			cAsyncConn *found = serv->FindConn(sock, id);
+
+			if (found && found->ok) // note: operator might be gone already
+				serv->DCPublicHS(format(rows), (cConnDC*)found);
+		}))
+			return;
+
+		vector<string> hosts; // note: workers are not available, look up on this thread like before
+
+		for (const auto &addr: addrs)
+			hosts.push_back(cAsyncSocketServer::ReverseLookup(addr));
+
+		fill(rows, missing, hosts);
+	}
+
+	serv->DCPublicHS(format(rows), conn);
 }
 
 int cDCConsole::CmdQuit(istringstream &cmd_line, cConnDC *conn, int code)

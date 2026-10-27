@@ -43,6 +43,8 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <chrono>
+#include <poll.h>
 
 using namespace std;
 
@@ -192,14 +194,7 @@ int cAsyncSocketServer::run()
 			CheckHostWait(mTime);
 		}
 
-		//#if !defined _WIN32
-			::usleep(mStepDelay * 1000);
-		/*
-		#else
-			::Sleep(mStepDelay);
-		#endif
-		*/
-
+		StepWait(mStepDelay);
 		mFrequency.Insert(mTime);
 
 		if (mT.stop.Sec() && (mTime >= mT.stop))
@@ -209,6 +204,64 @@ int cAsyncSocketServer::run()
 	StopWorkers(); // note: unprocessed results are dropped
 	vhLog(1) << "Main loop stop with code " << mRunResult << endl;
 	return mRunResult;
+}
+
+void cAsyncSocketServer::StepWait(unsigned int msec)
+{
+	/*
+		sleep between main loop steps, but wake up at once when workers have results
+		note: we dont wait in connection poll instead, poll goes through all sockets, so step delay is what keeps number of those calls low
+		note: after results are processed we continue sleeping until step delay is over, so connections are still handled in batches
+	*/
+
+	if (!mWakeup.IsOpen()) {
+		::usleep(msec * 1000);
+		return;
+	}
+
+	const auto until = chrono::steady_clock::now() + chrono::milliseconds(msec);
+
+	while (true) {
+		const auto left = chrono::duration_cast<chrono::milliseconds>(until - chrono::steady_clock::now()).count();
+
+		if (left <= 0)
+			break;
+
+		struct pollfd pfd;
+		pfd.fd = (tSocket)mWakeup;
+		pfd.events = POLLIN;
+		pfd.revents = 0;
+		const int res = ::poll(&pfd, 1, (int)left);
+
+		if (res < 0) {
+			if (errno == EINTR) // note: signal, continue sleeping
+				continue;
+
+			::usleep(left * 1000); // note: should not happen, sleep like before
+			break;
+		}
+
+		if (res > 0) {
+			mTime.Get(); // note: results should see current time, not time when step started
+			RunPoolResults();
+		}
+	}
+}
+
+void cAsyncSocketServer::RunPoolResults()
+{
+	mWakeup.Clear();
+	bool more = false;
+
+	for (size_t i = 0; i < mPools.size(); i++) { // note: result is allowed to start new pool, dont use iterator
+		mPools[i]->RunResults(sWorkerMaxResults);
+
+		if (mPools[i]->ResultsQueued())
+			more = true;
+	}
+
+	if (more) // note: too many results, continue in next step
+		mWakeup.Signal();
 }
 
 bool cAsyncSocketServer::StartWorkers()
@@ -375,18 +428,7 @@ bool cAsyncSocketServer::LookupHost(cAsyncConn *conn, bool park)
 	const string addr = conn->AddrIP();
 
 	const bool posted = mWorkers.Post([this, sock, id, addr]() -> nThread::cWorkerPool::tResult { // note: runs on worker thread
-		string host;
-		struct sockaddr_in sa;
-		memset(&sa, 0, sizeof(sa));
-		sa.sin_family = AF_INET;
-
-		if (inet_pton(AF_INET, addr.c_str(), &sa.sin_addr) == 1) {
-			char name[NI_MAXHOST];
-
-			if (getnameinfo((struct sockaddr*)&sa, sizeof(sa), name, sizeof(name), NULL, 0, NI_NAMEREQD) == 0) // note: thread safe, unlike gethostbyaddr
-				host = name;
-		}
-
+		const string host = ReverseLookup(addr);
 		return [this, sock, id, addr, host] { OnHostResult(sock, id, addr, host); }; // note: runs on main thread
 	});
 
@@ -400,6 +442,39 @@ bool cAsyncSocketServer::LookupHost(cAsyncConn *conn, bool park)
 	}
 
 	return true;
+}
+
+string cAsyncSocketServer::ReverseLookup(const string &addr)
+{
+	string host;
+	struct sockaddr_in sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sin_family = AF_INET;
+
+	if (inet_pton(AF_INET, addr.c_str(), &sa.sin_addr) == 1) {
+		char name[NI_MAXHOST];
+
+		if (getnameinfo((struct sockaddr*)&sa, sizeof(sa), name, sizeof(name), NULL, 0, NI_NAMEREQD) == 0) // note: thread safe, unlike gethostbyaddr
+			host = name;
+	}
+
+	return host;
+}
+
+bool cAsyncSocketServer::LookupHosts(const vector<string> &addrs, tHostsDone done)
+{
+	if (addrs.empty() || !done)
+		return false;
+
+	return mWorkers.Post([addrs, done]() -> nThread::cWorkerPool::tResult { // note: runs on worker thread
+		vector<string> hosts;
+		hosts.reserve(addrs.size());
+
+		for (const auto &addr: addrs)
+			hosts.push_back(ReverseLookup(addr));
+
+		return [done, hosts] { done(hosts); }; // note: runs on main thread
+	});
 }
 
 cAsyncConn* cAsyncSocketServer::FindConn(tSocket sock, unsigned long long id)
@@ -623,19 +698,7 @@ void cAsyncSocketServer::TimeStep()
 		++it;
 
 		if (res.mConn == &mWakeup) { // note: not a real connection, workers have results for us
-			mWakeup.Clear();
-			bool more = false;
-
-			for (size_t i = 0; i < mPools.size(); i++) { // note: result is allowed to start new pool, dont use iterator
-				mPools[i]->RunResults(sWorkerMaxResults);
-
-				if (mPools[i]->ResultsQueued())
-					more = true;
-			}
-
-			if (more) // note: too many results, continue in next step
-				mWakeup.Signal();
-
+			RunPoolResults();
 			continue;
 		}
 

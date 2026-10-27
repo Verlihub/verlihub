@@ -54,18 +54,6 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-cHTTPConn::cHTTPConn(int sock):
-	mGood(sock > 0),
-	mWrite(true),
-	mSock(sock),
-	mHost(""),
-	mPort(0),
-	mEnd(0),
-	mClose(0, 0)
-{
-	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
-}
-
 cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel):
 	mGood(false),
 	mWrite(true),
@@ -73,7 +61,6 @@ cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel):
 	mHost(host),
 	mPort(port),
 	mEnd(0),
-	mClose(0, 0),
 	mCancel(cancel)
 {
 	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
@@ -177,50 +164,22 @@ int cHTTPConn::Write(const string &data)
 	if (!mGood)
 		return -1;
 
-	const size_t dasi = data.size();
-	size_t busi = GetSize() + dasi;
+	size_t len = data.size();
 
-	if (busi > MAX_SEND) {
+	if (!len)
+		return 0;
+
+	if (len > MAX_SEND) {
 		CloseNow();
 		return -1;
 	}
 
-	if (dasi)
-		mSend.append(data);
-
-	if (!busi)
-		return 0;
-
-	const char *buf = mSend.data();
-
-	/*
-	if (!buf)
-		return 0;
-	*/
-
-	if (Send(buf, busi) == -1) {
-		if ((errno != EAGAIN) && (errno != EINTR)) {
-			CloseNow();
-			return -1;
-		}
-
-		if (busi > 0) {
-			mLast.Get();
-			StrCutLeft(mSend, busi);
-		} else if (bool(mClose)) {
-			CloseNow();
-		}
-	} else {
-		mSend.clear();
-		ShrinkStringToFit(mSend);
-
-		if (bool(mClose))
-			CloseNow();
-
-		mLast.Get();
+	if (Send(data.data(), len) == -1) { // note: socket is blocking with send timeout, so anything not sent now is never sent
+		CloseNow();
+		return -1;
 	}
 
-	return busi;
+	return len;
 }
 
 int cHTTPConn::Connect(const string &host, const int port)
@@ -242,7 +201,7 @@ int cHTTPConn::Connect(const string &host, const int port)
 	hints.ai_family = AF_INET; // note: socket is ipv4
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((getaddrinfo(host.c_str(), NULL, &hints, &res) != 0) || !res) // note: thread safe, unlike gethostbyname, because this runs on hublist and update threads
+	if ((getaddrinfo(host.c_str(), NULL, &hints, &res) != 0) || !res) // note: thread safe, unlike gethostbyname, connections are made on other threads
 		return -1;
 
 	struct sockaddr_in dest = *(struct sockaddr_in*)res->ai_addr;
@@ -261,32 +220,24 @@ int cHTTPConn::Send(const char *buf, size_t &len)
 	if (!mGood)
 		return -1;
 
-	size_t tot = 0, left = len;
-	int res = 0;
+	size_t tot = 0;
 
-#ifndef QUICK_SEND
 	while (tot < len) {
-		//try {
-			res = send(mSock, buf + tot, left, MSG_NOSIGNAL | MSG_DONTWAIT);
-		/*
-   		} catch (...) {
-			return -1;
-		}
-		*/
+		const ssize_t res = send(mSock, buf + tot, len - tot, MSG_NOSIGNAL);
 
-		if (res == -1)
-			break;
+		if (res < 0) {
+			if (errno == EINTR) // note: interrupted by signal, try again
+				continue;
+
+			break; // note: error or send timeout expired
+		}
 
 		tot += res;
-		left -= res;
 	}
-#else
-	res = send(mSock, buf + tot, left, 0);
-	tot = res;
-#endif
 
+	const bool done = (tot == len);
 	len = tot;
-	return res == -1 ? -1 : 0;
+	return (done ? 0 : -1);
 }
 
 int cHTTPConn::Read()
@@ -322,7 +273,6 @@ int cHTTPConn::Read()
 	} else {
 		mEnd = len;
 		mBuf[mEnd] = '\0';
-		mLast.Get();
 	}
 
 	return len;
@@ -348,28 +298,6 @@ void cHTTPConn::CloseNow()
 {
 	mWrite = false;
 	mGood = false;
-}
-
-void cHTTPConn::CloseNice(int msec)
-{
-	mWrite = false;
-
-	if ((msec <= 0) || !GetSize()) {
-		CloseNow();
-		return;
-	}
-
-	mClose.Get();
-	mClose += msec;
-}
-
-int cHTTPConn::OnTimerBase(const cTime &now)
-{
-
-	if (bool(mClose) && (mClose < now))
-		CloseNow();
-
-	return 0;
 }
 
 	}; // namespace nSocket

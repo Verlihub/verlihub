@@ -330,6 +330,7 @@ public:
 	int chatonly_bypass_class;
 	bool use_reglist_cache;
 	bool use_penlist_cache;
+	bool use_banlist_cache;
 	bool chat_default_on;
 	bool notify_gag_chats;
 	bool clean_gags_cleanbans;

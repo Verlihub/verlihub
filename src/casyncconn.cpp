@@ -1202,45 +1202,29 @@ bool cAsyncConn::DNSLookup()
 	if (mAddrHost.size())
 		return true;
 
-	struct hostent *hp;
-
-	if ((hp = gethostbyaddr((char*)&mIP, sizeof(mIP), AF_INET)))
-		mAddrHost = hp->h_name;
-
-	return (hp != NULL);
+	mAddrHost = cAsyncSocketServer::ReverseLookup(mAddrIP); // note: blocks, used only when workers are not available
+	return mAddrHost.size();
 }
 
 unsigned long cAsyncConn::DNSResolveHost(const string &host)
 {
-	struct sockaddr_in AddrIN;
-	memset(&AddrIN, 0, sizeof(sockaddr_in));
-	struct hostent *he = gethostbyname(host.c_str());
+	struct addrinfo hints, *res = NULL;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	unsigned long addr = 0;
 
-	if (he != NULL)
-		AddrIN.sin_addr = *((struct in_addr*)he->h_addr);
+	if ((getaddrinfo(host.c_str(), NULL, &hints, &res) == 0) && res) { // note: thread safe, unlike gethostbyname
+		addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
+		freeaddrinfo(res);
+	}
 
-	return AddrIN.sin_addr.s_addr;
+	return addr;
 }
 
 bool cAsyncConn::DNSResolveReverse(const string &ip, string &host)
 {
-	struct in_addr addr;
-
-//#ifndef _WIN32
-	if (!inet_aton(ip.c_str(), &addr))
-		return false;
-/*
-#else
-	addr.s_addr = inet_addr(ip.c_str());
-#endif
-*/
-
-	struct hostent *hp;
-
-	if ((hp = gethostbyaddr((char*)&addr, sizeof(addr), AF_INET)))
-		host = hp->h_name;
-
-	return (hp != NULL);
+	host = cAsyncSocketServer::ReverseLookup(ip); // note: blocks
+	return host.size();
 }
 
 /*

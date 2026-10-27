@@ -84,6 +84,7 @@ SET(VERLIHUB_HDRS
 	cworkerpool.h
 	cwakeup.h
 	csocketcancel.h
+	cmysqlworker.h
 	czlib.h
 	gettext.h
 	i18n.h
@@ -166,6 +167,7 @@ SET(VERLIHUB_SRCS
 	cworkerpool.cpp
 	cwakeup.cpp
 	csocketcancel.cpp
+	cmysqlworker.cpp
 	czlib.cpp
 	i18n.cpp
 	script_api.cpp

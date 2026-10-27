@@ -47,6 +47,7 @@
 #include "cmeanfrequency.h"
 #include "cworkerpool.h"
 #include "csocketcancel.h"
+#include "cmysqlworker.h"
 #include "czlib.h"
 #include "cconndc.h"
 
@@ -223,6 +224,8 @@ class cServerDC : public cAsyncSocketServer
 		cDBConf mDBConf;
 		// MySQL database connection
 		cMySQL mMySQL;
+		// database thread with its own connection, for writes and background reads
+		nMySQL::cMySQLWorker mMySQLWorker;
 		// VerliHub configuration
 		cDCConf mC;
 		// Setup loader
@@ -426,6 +429,7 @@ class cServerDC : public cAsyncSocketServer
 		* @param ToMain Send report to mainchat.
 		*/
 		void ReportUserToOpchat(cConnDC *, const string &Msg, bool ToMain = false);
+		void SendUserReport(const string &text, const string &host, bool ToMain); // note: second half of ReportUserToOpchat, can be called later when host is known
 
 		/*
 		* Send host headers to user.

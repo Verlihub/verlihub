@@ -39,6 +39,7 @@
 #include <list>
 #include <deque>
 #include <vector>
+#include <functional>
 
 /*
 #ifdef USE_SSL_CONNECTS
@@ -245,6 +246,16 @@ namespace nVerliHub {
 				/// Find connection by socket and id, returns null when connection is gone or socket is reused by other connection.
 				cAsyncConn* FindConn(tSocket sock, unsigned long long id);
 
+				/// Host names in same order as addresses, empty string when not found.
+				using tHostsDone = std::function<void(const vector<string> &hosts)>;
+
+				/// Look up host names on worker thread, done is called on main thread.
+				/// @return False when lookup could not be queued, caller must then use ReverseLookup() by itself.
+				bool LookupHosts(const vector<string> &addrs, tHostsDone done);
+
+				/// Reverse lookup of ip address, blocks until resolver answers, thread safe.
+				static string ReverseLookup(const string &addr);
+
 				/// Start extra worker pool for slow work that must not hold up jobs in mWorkers, its results are also processed in main loop.
 				/// Works only while main loop is running, pool is stopped together with mWorkers.
 				bool StartPool(nThread::cWorkerPool &pool, unsigned int threads, size_t max_jobs = 0);
@@ -377,6 +388,8 @@ namespace nVerliHub {
 			cWakeup mWakeup;
 
 			bool StartWorkers();
+			void StepWait(unsigned int msec);
+			void RunPoolResults();
 
 			/// All running pools whose results are processed in main loop, mWorkers included.
 			std::vector<nThread::cWorkerPool*> mPools;

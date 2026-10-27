@@ -68,6 +68,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
 	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // create and connect to mysql
+	mMySQLWorker(*this, mMySQL, mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // note: connects on its own thread when first used
 	mC(*this), // create the config object
 	mSetupList(mMySQL),
 	mP(this),
@@ -162,6 +163,10 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mUnBanList->CreateTable();
 	mUnBanList->Cleanup();
 	mBanList->SetUnBanList(mUnBanList);
+
+	if (mC.use_banlist_cache) // note: after cleanup, so old bans are not loaded
+		mBanList->LoadCache();
+
 	mKickList->CreateTable();
 	mKickList->Cleanup();
 	mPenList->CreateTable();
@@ -1881,6 +1886,8 @@ int cServerDC::OnTimer(const cTime &now)
 		if (mC.use_penlist_cache)
 			mPenList->UpdateCache();
 
+		mBanList->ReloadCache(); // note: in background, also catches bans added by others, like web interface
+
 		/*
 			todo
 				we have a bug where current upload counter is failing sometimes
@@ -2025,7 +2032,7 @@ cServerDC::tHublistResults cServerDC::DoRegisterInHublist(const sHublistData &da
 	size_t pos;
 
 	while (!cancel.IsCancelled() && (curhost.clear(), is >> curhost, curhost.size())) { // note: hub is stopping, dont continue with next hublist
-		cHTTPConn hublist(curhost, data.mPort, &cancel); // connect, note: closed by destructor
+		cHTTPConn hublist(curhost, data.mPort, &cancel); // connect, note: plain tcp with nmdc protocol, no http, closed by destructor
 		tHublistResult res = eHLR_CONNECT;
 
 		if (hublist.mGood) {
@@ -2927,15 +2934,39 @@ void cServerDC::ReportUserToOpchat(cConnDC *conn, const string &Msg, bool ToMain
 			os << '.' << temp;
 	}
 
-	if (!mUseDNS && mC.report_dns_lookup)
-		conn->DNSLookup();
+	if (conn->AddrHost().empty() && !mUseDNS && mC.report_dns_lookup) { // note: look up host on worker thread, report is sent when it is known
+		const tSocket sock = (tSocket)(*conn);
+		const unsigned long long id = conn->mConnID;
+		const string addr = conn->AddrIP(), text = os.str();
 
-	if (conn->AddrHost().size()) // host
-		os << " ][ " << autosprintf(_("Host: %s"), conn->AddrHost().c_str());
+		if (LookupHosts({addr}, [this, sock, id, addr, text, ToMain](const vector<string> &hosts) {
+			cAsyncConn *found = FindConn(sock, id);
+
+			if (found && (found->AddrIP() == addr) && hosts[0].size()) // note: remember host, connection is still there
+				found->SetAddrHost(hosts[0]);
+
+			SendUserReport(text, hosts[0], ToMain); // note: report is sent even when user is gone already
+		}))
+			return;
+
+		conn->DNSLookup(); // note: workers are not available, look up on this thread like before
+	}
+
+	SendUserReport(os.str(), conn->AddrHost(), ToMain);
+}
+
+void cServerDC::SendUserReport(const string &text, const string &host, bool ToMain)
+{
+	ostringstream os;
+	os << text;
+
+	if (host.size())
+		os << " ][ " << autosprintf(_("Host: %s"), host.c_str());
 
 	if (!ToMain && mOpChat) {
 		mOpChat->SendPMToAll(os.str(), NULL);
 	} else {
+		string temp;
 		mP.Create_Chat(temp, mC.opchat_name, os.str());
 		mOpchatList.SendToAll(temp, false, true);
 	}
@@ -3674,18 +3705,10 @@ void cServerDC::DoStackTrace()
 	if (!mC.send_crash_report)
 		return;
 
-	cHTTPConn *http = new cHTTPConn(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http
+	cHTTPConn http(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http, note: closed by destructor
 
-	if (!http) {
-		vhErr(0) << "Failed creating connection socket, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
-		return;
-	}
-
-	if (!http->mGood) {
+	if (!http.mGood) {
 		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
-		http->Close();
-		delete http;
-		http = NULL;
 		return;
 	}
 
@@ -3698,15 +3721,11 @@ void cServerDC::DoStackTrace()
 	ostringstream data;
 	data << "backtrace=" << StrToHex(bt.str());
 
-	if (http->Request("POST", "/vhcs.php", head.str(), data.str()) && http->mGood) {
+	if (http.Request("POST", "/vhcs.php", head.str(), data.str()) && http.mGood) {
 		vhErr(0) << "Successfully sent stack backtrace to crash server" << endl;
 	} else {
 		vhErr(0) << "Failed sending to crash server, please post above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;
 	}
-
-	http->CloseNice(500);
-	/*delete http; // cant delete when closing nice
-	http = NULL;*/
 }
 
 /*
@@ -3815,6 +3834,7 @@ void cServerDC::ReloadNow()
 	if (mC.use_penlist_cache)
 		mPenList->UpdateCache();
 
+	mBanList->ReloadCache();
 	this->mMaxMindDB->ReloadAll(); // reload maxminddb
 
 	if (mReloadNow) {

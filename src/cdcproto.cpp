@@ -3349,7 +3349,7 @@ int cDCProto::DCO_UnBan(cMessageDC *msg, cConnDC *conn)
 	if(msg->mType == eDCO_UNBAN)
 		ip = msg->ChunkString(eCH_1_PARAM);
 
-	int n = mS->mBanList->DeleteAllBansBy(ip, nick , eBF_NICKIP);
+	int n = (ip.size() ? mS->mBanList->DeleteAllBansBy(ip, nick, eBF_IP) : 0); // note: was eBF_NICKIP, which built broken query and never removed anything
 
 	if(n <= 0) {
 		os << autosprintf(_("No banned user found with IP %s."), msg->ChunkString(eCH_1_PARAM).c_str());

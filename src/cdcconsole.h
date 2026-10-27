@@ -21,6 +21,9 @@
 #ifndef CDCCONSOLE_H
 #define CDCCONSOLE_H
 #include <string>
+#include <vector>
+#include <functional>
+#include "cconnbase.h"
 #include "ctriggers.h"
 #include "ccustomredirects.h"
 #include "cdcclients.h"
@@ -47,6 +50,7 @@ namespace nVerliHub {
 		class cConnDC;
 		class cServerDC;
 	};
+	class cUser;
 	using namespace nTables;
 	using namespace nUtils;
 	using namespace nCmdr;
@@ -325,6 +329,23 @@ public:
 	// Pointer to Client console to handle custom client TAG
 	cDCClients *mDCClients;
 private:
+	// user row of gethost and getinfo commands, host is looked up on worker thread when it is not known yet
+	struct sHostRow
+	{
+		string mNick; // note: empty when user is not found
+		string mText; // note: requested nick when user is not found, else command specific text
+		string mAddr;
+		string mHost;
+		nSocket::tSocket mSock = INVALID_SOCKET;
+		unsigned long long mID = 0;
+	};
+
+	using tHostRows = vector<sHostRow>;
+	using tHostFormat = std::function<string(const tHostRows&)>;
+
+	void SetHostRow(sHostRow &row, cUser *user);
+	void ReplyWithHosts(nSocket::cConnDC *conn, tHostRows &rows, tHostFormat format);
+
 	cCommandCollection mCmdr;
 	cCommandCollection mUserCmdr;
 	struct cfBan: cfDCCmdBase { virtual bool operator()(); } mFunBan;

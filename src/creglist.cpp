@@ -185,33 +185,50 @@ bool cRegList::SetVar(const string &nick, string &field, string &value)
 	return UpdatePKVar(field.c_str(), value);
 }
 
-/** log that user logged in */
-bool cRegList::Login(cConnDC *conn, const string &nick)
+/*
+	login statistics are written on database thread, login does not wait for them
+	note: counters are increased by database itself, so nothing has to be read first
+*/
+
+bool cRegList::WriteStats(const string &nick, const string &fields)
 {
-	cRegUserInfo ui;
-	if(!FindRegInfo(ui, nick)) return false;
-	ui.mLoginLast = mS->mTime.Sec();
-	ui.mLoginIP   = conn->AddrIP();
-	ui.mLoginCount++;
-	return UpdatePK();
+	if (mS->mC.use_reglist_cache && (!mCache.IsLoaded() || !mCache.Find(nick))) // note: same check as FindRegInfo, user is not registered
+		return false;
+
+	ostringstream query;
+	query << "update `" << mMySQLTable.mName << "` set " << fields << " where `nick` = '";
+	WriteStringConstant(query, nick); // todo: nick2dbkey
+	query << '\'';
+	mS->mMySQLWorker.Write(query.str());
+	return true;
 }
 
 /** log that user logged in */
+bool cRegList::Login(cConnDC *conn, const string &nick)
+{
+	ostringstream fields;
+	fields << "`login_last` = " << mS->mTime.Sec() << ", `login_ip` = '";
+	WriteStringConstant(fields, conn->AddrIP());
+	fields << "', `login_cnt` = `login_cnt` + 1";
+	return WriteStats(nick, fields.str());
+}
+
+/** log that user logged out */
 bool cRegList::Logout(const string &nick)
 {
-	if(!FindRegInfo(mModel, nick)) return false;
-	mModel.mLogoutLast = mS->mTime.Sec() - 1; // this is a patch for users that connect twice
-	return UpdatePKVar("logout_last");
+	ostringstream fields;
+	fields << "`logout_last` = " << (mS->mTime.Sec() - 1); // this is a patch for users that connect twice
+	return WriteStats(nick, fields.str());
 }
 
 /** log that user logged in with error*/
 bool cRegList::LoginError(cConnDC *conn, const string &nick)
 {
-	if(!FindRegInfo(mModel, nick)) return false;
-	mModel.mErrorLast = mS->mTime.Sec();
-	mModel.mErrorIP = conn->AddrIP();
-	mModel.mErrorCount++;
-	return UpdatePK();
+	ostringstream fields;
+	fields << "`error_last` = " << mS->mTime.Sec() << ", `error_ip` = '";
+	WriteStringConstant(fields, conn->AddrIP());
+	fields << "', `error_cnt` = `error_cnt` + 1";
+	return WriteStats(nick, fields.str());
 }
 
 /*!
