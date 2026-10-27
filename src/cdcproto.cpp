@@ -130,6 +130,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 		msg->Parse(); // parse message again because parser sets state variables
 	}
 
+	if ((msg->mType == eDCC_MYIP) && !MyIPAllowed(conn)) // note: not nmdc command, only external tls proxy sends it, for everyone else it is unknown
+		msg->mType = eDC_UNKNOWN;
+
 	#ifndef WITHOUT_PLUGINS
 		if (msg->mType != eMSG_UNPARSED) {
 			if (conn->mpUser) {
@@ -3453,15 +3456,20 @@ int cDCProto::DCU_Unknown(cMessageDC *msg, cConnDC *conn)
 	client commands
 */
 
+bool cDCProto::MyIPAllowed(cConnDC *conn)
+{
+	if (!mS->ExternalTLS()) // note: external tls proxy is not used
+		return false;
+
+	if (conn->AddrIP() != mS->mTLSAddr) // note: not from proxy, todo: use ip integer instead
+		return false;
+
+	return conn->mTLSVer.empty(); // note: only once, before proxy told us who the user is
+}
+
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 {
-	if (mS->mTLSAddr.empty()) // must have
-		return this->DCU_Unknown(msg, conn);
-
-	if (!mS->mTLSForce && !mS->mTLSPort && (mS->mTLSAddr != mS->mAddr))
-		return this->DCU_Unknown(msg, conn);
-
-	if (conn->AddrIP() != mS->mTLSAddr) // todo: use ip integer instead
+	if (!MyIPAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
 		return this->DCU_Unknown(msg, conn);
 
 	if ((msg->mLen < 17) || (msg->mLen > 25)) {
@@ -3482,37 +3490,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	ostringstream os;
-	string data, url;
-
-	if (mS->mC.tls_only_mode && conn->mTLSVer == "0.0") { // tls only mode
-		if (conn->Log(3))
-			conn->LogStream() << "Disconnecting unsecure user" << endl;
-
-		os << '<' << mS->mC.hub_security << "> " << _("This hub supports only TLS-encrypted connections.");
-		mS->GetHubURLs(url, url);
-
-		if (url.size())
-			os << ' ' << autosprintf(_("Please update your favorites to: %s"), url.c_str());
-
-		os << '|';
-
-		if (mS->mC.not_tls_redirect.size()) {
-			Create_ForceMove(data, mS->mC.not_tls_redirect, false);
-			os << data << '|';
-
-		} else if (url.size()) {
-			Create_ForceMove(data, url, false);
-			os << data << '|';
-		}
-
-		data = os.str();
-		conn->Send(data, false, true); // send directly
-		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
-		return -1;
-	}
-
-	if (0 > mS->StartConn(conn)) {
+	if (0 > mS->StartConn(conn)) { // note: tls only mode is checked when connection is started
 		mS->delConnection(conn);
 		return -1;
 	}

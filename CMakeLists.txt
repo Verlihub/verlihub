@@ -40,9 +40,7 @@ message(STATUS)
 message(STATUS "[ ?? ] You can change build options with: -D{OPTION}=ON|OFF")
 message(STATUS "[ ?? ] You can enable debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "[ ?? ] You can disable all plugins with: -DWITH_PLUGINS=OFF")
-message(STATUS "[ ?? ] You can build Go TLS proxy library with: -DUSE_TLS_PROXY=ON")
-message(STATUS "[ .. ] Or you can use FearTLS proxy library with: -DUSE_FEARTLS_PROXY=ON")
-#message(STATUS "[ ?? ] You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
+message(STATUS "[ ?? ] You can build without TLS support with: -DUSE_TLS=OFF")
 message(STATUS "[ ?? ] You can disable Lua plugin with: -DWITH_LUA=OFF")
 message(STATUS "[ ?? ] You can use poll instead of epoll connection chooser with: -DUSE_EPOLL=OFF")
 message(STATUS "[ ?? ] If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
@@ -56,13 +54,8 @@ message(STATUS)
 OPTION(INSTALL_CMAKE_FILES "Install *.cmake files into CMake root" ON)
 option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
 OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
-option(USE_TLS_PROXY "Build Go TLS proxy library" OFF)
-option(USE_FEARTLS_PROXY "Use FearTLS proxy library" OFF)
+option(USE_TLS "Build with TLS support using OpenSSL" ON)
 option(USE_EPOLL "Use epoll connection chooser when available, else poll" ON)
-
-if(USE_TLS_PROXY AND USE_FEARTLS_PROXY)
-	message(FATAL_ERROR "[ ER ] You can't have both USE_TLS_PROXY and USE_FEARTLS_PROXY at the same time")
-endif()
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -201,12 +194,6 @@ IF(HAVE_BSD)
 	Find_Package(SysInfo REQUIRED)
 ENDIF(HAVE_BSD)
 
-if(USE_TLS_PROXY)
-	find_package(Go REQUIRED)
-elseif(USE_FEARTLS_PROXY)
-	find_package(FearTLS REQUIRED)
-endif()
-
 IF(UNIX)
 	FIND_PROGRAM(BASH_PATH bash PATHS "/usr/bin" "/usr/local/bin")
 	IF(NOT BASH_PATH)
@@ -234,9 +221,6 @@ ENDIF(HAVE_BSD)
 
 IF(HAVE_ALPINE)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
-	# todo
-	# https://wiki.alpinelinux.org/wiki/Software_management#Running_glibc_programs
-	# https://github.com/golang/go/issues/13492
 ENDIF(HAVE_ALPINE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -Wno-overloaded-virtual") # todo: -Woverloaded-virtual -pthread
@@ -253,17 +237,6 @@ SET(VERLIHUB_USE_LIBS "-lverlihub -lvhapi")
 if(USE_CUSTOM_AUTOSPRINTF)
 	add_definitions(-DUSE_CUSTOM_AUTOSPRINTF=1)
 endif(USE_CUSTOM_AUTOSPRINTF)
-
-if(USE_TLS_PROXY)
-	add_definitions(-DUSE_TLS_PROXY=1)
-	set(VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS} -lvhproxy")
-elseif(USE_FEARTLS_PROXY)
-	add_definitions(-DUSE_FEARTLS_PROXY=1)
-	set(VERLIHUB_USE_LIBS "${VERLIHUB_USE_LIBS} -lfeartls")
-endif()
-
-#ADD_DEFINITIONS(-DUSE_SSL_CONNECTS)
-#OPTION(USE_SSL_CONNECTS "Use SSL secured connects" ON) # use cmake -DUSE_SSL_CONNECTS=OFF to disable ssl
 
 string(STRIP "${CMAKE_CXX_FLAGS}" CMAKE_CXX_FLAGS)
 
@@ -437,10 +410,6 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/c
 # ----------------------------------------------------------------------------------------------------
 # directories
 
-if(USE_TLS_PROXY)
-	make_directory("${CMAKE_BINARY_DIR}/tls-proxy")
-endif()
-
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(share)
@@ -512,8 +481,7 @@ message(STATUS "[ ** ] Verlihub version: ${VERLIHUB_VERSION}")
 message(STATUS "[ ** ] Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "[ ** ] Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "[ ** ] Building plugins: ${PLUGINS_LIST}")
-message(STATUS "[ ** ] Building Go TLS proxy: ${USE_TLS_PROXY}")
-message(STATUS "[ ** ] Using FearTLS proxy: ${USE_FEARTLS_PROXY}")
+message(STATUS "[ ** ] TLS support: ${USE_TLS}")
 message(STATUS "[ ** ] Now run \"make\" as current user and \"make install\" as super user")
 message(STATUS "[ ** ] Then run \"ldconfig\" as super user to avoid shared library errors")
 message(STATUS)

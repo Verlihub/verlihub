@@ -104,11 +104,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 	mLineSizeMax(0),
 	mType(ct),
 	mxLine(NULL),
-/*
-#ifdef USE_SSL_CONNECTS
-	mSSLConn(NULL),
-#endif
-*/
 	meLineStatus(AC_LS_NO_LINE),
 	mBufEnd(0),
 	mBufReadPos(0),
@@ -214,15 +209,6 @@ void cAsyncConn::Close()
 	mWritable = false;
 	ok = false;
 
-/*
-#ifdef USE_SSL_CONNECTS
-	if (mSSLConn) {
-		SSL_shutdown(mSSLConn);
-		SSL_free(mSSLConn);
-		mSSLConn = NULL;
-	}
-#endif
-*/
 
 	if (mxServer)
 		mxServer->OnConnClose(this);
@@ -309,6 +295,18 @@ string* cAsyncConn::GetLine()
 void cAsyncConn::CloseNice(int msec)
 {
 	OnCloseNice(); // must be first
+
+#ifdef USE_TLS
+	if (mTLS && !mTLSBusy && mTLS->IsReady() && mWritable && ok) { // note: when worker has session, handshake is not done yet anyway
+		Flush(); // note: waiting data must be encrypted before close notify
+
+		if (ok) {
+			string out;
+			mTLS->Shutdown(out);
+			mBufSend.append(out);
+		}
+	}
+#endif
 	mWritable = false;
 
 	if ((msec <= 0) || (!GetFlushSize() && !GetBufferSize())) {
@@ -347,34 +345,17 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 	//bool udp = (this->GetType() == eCT_CLIENTUDP);
 
 	//if (!udp) {
-/*
-#ifdef USE_SSL_CONNECTS
-		if (mSSLConn) {
-			int err = 0;
+		#ifdef USE_TLS
+			const size_t max_len = ((mTLS || (mStartWait & eSW_DETECT)) ? (MAX_MESS_SIZE - cTLSSession::sMaxExtra) : MAX_MESS_SIZE); // note: decrypted data must fit into read buffer
+		#else
+			const size_t max_len = MAX_MESS_SIZE;
+		#endif
 
-			do {
-				buf_len = SSL_read(mSSLConn, msBuffer.data(), MAX_MESS_SIZE);
-				err = SSL_get_error(mSSLConn, buf_len);
-
-				if (err == SSL_ERROR_WANT_READ)
-					mxServer->mConnChooser.OptIn(this, eCC_INPUT);
-
-				::usleep(sleep);
-			} while ((err == SSL_ERROR_WANT_READ) && (i++ <= tries));
-
-		} else {
-#endif
-*/
-			while (((buf_len = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
+			while (((buf_len = recv(mSockDesc, msBuffer.data(), max_len, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (i++ <= tries)) {
 			//#if !defined _WIN32
 				::usleep(sleep);
 			//#endif
 			}
-/*
-#ifdef USE_SSL_CONNECTS
-		}
-#endif
-*/
 	/*
 	} else {
 		while (((buf_len = recvfrom(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0, (struct sockaddr*)&mAddrIN, (socklen_t*)&addr_len)) == -1) && (i++ <= tries)) {
@@ -414,6 +395,31 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 		//}
 
 	} else { // received data
+		if (mxServer)
+			mTimeLastIOAction = mxServer->mTime;
+		else
+			mTimeLastIOAction.Get();
+
+	#ifdef USE_TLS
+		if ((mStartWait & eSW_DETECT) && mxServer) { // note: first data decides, client that wants tls starts handshake at once
+			if ((msBuffer[0] == 0x16) && ((buf_len < 2) || (msBuffer[1] == 0x03)) && StartTLS(mxServer->mTLSContext.Get())) {
+				if (Log(3))
+					LogStream() << "TLS connection detected" << endl;
+
+				mxServer->TLSDetected(this, true);
+				return TLSRead(buf_len);
+			}
+
+			mxServer->TLSDetected(this, false); // note: plain client that did not wait for $Lock
+
+			if (!ok)
+				return -1;
+		}
+
+		if (mTLS)
+			return TLSRead(buf_len);
+	#endif
+
 		if ((buf_len > 2) && (msBuffer[0] == 0x16) && (msBuffer[1] == 0x03)) { // detect tls connection
 			if (Log(2))
 				LogStream() << "Closing TLS connection" << endl;
@@ -424,14 +430,192 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 
 		mBufEnd = buf_len;
 		msBuffer[mBufEnd] = '\0'; // end string
-
-		if (mxServer)
-			mTimeLastIOAction = mxServer->mTime;
-		else
-			mTimeLastIOAction.Get();
 	}
 
 	return buf_len;
+}
+
+#ifdef USE_TLS
+
+void cAsyncConn::OnTLSReady()
+{
+	if (mxServer)
+		mxServer->TLSReady(this);
+}
+
+bool cAsyncConn::StartTLS(ssl_ctx_st *ctx)
+{
+	if (mTLS || !ctx)
+		return false;
+
+	mTLS = std::make_shared<cTLSSession>(ctx);
+
+	if (!mTLS->IsValid()) {
+		mTLS.reset();
+		return false;
+	}
+
+	return true;
+}
+
+int cAsyncConn::TLSRead(int len)
+{
+	if (mTLSBusy) { // note: worker is doing handshake with this session, data waits until it is done
+		mTLSQueue.append(msBuffer.data(), len);
+		mBufEnd = 0;
+		return len;
+	}
+
+	if (!mTLS->IsReady() && mxServer && mxServer->PostTLS(this, mTLS, string(msBuffer.data(), len))) { // note: handshake signs with private key, do it on worker thread
+		mTLSBusy = true;
+		mBufEnd = 0;
+		return len;
+	}
+
+	string plain, out, err; // note: on this thread, after handshake or when workers are not available
+	const bool was_ready = mTLS->IsReady();
+	const bool good = mTLS->Feed(msBuffer.data(), len, plain, out, err);
+
+	if (!TLSFed(was_ready, good, plain, out, err))
+		return -1;
+
+	return len; // note: data was received even when nothing was decrypted yet
+}
+
+bool cAsyncConn::TLSFed(bool was_ready, bool good, const string &plain, const string &out, const string &err)
+{
+	mBufReadPos = 0;
+	mBufEnd = 0;
+
+	if (out.size() && ok) { // note: handshake, session tickets or alert, send them at once
+		mBufSend.append(out);
+		string empty;
+		Write(empty, true);
+	}
+
+	if (!good) {
+		if ((mxServer && mxServer->mTLSLog) ? Log(0) : Log(2))
+			LogStream() << "TLS error: " << err << endl;
+
+		CloseNow();
+		return false;
+	}
+
+	if (mTLS->IsClosed()) { // note: same as hang up
+		if (Log(2))
+			LogStream() << "User closed TLS session" << endl;
+
+		CloseNow();
+		return false;
+	}
+
+	if (plain.size() > MAX_MESS_SIZE) { // note: can not happen, receive size leaves room for it
+		if (Log(0))
+			LogStream() << "Decrypted data does not fit into read buffer: " << plain.size() << endl;
+
+		CloseNow();
+		return false;
+	}
+
+	if (plain.size())
+		memcpy(msBuffer.data(), plain.data(), plain.size());
+
+	mBufEnd = plain.size();
+	msBuffer[mBufEnd] = '\0'; // end string
+
+	if (!was_ready && mTLS->IsReady()) {
+		mTLSVer = mTLS->Version();
+
+		if (Log(3))
+			LogStream() << "TLS handshake done: " << mTLSVer << endl;
+
+		OnTLSReady();
+	}
+
+	return true;
+}
+
+void cAsyncConn::TLSResult(bool good, const string &plain, const string &out, const string &err)
+{
+	mTLSBusy = false;
+
+	if (!ok || !mTLS) // note: connection is closing
+		return;
+
+	if (!TLSFed(false, good, plain, out, err) || !ok) // note: result is posted only before handshake is done
+		return;
+
+	if (!BufferEmpty() && mxServer) // note: data that came together with end of handshake
+		mxServer->ParseInput(this);
+
+	if (!ok)
+		return;
+
+	if (mTLSHold.size()) { // note: data that was written while worker had session
+		string hold;
+		hold.swap(mTLSHold);
+
+		if (!AppendSend(hold.data(), hold.size())) {
+			CloseNow();
+			return;
+		}
+
+		string empty;
+		Write(empty, true);
+	}
+
+	TLSFeedQueue();
+}
+
+void cAsyncConn::TLSFeedQueue()
+{
+	if (mTLSQueue.empty() || !ok || mTLSBusy)
+		return;
+
+	string data;
+	data.swap(mTLSQueue);
+
+	if (!mTLS->IsReady() && mxServer && mxServer->PostTLS(this, mTLS, data)) { // note: handshake is still not done
+		mTLSBusy = true;
+		return;
+	}
+
+	string plain, out, err;
+	const bool was_ready = mTLS->IsReady();
+	const bool good = mTLS->Feed(data.data(), data.size(), plain, out, err);
+
+	if (TLSFed(was_ready, good, plain, out, err) && ok && !BufferEmpty() && mxServer)
+		mxServer->ParseInput(this);
+}
+
+#endif
+
+bool cAsyncConn::AppendSend(const char *data, size_t len)
+{
+#ifdef USE_TLS
+	if (mTLS && mTLSBusy) { // note: worker has session, encrypt when it is back
+		mTLSHold.append(data, len);
+		return true;
+	}
+
+	if (mTLS) {
+		string out, err;
+		const bool good = mTLS->Encrypt(data, len, out, err);
+		mBufSend.append(out);
+
+		if (!good) {
+			if ((mxServer && mxServer->mTLSLog) ? Log(0) : Log(2))
+				LogStream() << "TLS error: " << err << endl;
+
+			return false;
+		}
+
+		return true;
+	}
+#endif
+
+	mBufSend.append(data, len);
+	return true;
 }
 
 int cAsyncConn::SendAll(const char *buf, size_t &len)
@@ -447,18 +631,6 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 		//try {
 			//if (!udp) {
 //#if !defined _WIN32
-/*
-#ifdef USE_SSL_CONNECTS
-				if (mSSLConn) {
-					do {
-						n = SSL_write(mSSLConn, buf + total, bytesleft);
-						err = SSL_get_error(mSSLConn, n);
-						//sleep(1);
-					} while (err == SSL_ERROR_WANT_WRITE);
-
-				} else {
-#endif
-*/
 					n = send(mSockDesc, buf + total, bytesleft, MSG_NOSIGNAL | MSG_DONTWAIT);
 /*
 #else
@@ -475,11 +647,6 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 						::Sleep(50);
 					}
 				} while (WSAGetLastError() == WSAEWOULDBLOCK);
-*/
-/*
-#ifdef USE_SSL_CONNECTS
-				}
-#endif
 */
 /*
 #endif
@@ -508,24 +675,7 @@ int cAsyncConn::SendAll(const char *buf, size_t &len)
 	}
 #else
 	//if (!udp)
-/*
-#ifdef USE_SSL_CONNECTS
-		if (mSSLConn) {
-			do {
-				n = SSL_write(mSSLConn, buf + total, bytesleft);
-				err = SSL_get_error(mSSLConn, n);
-				//sleep(1);
-			} while (err == SSL_ERROR_WANT_WRITE);
-
-		} else {
-#endif
-*/
 			n = send(mSockDesc, buf + total, bytesleft, 0);
-/*
-#ifdef USE_SSL_CONNECTS
-		}
-#endif
-*/
 	/*
 	else
 		n = sendto(mSockDesc, buf + total, bytesleft, 0, (struct sockaddr*)&mAddrIN, sizeof(struct sockaddr));
@@ -817,45 +967,6 @@ tSocket cAsyncConn::AcceptSock(const unsigned int sleep, const unsigned int trie
 	if (Log(3))
 		LogStream() << "Accepted socket: " << socknum << endl;
 
-/*
-#ifdef USE_SSL_CONNECTS
-	if (mxServer && mxServer->mSSLCont) {
-		mSSLConn = SSL_new(mxServer->mSSLCont);
-
-		if (mSSLConn) {
-			int ret = 0, err = 0;
-
-			if ((ret = SSL_set_fd(mSSLConn, socknum)) == 1) {
-				i = 0;
-
-				do {
-					ret = SSL_accept(mSSLConn);
-					err = SSL_get_error(mSSLConn, ret);
-
-					if (err == SSL_ERROR_WANT_READ)
-						mxServer->mConnChooser.OptIn(this, eCC_INPUT);
-				} while (((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) && (i++ < tries));
-
-				if (ret != 1) {
-					if (Log(0))
-						LogStream() << "Failed to accept client SSL socket: " << socknum << " (" << err << '/' << ret << ')' << endl;
-
-					SSL_free(mSSLConn);
-					mSSLConn = NULL;
-				}
-
-			} else {
-				if (Log(0))
-					LogStream() << "Failed to set SSL file descriptor: " << socknum << " (" << SSL_get_error(mSSLConn, ret) << '/' << ret << ')' << endl;
-			}
-
-		} else {
-			if (Log(0))
-				LogStream() << "Failed to create client SSL socket: " << socknum << endl;
-		}
-	}
-#endif
-*/
 
 	sSocketCounter++;
 	sockoptval_t yes = 1;
@@ -991,13 +1102,18 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
 
 				if (calc_size && zlib_buf) { // compression successful
-					buf_size -= flush_size; // recalculate final send buffer size
-					buf_size += calc_size;
-					mBufSend.append(zlib_buf, calc_size); // add compressed data to final send buffer
+					if (!AppendSend(zlib_buf, calc_size)) { // add compressed data to final send buffer
+						CloseNow();
+						return -1;
+					}
+
 					serv->mProtoSaved[0] += flush_size - calc_size; // add difference to saved upload statistics
 
 				} else { // compression is larger than initial data or something failed
-					mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
+					if (!AppendSend(send_buf, flush_size)) { // add uncompressed data to final send buffer
+						CloseNow();
+						return -1;
+					}
 
 					if (calc_size) {
 						if (Log(5))
@@ -1020,13 +1136,18 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			}
 
 		} else { // compression is disabled or data too short for good result
-			mBufSend.append(send_buf, flush_size); // add uncompressed data to final send buffer
+			if (!AppendSend(send_buf, flush_size)) { // add uncompressed data to final send buffer
+				CloseNow();
+				return -1;
+			}
+
 			mBufFlush.clear(); // clean up flush buffer
 			ShrinkStringToFit(mBufFlush);
 		}
 	}
 
 	send_buf = mBufSend.data(); // pointer to send buffer
+	buf_size = mBufSend.size(); // note: encrypted data is bigger, and data that was not flushed is not in send buffer at all
 
 	/*
 	if (!send_buf)
@@ -1063,7 +1184,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		if (serv && ok) { // buffer overfill protection, only on registered connections
 			serv->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			if (!mHostWait && (buf_size < serv->mC.max_unblock_size)) { // if buffer size is smaller than unblock size, allow read operation on the connection, note: input stays blocked while waiting for host name
+			if (!InputParked() && (buf_size < serv->mC.max_unblock_size)) { // if buffer size is smaller than unblock size, allow read operation on the connection, note: input stays blocked while waiting for host name
 				serv->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {

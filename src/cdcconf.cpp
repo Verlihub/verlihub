@@ -65,9 +65,9 @@ void cDCConf::AddVars()
 	Add("extra_listen_ports", mS.mExtra, "");
 	// end of section
 
-	// tls proxy
-	Add("tls_listen_ip", mS.mTLSAddr, "127.0.0.1");
-	Add("tls_listen_port", mS.mTLSPort, 0); // 0 to disable, default
+	// tls
+	Add("tls_enable", mS.mTLSEnable, true); // note: only when built with tls support
+	Add("tls_listen_ip", mS.mTLSAddr, "127.0.0.1"); // note: address of external tls proxy
 	Add("tls_only_mode", tls_only_mode, false);
 	Add("not_tls_redirect", not_tls_redirect, "");
 	Add("tls_detect_wait", mS.mTLSWait, 500);
@@ -77,7 +77,6 @@ void cDCConf::AddVars()
 	Add("tls_cert_mail", mS.mTLSMail, "verlihub@localhost");
 	Add("tls_cert_host", mS.mTLSHost, "localhost");
 	Add("tls_min_ver", mS.mTLSVer, 2);
-	Add("tls_buf_size", mS.mTLSBuf, 10);
 	Add("tls_force_myip", mS.mTLSForce, false);
 	Add("tls_err_log", mS.mTLSLog, false);
 	// end of section

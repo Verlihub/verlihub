@@ -43,12 +43,6 @@
 #include <vector>
 #include <functional>
 
-/*
-#ifdef USE_SSL_CONNECTS
-	#include <openssl/ssl.h>
-	#include <openssl/err.h>
-#endif
-*/
 
 using namespace std;
 
@@ -142,12 +136,6 @@ namespace nVerliHub {
 				*/
 				int OnTimerBase(const cTime &now);
 
-			/*
-			#ifdef USE_SSL_CONNECTS
-				// ssl context
-				SSL_CTX* mSSLCont;
-			#endif
-			*/
 
 				/**
 				* Start the main loop.
@@ -214,8 +202,8 @@ namespace nVerliHub {
 				/// Maximum size of the buffer for cAsyncConn::SetLineToRead() method.
 				unsigned long mMaxLineLength;
 
+				bool mTLSEnable; // note: tls_enable, used only when built with tls support
 				string mTLSAddr;
-				unsigned int mTLSPort;
 				unsigned int mTLSWait;
 				string mTLSCert;
 				string mTLSKey;
@@ -223,7 +211,6 @@ namespace nVerliHub {
 				string mTLSMail;
 				string mTLSHost;
 				unsigned int mTLSVer;
-				unsigned int mTLSBuf;
 				bool mTLSForce;
 				bool mTLSLog;
 
@@ -278,9 +265,43 @@ namespace nVerliHub {
 					return mConnChooser.mConnList.size();
 				}
 
-			#if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY) // tls proxy
-				void StopProxy(int code);
+				/// Connections come from external tls proxy, it sends real ip and tls version with $MyIP.
+				bool ExternalTLS() const;
+
+				/// Native tls is loaded and can be detected.
+				bool NativeTLS() const;
+
+				/// Hub can offer tls to clients.
+				bool HasTLS() const;
+
+			#ifdef USE_TLS
+				/*
+					load certificate and key from tls_cert_file and tls_key_file, relative path is inside config directory
+					when certificate or key is missing, or certificate expired, new self signed one is created first
+					without force it is loaded only when files changed, report gets result for user
+				*/
+				bool CheckTLS(bool force, string *report = NULL);
+
+				/// Server tls context, empty when tls is disabled or certificate could not be loaded.
+				nSocket::cTLSContext mTLSContext;
+				time_t mTLSCertTime = 0; // note: file times of loaded certificate and key, to see when they change
+				time_t mTLSKeyTime = 0;
+
+				/// Result of tls detection on first data of new connection, called by connection.
+				void TLSDetected(cAsyncConn *conn, bool tls);
+
+				/// Tls handshake is done, called by connection.
+				void TLSReady(cAsyncConn *conn);
+
+				/// Feed session on tls worker thread, result goes to cAsyncConn::TLSResult(), false when it could not be queued.
+				bool PostTLS(cAsyncConn *conn, const std::shared_ptr<nSocket::cTLSSession> &session, const string &data);
+
+				/// Tls handshakes, separate from mWorkers, so they dont wait for slow host name lookups.
+				nThread::cWorkerPool mTLSWorkers;
 			#endif
+
+				/// Parse lines from read buffer of connection, also used for data that worker decrypted.
+				int ParseInput(cAsyncConn *conn);
 
 		protected:
 
@@ -399,19 +420,26 @@ namespace nVerliHub {
 			/// All running pools whose results are processed in main loop, mWorkers included.
 			std::vector<nThread::cWorkerPool*> mPools;
 
-			/// Connections waiting for host name, in order of start time.
-			struct sHostWait
+			/// Connection that waits before it is started, see cAsyncConn::tStartWait.
+			struct sStartWait
 			{
 				tSocket mSock;
 				unsigned long long mID;
-				long mStart;
+				long long mUntil; // note: milliseconds
 			};
 
-			std::deque<sHostWait> mHostWaitList;
+			std::deque<sStartWait> mHostWaitList; // note: in order of time
+		#ifdef USE_TLS
+			std::deque<sStartWait> mTLSDetectList;
+			std::deque<sStartWait> mTLSHandshakeList;
+		#endif
 
 			void OnHostResult(tSocket sock, unsigned long long id, const string &addr, const string &host);
-			void HostWaitDone(cAsyncConn *conn);
-			void CheckHostWait(const cTime &now);
+			void StartWaitDone(cAsyncConn *conn, unsigned int flag);
+			void UpdateStartInput(cAsyncConn *conn);
+			void AddStartWait(std::deque<sStartWait> &list, cAsyncConn *conn, long long until);
+			void CheckStartWait(std::deque<sStartWait> &list, unsigned int flag, long long now, const std::function<void(cAsyncConn*)> &expired);
+			void CheckStartWaits();
 		};
 		/// @}
 

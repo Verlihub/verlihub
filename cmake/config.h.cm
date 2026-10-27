@@ -41,5 +41,8 @@
 /* Define to 1 if you have the <sys/epoll.h> header file. */
 #cmakedefine HAVE_SYS_EPOLL_H 1
 
+/* Define to 1 to build with TLS support. */
+#cmakedefine USE_TLS 1
+
 /* Define to 1 if you have gettext function. */
 #cmakedefine HAVE_GETTEXT 1

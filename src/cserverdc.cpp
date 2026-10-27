@@ -34,11 +34,6 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 
-#if defined(USE_TLS_PROXY)
-	#include "libvhproxy.h"
-#elif defined(USE_FEARTLS_PROXY)
-	#include "../feartls/feartls.h"
-#endif
 
 #include "cserverdc.h"
 #include "cinterpolexp.h"
@@ -342,11 +337,6 @@ cServerDC::~cServerDC()
 	}
 
 	mMySQL.Close();
-
-#if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY)
-	if (mTLSAddr.size() && mTLSPort)
-		StopProxy(mRunResult); // todo: there is a bug in go, stop proxy at last until fixed
-#endif
 }
 
 bool cServerDC::StartListening(int OverrideDefaultPort)
@@ -354,7 +344,6 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 	if (!cAsyncSocketServer::StartListening(OverrideDefaultPort)) // default port
 		return false;
 
-#if !defined(USE_TLS_PROXY) && !defined(USE_FEARTLS_PROXY)
 	if (mExtra.size()) {
 		istringstream is(mExtra);
 		int i = 1;
@@ -369,7 +358,6 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 			}
 		}
 	}
-#endif
 
 	return true;
 }
@@ -1071,6 +1059,35 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	if (!conn)
 		return -1;
 
+	if (mC.tls_only_mode && (conn->mTLSVer == "0.0")) { // tls only mode, note: plain connection reported by external proxy or found by native detection
+		if (conn->Log(3))
+			conn->LogStream() << "Disconnecting unsecure user" << endl;
+
+		ostringstream os;
+		string data, url;
+		os << '<' << mC.hub_security << "> " << _("This hub supports only TLS-encrypted connections.");
+		GetHubURLs(url, url);
+
+		if (url.size())
+			os << ' ' << autosprintf(_("Please update your favorites to: %s"), url.c_str());
+
+		os << '|';
+
+		if (mC.not_tls_redirect.size()) {
+			cDCProto::Create_ForceMove(data, mC.not_tls_redirect, false);
+			os << data << '|';
+
+		} else if (url.size()) {
+			cDCProto::Create_ForceMove(data, url, false);
+			os << data << '|';
+		}
+
+		data = os.str();
+		conn->Send(data, false, true); // send directly
+		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
+		return 0; // note: connection closes by itself, caller must not delete it
+	}
+
 	#ifndef WITHOUT_PLUGINS
 		if (!mCallBacks.mOnNewConn.CallAll(conn)) // note: called before sending lock
 			return -1;
@@ -1079,7 +1096,7 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added
 
-	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr))) {
+	if (HasTLS()) {
 		if (mC.tls_only_mode)
 			conn->mLock.append("TLSONLY_");
 		else
@@ -1887,6 +1904,10 @@ int cServerDC::OnTimer(const cTime &now)
 			mPenList->UpdateCache();
 
 		mBanList->ReloadCache(); // note: in background, also catches bans added by others, like web interface
+
+	#ifdef USE_TLS
+		CheckTLS(false); // note: renew expired certificate, load certificate that was replaced, for example by certbot
+	#endif
 
 		/*
 			todo
@@ -3266,7 +3287,7 @@ void cServerDC::GetHubURLs(string &url, string &urls)
 		url.append(host);
 	}
 
-	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr)) && host.size()) {
+	if (HasTLS() && host.size()) {
 		urls = "nmdcs://";
 		urls.append(host);
 
@@ -3491,38 +3512,11 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				}
 			*/
 
-			} else if ((svar == "tls_buf_size") && (val_new != val_old)) { // live change
+			} else if (((svar == "tls_detect_wait") || (svar == "tls_err_log")) && (val_new != val_old)) { // live change
 				if (val_new.empty()) { // dont allow empty
 					ci->ConvertFrom(val_old);
 					return 0;
 				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetBuf(num);
-#endif
-
-			} else if ((svar == "tls_detect_wait") && (val_new != val_old)) { // live change
-				if (val_new.empty()) { // dont allow empty
-					ci->ConvertFrom(val_old);
-					return 0;
-				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetWait(num);
-#endif
-
-			} else if ((svar == "tls_err_log") && (val_new != val_old)) { // live change
-				if (val_new.empty()) { // dont allow empty
-					ci->ConvertFrom(val_old);
-					return 0;
-				}
-
-#ifdef USE_TLS_PROXY
-				unsigned int num = StringAsLL(val_new);
-				VH_ProxySetLog(num); // note: is boolean
-#endif
 
 			} else if (((svar == "ip_zone4_min") || (svar == "ip_zone5_min") || (svar == "ip_zone6_min")) && (val_new != val_old) && val_new.size()) { // validate low zones
 				unsigned long ip = 0;
@@ -3553,6 +3547,17 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 			}
 
 			mSetupList.SaveItem(conf, ci);
+
+		#ifdef USE_TLS
+			if ((val_new != val_old) && ((svar == "tls_enable") || (svar == "tls_cert_file") || (svar == "tls_key_file") || (svar == "tls_min_ver"))) { // note: apply at once, running sessions keep what they have
+				string report;
+				CheckTLS(true, &report);
+
+				if (report.size() && user && user->mxConn)
+					DCPublicHS(report, user->mxConn);
+			}
+		#endif
+
 			return 1;
 
 		} else {
@@ -3835,6 +3840,11 @@ void cServerDC::ReloadNow()
 		mPenList->UpdateCache();
 
 	mBanList->ReloadCache();
+
+#ifdef USE_TLS
+	CheckTLS(true);
+#endif
+
 	this->mMaxMindDB->ReloadAll(); // reload maxminddb
 
 	if (mReloadNow) {

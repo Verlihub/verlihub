@@ -4,7 +4,7 @@ Verlihub is advanced NMDC protocol server for Linux operating systems that provi
 
   * Low RAM and CPU usage
   * It can hold more than 25k users
-  * TLS-encrypted connection via NMDCS protocol, requires Go or FearTLS
+  * TLS-encrypted connection via NMDCS protocol, built in using OpenSSL
   * Utility scripts for simple installation and hub management
   * Export and import of hub setting via MySQL or MariaDB
   * User management with privilegies
@@ -15,12 +15,11 @@ Verlihub is advanced NMDC protocol server for Linux operating systems that provi
   * Import users from PtokaX, Aquila or YnHub
   * Plus much more
 
-# TLS proxy
+# TLS
 
-Currently there are two supported libraries:
+TLS support is built in using OpenSSL and enabled by default, to build without it use `-DUSE_TLS=OFF` flag.
 
-  * Build Go TLS library using `USE_TLS_PROXY` flag: https://github.com/verlihub/tls-proxy#readme
-  * Use FearTLS library using `USE_FEARTLS_PROXY` flag: https://github.com/rolex/feartls#readme
+External TLS proxy is still supported, it sends real address of user with `$MyIP` command, see `tls_listen_ip` and `tls_force_myip` configuration.
 
 # Links
 

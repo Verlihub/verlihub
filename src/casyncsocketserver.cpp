@@ -20,11 +20,6 @@
 
 #include "casyncsocketserver.h"
 
-#if defined(USE_TLS_PROXY)
-	#include "libvhproxy.h"
-#elif defined(USE_FEARTLS_PROXY)
-	#include "../feartls/feartls.h"
-#endif
 
 /*
 #if defined _WIN32
@@ -45,6 +40,8 @@
 #include <cstring>
 #include <chrono>
 #include <poll.h>
+#include <sstream>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -59,7 +56,9 @@ namespace nVerliHub {
 
 	static constexpr size_t sWorkerMaxJobs = 10000; // note: posting fails when this many jobs are waiting
 	static constexpr size_t sWorkerMaxResults = 500; // note: maximum results processed in one main loop step
-	static constexpr long sHostWaitMax = 5; // note: seconds to wait for host name before connection is started without it
+	static constexpr long long sHostWaitMax = 5000; // note: milliseconds to wait for host name before connection is started without it
+	static constexpr long long sTLSHandshakeMax = 10000; // note: milliseconds for tls handshake, connection is closed when it takes longer
+	static constexpr unsigned int sTLSCertDays = 5 * 365; // note: validity of created certificate, same as go version had
 
 cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	cObj("cAsyncSocketServer"),
@@ -82,11 +81,6 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mbRun(false),
 	mFactory(NULL),
 	mRunResult(0),
-/*
-#ifdef USE_SSL_CONNECTS
-	mSSLCont(NULL),
-#endif
-*/
 	mNowTreating(NULL)
 {
 	/*
@@ -144,43 +138,6 @@ int cAsyncSocketServer::run()
 	mbRun = true;
 	vhLog(1) << "Main loop start" << endl;
 
-/*
-#ifdef USE_SSL_CONNECTS
-	// https://wiki.openssl.org/index.php/Simple_TLS_Server
-	// https://github.com/wolfSSL/wolfssl-examples/blob/master/tls/server-tls-nonblocking.c
-	SSL_library_init();
-	SSL_load_error_strings();
-	OpenSSL_add_ssl_algorithms();
-	const SSL_METHOD *meth = TLS_server_method(); // todo: detect version from ssl.h
-	mSSLCont = SSL_CTX_new(meth);
-
-	if (mSSLCont) {
-		SSL_CTX_set_options(mSSLCont, SSL_OP_NO_COMPRESSION); // no compression
-		SSL_CTX_set_min_proto_version(mSSLCont, TLS1_3_VERSION); // min version 1.3
-		SSL_CTX_set_max_proto_version(mSSLCont, TLS1_3_VERSION); // max version 1.3
-
-		if (SSL_CTX_use_certificate_file(mSSLCont, "/home/user/.certs/hub.crt", SSL_FILETYPE_PEM) <= 0) { // todo: add config
-			vhLog(0) << ("Failed to apply SSL certificate to server SSL context") << endl;
-			SSL_CTX_free(mSSLCont);
-			mSSLCont = NULL;
-			ERR_free_strings();
-			EVP_cleanup();
-
-		} else {
-			if (SSL_CTX_use_PrivateKey_file(mSSLCont, "/home/user/.certs/hub.key", SSL_FILETYPE_PEM) <= 0 ) { // todo: add config
-				vhLog(0) << ("Failed to apply SSL key to server SSL context") << endl;
-				SSL_CTX_free(mSSLCont);
-				mSSLCont = NULL;
-				ERR_free_strings();
-				EVP_cleanup();
-			}
-		}
-
-	} else {
-		vhLog(0) << ("Failed to create server SSL context") << endl;
-    }
-#endif
-*/
 
 	StartWorkers();
 
@@ -191,8 +148,9 @@ int cAsyncSocketServer::run()
 		if (mTime >= (mT.main + timer_serv_period)) {
 			mT.main = mTime;
 			OnTimerBase(mTime);
-			CheckHostWait(mTime);
 		}
+
+		CheckStartWaits(); // note: every step, tls detection waits only milliseconds
 
 		StepWait(mStepDelay);
 		mFrequency.Insert(mTime);
@@ -356,16 +314,6 @@ void cAsyncSocketServer::close()
 		}
 	}
 
-/*
-#ifdef USE_SSL_CONNECTS
-	if (mSSLCont) {
-		SSL_CTX_free(mSSLCont);
-		mSSLCont = NULL;
-		ERR_free_strings();
-		EVP_cleanup();
-	}
-#endif
-*/
 }
 
 /*
@@ -399,7 +347,7 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 	tCLIt it = mConnList.insert(mConnList.begin(), new_conn);
 	new_conn->mIterator = it;
 
-	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr)) && (new_conn->AddrIP() == mTLSAddr)) // tls proxy, wait for myip command
+	if (ExternalTLS() && (new_conn->AddrIP() == mTLSAddr)) // external tls proxy, wait for myip command
 		return;
 
 	if (0 > StartConn(new_conn))
@@ -408,11 +356,21 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 
 int cAsyncSocketServer::StartConn(cAsyncConn *conn)
 {
-	if (mUseDNS && conn->AddrHost().empty()) {
-		if (LookupHost(conn, true))
-			return 0; // note: connection is started when host name is known
+	// note: connection is started when host name is known and tls detection is done
 
+#ifdef USE_TLS
+	if (NativeTLS() && conn->mTLSVer.empty()) { // note: client that wants tls sends data at once, plain client waits for $Lock
+		conn->mStartWait |= cAsyncConn::eSW_DETECT;
+		AddStartWait(mTLSDetectList, conn, mTime.MiliSec() + mTLSWait);
+	}
+#endif
+
+	if (mUseDNS && conn->AddrHost().empty() && !LookupHost(conn, true))
 		conn->DNSLookup(); // note: workers are not available, do it on this thread like before
+
+	if (conn->mStartWait) {
+		UpdateStartInput(conn);
+		return 0;
 	}
 
 	return OnNewConn(conn);
@@ -436,9 +394,9 @@ bool cAsyncSocketServer::LookupHost(cAsyncConn *conn, bool park)
 		return false;
 
 	if (park) {
-		conn->mHostWait = true;
-		mConnChooser.cConnChoose::OptOut((cConnBase*)conn, eCC_INPUT);
-		mHostWaitList.push_back({sock, id, mTime.Sec()});
+		conn->mStartWait |= cAsyncConn::eSW_HOST;
+		AddStartWait(mHostWaitList, conn, mTime.MiliSec() + sHostWaitMax);
+		UpdateStartInput(conn);
 	}
 
 	return true;
@@ -498,47 +456,124 @@ void cAsyncSocketServer::OnHostResult(tSocket sock, unsigned long long id, const
 	if (host.size())
 		conn->SetAddrHost(host);
 
-	if (conn->mHostWait)
-		HostWaitDone(conn);
+	if (conn->mStartWait & cAsyncConn::eSW_HOST)
+		StartWaitDone(conn, cAsyncConn::eSW_HOST);
 }
 
-void cAsyncSocketServer::HostWaitDone(cAsyncConn *conn)
+void cAsyncSocketServer::StartWaitDone(cAsyncConn *conn, unsigned int flag)
 {
-	conn->mHostWait = false;
+	conn->mStartWait &= ~flag;
 
 	if (!conn->ok) // note: connection is closing, it will be deleted in main loop
 		return;
 
-	mConnChooser.cConnChoose::OptIn((cConnBase*)conn, eCC_INPUT);
+	UpdateStartInput(conn);
+
+	if (conn->mStartWait) // note: still waiting for something else
+		return;
 
 	if (0 > OnNewConn(conn))
 		conn->CloseNow(); // note: dont delete here, we might be in the middle of connection loop
 }
 
-void cAsyncSocketServer::CheckHostWait(const cTime &now)
+void cAsyncSocketServer::UpdateStartInput(cAsyncConn *conn)
 {
-	while (mHostWaitList.size() && ((mHostWaitList.front().mStart + sHostWaitMax) <= now.Sec())) {
-		const sHostWait item = mHostWaitList.front();
-		mHostWaitList.pop_front();
+	if (conn->InputParked())
+		mConnChooser.cConnChoose::OptOut((cConnBase*)conn, eCC_INPUT);
+	else
+		mConnChooser.cConnChoose::OptIn((cConnBase*)conn, eCC_INPUT);
+}
+
+void cAsyncSocketServer::AddStartWait(deque<sStartWait> &list, cAsyncConn *conn, long long until)
+{
+	list.push_back({(tSocket)(*conn), conn->mConnID, until}); // note: same wait time for everyone in list, so it stays in order of time
+}
+
+void cAsyncSocketServer::CheckStartWait(deque<sStartWait> &list, unsigned int flag, long long now, const function<void(cAsyncConn*)> &expired)
+{
+	while (list.size()) {
+		const sStartWait item = list.front();
 		cAsyncConn *conn = FindConn(item.mSock, item.mID);
+		const bool waiting = (conn && (conn->mStartWait & flag));
 
-		if (conn && conn->mHostWait) { // note: lookup takes too long, start connection without host name, late result will still set it
-			if (conn->Log(2))
-				conn->LogStream() << "Host name lookup timed out" << endl;
-
-			HostWaitDone(conn);
-		}
-	}
-
-	while (mHostWaitList.size()) { // note: remove items that are already done from front of list
-		cAsyncConn *conn = FindConn(mHostWaitList.front().mSock, mHostWaitList.front().mID);
-
-		if (conn && conn->mHostWait)
+		if (waiting && (item.mUntil > now)) // note: rest of list is not expired either
 			break;
 
-		mHostWaitList.pop_front();
+		list.pop_front(); // note: expired, or connection is done waiting or gone
+
+		if (waiting)
+			expired(conn);
 	}
 }
+
+void cAsyncSocketServer::CheckStartWaits()
+{
+	const long long now = mTime.MiliSec();
+
+	CheckStartWait(mHostWaitList, cAsyncConn::eSW_HOST, now, [this](cAsyncConn *conn) { // note: start without host name, late result will still set it
+		if (conn->Log(2))
+			conn->LogStream() << "Host name lookup timed out" << endl;
+
+		StartWaitDone(conn, cAsyncConn::eSW_HOST);
+	});
+
+#ifdef USE_TLS
+	CheckStartWait(mTLSDetectList, cAsyncConn::eSW_DETECT, now, [this](cAsyncConn *conn) { // note: client did not start tls, it waits for $Lock
+		TLSDetected(conn, false);
+	});
+
+	CheckStartWait(mTLSHandshakeList, cAsyncConn::eSW_HANDSHAKE, now, [](cAsyncConn *conn) {
+		if (conn->Log(2))
+			conn->LogStream() << "TLS handshake timed out" << endl;
+
+		conn->CloseNow();
+	});
+#endif
+}
+
+#ifdef USE_TLS
+
+void cAsyncSocketServer::TLSDetected(cAsyncConn *conn, bool tls)
+{
+	if (tls) {
+		conn->mStartWait = ((conn->mStartWait & ~cAsyncConn::eSW_DETECT) | cAsyncConn::eSW_HANDSHAKE);
+		AddStartWait(mTLSHandshakeList, conn, mTime.MiliSec() + sTLSHandshakeMax);
+		UpdateStartInput(conn);
+		return;
+	}
+
+	conn->mTLSVer = "0.0"; // note: same as external proxy reports for plain connection
+	StartWaitDone(conn, cAsyncConn::eSW_DETECT);
+}
+
+void cAsyncSocketServer::TLSReady(cAsyncConn *conn)
+{
+	if (conn->mStartWait & cAsyncConn::eSW_HANDSHAKE)
+		StartWaitDone(conn, cAsyncConn::eSW_HANDSHAKE);
+}
+
+bool cAsyncSocketServer::PostTLS(cAsyncConn *conn, const shared_ptr<nSocket::cTLSSession> &session, const string &data)
+{
+	if (!StartPool(mTLSWorkers, 0, sWorkerMaxJobs)) // note: all cpu cores, handshake is cpu work
+		return false;
+
+	const tSocket sock = (tSocket)(*conn);
+	const unsigned long long id = conn->mConnID;
+
+	return mTLSWorkers.Post([this, session, sock, id, data]() -> nThread::cWorkerPool::tResult { // note: runs on worker thread, main thread does not touch session meanwhile
+		string plain, out, err;
+		const bool good = session->Feed(data.data(), data.size(), plain, out, err);
+
+		return [this, sock, id, good, plain, out, err] { // note: runs on main thread
+			cAsyncConn *found = FindConn(sock, id);
+
+			if (found) // note: else connection is gone, session is freed together with job
+				found->TLSResult(good, plain, out, err);
+		};
+	});
+}
+
+#endif
 
 void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 {
@@ -594,6 +629,16 @@ int cAsyncSocketServer::input(cAsyncConn *conn)
 	if (conn->ReadAll(mNoReadTry, mNoReadDelay) <= 0) // read all data available into a buffer
 		return 0;
 
+	if (conn->BufferEmpty()) // note: tls data was received, but nothing was decrypted yet, for example during handshake
+		return 1;
+
+	return ParseInput(conn);
+}
+
+int cAsyncSocketServer::ParseInput(cAsyncConn *conn)
+{
+	cAsyncConn *was = mNowTreating;
+	mNowTreating = conn; // note: delConnection only marks connection, so it is not deleted while we are in it
 	int just_read = 0;
 
 	while (conn->ok && conn->mWritable) {
@@ -610,6 +655,11 @@ int cAsyncSocketServer::input(cAsyncConn *conn)
 		if (conn->BufferEmpty())
 			break;
 	}
+
+	mNowTreating = was;
+
+	if ((was != conn) && !conn->ok) // note: called outside of connection loop, for example with data from worker, make sure loop deletes it
+		conn->CloseNow();
 
 	return just_read;
 }
@@ -773,174 +823,110 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 	if (mPort && !OverrideDefaultPort)
 		OverrideDefaultPort = mPort;
 
-#if defined(USE_TLS_PROXY)
-
-	if (mTLSAddr.empty() || !mTLSPort) // disabled
-		return this->Listen(OverrideDefaultPort/*, false*/);
-
-	VH_ProxyConfig *conf = VH_ProxyCreate();
-
-	if (!conf) {
-		if (Log(0))
-			LogStream() << "Failed to create proxy configuration" << endl;
-
-		return false;
-	}
-
-	string shub, saddr, scert, skey, sorg, smail, shost;
-	stringstream sstr;
-
-	sstr << mTLSAddr << ':' << mTLSPort;
-	shub.assign(sstr.str());
-
-	sstr.str("");
-	sstr << mAddr << ':' << OverrideDefaultPort;
-
-	if (mExtra.size()) {
-		istringstream is(mExtra);
-		int i = 1;
-
-		while (i) {
-			i = 0;
-			is >> i;
-
-			if ((i >= 1) && (i <= 65535))
-				sstr << ' ' << mAddr << ':' << i;
-		}
-	}
-
-	saddr.assign(sstr.str());
-
-	scert.assign(mTLSCert);
-
-	if (scert.find('/') == string::npos)
-		scert = mConfBaseDir + "/" + scert;
-
-	skey.assign(mTLSKey);
-
-	if (skey.find('/') == string::npos)
-		skey = mConfBaseDir + "/" + skey;
-
-	sorg.assign(mTLSOrg);
-	smail.assign(mTLSMail);
-	shost.assign(mTLSHost);
-
-	conf->HubAddr = shub.c_str();
-	conf->HubNetwork = "tcp4"; // note: static
-	conf->Hosts = saddr.c_str();
-	conf->Cert = scert.c_str();
-	conf->Key = skey.c_str();
-	conf->CertOrg = sorg.c_str();
-	conf->CertMail = smail.c_str();
-	conf->CertHost = shost.c_str();
-	conf->LogErrors = mTLSLog;
-	conf->Wait = mTLSWait;
-	conf->Buffer = mTLSBuf;
-	conf->MinVer = mTLSVer;
-	conf->NoSendIP = false; // note: static
-
-	if (Log(0))
-		LogStream() << "Starting TLS proxy: " << saddr << " -> " << shub << endl;
-
-	if (!VH_ProxyStart(conf)) {
-		char *err = VH_ProxyError();
-
-		if (err) {
-			if (Log(0))
-				LogStream() << "Error starting TLS proxy: " << err << endl;
-
-			free(err); // note: allocated by C.CString
-
-		} else if (Log(0)) {
-			LogStream() << "Error starting TLS proxy" << endl;
-		}
-
-		free(conf); // note: allocated by C.malloc
-		return false;
-	}
-
-	free(conf);
-	return this->Listen(mTLSPort/*, false*/);
-
-#elif defined(USE_FEARTLS_PROXY)
-
-	if (mTLSAddr.empty() || !mTLSPort) // disabled
-		return this->Listen(OverrideDefaultPort/*, false*/);
-
-	string saddr, scert, skey, shost;
-	stringstream sstr;
-
-	saddr.assign(mTLSAddr);
-	scert.assign(mTLSCert);
-
-	if (scert.find('/') == string::npos)
-		scert = mConfBaseDir + "/" + scert;
-
-	skey.assign(mTLSKey);
-
-	if (skey.find('/') == string::npos)
-		skey = mConfBaseDir + "/" + skey;
-
-	sstr << mAddr << ':' << OverrideDefaultPort;
-
-	if (mExtra.size()) {
-		istringstream is(mExtra);
-		int i = 1;
-
-		while (i) {
-			i = 0;
-			is >> i;
-
-			if ((i >= 1) && (i <= 65535))
-				sstr << ' ' << mAddr << ':' << i;
-		}
-	}
-
-	shost.assign(sstr.str());
-
-	VH_FearConf conf;
-	conf.FAddr = saddr.c_str();
-	conf.FPort = mTLSPort;
-	conf.FHost = shost.c_str();
-	conf.FCert = scert.c_str();
-	conf.FKey = skey.c_str();
-	conf.FLog = mTLSLog;
-	conf.FWait = mTLSWait;
-	conf.FVer = mTLSVer;
-	conf.FSend = true; // note: static
-
-	if (!VH_FearStart(&conf))
-		return false;
-
-	return this->Listen(mTLSPort/*, false*/);
-
-#else
+#ifdef USE_TLS
+	CheckTLS(true); // note: hub also works without tls
+#endif
 
 	return this->Listen(OverrideDefaultPort/*, false*/);
+}
 
+#ifdef USE_TLS
+
+static time_t FileTime(const string &path)
+{
+	struct stat st;
+	return ((stat(path.c_str(), &st) == 0) ? st.st_mtime : 0);
+}
+
+bool cAsyncSocketServer::CheckTLS(bool force, string *report)
+{
+	ostringstream res;
+
+	auto done = [&](bool good, int level) {
+		if (res.str().size() && Log(level))
+			LogStream() << res.str() << endl;
+
+		if (report)
+			*report = res.str();
+
+		return good;
+	};
+
+	if (!mTLSEnable) {
+		if (mTLSContext.IsLoaded() || force) {
+			mTLSContext.Clear();
+			mTLSCertTime = 0;
+			mTLSKeyTime = 0;
+			res << "TLS is disabled with tls_enable";
+		}
+
+		return done(false, 1);
+	}
+
+	string cert(mTLSCert), key(mTLSKey), info, err;
+
+	if (cert.size() && (cert.find('/') == string::npos)) // note: file name only, look in config directory
+		cert = mConfBaseDir + "/" + cert;
+
+	if (key.size() && (key.find('/') == string::npos))
+		key = mConfBaseDir + "/" + key;
+
+	cTLSContext::tCertState state = cTLSContext::CertState(cert, info);
+
+	if (state == cTLSContext::eCS_INVALID) { // note: never overwrite certificate that we can not read, it might be from certificate authority
+		res << "TLS certificate is not usable, " << (mTLSContext.IsLoaded() ? "old one stays" : "TLS is disabled") << ": " << cert << ": " << info;
+		return done(false, 0);
+	}
+
+	if ((state != cTLSContext::eCS_VALID) || !FileTime(key)) { // note: missing or expired certificate, or missing key
+		if (Log(0))
+			LogStream() << "Creating new TLS certificate, " << ((state == cTLSContext::eCS_EXPIRED) ? ("old one expired: " + info) : string("certificate or key not found")) << ": " << cert << endl;
+
+		if (!cTLSContext::Generate(cert, key, mTLSOrg, mTLSMail, mTLSHost, sTLSCertDays, err)) {
+			res << "Failed creating TLS certificate, " << (mTLSContext.IsLoaded() ? "old one stays" : "TLS is disabled") << ": " << err;
+			return done(false, 0);
+		}
+
+		state = cTLSContext::CertState(cert, info);
+		force = true;
+	}
+
+	const time_t cert_time = FileTime(cert), key_time = FileTime(key);
+
+	if (!force && mTLSContext.IsLoaded() && (cert_time == mTLSCertTime) && (key_time == mTLSKeyTime)) // note: nothing changed
+		return done(true, 0);
+
+	if (!mTLSContext.Load(cert, key, mTLSVer, err)) {
+		res << "Failed loading TLS certificate, " << (mTLSContext.IsLoaded() ? "old one stays" : "TLS is disabled") << ": " << err;
+		return done(false, 0);
+	}
+
+	mTLSCertTime = cert_time;
+	mTLSKeyTime = key_time;
+	res << "TLS certificate loaded: " << cert << ", valid until " << info << ", keyprint " << mTLSContext.Keyprint();
+	return done(true, 0);
+}
+
+#endif
+
+bool cAsyncSocketServer::ExternalTLS() const
+{
+	return (mTLSAddr.size() && (mTLSForce || (mTLSAddr == mAddr))); // note: hub listens on same address as proxy, or it is forced
+}
+
+bool cAsyncSocketServer::NativeTLS() const
+{
+#ifdef USE_TLS
+	return (mTLSContext.IsLoaded() && mTLSWait); // note: without wait time tls can not be detected, same as it was with proxy
+#else
+	return false;
 #endif
 }
 
-#if defined(USE_TLS_PROXY)
-
-void cAsyncSocketServer::StopProxy(int code)
+bool cAsyncSocketServer::HasTLS() const
 {
-	if (Log(0))
-		LogStream() << "Stopping TLS proxy" << endl;
-
-	VH_ProxySetLog(false); // prevents log flood
-	VH_ProxyStop(code);
+	return (ExternalTLS() || NativeTLS());
 }
-
-#elif defined(USE_FEARTLS_PROXY)
-
-void cAsyncSocketServer::StopProxy(int code)
-{
-	VH_FearStop(code);
-	exit(code); // todo: crash hack, dont know what the problem is
-}
-
-#endif
 
 bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bool UDP*/)
 {
@@ -948,11 +934,6 @@ bool cAsyncSocketServer::ListenWithConn(cAsyncConn *ListenSock, int OnPort/*, bo
 		return false;
 
 	string addr = mAddr;
-
-#if defined(USE_TLS_PROXY) || defined(USE_FEARTLS_PROXY)
-	if (mTLSAddr.size() && mTLSPort)
-		addr = mTLSAddr;
-#endif
 
 	if (!ListenSock->ListenOnPort(OnPort, addr.c_str(), mAcceptNum/*, UDP*/)) {
 		if (Log(0)) {

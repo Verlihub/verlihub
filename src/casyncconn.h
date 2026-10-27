@@ -31,21 +31,18 @@
 #include "ctime.h"
 #include "cconnbase.h"
 #include "cprotocol.h"
+#include "ctlssession.h"
 
 //#ifndef _WIN32
 	#include <netinet/in.h>
 //#endif
 
-/*
-#ifdef USE_SSL_CONNECTS
-	#include <openssl/ssl.h>
-#endif
-*/
 
 #include <string>
 #include <list>
 #include <vector>
 #include <atomic>
+#include <memory>
 
 using namespace std;
 
@@ -496,12 +493,6 @@ namespace nVerliHub {
 					return mSockDesc;
 				}
 
-			/*
-			#ifdef USE_SSL_CONNECTS
-				// ssl connection
-				SSL *mSSLConn;
-			#endif
-			*/
 
 				/**
 				 * Write the given data into the output buffer.
@@ -516,8 +507,24 @@ namespace nVerliHub {
 				// states that client supports zlib compression
 				bool mZLibFlag;
 
-				// tls proxy
+				// tls version, "0.0" when external proxy says connection is not encrypted, empty when unknown
 				string mTLSVer;
+
+			#ifdef USE_TLS
+				/// Start tls on this connection, data that is read and written after this is decrypted and encrypted.
+				bool StartTLS(ssl_ctx_st *ctx);
+
+				bool IsTLS() const
+				{
+					return (mTLS != nullptr);
+				}
+
+				/// Called when tls handshake is done, mTLSVer is already set, by default it lets server start connection.
+				virtual void OnTLSReady();
+
+				/// Result of handshake that was done on worker thread, called by server on main thread.
+				void TLSResult(bool good, const string &plain, const string &out, const string &err);
+			#endif
 				bool SetSecConn(const string &addr, string &vers);
 				bool SetUserIP(const string &addr);
 
@@ -555,8 +562,21 @@ namespace nVerliHub {
 				/// Use it to find connection again when result of work on other thread comes back.
 				const unsigned long long mConnID = ++sConnIDCounter;
 
-				/// Connection is started only after host name lookup is done, input is not read until then.
-				bool mHostWait = false;
+				/// What connection waits for before it is started, see tStartWait, connection is started when nothing is left.
+				enum tStartWait
+				{
+					eSW_HOST = 1 << 0, // host name lookup
+					eSW_DETECT = 1 << 1, // first data, to see if client starts tls
+					eSW_HANDSHAKE = 1 << 2 // tls handshake
+				};
+
+				unsigned int mStartWait = 0;
+
+				/// Input is not read while connection waits only for host name, tls detection and handshake need input.
+				bool InputParked() const
+				{
+					return ((mStartWait & eSW_HOST) && !(mStartWait & (eSW_DETECT | eSW_HANDSHAKE)));
+				}
 
 			protected:
 				/// Socket descriptor.
@@ -669,6 +689,30 @@ namespace nVerliHub {
 				* @return Number of sent bytes
 				*/
 				int SendAll(const char *buf, size_t &len);
+
+				// add data to final send buffer, encrypt it when connection uses tls
+				bool AppendSend(const char *data, size_t len);
+
+			#ifdef USE_TLS
+				std::shared_ptr<cTLSSession> mTLS; // note: tls session, null when connection is not encrypted, worker that does handshake holds it too
+
+				/*
+					while worker thread does handshake, this thread does not touch session
+					received data waits in queue and data to send waits in hold, both are handled when result is back
+				*/
+				bool mTLSBusy = false;
+				string mTLSQueue;
+				string mTLSHold;
+
+				// decrypt received data in place of shared read buffer
+				int TLSRead(int len);
+
+				// handle result of feeding session, decrypted data is put into read buffer, false on error when connection is closed
+				bool TLSFed(bool was_ready, bool good, const string &plain, const string &out, const string &err);
+
+				// feed data that came while worker had session
+				void TLSFeedQueue();
+			#endif
 			private:
 				/// Pointer to a line in the buffer.
 				/// The string is stored by ReadLineLocal() call and then fetched with GetLine() call.

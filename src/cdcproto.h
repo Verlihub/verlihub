@@ -195,6 +195,7 @@ protected:
 
 	// tls proxy
 	int DCC_MyIP(cMessageDC *msg, nSocket::cConnDC *conn);
+	bool MyIPAllowed(nSocket::cConnDC *conn); // note: $MyIP is accepted only from external tls proxy
 
 	// ctm2hub
 	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);

@@ -78,11 +78,11 @@ Supported CMake options
 	example:
 		-DPLUGIN_INSTALL_DIR=lib64/vh_plugins
 
--DUSE_TLS_PROXY=ON (default: OFF)
-	build go tls proxy
+-DUSE_TLS=OFF (default: ON)
+	build without tls support
 
--DUSE_FEARTLS_PROXY=ON (default: OFF)
-	use feartls proxy
+-DUSE_EPOLL=OFF (default: ON)
+	use poll instead of epoll connection chooser
 
 ===========
 End of file
