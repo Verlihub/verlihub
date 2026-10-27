@@ -60,6 +60,9 @@ cConnDC::~cConnDC()
 		delete mRegInfo;
 		mRegInfo = NULL;
 	}
+
+	if (mZoneWaitSent && Server()) // note: connection never got zone, for example failed tls handshake, count it to default zone of other users
+		Server()->mUploadZone[0].Insert(Server()->mTime, mZoneWaitSent);
 }
 
 bool cConnDC::SetUser(cUser *usr)
@@ -84,6 +87,35 @@ bool cConnDC::SetUser(cUser *usr)
 	return true;
 }
 
+void cConnDC::OnReceived(size_t len)
+{
+	cServerDC *serv = Server();
+
+	if (!serv)
+		return;
+
+	serv->mDownloadZone.Insert(serv->mTime, len);
+	serv->mProtoTotal[0] += len; // add total download
+}
+
+void cConnDC::OnSent(size_t len)
+{
+	cServerDC *serv = Server();
+
+	if (!serv)
+		return;
+
+	serv->mProtoTotal[1] += len; // add total upload
+
+	if ((mGeoZone < 0) || (mGeoZone > USER_ZONES)) { // note: zone is not set yet before connection is started, for example during tls handshake
+		mZoneWaitSent += len;
+		return;
+	}
+
+	serv->mUploadZone[mGeoZone].Insert(serv->mTime, len + mZoneWaitSent); // calculate upload bandwidth in real time
+	mZoneWaitSent = 0;
+}
+
 int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 {
 	if (!mWritable)
@@ -102,17 +134,10 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 			Server()->mNetOutLog << len << ": " << data.substr(0, 100) << endl;
 	}
 
-	int ret = Write(data, Flush);
+	int ret = Write(data, Flush); // note: upload is counted in OnSent() with everything that goes to socket
 
 	if ((Server()->mTime.Sec() - mTimeLastAttempt.Sec()) >= 2) // delay 2 seconds
 		mTimeLastAttempt = Server()->mTime;
-
-	if (ret > 0) { // calculate upload bandwidth in real time
-		//Server()->mUploadZone[mGeoZone].Dump();
-		Server()->mUploadZone[mGeoZone].Insert(Server()->mTime, ret);
-		//Server()->mUploadZone[mGeoZone].Dump();
-		Server()->mProtoTotal[1] += ret; // add total upload
-	}
 
 	if (AddPipe)
 		data.erase(len - 1, 1);

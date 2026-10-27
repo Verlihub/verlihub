@@ -303,6 +303,10 @@ namespace nVerliHub {
 				 */
 				virtual int OnTimer(const cTime &now);
 
+				// count real network traffic of connection to hub totals
+				virtual void OnReceived(size_t len);
+				virtual void OnSent(size_t len);
+
 				/**
 				 * Reset login status flag and set a new value.
 				 * @param statusFlag Status flag.
@@ -407,6 +411,7 @@ namespace nVerliHub {
 				void ResetGeo(); // reset all
 				void SetGeoZone(); // country code zone
 				int mGeoZone;
+				unsigned long mZoneWaitSent = 0; // note: bytes sent before zone was set, they are added to zone when it is known
 
 				/// Reason of why connection was closed.
 				int mCloseReason;

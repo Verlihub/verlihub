@@ -27,6 +27,8 @@
 * Fixed: Poll connection chooser added up timeouts of every 1024 sockets, which delayed active connections on big hubs
 * Fixed: Data past end of output buffer could be sent when compressed data was missing ending pipe
 * Fixed: Command $MyIP is treated as unknown unless it comes once from enabled external TLS proxy
+* Fixed: Total download and upload show real network traffic, including TLS and data that was sent later from output buffer
+* Fixed: Upload statistics wrote outside of zone table for data sent before user zone was set, now it is added to zone of user when it is known
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Old thread classes cThread, cWorkerThread, cThreadWork and cMutex
 * Removed: Built-in Go TLS proxy and FearTLS library, with configurations tls_listen_port and tls_buf_size

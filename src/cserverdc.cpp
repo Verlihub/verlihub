@@ -1158,9 +1158,7 @@ string * cServerDC::FactoryString(cAsyncConn *conn)
 
 void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 {
-	size_t len = (*str).size() + 1;
-	this->mDownloadZone.Insert(this->mTime, len);
-	this->mProtoTotal[0] += len;
+	size_t len = (*str).size() + 1; // note: download is counted in cConnDC::OnReceived() with everything that comes from socket
 
 	if (conn->Log(4))
 		conn->LogStream() << "IN [" << len << "]: " << (*str) << '|' << endl;

@@ -1,0 +1,1 @@
+* zLib: data that does not end with pipe is not compressed and stays in flush buffer until next write, also timer flush can not send it, see "Missing ending pipe in compress data" in cAsyncConn::Write()

@@ -425,6 +425,13 @@ namespace nVerliHub {
 				 */
 				virtual int OnTimer(const cTime &now);
 
+				/// Called with number of bytes that were received from socket or sent to it, this is real network traffic, with tls and zlib.
+				virtual void OnReceived(size_t)
+				{}
+
+				virtual void OnSent(size_t)
+				{}
+
 				/**
 				 * This event is trigger every N seconds by cAsyncSocketServer::OnTimerBase()
 				 * that handles all socket connections to the server.

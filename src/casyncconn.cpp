@@ -400,6 +400,8 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 		else
 			mTimeLastIOAction.Get();
 
+		OnReceived(buf_len); // note: before decrypting, so tls data is counted too
+
 	#ifdef USE_TLS
 		if ((mStartWait & eSW_DETECT) && mxServer) { // note: first data decides, client that wants tls starts handshake at once
 			if ((msBuffer[0] == 0x16) && ((buf_len < 2) || (msBuffer[1] == 0x03)) && StartTLS(mxServer->mTLSContext.Get())) {
@@ -1156,7 +1158,12 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
 
-	if (SendAll(send_buf, calc_size) == -1) { // try to send as much data as possible
+	const int send_res = SendAll(send_buf, calc_size); // try to send as much data as possible
+
+	if (calc_size) // note: bytes that really went to socket, after compression and encryption
+		OnSent(calc_size);
+
+	if (send_res == -1) {
 		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
 			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << errno << '=' << strerror(errno) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
 
