@@ -81,6 +81,7 @@ namespace nVerliHub {
 
 vector<char> cAsyncConn::msBuffer(MAX_MESS_SIZE + 1); // todo: use dynamic grow
 unsigned long cAsyncConn::sSocketCounter = 0;
+std::atomic<unsigned long long> cAsyncConn::sConnIDCounter{0};
 
 cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incoming connection
 	cObj("cAsyncConn"),
@@ -136,10 +137,6 @@ cAsyncConn::cAsyncConn(int desc, cAsyncSocketServer *s, tConnType ct): // incomi
 			char *temp = inet_ntoa(addr_in->sin_addr);
 			mAddrIP = temp; // ip address
 			cBanList::Ip2Num(mAddrIP, mNumIP); // not validated
-
-			if (mxServer && mxServer->mUseDNS) // host name
-				DNSLookup();
-
 			mAddrPort = ntohs(addr_in->sin_port); // port number
 
 			if (getsockname(mSockDesc, &saddr, &addr_size) == 0) { // get server address and port that user is connected to
@@ -1066,7 +1063,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		if (serv && ok) { // buffer overfill protection, only on registered connections
 			serv->mConnChooser.OptIn(this, eCC_OUTPUT); // choose the connection to send the rest of data as soon as possible
 
-			if (buf_size < serv->mC.max_unblock_size) { // if buffer size is smaller than unblock size, allow read operation on the connection
+			if (!mHostWait && (buf_size < serv->mC.max_unblock_size)) { // if buffer size is smaller than unblock size, allow read operation on the connection, note: input stays blocked while waiting for host name
 				serv->mConnChooser.OptIn(this, eCC_INPUT);
 
 				if (Log(5)) {
@@ -1159,11 +1156,7 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 	mNumIP = num;
 	mAddrIP = addr;
 	mIP = inet_addr(addr.c_str());
-
-	if (mxServer && mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
-		mAddrHost.clear();
-		DNSLookup();
-	}
+	mAddrHost.clear(); // note: host name is looked up when connection is started
 
 	if (vers.size() == 1) {
 		if (vers[0] == 'S')
@@ -1189,6 +1182,7 @@ bool cAsyncConn::SetUserIP(const string &addr)
 	mNumIP = num;
 	mAddrIP = addr;
 	mIP = inet_addr(addr.c_str());
+	mAddrHost.clear(); // note: old host belongs to old ip
 
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
@@ -1196,10 +1190,8 @@ bool cAsyncConn::SetUserIP(const string &addr)
 		if (serv) // send userip to operators
 			serv->ShowUserIP(this);
 
-		if (mxServer->mUseDNS && (mAddrHost.empty() || (mAddrHost == "localhost"))) {
-			mAddrHost.clear();
+		if (mxServer->mUseDNS && !mxServer->LookupHost(this, false)) // note: lookup on this thread when workers are not available
 			DNSLookup();
-		}
 	}
 
 	return true;

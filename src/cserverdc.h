@@ -45,7 +45,7 @@
 #include "cusercollection.h"
 #include "cvhpluginmgr.h"
 #include "cmeanfrequency.h"
-#include "cworkerthread.h"
+#include "cworkerpool.h"
 #include "czlib.h"
 #include "cconndc.h"
 
@@ -407,27 +407,15 @@ class cServerDC : public cAsyncSocketServer
 		bool DelRobot(cUserRobot *robot);
 
 		/**
-		* Register the hub to the given hublist.
-		* @param host The address of hublist.
-		* @param port The port.
-		* @param NickForReply The nickname of the user to send the result.
-		* @return Always one.
-		*/
-		int DoRegisterInHublist(string host, unsigned int port, string reply);
-
-		/**
-		* Register the hub to the given hublist.
-		*
-		* This method does the same thing of DoRegisterInHublist() but it is asynchronous.
-		* @param host The address of hublist.
+		* Register the hub to the given hublists on hublist thread.
+		* @param host The addresses of hublists separated by space.
 		* @param port The port.
 		* @param conn The user connection to send the result.
-		* @return One if the operation can be added and processed by thread or zero otherwise.
+		* @return True if registration is started or false otherwise.
 		*/
 		bool RegisterInHublist(string host, unsigned int port, cConnDC *conn);
 
-		// update check
-		int DoCheckForUpdates(bool git, string reply = "");
+		// update check on update check thread
 		bool CheckForUpdates(bool git, cConnDC *conn = NULL);
 
 		/**
@@ -698,8 +686,45 @@ class cServerDC : public cAsyncSocketServer
 		bool mReloadNow;
 
 protected: // Protected methods
-	cWorkerThread mHublistReg; // hublist registration thread
-	cWorkerThread mUpdateCheck; // update check thread
+	/*
+		hublist registration and update check have their own threads, they can take long time and must not hold up other work
+		note: they run without access to hub state, everything is copied before and result is handled on main thread
+	*/
+	nThread::cWorkerPool mHublistReg;
+	nThread::cWorkerPool mUpdateCheck;
+
+	// hublist registration data, copied on main thread
+	struct sHublistData
+	{
+		string mHosts;
+		unsigned int mPort = 0;
+		string mHubName;
+		string mHubHost;
+		string mHubDesc;
+		unsigned __int64 mMinShare = 0;
+		unsigned int mUsers = 0;
+		unsigned __int64 mTotalShare = 0;
+		bool mSendMinShare = false;
+		bool mSendListHost = false;
+	};
+
+	// result of registration in single hublist
+	enum tHublistResult
+	{
+		eHLR_DONE,
+		eHLR_CONNECT,
+		eHLR_READ,
+		eHLR_PROTOCOL,
+		eHLR_SEND
+	};
+
+	using tHublistResults = vector<pair<string, tHublistResult>>;
+
+	static tHublistResults DoRegisterInHublist(const sHublistData &data); // note: runs on hublist thread
+	void OnHublistDone(const tHublistResults &results, unsigned int port, const string &reply);
+
+	static unsigned int DoCheckForUpdates(bool git, string &ver); // note: runs on update check thread, returns result code
+	void OnUpdateCheckDone(unsigned int code, const string &ver, const string &reply);
 
 	/**
 	* This method is called when user is logged in.

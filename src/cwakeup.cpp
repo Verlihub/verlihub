@@ -1,0 +1,115 @@
+/*
+	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
+
+	Verlihub is free software; You can redistribute it
+	and modify it under the terms of the GNU General
+	Public License as published by the Free Software
+	Foundation, either version 3 of the license, or at
+	your option any later version.
+
+	Verlihub is distributed in the hope that it will be
+	useful, but without any warranty, without even the
+	implied warranty of merchantability or fitness for
+	a particular purpose. See the GNU General Public
+	License for more details.
+
+	Please see https://www.gnu.org/licenses/ for a copy
+	of the GNU General Public License.
+*/
+
+#include "cwakeup.h"
+#include <cerrno>
+#include <fcntl.h>
+#include <unistd.h>
+
+namespace nVerliHub {
+	namespace nSocket {
+
+static bool SetNonBlockExec(int fd)
+{
+	const int flags = fcntl(fd, F_GETFL, 0);
+
+	if ((flags < 0) || (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0))
+		return false;
+
+	return (fcntl(fd, F_SETFD, FD_CLOEXEC) == 0);
+}
+
+cWakeup::~cWakeup()
+{
+	Close();
+}
+
+bool cWakeup::Open()
+{
+	if (IsOpen())
+		return true;
+
+	int fds[2];
+
+	if (pipe(fds) != 0)
+		return false;
+
+	if (!SetNonBlockExec(fds[0]) || !SetNonBlockExec(fds[1])) {
+		::close(fds[0]);
+		::close(fds[1]);
+		return false;
+	}
+
+	mRead = fds[0];
+	mWrite = fds[1];
+	mPending = false;
+	return true;
+}
+
+void cWakeup::Close()
+{
+	if (mRead != INVALID_SOCKET) {
+		::close(mRead);
+		mRead = INVALID_SOCKET;
+	}
+
+	if (mWrite != INVALID_SOCKET) {
+		::close(mWrite);
+		mWrite = INVALID_SOCKET;
+	}
+
+	mPending = false;
+}
+
+void cWakeup::Signal()
+{
+	if ((mWrite == INVALID_SOCKET) || mPending.exchange(true)) // note: already signaled and not cleared yet
+		return;
+
+	const char byte = 1;
+	ssize_t res;
+
+	do {
+		res = ::write(mWrite, &byte, 1);
+	} while ((res < 0) && (errno == EINTR));
+
+	// note: eagain means pipe is full, which means main loop will wake up anyway
+}
+
+void cWakeup::Clear()
+{
+	if (mRead != INVALID_SOCKET) {
+		char buf[64];
+		ssize_t res;
+
+		do {
+			res = ::read(mRead, buf, sizeof(buf));
+		} while ((res > 0) || ((res < 0) && (errno == EINTR)));
+	}
+
+	/*
+		note: clear flag only after draining, otherwise byte written by signal in between is drained while flag stays set, and all next signals are lost
+		signal that comes before this line is not lost, because caller processes everything right after this call
+	*/
+	mPending = false;
+}
+
+	}; // namespace nSocket
+}; // namespace nVerliHub

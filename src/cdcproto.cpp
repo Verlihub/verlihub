@@ -3512,7 +3512,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (0 > mS->OnNewConn(conn)) {
+	if (0 > mS->StartConn(conn)) {
 		mS->delConnection(conn);
 		return -1;
 	}

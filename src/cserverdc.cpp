@@ -48,7 +48,6 @@
 #include "cbanlist.h"
 #include "ckicklist.h"
 #include "cpenaltylist.h"
-#include "cthreadwork.h"
 #include "stringutils.h"
 #include "cconntypes.h"
 #include "cdcconsole.h"
@@ -236,8 +235,7 @@ cServerDC::~cServerDC()
 	if (Log(1))
 		LogStream() << "Destructor cServerDC" << endl;
 
-	//mHublistReg.StopAndDel();
-	//mUpdateCheck.StopAndDel();
+	StopWorkers(); // note: our pools are members of this class, stop them before they are destroyed
 
 	close(); // close all remaining connections
 	cUser *user;
@@ -2015,57 +2013,26 @@ unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 	return u;
 }
 
-int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply) // note: threaded function
+cServerDC::tHublistResults cServerDC::DoRegisterInHublist(const sHublistData &data) // note: runs on hublist thread, dont touch hub state here
 {
-	unsigned __int64 min_share = this->mC.min_share; // prepare
-
-	if (this->mC.min_share_use_hub > min_share)
-		min_share = this->mC.min_share_use_hub;
-
-	char pipe = '|';
+	const char pipe = '|';
+	tHublistResults results;
+	istringstream is(data.mHosts);
+	ostringstream to_serv;
+	string curhost, lock, key;
 	size_t pos;
-	ostringstream to_serv, to_user;
-	istringstream is(host);
-	string curhost, lock, key, hubhost = this->mC.hub_host;
 
-	if (hubhost.size() > 2) { // remove protocol
-		pos = hubhost.find("://");
+	while (curhost.clear(), is >> curhost, curhost.size()) {
+		cHTTPConn hublist(curhost, data.mPort); // connect, note: closed by destructor
+		tHublistResult res = eHLR_CONNECT;
 
-		if (pos != hubhost.npos)
-			hubhost.erase(0, pos + 3);
-	}
-
-	if (hubhost.size()) {
-		pos = hubhost.find(':');
-
-		if ((pos == hubhost.npos) && (this->mPort != 411)) // add port
-			hubhost.append(':' + StringFrom(this->mPort));
-	}
-
-	cHTTPConn *pHubList;
-	to_user << _("Hublist registration results") << ":\r\n\r\n";
-
-	while (curhost = "", is >> curhost, curhost.size() > 0) {
-		to_user << autosprintf(_("Sending information to: %s:%d"), curhost.c_str(), port) << " .. ";
-		pHubList = new cHTTPConn(curhost, port); // connect
-
-		if (!pHubList) {
-			to_user << _("Error creating socket") << "\r\n";
-			continue;
-		}
-
-		if (!pHubList->mGood) {
-			to_user << _("Connection error") << "\r\n";
-			pHubList->Close();
-			delete pHubList;
-			pHubList = NULL;
-			continue;
-		}
-
-		if (pHubList->Read() > 0) {
+		if (hublist.mGood) {
+			res = eHLR_READ;
 			lock.clear();
 
-			if (pHubList->GetBuf(lock) > 0) {
+			if ((hublist.Read() > 0) && (hublist.GetBuf(lock) > 0)) {
+				res = eHLR_PROTOCOL;
+
 				if (lock.find(pipe) != lock.npos) {
 					key.clear();
 
@@ -2079,52 +2046,69 @@ int cServerDC::DoRegisterInHublist(string host, unsigned int port, string reply)
 						cDCProto::Lock2Key(lock, key);
 					}
 
-					this->mP.Create_Key(lock, key);
 					to_serv.str("");
 					to_serv.clear();
-					to_serv << lock << pipe; // create registration data
-					to_serv << this->mC.hub_name << pipe;
-					to_serv << hubhost << pipe;
+					to_serv << "$Key " << key << pipe; // create registration data
+					to_serv << data.mHubName << pipe;
+					to_serv << data.mHubHost << pipe;
 
-					if (this->mC.hublist_send_minshare)
-						to_serv << "[MINSHARE:" << StringFrom(min_share) << "MB] ";
+					if (data.mSendMinShare)
+						to_serv << "[MINSHARE:" << StringFrom(data.mMinShare) << "MB] ";
 
-					to_serv << this->mC.hub_desc << pipe;
-					to_serv << this->mUserList.Size() << pipe;
-					to_serv << this->mTotalShare << pipe;
+					to_serv << data.mHubDesc << pipe;
+					to_serv << data.mUsers << pipe;
+					to_serv << data.mTotalShare << pipe;
 
-					if (this->mC.hublist_send_listhost) // hublist host with port
-						to_serv << curhost << ':' << StringFrom(port) << pipe;
+					if (data.mSendListHost) // hublist host with port
+						to_serv << curhost << ':' << StringFrom(data.mPort) << pipe;
 
-					if ((pHubList->Write(to_serv.str()) > 0) && pHubList->mGood) // send it
-						to_user << _("Registration done") << "\r\n";
-					else
-						to_user << _("Send error") << "\r\n";
-				} else {
-					to_user << _("Protocol error") << "\r\n";
+					res = (((hublist.Write(to_serv.str()) > 0) && hublist.mGood) ? eHLR_DONE : eHLR_SEND); // send it
 				}
-			} else {
-				to_user << _("Read error") << "\r\n";
 			}
-		} else {
-			to_user << _("Read error") << "\r\n";
 		}
 
-		pHubList->Close();
-		delete pHubList;
-		pHubList = NULL;
+		results.emplace_back(curhost, res);
 	}
 
-	if (reply.size()) {
-		cUser *user = this->mUserList.GetUserByNick(reply);
+	return results;
+}
 
-		if (user && user->mxConn && user->mInList) {
-			to_user << "\r\n" << _("Finished registering in hublists.");
-			this->DCPublicHS(to_user.str(), user->mxConn);
+void cServerDC::OnHublistDone(const tHublistResults &results, unsigned int port, const string &reply)
+{
+	cUser *user = mUserList.GetUserByNick(reply);
+
+	if (!user || !user->mxConn || !user->mInList)
+		return;
+
+	ostringstream os;
+	os << _("Hublist registration results") << ":\r\n\r\n";
+
+	for (const auto &res: results) {
+		os << autosprintf(_("Sending information to: %s:%d"), res.first.c_str(), port) << " .. ";
+
+		switch (res.second) {
+			case eHLR_DONE:
+				os << _("Registration done");
+				break;
+			case eHLR_CONNECT:
+				os << _("Connection error");
+				break;
+			case eHLR_READ:
+				os << _("Read error");
+				break;
+			case eHLR_PROTOCOL:
+				os << _("Protocol error");
+				break;
+			case eHLR_SEND:
+				os << _("Send error");
+				break;
 		}
+
+		os << "\r\n";
 	}
 
-	return 0; // note: always return 0
+	os << "\r\n" << _("Finished registering in hublists.");
+	DCPublicHS(os.str(), user->mxConn);
 }
 
 bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
@@ -2152,40 +2136,64 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 			reply.assign(conn->mpUser->mNick);
 	}
 
-	string shost;
-	shost.assign(host);
-	unsigned int sport = port;
-	cThreadWork *work = new tThreadWork3T<cServerDC, string, unsigned int, string>(shost, sport, reply, this, &nVerliHub::nSocket::cServerDC::DoRegisterInHublist);
+	sHublistData data; // note: copy everything that registration needs, it runs on other thread
+	data.mHosts = host;
+	data.mPort = port;
+	data.mHubName = mC.hub_name;
+	data.mHubDesc = mC.hub_desc;
+	data.mMinShare = mC.min_share;
 
-	if (!work) {
-		if (conn)
-			DCPublicHS(_("Failed to create new working thread."), conn);
+	if (mC.min_share_use_hub > data.mMinShare)
+		data.mMinShare = mC.min_share_use_hub;
 
-		return false;
+	data.mUsers = mUserList.Size();
+	data.mTotalShare = mTotalShare;
+	data.mSendMinShare = mC.hublist_send_minshare;
+	data.mSendListHost = mC.hublist_send_listhost;
+	data.mHubHost = mC.hub_host;
+
+	if (data.mHubHost.size() > 2) { // remove protocol
+		const size_t pos = data.mHubHost.find("://");
+
+		if (pos != data.mHubHost.npos)
+			data.mHubHost.erase(0, pos + 3);
 	}
 
-	if (mHublistReg.AddWork(work))
-		return true;
+	if (data.mHubHost.size() && (data.mHubHost.find(':') == data.mHubHost.npos) && (mPort != 411)) // add port
+		data.mHubHost.append(':' + StringFrom(mPort));
+
+	if (StartPool(mHublistReg, 1) && mHublistReg.IsIdle()) { // note: one registration at a time
+		const bool posted = mHublistReg.Post([this, data, reply]() -> nThread::cWorkerPool::tResult {
+			const tHublistResults results = DoRegisterInHublist(data);
+
+			if (reply.empty()) // note: nobody to report to
+				return nullptr;
+
+			const unsigned int list_port = data.mPort;
+			return [this, results, list_port, reply] { OnHublistDone(results, list_port, reply); };
+		});
+
+		if (posted)
+			return true;
+	}
 
 	if (conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
-	delete work;
-	work = NULL;
 	return false;
 }
 
-int cServerDC::DoCheckForUpdates(bool git, string reply) // note: threaded function
+unsigned int cServerDC::DoCheckForUpdates(bool git, string &ver) // note: runs on update check thread, dont touch hub state here
 {
-	cHTTPConn *pConn = new cHTTPConn(VER_CHECK_ADDR, VER_CHECK_PORT); // connect
+	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT); // connect, note: closed by destructor
 	unsigned int code = 0;
-	string ver;
+	ver.clear();
 
-	if (pConn && pConn->mGood) {
-		if (pConn->Request("", (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"), "", "")) {
+	if (conn.mGood) {
+		if (conn.Request("", (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"), "", "")) {
 			string data;
 
-			if (pConn->ParseReply(data) && (data.size() >= 7) && (data.size() <= 19)) { // we are expecting 1.22.333.4444
+			if (conn.ParseReply(data) && (data.size() >= 7) && (data.size() <= 19)) { // we are expecting 1.22.333.4444
 				ver = data;
 				string sv1, sv2, sv3, sv4;
 				size_t pos = data.find('.'); // v1
@@ -2263,9 +2271,11 @@ int cServerDC::DoCheckForUpdates(bool git, string reply) // note: threaded funct
 		code = 1;
 	}
 
-	pConn->Close();
-	delete pConn;
-	pConn = NULL;
+	return code;
+}
+
+void cServerDC::OnUpdateCheckDone(unsigned int code, const string &ver, const string &reply)
+{
 	ostringstream os;
 
 	if (code == 100) { // success
@@ -2295,8 +2305,6 @@ int cServerDC::DoCheckForUpdates(bool git, string reply) // note: threaded funct
 	} else if ((code == 100) && this->mOpChat) { // only if available
 		this->mOpChat->SendPMToAll(os.str(), NULL);
 	}
-
-	return 0; // note: always return 0
 }
 
 bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
@@ -2310,24 +2318,20 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 			reply.assign(conn->mpUser->mNick);
 	}
 
-	bool sgit = git;
-	cThreadWork *work = new tThreadWork2T<cServerDC, bool, string>(sgit, reply, this, &nVerliHub::nSocket::cServerDC::DoCheckForUpdates);
+	if (StartPool(mUpdateCheck, 1) && mUpdateCheck.IsIdle()) { // note: one check at a time
+		const bool posted = mUpdateCheck.Post([this, git, reply]() -> nThread::cWorkerPool::tResult {
+			string ver;
+			const unsigned int code = DoCheckForUpdates(git, ver);
+			return [this, code, ver, reply] { OnUpdateCheckDone(code, ver, reply); };
+		});
 
-	if (!work) {
-		if (conn)
-			DCPublicHS(_("Failed to create new working thread."), conn);
-
-		return false;
+		if (posted)
+			return true;
 	}
-
-	if (mUpdateCheck.AddWork(work))
-		return true;
 
 	if (conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
-	delete work;
-	work = NULL;
 	return false;
 }
 

@@ -33,8 +33,12 @@
 #include "cobj.h"
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
+#include "cworkerpool.h"
+#include "cwakeup.h"
 
 #include <list>
+#include <deque>
+#include <vector>
 
 /*
 #ifdef USE_SSL_CONNECTS
@@ -223,6 +227,28 @@ namespace nVerliHub {
 				/// Use reverse DNS lookup feature when there is a new connection.
 				int mUseDNS;
 
+				/// Number of worker threads for blocking or heavy work, 0 = number of cpu cores.
+				unsigned int mWorkerThreads;
+
+				/// Worker threads, their results are processed in main loop.
+				/// Posting fails when workers are not running, caller must then do the work itself.
+				nThread::cWorkerPool mWorkers;
+
+				/// Start new connection, when dns_lookup is enabled this happens only after host name is known.
+				/// @return Same as OnNewConn(), negative value means connection must be closed.
+				int StartConn(cAsyncConn *conn);
+
+				/// Look up host name on worker thread, when park is true connection is not started and its input is not read until result comes back.
+				/// @return False when lookup could not be queued, caller must then do it by itself.
+				bool LookupHost(cAsyncConn *conn, bool park);
+
+				/// Find connection by socket and id, returns null when connection is gone or socket is reused by other connection.
+				cAsyncConn* FindConn(tSocket sock, unsigned long long id);
+
+				/// Start extra worker pool for slow work that must not hold up jobs in mWorkers, its results are also processed in main loop.
+				/// Works only while main loop is running, pool is stopped together with mWorkers.
+				bool StartPool(nThread::cWorkerPool &pool, unsigned int threads, size_t max_jobs = 0);
+
 				/// The current time.
 				cTimePrint mTime;
 
@@ -340,9 +366,34 @@ namespace nVerliHub {
 
 			sTimers mT; // timer structure
 			int mRunResult; // stop code
+
+			/// Stop all worker pools, derived class must call this in its destructor when it owns pools.
+			void StopWorkers();
 		private:
 			/// Pointer to the connection that server is currently handling
 			cAsyncConn * mNowTreating;
+
+			/// Wakes up main loop when workers have results, note: workers must be stopped before this is closed.
+			cWakeup mWakeup;
+
+			bool StartWorkers();
+
+			/// All running pools whose results are processed in main loop, mWorkers included.
+			std::vector<nThread::cWorkerPool*> mPools;
+
+			/// Connections waiting for host name, in order of start time.
+			struct sHostWait
+			{
+				tSocket mSock;
+				unsigned long long mID;
+				long mStart;
+			};
+
+			std::deque<sHostWait> mHostWaitList;
+
+			void OnHostResult(tSocket sock, unsigned long long id, const string &addr, const string &host);
+			void HostWaitDone(cAsyncConn *conn);
+			void CheckHostWait(const cTime &now);
 		};
 		/// @}
 

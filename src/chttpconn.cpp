@@ -32,7 +32,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h> // sockaddr_in
 #include <sys/socket.h> // AF_INET
-#include <netdb.h> // gethostbyname
+#include <netdb.h> // getaddrinfo
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -233,23 +233,23 @@ int cHTTPConn::Connect(const string &host, const int port)
 	cTime tout(5.0);
 	SetOpt(SO_RCVTIMEO, &tout, sizeof(timeval));
 	SetOpt(SO_SNDTIMEO, &tout, sizeof(timeval));
-	struct hostent *name = gethostbyname(host.c_str());
-	struct sockaddr_in dest;
+	struct addrinfo hints, *res = NULL;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; // note: socket is ipv4
+	hints.ai_socktype = SOCK_STREAM;
 
-	if (name) {
-		dest.sin_family = AF_INET;
-		dest.sin_port = htons(port);
-		dest.sin_addr.s_addr = *(unsigned*)(name->h_addr_list[0]);
-		memset(&(dest.sin_zero), '\0', 8);
+	if ((getaddrinfo(host.c_str(), NULL, &hints, &res) != 0) || !res) // note: thread safe, unlike gethostbyname, because this runs on hublist and update threads
+		return -1;
 
-		if (connect(mSock, (struct sockaddr*)&dest, sizeof(struct sockaddr)) == -1)
-			return -1;
+	struct sockaddr_in dest = *(struct sockaddr_in*)res->ai_addr;
+	freeaddrinfo(res);
+	dest.sin_port = htons(port);
 
-		mGood = true;
-		return 0;
-	}
+	if (connect(mSock, (struct sockaddr*)&dest, sizeof(dest)) == -1)
+		return -1;
 
-	return -1;
+	mGood = true;
+	return 0;
 }
 
 int cHTTPConn::Send(const char *buf, size_t &len)

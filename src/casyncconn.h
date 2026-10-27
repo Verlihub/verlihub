@@ -45,6 +45,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <atomic>
 
 using namespace std;
 
@@ -186,6 +187,12 @@ namespace nVerliHub {
 				const string& AddrHost()
 				{
 					return mAddrHost;
+				}
+
+				/// Set host name that was looked up on other thread.
+				void SetAddrHost(const string &host)
+				{
+					mAddrHost = host;
 				}
 
 				/**
@@ -540,6 +547,16 @@ namespace nVerliHub {
 
 				/// Number of connections whit a socket.
 				static unsigned long sSocketCounter;
+
+				/// Last given connection id, atomic so connection can be safely created on any thread.
+				static std::atomic<unsigned long long> sConnIDCounter;
+
+				/// Unique connection id, never reused, unlike socket descriptor.
+				/// Use it to find connection again when result of work on other thread comes back.
+				const unsigned long long mConnID = ++sConnIDCounter;
+
+				/// Connection is started only after host name lookup is done, input is not read until then.
+				bool mHostWait = false;
 
 			protected:
 				/// Socket descriptor.

@@ -58,7 +58,6 @@ SET(VERLIHUB_HDRS
 	clog.h
 	cmeanfrequency.h
 	cmessagedc.h
-	cmutex.h
 	cmysql.h
 	cobj.h
 	cpcre.h
@@ -74,8 +73,6 @@ SET(VERLIHUB_HDRS
 	cserverdc.h
 	csetuplist.h
 	ctempfunctionbase.h
-	cthread.h
-	cthreadwork.h
 	ctime.h
 	ctimeout.h
 	ctrigger.h
@@ -84,7 +81,8 @@ SET(VERLIHUB_HDRS
 	cusercollection.h
 	cvhplugin.h
 	cvhpluginmgr.h
-	cworkerthread.h
+	cworkerpool.h
+	cwakeup.h
 	czlib.h
 	gettext.h
 	i18n.h
@@ -141,7 +139,6 @@ SET(VERLIHUB_SRCS
 	clog.cpp
 	cmeanfrequency.cpp
 	cmessagedc.cpp
-	cmutex.cpp
 	cmysql.cpp
 	cobj.cpp
 	cpcre.cpp
@@ -157,8 +154,6 @@ SET(VERLIHUB_SRCS
 	cserverdc.cpp
 	csetuplist.cpp
 	ctempfunctionbase.cpp
-	cthread.cpp
-	cthreadwork.cpp
 	ctime.cpp
 	ctimeout.cpp
 	ctrigger.cpp
@@ -167,7 +162,8 @@ SET(VERLIHUB_SRCS
 	cusercollection.cpp
 	cvhplugin.cpp
 	cvhpluginmgr.cpp
-	cworkerthread.cpp
+	cworkerpool.cpp
+	cwakeup.cpp
 	czlib.cpp
 	i18n.cpp
 	script_api.cpp

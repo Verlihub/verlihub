@@ -365,6 +365,7 @@ void cDCConf::AddVars()
 	Add("adv_conn_choose_timeout", mS.mChooseTimeOut, 10); // note: this is milliseconds
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
+	Add("adv_worker_threads", mS.mWorkerThreads, 2); // note: 0 = number of cpu cores, applied on hub start
 	Add("adv_max_upload_kbps", max_upload_kbps, 131072.);
 	Add("adv_max_outbuf_size", max_outbuf_size, (unsigned long)MAX_SEND_SIZE);
 	Add("adv_max_outfill_size", max_outfill_size, (unsigned long)MAX_SEND_FILL_SIZE);

@@ -32,12 +32,17 @@
 #else
 */
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 //#endif
 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <cerrno>
+#include <cstring>
 
 using namespace std;
 
@@ -49,6 +54,10 @@ namespace nVerliHub {
 	namespace nSocket {
 
 	//bool nSocket::cAsyncSocketServer::WSinitialized = false;
+
+	static constexpr size_t sWorkerMaxJobs = 10000; // note: posting fails when this many jobs are waiting
+	static constexpr size_t sWorkerMaxResults = 500; // note: maximum results processed in one main loop step
+	static constexpr long sHostWaitMax = 5; // note: seconds to wait for host name before connection is started without it
 
 cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	cObj("cAsyncSocketServer"),
@@ -66,6 +75,7 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mAcceptTry(0),
 	mMaxLineLength(0),
 	mUseDNS(0),
+	mWorkerThreads(2),
 	mFrequency(mTime, 90.0, 20),
 	mbRun(false),
 	mFactory(NULL),
@@ -120,6 +130,8 @@ cAsyncSocketServer::~cAsyncSocketServer()
 	#endif
 	*/
 
+	StopWorkers(); // note: in case main loop was never run or did not stop normally
+
 	vhLog(1) << "Allocated objects: " << cObj::GetCount() << endl;
 	vhLog(1) << "Unclosed sockets: " << cAsyncConn::sSocketCounter << endl;
 }
@@ -168,6 +180,8 @@ int cAsyncSocketServer::run()
 #endif
 */
 
+	StartWorkers();
+
 	while (mbRun) {
 		mTime.Get(); // note: always current time, dont modify this container anywhere
 		TimeStep();
@@ -175,6 +189,7 @@ int cAsyncSocketServer::run()
 		if (mTime >= (mT.main + timer_serv_period)) {
 			mT.main = mTime;
 			OnTimerBase(mTime);
+			CheckHostWait(mTime);
 		}
 
 		//#if !defined _WIN32
@@ -191,8 +206,62 @@ int cAsyncSocketServer::run()
 			mbRun = false;
 	}
 
+	StopWorkers(); // note: unprocessed results are dropped
 	vhLog(1) << "Main loop stop with code " << mRunResult << endl;
 	return mRunResult;
+}
+
+bool cAsyncSocketServer::StartWorkers()
+{
+	if (!mWakeup.IsOpen()) {
+		if (!mWakeup.Open()) {
+			vhLog(0) << "Failed to create wakeup pipe, worker threads are disabled: " << errno << " = " << strerror(errno) << endl;
+			return false;
+		}
+
+		mConnChooser.AddConn(&mWakeup);
+		mConnChooser.cConnChoose::OptIn(&mWakeup, tChEvent(eCC_INPUT | eCC_ERROR));
+	}
+
+	if (!StartPool(mWorkers, mWorkerThreads, sWorkerMaxJobs)) {
+		vhLog(0) << "Failed to start worker threads, they are disabled" << endl;
+		return false;
+	}
+
+	vhLog(1) << "Started worker threads: " << mWorkers.Threads() << endl;
+	return true;
+}
+
+bool cAsyncSocketServer::StartPool(nThread::cWorkerPool &pool, unsigned int threads, size_t max_jobs)
+{
+	if (pool.IsRunning())
+		return true;
+
+	if (!mWakeup.IsOpen()) // note: main loop is not running
+		return false;
+
+	pool.SetNotify([this] { mWakeup.Signal(); });
+
+	if (!pool.Start(threads, max_jobs))
+		return false;
+
+	if (find(mPools.begin(), mPools.end(), &pool) == mPools.end())
+		mPools.push_back(&pool);
+
+	return true;
+}
+
+void cAsyncSocketServer::StopWorkers()
+{
+	for (auto pool: mPools)
+		pool->Stop(); // note: joins all threads of pool, nothing can signal wakeup after this
+
+	mPools.clear();
+
+	if (mWakeup.IsOpen()) {
+		mConnChooser.DelConn(&mWakeup);
+		mWakeup.Close();
+	}
 }
 
 void cAsyncSocketServer::stop(int code, int delay)
@@ -277,8 +346,120 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 	if (mTLSAddr.size() && (mTLSForce || mTLSPort || (mTLSAddr == mAddr)) && (new_conn->AddrIP() == mTLSAddr)) // tls proxy, wait for myip command
 		return;
 
-	if (0 > OnNewConn(new_conn))
+	if (0 > StartConn(new_conn))
 		delConnection(new_conn);
+}
+
+int cAsyncSocketServer::StartConn(cAsyncConn *conn)
+{
+	if (mUseDNS && conn->AddrHost().empty()) {
+		if (LookupHost(conn, true))
+			return 0; // note: connection is started when host name is known
+
+		conn->DNSLookup(); // note: workers are not available, do it on this thread like before
+	}
+
+	return OnNewConn(conn);
+}
+
+bool cAsyncSocketServer::LookupHost(cAsyncConn *conn, bool park)
+{
+	if (!conn || !conn->ok)
+		return false;
+
+	const tSocket sock = (tSocket)(*conn);
+	const unsigned long long id = conn->mConnID;
+	const string addr = conn->AddrIP();
+
+	const bool posted = mWorkers.Post([this, sock, id, addr]() -> nThread::cWorkerPool::tResult { // note: runs on worker thread
+		string host;
+		struct sockaddr_in sa;
+		memset(&sa, 0, sizeof(sa));
+		sa.sin_family = AF_INET;
+
+		if (inet_pton(AF_INET, addr.c_str(), &sa.sin_addr) == 1) {
+			char name[NI_MAXHOST];
+
+			if (getnameinfo((struct sockaddr*)&sa, sizeof(sa), name, sizeof(name), NULL, 0, NI_NAMEREQD) == 0) // note: thread safe, unlike gethostbyaddr
+				host = name;
+		}
+
+		return [this, sock, id, addr, host] { OnHostResult(sock, id, addr, host); }; // note: runs on main thread
+	});
+
+	if (!posted)
+		return false;
+
+	if (park) {
+		conn->mHostWait = true;
+		mConnChooser.cConnChoose::OptOut((cConnBase*)conn, eCC_INPUT);
+		mHostWaitList.push_back({sock, id, mTime.Sec()});
+	}
+
+	return true;
+}
+
+cAsyncConn* cAsyncSocketServer::FindConn(tSocket sock, unsigned long long id)
+{
+	cConnBase *base = mConnChooser[sock];
+
+	if (!base || (base == &mWakeup))
+		return NULL;
+
+	cAsyncConn *conn = (cAsyncConn*)base; // note: everything else in chooser is connection
+	return ((conn->mConnID == id) ? conn : NULL);
+}
+
+void cAsyncSocketServer::OnHostResult(tSocket sock, unsigned long long id, const string &addr, const string &host)
+{
+	cAsyncConn *conn = FindConn(sock, id);
+
+	if (!conn || (conn->AddrIP() != addr)) // note: connection is gone or ip was changed meanwhile, then newer lookup is on its way
+		return;
+
+	if (host.size())
+		conn->SetAddrHost(host);
+
+	if (conn->mHostWait)
+		HostWaitDone(conn);
+}
+
+void cAsyncSocketServer::HostWaitDone(cAsyncConn *conn)
+{
+	conn->mHostWait = false;
+
+	if (!conn->ok) // note: connection is closing, it will be deleted in main loop
+		return;
+
+	mConnChooser.cConnChoose::OptIn((cConnBase*)conn, eCC_INPUT);
+
+	if (0 > OnNewConn(conn))
+		conn->CloseNow(); // note: dont delete here, we might be in the middle of connection loop
+}
+
+void cAsyncSocketServer::CheckHostWait(const cTime &now)
+{
+	while (mHostWaitList.size() && ((mHostWaitList.front().mStart + sHostWaitMax) <= now.Sec())) {
+		const sHostWait item = mHostWaitList.front();
+		mHostWaitList.pop_front();
+		cAsyncConn *conn = FindConn(item.mSock, item.mID);
+
+		if (conn && conn->mHostWait) { // note: lookup takes too long, start connection without host name, late result will still set it
+			if (conn->Log(2))
+				conn->LogStream() << "Host name lookup timed out" << endl;
+
+			HostWaitDone(conn);
+		}
+	}
+
+	while (mHostWaitList.size()) { // note: remove items that are already done from front of list
+		cAsyncConn *conn = FindConn(mHostWaitList.front().mSock, mHostWaitList.front().mID);
+
+		if (conn && conn->mHostWait)
+			break;
+
+		mHostWaitList.pop_front();
+	}
 }
 
 void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
@@ -437,6 +618,24 @@ void cAsyncSocketServer::TimeStep()
 	for (it = mConnChooser.begin(); it != mConnChooser.end();) {
 		res = (*it);
 		++it;
+
+		if (res.mConn == &mWakeup) { // note: not a real connection, workers have results for us
+			mWakeup.Clear();
+			bool more = false;
+
+			for (size_t i = 0; i < mPools.size(); i++) { // note: result is allowed to start new pool, dont use iterator
+				mPools[i]->RunResults(sWorkerMaxResults);
+
+				if (mPools[i]->ResultsQueued())
+					more = true;
+			}
+
+			if (more) // note: too many results, continue in next step
+				mWakeup.Signal();
+
+			continue;
+		}
+
 		mNowTreating = (cAsyncConn*)res.mConn;
 
 		if (!mNowTreating)
