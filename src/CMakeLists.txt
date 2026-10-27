@@ -83,6 +83,7 @@ SET(VERLIHUB_HDRS
 	cvhpluginmgr.h
 	cworkerpool.h
 	cwakeup.h
+	csocketcancel.h
 	czlib.h
 	gettext.h
 	i18n.h
@@ -164,6 +165,7 @@ SET(VERLIHUB_SRCS
 	cvhpluginmgr.cpp
 	cworkerpool.cpp
 	cwakeup.cpp
+	csocketcancel.cpp
 	czlib.cpp
 	i18n.cpp
 	script_api.cpp

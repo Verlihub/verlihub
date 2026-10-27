@@ -46,6 +46,7 @@
 #include "cvhpluginmgr.h"
 #include "cmeanfrequency.h"
 #include "cworkerpool.h"
+#include "csocketcancel.h"
 #include "czlib.h"
 #include "cconndc.h"
 
@@ -689,7 +690,10 @@ protected: // Protected methods
 	/*
 		hublist registration and update check have their own threads, they can take long time and must not hold up other work
 		note: they run without access to hub state, everything is copied before and result is handled on main thread
+		note: on hub stop their sockets are shut down through cancel, so they dont hold up the stop, next start registers again
 	*/
+	cSocketCancel mHublistCancel; // note: declared before pools, so it outlives their threads
+	cSocketCancel mUpdateCancel;
 	nThread::cWorkerPool mHublistReg;
 	nThread::cWorkerPool mUpdateCheck;
 
@@ -720,10 +724,10 @@ protected: // Protected methods
 
 	using tHublistResults = vector<pair<string, tHublistResult>>;
 
-	static tHublistResults DoRegisterInHublist(const sHublistData &data); // note: runs on hublist thread
+	static tHublistResults DoRegisterInHublist(const sHublistData &data, cSocketCancel &cancel); // note: runs on hublist thread
 	void OnHublistDone(const tHublistResults &results, unsigned int port, const string &reply);
 
-	static unsigned int DoCheckForUpdates(bool git, string &ver); // note: runs on update check thread, returns result code
+	static unsigned int DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel); // note: runs on update check thread, returns result code
 	void OnUpdateCheckDone(unsigned int code, const string &ver, const string &reply);
 
 	/**

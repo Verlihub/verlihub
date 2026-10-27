@@ -24,6 +24,7 @@
 #include "cobj.h"
 #include "ctime.h"
 #include "cconnbase.h"
+#include "csocketcancel.h"
 #include <string>
 #include <vector>
 
@@ -39,7 +40,7 @@ namespace nVerliHub {
 		{
 			public:
 				cHTTPConn(int sock = 0);
-				cHTTPConn(const string &host, int port);
+				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL); // note: cancel lets other thread abort blocking connection
 				virtual ~cHTTPConn();
 
 				size_t GetSize() const
@@ -89,6 +90,7 @@ namespace nVerliHub {
 				vector<char> mBuf; // note: http connections dont share same buffer
 				unsigned int mEnd;
 				cTime mClose;
+				cSocketCancel *mCancel = NULL;
 		};
 
 	}; // namespace nSocket

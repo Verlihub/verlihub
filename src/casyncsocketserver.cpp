@@ -253,8 +253,11 @@ bool cAsyncSocketServer::StartPool(nThread::cWorkerPool &pool, unsigned int thre
 
 void cAsyncSocketServer::StopWorkers()
 {
-	for (auto pool: mPools)
-		pool->Stop(); // note: joins all threads of pool, nothing can signal wakeup after this
+	for (auto pool: mPools) // note: first ask all pools to stop and abort their running work, so they finish at same time
+		pool->RequestStop();
+
+	for (auto pool: mPools) // note: then wait for threads, nothing can signal wakeup after this
+		pool->Stop();
 
 	mPools.clear();
 

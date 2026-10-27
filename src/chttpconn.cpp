@@ -66,14 +66,15 @@ cHTTPConn::cHTTPConn(int sock):
 	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 }
 
-cHTTPConn::cHTTPConn(const string &host, const int port):
+cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel):
 	mGood(false),
 	mWrite(true),
 	mSock(0),
 	mHost(host),
 	mPort(port),
 	mEnd(0),
-	mClose(0, 0)
+	mClose(0, 0),
+	mCancel(cancel)
 {
 	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 	Connect(host, port);
@@ -230,6 +231,9 @@ int cHTTPConn::Connect(const string &host, const int port)
 	if (mSock == INVALID_SOCKET)
 		return -1;
 
+	if (mCancel && !mCancel->Attach(mSock)) // note: already cancelled, dont even start
+		return -1;
+
 	cTime tout(5.0);
 	SetOpt(SO_RCVTIMEO, &tout, sizeof(timeval));
 	SetOpt(SO_SNDTIMEO, &tout, sizeof(timeval));
@@ -290,11 +294,12 @@ int cHTTPConn::Read()
 	if (!mGood || !mWrite)
 		return -1;
 
-	int len = 0, max = 0;
+	int len = 0;
 	mEnd = 0;
 
-	while (((len = recv(mSock, mBuf.data(), MAX_DATA, 0)) == -1) && ((errno == EAGAIN) || (errno == EINTR)) && (max++ <= 100))
-		::usleep(5);
+	do { // note: socket is blocking with receive timeout, eagain means timeout expired, so retry only when interrupted by signal
+		len = recv(mSock, mBuf.data(), MAX_DATA, 0);
+	} while ((len == -1) && (errno == EINTR));
 
 	if (len <= 0) {
 		/*
@@ -330,6 +335,9 @@ void cHTTPConn::Close()
 
 	if (mSock <= 0)
 		return;
+
+	if (mCancel) // note: must be detached before closing, so cancel can not shut down reused descriptor
+		mCancel->Detach();
 
 	TEMP_FAILURE_RETRY(::close(mSock));
 	mSock = INVALID_SOCKET;

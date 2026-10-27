@@ -227,6 +227,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mCtmToHubConf.mStart = false;
 	mCtmToHubConf.mNew = 0;
 
+	mHublistReg.SetOnStop([this] { mHublistCancel.Cancel(); }); // note: dont wait for hublists when hub stops
+	mUpdateCheck.SetOnStop([this] { mUpdateCancel.Cancel(); });
 	mPluginManager.LoadAll(); // load all plugins at last
 }
 
@@ -2013,7 +2015,7 @@ unsigned int cServerDC::Str2Period(const string &s, ostream &err)
 	return u;
 }
 
-cServerDC::tHublistResults cServerDC::DoRegisterInHublist(const sHublistData &data) // note: runs on hublist thread, dont touch hub state here
+cServerDC::tHublistResults cServerDC::DoRegisterInHublist(const sHublistData &data, cSocketCancel &cancel) // note: runs on hublist thread, dont touch hub state here
 {
 	const char pipe = '|';
 	tHublistResults results;
@@ -2022,8 +2024,8 @@ cServerDC::tHublistResults cServerDC::DoRegisterInHublist(const sHublistData &da
 	string curhost, lock, key;
 	size_t pos;
 
-	while (curhost.clear(), is >> curhost, curhost.size()) {
-		cHTTPConn hublist(curhost, data.mPort); // connect, note: closed by destructor
+	while (!cancel.IsCancelled() && (curhost.clear(), is >> curhost, curhost.size())) { // note: hub is stopping, dont continue with next hublist
+		cHTTPConn hublist(curhost, data.mPort, &cancel); // connect, note: closed by destructor
 		tHublistResult res = eHLR_CONNECT;
 
 		if (hublist.mGood) {
@@ -2163,8 +2165,10 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 		data.mHubHost.append(':' + StringFrom(mPort));
 
 	if (StartPool(mHublistReg, 1) && mHublistReg.IsIdle()) { // note: one registration at a time
+		mHublistCancel.Reset(); // note: safe, nothing is running
+
 		const bool posted = mHublistReg.Post([this, data, reply]() -> nThread::cWorkerPool::tResult {
-			const tHublistResults results = DoRegisterInHublist(data);
+			const tHublistResults results = DoRegisterInHublist(data, mHublistCancel);
 
 			if (reply.empty()) // note: nobody to report to
 				return nullptr;
@@ -2183,9 +2187,9 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 	return false;
 }
 
-unsigned int cServerDC::DoCheckForUpdates(bool git, string &ver) // note: runs on update check thread, dont touch hub state here
+unsigned int cServerDC::DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel) // note: runs on update check thread, dont touch hub state here
 {
-	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT); // connect, note: closed by destructor
+	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT, &cancel); // connect, note: closed by destructor
 	unsigned int code = 0;
 	ver.clear();
 
@@ -2319,9 +2323,11 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 	}
 
 	if (StartPool(mUpdateCheck, 1) && mUpdateCheck.IsIdle()) { // note: one check at a time
+		mUpdateCancel.Reset(); // note: safe, nothing is running
+
 		const bool posted = mUpdateCheck.Post([this, git, reply]() -> nThread::cWorkerPool::tResult {
 			string ver;
-			const unsigned int code = DoCheckForUpdates(git, ver);
+			const unsigned int code = DoCheckForUpdates(git, ver, mUpdateCancel);
 			return [this, code, ver, reply] { OnUpdateCheckDone(code, ver, reply); };
 		});
 
