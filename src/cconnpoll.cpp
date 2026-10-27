@@ -19,6 +19,7 @@
 */
 
 #include "cconnpoll.h"
+#include <cerrno>
 
 #if !USE_SELECT
 
@@ -31,8 +32,7 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-cConnPoll::cConnPoll():
-	mBlockSize(1024)
+cConnPoll::cConnPoll()
 {
 	mFDs.reserve(20480); // idea: number depends on open files limit for process
 }
@@ -175,27 +175,25 @@ bool cConnPoll::RevTest(tSocket sock)
 int cConnPoll::poll(int wp_sec)
 {
 //#if !defined _WIN32
-	int ret = 0, n = 0, done = 0, todo = mFDs.size(), tmp;
+	/*
+		note: all sockets in one call, it used to poll blocks of 1024 sockets with timeout for each block
+		so idle blocks added their timeouts together and delayed blocks that had data
+	*/
+	size_t todo = mFDs.size();
 
-	while (todo) {
-		tmp = todo;
+	if (todo > size_t(mLastSock + 1)) // note: entries above last socket are never used
+		todo = mLastSock + 1;
 
-		if (tmp > mBlockSize)
-			tmp = mBlockSize;
+	if (!todo)
+		return 0;
 
-		//TEMP_FAILURE_RETRY( // todo: TEMP_FAILURE_RETRY for the poll
-			ret = ::poll(&(mFDs[done]), tmp, wp_sec + 1);
-		//);
+	int ret;
 
-		if (ret < 0)
-			continue;
+	do {
+		ret = ::poll(mFDs.data(), todo, wp_sec + 1);
+	} while ((ret < 0) && (errno == EINTR));
 
-		todo -= tmp;
-		done += tmp;
-		n += ret;
-	}
-
-	return n;
+	return ((ret < 0) ? 0 : ret); // note: other errors used to loop forever
 /*
 #else
 	return 0;

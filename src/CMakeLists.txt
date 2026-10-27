@@ -33,6 +33,7 @@ SET(VERLIHUB_HDRS
 	cconfmysql.h
 	cconnbase.h
 	cconnchoose.h
+	cconnepoll.h
 	cconndc.h
 	cconnpoll.h
 	cconnselect.h
@@ -116,6 +117,7 @@ SET(VERLIHUB_SRCS
 	cconfigitembase.cpp
 	cconfmysql.cpp
 	cconnchoose.cpp
+	cconnepoll.cpp
 	cconndc.cpp
 	cconnpoll.cpp
 	cconnselect.cpp

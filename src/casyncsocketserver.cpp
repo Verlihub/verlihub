@@ -685,7 +685,9 @@ void cAsyncSocketServer::TimeStep()
 		return;
 	}
 
-	#if !USE_SELECT
+	#if USE_EPOLL
+		cConnEpoll::iterator it;
+	#elif !USE_SELECT
 		cConnChoose::iterator it;
 	#else
 		cConnSelect::iterator it;

@@ -23,7 +23,9 @@
 
 #include "cconnchoose.h"
 
-#if USE_SELECT
+#if USE_EPOLL
+	#include "cconnepoll.h"
+#elif USE_SELECT
 	#include "cconnselect.h"
 #else
 	#include "cconnpoll.h"
@@ -290,7 +292,10 @@ namespace nVerliHub {
 			tConnList mConnList;
 			tConnList mListList; // listening connections
 
-			#if !USE_SELECT
+			#if USE_EPOLL
+				/// Connection chooser for epoll.
+				cConnEpoll mConnChooser;
+			#elif !USE_SELECT
 				/// Connection chooser for poll.
 				cConnPoll mConnChooser;
 			#else

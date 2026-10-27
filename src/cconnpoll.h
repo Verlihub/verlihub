@@ -126,7 +126,6 @@ public:
 protected:
 	tFDArray mFDs;
 
-	const int mBlockSize;
 };
 
 	}; // namespace nSocket

@@ -44,6 +44,7 @@ message(STATUS "[ ?? ] You can build Go TLS proxy library with: -DUSE_TLS_PROXY=
 message(STATUS "[ .. ] Or you can use FearTLS proxy library with: -DUSE_FEARTLS_PROXY=ON")
 #message(STATUS "[ ?? ] You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
 message(STATUS "[ ?? ] You can disable Lua plugin with: -DWITH_LUA=OFF")
+message(STATUS "[ ?? ] You can use poll instead of epoll connection chooser with: -DUSE_EPOLL=OFF")
 message(STATUS "[ ?? ] If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
 message(STATUS)
 
@@ -57,6 +58,7 @@ option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implement
 OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
 option(USE_TLS_PROXY "Build Go TLS proxy library" OFF)
 option(USE_FEARTLS_PROXY "Use FearTLS proxy library" OFF)
+option(USE_EPOLL "Use epoll connection chooser when available, else poll" ON)
 
 if(USE_TLS_PROXY AND USE_FEARTLS_PROXY)
 	message(FATAL_ERROR "[ ER ] You can't have both USE_TLS_PROXY and USE_FEARTLS_PROXY at the same time")
@@ -386,6 +388,20 @@ string(STRIP "${VERLIHUB_INCLUDE_DIRS}" VERLIHUB_INCLUDE_DIRS)
 
 CHECK_INCLUDE_FILES(errno.h HAVE_ERRNO_H)
 CHECK_INCLUDE_FILES(poll.h HAVE_SYS_POLL_H)
+
+if(USE_EPOLL)
+	CHECK_INCLUDE_FILES(sys/epoll.h HAVE_SYS_EPOLL_H)
+else()
+	unset(HAVE_SYS_EPOLL_H CACHE) # note: result of earlier check is cached
+endif()
+
+if(HAVE_SYS_EPOLL_H)
+	message(STATUS "[ OK ] Using epoll connection chooser")
+elseif(HAVE_SYS_POLL_H)
+	message(STATUS "[ OK ] Using poll connection chooser")
+else()
+	message(STATUS "[ OK ] Using select connection chooser")
+endif()
 CHECK_INCLUDE_FILES(getopt.h HAVE_GETOPT_H)
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
 
