@@ -66,7 +66,7 @@ help_me()
 	echo_s "  -u, --adduser" $RED && echo -e "\t<nick> <password> <class> [path_to_dbconfig]\tRegister a new user in the database"
 	echo_s "  -gc, --getconf" $RED && echo -e "\t<variable> <path_to_dbconfig>\tGet hub configuration by variable"
 	echo_s "  -sc, --setconf" $RED && echo -e "\t<variable> <value> <path_to_dbconfig>\tSet hub configuration by variable, use '_' for empty string"
-	echo_s "  -c, --clean" $RED && echo -e "\t[path_to_dbconfig] \t\t\tClean kicklist, banlist, unbanlist, iplog, stats and messages tables"	
+	echo_s "  -c, --clean" $RED && echo -e "\t[path_to_dbconfig] \t\t\tClean kicklist, banlist and unbanlist tables"	
 	echo_s "  -b, --backup" $RED && echo -e "\t<destination_path> [path_to_dbconfig] \tMake backup of database from the given dbconfig path"
 	echo_s "  -w, --restore" $RED && echo -e "\t<path_to_sql>      [path_to_dbconfig] \tImport the given SQL file in the database for given dbconfig path"
 	echo_s "  -v, --version" $RED && echo -e "\t\t\t\tPrint version information"
@@ -637,15 +637,6 @@ function clean() #path_to_dbconfig
 	fi
 	TABLES=("banlist" "kicklist" "unbanlist")
 
-	if _is_table_exists "pi_iplog" ; then
-		TABLES+=("pi_iplog")
-	fi
-	if _is_table_exists "pi_messages" ; then
-		TABLES+=("pi_messages")
-	fi
-	if _is_table_exists "pi_stats" ; then
-		TABLES+=("pi_stats")
-	fi
 	for TABLE in ${TABLES[@]}; do
 		if $(yes_or_no "Do you want to truncate '$TABLE' table?") ; then
 			if ! _mysql_query "TRUNCATE TABLE $TABLE;" ; then

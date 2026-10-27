@@ -10,7 +10,7 @@ Verlihub is advanced NMDC protocol server for Linux operating systems that provi
   * User management with privilegies
   * Logging of user IPs and complete MyINFOs, requires Ledokol
   * Clients and connections management
-  * Extend functionality with Lua and Python scripts
+  * Extend functionality with Lua scripts
   * Generate statistics for your hub, requires Ledokol
   * Import users from PtokaX, Aquila or YnHub
   * Plus much more

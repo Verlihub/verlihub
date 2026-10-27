@@ -36,6 +36,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <algorithm>
 
 using namespace std;
@@ -581,17 +582,17 @@ bool cAsyncSocketServer::StartListening(int OverrideDefaultPort)
 			if (Log(0))
 				LogStream() << "Error starting TLS proxy: " << err << endl;
 
-			delete err;
+			free(err); // note: allocated by C.CString
 
 		} else if (Log(0)) {
 			LogStream() << "Error starting TLS proxy" << endl;
 		}
 
-		delete conf;
+		free(conf); // note: allocated by C.malloc
 		return false;
 	}
 
-	delete conf;
+	free(conf);
 	return this->Listen(mTLSPort/*, false*/);
 
 #elif defined(USE_FEARTLS_PROXY)

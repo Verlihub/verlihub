@@ -43,9 +43,7 @@ message(STATUS "[ ?? ] You can disable all plugins with: -DWITH_PLUGINS=OFF")
 message(STATUS "[ ?? ] You can build Go TLS proxy library with: -DUSE_TLS_PROXY=ON")
 message(STATUS "[ .. ] Or you can use FearTLS proxy library with: -DUSE_FEARTLS_PROXY=ON")
 #message(STATUS "[ ?? ] You can disable SSL secured connects with: -DUSE_SSL_CONNECTS=OFF")
-message(STATUS "[ !! ] NOTE: Plugins other than LUA are now DEPRECATED")
-message(STATUS "[ ?? ] You can enable or disable specific plugin with: -DWITH_{NAME}=[ON/OFF]")
-message(STATUS "[ ?? ] Plugin names: LUA PYTHON PERL FORBID CHATROOM IPLOG ISP MESSENGER STATS REPLACER FLOODPROT")
+message(STATUS "[ ?? ] You can disable Lua plugin with: -DWITH_LUA=OFF")
 message(STATUS "[ ?? ] If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
 message(STATUS)
 
@@ -136,7 +134,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -undefined warning -flat_namespace")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_FLAGS} -undefined warning -flat_namespace")
-	SET(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} /usr/local/opt /usr/local/opt/gettext /usr/local/opt/perl) # workaround for homebrew path
+	SET(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} /usr/local/opt /usr/local/opt/gettext) # workaround for homebrew path
 	SET(GETTEXT_EXEC_PATH "/usr/local/opt/gettext")
 	SET(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -457,11 +455,6 @@ ADD_SUBDIRECTORY(man)
 #SET(CPACK_RPM_PACKAGE_URL "https://github.com/verlihub/")
 #SET(CPACK_RPM_PACKAGE_GROUP "Application/Internet")
 #SET(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.5, mysql >= 5.5, maxminddb, gettext, pcre")
-#
-#IF(WITH_PYTHON)
-#	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python (>= 2.7)")
-#	SET(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}, python2.7 >= 2.7")
-#ENDIF(WITH_PYTHON)
 #
 #IF(WITH_LUA)
 #	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, lua (>= 5.2)")

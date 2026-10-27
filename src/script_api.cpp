@@ -931,7 +931,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool
 
 	/*
 		do the restriction stuff, for example check cmd
-		plug = "python" for python, "lua" for lua, "perl" for perl
+		plug = "lua" for lua
 	*/
 
 	return serv->AddScriptCommand(cmd, data, plug, script, inst);

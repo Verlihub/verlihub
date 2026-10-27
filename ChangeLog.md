@@ -7,7 +7,7 @@
 * Added: Lua 5.5 support
 * Added: Consider users with hidden chat on welcome message
 * Updated: Translation files
-* Testing: Python plugin with version 3.x support
+* Removed: Deprecated plugins, only Lua and Plugman are left
 
 # 1.6.1.0
 
