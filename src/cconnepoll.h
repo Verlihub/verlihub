@@ -25,7 +25,13 @@
 
 #if USE_EPOLL
 
-#include <sys/epoll.h>
+#ifdef _WIN32
+	#include "wepoll/wepoll.h" // note: bundled epoll for windows, see ThirdParty.md
+	#include <unordered_map>
+#else
+	#include <sys/epoll.h>
+#endif
+
 #include <cstdint>
 #include <vector>
 
@@ -38,6 +44,7 @@ namespace nVerliHub {
 
 	note: close is not a socket event, connection that is closed with CloseNow() is kept in own list and reported in next step
 	note: when connection is deleted, its pending events are cleared, so new connection with reused socket does not get them
+	note: on windows wepoll is used, sockets are handles there, so their state is kept in hash map instead of vector
 */
 
 class cConnEpoll: public cConnChoose
@@ -52,6 +59,7 @@ class cConnEpoll: public cConnChoose
 		virtual int Choose(nUtils::cTime &tmout);
 
 		virtual bool AddConn(cConnBase *conn);
+		virtual bool DelConn(cConnBase *conn);
 
 		virtual void OptIn(tSocket sock, nEnums::tChEvent mask);
 		using cConnChoose::OptIn;
@@ -130,17 +138,33 @@ class cConnEpoll: public cConnChoose
 			eES_ERROR = 1 << 2 // error events were requested, they are always reported by epoll anyway
 		};
 
-		bool Valid(tSocket sock) const
+		struct sSock // note: state of one socket
 		{
-			return ((sock >= 0) && (size_t(sock) < mWant.size()));
+			uint32_t mWant = 0; // requested epoll events
+			uint32_t mRev = 0; // events of current step
+			unsigned char mState = 0; // tState flags
+		};
+
+		sSock *Get(tSocket sock) // note: null when socket is not known
+		{
+		#ifdef _WIN32
+			const auto it = mSocks.find(sock);
+			return ((it != mSocks.end()) ? &it->second : NULL);
+		#else
+			return (((sock >= 0) && (size_t(sock) < mSocks.size())) ? &mSocks[sock] : NULL);
+		#endif
 		}
 
-		void Apply(tSocket sock, uint32_t want); // note: update epoll registration
+		void Apply(tSocket sock, sSock &item, uint32_t want); // note: update epoll registration
 
+	#ifdef _WIN32
+		HANDLE mEpoll;
+		std::unordered_map<tSocket, sSock> mSocks; // note: by socket handle, removed when connection is deleted
+	#else
 		int mEpoll;
-		std::vector<uint32_t> mWant; // note: by socket, requested epoll events
-		std::vector<uint32_t> mRev; // note: by socket, events of current step
-		std::vector<unsigned char> mState; // note: by socket, tState flags
+		std::vector<sSock> mSocks; // note: by socket
+	#endif
+
 		std::vector<tSocket> mReady; // note: sockets of current step, iterated by iterator
 		std::vector<tSocket> mClosing; // note: sockets waiting to report close
 		std::vector<struct epoll_event> mEvents; // note: buffer for epoll_wait results

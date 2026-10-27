@@ -129,7 +129,7 @@ Supported CMake options
 	build without tls support
 
 -DUSE_EPOLL=OFF (default: ON)
-	use poll instead of epoll connection chooser
+	use poll instead of epoll connection chooser, on Windows select instead of bundled wepoll
 
 ===========
 End of file

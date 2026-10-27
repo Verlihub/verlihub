@@ -42,7 +42,7 @@ message(STATUS "[ ?? ] You can enable debug build with: -DDEFINE_DEBUG=ON")
 message(STATUS "[ ?? ] You can disable all plugins with: -DWITH_PLUGINS=OFF")
 message(STATUS "[ ?? ] You can build without TLS support with: -DUSE_TLS=OFF")
 message(STATUS "[ ?? ] You can disable Lua plugin with: -DWITH_LUA=OFF")
-message(STATUS "[ ?? ] You can use poll instead of epoll connection chooser with: -DUSE_EPOLL=OFF")
+message(STATUS "[ ?? ] You can use poll (select on Windows) instead of epoll connection chooser with: -DUSE_EPOLL=OFF")
 message(STATUS "[ ?? ] If you get errors related to autosprintf, please try with: -DUSE_CUSTOM_AUTOSPRINTF=ON")
 message(STATUS)
 
@@ -55,7 +55,7 @@ OPTION(INSTALL_CMAKE_FILES "Install *.cmake files into CMake root" ON)
 option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
 OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
 option(USE_TLS "Build with TLS support using OpenSSL" ON)
-option(USE_EPOLL "Use epoll connection chooser when available, else poll" ON)
+option(USE_EPOLL "Use epoll connection chooser when available, else poll, on Windows bundled wepoll, else select" ON)
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -376,7 +376,9 @@ string(STRIP "${VERLIHUB_INCLUDE_DIRS}" VERLIHUB_INCLUDE_DIRS)
 CHECK_INCLUDE_FILES(errno.h HAVE_ERRNO_H)
 CHECK_INCLUDE_FILES(poll.h HAVE_SYS_POLL_H)
 
-if(USE_EPOLL)
+if(USE_EPOLL AND WIN32)
+	SET(HAVE_WEPOLL TRUE) # note: windows has no epoll, bundled wepoll gives same api, see ThirdParty.md
+elseif(USE_EPOLL)
 	CHECK_INCLUDE_FILES(sys/epoll.h HAVE_SYS_EPOLL_H)
 else()
 	unset(HAVE_SYS_EPOLL_H CACHE) # note: result of earlier check is cached
@@ -384,6 +386,8 @@ endif()
 
 if(HAVE_SYS_EPOLL_H)
 	message(STATUS "[ OK ] Using epoll connection chooser")
+elseif(HAVE_WEPOLL)
+	message(STATUS "[ OK ] Using epoll connection chooser (bundled wepoll)")
 elseif(HAVE_SYS_POLL_H)
 	message(STATUS "[ OK ] Using poll connection chooser")
 else()

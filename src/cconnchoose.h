@@ -55,7 +55,7 @@
 		#define USE_SELECT 1
 	#endif
 
-	#if HAVE_SYS_EPOLL_H // note: epoll is preferred, poll stays as fallback where epoll is not available
+	#if HAVE_SYS_EPOLL_H || HAVE_WEPOLL // note: epoll is preferred, poll stays as fallback where epoll is not available, windows uses bundled wepoll
 		#define USE_EPOLL 1
 	#else
 		#define USE_EPOLL 0

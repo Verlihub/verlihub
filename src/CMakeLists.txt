@@ -184,6 +184,11 @@ SET(VERLIHUB_SRCS
 	#verlihub.cpp
 )
 
+if(HAVE_WEPOLL)
+	LIST(APPEND VERLIHUB_SRCS wepoll/wepoll.c) # note: bundled epoll for windows
+	LIST(APPEND VERLIHUB_HDRS wepoll/wepoll.h)
+endif(HAVE_WEPOLL)
+
 add_library(libverlihub_so SHARED ${VERLIHUB_SRCS})
 set_target_properties(libverlihub_so PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
@@ -214,6 +219,11 @@ INSTALL(
 	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
 	WORLD_READ WORLD_EXECUTE
 )
+
+if(HAVE_WEPOLL) # note: cconnepoll.h includes it from own folder
+	LIST(REMOVE_ITEM VERLIHUB_HDRS wepoll/wepoll.h)
+	INSTALL(FILES wepoll/wepoll.h DESTINATION "include/${PROJECT_NAME}/wepoll")
+endif(HAVE_WEPOLL)
 
 INSTALL(FILES ${VERLIHUB_HDRS} "${VERLIHUB_BINARY_DIR}/dirsettings.h" DESTINATION "include/${PROJECT_NAME}")
 

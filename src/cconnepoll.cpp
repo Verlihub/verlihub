@@ -35,21 +35,32 @@ static const uint32_t sInputEvents = (EPOLLIN | EPOLLPRI);
 static const size_t sMaxEvents = 4096; // note: more ready sockets are reported in next step, epoll is level triggered
 
 cConnEpoll::cConnEpoll():
+#ifdef _WIN32
+	mEpoll(epoll_create1(0)) // note: wepoll takes no flags
+#else
 	mEpoll(epoll_create1(EPOLL_CLOEXEC))
+#endif
 {
+#ifdef _WIN32
+	if (!mEpoll)
+#else
 	if (mEpoll < 0)
+#endif
 		throw "Unable to create epoll connection chooser";
 
-	mWant.reserve(20480); // note: same as poll chooser
-	mRev.reserve(20480);
-	mState.reserve(20480);
+	mSocks.reserve(20480); // note: same as poll chooser
 	mEvents.resize(sMaxEvents);
 }
 
 cConnEpoll::~cConnEpoll()
 {
+#ifdef _WIN32
+	if (mEpoll)
+		epoll_close(mEpoll);
+#else
 	if (mEpoll >= 0)
 		::close(mEpoll);
+#endif
 }
 
 bool cConnEpoll::AddConn(cConnBase *conn)
@@ -57,40 +68,52 @@ bool cConnEpoll::AddConn(cConnBase *conn)
 	if (!cConnChoose::AddConn(conn))
 		return false;
 
-	if (size_t(mLastSock) >= mWant.size()) { // note: grow like poll chooser
-		const size_t size = mLastSock + (mLastSock / 4) + 1;
-		mWant.resize(size, 0);
-		mRev.resize(size, 0);
-		mState.resize(size, 0);
-	}
+#ifdef _WIN32
+	mSocks[(tSocket)(*conn)] = sSock(); // note: handle can be reused by new socket, it starts clean
+#else
+	if (size_t(mLastSock) >= mSocks.size()) // note: grow like poll chooser
+		mSocks.resize(mLastSock + (mLastSock / 4) + 1);
+#endif
 
 	return true; // note: socket is registered in epoll when first event is requested
 }
 
-void cConnEpoll::Apply(tSocket sock, uint32_t want)
+bool cConnEpoll::DelConn(cConnBase *conn)
 {
-	const uint32_t was = mWant[sock];
-	mWant[sock] = want;
+	if (!conn || !cConnChoose::DelConn(conn)) // note: this opts out of all events, which removes socket from epoll
+		return false;
+
+#ifdef _WIN32
+	mSocks.erase((tSocket)(*conn)); // note: unknown socket is skipped by iterator, also when it is still in ready or closing list
+#endif
+
+	return true;
+}
+
+void cConnEpoll::Apply(tSocket sock, sSock &item, uint32_t want)
+{
+	const uint32_t was = item.mWant;
+	item.mWant = want;
 
 	if (!want) { // note: nothing left, remove from epoll like poll chooser resets its entry
-		if (mState[sock] & eES_ADDED) {
+		if (item.mState & eES_ADDED) {
 			epoll_ctl(mEpoll, EPOLL_CTL_DEL, sock, NULL);
-			mState[sock] &= ~eES_ADDED;
+			item.mState &= ~eES_ADDED;
 		}
 
-		mRev[sock] = 0; // note: dont report old events of this socket anymore
+		item.mRev = 0; // note: dont report old events of this socket anymore
 		return;
 	}
 
-	if ((want == was) && (mState[sock] & eES_ADDED))
+	if ((want == was) && (item.mState & eES_ADDED))
 		return;
 
 	struct epoll_event ev;
 	memset(&ev, 0, sizeof(ev));
 	ev.events = want;
-	ev.data.fd = sock;
+	ev.data.u64 = (uint64_t)sock; // note: windows socket does not fit into fd field
 
-	if (mState[sock] & eES_ADDED) {
+	if (item.mState & eES_ADDED) {
 		if (epoll_ctl(mEpoll, EPOLL_CTL_MOD, sock, &ev) == 0)
 			return;
 
@@ -99,32 +122,34 @@ void cConnEpoll::Apply(tSocket sock, uint32_t want)
 	}
 
 	if (epoll_ctl(mEpoll, EPOLL_CTL_ADD, sock, &ev) == 0) {
-		mState[sock] |= eES_ADDED;
+		item.mState |= eES_ADDED;
 		return;
 	}
 
 	if ((errno == EEXIST) && (epoll_ctl(mEpoll, EPOLL_CTL_MOD, sock, &ev) == 0)) // note: should not happen, but keep epoll in sync with what we want
-		mState[sock] |= eES_ADDED;
+		item.mState |= eES_ADDED;
 }
 
 void cConnEpoll::OptIn(tSocket sock, tChEvent mask)
 {
-	if (!Valid(sock))
+	sSock *item = Get(sock);
+
+	if (!item)
 		return;
 
 	if (mask & eCC_CLOSE) { // note: same as poll chooser, close clears requested events and waits to be reported
-		Apply(sock, 0);
-		mState[sock] &= ~eES_ERROR;
+		Apply(sock, *item, 0);
+		item->mState &= ~eES_ERROR;
 
-		if (!(mState[sock] & eES_CLOSING)) {
-			mState[sock] |= eES_CLOSING;
+		if (!(item->mState & eES_CLOSING)) {
+			item->mState |= eES_CLOSING;
 			mClosing.push_back(sock);
 		}
 
 		return;
 	}
 
-	uint32_t want = mWant[sock];
+	uint32_t want = item->mWant;
 
 	if (mask & eCC_INPUT)
 		want |= sInputEvents;
@@ -134,21 +159,23 @@ void cConnEpoll::OptIn(tSocket sock, tChEvent mask)
 
 	if (mask & eCC_ERROR) {
 		want |= (EPOLLERR | EPOLLHUP);
-		mState[sock] |= eES_ERROR;
+		item->mState |= eES_ERROR;
 	}
 
 	if (want)
-		mState[sock] &= ~eES_CLOSING; // note: requested events again, like poll chooser, it is not closing anymore
+		item->mState &= ~eES_CLOSING; // note: requested events again, like poll chooser, it is not closing anymore
 
-	Apply(sock, want);
+	Apply(sock, *item, want);
 }
 
 void cConnEpoll::OptOut(tSocket sock, tChEvent mask)
 {
-	if (!Valid(sock))
+	sSock *item = Get(sock);
+
+	if (!item)
 		return;
 
-	uint32_t want = mWant[sock];
+	uint32_t want = item->mWant;
 
 	if (mask & eCC_INPUT)
 		want &= ~sInputEvents;
@@ -158,33 +185,34 @@ void cConnEpoll::OptOut(tSocket sock, tChEvent mask)
 
 	if (mask & eCC_ERROR) {
 		want &= ~uint32_t(EPOLLERR | EPOLLHUP);
-		mState[sock] &= ~eES_ERROR;
+		item->mState &= ~eES_ERROR;
 	}
 
 	if (!want) // note: nothing left, like poll chooser reset, this also ends closing state
-		mState[sock] &= ~(eES_CLOSING | eES_ERROR);
+		item->mState &= ~(eES_CLOSING | eES_ERROR);
 
-	Apply(sock, want);
+	Apply(sock, *item, want);
 }
 
 int cConnEpoll::OptGet(tSocket sock)
 {
-	if (!Valid(sock))
+	const sSock *item = Get(sock);
+
+	if (!item)
 		return 0;
 
-	if (mState[sock] & eES_CLOSING)
+	if (item->mState & eES_CLOSING)
 		return eCC_CLOSE;
 
 	int mask = 0;
-	const uint32_t want = mWant[sock];
 
-	if (want & sInputEvents)
+	if (item->mWant & sInputEvents)
 		mask |= eCC_INPUT;
 
-	if (want & EPOLLOUT)
+	if (item->mWant & EPOLLOUT)
 		mask |= eCC_OUTPUT;
 
-	if (mState[sock] & eES_ERROR)
+	if (item->mState & eES_ERROR)
 		mask |= eCC_ERROR;
 
 	return mask;
@@ -192,22 +220,23 @@ int cConnEpoll::OptGet(tSocket sock)
 
 int cConnEpoll::RevGet(tSocket sock)
 {
-	if (!Valid(sock))
+	const sSock *item = Get(sock);
+
+	if (!item)
 		return 0;
 
 	int mask = 0;
-	const uint32_t rev = mRev[sock];
 
-	if (mState[sock] & eES_CLOSING)
+	if (item->mState & eES_CLOSING)
 		mask |= eCC_CLOSE;
 
-	if (rev & sInputEvents)
+	if (item->mRev & sInputEvents)
 		mask |= eCC_INPUT;
 
-	if (rev & EPOLLOUT)
+	if (item->mRev & EPOLLOUT)
 		mask |= eCC_OUTPUT;
 
-	if (rev & (EPOLLERR | EPOLLHUP))
+	if (item->mRev & (EPOLLERR | EPOLLHUP))
 		mask |= eCC_ERROR;
 
 	return mask;
@@ -215,17 +244,21 @@ int cConnEpoll::RevGet(tSocket sock)
 
 bool cConnEpoll::RevTest(tSocket sock)
 {
-	if (!Valid(sock))
+	const sSock *item = Get(sock);
+
+	if (!item)
 		return false;
 
-	return (mRev[sock] || (mState[sock] & eES_CLOSING));
+	return (item->mRev || (item->mState & eES_CLOSING));
 }
 
 int cConnEpoll::Choose(nUtils::cTime &tmout)
 {
 	for (const tSocket sock: mReady) { // note: events of previous step are done
-		if (Valid(sock))
-			mRev[sock] = 0;
+		sSock *item = Get(sock);
+
+		if (item)
+			item->mRev = 0;
 	}
 
 	mReady.clear();
@@ -233,8 +266,9 @@ int cConnEpoll::Choose(nUtils::cTime &tmout)
 
 	for (size_t i = 0; i < mClosing.size(); i++) { // note: closing sockets are reported without waiting, socket itself has no event for that
 		const tSocket sock = mClosing[i];
+		const sSock *item = Get(sock);
 
-		if (Valid(sock) && (mState[sock] & eES_CLOSING)) {
+		if (item && (item->mState & eES_CLOSING)) {
 			mClosing[keep++] = sock;
 			mReady.push_back(sock);
 		}
@@ -249,15 +283,16 @@ int cConnEpoll::Choose(nUtils::cTime &tmout)
 	} while ((res < 0) && (errno == EINTR));
 
 	for (int i = 0; i < res; i++) {
-		const tSocket sock = mEvents[i].data.fd;
+		const tSocket sock = (tSocket)mEvents[i].data.u64;
+		sSock *item = Get(sock);
 
-		if (!Valid(sock) || !(mState[sock] & eES_ADDED)) // note: removed meanwhile
+		if (!item || !(item->mState & eES_ADDED)) // note: removed meanwhile
 			continue;
 
-		if (!mRev[sock] && !(mState[sock] & eES_CLOSING)) // note: closing socket is already in list
+		if (!item->mRev && !(item->mState & eES_CLOSING)) // note: closing socket is already in list
 			mReady.push_back(sock);
 
-		mRev[sock] = mEvents[i].events;
+		item->mRev = mEvents[i].events;
 	}
 
 	return mReady.size();
