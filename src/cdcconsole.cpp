@@ -2419,7 +2419,7 @@ bool cDCConsole::cfGetConfig::operator()()
 	if (act < 0)
 		return false;
 
-	ostringstream os, lst;
+	ostringstream os, lst, unused; // note: unused are hub variables that this hub version doesnt know, setconfig does not create them, so they are left from older version
 	temp.clear();
 	GetParStr(1, temp);
 
@@ -2431,11 +2431,15 @@ bool cDCConsole::cfGetConfig::operator()()
 			for (it = mS->mC.mvItems.begin(); it != mS->mC.mvItems.end(); ++it)
 				lst << " [*] " << mS->mC.mhItems.GetByHash(*it)->mName << " = " << (*(mS->mC.mhItems.GetByHash(*it))) << "\r\n";
 		} else {
-			mS->mSetupList.OutputFile(temp.c_str(), lst);
+			mS->mSetupList.OutputFile(temp.c_str(), lst, ((temp == mS->mDBConf.config_name) ? &mS->mC : NULL), &unused);
 		}
 
-		if (lst.str().size()) {
+		if (lst.str().size() || unused.str().size()) {
 			os << autosprintf(_("Configuration file: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
+
+			if (unused.str().size())
+				os << "\r\n" << _("Unused variables, current hub version doesn't know them") << ":\r\n\r\n" << unused.str();
+
 			mS->DCPrivateHS(os.str(), mConn);
 		} else {
 			os << autosprintf(_("Configuration file is empty: %s"), temp.c_str());
@@ -2455,12 +2459,16 @@ bool cDCConsole::cfGetConfig::operator()()
 			var = var.substr(pos + 1);
 		}
 
-		mS->mSetupList.FilterFiles(var.c_str(), lst, file.c_str());
+		mS->mSetupList.FilterFiles(var.c_str(), lst, file.c_str(), &mS->mC, mS->mDBConf.config_name, &unused);
 
-		if (lst.str().size())
+		if (lst.str().size() || unused.str().size()) {
 			os << autosprintf(_("Configuration filter results: %s"), temp.c_str()) << "\r\n\r\n" << lst.str();
-		else
+
+			if (unused.str().size())
+				os << "\r\n" << _("Unused variables, current hub version doesn't know them") << ":\r\n\r\n" << unused.str();
+		} else {
 			os << autosprintf(_("Configuration filter didn't return any results: %s"), temp.c_str());
+		}
 
 		mS->DCPublicHS(os.str(), mConn);
 	}

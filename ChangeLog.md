@@ -24,6 +24,7 @@
 * Added: Changes of tls_enable, tls_cert_file, tls_key_file and tls_min_ver apply without restart, replaced certificate file is loaded by itself
 * Added: TLS protocol negotiation with nmdcs for clients that ask for it, certificate keyprint in log
 * Added: On Windows verlihub --stop and --reload work with named events, there are no signals
+* Added: Commands !getvar and !getconfig list unused hub variables separately, those that current hub version doesn't know anymore, variables of plugins and scripts are listed as before
 * Updated: Shell scripts and their commands are replaced by verlihub executable itself, same commands and parameters, they work on Linux and Windows, see verlihub --help
 * Updated: Syslog options of hub are only long --syslog and --syslog-suffix, short -s is stop command, same as in vh script
 * Updated: Multi hub manager vhm is verlihub itself, on Linux it is installed as symbolic link, on Windows use verlihub -m, hubs are started as their process owner without su, so owner without login shell works too
@@ -37,6 +38,7 @@
 * Updated: FindVerlihub.cmake is not installed into CMake root on Windows by default, CMake flag INSTALL_CMAKE_FILES
 * Updated: Translation files, they are UTF-8 now and without codepage in file name, hub converts them to charset of its locale at runtime, CMake flag LOCALE_CONVERT converts at build time instead, po/LANGS is removed, languages are found from files
 * Added: CMake target pot extracts translation templates from source, po/transifex.yml for Transifex GitHub integration
+* Added: Hub messages are translated also when locale from dbconfig is not installed on system, for example ru_RU.CP1251, then C.UTF-8 locale is used with language of hub locale and messages are still converted to its codeset
 * Fixed: Hublist registration could hang for minutes on hublist that does not answer
 * Fixed: Hublist registration and crash report could send incomplete data
 * Fixed: NMDC command UnBan never removed any ban

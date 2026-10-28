@@ -68,7 +68,7 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 	mQuery.Clear();
 }
 
-void cSetupList::OutputFile(const string &file, ostream &os)
+void cSetupList::OutputFile(const string &file, ostream &os, cConfigBaseBase *known, ostream *unused) // note: variables that known configuration doesnt have go to unused, for example removed in newer hub version
 {
 	db_iterator it;
 	SelectFields(mQuery.OStream());
@@ -88,13 +88,13 @@ void cSetupList::OutputFile(const string &file, ostream &os)
 		if (file == "plugins")
 			varName = mModel.mFile + '.' + varName;
 
-		os << " [*] " << varName << " = " << val << "\r\n";
+		((known && unused && !(*known)[mModel.mVarName]) ? *unused : os) << " [*] " << varName << " = " << val << "\r\n";
 	}
 
 	mQuery.Clear();
 }
 
-void cSetupList::FilterFiles(const string &var, ostream &os, const string &file)
+void cSetupList::FilterFiles(const string &var, ostream &os, const string &file, cConfigBaseBase *known, const string &known_file, ostream *unused) // note: variables of known_file that known configuration doesnt have go to unused, other files can contain anything, for example variables of scripts
 {
 	db_iterator it;
 	SelectFields(mQuery.OStream());
@@ -116,7 +116,7 @@ void cSetupList::FilterFiles(const string &var, ostream &os, const string &file)
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		cDCProto::EscapeChars(mModel.mVarValue, val);
-		os << " [*] " << mModel.mFile + '.' << mModel.mVarName << " = " << val << "\r\n";
+		((known && unused && (mModel.mFile == known_file) && !(*known)[mModel.mVarName]) ? *unused : os) << " [*] " << mModel.mFile + '.' << mModel.mVarName << " = " << val << "\r\n";
 	}
 
 	mQuery.Clear();

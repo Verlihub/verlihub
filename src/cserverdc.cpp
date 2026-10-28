@@ -128,21 +128,39 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((UnsetEnv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
 		char *res = setlocale(LC_MESSAGES/*LC_ALL*/, mDBConf.locale.c_str()); // note: only messages, else we break double decimal separator when saving and reading from db
 		vhLog(0) << "Setting hub locale: " << ((res) ? res : "Error") << endl;
+		const size_t dot = mDBConf.locale.find('.'); // note: translations are utf-8, gettext converts them to charset of hub locale, for example cp1251 of ru_RU.CP1251
+		const bool codeset_given = ((dot != string::npos) && ((dot + 1) < mDBConf.locale.size()));
 
 		if (res) {
 			res = setlocale(LC_CTYPE, mDBConf.locale.c_str()); // note: and character classification to display letters correctly
 			vhLog(0) << "Setting locale classification: " << ((res) ? res : "Error") << endl;
 			//res = setlocale(LC_COLLATE, mDBConf.locale.c_str()); // note: and collation
 			//vhLog(0) << "Setting locale collation: " << ((res) ? res : "Error") << endl;
+
+		} else if (codeset_given && dot) { // note: locale is not installed on system, glibc gettext translates nothing in c locale, so messages use c.utf-8 and language is given by environment variable, charset below still converts them to codeset of hub locale, character classification stays default
+			static const char *fallback[] = {"C.UTF-8", "C.utf8"};
+
+			for (const char *name: fallback) {
+				res = setlocale(LC_MESSAGES, name);
+
+				if (res)
+					break;
+			}
+
+			if (res) {
+				const string lang(mDBConf.locale.substr(0, dot));
+				vhLog(0) << "Locale " << mDBConf.locale << " is not installed, using " << res << " with language " << lang << " for messages, setting environment variable LANGUAGE: " << ((SetEnv("LANGUAGE", lang.c_str()) == 0) ? "OK" : "Error") << endl;
+			} else {
+				vhLog(0) << "Locale " << mDBConf.locale << " is not installed and fallback locale C.UTF-8 is not available, messages will not be translated" << endl;
+			}
 		}
 
 		res = bindtextdomain("verlihub", LOCALEDIR);
 		vhLog(1) << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
 		res = textdomain("verlihub");
 		vhLog(1) << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
-		const size_t dot = mDBConf.locale.find('.'); // note: translations are utf-8, gettext converts them to charset of hub locale, for example cp1251 of ru_RU.CP1251
 
-		if ((dot != string::npos) && ((dot + 1) < mDBConf.locale.size())) {
+		if (codeset_given) {
 			string codeset(mDBConf.locale.substr(dot + 1));
 			const size_t mod = codeset.find('@'); // note: without modifier like @euro
 

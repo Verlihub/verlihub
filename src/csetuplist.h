@@ -61,8 +61,8 @@ public:
 	~cSetupList();
 	void LoadFileTo(cConfigBaseBase *, const char *);
 	void SaveFileTo(cConfigBaseBase *, const char *);
-	void OutputFile(const string &, ostream &os);
-	void FilterFiles(const string &var, ostream &os, const string &file = "");
+	void OutputFile(const string &, ostream &os, cConfigBaseBase *known = NULL, ostream *unused = NULL);
+	void FilterFiles(const string &var, ostream &os, const string &file = "", cConfigBaseBase *known = NULL, const string &known_file = "", ostream *unused = NULL);
 	bool SaveItem(const char *InFile, cConfigItemBase *);
 	bool LoadItem(const char *FromFile, cConfigItemBase *);
 private:
