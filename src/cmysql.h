@@ -50,7 +50,7 @@ class cMySQL: public cObj
 {
 	friend class cQuery;
 	public:
-		cMySQL(string &host, string &user, string &pass, string &data, string &charset);
+		cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls = false);
 		~cMySQL();
 		void Init();
 		bool Connect();
@@ -60,6 +60,12 @@ class cMySQL: public cObj
 		{
 			return mDBName;
 		}
+
+		// split db_host into host and port, port is 0 when not given, todo: ipv6 address in brackets
+		static void SplitHost(const string &addr, string &host, unsigned int &port);
+
+		// connect to server, same for main connection and database worker, tls requires encrypted connection
+		static bool RealConnect(MYSQL *handle, const string &addr, const string &user, const string &pass, const string &data, bool tls);
 
 		public:
 			/*
@@ -73,6 +79,7 @@ class cMySQL: public cObj
 
 	private:
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;
+		bool mDBTLS;
 		MYSQL *mDBHandle;
 		//unsigned int mReconnect;
 };

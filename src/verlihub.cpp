@@ -36,6 +36,7 @@
 #include "cserverdc.h"
 #include "csocketapi.h"
 #include <iostream>
+#include <memory>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -287,8 +288,17 @@ int main(int argc, char *argv[])
 	} stop_signal; // note: declared before server, so console close handler continues after server is destroyed
 #endif
 
+	std::unique_ptr<cServerDC> server_ptr;
+
+	try { // note: constructor throws when database is not available, exit with error instead of terminate
+		server_ptr.reset(new cServerDC(ConfigBase, argv[0])); // create server
+	} catch (const char *ex) {
+		MAIN_LOG_ERROR << ex << endl;
+		return 1;
+	}
+
 	//try { // todo: whole process is running inside try?
-		cServerDC server(ConfigBase, argv[0]); // create server
+		cServerDC &server = *server_ptr;
 		cObj::msLogLevel += verbosity;
 
 		#ifndef _WIN32

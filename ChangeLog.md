@@ -8,11 +8,14 @@
 * Added: Host name lookup on worker threads, with dns_lookup new connection waits up to 5 seconds for host name
 * Added: Database thread with its own connection for writes and background reads, queued writes are done before hub stops
 * Added: Configuration use_banlist_cache, ban check on login without database query
+* Added: Custom MySQL port in dbconfig with db_host = host:port, connection uses TCP then, also in vh script
+* Added: Configuration db_tls in dbconfig to require encrypted connection to MySQL server, disabled by default, also newer MariaDB client library no longer refuses server without TLS
 * Added: Epoll connection chooser when available, CMake flag USE_EPOLL, poll stays as fallback
 * Added: Windows support using MinGW-w64, see Install.md
 * Added: On Windows Ctrl+C, Ctrl+Break or closing console window stops hub cleanly, second Ctrl+C ends it at once
 * Added: On Windows crash in any thread writes stack backtrace, plugins are loaded from DLL files
 * Added: Epoll connection chooser on Windows using bundled wepoll library, select stays as fallback, see ThirdParty.md
+* Added: CMake package configuration and installed config.h, plugins built outside of Verlihub source use find_package(Verlihub) and get same defines as Verlihub, see Install.md
 * Added: Native TLS using OpenSSL instead of separate proxy, plain and encrypted clients on same port, CMake flag USE_TLS, configuration tls_enable (enabled by default)
 * Added: TLS handshakes run on worker threads, one per CPU core, so many connecting users dont block the hub
 * Added: TLS versions 1.0 and 1.1 still work when allowed with tls_min_ver, also on systems where OpenSSL disables them by default
@@ -24,6 +27,7 @@
 * Updated: Results of worker threads are processed without waiting for adv_step_delay
 * Updated: Commands gethost and getinfo, and user reports to operator chat, look up host names in background
 * Updated: Login statistics of registered users and ban hits are written in background
+* Updated: FindVerlihub.cmake is not installed into CMake root on Windows by default, CMake flag INSTALL_CMAKE_FILES
 * Updated: Translation files
 * Fixed: Hublist registration could hang for minutes on hublist that does not answer
 * Fixed: Hublist registration and crash report could send incomplete data
@@ -35,6 +39,8 @@
 * Fixed: CMake did not notice missing ICU library and passed it to linker anyway
 * Fixed: Upload statistics wrote outside of zone table for data sent before user zone was set, now it is added to zone of user when it is known
 * Fixed: Command core_dump did not write stack backtrace to log, now it is only not sent to crash server
+* Fixed: Hub aborted with terminate message when MySQL connection failed on start, now it writes error and exits
+* Fixed: MySQL connection error was written twice
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Old thread classes cThread, cWorkerThread, cThreadWork and cMutex
 * Removed: Built-in Go TLS proxy and FearTLS library, with configurations tls_listen_port and tls_buf_size

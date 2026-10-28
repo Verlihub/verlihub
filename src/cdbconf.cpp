@@ -33,6 +33,7 @@ cDBConf::cDBConf(const string &file):
 	Add("db_pass", db_pass, "");
 	Add("db_data", db_data, "verlihub");
 	Add("db_charset", db_charset, "");
+	Add("db_tls", db_tls, false);
 	Add("config_name", config_name, "config");
 	Add("locale", locale, "");
 	Add("mmdb_path", mmdb_path, "");

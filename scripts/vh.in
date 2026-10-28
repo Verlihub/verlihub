@@ -349,7 +349,7 @@ function backup() # destination folder, path_to_dbconfig
 	fi
 
 	FILE="$1/${TIMESTAMP}.sql"
-	if ! $(@BASH_PATH@ -c "$DUMP -h $(get_db_host) -u $(get_db_user) -p$(get_db_pass) $(get_db_name)" >"$FILE" 2>/dev/null) ; then
+	if ! $(@BASH_PATH@ -c "$DUMP $(mysql_host_args "$(get_db_host)") -u $(get_db_user) -p$(get_db_pass) $(get_db_name)" >"$FILE" 2>/dev/null) ; then
 
 		echo_s "-- A error occured with backup\n" $RED
 		rm -rf $FILE
@@ -802,7 +802,7 @@ function install() # [sleep_time]
 		MYSQL_PASSWORD=$(ask "MySQL password for user '$MYSQL_USER'" "$MYSQL_PASSWORD" "" "true")
 		MYSQL_HOST=$(get_db_host)
 		echo ""
-		MYSQL_HOST=$(ask "MySQL hostname" "$MYSQL_HOST")
+		MYSQL_HOST=$(ask "MySQL hostname, add :port for custom port" "$MYSQL_HOST")
 		MYSQL_CHARSET="cp1250" # $(get_db_charset)
 		MYSQL_CHARSET=$(ask "MySQL charset, experts only, leave empty for default" "$MYSQL_CHARSET" "true")
 		VH_HUB_LOCALE="" # $(get_hub_locale)
@@ -835,8 +835,8 @@ function install() # [sleep_time]
 
 	# correct mysql host
 	IS_MYSQL_HOST_LOCAL=false
-	[ $MYSQL_HOST = "localhost" ] && IS_MYSQL_HOST_LOCAL=true
-	[ $MYSQL_HOST = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
+	[ "$(mysql_host_name "$MYSQL_HOST")" = "localhost" ] && IS_MYSQL_HOST_LOCAL=true # note: host can be host:port
+	[ "$(mysql_host_name "$MYSQL_HOST")" = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
 
 	if ! $IS_MYSQL_HOST_LOCAL ; then
 		echo_s "\nYou are going to use database on external server, please enter IP address of current server.\n\n"
@@ -867,7 +867,7 @@ function install() # [sleep_time]
 
 		_ask_admin_access
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+		$MYSQL --connect_timeout 5 $(mysql_host_args "$MYSQL_HOST") -u "$MYSQL_ADMIN_USER" -e "CREATE USER '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
 
 		if ! _does_mysql_account_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" ; then # check again
 			echo_s "\nMySQL account " $RED_BOLD
@@ -900,7 +900,7 @@ function install() # [sleep_time]
 		fi
 
 		export MYSQL_PWD="$MYSQL_ADMIN_PASSWORD"
-		$MYSQL --connect_timeout 5 -h "$MYSQL_HOST" -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS'; FLUSH PRIVILEGES;"
+		$MYSQL --connect_timeout 5 $(mysql_host_args "$MYSQL_HOST") -u "$MYSQL_ADMIN_USER" -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB_NAME\`; GRANT ALL ON \`$MYSQL_DB_NAME\`.* TO '$MYSQL_USER'@'$CURRENT_ADDRESS'; FLUSH PRIVILEGES;"
 		# CREATE USER IF NOT EXISTS '$MYSQL_USER'@'$CURRENT_ADDRESS' IDENTIFIED BY '$MYSQL_PASSWORD';
 
 		if ! _does_mysql_db_exists "$MYSQL_HOST" "$MYSQL_USER" "$MYSQL_PASSWORD" "$MYSQL_DB_NAME" ; then # check again

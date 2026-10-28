@@ -51,7 +51,11 @@ message(STATUS)
 # ----------------------------------------------------------------------------------------------------
 # defaults
 
-OPTION(INSTALL_CMAKE_FILES "Install *.cmake files into CMake root" ON)
+if(WIN32) # note: it would be installed into cmake folder of msys2, outside of install prefix, use find_package(Verlihub CONFIG) there
+	OPTION(INSTALL_CMAKE_FILES "Install FindVerlihub.cmake into CMake root" OFF)
+else()
+	OPTION(INSTALL_CMAKE_FILES "Install FindVerlihub.cmake into CMake root" ON)
+endif()
 option(USE_CUSTOM_AUTOSPRINTF "Build using custom internal autosprintf implementation" OFF)
 OPTION(DEFINE_DEBUG "Build using debugging code" OFF)
 option(USE_TLS "Build with TLS support using OpenSSL" ON)

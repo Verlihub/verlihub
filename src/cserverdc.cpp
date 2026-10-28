@@ -86,8 +86,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	cAsyncSocketServer(CfgBase), // create parent class
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
-	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // create and connect to mysql
-	mMySQLWorker(*this, mMySQL, mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset), // note: connects on its own thread when first used
+	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls), // create and connect to mysql
+	mMySQLWorker(*this, mMySQL, mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls), // note: connects on its own thread when first used
 	mC(*this), // create the config object
 	mSetupList(mMySQL),
 	mP(this),

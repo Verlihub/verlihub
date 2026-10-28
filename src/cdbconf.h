@@ -37,6 +37,7 @@ public:
 	string db_pass;
 	string db_data;
 	string db_charset;
+	bool db_tls; // note: require encrypted connection to database server
 	string config_name;
 	string locale;
 	string mmdb_path;

@@ -128,8 +128,24 @@ Supported CMake options
 -DUSE_TLS=OFF (default: ON)
 	build without tls support
 
+-DINSTALL_CMAKE_FILES=OFF (default: ON, on Windows OFF)
+	dont install FindVerlihub.cmake into CMake root, it is the only file installed outside of install prefix
+
 -DUSE_EPOLL=OFF (default: ON)
 	use poll instead of epoll connection chooser, on Windows select instead of bundled wepoll
+
+=======================================
+Build plugins outside of Verlihub source
+=======================================
+
+Verlihub installs its headers, config.h and CMake package configuration, so plugin can be built in its own folder:
+
+find_package(Verlihub 1.7 REQUIRED)
+add_library(my_pi MODULE my_plugin.cpp)
+target_link_libraries(my_pi Verlihub::verlihub)
+
+Verlihub::verlihub gives library, headers and defines that Verlihub headers depend on, plugin must be built with same compiler.
+When Verlihub is installed in own prefix, give it to CMake of plugin with: -DCMAKE_PREFIX_PATH=<install prefix>
 
 ===========
 End of file

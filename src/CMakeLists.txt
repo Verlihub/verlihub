@@ -211,7 +211,38 @@ CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DI
 
 # ----------------------------------------------------------------------------------------------------
 
-install(TARGETS vhapi_so libverlihub_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR}) # note: on windows dll goes to bin and its import library to lib
+# ----------------------------------------------------------------------------------------------------
+# package for plugins built outside of verlihub source, found with find_package(Verlihub)
+
+get_directory_property(VERLIHUB_EXPORT_DEFS COMPILE_DEFINITIONS) # note: verlihub headers depend on same defines and config.h, else plugin sees other class layout
+list(APPEND VERLIHUB_EXPORT_DEFS U_USING_ICU_NAMESPACE=1) # note: this one is set in compiler flags
+
+string(REGEX REPLACE " *-I([^ ]+)" "\\1;" VERLIHUB_EXPORT_INCS "${VERLIHUB_INCLUDE_DIRS}") # note: headers of libraries that verlihub headers include
+list(FILTER VERLIHUB_EXPORT_INCS EXCLUDE REGEX "^$")
+
+set_target_properties(libverlihub_so PROPERTIES EXPORT_NAME verlihub)
+target_include_directories(libverlihub_so INTERFACE "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>") # note: install interface only, build inside source is not changed
+
+foreach(INC ${VERLIHUB_EXPORT_INCS})
+	target_include_directories(libverlihub_so INTERFACE "$<INSTALL_INTERFACE:${INC}>")
+endforeach(INC ${VERLIHUB_EXPORT_INCS})
+
+foreach(DEF ${VERLIHUB_EXPORT_DEFS})
+	target_compile_definitions(libverlihub_so INTERFACE "$<INSTALL_INTERFACE:${DEF}>")
+endforeach(DEF ${VERLIHUB_EXPORT_DEFS})
+
+SET(VERLIHUB_CMAKE_DIR "${LIBDIR}/cmake/Verlihub")
+SET(VERLIHUB_HEADER_DIR "include/${PROJECT_NAME}")
+include(CMakePackageConfigHelpers)
+configure_package_config_file("${CMAKE_SOURCE_DIR}/cmake/VerlihubConfig.cmake.cm" "${CMAKE_BINARY_DIR}/VerlihubConfig.cmake" INSTALL_DESTINATION ${VERLIHUB_CMAKE_DIR} PATH_VARS VERLIHUB_HEADER_DIR PLUGINDIR)
+write_basic_package_version_file("${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmake" VERSION ${VERLIHUB_VERSION} COMPATIBILITY SameMinorVersion)
+
+# ----------------------------------------------------------------------------------------------------
+
+install(TARGETS libverlihub_so EXPORT VerlihubTargets RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR}) # note: on windows dll goes to bin and its import library to lib
+install(TARGETS vhapi_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR})
+install(EXPORT VerlihubTargets NAMESPACE Verlihub:: DESTINATION ${VERLIHUB_CMAKE_DIR})
+install(FILES "${CMAKE_BINARY_DIR}/VerlihubConfig.cmake" "${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmake" DESTINATION ${VERLIHUB_CMAKE_DIR})
 
 INSTALL(
 	FILES "${VERLIHUB_BINARY_DIR}/verlihub_config"
@@ -225,6 +256,6 @@ if(HAVE_WEPOLL) # note: cconnepoll.h includes it from own folder
 	INSTALL(FILES wepoll/wepoll.h DESTINATION "include/${PROJECT_NAME}/wepoll")
 endif(HAVE_WEPOLL)
 
-INSTALL(FILES ${VERLIHUB_HDRS} "${VERLIHUB_BINARY_DIR}/dirsettings.h" DESTINATION "include/${PROJECT_NAME}")
+INSTALL(FILES ${VERLIHUB_HDRS} "${VERLIHUB_BINARY_DIR}/dirsettings.h" "${VERLIHUB_BINARY_DIR}/config.h" DESTINATION "include/${PROJECT_NAME}") # note: headers include config.h, it decides class layout
 
 # end of file

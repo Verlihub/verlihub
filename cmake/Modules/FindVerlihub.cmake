@@ -18,6 +18,21 @@
 
 SET(VERLIHUB_FOUND 0)
 
+# note: newer verlihub installs package configuration, it also gives defines that verlihub headers depend on, so use it when found
+SET(_VH_FIND_QUIETLY ${Verlihub_FIND_QUIETLY}) # note: inner find_package changes these
+SET(_VH_FIND_REQUIRED ${Verlihub_FIND_REQUIRED})
+find_package(Verlihub ${Verlihub_FIND_VERSION} CONFIG QUIET HINTS ${WITH_VERLIHUB})
+SET(Verlihub_FIND_QUIETLY ${_VH_FIND_QUIETLY})
+SET(Verlihub_FIND_REQUIRED ${_VH_FIND_REQUIRED})
+
+if(Verlihub_FOUND)
+	IF(NOT Verlihub_FIND_QUIETLY)
+		MESSAGE(STATUS "[ OK ] Found Verlihub ${VERLIHUB_VERSION_STRING} package: ${Verlihub_DIR}")
+	ENDIF(NOT Verlihub_FIND_QUIETLY)
+
+	return()
+endif(Verlihub_FOUND)
+
 find_program(VERLIHUB_CONFIG verlihub_config
 	/usr/local/verlihub/bin/
 	/usr/local/bin/

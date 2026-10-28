@@ -22,18 +22,20 @@
 #include "cconfmysql.h"
 #include "i18n.h"
 #include <string.h>
+#include <stdlib.h>
 
 namespace nVerliHub {
 
 	namespace nMySQL {
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset):
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls):
 	cObj("cMySQL"),
 	mDBName(data),
 	mDBHost(host),
 	mDBUser(user),
 	mDBPass(pass),
 	mDBChar(charset),
+	mDBTLS(tls),
 	mDBHandle(NULL)//,
 	//mReconnect(0)
 {
@@ -88,12 +90,64 @@ bool cMySQL::Connect()
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
-	if (!mysql_real_connect(mDBHandle, mDBHost.c_str(), mDBUser.c_str(), mDBPass.c_str(), mDBName.c_str(), 0, NULL, 0)) {
-		Error(0, mysql_error(mDBHandle));
+	if (!RealConnect(mDBHandle, mDBHost, mDBUser, mDBPass, mDBName, mDBTLS)) {
+		Error(0, "Failed connecting to MySQL/MariaDB server: "); // note: error appends mysql error text
 		return false;
 	}
 
 	return true;
+}
+
+void cMySQL::SplitHost(const string &addr, string &host, unsigned int &port)
+{
+	host = addr;
+	port = 0; // note: default port
+	const size_t pos = addr.find(':');
+
+	if ((pos == string::npos) || (addr.find(':', pos + 1) != string::npos)) // note: no port, or more colons like in ipv6 address
+		return;
+
+	const string num = addr.substr(pos + 1);
+
+	if (num.empty() || (num.size() > 5) || (num.find_first_not_of("0123456789") != string::npos)) // note: not a port, whole value stays host and connection reports it
+		return;
+
+	const unsigned long val = strtoul(num.c_str(), NULL, 10);
+
+	if (!val || (val > 65535))
+		return;
+
+	host = addr.substr(0, pos);
+	port = val;
+}
+
+bool cMySQL::RealConnect(MYSQL *handle, const string &addr, const string &user, const string &pass, const string &data, bool tls)
+{
+	string host;
+	unsigned int port;
+	SplitHost(addr, host, port);
+
+#if defined(MARIADB_PACKAGE_VERSION) // note: mariadb connector/c 3.4 and later requires tls by default, so not required must be set too
+	my_bool enforce = (tls ? 1 : 0);
+	mysql_options(handle, MYSQL_OPT_SSL_ENFORCE, &enforce);
+
+	if (!tls) {
+		my_bool verify = 0;
+		mysql_options(handle, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &verify);
+	}
+#elif defined(LIBMYSQL_VERSION_ID) && (LIBMYSQL_VERSION_ID >= 50711) // note: mysql client uses tls when server has it, but does not require it
+	if (tls) {
+		unsigned int mode = SSL_MODE_REQUIRED;
+		mysql_options(handle, MYSQL_OPT_SSL_MODE, &mode);
+	}
+#endif
+
+	if (port) { // note: with localhost client uses local socket and ignores port, so force tcp when port is given
+		unsigned int proto = MYSQL_PROTOCOL_TCP;
+		mysql_options(handle, MYSQL_OPT_PROTOCOL, &proto);
+	}
+
+	return (mysql_real_connect(handle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), port, NULL, 0) != NULL);
 }
 
 //bool cMySQL::Error(int level, const string &text)

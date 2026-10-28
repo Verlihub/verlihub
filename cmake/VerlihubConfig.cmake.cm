@@ -1,0 +1,45 @@
+#	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
+#	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
+#
+#	Verlihub is free software; You can redistribute it
+#	and modify it under the terms of the GNU General
+#	Public License as published by the Free Software
+#	Foundation, either version 3 of the license, or at
+#	your option any later version.
+#
+#	Verlihub is distributed in the hope that it will be
+#	useful, but without any warranty, without even the
+#	implied warranty of merchantability or fitness for
+#	a particular purpose. See the GNU General Public
+#	License for more details.
+#
+#	Please see https://www.gnu.org/licenses/ for a copy
+#	of the GNU General Public License.
+
+# Verlihub package configuration, for building plugins outside of Verlihub source:
+#
+#	find_package(Verlihub 1.7 REQUIRED)
+#	target_link_libraries(my_plugin Verlihub::verlihub)
+#
+# Verlihub::verlihub gives library, headers and defines that Verlihub headers depend on.
+# When Verlihub is installed in own prefix, add -DCMAKE_PREFIX_PATH=<prefix> or -DVerlihub_DIR=<prefix>/lib/cmake/Verlihub
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/VerlihubTargets.cmake")
+
+SET(VERLIHUB_VERSION_MAJOR @VERLIHUB_VERSION_MAJOR@)
+SET(VERLIHUB_VERSION_MINOR @VERLIHUB_VERSION_MINOR@)
+SET(VERLIHUB_VERSION_PATCH @VERLIHUB_VERSION_PATCH@)
+SET(VERLIHUB_VERSION_TWEAK @VERLIHUB_VERSION_TWEAK@)
+SET(VERLIHUB_VERSION_STRING "@VERLIHUB_VERSION@")
+
+set_and_check(VERLIHUB_INCLUDE_DIR "@PACKAGE_VERLIHUB_HEADER_DIR@")
+SET(VERLIHUB_PLUGIN_DIR "@PACKAGE_PLUGINDIR@")
+
+# note: same variables as FindVerlihub.cmake module gives, so older plugin builds keep working
+get_target_property(VERLIHUB_INCLUDE_DIRS Verlihub::verlihub INTERFACE_INCLUDE_DIRECTORIES)
+SET(VERLIHUB_LIBRARIES Verlihub::verlihub)
+SET(VERLIHUB_FOUND TRUE)
+
+check_required_components(Verlihub)

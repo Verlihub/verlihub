@@ -180,8 +180,32 @@ function _get_plugin_name() #path_to_plugin
 	echo ${1#$PLUGIN_PATH}
 }
 
-# Return db_host
+# Return db_host, it can be host:port
 function get_db_host() { echo $(get_var_from_conf "db_host" "localhost"); }
+
+# Return host of db_host without port
+function mysql_host_name() # db_host
+{
+	local HOST="${1%:*}" PORT="${1##*:}"
+
+	if [ "$HOST" != "$1" ] && [[ "$HOST" != *:* ]] && [[ "$PORT" =~ ^[0-9]+$ ]]; then
+		echo "$HOST"
+	else
+		echo "$1"
+	fi
+}
+
+# Return mysql client options for db_host, note: with port tcp is used, else localhost would use local socket and ignore port, same as hub does
+function mysql_host_args() # db_host
+{
+	local HOST="${1%:*}" PORT="${1##*:}"
+
+	if [ "$HOST" != "$1" ] && [[ "$HOST" != *:* ]] && [[ "$PORT" =~ ^[0-9]+$ ]]; then
+		echo "-h $HOST -P $PORT --protocol=TCP"
+	else
+		echo "-h $1"
+	fi
+}
 
 # Return db_data
 function get_db_name() { echo $(get_var_from_conf "db_data" "verlihub"); }
@@ -208,7 +232,7 @@ function get_hub_encoding() { echo ""; }
 # Connect to MySQL server
 function mysql_connect() {
 	export MYSQL_PWD="$(get_db_pass)"
-	@BASH_PATH@ -c "$MYSQL --connect_timeout 5 -h $(get_db_host) -D $(get_db_name) -u $(get_db_user) $1" && return 0 || return 1;
+	@BASH_PATH@ -c "$MYSQL --connect_timeout 5 $(mysql_host_args "$(get_db_host)") -D $(get_db_name) -u $(get_db_user) $1" && return 0 || return 1;
 }
 
 # Run given query
@@ -251,7 +275,7 @@ function _does_mysql_account_exists() # host, user, pass
 	fi
 
 	export MYSQL_PWD="$3"
-	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "show databases" &>/dev/null  && return 0 || return 1
+	$MYSQL --connect_timeout 5 $(mysql_host_args "$1") -u "$2" -e "show databases" &>/dev/null  && return 0 || return 1
 }
 
 function _does_mysql_db_exists() # host, user, pass, db
@@ -261,7 +285,7 @@ function _does_mysql_db_exists() # host, user, pass, db
 	fi
 
 	export MYSQL_PWD="$3"
-	$MYSQL --connect_timeout 5 -h "$1" -u "$2" -e "use $4" &>/dev/null  && return 0 || return 1
+	$MYSQL --connect_timeout 5 $(mysql_host_args "$1") -u "$2" -e "use $4" &>/dev/null  && return 0 || return 1
 }
 
 function _mysql_get_socket()
@@ -277,7 +301,7 @@ function _mysql_get_socket()
 
 function _mysql_export_socket()
 {
-	MYSQL_HOST=$(get_db_host)
+	MYSQL_HOST=$(mysql_host_name "$(get_db_host)")
 	IS_MYSQL_HOST_LOCAL=false
 	[ $MYSQL_HOST = "localhost" ] && IS_MYSQL_HOST_LOCAL=true
 	[ $MYSQL_HOST = "127.0.0.1" ] && IS_MYSQL_HOST_LOCAL=true
