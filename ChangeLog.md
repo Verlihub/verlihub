@@ -33,7 +33,8 @@
 * Updated: Commands gethost and getinfo, and user reports to operator chat, look up host names in background
 * Updated: Login statistics of registered users and ban hits are written in background
 * Updated: FindVerlihub.cmake is not installed into CMake root on Windows by default, CMake flag INSTALL_CMAKE_FILES
-* Updated: Translation files
+* Updated: Translation files, they are UTF-8 now and without codepage in file name, hub converts them to charset of its locale at runtime, CMake flag LOCALE_CONVERT converts at build time instead, po/LANGS is removed, languages are found from files
+* Added: CMake target pot extracts translation templates from source, po/transifex.yml for Transifex GitHub integration
 * Fixed: Hublist registration could hang for minutes on hublist that does not answer
 * Fixed: Hublist registration and crash report could send incomplete data
 * Fixed: NMDC command UnBan never removed any ban

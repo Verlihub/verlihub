@@ -1,0 +1,16 @@
+# Transifex GitHub integration: templates are read from here, translations come back as utf-8 po files
+# Templates are made with: make pot, on Windows: mingw32-make pot
+# Hub converts translations to charset of its locale at runtime, so files stay utf-8
+
+git:
+  filters:
+    - filter_type: file
+      file_format: PO
+      source_language: en
+      source_file: po/verlihub_core.pot
+      translation_files_expression: 'po/core_<lang>.po'
+    - filter_type: file
+      file_format: PO
+      source_language: en
+      source_file: po/verlihub_plugins.pot
+      translation_files_expression: 'po/plugins_<lang>.po'

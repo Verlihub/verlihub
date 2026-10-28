@@ -140,6 +140,20 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 		vhLog(1) << "Setting locale message directory: " << ((res) ? res : "Error") << endl;
 		res = textdomain("verlihub");
 		vhLog(1) << "Setting locale message domain: " << ((res) ? res : "Error") << endl;
+		const size_t dot = mDBConf.locale.find('.'); // note: translations are utf-8, gettext converts them to charset of hub locale, for example cp1251 of ru_RU.CP1251
+
+		if ((dot != string::npos) && ((dot + 1) < mDBConf.locale.size())) {
+			string codeset(mDBConf.locale.substr(dot + 1));
+			const size_t mod = codeset.find('@'); // note: without modifier like @euro
+
+			if (mod != string::npos)
+				codeset.erase(mod);
+
+			if (codeset.size()) {
+				res = bind_textdomain_codeset("verlihub", codeset.c_str());
+				vhLog(1) << "Setting locale message charset: " << ((res) ? res : "Error") << endl;
+			}
+		}
 	}
 
 	mSetupList.CreateTable(); // must be done first

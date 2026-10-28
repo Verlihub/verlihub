@@ -136,6 +136,17 @@ Supported CMake options
 -DUSE_EPOLL=OFF (default: ON)
 	use poll instead of epoll connection chooser, on Windows select instead of bundled wepoll
 
+-DLOCALE_CONVERT=ON (default: OFF, on Alpine ON)
+	convert translations to codepage of their language at build time, needed only when gettext of system can not convert them at runtime, like musl libc on Alpine
+
+=======================
+Translations
+=======================
+
+Translation files in po folder are UTF-8, Transifex reads templates from GitHub and sends translations back, see po/transifex.yml
+Hub converts translations to charset of its locale at runtime, for example CP1251 with locale = ru_RU.CP1251 in dbconfig, or UTF-8 with ru_RU.UTF-8
+After changing texts in source, update templates with: make pot (on Windows: mingw32-make pot)
+
 =======================================
 Build plugins outside of Verlihub source
 =======================================

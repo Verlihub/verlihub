@@ -1,0 +1,616 @@
+# 
+# Translators:
+# daniel dny <danny05_c00l@yahoo.com>, 2016,2018
+# S0RiN <rusu_sorin_con@yahoo.com>, 2014-2019
+# Stan Marian <marian.stan@omegahost.ro>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: Verlihub\n"
+"Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
+"POT-Creation-Date: 2025-08-12 19:36+0200\n"
+"PO-Revision-Date: 2014-06-20 09:10+0000\n"
+"Last-Translator: S0RiN <rusu_sorin_con@yahoo.com>, 2014-2019\n"
+"Language-Team: Romanian (Romania) (http://app.transifex.com/feardc/verlihub/language/ro_RO/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ro_RO\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+"X-Generator: Poedit 3.6\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-KeywordsList: _;ngettext;gettext;gettext_noop\n"
+"X-Poedit-SearchPath-0: ../plugins\n"
+"X-Poedit-SourceCharset: CP1250\n"
+
+#: ../plugins/chatroom/cconsole.cpp:53
+msgid "Give a list of chatrooms"
+msgstr "Iata o lista cu camere de chat"
+
+#: ../plugins/forbid/cconsole.cpp:50
+msgid "Give a list of forbidden expressions"
+msgstr "Iata o lista cu expresii interzise"
+
+#: ../plugins/forbid/cconsole.cpp:98
+msgid "Sorry the regular expression you provided is not valid."
+msgstr "Ne pare rau dar sintaxa folosita de tine nu este valida"
+
+#: ../plugins/forbid/cforbidden.cpp:75
+#, c-format
+msgid "Forbidden words in %s: %s"
+msgstr "Cuvinte interzise în %s: %s"
+
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "MC"
+msgstr "Chat Principal"
+
+#: ../plugins/forbid/cforbidden.cpp:75
+msgid "PM"
+msgstr "Chat Privat"
+
+#: ../plugins/iplog/ciplog.cpp:94
+#, c-format
+msgid "Last %d events of nick %s:"
+msgstr "Ultimele %d evenimente ale utilizatorului %s:"
+
+#: ../plugins/iplog/ciplog.cpp:96
+#, c-format
+msgid "Last %d events of IP %s:"
+msgstr "Uktimele %d evenimente ale IP-ului %s:"
+
+#: ../plugins/iplog/ciplog.cpp:101
+msgid "connect"
+msgstr "conectat"
+
+#: ../plugins/iplog/ciplog.cpp:101
+msgid "login"
+msgstr "logare"
+
+#: ../plugins/iplog/ciplog.cpp:101
+msgid "logout"
+msgstr "delogare"
+
+#: ../plugins/iplog/ciplog.cpp:101
+msgid "disconnect"
+msgstr "deconectat"
+
+#: ../plugins/iplog/ciplog.cpp:104
+msgid "bad nick or nick temporarily banned"
+msgstr "nume de utilizator interzis sau nume de utilizator temporar blocat"
+
+#: ../plugins/iplog/ciplog.cpp:105
+msgid "used different nick in chat"
+msgstr "a folosit alt nume de utilizator in chat"
+
+#: ../plugins/iplog/ciplog.cpp:106
+msgid "kicked"
+msgstr "a dat afara"
+
+#: ../plugins/iplog/ciplog.cpp:107
+msgid "redirected"
+msgstr "redirectionat"
+
+#: ../plugins/iplog/ciplog.cpp:108
+msgid "exit from the hub"
+msgstr "a iesit de pe hub"
+
+#: ../plugins/iplog/ciplog.cpp:109
+msgid "critical hub load"
+msgstr "incarcare critica a hubului"
+
+#: ../plugins/iplog/ciplog.cpp:110
+msgid "timeout"
+msgstr "asteptare"
+
+#: ../plugins/iplog/ciplog.cpp:111
+msgid "user did nothing for too long time"
+msgstr "utilizatorul nu a facut nimic pentru o perioada mare de timp"
+
+#: ../plugins/iplog/ciplog.cpp:112
+msgid "hub full"
+msgstr "hubul este plin"
+
+#: ../plugins/iplog/ciplog.cpp:113
+msgid "share limit"
+msgstr "limita de sharing"
+
+#: ../plugins/iplog/ciplog.cpp:114
+msgid "no tag or not valid"
+msgstr "fara TAG sau nu este valid"
+
+#: ../plugins/iplog/ciplog.cpp:115
+msgid "tag breaks hub rules"
+msgstr "tag-ul încalca regulile hubului"
+
+#: ../plugins/iplog/ciplog.cpp:116
+msgid "wrong password"
+msgstr "parola gresita"
+
+#: ../plugins/iplog/ciplog.cpp:117
+msgid "error in login sequence"
+msgstr "eroare aparuta la autentificare"
+
+#: ../plugins/iplog/ciplog.cpp:118
+msgid "syntax error in some messages"
+msgstr "eroare de sintaxa in mesaj"
+
+#: ../plugins/iplog/ciplog.cpp:119
+msgid "invalid key"
+msgstr "cheie invalida"
+
+#: ../plugins/iplog/ciplog.cpp:123 ../plugins/iplog/ciplog.cpp:166
+msgid "Date"
+msgstr "Data"
+
+#: ../plugins/iplog/ciplog.cpp:124
+msgid "Action"
+msgstr "Actiune"
+
+#: ../plugins/iplog/ciplog.cpp:125 ../plugins/iplog/ciplog.cpp:167
+msgid "Nickname"
+msgstr "Nume utilizator"
+
+#: ../plugins/iplog/ciplog.cpp:126
+msgid "Info"
+msgstr "Informatie"
+
+#: ../plugins/iplog/ciplog.cpp:158
+#, c-format
+msgid "Nick %s has lately been in the hub with the following IP"
+msgstr "Utilizatorul %s a mai fost pe hub, avand urmatoarele adrese IP"
+
+#: ../plugins/iplog/ciplog.cpp:160
+#, c-format
+msgid "IP %s has lately been in the hub with following nicknames"
+msgstr "IP-ul: %s a mai fost pe hub, folosind urmatoarele nume de utilizator"
+
+#: ../plugins/isp/cconsole.cpp:54
+msgid "Give a list of ISPs"
+msgstr "Iata o lista cu ISP-uri"
+
+#: ../plugins/isp/cconsole.cpp:133
+msgid "Unknown range format."
+msgstr "Format necunoscut al range-ului"
+
+#: ../plugins/isp/cconsole.cpp:140
+msgid "Sorry the regular expression for nickname you provided is not valid."
+msgstr "Ne pare rau, dar expresia numelui tau de utilizator nu este valida."
+
+#: ../plugins/isp/cconsole.cpp:148
+msgid "Sorry the regular expression for connection you provided is not valid."
+msgstr "Ne pare rau, dar setarea conexiunii tale, nu este valida."
+
+#: ../plugins/isp/cisps.cpp:46
+msgid "Your nick should match %[pattern]"
+msgstr "Numele tau de utilizator se potriveste cu %[pattern]"
+
+#: ../plugins/isp/cisps.cpp:47
+msgid "Your connection type should match %[pattern]"
+msgstr "Tipul tau de conexiune se potriveste cu %[pattern]"
+
+#: ../plugins/lua/callbacks.cpp:1724
+msgid "Incorrect password"
+msgstr ""
+
+#: ../plugins/lua/cconsole.cpp:74 ../plugins/python/cconsole.cpp:64
+msgid "You have no rights to do this."
+msgstr "Nu ai permisiunile necesare acestei actiuni."
+
+#: ../plugins/lua/cconsole.cpp:93
+#, c-format
+msgid "Lua version: %s [%s]"
+msgstr "Versiune Lua: %s [%s]"
+
+#: ../plugins/lua/cconsole.cpp:94
+#, c-format
+msgid "Copyright: %s"
+msgstr "Drept de autor: %s"
+
+#: ../plugins/lua/cconsole.cpp:95
+#, c-format
+msgid "Authors: %s"
+msgstr "Autori: %s"
+
+#: ../plugins/lua/cconsole.cpp:106
+#, c-format
+msgid "Hub version: %s"
+msgstr "Versiune de hub: %s"
+
+#: ../plugins/lua/cconsole.cpp:107
+#, c-format
+msgid "Loaded scripts: %d"
+msgstr "Scripte încărcate: %d"
+
+#: ../plugins/lua/cconsole.cpp:108
+#, c-format
+msgid "Memory used: %s"
+msgstr "Memorie utilizată: %s"
+
+#: ../plugins/lua/cconsole.cpp:114
+msgid "Loaded Lua scripts"
+msgstr "Scripturi Lua incarcate"
+
+#: ../plugins/lua/cconsole.cpp:115 ../plugins/lua/cconsole.cpp:158
+#: ../plugins/perl/cconsole.cpp:56 ../plugins/python/cconsole.cpp:87
+#: ../plugins/python/cconsole.cpp:107
+msgid "ID"
+msgstr "ID"
+
+#: ../plugins/lua/cconsole.cpp:116 ../plugins/lua/cconsole.cpp:159
+#: ../plugins/perl/cconsole.cpp:57 ../plugins/python/cconsole.cpp:88
+#: ../plugins/python/cconsole.cpp:108
+msgid "Script"
+msgstr "Scriptul"
+
+#: ../plugins/lua/cconsole.cpp:117
+msgid "Memory"
+msgstr "Memorie"
+
+#: ../plugins/lua/cconsole.cpp:153 ../plugins/lua/cconsole.cpp:232
+#: ../plugins/python/cconsole.cpp:102 ../plugins/python/cconsole.cpp:187
+#, c-format
+msgid "Failed loading directory: %s"
+msgstr "Încărcarea directorului: %s a eşuat."
+
+#: ../plugins/lua/cconsole.cpp:157
+#, c-format
+msgid "Lua scripts found in: %s"
+msgstr "Scripturi Lua disponibile in: %s"
+
+#: ../plugins/lua/cconsole.cpp:206 ../plugins/lua/cconsole.cpp:325
+#, c-format
+msgid "Script stopped: %s"
+msgstr "Script oprit: %s"
+
+#: ../plugins/lua/cconsole.cpp:215 ../plugins/lua/cconsole.cpp:336
+#: ../plugins/python/cconsole.cpp:165 ../plugins/python/cconsole.cpp:288
+#, c-format
+msgid "Script not stopped because it's not loaded: #%d"
+msgstr "Scriptul nu s-a oprit pentru că nu s-a încărcat: #%d"
+
+#: ../plugins/lua/cconsole.cpp:217 ../plugins/lua/cconsole.cpp:338
+#: ../plugins/python/cconsole.cpp:167 ../plugins/python/cconsole.cpp:290
+#, c-format
+msgid "Script not stopped because it's not loaded: %s"
+msgstr "Scriptul nu s-a oprit pentru că nu s-a încărcat: %s"
+
+#: ../plugins/lua/cconsole.cpp:251
+#, c-format
+msgid ""
+"Script number %d is out of range. Get the right number using !luafiles "
+"command or specify the script path instead."
+msgstr "Numărul scriptului %d este în afara seriei. Află numărul corect folosind comanda !luafiles sau specifică patch-ul corespunzător."
+
+#: ../plugins/lua/cconsole.cpp:267
+#, c-format
+msgid "Script is already loaded: %s"
+msgstr "Script deja încărcat: %s"
+
+#: ../plugins/lua/cconsole.cpp:282 ../plugins/lua/cconsole.cpp:351
+#, c-format
+msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
+msgstr "Alocare eşuată a noului interpret pentru scripte Lua: %s [ %s ]"
+
+#: ../plugins/lua/cconsole.cpp:287 ../plugins/lua/cconsole.cpp:356
+#, c-format
+msgid "Script is now loaded: %s"
+msgstr "S-a încărcat acum scriptul: %s"
+
+#: ../plugins/lua/cconsole.cpp:292 ../plugins/lua/cconsole.cpp:361
+#: ../plugins/perl/cconsole.cpp:164 ../plugins/perl/cconsole.cpp:208
+#: ../plugins/python/cconsole.cpp:242 ../plugins/python/cconsole.cpp:307
+#, c-format
+msgid "Script not found or couldn't be parsed: %s"
+msgstr "Scriptul nu s-a găsit s-au n-a putut fi accesat: %s"
+
+#: ../plugins/lua/cconsole.cpp:380
+#, c-format
+msgid "Updated configuration %s.%s from '%s' to '%s'."
+msgstr "Se înnoieste configurarea %s.%s din '%s' în '%s'."
+
+#: ../plugins/lua/cconsole.cpp:382
+#, c-format
+msgid "Current log level: %d"
+msgstr "Nivelul curent al log-ului: %d"
+
+#: ../plugins/lua/cconsole.cpp:400 ../plugins/python/cconsole.cpp:334
+#, c-format
+msgid "Updated configuration %s.%s: %s -> %s"
+msgstr "Actualizare configurări %s.%s: %s -> %s"
+
+#: ../plugins/lua/cconsole.cpp:402
+#, c-format
+msgid "Current error class: %d"
+msgstr "Eroare curentă class: %d"
+
+#: ../plugins/lua/cluainterpreter.cpp:189
+msgid "Lua error"
+msgstr "Eroare lua"
+
+#: ../plugins/lua/cluainterpreter.cpp:195
+msgid "Unknown error"
+msgstr "Eroare necunoscuta"
+
+#: ../plugins/messenger/cconsole.cpp:71
+#, c-format
+msgid "The message has been sent to %s because he is online."
+msgstr "Mesajul a fost trimis catre %s deoarece este online."
+
+#: ../plugins/messenger/cconsole.cpp:74
+msgid "Message saved."
+msgstr "Mesaj salvat."
+
+#: ../plugins/messenger/cconsole.cpp:83
+#, c-format
+msgid "You have %d message in your box."
+msgid_plural "You have %d messages in your box."
+msgstr[0] "Ai %d mesaj in casuta de mesaje."
+msgstr[1] "Ai %d mesaje in casuta de mesaje."
+msgstr[2] "Ai %d mesaje in casuta de mesaje."
+
+#: ../plugins/messenger/cconsole.cpp:87
+msgid "You have no new message in your box."
+msgstr "Nu ai niciun mesaj."
+
+#: ../plugins/messenger/cmsglist.cpp:212
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+msgstr "De la: %s pentru: %s\nData: %s\nSubiect: %s\n"
+
+#: ../plugins/messenger/cmsglist.cpp:215
+#, c-format
+msgid ""
+"From: %s To: %s\n"
+"Date: %s\n"
+"Subject: %s\n"
+"%s\n"
+"----\n"
+msgstr "De la: %s pentru: %s\nData: %s\nSubiect: %s\n%s\n----\n"
+
+#: ../plugins/messenger/cmsglist.cpp:218
+#, c-format
+msgid ""
+"#OFFLINE MESSAGE# [%s]\n"
+"Subject: %s -------------------------\n"
+"%s"
+msgstr "#MESAJ OFFLINE# [%s]\nSubiect: %s -------------------------\n%s"
+
+#: ../plugins/perl/cconsole.cpp:55
+msgid "Loaded Perl scripts"
+msgstr "Scripturi Perl incarcate"
+
+#: ../plugins/perl/cconsole.cpp:99 ../plugins/perl/cconsole.cpp:189
+#, c-format
+msgid "Script %s stopped."
+msgstr "Scriptul %s a fost oprit."
+
+#: ../plugins/perl/cconsole.cpp:109 ../plugins/perl/cconsole.cpp:200
+#, c-format
+msgid "Script #%s not stopped because it is not running."
+msgstr "Scriptul #%s nu a fost oprit deoarece nu ruleaza."
+
+#: ../plugins/perl/cconsole.cpp:111
+#, c-format
+msgid "Script %s not stopped because it is not running."
+msgstr "Scriptul %s nu a fost oprit deoarece nu ruleaza."
+
+#: ../plugins/perl/cconsole.cpp:138
+#, c-format
+msgid "Failed loading directory %s."
+msgstr "Nu s-a putut incarca directorul %s."
+
+#: ../plugins/perl/cconsole.cpp:159
+#, c-format
+msgid "Script %s is already running."
+msgstr "Scriptul %s ruleaza deja."
+
+#: ../plugins/perl/cconsole.cpp:166 ../plugins/perl/cconsole.cpp:210
+#, c-format
+msgid "Script %s is now running."
+msgstr "Scriptul %s ruleaza cu succes."
+
+#: ../plugins/perl/cconsole.cpp:202
+#, c-format
+msgid "Script %s not stopped  because it is not running."
+msgstr "Scriptul %s nu a fost oprit deoarece nu ruleaza."
+
+#: ../plugins/plugman/cconsole.cpp:41
+#, c-format
+msgid "%s version: %s"
+msgstr "%s versiune: %s"
+
+#: ../plugins/plugman/cconsole.cpp:42
+#, c-format
+msgid "%s executable: %s"
+msgstr "%s executabil: %s"
+
+#: ../plugins/plugman/cconsole.cpp:43
+#, c-format
+msgid "%s build time: %s"
+msgstr "%s timp de construcţie: %s"
+
+#: ../plugins/plugman/cconsole.cpp:158
+msgid ""
+"Plugin name must be max 10 characters long, please provide another one."
+msgstr "Numele pluginului trebuie sa aiba maxim 10 caractere, te rugam sa mai incerci o data."
+
+#: ../plugins/plugman/cconsole.cpp:163
+msgid "Please provide a valid path for the plugin."
+msgstr "Te rugam sa introduci o cale valida pentru acest plugin."
+
+#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
+msgid "Plugin loaded."
+msgstr "Pluginul a fost incarcat."
+
+#: ../plugins/plugman/cconsole.cpp:200 ../plugins/plugman/cconsole.cpp:223
+#: ../plugins/plugman/cconsole.cpp:246
+#, c-format
+msgid "Plugin not found: %s"
+msgstr "Pluginul %s nu a fost gasit."
+
+#: ../plugins/plugman/cconsole.cpp:215
+msgid "Plugin unloaded."
+msgstr "Pluginul a fost dezactivat."
+
+#: ../plugins/plugman/cconsole.cpp:218
+msgid "Plugin not unloaded, probably because it's not loaded."
+msgstr "Nu s-a putut dezactiva pluginul, probabil nu a fost activat."
+
+#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
+msgid "Plugin reloaded."
+msgstr "Pluginul a fost reincarcat."
+
+#: ../plugins/plugman/cconsole.cpp:241
+msgid "Plugin not reloaded, probably because it's not loaded."
+msgstr "Pluginul nu se poate reincarca, deoarece nu a fost incarcat initial."
+
+#: ../plugins/plugman/cplugs.cpp:47
+msgid "Plugin not found."
+msgstr "Pluginul nu a fost gasit."
+
+#: ../plugins/plugman/cplugs.cpp:120
+msgid "Plugin does not support scripts."
+msgstr "Acest plugin nu suporta scripturi."
+
+#: ../plugins/plugman/cplugs.cpp:126
+msgid "Script loaded."
+msgstr "Scriptul a fost incarcat."
+
+#: ../plugins/plugman/cplugs.cpp:128
+msgid "Error loading script."
+msgstr "Eroare la incarcarea scriptului."
+
+#: ../plugins/plugman/cplugs.cpp:157
+msgid "Plugin needs to be recompiled."
+msgstr "Pluginul necesită recompilare."
+
+#: ../plugins/plugman/cplugs.cpp:208
+#, c-format
+msgid "Name: %s [%s] [%s]"
+msgstr "Nume: %s [%s] [%s]"
+
+#: ../plugins/plugman/cplugs.cpp:208
+msgid "On"
+msgstr "Pornit"
+
+#: ../plugins/plugman/cplugs.cpp:208
+msgid "Off"
+msgstr "Oprit"
+
+#: ../plugins/plugman/cplugs.cpp:208
+msgid "Automated"
+msgstr "Automatic"
+
+#: ../plugins/plugman/cplugs.cpp:208
+msgid "Manual"
+msgstr "Manual"
+
+#: ../plugins/plugman/cplugs.cpp:209
+#, c-format
+msgid "Path: %s"
+msgstr "Cale: %s"
+
+#: ../plugins/plugman/cplugs.cpp:212
+#, c-format
+msgid "Description: %s"
+msgstr "Descriere: %s"
+
+#: ../plugins/plugman/cplugs.cpp:215
+#, c-format
+msgid "Last error: %s"
+msgstr "Ultima eroare: %s"
+
+#: ../plugins/python/cconsole.cpp:82 ../plugins/python/cconsole.cpp:133
+#: ../plugins/python/cconsole.cpp:175 ../plugins/python/cconsole.cpp:251
+#: ../plugins/python/cconsole.cpp:316
+msgid "Python interpreter is not loaded."
+msgstr "Interpretorul Python nu este activ."
+
+#: ../plugins/python/cconsole.cpp:86
+msgid "Loaded Python scripts"
+msgstr "Încărcare scripte Python"
+
+#: ../plugins/python/cconsole.cpp:106
+#, c-format
+msgid "Python scripts found in: %s"
+msgstr "Scriptele Python găsite în: %s"
+
+#: ../plugins/python/cconsole.cpp:156 ../plugins/python/cconsole.cpp:278
+#, c-format
+msgid "Script #%d stopped: %s"
+msgstr "Script #%d oprit: %s"
+
+#: ../plugins/python/cconsole.cpp:206
+#, c-format
+msgid ""
+"Script number %d is out of range. Get the right number using !pyfiles "
+"command or specify the script path instead."
+msgstr "Numărul scriptului %d este în afara seriei. Află numărul corect folosind comanda !pyfiles sau specifică patch-ul corespunzător."
+
+#: ../plugins/python/cconsole.cpp:222
+#, c-format
+msgid "Script #%d is already loaded: %s"
+msgstr "Scriptul #%d este deja încărcat: %s"
+
+#: ../plugins/python/cconsole.cpp:232 ../plugins/python/cconsole.cpp:298
+#, c-format
+msgid "Failed to allocate new Python interpreter for script: %s [ %s ]"
+msgstr "Alocare eşuată a noului interpret pentru scripte Python: %s [ %s ]"
+
+#: ../plugins/python/cconsole.cpp:239 ../plugins/python/cconsole.cpp:304
+#, c-format
+msgid "Script #%d is now loaded: %s"
+msgstr "Scriptul #%d este acum încărcat: %s"
+
+#: ../plugins/python/cconsole.cpp:324
+msgid "Level must be a number."
+msgstr ""
+
+#: ../plugins/replacer/cconsole.cpp:66
+msgid "Replaced words"
+msgstr "Cuvinte inlocuite"
+
+#: ../plugins/replacer/cconsole.cpp:69
+msgid "Word"
+msgstr "Cuvant"
+
+#: ../plugins/replacer/cconsole.cpp:70
+msgid "Replace with"
+msgstr "Inlocuieste cu"
+
+#: ../plugins/replacer/cconsole.cpp:71
+msgid "Affected class"
+msgstr "Clasa afectata"
+
+#: ../plugins/replacer/cconsole.cpp:98
+#, c-format
+msgid "Word '%s' does not exist."
+msgstr "Cuvantul '%s' nu exista."
+
+#: ../plugins/replacer/cconsole.cpp:106
+#, c-format
+msgid "Word '%s' deleted."
+msgstr "Cuvantul '%s' a fost sters."
+
+#: ../plugins/replacer/cconsole.cpp:129
+msgid "Sorry the regular expression you provided cannot be parsed."
+msgstr "Imi pare rau, dar sintaxa oferita de tine, nu poate fi procesata."
+
+#: ../plugins/replacer/cconsole.cpp:135
+#, c-format
+msgid "Word '%s' already exists."
+msgstr "Cuvantul '%s' exista deja."
+
+#: ../plugins/replacer/cconsole.cpp:144
+#, c-format
+msgid ""
+"Added word %s. This word will be filtered in public chat for users with "
+"class that is less than or equal to %d."
+msgstr "Cuvantul %s a fost adaugat cu succes. Filtrarea se va face in main chat pentru utilizatorii cu o clasa mai mica sau egala cu %d."
+
+#: ../plugins/replacer/cconsole.cpp:146
+#, c-format
+msgid "Error adding word '%s'."
+msgstr "Eroare la adaugarea cuvantului '%s'."
