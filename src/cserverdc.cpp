@@ -124,6 +124,17 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
+		vector<string> fallback; // note: for locale that is not installed, locales of system environment before hub changes it, then usual english ones
+
+		for (const char *env: {"LC_ALL", "LC_MESSAGES", "LANG"}) {
+			const char *val = getenv(env);
+
+			if (val && val[0])
+				fallback.push_back(val);
+		}
+
+		fallback.push_back("en_US.UTF-8");
+		fallback.push_back("en_US.utf8");
 		vhLog(1) << "Setting environment variable LANG: " << ((SetEnv("LANG", mDBConf.locale.c_str()) == 0) ? "OK" : "Error") << endl;
 		vhLog(1) << "Unsetting environment variable LANGUAGE: " << ((UnsetEnv("LANGUAGE") == 0) ? "OK" : "Error") << endl;
 		char *res = setlocale(LC_MESSAGES/*LC_ALL*/, mDBConf.locale.c_str()); // note: only messages, else we break double decimal separator when saving and reading from db
@@ -137,11 +148,12 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 			//res = setlocale(LC_COLLATE, mDBConf.locale.c_str()); // note: and collation
 			//vhLog(0) << "Setting locale collation: " << ((res) ? res : "Error") << endl;
 
-		} else if (codeset_given && dot) { // note: locale is not installed on system, glibc gettext translates nothing in c locale, so messages use c.utf-8 and language is given by environment variable, charset below still converts them to codeset of hub locale, character classification stays default
-			static const char *fallback[] = {"C.UTF-8", "C.utf8"};
+		} else if (codeset_given && dot) { // note: locale is not installed on system, glibc gettext translates nothing in c, c.<charset> and posix locales and ignores language variable there, so messages use other installed locale and language is given by environment variable, charset below still converts them to codeset of hub locale, character classification stays default
+			for (const string &name: fallback) {
+				if ((name == "C") || (name == "POSIX") || (name.compare(0, 2, "C.") == 0))
+					continue;
 
-			for (const char *name: fallback) {
-				res = setlocale(LC_MESSAGES, name);
+				res = setlocale(LC_MESSAGES, name.c_str());
 
 				if (res)
 					break;
@@ -151,7 +163,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 				const string lang(mDBConf.locale.substr(0, dot));
 				vhLog(0) << "Locale " << mDBConf.locale << " is not installed, using " << res << " with language " << lang << " for messages, setting environment variable LANGUAGE: " << ((SetEnv("LANGUAGE", lang.c_str()) == 0) ? "OK" : "Error") << endl;
 			} else {
-				vhLog(0) << "Locale " << mDBConf.locale << " is not installed and fallback locale C.UTF-8 is not available, messages will not be translated" << endl;
+				vhLog(0) << "Locale " << mDBConf.locale << " is not installed and no other locale is installed except C, messages will not be translated" << endl;
 			}
 		}
 

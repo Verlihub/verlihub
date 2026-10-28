@@ -145,7 +145,7 @@ Translations
 
 Translation files in po folder are UTF-8, Transifex reads templates from GitHub and sends translations back, see po/transifex.yml
 Hub converts translations to charset of its locale at runtime, for example CP1251 with locale = ru_RU.CP1251 in dbconfig, or UTF-8 with ru_RU.UTF-8
-Locale must contain charset after dot, when it is not installed on system, hub still translates messages using C.UTF-8 locale, only character classification stays default
+Locale must contain charset after dot, when it is not installed on system, hub still translates messages using other installed locale like en_US.UTF-8, only character classification stays default
 After changing texts in source, update templates with: make pot (on Windows: mingw32-make pot)
 
 =======================================
