@@ -1,24 +1,107 @@
-.TH VERLIHUB 1 "January 2025" verlihub "January 2025"
+.TH VERLIHUB 1 "October 2026" verlihub "October 2026"
 .SH NAME
 verlihub \- Verlihub is a Direct Connect protocol server (Hub)
+.SH SYNOPSIS
+.B verlihub
+[options] [port]
+.br
+.B verlihub
+<command> [parameters]
+.SH OPTIONS
+These options start the hub:
+.TP
+.BR "-d, --config-dir <path>"
+Use configuration folder at given path. When it's not given, following folders are checked and last existing one is used: ~/.config/verlihub or ~/.verlihub, ./.verlihub, value of VERLIHUB_CFG environment variable. When none of them exists, <prefix>/etc/verlihub or home folder of system user verlihub is used, only when it contains dbconfig file, else /etc/verlihub
+.TP
+.BR "-v, --verbose"
+Increase log level, can be given more times
+.TP
+.BR "-S, --syslog"
+Log to syslog instead of console, when it's enabled at compile time
+.TP
+.BR "-s, --syslog-suffix <suffix>"
+Add suffix to syslog name
+.TP
+.BR "[port]"
+Listen on given port instead of configured one
+.SH COMMANDS
+Command must be the first argument, it does not start the hub. When configuration folder is optional and not given, it's found same way as for option --config-dir. Configuration folder must contain dbconfig file.
+.TP
+.BR "-i, --install"
+Install new hub. It asks for database information and creates database account and database when they don't exist, using administrator credentials of database server. Then it creates configuration folder with dbconfig file and default files, database tables, master account and basic hub settings. Log of table creation is written to install_log file in configuration folder. Run it as super user to choose system wide configuration folder. Optional sleep time of vh script is accepted and not used
+.TP
+.BR "-r, --run [config]"
+Run the hub in background from given configuration folder. Old log and err files are renamed to log.old and err.old, plugin links in plugins folder are checked, on Linux open files limit is raised by max_users. Hub runs with watchdog that restarts it when it exits with code 1 (restart command) or crashes, but not more than 3 times in 60 seconds. Its process ID is written to pid file
+.TP
+.BR "--stop [config]"
+Stop the hub that was started with --run and wait until it ends. Short option -s is not used, because it's syslog suffix option of hub
+.TP
+.BR "-q, --restart [config]"
+Stop the hub and start it again
+.TP
+.BR "-R, --reload [config]"
+Force hub to reload its configuration and caches, same as SIGHUP on Linux
+.TP
+.BR "-t, --status [config]"
+Check if hub is running or not
+.TP
+.BR "-g, --geoip [path]"
+Update all free MaxMind databases, Country, City and ASN. They are downloaded over HTTPS and unpacked by Verlihub itself, wget and tar are not needed. Default path is /usr/share/GeoIP on Linux and /usr/local/share/GeoIP on FreeBSD, on Windows path must be given, same as mmdb_path in dbconfig. On Linux it must be run as super user. Use !reload command in hubs after update
+.TP
+.BR "-a, --autoload [option] [-d config]"
+Load plugin automatically when hub starts, by link in plugins folder of configuration folder, on Windows plugin is copied there instead. Options are
+.B -l, --list
+to show list of available plugins and their status, this is default,
+.B -n, --on
+to run plugin automatically with hub and
+.B -f, --off
+to disable auto load of plugin. Configuration folder is given with
+.B -d, --configdir
+.TP
+.BR "-b, --backup <path> [config]"
+Make backup of hub database into <path>/<time>.sql, with structure and data of all tables, same as mysqldump makes. mysqldump is not needed, file can be imported with --restore or with mysql client
+.TP
+.BR "-w, --restore <file> [config]"
+Import given SQL file in hub database, file made by --backup or by mysqldump, it stops at first failed statement
+.TP
+.BR "-m, --multi <option>"
+Manage multiple hubs from list in /etc/verlihub.conf, options are same as for vhm, see vhm manual. On Linux vhm is installed as symbolic link to verlihub, so vhm <option> works same
+.TP
+.BR "-uh, --uphelp [config]"
+Update help files of hub from installed ones, including language folders
+.TP
+.BR "-mp, --modport <config> <main> [extra]"
+Modify main port and extra ports of hub, extra ports are separated by space. Running hub uses new ports after restart
+.TP
+.BR "-u, --adduser <nick> <password> <class> [config]"
+Register new user. Allowed classes are -1 (pinger), 1, 2, 3, 4, 5, 10, guest class 0 can not be registered. Password is hashed same way as hub does, using default_password_encryption
+.TP
+.BR "-gc, --getconf <variable> <config>"
+Get value of hub configuration variable
+.TP
+.BR "-sc, --setconf <variable> <value> <config>"
+Set value of existing hub configuration variable, use _ for empty value. Running hub uses new value after reload or restart
+.TP
+.BR "-c, --clean [config]"
+Ask to truncate kicklist, banlist and unbanlist tables, it removes all data in them
+.TP
+.BR "--version"
+Print version information of Verlihub, MySQL/MariaDB client library and OpenSSL
+.TP
+.BR "-h, --help"
+Show help with options and commands
+.P
+.I Example:
+.nf
+verlihub --getconf hub_name /etc/verlihub
+verlihub --adduser "[SU]Admin" secret 10
+.fi
 .SH DESCRIPTION
-Verlihub has some utility scripts that can be used to install a new hub or manage existing ones:
-.TP
-.BR 
-.I vh
-a script that includes features to manage hubs from command line interface (CLI)
-.TP
-.BR 
-.I vh_gui
-a script that includes features to manage hubs through a graphical interface (GUI)
-.TP
-.BR 
-.I vhm
-a script that allow you to run multi instances of Verlihub from command line interface (CLI)
+Verlihub itself installs a new hub and manages existing ones with commands above, there are no utility scripts anymore:
 .TP
 .BR
-.I  vh_regimporter
-a script that allow you to import registration from PtokaX, Aquila and YnHub
+.I vhm
+symbolic link to verlihub, same as verlihub -m, it allows you to run multi instances of Verlihub from command line interface (CLI)
 .P
 For more information please check <https://github.com/verlihub/>
 .SH "SPECIFIC FILE DESCRIPTIONS"
@@ -29,7 +112,7 @@ The global file for hub settings. Here there are variables you can use:
 .TP
 .BR 
 .I db_host
-Hostname for MySQL server. Can be a local server (localhost) or external server
+Hostname for MySQL server. Can be a local server (localhost) or external server, add :port for custom port, connection uses TCP then
 .TP
 .BR
 .I  db_data
@@ -42,6 +125,14 @@ MySQL username to access DB. User should has all privilegies
 .BR
 .I  db_pass
 Password for username
+.TP
+.BR
+.I  db_socket
+Path of local MySQL socket, used with localhost without port. Leave empty for built-in path of client library, set it when server uses another path. Installation finds it
+.TP
+.BR
+.I  db_tls
+Set to 1 to require encrypted connection to MySQL server, disabled by default
 .TP
 .BR
 .I  locale

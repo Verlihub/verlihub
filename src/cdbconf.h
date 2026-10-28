@@ -38,6 +38,7 @@ public:
 	string db_data;
 	string db_charset;
 	bool db_tls; // note: require encrypted connection to database server
+	string db_socket; // note: path of local socket, used with localhost when it differs from built in path of client library
 	string config_name;
 	string locale;
 	string mmdb_path;

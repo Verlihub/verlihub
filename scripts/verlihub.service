@@ -42,8 +42,8 @@ ExecStart=/usr/local/bin/vhm -r 1
 # start hub 2 using vhm
 #ExecStart=/usr/local/bin/vhm -r 2
 
-# start hub 1 using vh
-#ExecStart=/usr/local/bin/vh -r /path/to/dbconfig
+# start hub 1 using verlihub
+#ExecStart=/usr/local/bin/verlihub -r /path/to/config
 
 # stop hub 1 using vhm
 ExecStop=/usr/local/bin/vhm -s 1
@@ -51,8 +51,8 @@ ExecStop=/usr/local/bin/vhm -s 1
 # stop hub 2 using vhm
 #ExecStop=/usr/local/bin/vhm -s 2
 
-# stop hub 1 using vh
-#ExecStop=/usr/local/bin/vh -r /path/to/dbconfig
+# stop hub 1 using verlihub
+#ExecStop=/usr/local/bin/verlihub --stop /path/to/config
 
 # dont touch below
 Restart=on-failure

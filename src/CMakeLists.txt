@@ -198,16 +198,8 @@ add_library(vhapi_so SHARED "script_api.cpp")
 set_target_properties(vhapi_so PROPERTIES OUTPUT_NAME "vhapi")
 target_link_libraries(vhapi_so libverlihub_so)
 
-add_executable(verlihub "verlihub.cpp")
+add_executable(verlihub "verlihub.cpp" "ccmdline.cpp") # note: command line is used only by executable
 target_link_libraries(verlihub libverlihub_so)
-
-# ----------------------------------------------------------------------------------------------------
-# generate verlihub_config
-
-MESSAGE(STATUS "[ .. ] Generating configuration executable: ${CMAKE_BINARY_DIR}/verlihub_config")
-STRING(REPLACE ";" " " VERLIHUB_USE_LIBS "${VERLIHUB_LIBS}")
-string(STRIP "${VERLIHUB_USE_LIBS}" VERLIHUB_USE_LIBS)
-CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/cmake/verlihub_config.cm" "${CMAKE_BINARY_DIR}/verlihub_config")
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -241,15 +233,14 @@ write_basic_package_version_file("${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmak
 
 install(TARGETS libverlihub_so EXPORT VerlihubTargets RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR}) # note: on windows dll goes to bin and its import library to lib
 install(TARGETS vhapi_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR})
+
+if(NOT WIN32) # note: vhm is verlihub itself, started as vhm it manages multiple hubs, windows symbolic link needs administrator, there use verlihub -m
+	install(CODE "file(REMOVE \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm\")
+		execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink verlihub \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm\")
+		message(STATUS \"Installing: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm -> verlihub\")")
+endif()
 install(EXPORT VerlihubTargets NAMESPACE Verlihub:: DESTINATION ${VERLIHUB_CMAKE_DIR})
 install(FILES "${CMAKE_BINARY_DIR}/VerlihubConfig.cmake" "${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmake" DESTINATION ${VERLIHUB_CMAKE_DIR})
-
-INSTALL(
-	FILES "${VERLIHUB_BINARY_DIR}/verlihub_config"
-	DESTINATION "bin"
-	PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE
-	WORLD_READ WORLD_EXECUTE
-)
 
 if(HAVE_WEPOLL) # note: cconnepoll.h includes it from own folder
 	LIST(REMOVE_ITEM VERLIHUB_HDRS wepoll/wepoll.h)

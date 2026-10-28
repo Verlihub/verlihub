@@ -28,6 +28,9 @@
 #include <string>
 #include <vector>
 
+struct ssl_st; // note: openssl types, so plugins do not need openssl headers
+struct ssl_ctx_st;
+
 using namespace std;
 
 namespace nVerliHub {
@@ -39,11 +42,12 @@ namespace nVerliHub {
 			small blocking tcp client, http request and reply are used only by update check and crash report
 			note: hublist registration also uses it, but only as plain tcp connection with nmdc protocol, no http there
 			note: it is not part of main loop, every call blocks until data is sent or received or timeout expires
+			note: partial http client, only get and post over plain tcp or tls, server certificate is not verified, so tls only encrypts data
 		*/
 		class cHTTPConn
 		{
 			public:
-				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL); // note: cancel lets other thread abort blocking connection
+				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL, bool tls = false); // note: cancel lets other thread abort blocking connection, tls is for https
 				~cHTTPConn();
 
 				cHTTPConn(const cHTTPConn&) = delete;
@@ -63,7 +67,7 @@ namespace nVerliHub {
 				int SetOpt(int name, const void *val, int len, tSocket sock = 0);
 				int Write(const string &data);
 				bool Request(const string &meth, const string &req, const string &head, const string &data);
-				bool ParseReply(string &repl);
+				bool ParseReply(string &repl, size_t max = 524288); // note: reads whole reply, returns body when status is 2xx, max is limit of body size
 				int Read();
 				void Close();
 				void CloseNow();
@@ -71,10 +75,13 @@ namespace nVerliHub {
 				bool mGood;
 				bool mWrite;
 				tSocket mSock;
+				int mStatus = 0; // note: http status code of last reply
 
 			protected:
 				tSocket Create();
 				int Send(const char *buf, size_t &len);
+				int Recv(char *buf, int len); // note: returns 0 when connection is closed, -1 on error or timeout
+				bool StartTLS();
 
 				string mHost;
 				unsigned int mPort;
@@ -83,6 +90,9 @@ namespace nVerliHub {
 				vector<char> mBuf;
 				unsigned int mEnd;
 				cSocketCancel *mCancel = NULL;
+				bool mTLS = false;
+				struct ssl_st *mSSL = NULL;
+				struct ssl_ctx_st *mCTX = NULL;
 		};
 
 	}; // namespace nSocket

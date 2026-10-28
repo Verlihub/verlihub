@@ -86,8 +86,8 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	cAsyncSocketServer(CfgBase), // create parent class
 	mConfigBaseDir(CfgBase),
 	mDBConf(CfgBase + "/dbconfig"), // load the db config
-	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls), // create and connect to mysql
-	mMySQLWorker(*this, mMySQL, mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls), // note: connects on its own thread when first used
+	mMySQL(mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls, mDBConf.db_socket), // create and connect to mysql
+	mMySQLWorker(*this, mMySQL, mDBConf.db_host, mDBConf.db_user, mDBConf.db_pass, mDBConf.db_data, mDBConf.db_charset, mDBConf.db_tls, mDBConf.db_socket), // note: connects on its own thread when first used
 	mC(*this), // create the config object
 	mSetupList(mMySQL),
 	mP(this),
@@ -2247,7 +2247,7 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 
 unsigned int cServerDC::DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel) // note: runs on update check thread, dont touch hub state here
 {
-	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT, &cancel); // connect, note: closed by destructor
+	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT, &cancel, VER_CHECK_TLS); // connect, note: closed by destructor
 	unsigned int code = 0;
 	ver.clear();
 
@@ -3796,7 +3796,7 @@ void cServerDC::DoStackTrace()
 	if (!mC.send_crash_report)
 		return;
 
-	cHTTPConn http(CRASH_SERV_ADDR, CRASH_SERV_PORT); // try to send via http, note: closed by destructor
+	cHTTPConn http(CRASH_SERV_ADDR, CRASH_SERV_PORT, NULL, CRASH_SERV_TLS); // try to send via https, note: closed by destructor
 
 	if (!http.mGood) {
 		vhErr(0) << "Failed connecting to crash server, please send above stack backtrace here: https://github.com/verlihub/verlihub/issues" << endl;

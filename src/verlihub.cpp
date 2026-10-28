@@ -35,8 +35,10 @@
 
 #include "cserverdc.h"
 #include "csocketapi.h"
+#include "ccmdline.h"
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -44,7 +46,6 @@
 #include <stdlib.h>
 #include <sstream>
 #include <signal.h>
-#include <dirent.h>
 #include "script_api.h"
 #include "i18n.h"
 #include "dirsettings.h"
@@ -138,24 +139,13 @@ LONG WINAPI myCrashHandler(EXCEPTION_POINTERS *info) // note: crash in any threa
 }
 #endif
 
-bool DirExists(const char *dirname)
-{
-	DIR *dir ;
-	dir = opendir(dirname);
-	if( dir == NULL)
-	{
-		return false;
-	}
-	else
-	{
-		closedir(dir);
-		return true;
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	int result = 0;
+
+	if (cCmdLine::Run(argc, argv, result)) // note: command like --help, it does not start hub
+		return result;
+
 	string ConfigBase;
 	unsigned int port = 0;
 	int verbosity = 0;
@@ -215,52 +205,7 @@ int main(int argc, char *argv[])
 			port = 4111;
 	}
 
-	/*
-	#ifdef _WIN32
-		TCHAR Buffer[BUFSIZE];
-
-		if (!GetCurrentDirectory(BUFSIZE, Buffer)) {
-			MAIN_LOG_ERROR << "Unable to get current directory because: " << GetLastError() << endl;
-			return 1;
-		}
-
-		ConfigBase = Buffer;
-	#else
-	*/
-		const char *DirName = NULL;
-		char *HomeDir = getenv("HOME");
-		string tmp;
-
-		if (HomeDir) {
-			tmp = HomeDir;
-			tmp += "/.config/verlihub";
-
-			if (DirExists(tmp.c_str())) {
-				ConfigBase = tmp;
-			} else {
-				tmp = HomeDir;
-				tmp += "/.verlihub";
-
-				if (DirExists(tmp.c_str()))
-					ConfigBase = tmp;
-			}
-		}
-
-		DirName = "./.verlihub";
-
-		if (DirExists(DirName))
-			ConfigBase = DirName;
-
-		DirName = getenv("VERLIHUB_CFG");
-
-		if (OptDirName && DirExists(OptDirName))
-			ConfigBase = OptDirName;
-		else if (DirName && DirExists(DirName))
-			ConfigBase = DirName;
-
-		if (!ConfigBase.size())
-			ConfigBase = "/etc/verlihub";
-	//#endif
+	ConfigBase = cCmdLine::FindConfigDir(OptDirName); // note: commands find it same way
 
 	MAIN_LOG_NOTICE << "Configuration directory: " << ConfigBase << endl;
 
@@ -311,6 +256,52 @@ int main(int argc, char *argv[])
 			SetConsoleCtrlHandler(myConsoleHandler, TRUE); // note: ctrl+c, ctrl+break and closing console window stop hub cleanly
 			SetUnhandledExceptionFilter(myCrashHandler); // note: crash in any thread, not only main thread
 		#endif
+
+	#ifdef _WIN32
+		struct sControl { // note: windows has no signals, --stop and --reload of command line set named events of configuration folder instead
+			sControl(cServerDC &serv, const string &dir)
+			{
+				mList[0] = CreateEventA(NULL, TRUE, FALSE, NULL); // note: ends waiting when hub is done
+				mList[1] = CreateEventA(NULL, TRUE, FALSE, cCmdLine::EventName(dir, "stop").c_str()); // note: manual reset, watchdog sees it too
+				mList[2] = CreateEventA(NULL, FALSE, FALSE, cCmdLine::EventName(dir, "reload").c_str());
+
+				if (mList[0] && mList[1] && mList[2]) {
+					mThread = std::thread([this, &serv] {
+						while (true) {
+							const DWORD res = WaitForMultipleObjects(3, mList, FALSE, INFINITE);
+
+							if (res == (WAIT_OBJECT_0 + 1)) { // note: same as console stop, main loop stops hub
+								serv.RequestStop();
+								break;
+							}
+
+							if (res == (WAIT_OBJECT_0 + 2))
+								serv.SyncReload(); // note: only sets flag, same as sighup on linux
+							else
+								break;
+						}
+					});
+				}
+			}
+
+			~sControl()
+			{
+				if (mList[0])
+					SetEvent(mList[0]);
+
+				if (mThread.joinable())
+					mThread.join();
+
+				for (HANDLE item: mList) {
+					if (item)
+						CloseHandle(item);
+				}
+			}
+
+			HANDLE mList[3];
+			std::thread mThread;
+		} control(server, ConfigBase); // note: declared after server, so it ends before server is destroyed
+	#endif
 
 		if (!server.StartListening(port))
 			return 0;

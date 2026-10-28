@@ -51,7 +51,7 @@ class cMySQLWorker: public cObj
 		using tRows = std::vector<tRow>;
 		using tSelectDone = std::function<void(bool ok, const tRows &rows)>;
 
-		cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, const string &host, const string &user, const string &pass, const string &data, const string &charset, bool tls = false);
+		cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, const string &host, const string &user, const string &pass, const string &data, const string &charset, bool tls = false, const string &sock = "");
 		~cMySQLWorker();
 
 		cMySQLWorker(const cMySQLWorker&) = delete;
@@ -75,6 +75,7 @@ class cMySQLWorker: public cObj
 		cMySQL &mMain;
 		string mHost, mUser, mPass, mData, mCharset;
 		bool mTLS;
+		string mSock;
 		MYSQL *mHandle = NULL; // note: used only on worker thread
 		nThread::cWorkerPool mPool; // note: declared last, so its thread is stopped before other members are destroyed
 };

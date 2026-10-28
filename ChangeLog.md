@@ -10,6 +10,7 @@
 * Added: Configuration use_banlist_cache, ban check on login without database query
 * Added: Custom MySQL port in dbconfig with db_host = host:port, connection uses TCP then, also in vh script
 * Added: Configuration db_tls in dbconfig to require encrypted connection to MySQL server, disabled by default, also newer MariaDB client library no longer refuses server without TLS
+* Added: Configuration db_socket in dbconfig, path of local MySQL socket when it differs from built-in path of client library, verlihub --install finds it, same as vh script did
 * Added: Epoll connection chooser when available, CMake flag USE_EPOLL, poll stays as fallback
 * Added: Windows support using MinGW-w64, see Install.md
 * Added: On Windows Ctrl+C, Ctrl+Break or closing console window stops hub cleanly, second Ctrl+C ends it at once
@@ -22,7 +23,11 @@
 * Added: Self-signed ECDSA P-256 certificate is created when missing and renewed when expired, using tls_cert_org, tls_cert_mail and tls_cert_host
 * Added: Changes of tls_enable, tls_cert_file, tls_key_file and tls_min_ver apply without restart, replaced certificate file is loaded by itself
 * Added: TLS protocol negotiation with nmdcs for clients that ask for it, certificate keyprint in log
+* Added: On Windows verlihub --stop and --reload work with named events, there are no signals
+* Updated: Shell scripts and their commands are replaced by verlihub executable itself, same commands and parameters, they work on Linux and Windows, see verlihub --help
+* Updated: Multi hub manager vhm is verlihub itself, on Linux it is installed as symbolic link, on Windows use verlihub -m, hubs are started as their process owner without su, so owner without login shell works too
 * Updated: Hublist registration and update check run on their own threads without access to hub data
+* Updated: Update check and crash report use HTTPS, small built-in HTTP client on OpenSSL that is already required, server certificate is not verified
 * Updated: Hub stop no longer waits for running hublist registration or update check
 * Updated: Results of worker threads are processed without waiting for adv_step_delay
 * Updated: Commands gethost and getinfo, and user reports to operator chat, look up host names in background
@@ -41,7 +46,11 @@
 * Fixed: Command core_dump did not write stack backtrace to log, now it is only not sent to crash server
 * Fixed: Hub aborted with terminate message when MySQL connection failed on start, now it writes error and exits
 * Fixed: MySQL connection error was written twice
+* Fixed: Password encryption method 1 took salt from memory instead of random, existing passwords still work
+* Fixed: Hub that ended with code 3 was not restarted by vh_daemon script, now watchdog of verlihub --run restarts it, same as crash
 * Removed: Deprecated plugins, only Lua and Plugman are left
+* Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vhm is symbolic link to verlihub
+* Removed: Old verlihub_config way of FindVerlihub.cmake, plugins built outside of Verlihub source use installed package configuration
 * Removed: Old thread classes cThread, cWorkerThread, cThreadWork and cMutex
 * Removed: Built-in Go TLS proxy and FearTLS library, with configurations tls_listen_port and tls_buf_size
 

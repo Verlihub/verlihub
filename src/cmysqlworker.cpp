@@ -37,7 +37,7 @@ using namespace std;
 namespace nVerliHub {
 	namespace nMySQL {
 
-cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, const string &host, const string &user, const string &pass, const string &data, const string &charset, bool tls):
+cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, const string &host, const string &user, const string &pass, const string &data, const string &charset, bool tls, const string &sock):
 	cObj("cMySQLWorker"),
 	mServ(serv),
 	mMain(main),
@@ -46,7 +46,8 @@ cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, cons
 	mPass(pass),
 	mData(data),
 	mCharset(charset),
-	mTLS(tls)
+	mTLS(tls),
+	mSock(sock)
 {
 	mPool.SetDrain(true); // note: queued writes are done before hub stops
 	mPool.SetThreadHooks(
@@ -159,7 +160,7 @@ bool cMySQLWorker::Connect(string &err)
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
-	if (!cMySQL::RealConnect(mHandle, mHost, mUser, mPass, mData, mTLS)) { // note: same host and port handling as main connection
+	if (!cMySQL::RealConnect(mHandle, mHost, mUser, mPass, mData, mTLS, mSock)) { // note: same host and port handling as main connection
 		err = mysql_error(mHandle);
 		Disconnect();
 		return false;

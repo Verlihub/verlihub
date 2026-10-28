@@ -29,6 +29,8 @@
 #include <string.h>
 #include "ctime.h"
 #include "stringutils.h"
+#include <openssl/ssl.h>
+#include <stdlib.h>
 
 #define MAX_DATA 524288 // 0.5 mb
 #define MAX_SEND 2097152 // 2.0 mb
@@ -44,14 +46,15 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel):
+cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel, bool tls):
 	mGood(false),
 	mWrite(true),
 	mSock(0),
 	mHost(host),
 	mPort(port),
 	mEnd(0),
-	mCancel(cancel)
+	mCancel(cancel),
+	mTLS(tls)
 {
 	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 	Connect(host, port);
@@ -104,8 +107,14 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 
 	send << " HTTP/1.1\r\n";
 
-	if (head.find("\r\nHost: ") == head.npos) // todo: can be at position 0
-		send << "Host: " << mHost << ':' << mPort << "\r\n";
+	if (head.find("\r\nHost: ") == head.npos) { // todo: can be at position 0
+		send << "Host: " << mHost;
+
+		if (mPort != (mTLS ? 443 : 80)) // note: default port is not sent
+			send << ':' << mPort;
+
+		send << "\r\n";
+	}
 
 	if (head.find("\r\nAccept: ") == head.npos)
 		send << "Accept: */*\r\n";
@@ -119,10 +128,8 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	if (head.find("\r\nContent-Length: ") == head.npos)
 		send << "Content-Length: " << data.size() << "\r\n";
 
-	/*
-	if (head.find("\r\nConnection: ") == head.npos)
-		send << "Connection: Close\r\n";
-	*/
+	if (head.find("\r\nConnection: ") == head.npos) // note: server closes connection after reply, so reply ends there
+		send << "Connection: close\r\n";
 
 	send << head << "\r\n"; // note: must be double before data
 
@@ -132,23 +139,95 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	return Write(send.str()) > 0;
 }
 
-bool cHTTPConn::ParseReply(string &repl)
+bool cHTTPConn::ParseReply(string &repl, size_t max)
 {
-	if (Read() <= 0)
+	if (!mGood || !mWrite)
 		return false;
 
-	string data(mBuf.data());
+	string data;
+	char buf[16384];
+	size_t head = string::npos, need = string::npos;
+	bool chunk = false;
+	mStatus = 0;
 
-	if (data.empty())
+	while (true) { // note: read until connection is closed or whole body is here
+		const int len = Recv(buf, sizeof(buf));
+
+		if (len <= 0)
+			break;
+
+		data.append(buf, len);
+
+		if (head == string::npos) {
+			head = data.find("\r\n\r\n");
+
+			if (head != string::npos) { // note: headers are complete
+				const string low(toLower(data.substr(0, head + 2)));
+				size_t pos = low.find(' ');
+
+				if ((low.compare(0, 5, "http/") == 0) && (pos != string::npos))
+					mStatus = atoi(low.c_str() + pos + 1);
+
+				pos = low.find("\r\ncontent-length:");
+
+				if (pos != string::npos)
+					need = strtoul(low.c_str() + pos + 17, NULL, 10);
+
+				pos = low.find("\r\ntransfer-encoding:");
+				chunk = ((pos != string::npos) && (low.find("chunked", pos) < low.find("\r\n", pos + 2)));
+			}
+		}
+
+		if ((head != string::npos) && (data.size() > (head + 4 + max + 65536))) { // note: too big, part over limit is chunk headers
+			CloseNow();
+			return false;
+		}
+
+		if ((head != string::npos) && !chunk && (need != string::npos) && (data.size() >= (head + 4 + need)))
+			break;
+	}
+
+	CloseNow(); // note: connection is not used again
+
+	if (head == string::npos)
 		return false;
 
-	size_t pos = data.find("\r\n\r\n"); // skip headers for now
+	string body(data.substr(head + 4));
 
-	if (pos == data.npos)
+	if (chunk) { // note: chunk size in hex, then data, empty chunk ends body
+		string out;
+		size_t pos = 0;
+
+		while (true) {
+			const size_t end = body.find("\r\n", pos);
+
+			if (end == string::npos)
+				return false;
+
+			const size_t size = strtoul(body.c_str() + pos, NULL, 16);
+
+			if (!size)
+				break;
+
+			if ((end + 2 + size) > body.size())
+				return false;
+
+			out.append(body, end + 2, size);
+			pos = end + 2 + size + 2;
+		}
+
+		body.swap(out);
+	} else if (need != string::npos) {
+		if (body.size() < need) // note: connection ended early
+			return false;
+
+		body.resize(need);
+	}
+
+	if ((body.size() > max) || (mStatus < 200) || (mStatus > 299))
 		return false;
 
-	data.erase(0, pos + 4);
-	repl = data;
+	repl.swap(body);
 	return true;
 }
 
@@ -203,8 +282,62 @@ int cHTTPConn::Connect(const string &host, const int port)
 	if (connect(mSock, (struct sockaddr*)&dest, sizeof(dest)) == -1)
 		return -1;
 
+	if (mTLS && !StartTLS())
+		return -1;
+
 	mGood = true;
 	return 0;
+}
+
+bool cHTTPConn::StartTLS()
+{
+	mCTX = SSL_CTX_new(TLS_client_method());
+
+	if (!mCTX)
+		return false;
+
+	SSL_CTX_set_verify(mCTX, SSL_VERIFY_NONE, NULL); // note: partial client, server certificate is not verified
+	mSSL = SSL_new(mCTX);
+
+	if (!mSSL || !SSL_set_fd(mSSL, (int)mSock)) // note: windows socket fits in int, openssl takes it same way
+		return false;
+
+	SSL_set_tlsext_host_name(mSSL, mHost.c_str()); // note: servers with many sites need name of site
+
+	while (true) { // note: socket is blocking with timeouts
+		const int res = SSL_connect(mSSL);
+
+		if (res == 1)
+			return true;
+
+		if ((SSL_get_error(mSSL, res) == SSL_ERROR_SYSCALL) && SockInterrupted())
+			continue;
+
+		return false;
+	}
+}
+
+int cHTTPConn::Recv(char *buf, int len)
+{
+	int res;
+
+	if (mSSL) {
+		do {
+			res = SSL_read(mSSL, buf, len);
+		} while ((res <= 0) && (SSL_get_error(mSSL, res) == SSL_ERROR_SYSCALL) && SockInterrupted());
+
+		if (res > 0)
+			return res;
+
+		const int err = SSL_get_error(mSSL, res);
+		return (((err == SSL_ERROR_ZERO_RETURN) || ((err == SSL_ERROR_SYSCALL) && !res)) ? 0 : -1); // note: many servers close without tls close notify
+	}
+
+	do { // note: socket is blocking with receive timeout, eagain means timeout expired, so retry only when interrupted by signal
+		res = recv(mSock, buf, len, 0);
+	} while ((res == -1) && SockInterrupted());
+
+	return res;
 }
 
 int cHTTPConn::Send(const char *buf, size_t &len)
@@ -215,10 +348,10 @@ int cHTTPConn::Send(const char *buf, size_t &len)
 	size_t tot = 0;
 
 	while (tot < len) {
-		const int res = send(mSock, buf + tot, (int)(len - tot), MSG_NOSIGNAL);
+		const int res = (mSSL ? SSL_write(mSSL, buf + tot, (int)(len - tot)) : send(mSock, buf + tot, (int)(len - tot), MSG_NOSIGNAL));
 
-		if (res < 0) {
-			if (SockInterrupted()) // note: interrupted by signal, try again
+		if (res <= 0) {
+			if (SockInterrupted() && (!mSSL || (SSL_get_error(mSSL, res) == SSL_ERROR_SYSCALL))) // note: interrupted by signal, try again
 				continue;
 
 			break; // note: error or send timeout expired
@@ -280,6 +413,16 @@ void cHTTPConn::Close()
 
 	if (mCancel) // note: must be detached before closing, so cancel can not shut down reused descriptor
 		mCancel->Detach();
+
+	if (mSSL) { // note: no close notify, connection is closed anyway
+		SSL_free(mSSL);
+		mSSL = NULL;
+	}
+
+	if (mCTX) {
+		SSL_CTX_free(mCTX);
+		mCTX = NULL;
+	}
 
 	SockClose(mSock);
 	mSock = INVALID_SOCKET;

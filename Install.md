@@ -22,7 +22,6 @@ Dependencies and installation
 * Optional dependencies:
 
 	[ --- lib hdr ] Lua			5.2
-	[ bin --- --- ] Dialog
 
 * Install dependencies on Debian:
 
@@ -65,16 +64,7 @@ pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make mingw-w6
 
 MSYS2 has no MariaDB server, only client library, install MariaDB server for Windows from: https://mariadb.org/download
 During installation set root password and keep "Install as service" enabled, so server starts with Windows.
-Then open "MySQL Client" from MariaDB start menu folder, log in with root password and create database and user for Verlihub:
-
-CREATE DATABASE verlihub;
-CREATE USER 'verlihub'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL ON verlihub.* TO 'verlihub'@'localhost';
-FLUSH PRIVILEGES;
-
- * Notes
-
- Hub setup script "vh --install" is not available on Windows yet, so configuration folder and its dbconfig file are not created automatically.
+Database and user for Verlihub are created by "verlihub --install" using root password, see "Install new hub" below.
 
 * Compile and install Verlihub itself:
 
@@ -105,6 +95,18 @@ mingw32-make install
  Default installation prefix of CMake on Windows is not suitable, always set it.
  Verlihub needs MSYS2 libraries at runtime, they are found automatically in "MSYS2 UCRT64" shell.
  To run it outside of that shell, add C:/msys64/ucrt64/bin to PATH environment variable.
+
+* Install new hub:
+
+verlihub --install
+
+ * Notes
+
+ Installation asks for database information and creates database account and database when they don't exist, using administrator credentials of database server.
+ Then it creates configuration folder with dbconfig file, default files, database tables, master account and basic hub settings.
+ Run it as super user on Linux to choose system wide configuration folder like /etc/verlihub.
+ Log of table creation is written to install_log file in configuration folder.
+ In MSYS2 terminal passwords are shown while typing, in Windows console they are hidden.
 
 =======================
 Supported CMake options

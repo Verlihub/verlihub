@@ -59,9 +59,11 @@
 #define DEFAULT_COMMAND_TRIGS "+!/"
 
 #define CRASH_SERV_ADDR "crash.verlihub.net"
-#define CRASH_SERV_PORT 80
+#define CRASH_SERV_PORT 443
+#define CRASH_SERV_TLS true
 #define VER_CHECK_ADDR "ledo.feardc.net"
-#define VER_CHECK_PORT 80
+#define VER_CHECK_PORT 443
+#define VER_CHECK_TLS true
 
 #define DEFAULT_HUB_ENCODING "CP1252"
 

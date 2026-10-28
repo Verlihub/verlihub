@@ -30,20 +30,20 @@
 
  [*] Command line:
 
-	vh -i [sleep]				- Install new hub
-	vh -uh [config]				- Update help files
-	vh -mp <config> <main> [extra]	- Modify hub ports
-	vh -gc <var> <config>			- Get configuration variable
-	vh -sc <var> <val> <config>		- Set configuration variable
-	vh -u <nick> <class> <password> [config]	- Register new user
-	vh -g [config]				- Update free MaxMind databases
+	verlihub -i				- Install new hub
+	verlihub -uh [config]			- Update help files
+	verlihub -mp <config> <main> [extra]	- Modify hub ports
+	verlihub -gc <var> <config>		- Get configuration variable
+	verlihub -sc <var> <val> <config>	- Set configuration variable
+	verlihub -u <nick> <password> <class> [config]	- Register new user
+	verlihub -g [path]			- Update free MaxMind databases
 
-	vh -r [config]				- Start hub
-	vh -q [config]				- Restart hub
-	vh -s [config]				- Stop hub
-	vh -t [config]				- Hub status
+	verlihub -r [config]			- Start hub
+	verlihub -q [config]			- Restart hub
+	verlihub --stop [config]		- Stop hub
+	verlihub -t [config]			- Hub status
 
-	vh -a <action> -d [config]			- Load plugins on start
+	verlihub -a <action> -d [config]		- Load plugins on start
 
 	Following actions can be used:
 
@@ -51,13 +51,13 @@
 		-n				- Enable loading
 		-f				- Disable loading
 
-	vh -R [config]				- Reload cache lists
-	vh -c [config]				- Clean up tables
-	vh -b <path> [config]			- Backup database
-	vh -w <file> [config]			- Restore backup
+	verlihub -R [config]			- Reload cache lists
+	verlihub -c [config]			- Clean up tables
+	verlihub -b <path> [config]		- Backup database
+	verlihub -w <file> [config]		- Restore backup
 
-	vh -h					- List commands
-	vh -v					- Verlihub version
+	verlihub -h				- List commands
+	verlihub --version			- Verlihub version
 
 	[*] Multiple hubs:
 

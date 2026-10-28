@@ -28,7 +28,7 @@ namespace nVerliHub {
 
 	namespace nMySQL {
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls):
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls, const string &sock):
 	cObj("cMySQL"),
 	mDBName(data),
 	mDBHost(host),
@@ -36,6 +36,7 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 	mDBPass(pass),
 	mDBChar(charset),
 	mDBTLS(tls),
+	mDBSock(sock),
 	mDBHandle(NULL)//,
 	//mReconnect(0)
 {
@@ -90,7 +91,7 @@ bool cMySQL::Connect()
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
-	if (!RealConnect(mDBHandle, mDBHost, mDBUser, mDBPass, mDBName, mDBTLS)) {
+	if (!RealConnect(mDBHandle, mDBHost, mDBUser, mDBPass, mDBName, mDBTLS, mDBSock)) {
 		Error(0, "Failed connecting to MySQL/MariaDB server: "); // note: error appends mysql error text
 		return false;
 	}
@@ -121,7 +122,7 @@ void cMySQL::SplitHost(const string &addr, string &host, unsigned int &port)
 	port = val;
 }
 
-bool cMySQL::RealConnect(MYSQL *handle, const string &addr, const string &user, const string &pass, const string &data, bool tls)
+bool cMySQL::RealConnect(MYSQL *handle, const string &addr, const string &user, const string &pass, const string &data, bool tls, const string &sock)
 {
 	string host;
 	unsigned int port;
@@ -147,7 +148,8 @@ bool cMySQL::RealConnect(MYSQL *handle, const string &addr, const string &user, 
 		mysql_options(handle, MYSQL_OPT_PROTOCOL, &proto);
 	}
 
-	return (mysql_real_connect(handle, host.c_str(), user.c_str(), pass.c_str(), data.c_str(), port, NULL, 0) != NULL);
+	const char *path = ((!port && sock.size()) ? sock.c_str() : NULL); // note: client library uses socket only for localhost without port, else default path of library
+	return (mysql_real_connect(handle, host.c_str(), user.c_str(), pass.c_str(), (data.size() ? data.c_str() : NULL), port, path, 0) != NULL); // note: empty database is used by installation to check account only
 }
 
 //bool cMySQL::Error(int level, const string &text)

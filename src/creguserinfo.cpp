@@ -36,6 +36,9 @@
 	#include <openssl/des.h>
 #endif
 
+#include <openssl/rand.h>
+#include <random>
+
 #include "creguserinfo.h"
 #include "stringutils.h"
 #include "cuser.h"
@@ -158,15 +161,20 @@ void cRegUserInfo::SetPass(const string &str, tCryptMethods crypt_method)
 		return;
 	}
 
-	static const char arr[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmlopqrstuvwxyz0123456789./"; // 64
-	unsigned char dec[2] = {(unsigned char)((char*)&pass)[0], (unsigned char)((char*)&pass)[1]};
+	static const char arr[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./"; // 64
+	unsigned char dec[2];
 	string out;
 
 	switch (crypt_method) {
 		case eCRYPT_ENCRYPT:
-			dec[0] = arr[dec[0] % 64];
-			dec[1] = arr[dec[1] % 64];
-			out.assign((char*)dec, 2);
+			if (RAND_bytes(dec, 2) != 1) { // note: random salt, old hashes still verify because each hash keeps its own salt
+				std::random_device rnd;
+				dec[0] = (unsigned char)rnd();
+				dec[1] = (unsigned char)rnd();
+			}
+
+			out.append(1, arr[dec[0] % 64]);
+			out.append(1, arr[dec[1] % 64]);
 			mPasswd = CryptPass(pass, out);
 			mPWCrypt = eCRYPT_ENCRYPT;
 			break;

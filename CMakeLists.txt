@@ -204,13 +204,6 @@ IF(HAVE_BSD)
 	Find_Package(SysInfo REQUIRED)
 ENDIF(HAVE_BSD)
 
-IF(UNIX)
-	FIND_PROGRAM(BASH_PATH bash PATHS "/usr/bin" "/usr/local/bin")
-	IF(NOT BASH_PATH)
-		MESSAGE(FATAL_ERROR "[ ER ] Bash shell not found, please install it via your package manager or compile from source: https://ftp.gnu.org/gnu/bash/")
-	ENDIF(NOT BASH_PATH)
-ENDIF(UNIX)
-
 # ----------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------
@@ -241,8 +234,6 @@ IF(DEFINE_DEBUG)
 ELSE(DEFINE_DEBUG)
 	SET(CMAKE_BUILD_TYPE "RELEASE")
 ENDIF(DEFINE_DEBUG)
-
-SET(VERLIHUB_USE_LIBS "-lverlihub -lvhapi")
 
 if(USE_CUSTOM_AUTOSPRINTF)
 	add_definitions(-DUSE_CUSTOM_AUTOSPRINTF=1)
@@ -435,13 +426,9 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake/c
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(plugins)
 ADD_SUBDIRECTORY(share)
-IF(NOT WIN32) # note: bash scripts and man pages are not for windows
-	ADD_SUBDIRECTORY(scripts)
-ENDIF(NOT WIN32)
-
 ADD_SUBDIRECTORY(po)
 
-IF(NOT WIN32)
+IF(NOT WIN32) # note: man pages are not for windows
 	ADD_SUBDIRECTORY(man)
 ENDIF(NOT WIN32)
 
