@@ -25,7 +25,7 @@ Add suffix to syslog name
 .BR "[port]"
 Listen on given port instead of configured one
 .SH COMMANDS
-Command must be the first argument, it does not start the hub. When configuration folder is optional and not given, it's found same way as for option --config-dir. Configuration folder must contain dbconfig file. On Linux vh is installed as symbolic link to verlihub, so vh <command> works same as old vh script, with all commands below, -v shows version.
+Command must be the first argument, it does not start the hub. When configuration folder is optional and not given, it's found same way as for option --config-dir. Configuration folder must contain dbconfig file. On Linux vh is installed as symbolic link to verlihub, so vh <command> works same as old vh script, with all commands below, -v shows version. Commands are translated to language of system environment, for example LANG, hub itself uses locale from dbconfig.
 .TP
 .BR "-i, --install"
 Install new hub. It asks for database information and creates database account and database when they don't exist, using administrator credentials of database server. Then it creates configuration folder with dbconfig file and default files, database tables, master account and basic hub settings. Log of table creation is written to install_log file in configuration folder. Run it as super user to choose system wide configuration folder. Optional sleep time of vh script is accepted and not used

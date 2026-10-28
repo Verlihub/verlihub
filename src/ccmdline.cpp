@@ -65,6 +65,7 @@
 	#include <fcntl.h>
 	#include <sys/wait.h>
 	#include <sys/resource.h>
+	#include <langinfo.h>
 #endif
 
 #ifdef USE_TLS
@@ -411,8 +412,45 @@ static string Opt(const string &name) // note: optional parameter in help
 	return "[" + name + "]";
 }
 
+static bool sUtf8Text = true; // note: charset of command output, translations are converted to it
+
+#ifdef _WIN32
+static UINT sConsoleOut = 0; // note: console output codepage before command, it belongs to console window, so it is restored
+
+static void RestoreConsole()
+{
+	if (sConsoleOut)
+		SetConsoleOutputCP(sConsoleOut);
+}
+#endif
+
+static void SetupLocale() // note: commands use language of system or user environment, hub itself uses locale from dbconfig, so it is done only for commands
+{
+	setlocale(LC_MESSAGES, ""); // note: only messages and character classification, same as hub, numbers stay in c format
+
+#ifdef _WIN32
+	bind_textdomain_codeset("verlihub", "UTF-8"); // note: console codepage differs from ansi codepage of locale, so output is utf-8 and console is switched to it while command runs
+	sConsoleOut = GetConsoleOutputCP(); // note: zero when there is no console, msys2 terminal gets output through pipe and shows utf-8 by itself
+
+	if (sConsoleOut && (sConsoleOut != CP_UTF8) && SetConsoleOutputCP(CP_UTF8))
+		atexit(RestoreConsole);
+	else
+		sConsoleOut = 0;
+#else
+	setlocale(LC_CTYPE, "");
+	const char *set = nl_langinfo(CODESET); // note: gettext converts translations to it
+	sUtf8Text = (set && ((strcasecmp(set, "UTF-8") == 0) || (strcasecmp(set, "UTF8") == 0)));
+#endif
+
+	bindtextdomain("verlihub", LOCALEDIR);
+	textdomain("verlihub");
+}
+
 static size_t TextWidth(const string &text) // note: translation can be utf-8, count characters instead of bytes
 {
+	if (!sUtf8Text) // note: one byte charset like cp1251
+		return text.size();
+
 	size_t res = 0;
 
 	for (unsigned char c: text) {
@@ -451,6 +489,8 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 	const bool vhm = (name == "vhm");
 
 	if (vhm || ((argc > 1) && ((string(argv[1]) == "-m") || (string(argv[1]) == "--multi")))) {
+		SetupLocale();
+
 		if (!SockStartup()) {
 			cerr << Paint(_("Failed to start socket library."), sRed, true) << endl;
 			result = 1;
@@ -516,6 +556,8 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 			signal(SIGPIPE, SIG_IGN); // note: same as hub, closed connection gives error instead of ending process, https download writes to network
 		#endif
 
+			SetupLocale();
+
 			if (!SockStartup()) { // note: windows needs it before database connection
 				cerr << Paint(_("Failed to start socket library."), sRed, true) << endl;
 				result = 1;
@@ -533,6 +575,7 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 	}
 
 	if (vh) { // note: unknown option does not start hub, same as vh script
+		SetupLocale();
 		cout << Paint(autosprintf(_("Unknown option %s, try %s --help"), arg.c_str(), "vh"), sRed) << endl;
 		result = 1;
 		return true;
@@ -1498,6 +1541,65 @@ bool cCmdLine::CreateTables()
 	}
 
 	bool done = true;
+
+	struct sLocaleKeep { // note: hub constructor sets locale, environment and message charset from dbconfig, command output continues in its own afterwards
+		sLocaleKeep()
+		{
+			for (size_t i = 0; i < 2; i++) {
+				const char *val = getenv(mEnvName[i]);
+				mHave[i] = (val != NULL);
+
+				if (val)
+					mEnv[i] = val;
+			}
+
+			const char *res = setlocale(LC_MESSAGES, NULL);
+			mMessages = (res ? res : "");
+			res = setlocale(LC_CTYPE, NULL);
+			mType = (res ? res : "");
+			res = bind_textdomain_codeset("verlihub", NULL);
+			mCodeset = (res ? res : "");
+		}
+
+		~sLocaleKeep()
+		{
+			for (size_t i = 0; i < 2; i++) {
+			#ifdef _WIN32
+				_putenv_s(mEnvName[i], (mHave[i] ? mEnv[i].c_str() : "")); // note: empty value removes variable on windows
+			#else
+				if (mHave[i])
+					setenv(mEnvName[i], mEnv[i].c_str(), 1);
+				else
+					unsetenv(mEnvName[i]);
+			#endif
+			}
+
+			if (mMessages.size())
+				setlocale(LC_MESSAGES, mMessages.c_str());
+
+			if (mType.size())
+				setlocale(LC_CTYPE, mType.c_str());
+
+		#ifndef _WIN32
+			if (mCodeset.empty()) { // note: command did not set it, gettext used charset of locale, set it back after hub
+				const char *set = nl_langinfo(CODESET);
+
+				if (set)
+					mCodeset = set;
+			}
+		#endif
+
+			if (mCodeset.size())
+				bind_textdomain_codeset("verlihub", mCodeset.c_str());
+
+			textdomain("verlihub");
+		}
+
+		const char *mEnvName[2] = {"LANG", "LANGUAGE"};
+		string mEnv[2];
+		bool mHave[2] = {false, false};
+		string mMessages, mType, mCodeset;
+	} locale_keep;
 
 	{
 		sLogRedirect redirect(log);
