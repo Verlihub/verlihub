@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -29,8 +29,8 @@ namespace nVerliHub {
 
 cCommand::cCommand(int ID, const char *regexId, const char *paramRegex, sCmdFunc *CmdFunc):
 	mID(ID),
-	mIdentificator(regexId, PCRE_ANCHORED),
-	mParamsParser(paramRegex, PCRE_DOTALL, 64),
+	mIdentificator(regexId, PCRE2_ANCHORED),
+	mParamsParser(paramRegex, PCRE2_DOTALL, 64),
 	mCmdFunc(CmdFunc),
 	mParStr(paramRegex),
 	mIdRegexStr(regexId)
@@ -54,8 +54,8 @@ cCommand::cCommand():
 void cCommand::Init(int ID, const char *regexId, const char *paramRegex, sCmdFunc *CmdFunc)
 {
 	mID = ID;
-	mIdentificator.Compile(regexId, PCRE_ANCHORED);
-	mParamsParser.Compile(paramRegex, PCRE_DOTALL);
+	mIdentificator.Compile(regexId, PCRE2_ANCHORED);
+	mParamsParser.Compile(paramRegex, PCRE2_DOTALL);
 	mCmdFunc = CmdFunc;
 	mIdRegexStr = regexId;
 	mParRegexStr = paramRegex;

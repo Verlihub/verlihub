@@ -40,6 +40,7 @@
 * Added: CMake target pot extracts translation templates from source, po/transifex.yml for Transifex GitHub integration
 * Added: Hub messages are translated also when locale from dbconfig is not installed on system, for example ru_RU.CP1251, then other installed locale like en_US.UTF-8 is used with language of hub locale and messages are still converted to its codeset
 * Added: Commands of verlihub executable are translated to language of system environment, on Windows console they are shown as UTF-8
+* Updated: Regular expressions use PCRE2 library instead of old PCRE, which new Linux distributions no longer have, required package is libpcre2-dev on Debian, mingw-w64-ucrt-x86_64-pcre2 on Windows
 * Fixed: Translation with wrong format arguments could crash the hub, for example %s instead of %d, such translation is not used now and original text is shown instead
 * Fixed: Hublist registration could hang for minutes on hublist that does not answer
 * Fixed: Hublist registration and crash report could send incomplete data

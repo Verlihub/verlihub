@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,7 +20,11 @@
 
 #ifndef NUTILSCPCRE_H
 #define NUTILSCPCRE_H
-#include <pcre.h>
+#ifndef PCRE2_CODE_UNIT_WIDTH
+	#define PCRE2_CODE_UNIT_WIDTH 8 // note: must be before pcre2.h, strings are 8 bit
+#endif
+
+#include <pcre2.h>
 #include <string>
 
 using std::string;
@@ -45,7 +49,7 @@ namespace nVerliHub {
 				/**
 				* Class constructor.
 				* @param pattern The regular expression to compile.
-				* @param options Option bit for pcre_compile.
+				* @param options Option bits for pcre2_compile, for example PCRE2_ANCHORED.
 				* @param offsetResultSize Size of array of ints that contains result offsets.
 				*/
 				cPCRE(const char *pattern, unsigned int options, int offsetResultSize=30);
@@ -53,7 +57,7 @@ namespace nVerliHub {
 				/**
 				* Class constructor.
 				* @param pattern The regular expression to compile.
-				* @param options Option bit for pcre_compile.
+				* @param options Option bits for pcre2_compile, for example PCRE2_ANCHORED.
 				* @param offsetResultSize Size of array of ints that contains result offsets.
 				*/
 				cPCRE(const string&pattern, unsigned int options, int offsetResultSize=30);
@@ -106,7 +110,7 @@ namespace nVerliHub {
 				/**
 				* Compile the given regular expression.
 				* @param pattern The regular expression to compile.
-				* @param options Option bit for pcre_compile.
+				* @param options Option bits for pcre2_compile, for example PCRE2_ANCHORED.
 				* @return True if the regular expression is compiled or false otherwise.
 				*/
 				bool Compile(const char *pattern, unsigned int options = 0);
@@ -143,14 +147,17 @@ namespace nVerliHub {
 
 			private:
 				/// Compiled regular expression.
-				pcre *mPattern;
+				pcre2_code *mPattern;
+
+				/// Match data of pcre2, made once and reused by every Exec().
+				pcre2_match_data *mMatch;
 
 				/// Number of captured substring of
 				/// last call of Exec().
 				/// @see Exec()
 				int mResult;
 
-				/// Pointer to an array of ints for result offsets.
+				/// Pointer to an array of ints for result offsets, copy of pcre2 offsets, part that is not set is -1, same as in old pcre.
 				int *mOffsetResults;
 
 				/// Number of elements in the array

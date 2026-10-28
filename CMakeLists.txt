@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -185,7 +185,7 @@ Find_Package(ZLIB REQUIRED)
 Find_Package(MaxMindDB REQUIRED)
 Find_Package(ICU COMPONENTS data i18n uc io REQUIRED)
 Find_Package(DL REQUIRED) # note: on windows this is dlfcn library
-Find_Package(Pcre REQUIRED)
+Find_Package(Pcre2 REQUIRED)
 Find_Package(Threads REQUIRED)
 Find_Package(Gettext REQUIRED)
 Find_Package(Libintl REQUIRED)
@@ -272,9 +272,9 @@ if(ZLIB_LIBRARIES)
 	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${ZLIB_LIBRARIES}")
 endif(ZLIB_LIBRARIES)
 
-if(PCRE_LIBRARIES)
-	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${PCRE_LIBRARIES}")
-endif(PCRE_LIBRARIES)
+if(PCRE2_LIBRARIES)
+	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${PCRE2_LIBRARIES}")
+endif(PCRE2_LIBRARIES)
 
 if(CMAKE_THREAD_LIBS_INIT)
 	set(VERLIHUB_LIBS "${VERLIHUB_LIBS} ${CMAKE_THREAD_LIBS_INIT}")
@@ -338,10 +338,10 @@ if(ZLIB_INCLUDE_DIRS)
 	INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
 endif(ZLIB_INCLUDE_DIRS)
 
-if(PCRE_INCLUDE_DIR)
-	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${PCRE_INCLUDE_DIR}")
-	INCLUDE_DIRECTORIES(${PCRE_INCLUDE_DIR})
-endif(PCRE_INCLUDE_DIR)
+if(PCRE2_INCLUDE_DIR)
+	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${PCRE2_INCLUDE_DIR}")
+	INCLUDE_DIRECTORIES(${PCRE2_INCLUDE_DIR})
+endif(PCRE2_INCLUDE_DIR)
 
 if(LIBINTL_INCLUDE_DIR)
 	SET(VERLIHUB_INCLUDE_DIRS "${VERLIHUB_INCLUDE_DIRS} -I${LIBINTL_INCLUDE_DIR}")
@@ -449,12 +449,12 @@ ENDIF(NOT WIN32)
 #SET(CPACK_PACKAGE_VERSION_TWEAK "${VERLIHUB_VERSION_TWEAK}")
 #SET(CPACK_PACKAGE_VERSION "${VERLIHUB_VERSION}")
 #SET(CPACK_DEBIAN_PACKAGE_SECTION "net")
-#SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.5, mysql-client-5.5, mmdb-bin, gettext, libssl, openssl, libpcre3")
+#SET(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib, mysql-server-5.5, mysql-client-5.5, mmdb-bin, gettext, libssl, openssl, libpcre2-8-0")
 #
 #SET(CPACK_RPM_PACKAGE_LICENSE ${CPACK_RESOURCE_FILE_LICENSE})
 #SET(CPACK_RPM_PACKAGE_URL "https://github.com/verlihub/")
 #SET(CPACK_RPM_PACKAGE_GROUP "Application/Internet")
-#SET(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.5, mysql >= 5.5, maxminddb, gettext, pcre")
+#SET(CPACK_RPM_PACKAGE_REQUIRES "zlib, openssl, mysql-server >= 5.5, mysql >= 5.5, maxminddb, gettext, pcre2")
 #
 #IF(WITH_LUA)
 #	SET(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, lua (>= 5.2)")

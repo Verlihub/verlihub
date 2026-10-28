@@ -11,7 +11,7 @@ Dependencies and installation
 	[ --- lib hdr ] LibICU		55.0
 	[ bin --- --- ] Make
 	[ --- lib hdr ] ZLib
-	[ --- lib hdr ] PCRE
+	[ --- lib hdr ] PCRE2
 	[ --- lib hdr ] GetText
 	[ --- lib hdr ] MaxMindDB
 	[ ??? ??? ??? ] LibIntl
@@ -25,7 +25,7 @@ Dependencies and installation
 
 * Install dependencies on Debian:
 
-sudo apt install libpcre3-dev libssl-dev mysql-server mysql-client libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev g++ make cmake
+sudo apt install libpcre2-dev libssl-dev mysql-server mysql-client libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev g++ make cmake
 
  * Optional dependencies
 
@@ -54,7 +54,7 @@ MINGW64 environment of MSYS2 is deprecated, other MinGW-w64 toolchains should wo
 
 Run in "MSYS2 UCRT64" shell:
 
-pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-libmariadbclient mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-icu mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-pcre mingw-w64-ucrt-x86_64-gettext-runtime mingw-w64-ucrt-x86_64-gettext-tools mingw-w64-ucrt-x86_64-dlfcn mingw-w64-ucrt-x86_64-libmaxminddb
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-libmariadbclient mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-icu mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-pcre2 mingw-w64-ucrt-x86_64-gettext-runtime mingw-w64-ucrt-x86_64-gettext-tools mingw-w64-ucrt-x86_64-dlfcn mingw-w64-ucrt-x86_64-libmaxminddb
 
  * Optional dependencies
 

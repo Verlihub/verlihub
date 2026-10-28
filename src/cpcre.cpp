@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -28,8 +28,14 @@ using namespace std;
 namespace nVerliHub {
 	namespace nUtils {
 
+static uint32_t PartCount(int size) // note: old pcre used one third of offset array as workspace, so same number of parts is kept
+{
+	return ((size >= 3) ? uint32_t(size / 3) : 1);
+}
+
 cPCRE::cPCRE(int offsetResultSize):
 	mPattern(NULL),
+	mMatch(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(offsetResultSize)
 {
@@ -39,9 +45,14 @@ cPCRE::cPCRE(int offsetResultSize):
 cPCRE::~cPCRE()
 {
 	if (mPattern)
-		pcre_free(mPattern);
+		pcre2_code_free(mPattern);
 
 	mPattern = NULL;
+
+	if (mMatch)
+		pcre2_match_data_free(mMatch);
+
+	mMatch = NULL;
 
 	if (mOffsetResults)
 		delete [] mOffsetResults;
@@ -51,6 +62,7 @@ cPCRE::~cPCRE()
 
 cPCRE::cPCRE(const char *pattern, unsigned int options, int offsetResultSize):
 	mPattern(NULL),
+	mMatch(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(offsetResultSize)
 {
@@ -60,6 +72,7 @@ cPCRE::cPCRE(const char *pattern, unsigned int options, int offsetResultSize):
 
 cPCRE::cPCRE(const string &pattern, unsigned int options, int coord):
 	mPattern(NULL),
+	mMatch(NULL),
 	mOffsetResults(NULL),
 	mOffsetResultSize(coord)
 {
@@ -69,27 +82,51 @@ cPCRE::cPCRE(const string &pattern, unsigned int options, int coord):
 
 bool cPCRE::Compile(const char *pattern, unsigned int options)
 {
-	const char *errptr;
-	int erroffset;
-	mPattern = pcre_compile(pattern, options, &errptr, &erroffset, NULL);
+	if (mPattern) { // note: compiling again replaces old pattern
+		pcre2_code_free(mPattern);
+		mPattern = NULL;
+	}
+
+	mResult = 0;
+	int errcode = 0;
+	PCRE2_SIZE erroffset = 0;
+	mPattern = pcre2_compile((PCRE2_SPTR)pattern, PCRE2_ZERO_TERMINATED, options, &errcode, &erroffset, NULL);
 	return mPattern != NULL;
 }
 
 void cPCRE::Clear()
 {
 	if (mPattern)
-		pcre_free(mPattern);
+		pcre2_code_free(mPattern);
 
 	mPattern = NULL;
 	mResult = 0;
+	const uint32_t parts = PartCount(mOffsetResultSize);
 
 	if (!mOffsetResults)
-		mOffsetResults = new int[3 * mOffsetResultSize];
+		mOffsetResults = new int[2 * parts];
+
+	if (!mMatch)
+		mMatch = pcre2_match_data_create(parts, NULL);
 }
 
 int cPCRE::Exec(const string &subject)
 {
-	mResult = pcre_exec(mPattern, NULL, subject.c_str(), subject.size(), 0, 0, mOffsetResults, mOffsetResultSize);
+	if (!mPattern || !mMatch) {
+		mResult = PCRE2_ERROR_NULL;
+		return mResult;
+	}
+
+	mResult = pcre2_match(mPattern, (PCRE2_SPTR)subject.data(), subject.size(), 0, 0, mMatch, NULL); // note: same return values as old pcre, number of parts, zero when there are more parts than results can hold, negative when not matched
+
+	if (mResult >= 0) {
+		const PCRE2_SIZE *vec = pcre2_get_ovector_pointer(mMatch);
+		const uint32_t count = 2 * pcre2_get_ovector_count(mMatch);
+
+		for (uint32_t i = 0; i < count; i++)
+			mOffsetResults[i] = ((vec[i] == PCRE2_UNSET) ? -1 : int(vec[i])); // note: pcre2 marks part that is not set with own value, old pcre used -1
+	}
+
 	return mResult;
 }
 
@@ -140,7 +177,10 @@ void cPCRE::Replace(int index, string &subject, const string &replace)
 
 int cPCRE::GeStringNumber(const string &substring)
 {
-	return pcre_get_stringnumber(this->mPattern, substring.c_str());
+	if (!mPattern)
+		return PCRE2_ERROR_NULL;
+
+	return pcre2_substring_number_from_name(this->mPattern, (PCRE2_SPTR)substring.c_str());
 }
 
 	}; // namespace nUtils

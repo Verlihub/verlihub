@@ -39,7 +39,7 @@ When Verlihub is distributed in binary form together with these libraries, their
 * MySQL client library: GNU GPL 2 with Universal FOSS Exception
 * ICU: Unicode License
 * ZLib: zlib License
-* PCRE: BSD 3-Clause
+* PCRE2: BSD 3-Clause
 * GetText, LibIntl and LibAsprintf: GNU LGPL 2.1 or later
 * MaxMindDB (libmaxminddb): Apache License 2.0
 * Lua: MIT License
