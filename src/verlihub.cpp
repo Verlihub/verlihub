@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	unsigned int port = 0;
 	int verbosity = 0;
 
-	const char* short_options = "Ss:d:v";
+	const char* short_options = "d:v"; // note: syslog has only long options, -s is stop command
 
 	const struct option long_options[] = {
 		{"syslog", no_argument, 0, 'S'},
@@ -233,6 +233,12 @@ int main(int argc, char *argv[])
 	} stop_signal; // note: declared before server, so console close handler continues after server is destroyed
 #endif
 
+	#ifndef _WIN32
+		signal(SIGSEGV, mySigServHandler); // note: before server, plugins are loaded in its constructor
+	#else
+		SetUnhandledExceptionFilter(myCrashHandler); // note: crash in any thread, not only main thread, also before server, plugins are loaded in its constructor
+	#endif
+
 	std::unique_ptr<cServerDC> server_ptr;
 
 	try { // note: constructor throws when database is not available, exit with error instead of terminate
@@ -250,11 +256,9 @@ int main(int argc, char *argv[])
 			signal(SIGPIPE, mySigPipeHandler);
 			signal(SIGIO, mySigIOHandler);
 			signal(SIGQUIT, mySigQuitHandler);
-			signal(SIGSEGV, mySigServHandler);
 			signal(SIGHUP, mySigHupHandler);
 		#else
 			SetConsoleCtrlHandler(myConsoleHandler, TRUE); // note: ctrl+c, ctrl+break and closing console window stop hub cleanly
-			SetUnhandledExceptionFilter(myCrashHandler); // note: crash in any thread, not only main thread
 		#endif
 
 	#ifdef _WIN32

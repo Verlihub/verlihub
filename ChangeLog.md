@@ -25,7 +25,9 @@
 * Added: TLS protocol negotiation with nmdcs for clients that ask for it, certificate keyprint in log
 * Added: On Windows verlihub --stop and --reload work with named events, there are no signals
 * Updated: Shell scripts and their commands are replaced by verlihub executable itself, same commands and parameters, they work on Linux and Windows, see verlihub --help
+* Updated: Syslog options of hub are only long --syslog and --syslog-suffix, short -s is stop command, same as in vh script
 * Updated: Multi hub manager vhm is verlihub itself, on Linux it is installed as symbolic link, on Windows use verlihub -m, hubs are started as their process owner without su, so owner without login shell works too
+* Updated: Hub utility vh is verlihub itself, on Linux it is installed as symbolic link, so existing vh commands and autostart scripts keep working, same as vh script it shows help without command and version with -v
 * Updated: Hublist registration and update check run on their own threads without access to hub data
 * Updated: Update check and crash report use HTTPS, small built-in HTTP client on OpenSSL that is already required, server certificate is not verified
 * Updated: Hub stop no longer waits for running hublist registration or update check
@@ -49,8 +51,9 @@
 * Fixed: MySQL connection error was written twice
 * Fixed: Password encryption method 1 took salt from memory instead of random, existing passwords still work
 * Fixed: Hub that ended with code 3 was not restarted by vh_daemon script, now watchdog of verlihub --run restarts it, same as crash
+* Fixed: Crash during hub start, for example while loading plugins, gave no stack backtrace and no crash report
 * Removed: Deprecated plugins, only Lua and Plugman are left
-* Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vhm is symbolic link to verlihub
+* Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub
 * Removed: Old verlihub_config way of FindVerlihub.cmake, plugins built outside of Verlihub source use installed package configuration
 * Removed: Old thread classes cThread, cWorkerThread, cThreadWork and cMutex
 * Removed: Built-in Go TLS proxy and FearTLS library, with configurations tls_listen_port and tls_buf_size

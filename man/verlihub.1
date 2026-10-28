@@ -16,16 +16,16 @@ Use configuration folder at given path. When it's not given, following folders a
 .BR "-v, --verbose"
 Increase log level, can be given more times
 .TP
-.BR "-S, --syslog"
+.BR "--syslog"
 Log to syslog instead of console, when it's enabled at compile time
 .TP
-.BR "-s, --syslog-suffix <suffix>"
+.BR "--syslog-suffix <suffix>"
 Add suffix to syslog name
 .TP
 .BR "[port]"
 Listen on given port instead of configured one
 .SH COMMANDS
-Command must be the first argument, it does not start the hub. When configuration folder is optional and not given, it's found same way as for option --config-dir. Configuration folder must contain dbconfig file.
+Command must be the first argument, it does not start the hub. When configuration folder is optional and not given, it's found same way as for option --config-dir. Configuration folder must contain dbconfig file. On Linux vh is installed as symbolic link to verlihub, so vh <command> works same as old vh script, with all commands below, -v shows version.
 .TP
 .BR "-i, --install"
 Install new hub. It asks for database information and creates database account and database when they don't exist, using administrator credentials of database server. Then it creates configuration folder with dbconfig file and default files, database tables, master account and basic hub settings. Log of table creation is written to install_log file in configuration folder. Run it as super user to choose system wide configuration folder. Optional sleep time of vh script is accepted and not used
@@ -33,8 +33,8 @@ Install new hub. It asks for database information and creates database account a
 .BR "-r, --run [config]"
 Run the hub in background from given configuration folder. Old log and err files are renamed to log.old and err.old, plugin links in plugins folder are checked, on Linux open files limit is raised by max_users. Hub runs with watchdog that restarts it when it exits with code 1 (restart command) or crashes, but not more than 3 times in 60 seconds. Its process ID is written to pid file
 .TP
-.BR "--stop [config]"
-Stop the hub that was started with --run and wait until it ends. Short option -s is not used, because it's syslog suffix option of hub
+.BR "-s, --stop [config]"
+Stop the hub that was started with --run and wait until it ends
 .TP
 .BR "-q, --restart [config]"
 Stop the hub and start it again
@@ -98,6 +98,10 @@ verlihub --adduser "[SU]Admin" secret 10
 .fi
 .SH DESCRIPTION
 Verlihub itself installs a new hub and manages existing ones with commands above, there are no utility scripts anymore:
+.TP
+.BR
+.I vh
+symbolic link to verlihub, same commands as verlihub, but without command it shows help instead of starting the hub, -v shows version
 .TP
 .BR
 .I vhm

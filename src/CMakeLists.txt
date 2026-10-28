@@ -234,10 +234,15 @@ write_basic_package_version_file("${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmak
 install(TARGETS libverlihub_so EXPORT VerlihubTargets RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR}) # note: on windows dll goes to bin and its import library to lib
 install(TARGETS vhapi_so verlihub RUNTIME DESTINATION "bin" LIBRARY DESTINATION ${LIBDIR} ARCHIVE DESTINATION ${LIBDIR})
 
-if(NOT WIN32) # note: vhm is verlihub itself, started as vhm it manages multiple hubs, windows symbolic link needs administrator, there use verlihub -m
-	install(CODE "file(REMOVE \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm\")
-		execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink verlihub \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm\")
-		message(STATUS \"Installing: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/vhm -> verlihub\")")
+if(NOT WIN32) # note: vh and vhm are verlihub itself, started as vh it works same as old vh script, as vhm it manages multiple hubs, old scripts are replaced, windows symbolic link needs administrator, there use verlihub and verlihub -m
+	foreach(LINK vh vhm)
+		install(CODE "file(REMOVE \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/${LINK}\")
+			execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink verlihub \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/${LINK}\" RESULT_VARIABLE LINK_RES)
+			if(NOT LINK_RES EQUAL 0 OR NOT IS_SYMLINK \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/${LINK}\")
+				message(FATAL_ERROR \"Failed to install: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/${LINK} -> verlihub\")
+			endif()
+			message(STATUS \"Installing: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/${LINK} -> verlihub\")")
+	endforeach()
 endif()
 install(EXPORT VerlihubTargets NAMESPACE Verlihub:: DESTINATION ${VERLIHUB_CMAKE_DIR})
 install(FILES "${CMAKE_BINARY_DIR}/VerlihubConfig.cmake" "${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmake" DESTINATION ${VERLIHUB_CMAKE_DIR})

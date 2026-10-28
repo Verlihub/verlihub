@@ -470,11 +470,13 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 		return true;
 	}
 
-	if (argc < 2)
+	const bool vh = (name == "vh"); // note: started as vh, it is symbolic link to verlihub, works same as vh script, it never starts hub itself
+
+	if ((argc < 2) && !vh)
 		return false;
 
 	struct sCommand {
-		const char *mShort; // note: same as in vh script, except -v that is already verbose option of hub
+		const char *mShort; // note: same as in vh script, except -v that is already verbose option of hub, vh has it as version
 		const char *mLong;
 		int (cCmdLine::*mFunc)();
 	};
@@ -484,7 +486,7 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 		{NULL, "--version", &cCmdLine::Version},
 		{"-i", "--install", &cCmdLine::Install},
 		{"-r", "--run", &cCmdLine::HubRun},
-		{NULL, "--stop", &cCmdLine::HubStop}, // note: -s is already syslog suffix option of hub
+		{"-s", "--stop", &cCmdLine::HubStop},
 		{"-q", "--restart", &cCmdLine::HubRestart},
 		{"-R", "--reload", &cCmdLine::HubReload},
 		{"-t", "--status", &cCmdLine::HubStatus},
@@ -503,7 +505,10 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 		{"-uh", "--uphelp", &cCmdLine::UpHelp}
 	};
 
-	const string arg(argv[1]);
+	string arg((argc > 1) ? argv[1] : "--help"); // note: vh without arguments shows help, same as vh script
+
+	if (vh && (arg == "-v"))
+		arg = "--version";
 
 	for (const sCommand &cmd: list) {
 		if ((cmd.mShort && (arg == cmd.mShort)) || (arg == cmd.mLong)) {
@@ -525,6 +530,12 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 			SockCleanup();
 			return true;
 		}
+	}
+
+	if (vh) { // note: unknown option does not start hub, same as vh script
+		cout << Paint(autosprintf(_("Unknown option %s, try %s --help"), arg.c_str(), "vh"), sRed) << endl;
+		result = 1;
+		return true;
 	}
 
 	return false;
@@ -585,15 +596,15 @@ int cCmdLine::Help()
 	const vector<pair<string, string>> opts = {
 		{"-d, --config-dir " + Req(_("path")), _("Use configuration folder at given path")},
 		{"-v, --verbose", _("Increase log level, can be given more times")},
-		{"-S, --syslog", _("Log to syslog instead of console")},
-		{"-s, --syslog-suffix " + Req(_("suffix")), _("Add suffix to syslog name")},
+		{"--syslog", _("Log to syslog instead of console")},
+		{"--syslog-suffix " + Req(_("suffix")), _("Add suffix to syslog name")},
 		{Opt(_("port")), _("Listen on given port instead of configured one")}
 	};
 
 	const vector<pair<string, string>> cmds = {
 		{"-i, --install", _("Install new hub, its configuration folder, database and master account")},
 		{"-r, --run " + Opt(conf), _("Run the hub from the given configuration folder")},
-		{"--stop " + Opt(conf), _("Stop the hub from the given configuration folder")},
+		{"-s, --stop " + Opt(conf), _("Stop the hub from the given configuration folder")},
 		{"-q, --restart " + Opt(conf), _("Restart the hub from the given configuration folder")},
 		{"-R, --reload " + Opt(conf), _("Force hub to reload its configuration and caches")},
 		{"-t, --status " + Opt(conf), _("Check if hub is running or not")},
@@ -1561,8 +1572,13 @@ string cCmdLine::ExePath() const
 	if (len > 0)
 		return string(buf, len);
 
-	if (mExecPath.find('/') == string::npos) // note: started from path, same as vh script
+	const size_t pos = mExecPath.find_last_of('/');
+
+	if (pos == string::npos) // note: started from path, same as vh script
 		return string(PREFIXDIR) + "/bin/verlihub";
+
+	if (mExecPath.compare(pos + 1, string::npos, "verlihub") != 0) // note: started as vh or vhm, they are symbolic links, watchdog must start hub itself
+		return mExecPath.substr(0, pos + 1) + "verlihub";
 #endif
 
 	return mExecPath;

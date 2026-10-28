@@ -40,7 +40,7 @@
 
 	verlihub -r [config]			- Start hub
 	verlihub -q [config]			- Restart hub
-	verlihub --stop [config]		- Stop hub
+	verlihub -s [config]			- Stop hub
 	verlihub -t [config]			- Hub status
 
 	verlihub -a <action> -d [config]		- Load plugins on start
