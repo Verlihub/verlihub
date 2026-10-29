@@ -33,6 +33,15 @@ typedef unsigned int SOCKET;
 //#include <mysql/errmsg.h>
 
 #include "cobj.h"
+#include <chrono>
+
+#ifndef CR_SERVER_GONE_ERROR // note: from mysql/errmsg.h, connection is gone before query is sent
+	#define CR_SERVER_GONE_ERROR 2006
+#endif
+
+#ifndef CR_SERVER_LOST // note: connection is lost during query, query can be done already
+	#define CR_SERVER_LOST 2013
+#endif
 
 namespace nVerliHub {
 /**
@@ -53,7 +62,7 @@ class cMySQL: public cObj
 		cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls = false, const string &sock = "");
 		~cMySQL();
 		void Init();
-		bool Connect();
+		bool Connect(bool quiet = false);
 		void Close();
 
 		string GetDBName()
@@ -67,22 +76,23 @@ class cMySQL: public cObj
 		// connect to server, same for main connection and database worker, tls requires encrypted connection, sock is local socket path or empty for default
 		static bool RealConnect(MYSQL *handle, const string &addr, const string &user, const string &pass, const string &data, bool tls, const string &sock = "");
 
-		public:
-			/*
-				note
-					returns true if connection to server is lost
-					will try to autoreconnect and increase counter
-					probably need to resend query after successful reconnect
-			*/
-			//bool Error(int level, const string& text);
-			void Error(int level, const string& text);
+		// connect again after lost connection, for example database server restart, at most once in few seconds and with short timeout, because main connection runs on main thread
+		bool Reconnect();
+
+		// message for operators when connection was lost or is back, it is made inside of query, so hub sends it later from its timer
+		bool TakeNotice(string &text);
+
+		void Error(int level, const string& text);
 
 	private:
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;
 		bool mDBTLS;
 		string mDBSock;
 		MYSQL *mDBHandle;
-		//unsigned int mReconnect;
+		bool mLost; // note: connection is lost and not yet back
+		unsigned long mFailed; // note: failed reconnect attempts since connection was lost
+		std::chrono::steady_clock::time_point mLostSince, mLastTry, mLastLog; // note: when connection was lost, last reconnect attempt and last log line about it
+		string mNotice; // note: waiting message for operators
 };
 
 	}; // namespace nMySQL

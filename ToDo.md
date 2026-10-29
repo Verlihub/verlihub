@@ -6,4 +6,3 @@
 * Windows W6: portable folder with DLLs and their license texts next to exe, paths relative to exe, default configuration folder and install prefix, place of multi hub list verlihub.conf (now prefix/etc, maybe ProgramData), first run setup, locale names like en-US
 * Windows W7: run as Windows service, CI that builds Windows zip
 * IPv6: Verlihub has no IPv6 support yet, when it is added, also db_host in dbconfig needs [address]:port form
-* MySQL: MYSQL_OPT_RECONNECT is deprecated and will be removed, it gives warning on connect, only main connection uses it (cMySQL::Connect), replace it with own reconnect when connection is lost (CR_SERVER_GONE_ERROR, CR_SERVER_LOST) in cQuery, like cMySQLWorker::Execute already does on its own thread, main connection runs on main thread, so reconnect there must not wait long, and charset must be set again after reconnect

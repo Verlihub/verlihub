@@ -57,16 +57,23 @@ int cQuery::Query()
 	if (Log(3))
 		LogStream() << "Execute query: " << qstr << endl;
 
-	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) { // error
+	if ((!mMySQL.mDBHandle || mMySQL.mLost) && !mMySQL.Reconnect()) { // note: earlier reconnect failed, try again, it waits few seconds between tries
 		if (ErrLog(2))
-			LogStream() << "Error on query: " << qstr << endl;
+			LogStream() << "No connection to MySQL/MariaDB server for query: " << qstr << endl;
 
-		/*
-		if (mMySQL.Error(2, "Query error: ")) { // note: successful reconnect, try again
-			if (!mysql_query(mMySQL.mDBHandle, qstr.c_str())) // success
+		return -1;
+	}
+
+	if (mysql_query(mMySQL.mDBHandle, qstr.c_str())) { // error
+		const unsigned int code = mysql_errno(mMySQL.mDBHandle);
+
+		if ((code == CR_SERVER_GONE_ERROR) || (code == CR_SERVER_LOST)) { // note: connection lost, for example database restart, reconnect for this and next queries
+			if (mMySQL.Reconnect() && (code == CR_SERVER_GONE_ERROR) && !mysql_query(mMySQL.mDBHandle, qstr.c_str())) // note: query is sent again only when it was not sent before, lost during query can mean it was done already
 				return 1;
 		}
-		*/
+
+		if (ErrLog(2))
+			LogStream() << "Error on query: " << qstr << endl;
 
 		mMySQL.Error(2, "Query error: ");
 		return -1;
@@ -77,6 +84,9 @@ int cQuery::Query()
 
 int cQuery::StoreResult()
 {
+	if (!mMySQL.mDBHandle)
+		return 0;
+
 	mResult = mysql_store_result(mMySQL.mDBHandle);
 	if (mResult != NULL)
 		return mysql_num_rows(mResult);

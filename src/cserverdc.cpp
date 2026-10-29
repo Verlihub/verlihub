@@ -1960,6 +1960,11 @@ int cServerDC::OnTimer(const cTime &now)
 	if (mReloadNow) // reload now
 		this->ReloadNow();
 
+	string db_notice;
+
+	if (mMySQL.TakeNotice(db_notice) && mOpChat) // note: database connection lost or back, main connection makes notice inside of query, so it is sent here
+		mOpChat->SendPMToAll(db_notice, NULL);
+
 	int stop_req = 1;
 
 	if (mStopRequest.compare_exchange_strong(stop_req, 2)) { // note: stop asked from other thread, like windows console handler

@@ -37,8 +37,9 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 	mDBChar(charset),
 	mDBTLS(tls),
 	mDBSock(sock),
-	mDBHandle(NULL)//,
-	//mReconnect(0)
+	mDBHandle(NULL),
+	mLost(false),
+	mFailed(0)
 {
 	Init();
 
@@ -78,24 +79,95 @@ void cMySQL::Close()
 	mysql_library_end();
 }
 
-bool cMySQL::Connect()
+bool cMySQL::Connect(bool quiet)
 {
-	if (Log(0))
+	if (!quiet && Log(0))
 		LogStream() << "Connecting to MySQL/MariaDB server " << mDBUser << " @ " << mDBHost << " / " << mDBName << " using charset " << ((mDBChar.size()) ? mDBChar : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
 
-	bool yes = true; // todo: deprecated in mysql 8, use mariadb instead
-	mysql_options(mDBHandle, MYSQL_OPT_RECONNECT, &yes);
-
-	if (mDBChar.size())
+	if (mDBChar.size()) // note: no automatic reconnect of client library, it is deprecated, see Reconnect()
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, mDBChar.c_str());
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
 	if (!RealConnect(mDBHandle, mDBHost, mDBUser, mDBPass, mDBName, mDBTLS, mDBSock)) {
-		Error(0, "Failed connecting to MySQL/MariaDB server: "); // note: error appends mysql error text
+		if (!quiet)
+			Error(0, "Failed connecting to MySQL/MariaDB server: "); // note: error appends mysql error text
+
 		return false;
 	}
 
+	return true;
+}
+
+bool cMySQL::Reconnect()
+{
+	const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+	if (mLost && ((now - mLastTry) < std::chrono::seconds(5))) // note: database is still down, dont block main loop on every query
+		return false;
+
+	if (!mLost) { // note: first time, log and opchat get it once, next attempts are quiet
+		if (ErrLog(0))
+			LogStream() << "Lost connection to MySQL/MariaDB server, reconnecting" << endl;
+
+		mLostSince = now;
+		mLastLog = now;
+		mFailed = 0;
+		mNotice = _("Lost connection to database server, hub reconnects by itself, until then registered users can't login and commands that use database fail.");
+	}
+
+	mLost = true;
+	mLastTry = now;
+
+	if (mDBHandle) // note: library stays initialized, only handle is made again
+		mysql_close(mDBHandle);
+
+	mDBHandle = mysql_init(NULL);
+
+	if (!mDBHandle) {
+		if (ErrLog(0))
+			LogStream() << "Unable to initialize MySQL structure" << endl;
+
+		return false;
+	}
+
+	unsigned int timeout = 3; // note: main thread waits for it
+	mysql_options(mDBHandle, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+
+	if (!Connect(true)) { // note: same charset, tls, port and socket as on start
+		mFailed++;
+
+		if (((now - mLastLog) >= std::chrono::minutes(1)) || (mFailed == 1)) { // note: dont flood log while database is down
+			mLastLog = now;
+
+			if (ErrLog(0))
+				LogStream() << "Still no connection to MySQL/MariaDB server after " << mFailed << " attempts: " << mysql_error(mDBHandle) << endl;
+		}
+
+		return false;
+	}
+
+	mLost = false;
+	const long secs = long(std::chrono::duration_cast<std::chrono::seconds>(now - mLostSince).count());
+
+	if (Log(0))
+		LogStream() << "Reconnected to MySQL/MariaDB server after " << secs << " seconds" << endl;
+
+	if (mFailed) // note: replaces lost notice when it was not sent yet, both are not needed then
+		mNotice = autosprintf(_("Connection to database server is back after %ld seconds."), secs);
+	else // note: first attempt worked, nothing failed for operators, log is enough
+		mNotice.clear();
+
+	return true;
+}
+
+bool cMySQL::TakeNotice(string &text)
+{
+	if (mNotice.empty())
+		return false;
+
+	text.swap(mNotice);
+	mNotice.clear();
 	return true;
 }
 
@@ -152,47 +224,8 @@ bool cMySQL::RealConnect(MYSQL *handle, const string &addr, const string &user, 
 	return (mysql_real_connect(handle, host.c_str(), user.c_str(), pass.c_str(), (data.size() ? data.c_str() : NULL), port, path, 0) != NULL); // note: empty database is used by installation to check account only
 }
 
-//bool cMySQL::Error(int level, const string &text)
 void cMySQL::Error(int level, const string &text)
 {
-	/*
-	if (!mDBHandle) {
-		if (ErrLog(0))
-			LogStream() << "MySQL handle is no longer valid" << endl;
-
-		return false;
-	}
-
-	int err = mysql_errno(mDBHandle);
-
-	if ((err == CR_SERVER_GONE_ERROR) || (err == CR_SERVER_LOST)) { // connection lost
-		if (mReconnect >= 5) { // todo: notify to opchat without flood? admin needs to take action
-			if (ErrLog(0))
-				LogStream() << "MySQL server gone, tried to reconnect " << mReconnect << " times, nothing else to do" << endl;
-
-			return false;
-		}
-
-		mReconnect++;
-
-		if (ErrLog(0))
-			LogStream() << "MySQL server gone, trying to reconnect: #" << mReconnect << endl;
-
-		Close();
-		Init();
-
-		if (Connect(mDBHost, mDBUser, mDBPass, mDBName, mDBChar)) // success
-			return true;
-
-		return false;
-	}
-
-	if (mDBHandle && ErrLog(level))
-		LogStream() << text << mysql_error(mDBHandle) << endl;
-
-	return false;
-	*/
-
 	if (ErrLog(level))
 		LogStream() << text << (mDBHandle ? mysql_error(mDBHandle) : "Unknown error") << endl;
 }
