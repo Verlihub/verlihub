@@ -114,5 +114,13 @@ bool cQuery::GetResult()
 	return mResult ? true : false;
 }
 
+unsigned int cQuery::ErrorCode()
+{
+	if (!mMySQL.mDBHandle || mMySQL.mLost) // note: query was not sent, error of handle is old
+		return 0;
+
+	return mysql_errno(mMySQL.mDBHandle);
+}
+
 	}; // namespace nMySQL
 }; // namespace nVerliHub

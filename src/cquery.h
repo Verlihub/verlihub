@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -55,6 +55,8 @@ class cQuery : public cObj
 		void DataSeek(unsigned long long);
 		// is there an existing result?
 		bool GetResult();
+		// error code of last failed query, 0 when there was no connection
+		unsigned int ErrorCode();
 		cMySQL& getMySQL() { return mMySQL;}
 	private:
 		cMySQL & mMySQL;

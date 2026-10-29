@@ -42,6 +42,8 @@
 * Added: Commands of verlihub executable are translated to language of system environment, on Windows console they are shown as UTF-8
 * Updated: Regular expressions use PCRE2 library instead of old PCRE, which new Linux distributions no longer have, required package is libpcre2-dev on Debian, mingw-w64-ucrt-x86_64-pcre2 on Windows
 * Updated: Main database connection reconnects by itself when connection is lost, for example after database restart, at most once in 5 seconds with 3 seconds timeout, operators get OpChat message when it is lost and back, log shows failed attempts once a minute, deprecated automatic reconnect of client library and its warning are gone
+* Updated: Command sysinfo shows memory usage reported by database server itself instead of ps and pgrep, so it works on Windows and with database on other machine, on MySQL account needs select permission on performance_schema.memory_summary_global_by_event_name, verlihub --install grants it when administrator credentials are asked, see Install.md
+* Updated: On BSD command sysinfo shows highest resident memory of hub and no virtual memory, without running ps
 * Fixed: Translation with wrong format arguments could crash the hub, for example %s instead of %d, such translation is not used now and original text is shown instead
 * Fixed: Hublist registration could hang for minutes on hublist that does not answer
 * Fixed: Hublist registration and crash report could send incomplete data

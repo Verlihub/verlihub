@@ -107,6 +107,10 @@ verlihub --install
  Run it as super user on Linux to choose system wide configuration folder like /etc/verlihub.
  Log of table creation is written to install_log file in configuration folder.
  In MSYS2 terminal passwords are shown while typing, in Windows console they are hidden.
+ On MySQL server, when administrator credentials are asked, installation also allows database account to read memory usage of server for !sysinfo command, MariaDB server needs no extra permission.
+ For existing database account on MySQL server run as database administrator, with your account name and host:
+
+ GRANT SELECT ON performance_schema.memory_summary_global_by_event_name TO 'verlihub'@'localhost';
 
 =======================
 Supported CMake options

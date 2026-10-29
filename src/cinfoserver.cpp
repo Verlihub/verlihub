@@ -23,6 +23,7 @@
 #include "cserverdc.h"
 #include "casyncconn.h"
 #include "cbanlist.h"
+#include "cquery.h"
 
 #include <iostream>
 #include <thread>
@@ -407,11 +408,6 @@ void cInfoServer::SystemInfo(ostream &os)
 	unsigned __int64 size_vm = 0, size_res = 0; // self memory sizes and cpu usage
 	double perc_cpu;
 
-#ifndef _WIN32
-	pid_t mypid;
-	string temp;
-#endif
-
 #if defined _WIN32
 
 	PROCESS_MEMORY_COUNTERS pmc;
@@ -423,16 +419,10 @@ void cInfoServer::SystemInfo(ostream &os)
 
 #elif defined HAVE_BSD
 
-	mypid = ::getpid(); // get own pid
-	temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
+	struct rusage usage;
 
-	if (temp.size())
-		size_vm = StringAsLL(temp);
-
-	temp = ParsePsLine(mypid, "", "rss"); // resident memory
-
-	if (temp.size())
-		size_res = StringAsLL(temp);
+	if (!getrusage(RUSAGE_SELF, &usage)) // note: bsd has no proc status file, this gives highest resident memory in kb and no virtual memory
+		size_res = (unsigned __int64)usage.ru_maxrss;
 
 #elif defined HAVE_LINUX
 
@@ -497,47 +487,59 @@ void cInfoServer::SystemInfo(ostream &os)
 	last_user_cpu = time_sample.tms_utime;
 #endif
 
-	os << " [*] " << autosprintf(_("Virtual RAM usage: %s"), convertByte(size_vm * 1024).c_str()) << "\r\n";
+	if (size_vm) // note: unknown on bsd
+		os << " [*] " << autosprintf(_("Virtual RAM usage: %s"), convertByte(size_vm * 1024).c_str()) << "\r\n";
+
 	os << " [*] " << autosprintf(_("Resident RAM usage: %s"), convertByte(size_res * 1024).c_str()) << "\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("CPU cores: %d"), num_cpu) << "\r\n";
 	os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n";
 
-#ifndef _WIN32 // todo: windows has no ps and pgrep, find database server process another way
-	mypid = 0;
-	temp = ParsePsLine(0, "mysqld", "pid"); // try mysql
-	string name;
+	nMySQL::cQuery query(mServer->mMySQL); // note: database server tells its own memory, so it works on every system and also when database runs on other machine
+	string name("MySQL/MariaDB"), size;
+	query.OStream() << "select version()";
 
-	if (temp.size()) {
-		mypid = StringAsLL(temp);
-		name = "MySQL";
+	if ((query.Query() > 0) && (query.StoreResult() > 0)) {
+		MYSQL_ROW row = query.Row();
 
-	} else {
-		temp = ParsePsLine(0, "mariadbd", "pid"); // try mariadb
+		if (row && row[0])
+			name = ((string(row[0]).find("MariaDB") != string::npos) ? "MariaDB" : "MySQL");
+	}
 
-		if (temp.size()) {
-			mypid = StringAsLL(temp);
-			name = "MariaDB";
+	query.Clear();
+
+	if (name != "MySQL/MariaDB") {
+		if (name == "MariaDB") // note: memory reserved by server inclusive buffers, not resident memory, any user can read it
+			query.OStream() << "show global status like 'Memory_used'";
+		else // note: same for mysql, select on this table must be granted, verlihub --install does it
+			query.OStream() << "select 'Memory_used', sum(`CURRENT_NUMBER_OF_BYTES_USED`) from `performance_schema`.`memory_summary_global_by_event_name`";
+
+		if (query.Query() > 0) {
+			if (query.StoreResult() > 0) {
+				MYSQL_ROW row = query.Row();
+
+				if (row && row[1]) {
+					const __int64 bytes = StringAsLL(row[1]);
+
+					if (bytes > 0) // note: 0 when memory instruments are disabled, for example on mysql 5.7
+						size = convertByte(bytes);
+				}
+			}
+
+		} else {
+			const unsigned int code = query.ErrorCode(); // note: table, column, database and global access denied
+
+			if ((code == 1142) || (code == 1143) || (code == 1044) || (code == 1227))
+				size = _("No rights");
 		}
+
+		query.Clear();
 	}
 
-	if (mypid > 0) {
-		size_vm = 0;
-		size_res = 0;
-		temp = ParsePsLine(mypid, "", "vsize"); // virtual memory
+	if (size.empty()) // note: no connection, too old server or disabled performance schema
+		size = _("Not available");
 
-		if (temp.size())
-			size_vm = StringAsLL(temp);
-
-		temp = ParsePsLine(mypid, "", "rss"); // resident memory
-
-		if (temp.size())
-			size_res = StringAsLL(temp);
-
-		os << "\r\n [*] " << autosprintf(_("%s virtual RAM usage: %s"), name.c_str(), convertByte(size_vm * 1024).c_str()) << "\r\n";
-		os << " [*] " << autosprintf(_("%s resident RAM usage: %s"), name.c_str(), convertByte(size_res * 1024).c_str()) << "\r\n";
-	}
-#endif
+	os << "\r\n [*] " << autosprintf(_("%s memory usage reported by server: %s"), name.c_str(), size.c_str()) << "\r\n";
 }
 
 unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
@@ -555,50 +557,6 @@ unsigned __int64 cInfoServer::ParseMemSizeLine(char *line)
 	line[len - 3] = '\0'; // get rid of suffix
 	len = StringAsLL(pos);
 	return len;
-}
-
-string cInfoServer::ParsePsLine(pid_t pid, const string &proc, const string &what)
-{
-	string res;
-	ostringstream os;
-
-	if (strncmp(what.c_str(), "pidf", 4) == 0) { // full pid, note: proc is not validated
-		if (proc.size())
-			os << "pgrep -f \"" << proc << '\"';
-
-	} else if (strncmp(what.c_str(), "pid", 3) == 0) { // pid, note: proc is not validated
-		if (proc.size())
-			os << "pgrep \"" << proc << '\"';
-
-	} else if ((strncmp(what.c_str(), "vsize", 5) == 0) || (strncmp(what.c_str(), "rss", 3) == 0) || (strncmp(what.c_str(), "pcpu", 3) == 0)) { // field
-		if (pid > 0)
-			os << "ps -o " << what << "= " << pid;
-	}
-
-	if (os.str().size()) {
-		FILE *pipe = popen(os.str().c_str(), "r");
-
-		if (pipe) {
-			char buf[128];
-			os.str("");
-			os.clear();
-
-			try {
-				while (fgets(buf, sizeof buf, pipe) != NULL) {
-					os << buf;
-				}
-			} catch (...) {
-				pclose(pipe);
-			}
-
-			pclose(pipe);
-
-			if (os.str().size())
-				res = os.str();
-		}
-	}
-
-	return res;
 }
 
 void cInfoServer::SetServer(cServerDC *Server)

@@ -1105,6 +1105,26 @@ int cCmdLine::UpHelp()
 	return (fail ? 1 : 0);
 }
 
+static bool IsMariaDB(const string &host, const string &user, const string &pass, const string &sock) // note: server name is in version, for example 10.11.6-MariaDB
+{
+	MYSQL *handle = mysql_init(NULL);
+
+	if (!handle)
+		return false;
+
+	unsigned int wait = 5;
+	mysql_options(handle, MYSQL_OPT_CONNECT_TIMEOUT, &wait);
+	bool res = false;
+
+	if (cMySQL::RealConnect(handle, host, user, pass, "", false, sock)) {
+		const char *ver = mysql_get_server_info(handle);
+		res = (ver && strstr(ver, "MariaDB"));
+	}
+
+	mysql_close(handle);
+	return res;
+}
+
 void cCmdLine::AskAdmin(string &user, string &pass)
 {
 	while (true) { // note: same as _ask_admin_access of vh script
@@ -1267,6 +1287,20 @@ int cCmdLine::Install()
 		cout << '\n' << Paint(autosprintf(_("MySQL database %s has been created and permissions granted."), Paint(db_data, sBold, false, sGreenBold).c_str()), sGreenBold) << endl;
 	} else {
 		cout << Paint(autosprintf(_("MySQL database %s has been found, assuming that permissions are already granted."), Paint(db_data, sBold, false, sGreenBold).c_str()), sGreenBold) << endl;
+	}
+
+	if (admin_user.size() && !IsMariaDB(db_host, db_user, db_pass, db_socket)) { // note: only when administrator was asked anyway, mysql shows memory usage in !sysinfo only with this grant, mariadb needs none
+		os.str("");
+		os << "grant select on `performance_schema`.`memory_summary_global_by_event_name` to '";
+		cConfMySQL::WriteStringConstant(os, db_user);
+		os << "'@'";
+		cConfMySQL::WriteStringConstant(os, addr);
+		os << '\'';
+
+		if (AdminExecute(db_host, admin_user, admin_pass, {os.str(), "flush privileges"}, db_socket))
+			cout << '\n' << Paint(_("Permission to read memory usage of MySQL server has been granted."), sGreenBold) << endl;
+		else // note: not needed for hub to work
+			cout << '\n' << Paint(_("Memory usage of MySQL server will not be shown in !sysinfo, hub works without it."), sBlue) << endl;
 	}
 
 	vector<string> dirs; // note: same places as vh script offers
