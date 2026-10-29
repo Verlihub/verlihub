@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -72,7 +72,7 @@ class cTime : public timeval
 	cTime   operator/ (int i) const {long sec=tv_sec/i; long usec=tv_usec+1000000*(tv_sec % i); usec/=i; return cTime(sec,usec).Normalize();}
 	cTime   operator* (int i) const {long sec=tv_sec*i; long usec=tv_usec*i; return cTime(sec,usec).Normalize();}
 	operator double(){ return double(tv_sec)+double(tv_usec)/1000000.;}
-	operator long() const { return long(tv_sec)*1000000+long(tv_usec);}
+	operator long() const = delete; // note: microseconds dont fit into 32 bit long on windows, use Sec() or MiliSec() instead, deleted so every use fails to compile
 	operator bool() const { return !(!tv_sec && !tv_usec);}
 	int operator! () const { return !tv_sec && !tv_usec;}
 	long Sec() const { return tv_sec; }

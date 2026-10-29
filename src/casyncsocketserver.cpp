@@ -126,8 +126,9 @@ int cAsyncSocketServer::run()
 	mbRun = true;
 	vhLog(1) << "Main loop start" << endl;
 
-
 	StartWorkers();
+	mTime.Get();
+	mFrequency.Reset(mTime); // note: counter was made with hub, loading of database, plugins and scripts took time, it must not count as slow main loop
 
 	while (mbRun) {
 		mTime.Get(); // note: always current time, dont modify this container anywhere

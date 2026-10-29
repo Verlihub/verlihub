@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -53,15 +53,28 @@ string cTimePrint::AsString() const
 std::ostream& operator<<(std::ostream &os, const cTimePrint &t)
 {
 	#define CTIME_BUFFSIZE 26
-	static char buf[CTIME_BUFFSIZE + 1];
+	char buf[CTIME_BUFFSIZE + 1]; // note: not static, log lines are written from worker threads too
 	long n, rest, i;
 	ostringstream ostr;
 
 	switch (t.mPrintType) {
-		case 1:
-			strftime(buf, CTIME_BUFFSIZE + 1, "%Y-%m-%d %H:%M:%S", localtime((const time_t*) & (t.tv_sec)));
-			os << buf;
+		case 1: {
+			const time_t sec = t.tv_sec; // note: tv_sec is 32 bit long on windows and time_t is 64 bit, so it must be copied, not pointed to
+			struct tm loc;
+
+		#ifdef _WIN32 // note: thread safe versions, log lines are written from worker threads too
+			const bool conv = !localtime_s(&loc, &sec);
+		#else
+			const bool conv = (localtime_r(&sec, &loc) != NULL);
+		#endif
+
+			if (conv && strftime(buf, CTIME_BUFFSIZE + 1, "%Y-%m-%d %H:%M:%S", &loc))
+				os << buf;
+			else // note: time out of range
+				os << sec;
+
 			break;
+		}
 
 		case 2:
 			rest = t.tv_sec;

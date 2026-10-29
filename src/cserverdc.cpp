@@ -1997,9 +1997,7 @@ int cServerDC::OnTimer(const cTime &now)
 		*/
 
 		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
-			this->mUploadZone[zone].Reset(mTime);
-
-		mFrequency.Reset(mTime); // todo: same as above
+			this->mUploadZone[zone].Reset(mTime); // note: main loop frequency is not reset here anymore, after every reset it showed 0 for few seconds
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
