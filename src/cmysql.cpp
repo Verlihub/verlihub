@@ -154,7 +154,7 @@ bool cMySQL::Reconnect()
 		LogStream() << "Reconnected to MySQL/MariaDB server after " << secs << " seconds" << endl;
 
 	if (mFailed) // note: replaces lost notice when it was not sent yet, both are not needed then
-		mNotice = autosprintf(_("Connection to database server is back after %ld seconds."), secs);
+		mNotice = string(autosprintf(_("Connection to database server is back after %ld seconds."), secs));
 	else // note: first attempt worked, nothing failed for operators, log is enough
 		mNotice.clear();
 
