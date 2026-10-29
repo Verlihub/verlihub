@@ -1,5 +1,5 @@
 #	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-#	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+#	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 #
 #	Verlihub is free software; You can redistribute it
 #	and modify it under the terms of the GNU General
@@ -49,6 +49,7 @@ SET(CONFIG_FILES_RU # russian
 
 SET(prefix ${CMAKE_INSTALL_PREFIX})
 SET(plugindir "${CMAKE_INSTALL_PREFIX}/${PLUGINDIR}")
+SET(plugext "${CMAKE_SHARED_MODULE_SUFFIX}") # note: .so on linux, .dll on windows, same as plugins are built
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/sql/default_pi_plug.sql.in ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
 SET(SQL_FILES ${SQL_FILES}  ${CMAKE_CURRENT_BINARY_DIR}/sql/default_pi_plug.sql)
 INSTALL(FILES ${SQL_FILES} DESTINATION share/${PROJECT_NAME}/sql)

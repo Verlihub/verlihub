@@ -7,7 +7,7 @@
 * Added: Worker threads for blocking work, configuration adv_worker_threads (0 = all CPU cores)
 * Added: Host name lookup on worker threads, with dns_lookup new connection waits up to 5 seconds for host name
 * Added: Database thread with its own connection for writes and background reads, queued writes are done before hub stops
-* Added: Configuration use_banlist_cache, ban check on login without database query
+* Added: Configuration use_banlist_cache, ban check on login without database query, ban table changed by VH:SQLQuery of Lua script reloads cache at once, so script ban and unban work as before, other programs that change database are seen after timer_reloadcfg_period
 * Added: Custom MySQL port in dbconfig with db_host = host:port, connection uses TCP then, also in vh script
 * Added: Configuration db_tls in dbconfig to require encrypted connection to MySQL server, disabled by default, also newer MariaDB client library no longer refuses server without TLS
 * Added: Configuration db_socket in dbconfig, path of local MySQL socket when it differs from built-in path of client library, verlihub --install finds it, same as vh script did
@@ -37,7 +37,7 @@
 * Updated: Hub stop no longer waits for running hublist registration or update check
 * Updated: Results of worker threads are processed without waiting for adv_step_delay
 * Updated: Commands gethost and getinfo, and user reports to operator chat, look up host names in background
-* Updated: Login statistics of registered users and ban hits are written in background
+* Updated: Login statistics of registered users and ban hits are written in background, every query on main connection, also VH:SQLQuery of Lua script, first waits up to 3 seconds for them, so script reads same values as when they were written at once
 * Updated: FindVerlihub.cmake is not installed into CMake root on Windows by default, CMake flag INSTALL_CMAKE_FILES
 * Updated: Translation files, they are UTF-8 now and without codepage in file name, hub converts them to charset of its locale at runtime, CMake flag LOCALE_CONVERT converts at build time instead, po/LANGS is removed, languages are found from files
 * Added: CMake target pot extracts translation templates from source, po/transifex.yml for Transifex GitHub integration
@@ -73,6 +73,12 @@
 * Fixed: Kick search did not escape operator nick, so ban of recently kicked user failed for operator with quote or backslash in nick
 * Fixed: Database thread sent query again when connection was lost during query, so for example login counter could be increased twice, now only query that was not sent is repeated, same as main connection
 * Fixed: On Windows connection to hublist, update check and crash report server waited about 21 seconds instead of 5 seconds for server that does not answer
+* Fixed: Lua script call that started other script calls, for example VH:ParseCommand or VH:ScriptCommand, had its own stack cleared, so its strings could be freed while still in use and hub could crash
+* Fixed: Unloading or reloading Lua script from inside script call, also script itself, deleted running script and changed script list during calls, which could crash hub, now unloaded script gets no more calls and is deleted when no script runs
+* Fixed: VH:SQLFetch wrote past end of Lua stack for query with more than 19 columns, for example all columns of reglist
+* Fixed: VH:GetLuaBots returned only last bot of each script and left holes in list
+* Fixed: Variable with empty value in dbconfig, for example locale =, took value of previous line when it was last line, or next line as its value, which was then lost
+* Fixed: Trigger file with Windows line ends, for example edited on Windows and copied to Linux, was sent with double carriage return
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

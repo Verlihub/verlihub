@@ -204,8 +204,7 @@ bool cConsole::cfDelLuaScript::operator()()
 			li->CallFunction("UnLoad", args);
 			scriptfile = li->mScriptName;
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
-			GetPI()->mLua.erase(it);
-			delete li;
+			GetPI()->DelScript(li); // note: UnLoad() could change script list, so iterator is not used, script that still runs is deleted later
 			li = NULL;
 			return true;
 		}
@@ -324,8 +323,7 @@ bool cConsole::cfReloadLuaScript::operator()()
 			li->CallFunction("UnLoad", args);
 			(*mOS) << autosprintf(_("Script stopped: %s"), li->mScriptName.c_str());
 			scriptfile = li->mScriptName;
-			GetPI()->mLua.erase(it);
-			delete li;
+			GetPI()->DelScript(li); // note: UnLoad() could change script list, so iterator is not used, script that still runs is deleted later
 			li = NULL;
 			break;
 		}

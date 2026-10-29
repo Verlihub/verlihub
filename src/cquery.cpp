@@ -54,6 +54,9 @@ int cQuery::Query()
 {
 	const string qstr(mOS.str());
 
+	if (mMySQL.mBeforeQuery) // note: writes queued on database thread are done first, so this query sees them
+		mMySQL.mBeforeQuery();
+
 	if (Log(3))
 		LogStream() << "Execute query: " << qstr << endl;
 

@@ -34,6 +34,7 @@ typedef unsigned int SOCKET;
 
 #include "cobj.h"
 #include <chrono>
+#include <functional>
 
 #ifndef CR_SERVER_GONE_ERROR // note: from mysql/errmsg.h, connection is gone before query is sent
 	#define CR_SERVER_GONE_ERROR 2006
@@ -83,6 +84,9 @@ class cMySQL: public cObj
 		bool TakeNotice(string &text);
 
 		void Error(int level, const string& text);
+
+		// called before every query on this connection, database thread sets it, so main connection first waits for queued writes
+		std::function<void()> mBeforeQuery;
 
 	private:
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;

@@ -23,6 +23,9 @@
 #include "cconfmysql.h"
 #include "cquery.h"
 #include <cstring>
+#include <future>
+#include <memory>
+#include <chrono>
 
 #ifndef CR_SERVER_GONE_ERROR // note: from mysql/errmsg.h
 	#define CR_SERVER_GONE_ERROR 2006
@@ -57,11 +60,32 @@ cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, cons
 			mysql_thread_end();
 		}
 	);
+
+	mMain.mBeforeQuery = [this] { Flush(); }; // note: reads on main connection wait for queued writes, see Flush()
 }
 
 cMySQLWorker::~cMySQLWorker()
 {
+	mMain.mBeforeQuery = nullptr; // note: main connection can live longer
 	mPool.Stop();
+}
+
+void cMySQLWorker::Flush()
+{
+	if (!mPool.IsRunning() || mPool.IsIdle()) // note: nothing queued or running, almost always
+		return;
+
+	auto done = std::make_shared<std::promise<void>>();
+	std::future<void> wait = done->get_future();
+
+	if (!mPool.Post([done]() -> nThread::cWorkerPool::tResult { // note: single thread, so this runs after every query queued before
+		done->set_value();
+		return nullptr;
+	}))
+		return;
+
+	if ((wait.wait_for(std::chrono::seconds(3)) != std::future_status::ready) && ErrLog(1)) // note: database is slow or down, main thread does not freeze for it
+		LogStream() << "Database thread is still busy after 3 seconds, query on main connection runs without waiting for it" << endl;
 }
 
 bool cMySQLWorker::Start()

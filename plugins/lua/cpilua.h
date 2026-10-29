@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -28,6 +28,7 @@
 #include "src/cconndc.h"
 #include "src/cvhplugin.h"
 #include <vector>
+#include <algorithm>
 
 #define LUA_PI_IDENTIFIER "Lua"
 
@@ -110,6 +111,7 @@ public:
 		}
 
 		mLua.clear();
+		EmptyTrash();
 	}
 
 	void AddData(cLuaInterpreter *ip)
@@ -119,16 +121,65 @@ public:
 
 	cLuaInterpreter * operator[](unsigned int i)
 	{
-		if (i > Size())
+		if (i >= Size())
 			return NULL;
 		else
 			return mLua[i];
+	}
+
+	/*
+		script can load, unload or reload scripts from inside its own call, for example with VH:ParseCommand, also itself
+		note: unloaded script is removed from list at once, so it gets no more calls, but it is deleted only when no script is running, because its lua state may still run
+	*/
+	void CallStart()
+	{
+		mCallDepth++;
+	}
+
+	void CallEnd()
+	{
+		if (mCallDepth)
+			mCallDepth--;
+	}
+
+	bool HasScript(const cLuaInterpreter *li) const
+	{
+		return (std::find(mLua.begin(), mLua.end(), li) != mLua.end());
+	}
+
+	void DelScript(cLuaInterpreter *li)
+	{
+		if (!li)
+			return;
+
+		tvLuaInterpreter::iterator it = std::find(mLua.begin(), mLua.end(), li);
+
+		if (it == mLua.end()) // note: already unloaded, for example by its own UnLoad(), it must not be deleted twice
+			return;
+
+		mLua.erase(it);
+
+		if (mCallDepth) // note: deleted on next timer
+			mTrash.push_back(li);
+		else
+			delete li;
+	}
+
+	void EmptyTrash()
+	{
+		tvLuaInterpreter list; // note: closing state runs finalizers of script, they could unload too
+		list.swap(mTrash);
+
+		for (tvLuaInterpreter::iterator it = list.begin(); it != list.end(); ++it)
+			delete *it;
 	}
 
 	cConsole mConsole;
 	nMySQL::cQuery *mQuery;
 	typedef vector<cLuaInterpreter*> tvLuaInterpreter;
 	tvLuaInterpreter mLua;
+	tvLuaInterpreter mTrash; // note: unloaded scripts that were still running, see DelScript()
+	unsigned int mCallDepth = 0; // note: script calls in progress
 	string mScriptDir;
 	static int log_level;
 	static int err_class;

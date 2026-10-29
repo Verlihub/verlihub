@@ -1,2 +1,2 @@
 INSERT IGNORE INTO pi_plug (nick,autoload,path,detail) VALUES
-        ("lua"    ,0,"@plugindir@/liblua_pi.so"   ,"Support for Lua scripts")
+        ("lua"    ,0,"@plugindir@/liblua_pi@plugext@"   ,"Support for Lua scripts")

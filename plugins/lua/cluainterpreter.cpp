@@ -52,6 +52,9 @@ cLuaInterpreter::~cLuaInterpreter()
 
 bool cLuaInterpreter::Init()
 {
+	if (!mL) // note: no memory for new state
+		return false;
+
 	luaL_openlibs(mL);
 	lua_newtable(mL);
 
@@ -156,12 +159,22 @@ bool cLuaInterpreter::Init()
 
 	lua_setglobal(mL, VH_TABLE_NAME);
 
-	if (luaL_dofile(mL, mScriptName.c_str())) {
+	if (cpiLua::me) // note: main chunk of script runs here and can call hub too
+		cpiLua::me->CallStart();
+
+	const int fail = luaL_dofile(mL, mScriptName.c_str());
+
+	if (cpiLua::me)
+		cpiLua::me->CallEnd();
+
+	if (fail) {
 		const char *error = lua_tostring(mL, -1);
 		ReportLuaError(error);
+		lua_settop(mL, 0);
 		return false;
 	}
 
+	lua_settop(mL, 0); // note: values returned by main chunk are not used
 	return true;
 }
 
@@ -231,25 +244,37 @@ void cLuaInterpreter::VHPushString(const char *name, const char *val, bool updat
 
 bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC *conn)
 {
-	lua_settop(mL, 0);
+	const int top = lua_gettop(mL); // note: this can run inside call of same script, for example VH:ParseCommand or VH:ScriptCommand, so stack of that call must stay as it is
+	int pos = 0;
+
+	while (args[pos] != NULL)
+		pos++;
+
+	if (!lua_checkstack(mL, pos + 2)) // note: function, arguments and room for result
+		return true;
+
 	lua_getglobal(mL, func);
 
 	if (lua_isnil(mL, -1)) {
-		lua_pop(mL, 1);
+		lua_settop(mL, top);
 		return true;
 	}
 
-	int pos = 0;
+	for (int i = 0; i < pos; i++)
+		lua_pushstring(mL, args[i]);
 
-	while (args[pos] != NULL) {
-		lua_pushstring(mL, args[pos]);
-		pos++;
-	}
+	if (cpiLua::me) // note: script deleted during this call is deleted later, see cpiLua::DelScript()
+		cpiLua::me->CallStart();
 
-	if (lua_pcall(mL, pos, 1, 0)) {
+	const int fail = lua_pcall(mL, pos, 1, 0);
+
+	if (cpiLua::me)
+		cpiLua::me->CallEnd();
+
+	if (fail) {
 		const char *err = lua_tostring(mL, -1);
 		ReportLuaError(err);
-		lua_pop(mL, 1);
+		lua_settop(mL, top);
 		return true;
 	}
 
@@ -333,7 +358,7 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 			ret = false;
 	}
 
-	lua_pop(mL, 1);
+	lua_settop(mL, top);
 	return ret;
 }
 

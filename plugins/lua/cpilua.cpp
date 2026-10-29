@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -239,10 +239,11 @@ bool cpiLua::CallAll(const char *fncname, const char *args[], cConnDC *conn)
 	bool ret = true;
 
 	if (Size()) {
-		tvLuaInterpreter::iterator it;
+		const tvLuaInterpreter list(mLua); // note: script can load or unload scripts during its call, so list is copied, unloaded ones are skipped and deleted later
+		tvLuaInterpreter::const_iterator it;
 
-		for (it = mLua.begin(); it != mLua.end(); ++it) {
-			if (*it) {
+		for (it = list.begin(); it != list.end(); ++it) {
+			if (*it && HasScript(*it)) {
 				if (!(*it)->CallFunction(fncname, args, conn))
 					ret = false;
 			}
@@ -892,6 +893,9 @@ bool cpiLua::OnCloneCountLow(cUser *user, string nick, int count)
 
 bool cpiLua::OnTimer(__int64 msec)
 {
+	if (mTrash.size() && !mCallDepth) // note: scripts that were unloaded while running, no script runs now
+		EmptyTrash();
+
 	std::stringstream ss;
 	ss << msec;
 	std::string s = ss.str();

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -53,34 +53,27 @@ int cConfigFile::Load() // config load function from a file
 		return 0;
 	}
 
-	string name;
-	string str;
+	string line, name, str;
 	istringstream *ss;
 	cConfigItemBase *ci;
-	char ch;
 
-	while (!is.eof()) {
-		is >> name;
+	while (getline(is, line)) { // note: one variable per line, was read by words before, so empty value took next line or value of previous line at end of file
+		if (line.size() && (line[line.size() - 1] == '\r')) // note: file edited on windows
+			line.erase(line.size() - 1);
 
-		if (name.empty())
+		const size_t beg = line.find_first_not_of(" \t");
+
+		if (beg == string::npos) // note: empty line
 			continue;
 
-		ch = ' ';
+		const size_t eq = line.find('=', beg);
 
-		if (name[name.size() - 1] != '=') {
-			is >> ch >> ws;
-
-			if (ch == ' ')
-				break;
-		} else {
-			ch = '=';
-			name.assign(name, 0, name.size() - 1);
-		}
-
-		getline(is, str);
-
-		if (ch != '=')
+		if (eq == string::npos) // note: same as before, file is read only up to broken line
 			break;
+
+		name = line.substr(beg, eq - beg);
+		name.erase(name.find_last_not_of(" \t") + 1); // note: no space is npos, plus one is zero
+		str = line.substr(eq + 1); // note: value reads its own words, empty value stays empty
 
 		if ((ci = operator[](name))) {
 			ss = new istringstream(str);

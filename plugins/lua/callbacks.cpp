@@ -45,6 +45,7 @@ extern "C"
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <algorithm>
 
 using namespace std;
@@ -2058,6 +2059,7 @@ int _GetLuaBots(lua_State *L)
 	*/
 
 	cLuaInterpreter *li;
+	unsigned int num = 0; // note: bots of all scripts are numbered one after another
 	lua_newtable(L);
 
 	for (unsigned int pos = 0; pos < cpiLua::me->Size(); pos++) {
@@ -2082,7 +2084,7 @@ int _GetLuaBots(lua_State *L)
 				lua_pushnumber(L, it->second.uClass);
 				lua_setfield(L, -2, "iClass");
 
-				lua_rawseti(L, -2, pos + 1);
+				lua_rawseti(L, -2, ++num); // note: was index of script, so second bot of same script replaced first and scripts without bots left holes
 			}
 		}
 	}
@@ -2465,6 +2467,29 @@ int _IsBot(lua_State *L)
 	return 2;
 }
 
+static bool SQLWritesBans(const string &sql) // note: query that changes ban table, anything except reading statements that mention it
+{
+	string low(sql);
+	transform(low.begin(), low.end(), low.begin(), ::tolower);
+
+	if (low.find("banlist") == string::npos)
+		return false;
+
+	const size_t pos = low.find_first_not_of(" \t\r\n(");
+
+	if (pos == string::npos)
+		return false;
+
+	static const char *reads[] = {"select", "show", "desc", "explain"}; // note: desc also covers describe
+
+	for (const char *word: reads) {
+		if (low.compare(pos, strlen(word), word) == 0)
+			return false;
+	}
+
+	return true;
+}
+
 int _SQLQuery(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -2498,10 +2523,15 @@ int _SQLQuery(lua_State *L)
 	    return 2;
 	}
 
+	const string sql(lua_tostring(L, 2));
 	plug->mQuery->Clear();
-	plug->mQuery->OStream() << lua_tostring(L, 2);
-	plug->mQuery->Query();
+	plug->mQuery->OStream() << sql;
+	const bool done = (plug->mQuery->Query() > 0);
 	int res = plug->mQuery->StoreResult();
+
+	if (done && serv->mBanList && SQLWritesBans(sql)) // note: login check uses ban cache, so ban added or removed by script must be seen at once, same as without cache
+		serv->mBanList->ReloadCache();
+
 	lua_pushboolean(L, 1);
 
 	if (res)
@@ -2560,15 +2590,19 @@ int _SQLFetch(lua_State *L)
 		return 2;
 	}
 
-	lua_pushboolean(L, 1);
-	pos = 0;
+	const int cols = plug->mQuery->Cols();
 
-	while (pos < plug->mQuery->Cols()) {
-		lua_pushstring(L, row[pos]);
-		pos++;
+	if (!lua_checkstack(L, cols + 1)) { // note: lua gives only 20 free places, select of all columns from reglist has more, without check it writes past end of stack
+		luaerror(L, "Too many columns");
+		return 2;
 	}
 
-	return pos + 1;
+	lua_pushboolean(L, 1);
+
+	for (pos = 0; pos < cols; pos++)
+		lua_pushstring(L, row[pos]); // note: null value is nil
+
+	return cols + 1;
 }
 
 int _SQLFree(lua_State *L)
@@ -3180,6 +3214,10 @@ static void LuaHTTPReply(cLuaInterpreter *li, const string &script, const string
 
 	lua_State *L = li->mL;
 	const int top = lua_gettop(L);
+
+	if (!lua_checkstack(L, 6)) // note: function and its 5 arguments
+		return;
+
 	lua_getglobal(L, func.c_str());
 
 	if (!lua_isfunction(L, -1)) {
@@ -3187,8 +3225,8 @@ static void LuaHTTPReply(cLuaInterpreter *li, const string &script, const string
 		return;
 	}
 
-	lua_pushnumber(L, (lua_Number)id);
-	lua_pushnumber(L, code);
+	lua_pushinteger(L, (lua_Integer)id); // note: integer, so script shows 200 and not 200.0 on lua 5.3 and later
+	lua_pushinteger(L, (lua_Integer)code);
 	lua_pushlstring(L, body.data(), body.size()); // note: binary safe, body can contain zero bytes
 	lua_pushlstring(L, head.data(), head.size());
 
@@ -3197,7 +3235,11 @@ static void LuaHTTPReply(cLuaInterpreter *li, const string &script, const string
 	else
 		lua_pushnil(L);
 
-	if (lua_pcall(L, 5, 0, 0))
+	cpiLua::me->CallStart(); // note: script can unload itself in its reply, then it is deleted later
+	const int fail = lua_pcall(L, 5, 0, 0);
+	cpiLua::me->CallEnd();
+
+	if (fail)
 		li->ReportLuaError(lua_tostring(L, -1));
 
 	lua_settop(L, top);
@@ -3261,7 +3303,7 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 	}
 
 	lua_pushboolean(L, 1);
-	lua_pushnumber(L, (lua_Number)id);
+	lua_pushinteger(L, (lua_Integer)id);
 	return 2;
 }
 

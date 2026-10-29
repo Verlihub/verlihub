@@ -63,6 +63,12 @@ class cMySQLWorker: public cObj
 		// queue select, done is called on main thread, returns false when it could not be queued, caller must then do it by itself
 		bool Select(const string &query, tSelectDone done);
 
+		/*
+			main thread waits until queries queued before are done, at most few seconds, returns at once when nothing is queued
+			note: every query on main connection calls it first, so read after write sees that write, same order as on single thread, for example login statistics in script
+		*/
+		void Flush();
+
 	private:
 		bool Start();
 

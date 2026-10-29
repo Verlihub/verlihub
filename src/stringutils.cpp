@@ -140,6 +140,10 @@ bool LoadFileInString(const string &FileName, string &dest)
 	while(!is.eof() && is.good())
 	{
 		getline(is, buf);
+
+		if (buf.size() && (buf[buf.size() - 1] == '\r')) // note: file with windows line ends read on other system, lines are joined with own line end below
+			buf.erase(buf.size() - 1);
+
 		if (AddLine) dest += "\r\n";
 		else AddLine = true;
 		dest+= buf;
