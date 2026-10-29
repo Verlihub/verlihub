@@ -937,6 +937,47 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool
 	return serv->AddScriptCommand(cmd, data, plug, script, inst);
 }
 
+bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		err = "Server not found";
+		return false;
+	}
+
+	return serv->HTTPRequest("GET", url, head, "", "", timeout, owner, done, id, err);
+}
+
+bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+{
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		err = "Server not found";
+		return false;
+	}
+
+	return serv->HTTPRequest("POST", url, head, data, "", timeout, owner, done, id, err);
+}
+
+bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+{
+	if (file.empty()) {
+		err = "No file name";
+		return false;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		err = "Server not found";
+		return false;
+	}
+
+	return serv->HTTPRequest("GET", url, head, "", file, timeout, owner, done, id, err);
+}
+
 int CheckBotNick(const string &nick)
 {
 	/*

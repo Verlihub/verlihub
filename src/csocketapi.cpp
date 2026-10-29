@@ -79,10 +79,50 @@ int SockClose(tSocket sock)
 	return closesocket(sock);
 }
 
-bool SockNonBlock(tSocket sock)
+bool SockNonBlock(tSocket sock, bool on)
 {
-	u_long one = 1;
-	return (ioctlsocket(sock, FIONBIO, &one) == 0);
+	u_long val = (on ? 1 : 0);
+	return (ioctlsocket(sock, FIONBIO, &val) == 0);
+}
+
+bool SockIsTimeout(int err)
+{
+	return ((err == WSAETIMEDOUT) || (err == WSAEWOULDBLOCK)); // note: receive timeout on blocking socket is timed out
+}
+
+bool SockIsRefused(int err)
+{
+	return (err == WSAECONNREFUSED);
+}
+
+bool SockInProgress()
+{
+	return (WSAGetLastError() == WSAEWOULDBLOCK);
+}
+
+int SockWaitConnect(tSocket sock, int msec)
+{
+	fd_set wset, eset;
+	FD_ZERO(&wset);
+	FD_ZERO(&eset);
+	FD_SET(sock, &wset);
+	FD_SET(sock, &eset); // note: failed connect is reported as exception
+	struct timeval val;
+	val.tv_sec = msec / 1000;
+	val.tv_usec = (msec % 1000) * 1000;
+	const int res = select(0, NULL, &wset, &eset, &val); // note: first argument is ignored on windows
+	return ((res > 0) ? 1 : res);
+}
+
+int SockConnectError(tSocket sock)
+{
+	int err = 0;
+	int len = sizeof(err);
+
+	if (getsockopt(sock, SOL_SOCKET, SO_ERROR, (char*)&err, &len) != 0)
+		return WSAGetLastError();
+
+	return err;
 }
 
 int SockSetOpt(tSocket sock, int level, int name, const void *val, int len)
@@ -190,10 +230,46 @@ int SockClose(tSocket sock)
 	return ::close(sock);
 }
 
-bool SockNonBlock(tSocket sock)
+bool SockNonBlock(tSocket sock, bool on)
 {
 	const int flags = fcntl(sock, F_GETFL, 0);
-	return ((flags >= 0) && (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == 0));
+	return ((flags >= 0) && (fcntl(sock, F_SETFL, (on ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK))) == 0));
+}
+
+bool SockIsTimeout(int err)
+{
+	return ((err == EAGAIN) || (err == EWOULDBLOCK) || (err == ETIMEDOUT)); // note: receive timeout on blocking socket is would block
+}
+
+bool SockIsRefused(int err)
+{
+	return (err == ECONNREFUSED);
+}
+
+bool SockInProgress()
+{
+	return (errno == EINPROGRESS);
+}
+
+int SockWaitConnect(tSocket sock, int msec)
+{
+	struct pollfd fd;
+	fd.fd = sock;
+	fd.events = POLLOUT;
+	fd.revents = 0;
+	const int res = ::poll(&fd, 1, msec);
+	return ((res > 0) ? 1 : res);
+}
+
+int SockConnectError(tSocket sock)
+{
+	int err = 0;
+	socklen_t len = sizeof(err);
+
+	if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &len) != 0)
+		return errno;
+
+	return err;
 }
 
 int SockSetOpt(tSocket sock, int level, int name, const void *val, int len)

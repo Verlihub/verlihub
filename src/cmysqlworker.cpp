@@ -189,7 +189,12 @@ bool cMySQLWorker::Execute(const string &query, string &err)
 		const unsigned int code = mysql_errno(mHandle);
 		err = mysql_error(mHandle);
 
-		if ((code != CR_SERVER_GONE_ERROR) && (code != CR_SERVER_LOST)) // note: only lost connection is worth another try
+		if (code == CR_SERVER_LOST) { // note: lost during query, server may have done it already, so it is not sent again, same as main connection, next query reconnects
+			Disconnect();
+			return false;
+		}
+
+		if (code != CR_SERVER_GONE_ERROR) // note: only query that was not sent is worth another try
 			return false;
 
 		Disconnect(); // note: reconnect and try once more

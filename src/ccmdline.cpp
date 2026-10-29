@@ -2758,48 +2758,6 @@ int cCmdLine::Multi()
 	return (RunAs(list[num - 1], action) ? 0 : 1);
 }
 
-static bool SplitUrl(const string &url, string &host, int &port, string &path, bool &tls) // note: only http and https
-{
-	size_t pos;
-
-	if (url.compare(0, 8, "https://") == 0) {
-		tls = true;
-		port = 443;
-		pos = 8;
-	} else if (url.compare(0, 7, "http://") == 0) {
-		tls = false;
-		port = 80;
-		pos = 7;
-	} else {
-		return false;
-	}
-
-	const size_t end = url.find('/', pos);
-	host = url.substr(pos, ((end == string::npos) ? string::npos : (end - pos)));
-	path = ((end == string::npos) ? "/" : url.substr(end));
-	const size_t colon = host.find(':');
-
-	if (colon != string::npos) {
-		port = atoi(host.c_str() + colon + 1);
-		host.erase(colon);
-	}
-
-	return (host.size() && (port > 0) && (port <= 65535));
-}
-
-static bool Download(const string &url, string &data) // note: same as wget of vh script
-{
-	string host, path;
-	int port = 0;
-	bool tls = false;
-
-	if (!SplitUrl(url, host, port, path, tls))
-		return false;
-
-	cHTTPConn conn(host, port, NULL, tls);
-	return (conn.mGood && conn.Request("GET", path, "", "") && conn.ParseReply(data, 268435456)); // note: 256 mb, city database is biggest
-}
-
 static bool UnpackFile(const string &gz, const string &name, string &out) // note: same as tar of vh script, file with given name is taken from gzip compressed tar archive
 {
 	z_stream zs;
@@ -2909,7 +2867,7 @@ int cCmdLine::GeoIP()
 		cout << Paint(autosprintf(_("Processing MaxMind %s database."), item[0]), sBold) << endl;
 		string data, file;
 
-		if (!Download(item[1], data)) {
+		if (!cHTTPConn::Download(item[1], data)) {
 			cout << Paint(autosprintf(_("Error downloading MaxMind %s database."), item[0]), sRedBold) << endl;
 			return 1;
 		}

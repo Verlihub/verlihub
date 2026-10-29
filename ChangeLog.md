@@ -24,6 +24,9 @@
 * Added: Changes of tls_enable, tls_cert_file, tls_key_file and tls_min_ver apply without restart, replaced certificate file is loaded by itself
 * Added: TLS protocol negotiation with nmdcs for clients that ask for it, certificate keyprint in log
 * Added: On Windows verlihub --stop and --reload work with named events, there are no signals
+* Added: Lua calls VH:HTTPGet(url, func, [headers], [timeout]), VH:HTTPPost(url, data, func, [headers], [timeout]) and VH:HTTPDownload(url, file, func, [headers], [timeout]), they return at once with request id and call script function func(id, code, body, head, err) later, so scripts no longer need curl or wget and hub is not blocked
+* Added: HTTP requests of scripts run on own two threads, follow two redirects, timeout is seconds without data, headers can be table or string, download saves to file relative to configuration folder through file.part, so failed download keeps old file
+* Added: HTTP code is status of reply, or negative reason when there is no reply: -1 timeout, -2 connection refused, -3 host not found, -4 TLS handshake failed, -5 broken reply, -6 file can not be written, -7 hub is stopping, -8 other network error
 * Added: Commands !getvar and !getconfig list unused hub variables separately, those that current hub version doesn't know anymore, variables of plugins and scripts are listed as before
 * Updated: Shell scripts and their commands are replaced by verlihub executable itself, same commands and parameters, they work on Linux and Windows, see verlihub --help
 * Updated: Syslog options of hub are only long --syslog and --syslog-suffix, short -s is stop command, same as in vh script
@@ -66,6 +69,10 @@
 * Fixed: Main loop frequency showed 0 for few seconds after every timer_reloadcfg_period
 * Fixed: IP range with mask, for example 1.2.3.0/24, started from wrong address, invalid addresses in range are refused now
 * Fixed: Commands unbanrange and infobanrange did not find range ban by its range, now range finds that same ban and single address still finds all ranges that contain it
+* Fixed: Command getconfig put file name into database query without escaping, so admin could read other tables, for example passwords of masters
+* Fixed: Kick search did not escape operator nick, so ban of recently kicked user failed for operator with quote or backslash in nick
+* Fixed: Database thread sent query again when connection was lost during query, so for example login counter could be increased twice, now only query that was not sent is repeated, same as main connection
+* Fixed: On Windows connection to hublist, update check and crash report server waited about 21 seconds instead of 5 seconds for server that does not answer
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -20,6 +20,7 @@
 
 #include "cvhpluginmgr.h"
 #include "cvhplugin.h"
+#include "cserverdc.h"
 
 namespace nVerliHub {
 	using namespace nSocket;
@@ -39,6 +40,12 @@ void cVHPluginMgr::OnPluginLoad(cPluginBase *pi)
 {
 	vhLog(0) << "OnPluginLoad: " << pi->Name() << endl;
 	((cVHPlugin *)pi)->OnLoad(mServer);
+}
+
+void cVHPluginMgr::OnPluginUnload(cPluginBase *pi)
+{
+	if (mServer) // note: waiting http replies hold functions of plugin, they can not be called or deleted after its library is closed
+		mServer->HTTPForget(pi);
 }
 
 	}; // namespace nPlugin

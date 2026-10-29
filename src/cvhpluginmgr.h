@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -59,6 +59,7 @@ class cVHPluginMgr: public cPluginManager
 		cVHPluginMgr(nSocket::cServerDC *, const string &pluginDir);
 		virtual ~cVHPluginMgr();
 		virtual void OnPluginLoad(cPluginBase *pi);
+		virtual void OnPluginUnload(cPluginBase *pi);
 	private:
 		nSocket::cServerDC *mServer;
 };

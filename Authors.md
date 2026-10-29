@@ -6,6 +6,7 @@ Authors:
 * Dexo, Denys Smirnov, dexo at verlihub dot net
 * Shurik, Aleksandr Zeinalov, shurik at sbin dot ru
 * Vovochka, Vladimir Perepechin, vovochka13 at gmail dot com
+* Claude Code, https://claude.ai
 * Not forgetting other 4 people who didn't want to be listed here
 
 Contributors:

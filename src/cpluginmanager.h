@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -56,6 +56,7 @@ public:
 	void List(ostream &os);
 	void ListAll(ostream &os);
 	virtual void OnPluginLoad(cPluginBase *) = 0;
+	virtual void OnPluginUnload(cPluginBase *) {} // note: before plugin is deleted and its library closed, its code still works there
 	typedef tcHashListMap<cPluginLoader*> tPlugins;
 	string &GetError(){ return mLastLoadError;}
 	cPluginBase * GetPlugin(const string &Name);

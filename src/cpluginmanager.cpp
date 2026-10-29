@@ -177,12 +177,14 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 		return false;
 	}
 
+	OnPluginUnload(plugin->mPlugin);
+
 	for (tCBList::iterator it = mCallBacks.begin(); it != mCallBacks.end(); ++it) {
 		if (*it)
 			(*it)->Unregister(plugin->mPlugin);
 	}
 
-	if (remove && !mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
+	if (remove &&!mPlugins.RemoveByHash(mPlugins.Key2Hash(name))) {
 		if (ErrLog(0))
 			LogStream() << "Failed to unload plugin: " << name << endl;
 

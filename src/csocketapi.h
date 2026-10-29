@@ -76,8 +76,21 @@ bool SockTryAgain();
 // last socket call was interrupted by signal, note: on blocking socket with timeout, would block means timeout, not try again
 bool SockInterrupted();
 
+// error means timeout or refused connection, err is from SockError(), used to tell scripts why request failed
+bool SockIsTimeout(int err);
+bool SockIsRefused(int err);
+
 int SockClose(tSocket sock);
-bool SockNonBlock(tSocket sock);
+bool SockNonBlock(tSocket sock, bool on = true);
+
+/*
+	connect of non blocking socket was started and is in progress, then wait for it with SockWaitConnect()
+	wait returns 1 when connect ended, then SockConnectError() tells result, 0 when msec expired, -1 on error
+	note: windows poll does not report failed connect on older versions, so select is used there
+*/
+bool SockInProgress();
+int SockWaitConnect(tSocket sock, int msec);
+int SockConnectError(tSocket sock);
 int SockSetOpt(tSocket sock, int level, int name, const void *val, int len);
 
 // receive or send timeout, windows takes milliseconds, posix takes timeval

@@ -48,7 +48,11 @@
 #include "cmeanfrequency.h"
 #include "cworkerpool.h"
 #include "csocketcancel.h"
+#include "chttpconn.h"
 #include "cmysqlworker.h"
+#include <map>
+#include <set>
+#include <mutex>
 #include "czlib.h"
 #include "cconndc.h"
 
@@ -697,6 +701,14 @@ class cServerDC : public cAsyncSocketServer
 		bool RequestStop();
 		std::atomic<int> mStopRequest; // note: 0 = none, 1 = requested, 2 = done by main loop
 
+		/*
+			http request of scripts and plugins, runs on http thread, done runs on main thread with reply, returns false and err when request can not start
+			note: file is for download, relative to configuration folder unless full path, body of 2xx reply is saved there, then done gets file path instead of body
+			note: owner is plugin that waits for reply, plugin manager calls HTTPForget() before plugin is unloaded, because its done function can not be called or deleted after that
+		*/
+		bool HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
+		void HTTPForget(const nPlugin::cPluginBase *owner);
+
 protected: // Protected methods
 	/*
 		hublist registration and update check have their own threads, they can take long time and must not hold up other work
@@ -740,6 +752,29 @@ protected: // Protected methods
 
 	static unsigned int DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel); // note: runs on update check thread, returns result code
 	void OnUpdateCheckDone(unsigned int code, const string &ver, const string &reply);
+
+	/*
+		http requests of scripts have own threads, so slow websites dont hold up host name lookups and tls handshakes of users
+		note: every running request has own cancel, on hub stop all of them are shut down, waiting requests are dropped
+	*/
+	std::mutex mHTTPLock; // note: guards mHTTPCancel and mHTTPStop, declared before pool, so it outlives its threads
+	std::set<cSocketCancel*> mHTTPCancel;
+	bool mHTTPStop = false;
+	nThread::cWorkerPool mHTTPPool;
+
+	struct sHTTPWait // note: main thread only
+	{
+		const nPlugin::cPluginBase *mOwner;
+		nSocket::tHTTPDone mDone;
+	};
+
+	typedef std::map<unsigned long, sHTTPWait> tHTTPWaitMap;
+	tHTTPWaitMap mHTTPWait;
+	unsigned long mHTTPLastID = 0;
+	vector<pair<unsigned long, nThread::cWorkerPool::tJob>> mHTTPEarly; // note: requests made before main loop started
+	bool PostHTTP(nThread::cWorkerPool::tJob job);
+	void PostHTTPEarly();
+	void OnHTTPDone(unsigned long id, int code, const string &body, const string &head, const string &err);
 
 	/**
 	* This method is called when user is logged in.

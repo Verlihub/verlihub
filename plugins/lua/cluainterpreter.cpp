@@ -138,6 +138,9 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("GetTopic", &_GetTopic);
 	RegisterFunction("SetTopic", &_SetTopic);
 	RegisterFunction("ScriptCommand", &_ScriptCommand);
+	RegisterFunction("HTTPGet", &_HTTPGet);
+	RegisterFunction("HTTPPost", &_HTTPPost);
+	RegisterFunction("HTTPDownload", &_HTTPDownload);
 
 	cServerDC *serv = cServerDC::sCurrentServer;
 

@@ -106,6 +106,9 @@ namespace nVerliHub {
 	int _GetTopic(lua_State *L);
 	int _SetTopic(lua_State *L);
 	int _ScriptCommand(lua_State *L);
+	int _HTTPGet(lua_State *L);
+	int _HTTPPost(lua_State *L);
+	int _HTTPDownload(lua_State *L);
 
 	nLuaPlugin::cLuaInterpreter *FindLua(lua_State *L);
 	void luaerror(lua_State *L, const char *errstr);

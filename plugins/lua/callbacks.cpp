@@ -45,6 +45,7 @@ extern "C"
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -3123,6 +3124,160 @@ int _ScriptCommand(lua_State *L)
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
+}
+
+static bool LuaHTTPHead(lua_State *L, int pos, string &head) // note: request headers as table of name and value, or as ready string, nil for none
+{
+	head.clear();
+
+	if (lua_isnoneornil(L, pos))
+		return true;
+
+	if (lua_type(L, pos) == LUA_TSTRING) {
+		head = lua_tostring(L, pos);
+		return true;
+	}
+
+	if (!lua_istable(L, pos))
+		return false;
+
+	lua_pushnil(L);
+
+	while (lua_next(L, pos) != 0) { // note: key is at -2 and value at -1
+		if ((lua_type(L, -2) == LUA_TSTRING) && ((lua_type(L, -1) == LUA_TSTRING) || (lua_type(L, -1) == LUA_TNUMBER))) {
+			lua_pushvalue(L, -1); // note: copy, because tostring changes number in place and next must see original
+			string name(lua_tostring(L, -3)), val(lua_tostring(L, -1));
+			lua_pop(L, 1);
+			name.erase(remove_if(name.begin(), name.end(), [](char c) { return ((c == '\r') || (c == '\n')); }), name.end()); // note: value from user must not add own header lines
+			val.erase(remove_if(val.begin(), val.end(), [](char c) { return ((c == '\r') || (c == '\n')); }), val.end());
+
+			if (name.size())
+				head += name + ": " + val + "\r\n";
+		}
+
+		lua_pop(L, 1);
+	}
+
+	return true;
+}
+
+static void LuaHTTPReply(cLuaInterpreter *li, const string &script, const string &func, unsigned long id, int code, const string &body, const string &head, const string &err) // note: runs on main thread
+{
+	if (!cpiLua::me)
+		return;
+
+	bool found = false;
+
+	for (unsigned int pos = 0; pos < cpiLua::me->Size(); pos++) {
+		if (cpiLua::me->mLua[pos] == li) { // note: pointer first, only then it is safe to read name
+			found = (li->mScriptName == script);
+			break;
+		}
+	}
+
+	if (!found) // note: script was unloaded or reloaded meanwhile
+		return;
+
+	lua_State *L = li->mL;
+	const int top = lua_gettop(L);
+	lua_getglobal(L, func.c_str());
+
+	if (!lua_isfunction(L, -1)) {
+		lua_settop(L, top);
+		return;
+	}
+
+	lua_pushnumber(L, (lua_Number)id);
+	lua_pushnumber(L, code);
+	lua_pushlstring(L, body.data(), body.size()); // note: binary safe, body can contain zero bytes
+	lua_pushlstring(L, head.data(), head.size());
+
+	if (err.size())
+		lua_pushstring(L, err.c_str());
+	else
+		lua_pushnil(L);
+
+	if (lua_pcall(L, 5, 0, 0))
+		li->ReportLuaError(lua_tostring(L, -1));
+
+	lua_settop(L, top);
+}
+
+static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = get, 1 = post, 2 = download
+{
+	const int args = lua_gettop(L) - 1, need = (kind ? 3 : 2), fpos = need + 1; // note: position of callback name, then headers and timeout
+
+	if (args < need) {
+		luaL_error(L, "Error calling VH:%s, expected atleast %d arguments but got %d.", name, need, args);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	string head;
+
+	if (!lua_isstring(L, 2) || (kind && !lua_isstring(L, 3)) || !lua_isstring(L, fpos) || (!lua_isnoneornil(L, fpos + 2) && !lua_isnumber(L, fpos + 2)) || !LuaHTTPHead(L, fpos + 1, head)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	cLuaInterpreter *li = FindLua(L);
+
+	if (!li) {
+		luaerror(L, ERR_LUA);
+		return 2;
+	}
+
+	const string url(lua_tostring(L, 2)), func(lua_tostring(L, fpos)), script(li->mScriptName);
+	string extra; // note: post data or file name
+
+	if (kind) {
+		size_t len = 0;
+		const char *ptr = lua_tolstring(L, 3, &len); // note: post data can be binary
+		extra.assign(ptr, len);
+	}
+
+	const double secs = (lua_isnumber(L, fpos + 2) ? lua_tonumber(L, fpos + 2) : 0);
+	const unsigned int timeout = ((secs > 0) ? ((secs < 4294967) ? (unsigned int)secs : 4294967U) : 0); // note: 0 is default, upper limit only keeps milliseconds in range
+
+	nSocket::tHTTPDone done = [li, script, func](unsigned long id, int code, const string &body, const string &rhead, const string &err) {
+		LuaHTTPReply(li, script, func, id, code, body, rhead, err);
+	};
+
+	unsigned long id = 0;
+	string err;
+	bool res;
+
+	if (kind == 1)
+		res = HTTPPost(url, extra, head, timeout, cpiLua::me, done, id, err);
+	else if (kind == 2)
+		res = HTTPDownload(url, extra, head, timeout, cpiLua::me, done, id, err);
+	else
+		res = HTTPGet(url, head, timeout, cpiLua::me, done, id, err);
+
+	if (!res) {
+		luaerror(L, err.c_str());
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnumber(L, (lua_Number)id);
+	return 2;
+}
+
+int _HTTPGet(lua_State *L)
+{
+	return LuaHTTP(L, "HTTPGet", 0);
+}
+
+int _HTTPPost(lua_State *L)
+{
+	return LuaHTTP(L, "HTTPPost", 1);
+}
+
+int _HTTPDownload(lua_State *L)
+{
+	return LuaHTTP(L, "HTTPDownload", 2);
 }
 
 void luaerror(lua_State *L, const char *errstr)

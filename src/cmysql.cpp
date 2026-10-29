@@ -150,7 +150,7 @@ bool cMySQL::Reconnect()
 	mLost = false;
 	const long secs = long(std::chrono::duration_cast<std::chrono::seconds>(now - mLostSince).count());
 
-	if (Log(0))
+	if (ErrLog(0)) // note: same log as lost connection, else reader thinks it never came back
 		LogStream() << "Reconnected to MySQL/MariaDB server after " << secs << " seconds" << endl;
 
 	if (mFailed) // note: replaces lost notice when it was not sent yet, both are not needed then

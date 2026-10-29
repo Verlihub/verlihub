@@ -50,7 +50,9 @@ void cSetupList::LoadFileTo(cConfigBaseBase *Config, const char *file)
 	db_iterator it;
 	cConfigItemBase *item = NULL;
 	SelectFields(mQuery.OStream());
-	mQuery.OStream() << " where `file` = '" << file << '\'';
+	mQuery.OStream() << " where `file` = '";
+	WriteStringConstant(mQuery.OStream(), file);
+	mQuery.OStream() << '\'';
 
 	for (it = db_begin(); it != db_end(); ++it) {
 		item = (*Config)[mModel.mVarName];
@@ -73,10 +75,13 @@ void cSetupList::OutputFile(const string &file, ostream &os, cConfigBaseBase *kn
 	db_iterator it;
 	SelectFields(mQuery.OStream());
 
-	if (file == "plugins")
+	if (file == "plugins") {
 		mQuery.OStream() << " where `file` like 'pi_%'";
-	else
-		mQuery.OStream() << " where `file` = '" << file << '\'';
+	} else {
+		mQuery.OStream() << " where `file` = '";
+		WriteStringConstant(mQuery.OStream(), file); // note: file comes from command, it must not end the string
+		mQuery.OStream() << '\'';
+	}
 
 	mQuery.OStream() << " order by `var` asc";
 	string val;

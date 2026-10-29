@@ -28,6 +28,7 @@
 #include <map>
 #include <string>
 #include "cvhplugin.h"
+#include "chttpconn.h"
 
 using namespace std;
 
@@ -68,6 +69,17 @@ namespace nVerliHub {
 	bool DelRegUser(const char *nick);
 	bool SetRegClass(const char *nick, int clas);
 	bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst = false);
+
+	/*
+		http requests, they return at once with request id, done runs later on main thread with reply, see nSocket::tHTTPDone
+		head is extra request headers, each line ending with line break, timeout is seconds without data, 0 is default
+		download saves body of 2xx reply to file, relative to configuration folder unless full path, done gets file path instead of body
+		owner is plugin that waits for reply, usually this, plugin manager drops its waiting replies when it is unloaded
+		on false err tells why request could not start, for example invalid url or file that can not be written
+	*/
+	bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
+	bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
+	bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

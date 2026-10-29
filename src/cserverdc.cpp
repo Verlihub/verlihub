@@ -298,6 +298,14 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	mHublistReg.SetOnStop([this] { mHublistCancel.Cancel(); }); // note: dont wait for hublists when hub stops
 	mUpdateCheck.SetOnStop([this] { mUpdateCancel.Cancel(); });
+
+	mHTTPPool.SetOnStop([this] { // note: running requests of scripts are shut down, waiting ones are dropped by pool
+		std::lock_guard<std::mutex> lock(mHTTPLock);
+		mHTTPStop = true;
+
+		for (auto cancel: mHTTPCancel)
+			cancel->Cancel();
+	});
 	mPluginManager.LoadAll(); // load all plugins at last
 }
 
@@ -1902,6 +1910,9 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 
 int cServerDC::OnTimer(const cTime &now)
 {
+	if (mHTTPEarly.size()) // note: http requests of scripts from before main loop
+		PostHTTPEarly();
+
 	mUserList.FlushCache();
 	//mOpList.FlushCache(); // we are not sending anything to operators, only nicks are used
 	mOpchatList.FlushCache();
@@ -2444,6 +2455,131 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
 	return false;
+}
+
+bool cServerDC::HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, const nPlugin::cPluginBase *owner, tHTTPDone done, unsigned long &id, string &err)
+{
+	string host, path;
+	int port = 0;
+	bool tls = false;
+
+	if (!cHTTPConn::SplitUrl(url, host, port, path, tls)) {
+		err = "Invalid URL: " + url;
+		return false;
+	}
+
+	string full(file);
+
+	if (full.size()) {
+	#ifdef _WIN32
+		const bool abs = ((full[0] == '/') || (full[0] == '\\') || ((full.size() > 1) && (full[1] == ':')));
+	#else
+		const bool abs = (full[0] == '/');
+	#endif
+
+		if (!abs) // note: relative to configuration folder, same place as scripts and their files
+			full = mConfigBaseDir + '/' + full;
+
+		const string part(full + ".part");
+		FILE *test = fopen(part.c_str(), "wb"); // note: permission is checked before anything is sent, so script gets error at once
+
+		if (!test) {
+			err = "Unable to write file: " + full;
+			return false;
+		}
+
+		fclose(test);
+		remove(part.c_str());
+	}
+
+	if (!++mHTTPLastID) // note: 0 is never used
+		++mHTTPLastID;
+
+	const unsigned long num = mHTTPLastID;
+
+	nThread::cWorkerPool::tJob job([this, num, meth, url, head, data, full, timeout]() -> nThread::cWorkerPool::tResult { // note: runs on http thread, only cancel list is touched there
+		cSocketCancel cancel;
+
+		{
+			std::lock_guard<std::mutex> lock(mHTTPLock);
+
+			if (mHTTPStop) // note: hub is stopping, request is not started
+				cancel.Cancel();
+
+			mHTTPCancel.insert(&cancel);
+		}
+
+		int code = 0;
+		string rhead, body, why;
+
+		cHTTPConn::Fetch(meth, url, head, data, timeout, &cancel, code, rhead, body, why, full); // note: on failure code is negative reason and why is its text
+
+		{
+			std::lock_guard<std::mutex> lock(mHTTPLock);
+			mHTTPCancel.erase(&cancel);
+		}
+
+		if (full.size()) // note: download gives path of saved file instead of body
+			body = ((why.empty() && (code >= 200) && (code <= 299)) ? full : "");
+
+		return [this, num, code, body = std::move(body), rhead = std::move(rhead), why = std::move(why)] { OnHTTPDone(num, code, body, rhead, why); };
+	});
+
+	if (!mbRun) { // note: main loop is not running yet, for example Main() of script on hub start, request is posted on first timer
+		mHTTPEarly.emplace_back(num, std::move(job));
+	} else if (!PostHTTP(std::move(job))) {
+		err = "Unable to start HTTP request";
+		return false;
+	}
+
+	mHTTPWait[num] = sHTTPWait{owner, std::move(done)}; // note: result runs on main thread later, so this is in place before it
+	id = num;
+	return true;
+}
+
+bool cServerDC::PostHTTP(nThread::cWorkerPool::tJob job)
+{
+	if (!mHTTPPool.IsRunning()) { // note: pool can be started again after stop
+		std::lock_guard<std::mutex> lock(mHTTPLock);
+		mHTTPStop = false;
+	}
+
+	return (StartPool(mHTTPPool, 2) && mHTTPPool.Post(std::move(job)));
+}
+
+void cServerDC::PostHTTPEarly()
+{
+	vector<pair<unsigned long, nThread::cWorkerPool::tJob>> list;
+	list.swap(mHTTPEarly);
+
+	for (auto &item: list) {
+		if (!PostHTTP(std::move(item.second))) // note: script still gets its reply, with error
+			OnHTTPDone(item.first, eHTTP_NETWORK, "", "", "Unable to start HTTP request");
+	}
+}
+
+void cServerDC::OnHTTPDone(unsigned long id, int code, const string &body, const string &head, const string &err)
+{
+	tHTTPWaitMap::iterator it = mHTTPWait.find(id);
+
+	if (it == mHTTPWait.end()) // note: plugin was unloaded meanwhile
+		return;
+
+	tHTTPDone done(std::move(it->second.mDone));
+	mHTTPWait.erase(it);
+
+	if (done)
+		done(id, code, body, head, err);
+}
+
+void cServerDC::HTTPForget(const nPlugin::cPluginBase *owner)
+{
+	for (tHTTPWaitMap::iterator it = mHTTPWait.begin(); it != mHTTPWait.end();) {
+		if (it->second.mOwner == owner)
+			it = mHTTPWait.erase(it);
+		else
+			++it;
+	}
 }
 
 unsigned int cServerDC::WhoCC(const string &cc, string &dest, const string &sep)
