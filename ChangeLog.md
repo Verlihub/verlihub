@@ -62,6 +62,8 @@
 * Fixed: Mean upload, download and main loop frequency were up to half too low, because of integer division, too low frequency could set hub load status and block searches of users without real load
 * Fixed: Time of hub start, loading of database, plugins and scripts, was counted as slow main loop, so right after start hub load status could block searches and refuse new connections
 * Fixed: Main loop frequency showed 0 for few seconds after every timer_reloadcfg_period
+* Fixed: IP range with mask, for example 1.2.3.0/24, started from wrong address, invalid addresses in range are refused now
+* Fixed: Commands unbanrange and infobanrange did not find range ban by its range, now range finds that same ban and single address still finds all ranges that contain it
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

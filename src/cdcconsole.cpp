@@ -38,6 +38,7 @@
 #include "cdcclients.h"
 #include "i18n.h"
 #include <algorithm>
+#include <cstdlib>
 
 #ifndef _WIN32
 	#include <sys/resource.h>
@@ -4003,39 +4004,38 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 	if (mIPRangeRex.PartFound(R_RANGE)) { // <from>-<to>
 		if (mIPRangeRex.PartFound(R_DOTS)) {
 			mIPRangeRex.Extract(R_IP1, rang, temp);
-			cBanList::Ip2Num(temp, frdr);
-			/*
-			if (!cBanList::Ip2Num(temp, frdr))
+
+			if (!cBanList::Ip2Num(temp, frdr)) // note: invalid address, for example part above 255, gave range from old value
 				return false;
-			*/
+
 			mIPRangeRex.Extract(R_IP2, rang, temp);
-			cBanList::Ip2Num(temp, todr);
-			/*
+
 			if (!cBanList::Ip2Num(temp, todr))
 				return false;
-			*/
 
 		} else { // <addr>/<mask>
-			mIPRangeRex.Extract(0, rang, temp);
-			cBanList::Ip2Num(temp, frdr);
-			/*
+			mIPRangeRex.Extract(R_IP1, rang, temp); // note: was whole match with mask, which never converted, so range started from old value
+
 			if (!cBanList::Ip2Num(temp, frdr))
 				return false;
-			*/
-			int pos = temp.find_first_of("/\\");
-			istringstream is(temp.substr(pos + 1));
-			is >> pos;
-			frdr = frdr & (0xFFFFFFFF << (32 - pos));
-			todr = frdr + (0xFFFFFFFF >> pos);
+
+			mIPRangeRex.Extract(R_BITS, rang, temp);
+			const unsigned long bits = strtoul(temp.c_str(), NULL, 10);
+
+			if (bits > 32)
+				return false;
+
+			const unsigned long mask = (bits ? ((0xFFFFFFFFUL << (32 - bits)) & 0xFFFFFFFFUL) : 0UL); // note: shift by 32 is undefined, long is 32 bit on windows
+			frdr &= mask;
+			todr = (frdr | (~mask & 0xFFFFFFFFUL));
 		}
 
 	} else { // <addr>
 		mIPRangeRex.Extract(R_IP1, rang, temp);
-		cBanList::Ip2Num(temp, frdr);
-		/*
+
 		if (!cBanList::Ip2Num(temp, frdr))
 			return false;
-		*/
+
 		todr = frdr;
 	}
 

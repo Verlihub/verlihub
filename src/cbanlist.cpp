@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -27,6 +27,7 @@
 #include "cconndc.h"
 #include "cserverdc.h"
 #include "cbanlist.h"
+#include "cdcconsole.h" // note: GetIPRange
 #include "i18n.h"
 #include "stringutils.h"
 
@@ -501,12 +502,20 @@ bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
 			break;
 
 		case eBF_RANGE:
-			if (!Ip2Num(value, num, false)) {
-				os << " 0 ";
-				return false;
+			if (Ip2Num(value, num, false)) { // note: single address, all ranges that contain it
+				os << "(`nick` = '_rangeban_' and (" << num << " between `range_fr` and `range_to`))";
+
+			} else { // note: whole range, like help says, for example !unbanrange 1.2.3.4-1.2.3.9, only same range
+				unsigned long last = 0;
+
+				if (!cDCConsole::GetIPRange(value, num, last)) {
+					os << " 0 ";
+					return false;
+				}
+
+				os << "(`nick` = '_rangeban_' and `range_fr` = " << num << " and `range_to` = " << last << ')';
 			}
 
-			os << "(`nick` = '_rangeban_' and (" << num << " between `range_fr` and `range_to`))";
 			break;
 
 		case eBF_SHARE:
@@ -1154,10 +1163,13 @@ bool cBanList::CacheMatch(const sCacheBan &item, const string &value, int mask)
 			return (item.mIP == value);
 
 		case eBF_RANGE:
-			if (!Ip2Num(value, num, false))
-				return false;
+			if (Ip2Num(value, num, false))
+				return (SameText(item.mNick, "_rangeban_") && (num >= item.mRangeMin) && (num <= item.mRangeMax));
 
-			return (SameText(item.mNick, "_rangeban_") && (num >= item.mRangeMin) && (num <= item.mRangeMax));
+			{
+				unsigned long last = 0;
+				return (cDCConsole::GetIPRange(value, num, last) && SameText(item.mNick, "_rangeban_") && (item.mRangeMin == num) && (item.mRangeMax == last));
+			}
 
 		case eBF_SHARE:
 			return (SameText(item.mNick, "_shareban_") && (item.mShare == value));
