@@ -244,14 +244,6 @@ int cConnDC::OnTimer(const cTime &now)
 			LogStream() << "Any action timeout" << endl;
 
 		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
-
-	} else if (mWritable && mpUser && mpUser->mInList && (mTimeLastRead.Sec() < (now.Sec() - 270))) { // note: clients ping every minute, dead client without close still accepts pings into system buffer, so check above never fires for it
-		os << _("General timeout");
-
-		if (Log(2))
-			LogStream() << "Read timeout" << endl;
-
-		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
 	}
 
 	if (mpUser && mpUser->mInList && mpUser->mPendingMyINFO.size() && Server()->MinDelay(mpUser->mT.info, Server()->mC.int_myinfo)) { // note: myinfo that came too soon after last one, newest one is sent now

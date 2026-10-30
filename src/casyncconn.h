@@ -536,9 +536,6 @@ namespace nVerliHub {
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;
 
-				// note: last time anything was received, sending to dead client still works until system gives up, so only this finds it, starts at creation
-				cTime mTimeLastRead;
-
 				/// Connection iterator.
 				tCLIt mIterator;
 

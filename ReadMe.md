@@ -1,19 +1,25 @@
-# Verlihub 1.7.0.0
+# Verlihub 2.0.0.0
 
-Verlihub is advanced NMDC protocol server for Linux operating systems that provides high level functionality such as:
+Verlihub is advanced NMDC protocol server for Linux and Windows operating systems that provides high level functionality such as:
 
-  * Low RAM and CPU usage
+  * Low RAM and CPU usage, epoll on Linux and Windows
   * It can hold more than 25k users
-  * TLS-encrypted connection via NMDCS protocol, built in using OpenSSL
-  * Utility scripts for simple installation and hub management
-  * Export and import of hub setting via MySQL or MariaDB
-  * User management with privilegies
+  * Worker threads for slow work
+  * TLS-encrypted connection using OpenSSL, plain and encrypted users on same port
+  * Simple installation and hub management
+  * Backup and restore of hub database, MySQL or MariaDB
+  * User management with privileges
   * Logging of user IPs and complete MyINFOs, requires Ledokol
   * Clients and connections management
-  * Extend functionality with Lua scripts
+  * GeoIP country, city and ASN of users, using MaxMindDB
+  * Hub messages in many languages
+  * Extend functionality with Lua scripts, including HTTP requests
   * Generate statistics for your hub, requires Ledokol
-  * Import users from PtokaX, Aquila or YnHub
   * Plus much more
+
+# Windows
+
+Verlihub builds on Windows with MinGW-w64, see `Install.md` for dependencies and build steps.
 
 # TLS
 

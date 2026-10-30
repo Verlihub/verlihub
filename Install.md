@@ -4,48 +4,59 @@ Dependencies and installation
 
 * Required dependencies:
 
-	[ bin lib hdr ] GCC			4.8.0
+	[ bin lib hdr ] GCC			7.0 or Clang 5.0, C++17 is required
 	[ bin --- hdr ] CMake		3.16
-	[ bin lib hdr ] MySQL		5.7.1
+	[ bin lib hdr ] MySQL		5.7.1 or MariaDB client library
 	[ --- lib hdr ] OpenSSL		1.1.0
 	[ --- lib hdr ] LibICU		55.0
 	[ bin --- --- ] Make
 	[ --- lib hdr ] ZLib
 	[ --- lib hdr ] PCRE2
 	[ --- lib hdr ] GetText
+	[ --- lib hdr ] Asprintf, not needed with -DUSE_CUSTOM_AUTOSPRINTF=ON
 	[ --- lib hdr ] MaxMindDB
 	[ ??? ??? ??? ] LibIntl
-	[ ??? ??? ??? ] Crypt
+	[ ??? ??? ??? ] Crypt, not on Windows
 	[ ??? ??? ??? ] Threads
 	[ ??? ??? ??? ] DL
+	[ ??? ??? ??? ] ExecInfo, only on BSD and Alpine
+	[ ??? ??? ??? ] SysInfo, only on BSD
 
 * Optional dependencies:
 
-	[ --- lib hdr ] Lua			5.2
+	[ --- lib hdr ] Lua			5.2 to 5.5
 
-* Install dependencies on Debian:
+* Install dependencies on Debian and Ubuntu:
 
-sudo apt install libpcre2-dev libssl-dev mysql-server mysql-client libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev g++ make cmake
+sudo apt install g++ make cmake libpcre2-dev libssl-dev zlib1g-dev default-libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev
+
+ * Database server, when it runs on same machine
+
+ sudo apt install default-mysql-server
+
+ * Optional dependencies, any Lua version from 5.2 to 5.5
+
+ sudo apt install liblua5.4-dev
+
+* Install dependencies on Fedora, RedHat and CentOS:
+
+Note: package names are not tested yet, on RedHat and CentOS enable EPEL repository first for libmaxminddb-devel.
+
+sudo dnf install gcc-c++ make cmake pcre2-devel openssl-devel zlib-devel mariadb-connector-c-devel libmaxminddb-devel libicu-devel gettext-devel
 
  * Optional dependencies
 
- sudo apt install liblua5.2-dev
-
-* Install dependencies on CentOS:
-
-[todo]
-
-* Install dependencies on Gentoo:
-
-[todo]
-
-* Install dependencies on RedHat:
-
-[todo]
+ sudo dnf install lua-devel
 
 * Install dependencies on ArchLinux:
 
-[todo]
+Note: package names are not tested yet.
+
+sudo pacman -S --needed gcc make cmake pcre2 openssl zlib mariadb-libs libmaxminddb icu gettext
+
+ * Optional dependencies
+
+ sudo pacman -S --needed lua
 
 * Install dependencies on Windows:
 
@@ -75,7 +86,6 @@ cmake ..
 make
 make install (as super user)
 ldconfig (as super user, this is required only when you get: cannot open shared object file, no such file or directory)
-updatedb (as super user, people say this command is needed to update slocate locations)
 
 * Compile and install Verlihub on Windows:
 
@@ -143,6 +153,18 @@ Supported CMake options
 -DLOCALE_CONVERT=ON (default: OFF, on Alpine ON)
 	convert translations to codepage of their language at build time, needed only when gettext of system can not convert them at runtime, like musl libc on Alpine
 
+-DUSE_CUSTOM_AUTOSPRINTF=ON (default: OFF)
+	use built in autosprintf instead of libasprintf, when system library is missing or does not work
+
+-DDEFINE_DEBUG=ON (default: OFF)
+	debug build with debug symbols, for debugger and valgrind
+
+-DWITH_PLUGINS=OFF (default: ON)
+	build without any plugins
+
+-DWITH_LUA=OFF (default: ON)
+	build without Lua plugin
+
 =======================
 Translations
 =======================
@@ -159,7 +181,7 @@ Build plugins outside of Verlihub source
 
 Verlihub installs its headers, config.h and CMake package configuration, so plugin can be built in its own folder:
 
-find_package(Verlihub 1.7 REQUIRED)
+find_package(Verlihub 2.0 REQUIRED)
 add_library(my_pi MODULE my_plugin.cpp)
 target_link_libraries(my_pi Verlihub::verlihub)
 

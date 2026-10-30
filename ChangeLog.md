@@ -1,4 +1,4 @@
-# 1.7.0.0
+# 2.0.0.0
 
 * Added: Try to detect external TLS proxy when running on same server
 * Added: Configuration tls_force_myip to force external TLS proxy
@@ -90,7 +90,6 @@
 * Fixed: Protocol command ending in same read could be longer than max_message_size
 * Fixed: Changed MyINFO that came within int_myinfo was dropped, so others kept old one while total share already counted new one, now newest one is sent when interval is over
 * Fixed: Plugins and scripts got OnCloseConn for connections that never got OnNewConn, for example failed TLS handshake or connection refused before it, so counting of connections went wrong
-* Fixed: Dead user without closed connection, for example lost network, stayed in hub until system gave up sending, often 15 to 30 minutes, because pings of hub still went into system buffer, now logged in user who sends nothing for 270 seconds is closed with general timeout, clients ping every minute
 * Fixed: Error on listening socket used connection list position that was never set, now it is logged and hub keeps listening
 * Fixed: Command bufinfo counted only buffers of users in list, now it counts all connections, also those that log in or close, and shows data waiting for connection start and TLS
 * Fixed: Reply to $GetINFO was not sent at once

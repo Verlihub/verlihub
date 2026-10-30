@@ -383,7 +383,6 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 		else
 			mTimeLastIOAction.Get();
 
-		mTimeLastRead = mTimeLastIOAction;
 		OnReceived(buf_len); // note: before decrypting, so tls data is counted too
 
 	#ifdef USE_TLS
