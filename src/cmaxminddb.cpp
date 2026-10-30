@@ -874,8 +874,10 @@ void cMaxMindDB::ReloadAll()
 
 bool cMaxMindDB::FromUTF8(const char *udat, unsigned int ulen, string &conv)
 {
-	if (mServ->mC.mmdb_conv_depth == 0) // do nothing
+	if (mServ->mC.mmdb_conv_depth == 0) { // no conversion, name stays utf-8
+		conv.assign(udat, ulen);
 		return true;
+	}
 
 	if (mServ->mC.mmdb_conv_depth == 1) // convert only
 		return mServ->mICUConvert->Convert(udat, ulen, conv);

@@ -596,13 +596,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 	else if (conn->GetTheoricalClass() == eUC_REGUSER)
 		limit_extra += mS->mC.max_extra_regs;
 	else if (conn->GetTheoricalClass() == eUC_VIPUSER)
-		limit_extra += mS->mC.max_extra_vips;
-	else if (conn->GetTheoricalClass() == eUC_OPERATOR)
-		limit_extra += mS->mC.max_extra_ops;
-	else if (conn->GetTheoricalClass() == eUC_CHEEF)
-		limit_extra += mS->mC.max_extra_cheefs;
-	else if (conn->GetTheoricalClass() == eUC_ADMIN)
-		limit_extra += mS->mC.max_extra_admins;
+		limit_extra += mS->mC.max_extra_vips; // note: class 3 (operator) and above always enter, see below
 
 	limit += limit_extra;
 	limit_cc += limit_extra;
@@ -1257,10 +1251,12 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		temp = myinfo_desc;
 		mS->mCo->mDCClients->ParsePos(temp); // get new tag position in case its changed
 
-		if (mS->mC.show_desc_len >= 0) // hide description
-			myinfo_desc.assign(temp, 0, mS->mC.show_desc_len);
-		else
-			myinfo_desc.assign(temp, 0, mS->mCo->mDCClients->mPositionInDesc);
+		size_t desc_len = ((mS->mCo->mDCClients->mPositionInDesc >= 0) ? size_t(mS->mCo->mDCClients->mPositionInDesc) : temp.size()); // note: description is text before tag
+
+		if ((mS->mC.show_desc_len >= 0) && (size_t(mS->mC.show_desc_len) < desc_len)) // cut long description, tag is not touched
+			desc_len = mS->mC.show_desc_len;
+
+		myinfo_desc.assign(temp, 0, desc_len);
 
 		if (mS->mC.show_tags && mS->mCo->mDCClients->mPositionInDesc >= 0)
 			myinfo_tag.assign(temp, mS->mCo->mDCClients->mPositionInDesc, -1);

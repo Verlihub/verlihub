@@ -98,7 +98,7 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 
 	if (comp_level < Z_DEFAULT_COMPRESSION) // -1
 		comp_level = Z_DEFAULT_COMPRESSION;
-	else if (comp_level < Z_BEST_SPEED) // 1
+	else if ((comp_level != Z_DEFAULT_COMPRESSION) && (comp_level < Z_BEST_SPEED)) // 1, note: 0 becomes 1, -1 stays default level of zlib
 		comp_level = Z_BEST_SPEED;
 	else if (comp_level > Z_BEST_COMPRESSION) // 9
 		comp_level = Z_BEST_COMPRESSION;

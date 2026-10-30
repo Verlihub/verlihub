@@ -139,21 +139,19 @@ bool cDCTag::ValidateTag(ostream &os, cConnDC *conn, int &code)
 		return false;
 	}
 
-	double ratio = 0;
-
-	if (mTotHubs > 0)
-		ratio = double(mSlots / mTotHubs);
+	const int ratio_hubs = ((mTotHubs > 0) ? mTotHubs : 1); // note: user is at least in this hub, so 0 counted hubs count as 1 for ratio
+	const double ratio = (double(mSlots) / ratio_hubs); // note: double first, so fraction is kept
 
 	if ((mServer->mC.tag_min_hs_ratio > 0) && (ratio < mServer->mC.tag_min_hs_ratio)) {
 		os << autosprintf(_("Your slots per hub ratio %.2f is too low, minimum is %.2f."), ratio, mServer->mC.tag_min_hs_ratio);
-		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_min_hs_ratio)), mTotHubs);
+		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)ratio_hubs * mServer->mC.tag_min_hs_ratio)), ratio_hubs);
 		code = eTC_MIN_HS_RATIO;
 		return false;
 	}
 
 	if ((mServer->mC.tag_max_hs_ratio > 0) && (ratio > mServer->mC.tag_max_hs_ratio)) {
 		os << autosprintf(_("Your slots per hub ratio %.2f is too high, maximum is %.2f."), ratio, mServer->mC.tag_max_hs_ratio);
-		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)mTotHubs * mServer->mC.tag_max_hs_ratio)), mTotHubs);
+		os << ' ' << autosprintf(_("Open %d slots for %d hubs."), (int)(ceil((double)ratio_hubs * mServer->mC.tag_max_hs_ratio)), ratio_hubs);
 		code = eTC_MAX_HS_RATIO;
 		return false;
 	}

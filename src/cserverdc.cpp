@@ -1627,7 +1627,7 @@ bool cServerDC::MinDelayMS(cTime &then, unsigned long min, bool update)
 /*
 bool cServerDC::AllowNewConn()
 {
-	return (mConnList.size() <= (unsigned)(mC.max_users_total + mC.max_extra_regs + mC.max_extra_vips + mC.max_extra_ops + mC.max_extra_cheefs + mC.max_extra_admins + 300));
+	return (mConnList.size() <= (unsigned)(mC.max_users_total + mC.max_extra_regs + mC.max_extra_vips + 300));
 }
 */
 

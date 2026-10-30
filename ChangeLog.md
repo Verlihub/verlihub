@@ -127,6 +127,12 @@
 * Updated: Lua call VH:SendPMToAll(data, [from], [min_class], [max_class]) has optional sender nick, missing, nil or empty sends message from hub security
 * Fixed: Main loop frequency and upload counters stood still at old values after system clock went back, for example by time sync, now they start again at once, upload counters are no longer reset every timer_reloadcfg_period, which made them show too low values for few seconds
 * Updated: Build shows warning -Woverloaded-virtual again, hidden virtual functions that are known to be safe are marked in code with reason
+* Fixed: Configuration timeout_setpass had no effect and timeout_flush with 30 seconds was used as time to set password, now timeout_setpass with 300 seconds is used, timeout_flush is removed, it was never used for anything else
+* Fixed: Configuration zlib_compress_level -1 compressed at level 1, now it uses default level of zlib
+* Fixed: With mmdb_conv_depth 0 all country, region and city names were shown as --, now they are shown in UTF-8 as they are in database
+* Fixed: Slots per hub ratio of tag_min_hs_ratio and tag_max_hs_ratio lost its fraction, for example 5 slots in 2 hubs were 2.0, and user with 0 counted hubs had ratio 0, now ratio is exact and 0 hubs count as this one hub
+* Fixed: Configuration show_desc_len cut description together with tag, so short description showed part of tag and tag was added again, now it cuts only description that is longer, tag is shown or hidden only by show_tags
+* Removed: Configurations max_extra_ops, max_extra_cheefs and max_extra_admins, they had no effect, operators and higher classes always enter hub
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

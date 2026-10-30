@@ -101,9 +101,6 @@ void cDCConf::AddVars()
 	Add("max_extra_pings", max_extra_pings, 10);
 	Add("max_extra_regs",max_extra_regs,25);
 	Add("max_extra_vips",max_extra_vips,50);
-	Add("max_extra_ops",max_extra_ops,100);
-	Add("max_extra_cheefs",max_extra_cheefs,100);
-	Add("max_extra_admins",max_extra_admins,200);
 	Add("max_users0",max_users[0],6000);
 	Add("max_users1",max_users[1],1000);
 	Add("max_users2",max_users[2],1000);
@@ -388,17 +385,17 @@ void cDCConf::AddVars()
 	Add("mmdb_cache", mmdb_cache, true);
 	Add("mmdb_cache_mins", mmdb_cache_mins, 60); // 0 = never delete
 
-	static const char *to_names[] = {
-		"key", "nick", "login", "myinfo", "flush", "setpass"
+	static const char *to_names[] = { // note: same order as tTimeOut in cconndc.h, index is timeout number
+		"key", "nick", "login", "myinfo", "setpass"
 	};
 
 	double to_default[] = {
-		60., 30., 600., 40., 30., 300.
+		60., 30., 600., 40., 300.
 	};
 
 	string s_varname;
 
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 5; i++) {
 		s_varname = "timeout_";
 		s_varname += to_names[i];
 		Add(s_varname, timeout_length[i], to_default[i]);

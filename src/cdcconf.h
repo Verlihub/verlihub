@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -71,9 +71,6 @@ public:
 	unsigned int max_extra_pings;
 	unsigned int max_extra_regs;
 	unsigned int max_extra_vips;
-	unsigned int max_extra_ops;
-	unsigned int max_extra_cheefs;
-	unsigned int max_extra_admins;
 	double max_upload_kbps;
 	unsigned long min_share;
 	unsigned long min_share_reg;
@@ -349,7 +346,7 @@ public:
 	unsigned long clone_ip_tban_time;
 	bool nullchars_report;
 	bool botinfo_report;
-	double timeout_length[6];
+	double timeout_length[5]; // note: one for each timeout of tTimeOut in cconndc.h, eTO_KEY to eTO_SETPASS
 
 	string ban_extra_message;
 	string msg_replace_ban;
