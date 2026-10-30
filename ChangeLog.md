@@ -132,6 +132,29 @@
 * Fixed: With mmdb_conv_depth 0 all country, region and city names were shown as --, now they are shown in UTF-8 as they are in database
 * Fixed: Slots per hub ratio of tag_min_hs_ratio and tag_max_hs_ratio lost its fraction, for example 5 slots in 2 hubs were 2.0, and user with 0 counted hubs had ratio 0, now ratio is exact and 0 hubs count as this one hub
 * Fixed: Configuration show_desc_len cut description together with tag, so short description showed part of tag and tag was added again, now it cuts only description that is longer, tag is shown or hidden only by show_tags
+* Fixed: Lua call VH:ParseCommand always ran first command it ever got, now it runs given command
+* Fixed: Bots of Lua script stayed in hub after script was stopped or reloaded, so reloaded script could not add them again, now they are removed with script
+* Fixed: Lua calls VH:UnRegBot and VH:EditBot could delete or change bots of other scripts and plugins, now script can change only its own bots
+* Fixed: Lua calls VH:GetUserCC, VH:GetUserCN, VH:GetUserCity, VH:GetIPCC, VH:GetIPCN and VH:GetIPCity gave true with -- for online address and false for other address when nothing was found, now both give false and nil, unknown user gives false with error
+* Fixed: GeoIP lookup with own database file of script was kept in GeoIP cache and could be returned for same address later, also at login, now only own databases of hub are cached, VH:GetIPCity with own database file always looks it up
+* Fixed: Lua call VH:SendToChat ignored minimum class when maximum class was not given, and text ending with pipe got second pipe
+* Fixed: Lua call VH:IsBot returned false with error for hub security and operator chat, now it is true for every bot in hub
+* Fixed: Bot share above 2 GB was wrong in Lua call VH:GetBots, now it is 64 bit, share and class are integers
+* Fixed: Lua calls VH:AddRegUser and VH:SetRegClass allow same classes as reg commands, -1 and 1 to 5, scripts can not make master, before VH:SetRegClass could, refused call returns false with error, VH:SetRegClass saves class first and changes online user only after that
+* Fixed: Lua call VH:SetTopic sent new topic to users before saving it and did not check result, now topic is saved first and sent only when change is accepted, else call returns false with error
+* Fixed: Lua call VH:KickRedirUser kept redirect on user when kick was refused, so later close sent him there, now redirect is removed and call returns false with error
+* Fixed: Ban with time 0 from Lua call VH:Ban or NMDC command $Ban ended at once, now it is permanent like ban from kick
+* Fixed: Unknown ban type made host level 1 ban after shifting beyond bit size, now it is nick ban, Lua call VH:Ban refuses unknown type, type is one flag same as in core, for example 1 = nick and IP, 2 = IP, 4 = nick, 8 = range
+* Fixed: Lua event that returned false did not discard, only number 0 did, now false discards same as 0, nil and no return still do not discard
+* Fixed: Lua values VH.HubSec and VH.OpChat changed before hub accepted new nick, so refused change left wrong nick in scripts, now they change when hub really renamed bot
+* Fixed: Change of hub_security or opchat_name left VH table on Lua stack of every script, and script that replaced VH could end hub, now update is skipped for such script
+* Fixed: Host ban of user without host name saved empty reverse host that banned every user without host name, now host ban needs real host part, command ban tells when ban was not added instead of saying it was added, Lua call VH:Ban returns false then
+* Fixed: Command ban checked class only for host level 1, host level 2, 3 and reverse host bans were allowed for anyone who can ban, now host level 1 and reverse host need admin, host level 2 cheef and host level 3 operator
+* Fixed: Command ban dropped online users only for IP, range and nick bans, now every ban type drops all online users it matches, with same rules as ban check on login, users with ban_bypass_class stay, share ban drops only unregistered and registered users, prefix ban only unregistered
+* Updated: Ban message and ban information show banned value of ban type with its own name, for example IP, host, share or prefix, instead of key name of database column such as _ipban_ shown as nick, ban information also shows full banned host of host bans
+* Fixed: Ban information and ban list of ban with unknown ban_type in database read type name outside its table and could crash hub, now type is shown as unknown
+* Updated: Lua call VH:Ban takes banned value itself as first argument, same as command ban, for example nick, IP, range 1.2.3.4-5.6.7.8 or 1.2.3.4/5, host, share size or prefix, it is not bound to online user anymore and drops all online users that match, nick and IP type is IP ban of value, same as command ban without kick
+* Removed: NMDC commands $MultiSearch, $MultiSearch Hub: and $MultiConnectToMe of old NeoModus multi hub network, they are unknown commands now, no current client sends them
 * Removed: Configurations max_extra_ops, max_extra_cheefs and max_extra_admins, they had no effect, operators and higher classes always enter hub
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -56,18 +56,19 @@ public:
 
 	string mConfigName;
 	string mScriptName;
+	const unsigned long mSerial; // note: own number of each interpreter, reloaded script gets new one, so replies to old one are not given to it
 
 	struct mScriptBot
 	{
 		string uMyINFO;
-		int uShare;
+		__int64 uShare;
 		int uClass;
 	};
 
 	typedef map<string, mScriptBot> tvBot;
 	tvBot botList;
 
-	void addBot(const char *nick, const char *info, int shar, int clas)
+	void addBot(const char *nick, const char *info, __int64 shar, int clas)
 	{
 		mScriptBot &item = botList[nick];
 		item.uMyINFO = info;
@@ -75,7 +76,7 @@ public:
 		item.uClass = clas;
 	}
 
-	void editBot(const char *nick, const char *info, int shar, int clas)
+	void editBot(const char *nick, const char *info, __int64 shar, int clas)
 	{
 		tvBot::iterator it = botList.find(nick);
 

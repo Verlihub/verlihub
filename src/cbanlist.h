@@ -99,7 +99,15 @@ namespace nVerliHub {
 				 * If the ban already exists, the entry found is updated.
 				 * @param ban A cBan instance.
 				 */
-				void AddBan(cBan &ban);
+				bool AddBan(cBan &ban); // note: false when ban is not saved, for example host has too few parts for host ban level
+
+				/**
+				 * Drop all online users that match a saved ban, with same rules as ban check on login.
+				 * Users with ban_bypass_class are skipped, share ban only drops unregistered and registered users, prefix ban only unregistered.
+				 * @param ban A cBan instance after AddBan().
+				 * @param reason The reason in message to all, empty for message without reason.
+				 */
+				void DropBanned(cBan &ban, const string &reason);
 
 				/**
 				 * Populate a stream to build a WHERE condition for a SELECT statement.

@@ -56,7 +56,7 @@ namespace nVerliHub {
 	bool SetUserIP(const char *nick, const char *ip);
 	bool SetMyINFOFlag(const char *nick, const unsigned int flag);
 	bool UnsetMyINFOFlag(const char *nick, const unsigned int flag);
-	bool Ban(const char *, const string &, const string &, unsigned, unsigned);
+	bool Ban(const string &value, const string &op, const string &reason, unsigned howlong, unsigned bantype);
 	bool KickUser(const char *oper, const char *nick, const char *why, const char *note_op = NULL, const char *note_usr = NULL, bool hide = false);
 	bool DeleteNickTempBan(const char *nick);
 	bool DeleteIPTempBan(const char *ip);

@@ -178,8 +178,6 @@ protected:
 	int DCO_OpForceMove(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** Treat the DC message in a appropriate way */
 	int DC_RevConnectToMe(cMessageDC * msg, nSocket::cConnDC * conn);
-	/** Treat the DC message in a appropriate way */
-	int DC_MultiConnectToMe(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** operator ban */
 	int DCO_TempBan(cMessageDC * msg, nSocket::cConnDC * conn);
 	/** operator unban */

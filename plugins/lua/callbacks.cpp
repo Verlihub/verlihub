@@ -518,7 +518,7 @@ int _SendToChat(lua_State *L)
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 4) && (!lua_isnumber(L, 4) || !lua_isnumber(L, 5)))) {
+	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
@@ -532,9 +532,11 @@ int _SendToChat(lua_State *L)
 
 	int min_class = eUC_NORMUSER, max_class = eUC_MASTER;
 
-	if (args >= 4) {
+	if (args >= 3) { // note: each class is used when it is given
 		min_class = int(lua_tonumber(L, 4));
-		max_class = int(lua_tonumber(L, 5));
+
+		if (args >= 4)
+			max_class = int(lua_tonumber(L, 5));
 
 		if ((min_class < eUC_PINGER) || (min_class > eUC_MASTER) || ((min_class > eUC_ADMIN) && (min_class < eUC_MASTER)) || (max_class < eUC_PINGER) || (max_class > eUC_MASTER) || ((max_class > eUC_ADMIN) && (max_class < eUC_MASTER))) {
 			luaerror(L, ERR_CLASS);
@@ -685,6 +687,19 @@ int _GetMyINFO(lua_State *L)
 	}
 }
 
+static int LuaGeoValue(lua_State *L, const string &value) // note: "--" is not found in database or found without this value, then false and nil, empty means invalid address
+{
+	if (value.empty() || (value == "--")) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, value.c_str());
+	return 2;
+}
+
 int _GetUserCC(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -710,15 +725,11 @@ int _GetUserCC(lua_State *L)
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn) {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
+		luaerror(L, "User not found");
 		return 2;
 	}
 
-	nick = user->mxConn->GetGeoCC(); // country code
-	lua_pushboolean(L, 1);
-	lua_pushstring(L, nick.c_str());
-	return 2;
+	return LuaGeoValue(L, user->mxConn->GetGeoCC()); // country code
 }
 
 int _GetUserCN(lua_State *L)
@@ -746,15 +757,11 @@ int _GetUserCN(lua_State *L)
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn) {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
+		luaerror(L, "User not found");
 		return 2;
 	}
 
-	nick = user->mxConn->GetGeoCN(); // country name
-	lua_pushboolean(L, 1);
-	lua_pushstring(L, nick.c_str());
-	return 2;
+	return LuaGeoValue(L, user->mxConn->GetGeoCN()); // country name
 }
 
 int _GetUserCity(lua_State *L)
@@ -782,15 +789,11 @@ int _GetUserCity(lua_State *L)
 	cUser *user = serv->mUserList.GetUserByNick(nick);
 
 	if (!user || !user->mxConn) {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
+		luaerror(L, "User not found");
 		return 2;
 	}
 
-	nick = user->mxConn->GetGeoCI(); // city name
-	lua_pushboolean(L, 1);
-	lua_pushstring(L, nick.c_str());
-	return 2;
+	return LuaGeoValue(L, user->mxConn->GetGeoCI()); // city name
 }
 
 int _GetIPCC(lua_State *L)
@@ -810,15 +813,7 @@ int _GetIPCC(lua_State *L)
 	string ip = lua_tostring(L, 2);
 	const string cc = GetIPCC(ip.c_str());
 
-	if (cc.size()) {
-		lua_pushboolean(L, 1);
-		lua_pushstring(L, cc.c_str());
-	} else {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-	}
-
-	return 2;
+	return LuaGeoValue(L, cc);
 }
 
 int _GetIPCN(lua_State *L)
@@ -838,15 +833,7 @@ int _GetIPCN(lua_State *L)
 	string ip = lua_tostring(L, 2);
 	const string cn = GetIPCN(ip.c_str());
 
-	if (cn.size()) {
-		lua_pushboolean(L, 1);
-		lua_pushstring(L, cn.c_str());
-	} else {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-	}
-
-	return 2;
+	return LuaGeoValue(L, cn);
 }
 
 int _GetIPCity(lua_State *L)
@@ -884,15 +871,7 @@ int _GetIPCity(lua_State *L)
 	string ip = lua_tostring(L, 2);
 	const string ci = GetIPCity(ip.c_str(), db.c_str()); // use script api, it has new optimizations
 
-	if (ci.size()) {
-		lua_pushboolean(L, 1);
-		lua_pushstring(L, ci.c_str());
-	} else {
-		lua_pushboolean(L, 0);
-		lua_pushnil(L);
-	}
-
-	return 2;
+	return LuaGeoValue(L, ci);
 }
 
 int _GetIPASN(lua_State *L)
@@ -1802,7 +1781,7 @@ int _Ban(lua_State *L)
 			return 2;
 		}
 
-		string nick = lua_tostring(L, 2);
+		string value = lua_tostring(L, 2); // note: banned value itself, same as !ban* command, for example nick, ip, range, host, share or prefix
 
 		if (!lua_isstring(L, 3)) {
 			luaerror(L, ERR_PARAM);
@@ -1832,8 +1811,8 @@ int _Ban(lua_State *L)
 
 		unsigned bantype = (unsigned)lua_tonumber(L, 6);
 
-		if (!Ban(nick.c_str(), op, reason, howlong, bantype)) {
-			luaerror(L, "User not found");
+		if (!Ban(value, op, reason, howlong, bantype)) { // note: unknown ban type, empty value, bad range or host with too few parts
+			luaerror(L, ERR_PARAM);
 			return 2;
 		}
 	} else {
@@ -1943,8 +1922,16 @@ int _KickRedirUser(lua_State *L)
 		return 2;
 	}
 
-	user->mxConn->mCloseRedirect = addr; // set redirect
+	cConnDC *conn = user->mxConn;
+	conn->mCloseRedirect = addr; // set redirect, note: it is sent when kick closes connection
 	serv->DCKickNick(NULL, oper, nius, why, (eKI_CLOSE | eKI_WHY | eKI_PM | eKI_BAN), note_op, note_usr); // kick user
+
+	if (conn->mWritable) { // note: kick was refused, for example no rights or protected user, so user stays without redirect
+		conn->mCloseRedirect.clear();
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -2092,10 +2079,10 @@ int _GetLuaBots(lua_State *L)
 				lua_pushstring(L, it->second.uMyINFO.c_str());
 				lua_setfield(L, -2, "sMyINFO");
 
-				lua_pushnumber(L, it->second.uShare);
+				lua_pushinteger(L, (lua_Integer)it->second.uShare); // note: integer, so lua 5.3 and later shows 1234 and not 1234.0
 				lua_setfield(L, -2, "iShare");
 
-				lua_pushnumber(L, it->second.uClass);
+				lua_pushinteger(L, (lua_Integer)it->second.uClass);
 				lua_setfield(L, -2, "iClass");
 
 				lua_rawseti(L, -2, ++num);
@@ -2189,20 +2176,18 @@ int _RegBot(lua_State *L)
 	const string conn = lua_tostring(L, 5);
 	const string mail = lua_tostring(L, 6);
 	string shar;
-	int share;
+	__int64 share = 0; // note: 64 bit, share can be bigger than 2 GB
 
-	if (lua_isstring(L, 7)) {
+	if (lua_type(L, 7) == LUA_TNUMBER) { // note: real number, its text could be in exponent form
+		share = (__int64)lua_tonumber(L, 7);
+		shar = StringFrom(share);
+	} else {
 		shar = lua_tostring(L, 7);
 
-		if (shar.empty()) {
+		if (shar.empty())
 			shar = "0";
-			share = 0;
-		} else {
-			share = StrToInt(shar);
-		}
-	} else {
-		share = (int)lua_tonumber(L, 7);
-		shar = IntToStr(share);
+		else
+			share = StringAsLL(shar);
 	}
 
 	serv->mP.Create_MyINFO(temp, nick, desc, conn, mail, shar); // create myinfo
@@ -2266,7 +2251,7 @@ int _EditBot(lua_State *L)
 	if (bad > 1)
 		return 2;
 
-	if (!serv->mRobotList.ContainsNick(nick)) {
+	if (!lua->botList.count(nick) || !serv->mRobotList.ContainsNick(nick)) { // note: script can change only its own bots
 		luaerror(L, "Bot not found");
 		return 2;
 	}
@@ -2301,20 +2286,18 @@ int _EditBot(lua_State *L)
 	const string conn = lua_tostring(L, 5);
 	const string mail = lua_tostring(L, 6);
 	string shar;
-	int share;
+	__int64 share = 0; // note: 64 bit, share can be bigger than 2 GB
 
-	if (lua_isstring(L, 7)) {
+	if (lua_type(L, 7) == LUA_TNUMBER) { // note: real number, its text could be in exponent form
+		share = (__int64)lua_tonumber(L, 7);
+		shar = StringFrom(share);
+	} else {
 		shar = lua_tostring(L, 7);
 
-		if (shar.empty()) {
+		if (shar.empty())
 			shar = "0";
-			share = 0;
-		} else {
-			share = StrToInt(shar);
-		}
-	} else {
-		share = (int)lua_tonumber(L, 7);
-		shar = IntToStr(share);
+		else
+			share = StringAsLL(shar);
 	}
 
 	if (robot->mClass != clas) { // different class
@@ -2411,7 +2394,7 @@ int _UnRegBot(lua_State *L)
 	if (bad > 1)
 		return 2;
 
-	if (!serv->mRobotList.ContainsNick(nick)) {
+	if (!lua->botList.count(nick) || !serv->mRobotList.ContainsNick(nick)) { // note: script can change only its own bots
 		luaerror(L, "Bot not found");
 		return 2;
 	}
@@ -2454,24 +2437,8 @@ int _IsBot(lua_State *L)
 	}
 
 	const string nick = lua_tostring(L, 2);
-	const int bad = CheckBotNick(nick); // check bot nick
 
-	switch (bad) {
-		case 2:
-			luaerror(L, "Bot nick can not be empty");
-			break;
-		case 3:
-			luaerror(L, "Bot nick contains bad characters");
-			break;
-		case 4:
-			luaerror(L, "Bot nick is reserved");
-			break;
-	}
-
-	if (bad > 1)
-		return 2;
-
-	if (!serv->mRobotList.ContainsNick(nick)) {
+	if (nick.empty() || !serv->mRobotList.ContainsNick(nick)) { // note: any bot in hub, also hub security and operator chat, disabled operator chat with empty name is not in list
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
@@ -2997,7 +2964,7 @@ int _AddRegUser(lua_State *L)
 	const string pass = lua_tostring(L, 3); // can be empty
 	int clas = int(lua_tonumber(L, 4));
 
-	if ((clas < eUC_PINGER) || (clas == eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
+	if (!((clas == eUC_PINGER) || ((clas >= eUC_REGUSER) && (clas <= eUC_ADMIN)))) { // validate class number, note: same as core, script can not make master
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
@@ -3007,11 +2974,12 @@ int _AddRegUser(lua_State *L)
 	if (args >= 4)
 		op = lua_tostring(L, 5);
 
-	if (AddRegUser(nick.c_str(), clas, pass.c_str(), op.c_str()))
-		lua_pushboolean(L, 1);
-	else
-		lua_pushboolean(L, 0);
+	if (!AddRegUser(nick.c_str(), clas, pass.c_str(), op.c_str())) { // note: for example nick is already registered
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
 
+	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
 }
@@ -3071,16 +3039,17 @@ int _SetRegClass(lua_State *L)
 
 	int clas = int(lua_tonumber(L, 3));
 
-	if ((clas < eUC_NORMUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER)) { // validate class number, todo: can user implement his own classes?
+	if (!((clas == eUC_PINGER) || ((clas >= eUC_REGUSER) && (clas <= eUC_ADMIN)))) { // validate class number, note: same as core, script can not make master
 		luaerror(L, ERR_CLASS);
 		return 2;
 	}
 
-	if (SetRegClass(nick.c_str(), clas))
-		lua_pushboolean(L, 1);
-	else
-		lua_pushboolean(L, 0);
+	if (!SetRegClass(nick.c_str(), clas)) { // note: for example nick is not registered or has this class already
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
 
+	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
 }
@@ -3127,10 +3096,14 @@ int _SetTopic(lua_State *L)
 	}
 
 	string topic = lua_tostring(L, 2);
+	if (!SetConfig(li->mConfigName.c_str(), "hub_topic", topic.c_str())) { // note: save first, plugin or script can refuse it
+		luaerror(L, ERR_CALL);
+		return 2;
+	}
+
 	string omsg;
 	serv->mP.Create_HubName(omsg, serv->mC.hub_name, topic);
 	serv->SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
-	SetConfig(li->mConfigName.c_str(), "hub_topic", topic.c_str());
 	lua_pushboolean(L, 1);
 	lua_pushnil(L);
 	return 2;
@@ -3210,21 +3183,21 @@ static bool LuaHTTPHead(lua_State *L, int pos, string &head) // note: request he
 	return true;
 }
 
-static void LuaHTTPReply(cLuaInterpreter *li, const string &script, const string &func, unsigned long id, int code, const string &body, const string &head, const string &err) // note: runs on main thread
+static void LuaHTTPReply(unsigned long serial, const string &func, unsigned long id, int code, const string &body, const string &head, const string &err) // note: runs on main thread
 {
 	if (!cpiLua::me)
 		return;
 
-	bool found = false;
+	cLuaInterpreter *li = NULL;
 
 	for (unsigned int pos = 0; pos < cpiLua::me->Size(); pos++) {
-		if (cpiLua::me->mLua[pos] == li) { // note: pointer first, only then it is safe to read name
-			found = (li->mScriptName == script);
+		if (cpiLua::me->mLua[pos] && (cpiLua::me->mLua[pos]->mSerial == serial)) { // note: same interpreter that sent request, not new one of reloaded script
+			li = cpiLua::me->mLua[pos];
 			break;
 		}
 	}
 
-	if (!found) // note: script was unloaded or reloaded meanwhile
+	if (!li) // note: script was unloaded or reloaded meanwhile
 		return;
 
 	lua_State *L = li->mL;
@@ -3285,7 +3258,8 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 		return 2;
 	}
 
-	const string url(lua_tostring(L, 2)), func(lua_tostring(L, fpos)), script(li->mScriptName);
+	const string url(lua_tostring(L, 2)), func(lua_tostring(L, fpos));
+	const unsigned long serial = li->mSerial;
 	string extra; // note: post data or file name
 
 	if (kind) {
@@ -3297,8 +3271,8 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 	const double secs = (lua_isnumber(L, fpos + 2) ? lua_tonumber(L, fpos + 2) : 0);
 	const unsigned int timeout = ((secs > 0) ? ((secs < 4294967) ? (unsigned int)secs : 4294967U) : 0); // note: 0 is default, upper limit only keeps milliseconds in range
 
-	nSocket::tHTTPDone done = [li, script, func](unsigned long id, int code, const string &body, const string &rhead, const string &err) {
-		LuaHTTPReply(li, script, func, id, code, body, rhead, err);
+	nSocket::tHTTPDone done = [serial, func](unsigned long id, int code, const string &body, const string &rhead, const string &err) {
+		LuaHTTPReply(serial, func, id, code, body, rhead, err);
 	};
 
 	unsigned long id = 0;

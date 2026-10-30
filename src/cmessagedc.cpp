@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -53,9 +53,6 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand("$UserIP "),
 	cProtoCommand("$Kick "),
 	cProtoCommand("$OpForceMove $Who:"),
-	cProtoCommand("$MultiConnectToMe "),
-	cProtoCommand("$MultiSearch Hub:"),
-	cProtoCommand("$MultiSearch "),
 	cProtoCommand("$MCTo: "),
 	cProtoCommand("$Quit "),
 	cProtoCommand("$Ban "),
@@ -128,7 +125,6 @@ bool cMessageDC::SplitChunks()
 
 	switch (mType) { // now try to find chunks one by one
 		case eDC_CONNECTTOME:
-		case eDC_MCONNECTTOME:
 			if (!SplitOnTwo(mKWSize, ' ', eCH_CM_NICK, eCH_CM_ACTIVE))
 				mError = true;
 
@@ -189,7 +185,6 @@ bool cMessageDC::SplitChunks()
 			break;
 
 		case eDC_SEARCH_PAS:
-		case eDC_MSEARCH_PAS: // not implemented, but should be same as passive search
 			/*
 				$Search Hub:<nick> <limits><pattern>
 				eCH_PS_ALL, eCH_PS_NICK, eCH_PS_QUERY, eCH_PS_SEARCHLIMITS, eCH_PS_SEARCHPATTERN
@@ -207,7 +202,6 @@ bool cMessageDC::SplitChunks()
 			break;
 
 		case eDC_SEARCH:
-		case eDC_MSEARCH: // not implemented, but should be same as active search
 			/*
 				$Search <ip>:<port> <limits><pattern>
 				eCH_AS_ALL, eCH_AS_ADDR, eCH_AS_IP, eCH_AS_PORT, eCH_AS_QUERY, eCH_AS_SEARCHLIMITS, eCH_AS_SEARCHPATTERN

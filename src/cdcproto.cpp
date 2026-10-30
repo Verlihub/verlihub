@@ -166,7 +166,6 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			return TreatMsg(msg, conn); // todo: mS->mCallBacks.mOnUnparsedMsg.CallAll(conn, msg)
 
 		case eDC_CONNECTTOME:
-		case eDC_MCONNECTTOME: // todo: this->DC_MultiConnectToMe(msg, conn);
 			this->DC_ConnectToMe(msg, conn);
 			break;
 
@@ -180,8 +179,6 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 		case eDC_SEARCH_PAS:
 		case eDC_SEARCH:
-		case eDC_MSEARCH_PAS:
-		case eDC_MSEARCH:
 			this->DC_Search(msg, conn);
 			break;
 
@@ -2385,15 +2382,6 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-int cDCProto::DC_MultiConnectToMe(cMessageDC *msg, cConnDC *conn)
-{
-	if (CheckUserLogin(conn, msg))
-		return -1;
-
-	// todo
-	return 0;
-}
-
 int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 {
 	if (CheckUserLogin(conn, msg))
@@ -2423,7 +2411,6 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	switch (msg->mType) { // detect search mode once
 		case eDC_SEARCH:
-		case eDC_MSEARCH:
 			passive = false;
 			break;
 
@@ -3678,7 +3665,6 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 
 	switch (msg->mType) {
 		case eDC_CONNECTTOME:
-		case eDC_MCONNECTTOME:
 			cmd = "ConnectToMe";
 			break;
 
@@ -3692,8 +3678,6 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 
 		case eDC_SEARCH_PAS:
 		case eDC_SEARCH:
-		case eDC_MSEARCH_PAS:
-		case eDC_MSEARCH:
 			cmd = "Search";
 			break;
 
@@ -3841,8 +3825,6 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 		case eDC_TTHS_PAS:
 		case eDC_SEARCH_PAS:
 		case eDC_SEARCH:
-		case eDC_MSEARCH_PAS:
-		case eDC_MSEARCH:
 			mlen = mS->mC.max_len_search;
 			break;
 
@@ -3895,8 +3877,6 @@ bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
 
 		case eDC_SEARCH_PAS:
 		case eDC_SEARCH:
-		case eDC_MSEARCH_PAS:
-		case eDC_MSEARCH:
 			cmd = "Search";
 			break;
 

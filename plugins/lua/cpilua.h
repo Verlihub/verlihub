@@ -91,6 +91,7 @@ public:
 	virtual bool OnUnLoad(long code);
 
 	bool AutoLoad();
+	void DelBots(cLuaInterpreter *li); // note: removes bots that script added from hub
 	bool CallAll(const char *, const char *[], cConnDC *conn = NULL);
 	unsigned int Size() { return mLua.size(); }
 	void SetLogLevel(int level);
@@ -156,6 +157,7 @@ public:
 			return;
 
 		mLua.erase(it);
+		DelBots(li); // note: bots of script leave hub at once, also when script itself is deleted later, so reloaded script can add them again
 
 		if (mCallDepth) // note: deleted on next timer
 			mTrash.push_back(li);

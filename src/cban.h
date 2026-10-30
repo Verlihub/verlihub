@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -115,7 +115,7 @@ namespace nVerliHub {
 				* Set the type of the ban.
 				* @param type Ban type.
 				*/
-				void SetType(unsigned type);
+				bool SetType(unsigned type); // note: type is one flag of tBanFlags, unknown type gives nick ban and false
 
 				/**
 				* Write ban information to the output stream.

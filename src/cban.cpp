@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -102,23 +102,46 @@ ostream & operator << (ostream &os, cBan &ban)
 void cBan::DisplayUser(ostream &os)
 {
 	os << "\r\n";
-
-	if (mNick.size())
-		os << " [*] " << autosprintf(_("Nick: %s"), mNick.c_str()) << "\r\n";
-
-	if (!mRangeMin && mIP.size() && (mIP[0] != '_'))
-		os << " [*] " << autosprintf(_("IP: %s"), mIP.c_str()) << "\r\n";
-
 	string loaddr, hiaddr;
 
-	if (mRangeMin) {
-		cBanList::Num2Ip(mRangeMin, loaddr);
-		cBanList::Num2Ip(mRangeMax, hiaddr);
-		os << " [*] " << autosprintf(_("IP range: %s - %s"), loaddr.c_str(), hiaddr.c_str()) << "\r\n";
-	}
+	switch (1 << mType) { // note: only banned value of ban type, key names of other column are not shown
+		case eBF_NICKIP:
+			os << " [*] " << autosprintf(_("Nick: %s"), mNick.c_str()) << "\r\n";
+			os << " [*] " << autosprintf(_("IP: %s"), mIP.c_str()) << "\r\n";
+			break;
 
-	if (mShare)
-		os << " [*] " << autosprintf(_("Share: %llu [%s]"), mShare, convertByte(mShare, false).c_str()) << "\r\n";
+		case eBF_NICK:
+			os << " [*] " << autosprintf(_("Nick: %s"), mNick.c_str()) << "\r\n";
+			break;
+
+		case eBF_IP:
+			os << " [*] " << autosprintf(_("IP: %s"), mIP.c_str()) << "\r\n";
+			break;
+
+		case eBF_RANGE:
+			cBanList::Num2Ip(mRangeMin, loaddr);
+			cBanList::Num2Ip(mRangeMax, hiaddr);
+			os << " [*] " << autosprintf(_("IP range: %s - %s"), loaddr.c_str(), hiaddr.c_str()) << "\r\n";
+			break;
+
+		case eBF_HOST1:
+		case eBF_HOST2:
+		case eBF_HOST3:
+		case eBF_HOSTR1: // note: host part is in nick column
+			os << " [*] " << autosprintf(_("Host: %s"), mNick.c_str()) << "\r\n";
+			break;
+
+		case eBF_SHARE:
+			os << " [*] " << autosprintf(_("Share: %llu [%s]"), mShare, convertByte(mShare, false).c_str()) << "\r\n";
+			break;
+
+		case eBF_PREFIX:
+			os << " [*] " << autosprintf(_("Prefix: %s"), mNick.c_str()) << "\r\n";
+			break;
+
+		default:
+			break;
+	}
 
 	if (mReason.size())
 		os << " [*] " << autosprintf(_("Reason: %s"), mReason.c_str()) << "\r\n";
@@ -158,6 +181,20 @@ void cBan::DisplayComplete(ostream &os)
 
 	os << " [*] " << autosprintf(_("Type: %s"), this->GetBanType()) << "\r\n";
 
+	switch (1 << mType) {
+		case eBF_HOST1:
+		case eBF_HOST2:
+		case eBF_HOST3:
+		case eBF_HOSTR1: // note: full host that was banned, host part of it is shown above
+			if (mHost.size())
+				os << " [*] " << autosprintf(_("Banned host: %s"), mHost.c_str()) << "\r\n";
+
+			break;
+
+		default:
+			break;
+	}
+
 	if (mNickOp.size())
 		os << " [*] " << autosprintf(_("Operator: %s"), mNickOp.c_str()) << "\r\n";
 
@@ -174,22 +211,24 @@ void cBan::DisplayComplete(ostream &os)
 const char *cBan::GetBanType()
 {
 	static const char *banTypes[] = {_("Nick + IP"), _("IP"), _("Nick"), _("IP range"), _("Host level 1"), _("Host level 2"), _("Host level 3"), _("Share size"), _("Nick prefix"), _("Reverse host")};
+
+	if (mType >= (sizeof(banTypes) / sizeof(banTypes[0]))) // note: ban_type is read from database as it is, outside value is no known type
+		return _("Unknown");
+
 	return banTypes[mType];
 }
 
-void cBan::SetType(unsigned type)
+bool cBan::SetType(unsigned type)
 {
-	/*
-		Undefined behavior. Check the shift operator '<<'. The right operand ('mType' = [0..1023]) is greater than or equal to the length in bits of the promoted left operand.
-		this is false because: mType < nEnums::eBF_LAST
-	*/
+	static_assert((1u << 2) == unsigned(nEnums::eBF_NICK), "nick position");
 
-	for (mType = 0; mType < nEnums::eBF_LAST; mType++) {
-		if (type == (unsigned)(1 << mType))
-			return;
+	for (mType = 0; (1u << mType) < unsigned(nEnums::eBF_LAST); mType++) { // note: type is one flag of tBanFlags, mType is its bit position, 0 to 9
+		if (type == (1u << mType))
+			return true;
 	}
 
-	mType = eBF_NICK; // default type in case we fail
+	mType = 2; // note: bit position of eBF_NICK, used when type is not one known flag
+	return false;
 }
 
 /*

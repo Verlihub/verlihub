@@ -27,6 +27,7 @@
 #include "cbanlist.h"
 #include "creglist.h"
 #include "cusercollection.h"
+#include "cdcconsole.h" // note: GetIPRange
 #include "script_api.h"
 #include "cconfigitembase.h"
 #include "i18n.h"
@@ -219,7 +220,7 @@ bool SendToChat(const char *nick, const char *text, int min_class, int max_class
 
 	string omsg;
 	serv->mP.Create_Chat(omsg, nick, text);
-	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, true);
+	serv->mChatUsers.SendToAllWithClass(omsg, min_class, max_class, serv->mC.delayed_chat, CheckDataPipe(omsg)); // note: pipe only when text does not end with it
 	return true;
 }
 
@@ -326,10 +327,8 @@ string GetIPCC(const char *ip)
 		return cc;
 	}
 
-	if (serv->mMaxMindDB->GetCC(ip, cc)) // else perform mmdb lookup
-		return cc;
-
-	return "";
+	serv->mMaxMindDB->GetCC(ip, cc); // else perform mmdb lookup, note: not found gives "--", same as for connection above
+	return cc;
 }
 
 string GetIPCN(const char *ip)
@@ -357,10 +356,8 @@ string GetIPCN(const char *ip)
 		return cn;
 	}
 
-	if (serv->mMaxMindDB->GetCN(ip, cn)) // else perform mmdb lookup
-		return cn;
-
-	return "";
+	serv->mMaxMindDB->GetCN(ip, cn); // else perform mmdb lookup, note: not found gives "--", same as for connection above
+	return cn;
 }
 
 string GetIPCity(const char *ip, const char *db)
@@ -380,18 +377,19 @@ string GetIPCity(const char *ip, const char *db)
 	if (!cBanList::Ip2Num(ip, ipnum, false))
 		return "";
 
-	cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
 	string ci;
 
-	if (conn && conn->ok) {
-		ci = conn->GetGeoCI(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
-		return ci;
+	if (!db || (db[0] == '\0')) { // note: own database file of script is always looked up, connection has city from databases of hub
+		cConnDC *conn = serv->GetConnByIP(ipnum); // look in connection list first, script ususally call this for connected but not yet logged in users
+
+		if (conn && conn->ok) {
+			ci = conn->GetGeoCI(); // this also sets location data on user, will be useful if he passes all checks and finally logs in
+			return ci;
+		}
 	}
 
-	if (serv->mMaxMindDB->GetCity(ci, ip, db)) // else perform mmdb lookup
-		return ci;
-
-	return "";
+	serv->mMaxMindDB->GetCity(ci, ip, (db ? db : "")); // else perform mmdb lookup, note: not found gives "--", same as for connection above
+	return ci;
 }
 
 const char *GetMyINFO(const char *nick)
@@ -525,7 +523,7 @@ bool UnsetMyINFOFlag(const char *nick, const unsigned int flag)
 	return true;
 }
 
-bool Ban(const char *nick, const string &op, const string &reason, unsigned howlong, unsigned bantype)
+bool Ban(const string &value, const string &op, const string &reason, unsigned howlong, unsigned bantype)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -534,15 +532,69 @@ bool Ban(const char *nick, const string &op, const string &reason, unsigned howl
 		return false;
 	}
 
-	cUser *user = GetUser(nick);
-
-	if (!user || !user->mxConn)
+	if (!bantype || (bantype >= unsigned(nEnums::eBF_LAST)) || (bantype & (bantype - 1))) // note: one flag of tBanFlags, same numbers as core, for example 1 = nick and ip, 2 = ip, 4 = nick
 		return false;
 
-	cBan ban(serv);
-	serv->mBanList->NewBan(ban, user->mxConn, op, reason, howlong, bantype);
-	serv->mBanList->AddBan(ban);
-	user->mxConn->CloseNice(1000, eCR_KICKED);
+	if (value.empty())
+		return false;
+
+	if (bantype == nEnums::eBF_NICKIP) // note: same as !ban without kick, nick and ip ban of value is ip ban
+		bantype = nEnums::eBF_IP;
+
+	cBan ban(serv); // note: value is built same way as !ban* command
+	ban.mNickOp = op;
+
+	if (reason.size())
+		ban.mReason = reason;
+	else
+		ban.mReason = _("No reason specified");
+
+	ban.mDateStart = serv->mTime.Sec();
+	ban.mDateEnd = (howlong ? (ban.mDateStart + howlong) : 0); // note: 0 is permanent
+	ban.mLastHit = 0;
+	ban.SetType(bantype);
+
+	switch (bantype) {
+		case nEnums::eBF_NICK:
+		case nEnums::eBF_PREFIX:
+			ban.mNick = value;
+			break;
+
+		case nEnums::eBF_IP:
+			ban.mIP = value;
+			break;
+
+		case nEnums::eBF_HOST1:
+		case nEnums::eBF_HOST2:
+		case nEnums::eBF_HOST3:
+		case nEnums::eBF_HOSTR1:
+			ban.mHost = value;
+			ban.mIP = value;
+			break;
+
+		case nEnums::eBF_RANGE:
+			if (!cDCConsole::GetIPRange(value, ban.mRangeMin, ban.mRangeMax))
+				return false;
+
+			ban.mIP = value;
+			break;
+
+		case nEnums::eBF_SHARE: {
+			istringstream is(value);
+			__int64 share = 0;
+			is >> share;
+			ban.mShare = share;
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	if (!serv->mBanList->AddBan(ban)) // note: only host ban can fail, host has too few parts for this ban type
+		return false;
+
+	serv->mBanList->DropBanned(ban, reason); // note: drops all online users that match, same as !ban* command
 	return true;
 }
 
@@ -595,7 +647,7 @@ bool ParseCommand(const char *nick, const char *cmd, int pm)
 	if (!usr || !usr->mxConn)
 		return false;
 
-	static string command(cmd);
+	string command(cmd); // note: copy, parser takes reference
 	serv->mP.ParseForCommands(command, usr->mxConn, pm);
 	return true;
 }
@@ -738,7 +790,7 @@ bool GetTempRights(const char *nick,  map<string,int> &rights)
 
 bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 {
-	if (!nick || (clas == eUC_MASTER))
+	if (!nick || !((clas == eUC_PINGER) || ((clas >= eUC_REGUSER) && (clas <= eUC_ADMIN)))) // note: same classes as reg commands, but script can not make master, only master can with command
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -764,9 +816,16 @@ bool AddRegUser(const char *nick, int clas, const char *pass, const char* op)
 	if (res && user && user->mxConn) { // no need to reconnect for class to take effect
 		ostringstream ostr;
 		string data;
-		ostr << autosprintf(_("You have been registered with class %d. Please set your password by using following command: +passwd <password>"), clas); // todo: use password request here aswell, send_pass_request
-		serv->DCPrivateHS(ostr.str(), user->mxConn);
-		serv->DCPublicHS(ostr.str(), user->mxConn);
+
+		if (clas != eUC_PINGER) { // note: pinger is hublist bot, it can not set password, same messages as reg command
+			if (pass && (pass[0] != '\0'))
+				ostr << autosprintf(_("You have been registered with class %d and following password: %s"), clas, pass);
+			else
+				ostr << autosprintf(_("You have been registered with class %d. Please set your password by using following command: +passwd <password>"), clas); // todo: use password request here aswell, send_pass_request
+
+			serv->DCPrivateHS(ostr.str(), user->mxConn);
+			serv->DCPublicHS(ostr.str(), user->mxConn);
+		}
 
 		if ((clas >= serv->mC.opchat_class) && !serv->mOpchatList.ContainsHash(user->mNickHash)) // opchat list
 			serv->mOpchatList.AddWithHash(user, user->mNickHash);
@@ -851,7 +910,7 @@ bool DelRegUser(const char *nick)
 
 bool SetRegClass(const char *nick, int clas)
 {
-	if (!nick || (clas < eUC_REGUSER) || ((clas > eUC_ADMIN) && (clas < eUC_MASTER)) || (clas > eUC_MASTER))
+	if (!nick || !((clas == eUC_PINGER) || ((clas >= eUC_REGUSER) && (clas <= eUC_ADMIN)))) // note: same classes as reg commands, but script can not make master, only master can with command
 		return false;
 
 	cServerDC *serv = GetCurrentVerlihub();
@@ -867,6 +926,11 @@ bool SetRegClass(const char *nick, int clas)
 		return false;
 
 	if (ui.mClass == clas) // no need to set same class
+		return false;
+
+	string svar("class"), sval(StringFrom(clas));
+
+	if (!serv->mR->SetVar(nick, svar, sval)) // note: save first, online user is changed only when database has new class, registration info is read again below
 		return false;
 
 	cUser *user = GetUser(nick);
@@ -921,8 +985,7 @@ bool SetRegClass(const char *nick, int clas)
 		serv->SetUserRegInfo(user->mxConn, user->mNick); // update registration information in real time aswell
 	}
 
-	string svar("class"), sval(StringFrom(clas));
-	return serv->mR->SetVar(nick, svar, sval);
+	return true;
 }
 
 bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool inst)

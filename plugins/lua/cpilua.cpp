@@ -65,6 +65,21 @@ cpiLua::~cpiLua()
 	this->Empty();
 }
 
+void cpiLua::DelBots(cLuaInterpreter *li)
+{
+	if (!li)
+		return;
+
+	for (cLuaInterpreter::tvBot::iterator it = li->botList.begin(); it != li->botList.end(); ++it) {
+		cUserBase *bot = mRobots.GetUserBaseByNick(it->first); // note: only bots of this plugin
+
+		if (bot)
+			DelRobot((cUserRobot*)bot); // note: this sends quit to all
+	}
+
+	li->clean();
+}
+
 void cpiLua::SetLogLevel(int level)
 {
 	ostringstream val;
@@ -1045,20 +1060,7 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 			NULL
 		};
 
-		res = CallAll("VH_OnSetConfig", args, user->mxConn);
-
-		if (res && server && !strcmp(conf->c_str(), server->mDBConf.config_name.c_str()) && (!strcmp(var->c_str(), "hub_security") || !strcmp(var->c_str(), "opchat_name")) && Size()) {
-			tvLuaInterpreter::iterator it;
-
-			for (it = mLua.begin(); it != mLua.end(); ++it) {
-				if (*it) {
-					if (!strcmp(var->c_str(), "hub_security"))
-						(*it)->VHPushString("HubSec", val_new->c_str(), true);
-					else if (!strcmp(var->c_str(), "opchat_name"))
-						(*it)->VHPushString("OpChat", val_new->c_str(), true);
-				}
-			}
-		}
+		res = CallAll("VH_OnSetConfig", args, user->mxConn); // note: VH.HubSec and VH.OpChat are updated in OnScriptCommand, when hub really applied new nick
 	}
 
 	return res;
@@ -1067,6 +1069,16 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 bool cpiLua::OnScriptCommand(string *cmd, string *data, string *plug, string *script)
 {
 	if (cmd && data && plug && script) {
+		if (server && ((*cmd == "_hub_security_change") || (*cmd == "_opchat_name_change"))) { // note: hub sends this after bot nick is really changed, real value is used, so faked command can not set wrong nick
+			const bool sec = (*cmd == "_hub_security_change");
+			const string &nick = (sec ? server->mC.hub_security : server->mC.opchat_name);
+
+			for (tvLuaInterpreter::iterator it = mLua.begin(); it != mLua.end(); ++it) {
+				if (*it)
+					(*it)->VHPushString((sec ? "HubSec" : "OpChat"), nick.c_str(), true);
+			}
+		}
+
 		const char *args[] = {
 			cmd->c_str(),
 			data->c_str(),

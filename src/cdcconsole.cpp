@@ -1931,8 +1931,15 @@ bool cDCConsole::cfBan::operator()()
 				case eBF_HOST1:
 				case eBF_HOST2:
 				case eBF_HOST3:
-				case eBF_HOSTR1:
-					if (MyClass < (eUC_ADMIN - (BanType - eBF_HOST1))) {
+				case eBF_HOSTR1: {
+					int need = eUC_ADMIN; // note: broader host ban needs higher class, host level 1 and reverse host need admin
+
+					if (BanType == eBF_HOST2)
+						need = eUC_CHEEF;
+					else if (BanType == eBF_HOST3)
+						need = eUC_OPERATOR;
+
+					if (MyClass < need) {
 						(*mOS) << _("You have no rights to do this.");
 						return false;
 					}
@@ -1940,6 +1947,7 @@ bool cDCConsole::cfBan::operator()()
 					Ban.mHost = Who;
 					Ban.mIP = Who;
 					break;
+				}
 
 				case eBF_RANGE:
 					if (!cDCConsole::GetIPRange(Who, Ban.mRangeMin, Ban.mRangeMax)) {
@@ -1975,76 +1983,12 @@ bool cDCConsole::cfBan::operator()()
 				}
 			#endif
 
-			if ((BanType == eBF_IP) || (BanType == eBF_RANGE)) { // drop users if ban type is ip or range
-				cUserCollection::iterator i;
-				cConnDC *conn;
-				ostringstream toall;
-				unsigned long ipnum;
-
-				for (i = mS->mUserList.begin(); i != mS->mUserList.end(); ++i) {
-					conn = ((cUser*)(*i))->mxConn;
-
-					if (conn && conn->mpUser) {
-						ipnum = conn->AddrToNumber();
-
-						if (((BanType == eBF_IP) && (Ban.mIP == conn->AddrIP())) || ((BanType == eBF_RANGE) && (Ban.mRangeMin <= ipnum) && (Ban.mRangeMax >= ipnum))) {
-							if (mS->mC.notify_kicks_to_all > -1) { // message to all
-								toall.str("");
-
-								if (BanTime) {
-									if (tmp.size())
-										toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), conn->mpUser->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
-									else
-										toall << autosprintf(_("%s was banned for %s by %s without reason."), conn->mpUser->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
-								} else {
-									if (tmp.size())
-										toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), conn->mpUser->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
-									else
-										toall << autosprintf(_("%s was banned permanently by %s without reason."), conn->mpUser->mNick.c_str(), Ban.mNickOp.c_str());
-								}
-
-								mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
-							}
-
-							ostringstream own; // note: same message as ban check on login
-							own << _("You are banned from this hub") << ":\r\n";
-							Ban.DisplayUser(own);
-							mS->DCPublicHS(own.str(), conn);
-							conn->CloseNice(1000, eCR_KICKED); // note: message goes out first, redirect for kick reason is sent if enabled
-						}
-					}
-				}
-			} else if (Ban.mNick.size()) { // drop user if nick is specified
-				cUser *user = mS->mUserList.GetUserByNick(Ban.mNick);
-
-				if (user && user->mxConn) {
-					if (mS->mC.notify_kicks_to_all > -1) { // message to all
-						ostringstream toall;
-
-						if (BanTime) {
-							if (tmp.size())
-								toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), user->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str(), tmp.c_str());
-							else
-								toall << autosprintf(_("%s was banned for %s by %s without reason."), user->mNick.c_str(), cTimePrint(BanTime, 0).AsPeriod().AsString().c_str(), Ban.mNickOp.c_str());
-						} else {
-							if (tmp.size())
-								toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), user->mNick.c_str(), Ban.mNickOp.c_str(), tmp.c_str());
-							else
-								toall << autosprintf(_("%s was banned permanently by %s without reason."), user->mNick.c_str(), Ban.mNickOp.c_str());
-						}
-
-						mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
-					}
-
-					ostringstream own; // note: same message as ban check on login
-					own << _("You are banned from this hub") << ":\r\n";
-					Ban.DisplayUser(own);
-					mS->DCPublicHS(own.str(), user->mxConn);
-					user->mxConn->CloseNice(1000, eCR_KICKED); // note: message goes out first, redirect for kick reason is sent if enabled
-				}
+			if (!mS->mBanList->AddBan(Ban)) { // note: only host ban can fail
+				(*mOS) << autosprintf(_("Ban was not added, host has too few parts for this ban type: %s"), Who.c_str());
+				return false;
 			}
 
-			mS->mBanList->AddBan(Ban);
+			mS->mBanList->DropBanned(Ban, tmp); // note: after AddBan, ban has its saved keys
 			(*mOS) << _("Added new ban") << ":\r\n";
 			Ban.DisplayComplete(*mOS);
 			break;

@@ -239,7 +239,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 		return true;
 	}
 
-	if (mServ->mC.mmdb_cache) { // mmdb cache
+	if (mServ->mC.mmdb_cache && db.empty()) { // mmdb cache, note: only for own databases of hub, result of other database file is not mixed into it
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
 		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_ci.size()) {
@@ -278,7 +278,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 			}
 
 			if (res) {
-				if (mServ->mC.mmdb_cache)
+				if (mServ->mC.mmdb_cache && db.empty()) // note: result of other database file is not cached
 					MMDBCacheSet(sip, "", "", city, "");
 
 				vhLog(3) << "[GetCity] Result for IP: " << host << " = " << city << endl;
@@ -327,7 +327,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		return true;
 	}
 
-	if (mServ->mC.mmdb_cache) { // mmdb cache
+	if (mServ->mC.mmdb_cache && db.empty()) { // mmdb cache, note: only for own databases of hub, result of other database file is not mixed into it
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
 		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_cc.size() && ca_cn.size() && ca_ci.size()) {
@@ -386,7 +386,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 			}
 
 			if (r1 || r2 || r3) {
-				if (mServ->mC.mmdb_cache)
+				if (mServ->mC.mmdb_cache && db.empty()) // note: result of other database file is not cached
 					MMDBCacheSet(sip, cc, cn, ci, "");
 
 				vhLog(3) << "[GetCCC] Result for IP: " << host << " = " << cc << " + " << cn << " + " << ci << endl;
@@ -572,7 +572,7 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 			geo_host = host;
 
 			if (r2 || r3 || r8) { // cache used for set
-				if (mServ->mC.mmdb_cache)
+				if (mServ->mC.mmdb_cache && db.empty()) // note: result of other database file is not cached
 					MMDBCacheSet(sip, geo_cc, geo_cn, geo_city, "");
 
 				vhLog(3) << "[GetGeoIP] Result for IP: " << host << " = " << geo_cc << " + " << geo_cn << " + " << geo_city << endl; // not full list
@@ -614,7 +614,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 		return true;
 	}
 
-	if (mServ->mC.mmdb_cache) { // mmdb cache
+	if (mServ->mC.mmdb_cache && db.empty()) { // mmdb cache, note: only for own databases of hub, result of other database file is not mixed into it
 		string ca_cc, ca_cn, ca_ci, ca_as;
 
 		if (MMDBCacheGet(sip, ca_cc, ca_cn, ca_ci, ca_as) && ca_as.size()) {
@@ -673,7 +673,7 @@ bool cMaxMindDB::GetASN(string &asn_name, const string &host, const string &db)
 			}
 
 			if (r1 || r2) {
-				if (mServ->mC.mmdb_cache)
+				if (mServ->mC.mmdb_cache && db.empty()) // note: result of other database file is not cached
 					MMDBCacheSet(sip, "", "", "", asn_name);
 
 				vhLog(3) << "[GetASN] Result for IP: " << host << " = " << asn_name << endl;

@@ -34,9 +34,12 @@ namespace nVerliHub {
 	using namespace nSocket;
 	namespace nLuaPlugin {
 
+static unsigned long sLuaSerial = 0; // note: main thread only, only grows
+
 cLuaInterpreter::cLuaInterpreter(const string& configname, const string& scriptname):
 	mConfigName(configname),
-	mScriptName(scriptname)
+	mScriptName(scriptname),
+	mSerial(++sLuaSerial)
 {
 	mL = luaL_newstate();
 }
@@ -226,20 +229,26 @@ void cLuaInterpreter::RegisterFunction(const char *func, int (*ptr)(lua_State*))
 
 void cLuaInterpreter::VHPushString(const char *name, const char *val, bool update)
 {
-	int pos = -3;
+	if (update) { // note: script can replace VH table, then update is skipped, raw set calls no script code, so error can not happen outside protected call
+		lua_pushglobaltable(mL);
+		lua_pushstring(mL, VH_TABLE_NAME);
+		lua_rawget(mL, -2); // note: raw get, metatable of globals is not used
+		lua_remove(mL, -2); // note: globals table
 
-	if (update)
-		lua_getglobal(mL, VH_TABLE_NAME);
-	else
-		pos = lua_gettop(mL);
+		if (lua_istable(mL, -1)) {
+			lua_pushlstring(mL, name, strlen(name));
+			lua_pushstring(mL, val);
+			lua_rawset(mL, -3);
+		}
 
+		lua_pop(mL, 1); // note: VH table or what script put there
+		return;
+	}
+
+	const int pos = lua_gettop(mL);
 	lua_pushlstring(mL, name, strlen(name));
 	lua_pushstring(mL, val);
-
-	if (update)
-		lua_settable(mL, pos);
-	else
-		lua_rawset(mL, pos);
+	lua_rawset(mL, pos);
 }
 
 bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC *conn)
@@ -347,14 +356,16 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 
 	} else if (lua_isnumber(mL, -1)) {
 		/*
-			old school, simple boolean return for backward compatibility
-
-			type = boolean
-			value: 0 = discard
-			value: 1 = dont discard
+			simple return
+				number 0 = discard
+				other number = dont discard
 		*/
 
 		if ((int)lua_tonumber(mL, -1) == 0)
+			ret = false;
+
+	} else if (lua_isboolean(mL, -1)) { // note: false = discard, same as 0 and same as boolean in table above, true = dont discard
+		if (!lua_toboolean(mL, -1))
 			ret = false;
 	}
 

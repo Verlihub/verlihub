@@ -28,6 +28,7 @@
 #include "cserverdc.h"
 #include "cbanlist.h"
 #include "cdcconsole.h" // note: GetIPRange
+#include "ctime.h"
 #include "i18n.h"
 #include "stringutils.h"
 
@@ -146,7 +147,7 @@ void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, cons
 		ban.mIP = connection->AddrIP();
 		ban.mHost = connection->AddrHost();
 		ban.mDateStart = mS->mTime.Sec();
-		ban.mDateEnd = ban.mDateStart + length;
+		ban.mDateEnd = (length ? (ban.mDateStart + length) : 0); // note: 0 is permanent, same as ban from kick
 		ban.mLastHit = 0;
 		ban.mReason = reason;
 		ban.mNickOp = nickOp;
@@ -161,9 +162,9 @@ void cBanList::NewBan(cBan &ban, cConnDC *connection, const string &nickOp, cons
 	}
 }
 
-void cBanList::AddBan(cBan &ban)
+bool cBanList::AddBan(cBan &ban)
 {
-	switch (1 << ban.mType) { // todo: nick2dbkey
+	switch (1 << ban.mType) { // todo: nick2dbkey, note: host ban without valid host part is not saved and false is returned
 		case eBF_NICK:
 			ban.mIP = "_nickban_";
 			break;
@@ -180,7 +181,7 @@ void cBanList::AddBan(cBan &ban)
 			ban.mIP = "_host1ban_";
 
 			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 1))
-				return;
+				return false;
 
 			break;
 
@@ -188,7 +189,7 @@ void cBanList::AddBan(cBan &ban)
 			ban.mIP = "_host2ban_";
 
 			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 2))
-				return;
+				return false;
 
 			break;
 
@@ -196,7 +197,7 @@ void cBanList::AddBan(cBan &ban)
 			ban.mIP = "_host3ban_";
 
 			if (!this->GetHostSubstring(ban.mHost, ban.mNick, 3))
-				return;
+				return false;
 
 			break;
 
@@ -204,7 +205,7 @@ void cBanList::AddBan(cBan &ban)
 			ban.mIP = "_hostr1ban_";
 
 			if (!this->GetHostSubstring(ban.mHost, ban.mNick, -1))
-				return;
+				return false;
 
 			break;
 
@@ -256,6 +257,102 @@ void cBanList::AddBan(cBan &ban)
 
 	if (mCacheLoaded)
 		CacheSave(mModel);
+
+	return true;
+}
+
+void cBanList::DropBanned(cBan &ban, const string &reason)
+{
+	const int type = (1 << ban.mType);
+	sCacheBan item; // note: ban has its saved keys after AddBan, same match as ban check on login
+	CacheFromBan(item, ban);
+	const time_t length = (ban.mDateEnd ? (ban.mDateEnd - ban.mDateStart) : 0);
+	cUserCollection::iterator it;
+	cUser *user;
+	cConnDC *conn;
+	unsigned long num;
+	bool match;
+	ostringstream share;
+
+	for (it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
+		user = (cUser*)(*it);
+		conn = user->mxConn;
+
+		if (!conn || !conn->mpUser || (user->mClass >= mS->mC.ban_bypass_class)) // note: bots have no connection
+			continue;
+
+		switch (type) {
+			case eBF_NICKIP:
+				match = (CacheMatch(item, conn->AddrIP(), eBF_IP) || CacheMatch(item, user->mNick, eBF_NICK));
+				break;
+
+			case eBF_NICK:
+				match = CacheMatch(item, user->mNick, eBF_NICK);
+				break;
+
+			case eBF_IP:
+				match = CacheMatch(item, conn->AddrIP(), eBF_IP);
+				break;
+
+			case eBF_RANGE:
+				num = conn->AddrToNumber();
+				match = ((num >= item.mRangeMin) && (num <= item.mRangeMax));
+				break;
+
+			case eBF_HOST1:
+			case eBF_HOST2:
+			case eBF_HOST3:
+			case eBF_HOSTR1:
+				match = CacheMatch(item, conn->AddrHost(), type);
+				break;
+
+			case eBF_SHARE:
+				if ((user->mClass <= eUC_REGUSER) && (user->mShare > 0)) {
+					share.str("");
+					share << user->mShare; // note: same as database query
+					match = CacheMatch(item, share.str(), eBF_SHARE);
+				} else {
+					match = false;
+				}
+
+				break;
+
+			case eBF_PREFIX:
+				match = ((user->mClass == eUC_NORMUSER) && CacheMatch(item, user->mNick, eBF_PREFIX));
+				break;
+
+			default:
+				match = false;
+				break;
+		}
+
+		if (!match)
+			continue;
+
+		if (mS->mC.notify_kicks_to_all > -1) { // message to all
+			ostringstream toall;
+
+			if (length) {
+				if (reason.size())
+					toall << autosprintf(_("%s was banned for %s by %s with reason: %s"), user->mNick.c_str(), cTimePrint(length, 0).AsPeriod().AsString().c_str(), ban.mNickOp.c_str(), reason.c_str());
+				else
+					toall << autosprintf(_("%s was banned for %s by %s without reason."), user->mNick.c_str(), cTimePrint(length, 0).AsPeriod().AsString().c_str(), ban.mNickOp.c_str());
+			} else {
+				if (reason.size())
+					toall << autosprintf(_("%s was banned permanently by %s with reason: %s"), user->mNick.c_str(), ban.mNickOp.c_str(), reason.c_str());
+				else
+					toall << autosprintf(_("%s was banned permanently by %s without reason."), user->mNick.c_str(), ban.mNickOp.c_str());
+			}
+
+			mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
+		}
+
+		ostringstream own; // note: same message as ban check on login
+		own << _("You are banned from this hub") << ":\r\n";
+		ban.DisplayUser(own);
+		mS->DCPublicHS(own.str(), conn);
+		conn->CloseNice(1000, eCR_KICKED); // note: message goes out first, redirect for kick reason is sent if enabled
+	}
 }
 
 unsigned int cBanList::TestBan(cBan &ban, cConnDC *conn, const string &nick, unsigned mask)
@@ -460,6 +557,9 @@ int cBanList::Unban(ostream &os, const string &value, const string &reason, cons
 
 bool cBanList::GetHostSubstring(const string &hostname, string &result, int level)
 {
+	if (hostname.empty()) // note: no host name, for example dns_lookup is disabled, empty part would match every user without host name
+		return false;
+
 	string tmp(".");
 	size_t pos;
 	if(level > 0) {
@@ -482,7 +582,7 @@ bool cBanList::GetHostSubstring(const string &hostname, string &result, int leve
 		result.assign(tmp, 0, pos);
 	}
 
-	return true;
+	return (result.size() && (result != ".")); // note: only dot or nothing is no host part
 }
 
 bool cBanList::AddTestCondition(ostream &os, const string &value, int mask)
