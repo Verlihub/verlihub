@@ -532,14 +532,24 @@ bool Ban(const string &value, const string &op, const string &reason, unsigned h
 		return false;
 	}
 
-	if (!bantype || (bantype >= unsigned(nEnums::eBF_LAST)) || (bantype & (bantype - 1))) // note: one flag of tBanFlags, same numbers as core, for example 1 = nick and ip, 2 = ip, 4 = nick
+	if ((bantype > 31) || ((1u << bantype) >= unsigned(nEnums::eBF_LAST))) // note: bit position of tBanFlags, same number as ban_type column and VH_OnNewBan, for example 0 = nick and ip, 1 = ip, 2 = nick
 		return false;
 
 	if (value.empty())
 		return false;
 
-	if (bantype == nEnums::eBF_NICKIP) // note: same as !ban without kick, nick and ip ban of value is ip ban
-		bantype = nEnums::eBF_IP;
+	unsigned flag = (1u << bantype);
+	unsigned long num = 0;
+
+	if (flag == nEnums::eBF_NICKIP) { // note: value decides, address is ip ban, anything else is nick ban
+		if (cBanList::Ip2Num(value, num, true))
+			flag = nEnums::eBF_IP;
+		else
+			flag = nEnums::eBF_NICK;
+
+	} else if ((flag == nEnums::eBF_IP) && !cBanList::Ip2Num(value, num, true)) { // note: ip ban needs valid address
+		return false;
+	}
 
 	cBan ban(serv); // note: value is built same way as !ban* command
 	ban.mNickOp = op;
@@ -552,9 +562,9 @@ bool Ban(const string &value, const string &op, const string &reason, unsigned h
 	ban.mDateStart = serv->mTime.Sec();
 	ban.mDateEnd = (howlong ? (ban.mDateStart + howlong) : 0); // note: 0 is permanent
 	ban.mLastHit = 0;
-	ban.SetType(bantype);
+	ban.SetType(flag);
 
-	switch (bantype) {
+	switch (flag) {
 		case nEnums::eBF_NICK:
 		case nEnums::eBF_PREFIX:
 			ban.mNick = value;
@@ -580,9 +590,17 @@ bool Ban(const string &value, const string &op, const string &reason, unsigned h
 			break;
 
 		case nEnums::eBF_SHARE: {
+			for (const char c: value) { // note: share size is digits only, no sign or space
+				if ((c < '0') || (c > '9'))
+					return false;
+			}
+
 			istringstream is(value);
-			__int64 share = 0;
-			is >> share;
+			unsigned __int64 share = 0;
+
+			if (!(is >> share)) // note: number too big
+				return false;
+
 			ban.mShare = share;
 			break;
 		}

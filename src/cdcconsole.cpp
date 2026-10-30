@@ -1911,8 +1911,16 @@ bool cDCConsole::cfBan::operator()()
 						mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
 
 					} else {
-						if (BanType == eBF_NICKIP)
-							BanType = eBF_IP;
+						unsigned long num = 0;
+						const bool addr = cBanList::Ip2Num(Who, num, true);
+
+						if (BanType == eBF_NICKIP) // note: without kick, value decides, address is ip ban, anything else is nick ban
+							BanType = (addr ? eBF_IP : eBF_NICK);
+
+						if ((BanType == eBF_IP) && !addr) {
+							(*mOS) << autosprintf(_("Invalid IP address: %s"), Who.c_str());
+							return false;
+						}
 
 						mParRex->Extract(BAN_REASON, mParStr, Kick.mReason);
 						Kick.mOp = mConn->mpUser->mNick;
@@ -1962,15 +1970,27 @@ bool cDCConsole::cfBan::operator()()
 					Ban.mNick = Who;
 					break;
 
-				case eBF_SHARE:
-					{
-						istringstream is(Who);
-						__int64 share;
-						is >> share;
-						Ban.mShare = share;
+				case eBF_SHARE: {
+					bool digits = true;
+
+					for (const char c: Who) { // note: share size is digits only, no sign or space
+						if ((c < '0') || (c > '9')) {
+							digits = false;
+							break;
+						}
 					}
 
+					istringstream is(Who);
+					unsigned __int64 share = 0;
+
+					if (!digits || !(is >> share)) { // note: also number too big
+						(*mOS) << autosprintf(_("Invalid share size: %s"), Who.c_str());
+						return false;
+					}
+
+					Ban.mShare = share;
 					break;
+				}
 
 				default:
 					break;
