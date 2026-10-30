@@ -1007,9 +1007,9 @@ void cAsyncConn::OnFlushDone()
 {}
 */
 
-int cAsyncConn::Write(const string &data, bool flush) // note: data can actually be empty when we perform a timed flush
+int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data can actually be empty when we perform a timed flush
 {
-	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = data.size();
+	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = (data.size() + (pipe ? 1 : 0)); // note: pipe is added after data in buffer, data itself is not changed
 	size_t calc_size = flush_size + buf_size + data_size;
 
 	if (!flush_size && !buf_size && (data_size > mMaxBuffer)) // note: one message bigger than limit while nothing is waiting is not slow user, it is allowed, more data on top of it only up to normal limit
@@ -1024,7 +1024,11 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	}
 
 	if (data_size) { // we have something new to append
-		mBufFlush.append(data.data(), data_size);
+		mBufFlush.append(data.data(), data.size());
+
+		if (pipe)
+			mBufFlush.append(1, '|');
+
 		flush_size += data_size;
 	}
 
@@ -1081,8 +1085,8 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 				mBufFlush.clear(); // clean up flush buffer in both cases
 				ShrinkStringToFit(mBufFlush);
 
-			} else if (Log(1)) { // client will fail to decompress when pipe is missing, this happens when we are flushing incomplete data, todo: not sure if wait or do something already here
-				LogStream() << "Missing ending pipe in compress data: " << mBufFlush << endl; // todo: log only tail of data, dont fill logs
+			} else if (Log(1)) { // client will fail to decompress when pipe is missing, note: data stays in flush buffer and is compressed on later flush when it ends with pipe
+				LogStream() << "Missing ending pipe in compress data of " << flush_size << " bytes, ending: " << mBufFlush.substr((flush_size > 100) ? (flush_size - 100) : 0) << endl; // note: only tail, where pipe is missing
 			}
 
 		} else { // compression is disabled or data too short for good result
@@ -1115,7 +1119,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 	if (send_res == -1) {
 		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << send_err << '=' << SockErrorText(send_err) << ": " << mBufSend.substr(mSendPos) << endl; // todo: log only part of data, dont fill logs
+			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, sent " << calc_size << " of " << buf_size << " bytes, " << (buf_size - calc_size) << " bytes left, " << send_err << '=' << SockErrorText(send_err) << ": " << mBufSend.substr(mSendPos + calc_size, 100) << endl; // note: only start of unsent data, send position is moved below
 
 		if (!send_again) { // analyse the error if any
 			if (Log(2))

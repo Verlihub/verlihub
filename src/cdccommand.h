@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -54,6 +54,10 @@ namespace nVerliHub {
 
 		//long mActionType;
 
+		// note: operator() hiding is safe, see note at sCmdFunc in ccommand.h, warning is off until pop below
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
 		class sDCCmdFunc : public nCmdr::cCommand::sCmdFunc
 		{
 		public:
@@ -70,6 +74,8 @@ namespace nVerliHub {
 			void Bind(cDCConsoleBase *co);
 			virtual bool operator() (nUtils::cPCRE &idrex, nUtils::cPCRE &parrex, ostream &os, void *extra);
 		};
+
+		#pragma GCC diagnostic pop
 
 		cDCCommand(int ID, const char *IdRegex, const char *ParRegex, sDCCmdFunc *CmdFunc/*, long Action = -1*/);
 		virtual void Init(void *co);

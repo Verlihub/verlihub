@@ -136,8 +136,9 @@ namespace nVerliHub {
 				int OnTimerBase(const cTime &now);
 
 				/*
-					connection timer and flush of delayed messages are spread over sTimerSlices parts of their period
+					connection timer is spread over sTimerSlices parts of its period
 					every connection has its own part, so it is handled once per period, but not all connections in same main loop step
+					note: flush of delayed messages is not spread, users with same waiting data are flushed one after another, so zlib compresses it once
 				*/
 				static constexpr unsigned int sTimerSlices = 20;
 
@@ -145,12 +146,6 @@ namespace nVerliHub {
 				{
 					return (((slot + sTimerSlices - from) % sTimerSlices) < count);
 				}
-
-				/*
-					called from main loop for parts of flush period that are due, period is timer_serv_period
-					cServerDC flushes delayed messages of users whose connection has one of these parts
-				*/
-				virtual void OnFlushSlice(unsigned int from, unsigned int count);
 
 
 				/**
@@ -439,7 +434,6 @@ namespace nVerliHub {
 
 			unsigned int mTimerSlotNext = 0; // note: part of timer period for next added connection, round robin
 			long long mConnSliceLast = -1; // note: last handled part of connection timer, counted in parts of steady clock
-			long long mFlushSliceLast = -1; // note: same for flush of delayed messages
 			void TimerSlices();
 			static bool DueSlices(long long now, int period, long long &last, unsigned int &from, unsigned int &count);
 			void RunPoolResults();

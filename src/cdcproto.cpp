@@ -1158,7 +1158,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				if (conn->mpUser->mPassive)
 					temp_min_share = (__int64)(temp_min_share * mS->mC.min_share_factor_passive);
 
-				if (share_check < temp_min_share) { // todo: notify user
+				if (share_check < temp_min_share) { // note: user is told when searching or connecting, unless hide_msg_badctm or own setting hides it
 					conn->mpUser->SetRight(eUR_SEARCH, 0);
 					conn->mpUser->SetRight(eUR_CTM, 0);
 				}
@@ -1167,7 +1167,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 		result = ((conn->mpUser->mPassive) ? mS->mC.min_class_use_hub_passive : mS->mC.min_class_use_hub);
 
-		if (conn->mpUser->mClass < result) { // todo: notify user
+		if (conn->mpUser->mClass < result) { // note: user is told when searching or connecting, unless hide_msg_badctm or own setting hides it
 			conn->mpUser->SetRight(eUR_SEARCH, 0);
 			conn->mpUser->SetRight(eUR_CTM, 0);
 		}
@@ -3429,11 +3429,8 @@ int cDCProto::DCO_SetTopic(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	const string &topic = msg->ChunkString(eCH_1_PARAM); // todo: check length
-	mS->mC.hub_topic = topic;
-	ostringstream os;
-	os << autosprintf(_("Topic is set to: %s"), topic.c_str());
-	mS->DCPublicHS(os.str(), conn);
+	istringstream cmd_line(' ' + msg->ChunkString(eCH_1_PARAM)); // note: same as topic command, which removes one space after its name
+	mS->mCo->CmdTopic(cmd_line, conn); // note: same rights, length limit, plugin check, saving, hub name to all and message
 	return 0;
 }
 
@@ -3463,7 +3460,7 @@ bool cDCProto::MyIPAllowed(cConnDC *conn)
 	if (!mS->ExternalTLS()) // note: external tls proxy is not used
 		return false;
 
-	if (conn->AddrIP() != mS->mTLSAddr) // note: not from proxy, todo: use ip integer instead
+	if (conn->AddrIP() != mS->mTLSAddr) // note: not from proxy
 		return false;
 
 	return conn->mTLSVer.empty(); // note: only once, before proxy told us who the user is
@@ -4077,83 +4074,44 @@ int cDCProto::NickList(cConnDC *conn)
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
-				cUser *user;
-				string info;
-				_str.clear();
-
-				for (cUserCollection::iterator it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
-					user = (cUser*)(*it);
-
-					if (user && user->mInList && user->mFakeMyINFO.size()) {
-						if (user->GetMyFlag(eMF_TLS))
-							mS->RemoveMyINFOFlag(info, user->mFakeMyINFO, eMF_TLS);
-						else
-							info = user->mFakeMyINFO;
-
-						_str += info + '|';
-					}
-				}
+			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter, user without tls gets list without tls flags
+				conn->SendList(mS->InfoListNoTLS(), false, true); // pipe was already added by list generator
 
 			} else {
-				mS->mUserList.GetInfoList(_str);
+				conn->SendList(mS->mUserList.InfoListRef(), false, true); // pipe was already added by list generator
 			}
-
-			conn->Send(_str, false); // pipe was already added by list generator
 
 		} else if (conn->mFeatures & eSF_NOGETINFO) {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending MyINFO list" << endl;
 
-			mS->mUserList.GetNickList(_str);
-			conn->Send(_str, true);
+			conn->SendList(mS->mUserList.NickListRef(), true, true);
 
-			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
-				cUser *user;
-				string info;
-				_str.clear();
-
-				for (cUserCollection::iterator it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
-					user = (cUser*)(*it);
-
-					if (user && user->mInList && user->mFakeMyINFO.size()) {
-						if (user->GetMyFlag(eMF_TLS))
-							mS->RemoveMyINFOFlag(info, user->mFakeMyINFO, eMF_TLS);
-						else
-							info = user->mFakeMyINFO;
-
-						_str += info + '|';
-					}
-				}
+			if (mS->mC.myinfo_tls_filter && conn->mpUser && !conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter, user without tls gets list without tls flags
+				conn->SendList(mS->InfoListNoTLS(), false, true); // pipe was already added by list generator
 
 			} else {
-				mS->mUserList.GetInfoList(_str);
+				conn->SendList(mS->mUserList.InfoListRef(), false, true); // pipe was already added by list generator
 			}
-
-			conn->Send(_str, false); // pipe was already added by list generator
 
 		} else {
 			if (conn->Log(3))
 				conn->LogStream() << "Sending Nicklist" << endl;
 
-			mS->mUserList.GetNickList(_str);
-			conn->Send(_str, true);
+			conn->SendList(mS->mUserList.NickListRef(), true, true);
 		}
 
 		if (mS->mOpList.Size()) { // send $OpList
-			mS->mOpList.GetNickList(_str);
-			conn->Send(_str, true);
+			conn->SendList(mS->mOpList.NickListRef(), true, true);
 		}
 
 		if (mS->mRobotList.Size() && (conn->mFeatures & eSF_BOTLIST)) { // send $BotList
-			mS->mRobotList.GetNickList(_str);
-			conn->Send(_str, true);
+			conn->SendList(mS->mRobotList.NickListRef(), true, true);
 		}
 
 		if (mS->mC.send_user_ip && conn->mpUser && (conn->mFeatures & eSF_USERIP2)) { // send $UserIP
 			if (conn->mpUser->mClass >= mS->mC.user_ip_class) { // full list
-				mS->mUserList.GetIPList(_str);
-				conn->Send(_str, true);
+				conn->SendList(mS->mUserList.IPListRef(), true, true);
 
 			} else { // own ip only
 				Create_UserIP(_str, conn->mpUser->mNick, conn->AddrIP());

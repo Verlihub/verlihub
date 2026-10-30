@@ -144,7 +144,7 @@ int cAsyncSocketServer::run()
 			OnTimerBase(mTime);
 		}
 
-		TimerSlices(); // note: every step, connection timer and flush handle only connections whose part of period is due
+		TimerSlices(); // note: every step, connection timer handles only connections whose part of period is due
 
 		CheckStartWaits(); // note: every step, tls detection waits only milliseconds
 
@@ -771,13 +771,6 @@ void cAsyncSocketServer::TimerSlices()
 				(*it)->OnTimerBase(mTime);
 		}
 	}
-
-	if (DueSlices(now, timer_serv_period, mFlushSliceLast, from, count)) // flush of delayed messages
-		OnFlushSlice(from, count);
-}
-
-void cAsyncSocketServer::OnFlushSlice(unsigned int, unsigned int)
-{
 }
 
 int cAsyncSocketServer::OnTimer(const cTime &now)

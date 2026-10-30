@@ -175,25 +175,22 @@ bool cConnPoll::RevTest(tSocket sock)
 int cConnPoll::poll(int wp_sec)
 {
 //#if !defined _WIN32
-	/*
-		note: all sockets in one call, it used to poll blocks of 1024 sockets with timeout for each block
-		so idle blocks added their timeouts together and delayed blocks that had data
-	*/
-	size_t todo = mFDs.size();
+	// note: all sockets in one poll call with one timeout for all
+	size_t count = mFDs.size();
 
-	if (todo > size_t(mLastSock + 1)) // note: entries above last socket are never used
-		todo = mLastSock + 1;
+	if (count > size_t(mLastSock + 1)) // note: entries above last socket are never used
+		count = mLastSock + 1;
 
-	if (!todo)
+	if (!count)
 		return 0;
 
 	int ret;
 
 	do {
-		ret = ::poll(mFDs.data(), todo, wp_sec + 1);
+		ret = ::poll(mFDs.data(), count, wp_sec + 1);
 	} while ((ret < 0) && (errno == EINTR));
 
-	return ((ret < 0) ? 0 : ret); // note: other errors used to loop forever
+	return ((ret < 0) ? 0 : ret); // note: interrupted call is repeated, other errors return no events
 /*
 #else
 	return 0;

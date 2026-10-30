@@ -68,6 +68,13 @@ class cVHPluginMgr: public cPluginManager
 * \brief Verlihub CallBackList Base class
 */
 
+/*
+	note: CallOne(cVHPlugin*) of callback classes below hides CallOne(cPluginBase*), callback list calls only CallOne(cPluginBase*) through cCallBackList pointer,
+	that one casts plugin and calls CallOne(cVHPlugin*) of callback class, so it is safe, warning is off until pop below
+*/
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
 class cVHCBL_Base: public cCallBackList
 {
 	public:
@@ -423,6 +430,8 @@ class cVHCBL_Connection: public cVHCBL_Base
 	private:
 		using cVHCBL_Base::CallAll;
 };
+
+#pragma GCC diagnostic pop
 
 typedef tVHCBL_6Types<cUser*, string*, string*, string*, string*, int> cVHCBL_UsrStrStrStrStrInt;
 typedef tVHCBL_4Types<nSocket::cConnDC, string, int, int> cVHCBL_ConnTextIntInt;

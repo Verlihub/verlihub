@@ -47,8 +47,8 @@ namespace nVerliHub {
 cBanList::cBanList(cServerDC *s):
 	cConfMySQL(s->mMySQL),
 	mModel(s),
-	mUnBanList(NULL),
-	mS(s)
+	mS(s),
+	mUnBanList(NULL)
 {
 	mMySQLTable.mName = "banlist";
 	AddCol("ip", "varchar(15)", "", true, mModel.mIP);
@@ -115,7 +115,7 @@ void cBanList::Cleanup()
 
 void cUnBanList::Cleanup()
 {
-	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_unban` < " << (cTime().Sec() - (3600 * 24 * 30)); // todo: mS->mTime.Sec()
+	mQuery.OStream() << "delete from `" << mMySQLTable.mName << "` where `date_unban` < " << (mS->mTime.Sec() - (3600 * 24 * 30));
 	mQuery.Query();
 	mQuery.Clear();
 }

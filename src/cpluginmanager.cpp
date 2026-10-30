@@ -141,7 +141,15 @@ bool cPluginManager::LoadPlugin(const string &file)
 		if (ErrLog(0))
 			LogStream() << "Plugin on load exception: " << file << " [ " << ex << " ]" << endl;
 
-		// todo: del with hash since failed, if was added
+		OnPluginUnload(plugin->mPlugin); // note: same cleanup as unload, plugin is already in list and some callbacks or requests might be registered
+		const string name(plugin->mPlugin->Name());
+
+		for (tCBList::iterator it = mCallBacks.begin(); it != mCallBacks.end(); ++it) {
+			if (*it)
+				(*it)->Unregister(plugin->mPlugin);
+		}
+
+		mPlugins.RemoveByHash(mPlugins.Key2Hash(name));
 		delete plugin;
 		plugin = NULL;
 		return false;

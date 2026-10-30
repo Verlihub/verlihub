@@ -442,23 +442,37 @@ int _SendPMToAll(lua_State *L)
 {
 	int args = lua_gettop(L) - 1;
 
-	if (args < 2) {
-		luaL_error(L, "Error calling VH:SendPMToAll, expected atleast 2 argument but got %d.", args);
+	if (args < 1) {
+		luaL_error(L, "Error calling VH:SendPMToAll, expected atleast 1 argument but got %d.", args);
 		lua_pushboolean(L, 0);
 		lua_pushnil(L);
 		return 2;
 	}
 
-	if (!lua_isstring(L, 2) || !lua_isstring(L, 3) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
+	if (!lua_isstring(L, 2) || (!lua_isstring(L, 3) && !lua_isnoneornil(L, 3)) || ((args >= 3) && !lua_isnumber(L, 4)) || ((args >= 4) && !lua_isnumber(L, 5))) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
 
-	string data = lua_tostring(L, 2), from = lua_tostring(L, 3); // todo: make from nick optional, use hub security nick
+	string data = lua_tostring(L, 2), from;
 
-	if (data.empty() || from.empty()) {
+	if (lua_isstring(L, 3)) // note: from nick is optional, missing, nil or empty is hub security
+		from = lua_tostring(L, 3);
+
+	if (data.empty()) {
 		luaerror(L, ERR_EMPT);
 		return 2;
+	}
+
+	if (from.empty()) {
+		cServerDC *serv = GetCurrentVerlihub();
+
+		if (!serv) {
+			luaerror(L, ERR_SERV);
+			return 2;
+		}
+
+		from = serv->mC.hub_security;
 	}
 
 	int min_class = eUC_NORMUSER;

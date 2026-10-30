@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -204,7 +204,7 @@ bool cDCTag::ValidateTag(ostream &os, cConnDC *conn, int &code)
 		return false;
 	}
 
-	if (client && conn->mpUser && (client->mMinVerUse >= 0) && ((double)mClientVersion < client->mMinVerUse)) { // minimum version to use hub, known clients only, todo: notify user
+	if (client && conn->mpUser && (client->mMinVerUse >= 0) && ((double)mClientVersion < client->mMinVerUse)) { // minimum version to use hub, known clients only, note: user is told when searching or connecting, unless hide_msg_badctm or own setting hides it
 		conn->mpUser->SetRight(eUR_SEARCH, 0);
 		conn->mpUser->SetRight(eUR_CTM, 0);
 	}

@@ -282,15 +282,19 @@ public:
 		virtual ~ufDoNickList()
 		{}
 
-		virtual void Clear()
+		virtual void Clear() // note: memory is kept, list is made again into same buffer without reallocations
 		{
 			if (mList.size())
 				mList.clear();
 
-			ShrinkStringToFit(mList);
-
 			if (mStart.size())
 				mList.append(mStart);
+		}
+
+		void Fit() // note: after list is made, memory more than twice of list is freed, for example when users of day are gone at night
+		{
+			if (mList.capacity() > (mList.size() << 1))
+				ShrinkStringToFit(mList);
 		}
 
 		virtual void AppendList(string &list, cUserBase *user);
@@ -350,6 +354,7 @@ protected:
 	bool mRemakeNextNickList;
 	bool mRemakeNextInfoList;
 	bool mRemakeNextIPList;
+	unsigned long mInfoListVer = 0;
 
 public:
 	cUserCollection(const bool keep_nick, const bool keep_info, const bool keep_ip);
@@ -369,14 +374,20 @@ public:
 	virtual void GetNickList(string &dest);
 	virtual void GetInfoList(string &dest);
 	virtual void GetIPList(string &dest);
+
+	// kept list itself without copy, made again first when needed, reference is valid until list changes
+	const string &NickListRef();
+	const string &InfoListRef();
+	const string &IPListRef();
+
+	// grows on every change of kept myinfo list, lists made from it know when they must be made again
+	unsigned long InfoListVersion() const
+	{
+		return mInfoListVer;
+	}
 	void Nick2Hash(const string &nick, tHashType &hash);
 
-	tHashType Nick2Hash(const string &nick)
-	{
-		string key;
-		Nick2Key(nick, key);
-		return Key2Hash(key); //Key2HashLower(nick)
-	}
+	static tHashType Nick2Hash(const string &nick); // note: same value as Key2Hash of key made by Nick2Key, without making key
 
 	void Nick2Key(const string &nick, string &key);
 
@@ -471,8 +482,10 @@ public:
 		if (!mRemakeNextNickList && mKeepNickList)
 			mNickListMaker(user);
 
-		if (!mRemakeNextInfoList && mKeepInfoList)
+		if (!mRemakeNextInfoList && mKeepInfoList) {
 			mInfoListMaker(user);
+			mInfoListVer++;
+		}
 
 		if (!mRemakeNextIPList && mKeepIPList)
 			mIPListMaker(user);

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -96,6 +96,13 @@ namespace nVerliHub {
 						virtual ~sCmdFunc()
 						{};
 
+						/*
+							note: both operator() hide each other in sDCCmdFunc and command classes, command is only called through sCmdFunc pointer with 4 arguments,
+							that one stores them and calls operator() without arguments of command class, so it is safe, warning is off until pop below
+						*/
+						#pragma GCC diagnostic push
+						#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
 						/**
 						* Execute the command.
 						* @return The result of execution.
@@ -120,6 +127,8 @@ namespace nVerliHub {
 							mOS = &os;
 							return operator()();
 						}
+
+						#pragma GCC diagnostic pop
 
 						/**
 						 * Return the value of the given option as boolean.

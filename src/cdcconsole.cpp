@@ -1056,7 +1056,7 @@ int cDCConsole::CmdRegMe(istringstream &cmd_line, cConnDC *conn, bool unreg)
 	if (pass.size())
 		pass = pass.substr(1); // strip space
 
-	if (pass.size()) // todo: make password_min_len usable here?
+	if (pass.size())
 		os << autosprintf(_("Registration request with password: %s"), pass.c_str());
 	else
 		os << _("Registration request without password");
@@ -1239,17 +1239,8 @@ int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 
 	const int period = ((mOwner->timer_serv_period > 0) ? mOwner->timer_serv_period : 1); // note: with 0 timer runs every main loop step, here it counts as one second, so there is no division by zero
 	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / period, (60 * minutes) / period); // 60 steps at most
-
-	/* todo: use try instead
-	if (fn) {
-	*/
-		mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
-		ostr << autosprintf(ngettext("Updating max_users variable to %d for the duration of %d minute.", "Updating max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
-	/*
-	} else {
-		ostr << autosprintf(ngettext("Failed to update max_users variable to %d for the duration of %d minute.", "Failed to update max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
-	}
-	*/
+	mOwner->mTmpFunc.push_back((cTempFunctionBase*)fn);
+	ostr << autosprintf(ngettext("Updating max_users variable to %d for the duration of %d minute.", "Updating max_users variable to %d for the duration of %d minutes.", minutes), maximum, minutes);
 
 	mOwner->DCPublicHS(ostr.str(), conn);
 	return 1;
@@ -2015,7 +2006,11 @@ bool cDCConsole::cfBan::operator()()
 								mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 							}
 
-							conn->CloseNow(eCR_KICKED); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+							ostringstream own; // note: same message as ban check on login
+							own << _("You are banned from this hub") << ":\r\n";
+							Ban.DisplayUser(own);
+							mS->DCPublicHS(own.str(), conn);
+							conn->CloseNice(1000, eCR_KICKED); // note: message goes out first, redirect for kick reason is sent if enabled
 						}
 					}
 				}
@@ -2041,7 +2036,11 @@ bool cDCConsole::cfBan::operator()()
 						mS->DCPublicToAll(mS->mC.hub_security, toall.str(), mS->mC.notify_kicks_to_all, int(eUC_MASTER), mS->mC.delayed_chat);
 					}
 
-					user->mxConn->CloseNow(eCR_KICKED); // todo: user dont get any message, only if notify_kicks_to_all is in his range
+					ostringstream own; // note: same message as ban check on login
+					own << _("You are banned from this hub") << ":\r\n";
+					Ban.DisplayUser(own);
+					mS->DCPublicHS(own.str(), user->mxConn);
+					user->mxConn->CloseNice(1000, eCR_KICKED); // note: message goes out first, redirect for kick reason is sent if enabled
 				}
 			}
 

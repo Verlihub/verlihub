@@ -111,7 +111,7 @@
 * Updated: Partial send of output buffer moves send position instead of copying all unsent data every time, sent part is cut off when it is more than half of buffer, so big nick list to slow user is copied about once
 * Updated: Delayed messages to slow user with more than half of adv_max_outbuf_size waiting are not flushed one by one while socket is full, they wait for socket to be writable and go out compressed together
 * Updated: Timer flushes delayed messages once over user list, users of active, passive, chat and opchat lists are in it, so same users are not walked four more times every second
-* Updated: Connection timer and flush of delayed messages are spread over 20 parts of adv_timer_conn_period and adv_timer_serv_period, every connection is still handled once per period, but big hub does not handle all users in one main loop step, order of messages to each user stays same
+* Updated: Connection timer is spread over 20 parts of adv_timer_conn_period, every connection is still handled once per period, but big hub does not handle all connections in one main loop step, flush of delayed messages still runs for all users at once, so same waiting data is compressed once
 * Updated: GeoIP cache keeps at most 100000 addresses, about 20 MB, when it is full oldest tenth is removed, also with mmdb_cache_mins 0
 * Updated: Message parser of connection frees memory of big message, bigger than 4 KB, before next one, small messages keep their buffer
 * Updated: HTTP reply without chunks goes from receive buffer straight to body or file, body with known size up to 16 MB is allocated once
@@ -119,6 +119,15 @@
 * Updated: Broadcast and triggers with variables check once which variables are in text, for each user only those are replaced, text without variables is sent without searching it
 * Fixed: Broken wakeup socket pair of worker threads on Windows could make main loop use whole CPU core, now it is logged once and main loop sleeps step delay and handles worker results once per step
 * Fixed: Command userlimit crashed hub with adv_timer_serv_period 0, finished userlimit functions left empty slots that timer walked every second
+* Updated: Nick lookup in user lists makes lower case hash directly from nick without copy of nick, value stays same, so nicks are found case insensitive as before
+* Updated: Login sends kept nick, MyINFO, operator, bot and IP lists straight from user lists to output buffer, without copy of whole list for every user, pipe is added in buffer, so kept list is not changed
+* Updated: Kept user lists are made again into their old memory without reallocations, memory is freed only when it is more than twice of list, so lists still shrink when users leave at night
+* Updated: With myinfo_tls_filter MyINFO list without TLS flags for users without TLS is kept and made again only when MyINFO list changed, instead of building it from all users for every such login, TLS flag is taken from MyINFO that is really sent
+* Fixed: User who is online when command ban hits him gets same ban message as on login and is closed after it is sent, also redirect for kick reason is sent when it is enabled, before connection was closed at once without message or redirect
+* Fixed: NMDC command SetTopic changed topic only in memory, users did not get new hub name and next configuration reload brought old topic back, now it works same as command topic, with same rights, length limit, plugin check, saving and message
+* Updated: Lua call VH:SendPMToAll(data, [from], [min_class], [max_class]) has optional sender nick, missing, nil or empty sends message from hub security
+* Fixed: Main loop frequency and upload counters stood still at old values after system clock went back, for example by time sync, now they start again at once, upload counters are no longer reset every timer_reloadcfg_period, which made them show too low values for few seconds
+* Updated: Build shows warning -Woverloaded-virtual again, hidden virtual functions that are known to be safe are marked in code with reason
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

@@ -77,7 +77,6 @@ void cMessageParser::ReInit()
 	if (mStr.capacity() > 4096) // note: parser is reused for every message of connection, memory of one big message is freed, small ones keep their buffer
 		ShrinkStringToFit(mStr);
 
-	//mStr.reserve(512); // todo: do we really need this big reserve? some commands are alot smaller
 	mType = eMSG_UNPARSED;
 	mKWSize = 0;
 }

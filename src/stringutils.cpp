@@ -175,7 +175,7 @@ void ExpandPath(string &Path)
 			Path.replace(pos, 2, home);
 	}
 
-	pos = Path.find("../"); // todo: doesnt work on windows
+	pos = Path.find("../"); // note: only slash, trigger definition already went through FilterPath, which also turns backslash on windows into slash
 
 	while (pos != Path.npos) {
 		Path.replace(pos, 3, "");

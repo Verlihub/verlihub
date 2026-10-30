@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -35,6 +35,10 @@ using namespace std;
 namespace nVerliHub {
 	namespace nConfig {
 
+	// note: same hidden operator= and NewItem as in cconfigitembase.h and cconfigbase.h, safe for same reason, warning is off until pop below
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
 	// Config item for MySQL
 	#define DeclareMySQLItemClass(TYPE,Suffix) \
 		class cConfigItemMySQL##Suffix : public cConfigItemBase##Suffix \
@@ -68,6 +72,8 @@ public:
 		return new nConfig::cConfigItemMySQLPChar(var); // todo: where are these deleted?
 	};
 };
+
+#pragma GCC diagnostic pop
 
 class cMySQLColumn
 {

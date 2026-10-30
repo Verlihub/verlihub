@@ -71,7 +71,7 @@ class cMySQL: public cObj
 			return mDBName;
 		}
 
-		// split db_host into host and port, port is 0 when not given, todo: ipv6 address in brackets
+		// split db_host into host and port, port is 0 when not given
 		static void SplitHost(const string &addr, string &host, unsigned int &port);
 
 		// connect to server, same for main connection and database worker, tls requires encrypted connection, sock is local socket path or empty for default

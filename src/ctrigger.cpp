@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -175,15 +175,9 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 		time(&curr_time);
 		struct tm *lt;
 
-		/*
-		#ifdef _WIN32
-			lt = localtime(&curr_time); // todo: do we really need reentrant version?
-		#else
-		*/
-			struct tm lt_obj;
-			lt = &lt_obj;
-			localtime_r(&curr_time, lt);
-		//#endif
+		struct tm lt_obj;
+		lt = &lt_obj;
+		localtime_r(&curr_time, lt);
 
 		char tmf[3];
 		sprintf(tmf, "%02d", lt->tm_sec);

@@ -140,6 +140,11 @@ template<class T, int max_size=20> class cMeanFrequency
 	/** adjust state to current time */
 	void Adjust(const cTimePrint &now)
 	{
+		if (now < mStart) { // note: clock went back, for example time sync, all parts would lie in future and counter would stand still, so it starts again
+			Reset(now);
+			return;
+		}
+
 		// need adjustment
 		if( mEnd < now )
 		{

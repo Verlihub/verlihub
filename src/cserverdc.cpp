@@ -776,7 +776,7 @@ cUser* cServerDC::GetConnUserByNick(const string &nick) // note: use this with c
 	return NULL;
 }
 
-void cServerDC::SendToAll(const string &data, int cm, int cM) // todo: class range is ignored here, bug?
+void cServerDC::SendToAll(const string &data, int cm, int cM) // todo: class range is ignored here
 {
 	cConnDC *conn;
 	tCLIt i;
@@ -1588,10 +1588,7 @@ void cServerDC::ConnCloseMsg(cConnDC *conn, const string &msg, int msec, int rea
 
 bool cServerDC::MinDelay(cTime &then, unsigned int min, bool update)
 {
-	/*
-		todo
-			use timeins instead of mindelay, or change to microsecond resolution
-	*/
+	// note: whole seconds, so interval is between min - 1 and min seconds, MinDelayMS is exact to millisecond
 
 	/*
 	cTime now;
@@ -1914,24 +1911,12 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 	return eVN_OK;
 }
 
-void cServerDC::OnFlushSlice(unsigned int from, unsigned int count)
-{
-	string empty; // note: flush adds no data, it sends what is already in own buffer of user, messages sent to other lists like active, passive, chat or opchat users are only in buffers of those users
-	cUser *user;
-
-	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
-		user = (cUser*)(*it);
-
-		if (user && user->CanSend() && InTimerSlice(user->mxConn->mTimerSlot, from, count))
-			user->Send(empty, false, true);
-	}
-}
-
 int cServerDC::OnTimer(const cTime &now)
 {
 	if (mHTTPEarly.size()) // note: http requests of scripts from before main loop
 		PostHTTPEarly();
 
+	mUserList.FlushCache(); // note: flushes own buffer of every user, messages sent to other lists like active, passive, chat or opchat users are already in buffers of only those users, flush adds no data
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {
@@ -2016,17 +2001,6 @@ int cServerDC::OnTimer(const cTime &now)
 	#ifdef USE_TLS
 		CheckTLS(false); // note: renew expired certificate, load certificate that was replaced, for example by certbot
 	#endif
-
-		/*
-			todo
-				we have a bug where current upload counter is failing sometimes
-				during high cpu usage when hub hangs it starts to show wrong values
-				Other users: 5433 of 10000 [33.04 KB/s] - while real hub upload is around 3-4 mb/s
-				temporarily we try to reset the counter every timer_reloadcfg_period - 300 seconds by default
-		*/
-
-		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
-			this->mUploadZone[zone].Reset(mTime); // note: main loop frequency is reset only when main loop starts
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
@@ -2899,13 +2873,11 @@ bool cServerDC::CheckUserClone(cConnDC *conn, const string &part, string &clone)
 					|| !mCallBacks.mOnCloneCountLow.CallAll(conn->mpUser, comp, count) // low count, but atleast one
 				#endif
 				) {
-					ostringstream os;
-
-					if (mC.clone_detect_report || mC.clone_det_tban_time) // todo: this is not used when not mC.clone_detect_report
+					if (mC.clone_detect_report) { // note: temporary ban below has its own reason
+						ostringstream os;
 						os << autosprintf(_("Detected clone of user with share %s: %s"), convertByte(other->mpUser->mShare, false).c_str(), other->mpUser->mNick.c_str());
-
-					if (mC.clone_detect_report)
 						ReportUserToOpchat(conn, os.str());
+					}
 
 					if (mC.clone_det_tban_time) { // add temporary nick ban
 						mBanList->AddNickTempBan(conn->mpUser->mNick, mTime.Sec() + mC.clone_det_tban_time, _("Clone detected"), eBT_CLONE);
@@ -3470,6 +3442,50 @@ void cServerDC::RemoveMyINFOFlag(string &dest, const string &info, unsigned shor
 		my &= ~flag;
 		dest[pos - 1] = my;
 	}
+}
+
+const string &cServerDC::InfoListNoTLS()
+{
+	const string &list = mUserList.InfoListRef(); // note: kept list is made first when needed, its version is current then
+
+	if (mInfoListNoTLSMade && (mInfoListNoTLSVer == mUserList.InfoListVersion()))
+		return mInfoListNoTLS;
+
+	mInfoListNoTLS = list; // note: copy reuses memory of last filtered list
+	const char sep[] = "$ $";
+	size_t start = 0, end;
+
+	while (start < mInfoListNoTLS.size()) { // note: every myinfo ends with pipe, its flag byte is changed same way as RemoveMyINFOFlag does
+		end = mInfoListNoTLS.find('|', start);
+
+		if (end == mInfoListNoTLS.npos)
+			end = mInfoListNoTLS.size();
+
+		const string::iterator first = mInfoListNoTLS.begin() + start, last = mInfoListNoTLS.begin() + end;
+		string::iterator pos = std::search(first, last, sep, sep + 3); // note: only inside this myinfo
+
+		if (pos != last) {
+			pos = std::find(pos + 3, last, '$');
+
+			if (pos != last) {
+				unsigned short my = *(pos - 1);
+
+				if ((my & eMF_TLS) == eMF_TLS) {
+					my &= ~eMF_TLS;
+					*(pos - 1) = my;
+				}
+			}
+		}
+
+		start = end + 1;
+	}
+
+	if (mInfoListNoTLS.capacity() > (mInfoListNoTLS.size() << 1)) // note: same as kept lists, memory of day is freed at night
+		ShrinkStringToFit(mInfoListNoTLS);
+
+	mInfoListNoTLSVer = mUserList.InfoListVersion();
+	mInfoListNoTLSMade = true;
+	return mInfoListNoTLS;
 }
 
 string cServerDC::EraseNewLines(const string &src)

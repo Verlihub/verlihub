@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -32,6 +32,10 @@ using namespace std;
 /**
  * a Typed template for a config Item, provides all the methods for convetiong with string, affecting values, ans streaming
  */
+
+// note: operator= of items is hidden in cConfigItemMySQL classes by their own copy assignment, items are only used through cConfigItemBase pointer, so it is safe, warning is off until pop below
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 
 #define DeclarecConfigItemBaseT(TYPE,TypeID,Suffix) \
 class cConfigItemBase##Suffix : public cConfigItemBase { \
@@ -123,6 +127,8 @@ public:
 	DeclarecConfigItemBaseT(string, nEnums::eIT_STRING,String);
 	DeclarecConfigItemBaseT(__int64, nEnums::eIT_LLONG,Int64);
 	DeclarecConfigItemBaseT(unsigned __int64, nEnums::eIT_ULLONG, UInt64);
+
+#pragma GCC diagnostic pop
 
 	}; // namespace nConfig
 }; // namespace nVerliHub

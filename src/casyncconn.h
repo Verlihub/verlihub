@@ -507,7 +507,7 @@ namespace nVerliHub {
 				 * @param Flush True if the buffer must be flushed.
 				 * @return Number of sent bytes. Zero in case buffer is not flushed or negative number in case of errors.
 				 */
-				int Write(const string &data, bool flush);
+				int Write(const string &data, bool flush, bool pipe = false); // note: pipe adds | after data in buffer, without changing data
 
 				// states that client supports zlib compression
 				bool mZLibFlag;
@@ -542,7 +542,7 @@ namespace nVerliHub {
 				/// Connection iterator.
 				tCLIt mIterator;
 
-				unsigned int mTimerSlot = 0; // note: part of timer period when this connection gets its timer and flush, set when connection is added to server
+				unsigned int mTimerSlot = 0; // note: part of connection timer period when this connection gets its timer, set when connection is added to server
 
 				/// Indicate if the connection is still valid.
 				bool ok;

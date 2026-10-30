@@ -16,7 +16,6 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# todo: cmake 3.16 has FindIntl.cmake, really need this?
 # note: https://cmake.org/cmake/help/latest/module/FindIntl.html#cache-variables
 
 if(LIBINTL_INCLUDE_DIR AND LIBINTL_LIB_FOUND)

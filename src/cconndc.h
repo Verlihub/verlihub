@@ -336,6 +336,9 @@ namespace nVerliHub {
 				*/
 				int Send(string &data, bool AddPipe = true, bool Flush = true);
 
+				// same as Send, but data is not changed, for kept lists of users that are sent without copy, no defaults, so every caller states pipe and flush
+				int SendList(const string &data, bool AddPipe, bool Flush);
+
 				/**
 				* Return a pointer to cServerDC instance.
 				* @return The pointer to cServerDC instance.

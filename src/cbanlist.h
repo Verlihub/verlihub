@@ -333,12 +333,12 @@ namespace nVerliHub {
 				/// @see SavePK()
 				/// @see LoadPK()
 				cBan mModel;
+
+				/// Pointer to cServerDC instance, note: also used by cUnBanList.
+				nSocket::cServerDC* mS;
 			private:
 				/// Pointer to unbanlist manager.
 				cUnBanList *mUnBanList;
-
-				/// Pointer to cServerDC instance.
-				nSocket::cServerDC* mS;
 
 				// active ban in cache, same fields as in database
 				struct sCacheBan

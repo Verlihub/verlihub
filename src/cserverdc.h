@@ -348,7 +348,6 @@ class cServerDC : public cAsyncSocketServer
 		* @return False if callbacks fails or true otherwise.
 		*/
 		virtual int OnTimer(const cTime &now);
-		virtual void OnFlushSlice(unsigned int from, unsigned int count);
 
 		/**
 		* Start the socket and listen on ports.
@@ -625,6 +624,9 @@ class cServerDC : public cAsyncSocketServer
 		bool CheckPortNumber(unsigned int port);
 		string EraseNewLines(const string &src);
 		void RemoveMyINFOFlag(string &dest, const string &info, unsigned short flag);
+
+		// kept myinfo list without tls flag, for users without tls when myinfo_tls_filter is enabled, made again only when kept list changed
+		const string &InfoListNoTLS();
 		static void RepBadNickChars(string &nick);
 		void GetHubURLs(string &url, string &urls);
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
@@ -659,6 +661,10 @@ class cServerDC : public cAsyncSocketServer
 		cUserCollection mPassiveUsers; // passive users
 		cUserCollection mChatUsers; // users who receive main chat
 		cUserCollection mRobotList; // bot list
+
+		string mInfoListNoTLS; // note: see InfoListNoTLS
+		unsigned long mInfoListNoTLSVer = 0; // note: version of kept myinfo list it was made from
+		bool mInfoListNoTLSMade = false;
 
 		// dont send stack trace of intentional crash to crash server, it is still written to log
 		static bool mCrashReport;

@@ -145,6 +145,29 @@ int cConnDC::Send(string &data, bool AddPipe, bool Flush)
 	return ret;
 }
 
+int cConnDC::SendList(const string &data, bool AddPipe, bool Flush)
+{
+	if (!mWritable)
+		return 0;
+
+	const size_t len = (data.size() + (AddPipe ? 1 : 0)); // note: pipe is added by write, after data
+
+	if (len > 1) { // write only if we really got anything excluding pipe
+		if (Log(5))
+			LogStream() << "OUT [" << len << "]: " << data.substr(0, 100) << endl;
+
+		if ((msLogLevel >= 3) && Server()->mNetOutLog && Server()->mNetOutLog.is_open())
+			Server()->mNetOutLog << len << ": " << data.substr(0, 100) << endl;
+	}
+
+	int ret = Write(data, Flush, AddPipe); // note: upload is counted in OnSent() with everything that goes to socket
+
+	if ((Server()->mTime.Sec() - mTimeLastAttempt.Sec()) >= 2) // delay 2 seconds
+		mTimeLastAttempt = Server()->mTime;
+
+	return ret;
+}
+
 int cConnDC::StrLog(ostream & ostr, int level)
 {
 	if (cObj::StrLog(ostr, level)) {
@@ -617,15 +640,6 @@ cAsyncConn *cDCConnFactory::CreateConn(tSocket sd)
 		return NULL;
 
 	cConnDC *conn = new cConnDC(sd, mServer);
-
-	/* todo: use try instead
-	if (!conn) {
-		if (mServer->Log(0))
-			mServer->LogStream() << "Failed to create new connection" << endl;
-
-		return NULL;
-	}
-	*/
 
 	conn->mxMyFactory = this;
 	conn->mxProtocol = mProtocol;

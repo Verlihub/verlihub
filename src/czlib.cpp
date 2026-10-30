@@ -87,7 +87,7 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	char *new_buf = (char*)realloc(inBuf, inBufLen);
 
 	if (!new_buf) {
-		//free(inBuf); // todo: this causes crash
+		// note: failed realloc keeps old buffer, inBuf still points to it and next call uses it again, so it is not freed here
 		outLen = inLastLen = outLastLen = 0;
 		err = -inBufLen; // note: special message
 		return NULL;

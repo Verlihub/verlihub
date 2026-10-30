@@ -16,8 +16,6 @@
 #	Please see https://www.gnu.org/licenses/ for a copy
 #	of the GNU General Public License.
 
-# todo: cmake 3.16 has FindICU.cmake, really need this?
-
 find_package(PkgConfig QUIET)
 
 function(icudebug _varname)

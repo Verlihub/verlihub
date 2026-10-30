@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -95,11 +95,28 @@ void cUserCollection::Nick2Key(const string &nick, string &key)
 	std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 }
 
+cUserCollection::tHashType cUserCollection::Nick2Hash(const string &nick)
+{
+	/*
+		same steps as Nick2Key and HashString together, so value is same bit by bit
+		each char goes through tolower and back to char like in transform, then it is added like in HashString, which stops at zero byte
+	*/
+
+	tHashType hash = 0;
+
+	for (const char c: nick) {
+		if (!c)
+			break;
+
+		hash = 33 * hash + (char)(::tolower(c));
+	}
+
+	return hash;
+}
+
 void cUserCollection::Nick2Hash(const string &nick, tHashType &hash)
 {
-	string key;
-	Nick2Key(nick, key);
-	hash = Key2Hash(key); //Key2HashLower(nick)
+	hash = Nick2Hash(nick);
 }
 
 void cUserCollection::ufDoNickList::AppendList(string &list, cUserBase *user)
@@ -147,37 +164,56 @@ bool cUserCollection::Remove(cUserBase *user)
 	return false;
 }
 
-void cUserCollection::GetNickList(string &dest)
+const string &cUserCollection::NickListRef()
 {
 	if (mRemakeNextNickList && mKeepNickList) {
 		mNickListMaker.Clear();
 		for_each(begin(), end(), mNickListMaker);
+		mNickListMaker.Fit();
 		mRemakeNextNickList = false;
 	}
 
-	dest = mNickList;
+	return mNickList;
 }
 
-void cUserCollection::GetInfoList(string &dest)
+const string &cUserCollection::InfoListRef()
 {
 	if (mRemakeNextInfoList && mKeepInfoList) {
 		mInfoListMaker.Clear();
 		for_each(begin(), end(), mInfoListMaker);
+		mInfoListMaker.Fit();
 		mRemakeNextInfoList = false;
+		mInfoListVer++;
 	}
 
-	dest = mInfoList;
+	return mInfoList;
 }
 
-void cUserCollection::GetIPList(string &dest)
+const string &cUserCollection::IPListRef()
 {
 	if (mRemakeNextIPList && mKeepIPList) {
 		mIPListMaker.Clear();
 		for_each(begin(), end(), mIPListMaker);
+		mIPListMaker.Fit();
 		mRemakeNextIPList = false;
 	}
 
-	dest = mIPList;
+	return mIPList;
+}
+
+void cUserCollection::GetNickList(string &dest)
+{
+	dest = NickListRef();
+}
+
+void cUserCollection::GetInfoList(string &dest)
+{
+	dest = InfoListRef();
+}
+
+void cUserCollection::GetIPList(string &dest)
+{
+	dest = IPListRef();
 }
 
 void cUserCollection::SendToAll(string &data, const bool cache, const bool pipe)
