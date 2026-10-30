@@ -75,6 +75,8 @@ bool cWakeup::Open()
 	mRead = fds[0];
 	mWrite = fds[1];
 	mPending = false;
+	mBroken = false;
+	mBrokenTold = false;
 	return true;
 }
 
@@ -127,14 +129,22 @@ void cWakeup::Clear()
 		char buf[64];
 
 	#ifdef _WIN32
-		while (recv(mRead, buf, sizeof(buf), 0) > 0)
+		int res;
+
+		while ((res = recv(mRead, buf, sizeof(buf), 0)) > 0)
 		{}
+
+		if ((res == 0) || ((res < 0) && !SockTryAgain())) // note: other end is closed or socket has error
+			mBroken = true;
 	#else
 		ssize_t res;
 
 		do {
 			res = ::read(mRead, buf, sizeof(buf));
 		} while ((res > 0) || ((res < 0) && (errno == EINTR)));
+
+		if ((res == 0) || ((res < 0) && !SockTryAgain())) // note: write end is closed or pipe has error
+			mBroken = true;
 	#endif
 	}
 

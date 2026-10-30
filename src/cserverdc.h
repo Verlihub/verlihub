@@ -348,6 +348,7 @@ class cServerDC : public cAsyncSocketServer
 		* @return False if callbacks fails or true otherwise.
 		*/
 		virtual int OnTimer(const cTime &now);
+		virtual void OnFlushSlice(unsigned int from, unsigned int count);
 
 		/**
 		* Start the socket and listen on ports.
@@ -543,6 +544,9 @@ class cServerDC : public cAsyncSocketServer
 		* @return Always true.
 		*/
 		bool ShowUserToAll(cUser *user);
+
+		// changed fake myinfo of user in list to all users, also to new ones through kept list, with tls flag filter
+		void SendMyINFOToAll(cUser *user);
 		void ShowUserIP(cAsyncConn *conn);
 
 		/*
@@ -662,20 +666,10 @@ class cServerDC : public cAsyncSocketServer
 		// stack trace
 		void DoStackTrace();
 
-		// ctm2hub
-		struct sCtmToHubItem
-		{
-			//string mNick; // todo: make use of these
-			//string mIP;
-			//string mCC;
-			//int mPort;
-			//int mServ;
-			string mRef;
-			bool mUniq;
-		};
-
-		typedef list<sCtmToHubItem*> tCtmToHubList;
-		tCtmToHubList mCtmToHubList;
+		// ctm2hub, note: every hub address is kept once, memory does not grow with number of connections
+		std::set<string> mCtmToHubRefs; // note: all hub addresses since attack started
+		vector<string> mCtmToHubNew; // note: addresses not reported yet, in order they came
+		unsigned long mCtmToHubTotal = 0; // note: all filtered connections since attack started
 
 		struct sCtmToHubConf
 		{
@@ -895,6 +889,11 @@ public:
 
 	// Usercount of zones (CC and IP-range zones)
 	unsigned int mUserCount[USER_ZONES + 1];
+	// ip range zones 4 to 6 as numbers, made by SetIPZones from ip_zone4_min to ip_zone6_max
+	bool mIPZoneUse[3];
+	unsigned long mIPZoneMin[3];
+	unsigned long mIPZoneMax[3];
+	void SetIPZones();
 	// Total number of users
 	unsigned int mUserCountTot;
 	// User peak

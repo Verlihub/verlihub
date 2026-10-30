@@ -27,6 +27,8 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <chrono>
 
 namespace nVerliHub {
 	namespace nSocket {
@@ -57,10 +59,10 @@ class cMySQLWorker: public cObj
 		cMySQLWorker(const cMySQLWorker&) = delete;
 		cMySQLWorker& operator=(const cMySQLWorker&) = delete;
 
-		// queue query that returns nothing, it runs on main connection when thread is not available, returns true when queued
+		// queue query that returns nothing, it runs on main connection when thread is not available, it is dropped when queue is full, returns true when queued
 		bool Write(const string &query);
 
-		// queue select, done is called on main thread, returns false when it could not be queued, caller must then do it by itself
+		// queue select, done is called on main thread, returns false when thread is not available, caller must then do it by itself, when queue is full done gets failed result at once
 		bool Select(const string &query, tSelectDone done);
 
 		/*
@@ -69,8 +71,13 @@ class cMySQLWorker: public cObj
 		*/
 		void Flush();
 
+		// log of lost queries, failed after retry or dropped because queue is full, at most once a minute, hub timer calls it, so last count is not left unlogged
+		void Report();
+
 	private:
 		bool Start();
+		bool Expired() const;
+		void Lost(bool drop, const string &err);
 
 		// worker thread only
 		bool Connect(string &err);
@@ -83,6 +90,11 @@ class cMySQLWorker: public cObj
 		bool mTLS;
 		string mSock;
 		MYSQL *mHandle = NULL; // note: used only on worker thread
+		std::atomic<long long> mStopUntil{0}; // note: set on main thread when hub stops, read on worker thread
+		unsigned long mDropped = 0; // note: main thread only, same for next three
+		unsigned long mFailed = 0;
+		string mLastErr;
+		std::chrono::steady_clock::time_point mLastLostLog;
 		nThread::cWorkerPool mPool; // note: declared last, so its thread is stopped before other members are destroyed
 };
 

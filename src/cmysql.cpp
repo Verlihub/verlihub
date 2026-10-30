@@ -89,6 +89,10 @@ bool cMySQL::Connect(bool quiet)
 	else if (strcmp(DEFAULT_CHARSET, "") != 0)
 		mysql_options(mDBHandle, MYSQL_SET_CHARSET_NAME, DEFAULT_CHARSET);
 
+	unsigned int wait = 10; // note: seconds for read and write, main thread waits for every query, so database that does not answer must not hold hub forever, same as database thread
+	mysql_options(mDBHandle, MYSQL_OPT_READ_TIMEOUT, &wait);
+	mysql_options(mDBHandle, MYSQL_OPT_WRITE_TIMEOUT, &wait);
+
 	if (!RealConnect(mDBHandle, mDBHost, mDBUser, mDBPass, mDBName, mDBTLS, mDBSock)) {
 		if (!quiet)
 			Error(0, "Failed connecting to MySQL/MariaDB server: "); // note: error appends mysql error text
@@ -106,10 +110,7 @@ bool cMySQL::Reconnect()
 	if (mLost && ((now - mLastTry) < std::chrono::seconds(5))) // note: database is still down, dont block main loop on every query
 		return false;
 
-	if (!mLost) { // note: first time, log and opchat get it once, next attempts are quiet
-		if (ErrLog(0))
-			LogStream() << "Lost connection to MySQL/MariaDB server, reconnecting" << endl;
-
+	if (!mLost) { // note: first time, log and opchat get it only when reconnect fails, next attempts are quiet
 		mLostSince = now;
 		mLastLog = now;
 		mFailed = 0;
@@ -137,7 +138,13 @@ bool cMySQL::Reconnect()
 	if (!Connect(true)) { // note: same charset, tls, port and socket as on start
 		mFailed++;
 
-		if (((now - mLastLog) >= std::chrono::minutes(1)) || (mFailed == 1)) { // note: dont flood log while database is down
+		if (mFailed == 1) { // note: connection is lost only when reconnect failed
+			mLastLog = now;
+
+			if (ErrLog(0))
+				LogStream() << "Lost connection to MySQL/MariaDB server, reconnect failed: " << mysql_error(mDBHandle) << endl;
+
+		} else if ((now - mLastLog) >= std::chrono::minutes(1)) { // note: dont flood log while database is down
 			mLastLog = now;
 
 			if (ErrLog(0))
@@ -150,13 +157,14 @@ bool cMySQL::Reconnect()
 	mLost = false;
 	const long secs = long(std::chrono::duration_cast<std::chrono::seconds>(now - mLostSince).count());
 
-	if (ErrLog(0)) // note: same log as lost connection, else reader thinks it never came back
-		LogStream() << "Reconnected to MySQL/MariaDB server after " << secs << " seconds" << endl;
+	if (mFailed) { // note: same log as lost connection, else reader thinks it never came back, notice replaces lost notice when it was not sent yet, both are not needed then
+		if (ErrLog(0))
+			LogStream() << "Reconnected to MySQL/MariaDB server after " << secs << " seconds" << endl;
 
-	if (mFailed) // note: replaces lost notice when it was not sent yet, both are not needed then
 		mNotice = string(autosprintf(_("Connection to database server is back after %ld seconds."), secs));
-	else // note: first attempt worked, nothing failed for operators, log is enough
+	} else { // note: first attempt worked, nothing was lost, so no log and no notice
 		mNotice.clear();
+	}
 
 	return true;
 }

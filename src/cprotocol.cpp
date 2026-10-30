@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -73,6 +73,10 @@ void cMessageParser::ReInit()
 	mError = false;
 	mModified = false;
 	mStr.resize(0);
+
+	if (mStr.capacity() > 4096) // note: parser is reused for every message of connection, memory of one big message is freed, small ones keep their buffer
+		ShrinkStringToFit(mStr);
+
 	//mStr.reserve(512); // todo: do we really need this big reserve? some commands are alot smaller
 	mType = eMSG_UNPARSED;
 	mKWSize = 0;

@@ -190,6 +190,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mC.AddVars();
 	mC.Save();
 	mC.Load();
+	SetIPZones();
 
 	mConnTypes = new cConnTypes(this);
 	mCo = new cDCConsole(this);
@@ -562,12 +563,12 @@ bool cServerDC::AddRobot(cUserRobot *robot)
 
 bool cServerDC::DelRobot(cUserRobot *robot)
 {
-	if (this->RemoveNick(robot)) {
-		mRobotList.RemoveByHash(robot->mNickHash);
-		return true;
-	}
+	const bool res = this->RemoveNick(robot);
 
-	return false;
+	if (mRobotList.GetUserBaseByHash(robot->mNickHash) == robot) // note: always, also when real user has its nick, plugin deletes bot after this, so it must not stay in list
+		mRobotList.RemoveByHash(robot->mNickHash);
+
+	return res;
 }
 
 bool cServerDC::AddToList(cUser *user)
@@ -640,9 +641,9 @@ bool cServerDC::RemoveNick(cUser *user)
 
 		cUser *other = mUserList.GetUserByHash(user->mNickHash);
 
-		if (!user->mxConn)
+		if (!user->mxConn && (other == user)) // note: bot, only when list has this same object, real user with same nick stays
 			mUserList.RemoveByHash(user->mNickHash);
-		else if (other && other->mxConn && (other->mxConn == user->mxConn)) // make sure that the user we want to remove is the correct one
+		else if (user->mxConn && other && other->mxConn && (other->mxConn == user->mxConn)) // make sure that the user we want to remove is the correct one
 			mUserList.RemoveByHash(user->mNickHash);
 		else
 			return false;
@@ -809,43 +810,70 @@ int cServerDC::SendToAllWithNick(const string &start, const string &end, int cm,
 	return counter;
 }
 
+struct sNickVars // note: variables that are in text, text is same for all users, so it is checked once before sending
+{
+	bool mNick, mClass, mCC, mCN, mCity, mIP, mHost;
+
+	explicit sNickVars(const string &text):
+		mNick(text.find("%[NICK]") != string::npos),
+		mClass(text.find("%[CLASS]") != string::npos),
+		mCC(text.find("%[CC]") != string::npos),
+		mCN(text.find("%[CN]") != string::npos),
+		mCity(text.find("%[CITY]") != string::npos),
+		mIP(text.find("%[IP]") != string::npos),
+		mHost(text.find("%[HOST]") != string::npos)
+	{}
+
+	bool Any() const
+	{
+		return (mNick || mClass || mCC || mCN || mCity || mIP || mHost);
+	}
+
+	void Replace(string &text, cConnDC *conn) const // note: only variables that are in text, in this order
+	{
+		if (mNick)
+			ReplaceVarInString(text, "NICK", text, conn->mpUser->mNick);
+
+		if (mClass)
+			ReplaceVarInString(text, "CLASS", text, conn->mpUser->mClass);
+
+		if (mCC)
+			ReplaceVarInString(text, "CC", text, conn->GetGeoCC()); // country code
+
+		if (mCN)
+			ReplaceVarInString(text, "CN", text, conn->GetGeoCN()); // country name
+
+		if (mCity)
+			ReplaceVarInString(text, "CITY", text, conn->GetGeoCI()); // city name
+
+		if (mIP)
+			ReplaceVarInString(text, "IP", text, conn->AddrIP());
+
+		if (mHost)
+			ReplaceVarInString(text, "HOST", text, conn->AddrHost());
+	}
+};
+
 int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int cm, int cM)
 {
+	const sNickVars vars(end);
 	string temp, tend;
 	cConnDC *conn;
 	tCLIt it;
 	int tot = 0;
-	size_t pos;
 
 	for (it = mConnList.begin(); it != mConnList.end(); it++) {
 		conn = (cConnDC*)(*it);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
-			tend = end;
-			ReplaceVarInString(tend, "NICK", tend, conn->mpUser->mNick); // replace variables
-			ReplaceVarInString(tend, "CLASS", tend, conn->mpUser->mClass);
-			pos = tend.find("%[C");
-
-			if (pos != tend.npos) { // only if found
-				if (tend.find("%[CC]", pos) != tend.npos) {
-					temp = conn->GetGeoCC(); // country code
-					ReplaceVarInString(tend, "CC", tend, temp);
-				}
-
-				if (tend.find("%[CN]", pos) != tend.npos) {
-					temp = conn->GetGeoCN(); // country name
-					ReplaceVarInString(tend, "CN", tend, temp);
-				}
-
-				if (tend.find("%[CITY]", pos) != tend.npos) {
-					temp = conn->GetGeoCI(); // city name
-					ReplaceVarInString(tend, "CITY", tend, temp);
-				}
+			if (vars.Any()) { // replace variables
+				tend = end;
+				vars.Replace(tend, conn);
+				temp = start + conn->mpUser->mNick + tend; // finalize
+			} else {
+				temp = start + conn->mpUser->mNick + end;
 			}
 
-			ReplaceVarInString(tend, "IP", tend, conn->AddrIP());
-			ReplaceVarInString(tend, "HOST", tend, conn->AddrHost());
-			temp = start + conn->mpUser->mNick + tend; // finalize
 			conn->Send(temp, true); // pipe is added by default for safety
 			tot++;
 		}
@@ -856,40 +884,18 @@ int cServerDC::SendToAllWithNickVars(const string &start, const string &end, int
 
 int cServerDC::SendToAllNoNickVars(const string &msg, int cm, int cM)
 {
-	string temp, tmsg;
+	const sNickVars vars(msg);
+	string tmsg;
 	cConnDC *conn;
 	tCLIt it;
 	int tot = 0;
-	size_t pos;
 
 	for (it = mConnList.begin(); it != mConnList.end(); it++) {
 		conn = (cConnDC*)(*it);
 
 		if (conn && conn->ok && conn->mpUser && conn->mpUser->mInList && (conn->mpUser->mClass >= cm) && (conn->mpUser->mClass <= cM)) {
-			tmsg = msg;
-			ReplaceVarInString(tmsg, "NICK", tmsg, conn->mpUser->mNick); // replace variables
-			ReplaceVarInString(tmsg, "CLASS", tmsg, conn->mpUser->mClass);
-			pos = tmsg.find("%[C");
-
-			if (pos != tmsg.npos) { // only if found
-				if (tmsg.find("%[CC]", pos) != tmsg.npos) {
-					temp = conn->GetGeoCC(); // country code
-					ReplaceVarInString(tmsg, "CC", tmsg, temp);
-				}
-
-				if (tmsg.find("%[CN]", pos) != tmsg.npos) {
-					temp = conn->GetGeoCN(); // country name
-					ReplaceVarInString(tmsg, "CN", tmsg, temp);
-				}
-
-				if (tmsg.find("%[CITY]", pos) != tmsg.npos) {
-					temp = conn->GetGeoCI(); // city name
-					ReplaceVarInString(tmsg, "CITY", tmsg, temp);
-				}
-			}
-
-			ReplaceVarInString(tmsg, "IP", tmsg, conn->AddrIP());
-			ReplaceVarInString(tmsg, "HOST", tmsg, conn->AddrHost());
+			tmsg = msg; // note: also without variables, send adds pipe to its argument
+			vars.Replace(tmsg, conn); // replace variables
 			conn->Send(tmsg, true); // pipe is added by default for safety
 			tot++;
 		}
@@ -1166,6 +1172,8 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 	}
 
 	#ifndef WITHOUT_PLUGINS
+		conn->mNewConnCalled = true; // note: also when plugin refuses it, plugin saw it, so it gets close too
+
 		if (!mCallBacks.mOnNewConn.CallAll(conn)) // note: called before sending lock
 			return -1;
 	#endif
@@ -1426,7 +1434,7 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 		DCPublicHSToAll(omsg, mC.delayed_chat, true); // consider hidden chat
 	}
 
-	conn->mpUser->mLan = cDCProto::isLanIP(conn->AddrIP()); // detect lan ip
+	conn->mpUser->mLan = cDCProto::isLanIP(conn->AddrToNumber()); // detect lan ip
 
 	#ifndef WITHOUT_PLUGINS
 		if (!mCallBacks.mOnUserLogin.CallAll(conn->mpUser)) {
@@ -1548,9 +1556,7 @@ bool cServerDC::ShowUserToAll(cUser *user)
 		mUserList.SendToAllWithFeature(data, eSF_BOTLIST, mC.delayed_myinfo, true);
 	}
 
-	user->mInList = false; // note: this will prevent user from getting own myinfo, oplist and userip, i guess its done elsewhere
-	mUserList.FlushCache();
-	user->mInList = true;
+	// note: users are not flushed here, timer flushes every second, so delayed_myinfo works for logins too, order stays same because every user has one queue
 	return true;
 }
 
@@ -1908,18 +1914,24 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 	return eVN_OK;
 }
 
+void cServerDC::OnFlushSlice(unsigned int from, unsigned int count)
+{
+	string empty; // note: flush adds no data, it sends what is already in own buffer of user, messages sent to other lists like active, passive, chat or opchat users are only in buffers of those users
+	cUser *user;
+
+	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
+		user = (cUser*)(*it);
+
+		if (user && user->CanSend() && InTimerSlice(user->mxConn->mTimerSlot, from, count))
+			user->Send(empty, false, true);
+	}
+}
+
 int cServerDC::OnTimer(const cTime &now)
 {
 	if (mHTTPEarly.size()) // note: http requests of scripts from before main loop
 		PostHTTPEarly();
 
-	mUserList.FlushCache();
-	//mOpList.FlushCache(); // we are not sending anything to operators, only nicks are used
-	mOpchatList.FlushCache();
-	mActiveUsers.FlushCache();
-	mPassiveUsers.FlushCache();
-	mChatUsers.FlushCache();
-	//mRobotList.FlushCache(); // we are not sending anything to bots, they are bots
 	mSysLoad = eSL_NORMAL;
 
 	if (mFrequency.mNumFill > 0) {
@@ -1959,6 +1971,9 @@ int cServerDC::OnTimer(const cTime &now)
 		}
 	}
 
+	if (mTmpFunc.size()) // note: slots of finished functions are removed, step does not add new functions
+		mTmpFunc.erase(std::remove(mTmpFunc.begin(), mTmpFunc.end(), (cTempFunctionBase*)NULL), mTmpFunc.end());
+
 	if (bool(mSlowTimer.mMinDelay) && (mSlowTimer.Check(mTime, 1) == 0))
 		mBanList->RemoveOldShortTempBans(mTime.Sec());
 
@@ -1976,6 +1991,8 @@ int cServerDC::OnTimer(const cTime &now)
 	if (mMySQL.TakeNotice(db_notice) && mOpChat) // note: database connection lost or back, main connection makes notice inside of query, so it is sent here
 		mOpChat->SendPMToAll(db_notice, NULL);
 
+	mMySQLWorker.Report(); // note: lost queries of database thread, at most once a minute
+
 	int stop_req = 1;
 
 	if (mStopRequest.compare_exchange_strong(stop_req, 2)) { // note: stop asked from other thread, like windows console handler
@@ -1985,6 +2002,7 @@ int cServerDC::OnTimer(const cTime &now)
 
 	if (bool(mReloadcfgTimer.mMinDelay) && (mReloadcfgTimer.Check(mTime, 1) == 0)) {
 		mC.Load();
+		SetIPZones();
 		//mCo->mTriggers->ReloadAll();
 
 		if (mC.use_reglist_cache)
@@ -2008,7 +2026,7 @@ int cServerDC::OnTimer(const cTime &now)
 		*/
 
 		for (unsigned int zone = 0; zone <= USER_ZONES; zone++)
-			this->mUploadZone[zone].Reset(mTime); // note: main loop frequency is not reset here anymore, after every reset it showed 0 for few seconds
+			this->mUploadZone[zone].Reset(mTime); // note: main loop frequency is reset only when main loop starts
 
 		if (Log(2))
 			LogStream() << "Socket counter: " << cAsyncConn::sSocketCounter << endl;
@@ -2018,7 +2036,7 @@ int cServerDC::OnTimer(const cTime &now)
 		mMaxMindDB->MMDBCacheClean(); // do not confuse with MMDBCacheClear
 
 	if (mC.detect_ctmtohub && ((mTime.Sec() - mCtmToHubConf.mTime.Sec()) >= 60)) { // ctm2hub
-		unsigned long total = mCtmToHubList.size();
+		unsigned long total = mCtmToHubTotal;
 
 		if (total) {
 			if (mCtmToHubConf.mNew) {
@@ -2455,6 +2473,23 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 		DCPublicHS(_("Failed to start new working thread."), conn);
 
 	return false;
+}
+
+void cServerDC::SendMyINFOToAll(cUser *user)
+{
+	if (!user)
+		return;
+
+	mUserList.InfoChanged(); // note: new users get new myinfo too
+	string data(user->mFakeMyINFO);
+
+	if (mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
+		mUserList.SendToAllWithMyFlag(data, eMF_TLS, mC.delayed_myinfo, true);
+		RemoveMyINFOFlag(data, user->mFakeMyINFO, eMF_TLS);
+		mUserList.SendToAllWithoutMyFlag(data, eMF_TLS, mC.delayed_myinfo, true);
+	} else {
+		mUserList.SendToAll(data, mC.delayed_myinfo, true); // send fake myinfo
+	}
 }
 
 bool cServerDC::HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, const nPlugin::cPluginBase *owner, tHTTPDone done, unsigned long &id, string &err)
@@ -3564,6 +3599,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 					DelRobot((cMainRobot*)mHubSec); // this will send quit to all
 					mHubSec->mNick = val_new;
+					mHubSec->mNickHash = mUserList.Nick2Hash(val_new); // note: hash is made in constructor, it must follow new nick
 					mP.Create_MyINFO(mHubSec->mFakeMyINFO, mHubSec->mNick, mC.hub_security_desc + tag, flag, mail, shar);
 					AddRobot((cMainRobot*)mHubSec); // note: this will show user to all
 
@@ -3585,6 +3621,7 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					if (val_new.size()) {
 						if (mOpChat) {
 							mOpChat->mNick = val_new;
+							mOpChat->mNickHash = mUserList.Nick2Hash(val_new); // note: same as hub security above
 						} else {
 							mOpChat = new cOpChat(val_new, this);
 							mOpChat->mClass = tUserCl(10);
@@ -3607,12 +3644,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				} else if (svar == "hub_security_desc") {
 					mP.Create_MyINFO(mHubSec->mFakeMyINFO, mHubSec->mNick, val_new + tag, flag, mail, shar); // send new myinfo
 					data = mHubSec->mFakeMyINFO;
+					mUserList.InfoChanged(); // note: new users get new myinfo too
 					mUserList.SendToAll(data, mC.delayed_myinfo, true);
 
 				} else if (svar == "opchat_desc") {
 					if (mOpChat) {
 						mP.Create_MyINFO(mOpChat->mFakeMyINFO, mOpChat->mNick, val_new + tag, flag, mail, shar); // send new myinfo
 						data = mOpChat->mFakeMyINFO;
+						mUserList.InfoChanged();
 						mUserList.SendToAll(data, mC.delayed_myinfo, true);
 					}
 
@@ -3760,6 +3799,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 			}
 
 			mSetupList.SaveItem(conf, ci);
+
+			if ((val_new != val_old) && (svar.compare(0, 7, "ip_zone") == 0))
+				SetIPZones();
 
 		#ifdef USE_TLS
 			if ((val_new != val_old) && ((svar == "tls_enable") || (svar == "tls_cert_file") || (svar == "tls_key_file") || (svar == "tls_min_ver"))) { // note: apply at once, running sessions keep what they have
@@ -4011,30 +4053,10 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 	if (!conn)
 		return;
 
-	bool uniq = true;
+	mCtmToHubTotal++;
 
-	if (ref.empty())
-		uniq = false;
-	else if (mCtmToHubList.size()) {
-		tCtmToHubList::iterator it;
-
-		for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
-			if ((*it) && (StrCompare(ref, 0, ref.size(), (*it)->mRef) == 0)) {
-				uniq = false;
-				break;
-			}
-		}
-	}
-
-	sCtmToHubItem *item = new sCtmToHubItem;
-	//item->mNick = conn->mMyNick; // todo: make use of these
-	//item->mIP = conn->AddrIP();
-	//item->mCC = conn->mCC; // todo: conn->getGeoCC()
-	//item->mPort = conn->AddrPort();
-	//item->mServ = conn->GetServPort();
-	item->mRef = ref;
-	item->mUniq = uniq;
-	mCtmToHubList.push_back(item);
+	if (ref.size() && mCtmToHubRefs.insert(ref).second) // note: new hub address, it is reported once
+		mCtmToHubNew.push_back(ref);
 
 	if ((++mCtmToHubConf.mNew > 9) && !mCtmToHubConf.mStart) {
 		string omsg = _("DDoS detected, gathering attack information...");
@@ -4048,40 +4070,24 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 
 int cServerDC::CtmToHubRefererList(string &list)
 {
-	if (!mCtmToHubList.size())
-		return 0;
-
 	int count = 0;
-	tCtmToHubList::iterator it;
 
-	for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
-		if ((*it) && (*it)->mUniq) {
-			list.append(1, ' ');
-			list.append((*it)->mRef);
-			list.append("\r\n");
-			(*it)->mUniq = false;
-			count++;
-		}
+	for (const string &ref: mCtmToHubNew) {
+		list.append(1, ' ');
+		list.append(ref);
+		list.append("\r\n");
+		count++;
 	}
 
+	mCtmToHubNew.clear();
 	return count;
 }
 
 void cServerDC::CtmToHubClearList()
 {
-	if (!mCtmToHubList.size())
-		return;
-
-	tCtmToHubList::iterator it;
-
-	for (it = mCtmToHubList.begin(); it != mCtmToHubList.end(); ++it) {
-		if (*it) {
-			delete (*it);
-			(*it) = NULL;
-		}
-	}
-
-	mCtmToHubList.clear();
+	mCtmToHubRefs.clear();
+	mCtmToHubNew.clear();
+	mCtmToHubTotal = 0;
 }
 
 void cServerDC::SyncStop()
@@ -4101,9 +4107,30 @@ bool cServerDC::RequestStop()
 	return mStopRequest.compare_exchange_strong(none, 1);
 }
 
+void cServerDC::SetIPZones()
+{
+	const string *zone[3][2] = {
+		{&mC.ip_zone4_min, &mC.ip_zone4_max},
+		{&mC.ip_zone5_min, &mC.ip_zone5_max},
+		{&mC.ip_zone6_min, &mC.ip_zone6_max}
+	};
+
+	for (unsigned int pos = 0; pos < 3; pos++) {
+		mIPZoneMin[pos] = 0;
+		mIPZoneMax[pos] = 0;
+		mIPZoneUse[pos] = (zone[pos][0]->size() && zone[pos][1]->size());
+
+		if (mIPZoneUse[pos]) {
+			cBanList::Ip2Num(*zone[pos][0], mIPZoneMin[pos]); // validated on set
+			cBanList::Ip2Num(*zone[pos][1], mIPZoneMax[pos]);
+		}
+	}
+}
+
 void cServerDC::ReloadNow()
 {
 	mC.Load();
+	SetIPZones();
 	mCo->mTriggers->ReloadAll();
 	mCo->mRedirects->ReloadAll();
 	mCo->mDCClients->ReloadAll();

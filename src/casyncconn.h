@@ -36,6 +36,7 @@
 
 
 #include <string>
+#include <cstring>
 #include <list>
 #include <vector>
 #include <atomic>
@@ -236,9 +237,9 @@ namespace nVerliHub {
 				/*
 					returns buffer sizes
 				*/
-				size_t GetBufferSize() const
+				size_t GetBufferSize() const // note: only data that is not sent yet
 				{
-					return mBufSend.size();
+					return mBufSend.size() - mSendPos;
 				}
 
 				size_t GetBufferCapacity() const
@@ -535,8 +536,13 @@ namespace nVerliHub {
 				/// Timer of last IO operation.
 				cTime mTimeLastIOAction;
 
+				// note: last time anything was received, sending to dead client still works until system gives up, so only this finds it, starts at creation
+				cTime mTimeLastRead;
+
 				/// Connection iterator.
 				tCLIt mIterator;
+
+				unsigned int mTimerSlot = 0; // note: part of timer period when this connection gets its timer and flush, set when connection is added to server
 
 				/// Indicate if the connection is still valid.
 				bool ok;
@@ -582,6 +588,45 @@ namespace nVerliHub {
 					return ((mStartWait & eSW_HOST) && !(mStartWait & (eSW_DETECT | eSW_HANDSHAKE)));
 				}
 
+				/*
+					protocol data that came before connection was started, for example plain client that did not wait for $Lock while host name is looked up
+					note: it is not parsed before OnNewConn, there zone is set and bans and scripts can refuse connection, read buffer is shared by all connections, so data is kept here
+				*/
+				void HoldInput()
+				{
+					if (mBufEnd > mBufReadPos)
+						mStartHold.append(msBuffer.data() + mBufReadPos, mBufEnd - mBufReadPos);
+
+					mBufEnd = 0;
+					mBufReadPos = 0;
+				}
+
+				bool HasHeldInput() const
+				{
+					return !mStartHold.empty();
+				}
+
+				// note: data kept outside of normal buffers, before start and around tls handshake, for buffer information
+				size_t GetWaitSize() const
+				{
+					return mStartHold.size() + mTLSQueue.size() + mTLSHold.size();
+				}
+
+				// next part of held data into read buffer, returns false when nothing is left
+				bool TakeHeldInput()
+				{
+					if (mStartHold.empty())
+						return false;
+
+					const size_t len = ((mStartHold.size() < MAX_MESS_SIZE) ? mStartHold.size() : size_t(MAX_MESS_SIZE));
+					memcpy(msBuffer.data(), mStartHold.data(), len);
+					mStartHold.erase(0, len);
+					mBufReadPos = 0;
+					mBufEnd = (unsigned int)len;
+					msBuffer[mBufEnd] = '\0';
+					return true;
+				}
+
 			protected:
 				/// Socket descriptor.
 				tSocket mSockDesc;
@@ -594,6 +639,7 @@ namespace nVerliHub {
 					else we are going to recompress already compressed unsent data
 				*/
 				string mBufSend, mBufFlush;
+				size_t mSendPos = 0; // note: bytes at start of mBufSend that are already sent, they are cut off when more than half of buffer is sent
 
 				/// Line separator character.
 				/// Delimiter is used to split lines in the buffer and the default one is new line.
@@ -623,6 +669,7 @@ namespace nVerliHub {
 				/// The maximum size of the buffer that contains stock data.
 				/// @see msBuffer
 				unsigned long mMaxBuffer;
+				size_t mBigWrite = 0; // note: size of single message bigger than mMaxBuffer that came to empty buffer, for example nick list of big hub, limit is raised by it until all data is sent
 
 				/// The maximum size of the buffer that contains the read line.
 				/// This value can be changed with SetLineToRead() call and by
@@ -707,6 +754,7 @@ namespace nVerliHub {
 				bool mTLSBusy = false;
 				string mTLSQueue;
 				string mTLSHold;
+				string mStartHold; // note: see HoldInput()
 
 				// decrypt received data in place of shared read buffer
 				int TLSRead(int len);

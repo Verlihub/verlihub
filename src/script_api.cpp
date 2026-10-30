@@ -463,6 +463,11 @@ bool SetUserIP(const char *nick, const char *ip)
 		return false;
 
 	user->mxConn->ResetGeo();
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (serv)
+		serv->mUserList.IPChanged(); // note: new users get new ip too
+
 	return true;
 }
 
@@ -891,7 +896,7 @@ bool SetRegClass(const char *nick, int clas)
 			}
 
 		} else if ((user->mClass >= serv->mC.oplist_class) && (clas < serv->mC.oplist_class)) {
-			if (!ui.mHideKeys && serv->mOpList.ContainsHash(user->mNickHash)) {
+			if (!ui.mHideKeys && !ui.mShowKeys && serv->mOpList.ContainsHash(user->mNickHash)) { // note: show_keys keeps key also below operator class, same as on login
 				serv->mOpList.RemoveByHash(user->mNickHash);
 
 				serv->mP.Create_Quit(data, user->mNick); // send quit to all

@@ -128,13 +128,29 @@ namespace nVerliHub {
 				virtual int OnTimer(const cTime &now);
 
 				/**
-				* This event is trigger every N seconds.
-				* This method is responsable of calling cAsyncConn::OnTimerBase()
-				* for every connections the server is handling.
+				* This event is trigger every timer_serv_period seconds and calls OnTimer().
+				* Connections get cAsyncConn::OnTimerBase() from TimerSlices().
 				* @param now Current time.
 				* @return Always zero.
 				*/
 				int OnTimerBase(const cTime &now);
+
+				/*
+					connection timer and flush of delayed messages are spread over sTimerSlices parts of their period
+					every connection has its own part, so it is handled once per period, but not all connections in same main loop step
+				*/
+				static constexpr unsigned int sTimerSlices = 20;
+
+				static bool InTimerSlice(unsigned int slot, unsigned int from, unsigned int count) // note: true when slot is one of count parts starting with from
+				{
+					return (((slot + sTimerSlices - from) % sTimerSlices) < count);
+				}
+
+				/*
+					called from main loop for parts of flush period that are due, period is timer_serv_period
+					cServerDC flushes delayed messages of users whose connection has one of these parts
+				*/
+				virtual void OnFlushSlice(unsigned int from, unsigned int count);
 
 
 				/**
@@ -258,6 +274,12 @@ namespace nVerliHub {
 				unsigned int GetConnListSize() const
 				{
 					return mConnList.size();
+				}
+
+				// note: all connections, also those that are logging in or closing, for buffer information
+				const tConnList &GetConnList() const
+				{
+					return mConnList;
 				}
 
 				unsigned int GetConnChooserSize() const
@@ -397,7 +419,6 @@ namespace nVerliHub {
 			struct sTimers // structure that contains timers
 			{
 				cTime main; // server time of the last call of OnTimerBase
-				cTime conn; // connection time of the last call of cAsyncConn::OnTimerBase
 				cTime stop; // stop delay
 			};
 
@@ -415,6 +436,12 @@ namespace nVerliHub {
 
 			bool StartWorkers();
 			void StepWait(unsigned int msec);
+
+			unsigned int mTimerSlotNext = 0; // note: part of timer period for next added connection, round robin
+			long long mConnSliceLast = -1; // note: last handled part of connection timer, counted in parts of steady clock
+			long long mFlushSliceLast = -1; // note: same for flush of delayed messages
+			void TimerSlices();
+			static bool DueSlices(long long now, int period, long long &last, unsigned int &from, unsigned int &count);
 			void RunPoolResults();
 
 			/// All running pools whose results are processed in main loop, mWorkers included.

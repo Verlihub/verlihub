@@ -31,7 +31,7 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
-static const uint32_t sInputEvents = (EPOLLIN | EPOLLPRI);
+static const uint32_t sInputEvents = EPOLLIN; // note: no urgent data, hub does not read it, normal receive would find nothing
 static const size_t sMaxEvents = 4096; // note: more ready sockets are reported in next step, epoll is level triggered
 
 cConnEpoll::cConnEpoll():

@@ -79,6 +79,46 @@
 * Fixed: VH:GetLuaBots returned only last bot of each script and left holes in list
 * Fixed: Variable with empty value in dbconfig, for example locale =, took value of previous line when it was last line, or next line as its value, which was then lost
 * Fixed: Trigger file with Windows line ends, for example edited on Windows and copied to Linux, was sent with double carriage return
+* Fixed: ZLib compression wrote past end of its output buffer when compressed data was bigger than 256 kb, output buffer size was increased but buffer itself was never reallocated
+* Fixed: Protocol data of client that did not wait for $Lock was parsed before connection was started, while host name was looked up, so ban and script checks of new connection were skipped and user count of zone was changed outside of its table, which later could refuse all users of that zone, now such data is parsed after connection is started
+* Fixed: User whose read was blocked because of full output buffer was never read again when rest of buffer was sent at once
+* Fixed: Kick, ban and redirect messages were often lost, connection was closed at once when user sent anything more or when one send could not write data, instead of waiting for close time
+* Fixed: Changing hub_security or opchat_name at runtime kept bot under old nick, so it could not be reached and new nick was not reserved
+* Fixed: Removing script bot that had nick of registered user, who logged in meanwhile, removed that user from user list and could crash hub later
+* Fixed: New users got old MyINFO of users who changed it, and old IP after fake IP was set, until next logout
+* Fixed: Single message bigger than adv_max_outbuf_size, for example nick list of hub with thousands of users, disconnected new user with output buffer is too big, now it is allowed when nothing else is waiting
+* Fixed: Protocol command ending in same read could be longer than max_message_size
+* Fixed: Changed MyINFO that came within int_myinfo was dropped, so others kept old one while total share already counted new one, now newest one is sent when interval is over
+* Fixed: Plugins and scripts got OnCloseConn for connections that never got OnNewConn, for example failed TLS handshake or connection refused before it, so counting of connections went wrong
+* Fixed: Dead user without closed connection, for example lost network, stayed in hub until system gave up sending, often 15 to 30 minutes, because pings of hub still went into system buffer, now logged in user who sends nothing for 270 seconds is closed with general timeout, clients ping every minute
+* Fixed: Error on listening socket used connection list position that was never set, now it is logged and hub keeps listening
+* Fixed: Command bufinfo counted only buffers of users in list, now it counts all connections, also those that log in or close, and shows data waiting for connection start and TLS
+* Fixed: Reply to $GetINFO was not sent at once
+* Fixed: Waiting of new connections for host name and TLS used clock time, so clock set back, for example by time sync, stopped new connections that long
+* Fixed: Connection closed before it was registered or after it was removed left stale entry in connection chooser, with epoll main loop stopped sleeping and used full CPU
+* Fixed: Lowering class of user with show_keys below operator class removed operator key, now it stays, same as on login
+* Updated: Login no longer flushes data of all users at once, so delayed_myinfo works for logins too, timer still sends it every second in same order, this saves a lot of CPU when many users login after hub start
+* Updated: ZLib reuses one compression stream, before it was set up again for every compressed flush
+* Fixed: TCP urgent data from client gave read event that hub could not read, so main thread waited in read retries and then closed user, urgent data is not watched now
+* Fixed: Database thread queue had no limit, when database was slow or down statistics writes piled up in memory and hub stop waited for all of them, now queue holds 10000 queries, more writes are dropped, hub stop waits at most 5 seconds
+* Updated: Database logs only lost queries, failed after retry or dropped, as one line once a minute on level 0, slow database is not logged, lost and back main connection is logged only when reconnect failed
+* Fixed: Main database connection had no read and write timeout, so database that accepted query and did not answer froze whole hub, now query fails after 10 seconds and connection is reconnected
+* Fixed: CTM2HUB detection kept one item for every filtered connection and searched all of them for each new one, so long attack used hundreds of megabytes and more CPU every minute, now it keeps every hub address once and counts connections, reports stay same
+* Fixed: Data received during TLS handshake was kept without limit, now connection is closed when it is bigger than read buffer, real handshake is few kilobytes
+* Fixed: Ban check of ban cache parsed IP address of user again for every range, share and prefix ban on every login, now range bans use IP number of connection
+* Updated: LAN detection and GeoIP lookup of user use IP number of connection instead of parsing address again, IP zone ranges are converted once when configuration is loaded or set instead of on every new connection
+* Fixed: Lua callback number arguments were made with malloc and freed with delete in builds with USE_CUSTOM_AUTOSPRINTF, and share size of VH_OnNewBan was cut to 32 bits on Windows, now arguments are strings of callback itself
+* Updated: Partial send of output buffer moves send position instead of copying all unsent data every time, sent part is cut off when it is more than half of buffer, so big nick list to slow user is copied about once
+* Updated: Delayed messages to slow user with more than half of adv_max_outbuf_size waiting are not flushed one by one while socket is full, they wait for socket to be writable and go out compressed together
+* Updated: Timer flushes delayed messages once over user list, users of active, passive, chat and opchat lists are in it, so same users are not walked four more times every second
+* Updated: Connection timer and flush of delayed messages are spread over 20 parts of adv_timer_conn_period and adv_timer_serv_period, every connection is still handled once per period, but big hub does not handle all users in one main loop step, order of messages to each user stays same
+* Updated: GeoIP cache keeps at most 100000 addresses, about 20 MB, when it is full oldest tenth is removed, also with mmdb_cache_mins 0
+* Updated: Message parser of connection frees memory of big message, bigger than 4 KB, before next one, small messages keep their buffer
+* Updated: HTTP reply without chunks goes from receive buffer straight to body or file, body with known size up to 16 MB is allocated once
+* Updated: New ban in ban cache is found and added by index, without walking all bans and building whole index again, removing bans still builds it again
+* Updated: Broadcast and triggers with variables check once which variables are in text, for each user only those are replaced, text without variables is sent without searching it
+* Fixed: Broken wakeup socket pair of worker threads on Windows could make main loop use whole CPU core, now it is logged once and main loop sleeps step delay and handles worker results once per step
+* Fixed: Command userlimit crashed hub with adv_timer_serv_period 0, finished userlimit functions left empty slots that timer walked every second
 * Removed: Conversion of time to microseconds as long, it overflowed on Windows and was not used
 * Removed: Deprecated plugins, only Lua and Plugman are left
 * Removed: Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config, verlihub executable does all their work, Bash and Dialog are no longer needed, vh and vhm are symbolic links to verlihub

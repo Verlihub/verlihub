@@ -959,7 +959,7 @@ int _GetUserGeoIP(lua_State *L)
 	if (args > 1)
 		db = lua_tostring(L, 3);
 
-	bool ok = serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, user->mxConn->AddrIP(), db);
+	bool ok = serv->mMaxMindDB->GetGeoIP(geo_host, geo_ran_lo, geo_ran_hi, geo_cc, geo_ccc, geo_cn, geo_reg_code, geo_reg_name, geo_tz, geo_cont, geo_city, geo_post, geo_lat, geo_lon, geo_met, geo_area, user->mxConn->AddrIP(), db, user->mxConn->AddrToNumber());
 	lua_pushboolean(L, (ok ? 1 : 0));
 	lua_newtable(L);
 	int pos = lua_gettop(L);
@@ -2084,7 +2084,7 @@ int _GetLuaBots(lua_State *L)
 				lua_pushnumber(L, it->second.uClass);
 				lua_setfield(L, -2, "iClass");
 
-				lua_rawseti(L, -2, ++num); // note: was index of script, so second bot of same script replaced first and scripts without bots left holes
+				lua_rawseti(L, -2, ++num);
 			}
 		}
 	}
@@ -2333,6 +2333,7 @@ int _EditBot(lua_State *L)
 	}
 
 	serv->mP.Create_MyINFO(robot->mFakeMyINFO, nick, desc, conn, mail, shar);
+	serv->mUserList.InfoChanged(); // note: new users get new myinfo too
 	temp = robot->mFakeMyINFO;
 	serv->mUserList.SendToAll(temp, serv->mC.delayed_myinfo, true); // show new myinfo to all
 	lua->editBot(nick.c_str(), robot->mFakeMyINFO.c_str(), share, clas); // edit in lua bots
@@ -2529,7 +2530,7 @@ int _SQLQuery(lua_State *L)
 	const bool done = (plug->mQuery->Query() > 0);
 	int res = plug->mQuery->StoreResult();
 
-	if (done && serv->mBanList && SQLWritesBans(sql)) // note: login check uses ban cache, so ban added or removed by script must be seen at once, same as without cache
+	if (done && serv->mBanList && SQLWritesBans(sql)) // note: login check uses ban cache, so ban added or removed by script is seen at once
 		serv->mBanList->ReloadCache();
 
 	lua_pushboolean(L, 1);
@@ -2592,7 +2593,7 @@ int _SQLFetch(lua_State *L)
 
 	const int cols = plug->mQuery->Cols();
 
-	if (!lua_checkstack(L, cols + 1)) { // note: lua gives only 20 free places, select of all columns from reglist has more, without check it writes past end of stack
+	if (!lua_checkstack(L, cols + 1)) { // note: lua gives only 20 free places, select of all columns from reglist has more
 		luaerror(L, "Too many columns");
 		return 2;
 	}

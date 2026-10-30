@@ -250,19 +250,23 @@ void cInfoServer::ProtocolInfo(ostream &os)
 
 void cInfoServer::BufferInfo(ostream &os)
 {
-	unsigned __int64 total_buf_size = 0, total_buf_cap = 0, total_flush_size = 0, total_flush_cap = 0;
-	unsigned int total_bufs = 0;
-	cAsyncConn *conn;
+	unsigned __int64 total_buf_size = 0, total_buf_cap = 0, total_flush_size = 0, total_flush_cap = 0, total_wait_size = 0;
+	unsigned int total_bufs = 0, total_waits = 0;
 
-	for (cUserCollection::iterator it = mServer->mUserList.begin(); it != mServer->mUserList.end(); ++it) {
-		conn = ((cUser*)(*it))->mxConn;
+	for (cAsyncConn *conn: mServer->GetConnList()) { // note: all connections, also those that log in or close
+		if (!conn)
+			continue;
 
-		if (conn && conn->ok) {
-			total_buf_size += conn->GetBufferSize();
-			total_buf_cap += conn->GetBufferCapacity();
-			total_flush_size += conn->GetFlushSize();
-			total_flush_cap += conn->GetFlushCapacity();
-			total_bufs++;
+		total_buf_size += conn->GetBufferSize();
+		total_buf_cap += conn->GetBufferCapacity();
+		total_flush_size += conn->GetFlushSize();
+		total_flush_cap += conn->GetFlushCapacity();
+		total_bufs++;
+		const size_t wait = conn->GetWaitSize();
+
+		if (wait) {
+			total_wait_size += wait;
+			total_waits++;
 		}
 	}
 
@@ -274,6 +278,7 @@ void cInfoServer::BufferInfo(ostream &os)
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("User upload buffers: %d / %s / %s"), total_bufs, convertByte(total_buf_size).c_str(), convertByte(total_buf_cap).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("User upload caches: %d / %s / %s"), total_bufs, convertByte(total_flush_size).c_str(), convertByte(total_flush_cap).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Data waiting for connection start and TLS: %d / %s"), total_waits, convertByte(total_wait_size).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("User list size: %d / %d"), mServer->mUserList.Size(), mServer->mUserList.Capacity()) << "\r\n";
 	os << " [*] " << autosprintf(_("User list upload cache: %s / %s"), convertByte(mServer->mUserList.GetCacheSize()).c_str(), convertByte(mServer->mUserList.GetCacheCapacity()).c_str()) << "\r\n";

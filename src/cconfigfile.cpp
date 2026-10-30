@@ -57,7 +57,7 @@ int cConfigFile::Load() // config load function from a file
 	istringstream *ss;
 	cConfigItemBase *ci;
 
-	while (getline(is, line)) { // note: one variable per line, was read by words before, so empty value took next line or value of previous line at end of file
+	while (getline(is, line)) { // note: one variable per line, empty value stays empty
 		if (line.size() && (line[line.size() - 1] == '\r')) // note: file edited on windows
 			line.erase(line.size() - 1);
 
@@ -68,7 +68,7 @@ int cConfigFile::Load() // config load function from a file
 
 		const size_t eq = line.find('=', beg);
 
-		if (eq == string::npos) // note: same as before, file is read only up to broken line
+		if (eq == string::npos) // note: file is read only up to broken line
 			break;
 
 		name = line.substr(beg, eq - beg);

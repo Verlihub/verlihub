@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -84,6 +84,11 @@ namespace nUtils {
 			char *outBuf;
 			size_t outBufLen;
 			size_t outLastLen;
+
+			// note: one deflate stream for all flushes, reset is much cheaper than setting it up, type is z_stream, so zlib.h is not needed here
+			void *mStream = NULL;
+			int mStreamLevel = 0;
+			void EndStream();
 	};
 
 }; // namespace nUtils

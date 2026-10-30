@@ -48,6 +48,11 @@ namespace nVerliHub {
 	static constexpr long long sTLSHandshakeMax = 10000; // note: milliseconds for tls handshake, connection is closed when it takes longer
 	static constexpr unsigned int sTLSCertDays = 5 * 365; // note: validity of created certificate, same as go version had
 
+	static long long SteadyMS() // note: start wait deadlines, steady clock does not jump when clock time is changed, for example by time sync
+	{
+		return (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+	}
+
 cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	cObj("cAsyncSocketServer"),
 	mConfBaseDir(CfgBase),
@@ -128,7 +133,7 @@ int cAsyncSocketServer::run()
 
 	StartWorkers();
 	mTime.Get();
-	mFrequency.Reset(mTime); // note: counter was made with hub, loading of database, plugins and scripts took time, it must not count as slow main loop
+	mFrequency.Reset(mTime); // note: counter is made with hub, loading of database, plugins and scripts takes time, it must not count as slow main loop
 
 	while (mbRun) {
 		mTime.Get(); // note: always current time, dont modify this container anywhere
@@ -138,6 +143,8 @@ int cAsyncSocketServer::run()
 			mT.main = mTime;
 			OnTimerBase(mTime);
 		}
+
+		TimerSlices(); // note: every step, connection timer and flush handle only connections whose part of period is due
 
 		CheckStartWaits(); // note: every step, tls detection waits only milliseconds
 
@@ -174,6 +181,16 @@ void cAsyncSocketServer::StepWait(unsigned int msec)
 		if (left <= 0)
 			break;
 
+		if (mWakeup.IsBroken()) { // note: broken socket gives events all the time, so sleep rest of step and handle results once
+			if (mWakeup.BrokenNews())
+				vhLog(0) << "Wakeup socket is broken, worker results are handled once per main loop step" << endl;
+
+			::usleep(left * 1000);
+			mTime.Get();
+			RunPoolResults();
+			break;
+		}
+
 		struct pollfd pfd;
 		pfd.fd = (tSocket)mWakeup;
 		pfd.events = POLLIN;
@@ -189,8 +206,11 @@ void cAsyncSocketServer::StepWait(unsigned int msec)
 		}
 
 		if (res > 0) {
+			if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL))
+				mWakeup.SetBroken();
+
 			mTime.Get(); // note: results should see current time, not time when step started
-			RunPoolResults();
+			RunPoolResults(); // note: clear also finds broken socket, then next round sleeps
 		}
 	}
 }
@@ -332,6 +352,8 @@ void cAsyncSocketServer::addConnection(cAsyncConn *new_conn)
 		return;
 	}
 
+	new_conn->mTimerSlot = mTimerSlotNext;
+	mTimerSlotNext = ((mTimerSlotNext + 1) % sTimerSlices);
 	mConnChooser.AddConn(new_conn);
 	mConnChooser.cConnChoose::OptIn((cConnBase*)new_conn, tChEvent(eCC_INPUT | eCC_ERROR));
 	tCLIt it = mConnList.insert(mConnList.begin(), new_conn);
@@ -351,7 +373,7 @@ int cAsyncSocketServer::StartConn(cAsyncConn *conn)
 #ifdef USE_TLS
 	if (NativeTLS() && conn->mTLSVer.empty()) { // note: client that wants tls sends data at once, plain client waits for $Lock
 		conn->mStartWait |= cAsyncConn::eSW_DETECT;
-		AddStartWait(mTLSDetectList, conn, mTime.MiliSec() + mTLSWait);
+		AddStartWait(mTLSDetectList, conn, SteadyMS() + mTLSWait);
 	}
 #endif
 
@@ -385,7 +407,7 @@ bool cAsyncSocketServer::LookupHost(cAsyncConn *conn, bool park)
 
 	if (park) {
 		conn->mStartWait |= cAsyncConn::eSW_HOST;
-		AddStartWait(mHostWaitList, conn, mTime.MiliSec() + sHostWaitMax);
+		AddStartWait(mHostWaitList, conn, SteadyMS() + sHostWaitMax);
 		UpdateStartInput(conn);
 	}
 
@@ -462,8 +484,17 @@ void cAsyncSocketServer::StartWaitDone(cAsyncConn *conn, unsigned int flag)
 	if (conn->mStartWait) // note: still waiting for something else
 		return;
 
-	if (0 > OnNewConn(conn))
+	if (0 > OnNewConn(conn)) {
 		conn->CloseNow(); // note: dont delete here, we might be in the middle of connection loop
+		return;
+	}
+
+	if (conn->HasHeldInput()) { // note: data that came before start, also data of current read is put behind it, so order stays
+		conn->HoldInput();
+
+		while (conn->ok && !conn->mStartWait && conn->TakeHeldInput())
+			ParseInput(conn);
+	}
 }
 
 void cAsyncSocketServer::UpdateStartInput(cAsyncConn *conn)
@@ -498,7 +529,7 @@ void cAsyncSocketServer::CheckStartWait(deque<sStartWait> &list, unsigned int fl
 
 void cAsyncSocketServer::CheckStartWaits()
 {
-	const long long now = mTime.MiliSec();
+	const long long now = SteadyMS();
 
 	CheckStartWait(mHostWaitList, cAsyncConn::eSW_HOST, now, [this](cAsyncConn *conn) { // note: start without host name, late result will still set it
 		if (conn->Log(2))
@@ -527,7 +558,7 @@ void cAsyncSocketServer::TLSDetected(cAsyncConn *conn, bool tls)
 {
 	if (tls) {
 		conn->mStartWait = ((conn->mStartWait & ~cAsyncConn::eSW_DETECT) | cAsyncConn::eSW_HANDSHAKE);
-		AddStartWait(mTLSHandshakeList, conn, mTime.MiliSec() + sTLSHandshakeMax);
+		AddStartWait(mTLSHandshakeList, conn, SteadyMS() + sTLSHandshakeMax);
 		UpdateStartInput(conn);
 		return;
 	}
@@ -570,6 +601,11 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 	if (!old_conn)
 		throw "cAsyncSocketServer::delConnection null pointer";
 
+	if (old_conn->GetType() == eCT_LISTEN) { // note: listening socket is not in connection list, its iterator is not set, and hub must keep accepting users
+		vhErr(1) << "Error on listening socket, it stays open: " << old_conn << endl;
+		return;
+	}
+
 	if (mNowTreating == old_conn) {
 		old_conn->ok = false;
 		return;
@@ -599,6 +635,8 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 		}
 	}
 
+	old_conn->ok = false; // note: plugins still get close below, what they send to this connection must not register its socket in chooser again
+	old_conn->mWritable = false;
 	mConnChooser.DelConn(old_conn);
 
 	if (!badit)
@@ -622,7 +660,12 @@ int cAsyncSocketServer::input(cAsyncConn *conn)
 	if (conn->BufferEmpty()) // note: tls data was received, but nothing was decrypted yet, for example during handshake
 		return 1;
 
-	return ParseInput(conn);
+	const int res = ParseInput(conn);
+
+	if ((res <= 0) && conn->HasHeldInput()) // note: data is kept for later, see StartWaitDone(), main loop deletes connection when nothing was read
+		return 1;
+
+	return res;
 }
 
 int cAsyncSocketServer::ParseInput(cAsyncConn *conn)
@@ -632,6 +675,11 @@ int cAsyncSocketServer::ParseInput(cAsyncConn *conn)
 	int just_read = 0;
 
 	while (conn->ok && conn->mWritable) {
+		if (conn->mStartWait) { // note: connection is not started yet, for example host name is looked up or $MyIP of external proxy started it again, data is parsed after OnNewConn, see StartWaitDone()
+			conn->HoldInput();
+			break;
+		}
+
 		if (conn->LineStatus() == AC_LS_NO_LINE) // create new line if necessary
 			conn->SetLineToRead(FactoryString(conn), '|', mMaxLineLength);
 
@@ -690,18 +738,46 @@ int cAsyncSocketServer::OnNewConn(cAsyncConn *conn)
 int cAsyncSocketServer::OnTimerBase(const cTime &now)
 {
 	OnTimer(now);
+	return 0;
+}
 
-	if ((mT.conn + timer_conn_period) <= now) {
-		mT.conn = now;
-		tCLIt it;
+bool cAsyncSocketServer::DueSlices(long long now, int period, long long &last, unsigned int &from, unsigned int &count)
+{
+	const long long slice = ((((period > 1) ? period : 1) * 1000LL) / sTimerSlices); // note: period is seconds, at least one
+	const long long cur = (now / slice);
 
-		for (it = mConnList.begin(); it != mConnList.end(); ++it) {
-			if ((*it) && (*it)->ok)
-				(*it)->OnTimerBase(now);
+	if ((last < 0) || (cur < last)) { // note: first step, or period was changed to longer one, start with next part
+		last = cur;
+		return false;
+	}
+
+	if (cur == last)
+		return false;
+
+	from = (unsigned int)((last + 1) % sTimerSlices);
+	count = (((cur - last) >= sTimerSlices) ? sTimerSlices : (unsigned int)(cur - last)); // note: slow step can make several parts due, at most whole period
+	last = cur;
+	return true;
+}
+
+void cAsyncSocketServer::TimerSlices()
+{
+	const long long now = SteadyMS();
+	unsigned int from = 0, count = 0;
+
+	if (DueSlices(now, timer_conn_period, mConnSliceLast, from, count)) { // connection timer
+		for (tCLIt it = mConnList.begin(); it != mConnList.end(); ++it) {
+			if ((*it) && (*it)->ok && InTimerSlice((*it)->mTimerSlot, from, count))
+				(*it)->OnTimerBase(mTime);
 		}
 	}
 
-	return 0;
+	if (DueSlices(now, timer_serv_period, mFlushSliceLast, from, count)) // flush of delayed messages
+		OnFlushSlice(from, count);
+}
+
+void cAsyncSocketServer::OnFlushSlice(unsigned int, unsigned int)
+{
 }
 
 int cAsyncSocketServer::OnTimer(const cTime &now)

@@ -31,11 +31,15 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <algorithm>
+#include <vector>
 
 using namespace std;
 
 namespace nVerliHub {
 	namespace nUtils {
+
+static constexpr size_t sMMDBCacheMax = 100000; // note: most items in cache, about 20 mb, also with mmdb_cache_mins 0
 
 cMaxMindDB::cMaxMindDB(cServerDC *mS):
 	cObj("cMaxMindDB"),
@@ -295,7 +299,7 @@ bool cMaxMindDB::GetCity(string &geo_city, const string &host, const string &db)
 	return res;
 }
 
-bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db)
+bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db, unsigned long num)
 {
 	if (host.substr(0, 4) == "127.") {
 		geo_cc = "L1";
@@ -305,9 +309,9 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 		return true;
 	}
 
-	unsigned long sip = 0;
+	unsigned long sip = num;
 
-	if (!cBanList::Ip2Num(host, sip, false)) {
+	if (!sip && !cBanList::Ip2Num(host, sip, false)) {
 		geo_cc = "E1";
 		geo_cn = "Invalid IP";
 		geo_ci = "Invalid IP";
@@ -405,7 +409,7 @@ bool cMaxMindDB::GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const st
 	return r1 || r2 || r3;
 }
 
-bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db)
+bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db, unsigned long num)
 {
 	if (host.substr(0, 4) == "127.") {
 		geo_ran_lo = "127.0.0.0";
@@ -418,9 +422,9 @@ bool cMaxMindDB::GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_
 		return true;
 	}
 
-	unsigned long sip = 0;
+	unsigned long sip = num;
 
-	if (!cBanList::Ip2Num(host, sip, false)) {
+	if (!sip && !cBanList::Ip2Num(host, sip, false)) {
 		geo_ran_lo = "0.0.0.0";
 		geo_ran_hi = "255.255.255.255";
 		geo_cc = "E1";
@@ -967,6 +971,9 @@ void cMaxMindDB::MMDBCacheSet(const unsigned int ip, const string &cc, const str
 	if (cc.empty() && cn.empty() && ci.empty() && as.empty()) // nothing to set
 		return;
 
+	if ((mMMDBCacheList.size() >= sMMDBCacheMax) && (mMMDBCacheList.find(ip) == mMMDBCacheList.end())) // new item in full cache
+		MMDBCacheTrim();
+
 	sMMDBCache &it = mMMDBCacheList[ip];
 
 	if (cc.size()) // country code
@@ -1020,6 +1027,33 @@ void cMaxMindDB::MMDBCacheClean()
 
 	mClean = mServ->mTime; // update timer
 	vhLog(3) << "Cached items cleaned: " << del << " of " << mMMDBCacheList.size() << endl;
+}
+
+void cMaxMindDB::MMDBCacheTrim()
+{
+	vector<long> times;
+	times.reserve(mMMDBCacheList.size());
+
+	for (const auto &item: mMMDBCacheList)
+		times.push_back(item.second.mLT.Sec());
+
+	const size_t cut = (times.size() / 10); // note: oldest tenth, cache is full here so this is never zero
+	nth_element(times.begin(), times.begin() + cut, times.end());
+	const long limit = times[cut];
+	size_t del = 0;
+
+	for (tMMDBCacheList::iterator it = mMMDBCacheList.begin(); it != mMMDBCacheList.end();) {
+		const long look = it->second.mLT.Sec();
+
+		if ((look < limit) || ((look == limit) && (del < cut))) { // note: items of same second as limit are removed only until tenth is reached, many lookups can have same time
+			mMMDBCacheList.erase(it++);
+			del++;
+		} else {
+			++it;
+		}
+	}
+
+	vhLog(3) << "Cached items trimmed: " << del << " of " << (mMMDBCacheList.size() + del) << endl;
 }
 
 void cMaxMindDB::MMDBCacheClear()

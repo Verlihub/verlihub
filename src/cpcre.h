@@ -157,7 +157,7 @@ namespace nVerliHub {
 				/// @see Exec()
 				int mResult;
 
-				/// Pointer to an array of ints for result offsets, copy of pcre2 offsets, part that is not set is -1, same as in old pcre.
+				/// Pointer to an array of ints for result offsets, copy of pcre2 offsets, part that is not set is -1, same as in pcre1 interface.
 				int *mOffsetResults;
 
 				/// Number of elements in the array

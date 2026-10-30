@@ -90,8 +90,6 @@ public:
 	virtual bool OnPublicBotMessage(string *nick, string *data, int min_class, int max_class);
 	virtual bool OnUnLoad(long code);
 
-	char* toString(int);
-	char* longToString(long);
 	bool AutoLoad();
 	bool CallAll(const char *, const char *[], cConnDC *conn = NULL);
 	unsigned int Size() { return mLua.size(); }

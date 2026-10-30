@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -42,11 +42,24 @@ cZLib::cZLib():
 
 cZLib::~cZLib()
 {
+	EndStream();
+
 	if (outBuf)
 		free(outBuf);
 
 	if (inBuf)
 		free(inBuf);
+}
+
+void cZLib::EndStream()
+{
+	if (!mStream)
+		return;
+
+	z_stream *strm = (z_stream*)mStream;
+	deflateEnd(strm);
+	delete strm;
+	mStream = NULL;
 }
 
 char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level) // todo: do this in separate thread
@@ -68,9 +81,6 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 			return outBuf;
 	}
 
-	z_stream strm;
-	memset((void*)&strm, '\0', sizeof(strm));
-
 	if (inBufLen < len) // increase in buffer if not enough space
 		for (; inBufLen < len; inBufLen += ZLIB_BUFFER_SIZE);
 
@@ -84,9 +94,6 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	}
 
 	inBuf = new_buf;
-	strm.zalloc = Z_NULL; // allocate deflate state
-	strm.zfree = Z_NULL;
-	strm.data_type = Z_TEXT;
 	int comp_level = level;
 
 	if (comp_level < Z_DEFAULT_COMPRESSION) // -1
@@ -96,36 +103,68 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	else if (comp_level > Z_BEST_COMPRESSION) // 9
 		comp_level = Z_BEST_COMPRESSION;
 
-	err = deflateInit(&strm, comp_level);
+	z_stream *strm = (z_stream*)mStream;
 
-	if (err != Z_OK) { // initialize
-		outLen = inLastLen = outLastLen = 0;
-		return NULL;
+	if (strm && (mStreamLevel != comp_level)) // note: level was changed, stream is made again
+		EndStream();
+
+	if (mStream) { // note: same stream for every flush, reset is much cheaper than setting it up again
+		err = deflateReset(strm);
+
+		if (err != Z_OK) {
+			EndStream();
+			outLen = inLastLen = outLastLen = 0;
+			return NULL;
+		}
+
+	} else {
+		strm = new z_stream;
+		memset((void*)strm, '\0', sizeof(z_stream));
+		strm->zalloc = Z_NULL; // allocate deflate state
+		strm->zfree = Z_NULL;
+		err = deflateInit(strm, comp_level);
+
+		if (err != Z_OK) { // initialize
+			delete strm;
+			outLen = inLastLen = outLastLen = 0;
+			return NULL;
+		}
+
+		mStream = strm;
+		mStreamLevel = comp_level;
 	}
 
 	memcpy(inBuf, buffer, len); // copy data to in buffer
 
-	if (outBufLen < len) // increase out buffer if not enough space
-		for (; outBufLen < len; outBufLen += ZLIB_BUFFER_SIZE);
+	if (outBufLen < len) { // increase out buffer if not enough space, note: compressed data bigger than input falls back to raw data anyway
+		size_t want = outBufLen;
 
-	strm.avail_in = (uInt)len;
-	strm.next_in = (Bytef*)inBuf;
-	strm.avail_out = (uInt)(outBufLen - ZON_LEN);
-	strm.next_out = (Bytef*)(outBuf + ZON_LEN);
+		for (; want < len; want += ZLIB_BUFFER_SIZE);
 
-	if (deflate(&strm, Z_FINISH) != Z_STREAM_END) { // compress
-		deflateEnd(&strm);
+		char *new_out = (char*)realloc(outBuf, want); // note: buffer itself must grow, deflate writes up to its size, "$ZOn|" at start stays
+
+		if (!new_out) { // note: stream stays for next time
+			outLen = inLastLen = outLastLen = 0;
+			err = -int(want); // note: special message
+			return NULL;
+		}
+
+		outBuf = new_out;
+		outBufLen = want;
+	}
+
+	strm->avail_in = (uInt)len;
+	strm->next_in = (Bytef*)inBuf;
+	strm->avail_out = (uInt)(outBufLen - ZON_LEN);
+	strm->next_out = (Bytef*)(outBuf + ZON_LEN);
+
+	if (deflate(strm, Z_FINISH) != Z_STREAM_END) { // compress, note: data that does not fit ends here too, reset next time makes stream usable again
 		outLen = inLastLen = outLastLen = 0;
 		return NULL;
 	}
 
-	outLen = outLastLen = (strm.total_out + ZON_LEN);
+	outLen = outLastLen = (strm->total_out + ZON_LEN); // note: reset sets total to zero, so this is only this data
 	inLastLen = len;
-
-	if (deflateEnd(&strm) != Z_OK) { // finalize
-		outLen = inLastLen = outLastLen = 0;
-		return NULL;
-	}
 
 	if (len <= outLen) // out data size is bigger or equal in data size, fall back to raw data
 		return NULL;

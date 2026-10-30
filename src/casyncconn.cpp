@@ -220,6 +220,12 @@ int cAsyncConn::ReadLineLocal()
 	}
 
 	len = pos - buf;
+
+	if ((mxLine->size() + len) > mLineSizeMax) { // note: same limit for line that ends in this read
+		CloseNow();
+		return 0;
+	}
+
 	mxLine->append((char*)buf, len);
 	mBufReadPos += len + 1;
 	meLineStatus = AC_LS_LINE_DONE;
@@ -290,7 +296,7 @@ void cAsyncConn::CloseNow()
 	mWritable = false;
 	ok = false;
 
-	if (mxServer) {
+	if (mxServer && mxServer->mConnChooser.HasConn((cConnBase*)this)) { // note: only registered connection, closing before it is added or after it is removed must not leave entry in chooser
 		mxServer->mConnChooser.OptOut((cConnBase*)this, eCC_ALL);
 		mxServer->mConnChooser.OptIn((cConnBase*)this, eCC_CLOSE);
 	}
@@ -298,8 +304,20 @@ void cAsyncConn::CloseNow()
 
 int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 {
-	if (!ok || !mWritable)
+	if (!ok)
 		return -1;
+
+	if (!mWritable) { // note: close nice, data that user still sends is read and dropped, connection stays until its last data is sent or close time is over, unread data would make system reset connection on close
+		mBufReadPos = 0;
+		mBufEnd = 0;
+		const int drop = recv(mSockDesc, msBuffer.data(), MAX_MESS_SIZE, 0);
+
+		if ((drop > 0) || ((drop == -1) && SockTryAgain())) // note: buffer stays empty, so nothing is parsed
+			return 1;
+
+		CloseNow(); // note: user hung up or error, nothing more can be sent
+		return -1;
+	}
 
 	int buf_len = 0; //addr_len = sizeof(struct sockaddr)
 	unsigned int i = 0;
@@ -365,6 +383,7 @@ int cAsyncConn::ReadAll(const unsigned int tries, const unsigned int sleep)
 		else
 			mTimeLastIOAction.Get();
 
+		mTimeLastRead = mTimeLastIOAction;
 		OnReceived(buf_len); // note: before decrypting, so tls data is counted too
 
 	#ifdef USE_TLS
@@ -428,6 +447,14 @@ bool cAsyncConn::StartTLS(ssl_ctx_st *ctx)
 int cAsyncConn::TLSRead(int len)
 {
 	if (mTLSBusy) { // note: worker is doing handshake with this session, data waits until it is done
+		if ((mTLSQueue.size() + len) > MAX_MESS_SIZE) { // note: real handshake of client is few kb, openssl refuses certificate chain over 100 kb, more is never handshake
+			if (Log(2))
+				LogStream() << "TLS handshake data is too big, closing: " << (mTLSQueue.size() + len) << endl;
+
+			CloseNow();
+			return -1;
+		}
+
 		mTLSQueue.append(msBuffer.data(), len);
 		mBufEnd = 0;
 		return len;
@@ -985,7 +1012,10 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	size_t flush_size = GetFlushSize(), buf_size = GetBufferSize(), data_size = data.size();
 	size_t calc_size = flush_size + buf_size + data_size;
 
-	if (calc_size > mMaxBuffer) { // disconnect user who is receiving too slow and his buffer is overfilled, we cant waste memory forever
+	if (!flush_size && !buf_size && (data_size > mMaxBuffer)) // note: one message bigger than limit while nothing is waiting is not slow user, it is allowed, more data on top of it only up to normal limit
+		mBigWrite = data_size;
+
+	if (calc_size > (mMaxBuffer + mBigWrite)) { // disconnect user who is receiving too slow and his buffer is overfilled, we cant waste memory forever
 		if (Log(2))
 			LogStream() << "Output buffer is too big, closing: " << flush_size << " + " << buf_size << " + " << data_size << " = " << calc_size << " of " << mMaxBuffer << endl;
 
@@ -998,8 +1028,9 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		flush_size += data_size;
 	}
 
+	const bool send_wait = (buf_size && ok && mxServer); // note: unsent data in send buffer means socket is full, output event sends the rest together with flush buffer
 	buf_size += flush_size;
-	flush = (flush || (buf_size > (mMaxBuffer >> 1))); // force flush if required
+	flush = (flush || (!send_wait && (buf_size > (mMaxBuffer >> 1)))); // force flush when buffer is big, except while waiting for output event, send would only fail with try again
 
 	if (!buf_size || !flush) // nothing to send or send it later
 		return 0;
@@ -1065,8 +1096,8 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 		}
 	}
 
-	send_buf = mBufSend.data(); // pointer to send buffer
-	buf_size = mBufSend.size(); // note: encrypted data is bigger, and data that was not flushed is not in send buffer at all
+	send_buf = mBufSend.data() + mSendPos; // pointer to unsent part of send buffer
+	buf_size = mBufSend.size() - mSendPos; // note: encrypted data is bigger, and data that was not flushed is not in send buffer at all
 
 	/*
 	if (!send_buf)
@@ -1084,7 +1115,7 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 	if (send_res == -1) {
 		if (Log(6) && serv && serv->mNetOutLog && serv->mNetOutLog.is_open())
-			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << send_err << '=' << SockErrorText(send_err) << ": " << mBufSend << endl; // todo: log only part of data, dont fill logs
+			serv->mNetOutLog << '[' << AddrIP() << "] Failed sending all data, " << calc_size << " of " << buf_size << ", " << send_err << '=' << SockErrorText(send_err) << ": " << mBufSend.substr(mSendPos) << endl; // todo: log only part of data, dont fill logs
 
 		if (!send_again) { // analyse the error if any
 			if (Log(2))
@@ -1100,10 +1131,16 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 			else
 				mTimeLastIOAction.Get();
 
-			StrCutLeft(mBufSend, calc_size); // this is supposed to actually reduce the size of buffer, it does a copy so it is slower but memory usage is important
+			mSendPos += calc_size; // note: sent data stays in buffer, only position moves
+
+			if (mSendPos > (mBufSend.size() >> 1)) { // more than half is sent, cut it off with a copy that really reduces memory, all cuts together copy at most size of buffer
+				StrCutLeft(mBufSend, mSendPos);
+				mSendPos = 0;
+			}
+
 			buf_size -= calc_size;
 
-		} else if (bool(mCloseAfter)) { // we must close nice the connection
+		} else if (bool(mCloseAfter) && (mCloseAfter < (serv ? serv->mTime : cTime()))) { // note: nothing could be sent and time of close nice is over, until then it is tried again, so kick or redirect message behind slow data still goes out
 			CloseNow();
 		}
 
@@ -1133,6 +1170,8 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 	} else { // all data was sent
 		mBufSend.clear(); // clean up send buffer
 		ShrinkStringToFit(mBufSend);
+		mSendPos = 0;
+		mBigWrite = 0; // note: limit is normal again
 
 		if (bool(mCloseAfter)) // close nice the connection
 			CloseNow();
@@ -1142,6 +1181,9 @@ int cAsyncConn::Write(const string &data, bool flush) // note: data can actually
 
 			if (Log(5))
 				LogStream() << "Blocking output" << endl;
+
+			if (!InputParked()) // note: input can be blocked by full buffer above, it is allowed again when all data is sent, chooser does nothing when it is already set
+				serv->mConnChooser.OptIn(this, eCC_INPUT);
 		}
 
 		if (serv)

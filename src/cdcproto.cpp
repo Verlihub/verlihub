@@ -1350,18 +1350,20 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 				send only the version that has changed only to those who want it
 		*/
 
-		if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo) && (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), msg->mStr) != 0)) { // compare real myinfo
+		if (StrCompare(conn->mpUser->mMyINFO, 0, conn->mpUser->mMyINFO.size(), msg->mStr) == 0) { // compare real myinfo, same as sent one, so waiting newer one is dropped
+			conn->mpUser->mPendingMyINFO.clear();
+			conn->mpUser->mPendingFakeMyINFO.clear();
+
+		} else if (mS->MinDelay(conn->mpUser->mT.info, mS->mC.int_myinfo)) {
 			conn->mpUser->mMyINFO = msg->mStr; // set real myinfo
 			conn->mpUser->mFakeMyINFO = myinfo; // set fake myinfo
+			conn->mpUser->mPendingMyINFO.clear();
+			conn->mpUser->mPendingFakeMyINFO.clear();
+			mS->SendMyINFOToAll(conn->mpUser);
 
-			if (mS->mC.myinfo_tls_filter && conn->mpUser->GetMyFlag(eMF_TLS)) { // myinfo tls filter
-				mS->mUserList.SendToAllWithMyFlag(myinfo, eMF_TLS, mS->mC.delayed_myinfo, true);
-				mS->RemoveMyINFOFlag(temp, myinfo, eMF_TLS);
-				mS->mUserList.SendToAllWithoutMyFlag(temp, eMF_TLS, mS->mC.delayed_myinfo, true);
-
-			} else {
-				mS->mUserList.SendToAll(myinfo, mS->mC.delayed_myinfo, true); // send fake myinfo
-			}
+		} else { // note: too soon after last one, newest one is sent when interval is over, see cConnDC::OnTimer()
+			conn->mpUser->mPendingMyINFO = msg->mStr;
+			conn->mpUser->mPendingFakeMyINFO = myinfo;
 		}
 
 	} else { // user sends myinfo for the first time
@@ -1691,7 +1693,7 @@ int cDCProto::DC_GetINFO(cMessageDC *msg, cConnDC *conn)
 
 	if (!(conn->mFeatures & eSF_NOGETINFO)) { // send it
 		omsg = user->mFakeMyINFO;
-		conn->Send(omsg, true, false); // must be flushed, else user can wait for data forever
+		conn->Send(omsg, true, true); // must be flushed, else user can wait for data forever, protocol wants reply at once
 	}
 
 	return 0;
@@ -4241,14 +4243,12 @@ bool cDCProto::CheckIP(cConnDC *conn, const string &ip)
 	return false;
 }
 
-bool cDCProto::isLanIP(const string &ip)
+bool cDCProto::isLanIP(unsigned long lip)
 {
-	if (ip.substr(0, 4) == "127.")
+	if ((lip >= 2130706432UL) && (lip <= 2147483647UL)) // 127.0.0.0 - 127.255.255.255
 		return true;
 
-	unsigned long lip = 0;
-
-	if (cBanList::Ip2Num(ip, lip, false) && (((lip >= 167772160UL) && (lip <= 184549375UL)) || ((lip >= 2886729728UL) && (lip <= 2887778303UL)) || ((lip >= 3232235520UL) && (lip <= 3232301055UL))))
+	if (((lip >= 167772160UL) && (lip <= 184549375UL)) || ((lip >= 2886729728UL) && (lip <= 2887778303UL)) || ((lip >= 3232235520UL) && (lip <= 3232301055UL)))
 		return true;
 
 	/*

@@ -40,6 +40,14 @@ using namespace std;
 namespace nVerliHub {
 	namespace nMySQL {
 
+static constexpr size_t sMaxJobs = 10000; // note: queued queries, when database is slow or down more writes are dropped, they are statistics only
+static constexpr long long sStopWait = 5000; // note: milliseconds that hub stop waits for queued writes, then rest is dropped
+
+static long long SteadyMS()
+{
+	return (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, const string &host, const string &user, const string &pass, const string &data, const string &charset, bool tls, const string &sock):
 	cObj("cMySQLWorker"),
 	mServ(serv),
@@ -52,7 +60,8 @@ cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, cons
 	mTLS(tls),
 	mSock(sock)
 {
-	mPool.SetDrain(true); // note: queued writes are done before hub stops
+	mPool.SetDrain(true); // note: queued writes are done before hub stops, at most sStopWait, see Expired()
+	mPool.SetOnStop([this] { mStopUntil = SteadyMS() + sStopWait; });
 	mPool.SetThreadHooks(
 		[] { mysql_thread_init(); },
 		[this] {
@@ -84,36 +93,84 @@ void cMySQLWorker::Flush()
 	}))
 		return;
 
-	if ((wait.wait_for(std::chrono::seconds(3)) != std::future_status::ready) && ErrLog(1)) // note: database is slow or down, main thread does not freeze for it
-		LogStream() << "Database thread is still busy after 3 seconds, query on main connection runs without waiting for it" << endl;
+	wait.wait_for(std::chrono::seconds(3)); // note: database is slow or down, main thread does not freeze for it, query runs anyway, so nothing is lost and nothing is logged
 }
 
 bool cMySQLWorker::Start()
 {
-	return (mPool.IsRunning() || mServ.StartPool(mPool, 1)); // note: works only while main loop is running
+	return (mPool.IsRunning() || mServ.StartPool(mPool, 1, sMaxJobs)); // note: works only while main loop is running
+}
+
+bool cMySQLWorker::Expired() const
+{
+	const long long until = mStopUntil;
+	return (until && (SteadyMS() > until)); // note: hub is stopping and its wait time is over
+}
+
+void cMySQLWorker::Lost(bool drop, const string &err)
+{
+	if (drop)
+		mDropped++;
+	else
+		mFailed++;
+
+	if (err.size())
+		mLastErr = err;
+
+	Report();
+}
+
+void cMySQLWorker::Report()
+{
+	if (!mDropped && !mFailed)
+		return;
+
+	const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+	if ((now - mLastLostLog) < std::chrono::minutes(1)) // note: dont flood log while database is slow or down, rest is counted and logged later
+		return;
+
+	if (ErrLog(0)) { // note: same level as lost database connection, admin must see it, cause can also be full disk on database server
+		LogStream() << "Database thread lost queries, failed: " << mFailed << ", dropped because queue is full: " << mDropped;
+
+		if (mLastErr.size())
+			LogStream() << ", last error: " << mLastErr;
+
+		LogStream() << endl;
+	}
+
+	mDropped = 0;
+	mFailed = 0;
+	mLastErr.clear();
+	mLastLostLog = now;
 }
 
 bool cMySQLWorker::Write(const string &query)
 {
-	const bool queued = Start() && mPool.Post([this, query]() -> nThread::cWorkerPool::tResult {
+	if (!Start()) { // note: thread is not available, for example main loop is not running yet, then main connection is used
+		cQuery main(mMain);
+		main.OStream() << query;
+		main.Query();
+		main.Clear();
+		return false;
+	}
+
+	const bool queued = mPool.Post([this, query]() -> nThread::cWorkerPool::tResult {
 		string err;
+
+		if (Expired()) // note: dropped
+			return nullptr;
 
 		if (Execute(query, err))
 			return nullptr;
 
-		return [this, query, err] { // note: log on main thread
-			if (ErrLog(1))
-				LogStream() << "Query failed on database thread: " << err << " :: " << query << endl;
-		};
+		return [this, err] { Lost(false, err); }; // note: query failed also after retry, counted on main thread
 	});
 
 	if (queued)
 		return true;
 
-	cQuery main(mMain); // note: thread is not available, run it on main connection like before
-	main.OStream() << query;
-	main.Query();
-	main.Clear();
+	Lost(true, ""); // note: queue is full, main connection is not used, it would freeze main thread when database is slow
 	return false;
 }
 
@@ -122,7 +179,7 @@ bool cMySQLWorker::Select(const string &query, tSelectDone done)
 	if (!done || !Start())
 		return false;
 
-	return mPool.Post([this, query, done]() -> nThread::cWorkerPool::tResult {
+	const bool queued = mPool.Post([this, query, done]() -> nThread::cWorkerPool::tResult {
 		string err;
 		tRows rows;
 		bool ok = Execute(query, err);
@@ -153,13 +210,18 @@ bool cMySQLWorker::Select(const string &query, tSelectDone done)
 			}
 		}
 
-		return [this, query, err, ok, rows = std::move(rows), done] { // note: runs on main thread
-			if (!ok && ErrLog(1))
-				LogStream() << "Query failed on database thread: " << err << " :: " << query << endl;
+		return [this, err, ok, rows = std::move(rows), done] { // note: runs on main thread
+			if (!ok) // note: failed also after retry
+				Lost(false, err);
 
 			done(ok, rows);
 		};
 	});
+
+	if (!queued) // note: queue is full, caller gets failed result and tries again later, main connection is not used, it would freeze main thread when database is slow
+		done(false, tRows());
+
+	return true;
 }
 
 bool cMySQLWorker::Connect(string &err)

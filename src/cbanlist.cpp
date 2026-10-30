@@ -1096,35 +1096,38 @@ void cBanList::CacheIndex()
 	mCacheByIP.reserve(mCache.size());
 	mCacheByNick.reserve(mCache.size());
 
-	for (size_t i = 0; i < mCache.size(); i++) {
-		const sCacheBan &item = mCache[i];
-		mCacheByIP.emplace(item.mIP, i);
-		mCacheByNick.emplace(CacheKey(item.mNick), i);
+	for (size_t i = 0; i < mCache.size(); i++)
+		CacheIndexItem(i);
+}
 
-		if (SameText(item.mNick, "_rangeban_") || SameText(item.mNick, "_shareban_") || SameText(item.mIP, "_prefixban_"))
-			mCacheOther.push_back(i);
-	}
+void cBanList::CacheIndexItem(size_t index)
+{
+	const sCacheBan &item = mCache[index];
+	mCacheByIP.emplace(item.mIP, index);
+	mCacheByNick.emplace(CacheKey(item.mNick), index);
+
+	if (SameText(item.mNick, "_rangeban_") || SameText(item.mNick, "_shareban_") || SameText(item.mIP, "_prefixban_"))
+		mCacheOther.push_back(index);
 }
 
 void cBanList::CacheSave(const cBan &ban)
 {
 	sCacheBan item;
 	CacheFromBan(item, ban);
-	bool found = false;
+	mCacheChanges++;
+	const auto range = mCacheByIP.equal_range(item.mIP);
 
-	for (auto &old: mCache) { // note: same primary key as in database
-		if ((old.mIP == item.mIP) && SameText(old.mNick, item.mNick)) {
-			old = item;
-			found = true;
-			break;
+	for (auto it = range.first; it != range.second; ++it) { // note: same primary key as in database, ip and nick
+		sCacheBan &old = mCache[it->second];
+
+		if (SameText(old.mNick, item.mNick)) {
+			old = item; // note: keys are same, so index stays valid
+			return;
 		}
 	}
 
-	if (!found)
-		mCache.push_back(item);
-
-	mCacheChanges++;
-	CacheIndex();
+	mCache.push_back(item);
+	CacheIndexItem(mCache.size() - 1); // note: new ban is added to index alone, gives same index as full build
 }
 
 void cBanList::CacheErase(const string &value, int mask)
@@ -1210,7 +1213,13 @@ unsigned int cBanList::TestBanCache(cBan &ban, cConnDC *conn, const string &nick
 	}
 
 	const long now = mS->mTime.Sec();
+	const unsigned long num = (conn ? conn->AddrToNumber() : 0); // note: ip number of connection, range bans compare it without parsing text for every ban
 	size_t best = mCache.size(); // note: none
+
+	auto take = [&](size_t index) {
+		if ((best == mCache.size()) || (mCache[index].mDateEnd > mCache[best].mDateEnd)) // note: same order as database query, latest end date first, permanent last
+			best = index;
+	};
 
 	auto check = [&](size_t index, const string &value, int type) {
 		const sCacheBan &item = mCache[index];
@@ -1218,11 +1227,8 @@ unsigned int cBanList::TestBanCache(cBan &ban, cConnDC *conn, const string &nick
 		if (item.mDateEnd && (item.mDateEnd < now)) // note: expired
 			return;
 
-		if (!CacheMatch(item, value, type))
-			return;
-
-		if ((best == mCache.size()) || (item.mDateEnd > mCache[best].mDateEnd)) // note: same order as database query, latest end date first, permanent last
-			best = index;
+		if (CacheMatch(item, value, type))
+			take(index);
 	};
 
 	auto by_key = [&](const unordered_multimap<string, size_t> &map, const string &key, const string &value, int type) {
@@ -1249,8 +1255,12 @@ unsigned int cBanList::TestBanCache(cBan &ban, cConnDC *conn, const string &nick
 	}
 
 	for (const size_t index: mCacheOther) {
-		if ((mask & eBF_RANGE) && conn)
-			check(index, addr, eBF_RANGE);
+		if ((mask & eBF_RANGE) && conn) { // note: same match as CacheMatch for single address
+			const sCacheBan &item = mCache[index];
+
+			if ((!item.mDateEnd || (item.mDateEnd >= now)) && (num >= item.mRangeMin) && (num <= item.mRangeMax) && SameText(item.mNick, "_rangeban_"))
+				take(index);
+		}
 
 		if ((mask & eBF_SHARE) && share.size())
 			check(index, share, eBF_SHARE);

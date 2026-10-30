@@ -1237,7 +1237,8 @@ int cDCConsole::CmdUserLimit(istringstream &cmd_line, cConnDC *conn)
 		return 1;
 	}
 
-	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / mOwner->timer_serv_period, (60 * minutes) / mOwner->timer_serv_period); // 60 steps at most
+	const int period = ((mOwner->timer_serv_period > 0) ? mOwner->timer_serv_period : 1); // note: with 0 timer runs every main loop step, here it counts as one second, so there is no division by zero
+	cInterpolExp *fn = new cInterpolExp(mOwner->mC.max_users_total, maximum, (60 * minutes) / period, (60 * minutes) / period); // 60 steps at most
 
 	/* todo: use try instead
 	if (fn) {
@@ -1302,7 +1303,7 @@ int cDCConsole::CmdClass(istringstream &cmd_line, cConnDC *conn)
 					}
 
 				} else if ((old_class >= mOwner->mC.oplist_class) && (new_class < mOwner->mC.oplist_class)) {
-					if (!user->mxConn->mRegInfo->mHideKeys && mOwner->mOpList.ContainsHash(user->mNickHash)) {
+					if (!user->mxConn->mRegInfo->mHideKeys && !user->mxConn->mRegInfo->mShowKeys && mOwner->mOpList.ContainsHash(user->mNickHash)) { // note: show_keys keeps key also below operator class, same as on login
 						mOwner->mOpList.RemoveByHash(user->mNickHash);
 
 						mOwner->mP.Create_Quit(msg, user->mNick); // send quit to all
@@ -3644,7 +3645,7 @@ bool cDCConsole::cfRegUsr::operator()()
 						}
 
 					} else if ((user->mClass >= mS->mC.oplist_class) && (ParClass < mS->mC.oplist_class)) {
-						if (!ui.mHideKeys && mS->mOpList.ContainsHash(user->mNickHash)) {
+						if (!ui.mHideKeys && !ui.mShowKeys && mS->mOpList.ContainsHash(user->mNickHash)) { // note: show_keys keeps key also below operator class, same as on login
 							mS->mOpList.RemoveByHash(user->mNickHash);
 
 							mS->mP.Create_Quit(msg, user->mNick); // send quit to all
@@ -3835,6 +3836,7 @@ bool cDCConsole::cfRegUsr::operator()()
 					if (par.size()) {
 						if (user->mxConn->SetUserIP(par)) {
 							user->mxConn->ResetGeo();
+							mS->mUserList.IPChanged(); // note: new users get new ip too
 
 							if (ostr.str().empty())
 								ostr << autosprintf(_("Your fake IP is now set: %s"), par.c_str());
@@ -4006,7 +4008,7 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 		if (mIPRangeRex.PartFound(R_DOTS)) {
 			mIPRangeRex.Extract(R_IP1, rang, temp);
 
-			if (!cBanList::Ip2Num(temp, frdr)) // note: invalid address, for example part above 255, gave range from old value
+			if (!cBanList::Ip2Num(temp, frdr)) // note: invalid address, for example part above 255
 				return false;
 
 			mIPRangeRex.Extract(R_IP2, rang, temp);
@@ -4015,7 +4017,7 @@ bool cDCConsole::GetIPRange(const string &rang, unsigned long &frdr, unsigned lo
 				return false;
 
 		} else { // <addr>/<mask>
-			mIPRangeRex.Extract(R_IP1, rang, temp); // note: was whole match with mask, which never converted, so range started from old value
+			mIPRangeRex.Extract(R_IP1, rang, temp); // note: address without mask
 
 			if (!cBanList::Ip2Num(temp, frdr))
 				return false;

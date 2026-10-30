@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -138,6 +138,8 @@ public:
 	string mNick;
 	string mMyINFO; // real myinfo used only for comparing
 	string mFakeMyINFO; // we send only this modified myinfo
+	string mPendingMyINFO; // note: newest real myinfo that came within int_myinfo, it is sent when interval is over
+	string mPendingFakeMyINFO; // note: its fake myinfo
 
 	// store user nick hash and use it as much as possible instead of nick
 	typedef unsigned long tHashType;

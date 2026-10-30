@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -57,8 +57,8 @@ namespace nVerliHub {
 				bool GetCC(const string &host, string &cc);
 				bool GetCN(const string &host, string &cn);
 				bool GetCity(string &geo_city, const string &host, const string &db = "");
-				bool GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db = ""); // optimized function used on user login, gets all 3 values from 1 lookup
-				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db = "");
+				bool GetCCC(string &geo_cc, string &geo_cn, string &geo_ci, const string &host, const string &db = "", unsigned long num = 0); // optimized function used on user login, gets all 3 values from 1 lookup, num is ip number of host when caller has it
+				bool GetGeoIP(string &geo_host, string &geo_ran_lo, string &geo_ran_hi, string &geo_cc, string &geo_ccc, string &geo_cn, string &geo_reg_code, string &geo_reg_name, string &geo_tz, string &geo_cont, string &geo_city, string &geo_post, double &geo_lat, double &geo_lon, unsigned short &geo_met, unsigned short &geo_area, const string &host, const string &db = "", unsigned long num = 0); // num is ip number of host when caller has it
 				bool GetASN(string &asn_name, const string &host, const string &db = "");
 			private:
 				nSocket::cServerDC *mServ;
@@ -94,6 +94,7 @@ namespace nVerliHub {
 				void MMDBCacheSet(const unsigned int ip, const string &cc, const string &cn, const string &ci, const string &as);
 				bool MMDBCacheGet(const unsigned int ip, string &cc, string &cn, string &ci, string &as);
 				void MMDBCacheClear();
+				void MMDBCacheTrim(); // note: removes about oldest tenth of items when cache is full
 		};
 
 	};

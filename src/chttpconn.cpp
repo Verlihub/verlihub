@@ -275,6 +275,27 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 		return 1;
 	};
 
+	auto plain = [&](const char *ptr, size_t len) -> bool { // note: body without chunks, until content length or end of connection, false on error
+		if ((need != string::npos) && (len > (need - got)))
+			len = need - got;
+
+		if (!put(ptr, len)) {
+			if (full)
+				SetError(eHTTP_BROKEN, "Reply is too big");
+			else
+				SetError(eHTTP_FILE, "Unable to write file: " + file);
+
+			return false;
+		}
+
+		got += len;
+
+		if ((need != string::npos) && (got >= need))
+			done = true;
+
+		return true;
+	};
+
 	while (!done) { // note: read until whole body is here or connection is closed
 		const int len = Recv(buf, sizeof(buf));
 
@@ -288,6 +309,13 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 				SetError(eHTTP_BROKEN, (have ? "Connection closed before end of reply from " : "Connection closed before reply from ") + mHost + ':' + StringFrom(mPort));
 
 			break;
+		}
+
+		if (have && !chunk) { // note: rest of plain body goes from receive buffer straight to body or file
+			if (!plain(buf, size_t(len)))
+				break;
+
+			continue;
 		}
 
 		data.append(buf, len);
@@ -324,6 +352,9 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 					break;
 				}
 			}
+
+			if (!out && !chunk && (need != string::npos) && (!max || (need <= max))) // note: known size is allocated once, at most 16 mb so wrong content length can not take much memory
+				body.reserve(std::min(need, size_t(16777216)));
 		}
 
 		if (chunk) {
@@ -343,26 +374,11 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 				break;
 			}
 
-		} else {
-			size_t take = data.size();
-
-			if ((need != string::npos) && (take > (need - got)))
-				take = need - got;
-
-			if (!put(data.data(), take)) {
-				if (full)
-					SetError(eHTTP_BROKEN, "Reply is too big");
-				else
-					SetError(eHTTP_FILE, "Unable to write file: " + file);
-
+		} else { // note: part of plain body that came together with header
+			if (!plain(data.data(), data.size()))
 				break;
-			}
 
-			got += take;
 			data.clear();
-
-			if ((need != string::npos) && (got >= need))
-				done = true;
 		}
 	}
 

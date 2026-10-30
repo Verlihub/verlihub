@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -92,7 +92,7 @@ bool cConnChoose::AddConn(cConnBase *conn)
 	tSocket sock = (tSocket)(*conn);
 
 	if ((tSocket)mConnList.size() <= sock) // resize
-		mConnList.resize(sock + (sock / 4), NULL); // todo: decreaser
+		mConnList.resize(sock + (sock / 4) + 1, NULL); // todo: decreaser, note: plus one, so small socket number fits too
 
  	if (mConnList[sock]) // dont add twice
 		return false;

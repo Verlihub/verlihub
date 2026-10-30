@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -55,7 +55,7 @@ void cConnPoll::OptIn(tSocket sock, tChEvent mask)
 
 	} else {
 		if (mask & eCC_INPUT)
-			event = POLLIN | POLLPRI;
+			event = POLLIN; // note: no urgent data, hub does not read it
 
 		if (mask & eCC_OUTPUT)
 			event |= POLLOUT;
@@ -75,7 +75,7 @@ void cConnPoll::OptOut(tSocket sock, tChEvent mask)
  	unsigned event = ~(0u);
 
 	if (mask & eCC_INPUT)
-		event = ~unsigned(POLLIN | POLLPRI);
+		event = ~unsigned(POLLIN);
 
 	if (mask & eCC_OUTPUT)
 		event &= ~unsigned(POLLOUT);
@@ -100,7 +100,7 @@ int cConnPoll::OptGet(tSocket sock)
 		mask = eCC_CLOSE;
 
 	} else {
-		if (event & (POLLIN | POLLPRI))
+		if (event & POLLIN)
 			mask |= eCC_INPUT;
 
 		if (event & POLLOUT)
@@ -126,7 +126,7 @@ int cConnPoll::RevGet(tSocket sock)
 	if (!theFD.events && (theFD.fd == sock))
 		mask = eCC_CLOSE;
 
-	if (event & (POLLIN | POLLPRI))
+	if (event & POLLIN)
 		mask |= eCC_INPUT;
 
 	if (event & POLLOUT)
@@ -154,7 +154,7 @@ bool cConnPoll::RevTest(cPollfd &theFD)
 	if (event & POLLOUT)
 		return true;
 
-	if (event & (POLLIN | POLLPRI))
+	if (event & POLLIN)
 		return true;
 
 	if (event & (POLLERR | POLLHUP | POLLNVAL))
@@ -207,7 +207,7 @@ bool cConnPoll::AddConn(cConnBase *conn)
 		return false;
 
 	if (mLastSock >= (tSocket)mFDs.size()) // 2
-		mFDs.resize(mLastSock + (mLastSock / 4));
+		mFDs.resize(mLastSock + (mLastSock / 4) + 1); // note: plus one, so small socket number fits too
 
 	return true;
 }

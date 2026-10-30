@@ -221,6 +221,22 @@ int cConnDC::OnTimer(const cTime &now)
 			LogStream() << "Any action timeout" << endl;
 
 		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
+
+	} else if (mWritable && mpUser && mpUser->mInList && (mTimeLastRead.Sec() < (now.Sec() - 270))) { // note: clients ping every minute, dead client without close still accepts pings into system buffer, so check above never fires for it
+		os << _("General timeout");
+
+		if (Log(2))
+			LogStream() << "Read timeout" << endl;
+
+		Server()->ConnCloseMsg(this, os.str(), 6000, eCR_TO_ANYACTION);
+	}
+
+	if (mpUser && mpUser->mInList && mpUser->mPendingMyINFO.size() && Server()->MinDelay(mpUser->mT.info, Server()->mC.int_myinfo)) { // note: myinfo that came too soon after last one, newest one is sent now
+		mpUser->mMyINFO.swap(mpUser->mPendingMyINFO);
+		mpUser->mFakeMyINFO.swap(mpUser->mPendingFakeMyINFO);
+		mpUser->mPendingMyINFO.clear();
+		mpUser->mPendingFakeMyINFO.clear();
+		Server()->SendMyINFOToAll(mpUser);
 	}
 
 	if (mpUser && mpUser->mInList && Server()->mC.delayed_ping && Server()->MinDelay(mT.ping, Server()->mC.delayed_ping)) { // check frozen users, every minute by default
@@ -622,8 +638,10 @@ void cDCConnFactory::DeleteConn(cAsyncConn * &connection)
 
 	if (conn) {
 		#ifndef WITHOUT_PLUGINS
-			mServer->mCallBacks.mOnCloseConn.CallAll(conn);
-			mServer->mCallBacks.mOnCloseConnEx.CallAll(conn);
+			if (conn->mNewConnCalled) { // note: never close before new connection, plugins and scripts count connections by these two
+				mServer->mCallBacks.mOnCloseConn.CallAll(conn);
+				mServer->mCallBacks.mOnCloseConnEx.CallAll(conn);
+			}
 		#endif
 
 		if (conn->GetLSFlag(eLS_ALLOWED)) {
@@ -652,7 +670,7 @@ string cConnDC::GetGeoCC()
 {
 	if (mCC.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP(), "", AddrToNumber()); // lookup all at once
 	}
 
 	return mCC;
@@ -662,7 +680,7 @@ string cConnDC::GetGeoCN()
 {
 	if (mCN.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP(), "", AddrToNumber()); // lookup all at once
 	}
 
 	return mCN;
@@ -672,7 +690,7 @@ string cConnDC::GetGeoCI()
 {
 	if (mCity.empty() && mxServer) { // if not set
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;
-		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP()); // lookup all at once
+		serv->mMaxMindDB->GetCCC(mCC, mCN, mCity, AddrIP(), "", AddrToNumber()); // lookup all at once
 	}
 
 	return mCity;
@@ -724,34 +742,11 @@ void cConnDC::SetGeoZone()
 		}
 	}
 
-	unsigned long inum = AddrToNumber(), imin = 0, imax = 0;
+	const unsigned long inum = AddrToNumber();
 
-	if (serv->mC.ip_zone4_min.size() && serv->mC.ip_zone4_max.size()) {
-		cBanList::Ip2Num(serv->mC.ip_zone4_min, imin); // validated on set
-		cBanList::Ip2Num(serv->mC.ip_zone4_max, imax);
-
-		if ((imin <= inum) && (imax >= inum)) {
-			mGeoZone = 4;
-			return;
-		}
-	}
-
-	if (serv->mC.ip_zone5_min.size() && serv->mC.ip_zone5_max.size()) {
-		cBanList::Ip2Num(serv->mC.ip_zone5_min, imin); // validated on set
-		cBanList::Ip2Num(serv->mC.ip_zone5_max, imax);
-
-		if ((imin <= inum) && (imax >= inum)) {
-			mGeoZone = 5;
-			return;
-		}
-	}
-
-	if (serv->mC.ip_zone6_min.size() && serv->mC.ip_zone6_max.size()) {
-		cBanList::Ip2Num(serv->mC.ip_zone6_min, imin); // validated on set
-		cBanList::Ip2Num(serv->mC.ip_zone6_max, imax);
-
-		if ((imin <= inum) && (imax >= inum)) {
-			mGeoZone = 6;
+	for (unsigned int pos = 0; pos < 3; pos++) { // ip zones 4 to 6, numbers are made by SetIPZones
+		if (serv->mIPZoneUse[pos] && (serv->mIPZoneMin[pos] <= inum) && (serv->mIPZoneMax[pos] >= inum)) {
+			mGeoZone = pos + 4;
 			return;
 		}
 	}

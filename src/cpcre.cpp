@@ -28,7 +28,7 @@ using namespace std;
 namespace nVerliHub {
 	namespace nUtils {
 
-static uint32_t PartCount(int size) // note: old pcre used one third of offset array as workspace, so same number of parts is kept
+static uint32_t PartCount(int size) // note: one third of offset array is not used for results, so number of parts is same as in pcre1 interface
 {
 	return ((size >= 3) ? uint32_t(size / 3) : 1);
 }
@@ -117,14 +117,14 @@ int cPCRE::Exec(const string &subject)
 		return mResult;
 	}
 
-	mResult = pcre2_match(mPattern, (PCRE2_SPTR)subject.data(), subject.size(), 0, 0, mMatch, NULL); // note: same return values as old pcre, number of parts, zero when there are more parts than results can hold, negative when not matched
+	mResult = pcre2_match(mPattern, (PCRE2_SPTR)subject.data(), subject.size(), 0, 0, mMatch, NULL); // note: return values are same as in pcre1 interface, number of parts, zero when there are more parts than results can hold, negative when not matched
 
 	if (mResult >= 0) {
 		const PCRE2_SIZE *vec = pcre2_get_ovector_pointer(mMatch);
 		const uint32_t count = 2 * pcre2_get_ovector_count(mMatch);
 
 		for (uint32_t i = 0; i < count; i++)
-			mOffsetResults[i] = ((vec[i] == PCRE2_UNSET) ? -1 : int(vec[i])); // note: pcre2 marks part that is not set with own value, old pcre used -1
+			mOffsetResults[i] = ((vec[i] == PCRE2_UNSET) ? -1 : int(vec[i])); // note: pcre2 marks part that is not set with own value, here it is -1
 	}
 
 	return mResult;
