@@ -67,7 +67,7 @@ void cDCConf::AddVars()
 
 	// tls
 	Add("tls_enable", mS.mTLSEnable, true); // note: only when built with tls support
-	Add("tls_listen_ip", mS.mTLSAddr, "127.0.0.1"); // note: address of external tls proxy
+	Add("tls_listen_ip", mS.mTLSAddr, ""); // note: address of external tls proxy, empty when not used
 	Add("tls_only_mode", tls_only_mode, false);
 	Add("not_tls_redirect", not_tls_redirect, "");
 	Add("tls_detect_wait", mS.mTLSWait, 500);

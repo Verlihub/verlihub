@@ -199,6 +199,21 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mC.AddVars();
 	mC.Save();
 	mC.Load();
+
+	if (nConfig::cConfMySQL::msLastVersion.size() && tConnTypesBase::VersionNewer("2.0.0.0", nConfig::cConfMySQL::msLastVersion)) { // note: once on upgrade from version before 2.0
+		if ((mAddr.compare(0, 4, "127.") == 0) && (mAddr == mTLSAddr)) { // note: hub behind local tls proxy listens on all addresses, so users can enter without old proxy, tls_listen_ip is kept for going back
+			mAddr = "0.0.0.0";
+			cConfigItemBaseString item(mAddr, "listen_ip");
+			mSetupList.SaveItem(mDBConf.config_name.c_str(), &item);
+			vhLog(0) << "Old TLS proxy setup found, hub now listens on " << mAddr << ':' << mPort << ", please stop old TLS proxy" << endl;
+
+		} else if (mTLSAddr.size() && !ExternalTLS()) { // note: old default of tls_listen_ip is not used by any proxy
+			mTLSAddr.clear();
+			cConfigItemBaseString item(mTLSAddr, "tls_listen_ip");
+			mSetupList.SaveItem(mDBConf.config_name.c_str(), &item);
+		}
+	}
+
 	SetIPZones();
 
 	mConnTypes = new cConnTypes(this);

@@ -3,6 +3,8 @@
 ## Added
 
 * External TLS proxy is used when listen_ip equals tls_listen_ip, configuration tls_force_myip to force it
+* Upgrade from hub behind local TLS proxy sets listen_ip to 0.0.0.0 once
+* Configuration tls_listen_ip is empty by default, upgrade clears old value when no proxy uses it
 * Lua 5.5 support
 * Consider users with hidden chat on welcome message
 * Multithreading for MySQL, host lookup and other slow work, configuration adv_worker_threads
