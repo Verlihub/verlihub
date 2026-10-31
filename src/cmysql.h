@@ -60,7 +60,7 @@ class cMySQL: public cObj
 {
 	friend class cQuery;
 	public:
-		cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls = false, const string &sock = "");
+		cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls = false, const string &sock = "", bool info = true); // note: info shows connecting and closing in log, errors are always shown
 		~cMySQL();
 		void Init();
 		bool Connect(bool quiet = false);
@@ -92,6 +92,7 @@ class cMySQL: public cObj
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;
 		bool mDBTLS;
 		string mDBSock;
+		bool mInfo;
 		MYSQL *mDBHandle;
 		bool mLost; // note: connection is lost and not yet back
 		unsigned long mFailed; // note: failed reconnect attempts since connection was lost

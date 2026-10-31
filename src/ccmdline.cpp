@@ -3412,7 +3412,7 @@ bool cCmdLine::Connect()
 	mDBConf.reset(new cDBConf(mConfigDir + "/dbconfig"));
 
 	try { // note: constructor connects and throws on failure, it already wrote error of database client
-		mMySQL.reset(new cMySQL(mDBConf->db_host, mDBConf->db_user, mDBConf->db_pass, mDBConf->db_data, mDBConf->db_charset, mDBConf->db_tls, mDBConf->db_socket));
+		mMySQL.reset(new cMySQL(mDBConf->db_host, mDBConf->db_user, mDBConf->db_pass, mDBConf->db_data, mDBConf->db_charset, mDBConf->db_tls, mDBConf->db_socket, false)); // note: command output without connecting and closing log lines
 	} catch (const char *) {
 		cerr << Paint(_("Failed to connect to database of hub."), sRed, true) << endl;
 		return false;

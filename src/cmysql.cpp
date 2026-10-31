@@ -28,7 +28,7 @@ namespace nVerliHub {
 
 	namespace nMySQL {
 
-cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls, const string &sock):
+cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &charset, bool tls, const string &sock, bool info):
 	cObj("cMySQL"),
 	mDBName(data),
 	mDBHost(host),
@@ -37,6 +37,7 @@ cMySQL::cMySQL(string &host, string &user, string &pass, string &data, string &c
 	mDBChar(charset),
 	mDBTLS(tls),
 	mDBSock(sock),
+	mInfo(info),
 	mDBHandle(NULL),
 	mLost(false),
 	mFailed(0)
@@ -69,7 +70,7 @@ void cMySQL::Init()
 void cMySQL::Close()
 {
 	if (mDBHandle) {
-		if (Log(0))
+		if (mInfo && Log(0))
 			LogStream() << "Closing MySQL connection" << endl;
 
 		mysql_close(mDBHandle);
@@ -81,7 +82,7 @@ void cMySQL::Close()
 
 bool cMySQL::Connect(bool quiet)
 {
-	if (!quiet && Log(0))
+	if (!quiet && mInfo && Log(0))
 		LogStream() << "Connecting to MySQL/MariaDB server " << mDBUser << " @ " << mDBHost << " / " << mDBName << " using charset " << ((mDBChar.size()) ? mDBChar : ((strcmp(DEFAULT_CHARSET, "") != 0) ? DEFAULT_CHARSET : "<default>")) << endl;
 
 	if (mDBChar.size()) // note: no automatic reconnect of client library, it is deprecated, see Reconnect()
