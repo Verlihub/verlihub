@@ -31,6 +31,7 @@
 * Hub utility "vh" is "verlihub" itself, old "vh" commands keep working
 * Update check and crash report use HTTPS
 * Update check and MaxMind download retry twice on timeout or server error
+* Outgoing connections use listen_ip as source address when it is set to specific address
 * Hub stop no longer waits for hublist registration or update check
 * Translation files are UTF-8, converted to locale charset at runtime
 * PCRE2 instead of old PCRE, see Install.md

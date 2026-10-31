@@ -49,7 +49,8 @@ namespace nVerliHub {
 			eHTTP_BROKEN = -5, // note: connection closed before end of reply, or reply is not valid
 			eHTTP_FILE = -6, // note: download can not be written to file
 			eHTTP_CANCEL = -7, // note: hub is stopping
-			eHTTP_NETWORK = -8 // note: other network error, for example connection reset
+			eHTTP_NETWORK = -8, // note: other network error, for example connection reset
+			eHTTP_BIND = -9 // note: source address from listen_ip can not be used
 		};
 
 		// reply of http request for scripts and plugins, runs on main thread, code is http status or negative tHTTPError with err text, body is file path for download
@@ -81,6 +82,12 @@ namespace nVerliHub {
 
 				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice
 				static bool Download(const string &url, string &data);
+
+				/*
+					source address of all outgoing connections, same as interface option of curl, empty is address chosen by system
+					note: hub sets it once on start from listen_ip, before any thread can connect, so threads only read it
+				*/
+				static string msBindAddr;
 				~cHTTPConn();
 
 				cHTTPConn(const cHTTPConn&) = delete;

@@ -217,6 +217,13 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 		}
 	}
 
+	if (mAddr.size() && (mAddr != "0.0.0.0") && (mAddr.compare(0, 4, "127.") != 0)) { // note: specific listen_ip is also source of outgoing connections, same as interface option of curl in old scripts, local address would not reach other servers
+		cHTTPConn::msBindAddr = mAddr;
+		vhLog(1) << "Using source address for outgoing connections: " << mAddr << endl;
+	} else {
+		cHTTPConn::msBindAddr.clear();
+	}
+
 	SetIPZones();
 
 	mConnTypes = new cConnTypes(this);

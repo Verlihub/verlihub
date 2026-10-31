@@ -55,6 +55,8 @@ namespace nVerliHub {
 
 	namespace nSocket {
 
+string cHTTPConn::msBindAddr;
+
 cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel, bool tls, unsigned int timeout):
 	mGood(false),
 	mWrite(true),
@@ -653,6 +655,24 @@ int cHTTPConn::Connect(const string &host, const int port)
 
 	SockSetTimeout(mSock, SO_RCVTIMEO, mTimeout * 1000); // note: time without data, not whole request, so big download works as long as data comes
 	SockSetTimeout(mSock, SO_SNDTIMEO, mTimeout * 1000);
+
+	if (msBindAddr.size()) { // note: same as interface option of curl, server that allows only address of hub sees right one, no fall back to other address
+		struct sockaddr_in src;
+		memset(&src, 0, sizeof(src));
+		src.sin_family = AF_INET;
+		src.sin_port = 0; // note: any free local port
+
+		if (inet_pton(AF_INET, msBindAddr.c_str(), &src.sin_addr) != 1) {
+			SetError(eHTTP_BIND, "Binding to " + msBindAddr + " failed: not an IPv4 address");
+			return -1;
+		}
+
+		if (::bind(mSock, (struct sockaddr*)&src, sizeof(src)) == -1) {
+			SetError(eHTTP_BIND, "Binding to " + msBindAddr + " failed: " + SockErrorText(SockError()));
+			return -1;
+		}
+	}
+
 	struct addrinfo hints, *res = NULL;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET; // note: socket is ipv4
