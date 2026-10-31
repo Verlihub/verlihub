@@ -62,6 +62,20 @@ void cZLib::EndStream()
 	mStream = NULL;
 }
 
+int cZLib::Level(int level)
+{
+	if (level <= Z_DEFAULT_COMPRESSION) // -1
+		return 6; // note: default level of zlib, its header has no constant for it
+
+	if (level < Z_BEST_SPEED) // 1, note: 0 becomes 1
+		return Z_BEST_SPEED;
+
+	if (level > Z_BEST_COMPRESSION) // 9
+		return Z_BEST_COMPRESSION;
+
+	return level;
+}
+
 char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level) // todo: do this in separate thread
 {
 	if (!buffer)
@@ -94,15 +108,7 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 	}
 
 	inBuf = new_buf;
-	int comp_level = level;
-
-	if (comp_level < Z_DEFAULT_COMPRESSION) // -1
-		comp_level = Z_DEFAULT_COMPRESSION;
-	else if ((comp_level != Z_DEFAULT_COMPRESSION) && (comp_level < Z_BEST_SPEED)) // 1, note: 0 becomes 1, -1 stays default level of zlib
-		comp_level = Z_BEST_SPEED;
-	else if (comp_level > Z_BEST_COMPRESSION) // 9
-		comp_level = Z_BEST_COMPRESSION;
-
+	const int comp_level = Level(level);
 	z_stream *strm = (z_stream*)mStream;
 
 	if (strm && (mStreamLevel != comp_level)) // note: level was changed, stream is made again

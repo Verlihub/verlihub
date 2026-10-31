@@ -3443,7 +3443,7 @@ msgstr ""
 
 #: ../src/cinfoserver.cpp:244
 #, c-format
-msgid "Upload saved with zLib: %s / %d / %s / %s"
+msgid "Upload saved with ZLib: %s / %d / %s / %s"
 msgstr ""
 
 #: ../src/cinfoserver.cpp:245

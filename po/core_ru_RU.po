@@ -2311,8 +2311,8 @@ msgstr "Всего отдано: %s / %s"
 
 #: ../src/cinfoserver.cpp:224
 #, c-format
-msgid "Upload saved with zLib: %s / %d / %s / %s"
-msgstr "Сэкономлено трафика с помощью zLib: %s / %d / %s / %s"
+msgid "Upload saved with ZLib: %s / %d / %s / %s"
+msgstr "Сэкономлено трафика с помощью ZLib: %s / %d / %s / %s"
 
 #: ../src/cinfoserver.cpp:225
 #, c-format

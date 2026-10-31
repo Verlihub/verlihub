@@ -2278,8 +2278,8 @@ msgstr "Téléversement total : %s / %s"
 
 #: ../src/cinfoserver.cpp:224
 #, c-format
-msgid "Upload saved with zLib: %s / %d / %s / %s"
-msgstr "Téléversement économisé avec zLib :  %s / %d / %s / %s"
+msgid "Upload saved with ZLib: %s / %d / %s / %s"
+msgstr "Téléversement économisé avec ZLib :  %s / %d / %s / %s"
 
 #: ../src/cinfoserver.cpp:225
 #, c-format

@@ -2258,8 +2258,8 @@ msgstr "Toplam gönderi: %s / %s"
 
 #: ../src/cinfoserver.cpp:224
 #, c-format
-msgid "Upload saved with zLib: %s / %d / %s / %s"
-msgstr "zLib ile tasarruf edilen gönderi: %s / %d / %s / %s"
+msgid "Upload saved with ZLib: %s / %d / %s / %s"
+msgstr "ZLib ile tasarruf edilen gönderi: %s / %d / %s / %s"
 
 #: ../src/cinfoserver.cpp:225
 #, c-format

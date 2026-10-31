@@ -65,6 +65,9 @@ namespace nUtils {
 			*/
 			char* Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level);
 
+			// level that zlib really uses for configured level, from 1 to 9
+			static int Level(int level);
+
 			// get buffer sizes
 			size_t GetInBufLen()
 			{
