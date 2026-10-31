@@ -1132,6 +1132,16 @@ bool cBanList::LoadCache()
 	return true;
 }
 
+void cBanList::Clean()
+{
+	TruncateTable();
+
+	if (mCacheLoaded) { // note: change counter is increased, so reload that is on its way is made again
+		vector<sCacheBan> none;
+		CacheSet(none);
+	}
+}
+
 void cBanList::ReloadCache()
 {
 	if (!mS->mC.use_banlist_cache) { // note: cache was disabled

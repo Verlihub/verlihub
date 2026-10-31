@@ -307,6 +307,9 @@ namespace nVerliHub {
 				 */
 				int Unban(ostream &os, const string &value, const string &reason, const string &nickOp, int mask, bool deleteEntry = true);
 
+				// remove all bans from table and cache
+				void Clean();
+
 				/*
 					in-memory copy of active bans, used by TestBan() instead of database query when use_banlist_cache is enabled
 					changes made by hub itself are applied to cache at once, changes made by others, for example web interface or script, are seen after reload

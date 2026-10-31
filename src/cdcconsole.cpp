@@ -1648,7 +1648,7 @@ bool cDCConsole::cfClean::operator()()
 
 	switch (act) {
 		case CLEAN_BAN:
-			mS->mBanList->TruncateTable();
+			mS->mBanList->Clean();
 			(*mOS) << _("Ban list has been cleaned.");
 			break;
 
@@ -1675,7 +1675,7 @@ bool cDCConsole::cfClean::operator()()
 			break;
 
 		case CLEAN_ALLBAN:
-			mS->mBanList->TruncateTable();
+			mS->mBanList->Clean();
 			mS->mBanList->RemoveOldShortTempBans(0);
 			mS->mUnBanList->TruncateTable();
 			mS->mKickList->TruncateTable();
