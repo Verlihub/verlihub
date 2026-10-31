@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -217,6 +217,9 @@ void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 		case eLC_DEL:
 			help_str = "!deltrigger <trigger>";
 			break;
+		case eLC_GET:
+			help_str = "!gettrigger <trigger>";
+			break;
 		default:
 			break;
 	}
@@ -311,10 +314,43 @@ const char * cTriggerConsole::GetParamsRegex(int cmd)
 				"( -t ?(\\S+))?|" // [ -t<timeout>]
 				")*\\s*$"; // the end of message
 		case eLC_DEL:
+		case eLC_GET:
 			return "(\\S+)";
 		default:
 			return "";
 	}
+}
+
+const char* cTriggerConsole::CmdWord(int cmd)
+{
+	switch (cmd) {
+		case eLC_GET:
+			return "get";
+		default:
+			return tTriggerConsoleBase::CmdWord(cmd);
+	}
+}
+
+void cTriggerConsole::AddCommands()
+{
+	tTriggerConsoleBase::AddCommands();
+	mCmdGet.Init(eLC_GET, CmdId(eLC_GET), GetParamsRegex(eLC_GET), &mcfGet);
+	mCmdr.Add(&mCmdGet);
+}
+
+bool cTriggerConsole::cfGet::operator()()
+{
+	cTrigger Data;
+	GetParStr(1, Data.mCommand);
+	cTrigger *Trigger = (GetTheList() ? GetTheList()->FindData(Data) : NULL);
+
+	if (!Trigger) {
+		(*mOS) << autosprintf(_("Trigger not found: %s"), Data.mCommand.c_str());
+		return false;
+	}
+
+	(*mOS) << autosprintf(_("Trigger definition: %s"), Data.mCommand.c_str()) << "\r\n\r\n" << Trigger->mDefinition << "\r\n";
+	return true;
 }
 
 bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)

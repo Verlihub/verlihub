@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -81,7 +81,14 @@ public:
 	virtual bool ReadDataFromCmd(cfBase *cmd, int CmdID, cTrigger &data);
 	virtual void GetHelpForCommand(int cmd, ostream &os);
 	virtual void GetHelp(ostream &os);
+	virtual const char *CmdWord(int cmd);
+	virtual void AddCommands();
 	bool CheckData(cfBase *cmd, cTrigger &tmp);
+
+	enum { eLC_GET = eLC_FREE };
+
+	class cfGet: public tTriggerConsoleBase::cfBase { virtual bool operator()(); } mcfGet;
+	cDCCommand mCmdGet;
 };
 
 	}; // namespace nTables

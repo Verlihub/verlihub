@@ -61,19 +61,19 @@
 
 	[*] Multiple hubs:
 
-		vhm -a					- Add new hub
-		vhm -d [id]					- Remove hub
-		vhm -l					- List hubs
+		verlihub -m -a				- Add new hub
+		verlihub -m -d [id]				- Remove hub
+		verlihub -m -l				- List hubs
 
-		vhm -r [id]					- Start hub
-		vhm -q [id]					- Restart hub
-		vhm -s [id]					- Stop hub
+		verlihub -m -r [id]				- Start hub
+		verlihub -m -q [id]				- Restart hub
+		verlihub -m -s [id]				- Stop hub
 
-		vhm -R [id]					- Reload cache lists
-		vhm -uh						- Update help files
+		verlihub -m -R [id]				- Reload cache lists
+		verlihub -m -uh					- Update help files
 
-		vhm -h					- List commands
-		vhm -v					- Verlihub version
+		verlihub -m -h				- List commands
+		verlihub -m -v				- Verlihub version
 
  [*] Links:
 

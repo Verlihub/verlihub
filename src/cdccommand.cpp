@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -35,22 +35,6 @@ namespace nVerliHub {
 	cDCCommand::cDCCommand(int ID, const char *IdRegex, const char *ParRegex, sDCCmdFunc *CmdFunc/*, long Action*/):
 		cCommand(ID, IdRegex, ParRegex, CmdFunc)//, mActionType(Action)
 	{}
-
-	bool cDCCommand::sDCCmdFunc::GetIDEnum(int rank, int &id, const char *ids[], const int enums[])
-	{
-		string tmp;
-		if(!GetIDStr(rank, tmp))
-			return false;
-		int i;
-
-		for(i = 0; ids[i] != NULL; i++) {
-			if (tmp == ids[i]) {
-				id = enums[i];
-				return true;
-			}
-		}
-		return false;
-	}
 
 	bool cDCCommand::sDCCmdFunc::GetParUnEscapeStr(int rank, string &dest)
 	{

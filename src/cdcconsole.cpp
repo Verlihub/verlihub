@@ -63,7 +63,6 @@ cDCConsole::cDCConsole(cServerDC *s):
  	mCmdBan(int(eCM_BAN), ".(add|new|del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
 	mCmdTempBan(int(eCM_TEMPBAN), ".(info|del|un)?tempban(nick|ip)? ", "(\\S+)", &mFunTempBan),
 	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochats|nochat|nopm|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
-	mCmdTrigger(int(eCM_TRIGGER),".(ft|trigger)(\\S+) ", "(\\S+)( (.*))?", &mFunTrigger),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
 	mCmdRegUsr(int(eCM_REG),".r(eg)?(n(ew)?(user)?|del(ete)?|pass(wd)?|(en|dis)able|(set)?class|(protect|hidekick)(class)?|set|=|info|list|lst) ", "(\\S+)( (((\\S+) )?(.*)))?", &mFunRegUsr),
 	mCmdRaw(int(eCM_RAW), ".proto(\\S+)_(\\S+) ", "((\\S+) )?(.+)", &mFunRaw),
@@ -73,7 +72,7 @@ cDCConsole::cDCConsole(cServerDC *s):
 	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|buf|buffer|mmdb|geoip)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
-	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|oc|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc), // |ccbc|ccbroadcast
+	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc),
 	mCmdGetConfig(int(eCM_GETCONFIG), ".(gc|getconfig|getconf|gv|getvar) ?", "(\\S+)?", &mFunGetConfig),
 	mCmdClean(int(eCM_CLEAN),".clean(\\S+) ?", "(\\S+)?", &mFunClean),
 	mCmdRedirConnType(int(eCM_CONNTYPE),".(\\S+)conntype ?","(.*)$",&mFunRedirConnType),
@@ -107,7 +106,6 @@ cDCConsole::cDCConsole(cServerDC *s):
 	mCmdr.Add(&mCmdBan);
 	mCmdr.Add(&mCmdTempBan);
 	mCmdr.Add(&mCmdGag);
-	mCmdr.Add(&mCmdTrigger);
 	mCmdr.Add(&mCmdSetVar);
 	mCmdr.Add(&mCmdRegUsr);
 	mCmdr.Add(&mCmdInfo);
@@ -205,10 +203,10 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
 			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);
 		case eUC_CHEEF:
-			if (cmdid == "ccbroadcast" || cmdid == "ccbc") return CmdCCBroadcast(cmd_line, conn, eUC_NORMUSER, eUC_MASTER);
 			if (cmdid == "class") return CmdClass(cmd_line, conn);
 			if (cmdid == "protect") return CmdProtect(cmd_line, conn);
 		case eUC_OPERATOR:
+			if (cmdid == "ccbroadcast" || cmdid == "ccbc") return CmdCCBroadcast(cmd_line, conn, eUC_NORMUSER, eUC_MASTER);
 			if (cmdid == "topic" || cmdid == "hubtopic" ) return CmdTopic(cmd_line, conn);
 			if (cmdid == "getip" || cmdid == "gi") return CmdGetip(cmd_line, conn);
 			if (cmdid == "gethost" || cmdid == "gh") return CmdGethost(cmd_line, conn);
@@ -604,6 +602,11 @@ int cDCConsole::CmdHelp(istringstream &, cConnDC * conn)
 
 int cDCConsole::CmdCCBroadcast(istringstream &cmd_line, cConnDC *conn, int cl_min, int cl_max)
 {
+	if (conn->mpUser->mClass < mOwner->mC.min_class_bc) { // note: same rights as broadcast
+		mOwner->DCPublicHS(_("You have no rights to do this."), conn);
+		return 1;
+	}
+
 	string start, end, str, cc_zone;
 	ostringstream ostr;
 	string tmpline;
@@ -2253,109 +2256,6 @@ bool cDCConsole::cfInfo::operator()()
 	return true;
 }
 
-bool cDCConsole::cfTrigger::operator()()
-{
-	if (mConn->mpUser->mClass < eUC_MASTER) {
-		(*mOS) << _("You have no rights to do this.");
-		return false;
-	}
-
-	string cmd;
-   	mIdRex->Extract(2, mIdStr, cmd);
-
-	enum {
-		eAC_ADD,
-		eAC_DEL,
-		eAC_EDIT,
-		eAC_GET,
-		eAC_FLAGS
-	};
-
-	static const char *acna[] = {
-		"new", "add",
-		"del",
-		"edit",
-		"get",
-		"setflags"
-	};
-
-	static const int acid[] = {
-		eAC_ADD, eAC_ADD,
-		eAC_DEL,
-		eAC_EDIT,
-		eAC_GET,
-		eAC_FLAGS
-	};
-
-	int act = this->StringToIntFromList(cmd, acna, acid, sizeof(acna) / sizeof(char*));
-
-	if (act < 0)
-		return false;
-
-	string trig/*, text*/;
-	mParRex->Extract(1, mParStr, trig);
-	//mParRex->Extract(3, mParStr, text);
-	int i/*, flags = 0*/;
-	//istringstream is(text);
-	bool res = false;
-	//cTrigger *tr;
-
-	switch (act) {
-		/*
-		case eAC_ADD:
-			tr = new cTrigger;
-			tr->mCommand = trig;
-			tr->mDefinition = text;
-			break;
-
-		case eAC_EDIT:
-			for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
-				if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
-					mS->SaveFile(((*((cDCConsole*)mCo)->mTriggers)[i])->mDefinition, text);
-					res = true;
-					break;
-				}
-			}
-
-			break;
-
-		case eAC_FLAGS:
-			flags = -1;
-			is >> flags;
-
-			if (flags >= 0) {
-				for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
-					if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
-						(*((cDCConsole*)mCo)->mTriggers)[i]->mFlags = flags;
-						((cDCConsole*)mCo)->mTriggers->SaveData(i);
-						res = true;
-						break;
-					}
-				}
-			}
-
-			break;
-		*/
-
-		case eAC_GET:
-			for (i = 0; i < ((cDCConsole*)mCo)->mTriggers->Size(); ++i) {
-				if (trig == (*((cDCConsole*)mCo)->mTriggers)[i]->mCommand) {
-					(*mOS) << autosprintf(_("Trigger definition: %s"), trig.c_str()) << "\r\n\r\n" << ((*((cDCConsole*)mCo)->mTriggers)[i])->mDefinition << "\r\n";
-					return true;
-				}
-			}
-
-			(*mOS) << autosprintf(_("Trigger not found: %s"), trig.c_str());
-			break;
-
-		default:
-			(*mOS) << _("This command is not implemented.");
-			break;
-	}
-
-	return res;
-}
-
 bool cDCConsole::cfGetConfig::operator()()
 {
 	if (!mConn || !mConn->mpUser)
@@ -3404,7 +3304,7 @@ bool cDCConsole::cfRegUsr::operator()()
 
 	switch (Action) {
 		case eAC_SET:
-			authorized = (RegFound && (MyClass >= eUC_ADMIN) && (MyClass >= int(ui.mClass + mS->mC.classdif_reg)) && (field != "class"));
+			authorized = (RegFound && (MyClass >= int(ui.mClass + mS->mC.classdif_reg)) && (field != "class") && (field != "class_protect") && (field != "class_hidekick")); // note: these fields have own commands with own class checks
 			break;
 
 		case eAC_NEW:
@@ -3866,13 +3766,15 @@ bool cDCConsole::cfRedirToConsole::operator()()
 
 bool cDCConsole::cfBc::operator()()
 {
-	enum { eBC_BC, eBC_OC, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER, eBC_CC };
+	enum { eBC_BC, eBC_OP, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER };
 	enum { eBC_ALL, eBC_MSG };
-	const char *cmds[] = { "bc", "broadcast", "oc", "ops", "guests", "regs", "vips", "cheefs", "admins", "masters", "ccbc", "ccbroadcast" };
-	const int nums[] = { eBC_BC, eBC_BC, eBC_OC, eBC_OC, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER, eBC_CC, eBC_CC };
-	int cmdid;
+	static const char *cmds[] = { "bc", "broadcast", "ops", "guests", "regs", "vips", "cheefs", "admins", "masters" };
+	static const int nums[] = { eBC_BC, eBC_BC, eBC_OP, eBC_GUEST, eBC_REG, eBC_VIP, eBC_CHEEF, eBC_ADMIN, eBC_MASTER };
+	string temp;
+	mIdRex->Extract(1, mIdStr, temp);
+	const int cmdid = this->StringToIntFromList(temp, cmds, nums, sizeof(cmds) / sizeof(char*));
 
-	if (!GetIDEnum(1, cmdid, cmds, nums))
+	if (cmdid < 0)
 		return false;
 
 	string message;
@@ -3905,15 +3807,15 @@ bool cDCConsole::cfBc::operator()()
 			MaxClass = eUC_VIPUSER;
 			AllowedClass = mS->mC.min_class_bc_vips;
 			break;
-		case eBC_OC:
+		case eBC_OP:
 			MinClass = eUC_OPERATOR;
 			MaxClass = eUC_MASTER;
 			AllowedClass = eUC_OPERATOR;
 			break;
 		case eBC_CHEEF:
 			MinClass = eUC_CHEEF;
-			MaxClass = eUC_ADMIN;
-			AllowedClass = eUC_OPERATOR;
+			MaxClass = eUC_MASTER;
+			AllowedClass = eUC_CHEEF;
 			break;
 		case eBC_ADMIN:
 			MinClass = eUC_ADMIN;
@@ -3923,9 +3825,7 @@ bool cDCConsole::cfBc::operator()()
 		case eBC_MASTER:
 			MinClass = eUC_MASTER;
 			MaxClass = eUC_MASTER;
-			AllowedClass = eUC_ADMIN;
-			break;
-		case eBC_CC:
+			AllowedClass = eUC_MASTER;
 			break;
 		default:
 			break;

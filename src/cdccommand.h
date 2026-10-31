@@ -66,7 +66,6 @@ namespace nVerliHub {
 			cDCConsoleBase *mCo;
 
 			virtual ~sDCCmdFunc(){};
-			virtual bool GetIDEnum(int rank, int &id, const char *ids[], const int enums[]);
 			virtual bool GetParUnEscapeStr(int rank, string &dest);
 			virtual bool GetParIPRange(int rank, unsigned long &ipmin, unsigned long &ipmax);
 			virtual bool GetParRegex(int rank, string &dest);

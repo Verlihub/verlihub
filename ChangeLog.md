@@ -55,6 +55,10 @@
 * Build shows -Woverloaded-virtual warnings again
 * Ban messages show banned value with its own name
 * Lua call VH:Ban behavior, see Wiki
+* Command regset follows classdif_reg like other reg commands
+* Command triggerget is now gettrigger for administrators
+* Broadcast commands to staff reach their class and higher, sent by same class or higher
+* Command ccbroadcast uses min_class_bc like broadcast
 
 ## Fixed
 
@@ -140,6 +144,7 @@
 
 * NMDC commands $MultiSearch and $MultiConnectToMe
 * Configurations max_extra_ops, max_extra_cheefs and max_extra_admins
+* Command oc, same as ops
 * Unused time conversion to microseconds
 * Deprecated plugins, only Lua and Plugman are left
 * Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config

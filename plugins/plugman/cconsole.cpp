@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -101,7 +101,7 @@ void cPlugConsole::GetHelpForCommand(int cmd, ostream &os)
 
 			break;
 		case eLC_DEL:
-			help_str = "!delplug <ipmin_or_iprange>";
+			help_str = "!delplug <nick>";
 			break;
 		default:
 			break;

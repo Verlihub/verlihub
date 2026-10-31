@@ -130,7 +130,7 @@
 
 	!topic [topic]				- Set or reset topic
 
- [*] Chatrooms:
+ [*] Operator chat:
 
 	+invite <nick>				- Add user
 	+out <nick>				- Remove user
