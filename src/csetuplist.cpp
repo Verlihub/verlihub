@@ -104,10 +104,16 @@ void cSetupList::FilterFiles(const string &var, ostream &os, const string &file,
 	db_iterator it;
 	SelectFields(mQuery.OStream());
 	string mask_var(var), mask_file(file);
+
+	if (mask_var.find('*') == string::npos) // note: name without wildcard is found anywhere in variable name
+		mask_var = '*' + mask_var + '*';
+
 	replace(mask_var.begin(), mask_var.end(), '*', '%');
-	mQuery.OStream() << " where `var` like '";
+	mQuery.OStream() << " where (`var` like '"; // note: mask is found in name or value
 	WriteStringConstant(mQuery.OStream(), mask_var, true);
-	mQuery.OStream() << '\'';
+	mQuery.OStream() << "' or `val` like '";
+	WriteStringConstant(mQuery.OStream(), mask_var, true);
+	mQuery.OStream() << "')";
 
 	if (file.size()) {
 		replace(mask_file.begin(), mask_file.end(), '*', '%');

@@ -62,6 +62,7 @@
 * Command !reload also reloads connection types
 * Welcome messages accept %[NICK] same as triggers and broadcasts
 * Default triggers, redirects, clients and connection types are added to new tables and once after upgrade, deleted ones stay deleted
+* Command !getvar finds variables that contain given text in name or value, without "*" around it
 
 ## Fixed
 
