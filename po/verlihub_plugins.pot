@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2026-10-30 21:35+0100\n"
+"POT-Creation-Date: 2026-10-31 17:57+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -168,37 +168,59 @@ msgstr ""
 msgid "%s build time: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:158
+#: ../plugins/plugman/cconsole.cpp:79
+msgid "Path to plugin file, full path is best"
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:80
+msgid "Description"
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:81
+msgid "Load when Plugman starts, 1 = yes, 0 = no"
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:82
+msgid "Name is short name of plugin, at most 10 characters."
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:83
+msgid ""
+"Plugins in plugins folder of configuration folder are loaded by hub itself, "
+"not by Plugman."
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:165
 msgid "Plugin name must be max 10 characters long, please provide another one."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:163
+#: ../plugins/plugman/cconsole.cpp:170
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:195 ../plugins/plugman/cplugs.cpp:136
+#: ../plugins/plugman/cconsole.cpp:202 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:200 ../plugins/plugman/cconsole.cpp:223
-#: ../plugins/plugman/cconsole.cpp:246
+#: ../plugins/plugman/cconsole.cpp:207 ../plugins/plugman/cconsole.cpp:230
+#: ../plugins/plugman/cconsole.cpp:253
 #, c-format
 msgid "Plugin not found: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:215
+#: ../plugins/plugman/cconsole.cpp:222
 msgid "Plugin unloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:218
+#: ../plugins/plugman/cconsole.cpp:225
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:238 ../plugins/plugman/cplugs.cpp:184
+#: ../plugins/plugman/cconsole.cpp:245 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:241
+#: ../plugins/plugman/cconsole.cpp:248
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 
