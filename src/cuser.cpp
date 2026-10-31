@@ -295,14 +295,12 @@ void cUser::DisplayRightsInfo(ostream &os, bool head)
 		os << " [*] " << autosprintf(_("Can download files: %s"), _("Yes")) << "\r\n";
 	}
 
-	if ((this->mClass < eUC_VIPUSER) && this->mCanShare0 && (this->mCanShare0 < now)) { // hide share
-		os << " [*] " << autosprintf(_("Can hide share: %s"), _("No")) << "\r\n";
-	} else if (this->mCanShare0 > now) {
+	if (this->mCanShare0 > now) { // note: noshare right, only when given, same as share check
 		ostringstream oss;
 		oss << autosprintf(_("Yes [%s]"), cTimePrint(this->mCanShare0 - now).AsPeriod().AsString().c_str());
-		os << " [*] " << autosprintf(_("Can hide share: %s"), oss.str().c_str()) << "\r\n";
+		os << " [*] " << autosprintf(_("Can share less than minimum: %s"), oss.str().c_str()) << "\r\n";
 	} else {
-		os << " [*] " << autosprintf(_("Can hide share: %s"), _("Yes")) << "\r\n";
+		os << " [*] " << autosprintf(_("Can share less than minimum: %s"), _("No")) << "\r\n";
 	}
 
 	if ((this->mClass < mxServer->mC.min_class_register) && this->mCanReg && (this->mCanReg < now)) { // register users
@@ -475,7 +473,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanKick = until;
 			} else {
 				msg = _("You're now allowed to kick users for: %s");
-				mCanKick = 1;
+				mCanKick = (until ? until : 1); // note: end time of given right, 1 is default without right
 			}
 
 			break;
@@ -485,7 +483,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanReg = until;
 			} else {
 				msg = _("You're now allowed to register users for: %s");
-				mCanReg = 1;
+				mCanReg = (until ? until : 1);
 			}
 
 			break;
@@ -495,17 +493,17 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanOpchat = until;
 			} else {
 				msg = _("You're now allowed to use operator chat for: %s");
-				mCanOpchat = 1;
+				mCanOpchat = (until ? until : 1);
 			}
 
 			break;
 		case nEnums::eUR_NOSHARE:
 			if (allow) {
-				msg = _("You're no longer allowed to hide share.");
+				msg = _("You're no longer allowed to share less than minimum.");
 				mCanShare0 = until;
 			} else {
-				msg = _("You're now allowed to hide share for: %s");
-				mCanShare0 = 1;
+				msg = _("You're now allowed to share less than minimum for: %s");
+				mCanShare0 = (until ? until : 1);
 			}
 
 			break;
@@ -515,7 +513,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanDrop = until;
 			} else {
 				msg = _("You're now allowed to drop users for: %s");
-				mCanDrop = 1;
+				mCanDrop = (until ? until : 1);
 			}
 
 			break;
@@ -525,7 +523,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanTBan = until;
 			} else {
 				msg = _("You're now allowed to temporarily ban users for: %s");
-				mCanTBan = 1;
+				mCanTBan = (until ? until : 1);
 			}
 
 			break;
@@ -535,7 +533,7 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 				mCanPBan = until;
 			} else {
 				msg = _("You're now allowed to permanently ban users for: %s");
-				mCanPBan = 1;
+				mCanPBan = (until ? until : 1);
 			}
 
 			break;
@@ -549,10 +547,20 @@ void cUser::SetRight(unsigned Right, long until, bool allow, bool notify)
 
 void cUser::ApplyRights(cPenaltyList::sPenalty &pen)
 {
-	mGag = pen.mStartChat;
-	mNoPM = pen.mStartPM;
-	mNoSearch = pen.mStartSearch;
-	mNoCTM = pen.mStartCTM;
+	const long now = mxServer->mTime.Sec(); // note: only active restrictions, so restrictions set by share, class or client checks stay
+
+	if (pen.mStartChat > now)
+		mGag = pen.mStartChat;
+
+	if (pen.mStartPM > now)
+		mNoPM = pen.mStartPM;
+
+	if (pen.mStartSearch > now)
+		mNoSearch = pen.mStartSearch;
+
+	if (pen.mStartCTM > now)
+		mNoCTM = pen.mStartCTM;
+
 	mCanKick = pen.mStopKick;
 	mCanShare0 = pen.mStopShare0;
 	mCanReg = pen.mStopReg;

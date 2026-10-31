@@ -163,6 +163,7 @@ public:
 	unsigned int classdif_pm;
 	unsigned int classdif_mcto;
 	unsigned int classdif_kick;
+	unsigned int classdif_rights;
 	int min_class_register;
 	int min_class_bc;
 	int min_class_bc_guests;

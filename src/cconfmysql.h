@@ -146,8 +146,9 @@ public:
 	bool LoadPK();
 	bool SavePK(bool dup=false);
 	static void WriteStringConstant(ostream &os, const string &str, bool like = false);
+	static string msLastVersion; // note: hub_version of previous hub start, read before hub saves its own, empty on new hub
 	void TruncateTable();
-	void CreateTable();
+	bool CreateTable(); // note: true when table did not exist and was created
 	template <class T> void AddCol(const char *colName, const char *colType, const char *colDefault, bool colNull, T &var)
 	{
 		nMySQL::cMySQLColumn col;

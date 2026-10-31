@@ -38,15 +38,15 @@ namespace nVerliHub {
 
 cConsole::cConsole(cpiLua *lua):
 	mLua(lua),
-	mCmdLuaScriptGet(0, "!lualist", "", &mcfLuaScriptGet),
-	mCmdLuaScriptAdd(1, "!luaload ", "(.*)", &mcfLuaScriptAdd),
-	mCmdLuaScriptDel(2, "!luaunload ", "(.*)", &mcfLuaScriptDel),
-	mCmdLuaScriptRe(3, "!luareload ", "(.*)", &mcfLuaScriptRe),
-	mCmdLuaScriptLog(4, "!lualog ?", "(\\d+)?", &mcfLuaScriptLog),
-	mCmdLuaScriptErr(5, "!luaerr ?", "(\\d+)?", &mcfLuaScriptErr),
-	mCmdLuaScriptInfo(6, "!luainfo", "", &mcfLuaScriptInfo),
-	mCmdLuaScriptVersion(7, "!luaversion", "", &mcfLuaScriptVersion),
-	mCmdLuaScriptFiles(8, "!luafiles", "", &mcfLuaScriptFiles),
+	mCmdLuaScriptGet(0, ".lualist", "", &mcfLuaScriptGet), // note: any first character, cmd_start_op is checked before command reaches plugin
+	mCmdLuaScriptAdd(1, ".luaload ", "(.*)", &mcfLuaScriptAdd),
+	mCmdLuaScriptDel(2, ".luaunload ", "(.*)", &mcfLuaScriptDel),
+	mCmdLuaScriptRe(3, ".luareload ", "(.*)", &mcfLuaScriptRe),
+	mCmdLuaScriptLog(4, ".lualog ?", "(\\d+)?", &mcfLuaScriptLog),
+	mCmdLuaScriptErr(5, ".luaerr ?", "(\\d+)?", &mcfLuaScriptErr),
+	mCmdLuaScriptInfo(6, ".luainfo", "", &mcfLuaScriptInfo),
+	mCmdLuaScriptVersion(7, ".luaversion", "", &mcfLuaScriptVersion),
+	mCmdLuaScriptFiles(8, ".luafiles", "", &mcfLuaScriptFiles),
 	mCmdr(this)
 {
 	mCmdr.Add(&mCmdLuaScriptAdd);

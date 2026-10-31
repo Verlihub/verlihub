@@ -1269,7 +1269,12 @@ int cCmdLine::Install()
 		}
 
 		vector<string> list;
-		list.push_back("create database if not exists `" + name + '`');
+		string create("create database if not exists `" + name + '`');
+
+		if (db_charset.size() && (db_charset.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") == string::npos)) // note: same charset as connection, so server converts nothing and bytes from hub are stored as they are
+			create += " character set " + db_charset;
+
+		list.push_back(create);
 		os.str("");
 		os << "grant all on `" << name << "`.* to '";
 		cConfMySQL::WriteStringConstant(os, db_user);

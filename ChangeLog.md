@@ -5,9 +5,7 @@
 * External TLS proxy is used when listen_ip equals tls_listen_ip, configuration tls_force_myip to force it
 * Lua 5.5 support
 * Consider users with hidden chat on welcome message
-* Worker threads for blocking work, configuration adv_worker_threads
-* Host name lookup on worker threads
-* Database thread for writes and background reads
+* Multithreading for MySQL, host lookup and other slow work, configuration adv_worker_threads
 * Configuration use_banlist_cache, ban check on login without database query
 * Custom MySQL port with db_host = <host>:<port>
 * Configuration db_tls to require encrypted MySQL connection
@@ -17,26 +15,25 @@
 * CMake package configuration for plugins built outside of Verlihub source
 * Native TLS using OpenSSL, plain and encrypted clients on same port
 * Lua calls VH:HTTPGet, VH:HTTPPost and VH:HTTPDownload, see Wiki
-* Commands getvar and getconfig list unused variables separately
-* CMake target pot and Transifex integration
+* Commands !getvar and !getconfig list unused variables separately
+* CMake target POT and Transifex integration
 * Hub messages are translated also when dbconfig locale is not installed
-* Translated commands of verlihub executable
+* Configuration classdif_rights for rights and restrictions commands
 
 ## Updated
 
-* Shell scripts are replaced by verlihub executable itself, see verlihub --help
+* Wiki is rewritten to match current version: https://github.com/verlihub/verlihub/wiki
+* Shell scripts are replaced by "verlihub" executable itself, see "verlihub --help"
 * Syslog options are only long --syslog and --syslog-suffix
-* Multi hub manager vhm is verlihub itself
-* Hub utility vh is verlihub itself, old vh commands keep working
+* Multi hub manager "vhm" is "verlihub" itself
+* Hub utility "vh" is "verlihub" itself, old "vh" commands keep working
 * Update check and crash report use HTTPS
 * Hub stop no longer waits for hublist registration or update check
-* Host lookups of commands gethost, getinfo and user reports run in background
-* Login statistics and ban hits are written in background
 * Translation files are UTF-8, converted to locale charset at runtime
 * PCRE2 instead of old PCRE, see Install.md
 * Main database connection reconnects by itself
-* MySQL memory in command sysinfo is read directly from its engine, see Install.md
-* Command sysinfo on BSD without ps
+* MySQL memory in command !sysinfo is read directly from its engine, see Install.md
+* Command !sysinfo on BSD without "ps"
 * Login no longer flushes data of all users at once
 * ZLib reuses one compression stream
 * LAN detection, GeoIP and IP zones use IP number of connection
@@ -55,24 +52,30 @@
 * Build shows -Woverloaded-virtual warnings again
 * Ban messages show banned value with its own name
 * Lua call VH:Ban behavior, see Wiki
-* Command regset follows classdif_reg like other reg commands
-* Command triggerget is now gettrigger for administrators
+* Command !regset follows classdif_reg like other reg commands
+* Command !triggerget is now !gettrigger for administrators
 * Broadcast commands to staff reach their class and higher, sent by same class or higher
-* Command ccbroadcast uses min_class_bc like broadcast
+* Command !ccbroadcast uses min_class_bc like !broadcast
+* Command !ban and Lua call VH:Ban type 0 ban nick and IP of online user
+* Help commands !h are complete and translated
+* New database created by installation uses same charset as hub connection
+* Command !reload also reloads connection types
+* Welcome messages accept %[NICK] same as triggers and broadcasts
+* Default triggers, redirects, clients and connection types are added to new tables and once after upgrade, deleted ones stay deleted
 
 ## Fixed
 
 * Translation with wrong format arguments could crash hub
 * Hublist registration could hang for minutes on hublist that does not answer
 * Hublist registration and crash report could send incomplete data
-* NMDC command UnBan never removed any ban
+* NMDC command $UnBan never removed any ban
 * Poll connection chooser delayed active connections on big hubs
 * Data past end of output buffer could be sent
 * NMDC command $MyIP is accepted only from enabled external TLS proxy
 * Total download and upload show real network traffic
 * CMake did not notice missing ICU library
 * Upload statistics wrote outside of zone table
-* Command core_dump did not write stack backtrace to log
+* Command !core_dump did not write stack backtrace to log
 * Hub aborted when MySQL connection failed on start
 * MySQL connection error was written twice
 * Password encryption method 1 used salt from memory instead of random
@@ -82,8 +85,8 @@
 * Hub start was counted as slow main loop
 * Main loop frequency showed 0 for few seconds after every timer_reloadcfg_period
 * IP range with mask started from wrong address
-* Commands unbanrange and infobanrange did not find range ban by its range
-* Command getconfig did not escape file name in database query
+* Commands !unbanrange and !infobanrange did not find range ban by its range
+* Command !getconfig did not escape file name in database query
 * Kick search did not escape operator nick
 * Possible crash in nested Lua script calls
 * Possible crash when Lua script was unloaded from inside script call
@@ -102,16 +105,16 @@
 * Changed MyINFO within int_myinfo was dropped
 * Plugins and scripts got OnCloseConn without OnNewConn
 * Error on listening socket used unset connection list position
-* Command bufinfo counted only users in list
-* Reply to $GetINFO was not sent at once
+* Command !bufinfo counted only users in list
+* Reply to NMDC command $GetINFO was not sent at once
 * Lowering class of user with show_keys removed operator key
 * TCP urgent data from client closed user
 * Database that did not answer froze whole hub
 * CTM2HUB detection used too much memory and CPU during long attack
 * Lua callback arguments mixed malloc and delete
-* Command userlimit crashed hub with adv_timer_serv_period 0
-* User hit by command ban got no ban message or redirect
-* NMDC command $SetTopic works same as command topic
+* Command !userlimit crashed hub with adv_timer_serv_period 0
+* User hit by command !ban got no ban message or redirect
+* NMDC command $SetTopic works same as command !topic
 * Main loop frequency and upload counters stood still after clock went back
 * Configuration timeout_setpass had no effect, timeout_flush is removed
 * Configuration zlib_compress_level -1 compressed at level 1
@@ -135,20 +138,27 @@
 * Lua values VH.HubSec and VH.OpChat changed before hub accepted new nick
 * Possible hub crash when Lua script replaced VH table
 * Host ban of user without host name banned every user without host
-* Command ban checked class only for host level 1
-* Command ban, banip and banshare saved invalid values as bans that matched nobody
-* Command ban dropped online users only for IP, range and nick bans
+* Command !ban checked class only for host level 1
+* Commands !ban, !banip and !banshare saved invalid values as bans that matched nobody
+* Command !ban dropped online users only for IP, range and nick bans
 * Possible crash in ban information with unknown ban_type
+* Trigger, redirect, client, connection type, Plugman and Lua commands worked only with "!" prefix
+* Lua plugin settings changed with command !set were used only after plugin reload
+* Possible crash after command !delconntype, and changed connection speed was used only after reconnect
+* File trigger with uppercase letters in name could not be used
+* Rights and restrictions commands had no class check of target user
+* Right !noshare had no effect, user with it can share less than minimum
+* User with any temporary right got back search and download taken by share, class or client limits
 
 ## Removed
 
 * NMDC commands $MultiSearch and $MultiConnectToMe
 * Configurations max_extra_ops, max_extra_cheefs and max_extra_admins
-* Command oc, same as ops
+* Command !oc, same as !ops
 * Unused time conversion to microseconds
 * Deprecated plugins, only Lua and Plugman are left
-* Shell scripts vh, vh_daemon, vh_gui, vhm, vh_regimporter, vh_migration and verlihub_config
-* Old verlihub_config way of FindVerlihub.cmake
+* Shell scripts "vh", "vh_daemon", "vh_gui", "vhm", "vh_regimporter", "vh_migration" and "verlihub_config"
+* Old "verlihub_config" way of FindVerlihub.cmake
 * Old thread classes cThread, cWorkerThread, cThreadWork and cMutex
 * Built-in Go TLS proxy and FearTLS library, with configurations tls_listen_port and tls_buf_size
 
@@ -168,7 +178,7 @@
 ## Added
 
 * Built-in TLS proxy instead of standalone command line utility, requires Go
-* New vh command line utility options --getconf and --setconf
+* New "vh" command line utility options --getconf and --setconf
 
 # Older
 

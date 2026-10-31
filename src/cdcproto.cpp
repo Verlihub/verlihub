@@ -1025,8 +1025,7 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	if (myinfo_speed.empty())
 		myinfo_speed = "\x1";
 
-	if (!conn->mConnType) // parse connection, it will be used below
-		conn->mConnType = ParseSpeed(myinfo_speed);
+	conn->mConnType = ParseSpeed(myinfo_speed); // note: found on every myinfo, so it follows speed changes and list item is never kept after delete or reload
 
 	bool check = true;
 	int result = 0;
@@ -1112,8 +1111,8 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		if (conn->mpUser->mPassive)
 			min_share = min_share_p;
 
-		//if (conn->mpUser->Can(eUR_NOSHARE, mS->mTime.Sec()))
-			//min_share = 0;
+		if ((share_check < min_share) && (conn->mpUser->mInList ? (conn->mpUser->mCanShare0 > mS->mTime.Sec()) : mS->mPenList->CanShare0(conn->mpUser->mNick))) // note: noshare right, before login rights are not loaded yet, so only this one is read, and only when share is too low
+			min_share = 0;
 
 		if ((share_check < min_share) || (max_share && (share_check > max_share))) {
 			if (share_check < min_share)

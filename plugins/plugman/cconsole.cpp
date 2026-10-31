@@ -50,7 +50,7 @@ const char *cPlugConsole::CmdSuffix()
 
 const char *cPlugConsole::CmdPrefix()
 {
-	return "!";
+	return "."; // note: any character, cmd_start_op is checked before command reaches plugin
 }
 
 bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
@@ -76,7 +76,14 @@ bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
 
 void cPlugConsole::GetHelp(ostream &os)
 {
-	os << "https://github.com/verlihub/verlihub/wiki/command-list#plugins"; // todo
+	string help(" -p\t" + string(_("Path to plugin file, full path is best")) + "\r\n");
+	help += " -d\t" + string(_("Description")) + "\r\n";
+	help += " -a\t" + string(_("Load when Plugman starts, 1 = yes, 0 = no")) + "\r\n\r\n";
+	help += ' ' + string(_("Name is short name of plugin, at most 10 characters.")) + "\r\n";
+	help += ' ' + string(_("Plugins in plugins folder of configuration folder are loaded by hub itself, not by Plugman.")) + "\r\n\r\n";
+	help += "https://github.com/verlihub/verlihub/wiki/plugins#plugman";
+	cDCProto::EscapeChars(help, help);
+	os << help;
 }
 
 void cPlugConsole::GetHelpForCommand(int cmd, ostream &os)
@@ -95,8 +102,8 @@ void cPlugConsole::GetHelpForCommand(int cmd, ostream &os)
 				"[ -a <autoload>]"
 				"\r\n""      register or update a plugin\r\n"
 				"     * name - short plugin name\r\n"
-				"     * path - a relative or absolute filename of the plugin's binary (it's better to provide absoulute path)\r\n"
-				"     * desc - a breif description of what the plugin does\r\n"
+				"     * path - a relative or absolute filename of the plugin's binary (it's better to provide absolute path)\r\n"
+				"     * desc - a brief description of what the plugin does\r\n"
 				"     * autoload - 1/0 to autoload plugin at startup";
 
 			break;

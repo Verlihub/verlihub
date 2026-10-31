@@ -1,3 +1,4 @@
+-- 1.0.0.0
 INSERT IGNORE INTO `client_list` (`name`, `tag_id`, `min_version`, `max_version`, `ban`, `enable`) VALUES
 	('DC++', '++', -1, -1, 0, 1),
 	('FearDC', 'FearDC', -1, -1, 0, 1),

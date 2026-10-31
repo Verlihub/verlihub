@@ -187,6 +187,15 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	}
 
 	mSetupList.CreateTable(); // must be done first
+
+	{ // note: version of previous start, default data of newer versions is added to tables that already exist
+		string last;
+		cConfigItemBaseString item(last, "hub_version");
+
+		if (mSetupList.LoadItem(mDBConf.config_name.c_str(), &item))
+			nConfig::cConfMySQL::msLastVersion = last;
+	}
+
 	mC.AddVars();
 	mC.Save();
 	mC.Load();
@@ -1409,7 +1418,8 @@ void cServerDC::AfterUserLogin(cConnDC *conn)
 
 	if ((conn->mpUser->mClass >= eUC_NORMUSER) && (conn->mpUser->mClass <= eUC_MASTER) && mC.msg_welcome[conn->mpUser->mClass].size()) { // pingers dont have welcome messages
 		omsg.clear();
-		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // todo: should not be uppercace %[NICK] ?
+		ReplaceVarInString(mC.msg_welcome[conn->mpUser->mClass], "nick", omsg, conn->mpUser->mNick); // note: both %[nick] and %[NICK] work, uppercase is same as in triggers and broadcasts
+		ReplaceVarInString(omsg, "NICK", omsg, conn->mpUser->mNick);
 		const size_t pos = omsg.find("%[C");
 
 		if (pos != omsg.npos) { // only if found
@@ -4150,6 +4160,7 @@ void cServerDC::ReloadNow()
 	mCo->mTriggers->ReloadAll();
 	mCo->mRedirects->ReloadAll();
 	mCo->mDCClients->ReloadAll();
+	mConnTypes->ReloadAll();
 
 	if (mC.use_reglist_cache)
 		mR->UpdateCache();

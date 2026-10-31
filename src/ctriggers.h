@@ -47,7 +47,6 @@ public:
 	cTriggers(nSocket::cServerDC *);
 	virtual ~cTriggers(){};
 	virtual void AddFields();
-	cTrigger * Find(const string &name); //@todo Trigger stuff
 	virtual bool CompareDataKey(const cTrigger &D1, const cTrigger &D2);
 	void OnTimer(long now);
 	// useful functions

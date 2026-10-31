@@ -1,3 +1,4 @@
+-- 1.0.0.0
 INSERT IGNORE INTO conn_types (identifier, description) VALUES 
 	('default','Default settings for missing connection types'),
 	('28.8Kbps', 'Old style'),

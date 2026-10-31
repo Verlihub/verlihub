@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -112,6 +112,7 @@ class cPenaltyList: public cConfMySQL
 		void Cleanup(void);
 		void CleanType(const string &type);
 		bool LoadTo(sPenalty &, const string &nick);
+		bool CanShare0(const string &nick); // note: only noshare right, for share check of user who is not logged in yet
 		bool AddPenalty(sPenalty &);
 		bool RemPenalty(sPenalty &);
 		void ListAll(ostream &os);

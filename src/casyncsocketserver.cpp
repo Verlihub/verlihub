@@ -46,7 +46,7 @@ namespace nVerliHub {
 	static constexpr size_t sWorkerMaxResults = 500; // note: maximum results processed in one main loop step
 	static constexpr long long sHostWaitMax = 5000; // note: milliseconds to wait for host name before connection is started without it
 	static constexpr long long sTLSHandshakeMax = 10000; // note: milliseconds for tls handshake, connection is closed when it takes longer
-	static constexpr unsigned int sTLSCertDays = 5 * 365; // note: validity of created certificate, same as go version had
+	static constexpr unsigned int sTLSCertDays = 5 * 365; // note: validity of created certificate
 
 	static long long SteadyMS() // note: start wait deadlines, steady clock does not jump when clock time is changed, for example by time sync
 	{

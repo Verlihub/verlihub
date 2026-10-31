@@ -152,7 +152,7 @@ bool cTriggers::DoCommand(cConnDC *conn, const string &cmd, istringstream &cmd_l
 	for (int i = 0; i < Size(); ++i) {
 		curTrigger = (*this)[i];
 
-		if (curTrigger->mMinClass <= conn->mpUser->mClass && cmd == curTrigger->mCommand) {
+		if (curTrigger->mMinClass <= conn->mpUser->mClass && cmd == toLower(curTrigger->mCommand)) { // note: typed command is lowercase, trigger name can have any case
 			if (Log(3))
 				LogStream() << "trigger found " << cmd << endl;
 
@@ -240,56 +240,60 @@ void cTriggerConsole::GetHelpForCommand(int cmd, ostream &os)
 
 void cTriggerConsole::GetHelp(ostream &os)
 {
-	string help;
+	string help(' ' + string(_("Available trigger flags")) + ":\r\n\r\n");
+	help += " 0\t\t\t- " + string(_("Send to main chat, visible to user only")) + "\r\n";
+	help += " 1\t\t\t- " + string(_("Execute command, functionality removed")) + "\r\n";
+	help += " 2\t\t\t- " + string(_("Message is sent to PM")) + "\r\n";
+	help += " 4\t\t\t- " + string(_("Automatically trigger when user logs in")) + "\r\n";
+	help += " 8\t\t\t- " + string(_("Trigger on help command")) + "\r\n";
+	help += " 16\t\t\t- " + string(_("The definition is the text")) + "\r\n";
+	help += " 32\t\t\t- " + string(_("Allow replacing of variables")) + "\r\n";
+	help += " 64\t\t\t- " + string(_("Message is sent to everyone in class range")) + "\r\n\r\n";
+	help += ' ' + string(_("Remember to make the sum of selected above flags.")) + "\r\n\r\n";
 
-	help = "https://github.com/verlihub/verlihub/wiki/messages#file-triggers\r\n\r\n";
+	help += ' ' + string(_("Available variables")) + ":\r\n\r\n";
+	help += " %[PARALL]\t\t- " + string(_("Trigger parameters")) + "\r\n";
+	help += " %[PAR1]\t\t- " + string(_("First trigger parameter, separated by space")) + "\r\n";
+	help += " %[END1]\t\t- " + string(_("Trigger command with all parameters")) + "\r\n";
+	help += " %[CC]\t\t\t- " + string(_("User country code")) + "\r\n";
+	help += " %[CN]\t\t\t- " + string(_("User country name")) + "\r\n";
+	help += " %[CITY]\t\t\t- " + string(_("User city")) + "\r\n";
+	help += " %[IP]\t\t\t- " + string(_("User IP address")) + "\r\n";
+	help += " %[TLS]\t\t\t- " + string(_("User TLS version if available in client to hub connection")) + "\r\n";
+	help += " %[CLI_TLS]\t\t\t- " + string(_("User TLS encryption support in client to client connections")) + "\r\n";
+	help += " %[CLI_NAT]\t\t\t- " + string(_("User NAT traversal support in client to client connections")) + "\r\n";
+	help += " %[MODE]\t\t- " + string(_("User connection mode")) + "\r\n";
+	help += " %[HOST]\t\t- " + string(_("User host")) + "\r\n";
+	help += " %[NICK]\t\t\t- " + string(_("User nick")) + "\r\n";
+	help += " %[CLASS]\t\t- " + string(_("User class number")) + "\r\n";
+	help += " %[CLASSNAME]\t\t- " + string(_("User class name")) + "\r\n";
+	help += " %[SHARE]\t\t- " + string(_("User share size")) + "\r\n";
+	help += " %[SHARE_EXACT]\t\t- " + string(_("User exact share size")) + "\r\n";
+	help += " %[USERS]\t\t- " + string(_("Online users")) + "\r\n";
+	help += " %[USERS_ACTIVE]\t- " + string(_("Online active users")) + "\r\n";
+	help += " %[USERS_PASSIVE]\t- " + string(_("Online passive users")) + "\r\n";
+	help += " %[USERSPEAK]\t\t- " + string(_("Peak online users")) + "\r\n";
+	help += " %[UPTIME]\t\t- " + string(_("Hub uptime")) + "\r\n";
+	help += " %[VERSION]\t\t- " + string(_("Hub version")) + "\r\n";
+	help += " %[HUBNAME]\t\t- " + string(_("Hub name")) + "\r\n";
+	help += " %[HUBTOPIC]\t\t- " + string(_("Hub topic")) + "\r\n";
+	help += " %[HUBDESC]\t\t- " + string(_("Hub description")) + "\r\n";
+	help += " %[TOTAL_SHARE]\t\t- " + string(_("Total share")) + "\r\n";
+	help += " %[SHAREPEAK]\t\t- " + string(_("Peak total share")) + "\r\n";
+	help += " %[ss]\t\t\t- " + string(_("Current second, 2 digits")) + "\r\n";
+	help += " %[mm]\t\t\t- " + string(_("Current minute, 2 digits")) + "\r\n";
+	help += " %[HH]\t\t\t- " + string(_("Current hour, 2 digits")) + "\r\n";
+	help += " %[DD]\t\t\t- " + string(_("Current day, 2 digits")) + "\r\n";
+	help += " %[MM]\t\t\t- " + string(_("Current month, 2 digits")) + "\r\n";
+	help += " %[YY]\t\t\t- " + string(_("Current year, 4 digits")) + "\r\n\r\n";
 
-	help += " Available trigger flags:\r\n\r\n";
-	help += " 0\t\t\t- Send to main chat, visible to user only\r\n";
-	help += " 1\t\t\t- Execute command (functionality removed)\r\n";
-	help += " 2\t\t\t- Message is sent to PM\r\n";
-	help += " 4\t\t\t- Automatically trigger when user logs in\r\n";
-	help += " 8\t\t\t- Trigger on help command\r\n";
-	help += " 16\t\t\t- The definition is the text\r\n";
-	help += " 32\t\t\t- Allow replacing of variables\r\n";
-	help += " 64\t\t\t- Message is sent to everyone in class range\r\n\r\n";
-	help += " Remember to make the sum of selected above flags.\r\n\r\n";
+	help += ' ' + string(_("In definition file path")) + ":\r\n\r\n";
+	help += " %[CFG]\t\t\t- " + string(_("Configuration folder")) + "\r\n";
+	help += " %[CC]\t\t\t- " + string(_("User country code")) + "\r\n\r\n";
+	help += ' ' + string(_("In sender nick")) + ": %[PAR1], %[NICK]\r\n\r\n";
+	help += ' ' + string(_("Timed triggers have no user, user variables are not replaced.")) + "\r\n\r\n";
 
-	help += " Available variables:\r\n\r\n";
-	help += " %[PARALL]\t\t- Trigger parameters\r\n";
-	help += " %[PAR1]\t\t- First trigger parameter, separated by space\r\n";
-	help += " %[END1]\t\t- Last trigger parameter, separated by space\r\n";
-	help += " %[CC]\t\t\t- User country code\r\n";
-	help += " %[CN]\t\t\t- User country name\r\n";
-	help += " %[CITY]\t\t\t- User city\r\n";
-	help += " %[IP]\t\t\t- User IP address\r\n";
-	help += " %[TLS]\t\t\t- User TLS version if available in client to hub connection\r\n";
-	help += " %[CLI_TLS]\t\t\t- User TLS encryption support in client to client connections\r\n";
-	help += " %[CLI_NAT]\t\t\t- User NAT traversal support in client to client connections\r\n";
-	help += " %[MODE]\t\t- User connection mode\r\n";
-	help += " %[HOST]\t\t- User host\r\n";
-	help += " %[NICK]\t\t\t- User nick\r\n";
-	help += " %[CLASS]\t\t- User class number\r\n";
-	help += " %[CLASSNAME]\t\t- User class name\r\n";
-	help += " %[SHARE]\t\t- User share size\r\n";
-	help += " %[SHARE_EXACT]\t\t- User exact share size\r\n";
-	help += " %[USERS]\t\t- Online users\r\n";
-	help += " %[USERS_ACTIVE]\t- Online active users\r\n";
-	help += " %[USERS_PASSIVE]\t- Online passive users\r\n";
-	help += " %[USERSPEAK]\t\t- Peak online users\r\n";
-	help += " %[UPTIME]\t\t- Hub uptime\r\n";
-	help += " %[VERSION]\t\t- Hub version\r\n";
-	help += " %[HUBNAME]\t\t- Hub name\r\n";
-	help += " %[HUBTOPIC]\t\t- Hub topic\r\n";
-	help += " %[HUBDESC]\t\t- Hub description\r\n";
-	help += " %[TOTAL_SHARE]\t\t- Total share\r\n";
-	help += " %[SHAREPEAK]\t\t- Peak total share\r\n";
-	help += " %[ss]\t\t\t- Current second, 2 digits\r\n";
-	help += " %[mm]\t\t\t- Current minute, 2 digits\r\n";
-	help += " %[HH]\t\t\t- Current hour, 2 digits\r\n";
-	help += " %[DD]\t\t\t- Current day, 2 digits\r\n";
-	help += " %[MM]\t\t\t- Current month, 2 digits\r\n";
-	help += " %[YY]\t\t\t- Current year, 4 digits\r\n";
+	help += "https://github.com/verlihub/verlihub/wiki/triggers";
 
 	cDCProto::EscapeChars(help, help);
 	os << help;
@@ -452,14 +456,13 @@ const char* cTriggerConsole::CmdSuffix() { return "trigger"; }
 
   /**
 
-  Return the command prefix
+  Return the command prefix, any character, cmd_start_op is checked before command reaches console
 
-  @todo Use config variable for prefix  (cmd_start_user)
   @return The string of prefix
 
   */
 
-const char* cTriggerConsole::CmdPrefix() { return "!"; }
+const char* cTriggerConsole::CmdPrefix() { return "."; }
 
   /**
 

@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -215,6 +215,8 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 	}; // namespace nMySQL
 	namespace nConfig {
 
+string cConfMySQL::msLastVersion;
+
 cConfMySQL::cConfMySQL(cMySQL &mysql):
 	mMySQL(mysql),
 	mQuery(mMySQL),
@@ -237,14 +239,17 @@ cConfMySQL::~cConfMySQL()
 	}
 }
 
-void cConfMySQL::CreateTable()
+bool cConfMySQL::CreateTable()
 {
 	cMySQLTable existing_desc(mMySQL);
 
-	if (existing_desc.GetDescription(mMySQLTable.mName))
+	if (existing_desc.GetDescription(mMySQLTable.mName)) {
 		mMySQLTable.AutoAlterTable(existing_desc);
-	else
-		mMySQLTable.CreateTable();
+		return false;
+	}
+
+	mMySQLTable.CreateTable();
+	return true;
 }
 
 void cConfMySQL::TruncateTable()

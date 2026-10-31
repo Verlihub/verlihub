@@ -606,7 +606,11 @@ namespace nVerliHub {
 				// note: data kept outside of normal buffers, before start and around tls handshake, for buffer information
 				size_t GetWaitSize() const
 				{
+				#ifdef USE_TLS
 					return mStartHold.size() + mTLSQueue.size() + mTLSHold.size();
+				#else
+					return mStartHold.size();
+				#endif
 				}
 
 				// next part of held data into read buffer, returns false when nothing is left
@@ -741,6 +745,8 @@ namespace nVerliHub {
 				// add data to final send buffer, encrypt it when connection uses tls
 				bool AppendSend(const char *data, size_t len);
 
+				string mStartHold; // note: see HoldInput()
+
 			#ifdef USE_TLS
 				std::shared_ptr<cTLSSession> mTLS; // note: tls session, null when connection is not encrypted, worker that does handshake holds it too
 
@@ -751,7 +757,6 @@ namespace nVerliHub {
 				bool mTLSBusy = false;
 				string mTLSQueue;
 				string mTLSHold;
-				string mStartHold; // note: see HoldInput()
 
 				// decrypt received data in place of shared read buffer
 				int TLSRead(int len);

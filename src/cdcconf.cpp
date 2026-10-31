@@ -267,6 +267,7 @@ void cDCConf::AddVars()
 	// User control configuration
 	Add("classdif_reg", classdif_reg, 2);
 	Add("classdif_kick", classdif_kick, 0);
+	Add("classdif_rights", classdif_rights, 0);
 	Add("classdif_pm",classdif_pm,10);
 	Add("classdif_mcto", classdif_mcto, 10);
 	//Add("classdif_search",classdif_search,10);

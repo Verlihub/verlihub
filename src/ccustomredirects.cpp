@@ -228,22 +228,30 @@ namespace nVerliHub {
 
 	void cRedirectConsole::GetHelp(ostream &os)
 	{
-		string help("https://github.com/verlihub/verlihub/wiki/redirects/\r\n\r\n");
+		string help(' ' + string(_("Available redirect flags")) + ":\r\n\r\n");
+		help += " 0\t\t\t- " + string(_("For any reason")) + "\r\n";
+		help += " 1\t\t\t- " + string(_("Ban and kick")) + "\r\n";
+		help += " 2\t\t\t- " + string(_("Hub is full")) + "\r\n";
+		help += " 4\t\t\t- " + string(_("Too low or too high share")) + "\r\n";
+		help += " 8\t\t\t- " + string(_("Wrong or unknown tag")) + "\r\n";
+		help += " 16\t\t\t- " + string(_("Wrong password")) + "\r\n";
+		help += " 32\t\t\t- " + string(_("Invalid key")) + "\r\n";
+		help += " 64\t\t\t- " + string(_("Hub is busy")) + "\r\n";
+		help += " 128\t\t\t- " + string(_("Too fast reconnect")) + "\r\n";
+		help += " 256\t\t\t- " + string(_("Bad nick, already used, too short, etc")) + "\r\n";
+		help += " 512\t\t\t- " + string(_("Clone detection")) + "\r\n";
+		help += " 1024\t\t\t- " + string(_("Same user connects twice")) + "\r\n\r\n";
+		help += ' ' + string(_("Remember to make the sum of selected above flags.")) + "\r\n\r\n";
 
-		help += " Available redirect flags:\r\n\r\n";
-		help += " 0\t\t\t- For any reason\r\n";
-		help += " 1\t\t\t- Ban and kick\r\n";
-		help += " 2\t\t\t- Hub is full\r\n";
-		help += " 4\t\t\t- Too low or too high share\r\n";
-		help += " 8\t\t\t- Wrong or unknown tag\r\n";
-		help += " 16\t\t\t- Wrong password\r\n";
-		help += " 32\t\t\t- Invalid key\r\n";
-		help += " 64\t\t\t- Hub is busy\r\n";
-		help += " 128\t\t\t- Too fast reconnect\r\n";
-		help += " 256\t\t\t- Bad nick, already used, too short, etc\r\n";
-		help += " 512\t\t\t- Clone detection\r\n";
-		help += " 1024\t\t\t- Same user connects twice\r\n\r\n";
-		help += " Remember to make the sum of selected above flags.\r\n";
+		help += " -f\t" + string(_("Redirect flags")) + "\r\n";
+		help += " -e\t" + string(_("Enabled, 1 = yes, 0 = no")) + "\r\n";
+		help += " -a\t" + string(_("Start hour, 0 to 23")) + "\r\n";
+		help += " -z\t" + string(_("Stop hour, same as start hour for whole day, start must be lower than stop")) + "\r\n";
+		help += " -c\t" + string(_("Country codes, for example :US:GB:, empty for all countries")) + "\r\n";
+		help += " -s\t" + string(_("Secure connection, 2 = any, 1 = encrypted only, 0 = unencrypted only")) + "\r\n";
+		help += " -g\t" + string(_("Minimum share in GB, 0 for no limit")) + "\r\n\r\n";
+
+		help += "https://github.com/verlihub/verlihub/wiki/redirects";
 
 		cDCProto::EscapeChars(help, help);
 		os << help;
@@ -304,7 +312,7 @@ namespace nVerliHub {
 	}
 
 	const char* cRedirectConsole::CmdSuffix() { return "redirect"; }
-	const char* cRedirectConsole::CmdPrefix() { return "!"; }
+	const char* cRedirectConsole::CmdPrefix() { return "."; } // note: any character, cmd_start_op is checked before command reaches console
 
 	void cRedirectConsole::ListHead(ostream *os)
 	{

@@ -344,14 +344,13 @@ namespace nVerliHub {
 
 	void cDCClientConsole::GetHelp(ostream &os)
 	{
-		string help;
-		help = "https://github.com/verlihub/verlihub/wiki/clients/\r\n\r\n";
-		help += " -t\tClient ID (in <++ V:0.871,M:A,H:1/0/0,S:1> ID is '++')\r\n";
-		help += " -b\tBan client with any version (0 - no, 1 - yes)\r\n";
-		help += " -v\tMinimum allowed version number\r\n";
-		help += " -V\tMaximum allowed version number\r\n";
-		help += " -u\tMinimum version to use hub\r\n";
-		help += " -e\tEnable or disable this rule (0 - off, 1 - on)\r\n";
+		string help(" -t\t" + string(autosprintf(_("Client ID, in %s ID is %s"), "<++ V:0.871,M:A,H:1/0/0,S:1>", "++")) + "\r\n");
+		help += " -b\t" + string(_("Ban client with any version, 0 = no, 1 = yes")) + "\r\n";
+		help += " -v\t" + string(_("Minimum allowed version number, -1 for no limit")) + "\r\n";
+		help += " -V\t" + string(_("Maximum allowed version number, -1 for no limit")) + "\r\n";
+		help += " -u\t" + string(_("Minimum version to search and download, -1 for no limit")) + "\r\n";
+		help += " -e\t" + string(_("Enable or disable this rule, 0 = off, 1 = on")) + "\r\n\r\n";
+		help += "https://github.com/verlihub/verlihub/wiki/clients";
 		cDCProto::EscapeChars(help, help);
 		os << help;
 	}
@@ -441,7 +440,7 @@ namespace nVerliHub {
 	}
 
 	const char *cDCClientConsole::CmdSuffix() { return "client"; }
-	const char *cDCClientConsole::CmdPrefix() { return "!"; }
+	const char *cDCClientConsole::CmdPrefix() { return "."; } // note: any character, cmd_start_op is checked before command reaches console
 
 	void cDCClientConsole::ListHead(ostream *os)
 	{

@@ -5,7 +5,7 @@
 	!drop <nick> [reason]			- Drop user
 	!kick <nick> [reason] [_ban_time]		- Kick user
 
-	!ban[_time] <ip> [reason]			- Ban IP address
+	!ban[_time] <nick> [reason]			- Ban nick and IP address of online user
 	!banip[_time] <ip> [reason]			- Ban IP address
 	!banrange[_time] <range> [reason]		- Ban IP range
 	!bannick[_time] <nick> [reason]		- Ban nick
@@ -73,7 +73,7 @@
 	!nochats <nick> [time]			- Mute user in main chat and PM
 	!nodl <nick> [time]				- Disallow user to download
 	!nosearch <nick> [time]			- Disallow user to search
-	!noshare <nick> [time]			- Disallow user to hide share
+	!noshare <nick> [time]			- Allow user to share less than minimum
 	!maykick <nick> [time]			- Allow user to kick users
 	!mayreg <nick> [time]			- Allow user to register users
 	!mayopchat <nick> [time]			- Allow user to use operator chat
@@ -102,7 +102,7 @@
 		!unnochats <nick>			- Unmute user in main chat and PM
 		!unnodl <nick>			- Allow user to download
 		!unnosearch <nick>		- Allow user to search
-		!unnoshare <nick>			- Allow user to hide share
+		!unnoshare <nick>			- Disallow user to share less than minimum
 		!unmaykick <nick>			- Disallow user to kick users
 		!unmayreg <nick>			- Disallow user to register users
 		!unmayopchat <nick>		- Disallow user to use operator chat

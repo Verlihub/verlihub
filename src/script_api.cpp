@@ -538,14 +538,15 @@ bool Ban(const string &value, const string &op, const string &reason, unsigned h
 	if (value.empty())
 		return false;
 
-	unsigned flag = (1u << bantype);
+	const unsigned flag = (1u << bantype);
 	unsigned long num = 0;
+	cUser *user = NULL;
 
-	if (flag == nEnums::eBF_NICKIP) { // note: value decides, address is ip ban, anything else is nick ban
-		if (cBanList::Ip2Num(value, num, true))
-			flag = nEnums::eBF_IP;
-		else
-			flag = nEnums::eBF_NICK;
+	if (flag == nEnums::eBF_NICKIP) { // note: nick and ip of online user, same as !ban
+		user = serv->mUserList.GetUserByNick(value);
+
+		if (!user || !user->mxConn)
+			return false;
 
 	} else if ((flag == nEnums::eBF_IP) && !cBanList::Ip2Num(value, num, true)) { // note: ip ban needs valid address
 		return false;
@@ -565,6 +566,13 @@ bool Ban(const string &value, const string &op, const string &reason, unsigned h
 	ban.SetType(flag);
 
 	switch (flag) {
+		case nEnums::eBF_NICKIP:
+			ban.mNick = user->mNick;
+			ban.mIP = user->mxConn->AddrIP();
+			ban.mHost = user->mxConn->AddrHost();
+			ban.mShare = user->mShare;
+			break;
+
 		case nEnums::eBF_NICK:
 		case nEnums::eBF_PREFIX:
 			ban.mNick = value;

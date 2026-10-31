@@ -36,22 +36,22 @@ Wants=network-online.target mysql.service
 # not needed
 #EnvironmentFile=
 
-# start hub 1 using vhm
-ExecStart=/usr/local/bin/vhm -r 1
+# start hub 1 from multiple hub list
+ExecStart=/usr/local/bin/verlihub --multi --run 1
 
-# start hub 2 using vhm
-#ExecStart=/usr/local/bin/vhm -r 2
+# start hub 2 from multiple hub list
+#ExecStart=/usr/local/bin/verlihub --multi --run 2
 
-# start hub 1 using verlihub
-#ExecStart=/usr/local/bin/verlihub -r /path/to/config
+# start hub from configuration folder
+#ExecStart=/usr/local/bin/verlihub --run /path/to/config
 
-# stop hub 1 using vhm
-ExecStop=/usr/local/bin/vhm -s 1
+# stop hub 1 from multiple hub list
+ExecStop=/usr/local/bin/verlihub --multi --stop 1
 
-# stop hub 2 using vhm
-#ExecStop=/usr/local/bin/vhm -s 2
+# stop hub 2 from multiple hub list
+#ExecStop=/usr/local/bin/verlihub --multi --stop 2
 
-# stop hub 1 using verlihub
+# stop hub from configuration folder
 #ExecStop=/usr/local/bin/verlihub --stop /path/to/config
 
 # dont touch below

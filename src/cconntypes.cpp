@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -132,8 +132,15 @@ void cConnTypeConsole::GetHelpForCommand(int cmd, ostream &os)
 
 void cConnTypeConsole::GetHelp(ostream &os)
 {
-	string help;
-	help = "https://github.com/verlihub/verlihub/wiki/connections/"; // todo: add more help
+	string help(' ' + string(_("Connection type is speed field of user MyINFO without last character, for example DSL.")) + "\r\n");
+	help += ' ' + string(_("Type named default is used for users whose type is not in the list.")) + "\r\n\r\n";
+	help += " -d\t" + string(_("Description")) + "\r\n";
+	help += " -s\t" + string(_("Minimum open slots, 0 for no limit")) + "\r\n";
+	help += " -S\t" + string(_("Maximum open slots, 0 for no limit")) + "\r\n";
+	help += " -l\t" + string(_("Minimum upload limit, -1 for no limit")) + "\r\n";
+	help += " -ls\t" + string(_("Minimum upload limit per slot, -1 for no limit")) + "\r\n\r\n";
+	help += ' ' + string(_("Upload limits are checked only when client tag contains limit.")) + "\r\n\r\n";
+	help += "https://github.com/verlihub/verlihub/wiki/connections";
 	cDCProto::EscapeChars(help, help);
 	os << help;
 }
@@ -183,7 +190,7 @@ cConnTypes *cConnTypeConsole::GetTheList()
 }
 
 const char* cConnTypeConsole::CmdSuffix() { return "conntype"; }
-const char* cConnTypeConsole::CmdPrefix() { return "!"; }
+const char* cConnTypeConsole::CmdPrefix() { return "."; } // note: any character, cmd_start_op is checked before command reaches console
 
 void cConnTypeConsole::ListHead(ostream *os)
 {

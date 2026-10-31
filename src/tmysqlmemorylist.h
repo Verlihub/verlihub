@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -21,6 +21,8 @@
 #ifndef TMYSQLMEMORYLIST_H
 #define TMYSQLMEMORYLIST_H
 #include <vector>
+#include <sstream>
+#include <cstdlib>
 #include "cconfmysql.h"
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -66,7 +68,7 @@ public:
 
 	/**
 	* This method is called before loading data from mysql table to memory.
-	* By default table is created if it does not exist, default sql files are loaded and queries run and then data are loaded into memory.
+	* By default table is created if it does not exist, default sql file is run and then data are loaded into memory.
 	    * @see AddFields()
 	    * @see InstallDefaultData()
 	    * @see ReloadAll()
@@ -75,8 +77,7 @@ public:
 	{
 		AddFields();
 		SetBaseTo(&mModel);
-		CreateTable();
-		InstallDefaultData();
+		InstallDefaultData(CreateTable());
 		ReloadAll();
 	}
 
@@ -253,27 +254,68 @@ public:
 	}
 
 	/**
-	* Load default sql files and run them.
+	* Load default sql file and run its sections.
+	* Each section starts with line "-- <version>", the version that added its rows.
+	* New table gets all sections, existing table only sections newer than hub version of previous start, so rows that admin deleted stay deleted.
+	    * @param[in] fresh True when table was just created.
+	    * @return False when a query failed.
 	*/
-	bool InstallDefaultData()
+	bool InstallDefaultData(bool fresh)
 	{
 		mQuery.Clear();
-		string buf, filename;
-		/*
-		#ifdef _WIN32
-		filename =  ".\\sql\\default_" + mMySQLTable.mName + ".sql";
-		#else
-		*/
-		filename =  DATADIR  "/sql/default_" + mMySQLTable.mName + ".sql";
-		//#endif
-		bool _Result = false;
-		if(LoadFileInString(filename, buf))
-		{
-			mQuery.OStream() << buf;
-			_Result = mQuery.Query();
-			mQuery.Clear();
+		string buf;
+
+		if (!LoadFileInString(DATADIR "/sql/default_" + mMySQLTable.mName + ".sql", buf))
+			return true; // note: table without default data
+
+		std::istringstream lines(buf);
+		string line, ver, part;
+		bool res = true, more = true;
+
+		while (more) {
+			more = bool(std::getline(lines, line));
+
+			if (more && (line.compare(0, 3, "-- ") != 0)) { // note: rows of current section
+				part += line;
+				part += '\n';
+				continue;
+			}
+
+			if ((part.find_first_not_of(" \t\r\n") != string::npos) && (fresh || VersionNewer(ver, cConfMySQL::msLastVersion))) { // note: end of section, run it when needed
+				mQuery.OStream() << part;
+				res = ((mQuery.Query() > 0) && res);
+				mQuery.Clear();
+			}
+
+			if (more) { // note: next section starts
+				ver = line.substr(3);
+				part.clear();
+			}
 		}
-		return _Result;
+
+		return res;
+	}
+
+	/**
+	* Compare two dotted version numbers like 2.0.0.0, missing parts count as 0.
+	    * @return True when ver is newer than than.
+	*/
+	static bool VersionNewer(const string &ver, const string &than)
+	{
+		const char *a = ver.c_str(), *b = than.c_str();
+		char *end = NULL;
+
+		for (int i = 0; i < 4; i++) {
+			const unsigned long x = strtoul(a, &end, 10);
+			a = ((*end == '.') ? (end + 1) : end);
+			const unsigned long y = strtoul(b, &end, 10);
+			b = ((*end == '.') ? (end + 1) : end);
+
+			if (x != y)
+				return (x > y);
+		}
+
+		return false;
 	}
 
 	/**

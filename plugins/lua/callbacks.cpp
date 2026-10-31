@@ -1811,7 +1811,7 @@ int _Ban(lua_State *L)
 
 		unsigned bantype = (unsigned)lua_tonumber(L, 6);
 
-		if (!Ban(value, op, reason, howlong, bantype)) { // note: unknown ban type, empty value, bad range or host with too few parts
+		if (!Ban(value, op, reason, howlong, bantype)) { // note: unknown ban type, empty value, user not online for type 0, bad range or host with too few parts
 			luaerror(L, ERR_PARAM);
 			return 2;
 		}

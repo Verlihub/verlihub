@@ -60,7 +60,7 @@ cDCConsole::cDCConsole(cServerDC *s):
 	mDCClients(NULL),
 	mCmdr(this),
 	mUserCmdr(this),
- 	mCmdBan(int(eCM_BAN), ".(add|new|del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))?( this (nick|ip))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
+ 	mCmdBan(int(eCM_BAN), ".(add|new|del|rm|un|info|list|ls|lst)?ban([^_\\s]+)?(_(\\d+\\S))? ?", "(\\S+)?( (.*)$)?", &mFunBan),
 	mCmdTempBan(int(eCM_TEMPBAN), ".(info|del|un)?tempban(nick|ip)? ", "(\\S+)", &mFunTempBan),
 	mCmdGag(int(eCM_GAG), ".(un)?(gag|nochats|nochat|nopm|noctm|nodl|nosearch|kvip|maykick|noshare|mayreg|mayopchat|noinfo|mayinfo|temprights) ?", "(\\S+)?( (\\d+\\w))?", &mFunGag),
 	mCmdSetVar(int(eCM_SET),".(set|=) ", "(\\[(\\S+)\\] )?(\\S+) (.*)", &mFunSetVar),
@@ -1762,7 +1762,6 @@ bool cDCConsole::cfBan::operator()()
 		BAN_PREFIX = 1, // mIdStr
 		BAN_TYPE = 2,
 		BAN_LENGTH = 4,
-		BAN_THIS = 6,
 		BAN_WHO = 1, // mParStr
 		BAN_REASON = 3
 	};
@@ -1807,14 +1806,7 @@ bool cDCConsole::cfBan::operator()()
 			return false;
 	}
 
-	bool IsNick = false;
-
-	if (BanType == eBF_NICK)
-		IsNick = true;
-
-	if (mIdRex->PartFound(BAN_THIS))
-		IsNick = (0 == mIdRex->Compare(BAN_TYPE, mIdStr, "nick"));
-
+	const bool IsNick = (BanType == eBF_NICK);
 	bool IsPerm = !mIdRex->PartFound(BAN_LENGTH);
 	time_t BanTime = 0;
 
@@ -1907,7 +1899,26 @@ bool cDCConsole::cfBan::operator()()
 			Ban.SetType(BanType);
 
 			switch (BanType) {
-				case eBF_NICKIP:
+				case eBF_NICKIP: { // note: nick and ip of online user
+					cUser *user = mS->mUserList.GetUserByNick(Who);
+
+					if (!user || !user->mxConn) {
+						(*mOS) << autosprintf(_("User not online: %s"), Who.c_str());
+						return false;
+					}
+
+					if ((user->mClass + int(mS->mC.classdif_kick)) > MyClass) { // note: same rights as drop
+						(*mOS) << _("You have no rights to do this.");
+						return false;
+					}
+
+					Ban.mNick = user->mNick;
+					Ban.mIP = user->mxConn->AddrIP();
+					Ban.mHost = user->mxConn->AddrHost();
+					Ban.mShare = user->mShare;
+					break;
+				}
+
 				case eBF_NICK:
 				case eBF_IP:
 					if (mS->mKickList->FindKick(Kick, Who, mConn->mpUser->mNick, 3000, true, true, IsNick)) {
@@ -1916,9 +1927,6 @@ bool cDCConsole::cfBan::operator()()
 					} else {
 						unsigned long num = 0;
 						const bool addr = cBanList::Ip2Num(Who, num, true);
-
-						if (BanType == eBF_NICKIP) // note: without kick, value decides, address is ip ban, anything else is nick ban
-							BanType = (addr ? eBF_IP : eBF_NICK);
 
 						if ((BanType == eBF_IP) && !addr) {
 							(*mOS) << autosprintf(_("Invalid IP address: %s"), Who.c_str());
@@ -2482,6 +2490,20 @@ bool cDCConsole::cfGag::operator()()
 			(*mOS) << autosprintf(_("User not found: %s"), nick.c_str());
 			return false;
 		}
+	}
+
+	user = mS->mUserList.GetUserByNick(nick);
+	int other = eUC_NORMUSER; // note: class of target, offline nick that is not registered counts as guest
+	cRegUserInfo ui;
+
+	if (user)
+		other = user->mClass;
+	else if (mS->mR->FindRegInfo(ui, nick))
+		other = ui.mClass;
+
+	if ((other + int(mS->mC.classdif_rights)) > mConn->mpUser->mClass) { // note: same rule as kick, with own class difference
+		(*mOS) << _("You have no rights to do this.");
+		return false;
 	}
 
 	unsigned long per = 24 * 3600 * 7;

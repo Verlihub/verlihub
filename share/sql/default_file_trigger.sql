@@ -1,3 +1,4 @@
+-- 1.0.0.0
 INSERT IGNORE INTO file_trigger (command,def,descr,min_class,flags) VALUES
 	('+motd','%[CFG]/motd','Message of the day',0,4),
 	('+motd_reg','%[CFG]/motd_reg','Message of the day',1,4),

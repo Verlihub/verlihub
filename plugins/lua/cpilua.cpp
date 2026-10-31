@@ -1063,6 +1063,13 @@ bool cpiLua::OnSetConfig(cUser *user, string *conf, string *var, string *val_new
 		res = CallAll("VH_OnSetConfig", args, user->mxConn); // note: VH.HubSec and VH.OpChat are updated in OnScriptCommand, when hub really applied new nick
 	}
 
+	if (res && conf && var && val_new && (*conf == "pi_lua")) { // note: own variables are used at once, same as !lualog and !luaerr
+		if (*var == "log_level")
+			this->log_level = atoi(val_new->c_str());
+		else if (*var == "err_class")
+			this->err_class = atoi(val_new->c_str());
+	}
+
 	return res;
 }
 

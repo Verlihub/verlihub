@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -71,6 +71,20 @@ void cPenaltyList::CleanType(const string &type)
 	query.OStream() << "` > 1)";
 	query.Query();
 	query.Clear();
+}
+
+bool cPenaltyList::CanShare0(const string &nick)
+{
+	if (mServ->mC.use_penlist_cache && (!mCache.IsLoaded() || !mCache.Find(nick))) // note: most users have no rights, no query for them
+		return false;
+
+	cQuery query(mMySQL);
+	query.OStream() << "select 1 from `" << mMySQLTable.mName << "` where `nick` = '";
+	WriteStringConstant(query.OStream(), nick);
+	query.OStream() << "' and `st_share0` > " << mServ->mTime.Sec() << " limit 1";
+	const bool res = ((query.Query() > 0) && (query.StoreResult() > 0));
+	query.Clear();
+	return res;
 }
 
 bool cPenaltyList::LoadTo(sPenalty &pen, const string &nick)

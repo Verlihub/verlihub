@@ -330,13 +330,13 @@ bool cTLSContext::Generate(const string &cert, const string &key, const string &
 	BIGNUM *serial = BN_new();
 	bool good = (x509 && serial);
 
-	if (good) // note: random 128 bit serial, like go version did
+	if (good) // note: random 128 bit serial
 		good = (BN_rand(serial, 127, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY) == 1) && BN_to_ASN1_INTEGER(serial, X509_get_serialNumber(x509));
 
 	if (good)
 		good = (X509_set_version(x509, 2) == 1) && X509_gmtime_adj(X509_getm_notBefore(x509), -3600) && X509_time_adj_ex(X509_getm_notAfter(x509), days, 0, NULL) && (X509_set_pubkey(x509, pkey) == 1); // note: one hour back for clocks that are a bit behind
 
-	if (good) { // note: same subject as go version, organization is also common name
+	if (good) { // note: organization is also common name
 		const string name = (org.size() ? org : "Verlihub");
 		X509_NAME *subj = X509_get_subject_name(x509);
 		good = (X509_NAME_add_entry_by_txt(subj, "CN", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_NAME_add_entry_by_txt(subj, "O", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_set_issuer_name(x509, subj) == 1);
@@ -377,7 +377,7 @@ bool cTLSContext::Generate(const string &cert, const string &key, const string &
 
 	if (good) {
 		BIO *cbio = BIO_new(BIO_s_mem()), *kbio = BIO_new(BIO_s_mem());
-		good = (cbio && kbio && (PEM_write_bio_X509(cbio, x509) == 1) && (PEM_write_bio_PrivateKey(kbio, pkey, NULL, NULL, 0, NULL, NULL) == 1)); // note: pkcs8 like go version
+		good = (cbio && kbio && (PEM_write_bio_X509(cbio, x509) == 1) && (PEM_write_bio_PrivateKey(kbio, pkey, NULL, NULL, 0, NULL, NULL) == 1)); // note: key is written as pkcs8
 
 		if (good) {
 			char *data = NULL;
