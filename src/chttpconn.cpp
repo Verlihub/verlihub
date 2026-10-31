@@ -35,6 +35,7 @@
 #include <cctype>
 #include <algorithm>
 #include <chrono>
+#include <thread>
 
 #ifdef _WIN32
 	#include <windows.h> // note: MoveFileExA
@@ -499,13 +500,51 @@ bool cHTTPConn::SplitUrl(const string &url, string &host, int &port, string &pat
 	return (host.size() && (port > 0) && (port <= 65535));
 }
 
-bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file)
+bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, unsigned int retry)
 {
-	string cur(url), how(meth.size() ? toUpper(meth) : "GET"), send(data), extra(head);
+	const string how(meth.size() ? toUpper(meth) : "GET");
+	const bool safe = ((how == "GET") || (how == "HEAD")); // note: request without data can be sent again
+
+	for (unsigned int attempt = 0; ; attempt++) {
+		bool sent = false;
+		const bool res = FetchOnce(how, url, head, data, timeout, cancel, code, rhead, body, err, file, sent);
+
+		if (attempt >= retry)
+			return res;
+
+		if (res) {
+			if ((code != 408) && (code != 429) && (code != 500) && (code != 502) && (code != 503) && (code != 504)) // note: same http codes as retry of curl
+				return res;
+
+		} else if ((code != eHTTP_TIMEOUT) && (code != eHTTP_NETWORK)) {
+			return res;
+		}
+
+		if (sent && !safe) // note: data might have reached server already
+			return res;
+
+		const auto until = std::chrono::steady_clock::now() + std::chrono::seconds(1 << std::min(attempt, 6U)); // note: 1, 2, 4 seconds and so on, at most 64
+
+		while (std::chrono::steady_clock::now() < until) { // note: short steps, so hub stop is noticed
+			if (cancel && cancel->IsCancelled())
+				return res;
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		}
+
+		if (cancel && cancel->IsCancelled())
+			return res;
+	}
+}
+
+bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, bool &sent)
+{
+	string cur(url), how(meth), send(data), extra(head);
 	code = 0;
 	rhead.clear();
 	body.clear();
 	err.clear();
+	sent = false;
 
 	if (extra.size() && ((extra.size() < 2) || (extra.compare(extra.size() - 2, 2, "\r\n") != 0))) // note: every header line must end with line break
 		extra.append("\r\n");
@@ -524,6 +563,9 @@ bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head,
 		}
 
 		cHTTPConn conn(host, port, cancel, tls, timeout);
+
+		if (conn.mGood) // note: from here request can reach server
+			sent = true;
 
 		if (!conn.mGood || !conn.Request(how, path, extra, send) || !conn.ReadReply(rhead, body, 0, part, err)) { // note: no limit, script decides what it downloads
 			code = (conn.mError ? conn.mError : eHTTP_NETWORK);
@@ -565,7 +607,7 @@ bool cHTTPConn::Download(const string &url, string &data) // note: same as wget 
 {
 	int code = 0;
 	string head, err;
-	return (Fetch("GET", url, "", "", 5, NULL, code, head, data, err) && (code >= 200) && (code <= 299));
+	return (Fetch("GET", url, "", "", 5, NULL, code, head, data, err, "", 2) && (code >= 200) && (code <= 299));
 }
 
 int cHTTPConn::Write(const string &data)

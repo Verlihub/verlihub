@@ -705,8 +705,9 @@ class cServerDC : public cAsyncSocketServer
 			http request of scripts and plugins, runs on http thread, done runs on main thread with reply, returns false and err when request can not start
 			note: file is for download, relative to configuration folder unless full path, body of 2xx reply is saved there, then done gets file path instead of body
 			note: owner is plugin that waits for reply, plugin manager calls HTTPForget() before plugin is unloaded, because its done function can not be called or deleted after that
+			note: retry is number of extra attempts, see cHTTPConn::Fetch
 		*/
-		bool HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
+		bool HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, unsigned int retry, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
 		void HTTPForget(const nPlugin::cPluginBase *owner);
 
 protected: // Protected methods
@@ -761,6 +762,7 @@ protected: // Protected methods
 	std::set<cSocketCancel*> mHTTPCancel;
 	bool mHTTPStop = false;
 	nThread::cWorkerPool mHTTPPool;
+	unsigned int mHTTPThreads = 2; // note: adv_http_threads, 0 = number of cpu cores, used when pool starts on first request
 
 	struct sHTTPWait // note: main thread only
 	{

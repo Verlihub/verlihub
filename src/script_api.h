@@ -76,10 +76,11 @@ namespace nVerliHub {
 		download saves body of 2xx reply to file, relative to configuration folder unless full path, done gets file path instead of body
 		owner is plugin that waits for reply, usually this, plugin manager drops its waiting replies when it is unloaded
 		on false err tells why request could not start, for example invalid url or file that can not be written
+		retry is number of extra attempts on timeout, network error and http 408, 429, 500, 502, 503 and 504, see nSocket::cHTTPConn::Fetch
 	*/
-	bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
-	bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
-	bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err);
+	bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
+	bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
+	bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

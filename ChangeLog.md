@@ -16,7 +16,7 @@
 * Windows support using MinGW-w64, see Install.md
 * CMake package configuration for plugins built outside of Verlihub source
 * Native TLS using OpenSSL, plain and encrypted clients on same port
-* Lua calls VH:HTTPGet, VH:HTTPPost and VH:HTTPDownload, see Wiki
+* Lua calls VH:HTTPGet, VH:HTTPPost and VH:HTTPDownload, configuration adv_http_threads, see Wiki
 * Commands !getvar and !getconfig with file name list unused variables separately
 * CMake target POT and Transifex integration
 * Hub messages are translated also when dbconfig locale is not installed
@@ -30,6 +30,7 @@
 * Multi hub manager "vhm" is "verlihub" itself
 * Hub utility "vh" is "verlihub" itself, old "vh" commands keep working
 * Update check and crash report use HTTPS
+* Update check and MaxMind download retry twice on timeout or server error
 * Hub stop no longer waits for hublist registration or update check
 * Translation files are UTF-8, converted to locale charset at runtime
 * PCRE2 instead of old PCRE, see Install.md

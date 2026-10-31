@@ -2325,86 +2325,81 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 
 unsigned int cServerDC::DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel) // note: runs on update check thread, dont touch hub state here
 {
-	cHTTPConn conn(VER_CHECK_ADDR, VER_CHECK_PORT, &cancel, VER_CHECK_TLS); // connect, note: closed by destructor
+	const string url(string(VER_CHECK_TLS ? "https://" : "http://") + VER_CHECK_ADDR + ':' + StringFrom(VER_CHECK_PORT) + (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"));
+	int status = 0;
+	string head, data, err;
 	unsigned int code = 0;
 	ver.clear();
 
-	if (conn.mGood) {
-		if (conn.Request("", (git ? "/verlihub/verligit.ver" : "/verlihub/verlihub.ver"), "", "")) {
-			string data;
+	if (cHTTPConn::Fetch("GET", url, "", "", 5, &cancel, status, head, data, err, "", 2)) { // note: tried again twice on timeout, network error and server error
+		if ((status >= 200) && (status <= 299) && (data.size() >= 7) && (data.size() <= 19)) { // we are expecting 1.22.333.4444
+			ver = data;
+			string sv1, sv2, sv3, sv4;
+			size_t pos = data.find('.'); // v1
 
-			if (conn.ParseReply(data) && (data.size() >= 7) && (data.size() <= 19)) { // we are expecting 1.22.333.4444
-				ver = data;
-				string sv1, sv2, sv3, sv4;
-				size_t pos = data.find('.'); // v1
+			if (pos != data.npos) {
+				sv1 = data.substr(0, pos);
 
-				if (pos != data.npos) {
-					sv1 = data.substr(0, pos);
+				if (sv1.size() && nUtils::IsNumber(sv1.c_str())) {
+					data = data.substr(pos + 1);
+					pos = data.find('.'); // v2
 
-					if (sv1.size() && nUtils::IsNumber(sv1.c_str())) {
-						data = data.substr(pos + 1);
-						pos = data.find('.'); // v2
+					if (pos != data.npos) {
+						sv2 = data.substr(0, pos);
 
-						if (pos != data.npos) {
-							sv2 = data.substr(0, pos);
+						if (sv2.size() && nUtils::IsNumber(sv2.c_str())) {
+							data = data.substr(pos + 1);
+							pos = data.find('.'); // v3
 
-							if (sv2.size() && nUtils::IsNumber(sv2.c_str())) {
-								data = data.substr(pos + 1);
-								pos = data.find('.'); // v3
+							if (pos != data.npos) {
+								sv3 = data.substr(0, pos);
 
-								if (pos != data.npos) {
-									sv3 = data.substr(0, pos);
+								if (sv3.size() && nUtils::IsNumber(sv3.c_str())) {
+									sv4 = data.substr(pos + 1); // v4
 
-									if (sv3.size() && nUtils::IsNumber(sv3.c_str())) {
-										sv4 = data.substr(pos + 1); // v4
+									if (sv4.size() && nUtils::IsNumber(sv4.c_str())) {
+										int iv1 = atoi(sv1.c_str()), iv2 = atoi(sv2.c_str()), iv3 = atoi(sv3.c_str()), iv4 = atoi(sv4.c_str());
 
-										if (sv4.size() && nUtils::IsNumber(sv4.c_str())) {
-											int iv1 = atoi(sv1.c_str()), iv2 = atoi(sv2.c_str()), iv3 = atoi(sv3.c_str()), iv4 = atoi(sv4.c_str());
-
-											if (
-												(iv1 > HUB_VERSION_A) // v1
-													|| ((iv1 == HUB_VERSION_A) && (iv2 > HUB_VERSION_B)) // v2
-														|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 > HUB_VERSION_C)) // v3
-															|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 == HUB_VERSION_C) && (iv4 > HUB_VERSION_D)) // v4
-											) // higher version
-												code = 100;
-											else // lower or same version
-												code = 50;
-
-										} else { // bad data
-											code = 10;
-										}
+										if (
+											(iv1 > HUB_VERSION_A) // v1
+												|| ((iv1 == HUB_VERSION_A) && (iv2 > HUB_VERSION_B)) // v2
+													|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 > HUB_VERSION_C)) // v3
+														|| ((iv1 == HUB_VERSION_A) && (iv2 == HUB_VERSION_B) && (iv3 == HUB_VERSION_C) && (iv4 > HUB_VERSION_D)) // v4
+										) // higher version
+											code = 100;
+										else // lower or same version
+											code = 50;
 
 									} else { // bad data
-										code = 9;
+										code = 10;
 									}
 
 								} else { // bad data
-									code = 8;
+									code = 9;
 								}
 
 							} else { // bad data
-								code = 7;
+								code = 8;
 							}
 
 						} else { // bad data
-							code = 6;
+							code = 7;
 						}
 
 					} else { // bad data
-						code = 5;
+						code = 6;
 					}
 
 				} else { // bad data
-					code = 4;
+					code = 5;
 				}
 
 			} else { // bad data
-				code = 3;
+				code = 4;
 			}
 
-		} else { // send error
-			code = 2;
+		} else { // bad data
+			code = 3;
 		}
 
 	} else { // connection error
@@ -2432,8 +2427,6 @@ void cServerDC::OnUpdateCheckDone(unsigned int code, const string &ver, const st
 				os << _("Your version of Verlihub is currently up to date.");
 			else if (code == 1)
 				os << _("Failed connecting to update server.");
-			else if (code == 2)
-				os << _("Failed sending request to update server.");
 			else if ((code >= 3) && (code < 50))
 				os << autosprintf(_("Failed parsing reply from update server with code: %d"), code);
 
@@ -2499,7 +2492,7 @@ void cServerDC::SendMyINFOToAll(cUser *user)
 	}
 }
 
-bool cServerDC::HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, const nPlugin::cPluginBase *owner, tHTTPDone done, unsigned long &id, string &err)
+bool cServerDC::HTTPRequest(const string &meth, const string &url, const string &head, const string &data, const string &file, unsigned int timeout, unsigned int retry, const nPlugin::cPluginBase *owner, tHTTPDone done, unsigned long &id, string &err)
 {
 	string host, path;
 	int port = 0;
@@ -2539,7 +2532,7 @@ bool cServerDC::HTTPRequest(const string &meth, const string &url, const string 
 
 	const unsigned long num = mHTTPLastID;
 
-	nThread::cWorkerPool::tJob job([this, num, meth, url, head, data, full, timeout]() -> nThread::cWorkerPool::tResult { // note: runs on http thread, only cancel list is touched there
+	nThread::cWorkerPool::tJob job([this, num, meth, url, head, data, full, timeout, retry]() -> nThread::cWorkerPool::tResult { // note: runs on http thread, only cancel list is touched there
 		cSocketCancel cancel;
 
 		{
@@ -2554,7 +2547,7 @@ bool cServerDC::HTTPRequest(const string &meth, const string &url, const string 
 		int code = 0;
 		string rhead, body, why;
 
-		cHTTPConn::Fetch(meth, url, head, data, timeout, &cancel, code, rhead, body, why, full); // note: on failure code is negative reason and why is its text
+		cHTTPConn::Fetch(meth, url, head, data, timeout, &cancel, code, rhead, body, why, full, retry); // note: on failure code is negative reason and why is its text
 
 		{
 			std::lock_guard<std::mutex> lock(mHTTPLock);
@@ -2586,7 +2579,7 @@ bool cServerDC::PostHTTP(nThread::cWorkerPool::tJob job)
 		mHTTPStop = false;
 	}
 
-	return (StartPool(mHTTPPool, 2) && mHTTPPool.Post(std::move(job)));
+	return (StartPool(mHTTPPool, mHTTPThreads) && mHTTPPool.Post(std::move(job)));
 }
 
 void cServerDC::PostHTTPEarly()

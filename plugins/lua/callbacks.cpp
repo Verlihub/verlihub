@@ -3235,7 +3235,7 @@ static void LuaHTTPReply(unsigned long serial, const string &func, unsigned long
 
 static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = get, 1 = post, 2 = download
 {
-	const int args = lua_gettop(L) - 1, need = (kind ? 3 : 2), fpos = need + 1; // note: position of callback name, then headers and timeout
+	const int args = lua_gettop(L) - 1, need = (kind ? 3 : 2), fpos = need + 1; // note: position of callback name, then headers, timeout and retry
 
 	if (args < need) {
 		luaL_error(L, "Error calling VH:%s, expected atleast %d arguments but got %d.", name, need, args);
@@ -3246,7 +3246,7 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 
 	string head;
 
-	if (!lua_isstring(L, 2) || (kind && !lua_isstring(L, 3)) || !lua_isstring(L, fpos) || (!lua_isnoneornil(L, fpos + 2) && !lua_isnumber(L, fpos + 2)) || !LuaHTTPHead(L, fpos + 1, head)) {
+	if (!lua_isstring(L, 2) || (kind && !lua_isstring(L, 3)) || !lua_isstring(L, fpos) || (!lua_isnoneornil(L, fpos + 2) && !lua_isnumber(L, fpos + 2)) || (!lua_isnoneornil(L, fpos + 3) && !lua_isnumber(L, fpos + 3)) || !LuaHTTPHead(L, fpos + 1, head)) {
 		luaerror(L, ERR_PARAM);
 		return 2;
 	}
@@ -3270,6 +3270,8 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 
 	const double secs = (lua_isnumber(L, fpos + 2) ? lua_tonumber(L, fpos + 2) : 0);
 	const unsigned int timeout = ((secs > 0) ? ((secs < 4294967) ? (unsigned int)secs : 4294967U) : 0); // note: 0 is default, upper limit only keeps milliseconds in range
+	const double tries = (lua_isnumber(L, fpos + 3) ? lua_tonumber(L, fpos + 3) : 0);
+	const unsigned int retry = ((tries > 0) ? ((tries < 5) ? (unsigned int)tries : 5U) : 0); // note: at most 5, pause grows to 16 seconds, so request does not hold http thread too long
 
 	nSocket::tHTTPDone done = [serial, func](unsigned long id, int code, const string &body, const string &rhead, const string &err) {
 		LuaHTTPReply(serial, func, id, code, body, rhead, err);
@@ -3280,11 +3282,11 @@ static int LuaHTTP(lua_State *L, const char *name, int kind) // note: kind 0 = g
 	bool res;
 
 	if (kind == 1)
-		res = HTTPPost(url, extra, head, timeout, cpiLua::me, done, id, err);
+		res = HTTPPost(url, extra, head, timeout, cpiLua::me, done, id, err, retry);
 	else if (kind == 2)
-		res = HTTPDownload(url, extra, head, timeout, cpiLua::me, done, id, err);
+		res = HTTPDownload(url, extra, head, timeout, cpiLua::me, done, id, err, retry);
 	else
-		res = HTTPGet(url, head, timeout, cpiLua::me, done, id, err);
+		res = HTTPGet(url, head, timeout, cpiLua::me, done, id, err, retry);
 
 	if (!res) {
 		luaerror(L, err.c_str());

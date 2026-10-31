@@ -74,10 +74,12 @@ namespace nVerliHub {
 					note: follows at most 2 redirects, one for moved domain and one for rewrite rule on new server, then last reply is returned
 					note: code, head and body are of any reply, also 404, head is header lines without status line
 					note: when file is given, body of 2xx reply goes to file instead of body, it is written to file.part first and renamed when complete
+					note: retry is number of extra attempts after timeout, network error and http 408, 429, 500, 502, 503 and 504, same as curl, with pause of 1, 2, 4 seconds and so on
+					note: post and other methods with data are tried again only when connection failed, so data is never sent twice
 				*/
-				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "");
+				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0);
 
-				// whole file into memory, only 2xx reply, same as wget of vh script
+				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice
 				static bool Download(const string &url, string &data);
 				~cHTTPConn();
 
@@ -118,6 +120,9 @@ namespace nVerliHub {
 				bool StartTLS();
 				void SetError(int code, const string &text); // note: socket error is told by cancel first, hub stop shuts socket down
 				void SetSockError(int err, const string &what);
+
+				// one attempt of Fetch, sent tells that connection was made, so request data might have reached server
+				static bool FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, bool &sent);
 
 				string mHost;
 				unsigned int mPort;

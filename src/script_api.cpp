@@ -1031,7 +1031,7 @@ bool ScriptCommand(string *cmd, string *data, string *plug, string *script, bool
 	return serv->AddScriptCommand(cmd, data, plug, script, inst);
 }
 
-bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -1040,10 +1040,10 @@ bool HTTPGet(const string &url, const string &head, unsigned int timeout, const 
 		return false;
 	}
 
-	return serv->HTTPRequest("GET", url, head, "", "", timeout, owner, done, id, err);
+	return serv->HTTPRequest("GET", url, head, "", "", timeout, retry, owner, done, id, err);
 }
 
-bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry)
 {
 	cServerDC *serv = GetCurrentVerlihub();
 
@@ -1052,10 +1052,10 @@ bool HTTPPost(const string &url, const string &data, const string &head, unsigne
 		return false;
 	}
 
-	return serv->HTTPRequest("POST", url, head, data, "", timeout, owner, done, id, err);
+	return serv->HTTPRequest("POST", url, head, data, "", timeout, retry, owner, done, id, err);
 }
 
-bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err)
+bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry)
 {
 	if (file.empty()) {
 		err = "No file name";
@@ -1069,7 +1069,7 @@ bool HTTPDownload(const string &url, const string &file, const string &head, uns
 		return false;
 	}
 
-	return serv->HTTPRequest("GET", url, head, "", file, timeout, owner, done, id, err);
+	return serv->HTTPRequest("GET", url, head, "", file, timeout, retry, owner, done, id, err);
 }
 
 int CheckBotNick(const string &nick)
