@@ -247,6 +247,9 @@ endif()
 install(EXPORT VerlihubTargets NAMESPACE Verlihub:: DESTINATION ${VERLIHUB_CMAKE_DIR})
 install(FILES "${CMAKE_BINARY_DIR}/VerlihubConfig.cmake" "${CMAKE_BINARY_DIR}/VerlihubConfigVersion.cmake" DESTINATION ${VERLIHUB_CMAKE_DIR})
 
+install(CODE "file(REMOVE_RECURSE \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${VERLIHUB_HEADER_DIR}\")
+	message(STATUS \"Removing: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${VERLIHUB_HEADER_DIR}\")") # note: header folder is emptied before headers are installed, so headers of removed classes are not left behind
+
 if(HAVE_WEPOLL) # note: cconnepoll.h includes it from own folder
 	LIST(REMOVE_ITEM VERLIHUB_HDRS wepoll/wepoll.h)
 	INSTALL(FILES wepoll/wepoll.h DESTINATION "include/${PROJECT_NAME}/wepoll")
