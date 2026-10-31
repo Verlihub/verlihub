@@ -2430,8 +2430,6 @@ void cServerDC::OnUpdateCheckDone(unsigned int code, const string &ver, const st
 		if (user && user->mxConn && user->mInList) { // only to user
 			if (code == 50)
 				os << _("Your version of Verlihub is currently up to date.");
-			else if (code == 0)
-				os << _("Failed creating connection socket.");
 			else if (code == 1)
 				os << _("Failed connecting to update server.");
 			else if (code == 2)
@@ -2451,14 +2449,17 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 {
 	string reply;
 
-	if (conn) {
-		DCPublicHS(_("Checking for updates, please wait."), conn);
+	if (conn && conn->mpUser && conn->mpUser->mInList)
+		reply.assign(conn->mpUser->mNick);
 
-		if (conn->mpUser && conn->mpUser->mInList)
-			reply.assign(conn->mpUser->mNick);
-	}
+	if (StartPool(mUpdateCheck, 1)) {
+		if (!mUpdateCheck.IsIdle()) { // note: one check at a time, for example timer check is running
+			if (conn)
+				DCPublicHS(_("Update check is already running, please try again later."), conn);
 
-	if (StartPool(mUpdateCheck, 1) && mUpdateCheck.IsIdle()) { // note: one check at a time
+			return false;
+		}
+
 		mUpdateCancel.Reset(); // note: safe, nothing is running
 
 		const bool posted = mUpdateCheck.Post([this, git, reply]() -> nThread::cWorkerPool::tResult {
@@ -2467,8 +2468,12 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 			return [this, code, ver, reply] { OnUpdateCheckDone(code, ver, reply); };
 		});
 
-		if (posted)
+		if (posted) {
+			if (conn) // note: result comes later from main loop, so this is sent first
+				DCPublicHS(_("Checking for updates, please wait."), conn);
+
 			return true;
+		}
 	}
 
 	if (conn)
