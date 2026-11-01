@@ -1038,6 +1038,8 @@ int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data c
 	if (!buf_size || !flush) // nothing to send or send it later
 		return 0;
 
+	cProfileScope prof((mxServer ? &mxServer->mProfiler : NULL), (mxServer ? mxServer->mProfWrite : 0)); // note: compression, encryption and send
+
 	nVerliHub::cServerDC *serv = NULL;
 
 	if (mxServer)

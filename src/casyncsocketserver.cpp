@@ -727,8 +727,7 @@ int cAsyncSocketServer::ParseInput(cAsyncConn *conn)
 
 int cAsyncSocketServer::output(cAsyncConn *conn)
 {
-	cProfileScope prof(&mProfiler, mProfWrite);
-	conn->Flush();
+	conn->Flush(); // note: time of sending is measured in cAsyncConn::Write()
 	return 0;
 }
 

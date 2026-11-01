@@ -239,6 +239,9 @@ namespace nVerliHub {
 				/// Time of main loop sections and work of threads, configuration adv_enable_profiler.
 				nUtils::cProfiler mProfiler;
 
+				/// Profiler section of data that really goes to sockets, used by connections.
+				unsigned int mProfWrite = 0;
+
 				/// Start new connection, when dns_lookup is enabled this happens only after host name is known.
 				/// @return Same as OnNewConn(), negative value means connection must be closed.
 				virtual int StartConn(cAsyncConn *conn);
@@ -453,7 +456,6 @@ namespace nVerliHub {
 
 			/// Profiler sections of main loop.
 			unsigned int mProfRead = 0;
-			unsigned int mProfWrite = 0;
 			unsigned int mProfAccept = 0;
 			unsigned int mProfServTimer = 0;
 			unsigned int mProfConnTimer = 0;
