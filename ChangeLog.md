@@ -25,6 +25,7 @@
 * Event OnTLSHandshake for plugins and Lua, called when TLS handshake of new connection is done
 * Command "verlihub --tlscert" creates new TLS certificate same way as hub does
 * Configuration adv_enable_profiler and command !procinfo, time of hub work and threads
+* Lua call VH:SQLWrite, see Wiki
 
 ## Updated
 

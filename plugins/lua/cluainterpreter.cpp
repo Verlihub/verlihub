@@ -129,6 +129,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("SetConfig", &_SetConfig);
 	RegisterFunction("GetConfig", &_GetConfig);
 	RegisterFunction("SQLQuery", &_SQLQuery);
+	RegisterFunction("SQLWrite", &_SQLWrite);
 	RegisterFunction("SQLFetch", &_SQLFetch);
 	RegisterFunction("SQLFree", &_SQLFree);
 	RegisterFunction("GetUsersCount", &_GetUsersCount);

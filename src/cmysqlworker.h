@@ -59,7 +59,7 @@ class cMySQLWorker: public cObj
 		cMySQLWorker(const cMySQLWorker&) = delete;
 		cMySQLWorker& operator=(const cMySQLWorker&) = delete;
 
-		// queue query that returns nothing, it runs on main connection when thread is not available, it is dropped when queue is full, returns true when queued
+		// queue query that returns nothing, it runs on main connection when thread is not available, it is dropped when queue is full, returns false only when dropped
 		bool Write(const string &query);
 
 		// queue select, done is called on main thread, returns false when thread is not available, caller must then do it by itself, when queue is full done gets failed result at once

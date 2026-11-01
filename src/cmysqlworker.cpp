@@ -152,7 +152,7 @@ bool cMySQLWorker::Write(const string &query)
 		main.OStream() << query;
 		main.Query();
 		main.Clear();
-		return false;
+		return true; // note: query is done, error is logged by query itself
 	}
 
 	const bool queued = mPool.Post([this, query]() -> nThread::cWorkerPool::tResult {

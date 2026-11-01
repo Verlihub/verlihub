@@ -2524,6 +2524,53 @@ int _SQLQuery(lua_State *L)
 	return 2;
 }
 
+int _SQLWrite(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:SQLWrite, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (!serv) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	const string sql(lua_tostring(L, 2));
+
+	if (sql.empty()) {
+		luaerror(L, ERR_EMPT);
+		return 2;
+	}
+
+	if (serv->mBanList && SQLWritesBans(sql)) { // note: ban cache is reloaded after write, so it runs at once on main connection, same as VH:SQLQuery, queued writes are done first
+		nMySQL::cQuery query(serv->mMySQL);
+		query.OStream() << sql;
+
+		if (query.Query() > 0)
+			serv->mBanList->ReloadCache();
+
+		query.Clear();
+
+	} else if (!serv->mMySQLWorker.Write(sql)) { // note: runs on database thread in same order as other writes, or at once on main connection when thread is not running
+		luaerror(L, "Queue is full");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushnil(L);
+	return 2;
+}
+
 int _SQLFetch(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {

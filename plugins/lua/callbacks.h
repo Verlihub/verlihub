@@ -91,6 +91,7 @@ namespace nVerliHub {
 	int _ReportUser(lua_State *L);
 	int _ParseCommand(lua_State *L);
 	int _SQLQuery(lua_State *L);
+	int _SQLWrite(lua_State *L);
 	int _SQLFetch(lua_State *L);
 	int _SQLFree(lua_State *L);
 	int _GetUsersCount(lua_State *L);
