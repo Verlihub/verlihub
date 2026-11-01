@@ -2472,6 +2472,20 @@ static bool SQLWritesBans(const string &sql) // note: query that changes ban tab
 	return true;
 }
 
+static bool SQLCaller(lua_State *L, cServerDC *serv) // note: profiler shows time of query under name of Lua function that called it, when true caller clears it after query
+{
+	if (!serv->mProfiler.mEnabled)
+		return false;
+
+	lua_Debug ar;
+
+	if (!lua_getstack(L, 1, &ar) || !lua_getinfo(L, "n", &ar) || !ar.name)
+		return false;
+
+	serv->mProfiler.mQueryDetail = ar.name;
+	return true;
+}
+
 int _SQLQuery(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -2508,8 +2522,12 @@ int _SQLQuery(lua_State *L)
 	const string sql(lua_tostring(L, 2));
 	plug->mQuery->Clear();
 	plug->mQuery->OStream() << sql;
+	const bool named = SQLCaller(L, serv);
 	const bool done = (plug->mQuery->Query() > 0);
 	int res = plug->mQuery->StoreResult();
+
+	if (named)
+		serv->mProfiler.mQueryDetail.clear();
 
 	if (done && serv->mBanList && SQLWritesBans(sql)) // note: login check uses ban cache, so ban added or removed by script is seen at once
 		serv->mBanList->ReloadCache();
@@ -2555,9 +2573,13 @@ int _SQLWrite(lua_State *L)
 	if (serv->mBanList && SQLWritesBans(sql)) { // note: ban cache is reloaded after write, so it runs at once on main connection, same as VH:SQLQuery, queued writes are done first
 		nMySQL::cQuery query(serv->mMySQL);
 		query.OStream() << sql;
+		const bool named = SQLCaller(L, serv);
 
 		if (query.Query() > 0)
 			serv->mBanList->ReloadCache();
+
+		if (named)
+			serv->mProfiler.mQueryDetail.clear();
 
 		query.Clear();
 

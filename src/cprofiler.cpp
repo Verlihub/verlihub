@@ -104,9 +104,14 @@ void cProfiler::End()
 unsigned int cProfiler::QueryId()
 {
 	if (mStack.empty()) // note: query outside of measured section
-		return Id("MySQL query");
+		return Id(mQueryDetail.size() ? ("MySQL query: " + mQueryDetail) : string("MySQL query"));
 
 	const unsigned int parent = mStack.back().mId;
+
+	if (mQueryDetail.size()) {
+		const string name("MySQL in " + mSections[parent].mName + ": " + mQueryDetail); // note: copy before new section is added
+		return Id(name);
+	}
 
 	if (parent >= mQueryIds.size())
 		mQueryIds.resize(parent + 1, 0);

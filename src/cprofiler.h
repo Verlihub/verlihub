@@ -61,8 +61,11 @@ class cProfiler
 		void Begin(unsigned int id, bool count = true);
 		void End();
 
-		// section of database query, named after section that runs it
+		// section of database query, named after section that runs it and mQueryDetail
 		unsigned int QueryId();
+
+		// what runs next database queries inside current section, for example calling Lua function, set and cleared by caller, empty = nothing
+		std::string mQueryDetail;
 
 		// change id of current section, for example when protocol command is known only after parsing
 		void SetId(unsigned int id);
