@@ -98,7 +98,7 @@ void cMySQLWorker::Flush()
 
 bool cMySQLWorker::Start()
 {
-	return (mPool.IsRunning() || mServ.StartPool(mPool, 1, sMaxJobs)); // note: works only while main loop is running
+	return (mPool.IsRunning() || mServ.StartPool(mPool, "mysql", 1, sMaxJobs)); // note: works only while main loop is running
 }
 
 bool cMySQLWorker::Expired() const

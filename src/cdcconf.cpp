@@ -365,6 +365,7 @@ void cDCConf::AddVars()
 	Add("adv_conn_accept_ip", conn_accept_ip, 10); // note: connections from same ip that did not finish login, 0 = no limit
 	Add("adv_worker_threads", mS.mWorkerThreads, 2); // note: 0 = number of cpu cores, applied on hub start
 	Add("adv_http_threads", mS.mHTTPThreads, 2); // note: threads for http requests of scripts, 0 = number of cpu cores, applied on hub start
+	Add("adv_enable_profiler", mS.mProfiler.mEnabled, false); // note: time of main loop sections and work of threads, see !procinfo
 	Add("adv_max_upload_kbps", max_upload_kbps, 131072.);
 	Add("adv_max_outbuf_size", max_outbuf_size, (unsigned long)MAX_SEND_SIZE);
 	Add("adv_max_outfill_size", max_outfill_size, (unsigned long)MAX_SEND_FILL_SIZE);

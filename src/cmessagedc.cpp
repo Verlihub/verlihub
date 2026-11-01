@@ -115,6 +115,22 @@ int cMessageDC::Parse()
 	return mType;
 }
 
+string cMessageDC::CommandName(int type)
+{
+	if (type == eDC_CHAT)
+		return "Chat";
+
+	if ((type < 0) || (type > eDC_CHAT))
+		return "Unknown";
+
+	string name(sDC_Commands[type].mCmd);
+
+	while (name.size() && (name[name.size() - 1] == ' '))
+		name.resize(name.size() - 1);
+
+	return name;
+}
+
 /*
 	splits message into parts and stores them in the chunk set mChunks
 */

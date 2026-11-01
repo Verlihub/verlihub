@@ -45,6 +45,10 @@ typedef unsigned int SOCKET;
 #endif
 
 namespace nVerliHub {
+	namespace nUtils {
+		class cProfiler;
+	};
+
 /**
    Mysql utilities
    Contains classes that encapsulate mysql structures,  and ease their usage
@@ -90,6 +94,9 @@ class cMySQL: public cObj
 
 		// called before every query on this connection, database thread sets it, so main connection first waits for queued writes
 		std::function<void()> mBeforeQuery;
+
+		// queries on this connection are measured, set only for main connection of hub, they run on main thread
+		nUtils::cProfiler *mProfiler = nullptr;
 
 	private:
 		string mDBName, mDBHost, mDBUser, mDBPass, mDBChar;

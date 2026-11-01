@@ -69,7 +69,7 @@ cDCConsole::cDCConsole(cServerDC *s):
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK), ".(kick|drop|vipgag|vipungag) ", "(\\S+)( (.*)$)?", &mFunKick), // eUR_KICK
-	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|buf|buffer|mmdb|geoip)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|buf|buffer|mmdb|geoip|proc|process)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc),
@@ -2236,7 +2236,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_HUBURL,
 		eINFO_PROTOCOL,
 		eINFO_BUFFER,
-		eINFO_MMDB
+		eINFO_MMDB,
+		eINFO_PROCESS
 	};
 
 	static const char *infonames[] = {
@@ -2246,7 +2247,8 @@ bool cDCConsole::cfInfo::operator()()
 		"url", "huburl",
 		"prot", "proto", "protocol",
 		"buf", "buffer",
-		"mmdb", "geoip"
+		"mmdb", "geoip",
+		"proc", "process"
 	};
 
 	static const int infoids[] = {
@@ -2256,7 +2258,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_HUBURL, eINFO_HUBURL,
 		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL,
 		eINFO_BUFFER, eINFO_BUFFER,
-		eINFO_MMDB, eINFO_MMDB
+		eINFO_MMDB, eINFO_MMDB,
+		eINFO_PROCESS, eINFO_PROCESS
 	};
 
 	string tmp;
@@ -2288,6 +2291,31 @@ bool cDCConsole::cfInfo::operator()()
 		case eINFO_HUB:
 			mInfoServer.Output(*mOS, mConn->mpUser->mClass);
 			break;
+		case eINFO_PROCESS: {
+			tmp.clear();
+			GetParStr(1, tmp);
+
+			if (tmp == "reset") {
+				mS->mProfiler.Reset();
+				(*mOS) << _("Profiler data is cleared.");
+				break;
+			}
+
+			unsigned int period = 0; // note: all time
+
+			if (tmp.size()) {
+				ostringstream err;
+				period = mS->Str2Period(tmp, err);
+
+				if (err.str().size()) {
+					(*mOS) << err.str();
+					return false;
+				}
+			}
+
+			mS->mProfiler.Show(*mOS, period);
+			break;
+		}
 		default:
 			(*mOS) << _("This command is not implemented.");
 			return false;

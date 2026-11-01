@@ -83,6 +83,7 @@ SET(VERLIHUB_HDRS
 	cvhplugin.h
 	cvhpluginmgr.h
 	cworkerpool.h
+	cprofiler.h
 	cwakeup.h
 	csocketcancel.h
 	csocketapi.h
@@ -169,6 +170,7 @@ SET(VERLIHUB_SRCS
 	cvhplugin.cpp
 	cvhpluginmgr.cpp
 	cworkerpool.cpp
+	cprofiler.cpp
 	cwakeup.cpp
 	csocketcancel.cpp
 	csocketapi.cpp

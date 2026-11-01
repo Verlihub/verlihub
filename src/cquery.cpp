@@ -19,8 +19,11 @@
 */
 
 #include "cquery.h"
+#include "cprofiler.h"
 
 namespace nVerliHub {
+	using namespace nUtils;
+
 	namespace nMySQL {
 
 cQuery::cQuery(cMySQL &mysql):
@@ -53,6 +56,8 @@ void cQuery::Clear(void)
 int cQuery::Query()
 {
 	const string qstr(mOS.str());
+	cProfiler *prof = mMySQL.mProfiler;
+	cProfileScope scope(prof, ((prof && prof->mEnabled) ? prof->QueryId() : 0)); // note: wait for queued writes and reconnect are counted too
 
 	if (mMySQL.mBeforeQuery) // note: writes queued on database thread are done first, so this query sees them
 		mMySQL.mBeforeQuery();
@@ -90,6 +95,8 @@ int cQuery::StoreResult()
 	if (!mMySQL.mDBHandle)
 		return 0;
 
+	cProfiler *prof = mMySQL.mProfiler;
+	cProfileScope scope(prof, ((prof && prof->mEnabled) ? prof->QueryId() : 0), false); // note: rows of same query, so it is not counted as another call
 	mResult = mysql_store_result(mMySQL.mDBHandle);
 	if (mResult != NULL)
 		return mysql_num_rows(mResult);

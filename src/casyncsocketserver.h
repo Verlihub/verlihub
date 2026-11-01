@@ -36,6 +36,7 @@
 #include "casyncconn.h"
 #include "cmeanfrequency.h"
 #include "cworkerpool.h"
+#include "cprofiler.h"
 #include "cwakeup.h"
 
 #include <list>
@@ -235,6 +236,9 @@ namespace nVerliHub {
 				/// Posting fails when workers are not running, caller must then do the work itself.
 				nThread::cWorkerPool mWorkers;
 
+				/// Time of main loop sections and work of threads, configuration adv_enable_profiler.
+				nUtils::cProfiler mProfiler;
+
 				/// Start new connection, when dns_lookup is enabled this happens only after host name is known.
 				/// @return Same as OnNewConn(), negative value means connection must be closed.
 				virtual int StartConn(cAsyncConn *conn);
@@ -257,8 +261,8 @@ namespace nVerliHub {
 				static string ReverseLookup(const string &addr);
 
 				/// Start extra worker pool for slow work that must not hold up jobs in mWorkers, its results are also processed in main loop.
-				/// Works only while main loop is running, pool is stopped together with mWorkers.
-				bool StartPool(nThread::cWorkerPool &pool, unsigned int threads, size_t max_jobs = 0);
+				/// Works only while main loop is running, pool is stopped together with mWorkers, name is shown by profiler and in thread names.
+				bool StartPool(nThread::cWorkerPool &pool, const char *name, unsigned int threads, size_t max_jobs = 0);
 
 				/// The current time.
 				cTimePrint mTime;
@@ -446,6 +450,13 @@ namespace nVerliHub {
 
 			/// All running pools whose results are processed in main loop, mWorkers included.
 			std::vector<nThread::cWorkerPool*> mPools;
+
+			/// Profiler sections of main loop.
+			unsigned int mProfRead = 0;
+			unsigned int mProfWrite = 0;
+			unsigned int mProfAccept = 0;
+			unsigned int mProfServTimer = 0;
+			unsigned int mProfConnTimer = 0;
 
 			/// Connection that waits before it is started, see cAsyncConn::tStartWait.
 			struct sStartWait

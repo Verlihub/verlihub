@@ -27,6 +27,7 @@
 #include <deque>
 #include <functional>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -91,6 +92,29 @@ class cWorkerPool
 		// when set, stop does not drop queued jobs, threads exit only after all of them are done, used for database writes
 		void SetDrain(bool drain);
 
+		// name of pool, threads get it with vh- prefix, must be set before Start()
+		void SetName(const std::string &name);
+
+		const std::string& Name() const
+		{
+			return mName;
+		}
+
+		// work of jobs since last call, time and max are nanoseconds, cpu is in units of ThreadCPU(), counted only while sMeasure is set
+		void TakeStats(unsigned long long &jobs, unsigned long long &time, unsigned long long &cpu, unsigned long long &max);
+
+		// set by profiler, workers measure their jobs
+		static std::atomic<bool> sMeasure;
+
+		// cpu time of calling thread in nanoseconds, or in cpu cycles when CPUCycles() is true
+		static unsigned long long ThreadCPU();
+
+		// thread cpu is counted in cycles, on windows with x86 cpu, because its thread times grow only by whole scheduler ticks
+		static bool CPUCycles();
+
+		// cycle counter of cpu, same units as ThreadCPU() when it counts cycles, used to convert them to time, 0 otherwise
+		static unsigned long long CycleCounter();
+
 		bool IsRunning() const
 		{
 			return mRunning;
@@ -137,6 +161,11 @@ class cWorkerPool
 		std::atomic<bool> mRunning{false};
 		std::atomic<unsigned int> mBusy{0};
 		std::atomic<unsigned long> mFailed{0};
+		std::string mName;
+		std::atomic<unsigned long long> mStatJobs{0};
+		std::atomic<unsigned long long> mStatTime{0};
+		std::atomic<unsigned long long> mStatCPU{0};
+		std::atomic<unsigned long long> mStatMax{0};
 };
 
 	}; // namespace nThread

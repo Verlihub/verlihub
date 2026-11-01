@@ -132,6 +132,8 @@ class cMessageDC: public cMessageParser
 		virtual int Parse(); // override
 		// splits message to its important parts and stores their info in the chunkset mChunks
 		virtual bool SplitChunks(); // override
+		// keyword of message type without ending space, for example $MyINFO
+		static std::string CommandName(int type);
 };
 
 	}; // namespace nProtocol

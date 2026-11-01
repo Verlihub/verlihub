@@ -75,6 +75,12 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mRunResult(0),
 	mNowTreating(NULL)
 {
+	mProfRead = mProfiler.Id("Network read");
+	mProfWrite = mProfiler.Id("Network write");
+	mProfAccept = mProfiler.Id("Accept");
+	mProfServTimer = mProfiler.Id("Timer server");
+	mProfConnTimer = mProfiler.Id("Timer connections");
+
 	/*
 	#ifdef _WIN32
 	if(!this->WSinitialized) {
@@ -136,10 +142,12 @@ int cAsyncSocketServer::run()
 
 	while (mbRun) {
 		mTime.Get(); // note: always current time, dont modify this container anywhere
+		mProfiler.Tick();
 		TimeStep();
 
 		if (mTime >= (mT.main + timer_serv_period)) {
 			mT.main = mTime;
+			cProfileScope prof(&mProfiler, mProfServTimer);
 			OnTimerBase(mTime);
 		}
 
@@ -220,7 +228,10 @@ void cAsyncSocketServer::RunPoolResults()
 	bool more = false;
 
 	for (size_t i = 0; i < mPools.size(); i++) { // note: result is allowed to start new pool, dont use iterator
-		mPools[i]->RunResults(sWorkerMaxResults);
+		{
+			cProfileScope prof(&mProfiler, mProfiler.PoolResults(i));
+			mPools[i]->RunResults(sWorkerMaxResults);
+		}
 
 		if (mPools[i]->ResultsQueued())
 			more = true;
@@ -243,7 +254,7 @@ bool cAsyncSocketServer::StartWorkers()
 		mConnChooser.cConnChoose::OptIn(&mWakeup, tChEvent(eCC_INPUT | eCC_ERROR));
 	}
 
-	if (!StartPool(mWorkers, mWorkerThreads, sWorkerMaxJobs)) {
+	if (!StartPool(mWorkers, "dns", mWorkerThreads, sWorkerMaxJobs)) {
 		vhLog(0) << "Failed to start worker threads, they are disabled" << endl;
 		return false;
 	}
@@ -252,7 +263,7 @@ bool cAsyncSocketServer::StartWorkers()
 	return true;
 }
 
-bool cAsyncSocketServer::StartPool(nThread::cWorkerPool &pool, unsigned int threads, size_t max_jobs)
+bool cAsyncSocketServer::StartPool(nThread::cWorkerPool &pool, const char *name, unsigned int threads, size_t max_jobs)
 {
 	if (pool.IsRunning())
 		return true;
@@ -261,12 +272,15 @@ bool cAsyncSocketServer::StartPool(nThread::cWorkerPool &pool, unsigned int thre
 		return false;
 
 	pool.SetNotify([this] { mWakeup.Signal(); });
+	pool.SetName(name);
 
 	if (!pool.Start(threads, max_jobs))
 		return false;
 
-	if (find(mPools.begin(), mPools.end(), &pool) == mPools.end())
+	if (find(mPools.begin(), mPools.end(), &pool) == mPools.end()) {
 		mPools.push_back(&pool);
+		mProfiler.AddPool(&pool); // note: same position as in pool list
+	}
 
 	return true;
 }
@@ -280,6 +294,7 @@ void cAsyncSocketServer::StopWorkers()
 		pool->Stop();
 
 	mPools.clear();
+	mProfiler.ClearPools();
 
 	if (mWakeup.IsOpen()) {
 		mConnChooser.DelConn(&mWakeup);
@@ -579,7 +594,7 @@ void cAsyncSocketServer::TLSReady(cAsyncConn *conn)
 
 bool cAsyncSocketServer::PostTLS(cAsyncConn *conn, const shared_ptr<nSocket::cTLSSession> &session, const string &data)
 {
-	if (!StartPool(mTLSWorkers, 0, sWorkerMaxJobs)) // note: all cpu cores, handshake is cpu work
+	if (!StartPool(mTLSWorkers, "tls", 0, sWorkerMaxJobs)) // note: all cpu cores, handshake is cpu work
 		return false;
 
 	const tSocket sock = (tSocket)(*conn);
@@ -658,8 +673,12 @@ void cAsyncSocketServer::delConnection(cAsyncConn *old_conn)
 
 int cAsyncSocketServer::input(cAsyncConn *conn)
 {
-	if (conn->ReadAll(mNoReadTry, mNoReadDelay) <= 0) // read all data available into a buffer
-		return 0;
+	{
+		cProfileScope prof(&mProfiler, mProfRead);
+
+		if (conn->ReadAll(mNoReadTry, mNoReadDelay) <= 0) // read all data available into a buffer
+			return 0;
+	}
 
 	if (conn->BufferEmpty()) // note: tls data was received, but nothing was decrypted yet, for example during handshake
 		return 1;
@@ -708,6 +727,7 @@ int cAsyncSocketServer::ParseInput(cAsyncConn *conn)
 
 int cAsyncSocketServer::output(cAsyncConn *conn)
 {
+	cProfileScope prof(&mProfiler, mProfWrite);
 	conn->Flush();
 	return 0;
 }
@@ -770,6 +790,8 @@ void cAsyncSocketServer::TimerSlices()
 	unsigned int from = 0, count = 0;
 
 	if (DueSlices(now, timer_conn_period, mConnSliceLast, from, count)) { // connection timer
+		cProfileScope prof(&mProfiler, mProfConnTimer);
+
 		for (tCLIt it = mConnList.begin(); it != mConnList.end(); ++it) {
 			if ((*it) && (*it)->ok && InTimerSlice((*it)->mTimerSlot, from, count))
 				(*it)->OnTimerBase(mTime);
@@ -829,6 +851,7 @@ void cAsyncSocketServer::TimeStep()
 		if (OK && (activity & eCC_INPUT) && (conn->GetType() == eCT_LISTEN)) { // some connections may have been disabled during this loop so skip them
 			unsigned int i = 0;
 			cAsyncConn *new_conn = NULL; // accept incoming connection
+			cProfileScope prof(&mProfiler, mProfAccept);
 
 			do {
 				new_conn = conn->Accept(mNoConnDelay, mAcceptTry);

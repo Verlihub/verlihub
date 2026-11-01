@@ -19,12 +19,104 @@
 */
 
 #include "cworkerpool.h"
+#include <chrono>
 #include <system_error>
+
+#ifdef _WIN32
+	#include <windows.h>
+
+	#if defined(__x86_64__) || defined(__i386__)
+		#include <x86intrin.h>
+		#define VH_THREAD_CYCLES
+	#endif
+#else
+	#include <pthread.h>
+	#include <time.h>
+
+	#if defined(__FreeBSD__) || defined(__OpenBSD__)
+		#include <pthread_np.h>
+	#endif
+#endif
 
 using namespace std;
 
 namespace nVerliHub {
 	namespace nThread {
+
+atomic<bool> cWorkerPool::sMeasure{false};
+
+static unsigned long long SteadyNS()
+{
+	return (unsigned long long)chrono::duration_cast<chrono::nanoseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+static void SetThreadName(const string &name) // note: name of calling thread, seen in top, ps and debuggers, linux allows 15 characters
+{
+	const string full(("vh-" + name).substr(0, 15));
+
+#ifdef _WIN32
+	typedef HRESULT (WINAPI *tSetThreadDescription)(HANDLE, PCWSTR);
+	const HMODULE kern = GetModuleHandleW(L"kernel32.dll");
+	const tSetThreadDescription set_desc = (kern ? (tSetThreadDescription)(void*)GetProcAddress(kern, "SetThreadDescription") : NULL); // note: windows 10 1607 and later
+
+	if (set_desc) {
+		const wstring wide(full.begin(), full.end());
+		set_desc(GetCurrentThread(), wide.c_str());
+	}
+#elif defined(__linux__)
+	pthread_setname_np(pthread_self(), full.c_str());
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+	pthread_set_name_np(pthread_self(), full.c_str());
+#elif defined(__NetBSD__)
+	pthread_setname_np(pthread_self(), "%s", (void*)full.c_str());
+#elif defined(__APPLE__)
+	pthread_setname_np(full.c_str());
+#endif
+}
+
+unsigned long long cWorkerPool::ThreadCPU()
+{
+#if defined(VH_THREAD_CYCLES)
+	ULONG64 cycles = 0;
+
+	if (!QueryThreadCycleTime(GetCurrentThread(), &cycles))
+		return 0;
+
+	return cycles;
+#elif defined(_WIN32)
+	FILETIME create, leave, kern, user;
+
+	if (!GetThreadTimes(GetCurrentThread(), &create, &leave, &kern, &user)) // note: counted in scheduler ticks, single job is not exact, sum of many is
+		return 0;
+
+	return (((((unsigned long long)kern.dwHighDateTime) << 32) | kern.dwLowDateTime) + ((((unsigned long long)user.dwHighDateTime) << 32) | user.dwLowDateTime)) * 100ULL;
+#else
+	struct timespec now;
+
+	if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &now))
+		return 0;
+
+	return (((unsigned long long)now.tv_sec * 1000000000ULL) + (unsigned long long)now.tv_nsec);
+#endif
+}
+
+bool cWorkerPool::CPUCycles()
+{
+#if defined(VH_THREAD_CYCLES)
+	return true;
+#else
+	return false;
+#endif
+}
+
+unsigned long long cWorkerPool::CycleCounter()
+{
+#if defined(VH_THREAD_CYCLES)
+	return __rdtsc(); // note: thread cycle time of windows is counted with same counter
+#else
+	return 0;
+#endif
+}
 
 cWorkerPool::~cWorkerPool()
 {
@@ -177,6 +269,20 @@ void cWorkerPool::SetDrain(bool drain)
 	mDrain = drain;
 }
 
+void cWorkerPool::SetName(const string &name)
+{
+	if (!mRunning)
+		mName = name;
+}
+
+void cWorkerPool::TakeStats(unsigned long long &jobs, unsigned long long &time, unsigned long long &cpu, unsigned long long &max)
+{
+	jobs = mStatJobs.exchange(0);
+	time = mStatTime.exchange(0);
+	cpu = mStatCPU.exchange(0);
+	max = mStatMax.exchange(0);
+}
+
 size_t cWorkerPool::JobsQueued() const
 {
 	lock_guard<mutex> lock(mJobLock);
@@ -197,6 +303,9 @@ bool cWorkerPool::IsIdle() const
 
 void cWorkerPool::WorkerLoop()
 {
+	if (mName.size())
+		SetThreadName(mName);
+
 	if (mThreadStart)
 		mThreadStart();
 
@@ -216,6 +325,8 @@ void cWorkerPool::WorkerLoop()
 		}
 
 		tResult res;
+		const bool measure = sMeasure;
+		const unsigned long long start = (measure ? SteadyNS() : 0), cpu = (measure ? ThreadCPU() : 0);
 
 		try {
 			res = job();
@@ -224,6 +335,20 @@ void cWorkerPool::WorkerLoop()
 		}
 
 		job = nullptr; // note: release captured data on worker thread
+
+		if (measure) {
+			const unsigned long long now = SteadyNS(), took = ((now > start) ? (now - start) : 0), used = ThreadCPU();
+			mStatJobs++;
+			mStatTime += took;
+			mStatCPU += ((used > cpu) ? (used - cpu) : 0);
+			unsigned long long max = mStatMax;
+
+			while (took > max) { // note: max changes only to higher value, failed exchange loads current value into max
+				if (mStatMax.compare_exchange_weak(max, took))
+					break;
+			}
+		}
+
 		mBusy--;
 
 		if (!res)

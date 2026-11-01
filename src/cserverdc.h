@@ -786,6 +786,8 @@ protected: // Protected methods
 	void PostHTTPEarly();
 	void OnHTTPDone(unsigned long id, int code, const string &body, const string &head, const string &err);
 
+	unsigned int mProfNMDC[nEnums::eDC_UNKNOWN + 1]; // note: profiler section of each protocol message type
+
 	/**
 	* This method is called when user is logged in.
 	*

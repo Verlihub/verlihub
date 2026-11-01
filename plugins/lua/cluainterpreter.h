@@ -54,8 +54,12 @@ public:
 	void VHPushString(const char *name, const char *val, bool update = false);
 	void Load();
 
+	// profiler section of script function
+	unsigned int ProfileId(const char *func);
+
 	string mConfigName;
 	string mScriptName;
+	map<string, unsigned int, less<>> mProfileIds; // note: transparent compare, function name is found without string copy
 	const unsigned long mSerial; // note: own number of each interpreter, reloaded script gets new one, so replies to old one are not given to it
 
 	struct mScriptBot

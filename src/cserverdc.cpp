@@ -123,6 +123,10 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 {
 	sCurrentServer = this; // static pointer to current server, can be used anywhere
 	cConfMySQL::msEscape = &mMySQL;
+	mMySQL.mProfiler = &mProfiler;
+
+	for (int type = 0; type <= eDC_UNKNOWN; type++)
+		mProfNMDC[type] = mProfiler.Id("NMDC " + cMessageDC::CommandName(type));
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
@@ -1348,7 +1352,12 @@ void cServerDC::OnNewMessage(cAsyncConn *conn, string *str)
 	if (conn->Log(4))
 		conn->LogStream() << "IN [" << len << "]: " << (*str) << '|' << endl;
 
-	conn->mpMsgParser->Parse();
+	cProfileScope prof(&mProfiler, mProfNMDC[eDC_UNKNOWN]);
+	const int type = conn->mpMsgParser->Parse();
+
+	if ((type >= 0) && (type <= eDC_UNKNOWN))
+		prof.SetId(mProfNMDC[type]);
+
 	conn->mxProtocol->TreatMsg(conn->mpMsgParser, conn);
 }
 
@@ -2373,7 +2382,7 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 	if (data.mHubHost.size() && (data.mHubHost.find(':') == data.mHubHost.npos) && (mPort != 411)) // add port
 		data.mHubHost.append(':' + StringFrom(mPort));
 
-	if (StartPool(mHublistReg, 1) && mHublistReg.IsIdle()) { // note: one registration at a time
+	if (StartPool(mHublistReg, "hublist", 1) && mHublistReg.IsIdle()) { // note: one registration at a time
 		mHublistCancel.Reset(); // note: safe, nothing is running
 
 		const bool posted = mHublistReg.Post([this, data, reply]() -> nThread::cWorkerPool::tResult {
@@ -2518,7 +2527,7 @@ bool cServerDC::CheckForUpdates(bool git, cConnDC *conn)
 	if (conn && conn->mpUser && conn->mpUser->mInList)
 		reply.assign(conn->mpUser->mNick);
 
-	if (StartPool(mUpdateCheck, 1)) {
+	if (StartPool(mUpdateCheck, "update", 1)) {
 		if (!mUpdateCheck.IsIdle()) { // note: one check at a time, for example timer check is running
 			if (conn)
 				DCPublicHS(_("Update check is already running, please try again later."), conn);
@@ -2662,7 +2671,7 @@ bool cServerDC::PostHTTP(nThread::cWorkerPool::tJob job)
 		mHTTPStop = false;
 	}
 
-	return (StartPool(mHTTPPool, mHTTPThreads) && mHTTPPool.Post(std::move(job)));
+	return (StartPool(mHTTPPool, "http", mHTTPThreads) && mHTTPPool.Post(std::move(job)));
 }
 
 void cServerDC::PostHTTPEarly()

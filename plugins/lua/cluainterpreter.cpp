@@ -262,6 +262,19 @@ void cLuaInterpreter::VHPushString(const char *name, const char *val, bool updat
 	lua_rawset(mL, pos);
 }
 
+unsigned int cLuaInterpreter::ProfileId(const char *func)
+{
+	const auto it = mProfileIds.find(func);
+
+	if (it != mProfileIds.end())
+		return it->second;
+
+	const size_t pos = mScriptName.find_last_of("/\\");
+	const unsigned int id = cpiLua::server->mProfiler.Id("Lua " + ((pos == string::npos) ? mScriptName : mScriptName.substr(pos + 1)) + ' ' + func); // note: reloaded script gets same section
+	mProfileIds.emplace(func, id);
+	return id;
+}
+
 bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC *conn)
 {
 	const int top = lua_gettop(mL); // note: this can run inside call of same script, for example VH:ParseCommand or VH:ScriptCommand, so stack of that call must stay as it is
@@ -286,7 +299,13 @@ bool cLuaInterpreter::CallFunction(const char *func, const char *args[], cConnDC
 	if (cpiLua::me) // note: script deleted during this call is deleted later, see cpiLua::DelScript()
 		cpiLua::me->CallStart();
 
-	const int fail = lua_pcall(mL, pos, 1, 0);
+	cProfiler *prof = (cpiLua::server ? &cpiLua::server->mProfiler : NULL);
+	int fail = 0;
+
+	{
+		cProfileScope scope(prof, ((prof && prof->mEnabled) ? ProfileId(func) : 0));
+		fail = lua_pcall(mL, pos, 1, 0);
+	}
 
 	if (cpiLua::me)
 		cpiLua::me->CallEnd();

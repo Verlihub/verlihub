@@ -3224,7 +3224,14 @@ static void LuaHTTPReply(unsigned long serial, const string &func, unsigned long
 		lua_pushnil(L);
 
 	cpiLua::me->CallStart(); // note: script can unload itself in its reply, then it is deleted later
-	const int fail = lua_pcall(L, 5, 0, 0);
+	cProfiler *prof = (cpiLua::server ? &cpiLua::server->mProfiler : NULL);
+	int fail = 0;
+
+	{
+		cProfileScope scope(prof, ((prof && prof->mEnabled) ? li->ProfileId(func.c_str()) : 0));
+		fail = lua_pcall(L, 5, 0, 0);
+	}
+
 	cpiLua::me->CallEnd();
 
 	if (fail)
