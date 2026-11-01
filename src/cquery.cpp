@@ -59,8 +59,8 @@ int cQuery::Query()
 	cProfiler *prof = mMySQL.mProfiler;
 	cProfileScope scope(prof, ((prof && prof->mEnabled) ? prof->QueryId() : 0)); // note: wait for queued writes and reconnect are counted too
 
-	if (mMySQL.mBeforeQuery) // note: writes queued on database thread are done first, so this query sees them
-		mMySQL.mBeforeQuery();
+	if (mMySQL.mBeforeQuery) // note: writes queued on database thread to tables of this query are done first, so this query sees them
+		mMySQL.mBeforeQuery(qstr);
 
 	if (Log(3))
 		LogStream() << "Execute query: " << qstr << endl;

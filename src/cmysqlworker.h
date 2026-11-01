@@ -29,6 +29,8 @@
 #include <vector>
 #include <atomic>
 #include <chrono>
+#include <mutex>
+#include <unordered_map>
 
 namespace nVerliHub {
 	namespace nSocket {
@@ -67,9 +69,13 @@ class cMySQLWorker: public cObj
 
 		/*
 			main thread waits until queries queued before are done, at most few seconds, returns at once when nothing is queued
+			it waits only when query mentions table that has queued writes, or when table of some queued write is not known
 			note: every query on main connection calls it first, so read after write sees that write, same order as on single thread, for example login statistics in script
 		*/
-		void Flush();
+		void Flush(const string &query);
+
+		// lower case table name of insert, replace, update, delete or truncate query, empty when it is not known, for example join or other form
+		static string WriteTable(const string &query);
 
 		// log of lost queries, failed after retry or dropped because queue is full, at most once a minute, hub timer calls it, so last count is not left unlogged
 		void Report();
@@ -78,6 +84,11 @@ class cMySQLWorker: public cObj
 		bool Start();
 		bool Expired() const;
 		void Lost(bool drop, const string &err);
+
+		// queued writes by table, empty name is unknown table, main thread adds before queueing, worker thread removes when query ends
+		void PendingAdd(const string &table);
+		void PendingDone(const string &table);
+		bool Pending(const string &query) const;
 
 		// worker thread only
 		bool Connect(string &err);
@@ -95,6 +106,9 @@ class cMySQLWorker: public cObj
 		unsigned long mFailed = 0;
 		string mLastErr;
 		std::chrono::steady_clock::time_point mLastLostLog;
+		mutable std::mutex mPendingLock; // note: guards next two, declared before pool, so it outlives its thread
+		std::unordered_map<string, unsigned long> mPending;
+		unsigned long mPendingUnknown = 0;
 		nThread::cWorkerPool mPool; // note: declared last, so its thread is stopped before other members are destroyed
 };
 

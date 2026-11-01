@@ -22,6 +22,8 @@
 #include "casyncsocketserver.h"
 #include "cconfmysql.h"
 #include "cquery.h"
+#include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <future>
 #include <memory>
@@ -70,7 +72,7 @@ cMySQLWorker::cMySQLWorker(nSocket::cAsyncSocketServer &serv, cMySQL &main, cons
 		}
 	);
 
-	mMain.mBeforeQuery = [this] { Flush(); }; // note: reads on main connection wait for queued writes, see Flush()
+	mMain.mBeforeQuery = [this](const string &query) { Flush(query); }; // note: queries on main connection wait for queued writes to tables they mention, see Flush()
 }
 
 cMySQLWorker::~cMySQLWorker()
@@ -79,9 +81,12 @@ cMySQLWorker::~cMySQLWorker()
 	mPool.Stop();
 }
 
-void cMySQLWorker::Flush()
+void cMySQLWorker::Flush(const string &query)
 {
 	if (!mPool.IsRunning() || mPool.IsIdle()) // note: nothing queued or running, almost always
+		return;
+
+	if (!Pending(query)) // note: queued writes are only for other tables, so query does not depend on them
 		return;
 
 	auto done = std::make_shared<std::promise<void>>();
@@ -155,13 +160,21 @@ bool cMySQLWorker::Write(const string &query)
 		return true; // note: query is done, error is logged by query itself
 	}
 
-	const bool queued = mPool.Post([this, query]() -> nThread::cWorkerPool::tResult {
+	const string table(WriteTable(query));
+	PendingAdd(table);
+
+	const bool queued = mPool.Post([this, query, table]() -> nThread::cWorkerPool::tResult {
 		string err;
 
-		if (Expired()) // note: dropped
+		if (Expired()) { // note: dropped
+			PendingDone(table);
 			return nullptr;
+		}
 
-		if (Execute(query, err))
+		const bool done = Execute(query, err);
+		PendingDone(table);
+
+		if (done)
 			return nullptr;
 
 		return [this, err] { Lost(false, err); }; // note: query failed also after retry, counted on main thread
@@ -170,7 +183,105 @@ bool cMySQLWorker::Write(const string &query)
 	if (queued)
 		return true;
 
+	PendingDone(table);
 	Lost(true, ""); // note: queue is full, main connection is not used, it would freeze main thread when database is slow
+	return false;
+}
+
+string cMySQLWorker::WriteTable(const string &query)
+{
+	string low(query);
+
+	for (char &chr: low)
+		chr = (char)tolower((unsigned char)chr);
+
+	size_t pos = low.find_first_not_of(" \t\r\n(");
+
+	if (pos == string::npos)
+		return "";
+
+	static const char *heads[] = {"insert ignore into ", "insert into ", "replace into ", "update ignore ", "update ", "delete from ", "truncate table ", "truncate "}; // note: longer form first, other forms stay unknown
+	bool found = false;
+
+	for (const char *head: heads) {
+		if (low.compare(pos, strlen(head), head) == 0) {
+			pos += strlen(head);
+			found = true;
+			break;
+		}
+	}
+
+	if (!found || ((pos = low.find_first_not_of(" \t\r\n", pos)) == string::npos))
+		return "";
+
+	const size_t end = low.find_first_of(" \t\r\n(", pos);
+	string name(low.substr(pos, ((end == string::npos) ? string::npos : (end - pos))));
+	name.erase(remove(name.begin(), name.end(), '`'), name.end());
+	const size_t dot = name.rfind('.'); // note: database name before table
+
+	if (dot != string::npos)
+		name.erase(0, dot + 1);
+
+	for (const char chr: name) {
+		if (!isalnum((unsigned char)chr) && (chr != '_') && (chr != '$')) // note: comma of multi table query and anything else unusual
+			return "";
+	}
+
+	return name;
+}
+
+void cMySQLWorker::PendingAdd(const string &table)
+{
+	lock_guard<mutex> lock(mPendingLock);
+
+	if (table.empty())
+		mPendingUnknown++;
+	else
+		mPending[table]++;
+}
+
+void cMySQLWorker::PendingDone(const string &table)
+{
+	lock_guard<mutex> lock(mPendingLock);
+
+	if (table.empty()) {
+		if (mPendingUnknown)
+			mPendingUnknown--;
+
+		return;
+	}
+
+	auto it = mPending.find(table);
+
+	if (it == mPending.end())
+		return;
+
+	if (it->second > 1)
+		it->second--;
+	else
+		mPending.erase(it);
+}
+
+bool cMySQLWorker::Pending(const string &query) const
+{
+	lock_guard<mutex> lock(mPendingLock);
+
+	if (mPendingUnknown) // note: write with unknown table can change anything
+		return true;
+
+	if (mPending.empty())
+		return false;
+
+	string low(query);
+
+	for (char &chr: low)
+		chr = (char)tolower((unsigned char)chr);
+
+	for (const auto &item: mPending) {
+		if (low.find(item.first) != string::npos) // note: plain text match, name in other word or in value only makes it wait
+			return true;
+	}
+
 	return false;
 }
 
