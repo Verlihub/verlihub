@@ -174,6 +174,7 @@
 * Lua call VH:GetUserHost with dns_lookup 0 blocked hub during lookup
 * Plugins and scripts got OnNewConn only after TLS detection, handshake and host lookup
 * Data that plugin or script sent to refused new connection was not sent
+* Main loop slept after every accepted batch of new connections
 
 ## Removed
 

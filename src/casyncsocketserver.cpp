@@ -853,7 +853,7 @@ void cAsyncSocketServer::TimeStep()
 			cProfileScope prof(&mProfiler, mProfAccept);
 
 			do {
-				new_conn = conn->Accept(mNoConnDelay, mAcceptTry);
+				new_conn = conn->Accept(mNoConnDelay, (i ? 0 : mAcceptTry)); // note: retry only for first connection of event, later empty accept ends the batch, retrying it only sleeps
 
 				if (new_conn)
 					addConnection(new_conn);
