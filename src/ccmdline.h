@@ -74,6 +74,7 @@ class cCmdLine
 		int ModPort();
 		int AddUser();
 		int Clean();
+		int TLSCert();
 		int UpHelp();
 		int Install();
 		int HubRun();

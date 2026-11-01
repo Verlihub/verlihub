@@ -78,6 +78,8 @@ class cTLSContext
 		// state of certificate file, info is expiry date or error
 		static tCertState CertState(const std::string &cert, std::string &info);
 
+		static constexpr unsigned int sCertDays = 5 * 365; // note: validity of created certificate, same for hub and command line
+
 		/*
 			create self signed ecdsa p-256 certificate and its key, old files are replaced only when both are written
 			host is comma separated list of host names and ip addresses

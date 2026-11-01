@@ -23,6 +23,7 @@
 * Configuration classdif_rights for rights and restrictions commands
 * Configuration adv_conn_accept_ip, limit of connections from same IP address that did not finish login
 * Event OnTLSHandshake for plugins and Lua, called when TLS handshake of new connection is done
+* Command "verlihub --tlscert" creates new TLS certificate same way as hub does
 
 ## Updated
 

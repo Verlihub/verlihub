@@ -542,6 +542,7 @@ bool cCmdLine::Run(int argc, char *argv[], int &result)
 		{"-mp", "--modport", &cCmdLine::ModPort},
 		{"-u", "--adduser", &cCmdLine::AddUser},
 		{"-c", "--clean", &cCmdLine::Clean},
+		{"-tc", "--tlscert", &cCmdLine::TLSCert},
 		{"-uh", "--uphelp", &cCmdLine::UpHelp}
 	};
 
@@ -664,6 +665,7 @@ int cCmdLine::Help()
 		{"-gc, --getconf " + Req(_("variable")) + ' ' + Req(conf), _("Get hub configuration variable")},
 		{"-sc, --setconf " + Req(_("variable")) + ' ' + Req(_("value")) + ' ' + Req(conf), _("Set hub configuration variable, use _ for empty value")},
 		{"-c, --clean " + Opt(conf), _("Clean kicklist, banlist and unbanlist tables")},
+		{"-tc, --tlscert " + Opt(conf), _("Create new TLS certificate same way as hub does, old files are kept with .old ending")},
 		{"-b, --backup " + Req(_("path")) + ' ' + Opt(conf), _("Make backup of database from the given configuration folder")},
 		{"-w, --restore " + Req(_("file")) + ' ' + Opt(conf), _("Import the given SQL file in the database of given configuration folder")},
 		{"--version", _("Print version information")},
@@ -1019,6 +1021,103 @@ int cCmdLine::Clean()
 	}
 
 	return res;
+}
+
+int cCmdLine::TLSCert()
+{
+#ifdef USE_TLS
+	if (mArgs.size() > 1) {
+		cerr << Paint(_("Too many parameters."), sRed, true) << endl;
+		return 1;
+	}
+
+	if (!SetPath(mArgs.size() ? mArgs[0] : "") || !Connect())
+		return 1;
+
+	if (!TableExists("SetupList")) {
+		cerr << Paint(_("Table SetupList does not exist, start hub once to create it."), sRed, true) << endl;
+		return 1;
+	}
+
+	string cert("hub.crt"), key("hub.key"), org("Verlihub"), mail("verlihub@localhost"), host("localhost"), val; // note: same defaults as hub
+
+	if (LoadVar("tls_cert_file", val))
+		cert = val;
+
+	if (LoadVar("tls_key_file", val))
+		key = val;
+
+	if (LoadVar("tls_cert_org", val))
+		org = val;
+
+	if (LoadVar("tls_cert_mail", val))
+		mail = val;
+
+	if (LoadVar("tls_cert_host", val))
+		host = val;
+
+	if (cert.size() && !HasPathSeparator(cert)) // note: file name only, look in configuration folder, same as hub
+		cert = mConfigDir + '/' + cert;
+
+	if (key.size() && !HasPathSeparator(key))
+		key = mConfigDir + '/' + key;
+
+	if (cert.empty() || key.empty()) {
+		cerr << Paint(_("Configuration tls_cert_file and tls_key_file must not be empty."), sRed, true) << endl;
+		return 1;
+	}
+
+	cout << '\t' << Paint(_("Certificate"), sBold) << ": " << cert << '\n';
+	cout << '\t' << Paint(_("Key"), sBold) << ": " << key << '\n';
+	cout << '\t' << Paint(_("Host names"), sBold) << ": " << host << '\n';
+	string info, err;
+	const cTLSContext::tCertState state = cTLSContext::CertState(cert, info);
+
+	if (state != cTLSContext::eCS_MISSING) {
+		if (state == cTLSContext::eCS_VALID)
+			cout << '\t' << Paint(_("Valid until"), sBold) << ": " << info << '\n';
+		else if (state == cTLSContext::eCS_EXPIRED)
+			cout << '\t' << Paint(_("Expired"), sBold) << ": " << info << '\n';
+		else
+			cout << '\t' << Paint(_("Not readable"), sBold) << ": " << info << '\n';
+
+		cTLSContext old;
+
+		if (old.Load(cert, key, 2, err))
+			cout << '\t' << Paint(_("Keyprint"), sBold) << ": " << old.Keyprint() << '\n';
+
+		if (!AskYesNo(_("Do you want to replace this certificate?"))) {
+			cout << _("Skipped.") << endl;
+			return 0;
+		}
+
+		for (const string &file: {cert, key}) {
+			if (FileExists(file) && !CopyOneFile(file, file + ".old")) {
+				cerr << Paint(autosprintf(_("Failed to copy file: %s"), file.c_str()), sRed, true) << endl;
+				return 1;
+			}
+		}
+	}
+
+	if (!cTLSContext::Generate(cert, key, org, mail, host, cTLSContext::sCertDays, err)) {
+		cerr << Paint(autosprintf(_("Failed to create TLS certificate: %s"), err.c_str()), sRed, true) << endl;
+		return 1;
+	}
+
+	cTLSContext ctx;
+	cTLSContext::CertState(cert, info);
+	cout << Paint(_("New TLS certificate has been created."), sGreenBold) << '\n';
+	cout << '\t' << Paint(_("Valid until"), sBold) << ": " << info << '\n';
+
+	if (ctx.Load(cert, key, 2, err))
+		cout << '\t' << Paint(_("Keyprint"), sBold) << ": " << ctx.Keyprint() << '\n';
+
+	cout << _("Running hub loads it on next reload, for example: verlihub --reload") << endl;
+	return 0;
+#else
+	cerr << Paint(_("This build has no TLS support."), sRed, true) << endl;
+	return 1;
+#endif
 }
 
 int cCmdLine::UpHelp()

@@ -85,6 +85,9 @@ Set value of existing hub configuration variable, use _ for empty value. Running
 .BR "-c, --clean [config]"
 Ask to truncate kicklist, banlist and unbanlist tables, it removes all data in them
 .TP
+.BR "-tc, --tlscert [config]"
+Create new TLS certificate same way as hub does, from tls_cert_* and tls_key_file of hub, old files are kept with .old ending and new keyprint is shown
+.TP
 .BR "--version"
 Print version information of Verlihub, MySQL/MariaDB client library and OpenSSL
 .TP
