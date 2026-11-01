@@ -86,8 +86,8 @@ class cProfiler
 		// clear all collected data
 		void Reset();
 
-		// show data of last period in seconds, 0 = all time
-		void Show(std::ostream &os, unsigned int period) const;
+		// show data of last period in seconds, 0 = all time, filter shows only main thread sections whose name contains it without case, numbers stay same as in full list
+		void Show(std::ostream &os, unsigned int period, const std::string &filter = "") const;
 
 		// longest period that Show() accepts, in seconds
 		static constexpr unsigned int sMaxPeriod = 24 * 60 * 60;

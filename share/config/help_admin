@@ -145,7 +145,7 @@
 	!portinfo					- Port information
 	!urlinfo					- URL information
 	!mmdbinfo					- MaxMindDB information
-	!procinfo [time/reset]				- Profiler information
+	!procinfo [time/reset] [filter]			- Profiler information
 
  [*] Links:
 

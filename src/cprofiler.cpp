@@ -21,6 +21,7 @@
 #include "cprofiler.h"
 #include "cworkerpool.h"
 #include "ctime.h"
+#include "stringutils.h"
 #include "i18n.h"
 
 #include <algorithm>
@@ -334,7 +335,7 @@ string cProfiler::Share(unsigned long long part, unsigned long long all)
 	return buf;
 }
 
-void cProfiler::Show(ostream &os, unsigned int period) const
+void cProfiler::Show(ostream &os, unsigned int period, const string &filter) const
 {
 	if (period > sMaxPeriod)
 		period = sMaxPeriod;
@@ -392,11 +393,20 @@ void cProfiler::Show(ostream &os, unsigned int period) const
 			os << "\r\n";
 
 		os << _("Main thread sections") << ":\r\n\r\n";
+		const string low(toLower(filter));
+		bool shown = false;
 
 		for (const auto &item: sections) {
+			if (low.size() && (toLower(item.first->mName).find(low) == string::npos)) // note: only hides line, shares are counted from all sections
+				continue;
+
+			shown = true;
 			const sPart &sum = item.second;
 			os << " [*] " << autosprintf(_("%s: %s [%s], calls %s, average %s, longest %s"), item.first->mName.c_str(), Time(sum.mTime).c_str(), Share(sum.mTime, all_time).c_str(), to_string(sum.mCount).c_str(), Time(sum.mCount ? (sum.mTime / sum.mCount) : 0).c_str(), Time(sum.mMax).c_str()) << "\r\n";
 		}
+
+		if (!shown)
+			os << " [*] " << autosprintf(_("No section contains: %s"), filter.c_str()) << "\r\n";
 	}
 }
 

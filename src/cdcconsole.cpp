@@ -38,6 +38,7 @@
 #include "cdcclients.h"
 #include "i18n.h"
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 
 #ifndef _WIN32
@@ -2291,9 +2292,11 @@ bool cDCConsole::cfInfo::operator()()
 		case eINFO_HUB:
 			mInfoServer.Output(*mOS, mConn->mpUser->mClass);
 			break;
-		case eINFO_PROCESS: {
-			tmp.clear();
-			GetParStr(1, tmp);
+		case eINFO_PROCESS: { // note: !procinfo [reset|time] [filter], filter is rest of line and can contain spaces
+			const size_t from = mParStr.find_first_not_of(' '), to = mParStr.find_last_not_of(' ');
+			const string pars((from == string::npos) ? string() : mParStr.substr(from, to - from + 1));
+			const size_t space = pars.find(' ');
+			tmp = pars.substr(0, space);
 
 			if (tmp == "reset") {
 				mS->mProfiler.Reset();
@@ -2302,8 +2305,9 @@ bool cDCConsole::cfInfo::operator()()
 			}
 
 			unsigned int period = 0; // note: all time
+			string filter(pars);
 
-			if (tmp.size()) {
+			if (tmp.size() && isdigit((unsigned char)tmp[0])) { // note: first word is time, rest is filter
 				ostringstream err;
 				period = mS->Str2Period(tmp, err);
 
@@ -2311,9 +2315,11 @@ bool cDCConsole::cfInfo::operator()()
 					(*mOS) << err.str();
 					return false;
 				}
+
+				filter = ((space == string::npos) ? string() : pars.substr(pars.find_first_not_of(' ', space)));
 			}
 
-			mS->mProfiler.Show(*mOS, period);
+			mS->mProfiler.Show(*mOS, period, filter);
 			break;
 		}
 		default:

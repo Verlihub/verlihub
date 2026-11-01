@@ -145,7 +145,7 @@
 	!portinfo					- Информация о портах хаба
 	!urlinfo					- Информация о адресах хаба
 	!mmdbinfo					- Информация о MaxMindDB
-	!procinfo [time/reset]				- Информация профилировщика
+	!procinfo [time/reset] [filter]			- Информация профилировщика
 
  [*] Ссылки:
 
