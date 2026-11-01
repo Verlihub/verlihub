@@ -85,6 +85,9 @@ class cMySQL: public cObj
 
 		void Error(int level, const string& text);
 
+		// escape string value for query by charset of this connection, false when there is no connection handle
+		bool Escape(const string &str, string &res) const;
+
 		// called before every query on this connection, database thread sets it, so main connection first waits for queued writes
 		std::function<void()> mBeforeQuery;
 

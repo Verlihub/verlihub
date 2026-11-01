@@ -141,6 +141,11 @@ public:
 			mCallDepth--;
 	}
 
+	bool Busy() const override
+	{
+		return (mCallDepth > 0);
+	}
+
 	bool HasScript(const cLuaInterpreter *li) const
 	{
 		return (std::find(mLua.begin(), mLua.end(), li) != mLua.end());

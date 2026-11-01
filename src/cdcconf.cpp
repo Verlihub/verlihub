@@ -324,7 +324,7 @@ void cDCConf::AddVars()
 	Add("int_myinfo", int_myinfo, 60);
 	Add("int_nicklist", int_nicklist, 60);
 	Add("int_login",int_login, 60);
-	Add("max_class_int_login", max_class_int_login, int(eUC_OPERATOR));
+	Add("max_class_int_login", max_class_int_login, int(eUC_VIPUSER));
 	Add("max_class_check_clone", max_class_check_clone, 0);
 	Add("max_class_self_repass", max_class_self_repass, 0); // 0 means disabled
 	Add("clone_det_tban_time", clone_det_tban_time, 1800); // 30 minutes
@@ -362,6 +362,7 @@ void cDCConf::AddVars()
 	Add("adv_conn_choose_timeout", mS.mChooseTimeOut, 10); // note: this is milliseconds
 	Add("adv_conn_accept_num", mS.mAcceptNum, 100); // note: this also sets listen backlog
 	Add("adv_conn_accept_try", mS.mAcceptTry, 10);
+	Add("adv_conn_accept_ip", conn_accept_ip, 10); // note: connections from same ip that did not finish login, 0 = no limit
 	Add("adv_worker_threads", mS.mWorkerThreads, 2); // note: 0 = number of cpu cores, applied on hub start
 	Add("adv_http_threads", mS.mHTTPThreads, 2); // note: threads for http requests of scripts, 0 = number of cpu cores, applied on hub start
 	Add("adv_max_upload_kbps", max_upload_kbps, 131072.);

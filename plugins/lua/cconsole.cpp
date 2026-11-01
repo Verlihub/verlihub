@@ -256,6 +256,9 @@ bool cConsole::cfAddLuaScript::operator()()
 		scriptfile = GetPI()->mScriptDir + scriptfile;
 	}
 
+	if (!GetPI()->server || !GetPI()->server->AllowedFile((cConnDC*)mExtra, scriptfile, nSocket::cServerDC::eFILE_SCRIPT, *mOS))
+		return false;
+
 	vector<cLuaInterpreter*>::iterator it;
 	cLuaInterpreter *li;
 
@@ -334,6 +337,13 @@ bool cConsole::cfReloadLuaScript::operator()()
 			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: #%d"), num);
 		else
 			(*mOS) << autosprintf(_("Script not stopped because it's not loaded: %s"), scriptfile.c_str());
+
+		ostringstream err;
+
+		if (!GetPI()->server || !GetPI()->server->AllowedFile((cConnDC*)mExtra, scriptfile, nSocket::cServerDC::eFILE_SCRIPT, err)) {
+			(*mOS) << ' ' << err.str();
+			return false;
+		}
 	}
 
 	string config("config");

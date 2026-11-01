@@ -66,6 +66,7 @@ public:
 	unsigned int max_users_total;
 	int max_users_passive; // -1 means disabled, 0 means what it is
 	unsigned int max_users_from_ip;
+	unsigned int conn_accept_ip;
 	unsigned int max_users[7];
 	string hubfull_message;
 	unsigned int max_extra_pings;

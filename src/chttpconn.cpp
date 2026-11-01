@@ -150,7 +150,9 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	size_t len = top.size();
 
 	if (Send(top.data(), len) == -1) { // note: socket is blocking with send timeout, so anything not sent now is never sent
-		SetSockError(SockError(), "Sending request to " + mHost + ':' + StringFrom(mPort));
+		if (!mError) // note: error of time limit is already set by send
+			SetSockError(SockError(), "Sending request to " + mHost + ':' + StringFrom(mPort));
+
 		CloseNow();
 		return false;
 	}
@@ -158,7 +160,9 @@ bool cHTTPConn::Request(const string &meth, const string &req, const string &hea
 	len = data.size(); // note: data is sent separately, so post of scripts has no size limit and is not copied
 
 	if (len && (Send(data.data(), len) == -1)) {
-		SetSockError(SockError(), "Sending request to " + mHost + ':' + StringFrom(mPort));
+		if (!mError) // note: error of time limit is already set by send
+			SetSockError(SockError(), "Sending request to " + mHost + ':' + StringFrom(mPort));
+
 		CloseNow();
 		return false;
 	}
@@ -220,8 +224,12 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 			if (state == 0) {
 				const size_t end = data.find("\r\n", pos);
 
-				if (end == string::npos)
+				if (end == string::npos) {
+					if ((data.size() - pos) > 1024)
+						return 0;
+
 					break;
+				}
 
 				if (!isxdigit((unsigned char)data[pos]))
 					return 0;
@@ -264,8 +272,12 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 			} else { // note: trailer lines until empty line
 				const size_t end = data.find("\r\n", pos);
 
-				if (end == string::npos)
+				if (end == string::npos) {
+					if ((data.size() - pos) > 65536)
+						return 0;
+
 					break;
+				}
 
 				if (end == pos)
 					done = true;
@@ -300,6 +312,9 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 	};
 
 	while (!done) { // note: read until whole body is here or connection is closed
+		if (TimeOver())
+			break;
+
 		const int len = Recv(buf, sizeof(buf));
 
 		if (len < 0) // note: error is set by receive
@@ -326,8 +341,14 @@ bool cHTTPConn::ReadReply(string &head, string &body, size_t max, const string &
 		if (!have) {
 			const size_t end = data.find("\r\n\r\n");
 
-			if (end == string::npos)
+			if (end == string::npos) {
+				if (data.size() > 65536) {
+					SetError(eHTTP_BROKEN, "Reply header is too big");
+					break;
+				}
+
 				continue;
+			}
 
 			const string low(toLower(data.substr(0, end + 2))); // note: status line, then headers, each with line break
 			const size_t line = low.find("\r\n");
@@ -425,6 +446,25 @@ static string HeadValue(const string &head, const string &name) // note: value o
 	return val;
 }
 
+static string DropCredentials(const string &head) // note: same as curl, these headers are not sent to other host after redirect
+{
+	string res;
+	size_t pos = 0;
+
+	while (pos < head.size()) {
+		size_t end = head.find("\r\n", pos);
+		end = ((end == string::npos) ? head.size() : (end + 2));
+		const string line(head.substr(pos, end - pos)), low(toLower(line));
+
+		if ((low.compare(0, 14, "authorization:") != 0) && (low.compare(0, 20, "proxy-authorization:") != 0) && (low.compare(0, 7, "cookie:") != 0))
+			res.append(line);
+
+		pos = end;
+	}
+
+	return res;
+}
+
 static string JoinUrl(const string &base, const string &loc) // note: location of redirect can be relative
 {
 	if ((toLower(loc.substr(0, 7)) == "http://") || (toLower(loc.substr(0, 8)) == "https://"))
@@ -462,6 +502,11 @@ static bool MoveOver(const string &from, const string &to) // note: rename that 
 
 bool cHTTPConn::SplitUrl(const string &url, string &host, int &port, string &path, bool &tls) // note: only http and https
 {
+	for (const char c: url) {
+		if (((unsigned char)c <= 0x20) || ((unsigned char)c == 0x7F))
+			return false;
+	}
+
 	size_t pos;
 	const string low(toLower(url.substr(0, 8)));
 
@@ -502,14 +547,34 @@ bool cHTTPConn::SplitUrl(const string &url, string &host, int &port, string &pat
 	return (host.size() && (port > 0) && (port <= 65535));
 }
 
-bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, unsigned int retry)
+bool cHTTPConn::ValidHead(const string &head)
+{
+	for (size_t pos = 0; pos < head.size(); pos++) {
+		if (head[pos] == '\r') {
+			if (((pos + 1) >= head.size()) || (head[pos + 1] != '\n'))
+				return false;
+
+			if ((pos == 0) || ((pos >= 2) && (head[pos - 1] == '\n')))
+				return false;
+
+			pos++;
+
+		} else if (head[pos] == '\n') {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, unsigned int retry, size_t max)
 {
 	const string how(meth.size() ? toUpper(meth) : "GET");
 	const bool safe = ((how == "GET") || (how == "HEAD")); // note: request without data can be sent again
 
 	for (unsigned int attempt = 0; ; attempt++) {
 		bool sent = false;
-		const bool res = FetchOnce(how, url, head, data, timeout, cancel, code, rhead, body, err, file, sent);
+		const bool res = FetchOnce(how, url, head, data, timeout, cancel, code, rhead, body, err, file, max, sent);
 
 		if (attempt >= retry)
 			return res;
@@ -539,7 +604,7 @@ bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head,
 	}
 }
 
-bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, bool &sent)
+bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent)
 {
 	string cur(url), how(meth), send(data), extra(head);
 	code = 0;
@@ -569,7 +634,7 @@ bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &h
 		if (conn.mGood) // note: from here request can reach server
 			sent = true;
 
-		if (!conn.mGood || !conn.Request(how, path, extra, send) || !conn.ReadReply(rhead, body, 0, part, err)) { // note: no limit, script decides what it downloads
+		if (!conn.mGood || !conn.Request(how, path, extra, send) || !conn.ReadReply(rhead, body, max, part, err)) {
 			code = (conn.mError ? conn.mError : eHTTP_NETWORK);
 			err = conn.mErrText;
 			rhead.clear();
@@ -593,6 +658,33 @@ bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &h
 			how = "GET";
 			send.clear();
 		}
+
+		string next_host, next_path;
+		int next_port = 0;
+		bool next_tls = false;
+
+		if (!SplitUrl(cur, next_host, next_port, next_path, next_tls)) // note: bad address is told at start of next round
+			continue;
+
+		if (tls && !next_tls) {
+			code = eHTTP_REDIRECT;
+			err = "Redirect from HTTPS to HTTP is not allowed: " + cur;
+			rhead.clear();
+			body.clear();
+			return false;
+		}
+
+		if ((toLower(next_host) != toLower(host)) || (next_port != port)) {
+			if (send.size()) {
+				code = eHTTP_REDIRECT;
+				err = "Redirect of request data to other host is not allowed: " + cur;
+				rhead.clear();
+				body.clear();
+				return false;
+			}
+
+			extra = DropCredentials(extra);
+		}
 	}
 
 	if (part.size() && (code >= 200) && (code <= 299) && !MoveOver(part, file)) {
@@ -609,7 +701,7 @@ bool cHTTPConn::Download(const string &url, string &data) // note: same as wget 
 {
 	int code = 0;
 	string head, err;
-	return (Fetch("GET", url, "", "", 5, NULL, code, head, data, err, "", 2) && (code >= 200) && (code <= 299));
+	return (Fetch("GET", url, "", "", 5, NULL, code, head, data, err, "", 2, 268435456) && (code >= 200) && (code <= 299));
 }
 
 int cHTTPConn::Write(const string &data)
@@ -754,6 +846,15 @@ void cHTTPConn::SetError(int code, const string &text)
 	mErrText = text;
 }
 
+bool cHTTPConn::TimeOver()
+{
+	if ((std::chrono::steady_clock::now() - mStart) < std::chrono::seconds(HTTP_MAX_TIME))
+		return false;
+
+	SetError(eHTTP_TIMEOUT, "Request to " + mHost + ':' + StringFrom(mPort) + " took longer than " + StringFrom(HTTP_MAX_TIME) + " seconds");
+	return true;
+}
+
 void cHTTPConn::SetSockError(int err, const string &what)
 {
 	if (SockIsTimeout(err))
@@ -850,6 +951,9 @@ int cHTTPConn::Send(const char *buf, size_t &len)
 	size_t tot = 0;
 
 	while (tot < len) {
+		if (TimeOver())
+			break;
+
 		const int res = (mSSL ? SSL_write(mSSL, buf + tot, (int)(len - tot)) : send(mSock, buf + tot, (int)(len - tot), MSG_NOSIGNAL));
 
 		if (res <= 0) {

@@ -628,6 +628,14 @@ class cServerDC : public cAsyncSocketServer
 		// kept myinfo list without tls flag, for users without tls when myinfo_tls_filter is enabled, made again only when kept list changed
 		const string &InfoListNoTLS();
 		static void RepBadNickChars(string &nick);
+
+		/*
+			file that user can load as plugin or script, master can load any file
+			note: below master path must be in plugin or script folder of given kind and end with its extension, path is filtered
+		*/
+		enum { eFILE_PLUGIN = 1, eFILE_SCRIPT = 2 };
+		bool AllowedFile(cConnDC *conn, string &path, int kind, ostream &os);
+
 		void GetHubURLs(string &url, string &urls);
 		int SetConfig(const char *conf, const char *var, const char *val, string &val_new, string &val_old, cUser *user = NULL);
 		char* GetConfig(const char *conf, const char *var, const char *def);
@@ -865,6 +873,13 @@ protected: // Protected methods
 	* @return A negative number if connection is refused or zero otherwise.
 	*/
 	int OnNewConn(cAsyncConn *);
+
+	/**
+	* Start new connection, limits connections from same IP address that did not finish login, see adv_conn_accept_ip.
+	* @param conn New connection, its IP address is final, also behind external TLS proxy.
+	* @return Same as OnNewConn(), negative value means connection must be closed.
+	*/
+	int StartConn(cAsyncConn *conn) override;
 
 	/**
 	* This method is triggered when there is a new incoming message.

@@ -98,20 +98,26 @@ void cUserCollection::Nick2Key(const string &nick, string &key)
 cUserCollection::tHashType cUserCollection::Nick2Hash(const string &nick)
 {
 	/*
-		same steps as Nick2Key and HashString together, so value is same bit by bit
-		each char goes through tolower and back to char like in transform, then it is added like in HashString, which stops at zero byte
+		same steps as Nick2Key and Key2Hash together, so value is same bit by bit
+		each char goes through tolower and back to char like in transform, key ends at zero byte like in Key2Hash
 	*/
 
-	tHashType hash = 0;
+	string key;
+	key.reserve(nick.size());
 
 	for (const char c: nick) {
 		if (!c)
 			break;
 
-		hash = 33 * hash + (char)(::tolower(c));
+		key.append(1, (char)(::tolower(c)));
 	}
 
-	return hash;
+	return SipHash(key.data(), key.size());
+}
+
+cUserCollection::tHashType cUserCollection::Key2Hash(const string &key)
+{
+	return SipHash(key.c_str(), strlen(key.c_str()));
 }
 
 void cUserCollection::Nick2Hash(const string &nick, tHashType &hash)

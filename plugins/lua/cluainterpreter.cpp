@@ -214,8 +214,19 @@ void cLuaInterpreter::ReportLuaError(const char *error)
 	else
 		toall.append(_("Unknown error"));
 
-	string start, end;
-	serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, toall);
+	string start, end, text;
+	text.reserve(toall.size());
+
+	for (const char c: toall) {
+		if (c == '|')
+			text.append("&#124;");
+		else if (c == '$')
+			text.append("&#36;");
+		else
+			text.append(1, c);
+	}
+
+	serv->mP.Create_PMForBroadcast(start, end, serv->mC.opchat_name, serv->mC.opchat_name, text);
 	serv->SendToAllWithNick(start, end, cpiLua::me->err_class, eUC_MASTER); // use err_class here
 	cpiLua::me->ReportLuaError(toall); // also write to err file
 }

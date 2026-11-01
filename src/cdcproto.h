@@ -99,6 +99,15 @@ class cDCProto : public cProtocol
 	*/
 	virtual int ParseForCommands(string &cmd, nSocket::cConnDC *conn, int pm);
 
+	/*
+	* check if user can send private message, user is told why not
+	* to - nick of receiver, message window of user
+	* text - private message
+	* other - receiver checked with classdif_pm, null skips that check
+	* return - 1 if message can be sent, otherwise result of DC_To
+	*/
+	int CheckPM(nSocket::cConnDC *conn, string &to, const string &text, cUser *other);
+
 	/**
 	* Process a given protocol message that has been already parsed.
 	* @param msg The parsed message.

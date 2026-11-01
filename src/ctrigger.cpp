@@ -61,6 +61,36 @@ cTrigger::cTrigger()
   */
 
 cTrigger::~cTrigger(){}
+static void ReplaceParVars(string &buf, const string &parall, const string &par1, const string &end1) // note: %[PARALL], %[PAR1] and %[END1] in one pass
+{
+	size_t pos = buf.find("%[");
+
+	while (pos != buf.npos) {
+		const string *by = NULL;
+		size_t len = 0;
+
+		if (buf.compare(pos, 9, "%[PARALL]") == 0) {
+			by = &parall;
+			len = 9;
+		} else if (buf.compare(pos, 7, "%[PAR1]") == 0) {
+			by = &par1;
+			len = 7;
+		} else if (buf.compare(pos, 7, "%[END1]") == 0) {
+			by = &end1;
+			len = 7;
+		}
+
+		if (by) {
+			buf.replace(pos, len, *by);
+			pos += by->size();
+		} else {
+			pos += 2;
+		}
+
+		pos = buf.find("%[", pos);
+	}
+}
+
   /**
 
   Send the trigger message. Message can be the content of a file or a string stored in the database (in this case def column)
@@ -118,10 +148,6 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 	}
 
 	if (mFlags & eTF_VARS) {
-		ReplaceVarInString(buf, "PARALL", buf, parall);
-		ReplaceVarInString(buf, "PAR1", buf, par1);
-		ReplaceVarInString(buf, "END1", buf, end1);
-
 		if (user) {
 			ReplaceVarInString(buf, "CLASS", buf, clas);
 			ReplaceVarInString(buf, "CLASSNAME", buf, server.UserClassName(nEnums::tUserCl(clas)));
@@ -191,6 +217,7 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 		sprintf(tmf, "%02hd", short(lt->tm_mon + 1));
 		ReplaceVarInString(buf, "MM", buf, tmf);
 		ReplaceVarInString(buf, "YY", buf, 1900 + lt->tm_year);
+		ReplaceParVars(buf, parall, par1, end1);
 	}
 
 	if (mFlags & eTF_SENDTOALL) { // to all

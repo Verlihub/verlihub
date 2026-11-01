@@ -578,6 +578,7 @@ namespace nVerliHub {
 				};
 
 				unsigned int mStartWait = 0;
+				bool mHostAsked = false; // note: host name of current ip was looked up in background on request of script, only once
 
 				/// Input is not read while connection waits only for host name, tls detection and handshake need input.
 				bool InputParked() const

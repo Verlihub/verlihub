@@ -363,16 +363,38 @@ bool cTriggerConsole::CheckData(cfBase *cmd, cTrigger &data)
 		*cmd->mOS << _("The definition is empty or not specified. Please define it with -d option.");
 		return false;
 	}
-	size_t pos = data.mDefinition.rfind("dbconfig");
-	if(pos != string::npos) {
-		*cmd->mOS << _("It's not allowed to define dbconfig file as trigger.") << "\n";
-		cConnDC *conn = (cConnDC *) cmd->mConn;
-		ostringstream message;
-		message << autosprintf(_("User '%s' tried to define dbconfig as trigger"), conn->mpUser->mNick.c_str());
-		mOwner->mServer->ReportUserToOpchat(conn, message.str());
+	FilterPath(data.mDefinition);
+
+	if (data.mDefinition.empty()) {
+		*cmd->mOS << _("The definition is empty or not specified. Please define it with -d option.");
 		return false;
 	}
-	FilterPath(data.mDefinition);
+
+	const string low(toLower(data.mDefinition));
+	cConnDC *conn = (cConnDC*)cmd->mConn;
+
+#ifdef _WIN32
+	if (low.find('~') != string::npos) {
+		*cmd->mOS << _("It's not allowed to use ~ in trigger file name.") << "\n";
+		return false;
+	}
+#endif
+
+	if (low.find("dbconfig") != string::npos) {
+		*cmd->mOS << _("It's not allowed to define dbconfig file as trigger.") << "\n";
+		mOwner->mServer->ReportUserToOpchat(conn, autosprintf(_("User '%s' tried to define dbconfig as trigger"), conn->mpUser->mNick.c_str()));
+		return false;
+	}
+
+	string key, keyPath;
+	GetPath(toLower(mOwner->mServer->mTLSKey), keyPath, key);
+
+	if (key.size() && (low.find(key) != string::npos)) {
+		*cmd->mOS << _("It's not allowed to define TLS key file as trigger.") << "\n";
+		mOwner->mServer->ReportUserToOpchat(conn, autosprintf(_("User '%s' tried to define TLS key file as trigger"), conn->mpUser->mNick.c_str()));
+		return false;
+	}
+
 	string vPath(mOwner->mServer->mConfigBaseDir), triggerPath, triggerName;
 	ExpandPath(vPath);
 	GetPath(data.mDefinition, triggerPath, triggerName);

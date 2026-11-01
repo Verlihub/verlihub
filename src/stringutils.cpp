@@ -32,6 +32,9 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
+#include <chrono>
+#include <cstdint>
+#include <random>
 
 /*
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -179,12 +182,10 @@ void ExpandPath(string &Path)
 
 	while (pos != Path.npos) {
 		Path.replace(pos, 3, "");
-		pos = Path.find("../", pos);
+		pos = Path.find("../");
 	}
 
-	int len = Path.length();
-
-	if (Path.substr(len - 1, len) != "/")
+	if (Path.empty() || (Path[Path.size() - 1] != '/'))
 		Path.append(1, '/');
 }
 
@@ -215,7 +216,7 @@ void FilterPath(string &Path)
 	size_t pos = Path.find("../");
 	while (pos != Path.npos) {
 		Path.replace(pos, 3, "");
-		pos = Path.find("../", pos);
+		pos = Path.find("../");
 	}
 }
 
@@ -232,7 +233,7 @@ void ReplaceVarInString(const string&src ,const string &varname, string &dest, c
 	while (pos != dest.npos)
 	{
 		dest.replace(pos, searchvar.size(), by);
-		pos = dest.find(searchvar, pos);
+		pos = dest.find(searchvar, pos + by.size());
 	}
 }
 
@@ -452,6 +453,85 @@ string StrToHex(const string &str)
 	}
 
 	return out;
+}
+
+static inline uint64_t SipRotate(uint64_t x, int b)
+{
+	return ((x << b) | (x >> (64 - b)));
+}
+
+static inline void SipRound(uint64_t &v0, uint64_t &v1, uint64_t &v2, uint64_t &v3)
+{
+	v0 += v1;
+	v1 = SipRotate(v1, 13);
+	v1 ^= v0;
+	v0 = SipRotate(v0, 32);
+	v2 += v3;
+	v3 = SipRotate(v3, 16);
+	v3 ^= v2;
+	v0 += v3;
+	v3 = SipRotate(v3, 21);
+	v3 ^= v0;
+	v2 += v1;
+	v1 = SipRotate(v1, 17);
+	v1 ^= v2;
+	v2 = SipRotate(v2, 32);
+}
+
+unsigned long SipHash(const char *data, size_t len)
+{
+	static const struct sSipKey {
+		uint64_t mKey[2];
+
+		sSipKey()
+		{
+			const uint64_t mix = uint64_t(std::chrono::steady_clock::now().time_since_epoch().count()) ^ uint64_t(uintptr_t(this));
+			mKey[0] = mix;
+			mKey[1] = (mix << 1) ^ 0x9e3779b97f4a7c15ULL;
+
+			try {
+				std::random_device dev;
+
+				for (int i = 0; i < 2; i++)
+					mKey[i] ^= ((uint64_t(dev()) << 32) | uint64_t(dev()));
+			} catch (...) {
+			}
+		}
+	} key;
+
+	uint64_t v0 = 0x736f6d6570736575ULL ^ key.mKey[0];
+	uint64_t v1 = 0x646f72616e646f6dULL ^ key.mKey[1];
+	uint64_t v2 = 0x6c7967656e657261ULL ^ key.mKey[0];
+	uint64_t v3 = 0x7465646279746573ULL ^ key.mKey[1];
+	const unsigned char *in = (const unsigned char*)data;
+	const size_t full = len - (len % 8);
+	uint64_t last = uint64_t(len) << 56, part;
+
+	for (size_t pos = 0; pos < full; pos += 8) {
+		part = 0;
+
+		for (int i = 0; i < 8; i++)
+			part |= uint64_t(in[pos + i]) << (8 * i);
+
+		v3 ^= part;
+		SipRound(v0, v1, v2, v3);
+		SipRound(v0, v1, v2, v3);
+		v0 ^= part;
+	}
+
+	for (size_t i = 0; i < (len % 8); i++)
+		last |= uint64_t(in[full + i]) << (8 * i);
+
+	v3 ^= last;
+	SipRound(v0, v1, v2, v3);
+	SipRound(v0, v1, v2, v3);
+	v0 ^= last;
+	v2 ^= 0xff;
+
+	for (int i = 0; i < 4; i++)
+		SipRound(v0, v1, v2, v3);
+
+	return (unsigned long)(v0 ^ v1 ^ v2 ^ v3);
 }
 
 	}; // namespace nUtils

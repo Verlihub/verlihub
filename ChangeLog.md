@@ -21,6 +21,7 @@
 * CMake target POT and Transifex integration
 * Hub messages are translated also when dbconfig locale is not installed
 * Configuration classdif_rights for rights and restrictions commands
+* Configuration adv_conn_accept_ip, limit of connections from same IP address that did not finish login
 
 ## Updated
 
@@ -68,6 +69,9 @@
 * Default triggers, redirects, clients and connection types are added to new tables and once after upgrade, deleted ones stay deleted
 * Command !getvar finds variables that contain given text in name or value, without "*" around it
 * Installation empties header folder first, headers of removed classes are not left behind
+* Operator chat commands +invite and +out need opchat_class
+* Below master class plugins and scripts are loaded only from plugin and scripts folders
+* Configuration max_class_int_login defaults to 2, operators are not blocked by int_login
 
 ## Fixed
 
@@ -155,6 +159,16 @@
 * Rights and restrictions commands had no class check of target user
 * Right !noshare had no effect, user with it can share less than minimum
 * User with any temporary right got back search and download taken by share, class or client limits
+* Variable %[MODE] in desc_insert_vars showed number instead of mode letter
+* Only first invalid character of each kind was replaced in hub_security and opchat_name
+* Command +me ignored +nochat and chat flood protection from all
+* Plugman commands ignored plugin_mod_class
+* Replies to broadcast through bc_reply ignored private chat restrictions
+* Plugman commands !offplug and !replug could unload Plugman itself
+* Lua plugin could be unloaded from inside its own script call
+* HTTP request from UnLoad of script during Lua plugin unload could crash hub
+* Trigger file path that was empty after filtering crashed hub
+* Lua call VH:GetUserHost with dns_lookup 0 blocked hub during lookup
 
 ## Removed
 

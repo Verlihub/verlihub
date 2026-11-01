@@ -216,6 +216,7 @@ bool cMySQLTable::AutoAlterTable(const cMySQLTable &original)
 	namespace nConfig {
 
 string cConfMySQL::msLastVersion;
+nMySQL::cMySQL *cConfMySQL::msEscape = NULL;
 
 cConfMySQL::cConfMySQL(cMySQL &mysql):
 	mMySQL(mysql),
@@ -503,6 +504,16 @@ void cConfMySQL::WriteStringConstant(ostream &os, const string &str, bool like)
 	string tmp, escs("\\\"'`");
 	size_t pos = 0, lastpos = 0;
 	char c;
+
+	if (msEscape && msEscape->Escape(str, tmp)) {
+		if (like) { // note: % is not escaped
+			for (pos = tmp.find('_'); pos != tmp.npos; pos = tmp.find('_', pos + 2))
+				tmp.insert(pos, 1, '\\');
+		}
+
+		os << tmp;
+		return;
+	}
 
 	if (like) // note: % is not escaped
 		escs.append(1, '_');

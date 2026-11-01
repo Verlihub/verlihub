@@ -146,6 +146,7 @@ public:
 	bool LoadPK();
 	bool SavePK(bool dup=false);
 	static void WriteStringConstant(ostream &os, const string &str, bool like = false);
+	static nMySQL::cMySQL *msEscape; // note: main connection of hub, its charset is used by WriteStringConstant, worker connection has same charset
 	static string msLastVersion; // note: hub_version of previous hub start, read before hub saves its own, empty on new hub
 	void TruncateTable();
 	bool CreateTable(); // note: true when table did not exist and was created

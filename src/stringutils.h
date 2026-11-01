@@ -58,6 +58,7 @@ unsigned int CountLines(const string &);
 bool LimitLines(const string &str, int max);
 string StrByteList(const string &data, const string &sep = " ");
 string StrToMD5ToHex(const string &str);
+unsigned long SipHash(const char *data, size_t len);
 string StrToHex(const string &str);
 
 inline void AppendPipe(string &dest, string &data, const bool pipe)

@@ -65,7 +65,7 @@ bool cPlugConsole::IsConnAllowed(cConnDC *conn, int cmd)
 		case eLC_ON:
 		case eLC_OFF:
 		case eLC_RE:
-			return conn->mpUser->mClass >= eUC_ADMIN;
+			return conn->mpUser->mClass >= mOwner->mServer->mC.plugin_mod_class;
 		case eLC_LST:
 		case eLC_HELP:
 			return conn->mpUser->mClass >= eUC_OPERATOR;
@@ -170,6 +170,9 @@ bool cPlugConsole::ReadDataFromCmd(cfBase *cmd, int id, cPlug &data)
 		*cmd->mOS << _("Please provide a valid path for the plugin.");
 		return false;
 	}
+
+	if (data.mPath.size() && ((id == eLC_ADD) || (id == eLC_MOD)) && !mOwner->mServer->AllowedFile(cmd->mConn, data.mPath, nSocket::cServerDC::eFILE_PLUGIN | nSocket::cServerDC::eFILE_SCRIPT, *cmd->mOS))
+		return false;
 	cmd->GetParStr(eADD_DESC, data.mDesc);
 	cmd->GetParBool(eADD_AUTO, data.mLoadOnStartup);
 	return true;
@@ -218,6 +221,11 @@ bool cPlugConsole::cfOff::operator()()
 		cPlug *Plug = GetTheList()->FindData(Data);
 
 		if (Plug) {
+			if (Plug->IsLoaded() == GetConsole()->GetPlugin()) {
+				(*mOS) << _("You don't want to unload Plugman because all other plugins are loaded via it.");
+				return false;
+			}
+
 			if (Plug->Plugout()) {
 				(*mOS) << _("Plugin unloaded.");
 				return true;
@@ -241,6 +249,11 @@ bool cPlugConsole::cfRe::operator()()
 		cPlug *Plug = GetTheList()->FindData(Data);
 
 		if (Plug) {
+			if (Plug->IsLoaded() == GetConsole()->GetPlugin()) {
+				(*mOS) << _("You don't want to reload Plugman because all other plugins are loaded via it.");
+				return false;
+			}
+
 			if (Plug->Replug()) {
 				(*mOS) << _("Plugin reloaded.");
 				return true;

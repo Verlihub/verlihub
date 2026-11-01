@@ -61,6 +61,7 @@ public:
 	string &GetError(){ return mLastLoadError;}
 	cPluginBase * GetPlugin(const string &Name);
 	cPluginBase * GetPluginByLib(const string &path);
+	bool HasPlugin(const cPluginBase *pi); // note: plugin is loaded and not being unloaded
 protected:
 	string mPluginDir;
 	typedef tcHashListMap<cCallBackList*> tCBList;

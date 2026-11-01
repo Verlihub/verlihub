@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -127,10 +127,24 @@ cUserCollection* cChatConsole::cfBase::GetTheList()
 	return NULL;
 }
 
+bool cChatConsole::cfBase::CanManage()
+{
+	if (!mConn || !mConn->mpUser || !mCommand || !mCommand->mCmdr || !mCommand->mCmdr->mOwner)
+		return false;
+
+	cChatRoom *room = ((cChatConsole*)mCommand->mCmdr->mOwner)->mChatRoom;
+	return (room && room->IsUserAllowed(mConn->mpUser));
+}
+
 bool cChatConsole::cfOut::operator()()
 {
 	if (!mConn || !mConn->mpUser)
 		return false;
+
+	if (!CanManage()) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
 
 	string nick;
 	cUser *user;
@@ -189,6 +203,11 @@ bool cChatConsole::cfInvite::operator()()
 {
 	if (!mConn || !mConn->mpUser)
 		return false;
+
+	if (!CanManage()) {
+		(*mOS) << _("You have no rights to do this.");
+		return false;
+	}
 
 	string nick;
 	cUser *user;

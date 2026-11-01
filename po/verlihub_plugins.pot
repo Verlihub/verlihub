@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2026-10-31 17:57+0100\n"
+"POT-Creation-Date: 2026-11-01 11:47+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -83,17 +83,17 @@ msgstr ""
 msgid "Lua scripts found in: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:206 ../plugins/lua/cconsole.cpp:324
+#: ../plugins/lua/cconsole.cpp:206 ../plugins/lua/cconsole.cpp:327
 #, c-format
 msgid "Script stopped: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:334
+#: ../plugins/lua/cconsole.cpp:214 ../plugins/lua/cconsole.cpp:337
 #, c-format
 msgid "Script not stopped because it's not loaded: #%d"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:216 ../plugins/lua/cconsole.cpp:336
+#: ../plugins/lua/cconsole.cpp:216 ../plugins/lua/cconsole.cpp:339
 #, c-format
 msgid "Script not stopped because it's not loaded: %s"
 msgstr ""
@@ -105,42 +105,42 @@ msgid ""
 "command or specify the script path instead."
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:266
+#: ../plugins/lua/cconsole.cpp:269
 #, c-format
 msgid "Script is already loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:281 ../plugins/lua/cconsole.cpp:349
+#: ../plugins/lua/cconsole.cpp:284 ../plugins/lua/cconsole.cpp:359
 #, c-format
 msgid "Failed to allocate new Lua interpreter for script: %s [ %s ]"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:286 ../plugins/lua/cconsole.cpp:354
+#: ../plugins/lua/cconsole.cpp:289 ../plugins/lua/cconsole.cpp:364
 #, c-format
 msgid "Script is now loaded: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:291 ../plugins/lua/cconsole.cpp:359
+#: ../plugins/lua/cconsole.cpp:294 ../plugins/lua/cconsole.cpp:369
 #, c-format
 msgid "Script not found or couldn't be parsed: %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:378
+#: ../plugins/lua/cconsole.cpp:388
 #, c-format
 msgid "Updated configuration %s.%s from '%s' to '%s'."
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:380
+#: ../plugins/lua/cconsole.cpp:390
 #, c-format
 msgid "Current log level: %d"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:398
+#: ../plugins/lua/cconsole.cpp:408
 #, c-format
 msgid "Updated configuration %s.%s: %s -> %s"
 msgstr ""
 
-#: ../plugins/lua/cconsole.cpp:400
+#: ../plugins/lua/cconsole.cpp:410
 #, c-format
 msgid "Current error class: %d"
 msgstr ""
@@ -198,29 +198,39 @@ msgstr ""
 msgid "Please provide a valid path for the plugin."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:202 ../plugins/plugman/cplugs.cpp:136
+#: ../plugins/plugman/cconsole.cpp:205 ../plugins/plugman/cplugs.cpp:136
 msgid "Plugin loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:207 ../plugins/plugman/cconsole.cpp:230
-#: ../plugins/plugman/cconsole.cpp:253
+#: ../plugins/plugman/cconsole.cpp:210 ../plugins/plugman/cconsole.cpp:238
+#: ../plugins/plugman/cconsole.cpp:266
 #, c-format
 msgid "Plugin not found: %s"
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:222
+#: ../plugins/plugman/cconsole.cpp:225
+msgid ""
+"You don't want to unload Plugman because all other plugins are loaded via it."
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:230
 msgid "Plugin unloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:225
+#: ../plugins/plugman/cconsole.cpp:233
 msgid "Plugin not unloaded, probably because it's not loaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:245 ../plugins/plugman/cplugs.cpp:184
+#: ../plugins/plugman/cconsole.cpp:253
+msgid ""
+"You don't want to reload Plugman because all other plugins are loaded via it."
+msgstr ""
+
+#: ../plugins/plugman/cconsole.cpp:258 ../plugins/plugman/cplugs.cpp:184
 msgid "Plugin reloaded."
 msgstr ""
 
-#: ../plugins/plugman/cconsole.cpp:248
+#: ../plugins/plugman/cconsole.cpp:261
 msgid "Plugin not reloaded, probably because it's not loaded."
 msgstr ""
 

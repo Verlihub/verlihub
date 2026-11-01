@@ -426,8 +426,8 @@ const char *GetUserHost(const char *nick)
 			return "";
 		}
 
-		if (!server->mUseDNS)
-			usr->mxConn->DNSLookup();
+		if (!server->mUseDNS && usr->mxConn->AddrHost().empty() && !usr->mxConn->mHostAsked) // note: result comes later on main thread, see OnHostResult()
+			usr->mxConn->mHostAsked = server->LookupHost(usr->mxConn, false);
 
 		return usr->mxConn->AddrHost().c_str();
 	}

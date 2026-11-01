@@ -388,6 +388,7 @@ public:
 	void Nick2Hash(const string &nick, tHashType &hash);
 
 	static tHashType Nick2Hash(const string &nick); // note: same value as Key2Hash of key made by Nick2Key, without making key
+	static tHashType Key2Hash(const string &key); // note: used instead of Key2Hash of hash array, so nick and key give same value
 
 	void Nick2Key(const string &nick, string &key);
 

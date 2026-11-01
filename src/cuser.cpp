@@ -679,7 +679,10 @@ bool cMainRobot::ReceiveMsg(cConnDC *conn, cMessageDC *message)
 				cUser *other = mxServer->mUserList.GetUserByNick(mxServer->LastBCNick);
 
 				if (other && other->mxConn) {
-					mxServer->DCPrivateHS(message->ChunkString(eCH_PM_MSG), other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
+					if (mxServer->mP.CheckPM(conn, mNick, msg, NULL) < 1)
+						return true;
+
+					mxServer->DCPrivateHS(msg, other->mxConn, &conn->mpUser->mNick, &conn->mpUser->mNick);
 					return true;
 				}
 			}

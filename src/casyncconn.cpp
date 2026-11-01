@@ -1249,6 +1249,7 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 	mAddrIP = addr;
 	mIP = inet_addr(addr.c_str());
 	mAddrHost.clear(); // note: host name is looked up when connection is started
+	mHostAsked = false;
 
 	if (vers.size() == 1) {
 		if (vers[0] == 'S')
@@ -1275,6 +1276,7 @@ bool cAsyncConn::SetUserIP(const string &addr)
 	mAddrIP = addr;
 	mIP = inet_addr(addr.c_str());
 	mAddrHost.clear(); // note: old host belongs to old ip
+	mHostAsked = false;
 
 	if (mxServer) {
 		nVerliHub::cServerDC *serv = (nVerliHub::cServerDC*)mxServer;

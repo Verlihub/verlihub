@@ -721,8 +721,11 @@ int cDCConsole::CmdMe(istringstream &cmd_line, cConnDC *conn)
 	if ((conn->mpUser->mClass < eUC_VIPUSER) && !cDCProto::CheckChatMsg(text, conn)) // check message length and other conditions
 		return 1;
 
+	if (mOwner->CheckProtoFloodAll(conn, ePFA_CHAT)) // protocol flood from all
+		return 1;
+
 	mOwner->mP.Create_Me(temp, conn->mpUser->mNick, text);
-	mOwner->mUserList.SendToAll(temp, mOwner->mC.delayed_chat, true);
+	mOwner->mChatUsers.SendToAll(temp, mOwner->mC.delayed_chat, true);
 	return 1;
 }
 
@@ -1920,7 +1923,35 @@ bool cDCConsole::cfBan::operator()()
 				}
 
 				case eBF_NICK:
-				case eBF_IP:
+				case eBF_IP: {
+					int other = -1;
+
+					if (BanType == eBF_NICK) {
+						cUser *user = mS->mUserList.GetUserByNick(Who);
+
+						if (user) {
+							other = user->mClass;
+						} else {
+							cRegUserInfo ui;
+
+							if (mS->mR->FindRegInfo(ui, Who))
+								other = ui.mClass;
+						}
+
+					} else {
+						for (cUserCollection::iterator it = mS->mUserList.begin(); it != mS->mUserList.end(); ++it) {
+							cUser *user = (cUser*)(*it);
+
+							if (user && user->mxConn && (user->mxConn->AddrIP() == Who) && (user->mClass > other))
+								other = user->mClass;
+						}
+					}
+
+					if ((other >= 0) && ((other + int(mS->mC.classdif_kick)) > MyClass)) {
+						(*mOS) << _("You have no rights to do this.");
+						return false;
+					}
+
 					if (mS->mKickList->FindKick(Kick, Who, mConn->mpUser->mNick, 3000, true, true, IsNick)) {
 						mS->mBanList->NewBan(Ban, Kick, BanTime, BanType);
 
@@ -1946,6 +1977,7 @@ bool cDCConsole::cfBan::operator()()
 					}
 
 					break;
+				}
 
 				case eBF_HOST1:
 				case eBF_HOST2:
@@ -3152,6 +3184,9 @@ bool cDCConsole::cfPlug::operator()()
 		case eAC_IN:
 			if (mParRex->PartFound(1)) {
 				mParRex->Extract(1, mParStr, tmp);
+
+				if (!mS->AllowedFile(mConn, tmp, cServerDC::eFILE_PLUGIN, *mOS))
+					return false;
 
 				if (!mS->mPluginManager.LoadPlugin(tmp)) {
 					(*mOS) << mS->mPluginManager.GetError();

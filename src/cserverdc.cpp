@@ -53,6 +53,7 @@
 #include "cconntypes.h"
 #include "cdcconsole.h"
 #include "ctriggers.h"
+#include "dirsettings.h"
 
 static int SetEnv(const char *name, const char *value) // note: windows has no setenv and unsetenv
 {
@@ -121,6 +122,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mCallBacks(&mPluginManager)
 {
 	sCurrentServer = this; // static pointer to current server, can be used anywhere
+	cConfMySQL::msEscape = &mMySQL;
 
 	if (mDBConf.locale.size()) {
 		vhLog(1) << "Found locale configuration: " << mDBConf.locale << endl;
@@ -448,6 +450,7 @@ cServerDC::~cServerDC()
 		mICUConvert = NULL;
 	}
 
+	cConfMySQL::msEscape = NULL;
 	mMySQL.Close();
 }
 
@@ -1169,6 +1172,32 @@ unsigned int cServerDC::CollectExtJSON(string &dest, cConnDC *conn)
 	return count;
 }
 
+int cServerDC::StartConn(cAsyncConn *nc)
+{
+	cConnDC *conn = (cConnDC*)nc;
+
+	if (conn && conn->ok && mC.conn_accept_ip) { // note: oldest connection is closed, not new one, so new attempt of real user always gets in
+		const unsigned long addr = conn->AddrToNumber();
+		cConnDC *oldest = NULL;
+		unsigned int tot = 0;
+
+		for (tCLIt it = mConnList.begin(); it != mConnList.end(); ++it) { // note: newest connection is first in list
+			cConnDC *other = (cConnDC*)(*it);
+
+			if (!other || (other == conn) || !other->ok || (other->AddrToNumber() != addr) || (other->GetLSFlag(eLS_LOGIN_DONE) == eLS_LOGIN_DONE))
+				continue;
+
+			oldest = other;
+			tot++;
+		}
+
+		if (oldest && (tot >= mC.conn_accept_ip))
+			oldest->CloseNow(eCR_USERLIMIT);
+	}
+
+	return cAsyncSocketServer::StartConn(nc);
+}
+
 int cServerDC::OnNewConn(cAsyncConn *nc)
 {
 	cConnDC *conn = (cConnDC*)nc;
@@ -1720,7 +1749,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 		string extra;
 
 		if (vn == eVN_BANNED) {
-			cBanList::sTempBan *tban = mBanList->mTempNickBanlist.GetByHash(mBanList->mTempNickBanlist.HashLowerString(nick));
+			cBanList::sTempBan *tban = mBanList->mTempNickBanlist.GetByHash(cUserCollection::Nick2Hash(nick));
 
 			if (tban && (tban->mUntil > mTime.Sec())) {
 				errmsg << autosprintf(_("You're still temporarily prohibited from entering the hub for %s because: %s"), cTimePrint(tban->mUntil - mTime.Sec()).AsPeriod().AsString().c_str(), tban->mReason.c_str());
@@ -2505,8 +2534,18 @@ bool cServerDC::HTTPRequest(const string &meth, const string &url, const string 
 	int port = 0;
 	bool tls = false;
 
+	if (owner && !mPluginManager.HasPlugin(owner)) {
+		err = "Plugin is not loaded";
+		return false;
+	}
+
 	if (!cHTTPConn::SplitUrl(url, host, port, path, tls)) {
 		err = "Invalid URL: " + url;
+		return false;
+	}
+
+	if (!cHTTPConn::ValidHead(head)) {
+		err = "Invalid headers";
 		return false;
 	}
 
@@ -3550,14 +3589,63 @@ string cServerDC::EraseNewLines(const string &src)
 void cServerDC::RepBadNickChars(string &nick)
 {
 	static const string badchars(string(BAD_NICK_CHARS_NMDC) + string(BAD_NICK_CHARS_OWN));
-	size_t pos;
+	size_t pos = nick.find_first_of(badchars);
 
-	for (unsigned i = 0; i < badchars.size(); ++i) {
-		pos = nick.find(badchars[i]);
-
-		if (pos != nick.npos)
-			nick.replace(pos, 1, 1, '_');
+	while (pos != nick.npos) {
+		nick[pos] = '_';
+		pos = nick.find_first_of(badchars, pos + 1);
 	}
+}
+
+bool cServerDC::AllowedFile(cConnDC *conn, string &path, int kind, ostream &os)
+{
+	if (!conn || !conn->mpUser)
+		return false;
+
+	if (conn->mpUser->mClass >= eUC_MASTER)
+		return true;
+
+	FilterPath(path);
+	const string low(toLower(path));
+	string dir, name;
+	GetPath(toLower(mTLSKey), dir, name);
+	bool ok = (path.size() && (low.find('~') == low.npos) && (low.find("dbconfig") == low.npos) && (name.empty() || (low.find(name) == low.npos)));
+
+	if (ok) {
+#ifdef _WIN32
+		static const string ext_plug(".dll");
+#else
+		static const string ext_plug(".so");
+#endif
+
+		vector<pair<string, string> > places;
+
+		if (kind & eFILE_PLUGIN) {
+			places.push_back(make_pair(mConfigBaseDir + "/plugins", ext_plug));
+			places.push_back(make_pair(string(PLUGINDIR), ext_plug));
+		}
+
+		if (kind & eFILE_SCRIPT)
+			places.push_back(make_pair(mConfigBaseDir + "/scripts", string(".lua")));
+
+		GetPath(path, dir, name);
+		ExpandPath(dir);
+		ok = false;
+
+		for (auto &place: places) {
+			ExpandPath(place.first);
+
+			if ((dir.compare(0, place.first.size(), place.first) == 0) && (name.size() > place.second.size()) && (toLower(name).compare(name.size() - place.second.size(), place.second.size(), place.second) == 0)) {
+				ok = true;
+				break;
+			}
+		}
+	}
+
+	if (!ok)
+		os << autosprintf(_("You have no rights to load this file: %s"), path.c_str());
+
+	return ok;
 }
 
 void cServerDC::GetHubURLs(string &url, string &urls)
@@ -4104,7 +4192,7 @@ void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
 
 	mCtmToHubTotal++;
 
-	if (ref.size() && mCtmToHubRefs.insert(ref).second) // note: new hub address, it is reported once
+	if (ref.size() && (mCtmToHubRefs.size() < 1000) && mCtmToHubRefs.insert(ref).second) // note: new hub address, it is reported once
 		mCtmToHubNew.push_back(ref);
 
 	if ((++mCtmToHubConf.mNew > 9) && !mCtmToHubConf.mStart) {
@@ -4122,10 +4210,19 @@ int cServerDC::CtmToHubRefererList(string &list)
 	int count = 0;
 
 	for (const string &ref: mCtmToHubNew) {
-		list.append(1, ' ');
-		list.append(ref);
-		list.append("\r\n");
+		if (count < 100) {
+			list.append(1, ' ');
+			list.append(ref);
+			list.append("\r\n");
+		}
+
 		count++;
+	}
+
+	if (count > 100) {
+		list.append(1, ' ');
+		list.append(string(autosprintf(_("and %d more"), count - 100)));
+		list.append("\r\n");
 	}
 
 	mCtmToHubNew.clear();

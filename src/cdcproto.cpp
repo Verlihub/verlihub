@@ -345,7 +345,7 @@ int cDCProto::DC_Key(cMessageDC *msg, cConnDC *conn)
 		string key, par = msg->ChunkString(eCH_1_PARAM);
 		Lock2Key(conn->mLock, key);
 
-		if (StrCompare(key, 0, par.size(), par) != 0) {
+		if (key != par) {
 			os << _("Your client provided invalid key in response to lock.");
 
 			if (conn->Log(1))
@@ -673,7 +673,7 @@ int cDCProto::DC_ValidateNick(cMessageDC *msg, cConnDC *conn)
 		conn->Send(omsg, true);
 	}
 
-	if (conn->mRegInfo && conn->mRegInfo->mAuthIP.size() && (StrCompare(conn->mRegInfo->mAuthIP, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0)) { // check authorization ip
+	if (conn->mRegInfo && conn->mRegInfo->mAuthIP.size() && (conn->mRegInfo->mAuthIP != conn->mAddrIP)) { // check authorization ip
 		mS->mR->LoginError(conn, nick); // important
 
 		if (conn->GetTheoricalClass() >= mS->mC.wrongauthip_report)
@@ -1302,19 +1302,19 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 
 			switch (dc_tag->mClientMode) {
 				case eCM_ACTIVE:
-					ReplaceVarInString(temp, "MODE", temp, 'A');
+					ReplaceVarInString(temp, "MODE", temp, "A");
 					break;
 
 				case eCM_PASSIVE:
-					ReplaceVarInString(temp, "MODE", temp, 'P');
+					ReplaceVarInString(temp, "MODE", temp, "P");
 					break;
 
 				case eCM_SOCK5:
-					ReplaceVarInString(temp, "MODE", temp, '5');
+					ReplaceVarInString(temp, "MODE", temp, "5");
 					break;
 
 				default: // eCM_OTHER, eCM_NOTAG
-					ReplaceVarInString(temp, "MODE", temp, '?');
+					ReplaceVarInString(temp, "MODE", temp, "?");
 					break;
 			}
 
@@ -1739,6 +1739,27 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 	}
 
 	string &text = msg->ChunkString(eCH_PM_MSG);
+	const int res = CheckPM(conn, to, text, other);
+
+	if (res < 1)
+		return res;
+
+	if (mS->CheckProtoFloodAll(conn, ePFA_PRIV, other)) // protocol flood from all
+		return -1;
+
+	#ifndef WITHOUT_PLUGINS
+		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
+			return 0;
+	#endif
+
+	string _str(msg->mStr);
+	other->mxConn->Send(_str, true); // send it
+	return 0;
+}
+
+int cDCProto::CheckPM(cConnDC *conn, string &to, const string &text, cUser *other)
+{
+	ostringstream os;
 
 	if (!conn->mpUser->Can(eUR_PM, mS->mTime.Sec(), 0)) {
 		mS->DCPrivateHS(_("You're not allowed to use private chat right now."), conn, &to);
@@ -1756,7 +1777,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return 0;
 	}
 
-	if ((conn->mpUser->mClass + (int)mS->mC.classdif_pm) < other->mClass) {
+	if (other && ((conn->mpUser->mClass + (int)mS->mC.classdif_pm) < other->mClass)) {
 		os << _("You can't talk to this user.");
 		mS->DCPrivateHS(os.str(), conn);
 		mS->DCPublicHS(os.str(), conn);
@@ -1793,17 +1814,7 @@ int cDCProto::DC_To(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (mS->CheckProtoFloodAll(conn, ePFA_PRIV, other)) // protocol flood from all
-		return -1;
-
-	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgPM.CallAll(conn, msg))
-			return 0;
-	#endif
-
-	string _str(msg->mStr);
-	other->mxConn->Send(_str, true); // send it
-	return 0;
+	return 1;
 }
 
 int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
@@ -2599,7 +2610,7 @@ int cDCProto::DC_Search(cMessageDC *msg, cConnDC *conn)
 
 	if (passive) {
 		conn->mSRCounter = 0;
-	} else if (StrCompare(addr, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0) {
+	} else if (!CheckIP(conn, addr)) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
@@ -2807,7 +2818,7 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 
 	conn->mpUser->mSearchNumber++; // set counter last of all
 
-	if (StrCompare(addr, 0, conn->mAddrIP.size(), conn->mAddrIP) != 0) {
+	if (!CheckIP(conn, addr)) {
 		if (conn->Log(3))
 			conn->LogStream() << "Fixed wrong IP in $Search: " << addr << endl;
 
@@ -4167,10 +4178,10 @@ int cDCProto::ParseForCommands(string &text, cConnDC *conn, int pm)
 
 bool cDCProto::CheckIP(cConnDC *conn, const string &ip)
 {
-	if (StrCompare(ip, 0, conn->mAddrIP.size(), conn->mAddrIP) == 0)
+	if (ip == conn->mAddrIP)
 		return true;
 
-	if (conn->mRegInfo && ((conn->mRegInfo->mAlternateIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mAlternateIP.size(), conn->mRegInfo->mAlternateIP) == 0)) || (conn->mRegInfo->mFakeIP.size() && (StrCompare(ip, 0, conn->mRegInfo->mFakeIP.size(), conn->mRegInfo->mFakeIP) == 0))))
+	if (conn->mRegInfo && ((conn->mRegInfo->mAlternateIP.size() && (ip == conn->mRegInfo->mAlternateIP)) || (conn->mRegInfo->mFakeIP.size() && (ip == conn->mRegInfo->mFakeIP))))
 		return true;
 
 	return false;
@@ -4941,6 +4952,13 @@ void cDCProto::Lock2Key(const string &Lock, string &fkey)
 	char *key = 0;
 	char *lock = new char[len + 1];
 	UnEscapeChars(Lock, lock, len, true);
+
+	if (len < 2) {
+		delete [] lock;
+		fkey = "";
+		return;
+	}
+
 	key = new char[len + 1];
 	key[0] = lock[0] ^ lock[len - 1] ^ lock[len - 2] ^ 5;
 

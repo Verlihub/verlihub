@@ -237,7 +237,7 @@ namespace nVerliHub {
 
 				/// Start new connection, when dns_lookup is enabled this happens only after host name is known.
 				/// @return Same as OnNewConn(), negative value means connection must be closed.
-				int StartConn(cAsyncConn *conn);
+				virtual int StartConn(cAsyncConn *conn);
 
 				/// Look up host name on worker thread, when park is true connection is not started and its input is not read until result comes back.
 				/// @return False when lookup could not be queued, caller must then do it by itself.

@@ -28,6 +28,9 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <chrono>
+
+#define HTTP_MAX_TIME 600 // note: seconds for one attempt of request, from connect to end of reply
 
 struct ssl_st; // note: openssl types, so plugins do not need openssl headers
 struct ssl_ctx_st;
@@ -50,7 +53,8 @@ namespace nVerliHub {
 			eHTTP_FILE = -6, // note: download can not be written to file
 			eHTTP_CANCEL = -7, // note: hub is stopping
 			eHTTP_NETWORK = -8, // note: other network error, for example connection reset
-			eHTTP_BIND = -9 // note: source address from listen_ip can not be used
+			eHTTP_BIND = -9, // note: source address from listen_ip can not be used
+			eHTTP_REDIRECT = -10 // note: redirect is not followed, from https to http, or request data to other host
 		};
 
 		// reply of http request for scripts and plugins, runs on main thread, code is http status or negative tHTTPError with err text, body is file path for download
@@ -70,6 +74,9 @@ namespace nVerliHub {
 				// split http or https url into host, port and path, path keeps query and is / when url has none
 				static bool SplitUrl(const string &url, string &host, int &port, string &path, bool &tls);
 
+				// extra request headers are lines that each end with line break, without empty line
+				static bool ValidHead(const string &head);
+
 				/*
 					whole request, blocks calling thread, returns false when there is no reply, then code is negative tHTTPError and err tells why
 					note: follows at most 2 redirects, one for moved domain and one for rewrite rule on new server, then last reply is returned
@@ -77,8 +84,9 @@ namespace nVerliHub {
 					note: when file is given, body of 2xx reply goes to file instead of body, it is written to file.part first and renamed when complete
 					note: retry is number of extra attempts after timeout, network error and http 408, 429, 500, 502, 503 and 504, same as curl, with pause of 1, 2, 4 seconds and so on
 					note: post and other methods with data are tried again only when connection failed, so data is never sent twice
+					note: max is largest body kept in memory, body that goes to file has no such limit
 				*/
-				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0);
+				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0, size_t max = 67108864);
 
 				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice
 				static bool Download(const string &url, string &data);
@@ -129,11 +137,14 @@ namespace nVerliHub {
 				void SetSockError(int err, const string &what);
 
 				// one attempt of Fetch, sent tells that connection was made, so request data might have reached server
-				static bool FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, bool &sent);
+				static bool FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent);
 
 				string mHost;
 				unsigned int mPort;
 				unsigned int mTimeout; // note: seconds
+				std::chrono::steady_clock::time_point mStart = std::chrono::steady_clock::now(); // note: start of this attempt, see HTTP_MAX_TIME
+
+				bool TimeOver(); // note: sets timeout error when HTTP_MAX_TIME is over
 
 			private:
 				vector<char> mBuf;

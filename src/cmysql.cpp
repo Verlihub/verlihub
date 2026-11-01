@@ -180,6 +180,16 @@ bool cMySQL::TakeNotice(string &text)
 	return true;
 }
 
+bool cMySQL::Escape(const string &str, string &res) const
+{
+	if (!mDBHandle)
+		return false;
+
+	res.resize((str.size() * 2) + 1);
+	res.resize(mysql_real_escape_string(mDBHandle, &res[0], str.data(), str.size()));
+	return true;
+}
+
 void cMySQL::SplitHost(const string &addr, string &host, unsigned int &port)
 {
 	host = addr;

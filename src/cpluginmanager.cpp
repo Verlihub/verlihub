@@ -185,6 +185,15 @@ bool cPluginManager::UnloadPlugin(const string &name, bool remove)
 		return false;
 	}
 
+	if (plugin->mPlugin->Busy()) {
+		mLastLoadError = "Plugin is busy, please try again later.";
+
+		if (ErrLog(0))
+			LogStream() << "Plugin is busy, not unloaded: " << name << endl;
+
+		return false;
+	}
+
 	OnPluginUnload(plugin->mPlugin);
 
 	for (tCBList::iterator it = mCallBacks.begin(); it != mCallBacks.end(); ++it) {
@@ -302,6 +311,16 @@ cPluginBase * cPluginManager::GetPlugin(const string &Name)
 		return pi->mPlugin;
 	else
 		return NULL;
+}
+
+bool cPluginManager::HasPlugin(const cPluginBase *pi)
+{
+	for (tPlugins::iterator it = mPlugins.begin(); it != mPlugins.end(); ++it) {
+		if ((*it)->mPlugin == pi)
+			return true;
+	}
+
+	return false;
 }
 
 cPluginBase * cPluginManager::GetPluginByLib(const string &path)
