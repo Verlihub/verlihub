@@ -150,7 +150,7 @@ namespace nVerliHub {
 
 				/**
 				* Start the main loop.
-				* This ìs the method that calls OnTimerBase() and TimeStep()
+				* This is the method that calls OnTimerBase() and TimeStep()
 				* Run it until it is stopped or paused.
 				* @see TimeStep()
 				* @see OnTimerBase()
@@ -410,6 +410,12 @@ namespace nVerliHub {
 			* @return Zero if connection is accepted or a negative number otherwise.
 			*/
 			virtual int OnNewConn(cAsyncConn*);
+
+			/// Tls handshake of new connection is done, before it is started, false when connection was refused and closes.
+			virtual bool OnTLSHandshake(cAsyncConn *conn)
+			{
+				return true;
+			}
 
 			struct sTimers // structure that contains timers
 			{

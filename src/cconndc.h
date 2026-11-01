@@ -415,7 +415,7 @@ namespace nVerliHub {
 				void SetGeoZone(); // country code zone
 				int mGeoZone;
 				unsigned long mZoneWaitSent = 0; // note: bytes sent before zone was set, they are added to zone when it is known
-				bool mNewConnCalled = false; // note: plugins got OnNewConn, only then they get OnCloseConn, connection can be closed before, for example failed tls handshake
+				bool mNewConnCalled = false; // note: plugins got OnNewConn, only then they get OnCloseConn, connection can be closed before, for example connection of external tls proxy without $MyIP
 
 				/// Reason of why connection was closed.
 				int mCloseReason;

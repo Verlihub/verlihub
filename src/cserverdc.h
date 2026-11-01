@@ -875,11 +875,25 @@ protected: // Protected methods
 	int OnNewConn(cAsyncConn *);
 
 	/**
-	* Start new connection, limits connections from same IP address that did not finish login, see adv_conn_accept_ip.
+	* Start new connection, plugins get OnNewConn here, then connections from same IP address that did not finish login are limited, see adv_conn_accept_ip.
 	* @param conn New connection, its IP address is final, also behind external TLS proxy.
 	* @return Same as OnNewConn(), negative value means connection must be closed.
 	*/
 	int StartConn(cAsyncConn *conn) override;
+
+	/**
+	* Plugins get OnTLSHandshake when tls handshake of new connection is done.
+	* @param conn New connection.
+	* @return False when plugin refused it, connection closes by itself.
+	*/
+	bool OnTLSHandshake(cAsyncConn *conn) override;
+
+	/**
+	* Close connection that plugin refused, data that plugin sent to it goes out first.
+	* @param conn Refused connection.
+	* @return True when connection still sends data and closes by itself, false when it is closed now.
+	*/
+	bool RefuseConn(cConnDC *conn);
 
 	/**
 	* This method is triggered when there is a new incoming message.
@@ -942,6 +956,7 @@ private:
 	{
 		sCallBacks(cVHPluginMgr *mgr):
 			mOnNewConn(mgr, "VH_OnNewConn", &cVHPlugin::OnNewConn),
+			mOnTLSHandshake(mgr, "VH_OnTLSHandshake", &cVHPlugin::OnTLSHandshake),
 			mOnCloseConn(mgr, "VH_OnCloseConn", &cVHPlugin::OnCloseConn),
 			mOnCloseConnEx(mgr, "VH_OnCloseConnEx", &cVHPlugin::OnCloseConnEx),
 			mOnUnknownMsg(mgr, "VH_OnUnknownMsg", &cVHPlugin::OnUnknownMsg),
@@ -990,6 +1005,7 @@ private:
 		{};
 
 		cVHCBL_Connection mOnNewConn;
+		cVHCBL_Connection mOnTLSHandshake;
 		cVHCBL_Connection mOnCloseConn;
 		cVHCBL_Connection mOnCloseConnEx;
 		cVHCBL_Message mOnUnknownMsg;

@@ -44,6 +44,7 @@ public:
 	virtual void OnLoad(cServerDC *);
 	virtual bool RegisterAll();
 	virtual bool OnNewConn(nSocket::cConnDC *);
+	virtual bool OnTLSHandshake(nSocket::cConnDC *);
 	virtual bool OnCloseConn(nSocket::cConnDC *);
 	virtual bool OnCloseConnEx(nSocket::cConnDC *);
 	virtual bool OnParsedMsgChat(nSocket::cConnDC *, nProtocol::cMessageDC *);

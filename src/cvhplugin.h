@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -109,6 +109,14 @@ public:
 	* return = Return false to close the connection otherwise return true.
 	*/
 	virtual bool OnNewConn(nSocket::cConnDC* conn) {return true;}
+
+	/*
+	* Event handler function that is called when tls handshake of new connection is done, only for tls connections, before $Lock.
+	* Use RegisterCallBack("VH_OnTLSHandshake") to register it. This event can be discarded.
+	* conn = The new connection, its tls version is in mTLSVer.
+	* return = Return false to close the connection otherwise return true.
+	*/
+	virtual bool OnTLSHandshake(nSocket::cConnDC* conn) {return true;}
 
 	//! Event handler function that is called when a connection is closed
 	/*!

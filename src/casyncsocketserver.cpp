@@ -569,8 +569,13 @@ void cAsyncSocketServer::TLSDetected(cAsyncConn *conn, bool tls)
 
 void cAsyncSocketServer::TLSReady(cAsyncConn *conn)
 {
-	if (conn->mStartWait & cAsyncConn::eSW_HANDSHAKE)
-		StartWaitDone(conn, cAsyncConn::eSW_HANDSHAKE);
+	if (!(conn->mStartWait & cAsyncConn::eSW_HANDSHAKE))
+		return;
+
+	if (!OnTLSHandshake(conn)) // note: connection was refused, it closes by itself
+		return;
+
+	StartWaitDone(conn, cAsyncConn::eSW_HANDSHAKE);
 }
 
 bool cAsyncSocketServer::PostTLS(cAsyncConn *conn, const shared_ptr<nSocket::cTLSSession> &session, const string &data)

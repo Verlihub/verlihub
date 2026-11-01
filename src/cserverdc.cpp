@@ -1176,7 +1176,20 @@ int cServerDC::StartConn(cAsyncConn *nc)
 {
 	cConnDC *conn = (cConnDC*)nc;
 
-	if (conn && conn->ok && mC.conn_accept_ip) { // note: oldest connection is closed, not new one, so new attempt of real user always gets in
+	if (!conn)
+		return -1;
+
+	#ifndef WITHOUT_PLUGINS
+		conn->mNewConnCalled = true; // note: also when plugin refuses it, plugin saw it, so it gets close too
+
+		if (!mCallBacks.mOnNewConn.CallAll(conn)) // note: right after accept, before tls detection, handshake and host lookup, so refused client sees nothing of hub
+			return (RefuseConn(conn) ? 0 : -1);
+
+		if (conn->mTLSVer.size() && (conn->mTLSVer != "0.0") && !mCallBacks.mOnTLSHandshake.CallAll(conn)) // note: external tls proxy already did handshake
+			return (RefuseConn(conn) ? 0 : -1);
+	#endif
+
+	if (conn->ok && mC.conn_accept_ip) { // note: oldest connection is closed, not new one, so new attempt of real user always gets in
 		const unsigned long addr = conn->AddrToNumber();
 		cConnDC *oldest = NULL;
 		unsigned int tot = 0;
@@ -1196,6 +1209,37 @@ int cServerDC::StartConn(cAsyncConn *nc)
 	}
 
 	return cAsyncSocketServer::StartConn(nc);
+}
+
+bool cServerDC::OnTLSHandshake([[maybe_unused]] cAsyncConn *nc)
+{
+	#ifndef WITHOUT_PLUGINS
+		cConnDC *conn = (cConnDC*)nc;
+
+		if (conn && conn->ok && !mCallBacks.mOnTLSHandshake.CallAll(conn)) {
+			RefuseConn(conn);
+			return false;
+		}
+	#endif
+
+	return true;
+}
+
+bool cServerDC::RefuseConn(cConnDC *conn)
+{
+	if (conn->ok && (conn->GetFlushSize() || conn->GetBufferSize())) { // note: data that plugin or script sent goes out before close, without redirect
+		conn->Flush();
+
+		if (conn->ok) {
+			conn->CloseNice(1000, eCR_NOREDIR);
+
+			if (conn->ok)
+				return true;
+		}
+	}
+
+	conn->CloseNow(eCR_PLUGIN);
+	return false;
 }
 
 int cServerDC::OnNewConn(cAsyncConn *nc)
@@ -1233,13 +1277,6 @@ int cServerDC::OnNewConn(cAsyncConn *nc)
 		conn->CloseNice(500, eCR_NOREDIR); // wait before closing
 		return 0; // note: connection closes by itself, caller must not delete it
 	}
-
-	#ifndef WITHOUT_PLUGINS
-		conn->mNewConnCalled = true; // note: also when plugin refuses it, plugin saw it, so it gets close too
-
-		if (!mCallBacks.mOnNewConn.CallAll(conn)) // note: called before sending lock
-			return -1;
-	#endif
 
 	conn->SetGeoZone(); // set zone once on connect
 	conn->mLock.append("EXTENDEDPROTOCOL_NMDC_"); // todo: EscapeChars with DCN when dynamic data added

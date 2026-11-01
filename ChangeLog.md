@@ -22,6 +22,7 @@
 * Hub messages are translated also when dbconfig locale is not installed
 * Configuration classdif_rights for rights and restrictions commands
 * Configuration adv_conn_accept_ip, limit of connections from same IP address that did not finish login
+* Event OnTLSHandshake for plugins and Lua, called when TLS handshake of new connection is done
 
 ## Updated
 
@@ -169,6 +170,8 @@
 * HTTP request from UnLoad of script during Lua plugin unload could crash hub
 * Trigger file path that was empty after filtering crashed hub
 * Lua call VH:GetUserHost with dns_lookup 0 blocked hub during lookup
+* Plugins and scripts got OnNewConn only after TLS detection, handshake and host lookup
+* Data that plugin or script sent to refused new connection was not sent
 
 ## Removed
 

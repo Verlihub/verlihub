@@ -137,6 +137,7 @@ void cpiLua::OnLoad(cServerDC *serv)
 bool cpiLua::RegisterAll()
 {
 	RegisterCallBack("VH_OnNewConn");
+	RegisterCallBack("VH_OnTLSHandshake");
 	RegisterCallBack("VH_OnCloseConn");
 	RegisterCallBack("VH_OnCloseConnEx");
 	RegisterCallBack("VH_OnParsedMsgChat");
@@ -286,6 +287,20 @@ bool cpiLua::OnNewConn(cConnDC *conn)
 	}
 
 	return res;
+}
+
+bool cpiLua::OnTLSHandshake(cConnDC *conn)
+{
+	if (!conn)
+		return true;
+
+	const char *args[] = {
+		conn->AddrIP().c_str(),
+		conn->mTLSVer.c_str(),
+		NULL
+	};
+
+	return CallAll("VH_OnTLSHandshake", args, conn);
 }
 
 bool cpiLua::OnCloseConn(cConnDC *conn)
