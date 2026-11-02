@@ -242,6 +242,11 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Total upload: %s / %s"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
 	os << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with ZLib: %s / %d / %s / %s"), convertByte(mServer->mProtoSaved[0]).c_str(), cZLib::Level(mServer->mC.zlib_compress_level), convertByte(mServer->mZLib->GetInBufLen()).c_str(), convertByte(mServer->mZLib->GetOutBufLen()).c_str()) << "\r\n";
+
+	for (size_t pos = 0; pos < cZLib::sCacheSize; pos++) // note: 1 is most recently used data
+		os << " [*] " << autosprintf(_("ZLib cache %u: %llu hits"), (unsigned int)(pos + 1), mServer->mZLib->CacheHits(pos)) << "\r\n";
+
+	os << " [*] " << autosprintf(_("ZLib cache misses: %llu"), mServer->mZLib->CacheMisses()) << "\r\n";
 	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
 }
 

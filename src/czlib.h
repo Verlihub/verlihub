@@ -54,39 +54,56 @@ namespace nUtils {
 
 			/**
 			* Compress the given data.
-			* If there are available data in the internal buffer,
-			* the given data is appended after the data and then
-			* compression is performed.
+			* Result of same data compressed recently is taken from cache.
 			*
 			* @param buffer Pointer to buffer data.
 			* @param len Data length.
 			* @param outLen Length of compressed data.
-			* @return Pointer to compressed data.
+			* @param cached Set when result was taken from cache.
+			* @return Pointer to compressed data, valid until next call, NULL when compressed data is not smaller or compression failed.
 			*/
-			char* Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level);
+			const char* Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level, bool &cached);
 
 			// level that zlib really uses for configured level, from 1 to 9
 			static int Level(int level);
 
-			// get buffer sizes
-			size_t GetInBufLen()
+			// memory of cached data and of compression buffer
+			size_t GetInBufLen() const;
+			size_t GetOutBufLen() const;
+
+			// note: position 0 is most recently used data, so hits by position show how many entries are useful
+			static constexpr size_t sCacheSize = 8;
+
+			unsigned long long CacheHits(size_t pos) const
 			{
-				return inBufLen;
+				return ((pos < sCacheSize) ? mCacheHits[pos] : 0);
 			}
-			size_t GetOutBufLen()
+
+			unsigned long long CacheMisses() const
 			{
-				return outBufLen;
+				return mCacheMisses;
 			}
 		private:
-			// in buffer
-			char *inBuf;
-			size_t inBufLen;
-			size_t inLastLen;
-
 			// out buffer
 			char *outBuf;
 			size_t outBufLen;
-			size_t outLastLen;
+
+			// note: recent different data with its result, users without own data in a flush get same data as others of same group, so it is compressed once per group
+			struct sCache
+			{
+				size_t mHash = 0;
+				int mLevel = 0;
+				string mIn;
+				string mOut; // note: compressed data with "$ZOn|" in front, empty when it is not smaller
+				size_t mOutLen = 0;
+				unsigned long long mUsed = 0; // note: 0 = empty, else order of last use
+			};
+
+			static constexpr size_t sCacheMax = 65536; // note: bigger data is not kept, so cache takes at most about 1 mb
+			sCache mCache[sCacheSize];
+			unsigned long long mCacheUse = 0;
+			unsigned long long mCacheHits[sCacheSize] = {};
+			unsigned long long mCacheMisses = 0; // note: every real compression, also of data too big for cache
 
 			// note: one deflate stream for all flushes, reset is much cheaper than setting it up, type is z_stream, so zlib.h is not needed here
 			void *mStream = NULL;

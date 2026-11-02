@@ -45,6 +45,7 @@
 * Command !sysinfo on BSD without "ps"
 * Login no longer flushes data of all users at once
 * ZLib reuses one compression stream
+* ZLib compresses same data for many users only once
 * LAN detection, GeoIP and IP zones use IP number of connection
 * Partial send no longer copies unsent data every time
 * Delayed messages to slow user wait for writable socket
@@ -76,6 +77,7 @@
 * Operator chat commands +invite and +out need opchat_class
 * Below master class plugins and scripts are loaded only from plugin and scripts folders
 * Configuration max_class_int_login defaults to 2, operators are not blocked by int_login
+* Configuration zlib_min_len defaults to 300, shorter data saves almost nothing
 
 ## Fixed
 

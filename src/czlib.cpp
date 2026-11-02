@@ -23,21 +23,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string_view>
+#include <functional>
 
 namespace nVerliHub {
 	namespace nUtils {
 
 cZLib::cZLib():
-	inBufLen(ZLIB_BUFFER_SIZE),
-	inLastLen(0),
-	outBufLen(ZLIB_BUFFER_SIZE),
-	outLastLen(0)
+	outBufLen(0)
 {
-	inBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
 	outBuf = (char*)calloc(ZLIB_BUFFER_SIZE, 1);
 
-	if (outBuf)
+	if (outBuf) {
 		memcpy(outBuf, "$ZOn|", ZON_LEN);
+		outBufLen = ZLIB_BUFFER_SIZE;
+	}
 }
 
 cZLib::~cZLib()
@@ -46,9 +46,26 @@ cZLib::~cZLib()
 
 	if (outBuf)
 		free(outBuf);
+}
 
-	if (inBuf)
-		free(inBuf);
+size_t cZLib::GetInBufLen() const
+{
+	size_t size = 0;
+
+	for (const sCache &ent: mCache)
+		size += ent.mIn.capacity();
+
+	return size;
+}
+
+size_t cZLib::GetOutBufLen() const
+{
+	size_t size = outBufLen;
+
+	for (const sCache &ent: mCache)
+		size += ent.mOut.capacity();
+
+	return size;
 }
 
 void cZLib::EndStream()
@@ -76,39 +93,44 @@ int cZLib::Level(int level)
 	return level;
 }
 
-char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level) // todo: do this in separate thread
+const char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, int level, bool &cached) // todo: do this in separate thread
 {
+	cached = false;
+	outLen = 0;
+
 	if (!buffer)
 		return NULL;
 
-	/*
-		check if we are compressing same data as last time
-		then return last compressed buffer to save resources
-	*/
-
-	if (inLastLen && outLastLen && (len == inLastLen) && inBuf && (memcmp(buffer, inBuf, len) == 0)) {
-		outLen = outLastLen;
-
-		if (len <= outLastLen) // fall back already here
-			return NULL;
-		else
-			return outBuf;
-	}
-
-	if (inBufLen < len) // increase in buffer if not enough space
-		for (; inBufLen < len; inBufLen += ZLIB_BUFFER_SIZE);
-
-	char *new_buf = (char*)realloc(inBuf, inBufLen);
-
-	if (!new_buf) {
-		// note: failed realloc keeps old buffer, inBuf still points to it and next call uses it again, so it is not freed here
-		outLen = inLastLen = outLastLen = 0;
-		err = -inBufLen; // note: special message
-		return NULL;
-	}
-
-	inBuf = new_buf;
 	const int comp_level = Level(level);
+	const bool keep = (len <= sCacheMax);
+	size_t hash = 0;
+
+	if (keep) { // note: same data was compressed recently, its result is used again
+		hash = std::hash<std::string_view>()(std::string_view(buffer, len));
+
+		for (sCache &ent: mCache) {
+			if (ent.mUsed && (ent.mHash == hash) && (ent.mLevel == comp_level) && (ent.mIn.size() == len) && (memcmp(ent.mIn.data(), buffer, len) == 0)) {
+				size_t pos = 0; // note: number of entries used after this one
+
+				for (const sCache &cur: mCache) {
+					if (cur.mUsed > ent.mUsed)
+						pos++;
+				}
+
+				mCacheHits[pos]++;
+				ent.mUsed = ++mCacheUse;
+				cached = true;
+				outLen = ent.mOutLen;
+
+				if (len <= outLen) // note: compressed data is not smaller, fall back to raw data
+					return NULL;
+
+				return ent.mOut.data();
+			}
+		}
+	}
+
+	mCacheMisses++;
 	z_stream *strm = (z_stream*)mStream;
 
 	if (strm && (mStreamLevel != comp_level)) // note: level was changed, stream is made again
@@ -119,7 +141,6 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 
 		if (err != Z_OK) {
 			EndStream();
-			outLen = inLastLen = outLastLen = 0;
 			return NULL;
 		}
 
@@ -132,7 +153,6 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 
 		if (err != Z_OK) { // initialize
 			delete strm;
-			outLen = inLastLen = outLastLen = 0;
 			return NULL;
 		}
 
@@ -140,37 +160,53 @@ char *cZLib::Compress(const char *buffer, size_t len, size_t &outLen, int &err, 
 		mStreamLevel = comp_level;
 	}
 
-	memcpy(inBuf, buffer, len); // copy data to in buffer
-
 	if (outBufLen < len) { // increase out buffer if not enough space, note: compressed data bigger than input falls back to raw data anyway
 		size_t want = outBufLen;
 
 		for (; want < len; want += ZLIB_BUFFER_SIZE);
 
-		char *new_out = (char*)realloc(outBuf, want); // note: buffer itself must grow, deflate writes up to its size, "$ZOn|" at start stays
+		char *new_out = (char*)realloc(outBuf, want); // note: buffer itself must grow, deflate writes up to its size
 
 		if (!new_out) { // note: stream stays for next time
-			outLen = inLastLen = outLastLen = 0;
 			err = -int(want); // note: special message
 			return NULL;
 		}
 
 		outBuf = new_out;
 		outBufLen = want;
+		memcpy(outBuf, "$ZOn|", ZON_LEN); // note: buffer can be new when first one was not allocated
 	}
 
 	strm->avail_in = (uInt)len;
-	strm->next_in = (Bytef*)inBuf;
+	strm->next_in = (Bytef*)buffer; // note: deflate only reads input
 	strm->avail_out = (uInt)(outBufLen - ZON_LEN);
 	strm->next_out = (Bytef*)(outBuf + ZON_LEN);
 
-	if (deflate(strm, Z_FINISH) != Z_STREAM_END) { // compress, note: data that does not fit ends here too, reset next time makes stream usable again
-		outLen = inLastLen = outLastLen = 0;
+	if (deflate(strm, Z_FINISH) != Z_STREAM_END) // compress, note: data that does not fit ends here too, reset next time makes stream usable again
 		return NULL;
-	}
 
-	outLen = outLastLen = (strm->total_out + ZON_LEN); // note: reset sets total to zero, so this is only this data
-	inLastLen = len;
+	outLen = (strm->total_out + ZON_LEN); // note: reset sets total to zero, so this is only this data
+
+	if (keep) { // note: least recently used or empty entry is replaced
+		sCache *ent = &mCache[0];
+
+		for (sCache &cur: mCache) {
+			if (cur.mUsed < ent->mUsed)
+				ent = &cur;
+		}
+
+		ent->mHash = hash;
+		ent->mLevel = comp_level;
+		ent->mIn.assign(buffer, len);
+		ent->mOutLen = outLen;
+
+		if (len > outLen)
+			ent->mOut.assign(outBuf, outLen);
+		else
+			ent->mOut.clear();
+
+		ent->mUsed = ++mCacheUse;
+	}
 
 	if (len <= outLen) // out data size is bigger or equal in data size, fall back to raw data
 		return NULL;

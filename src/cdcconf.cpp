@@ -380,7 +380,7 @@ void cDCConf::AddVars()
 	Add("delayed_ping", delayed_ping, 60);
 	Add("disable_zlib", disable_zlib, true);
 	Add("zlib_compress_level", zlib_compress_level, int(Z_DEFAULT_COMPRESSION));
-	Add("zlib_min_len", zlib_min_len, 100);
+	Add("zlib_min_len", zlib_min_len, 300);
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
 	Add("myinfo_tls_filter", myinfo_tls_filter, false);

@@ -78,6 +78,7 @@ cAsyncSocketServer::cAsyncSocketServer(string CfgBase, int port):
 	mProfRead = mProfiler.Id("Network read");
 	mProfWrite = mProfiler.Id("Network write");
 	mProfZLib = mProfiler.Id("Network zlib");
+	mProfZLibCached = mProfiler.Id("Network zlib cached");
 	mProfTLS = mProfiler.Id("Network TLS");
 	mProfSend = mProfiler.Id("Network send");
 	mProfAccept = mProfiler.Id("Accept");

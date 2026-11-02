@@ -244,6 +244,7 @@ namespace nVerliHub {
 
 				/// Profiler sections of compression, encryption and socket send, nested in write section.
 				unsigned int mProfZLib = 0;
+				unsigned int mProfZLibCached = 0;
 				unsigned int mProfTLS = 0;
 				unsigned int mProfSend = 0;
 

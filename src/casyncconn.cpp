@@ -1059,7 +1059,11 @@ int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data c
 
 				{
 					cProfileScope zprof(&serv->mProfiler, serv->mProfZLib);
-					zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
+					bool cached = false;
+					zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level, cached);
+
+					if (cached)
+						zprof.SetId(serv->mProfZLibCached);
 				}
 
 				if (calc_size && zlib_buf) { // compression successful
