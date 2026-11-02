@@ -148,6 +148,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("HTTPGet", &_HTTPGet);
 	RegisterFunction("HTTPPost", &_HTTPPost);
 	RegisterFunction("HTTPDownload", &_HTTPDownload);
+	RegisterFunction("HTTPVersion", &_HTTPVersion);
 
 	cServerDC *serv = cServerDC::sCurrentServer;
 

@@ -81,6 +81,7 @@ namespace nVerliHub {
 	bool HTTPGet(const string &url, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
 	bool HTTPPost(const string &url, const string &data, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
 	bool HTTPDownload(const string &url, const string &file, const string &head, unsigned int timeout, const nPlugin::cPluginBase *owner, nSocket::tHTTPDone done, unsigned long &id, string &err, unsigned int retry = 0);
+	unsigned int HTTPVersion(); // note: version of http client in running hub, see nSocket::cHTTPConn::sVersion
 	int CheckBotNick(const string &nick);
 	bool CheckDataPipe(const string &data);
 

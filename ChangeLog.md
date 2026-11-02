@@ -16,7 +16,7 @@
 * Windows support using MinGW-w64, see Install.md
 * CMake package configuration for plugins built outside of Verlihub source
 * Native TLS using OpenSSL, plain and encrypted clients on same port
-* Lua calls VH:HTTPGet, VH:HTTPPost and VH:HTTPDownload, configuration adv_http_threads, see Wiki
+* Lua calls VH:HTTPGet, VH:HTTPPost, VH:HTTPDownload and VH:HTTPVersion, configuration adv_http_threads, see Wiki
 * Commands !getvar and !getconfig with file name list unused variables separately
 * CMake target POT and Transifex integration
 * Hub messages are translated also when dbconfig locale is not installed

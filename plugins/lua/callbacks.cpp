@@ -3389,6 +3389,13 @@ int _HTTPDownload(lua_State *L)
 	return LuaHTTP(L, "HTTPDownload", 2);
 }
 
+int _HTTPVersion(lua_State *L) // note: res, num = VH:HTTPVersion (), version of http client, see nSocket::cHTTPConn::sVersion
+{
+	lua_pushboolean(L, 1);
+	lua_pushinteger(L, (lua_Integer)HTTPVersion());
+	return 2;
+}
+
 void luaerror(lua_State *L, const char *errstr)
 {
 	lua_pushboolean(L, 0);

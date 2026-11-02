@@ -69,6 +69,9 @@ namespace nVerliHub {
 		class cHTTPConn
 		{
 			public:
+				// version of http client, one number that is raised when client gets new ability, plugins and scripts check it with HTTPVersion
+				static constexpr unsigned int sVersion = 1;
+
 				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL, bool tls = false, unsigned int timeout = 5); // note: cancel lets other thread abort blocking connection, tls is for https, timeout is seconds without data
 
 				// split http or https url into host, port and path, path keeps query and is / when url has none

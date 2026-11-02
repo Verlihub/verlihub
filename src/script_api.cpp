@@ -1072,6 +1072,11 @@ bool HTTPDownload(const string &url, const string &file, const string &head, uns
 	return serv->HTTPRequest("GET", url, head, "", file, timeout, retry, owner, done, id, err);
 }
 
+unsigned int HTTPVersion()
+{
+	return nSocket::cHTTPConn::sVersion;
+}
+
 int CheckBotNick(const string &nick)
 {
 	/*
