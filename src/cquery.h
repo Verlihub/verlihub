@@ -51,7 +51,7 @@ class cQuery : public cObj
 		MYSQL_ROW Row();
 		// return the number of colums in the query result
 		int Cols();
-		// seek data row by the given number
+		// seek data row by the given number, nothing to do when it is the next row
 		void DataSeek(unsigned long long);
 		// is there an existing result?
 		bool GetResult();
@@ -61,6 +61,7 @@ class cQuery : public cObj
 	private:
 		cMySQL & mMySQL;
 		MYSQL_RES *mResult;
+		unsigned long long mRowPos = 0; // note: number of row that next fetch returns, seek in client library walks all rows from first one
 		//string mQuery;
 		ostringstream mOS;
 };

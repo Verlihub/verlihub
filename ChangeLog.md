@@ -46,6 +46,7 @@
 * Login no longer flushes data of all users at once
 * ZLib reuses one compression stream
 * ZLib compresses same data for many users only once
+* Lua call VH:SQLFetch reads next row without walking all rows before it
 * LAN detection, GeoIP and IP zones use IP number of connection
 * Partial send no longer copies unsent data every time
 * Delayed messages to slow user wait for writable socket

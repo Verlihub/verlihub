@@ -98,6 +98,8 @@ int cQuery::StoreResult()
 	cProfiler *prof = mMySQL.mProfiler;
 	cProfileScope scope(prof, ((prof && prof->mEnabled) ? prof->QueryId() : 0), false); // note: rows of same query, so it is not counted as another call
 	mResult = mysql_store_result(mMySQL.mDBHandle);
+	mRowPos = 0;
+
 	if (mResult != NULL)
 		return mysql_num_rows(mResult);
 	else return 0;
@@ -105,8 +107,15 @@ int cQuery::StoreResult()
 
 MYSQL_ROW cQuery::Row()
 {
-	if(!mResult) return NULL;
-	return mysql_fetch_row(mResult);
+	if (!mResult)
+		return NULL;
+
+	MYSQL_ROW row = mysql_fetch_row(mResult);
+
+	if (row)
+		mRowPos++;
+
+	return row;
 }
 
 int cQuery::Cols()
@@ -116,7 +125,11 @@ int cQuery::Cols()
 
 void cQuery::DataSeek(unsigned long long r)
 {
+	if (!mResult || (r == mRowPos)) // note: loop over all rows asks for next row each time, so walk from first row is not needed
+		return;
+
 	mysql_data_seek(mResult, r);
+	mRowPos = r;
 }
 
 bool cQuery::GetResult()
