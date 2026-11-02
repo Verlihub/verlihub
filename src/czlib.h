@@ -67,12 +67,17 @@ namespace nUtils {
 			// level that zlib really uses for configured level, from 1 to 9
 			static int Level(int level);
 
-			// memory of cached data and of compression buffer
-			size_t GetInBufLen() const;
-			size_t GetOutBufLen() const;
+			// memory of cached data
+			size_t GetCacheSize() const;
+
+			// memory of compression buffer
+			size_t GetBufferSize() const
+			{
+				return outBufLen;
+			}
 
 			// note: position 0 is most recently used data, so hits by position show how many entries are useful
-			static constexpr size_t sCacheSize = 8;
+			static constexpr size_t sCacheSize = 16;
 
 			unsigned long long CacheHits(size_t pos) const
 			{
@@ -99,7 +104,7 @@ namespace nUtils {
 				unsigned long long mUsed = 0; // note: 0 = empty, else order of last use
 			};
 
-			static constexpr size_t sCacheMax = 65536; // note: bigger data is not kept, so cache takes at most about 1 mb
+			static constexpr size_t sCacheMax = 65536; // note: bigger data is not kept, so cache takes at most about 2 mb
 			sCache mCache[sCacheSize];
 			unsigned long long mCacheUse = 0;
 			unsigned long long mCacheHits[sCacheSize] = {};

@@ -26,6 +26,7 @@
 * Command "verlihub --tlscert" creates new TLS certificate same way as hub does
 * Configuration adv_enable_profiler and command !procinfo, time of hub work and threads
 * Lua call VH:SQLWrite, see Wiki
+* Command !zlibinfo, ZLib compression and cache
 
 ## Updated
 

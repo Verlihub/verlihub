@@ -48,22 +48,12 @@ cZLib::~cZLib()
 		free(outBuf);
 }
 
-size_t cZLib::GetInBufLen() const
+size_t cZLib::GetCacheSize() const
 {
 	size_t size = 0;
 
 	for (const sCache &ent: mCache)
-		size += ent.mIn.capacity();
-
-	return size;
-}
-
-size_t cZLib::GetOutBufLen() const
-{
-	size_t size = outBufLen;
-
-	for (const sCache &ent: mCache)
-		size += ent.mOut.capacity();
+		size += ent.mIn.capacity() + ent.mOut.capacity();
 
 	return size;
 }

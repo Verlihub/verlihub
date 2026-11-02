@@ -70,7 +70,7 @@ cDCConsole::cDCConsole(cServerDC *s):
 	mCmdCmd(int(eCM_CMD),".cmd(\\S+)","(.*)", &mFunCmd),
 	mCmdWho(int(eCM_WHO), ".w(ho)?(\\S+) ", "(.*)", &mFunWho),
 	mCmdKick(int(eCM_KICK), ".(kick|drop|vipgag|vipungag) ", "(\\S+)( (.*)$)?", &mFunKick), // eUR_KICK
-	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|buf|buffer|mmdb|geoip|proc|process)info ?", "(\\S+)?", &mFunInfo),
+	mCmdInfo(int(eCM_INFO), ".(hub|serv|server|sys|system|os|port|url|huburl|prot|proto|protocol|buf|buffer|mmdb|geoip|proc|process|zlib)info ?", "(\\S+)?", &mFunInfo),
 	mCmdPlug(int(eCM_PLUG), ".plug(in|out|list|reg|call|calls|callback|callbacks|reload) ?", "(\\S+)?( (.*)$)?", &mFunPlug),
 	mCmdReport(int(eCM_REPORT),".report ","(\\S+)( (.*)$)?", &mFunReport),
 	mCmdBc(int(eCM_BROADCAST),".(bc|broadcast|ops|regs|guests|vips|cheefs|admins|masters)( |\\r\\n)","(.*)$", &mFunBc),
@@ -2238,7 +2238,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_PROTOCOL,
 		eINFO_BUFFER,
 		eINFO_MMDB,
-		eINFO_PROCESS
+		eINFO_PROCESS,
+		eINFO_ZLIB
 	};
 
 	static const char *infonames[] = {
@@ -2249,7 +2250,8 @@ bool cDCConsole::cfInfo::operator()()
 		"prot", "proto", "protocol",
 		"buf", "buffer",
 		"mmdb", "geoip",
-		"proc", "process"
+		"proc", "process",
+		"zlib"
 	};
 
 	static const int infoids[] = {
@@ -2260,7 +2262,8 @@ bool cDCConsole::cfInfo::operator()()
 		eINFO_PROTOCOL, eINFO_PROTOCOL, eINFO_PROTOCOL,
 		eINFO_BUFFER, eINFO_BUFFER,
 		eINFO_MMDB, eINFO_MMDB,
-		eINFO_PROCESS, eINFO_PROCESS
+		eINFO_PROCESS, eINFO_PROCESS,
+		eINFO_ZLIB
 	};
 
 	string tmp;
@@ -2285,6 +2288,9 @@ bool cDCConsole::cfInfo::operator()()
 			break;
 		case eINFO_BUFFER:
 			mInfoServer.BufferInfo(*mOS);
+			break;
+		case eINFO_ZLIB:
+			mInfoServer.ZLibInfo(*mOS);
 			break;
 		case eINFO_SERVER:
 			mInfoServer.SystemInfo(*mOS);

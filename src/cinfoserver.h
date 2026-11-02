@@ -48,6 +48,7 @@ class cInfoServer: public nConfig::cConfigBase
 		void PortInfo(ostream &os);
 		void ProtocolInfo(ostream &os);
 		void BufferInfo(ostream &os);
+		void ZLibInfo(ostream &os);
 		void HubURLInfo(ostream &os);
 		void SystemInfo(ostream &os);
 		void SetServer(nSocket::cServerDC *Server);

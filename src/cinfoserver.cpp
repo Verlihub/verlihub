@@ -241,13 +241,31 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Total download: %s / %s"), convertByte(mServer->mProtoTotal[0]).c_str(), convertByte(mServer->mDownloadZone.GetMean(mServer->mTime), true).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Total upload: %s / %s"), convertByte(mServer->mProtoTotal[1]).c_str(), convertByte(total_up, true).c_str()) << "\r\n";
 	os << "\r\n";
-	os << " [*] " << autosprintf(_("Upload saved with ZLib: %s / %d / %s / %s"), convertByte(mServer->mProtoSaved[0]).c_str(), cZLib::Level(mServer->mC.zlib_compress_level), convertByte(mServer->mZLib->GetInBufLen()).c_str(), convertByte(mServer->mZLib->GetOutBufLen()).c_str()) << "\r\n";
+	if (!mServer->mC.disable_zlib)
+		os << " [*] " << autosprintf(_("Upload saved with ZLib: %s"), convertByte(mServer->mProtoSaved[0]).c_str()) << "\r\n";
+
+	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
+}
+
+void cInfoServer::ZLibInfo(ostream &os)
+{
+	if (mServer->mC.disable_zlib) {
+		os << _("ZLib compression is disabled.");
+		return;
+	}
+
+	os << _("ZLib information") << ":\r\n";
+	os << "\r\n";
+	os << " [*] " << autosprintf(_("Upload saved with ZLib: %s"), convertByte(mServer->mProtoSaved[0]).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Compression level: %d"), cZLib::Level(mServer->mC.zlib_compress_level)) << "\r\n";
+	os << " [*] " << autosprintf(_("Cache memory: %s"), convertByte(mServer->mZLib->GetCacheSize()).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Compression buffer: %s"), convertByte(mServer->mZLib->GetBufferSize()).c_str()) << "\r\n";
+	os << "\r\n";
 
 	for (size_t pos = 0; pos < cZLib::sCacheSize; pos++) // note: 1 is most recently used data
-		os << " [*] " << autosprintf(_("ZLib cache %u: %llu hits"), (unsigned int)(pos + 1), mServer->mZLib->CacheHits(pos)) << "\r\n";
+		os << " [*] " << autosprintf(_("Cache %u: %llu hits"), (unsigned int)(pos + 1), mServer->mZLib->CacheHits(pos)) << "\r\n";
 
-	os << " [*] " << autosprintf(_("ZLib cache misses: %llu"), mServer->mZLib->CacheMisses()) << "\r\n";
-	os << " [*] " << autosprintf(_("Upload saved with TTHS: %s"), convertByte(mServer->mProtoSaved[1]).c_str()) << "\r\n";
+	os << " [*] " << autosprintf(_("Cache misses: %llu"), mServer->mZLib->CacheMisses()) << "\r\n";
 }
 
 void cInfoServer::BufferInfo(ostream &os)

@@ -142,6 +142,7 @@
 	!sysinfo					- System information
 	!protinfo					- Protocol information
 	!bufinfo					- Buffer information
+	!zlibinfo					- ZLib information
 	!portinfo					- Port information
 	!urlinfo					- URL information
 	!mmdbinfo					- MaxMindDB information
