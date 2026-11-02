@@ -592,6 +592,7 @@ bool cAsyncConn::AppendSend(const char *data, size_t len)
 	}
 
 	if (mTLS) {
+		cProfileScope prof((mxServer ? &mxServer->mProfiler : NULL), (mxServer ? mxServer->mProfTLS : 0));
 		string out, err;
 		const bool good = mTLS->Encrypt(data, len, out, err);
 		mBufSend.append(out);
@@ -1038,7 +1039,7 @@ int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data c
 	if (!buf_size || !flush) // nothing to send or send it later
 		return 0;
 
-	cProfileScope prof((mxServer ? &mxServer->mProfiler : NULL), (mxServer ? mxServer->mProfWrite : 0)); // note: compression, encryption and send
+	cProfileScope prof((mxServer ? &mxServer->mProfiler : NULL), (mxServer ? mxServer->mProfWrite : 0)); // note: buffer work, compression, encryption and send have own nested sections
 
 	nVerliHub::cServerDC *serv = NULL;
 
@@ -1054,7 +1055,12 @@ int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data c
 			if (send_buf[flush_size - 1] == '|') {
 				calc_size = 0; // we dont use it anymore
 				int comp_err = 0;
-				const char *zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
+				const char *zlib_buf = NULL;
+
+				{
+					cProfileScope zprof(&serv->mProfiler, serv->mProfZLib);
+					zlib_buf = serv->mZLib->Compress(send_buf, flush_size, calc_size, comp_err, serv->mC.zlib_compress_level);
+				}
 
 				if (calc_size && zlib_buf) { // compression successful
 					if (!AppendSend(zlib_buf, calc_size)) { // add compressed data to final send buffer
@@ -1111,9 +1117,18 @@ int cAsyncConn::Write(const string &data, bool flush, bool pipe) // note: data c
 
 	calc_size = buf_size; // we dont use it anymore, make copy of send buffer size because send method will change it
 
-	const int send_res = SendAll(send_buf, calc_size); // try to send as much data as possible
-	const int send_err = ((send_res == -1) ? SockError() : 0); // note: take error before anything else can change it
-	const bool send_again = ((send_res == -1) && SockTryAgain());
+	int send_res = 0, send_err = 0;
+	bool send_again = false;
+
+	{ // note: error is taken inside, before end of profiler scope can change it
+		cProfileScope sprof((serv ? &serv->mProfiler : NULL), (serv ? serv->mProfSend : 0));
+		send_res = SendAll(send_buf, calc_size); // try to send as much data as possible
+
+		if (send_res == -1) {
+			send_err = SockError(); // note: take error before anything else can change it
+			send_again = SockTryAgain();
+		}
+	}
 
 	if (calc_size) // note: bytes that really went to socket, after compression and encryption
 		OnSent(calc_size);

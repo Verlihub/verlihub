@@ -368,7 +368,7 @@ void cProfiler::Show(ostream &os, unsigned int period, const string &filter) con
 	}
 
 	if (threads.empty() && sections.empty()) {
-		os << " [*] " << _("No data collected.");
+		os << " [*] " << _("No data collected.") << "\r\n";
 		return;
 	}
 

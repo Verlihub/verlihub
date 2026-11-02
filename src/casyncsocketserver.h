@@ -242,6 +242,11 @@ namespace nVerliHub {
 				/// Profiler section of data that really goes to sockets, used by connections.
 				unsigned int mProfWrite = 0;
 
+				/// Profiler sections of compression, encryption and socket send, nested in write section.
+				unsigned int mProfZLib = 0;
+				unsigned int mProfTLS = 0;
+				unsigned int mProfSend = 0;
+
 				/// Start new connection, when dns_lookup is enabled this happens only after host name is known.
 				/// @return Same as OnNewConn(), negative value means connection must be closed.
 				virtual int StartConn(cAsyncConn *conn);
