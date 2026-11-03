@@ -503,7 +503,6 @@ void cInfoServer::SystemInfo(ostream &os)
 	} else { // calculate cpu usage
 		perc_cpu = (time_sample.tms_stime - last_sys_cpu) + (time_sample.tms_utime - last_user_cpu);
 		perc_cpu /= (now - last_cpu);
-		//perc_cpu /= num_cpu; // we are single threaded, show only one core
 		perc_cpu *= 100;
 	}
 
@@ -518,7 +517,7 @@ void cInfoServer::SystemInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Resident RAM usage: %s"), convertByte(size_res * 1024).c_str()) << "\r\n\r\n";
 
 	os << " [*] " << autosprintf(_("CPU cores: %d"), num_cpu) << "\r\n";
-	os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n";
+	os << " [*] " << autosprintf(_("CPU usage: %.2f%%"), perc_cpu) << "\r\n"; // note: all threads of hub since last call, 100 is one whole core
 
 	nMySQL::cQuery query(mServer->mMySQL); // note: database server tells its own memory, so it works on every system and also when database runs on other machine
 	string name("MySQL/MariaDB"), size;

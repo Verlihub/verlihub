@@ -1867,7 +1867,13 @@ bool cCmdLine::IsRunning(long pid)
 
 	string cmd;
 	getline(file, cmd, '\0');
-	return (cmd.find("verlihub") != string::npos);
+
+	if (cmd.find("verlihub") != string::npos)
+		return true;
+
+	const size_t pos = cmd.find_last_of('/');
+	const string name((pos == string::npos) ? cmd : cmd.substr(pos + 1)); // note: watchdog of hub started as vh or vhm keeps that name, they are symbolic links to verlihub
+	return ((name == "vh") || (name == "vhm"));
 #endif
 }
 
