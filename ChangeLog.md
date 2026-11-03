@@ -27,6 +27,7 @@
 * Configuration adv_enable_profiler and command !procinfo, time of hub work and threads
 * Lua call VH:SQLWrite, see Wiki
 * Command !zlibinfo, ZLib compression and cache
+* Command !mmdbupdate, free MaxMind databases are downloaded without hub restart
 
 ## Updated
 

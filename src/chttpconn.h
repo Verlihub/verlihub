@@ -61,7 +61,7 @@ namespace nVerliHub {
 		typedef std::function<void(unsigned long id, int code, const string &body, const string &head, const string &err)> tHTTPDone;
 
 		/*
-			small blocking tcp client, http request and reply are used by update check, crash report, --geoip and scripts
+			small blocking tcp client, http request and reply are used by update check, crash report, maxmind download and scripts
 			note: hublist registration also uses it, but only as plain tcp connection with nmdc protocol, no http there
 			note: it is not part of main loop, every call blocks until data is sent or received or timeout expires, so it runs on other threads
 			note: partial http client, only get and post over plain tcp or tls, server certificate is not verified, so tls only encrypts data
@@ -91,8 +91,8 @@ namespace nVerliHub {
 				*/
 				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0, size_t max = 67108864);
 
-				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice
-				static bool Download(const string &url, string &data);
+				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice, cancel lets hub stop abort it
+				static bool Download(const string &url, string &data, cSocketCancel *cancel = NULL);
 
 				/*
 					source address of all outgoing connections, same as interface option of curl, empty is address chosen by system

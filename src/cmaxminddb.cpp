@@ -21,13 +21,17 @@
 #include "cmaxminddb.h"
 #include "cdcconsole.h"
 #include "cbanlist.h"
+#include "chttpconn.h"
 #include "stringutils.h"
 
 #include <sstream>
 #include <iostream>
+#include <fstream>
+#include <zlib.h>
 #include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -848,28 +852,182 @@ MMDB_s *cMaxMindDB::TryASNDB(unsigned int flags)
 
 void cMaxMindDB::ReloadAll()
 {
+	CloseAll();
+	OpenAll();
+}
+
+void cMaxMindDB::CloseAll()
+{
 	MMDBCacheClear();
 
 	if (mDBCO) {
 		MMDB_close(mDBCO);
 		free(mDBCO);
+		mDBCO = NULL;
 	}
-
-	mDBCO = TryCountryDB(MMDB_MODE_MMAP);
 
 	if (mDBCI) {
 		MMDB_close(mDBCI);
 		free(mDBCI);
+		mDBCI = NULL;
 	}
-
-	mDBCI = TryCityDB(MMDB_MODE_MMAP);
 
 	if (mDBAS) {
 		MMDB_close(mDBAS);
 		free(mDBAS);
+		mDBAS = NULL;
+	}
+}
+
+void cMaxMindDB::OpenAll()
+{
+	if (!mDBCO)
+		mDBCO = TryCountryDB(MMDB_MODE_MMAP);
+
+	if (!mDBCI)
+		mDBCI = TryCityDB(MMDB_MODE_MMAP);
+
+	if (!mDBAS)
+		mDBAS = TryASNDB(MMDB_MODE_MMAP);
+}
+
+static const char *sFreeList[cMaxMindDB::sFreeCount][4] = { // note: same databases and addresses as vh script
+	{"Country", DB_COUNTRY, "GeoLite2-Country.mmdb", "GeoIP2-Country.mmdb"},
+	{"City", DB_CITY, "GeoLite2-City.mmdb", "GeoIP2-City.mmdb"},
+	{"ASN", DB_ASN, "GeoLite2-ASN.mmdb", "GeoIP2-ASN.mmdb"}
+};
+
+const char *cMaxMindDB::FreeName(unsigned int num)
+{
+	return ((num < sFreeCount) ? sFreeList[num][0] : "");
+}
+
+const char *cMaxMindDB::PaidFile(unsigned int num)
+{
+	return ((num < sFreeCount) ? sFreeList[num][3] : "");
+}
+
+static bool UnpackFile(const string &gz, const string &name, string &out) // note: same as tar of vh script, file with given name is taken from gzip compressed tar archive
+{
+	z_stream zs;
+	memset(&zs, 0, sizeof(zs));
+
+	if (inflateInit2(&zs, 16 + MAX_WBITS) != Z_OK) // note: gzip header
+		return false;
+
+	zs.next_in = (Bytef*)gz.data();
+	zs.avail_in = uInt(gz.size());
+	string tar;
+	char buf[65536];
+	int res;
+
+	do {
+		zs.next_out = (Bytef*)buf;
+		zs.avail_out = sizeof(buf);
+		res = inflate(&zs, Z_NO_FLUSH);
+
+		if ((res != Z_OK) && (res != Z_STREAM_END)) {
+			inflateEnd(&zs);
+			return false;
+		}
+
+		tar.append(buf, sizeof(buf) - zs.avail_out);
+
+		if (tar.size() > 1073741824UL) { // note: 1 gb, not a database
+			inflateEnd(&zs);
+			return false;
+		}
+	} while ((res != Z_STREAM_END) && (zs.avail_in || !zs.avail_out));
+
+	inflateEnd(&zs);
+	size_t pos = 0;
+
+	while ((pos + 512) <= tar.size()) { // note: 512 byte header, then data rounded up to 512 bytes
+		const char *head = tar.data() + pos;
+
+		if (!head[0]) // note: end of archive
+			break;
+
+		const char *end = (const char*)memchr(head, '\0', 100);
+		string file(head, (end ? size_t(end - head) : 100));
+		const size_t size = strtoul(string(head + 124, 12).c_str(), NULL, 8);
+		const char type = head[156];
+		pos += 512;
+
+		if ((pos + size) > tar.size())
+			return false;
+
+		const size_t slash = file.find_last_of('/');
+
+		if (((type == '0') || (type == '\0')) && (file.substr((slash == string::npos) ? 0 : (slash + 1)) == name)) {
+			tar.erase(pos + size); // note: no copy of big database
+			tar.erase(0, pos);
+			out.swap(tar);
+			return true;
+		}
+
+		pos += (((size + 511) / 512) * 512);
 	}
 
-	mDBAS = TryASNDB(MMDB_MODE_MMAP);
+	return false;
+}
+
+int cMaxMindDB::FetchFree(unsigned int num, const string &dir, nSocket::cSocketCancel *cancel)
+{
+	if (num >= sFreeCount)
+		return eFREE_DOWNLOAD;
+
+	string data, file;
+
+	if (!nSocket::cHTTPConn::Download(sFreeList[num][1], data, cancel))
+		return eFREE_DOWNLOAD;
+
+	if (!UnpackFile(data, sFreeList[num][2], file))
+		return eFREE_UNPACK;
+
+	data.clear();
+	const string temp(dir + '/' + sFreeList[num][2] + ".tmp"); // note: written next to old one, then replaced, so hub never reads half file
+	ofstream out(temp.c_str(), ios::out | ios::binary | ios::trunc);
+
+	if (out.is_open()) {
+		out.write(file.data(), file.size());
+		out.close();
+	}
+
+	if (!out) {
+		remove(temp.c_str());
+		return eFREE_WRITE;
+	}
+
+	return eFREE_OK;
+}
+
+bool cMaxMindDB::MoveFree(unsigned int num, const string &dir)
+{
+	if (num >= sFreeCount)
+		return false;
+
+	const string dest(dir + '/' + sFreeList[num][2]), temp(dest + ".tmp");
+
+#ifdef _WIN32
+	struct stat fs;
+
+	if (stat(temp.c_str(), &fs) == 0)
+		remove(dest.c_str()); // note: windows rename does not replace
+#endif
+
+	if (rename(temp.c_str(), dest.c_str()) != 0) {
+		remove(temp.c_str());
+		return false;
+	}
+
+	return true;
+}
+
+void cMaxMindDB::DropFree(unsigned int num, const string &dir)
+{
+	if (num < sFreeCount)
+		remove((dir + '/' + sFreeList[num][2] + ".tmp").c_str());
 }
 
 bool cMaxMindDB::FromUTF8(const char *udat, unsigned int ulen, string &conv)

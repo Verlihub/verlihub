@@ -203,6 +203,12 @@ int cDCConsole::OpCommand(const string &str, cConnDC *conn)
 		case eUC_ADMIN:
 			if (cmdid == "userlimit" || cmdid == "ul") return CmdUserLimit(cmd_line, conn);
 			if (cmdid == "reload" || cmdid == "re") return CmdReload(cmd_line, conn);
+
+			if (cmdid == "mmdbupdate" || cmdid == "geoipupdate") {
+				mOwner->UpdateMMDB(conn);
+				return 1;
+			}
+
 		case eUC_CHEEF:
 			if (cmdid == "class") return CmdClass(cmd_line, conn);
 			if (cmdid == "protect") return CmdProtect(cmd_line, conn);

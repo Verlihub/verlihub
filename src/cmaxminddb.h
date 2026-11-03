@@ -38,6 +38,7 @@ using std::string;
 namespace nVerliHub {
 	namespace nSocket {
 		class cServerDC;
+		class cSocketCancel;
 	};
 
 	namespace nUtils {
@@ -52,7 +53,29 @@ namespace nVerliHub {
 				void MMDBCacheClean(); // cache clean function
 
 				void ReloadAll();
+				void CloseAll(); // note: files stay closed until OpenAll, so they can be replaced also on windows
+				void OpenAll();
 				void ShowInfo(ostream &os);
+
+				/*
+					free databases from update server, same files and addresses as vh script, used by --geoip and !mmdbupdate
+					note: FetchFree downloads and unpacks one database into <file>.tmp in given folder, it blocks, so hub runs it on other thread
+					note: MoveFree replaces database with its .tmp file, DropFree removes .tmp file
+				*/
+				enum tFreeResult
+				{
+					eFREE_OK,
+					eFREE_DOWNLOAD,
+					eFREE_UNPACK,
+					eFREE_WRITE
+				};
+
+				static constexpr unsigned int sFreeCount = 3;
+				static const char *FreeName(unsigned int num); // note: Country, City or ASN
+				static const char *PaidFile(unsigned int num); // note: paid database of same type, hub loads it before free one
+				static int FetchFree(unsigned int num, const string &dir, nSocket::cSocketCancel *cancel);
+				static bool MoveFree(unsigned int num, const string &dir);
+				static void DropFree(unsigned int num, const string &dir);
 
 				bool GetCC(const string &host, string &cc);
 				bool GetCN(const string &host, string &cn);

@@ -8,6 +8,7 @@
 
 	!userlimit <limit> [minutes=60]		- Temporarily change user limit
 	!reload					- Reload cache lists
+	!mmdbupdate				- Update free MaxMind databases
 
  [*] Redirects:
 

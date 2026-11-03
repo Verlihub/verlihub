@@ -429,6 +429,9 @@ class cServerDC : public cAsyncSocketServer
 		// update check on update check thread
 		bool CheckForUpdates(bool git, cConnDC *conn = NULL);
 
+		// download of free maxmind databases on own thread, then they are replaced on main thread
+		bool UpdateMMDB(cConnDC *conn);
+
 		/**
 		* Report an user to opchat.
 		* @param conn User connection.
@@ -720,14 +723,17 @@ class cServerDC : public cAsyncSocketServer
 
 protected: // Protected methods
 	/*
-		hublist registration and update check have their own threads, they can take long time and must not hold up other work
+		hublist registration, update check and maxmind update have their own threads, they can take long time and must not hold up other work
 		note: they run without access to hub state, everything is copied before and result is handled on main thread
 		note: on hub stop their sockets are shut down through cancel, so they dont hold up the stop, next start registers again
 	*/
 	cSocketCancel mHublistCancel; // note: declared before pools, so it outlives their threads
 	cSocketCancel mUpdateCancel;
+	cSocketCancel mMMDBCancel;
 	nThread::cWorkerPool mHublistReg;
 	nThread::cWorkerPool mUpdateCheck;
+	nThread::cWorkerPool mMMDBUpdate;
+	bool mMMDBBusy = false; // note: from start until databases are replaced on main thread, pool is idle already before that
 
 	// hublist registration data, copied on main thread
 	struct sHublistData
@@ -761,6 +767,8 @@ protected: // Protected methods
 
 	static unsigned int DoCheckForUpdates(bool git, string &ver, cSocketCancel &cancel); // note: runs on update check thread, returns result code
 	void OnUpdateCheckDone(unsigned int code, const string &ver, const string &reply);
+
+	void OnMMDBUpdateDone(int res, unsigned int num, const string &dir, const string &reply); // note: res is tFreeResult of database num, all databases are replaced only when all were fetched
 
 	/*
 		http requests of scripts have own threads, so slow websites dont hold up host name lookups and tls handshakes of users

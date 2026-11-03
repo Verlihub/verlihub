@@ -697,11 +697,11 @@ bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &h
 	return true;
 }
 
-bool cHTTPConn::Download(const string &url, string &data) // note: same as wget of vh script
+bool cHTTPConn::Download(const string &url, string &data, cSocketCancel *cancel) // note: same as wget of vh script
 {
 	int code = 0;
 	string head, err;
-	return (Fetch("GET", url, "", "", 5, NULL, code, head, data, err, "", 2, 268435456) && (code >= 200) && (code <= 299));
+	return (Fetch("GET", url, "", "", 5, cancel, code, head, data, err, "", 2, 268435456) && (code >= 200) && (code <= 299));
 }
 
 int cHTTPConn::Write(const string &data)

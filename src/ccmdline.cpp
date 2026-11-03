@@ -48,7 +48,6 @@
 #include <dirent.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <zlib.h>
 
 #include <string.h>
 #include <errno.h>
@@ -2868,71 +2867,6 @@ int cCmdLine::Multi()
 	return (RunAs(list[num - 1], action) ? 0 : 1);
 }
 
-static bool UnpackFile(const string &gz, const string &name, string &out) // note: same as tar of vh script, file with given name is taken from gzip compressed tar archive
-{
-	z_stream zs;
-	memset(&zs, 0, sizeof(zs));
-
-	if (inflateInit2(&zs, 16 + MAX_WBITS) != Z_OK) // note: gzip header
-		return false;
-
-	zs.next_in = (Bytef*)gz.data();
-	zs.avail_in = uInt(gz.size());
-	string tar;
-	char buf[65536];
-	int res;
-
-	do {
-		zs.next_out = (Bytef*)buf;
-		zs.avail_out = sizeof(buf);
-		res = inflate(&zs, Z_NO_FLUSH);
-
-		if ((res != Z_OK) && (res != Z_STREAM_END)) {
-			inflateEnd(&zs);
-			return false;
-		}
-
-		tar.append(buf, sizeof(buf) - zs.avail_out);
-
-		if (tar.size() > 1073741824UL) { // note: 1 gb, not a database
-			inflateEnd(&zs);
-			return false;
-		}
-	} while ((res != Z_STREAM_END) && (zs.avail_in || !zs.avail_out));
-
-	inflateEnd(&zs);
-	size_t pos = 0;
-
-	while ((pos + 512) <= tar.size()) { // note: 512 byte header, then data rounded up to 512 bytes
-		const char *head = tar.data() + pos;
-
-		if (!head[0]) // note: end of archive
-			break;
-
-		const char *end = (const char*)memchr(head, '\0', 100);
-		string file(head, (end ? size_t(end - head) : 100));
-		const size_t size = strtoul(string(head + 124, 12).c_str(), NULL, 8);
-		const char type = head[156];
-		pos += 512;
-
-		if ((pos + size) > tar.size())
-			return false;
-
-		const size_t slash = file.find_last_of('/');
-
-		if (((type == '0') || (type == '\0')) && (file.substr((slash == string::npos) ? 0 : (slash + 1)) == name)) {
-			tar.erase(pos + size); // note: no copy of big database
-			tar.erase(0, pos);
-			out.swap(tar);
-			return true;
-		}
-
-		pos += (((size + 511) / 512) * 512);
-	}
-
-	return false;
-}
-
 int cCmdLine::GeoIP()
 {
 	if (mArgs.size() > 1) {
@@ -2967,43 +2901,23 @@ int cCmdLine::GeoIP()
 		return 1;
 	}
 
-	static const char *list[][3] = { // note: same databases and addresses as vh script
-		{"Country", "https://ledo.feardc.net/mmdb/country.tar.gz", "GeoLite2-Country.mmdb"},
-		{"City", "https://ledo.feardc.net/mmdb/city.tar.gz", "GeoLite2-City.mmdb"},
-		{"ASN", "https://ledo.feardc.net/mmdb/asn.tar.gz", "GeoLite2-ASN.mmdb"}
-	};
+	for (unsigned int num = 0; num < cMaxMindDB::sFreeCount; num++) {
+		const char *name = cMaxMindDB::FreeName(num);
+		cout << Paint(autosprintf(_("Processing MaxMind %s database."), name), sBold) << endl;
+		const int res = cMaxMindDB::FetchFree(num, path, NULL);
 
-	for (const auto &item: list) {
-		cout << Paint(autosprintf(_("Processing MaxMind %s database."), item[0]), sBold) << endl;
-		string data, file;
-
-		if (!cHTTPConn::Download(item[1], data)) {
-			cout << Paint(autosprintf(_("Error downloading MaxMind %s database."), item[0]), sRedBold) << endl;
+		if (res == cMaxMindDB::eFREE_DOWNLOAD) {
+			cout << Paint(autosprintf(_("Error downloading MaxMind %s database."), name), sRedBold) << endl;
 			return 1;
 		}
 
-		if (!UnpackFile(data, item[2], file)) {
-			cout << Paint(autosprintf(_("Error decompressing MaxMind %s database."), item[0]), sRedBold) << endl;
+		if (res == cMaxMindDB::eFREE_UNPACK) {
+			cout << Paint(autosprintf(_("Error decompressing MaxMind %s database."), name), sRedBold) << endl;
 			return 1;
 		}
 
-		data.clear();
-		const string dest(path + '/' + item[2]), temp(dest + ".tmp"); // note: written next to old one, then replaced, so hub never reads half file
-		ofstream out(temp.c_str(), ios::out | ios::binary | ios::trunc);
-
-		if (out.is_open()) {
-			out.write(file.data(), file.size());
-			out.close();
-		}
-
-	#ifdef _WIN32
-		if (out && FileExists(temp))
-			remove(dest.c_str()); // note: windows rename does not replace
-	#endif
-
-		if (!out || (rename(temp.c_str(), dest.c_str()) != 0)) {
-			remove(temp.c_str());
-			cout << Paint(autosprintf(_("Error moving MaxMind %s database."), item[0]), sRedBold) << endl;
+		if ((res != cMaxMindDB::eFREE_OK) || !cMaxMindDB::MoveFree(num, path)) {
+			cout << Paint(autosprintf(_("Error moving MaxMind %s database."), name), sRedBold) << endl;
 			return 1;
 		}
 	}

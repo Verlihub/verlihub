@@ -339,6 +339,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 
 	mHublistReg.SetOnStop([this] { mHublistCancel.Cancel(); }); // note: dont wait for hublists when hub stops
 	mUpdateCheck.SetOnStop([this] { mUpdateCancel.Cancel(); });
+	mMMDBUpdate.SetOnStop([this] { mMMDBCancel.Cancel(); });
 
 	mHTTPPool.SetOnStop([this] { // note: running requests of scripts are shut down, waiting ones are dropped by pool
 		std::lock_guard<std::mutex> lock(mHTTPLock);
@@ -2397,6 +2398,125 @@ bool cServerDC::RegisterInHublist(string host, unsigned int port, cConnDC *conn)
 
 		if (posted)
 			return true;
+	}
+
+	if (conn)
+		DCPublicHS(_("Failed to start new working thread."), conn);
+
+	return false;
+}
+
+void cServerDC::OnMMDBUpdateDone(int res, unsigned int num, const string &dir, const string &reply)
+{
+	mMMDBBusy = false;
+	ostringstream os;
+
+	if (res == cMaxMindDB::eFREE_DOWNLOAD) {
+		os << autosprintf(_("Error downloading MaxMind %s database."), cMaxMindDB::FreeName(num));
+	} else if (res == cMaxMindDB::eFREE_UNPACK) {
+		os << autosprintf(_("Error decompressing MaxMind %s database."), cMaxMindDB::FreeName(num));
+	} else if (res != cMaxMindDB::eFREE_OK) {
+		os << autosprintf(_("Error moving MaxMind %s database."), cMaxMindDB::FreeName(num));
+	} else {
+		string failed, paid;
+		mMaxMindDB->CloseAll(); // note: windows can not replace open file
+
+		for (unsigned int pos = 0; pos < cMaxMindDB::sFreeCount; pos++) {
+			const string name(cMaxMindDB::FreeName(pos));
+
+			if (!cMaxMindDB::MoveFree(pos, dir)) {
+				failed += (failed.size() ? ", " : "") + name;
+				continue;
+			}
+
+			FILE *file = fopen((dir + '/' + cMaxMindDB::PaidFile(pos)).c_str(), "rb"); // note: hub loads paid database before free one
+
+			if (file) {
+				fclose(file);
+				paid += (paid.size() ? ", " : "") + name;
+			}
+		}
+
+		mMaxMindDB->OpenAll();
+
+		if (failed.size()) {
+			os << autosprintf(_("Error moving MaxMind %s database."), failed.c_str());
+		} else {
+			os << _("Done updating all free MaxMind databases.");
+
+			if (paid.size())
+				os << ' ' << autosprintf(_("Paid database is used instead of free one for: %s"), paid.c_str());
+		}
+	}
+
+	if (Log(1))
+		LogStream() << os.str() << endl;
+
+	if (reply.size()) {
+		cUser *user = mUserList.GetUserByNick(reply);
+
+		if (user && user->mxConn && user->mInList) // note: only when user is still here
+			DCPublicHS(os.str(), user->mxConn);
+	}
+}
+
+bool cServerDC::UpdateMMDB(cConnDC *conn)
+{
+	if (mDBConf.mmdb_path.empty()) { // note: default folders usually belong to administrator, hub user can not write there
+		if (conn)
+			DCPublicHS(_("Please set mmdb_path in dbconfig to folder of MaxMind databases."), conn);
+
+		return false;
+	}
+
+	string reply;
+
+	if (conn && conn->mpUser && conn->mpUser->mInList)
+		reply.assign(conn->mpUser->mNick);
+
+	const bool was = mMMDBUpdate.IsRunning();
+
+	if (StartPool(mMMDBUpdate, "mmdb", 1)) {
+		if (!was) // note: pool that was stopped dropped its result, so old update is over
+			mMMDBBusy = false;
+
+		if (mMMDBBusy) {
+			if (conn)
+				DCPublicHS(_("MaxMind database update is already running, please try again later."), conn);
+
+			return false;
+		}
+
+		mMMDBCancel.Reset(); // note: safe, nothing is running
+		const string dir(mDBConf.mmdb_path);
+
+		const bool posted = mMMDBUpdate.Post([this, dir, reply]() -> nThread::cWorkerPool::tResult { // note: runs on mmdb thread, only touches files in dir
+			int res = cMaxMindDB::eFREE_OK;
+			unsigned int num = 0;
+
+			for (; num < cMaxMindDB::sFreeCount; num++) {
+				res = cMaxMindDB::FetchFree(num, dir, &mMMDBCancel);
+
+				if (res != cMaxMindDB::eFREE_OK)
+					break;
+			}
+
+			if (res != cMaxMindDB::eFREE_OK) { // note: all or nothing, databases fetched before are dropped
+				for (unsigned int pos = 0; pos < num; pos++)
+					cMaxMindDB::DropFree(pos, dir);
+			}
+
+			return [this, res, num, dir, reply] { OnMMDBUpdateDone(res, num, dir, reply); };
+		});
+
+		if (posted) {
+			mMMDBBusy = true;
+
+			if (conn) // note: result comes later from main loop, so this is sent first
+				DCPublicHS(_("Updating MaxMind databases, please wait."), conn);
+
+			return true;
+		}
 	}
 
 	if (conn)
