@@ -464,6 +464,7 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 			break;
 
 		case ePF_PING:
+		case ePF_PORTTEST: // note: same limits, own counter
 			period = serv->mC.int_flood_ping_period;
 			limit = serv->mC.int_flood_ping_limit;
 			action = serv->mC.proto_flood_ping_action;
@@ -557,6 +558,10 @@ bool cConnDC::CheckProtoFlood(const string &data, int type)
 
 		case ePF_PING:
 			to_user << "Ping";
+			break;
+
+		case ePF_PORTTEST:
+			to_user << "PortTest";
 			break;
 
 		case ePF_UNKNOWN:

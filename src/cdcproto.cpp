@@ -1523,6 +1523,9 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
+	if (conn->CheckProtoFlood(msg->mStr, ePF_PORTTEST)) // protocol flood
+		return -1;
+
 	if ((msg->mLen > 40) || msg->SplitChunks()) {
 		conn->CloseNow(eCR_SYNTAX);
 		return -1;

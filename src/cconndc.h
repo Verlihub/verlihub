@@ -159,6 +159,7 @@ namespace nVerliHub {
 			ePF_MCTO,
 			ePF_IN,
 			ePF_PING,
+			ePF_PORTTEST,
 			ePF_UNKNOWN,
 			ePF_LAST
 		} tProtoFloodItems; // protocol flood
