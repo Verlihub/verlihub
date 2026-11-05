@@ -140,7 +140,8 @@ namespace nVerliHub {
 			eSF_ACTM = 1 << 27,
 			eSF_SALTPASS = 1 << 28,
 			eSF_NICKRULE = 1 << 29,
-			eSF_NATIP6 = 1 << 30
+			eSF_NATIP6 = 1 << 30,
+			eSF_PORTTEST = 1u << 31
 		} tSupportFeature;
 
 		typedef enum
@@ -383,6 +384,9 @@ namespace nVerliHub {
 
 				// checked ipv6 address of user, see cIP6Check, empty when there is none
 				string mAddrIP6;
+
+				// time of last $PortTest
+				long long mPortTestAt = 0;
 
 				/// Protocol version
 				/// @todo Move to cProtocol class.

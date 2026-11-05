@@ -496,6 +496,42 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 	return true;
 }
 
+void cServerDC::PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp)
+{
+	static const int wait_msec = 3000;
+	const tSocket sock = (tSocket)(*conn);
+	const unsigned long long id = conn->mConnID;
+	const string addr = conn->AddrIP();
+	const string bind = (((mAddr != "0.0.0.0") && (mAddr.compare(0, 4, "127.") != 0)) ? mAddr : ""); // note: same source as other outgoing connections
+	const string token = nSocket::cIP6Check::RandomHex();
+
+	const bool posted = StartPool(mPortWorkers, "port", 2, 64) && mPortWorkers.Post([this, sock, id, addr, bind, token, tcp, tls, udp]() -> nThread::cWorkerPool::tResult { // note: runs on worker thread
+		const bool tcp_good = nSocket::PortTestTCP(addr, tcp, bind, wait_msec);
+		const bool tls_good = nSocket::PortTestTCP(addr, tls, bind, wait_msec);
+		nSocket::PortTestUDP(addr, udp, bind, "$PortTest " + token + '|');
+
+		return [this, sock, id, addr, token, tcp, tls, udp, tcp_good, tls_good] { // note: runs on main thread
+			nSocket::cAsyncConn *found = FindConn(sock, id);
+
+			if (!found || (found->AddrIP() != addr)) // note: user left meanwhile
+				return;
+
+			cConnDC *user = static_cast<cConnDC*>(found);
+			string omsg("$PortTest " + StringFrom(tcp) + (tcp_good ? " ok" : " fail"));
+			user->Send(omsg, true);
+			omsg = "$PortTest " + StringFrom(tls) + (tls_good ? " ok" : " fail");
+			user->Send(omsg, true);
+			omsg = "$PortTest " + StringFrom(udp) + " udp " + token;
+			user->Send(omsg, true);
+		};
+	});
+
+	if (!posted) { // note: too many tests at once, client tries later
+		string omsg("$PortTest busy");
+		conn->Send(omsg, true);
+	}
+}
+
 const string &cServerDC::IP6Address()
 {
 	const string &addr = mIP6Check.TellAddress(mTime.Sec());

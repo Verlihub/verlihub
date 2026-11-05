@@ -51,6 +51,7 @@
 #include "chttpconn.h"
 #include "cmysqlworker.h"
 #include "cip6check.h"
+#include "cporttest.h"
 #include <map>
 #include <set>
 #include <mutex>
@@ -248,6 +249,10 @@ class cServerDC : public cAsyncSocketServer
 		const string &IP6Address();
 		string mIP6Tell; // last address written to log
 		bool mIP6Told = false;
+
+		// tries to reach ports of user on worker thread, answers with $PortTest
+		void PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp);
+		nThread::cWorkerPool mPortWorkers; // note: separate from mWorkers, so tests dont hold up host name lookups
 
 		// Console managment
 		class cDCConsole *mCo;

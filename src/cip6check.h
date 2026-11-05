@@ -83,6 +83,9 @@ class cIP6Check
 
 		std::string NewToken(const std::string &nick, long long now);
 
+		// 32 random hex characters
+		static std::string RandomHex();
+
 		// accepts and reads what is ready without waiting, done is called with every checked address, data longer than limit is closed
 		void Step(long long now, size_t limit, const tDone &done, const tTricked &tricked);
 

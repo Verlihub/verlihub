@@ -201,6 +201,15 @@ void cIP6Check::Stop()
 
 string cIP6Check::NewToken(const string &nick, long long now)
 {
+	const string token(RandomHex());
+	sToken &item = mTokens[token];
+	item.mNick = nick;
+	item.mUntil = now + IP6_TOKEN_SECS;
+	return token;
+}
+
+string cIP6Check::RandomHex()
+{
 	unsigned char data[16];
 
 	if (RAND_bytes(data, sizeof(data)) != 1) {
@@ -219,9 +228,6 @@ string cIP6Check::NewToken(const string &nick, long long now)
 		token.append(1, hex[one & 15]);
 	}
 
-	sToken &item = mTokens[token];
-	item.mNick = nick;
-	item.mUntil = now + IP6_TOKEN_SECS;
 	return token;
 }
 

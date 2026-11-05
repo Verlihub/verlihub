@@ -200,6 +200,7 @@ void cInfoServer::ProtocolInfo(ostream &os)
 	os << " [*] &#36;SR: " << mServer->mProtoCount[nEnums::eDC_SR] << "\r\n";
 	os << " [*] &#36;ConnectToMe: " << mServer->mProtoCount[nEnums::eDC_CONNECTTOME] << "\r\n";
 	os << " [*] &#36;RevConnectToMe: " << mServer->mProtoCount[nEnums::eDC_RCONNECTTOME] << "\r\n";
+	os << " [*] &#36;PortTest: " << mServer->mProtoCount[nEnums::eDC_PORTTEST] << "\r\n";
 	os << " [*] &#36;MyIP: " << mServer->mProtoCount[nEnums::eDCC_MYIP] << "\r\n";
 	os << " [*] &#36;Key: " << mServer->mProtoCount[nEnums::eDC_KEY] << "\r\n";
 	os << " [*] &#36;Supports: " << mServer->mProtoCount[nEnums::eDC_SUPPORTS] << "\r\n";

@@ -179,6 +179,8 @@ protected:
 	int DC_MyINFO(cMessageDC * msg, nSocket::cConnDC * conn);
 	// $IN
 	int DC_IN(cMessageDC *msg, nSocket::cConnDC *conn);
+	/** Client asks hub to try reaching its ports */
+	int DC_PortTest(cMessageDC *msg, nSocket::cConnDC *conn);
 	// $ExtJSON
 	int DC_ExtJSON(cMessageDC *msg, nSocket::cConnDC *conn);
 	/** Treat the DC message in a appropriate way */

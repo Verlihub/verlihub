@@ -300,6 +300,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 			this->DCC_Lock(msg, conn);
 			break;
 
+		case eDC_PORTTEST:
+			this->DC_PortTest(msg, conn);
+			break;
+
 		case eDC_IN:
 			this->DC_IN(msg, conn);
 			break;
@@ -499,6 +503,10 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 
 		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "NATIP6") == 0)) {
 			natip6 = true;
+
+		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "PortTest") == 0)) {
+			conn->mFeatures |= eSF_PORTTEST;
+			pars.append("PortTest ");
 
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "NickRule") == 0)) {
 			conn->mFeatures |= eSF_NICKRULE;
@@ -1497,6 +1505,45 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	conn->ClearTimeOut(eTO_MYINFO);
+	return 0;
+}
+
+int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
+{
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	if (!(conn->mFeatures & eSF_PORTTEST)) { // check support
+		const string text(_("Invalid login sequence, you didn't specify support for PortTest command."));
+
+		if (conn->Log(1))
+			conn->LogStream() << text << endl;
+
+		mS->ConnCloseMsg(conn, text, 1000, eCR_LOGIN_ERR);
+		return -1;
+	}
+
+	if ((msg->mLen > 40) || msg->SplitChunks()) {
+		conn->CloseNow(eCR_SYNTAX);
+		return -1;
+	}
+
+	unsigned int ports[3] = {0, 0, 0};
+	istringstream is(msg->ChunkString(eCH_1_PARAM));
+	is >> ports[0] >> ports[1] >> ports[2];
+
+	for (const unsigned int port: ports) {
+		if (!port || (port > 65535)) {
+			conn->CloseNow(eCR_SYNTAX);
+			return -1;
+		}
+	}
+
+	if ((mS->mTime.Sec() - conn->mPortTestAt) < 60) // note: hub connects out, so this must stay rare
+		return 0;
+
+	conn->mPortTestAt = mS->mTime.Sec();
+	mS->PortTest(conn, ports[0], ports[1], ports[2]);
 	return 0;
 }
 
