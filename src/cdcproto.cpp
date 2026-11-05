@@ -1546,6 +1546,8 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 		return 0;
 
 	conn->mPortTestAt = mS->mTime.Sec();
+	string omsg("$PortTest ip " + conn->AddrIP()); // note: many hubs dont send $UserIP, client needs this to tell others its address
+	conn->Send(omsg, true);
 	mS->PortTest(conn, ports[0], ports[1], ports[2]);
 	return 0;
 }
