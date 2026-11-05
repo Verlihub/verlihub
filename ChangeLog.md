@@ -2,6 +2,7 @@
 
 ## Added
 
+* Real client port in passive to passive $ConnectToMe, $MyIP from TLS proxy can carry the port
 * External TLS proxy is used when listen_ip equals tls_listen_ip, configuration tls_force_myip to force it
 * Upgrade from hub behind local TLS proxy sets listen_ip to 0.0.0.0 once
 * Configuration tls_listen_ip is empty by default, upgrade clears old value when no proxy uses it

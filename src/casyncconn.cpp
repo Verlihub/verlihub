@@ -1261,14 +1261,32 @@ bool cAsyncConn::SetSecConn(const string &addr, string &vers)
 	if (mTLSVer.size() || vers.empty() || (vers.size() > 3))
 		return false;
 
+	string ip(addr);
+	unsigned int port = 0; // note: connection to proxy has port of proxy, only proxy knows the real one
+	const size_t pos = addr.find(':');
+
+	if (pos != string::npos) {
+		ip.assign(addr, 0, pos);
+		const string part(addr, pos + 1);
+
+		if (part.empty() || (part.size() > 5) || (part.find_first_not_of("0123456789") != string::npos))
+			return false;
+
+		port = (unsigned int)stoi(part);
+
+		if (!port || (port > 65535))
+			return false;
+	}
+
 	unsigned long num = 0;
 
-	if (!cBanList::Ip2Num(addr, num, false)) // validate ip
+	if (!cBanList::Ip2Num(ip, num, false)) // validate ip
 		return false;
 
 	mNumIP = num;
-	mAddrIP = addr;
-	mIP = inet_addr(addr.c_str());
+	mAddrIP = ip;
+	mIP = inet_addr(ip.c_str());
+	mAddrPort = port;
 	mAddrHost.clear(); // note: host name is looked up when connection is started
 	mHostAsked = false;
 

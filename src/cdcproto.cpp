@@ -2249,6 +2249,9 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		temp = conn->mAddrIP;
 	}
 
+	if (extra.size() && ((extra[0] == 'N') || (extra[0] == 'R')) && conn->AddrPort() && (temp == conn->mAddrIP)) // nat: client knows only its local port, router can change it, hub sees the real one
+		iport = conn->AddrPort();
+
 	string ctm;
 	Create_ConnectToMe(ctm, nick, temp, StringFrom(iport), extra);
 	other->mxConn->Send(ctm, true); // send it
@@ -3464,7 +3467,7 @@ int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 	if (!MyIPAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
 		return this->DCU_Unknown(msg, conn);
 
-	if ((msg->mLen < 17) || (msg->mLen > 25)) {
+	if ((msg->mLen < 17) || (msg->mLen > 31)) { // note: port after ip is optional
 		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
