@@ -61,6 +61,7 @@ void cDCConf::AddVars()
 
 	// listen address
 	Add("listen_ip", mS.mAddr, "0.0.0.0");
+	Add("listen_ip6", mS.mAddr6, "");
 	Add("listen_port", mS.mPort, 4111);
 	Add("extra_listen_ports", mS.mExtra, "");
 	// end of section

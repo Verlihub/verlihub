@@ -479,7 +479,39 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 		}
 	}
 
+	if (mAddr6.size()) {
+		const unsigned int port = (OverrideDefaultPort ? OverrideDefaultPort : mPort);
+
+		// note: only for this feature, hub works without it
+		if (!nSocket::cIP6Check::IsAny(mAddr6) && !nSocket::cIP6Check::IsPublic(mAddr6)) { // note: value can come from database without check of config change
+			vhErr(0) << "Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: " << mAddr6 << endl;
+		} else if (mIP6Check.Start(mAddr6, port)) {
+			vhLog(1) << "Checking IPv6 addresses of users on [" << mAddr6 << "]:" << port << endl;
+			IP6Address();
+		} else {
+			vhErr(0) << "Can not listen on [" << mAddr6 << "]:" << port << ": " << SockErrorText(mIP6Check.LastError()) << endl;
+		}
+	}
+
 	return true;
+}
+
+const string &cServerDC::IP6Address()
+{
+	const string &addr = mIP6Check.TellAddress(mTime.Sec());
+
+	if (mIP6Check.IsOpen() && (!mIP6Told || (addr != mIP6Tell))) { // note: first time and when it changes
+		mIP6Told = true;
+		mIP6Tell = addr;
+
+		if (addr.size()) {
+			vhLog(1) << "Clients prove their IPv6 address on [" << addr << "]:" << mIP6Check.Port() << endl;
+		} else {
+			vhErr(0) << "No public IPv6 address found, IPv6 connections between users are off until there is one" << endl;
+		}
+	}
+
+	return addr;
 }
 
 /*
@@ -1600,6 +1632,16 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 	ShowUserToAll(conn->mpUser); // display user to others
 	SendHeaders(conn, 1);
 	AfterUserLogin(conn);
+
+	if (conn->mFeatures & eSF_NATIP6) { // ask client to prove its ipv6 address
+		const string &addr6 = IP6Address();
+
+		if (addr6.size()) {
+			mP.Create_ConnectToMe(omsg, conn->mpUser->mNick, '[' + addr6 + ']', StringFrom(mIP6Check.Port()), ' ' + mIP6Check.NewToken(conn->mpUser->mNick, mTime.Sec()));
+			conn->Send(omsg, true);
+		}
+	}
+
 	conn->ClearTimeOut(eTO_LOGIN);
 	conn->mpUser->mT.login = mTime;
 	conn->SetPing(mTime);
@@ -2026,6 +2068,21 @@ int cServerDC::OnTimer(const cTime &now)
 {
 	if (mHTTPEarly.size()) // note: http requests of scripts from before main loop
 		PostHTTPEarly();
+
+	mIP6Check.Step(now.Sec(), (size_t)mC.max_len_mynick + mC.max_len_lock, [this](const string &nick, const string &addr) {
+		cUser *user = mUserList.GetUserByNick(nick);
+
+		if (user && user->mxConn)
+			user->mxConn->mAddrIP6 = addr;
+	}, [this](const string &lock) {
+		if (!mC.detect_ctmtohub)
+			return false;
+
+		string ref;
+		mP.ParseReferer(lock, ref);
+		CtmToHubAddItem(ref);
+		return true;
+	});
 
 	mUserList.FlushCache(); // note: flushes own buffer of every user, messages sent to other lists like active, passive, chat or opchat users are already in buffers of only those users, flush adds no data
 	mSysLoad = eSL_NORMAL;
@@ -4054,6 +4111,15 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
+			} else if ((svar == "listen_ip6") && (val_new != val_old)) { // validate ipv6 address, empty turns it off
+				if (val_new.size() && !nSocket::cIP6Check::IsAny(val_new) && !nSocket::cIP6Check::IsPublic(val_new)) { // note: address is given to clients
+					if (user && user->mxConn)
+						DCPublicHS(_("Specified value is expected to be :: or a valid public IPv6 address."), user->mxConn);
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
 			/*
 			} else if ((svar == "tls_listen_ip") && (val_new != val_old)) { // validate proxy ip, todo: tls_min_ver - 0-3
 				unsigned long ip = 0;
@@ -4351,11 +4417,8 @@ void cServerDC::DoStackTrace()
 	ctm2hub
 */
 
-void cServerDC::CtmToHubAddItem(cConnDC *conn, const string &ref)
+void cServerDC::CtmToHubAddItem(const string &ref)
 {
-	if (!conn)
-		return;
-
 	mCtmToHubTotal++;
 
 	if (ref.size() && (mCtmToHubRefs.size() < 1000) && mCtmToHubRefs.insert(ref).second) // note: new hub address, it is reported once

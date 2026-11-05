@@ -87,6 +87,7 @@ SET(VERLIHUB_HDRS
 	cwakeup.h
 	csocketcancel.h
 	csocketapi.h
+	cip6check.h
 	ctlssession.h
 	cmysqlworker.h
 	czlib.h
@@ -174,6 +175,7 @@ SET(VERLIHUB_SRCS
 	cwakeup.cpp
 	csocketcancel.cpp
 	csocketapi.cpp
+	cip6check.cpp
 	ctlssession.cpp
 	cmysqlworker.cpp
 	czlib.cpp

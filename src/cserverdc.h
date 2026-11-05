@@ -50,6 +50,7 @@
 #include "csocketcancel.h"
 #include "chttpconn.h"
 #include "cmysqlworker.h"
+#include "cip6check.h"
 #include <map>
 #include <set>
 #include <mutex>
@@ -239,6 +240,15 @@ class cServerDC : public cAsyncSocketServer
 		cSetupList mSetupList;
 		// Protocol message handler
 		cDCProto mP;
+
+		// checks ipv6 addresses of users, open only when listen_ip6 is set
+		nSocket::cIP6Check mIP6Check;
+
+		// address where clients prove their ipv6 address, empty when they cant do it now
+		const string &IP6Address();
+		string mIP6Tell; // last address written to log
+		bool mIP6Told = false;
+
 		// Console managment
 		class cDCConsole *mCo;
 		// User registration and reglist handler
@@ -698,7 +708,7 @@ class cServerDC : public cAsyncSocketServer
 
 		sCtmToHubConf mCtmToHubConf;
 
-		void CtmToHubAddItem(cConnDC *conn, const string &ref);
+		void CtmToHubAddItem(const string &ref);
 		int CtmToHubRefererList(string &list);
 		void CtmToHubClearList();
 

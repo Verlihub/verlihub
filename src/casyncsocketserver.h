@@ -190,6 +190,9 @@ namespace nVerliHub {
 				// address to listen on
 				string mAddr;
 
+				// ipv6 address where users prove their ipv6 address, empty when not used
+				string mAddr6;
+
 				// main and extra ports to listen on
 				unsigned int mPort;
 				string mExtra;

@@ -389,6 +389,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	conn->mSupportsText = supports; // save user supports in plain text format
 	istringstream is(supports);
 	string feature, omsg, pars;
+	bool natip6 = false;
 
 	while (1) {
 		feature = mS->mEmpty;
@@ -496,6 +497,9 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "SaltPass") == 0)) {
 			conn->mFeatures |= eSF_SALTPASS;
 
+		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "NATIP6") == 0)) {
+			natip6 = true;
+
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "NickRule") == 0)) {
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
@@ -514,6 +518,11 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 			if (!mS->mC.disable_extjson)
 				pars.append("ExtJSON2 ");
 		}
+	}
+
+	if (natip6 && (conn->mFeatures & eSF_TLS) && mS->IP6Address().size()) { // note: ipv6 connections are tls only, and hub must be able to check addresses
+		conn->mFeatures |= eSF_NATIP6;
+		pars.append("NATIP6 ");
 	}
 
 	#ifndef WITHOUT_PLUGINS
@@ -2249,8 +2258,24 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		temp = conn->mAddrIP;
 	}
 
-	if (extra.size() && ((extra[0] == 'N') || (extra[0] == 'R')) && conn->AddrPort() && (temp == conn->mAddrIP)) // nat: client knows only its local port, router can change it, hub sees the real one
+	const unsigned int own_port = iport;
+	const bool nat = extra.size() && ((extra[0] == 'N') || (extra[0] == 'R'));
+
+	if (nat && conn->AddrPort() && (temp == conn->mAddrIP)) // nat: client knows only its local port, router can change it, hub sees the real one
 		iport = conn->AddrPort();
+
+	if (nat && (other->mxConn->mFeatures & eSF_NATIP6)) {
+		if (extra[0] == 'R') { // note: normal answer has no sender, client ties both addresses of one user together with it
+			extra.append(1, ' ');
+			extra.append(conn->mpUser->mNick);
+		}
+
+		if ((extra[1] == 'S') && (conn->mFeatures & eSF_NATIP6) && conn->mAddrIP6.size() && other->mxConn->mAddrIP6.size()) { // ipv6 is tls only, both addresses are checked, no nat so client port is right
+			string ctm6;
+			Create_ConnectToMe(ctm6, nick, '[' + conn->mAddrIP6 + ']', StringFrom(own_port), extra);
+			other->mxConn->Send(ctm6, true);
+		}
+	}
 
 	string ctm;
 	Create_ConnectToMe(ctm, nick, temp, StringFrom(iport), extra);
@@ -3561,7 +3586,7 @@ int cDCProto::DCC_Lock(cMessageDC *msg, cConnDC *conn)
 		}
 	#endif
 
-	mS->CtmToHubAddItem(conn, ref);
+	mS->CtmToHubAddItem(ref);
 	string omsg("$Error CTM2HUB|"); // notify client
 	conn->Send(omsg, false, true);
 	conn->CloseNice(500, eCR_NOREDIR); // wait before closing
