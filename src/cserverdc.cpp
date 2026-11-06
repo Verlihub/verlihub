@@ -486,7 +486,7 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 		if (!nSocket::cIP6Check::IsAny(mAddr6) && !nSocket::cIP6Check::IsPublic(mAddr6)) { // note: value can come from database without check of config change
 			vhErr(0) << "Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: " << mAddr6 << endl;
 		} else if (mIP6Check.Start(mAddr6, port)) {
-			vhLog(1) << "Checking IPv6 addresses of users on [" << mAddr6 << "]:" << port << endl;
+			vhLog(0) << "Listening for IPv6 address checks on [" << mAddr6 << "]:" << port << " TCP" << endl;
 			IP6Address();
 		} else {
 			vhErr(0) << "Can not listen on [" << mAddr6 << "]:" << port << ": " << SockErrorText(mIP6Check.LastError()) << endl;

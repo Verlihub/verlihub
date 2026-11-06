@@ -221,6 +221,7 @@ void cUser::DisplayInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Hub TLS: %s"), ((this->mxConn->mTLSVer.size() && (this->mxConn->mTLSVer != "0.0")) ? this->mxConn->mTLSVer.c_str() : _("No"))) << "\r\n"; // hub tls
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (this->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls
 	os << " [*] " << autosprintf(_("Client NAT: %s"), (this->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
+	os << " [*] " << autosprintf(_("Client IPv6: %s"), (this->mxConn->mAddrIP6.size() ? _("Yes") : _("No"))) << "\r\n"; // client ipv6
 
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));
