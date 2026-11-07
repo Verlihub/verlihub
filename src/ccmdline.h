@@ -136,6 +136,10 @@ class cCmdLine
 		bool InsertUser(const string &nick, const string &pass, int clas);
 		// create all tables and default data by creating hub once without listening, its log goes to install_log
 		bool CreateTables();
+		// download all free maxmind databases to existing folder, it reports progress and errors itself
+		static bool FetchMMDB(const string &path);
+		// check that hub finds maxmind database in its default folders when mmdb_path is empty
+		static bool HaveDefaultMMDB();
 
 		// use given configuration folder or find default one, it must contain dbconfig
 		bool SetPath(const string &dir);

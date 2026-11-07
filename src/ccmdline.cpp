@@ -1287,6 +1287,9 @@ int cCmdLine::Install()
 		cout << '\t' << Paint(_("Hub encoding"), sBold) << ": " << encoding << '\n';
 		cout << '\t' << Paint(_("MaxMindDB path"), sBold) << ": " << mmdb << "\n\n";
 
+		if (mmdb.empty() && !HaveDefaultMMDB())
+			cout << Paint(_("You didn't specify MaxMindDB path, your hub will run without geolocation data."), sRedBold) << "\n\n";
+
 		if (AskYesNo(_("Do you want to continue with this information?")))
 			break;
 
@@ -1643,6 +1646,25 @@ int cCmdLine::Install()
 
 	if (!LoadFileInString(regs, data) || !Execute(data))
 		cerr << '\n' << Paint(autosprintf(_("Failed to import %s, please do it manually after installation."), Paint(regs, sBold, true, sRedBold).c_str()), sRedBold, true) << endl;
+
+	if (mmdb.size()) { // note: before owner change, so folder inside configuration folder belongs to hub user too
+		const string path(StripSeparators(SlashPath(mmdb)));
+		cout << '\n';
+
+		if (AskYesNo(autosprintf(_("Do you want to download free MaxMind databases to %s now?"), path.c_str()))) {
+			bool fetched = MakeDirs(path);
+
+			if (!fetched)
+				cout << Paint(autosprintf(_("Error accessing database directory: %s"), path.c_str()), sRedBold) << endl;
+			else
+				fetched = FetchMMDB(path);
+
+			if (fetched) // note: failure never fails installation, hub runs without databases
+				cout << Paint(_("Done updating all free MaxMind databases."), sGreenBold) << endl;
+			else
+				cout << Paint(autosprintf(_("Failed to get MaxMind databases, you can use following command later: %s"), Paint("verlihub -g " + path, sBold, false, sRedBold).c_str()), sRedBold) << endl;
+		}
+	}
 
 #ifndef _WIN32
 	if (vh_home.size() && (dir == vh_home)) { // note: hub runs as system user verlihub
@@ -2901,6 +2923,15 @@ int cCmdLine::GeoIP()
 		return 1;
 	}
 
+	if (!FetchMMDB(path))
+		return 1;
+
+	cout << Paint(_("Done updating all free MaxMind databases, please use !reload command in your hubs."), sGreenBold) << endl;
+	return 0;
+}
+
+bool cCmdLine::FetchMMDB(const string &path)
+{
 	for (unsigned int num = 0; num < cMaxMindDB::sFreeCount; num++) {
 		const char *name = cMaxMindDB::FreeName(num);
 		cout << Paint(autosprintf(_("Processing MaxMind %s database."), name), sBold) << endl;
@@ -2908,22 +2939,37 @@ int cCmdLine::GeoIP()
 
 		if (res == cMaxMindDB::eFREE_DOWNLOAD) {
 			cout << Paint(autosprintf(_("Error downloading MaxMind %s database."), name), sRedBold) << endl;
-			return 1;
+			return false;
 		}
 
 		if (res == cMaxMindDB::eFREE_UNPACK) {
 			cout << Paint(autosprintf(_("Error decompressing MaxMind %s database."), name), sRedBold) << endl;
-			return 1;
+			return false;
 		}
 
 		if ((res != cMaxMindDB::eFREE_OK) || !cMaxMindDB::MoveFree(num, path)) {
 			cout << Paint(autosprintf(_("Error moving MaxMind %s database."), name), sRedBold) << endl;
-			return 1;
+			return false;
 		}
 	}
 
-	cout << Paint(_("Done updating all free MaxMind databases, please use !reload command in your hubs."), sGreenBold) << endl;
-	return 0;
+	return true;
+}
+
+bool cCmdLine::HaveDefaultMMDB()
+{
+#ifdef _WIN32
+	return false; // note: default folders of hub are unix paths
+#else
+	const char *dirs[] = {"/usr/share/GeoIP", "/usr/local/share/GeoIP"}, *files[] = {"GeoIP2-Country.mmdb", "GeoLite2-Country.mmdb"}; // note: same folders and files as hub tries
+
+	for (const char *dir: dirs)
+		for (const char *file: files)
+			if (FileExists(string(dir) + '/' + file))
+				return true;
+
+	return false;
+#endif
 }
 
 int cCmdLine::AutoLoad()
