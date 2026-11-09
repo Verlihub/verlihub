@@ -38,6 +38,7 @@ namespace std {
 
 #include <string>
 #include <functional>
+#include <cstdint>
 #include "thasharray.h"
 #include "stringutils.h"
 
@@ -113,9 +114,9 @@ public:
 
 	struct ufSendWithFeature: public ufSendBase // unary function for sending data to all users by feature in supports
 	{
-		unsigned mFeature;
+		uint64_t mFeature;
 
-		ufSendWithFeature(string &data, const unsigned feature, const bool cache):
+		ufSendWithFeature(string &data, const uint64_t feature, const bool cache):
 			ufSendBase(data, cache),
 			mFeature(feature)
 		{}
@@ -149,9 +150,9 @@ public:
 
 	struct ufSendWithClassFeature: public ufSendBase, ufSendMinMax // unary function for sending data to all users by class range and feature in supports
 	{
-		unsigned mFeature;
+		uint64_t mFeature;
 
-		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache):
+		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const uint64_t feature, const bool cache):
 			ufSendBase(data, cache),
 			ufSendMinMax(min_class, max_class),
 			mFeature(feature)
@@ -205,10 +206,10 @@ public:
 	struct ufSendWithFeature: public unary_function<void, iterator>
 	{
 		string &mData;
-		unsigned mFeature;
+		uint64_t mFeature;
 		bool mCache;
 
-		ufSendWithFeature(string &data, const unsigned feature, const bool cache):
+		ufSendWithFeature(string &data, const uint64_t feature, const bool cache):
 			mData(data),
 			mFeature(feature),
 			mCache(cache)
@@ -251,10 +252,10 @@ public:
 	{
 		string &mData;
 		int mMinClass, mMaxClass;
-		unsigned mFeature;
+		uint64_t mFeature;
 		bool mCache;
 
-		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache):
+		ufSendWithClassFeature(string &data, const int min_class, const int max_class, const uint64_t feature, const bool cache):
 			mData(data),
 			mMinClass(min_class),
 			mMaxClass(max_class),
@@ -471,10 +472,10 @@ public:
 	void SendToAll(string &Data, const bool cache, const bool pipe);
 	void SendToAllWithNick(string &start, string &end);
 	void SendToAllWithClass(string &data, const int min_class, const int max_class, const bool cache, const bool pipe);
-	void SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe);
+	void SendToAllWithFeature(string &data, const uint64_t feature, const bool cache, const bool pipe);
 	void SendToAllWithMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
 	void SendToAllWithoutMyFlag(string &data, const unsigned short flag, const bool cache, const bool pipe);
-	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe);
+	void SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const uint64_t feature, const bool cache, const bool pipe);
 	void FlushCache();
 	//void FlushForUser(cUserBase *user);
 

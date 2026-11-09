@@ -532,6 +532,31 @@ void cServerDC::PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsi
 	}
 }
 
+void cServerDC::SendFdcxAddress(cConnDC *conn)
+{
+	string omsg("$FDCX " + conn->mpUser->mNick);
+
+	if (conn->mFdcxAddr.size())
+		omsg.append(' ' + conn->mFdcxAddr);
+
+	mUserList.SendToAllWithFeature(omsg, eSF_FDCX, false, true);
+}
+
+void cServerDC::SendFdcxAddresses(cConnDC *conn)
+{
+	string omsg;
+
+	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
+		const cConnDC *other = ((cUser*)(*it))->mxConn; // note: bots have no connection
+
+		if (other && (other != conn) && other->mFdcxAddr.size())
+			omsg.append("$FDCX " + (*it)->mNick + ' ' + other->mFdcxAddr + '|');
+	}
+
+	if (omsg.size())
+		conn->Send(omsg, false);
+}
+
 const string &cServerDC::IP6Address()
 {
 	const string &addr = mIP6Check.TellAddress(mTime.Sec());
@@ -1668,6 +1693,13 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 	ShowUserToAll(conn->mpUser); // display user to others
 	SendHeaders(conn, 1);
 	AfterUserLogin(conn);
+
+	if (!mC.disable_fdcx && (conn->mFeatures & eSF_FDCX)) { // addresses of others, and own one that came before login ended
+		SendFdcxAddresses(conn);
+
+		if (conn->mFdcxAddr.size())
+			SendFdcxAddress(conn);
+	}
 
 	if (conn->mFeatures & eSF_NATIP6) { // ask client to prove its ipv6 address
 		const string &addr6 = IP6Address();

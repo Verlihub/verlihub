@@ -67,6 +67,7 @@ namespace nVerliHub {
 			eDCC_LOCK,
 			eDC_IN,
 			eDC_PORTTEST,
+			eDC_FDCX,
 			eDC_CHAT, // note: must always be before unknown
 			eDC_UNKNOWN
 		} tDCMsg;

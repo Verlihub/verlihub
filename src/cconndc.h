@@ -23,6 +23,7 @@
 #include "casyncconn.h"
 #include "creguserinfo.h"
 #include "ctimeout.h"
+#include <cstdint>
 
 namespace nVerliHub {
 	using namespace nSocket;
@@ -108,40 +109,42 @@ namespace nVerliHub {
 			eTO_MAXTO
 		} tTimeOut;
 
-		typedef enum // support flags for client and hub features sent in $Supports
+		// support flags for client and hub features sent in $Supports, 64 bits wide because a long has only 32 on windows
+		typedef enum : uint64_t
 		{
-			eSF_OPPLUS = 1,
-			eSF_NOHELLO = 1 << 1,
-			eSF_NOGETINFO = 1 << 2,
-			eSF_DHT0 = 1 << 3,
-			eSF_QUICKLIST = 1 << 4,
-			eSF_BOTINFO = 1 << 5,
-			eSF_ZLIB = 1 << 6,
-			eSF_CHATONLY = 1 << 7,
-			eSF_MCTO = 1 << 8,
-			eSF_USERCOMMAND = 1 << 9,
-			eSF_BOTLIST = 1 << 10,
-			eSF_HUBTOPIC = 1 << 11,
-			eSF_USERIP2 = 1 << 12,
-			eSF_TTHSEARCH = 1 << 13,
-			eSF_FEED = 1 << 14,
-			eSF_TTHS = 1 << 15,
-			eSF_IN = 1 << 16,
-			eSF_BANMSG = 1 << 17,
-			eSF_TLS = 1 << 18,
-			eSF_HUBURL = 1 << 19,
-			eSF_EXTJSON2 = 1 << 20,
-			eSF_FAILOVER = 1 << 21,
-			eSF_NICKCHANGE = 1 << 22,
-			eSF_CLIENTNICK = 1 << 23,
-			eSF_SEARRULE = 1 << 24,
-			eSF_ZLINE = 1 << 25,
-			eSF_GETZBLOCK = 1 << 26,
-			eSF_ACTM = 1 << 27,
-			eSF_SALTPASS = 1 << 28,
-			eSF_NICKRULE = 1 << 29,
-			eSF_NATIP6 = 1 << 30,
-			eSF_PORTTEST = 1u << 31
+			eSF_OPPLUS = 1ull,
+			eSF_NOHELLO = 1ull << 1,
+			eSF_NOGETINFO = 1ull << 2,
+			eSF_DHT0 = 1ull << 3,
+			eSF_QUICKLIST = 1ull << 4,
+			eSF_BOTINFO = 1ull << 5,
+			eSF_ZLIB = 1ull << 6,
+			eSF_CHATONLY = 1ull << 7,
+			eSF_MCTO = 1ull << 8,
+			eSF_USERCOMMAND = 1ull << 9,
+			eSF_BOTLIST = 1ull << 10,
+			eSF_HUBTOPIC = 1ull << 11,
+			eSF_USERIP2 = 1ull << 12,
+			eSF_TTHSEARCH = 1ull << 13,
+			eSF_FEED = 1ull << 14,
+			eSF_TTHS = 1ull << 15,
+			eSF_IN = 1ull << 16,
+			eSF_BANMSG = 1ull << 17,
+			eSF_TLS = 1ull << 18,
+			eSF_HUBURL = 1ull << 19,
+			eSF_EXTJSON2 = 1ull << 20,
+			eSF_FAILOVER = 1ull << 21,
+			eSF_NICKCHANGE = 1ull << 22,
+			eSF_CLIENTNICK = 1ull << 23,
+			eSF_SEARRULE = 1ull << 24,
+			eSF_ZLINE = 1ull << 25,
+			eSF_GETZBLOCK = 1ull << 26,
+			eSF_ACTM = 1ull << 27,
+			eSF_SALTPASS = 1ull << 28,
+			eSF_NICKRULE = 1ull << 29,
+			eSF_NATIP6 = 1ull << 30,
+			eSF_PORTTEST = 1ull << 31,
+			eSF_FDCX = 1ull << 32
 		} tSupportFeature;
 
 		typedef enum
@@ -160,6 +163,7 @@ namespace nVerliHub {
 			ePF_IN,
 			ePF_PING,
 			ePF_PORTTEST,
+			ePF_FDCX,
 			ePF_UNKNOWN,
 			ePF_LAST
 		} tProtoFloodItems; // protocol flood
@@ -381,10 +385,13 @@ namespace nVerliHub {
 					see tSupportFeature enum
 					todo: move to cProtocol class
 				*/
-				unsigned long mFeatures;
+				uint64_t mFeatures;
 
 				// checked ipv6 address of user, see cIP6Check, empty when there is none
 				string mAddrIP6;
+
+				// fdcx wallet address that client sent with $FDCX, empty when there is none
+				string mFdcxAddr;
 
 				// time of last $PortTest
 				long long mPortTestAt = 0;

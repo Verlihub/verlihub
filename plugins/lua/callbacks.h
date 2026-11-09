@@ -74,6 +74,7 @@ namespace nVerliHub {
 	int _GetTLSVer(lua_State *L);
 	int _IsUserOnline(lua_State *L);
 	int _GetUserSupports(lua_State *L);
+	int _GetUserFDCX(lua_State *L);
 	int _GetUserHubURL(lua_State *L);
 	int _GetUserExtJSON(lua_State *L);
 	int _GetUserVersion(lua_State *L);

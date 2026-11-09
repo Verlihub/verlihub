@@ -32,6 +32,9 @@
 #include <string>
 #include <string.h>
 #include <stdio.h>
+#include <vector>
+#include <cctype>
+#include <cstdint>
 
 #ifdef HAVE_CONFIG_H
 	#include <config.h>
@@ -131,6 +134,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	}
 
 	if ((msg->mType == eDCC_MYIP) && !MyIPAllowed(conn)) // note: not nmdc command, only external tls proxy sends it, for everyone else it is unknown
+		msg->mType = eDC_UNKNOWN;
+
+	if ((msg->mType == eDC_FDCX) && !FdcxAllowed(conn)) // note: extension is disabled or client did not specify support for it
 		msg->mType = eDC_UNKNOWN;
 
 	#ifndef WITHOUT_PLUGINS
@@ -302,6 +308,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 		case eDC_PORTTEST:
 			this->DC_PortTest(msg, conn);
+			break;
+
+		case eDC_FDCX:
+			this->DC_FDCX(msg, conn);
 			break;
 
 		case eDC_IN:
@@ -507,6 +517,12 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "PortTest") == 0)) {
 			conn->mFeatures |= eSF_PORTTEST;
 			pars.append("PortTest ");
+
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "FDCX") == 0)) {
+			if (!mS->mC.disable_fdcx) { // note: without this flag hub sends no fdcx commands and treats them as unknown
+				conn->mFeatures |= eSF_FDCX;
+				pars.append("FDCX ");
+			}
 
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "NickRule") == 0)) {
 			conn->mFeatures |= eSF_NICKRULE;
@@ -1549,6 +1565,92 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 	string omsg("$PortTest ip " + conn->AddrIP()); // note: many hubs dont send $UserIP, client needs this to tell others its address
 	conn->Send(omsg, true);
 	mS->PortTest(conn, ports[0], ports[1], ports[2]);
+	return 0;
+}
+
+// fdcx wallet address: fdcx1, tfdcx1 or rfdcx1 with bech32 or bech32m checksum, lower case, as bip173 and bip350 define it
+static bool ValidFdcxAddress(const string &addr)
+{
+	static const string charset("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
+	const size_t sep = addr.rfind('1');
+
+	if ((addr.size() > 90) || (sep == string::npos) || ((sep + 7) > addr.size()))
+		return false;
+
+	const string hrp(addr.substr(0, sep));
+
+	if ((hrp != "fdcx") && (hrp != "tfdcx") && (hrp != "rfdcx"))
+		return false;
+
+	std::vector<unsigned int> values;
+
+	for (const char ch: hrp)
+		values.push_back(static_cast<unsigned char>(ch) >> 5);
+
+	values.push_back(0);
+
+	for (const char ch: hrp)
+		values.push_back(static_cast<unsigned char>(ch) & 31);
+
+	for (size_t pos = sep + 1; pos < addr.size(); pos++) {
+		const size_t val = charset.find(addr[pos]);
+
+		if (val == string::npos)
+			return false;
+
+		values.push_back(static_cast<unsigned int>(val));
+	}
+
+	static const uint32_t gen[5] = {0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3};
+	uint32_t chk = 1;
+
+	for (const unsigned int val: values) {
+		const uint32_t top = chk >> 25;
+		chk = ((chk & 0x1ffffff) << 5) ^ val;
+
+		for (int bit = 0; bit < 5; bit++) {
+			if ((top >> bit) & 1)
+				chk ^= gen[bit];
+		}
+	}
+
+	return (chk == 1) || (chk == 0x2bc830a3);
+}
+
+int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
+{
+	if (!FdcxAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
+		return this->DCU_Unknown(msg, conn);
+
+	if (CheckUserLogin(conn, msg, false)) // note: address can come before login ends, others get it when user is in list
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_FDCX)) // protocol flood
+		return -1;
+
+	if ((msg->mLen > 100) || msg->SplitChunks()) {
+		conn->CloseNow(eCR_SYNTAX);
+		return -1;
+	}
+
+	string addr(msg->ChunkString(eCH_1_PARAM)); // note: empty address removes it
+
+	for (char &ch: addr)
+		ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+
+	if (addr.size() && !ValidFdcxAddress(addr)) {
+		conn->CloseNow(eCR_SYNTAX);
+		return -1;
+	}
+
+	if (addr == conn->mFdcxAddr)
+		return 0;
+
+	conn->mFdcxAddr = addr;
+
+	if (conn->mpUser->mInList)
+		mS->SendFdcxAddress(conn);
+
 	return 0;
 }
 
@@ -3537,6 +3639,11 @@ bool cDCProto::MyIPAllowed(cConnDC *conn)
 		return false;
 
 	return conn->mTLSVer.empty(); // note: only once, before proxy told us who the user is
+}
+
+bool cDCProto::FdcxAllowed(cConnDC *conn)
+{
+	return !mS->mC.disable_fdcx && (conn->mFeatures & eSF_FDCX);
 }
 
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)

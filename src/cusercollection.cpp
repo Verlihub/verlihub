@@ -269,7 +269,7 @@ void cUserCollection::SendToAllWithClass(string &data, const int min_class, cons
 		data.erase(data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithFeature(string &data, const unsigned feature, const bool cache, const bool pipe)
+void cUserCollection::SendToAllWithFeature(string &data, const uint64_t feature, const bool cache, const bool pipe)
 {
 	AppendPipe(mSendAllCache, data, pipe);
 
@@ -332,7 +332,7 @@ void cUserCollection::SendToAllWithoutMyFlag(string &data, const unsigned short 
 		data.erase(data.size() - 1, 1);
 }
 
-void cUserCollection::SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const unsigned feature, const bool cache, const bool pipe)
+void cUserCollection::SendToAllWithClassFeature(string &data, const int min_class, const int max_class, const uint64_t feature, const bool cache, const bool pipe)
 {
 	AppendPipe(mSendAllCache, data, pipe);
 

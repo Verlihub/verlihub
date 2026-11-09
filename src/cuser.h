@@ -131,7 +131,7 @@ public:
 	{}
 
 	virtual bool CanSend();
-	virtual bool HasFeature(unsigned feature);
+	virtual bool HasFeature(uint64_t feature);
 	virtual bool GetMyFlag(unsigned short flag) const { return false; }
 	virtual void Send(string &data, bool pipe, bool flush = true);
 public:
@@ -169,7 +169,7 @@ public:
 	{}
 
 	virtual bool CanSend();
-	virtual bool HasFeature(unsigned feature);
+	virtual bool HasFeature(uint64_t feature);
 	virtual void Send(string &data, bool pipe, bool flush = true);
 
 	// client flag in myinfo

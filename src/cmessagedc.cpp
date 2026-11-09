@@ -67,6 +67,7 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand("$Lock "),
 	cProtoCommand("$IN "),
 	cProtoCommand("$PortTest "),
+	cProtoCommand("$FDCX "),
 	cProtoCommand("<") // note: must always be last
 };
 
@@ -322,6 +323,7 @@ bool cMessageDC::SplitChunks()
 		case eDCC_MYNICK:
 		case eDCC_LOCK:
 		case eDC_PORTTEST:
+		case eDC_FDCX:
 			if (mLen < mKWSize)
 				mError = true;
 			else

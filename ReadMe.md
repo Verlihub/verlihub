@@ -1,6 +1,6 @@
 # Verlihub 2.0.0.0
 
-Verlihub is advanced NMDC protocol server for Linux and Windows operating systems that provides high level functionality such as:
+Verlihub is advanced NMDC+S protocol server for Linux and Windows operating systems that provides high level functionality such as:
 
   * Low RAM and CPU usage, epoll on Linux and Windows
   * It can hold more than 25k users
