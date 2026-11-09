@@ -207,7 +207,7 @@ protected:
 	// tls proxy
 	int DCC_MyIP(cMessageDC *msg, nSocket::cConnDC *conn);
 	bool MyIPAllowed(nSocket::cConnDC *conn); // note: $MyIP is accepted only from external tls proxy
-	bool FdcxAllowed(nSocket::cConnDC *conn); // note: $FDCX and $FDCXR are accepted only when extension is enabled and client specified support for it
+	bool FdcxAllowed(nSocket::cConnDC *conn); // note: $FDCX and $FDCXR are accepted only when client and hub agreed on support at $Supports
 
 	// ctm2hub
 	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);

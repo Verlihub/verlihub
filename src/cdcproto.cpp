@@ -136,7 +136,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	if ((msg->mType == eDCC_MYIP) && !MyIPAllowed(conn)) // note: not nmdc command, only external tls proxy sends it, for everyone else it is unknown
 		msg->mType = eDC_UNKNOWN;
 
-	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR)) && !FdcxAllowed(conn)) // note: extension is disabled or client did not specify support for it
+	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR)) && !FdcxAllowed(conn)) // note: client and hub did not agree on support at $Supports
 		msg->mType = eDC_UNKNOWN;
 
 	#ifndef WITHOUT_PLUGINS
@@ -3688,7 +3688,7 @@ bool cDCProto::MyIPAllowed(cConnDC *conn)
 
 bool cDCProto::FdcxAllowed(cConnDC *conn)
 {
-	return !mS->mC.disable_fdcx && (conn->mFeatures & eSF_FDCX);
+	return (conn->mFeatures & eSF_FDCX) != 0; // note: flag is set at $Supports only when extension is enabled, later changes of disable_fdcx affect new logins only
 }
 
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)

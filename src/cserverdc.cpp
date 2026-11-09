@@ -539,7 +539,7 @@ void cServerDC::SendFdcxAddress(cConnDC *conn)
 	if (conn->mFdcxAddr.size())
 		omsg.append(' ' + conn->mFdcxAddr);
 
-	mUserList.SendToAllWithFeature(omsg, eSF_FDCX, false, true);
+	mUserList.SendToAllWithFeature(omsg, eSF_FDCX, mC.delayed_myinfo, true); // note: same queue as $MyINFO, so it goes in same round and order
 }
 
 void cServerDC::SendFdcxAddresses(cConnDC *conn)
@@ -1698,14 +1698,16 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 	SendHeaders(conn, 1);
 	AfterUserLogin(conn);
 
-	if (!mC.disable_fdcx && (conn->mFeatures & eSF_FDCX)) { // addresses of others, and own one that came before login ended
+	const bool open = conn->ok && conn->mWritable; // note: login plugin can close the connection, then nothing of this user goes to others
+
+	if (open && (conn->mFeatures & eSF_FDCX)) { // addresses of others, and own one that came before login ended, flag was agreed at $Supports
 		SendFdcxAddresses(conn);
 
 		if (conn->mFdcxAddr.size())
 			SendFdcxAddress(conn);
 	}
 
-	if (conn->mFeatures & eSF_NATIP6) { // ask client to prove its ipv6 address
+	if (open && (conn->mFeatures & eSF_NATIP6)) { // ask client to prove its ipv6 address
 		const string &addr6 = IP6Address();
 
 		if (addr6.size()) {
