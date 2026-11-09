@@ -136,7 +136,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	if ((msg->mType == eDCC_MYIP) && !MyIPAllowed(conn)) // note: not nmdc command, only external tls proxy sends it, for everyone else it is unknown
 		msg->mType = eDC_UNKNOWN;
 
-	if ((msg->mType == eDC_FDCX) && !FdcxAllowed(conn)) // note: extension is disabled or client did not specify support for it
+	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR)) && !FdcxAllowed(conn)) // note: extension is disabled or client did not specify support for it
 		msg->mType = eDC_UNKNOWN;
 
 	#ifndef WITHOUT_PLUGINS
@@ -312,6 +312,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 		case eDC_FDCX:
 			this->DC_FDCX(msg, conn);
+			break;
+
+		case eDC_FDCXR:
+			this->DC_FDCXR(msg, conn);
 			break;
 
 		case eDC_IN:
@@ -1651,6 +1655,47 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 	if (conn->mpUser->mInList)
 		mS->SendFdcxAddress(conn);
 
+	return 0;
+}
+
+int cDCProto::DC_FDCXR(cMessageDC *msg, cConnDC *conn)
+{
+	if (!FdcxAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
+		return this->DCU_Unknown(msg, conn);
+
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_FDCXR)) // protocol flood
+		return -1;
+
+	if ((msg->mLen > 300) || msg->SplitChunks()) {
+		conn->CloseNow(eCR_SYNTAX);
+		return -1;
+	}
+
+	const string &nick = msg->ChunkString(eCH_FR_NICK);
+	const string &token = msg->ChunkString(eCH_FR_TOKEN);
+	bool good = (token.size() == 32);
+
+	for (const char ch: token) {
+		if (!(((ch >= '0') && (ch <= '9')) || ((ch >= 'a') && (ch <= 'f'))))
+			good = false;
+	}
+
+	if (!good) {
+		conn->CloseNow(eCR_SYNTAX);
+		return -1;
+	}
+
+	cUser *other = mS->mUserList.GetUserByNick(nick);
+
+	// note: asking client gives up on its own time when other user left or does not support this
+	if (!other || !other->mInList || !other->mxConn || (other->mxConn == conn) || !FdcxAllowed(other->mxConn))
+		return 0;
+
+	string omsg("$FDCXR " + conn->mpUser->mNick + ' ' + token); // note: hub adds nick of sender itself
+	other->mxConn->Send(omsg, true);
 	return 0;
 }
 

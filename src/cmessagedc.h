@@ -68,6 +68,7 @@ namespace nVerliHub {
 			eDC_IN,
 			eDC_PORTTEST,
 			eDC_FDCX,
+			eDC_FDCXR,
 			eDC_CHAT, // note: must always be before unknown
 			eDC_UNKNOWN
 		} tDCMsg;
@@ -88,6 +89,8 @@ namespace nVerliHub {
 		enum { eCH_GI_ALL, eCH_GI_OTHER, eCH_GI_NICK };
 		// RevConnectToMe   $RevConnectToMe <nick> <remoteNick>
 		enum { eCH_RC_ALL, eCH_RC_NICK, eCH_RC_OTHER };
+		// FDCXR   $FDCXR <nick> <token>
+		enum { eCH_FR_ALL, eCH_FR_NICK, eCH_FR_TOKEN };
 		// private chat : CHMSH is a "<nick> msg" together
 		enum { eCH_PM_ALL, eCH_PM_TO, eCH_PM_FROM, eCH_PM_CHMSG, eCH_PM_NICK, eCH_PM_MSG } ;
 		// private mainchat message

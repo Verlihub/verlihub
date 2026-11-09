@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Verlihub\n"
 "Report-Msgid-Bugs-To: Verlihub Team <info@verlihub.net>\n"
-"POT-Creation-Date: 2026-11-05 12:03+0100\n"
+"POT-Creation-Date: 2026-11-09 17:54+0100\n"
 "PO-Revision-Date: 2016-01-31 20:13+0100\n"
 "Last-Translator: Alexander Zenkov <webmaster@feardc.net>\n"
 "Language-Team: Verlihub Team <info@verlihub.net>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Generator: Poedit 3.10\n"
 "X-Poedit-SearchPath-0: ../plugins\n"
 
-#: ../plugins/lua/callbacks.cpp:1766
+#: ../plugins/lua/callbacks.cpp:1803
 msgid "Incorrect password"
 msgstr ""
 
@@ -145,11 +145,11 @@ msgstr ""
 msgid "Current error class: %d"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:211
+#: ../plugins/lua/cluainterpreter.cpp:212
 msgid "Lua error"
 msgstr ""
 
-#: ../plugins/lua/cluainterpreter.cpp:217
+#: ../plugins/lua/cluainterpreter.cpp:218
 msgid "Unknown error"
 msgstr ""
 

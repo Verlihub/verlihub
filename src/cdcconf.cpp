@@ -246,7 +246,7 @@ void cDCConf::AddVars()
 
 	Add("int_flood_ping_period", int_flood_ping_period, 60);
 	Add("int_flood_ping_limit", int_flood_ping_limit, 5);
-	Add("proto_flood_ping_action", proto_flood_ping_action, 3);
+	Add("proto_flood_ping_action", proto_flood_ping_action, 1); // note: skipped command does no harm, users who pay several others in a hurry are not thrown out
 
 	Add("int_flood_unknown_period", int_flood_unknown_period, 30);
 	Add("int_flood_unknown_limit", int_flood_unknown_limit, 10);

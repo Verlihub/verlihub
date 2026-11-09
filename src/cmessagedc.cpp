@@ -68,6 +68,7 @@ const static cProtoCommand /*cMessageDC::*/sDC_Commands[] = // this list corresp
 	cProtoCommand("$IN "),
 	cProtoCommand("$PortTest "),
 	cProtoCommand("$FDCX "),
+	cProtoCommand("$FDCXR "),
 	cProtoCommand("<") // note: must always be last
 };
 
@@ -153,6 +154,12 @@ bool cMessageDC::SplitChunks()
 
 		case eDC_RCONNECTTOME:
 			if (!SplitOnTwo(mKWSize, ' ', eCH_RC_NICK, eCH_RC_OTHER))
+				mError = true;
+
+			break;
+
+		case eDC_FDCXR:
+			if (!SplitOnTwo(mKWSize, ' ', eCH_FR_NICK, eCH_FR_TOKEN))
 				mError = true;
 
 			break;
