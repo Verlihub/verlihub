@@ -544,17 +544,21 @@ void cServerDC::SendFdcxAddress(cConnDC *conn)
 
 void cServerDC::SendFdcxAddresses(cConnDC *conn)
 {
-	string omsg;
+	string omsg("$FDCX "); // note: one command for all users, like $UserIP list
 
 	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
 		const cConnDC *other = ((cUser*)(*it))->mxConn; // note: bots have no connection
 
-		if (other && (other != conn) && other->mFdcxAddr.size())
-			omsg.append("$FDCX " + (*it)->mNick + ' ' + other->mFdcxAddr + '|');
+		if (other && (other != conn) && other->mFdcxAddr.size()) {
+			omsg.append((*it)->mNick);
+			omsg.append(1, ' ');
+			omsg.append(other->mFdcxAddr);
+			omsg.append("$$");
+		}
 	}
 
-	if (omsg.size())
-		conn->Send(omsg, false);
+	if (omsg.size() > 6) // note: size of command name
+		conn->Send(omsg, true);
 }
 
 const string &cServerDC::IP6Address()
