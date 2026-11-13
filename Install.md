@@ -28,7 +28,7 @@ Dependencies and installation
 
 * Install dependencies on Debian and Ubuntu:
 
-sudo apt install g++ make cmake libpcre2-dev libssl-dev zlib1g-dev default-libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev
+sudo apt install g++ make cmake libpcre2-dev libssl-dev libcrypt-dev zlib1g-dev default-libmysqlclient-dev libmaxminddb-dev libicu-dev gettext libasprintf-dev
 
  * Database server, when it runs on same machine
 
@@ -42,7 +42,7 @@ sudo apt install g++ make cmake libpcre2-dev libssl-dev zlib1g-dev default-libmy
 
 Note: package names are not tested yet, on RedHat and CentOS enable EPEL repository first for libmaxminddb-devel.
 
-sudo dnf install gcc-c++ make cmake pcre2-devel openssl-devel zlib-devel mariadb-connector-c-devel libmaxminddb-devel libicu-devel gettext-devel
+sudo dnf install gcc-c++ make cmake pcre2-devel openssl-devel libxcrypt-devel zlib-devel mariadb-connector-c-devel libmaxminddb-devel libicu-devel gettext-devel
 
  * Optional dependencies
 
@@ -52,7 +52,7 @@ sudo dnf install gcc-c++ make cmake pcre2-devel openssl-devel zlib-devel mariadb
 
 Note: package names are not tested yet.
 
-sudo pacman -S --needed gcc make cmake pcre2 openssl zlib mariadb-libs libmaxminddb icu gettext
+sudo pacman -S --needed gcc make cmake pcre2 openssl libxcrypt zlib mariadb-libs libmaxminddb icu gettext
 
  * Optional dependencies
 
