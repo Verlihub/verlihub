@@ -182,7 +182,7 @@ bool cMySQL::TakeNotice(string &text)
 
 bool cMySQL::Escape(const string &str, string &res) const
 {
-	if (!mDBHandle)
+	if (!mDBHandle || mLost) // note: handle of failed connect has no charset, caller escapes by itself then
 		return false;
 
 	res.resize((str.size() * 2) + 1);

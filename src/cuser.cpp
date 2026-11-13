@@ -223,6 +223,9 @@ void cUser::DisplayInfo(ostream &os)
 	os << " [*] " << autosprintf(_("Client NAT: %s"), (this->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
 	os << " [*] " << autosprintf(_("Client IPv6: %s"), (this->mxConn->mAddrIP6.size() ? _("Yes") : _("No"))) << "\r\n"; // client ipv6
 
+	if (this->mxConn->mFdcxAddr.size())
+		os << " [*] " << autosprintf(_("FDCX address: %s"), this->mxConn->mFdcxAddr.c_str()) << "\r\n"; // fdcx wallet
+
 	if (this->mxConn->mRegInfo)
 		os << (*(this->mxConn->mRegInfo));
 }
