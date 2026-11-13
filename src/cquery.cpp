@@ -120,7 +120,7 @@ MYSQL_ROW cQuery::Row()
 
 int cQuery::Cols()
 {
-	return mysql_num_fields(mResult);
+	return (mResult ? mysql_num_fields(mResult) : 0); // note: no result when connection was lost while rows were read
 }
 
 void cQuery::DataSeek(unsigned long long r)
