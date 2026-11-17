@@ -1621,6 +1621,22 @@ static bool ValidFdcxAddress(const string &addr)
 	return (chk == 1) || (chk == 0x2bc830a3);
 }
 
+// keyprint of client certificate: SHA256/ and base32 of sha-256 digest, 52 characters without padding, upper case
+static bool ValidFdcxKeyprint(const string &kp)
+{
+	if ((kp.size() != 59) || (StrCompare(kp, 0, 7, "SHA256/") != 0))
+		return false;
+
+	for (size_t pos = 7; pos < kp.size(); pos++) {
+		const char ch = kp[pos];
+
+		if (!(((ch >= 'A') && (ch <= 'Z')) || ((ch >= '2') && (ch <= '7'))))
+			return false;
+	}
+
+	return true;
+}
+
 int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 {
 	if (!FdcxAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
@@ -1632,25 +1648,39 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 	if (conn->CheckProtoFlood(msg->mStr, ePF_FDCX)) // protocol flood
 		return -1;
 
-	if ((msg->mLen > 100) || msg->SplitChunks()) {
+	if ((msg->mLen > 200) || msg->SplitChunks()) {
 		conn->CloseNow(eCR_SYNTAX);
 		return -1;
 	}
 
-	string addr(msg->ChunkString(eCH_1_PARAM)); // note: empty address removes it
+	const string &par = msg->ChunkString(eCH_1_PARAM); // note: empty parameter removes address
+	string addr, kp;
 
-	for (char &ch: addr)
-		ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+	if (par.size()) { // note: address always comes with keyprint of certificate that client uses on its connections, others check the client with it
+		const size_t pos = par.find(' ');
 
-	if (addr.size() && !ValidFdcxAddress(addr)) {
-		conn->CloseNow(eCR_SYNTAX);
-		return -1;
+		if ((pos == string::npos) || !pos) {
+			conn->CloseNow(eCR_SYNTAX);
+			return -1;
+		}
+
+		addr.assign(par, 0, pos);
+		kp.assign(par, pos + 1, string::npos);
+
+		for (char &ch: addr)
+			ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+
+		if (!ValidFdcxAddress(addr) || !ValidFdcxKeyprint(kp)) {
+			conn->CloseNow(eCR_SYNTAX);
+			return -1;
+		}
 	}
 
-	if (addr == conn->mFdcxAddr)
+	if ((addr == conn->mFdcxAddr) && (kp == conn->mFdcxKeyprint))
 		return 0;
 
 	conn->mFdcxAddr = addr;
+	conn->mFdcxKeyprint = kp;
 
 	if (conn->mpUser->mInList)
 		mS->SendFdcxAddress(conn);

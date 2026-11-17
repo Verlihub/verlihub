@@ -254,7 +254,7 @@ class cServerDC : public cAsyncSocketServer
 		void PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp);
 		nThread::cWorkerPool mPortWorkers; // note: separate from mWorkers, so tests dont hold up host name lookups
 
-		// fdcx address of user to all users with FDCX support, "$FDCX <nick>" alone when user removed it
+		// fdcx address and certificate keyprint of user to all users with FDCX support, "$FDCX <nick>" alone when user removed it
 		void SendFdcxAddress(cConnDC *conn);
 		// fdcx addresses of all other users to user that just logged in
 		void SendFdcxAddresses(cConnDC *conn);

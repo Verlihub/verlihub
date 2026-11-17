@@ -536,8 +536,10 @@ void cServerDC::SendFdcxAddress(cConnDC *conn)
 {
 	string omsg("$FDCX " + conn->mpUser->mNick);
 
-	if (conn->mFdcxAddr.size())
+	if (conn->mFdcxAddr.size()) {
 		omsg.append(' ' + conn->mFdcxAddr);
+		omsg.append(' ' + conn->mFdcxKeyprint);
+	}
 
 	mUserList.SendToAllWithFeature(omsg, eSF_FDCX, mC.delayed_myinfo, true); // note: same queue as $MyINFO, so it goes in same round and order
 }
@@ -553,6 +555,8 @@ void cServerDC::SendFdcxAddresses(cConnDC *conn)
 			omsg.append((*it)->mNick);
 			omsg.append(1, ' ');
 			omsg.append(other->mFdcxAddr);
+			omsg.append(1, ' ');
+			omsg.append(other->mFdcxKeyprint);
 			omsg.append("$$");
 		}
 	}

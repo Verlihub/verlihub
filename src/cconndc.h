@@ -394,6 +394,9 @@ namespace nVerliHub {
 				// fdcx wallet address that client sent with $FDCX, empty when there is none
 				string mFdcxAddr;
 
+				// keyprint of client certificate that came with the address, empty when there is no address
+				string mFdcxKeyprint;
+
 				// time of last $PortTest
 				long long mPortTestAt = 0;
 
