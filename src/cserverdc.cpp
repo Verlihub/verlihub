@@ -479,21 +479,80 @@ bool cServerDC::StartListening(int OverrideDefaultPort)
 		}
 	}
 
-	if (mAddr6.size()) {
-		const unsigned int port = (OverrideDefaultPort ? OverrideDefaultPort : mPort);
+	mIP6Port = (OverrideDefaultPort ? OverrideDefaultPort : mPort);
 
-		// note: only for this feature, hub works without it
-		if (!nSocket::cIP6Check::IsAny(mAddr6) && !nSocket::cIP6Check::IsPublic(mAddr6)) { // note: value can come from database without check of config change
-			vhErr(0) << "Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: " << mAddr6 << endl;
-		} else if (mIP6Check.Start(mAddr6, port)) {
-			vhLog(0) << "Listening for IPv6 address checks on [" << mAddr6 << "]:" << port << " TCP" << endl;
-			IP6Address();
-		} else {
-			vhErr(0) << "Can not listen on [" << mAddr6 << "]:" << port << ": " << SockErrorText(mIP6Check.LastError()) << endl;
-		}
+	if (mAddr6.size()) {
+		string report; // note: only for this feature, hub works without it
+		StartIP6Check(report);
 	}
 
 	return true;
+}
+
+bool cServerDC::StartIP6Check(string &report)
+{
+	if (!nSocket::cIP6Check::IsAny(mAddr6) && !nSocket::cIP6Check::IsPublic(mAddr6)) { // note: value can come from database without check of config change
+		vhErr(0) << "Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: " << mAddr6 << endl;
+		report = autosprintf(_("Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: %s"), mAddr6.c_str());
+		return false;
+	}
+
+	if (!mIP6Check.Start(mAddr6, mIP6Port)) {
+		const string error = SockErrorText(mIP6Check.LastError());
+		vhErr(0) << "Can not listen on [" << mAddr6 << "]:" << mIP6Port << ": " << error << endl;
+		report = autosprintf(_("Can't listen on [%s]:%u: %s"), mAddr6.c_str(), mIP6Port, error.c_str());
+		return false;
+	}
+
+	vhLog(0) << "Listening for IPv6 address checks on [" << mAddr6 << "]:" << mIP6Port << " TCP" << endl;
+	IP6Address();
+	report = autosprintf(_("Listening for IPv6 address checks on [%s]:%u"), mAddr6.c_str(), mIP6Port);
+	return true;
+}
+
+void cServerDC::ApplyIP6(string &report)
+{
+	mIP6Check.Stop(); // note: pending checks and tokens go with it
+	mIP6Told = false;
+	mIP6Tell.clear();
+
+	if (mAddr6.empty()) { // note: checked addresses are cleared, hub sends no ipv6 $ConnectToMe from now on
+		for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
+			cConnDC *other = ((cUser*)(*it))->mxConn; // note: bots have no connection
+
+			if (other)
+				other->mAddrIP6.clear();
+		}
+
+		vhLog(0) << "IPv6 address checks are off, IPv6 connections between users are off" << endl;
+		report = _("IPv6 address checks are off, IPv6 connections between users are off.");
+		return;
+	}
+
+	if (!StartIP6Check(report))
+		return;
+
+	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) { // note: users who logged in while check was closed
+		cConnDC *other = ((cUser*)(*it))->mxConn;
+
+		if (other && other->ok && other->mWritable && other->mAddrIP6.empty())
+			AskIP6(other);
+	}
+}
+
+void cServerDC::AskIP6(cConnDC *conn)
+{
+	if (!conn || !conn->mpUser || !(conn->mFeatures & eSF_NATIP6))
+		return;
+
+	const string &addr6 = IP6Address();
+
+	if (addr6.empty())
+		return;
+
+	string omsg;
+	mP.Create_ConnectToMe(omsg, conn->mpUser->mNick, '[' + addr6 + ']', StringFrom(mIP6Check.Port()), ' ' + mIP6Check.NewToken(conn->mpUser->mNick, mTime.Sec()));
+	conn->Send(omsg, true);
 }
 
 void cServerDC::PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp)
@@ -1711,14 +1770,8 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 			SendFdcxAddress(conn);
 	}
 
-	if (open && (conn->mFeatures & eSF_NATIP6)) { // ask client to prove its ipv6 address
-		const string &addr6 = IP6Address();
-
-		if (addr6.size()) {
-			mP.Create_ConnectToMe(omsg, conn->mpUser->mNick, '[' + addr6 + ']', StringFrom(mIP6Check.Port()), ' ' + mIP6Check.NewToken(conn->mpUser->mNick, mTime.Sec()));
-			conn->Send(omsg, true);
-		}
-	}
+	if (open) // ask client to prove its ipv6 address
+		AskIP6(conn);
 
 	conn->ClearTimeOut(eTO_LOGIN);
 	conn->mpUser->mT.login = mTime;
@@ -4259,6 +4312,14 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					DCPublicHS(report, user->mxConn);
 			}
 		#endif
+
+			if ((val_new != val_old) && (svar == "listen_ip6")) { // note: apply at once
+				string report;
+				ApplyIP6(report);
+
+				if (report.size() && user && user->mxConn)
+					DCPublicHS(report, user->mxConn);
+			}
 
 			return 1;
 

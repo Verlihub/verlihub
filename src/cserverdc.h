@@ -249,6 +249,14 @@ class cServerDC : public cAsyncSocketServer
 		const string &IP6Address();
 		string mIP6Tell; // last address written to log
 		bool mIP6Told = false;
+		unsigned int mIP6Port = 0; // hub port, check listens on it too
+
+		// opens check on listen_ip6, false with reason when it cant
+		bool StartIP6Check(string &report);
+		// listen_ip6 changed while hub runs: check closes or opens again, users online prove their address again
+		void ApplyIP6(string &report);
+		// asks user to prove ipv6 address, when check is open
+		void AskIP6(cConnDC *conn);
 
 		// tries to reach ports of user on worker thread, answers with $PortTest
 		void PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp);
