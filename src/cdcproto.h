@@ -337,6 +337,7 @@ protected:
 	bool CheckUserLogin(nSocket::cConnDC *conn, cMessageDC *msg, bool inlist = true);
 	bool CheckUserRights(nSocket::cConnDC *conn, cMessageDC *msg, bool cond);
 	bool CheckProtoSyntax(nSocket::cConnDC *conn, cMessageDC *msg);
+	void CloseSyntax(nSocket::cConnDC *conn, cMessageDC *msg); // tells user which command was malformed and closes connection
 	bool CheckProtoLen(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
 	bool CheckCompatTLS(nSocket::cConnDC *one, nSocket::cConnDC *two);

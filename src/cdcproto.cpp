@@ -1547,7 +1547,7 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if ((msg->mLen > 40) || msg->SplitChunks()) {
-		conn->CloseNow(eCR_SYNTAX);
+		CloseSyntax(conn, msg);
 		return -1;
 	}
 
@@ -1557,7 +1557,7 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 
 	for (const unsigned int port: ports) {
 		if (!port || (port > 65535)) {
-			conn->CloseNow(eCR_SYNTAX);
+			CloseSyntax(conn, msg);
 			return -1;
 		}
 	}
@@ -1649,7 +1649,7 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if ((msg->mLen > 200) || msg->SplitChunks()) {
-		conn->CloseNow(eCR_SYNTAX);
+		CloseSyntax(conn, msg);
 		return -1;
 	}
 
@@ -1660,7 +1660,7 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 		const size_t pos = par.find(' ');
 
 		if ((pos == string::npos) || !pos) {
-			conn->CloseNow(eCR_SYNTAX);
+			CloseSyntax(conn, msg);
 			return -1;
 		}
 
@@ -1671,7 +1671,7 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 			ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
 
 		if (!ValidFdcxAddress(addr) || !ValidFdcxKeyprint(kp)) {
-			conn->CloseNow(eCR_SYNTAX);
+			CloseSyntax(conn, msg);
 			return -1;
 		}
 	}
@@ -1700,7 +1700,7 @@ int cDCProto::DC_FDCXR(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if ((msg->mLen > 300) || msg->SplitChunks()) {
-		conn->CloseNow(eCR_SYNTAX);
+		CloseSyntax(conn, msg);
 		return -1;
 	}
 
@@ -1714,7 +1714,7 @@ int cDCProto::DC_FDCXR(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (!good) {
-		conn->CloseNow(eCR_SYNTAX);
+		CloseSyntax(conn, msg);
 		return -1;
 	}
 
@@ -3933,6 +3933,12 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 	if (!msg->SplitChunks())
 		return false;
 
+	CloseSyntax(conn, msg);
+	return true;
+}
+
+void cDCProto::CloseSyntax(cConnDC *conn, cMessageDC *msg)
+{
 	string cmd;
 
 	switch (msg->mType) {
@@ -4049,6 +4055,18 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 			cmd = "IN";
 			break;
 
+		case eDC_PORTTEST:
+			cmd = "PortTest";
+			break;
+
+		case eDC_FDCX:
+			cmd = "FDCX";
+			break;
+
+		case eDC_FDCXR:
+			cmd = "FDCXR";
+			break;
+
 		default:
 			cmd = _("Unknown");
 			break;
@@ -4061,7 +4079,6 @@ bool cDCProto::CheckProtoSyntax(cConnDC *conn, cMessageDC *msg)
 		conn->LogStream() << os.str() << endl;
 
 	mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
-	return true;
 }
 
 bool cDCProto::CheckProtoLen(cConnDC *conn, cMessageDC *msg)
