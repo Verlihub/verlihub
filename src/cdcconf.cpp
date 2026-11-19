@@ -385,6 +385,7 @@ void cDCConf::AddVars()
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
 	Add("disable_fdcx", disable_fdcx, false); // fdcx
+	Add("disable_ccpm", disable_ccpm, false); // ccpm
 	Add("myinfo_tls_filter", myinfo_tls_filter, false);
 	Add("mmdb_names_lang", mmdb_names_lang, ""); // maxminddb names language, empty means english
 	Add("mmdb_conv_depth", mmdb_conv_depth, 2); // conversion depth, 0 = do nothing, 1 = utf8 to hub_encoding conversion, 2 = transliteration

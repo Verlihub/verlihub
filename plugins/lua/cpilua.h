@@ -65,6 +65,7 @@ public:
 	virtual bool OnParsedMsgMyPass(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgConnectToMe(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnParsedMsgRevConnectToMe(nSocket::cConnDC *, nProtocol::cMessageDC *);
+	virtual bool OnParsedMsgCCPM(nSocket::cConnDC *, nProtocol::cMessageDC *, string *, string *, string *, int);
 	virtual bool OnUnknownMsg(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	//virtual bool OnUnparsedMsg(nSocket::cConnDC *, nProtocol::cMessageDC *);
 	virtual bool OnOperatorCommand(nSocket::cConnDC *, string *);

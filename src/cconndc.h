@@ -144,7 +144,8 @@ namespace nVerliHub {
 			eSF_NICKRULE = 1ull << 29,
 			eSF_NATIP6 = 1ull << 30,
 			eSF_PORTTEST = 1ull << 31,
-			eSF_FDCX = 1ull << 32
+			eSF_FDCX = 1ull << 32,
+			eSF_CCPM = 1ull << 33 // direct private chat between two clients, tls only
 		} tSupportFeature;
 
 		typedef enum

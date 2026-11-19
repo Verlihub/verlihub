@@ -1744,7 +1744,8 @@ int _InUserSupports(lua_State *L)
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "ExtJSON2") == 0) && (user->mxConn->mFeatures & eSF_EXTJSON2)) ||
 		((flag.size() == 6) && (StrCompare(flag, 0, 6, "NATIP6") == 0) && (user->mxConn->mFeatures & eSF_NATIP6)) ||
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "PortTest") == 0) && (user->mxConn->mFeatures & eSF_PORTTEST)) ||
-		((flag.size() == 4) && (StrCompare(flag, 0, 4, "FDCX") == 0) && (user->mxConn->mFeatures & eSF_FDCX))
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "FDCX") == 0) && (user->mxConn->mFeatures & eSF_FDCX)) ||
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "CCPM") == 0) && (user->mxConn->mFeatures & eSF_CCPM))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

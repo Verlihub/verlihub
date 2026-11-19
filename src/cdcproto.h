@@ -245,6 +245,7 @@ protected:
 	static void Create_ForceMove(string &dest, const string &addr, const bool clear);
 	static void Create_HubTopic(string &dest, const string &topic);
 	static void Create_ConnectToMe(string &dest, const string &nick, const string &addr, const string &port, const string &extra);
+	static void Create_CCPM(string &dest, const string &nick, const string &reason);
 	static void Create_Search(string &dest, const string &addr, const string &lims, const string &spat);
 	static void Create_Search(string &dest, const string &addr, const string &tth, const bool pas);
 	static void Create_SA(string &dest, const string &tth, const string &addr);
@@ -340,7 +341,14 @@ protected:
 	void CloseSyntax(nSocket::cConnDC *conn, cMessageDC *msg); // tells user which command was malformed and closes connection
 	bool CheckProtoLen(nSocket::cConnDC *conn, cMessageDC *msg);
 	bool CheckUserNick(nSocket::cConnDC *conn, const string &nick);
-	bool CheckCompatTLS(nSocket::cConnDC *one, nSocket::cConnDC *two);
+	bool CheckCompatTLS(nSocket::cConnDC *one, nSocket::cConnDC *two, const bool quiet = false); // quiet tells user nothing
+	int CheckCCPM(cMessageDC *msg, nSocket::cConnDC *conn, cUser *other, const bool nat, const bool answer); // 0 when direct private chat may start, else user was told why or flood was handled
+	bool CheckSupportCCPM(nSocket::cConnDC *conn); // closes connection that did not agree CCPM
+	void CloseCCPM(nSocket::cConnDC *conn, const string &nick, cUser *other, const bool offline); // other user is offline, a bot or sender itself, offline tells offline user too
+	static const long CCPM_ASK_TIME = 60; // seconds a direct private chat request waits for answer of its user
+	void PruneCCPMAsks(cUser *user); // requests to user older than CCPM_ASK_TIME go
+	void AddCCPMAsk(cUser *user, cUser *from); // from asked user for direct private chat, its answer is no new request
+	bool TakeCCPMAsk(cUser *user, cUser *from); // true when from asked user short time ago, ask is used up
 	bool FindInSupports(const string &list, const string &flag);
 
 	/**

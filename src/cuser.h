@@ -22,6 +22,7 @@
 #define CUSER_H
 
 #include <string>
+#include <map>
 #include "cobj.h"
 #include "cconndc.h"
 #include "cpenaltylist.h"
@@ -238,6 +239,9 @@ public:
 	unsigned int mRCTMCount;
 	cTime mRCTMTime;
 	bool mRCTMLock;
+
+	// direct private chat requests to this user that wait for its answer: nick hash of asker, number of open requests and time of last one
+	std::map<tHashType, std::pair<unsigned int, long>> mCCPMAsks;
 
 	/** 0 means perm ban, otherwiese in seconds */
 	//long mBanTime;

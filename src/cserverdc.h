@@ -1016,6 +1016,7 @@ private:
 			mOnParsedMsgValidateNick(mgr, "VH_OnParsedMsgValidateNick", &cVHPlugin::OnParsedMsgValidateNick),
 			mOnParsedMsgConnectToMe(mgr, "VH_OnParsedMsgConnectToMe", &cVHPlugin::OnParsedMsgConnectToMe),
 			mOnParsedMsgRevConnectToMe(mgr, "VH_OnParsedMsgRevConnectToMe", &cVHPlugin::OnParsedMsgRevConnectToMe),
+			mOnParsedMsgCCPM(mgr, "VH_OnParsedMsgCCPM", &cVHPlugin::OnParsedMsgCCPM),
 			mOnOperatorCommand(mgr, "VH_OnOperatorCommand", &cVHPlugin::OnOperatorCommand),
 			mOnUserCommand(mgr, "VH_OnUserCommand", &cVHPlugin::OnUserCommand),
 			mOnHubCommand(mgr, "VH_OnHubCommand", &cVHPlugin::OnHubCommand),
@@ -1065,6 +1066,7 @@ private:
 		cVHCBL_Message mOnParsedMsgValidateNick;
 		cVHCBL_Message mOnParsedMsgConnectToMe;
 		cVHCBL_Message mOnParsedMsgRevConnectToMe;
+		cVHCBL_ConnMsgStrStrStrInt mOnParsedMsgCCPM;
 		cVHCBL_ConnText mOnOperatorCommand;
 		cVHCBL_ConnText mOnUserCommand;
 		cVHCBL_ConnTextIntInt mOnHubCommand;

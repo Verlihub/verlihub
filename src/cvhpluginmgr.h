@@ -434,6 +434,7 @@ class cVHCBL_Connection: public cVHCBL_Base
 #pragma GCC diagnostic pop
 
 typedef tVHCBL_6Types<cUser*, string*, string*, string*, string*, int> cVHCBL_UsrStrStrStrStrInt;
+typedef tVHCBL_6Types<nSocket::cConnDC*, nProtocol::cMessageDC*, string*, string*, string*, int> cVHCBL_ConnMsgStrStrStrInt;
 typedef tVHCBL_4Types<nSocket::cConnDC, string, int, int> cVHCBL_ConnTextIntInt;
 typedef tVHCBL_R4Types<cUser, string, int, int> cVHCBL_UsrStrIntInt;
 typedef tVHCBL_R4Types<cUser, string, string, string> cVHCBL_UsrStrStrStr;

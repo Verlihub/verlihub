@@ -146,6 +146,7 @@ bool cpiLua::RegisterAll()
 	RegisterCallBack("VH_OnParsedMsgSearch");
 	RegisterCallBack("VH_OnParsedMsgConnectToMe");
 	RegisterCallBack("VH_OnParsedMsgRevConnectToMe");
+	RegisterCallBack("VH_OnParsedMsgCCPM");
 	RegisterCallBack("VH_OnParsedMsgSR");
 	RegisterCallBack("VH_OnParsedMsgMyINFO");
 	RegisterCallBack("VH_OnFirstMyINFO");
@@ -522,6 +523,25 @@ bool cpiLua::OnParsedMsgConnectToMe(cConnDC *conn, cMessageDC *msg)
 		}; // eCH_CM_NICK, eCH_CM_ACTIVE, eCH_CM_IP, eCH_CM_PORT
 
 		return CallAll("VH_OnParsedMsgConnectToMe", args, conn);
+	}
+
+	return true;
+}
+
+bool cpiLua::OnParsedMsgCCPM(cConnDC *conn, cMessageDC *msg, string *to, string *ip, string *port, int passive)
+{
+	if (conn && conn->mpUser && msg && to && ip && port) {
+		const string spas(to_string(passive));
+		const char *args[] = {
+			conn->mpUser->mNick.c_str(),
+			to->c_str(),
+			ip->c_str(),
+			port->c_str(),
+			spas.c_str(),
+			NULL
+		};
+
+		return CallAll("VH_OnParsedMsgCCPM", args, conn);
 	}
 
 	return true;

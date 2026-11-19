@@ -407,7 +407,7 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	conn->mSupportsText = supports; // save user supports in plain text format
 	istringstream is(supports);
 	string feature, omsg, pars;
-	bool natip6 = false;
+	bool natip6 = false, ccpm = false;
 
 	while (1) {
 		feature = mS->mEmpty;
@@ -518,6 +518,9 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "NATIP6") == 0)) {
 			natip6 = true;
 
+		} else if ((feature.size() == 4) && (StrCompare(feature, 0, 4, "CCPM") == 0)) {
+			ccpm = true;
+
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "PortTest") == 0)) {
 			conn->mFeatures |= eSF_PORTTEST;
 			pars.append("PortTest ");
@@ -551,6 +554,11 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 	if (natip6 && (conn->mFeatures & eSF_TLS) && mS->IP6Address().size()) { // note: ipv6 connections are tls only, and hub must be able to check addresses
 		conn->mFeatures |= eSF_NATIP6;
 		pars.append("NATIP6 ");
+	}
+
+	if (ccpm && (conn->mFeatures & eSF_TLS) && !mS->mC.disable_ccpm) { // note: direct private chat is tls only, hub checks rights and flood before each channel
+		conn->mFeatures |= eSF_CCPM;
+		pars.append("CCPM ");
 	}
 
 	#ifndef WITHOUT_PLUGINS
@@ -791,7 +799,7 @@ int cDCProto::DC_MyPass(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (conn->GetLSFlag(eLS_PASSWD) && !conn->mpUser->mSetPass) { // already sent
-		os << _("Invalid login sequence, you client already sent password.");
+		os << _("Invalid login sequence, your client already sent password.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -917,7 +925,7 @@ int cDCProto::DC_MyHubURL(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_HUBURL)) { // check support
-		os << _("Invalid login sequence, you didn't specify support for hub URL command.");
+		os << _("Invalid login sequence, your client didn't specify support for hub URL command.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -971,7 +979,7 @@ int cDCProto::DC_Version(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (conn->GetLSFlag(eLS_VERSION)) { // already sent
-		os << _("Invalid login sequence, you client already sent version.");
+		os << _("Invalid login sequence, your client already sent version.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -1534,12 +1542,12 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	if (!(conn->mFeatures & eSF_PORTTEST)) { // check support
-		const string text(_("Invalid login sequence, you didn't specify support for PortTest command."));
+		const string text(_("Your client didn't specify support for PortTest command."));
 
 		if (conn->Log(1))
 			conn->LogStream() << text << endl;
 
-		mS->ConnCloseMsg(conn, text, 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, text, 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -1737,12 +1745,12 @@ int cDCProto::DC_IN(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_IN)) { // check support
-		os << _("Invalid login sequence, you didn't specify support for IN command.");
+		os << _("Your client didn't specify support for IN command.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -1839,12 +1847,12 @@ int cDCProto::DC_ExtJSON(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_EXTJSON2)) { // check support
-		os << _("Invalid login sequence, you didn't specify support for ExtJSON command.");
+		os << _("Your client didn't specify support for ExtJSON command.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -2055,6 +2063,178 @@ int cDCProto::CheckPM(cConnDC *conn, string &to, const string &text, cUser *othe
 	return 1;
 }
 
+int cDCProto::CheckCCPM(cMessageDC *msg, cConnDC *conn, cUser *other, const bool nat, const bool answer)
+{
+	/*
+		direct private chat is private chat: same rights, class and flood rules as $To, checked before each channel
+		channel carries messages both ways, so both users must be allowed to send private messages to each other
+		user is told why like for $To and $RevConnectToMe, client also gets $CCPM <nick> off|unreachable|denied and sends private messages through hub
+		answer of other client to a request was not asked by its user, it gets only $CCPM
+	*/
+
+	const long now = mS->mTime.Sec();
+	const char *reason = NULL;
+	string to(other->mNick);
+	ostringstream os;
+
+	if (mS->mC.disable_ccpm) {
+		if (!answer)
+			mS->DCPublicHS(_("Direct private chat is disabled on this hub."), conn);
+
+		reason = "off";
+
+	} else if (!(other->mxConn->mFeatures & eSF_CCPM)) {
+		if (!answer) {
+			os << autosprintf(_("User you're trying to chat with doesn't support direct private chat: %s"), to.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		reason = "off";
+
+	} else if (!CheckCompatTLS(conn, other->mxConn, answer)) { // note: tells user itself
+		reason = "off";
+
+	} else if (!conn->mpUser->Can(eUR_PM, now, 0)) { // same as $To
+		if (!answer) {
+			mS->DCPrivateHS(_("You're not allowed to use private chat right now."), conn, &to);
+
+			if (mS->mC.notify_gag_chats)
+				mS->ReportUserToOpchat(conn, autosprintf(_("User tries to speak with gag in PM to %s: %s"), to.c_str(), msg->mStr.c_str()));
+		}
+
+		reason = "denied";
+
+	} else if (conn->mpUser->mClass < mS->mC.private_class) { // same as $To
+		if (!answer) {
+			os << _("Private chat is currently disabled for users with your class, please consider registering on the hub or contact an operator.");
+			mS->DCPrivateHS(os.str(), conn);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		reason = "denied";
+
+	} else if (((conn->mpUser->mClass + (int)mS->mC.classdif_pm) < other->mClass) || // same as $To
+		!other->Can(eUR_PM, now, 0) || (other->mClass < mS->mC.private_class) || ((other->mClass + (int)mS->mC.classdif_pm) < conn->mpUser->mClass)) { // note: other user could not answer through hub either
+
+		if (!answer) {
+			os << _("You can't talk to this user.");
+			mS->DCPrivateHS(os.str(), conn);
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		reason = "denied";
+
+	} else if (mS->mC.filter_lan_requests && (conn->mpUser->mLan != other->mLan)) { // same as $ConnectToMe
+		if (!answer && !mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't open direct private chat with this user because one of you is in a LAN: %s"), to.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		reason = "unreachable";
+
+	} else if (nat && (!conn->mpUser->GetMyFlag(eMF_NAT) || !other->GetMyFlag(eMF_NAT))) { // same as $RevConnectToMe, both passive meet only with nat traversal of both
+		if (!answer && !mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
+			os << autosprintf(_("You can't open direct private chat with this user, because he is also in passive mode: %s"), to.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+		reason = "unreachable";
+	}
+
+	if (reason) {
+		string omsg;
+		Create_CCPM(omsg, other->mNick, reason);
+		conn->Send(omsg, true);
+		return -2;
+	}
+
+	if (!answer && mS->CheckProtoFloodAll(conn, ePFA_PRIV, other)) { // protocol flood from all, answer was counted with its request
+		string omsg;
+		Create_CCPM(omsg, other->mNick, "denied"); // note: client sends through hub at once, where same lock applies
+		conn->Send(omsg, true);
+		return -1;
+	}
+
+	return 0;
+}
+
+void cDCProto::CloseCCPM(cConnDC *conn, const string &nick, cUser *other, const bool offline)
+{
+	ostringstream os;
+
+	if (!other || !other->mInList) { // same as $To
+		if (offline) {
+			os << autosprintf(_("You're trying to send private message to an offline user: %s"), nick.c_str());
+			mS->DCPublicHS(os.str(), conn);
+		}
+
+	} else if (!other->mxConn) { // same as $To
+		os << autosprintf(_("You're trying to send private message to a bot: %s"), nick.c_str());
+		mS->DCPublicHS(os.str(), conn);
+
+	} else { // same as $ConnectToMe
+		mS->DCPublicHS(_("You're trying to connect to yourself."), conn);
+	}
+
+	string omsg;
+	Create_CCPM(omsg, nick, "off");
+	conn->Send(omsg, true);
+}
+
+void cDCProto::PruneCCPMAsks(cUser *user)
+{
+	const long now = mS->mTime.Sec();
+
+	for (auto it = user->mCCPMAsks.begin(); it != user->mCCPMAsks.end();) { // note: requests without answer in time go, list holds only askers of last CCPM_ASK_TIME seconds
+		const long dif = now - it->second.second;
+
+		if ((dif < 0) || (dif > CCPM_ASK_TIME))
+			it = user->mCCPMAsks.erase(it);
+		else
+			++it;
+	}
+}
+
+void cDCProto::AddCCPMAsk(cUser *user, cUser *from)
+{
+	PruneCCPMAsks(user);
+	auto &ask = user->mCCPMAsks[from->mNickHash]; // note: each request of asker was counted, so each gets one answer that is not counted
+	const unsigned int most = (mS->mC.int_flood_to_limit ? mS->mC.int_flood_to_limit : 1); // note: asker sends no more within flood period, more open ones are requests nobody answers
+
+	if (ask.first < most)
+		ask.first++;
+
+	ask.second = mS->mTime.Sec();
+}
+
+bool cDCProto::TakeCCPMAsk(cUser *user, cUser *from)
+{
+	PruneCCPMAsks(user);
+	auto it = user->mCCPMAsks.find(from->mNickHash);
+
+	if (it == user->mCCPMAsks.end())
+		return false;
+
+	if (--it->second.first == 0)
+		user->mCCPMAsks.erase(it);
+
+	return true;
+}
+
+bool cDCProto::CheckSupportCCPM(cConnDC *conn)
+{
+	if (conn->mFeatures & eSF_CCPM)
+		return false;
+
+	const string text(_("Your client didn't specify support for CCPM."));
+
+	if (conn->Log(1))
+		conn->LogStream() << text << endl;
+
+	mS->ConnCloseMsg(conn, text, 1000, eCR_SYNTAX);
+	return true;
+}
+
 int cDCProto::DC_MCTo(cMessageDC *msg, cConnDC *conn)
 {
 	if (CheckUserLogin(conn, msg))
@@ -2249,19 +2429,74 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (CheckProtoSyntax(conn, msg))
 		return -1;
 
-	if (conn->CheckProtoFlood(msg->mStr, ePF_CTM)) // protocol flood
-		return -1;
+	string port = msg->ChunkString(eCH_CM_PORT);
+	size_t pize = port.size();
+
+	// note: P right before last S of port asks for direct private chat (CCPM), without it port is read like in any other request
+	const size_t pend = port.find_first_of(' ');
+	const size_t plen = ((pend == string::npos) ? pize : pend);
+	const bool ccpm = (plen > 2) && (port[plen - 1] == 'S') && (port[plen - 2] == 'P');
+	bool ccpmnat = false;
+
+	if (ccpm) {
+		if (CheckSupportCCPM(conn))
+			return -1;
+
+		port.erase(plen - 2, 1);
+		pize = port.size();
+
+		/*
+			forms are <port>S and <port>RS, or <port>NS <sender> for nat
+			sender is checked against own nick below
+		*/
+
+		const size_t dend = port.find_first_not_of("0123456789"); // note: S is always there, so digits end before it
+		bool valid = (dend > 0) && (dend <= 5);
+
+		if (valid) {
+			const unsigned int num = StringAsLL(port.substr(0, dend));
+			valid = mS->CheckPortNumber(num);
+		}
+
+		if (valid) {
+			const string form = port.substr(dend, plen - 1 - dend);
+
+			if ((form == "S") || (form == "RS"))
+				valid = (pend == string::npos);
+			else
+				valid = (form == "NS") && (pend != string::npos) && (pize > plen);
+
+			ccpmnat = (form != "S");
+		}
+
+		if (!valid) {
+			CloseSyntax(conn, msg);
+			return -1;
+		}
+	}
 
 	ostringstream os;
 	string &nick = msg->ChunkString(eCH_CM_NICK); // find other user
-	const string &port = msg->ChunkString(eCH_CM_PORT);
-	size_t pize = port.size();
+	cUser *other = mS->mUserList.GetUserByNick(nick);
+	string temp;
+	const bool answer = ccpm && other && TakeCCPMAsk(conn->mpUser, other); // note: answer to request of other user, that request was counted
+
+	if (!answer && conn->CheckProtoFlood(msg->mStr, (ccpm ? ePF_PRIV : ePF_CTM))) { // protocol flood, direct private chat counts as private chat
+		if (ccpm) { // note: when action only skips, client sends through hub at once, closed connection sends nothing
+			Create_CCPM(temp, nick, "denied");
+			conn->Send(temp, true);
+		}
+
+		return -1;
+	}
 
 	if (!pize)
 		return -1;
 
-	cUser *other = mS->mUserList.GetUserByNick(nick);
-	string temp;
+	if (ccpm && (!other || !other->mInList || !other->mxConn || (other->mNickHash == conn->mpUser->mNickHash))) { // note: offline user, bot or self, client sends through hub
+		CloseCCPM(conn, nick, other, false); // note: like $ConnectToMe, offline user is not told, it can be answer to user who just left
+		return -2;
+	}
 
 	if (!other) {
 		/*
@@ -2326,7 +2561,14 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (conn->mpUser->mClass < mS->mC.min_class_use_hub) { // check use hub class
+	if (ccpm) { // note: direct private chat follows rules of private chat, download rules below are not for it
+		const int res = CheckCCPM(msg, conn, other, ccpmnat, answer);
+
+		if (res)
+			return res;
+	}
+
+	if (!ccpm && (conn->mpUser->mClass < mS->mC.min_class_use_hub)) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
 			os << autosprintf(_("You can't download unless you are registered with class %d."), mS->mC.min_class_use_hub);
 			mS->DCPublicHS(os.str(), conn);
@@ -2353,7 +2595,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	use_hub_share = use_hub_share * 1024 * 1024;
 
-	if (conn->mpUser->mShare < use_hub_share) {
+	if (!ccpm && (conn->mpUser->mShare < use_hub_share)) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
 			os << autosprintf(_("You can't download unless you share %s."), convertByte(use_hub_share, false).c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2362,14 +2604,14 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) { // check temporary right
+	if (!ccpm && !conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) { // check temporary right
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're not allowed to download from anyone."), conn);
 
 		return -4;
 	}
 
-	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+	if (!ccpm && (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare))) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2378,7 +2620,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if (mS->mC.filter_lan_requests && (conn->mpUser->mLan != other->mLan)) { // filter lan to wan and reverse
+	if (!ccpm && mS->mC.filter_lan_requests && (conn->mpUser->mLan != other->mLan)) { // filter lan to wan and reverse
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user because one of you is in a LAN: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2387,7 +2629,7 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if ((other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
+	if (!ccpm && (other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user because he is in chat only mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2459,6 +2701,24 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		temp.assign(temp, 0, pize - 1);
 	}
 
+	if (ccpm) { // note: channel goes only over tls, nat form only when both support nat, P goes back right before S
+		const size_t spos = extra.find('S');
+
+		if (spos == string::npos) {
+			string omsg;
+			Create_CCPM(omsg, other->mNick, "unreachable");
+			conn->Send(omsg, true);
+			return -2;
+		}
+
+		extra.insert(spos, 1, 'P');
+
+		if (extra.find(' ') == string::npos) { // note: hub names sender, connecting client takes only that nick on the channel
+			extra.append(1, ' ');
+			extra.append(conn->mpUser->mNick);
+		}
+	}
+
 	if (temp.empty() || (temp.size() > 5))
 		return -1;
 
@@ -2468,8 +2728,19 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 
 	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg))
+		if (ccpm) { // note: direct private chat has own event, scripts that check downloads do not see it
+			string cto(other->mNick), cip(msg->ChunkString(eCH_CM_IP)), cport(temp);
+
+			if (!mS->mCallBacks.mOnParsedMsgCCPM.CallAll(conn, msg, &cto, &cip, &cport, (ccpmnat ? 1 : 0))) {
+				string omsg;
+				Create_CCPM(omsg, other->mNick, "denied");
+				conn->Send(omsg, true);
+				return -2;
+			}
+
+		} else if (!mS->mCallBacks.mOnParsedMsgConnectToMe.CallAll(conn, msg)) {
 			return -2;
+		}
 	#endif
 
 	const string &addr = msg->ChunkString(eCH_CM_IP);
@@ -2494,12 +2765,12 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 		iport = conn->AddrPort();
 
 	if (nat && (other->mxConn->mFeatures & eSF_NATIP6)) {
-		if (extra[0] == 'R') { // note: normal answer has no sender, client ties both addresses of one user together with it
+		if ((extra[0] == 'R') && (extra.find(' ') == string::npos)) { // note: normal answer has no sender, client ties both addresses of one user together with it
 			extra.append(1, ' ');
 			extra.append(conn->mpUser->mNick);
 		}
 
-		if ((extra[1] == 'S') && (conn->mFeatures & eSF_NATIP6) && conn->mAddrIP6.size() && other->mxConn->mAddrIP6.size()) { // ipv6 is tls only, both addresses are checked, no nat so client port is right
+		if (((extra[1] == 'S') || ((extra[1] == 'P') && (extra[2] == 'S'))) && (conn->mFeatures & eSF_NATIP6) && conn->mAddrIP6.size() && other->mxConn->mAddrIP6.size()) { // ipv6 is tls only, both addresses are checked, no nat so client port is right
 			string ctm6;
 			Create_ConnectToMe(ctm6, nick, '[' + conn->mAddrIP6 + ']', StringFrom(own_port), extra);
 			other->mxConn->Send(ctm6, true);
@@ -2509,6 +2780,10 @@ int cDCProto::DC_ConnectToMe(cMessageDC *msg, cConnDC *conn)
 	string ctm;
 	Create_ConnectToMe(ctm, nick, temp, StringFrom(iport), extra);
 	other->mxConn->Send(ctm, true); // send it
+
+	if (ccpm && (extra[0] == 'N')) // note: other user answers this nat request with R form
+		AddCCPMAsk(other, conn->mpUser);
+
 	return 0;
 }
 
@@ -2525,12 +2800,38 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 	if (CheckUserNick(conn, mynick))
 		return -1;
 
-	if (conn->CheckProtoFlood(msg->mStr, ePF_RCTM)) // protocol flood
+	string nick = msg->ChunkString(eCH_RC_OTHER); // find other user
+	const bool ccpm = (nick.size() > 2) && (nick.compare(nick.size() - 2, 2, " P") == 0); // note: word P after remote nick asks for direct private chat (CCPM)
+
+	if (ccpm) {
+		if (CheckSupportCCPM(conn))
+			return -1;
+
+		nick.erase(nick.size() - 2);
+
+		if (nick.find(' ') != string::npos) { // note: nick has no space, form is <remote> P
+			CloseSyntax(conn, msg);
+			return -1;
+		}
+	}
+
+	if (conn->CheckProtoFlood(msg->mStr, (ccpm ? ePF_PRIV : ePF_RCTM))) { // protocol flood, direct private chat counts as private chat
+		if (ccpm) { // note: when action only skips, client sends through hub at once, closed connection sends nothing
+			string omsg;
+			Create_CCPM(omsg, nick, "denied");
+			conn->Send(omsg, true);
+		}
+
 		return -1;
+	}
 
 	ostringstream os;
-	const string &nick = msg->ChunkString(eCH_RC_OTHER); // find other user
 	cUser *other = mS->mUserList.GetUserByNick(nick);
+
+	if (ccpm && (!other || !other->mInList || !other->mxConn || (other->mNickHash == conn->mpUser->mNickHash))) { // note: offline user, bot or self, client sends through hub
+		CloseCCPM(conn, nick, other, true);
+		return -2;
+	}
 
 	if (!other || !other->mInList) {
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
@@ -2557,7 +2858,14 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (other->mPassive && (!conn->mpUser->GetMyFlag(eMF_NAT) || !other->GetMyFlag(eMF_NAT))) { // passive request to passive user, allow if both support nat traversal
+	if (ccpm) { // note: direct private chat follows rules of private chat, download rules below are not for it
+		const int res = CheckCCPM(msg, conn, other, other->mPassive, false);
+
+		if (res)
+			return res;
+	}
+
+	if (!ccpm && other->mPassive && (!conn->mpUser->GetMyFlag(eMF_NAT) || !other->GetMyFlag(eMF_NAT))) { // passive request to passive user, allow if both support nat traversal
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user, because he is also in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2566,7 +2874,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
+	if (!ccpm && conn->mpUser->mHideShare) { // when my share is hidden other users cant connect to me
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user while your share is hidden, because you are in passive mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2575,7 +2883,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -2;
 	}
 
-	if (conn->mpUser->mClass < mS->mC.min_class_use_hub_passive) { // check use hub class
+	if (!ccpm && (conn->mpUser->mClass < mS->mC.min_class_use_hub_passive)) { // check use hub class
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
 			os << autosprintf(_("You can't download unless you are registered with class %d."), mS->mC.min_class_use_hub_passive);
 			mS->DCPublicHS(os.str(), conn);
@@ -2602,7 +2910,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 
 	use_hub_share = use_hub_share * 1024 * 1024;
 
-	if (conn->mpUser->mShare < use_hub_share) {
+	if (!ccpm && (conn->mpUser->mShare < use_hub_share)) {
 		if (!conn->mpUser->mHideCtmMsg && (!mS->mC.use_hub_msg_time || mS->MinDelay(conn->mpUser->mT.msg_ctm, mS->mC.use_hub_msg_time))) { // check message delay
 			os << autosprintf(_("You can't download unless you share %s."), convertByte(use_hub_share, false).c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2611,14 +2919,14 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if (!conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) { // check temporary right
+	if (!ccpm && !conn->mpUser->Can(eUR_CTM, mS->mTime.Sec(), 0)) { // check temporary right
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg)
 			mS->DCPublicHS(_("You're not allowed to download from anyone."), conn);
 
 		return -4;
 	}
 
-	if (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare)) { // check class difference and hidden share
+	if (!ccpm && (((conn->mpUser->mClass + (int)mS->mC.classdif_download) < other->mClass) || ((conn->mpUser->mClass < eUC_OPERATOR) && other->mHideShare))) { // check class difference and hidden share
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2627,7 +2935,7 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -4;
 	}
 
-	if ((other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
+	if (!ccpm && (other->mxConn->mFeatures & eSF_CHATONLY) && (conn->mpUser->mClass < mS->mC.chatonly_bypass_class)) { // user is here only to chat
 		if (!mS->mC.hide_msg_badctm && !conn->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("You can't download from this user because he is in chat only mode: %s"), nick.c_str());
 			mS->DCPublicHS(os.str(), conn);
@@ -2636,16 +2944,31 @@ int cDCProto::DC_RevConnectToMe(cMessageDC *msg, cConnDC *conn)
 		return -1;
 	}
 
-	if (mS->CheckProtoFloodAll(conn, ePFA_RCTM, other)) // protocol flood from all
+	if (!ccpm && mS->CheckProtoFloodAll(conn, ePFA_RCTM, other)) // protocol flood from all, direct private chat counts as private chat
 		return -1;
 
 	#ifndef WITHOUT_PLUGINS
-		if (!mS->mCallBacks.mOnParsedMsgRevConnectToMe.CallAll(conn, msg))
+		if (ccpm) { // note: direct private chat has own event, scripts that check downloads do not see it
+			string cto(other->mNick), cip, cport;
+
+			if (!mS->mCallBacks.mOnParsedMsgCCPM.CallAll(conn, msg, &cto, &cip, &cport, 1)) {
+				string omsg;
+				Create_CCPM(omsg, other->mNick, "denied");
+				conn->Send(omsg, true);
+				return -2;
+			}
+
+		} else if (!mS->mCallBacks.mOnParsedMsgRevConnectToMe.CallAll(conn, msg)) {
 			return -2;
+		}
 	#endif
 
 	string _str(msg->mStr);
 	other->mxConn->Send(_str, true); // send it
+
+	if (ccpm) // note: other user answers with $ConnectToMe
+		AddCCPMAsk(other, conn->mpUser);
+
 	return 0;
 }
 
@@ -2920,12 +3243,12 @@ int cDCProto::DC_SA(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_TTHS)) { // check support
-		os << _("Invalid login sequence, you didn't specify support for short TTH search command.");
+		os << _("Your client didn't specify support for short TTH search command.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -3099,12 +3422,12 @@ int cDCProto::DC_SP(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_TTHS)) { // check support
-		os << _("Invalid login sequence, you didn't specify support for short TTH search command.");
+		os << _("Your client didn't specify support for short TTH search command.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
 
-		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_LOGIN_ERR);
+		mS->ConnCloseMsg(conn, os.str(), 1000, eCR_SYNTAX);
 		return -1;
 	}
 
@@ -3306,7 +3629,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	ostringstream os;
 
 	if (!(conn->mFeatures & eSF_BOTINFO) && (conn->mpUser->mClass != eUC_PINGER)) { // not pinger
-		os << _("Invalid login sequence, you didn't identify yourself as pinger.");
+		os << _("Invalid login sequence, your client didn't identify itself as pinger.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -3316,7 +3639,7 @@ int cDCProto::DCB_BotINFO(cMessageDC *msg, cConnDC *conn)
 	}
 
 	if (conn->GetLSFlag(eLS_BOTINFO)) { // already sent
-		os << _("Invalid login sequence, you already sent pinger information.");
+		os << _("Invalid login sequence, your client already sent pinger information.");
 
 		if (conn->Log(1))
 			conn->LogStream() << os.str() << endl;
@@ -4203,7 +4526,7 @@ bool cDCProto::CheckUserNick(cConnDC *conn, const string &nick)
 	return true;
 }
 
-bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
+bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two, const bool quiet)
 {
 	if (!one || !one->mpUser || !two || !two->mpUser)
 		return false;
@@ -4225,7 +4548,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 				return true;
 
 			} else if (two->mTLSVer == "1.0") { // two has version 1.0
-				if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
+				if (!quiet && !mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 					os << autosprintf(_("User you're trying connect to doesn't have compatible TLS version in order to establish secure connection, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
 					os << "\r\n\r\n " << _("Consider these more or less modern clients") << ":\r\n\r\n";
 					os << "\tDC++ @ https://dcplusplus.sourceforge.io\r\n";
@@ -4248,7 +4571,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 
 		} else if (one->mTLSVer == "1.0") { // one has version 1.0
 			if (two->mTLSVer == "1.3") { // two has version 1.3
-				if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
+				if (!quiet && !mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 					os << autosprintf(_("Your client doesn't have compatible TLS version in order to establish secure connection to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
 					os << "\r\n\r\n " << _("Consider these more or less modern clients") << ":\r\n\r\n";
 					os << "\tDC++ @ https://dcplusplus.sourceforge.io\r\n";
@@ -4269,7 +4592,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 	}
 
 	if (!(one->mFeatures & eSF_TLS) || !one->mpUser->GetMyFlag(eMF_TLS)) { // one dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
+		if (!quiet && !mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("Your client doesn't support secure connections to following user, please upgrade or replace your client: %s"), two->mpUser->mNick.c_str());
 			os << "\r\n\r\n " << _("Consider these more or less modern clients") << ":\r\n\r\n";
 			os << "\tDC++ @ https://dcplusplus.sourceforge.io\r\n";
@@ -4285,7 +4608,7 @@ bool cDCProto::CheckCompatTLS(cConnDC *one, cConnDC *two)
 	}
 
 	if (!(two->mFeatures & eSF_TLS) || !two->mpUser->GetMyFlag(eMF_TLS)) { // two dont have tls flag in supports or myinfo
-		if (!mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
+		if (!quiet && !mS->mC.hide_msg_badtlsctm && !one->mpUser->mHideCtmMsg) {
 			os << autosprintf(_("User you're trying connect to doesn't support secure connections, tell him to upgrade or replace his client: %s"), two->mpUser->mNick.c_str());
 			os << "\r\n\r\n " << _("Consider these more or less modern clients") << ":\r\n\r\n";
 			os << "\tDC++ @ https://dcplusplus.sourceforge.io\r\n";
@@ -4736,6 +5059,17 @@ void cDCProto::Create_ConnectToMe(string &dest, const string &nick, const string
 	dest.append(1, ':');
 	dest.append(port);
 	dest.append(extra);
+}
+
+void cDCProto::Create_CCPM(string &dest, const string &nick, const string &reason)
+{
+	if (dest.size())
+		dest.clear();
+
+	dest.append("$CCPM ");
+	dest.append(nick);
+	dest.append(1, ' ');
+	dest.append(reason);
 }
 
 void cDCProto::Create_Search(string &dest, const string &addr, const string &lims, const string &spat)

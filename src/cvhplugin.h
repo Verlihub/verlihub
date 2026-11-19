@@ -304,6 +304,20 @@ public:
 	 */
 	virtual bool OnParsedMsgRevConnectToMe(nSocket::cConnDC* , cMessageDC *){ return true; }
 
+	//! Event handler function that is called when $ConnectToMe or $RevConnectToMe asks for direct private chat (CCPM)
+	/*!
+	 * 	Use RegisterCallBack("VH_OnParsedMsgCCPM") to register it. This event can be discardable.
+	 * 	Such requests do not reach OnParsedMsgConnectToMe and OnParsedMsgRevConnectToMe.
+	\return Return false to refuse the channel, sender gets $CCPM <nick> denied, otherwise return true.
+	\param conn The pointer to the connection that sent the message
+	\param msg The pointer to cMessageDC object
+	\param to Nick of the other user
+	\param ip IP address in $ConnectToMe, empty for $RevConnectToMe
+	\param port Port number in $ConnectToMe, without protocol flags, empty for $RevConnectToMe
+	\param passive 1 when sender is passive: $RevConnectToMe or nat form of $ConnectToMe, otherwise 0
+	 */
+	virtual bool OnParsedMsgCCPM(nSocket::cConnDC *, cMessageDC *, string *, string *, string *, int){ return true; }
+
 	//! Event handler function that is called when tag is parsed and validated
 	/*!
 	 * 	Use RegisterCallBack("VH_OnValidateTag") to register it. This event can be discardable.
