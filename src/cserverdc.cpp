@@ -493,20 +493,20 @@ bool cServerDC::StartIP6Check(string &report)
 {
 	if (!nSocket::cIP6Check::IsAny(mAddr6) && !nSocket::cIP6Check::IsPublic(mAddr6)) { // note: value can come from database without check of config change
 		vhErr(0) << "Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: " << mAddr6 << endl;
-		report = autosprintf(_("Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: %s"), mAddr6.c_str());
+		report = string(autosprintf(_("Value of listen_ip6 is not :: or a public IPv6 address, IPv6 connections between users stay off: %s"), mAddr6.c_str()));
 		return false;
 	}
 
 	if (!mIP6Check.Start(mAddr6, mIP6Port)) {
 		const string error = SockErrorText(mIP6Check.LastError());
 		vhErr(0) << "Can not listen on [" << mAddr6 << "]:" << mIP6Port << ": " << error << endl;
-		report = autosprintf(_("Can't listen on [%s]:%u: %s"), mAddr6.c_str(), mIP6Port, error.c_str());
+		report = string(autosprintf(_("Can't listen on [%s]:%u: %s"), mAddr6.c_str(), mIP6Port, error.c_str()));
 		return false;
 	}
 
 	vhLog(0) << "Listening for IPv6 address checks on [" << mAddr6 << "]:" << mIP6Port << " TCP" << endl;
 	IP6Address();
-	report = autosprintf(_("Listening for IPv6 address checks on [%s]:%u"), mAddr6.c_str(), mIP6Port);
+	report = string(autosprintf(_("Listening for IPv6 address checks on [%s]:%u"), mAddr6.c_str(), mIP6Port));
 	return true;
 }
 
