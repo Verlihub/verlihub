@@ -555,6 +555,22 @@ void cServerDC::AskIP6(cConnDC *conn)
 	conn->Send(omsg, true);
 }
 
+string cServerDC::NickPrefixes()
+{
+	// note: prefixes are checked split by any white space, client gets them split by one space each
+	istringstream is(mC.nick_prefix);
+	string pref, list;
+
+	while (is >> pref) {
+		if (list.size())
+			list.append(1, ' ');
+
+		list.append(pref);
+	}
+
+	return list;
+}
+
 void cServerDC::PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp)
 {
 	static const int wait_msec = 3000;
@@ -622,6 +638,57 @@ void cServerDC::SendFdcxAddresses(cConnDC *conn)
 
 	if (omsg.size() > 6) // note: size of command name
 		conn->Send(omsg, true);
+}
+
+void cServerDC::SendAvatar(cConnDC *conn)
+{
+	string omsg("$Avatar " + conn->mpUser->mNick); // note: user entry always ends with $$, so clients tell it from avatar address of hub
+
+	if (conn->mAvatar.size())
+		omsg.append(' ' + conn->mAvatar);
+
+	omsg.append("$$");
+	mUserList.SendToAllWithFeature(omsg, eSF_AVATAR, mC.delayed_myinfo, true); // note: same queue as $MyINFO, so it goes in same round and order
+}
+
+void cServerDC::SendAvatars(cConnDC *conn)
+{
+	string omsg("$Avatar "); // note: one command for all users, like $UserIP list
+
+	for (cUserCollection::iterator it = mUserList.begin(); it != mUserList.end(); ++it) {
+		const cConnDC *other = ((cUser*)(*it))->mxConn; // note: bots have no connection
+
+		if (other && (other != conn) && other->mAvatar.size()) {
+			omsg.append((*it)->mNick);
+			omsg.append(1, ' ');
+			omsg.append(other->mAvatar);
+			omsg.append("$$");
+		}
+	}
+
+	if (omsg.size() > 8) // note: size of command name
+		conn->Send(omsg, true);
+}
+
+void cServerDC::SendHubAvatar(cConnDC *conn)
+{
+	string omsg("$Avatar "), url;
+	const string &icon = mC.hub_icon_url;
+
+	// note: only web address in one piece, anything else is no avatar; empty one tells clients that hub has none
+	if (((StrCompare(icon, 0, 7, "http://") == 0) || (StrCompare(icon, 0, 8, "https://") == 0)) && (icon.find_first_of(" $|") == string::npos))
+		url = icon;
+
+	if (conn) {
+		if (url.empty()) // note: hub had none at login, client knows none
+			return;
+
+		omsg.append(url);
+		conn->Send(omsg, true);
+	} else {
+		omsg.append(url);
+		mUserList.SendToAllWithFeature(omsg, eSF_AVATAR, mC.delayed_myinfo, true);
+	}
 }
 
 const string &cServerDC::IP6Address()
@@ -1763,6 +1830,14 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 
 	const bool open = conn->ok && conn->mWritable; // note: login plugin can close the connection, then nothing of this user goes to others
 
+	if (open && (conn->mFeatures & eSF_AVATAR)) { // avatar of hub, avatars of others, and own one that came before login ended, flag was agreed at $Supports
+		SendHubAvatar(conn);
+		SendAvatars(conn);
+
+		if (conn->mAvatar.size())
+			SendAvatar(conn);
+	}
+
 	if (open && (conn->mFeatures & eSF_FDCX)) { // addresses of others, and own one that came before login ended, flag was agreed at $Supports
 		SendFdcxAddresses(conn);
 
@@ -2028,7 +2103,7 @@ int cServerDC::ValidateUser(cConnDC *conn, const string &nick, int &closeReason)
 					errmsg << autosprintf(_("Please use one of following nick prefixes: %s"), mC.nick_prefix.c_str());
 
 					if (conn->mFeatures & eSF_NICKRULE)
-						mP.Create_BadNick(extra, "Pref", mC.nick_prefix);
+						mP.Create_BadNick(extra, "Pref", NickPrefixes());
 
 					break;
 
@@ -2145,7 +2220,7 @@ tVAL_NICK cServerDC::ValidateNick(cConnDC *conn, const string &nick, string &mor
 				return eVN_CHARS;
 		}
 
-		if (mC.nick_prefix.size()) { // check nick prefix
+		if (NickPrefixes().size()) { // check nick prefix, white space alone is no prefix
 			bad = true;
 			istringstream is(mC.nick_prefix);
 			string pref, snick;
@@ -4320,6 +4395,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				if (report.size() && user && user->mxConn)
 					DCPublicHS(report, user->mxConn);
 			}
+
+			if ((val_new != val_old) && (svar == "hub_icon_url")) // note: clients with avatar support get new avatar of hub at once, empty one removes it
+				SendHubAvatar(NULL);
 
 			return 1;
 

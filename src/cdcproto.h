@@ -183,6 +183,7 @@ protected:
 	int DC_PortTest(cMessageDC *msg, nSocket::cConnDC *conn);
 	int DC_FDCX(cMessageDC *msg, nSocket::cConnDC *conn);
 	int DC_FDCXR(cMessageDC *msg, nSocket::cConnDC *conn);
+	int DC_Avatar(cMessageDC *msg, nSocket::cConnDC *conn);
 	// $ExtJSON
 	int DC_ExtJSON(cMessageDC *msg, nSocket::cConnDC *conn);
 	/** Treat the DC message in a appropriate way */
@@ -208,6 +209,7 @@ protected:
 	int DCC_MyIP(cMessageDC *msg, nSocket::cConnDC *conn);
 	bool MyIPAllowed(nSocket::cConnDC *conn); // note: $MyIP is accepted only from external tls proxy
 	bool FdcxAllowed(nSocket::cConnDC *conn); // note: $FDCX and $FDCXR are accepted only when client and hub agreed on support at $Supports
+	bool AvatarAllowed(nSocket::cConnDC *conn); // note: $Avatar is accepted only when client and hub agreed on support at $Supports
 
 	// ctm2hub
 	int DCC_MyNick(cMessageDC *msg, nSocket::cConnDC *conn);

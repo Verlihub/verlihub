@@ -283,6 +283,7 @@ public:
 	bool disable_extjson; // extjson
 	bool disable_fdcx; // fdcx
 	bool disable_ccpm; // ccpm
+	bool disable_avatar; // avatar
 	bool myinfo_tls_filter;
 	string mmdb_names_lang; // mmdb
 	unsigned int mmdb_conv_depth;

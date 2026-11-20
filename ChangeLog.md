@@ -7,6 +7,7 @@
 * FDCX wallet addresses of users with keyprints of their certificates, $FDCX command with FDCX support flag, $FDCXR relay request, config disable_fdcx, Lua call VH:GetUserFDCX
 * Passive users connect to each other over IPv6 with TLS 1.3, NATIP6 and TLS support flags, configuration listen_ip6
 * Direct private chat between clients over TLS, CCPM support flag, configuration disable_ccpm, Lua callback VH_OnParsedMsgCCPM
+* Avatars of users and of hub, $Avatar command with Avatar support flag, configuration disable_avatar, hub avatar from hub_icon_url, Lua call VH:GetUserAvatar
 * External TLS proxy is used when listen_ip equals tls_listen_ip, configuration tls_force_myip to force it
 * Upgrade from hub behind local TLS proxy sets listen_ip to 0.0.0.0 once
 * Configuration tls_listen_ip is empty by default, upgrade clears old value when no proxy uses it
@@ -91,6 +92,8 @@
 
 ## Fixed
 
+* $SearchRule gives operators minimum search length 1, hub does not check length for them
+* Extra spaces in nick_prefix gave clients a broken nick rule, only spaces refused every guest nick
 * Translation with wrong format arguments could crash hub
 * Hublist registration could hang for minutes on hublist that does not answer
 * Hublist registration and crash report could send incomplete data

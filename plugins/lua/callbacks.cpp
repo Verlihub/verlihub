@@ -1612,6 +1612,41 @@ int _GetUserFDCX(lua_State *L)
 	return 2;
 }
 
+int _GetUserAvatar(lua_State *L)
+{
+	if (lua_gettop(L) < 2) {
+		luaL_error(L, "Error calling VH:GetUserAvatar, expected 1 argument but got %d.", lua_gettop(L) - 1);
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	cServerDC *serv = GetCurrentVerlihub();
+
+	if (serv == NULL) {
+		luaerror(L, ERR_SERV);
+		return 2;
+	}
+
+	if (!lua_isstring(L, 2)) {
+		luaerror(L, ERR_PARAM);
+		return 2;
+	}
+
+	string nick = lua_tostring(L, 2);
+	cUser *usr = serv->mUserList.GetUserByNick(nick);
+
+	if ((usr == NULL) || (usr->mxConn == NULL)) {
+		lua_pushboolean(L, 0);
+		lua_pushnil(L);
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	lua_pushstring(L, usr->mxConn->mAvatar.c_str()); // note: tth of avatar picture, empty when user sent none
+	return 2;
+}
+
 int _GetUserHubURL(lua_State *L)
 {
 	if (lua_gettop(L) < 2) {
@@ -1745,7 +1780,8 @@ int _InUserSupports(lua_State *L)
 		((flag.size() == 6) && (StrCompare(flag, 0, 6, "NATIP6") == 0) && (user->mxConn->mFeatures & eSF_NATIP6)) ||
 		((flag.size() == 8) && (StrCompare(flag, 0, 8, "PortTest") == 0) && (user->mxConn->mFeatures & eSF_PORTTEST)) ||
 		((flag.size() == 4) && (StrCompare(flag, 0, 4, "FDCX") == 0) && (user->mxConn->mFeatures & eSF_FDCX)) ||
-		((flag.size() == 4) && (StrCompare(flag, 0, 4, "CCPM") == 0) && (user->mxConn->mFeatures & eSF_CCPM))
+		((flag.size() == 4) && (StrCompare(flag, 0, 4, "CCPM") == 0) && (user->mxConn->mFeatures & eSF_CCPM)) ||
+		((flag.size() == 6) && (StrCompare(flag, 0, 6, "Avatar") == 0) && (user->mxConn->mFeatures & eSF_AVATAR))
 	) {
 		lua_pushboolean(L, 1);
 		lua_pushboolean(L, 1);

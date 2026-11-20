@@ -145,7 +145,8 @@ namespace nVerliHub {
 			eSF_NATIP6 = 1ull << 30,
 			eSF_PORTTEST = 1ull << 31,
 			eSF_FDCX = 1ull << 32,
-			eSF_CCPM = 1ull << 33 // direct private chat between two clients, tls only
+			eSF_CCPM = 1ull << 33, // direct private chat between two clients, tls only
+			eSF_AVATAR = 1ull << 34 // avatar picture hash of users and avatar address of hub
 		} tSupportFeature;
 
 		typedef enum
@@ -166,6 +167,7 @@ namespace nVerliHub {
 			ePF_PORTTEST,
 			ePF_FDCX,
 			ePF_FDCXR,
+			ePF_AVATAR,
 			ePF_UNKNOWN,
 			ePF_LAST
 		} tProtoFloodItems; // protocol flood
@@ -397,6 +399,9 @@ namespace nVerliHub {
 
 				// keyprint of client certificate that came with the address, empty when there is no address
 				string mFdcxKeyprint;
+
+				// tth of avatar picture that client sent with $Avatar, empty when there is none
+				string mAvatar;
 
 				// time of last $PortTest
 				long long mPortTestAt = 0;

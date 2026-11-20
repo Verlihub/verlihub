@@ -680,6 +680,9 @@ int cDCConsole::CmdMyIp(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n"; // client tls
 	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n"; // client nat
 	os << " [*] " << autosprintf(_("Client IPv6: %s"), (conn->mAddrIP6.size() ? _("Yes") : _("No"))) << "\r\n"; // client ipv6
+	os << " [*] " << autosprintf(_("FDCX chain: %s"), ((conn->mFeatures & eSF_FDCX) ? _("Yes") : _("No"))) << "\r\n"; // fdcx
+	os << " [*] " << autosprintf(_("Client direct PM: %s"), ((conn->mFeatures & eSF_CCPM) ? _("Yes") : _("No"))) << "\r\n"; // ccpm
+	os << " [*] " << autosprintf(_("Client avatar: %s"), (conn->mAvatar.size() ? _("Yes") : _("No"))) << "\r\n"; // avatar
 
 	mOwner->DCPublicHS(os.str(), conn);
 	return 1;
@@ -881,6 +884,9 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	os << " [*] " << autosprintf(_("Client TLS: %s"), (conn->mpUser->GetMyFlag(eMF_TLS) ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Client NAT: %s"), (conn->mpUser->GetMyFlag(eMF_NAT) ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Client IPv6: %s"), (conn->mAddrIP6.size() ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("FDCX chain: %s"), ((conn->mFeatures & eSF_FDCX) ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Client direct PM: %s"), ((conn->mFeatures & eSF_CCPM) ? _("Yes") : _("No"))) << "\r\n";
+	os << " [*] " << autosprintf(_("Client avatar: %s"), (conn->mAvatar.size() ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Share: %s"), convertByte(conn->mpUser->mShare).c_str()) << "\r\n";
 	os << " [*] " << autosprintf(_("Hidden: %s"), (conn->mpUser->mHideShare ? _("Yes") : _("No"))) << "\r\n";
 	os << " [*] " << autosprintf(_("Chat: %s"), (conn->mpUser->mHideChat ? _("Yes") : _("No"))) << "\r\n";

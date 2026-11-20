@@ -115,6 +115,7 @@ bool cLuaInterpreter::Init()
 	RegisterFunction("IsUserOnline", &_IsUserOnline);
 	RegisterFunction("GetUserSupports", &_GetUserSupports);
 	RegisterFunction("GetUserFDCX", &_GetUserFDCX);
+	RegisterFunction("GetUserAvatar", &_GetUserAvatar);
 	RegisterFunction("GetUserHubURL", &_GetUserHubURL);
 	RegisterFunction("GetUserExtJSON", &_GetUserExtJSON);
 	RegisterFunction("GetUserVersion", &_GetUserVersion);

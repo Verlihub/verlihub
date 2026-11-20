@@ -139,6 +139,9 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR)) && !FdcxAllowed(conn)) // note: client and hub did not agree on support at $Supports
 		msg->mType = eDC_UNKNOWN;
 
+	if ((msg->mType == eDC_AVATAR) && !AvatarAllowed(conn)) // note: client and hub did not agree on support at $Supports
+		msg->mType = eDC_UNKNOWN;
+
 	#ifndef WITHOUT_PLUGINS
 		if (msg->mType != eMSG_UNPARSED) {
 			if (conn->mpUser) {
@@ -316,6 +319,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 		case eDC_FDCXR:
 			this->DC_FDCXR(msg, conn);
+			break;
+
+		case eDC_AVATAR:
+			this->DC_Avatar(msg, conn);
 			break;
 
 		case eDC_IN:
@@ -531,6 +538,12 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 				pars.append("FDCX ");
 			}
 
+		} else if ((feature.size() == 6) && (StrCompare(feature, 0, 6, "Avatar") == 0)) {
+			if (!mS->mC.disable_avatar) { // note: without this flag hub sends no avatar commands and treats them as unknown
+				conn->mFeatures |= eSF_AVATAR;
+				pars.append("Avatar ");
+			}
+
 		} else if ((feature.size() == 8) && (StrCompare(feature, 0, 8, "NickRule") == 0)) {
 			conn->mFeatures |= eSF_NICKRULE;
 			pars.append("NickRule ");
@@ -586,9 +599,11 @@ int cDCProto::DC_Supports(cMessageDC *msg, cConnDC *conn)
 		pars.append(StrByteList(string(BAD_NICK_CHARS_OWN))); // dont list all forbidden nmdc characters
 		pars.append("$$");
 
-		if (mS->mC.nick_prefix.size()) {
+		const string prefixes(mS->NickPrefixes());
+
+		if (prefixes.size()) { // note: only white space is no prefix
 			pars.append("Pref ");
-			pars.append(mS->mC.nick_prefix);
+			pars.append(prefixes);
 			pars.append("$$");
 		}
 
@@ -1435,7 +1450,11 @@ int cDCProto::DC_MyINFO(cMessageDC *msg, cConnDC *conn)
 		if (conn->mFeatures & eSF_SEARRULE) { // send search rule command
 			string pars;
 			pars.append("Min ");
-			pars.append(StringFrom(mS->mC.min_search_chars));
+
+			if (conn->mpUser->mClass >= eUC_OPERATOR) // search length is not checked for operators, one character is the least any search has
+				pars.append(1, '1');
+			else
+				pars.append(StringFrom(mS->mC.min_search_chars));
 			pars.append("$$Max ");
 			pars.append(StringFrom(mS->mC.max_len_search));
 			pars.append("$$Num ");
@@ -1570,8 +1589,11 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 		}
 	}
 
-	if ((mS->mTime.Sec() - conn->mPortTestAt) < 60) // note: hub connects out, so this must stay rare
+	if ((mS->mTime.Sec() - conn->mPortTestAt) < 60) { // note: hub connects out, so this must stay rare; client is told, flood check above stops one who keeps asking
+		string omsg("$PortTest busy");
+		conn->Send(omsg, true);
 		return 0;
+	}
 
 	conn->mPortTestAt = mS->mTime.Sec();
 	string omsg("$PortTest ip " + conn->AddrIP()); // note: many hubs dont send $UserIP, client needs this to tell others its address
@@ -1692,6 +1714,54 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 
 	if (conn->mpUser->mInList)
 		mS->SendFdcxAddress(conn);
+
+	return 0;
+}
+
+// tiger tree hash of avatar picture: base32 of 24 bytes, 39 characters without padding, upper case
+static bool ValidAvatarHash(const string &tth)
+{
+	if (tth.size() != 39)
+		return false;
+
+	for (const char ch: tth) {
+		if (!(((ch >= 'A') && (ch <= 'Z')) || ((ch >= '2') && (ch <= '7'))))
+			return false;
+	}
+
+	return true;
+}
+
+int cDCProto::DC_Avatar(cMessageDC *msg, cConnDC *conn)
+{
+	if (!AvatarAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
+		return this->DCU_Unknown(msg, conn);
+
+	if (CheckUserLogin(conn, msg, false)) // note: avatar can come before login ends, others get it when user is in list
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_AVATAR)) // protocol flood
+		return -1;
+
+	if ((msg->mLen > 100) || msg->SplitChunks()) {
+		CloseSyntax(conn, msg);
+		return -1;
+	}
+
+	const string &tth = msg->ChunkString(eCH_1_PARAM); // note: empty parameter removes avatar
+
+	if (tth.size() && !ValidAvatarHash(tth)) {
+		CloseSyntax(conn, msg);
+		return -1;
+	}
+
+	if (tth == conn->mAvatar)
+		return 0;
+
+	conn->mAvatar = tth;
+
+	if (conn->mpUser->mInList)
+		mS->SendAvatar(conn);
 
 	return 0;
 }
@@ -4044,6 +4114,11 @@ bool cDCProto::FdcxAllowed(cConnDC *conn)
 	return (conn->mFeatures & eSF_FDCX) != 0; // note: flag is set at $Supports only when extension is enabled, later changes of disable_fdcx affect new logins only
 }
 
+bool cDCProto::AvatarAllowed(cConnDC *conn)
+{
+	return (conn->mFeatures & eSF_AVATAR) != 0; // note: flag is set at $Supports only when extension is enabled, later changes of disable_avatar affect new logins only
+}
+
 int cDCProto::DCC_MyIP(cMessageDC *msg, cConnDC *conn)
 {
 	if (!MyIPAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
@@ -4388,6 +4463,10 @@ void cDCProto::CloseSyntax(cConnDC *conn, cMessageDC *msg)
 
 		case eDC_FDCXR:
 			cmd = "FDCXR";
+			break;
+
+		case eDC_AVATAR:
+			cmd = "Avatar";
 			break;
 
 		default:

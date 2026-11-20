@@ -260,12 +260,22 @@ class cServerDC : public cAsyncSocketServer
 
 		// tries to reach ports of user on worker thread, answers with $PortTest
 		void PortTest(cConnDC *conn, unsigned int tcp, unsigned int tls, unsigned int udp);
+
+		// prefixes of nick_prefix as $NickRule and $BadNick give them, one space between each
+		string NickPrefixes();
 		nThread::cWorkerPool mPortWorkers; // note: separate from mWorkers, so tests dont hold up host name lookups
 
 		// fdcx address and certificate keyprint of user to all users with FDCX support, "$FDCX <nick>" alone when user removed it
 		void SendFdcxAddress(cConnDC *conn);
 		// fdcx addresses of all other users to user that just logged in
 		void SendFdcxAddresses(cConnDC *conn);
+
+		// avatar hash of user to all users with Avatar support, "$Avatar <nick>$$" when user removed it
+		void SendAvatar(cConnDC *conn);
+		// avatar hashes of all other users to user that just logged in
+		void SendAvatars(cConnDC *conn);
+		// avatar address of hub from hub_icon_url, to one user or to all with Avatar support when conn is null; empty when there is none
+		void SendHubAvatar(cConnDC *conn);
 
 		// Console managment
 		class cDCConsole *mCo;
