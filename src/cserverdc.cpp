@@ -937,9 +937,13 @@ bool cServerDC::RemoveNick(cUser *user)
 
 	if (user->mInList) {
 		user->mInList = false; // this will prevent user from receiving own quit
-		string omsg;
-		mP.Create_Quit(omsg, user->mNick);
-		mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
+
+		if (user->mShown) { // note: user that a plugin refused before its myinfo went out is in nobody's list
+			user->mShown = false;
+			string omsg;
+			mP.Create_Quit(omsg, user->mNick);
+			mUserList.SendToAll(omsg, mC.delayed_myinfo, true); // delayed myinfo implies delay of quit too, otherwise there would be mess in peoples userslists
+		}
 	}
 
 	return true;
@@ -1884,6 +1888,7 @@ bool cServerDC::BeginUserLogin(cConnDC *conn)
 bool cServerDC::ShowUserToAll(cUser *user)
 {
 	string data;
+	user->mShown = true; // note: from now on others have this user in their lists, quit goes to them
 
 	if (mC.myinfo_tls_filter && user->GetMyFlag(eMF_TLS)) { // myinfo tls filter
 		data = user->mFakeMyINFO;

@@ -44,7 +44,8 @@ cUserBase::cUserBase(const string &nick):
 	mNick(nick),
 	mNickHash(0),
 	mClass(eUC_NORMUSER),
-	mInList(false)
+	mInList(false),
+	mShown(false)
 {
 	mNickHash = GetServer()->mUserList.Nick2Hash(nick);
 }

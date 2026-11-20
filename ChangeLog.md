@@ -92,6 +92,7 @@
 
 ## Fixed
 
+* $Quit went to all for user that a plugin refused before its $MyINFO went out
 * $SearchRule gives operators minimum search length 1, hub does not check length for them
 * Extra spaces in nick_prefix gave clients a broken nick rule, only spaces refused every guest nick
 * Translation with wrong format arguments could crash hub

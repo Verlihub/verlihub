@@ -150,6 +150,8 @@ public:
 	nEnums::tUserCl mClass;
 	// if the user was added to the list
 	bool mInList;
+	// if myinfo of the user went to others, only then others get quit of the user
+	bool mShown;
 };
 
 namespace nProtocol {
