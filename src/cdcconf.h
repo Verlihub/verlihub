@@ -282,6 +282,8 @@ public:
 	bool detect_ctmtohub; // ctm2hub
 	bool disable_extjson; // extjson
 	bool disable_fdcx; // fdcx
+	string fdcx_address; // fdcx address of hub itself, users send it tips
+	unsigned int fdcx_mention; // tip of at least this many whole fdcx is announced in main chat after explorer confirms it, 0 is never
 	bool disable_ccpm; // ccpm
 	bool disable_avatar; // avatar
 	bool myinfo_tls_filter;

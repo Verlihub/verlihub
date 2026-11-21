@@ -52,6 +52,7 @@
 #include "cmysqlworker.h"
 #include "cip6check.h"
 #include "cporttest.h"
+#include "cfdcx.h"
 #include <map>
 #include <set>
 #include <mutex>
@@ -276,6 +277,9 @@ class cServerDC : public cAsyncSocketServer
 		void SendAvatars(cConnDC *conn);
 		// avatar address of hub from hub_icon_url, to one user or to all with Avatar support when conn is null; empty when there is none
 		void SendHubAvatar(cConnDC *conn);
+
+		// fdcx address of hub itself and tips to it
+		cFDCX mFDCX;
 
 		// Console managment
 		class cDCConsole *mCo;

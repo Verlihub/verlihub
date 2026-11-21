@@ -92,6 +92,7 @@ cServerDC::cServerDC(string CfgBase, const string &ExecPath):
 	mC(*this), // create the config object
 	mSetupList(mMySQL),
 	mP(this),
+	mFDCX(*this),
 	mCo(NULL), // create console and its tables
 	mR(NULL),
 	mPenList(NULL),
@@ -1842,7 +1843,8 @@ bool cServerDC::DoUserLogin(cConnDC *conn)
 			SendAvatar(conn);
 	}
 
-	if (open && (conn->mFeatures & eSF_FDCX)) { // addresses of others, and own one that came before login ended, flag was agreed at $Supports
+	if (open && (conn->mFeatures & eSF_FDCX)) { // address of hub, addresses of others, and own one that came before login ended, flag was agreed at $Supports
+		mFDCX.SendHubAddress(conn);
 		SendFdcxAddresses(conn);
 
 		if (conn->mFdcxAddr.size())
@@ -2346,6 +2348,9 @@ int cServerDC::OnTimer(const cTime &now)
 
 	if (bool(mUpdateTimer.mMinDelay) && (mUpdateTimer.Check(mTime, 1) == 0)) // update check
 		this->CheckForUpdates(mC.update_check_git);
+
+	if (mFDCX.TipsWaiting()) // note: tips that wait for their block are asked again
+		mFDCX.TipTick(mTime.Sec());
 
 	if (mReloadNow) // reload now
 		this->ReloadNow();
@@ -4403,6 +4408,19 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 
 			if ((val_new != val_old) && (svar == "hub_icon_url")) // note: clients with avatar support get new avatar of hub at once, empty one removes it
 				SendHubAvatar(NULL);
+
+			if ((val_new != val_old) && (svar == "hub_name")) { // note: users see new name at once, fdcx payments of users name the payer with the name they have, so hub and users must have the same one
+				string omsg;
+				mP.Create_HubName(omsg, mC.hub_name, mC.hub_topic);
+				SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
+			}
+
+			if ((val_new != val_old) && ((svar == "fdcx_address") || (svar == "fdcx_mention"))) { // note: clients with fdcx support get new address of hub at once, empty or invalid one removes it
+				if ((svar == "fdcx_address") && mC.fdcx_address.size() && mFDCX.HubAddress().empty() && user && user->mxConn)
+					DCPublicHS(_("This is not a valid FDCX address, hub has no address now."), user->mxConn);
+
+				mFDCX.SendHubAddress(NULL);
+			}
 
 			return 1;
 

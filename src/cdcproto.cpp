@@ -136,7 +136,7 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 	if ((msg->mType == eDCC_MYIP) && !MyIPAllowed(conn)) // note: not nmdc command, only external tls proxy sends it, for everyone else it is unknown
 		msg->mType = eDC_UNKNOWN;
 
-	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR)) && !FdcxAllowed(conn)) // note: client and hub did not agree on support at $Supports
+	if (((msg->mType == eDC_FDCX) || (msg->mType == eDC_FDCXR) || (msg->mType == eDC_FDCXT)) && !FdcxAllowed(conn)) // note: client and hub did not agree on support at $Supports
 		msg->mType = eDC_UNKNOWN;
 
 	if ((msg->mType == eDC_AVATAR) && !AvatarAllowed(conn)) // note: client and hub did not agree on support at $Supports
@@ -319,6 +319,10 @@ int cDCProto::TreatMsg(cMessageParser *pMsg, cAsyncConn *pConn)
 
 		case eDC_FDCXR:
 			this->DC_FDCXR(msg, conn);
+			break;
+
+		case eDC_FDCXT:
+			this->DC_FDCXT(msg, conn);
 			break;
 
 		case eDC_AVATAR:
@@ -1602,55 +1606,6 @@ int cDCProto::DC_PortTest(cMessageDC *msg, cConnDC *conn)
 	return 0;
 }
 
-// fdcx wallet address: fdcx1, tfdcx1 or rfdcx1 with bech32 or bech32m checksum, lower case, as bip173 and bip350 define it
-static bool ValidFdcxAddress(const string &addr)
-{
-	static const string charset("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
-	const size_t sep = addr.rfind('1');
-
-	if ((addr.size() > 90) || (sep == string::npos) || ((sep + 7) > addr.size()))
-		return false;
-
-	const string hrp(addr.substr(0, sep));
-
-	if ((hrp != "fdcx") && (hrp != "tfdcx") && (hrp != "rfdcx"))
-		return false;
-
-	std::vector<unsigned int> values;
-
-	for (const char ch: hrp)
-		values.push_back(static_cast<unsigned char>(ch) >> 5);
-
-	values.push_back(0);
-
-	for (const char ch: hrp)
-		values.push_back(static_cast<unsigned char>(ch) & 31);
-
-	for (size_t pos = sep + 1; pos < addr.size(); pos++) {
-		const size_t val = charset.find(addr[pos]);
-
-		if (val == string::npos)
-			return false;
-
-		values.push_back(static_cast<unsigned int>(val));
-	}
-
-	static const uint32_t gen[5] = {0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3};
-	uint32_t chk = 1;
-
-	for (const unsigned int val: values) {
-		const uint32_t top = chk >> 25;
-		chk = ((chk & 0x1ffffff) << 5) ^ val;
-
-		for (int bit = 0; bit < 5; bit++) {
-			if ((top >> bit) & 1)
-				chk ^= gen[bit];
-		}
-	}
-
-	return (chk == 1) || (chk == 0x2bc830a3);
-}
-
 // keyprint of client certificate: SHA256/ and base32 of sha-256 digest, 52 characters without padding, upper case
 static bool ValidFdcxKeyprint(const string &kp)
 {
@@ -1700,7 +1655,7 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 		for (char &ch: addr)
 			ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
 
-		if (!ValidFdcxAddress(addr) || !ValidFdcxKeyprint(kp)) {
+		if (!cFDCX::ValidAddress(addr) || !ValidFdcxKeyprint(kp)) {
 			CloseSyntax(conn, msg);
 			return -1;
 		}
@@ -1804,6 +1759,39 @@ int cDCProto::DC_FDCXR(cMessageDC *msg, cConnDC *conn)
 
 	string omsg("$FDCXR " + conn->mpUser->mNick + ' ' + token); // note: hub adds nick of sender itself
 	other->mxConn->Send(omsg, true);
+	return 0;
+}
+
+int cDCProto::DC_FDCXT(cMessageDC *msg, cConnDC *conn)
+{
+	if (!FdcxAllowed(conn)) // note: already checked in TreatMsg, keep it here in case handler is called from somewhere else
+		return this->DCU_Unknown(msg, conn);
+
+	if (CheckUserLogin(conn, msg))
+		return -1;
+
+	if (conn->CheckProtoFlood(msg->mStr, ePF_FDCXT)) // protocol flood
+		return -1;
+
+	if ((msg->mLen > 100) || msg->SplitChunks()) {
+		CloseSyntax(conn, msg);
+		return -1;
+	}
+
+	const string &txid = msg->ChunkString(eCH_1_PARAM); // note: transaction id of payment to address of hub, 64 lower case hex characters
+	bool good = (txid.size() == 64);
+
+	for (const char ch: txid) {
+		if (!(((ch >= '0') && (ch <= '9')) || ((ch >= 'a') && (ch <= 'f'))))
+			good = false;
+	}
+
+	if (!good) {
+		CloseSyntax(conn, msg);
+		return -1;
+	}
+
+	mS->mFDCX.TipCheck(conn, txid);
 	return 0;
 }
 
@@ -4463,6 +4451,10 @@ void cDCProto::CloseSyntax(cConnDC *conn, cMessageDC *msg)
 
 		case eDC_FDCXR:
 			cmd = "FDCXR";
+			break;
+
+		case eDC_FDCXT:
+			cmd = "FDCXT";
 			break;
 
 		case eDC_AVATAR:

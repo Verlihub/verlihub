@@ -305,7 +305,7 @@ if(DL_LIBRARIES) # note: newer glibc has it built in, but windows needs it
 endif(DL_LIBRARIES)
 
 IF(WIN32)
-	SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ws2_32 dbghelp") # note: sockets and stack backtrace
+	SET(VERLIHUB_LIBS "${VERLIHUB_LIBS} ws2_32 dbghelp crypt32") # note: sockets, stack backtrace, trusted certificates of system for https that checks the server
 ENDIF(WIN32)
 
 string(STRIP "${VERLIHUB_LIBS}" VERLIHUB_LIBS)

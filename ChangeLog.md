@@ -8,6 +8,8 @@
 * Passive users connect to each other over IPv6 with TLS 1.3, NATIP6 and TLS support flags, configuration listen_ip6
 * Direct private chat between clients over TLS, CCPM support flag, configuration disable_ccpm, Lua callback VH_OnParsedMsgCCPM
 * Avatars of users and of hub, $Avatar command with Avatar support flag, configuration disable_avatar, hub avatar from hub_icon_url, Lua call VH:GetUserAvatar
+* FDCX address of hub and tips to it announced in main chat, $FDCXH and $FDCXT commands, configuration fdcx_address, fdcx_mention
+* Changed hub_name goes to all users at once
 * External TLS proxy is used when listen_ip equals tls_listen_ip, configuration tls_force_myip to force it
 * Upgrade from hub behind local TLS proxy sets listen_ip to 0.0.0.0 once
 * Configuration tls_listen_ip is empty by default, upgrade clears old value when no proxy uses it

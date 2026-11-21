@@ -69,6 +69,7 @@ namespace nVerliHub {
 			eDC_PORTTEST,
 			eDC_FDCX,
 			eDC_FDCXR,
+			eDC_FDCXT,
 			eDC_AVATAR,
 			eDC_CHAT, // note: must always be before unknown
 			eDC_UNKNOWN

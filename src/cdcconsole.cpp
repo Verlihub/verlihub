@@ -844,6 +844,11 @@ int cDCConsole::CmdUInfo(istringstream &cmd_line, cConnDC *conn)
 	if (urls.size())
 		os << " [*] " << autosprintf(_("Secure: %s"), urls.c_str()) << "\r\n";
 
+	const string fdcx = mOwner->mFDCX.HubAddress(); // note: only a valid fdcx_address is shown, same one users get
+
+	if (fdcx.size())
+		os << " [*] " << autosprintf(_("FDCX address: %s"), fdcx.c_str()) << "\r\n";
+
 	os << " [*] " << autosprintf(_("Status: %s"), mOwner->SysLoadName()) << "\r\n";
 	os << " [*] " << autosprintf(_("Users: %d of %d"), mOwner->mUserCountTot, mOwner->mC.max_users_total) << "\r\n";
 	os << " [*] " << autosprintf(_("Secure: %d of %d"), consec, contot) << "\r\n";

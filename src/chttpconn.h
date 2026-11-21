@@ -54,7 +54,8 @@ namespace nVerliHub {
 			eHTTP_CANCEL = -7, // note: hub is stopping
 			eHTTP_NETWORK = -8, // note: other network error, for example connection reset
 			eHTTP_BIND = -9, // note: source address from listen_ip can not be used
-			eHTTP_REDIRECT = -10 // note: redirect is not followed, from https to http, or request data to other host
+			eHTTP_REDIRECT = -10, // note: redirect is not followed, from https to http, or request data to other host
+			eHTTP_CERT = -11 // note: certificate of server is not trusted or not for its name, only when verify is asked
 		};
 
 		// reply of http request for scripts and plugins, runs on main thread, code is http status or negative tHTTPError with err text, body is file path for download
@@ -64,7 +65,7 @@ namespace nVerliHub {
 			small blocking tcp client, http request and reply are used by update check, crash report, maxmind download and scripts
 			note: hublist registration also uses it, but only as plain tcp connection with nmdc protocol, no http there
 			note: it is not part of main loop, every call blocks until data is sent or received or timeout expires, so it runs on other threads
-			note: partial http client, only get and post over plain tcp or tls, server certificate is not verified, so tls only encrypts data
+			note: partial http client, only get and post over plain tcp or tls; server certificate is verified only when verify is asked, else tls only encrypts data
 		*/
 		class cHTTPConn
 		{
@@ -72,7 +73,7 @@ namespace nVerliHub {
 				// version of http client, one number that is raised when client gets new ability, plugins and scripts check it with HTTPVersion
 				static constexpr unsigned int sVersion = 1;
 
-				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL, bool tls = false, unsigned int timeout = 5); // note: cancel lets other thread abort blocking connection, tls is for https, timeout is seconds without data
+				cHTTPConn(const string &host, int port, cSocketCancel *cancel = NULL, bool tls = false, unsigned int timeout = 5, bool verify = false); // note: cancel lets other thread abort blocking connection, tls is for https, timeout is seconds without data, verify checks certificate and name of server with trusted certificates of system
 
 				// split http or https url into host, port and path, path keeps query and is / when url has none
 				static bool SplitUrl(const string &url, string &host, int &port, string &path, bool &tls);
@@ -88,8 +89,9 @@ namespace nVerliHub {
 					note: retry is number of extra attempts after timeout, network error and http 408, 429, 500, 502, 503 and 504, same as curl, with pause of 1, 2, 4 seconds and so on
 					note: post and other methods with data are tried again only when connection failed, so data is never sent twice
 					note: max is largest body kept in memory, body that goes to file has no such limit
+					note: verify makes https check certificate and name of server, untrusted server is eHTTP_CERT; answer that decides something only when it is true counts on it
 				*/
-				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0, size_t max = 67108864);
+				static bool Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file = "", unsigned int retry = 0, size_t max = 67108864, bool verify = false);
 
 				// whole file into memory, only 2xx reply, same as wget of vh script, tried again twice, cancel lets hub stop abort it
 				static bool Download(const string &url, string &data, cSocketCancel *cancel = NULL);
@@ -140,7 +142,7 @@ namespace nVerliHub {
 				void SetSockError(int err, const string &what);
 
 				// one attempt of Fetch, sent tells that connection was made, so request data might have reached server
-				static bool FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent);
+				static bool FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent, bool verify);
 
 				string mHost;
 				unsigned int mPort;
@@ -154,6 +156,7 @@ namespace nVerliHub {
 				unsigned int mEnd;
 				cSocketCancel *mCancel = NULL;
 				bool mTLS = false;
+				bool mVerify = false; // note: tls checks certificate and name of server
 				struct ssl_st *mSSL = NULL;
 				struct ssl_ctx_st *mCTX = NULL;
 		};

@@ -167,6 +167,7 @@ namespace nVerliHub {
 			ePF_PORTTEST,
 			ePF_FDCX,
 			ePF_FDCXR,
+			ePF_FDCXT,
 			ePF_AVATAR,
 			ePF_UNKNOWN,
 			ePF_LAST

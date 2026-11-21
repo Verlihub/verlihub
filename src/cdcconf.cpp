@@ -385,6 +385,8 @@ void cDCConf::AddVars()
 	Add("detect_ctmtohub", detect_ctmtohub, true); // ctm2hub
 	Add("disable_extjson", disable_extjson, true); // extjson
 	Add("disable_fdcx", disable_fdcx, false); // fdcx
+	Add("fdcx_address", fdcx_address, "");
+	Add("fdcx_mention", fdcx_mention, 5);
 	Add("disable_ccpm", disable_ccpm, false); // ccpm
 	Add("disable_avatar", disable_avatar, false); // avatar
 	Add("myinfo_tls_filter", myinfo_tls_filter, false);

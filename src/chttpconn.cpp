@@ -30,6 +30,8 @@
 #include "ctime.h"
 #include "stringutils.h"
 #include <openssl/ssl.h>
+#include <openssl/x509v3.h>
+#include <openssl/err.h>
 #include <stdlib.h>
 #include <cstdio>
 #include <cctype>
@@ -39,6 +41,7 @@
 
 #ifdef _WIN32
 	#include <windows.h> // note: MoveFileExA
+	#include <wincrypt.h> // note: trusted certificates of system, openssl has none of its own on windows
 #endif
 
 #define MAX_DATA 524288 // 0.5 mb
@@ -57,7 +60,7 @@ namespace nVerliHub {
 
 string cHTTPConn::msBindAddr;
 
-cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel, bool tls, unsigned int timeout):
+cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel, bool tls, unsigned int timeout, bool verify):
 	mGood(false),
 	mWrite(true),
 	mSock(0),
@@ -66,7 +69,8 @@ cHTTPConn::cHTTPConn(const string &host, const int port, cSocketCancel *cancel, 
 	mTimeout(timeout ? timeout : 5), // note: 0 would wait forever
 	mEnd(0),
 	mCancel(cancel),
-	mTLS(tls)
+	mTLS(tls),
+	mVerify(verify)
 {
 	mBuf.resize(MAX_DATA + 1); // todo: use dynamic grow
 	Connect(host, port);
@@ -567,14 +571,14 @@ bool cHTTPConn::ValidHead(const string &head)
 	return true;
 }
 
-bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, unsigned int retry, size_t max)
+bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, unsigned int retry, size_t max, bool verify)
 {
 	const string how(meth.size() ? toUpper(meth) : "GET");
 	const bool safe = ((how == "GET") || (how == "HEAD")); // note: request without data can be sent again
 
 	for (unsigned int attempt = 0; ; attempt++) {
 		bool sent = false;
-		const bool res = FetchOnce(how, url, head, data, timeout, cancel, code, rhead, body, err, file, max, sent);
+		const bool res = FetchOnce(how, url, head, data, timeout, cancel, code, rhead, body, err, file, max, sent, verify);
 
 		if (attempt >= retry)
 			return res;
@@ -604,7 +608,7 @@ bool cHTTPConn::Fetch(const string &meth, const string &url, const string &head,
 	}
 }
 
-bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent)
+bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &head, const string &data, unsigned int timeout, cSocketCancel *cancel, int &code, string &rhead, string &body, string &err, const string &file, size_t max, bool &sent, bool verify)
 {
 	string cur(url), how(meth), send(data), extra(head);
 	code = 0;
@@ -629,7 +633,7 @@ bool cHTTPConn::FetchOnce(const string &meth, const string &url, const string &h
 			return false;
 		}
 
-		cHTTPConn conn(host, port, cancel, tls, timeout);
+		cHTTPConn conn(host, port, cancel, tls, timeout, verify);
 
 		if (conn.mGood) // note: from here request can reach server
 			sent = true;
@@ -865,6 +869,32 @@ void cHTTPConn::SetSockError(int err, const string &what)
 		SetError(eHTTP_NETWORK, what + " failed: " + SockErrorText(err));
 }
 
+#ifdef _WIN32
+// root certificates of windows into store of openssl, same ones browsers of system trust
+static void LoadSystemRoots(X509_STORE *store)
+{
+	HCERTSTORE sys = CertOpenSystemStoreA(0, "ROOT");
+
+	if (!sys)
+		return;
+
+	PCCERT_CONTEXT ctx = NULL;
+
+	while ((ctx = CertEnumCertificatesInStore(sys, ctx)) != NULL) { // note: enum frees previous context itself
+		const unsigned char *data = ctx->pbCertEncoded;
+		X509 *cert = d2i_X509(NULL, &data, (long)ctx->cbCertEncoded);
+
+		if (cert) {
+			X509_STORE_add_cert(store, cert); // note: certificate that is there already gives an error that does not matter
+			X509_free(cert);
+		}
+	}
+
+	CertCloseStore(sys, 0);
+	ERR_clear_error();
+}
+#endif
+
 bool cHTTPConn::StartTLS()
 {
 	const string addr(mHost + ':' + StringFrom(mPort));
@@ -875,7 +905,16 @@ bool cHTTPConn::StartTLS()
 		return false;
 	}
 
-	SSL_CTX_set_verify(mCTX, SSL_VERIFY_NONE, NULL); // note: partial client, server certificate is not verified
+	if (mVerify) { // note: certificate must lead to one that system trusts, default places of openssl and on windows the root store of system
+		SSL_CTX_set_verify(mCTX, SSL_VERIFY_PEER, NULL);
+		SSL_CTX_set_default_verify_paths(mCTX);
+	#ifdef _WIN32
+		LoadSystemRoots(SSL_CTX_get_cert_store(mCTX));
+	#endif
+	} else {
+		SSL_CTX_set_verify(mCTX, SSL_VERIFY_NONE, NULL); // note: partial client, server certificate is not verified
+	}
+
 	mSSL = SSL_new(mCTX);
 
 	if (!mSSL || !SSL_set_fd(mSSL, (int)mSock)) { // note: windows socket fits in int, openssl takes it same way
@@ -885,8 +924,26 @@ bool cHTTPConn::StartTLS()
 
 	SSL_set_tlsext_host_name(mSSL, mHost.c_str()); // note: servers with many sites need name of site
 
+	if (mVerify) { // note: certificate must be for this name or address, else any trusted certificate would do
+		X509_VERIFY_PARAM *param = SSL_get0_param(mSSL);
+		X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+
+		if ((X509_VERIFY_PARAM_set1_ip_asc(param, mHost.c_str()) != 1) && (X509_VERIFY_PARAM_set1_host(param, mHost.c_str(), 0) != 1)) {
+			SetError(eHTTP_CERT, "TLS handshake with " + addr + " failed: name of server can not be checked");
+			return false;
+		}
+
+		ERR_clear_error(); // note: address that is no ip gives an error before name is taken
+	}
+
 	while (true) { // note: socket is blocking with timeouts
 		const int res = SSL_connect(mSSL);
+
+		// note: untrusted certificate has its own code, a broken handshake can be tried again, a certificate that fails stays failed
+		if (mVerify && (SSL_get_verify_result(mSSL) != X509_V_OK)) {
+			SetError(eHTTP_CERT, "TLS handshake with " + addr + " failed: certificate is not trusted, " + X509_verify_cert_error_string(SSL_get_verify_result(mSSL)));
+			return false;
+		}
 
 		if (res == 1)
 			return true;
