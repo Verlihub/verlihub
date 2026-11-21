@@ -497,8 +497,8 @@ void cFDCX::Answer(const string &txid, const string &nick, int code, const strin
 	}
 
 	// note: what a payment pays and whom it names is known before its block, a wrong one ends at once
-	if (!paid) {
-		End(txid, nick, _("This payment does not go to the FDCX address of this hub."), true);
+	if (!paid) { // note: explorer counts nothing for a payment to another address and for one that the address of hub made itself
+		End(txid, nick, _("This payment brings no coins to the FDCX address of this hub."), true);
 		return;
 	}
 
