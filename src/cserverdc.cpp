@@ -4415,9 +4415,9 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 			}
 
-			if ((val_new != val_old) && ((svar == "fdcx_address") || (svar == "fdcx_mention"))) { // note: clients with fdcx support get new address of hub at once, empty or invalid one removes it
+			if ((val_new != val_old) && ((svar == "fdcx_address") || (svar == "fdcx_mention"))) { // note: clients with fdcx support get new address of hub at once, empty, invalid or testnet one removes it
 				if ((svar == "fdcx_address") && mC.fdcx_address.size() && mFDCX.HubAddress().empty() && user && user->mxConn)
-					DCPublicHS(_("This is not a valid FDCX address, hub has no address now."), user->mxConn);
+					DCPublicHS(_("This is not a valid FDCX mainnet address, it must start with fdcx1. Hub has no address now."), user->mxConn);
 
 				mFDCX.SendHubAddress(NULL);
 			}

@@ -160,6 +160,11 @@ bool cFDCX::ValidAddress(const string &addr)
 	return (chk == 1) || (chk == 0x2bc830a3);
 }
 
+bool cFDCX::MainAddress(const string &addr)
+{
+	return (addr.compare(0, 5, "fdcx1") == 0) && ValidAddress(addr);
+}
+
 string cFDCX::HubAddress()
 {
 	string addr(mServ.mC.fdcx_address);
@@ -167,8 +172,19 @@ string cFDCX::HubAddress()
 	for (char &ch: addr) // note: address is sent in lower case, as users send theirs
 		ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
 
-	if (!ValidAddress(addr))
+	if (!MainAddress(addr)) {
+		// note: also an address set before this check, from config of an older version, is never used silently; each wrong value is logged once
+		if (addr.size() && (mServ.mC.fdcx_address != mBadAddress)) {
+			mBadAddress = mServ.mC.fdcx_address;
+
+			if (ErrLog(1))
+				LogStream() << "fdcx_address is not a valid FDCX mainnet address (fdcx1), hub has no address: " << mBadAddress.substr(0, 100) << endl;
+		}
+
 		addr.clear();
+	} else {
+		mBadAddress.clear();
+	}
 
 	return addr;
 }

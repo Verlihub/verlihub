@@ -4,7 +4,7 @@
 
 * Real client port in passive to passive $ConnectToMe, $MyIP from TLS proxy can carry the port
 * Clients test if their ports can be reached, $PortTest command with PortTest support flag
-* FDCX wallet addresses of users with keyprints of their certificates, $FDCX command with FDCX support flag, $FDCXR relay request, config disable_fdcx, Lua call VH:GetUserFDCX
+* FDCX mainnet wallet addresses of users with keyprints of their certificates, $FDCX command with FDCX support flag, $FDCXR relay request, config disable_fdcx, Lua call VH:GetUserFDCX
 * Passive users connect to each other over IPv6 with TLS 1.3, NATIP6 and TLS support flags, configuration listen_ip6
 * Direct private chat between clients over TLS, CCPM support flag, configuration disable_ccpm, Lua callback VH_OnParsedMsgCCPM
 * Avatars of users and of hub, $Avatar command with Avatar support flag, configuration disable_avatar, hub avatar from hub_icon_url, Lua call VH:GetUserAvatar

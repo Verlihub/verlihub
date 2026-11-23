@@ -1659,6 +1659,12 @@ int cDCProto::DC_FDCX(cMessageDC *msg, cConnDC *conn)
 			CloseSyntax(conn, msg);
 			return -1;
 		}
+
+		if (!cFDCX::MainAddress(addr)) { // note: right form of another network, client is told and keeps its connection; such address is never passed on
+			mS->DCPublicHS(_("Your FDCX address is not a mainnet address, other users do not get it."), conn);
+			addr.clear();
+			kp.clear();
+		}
 	}
 
 	if ((addr == conn->mFdcxAddr) && (kp == conn->mFdcxKeyprint))

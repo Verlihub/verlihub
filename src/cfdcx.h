@@ -49,9 +49,11 @@ class cFDCX: public cObj
 	public:
 		cFDCX(cServerDC &serv);
 
-		// fdcx wallet address: fdcx1, tfdcx1 or rfdcx1 with bech32 or bech32m checksum, lower case
+		// fdcx wallet address of any network: fdcx1, tfdcx1 or rfdcx1 with bech32 or bech32m checksum, lower case
 		static bool ValidAddress(const string &addr);
-		// fdcx_address when it is a valid fdcx address, else empty
+		// valid address of fdcx mainnet (fdcx1), the only one hub uses and passes on; testnet ones are coins of no value
+		static bool MainAddress(const string &addr);
+		// fdcx_address when it is a valid mainnet address, else empty
 		string HubAddress();
 		// address of hub with smallest tip that is announced, to one user or to all with FDCX support when conn is null; "$FDCXH" alone when hub has none
 		void SendHubAddress(cConnDC *conn);
@@ -87,6 +89,7 @@ class cFDCX: public cObj
 		std::map<string, long> mSeen; // note: announced transaction id and second of announcement, kept in file so restart repeats none
 		std::map<string, long> mCool; // note: address whose notice was no payment to hub of its sender, second until it is checked again
 		bool mLoaded = false; // note: file of announced ids was read
+		string mBadAddress; // note: last fdcx_address that was logged as not usable, so a wrong value is logged once
 
 		void Ask(sWait &wait, long now);
 		void Answer(const string &txid, const string &nick, int code, const string &body, const string &err);
