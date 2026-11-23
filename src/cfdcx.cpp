@@ -45,11 +45,12 @@ namespace nVerliHub {
 
 static const size_t sWaitMax = 10; // note: checks at once, each asks explorer every half minute at most
 static const size_t sWaitUser = 2; // note: checks of one nick and of one address, a few users can not take all checks
-static const unsigned int sTriesMax = 20; // note: payment waits for its block this many times
+static const unsigned int sTriesMax = 20; // note: payment waits for its confirmations this many times
+static const long long sConfMin = 3; // note: blocks on top of the payment before it is announced, one block of a young chain is cheap to replace
 static const long sRetry = 30; // note: seconds between questions about one payment
 static const long sAgeMax = 3600; // note: older payment is not announced, nobody repeats an old tip
-static const long sAheadMax = 900; // note: block time can be ahead of clocks a little, a payment further ahead would stay young too long
-static const long sSeenKeep = 7200; // note: longer than any payment that can still pass age and time checks
+static const long sAheadMax = 7200; // note: block time can be as far ahead as fdcx nodes take it, two hours
+static const long sSeenKeep = 14400; // note: longer than any payment that can still pass age and time checks, sAheadMax + sAgeMax
 static const long sCoolTime = 600; // note: address that sent a notice of no real tip is not checked for this long, so a few bots can not keep all checks busy
 
 // address of user for limits: ipv4 as it is, ipv6 by its /64, one host of ipv6 usually has a whole /64
@@ -117,7 +118,7 @@ bool cFDCX::ValidAddress(const string &addr)
 	static const string charset("qpzry9x8gf2tvdw0s3jn54khce6mua7l");
 	const size_t sep = addr.rfind('1');
 
-	if ((addr.size() > 90) || (sep == string::npos) || ((sep + 7) > addr.size()))
+	if ((addr.size() > 90) || (sep == string::npos) || ((sep + 8) > addr.size())) // note: at least witness version and checksum
 		return false;
 
 	const string hrp(addr.substr(0, sep));
@@ -157,7 +158,32 @@ bool cFDCX::ValidAddress(const string &addr)
 		}
 	}
 
-	return (chk == 1) || (chk == 0x2bc830a3);
+	const size_t first = hrp.size() * 2 + 1, len = addr.size() - sep - 7; // note: 5 bit groups after separator without checksum, first one is witness version
+	const unsigned int ver = values[first];
+
+	if ((ver == 0) ? (chk != 1) : (chk != 0x2bc830a3)) // note: version 0 uses bech32, later versions bech32m
+		return false;
+
+	unsigned int acc = 0, bits = 0;
+	size_t prog = 0;
+
+	for (size_t pos = 1; pos < len; pos++) {
+		acc = (acc << 5) | values[first + pos];
+		bits += 5;
+
+		if (bits >= 8) {
+			bits -= 8;
+			prog++;
+		}
+
+		acc &= 0xff;
+	}
+
+	if ((bits >= 5) || (acc & ((1u << bits) - 1))) // note: padding is less than 5 bits and all zero
+		return false;
+
+	// note: versions above 1 have no rules yet, nor version 1 of other length than 32 (taproot), as fdcx clients check it
+	return ((ver == 0) && ((prog == 20) || (prog == 32))) || ((ver == 1) && (prog == 32));
 }
 
 bool cFDCX::MainAddress(const string &addr)
@@ -303,7 +329,7 @@ void cFDCX::SaveSeen()
 	if (!good) {
 		remove(part.c_str());
 
-		if (ErrLog(1)) // note: announcement still happened, after a restart within two hours this one could be announced again
+		if (ErrLog(1)) // note: announcement still happened, after a restart within four hours this one could be announced again
 			LogStream() << "Announced tip can not be saved to " << path << endl;
 	}
 }
@@ -398,7 +424,7 @@ void cFDCX::TipCheck(cConnDC *conn, const string &txid)
 	wait.mNext = now;
 	mWaits.push_back(wait);
 
-	mServ.DCPublicHS(_("Your tip is being checked, it is announced in main chat as soon as the payment is confirmed."), conn);
+	mServ.DCPublicHS(autosprintf(_("Your tip is being checked, it is announced in main chat as soon as the payment has %d confirmations."), (int)sConfMin), conn);
 	TipTick(now);
 }
 
@@ -528,9 +554,9 @@ void cFDCX::Answer(const string &txid, const string &nick, int code, const strin
 		return;
 	}
 
-	if (!conf) { // note: payment waits for its block
+	if (conf < sConfMin) { // note: payment waits for its confirmations
 		if (last)
-			End(txid, nick, _("Payment was not confirmed in 10 minutes, tip is not announced."));
+			End(txid, nick, autosprintf(_("Payment did not get %d confirmations in 10 minutes, tip is not announced."), (int)sConfMin));
 
 		return;
 	}

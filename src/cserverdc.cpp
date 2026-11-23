@@ -4377,6 +4377,22 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 					return 0;
 				}
 
+			} else if ((svar == "fdcx_address") && (val_new != val_old) && val_new.size()) { // note: only a mainnet address is taken, a wrong one never replaces the address users have now
+				string addr(val_new);
+
+				for (char &ch: addr)
+					ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+
+				if (!cFDCX::MainAddress(addr)) {
+					if (user && user->mxConn)
+						DCPublicHS(_("This is not a valid FDCX mainnet address, it must start with fdcx1. Hub keeps its address."), user->mxConn);
+					else if (ErrLog(1))
+						LogStream() << "Refused fdcx_address that is not a valid FDCX mainnet address: " << val_new.substr(0, 100) << endl;
+
+					ci->ConvertFrom(val_old);
+					return 0;
+				}
+
 			} else if ((svar == "hub_version") && user && user->mxConn) { // read only for user
 				DCPublicHS(_("Specified configuration variable is read only."), user->mxConn);
 				ci->ConvertFrom(val_old);
@@ -4415,12 +4431,8 @@ int cServerDC::SetConfig(const char *conf, const char *var, const char *val, str
 				SendToAll(omsg, eUC_NORMUSER, eUC_MASTER);
 			}
 
-			if ((val_new != val_old) && ((svar == "fdcx_address") || (svar == "fdcx_mention"))) { // note: clients with fdcx support get new address of hub at once, empty, invalid or testnet one removes it
-				if ((svar == "fdcx_address") && mC.fdcx_address.size() && mFDCX.HubAddress().empty() && user && user->mxConn)
-					DCPublicHS(_("This is not a valid FDCX mainnet address, it must start with fdcx1. Hub has no address now."), user->mxConn);
-
+			if ((val_new != val_old) && ((svar == "fdcx_address") || (svar == "fdcx_mention"))) // note: clients with fdcx support get new address of hub at once, empty one removes it
 				mFDCX.SendHubAddress(NULL);
-			}
 
 			return 1;
 

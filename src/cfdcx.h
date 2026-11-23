@@ -49,7 +49,7 @@ class cFDCX: public cObj
 	public:
 		cFDCX(cServerDC &serv);
 
-		// fdcx wallet address of any network: fdcx1, tfdcx1 or rfdcx1 with bech32 or bech32m checksum, lower case
+		// fdcx wallet address of any network: fdcx1, tfdcx1 or rfdcx1, lower case, witness version 0 with bech32 or version 1 (32 bytes) with bech32m
 		static bool ValidAddress(const string &addr);
 		// valid address of fdcx mainnet (fdcx1), the only one hub uses and passes on; testnet ones are coins of no value
 		static bool MainAddress(const string &addr);
