@@ -78,6 +78,9 @@ class cTLSContext
 		// state of certificate file, info is expiry date or error
 		static tCertState CertState(const std::string &cert, std::string &info);
 
+		// key file may be written: it is missing, or it is a file with a private key in it; anything else is never replaced, info tells why
+		static bool KeyReplaceable(const std::string &key, std::string &info);
+
 		static constexpr unsigned int sCertDays = 5 * 365; // note: validity of created certificate, same for hub and command line
 
 		/*

@@ -249,6 +249,47 @@ cTLSContext::tCertState cTLSContext::CertState(const string &cert, string &info)
 	return (expired ? eCS_EXPIRED : eCS_VALID);
 }
 
+static int NoPassword(char *buf, int size, int rwflag, void *u) // note: openssl asks on terminal without callback, an encrypted key is only read, never unlocked here
+{
+	(void)buf;
+	(void)size;
+	(void)rwflag;
+	(void)u;
+	return 0;
+}
+
+bool cTLSContext::KeyReplaceable(const string &key, string &info)
+{
+	struct stat st;
+
+	if (stat(key.c_str(), &st) != 0) // note: missing, new key is written
+		return true;
+
+	if (!S_ISREG(st.st_mode)) {
+		info = "Not a regular file";
+		return false;
+	}
+
+	FILE *file = fopen(key.c_str(), "r");
+
+	if (!file) {
+		info = "Failed to open file";
+		return false;
+	}
+
+	ERR_clear_error();
+	EVP_PKEY *pkey = PEM_read_PrivateKey(file, NULL, NoPassword, NULL);
+	fclose(file);
+
+	if (!pkey) {
+		info = "No private key in file: " + Errors(0);
+		return false;
+	}
+
+	EVP_PKEY_free(pkey);
+	return true;
+}
+
 static bool AddExt(X509 *cert, int nid, const string &value)
 {
 	X509V3_CTX ctx;
@@ -336,10 +377,11 @@ bool cTLSContext::Generate(const string &cert, const string &key, const string &
 	if (good)
 		good = (X509_set_version(x509, 2) == 1) && X509_gmtime_adj(X509_getm_notBefore(x509), -3600) && X509_time_adj_ex(X509_getm_notAfter(x509), days, 0, NULL) && (X509_set_pubkey(x509, pkey) == 1); // note: one hour back for clocks that are a bit behind
 
-	if (good) { // note: organization is also common name
+	if (good) { // note: organization is also common name; own name object, openssl 4 gives subject of certificate only to read, both set calls copy it
 		const string name = (org.size() ? org : "Verlihub");
-		X509_NAME *subj = X509_get_subject_name(x509);
-		good = (X509_NAME_add_entry_by_txt(subj, "CN", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_NAME_add_entry_by_txt(subj, "O", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_set_issuer_name(x509, subj) == 1);
+		X509_NAME *subj = X509_NAME_new();
+		good = subj && (X509_NAME_add_entry_by_txt(subj, "CN", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_NAME_add_entry_by_txt(subj, "O", MBSTRING_UTF8, (const unsigned char*)name.c_str(), -1, -1, 0) == 1) && (X509_set_subject_name(x509, subj) == 1) && (X509_set_issuer_name(x509, subj) == 1);
+		X509_NAME_free(subj); // note: accepts null
 	}
 
 	string alt; // note: host names and addresses, and mail

@@ -968,6 +968,13 @@ bool cAsyncSocketServer::CheckTLS(bool force, string *report)
 	}
 
 	if ((state != cTLSContext::eCS_VALID) || !FileTime(key)) { // note: missing or expired certificate, or missing key
+		string kinfo;
+
+		if (!cTLSContext::KeyReplaceable(key, kinfo)) { // note: same as certificate, only a missing file or a real key is replaced
+			res << "TLS key file is no private key, it is not replaced, " << (mTLSContext.IsLoaded() ? "old certificate stays" : "TLS is disabled") << ": " << key << ": " << kinfo;
+			return done(false, 0);
+		}
+
 		if (Log(0))
 			LogStream() << "Creating new TLS certificate, " << ((state == cTLSContext::eCS_EXPIRED) ? ("old one expired: " + info) : string("certificate or key not found")) << ": " << cert << endl;
 

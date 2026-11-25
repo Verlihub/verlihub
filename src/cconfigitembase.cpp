@@ -1,6 +1,6 @@
 /*
 	Copyright (C) 2003-2005 Daniel Muller, dan at verliba dot cz
-	Copyright (C) 2006-2025 Verlihub Team, info at verlihub dot net
+	Copyright (C) 2006-2026 Verlihub Team, info at verlihub dot net
 
 	Verlihub is free software; You can redistribute it
 	and modify it under the terms of the GNU General
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <iostream>
 #include <stdio.h>
+#include <cmath>
 #include "stringutils.h"
 
 using namespace std;
@@ -73,7 +74,10 @@ void cConfigItemBaseULong::ConvertFrom(const std::string &str)
 
 void cConfigItemBaseDouble::ConvertFrom(const std::string &str)
 {
-	*this = atof(str.c_str());
+	const double val = atof(str.c_str());
+
+	if (std::isfinite(val)) // note: inf and nan are no value of a setting, old value stays
+		*this = val;
 }
 
 void cConfigItemBaseChar::ConvertFrom(const std::string &str)
@@ -109,49 +113,58 @@ void cConfigItemBaseBool::ConvertTo(std::string &str)
 
 void cConfigItemBaseInt::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%d", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%d", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseUInt::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%u", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%u", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseLong::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%ld", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%ld", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseInt64::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%lld", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%lld", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseUInt64::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%llu", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%llu", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseULong::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%lu", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%lu", this->Data());
 	str = mBuf;
 }
 
 void cConfigItemBaseDouble::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%f", this->Data());
-	str = mBuf;
+	const double val = this->Data();
+	const int len = snprintf(NULL, 0, "%f", val); // note: large values have hundreds of digits, string gets the room it needs
+
+	if (len <= 0) {
+		str = "0";
+		return;
+	}
+
+	str.resize(len + 1);
+	snprintf(&str[0], str.size(), "%f", val);
+	str.resize(len);
 }
 
 void cConfigItemBaseChar::ConvertTo(std::string &str)
 {
-	sprintf(mBuf, "%c", this->Data());
+	snprintf(mBuf, sizeof(mBuf), "%c", this->Data());
 	str = mBuf;
 }
 

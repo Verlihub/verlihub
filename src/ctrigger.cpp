@@ -145,6 +145,13 @@ int cTrigger::DoIt(istringstream &cmd_line, cConnDC *conn, cServerDC &server)
 
 		if (!LoadFileInString(filename, buf))
 			return 0;
+
+		if (buf.find("PRIVATE KEY-----") != buf.npos) { // note: a private key is never sent, whatever name its file has
+			if (server.ErrLog(1))
+				server.LogStream() << "Trigger " << mCommand << " points to a file with a private key, it is not sent: " << filename << endl;
+
+			return 0;
+		}
 	}
 
 	if (mFlags & eTF_VARS) {
