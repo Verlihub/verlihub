@@ -62,7 +62,7 @@
 #define USER_ZONES 6
 
 #define BAD_NICK_CHARS_NMDC " $|"
-#define BAD_NICK_CHARS_OWN "<>\r\n"
+#define BAD_NICK_CHARS_OWN "<>\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f" // note: chat brackets and control characters 1 to 31 and 127, zero byte never gets through protocol; bytes above 127 are letters of hub codepage
 #define DEFAULT_COMMAND_TRIGS "+!/"
 
 #define CRASH_SERV_ADDR "crash.verlihub.net"

@@ -40,6 +40,7 @@
 ## Updated
 
 * Wiki is rewritten to match current version: https://github.com/verlihub/verlihub/wiki
+* Control characters are forbidden in nicks
 * Support flags are 64 bits wide, room for new extensions also on Windows
 * Default proto_flood_ping_action is 1, floods of ping, $PortTest, $FDCX and $FDCXR are skipped
 * Shell scripts are replaced by "verlihub" executable itself, see "verlihub --help"
@@ -95,6 +96,7 @@
 ## Fixed
 
 * $Quit went to all for user that a plugin refused before its $MyINFO went out
+* $BadNick and $NickRule showed bytes above 127 as negative numbers
 * $SearchRule gives operators minimum search length 1, hub does not check length for them
 * Extra spaces in nick_prefix gave clients a broken nick rule, only spaces refused every guest nick
 * Translation with wrong format arguments could crash hub

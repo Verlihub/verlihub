@@ -395,7 +395,7 @@ string StrByteList(const string &data, const string &sep)
 		if (i > 0)
 			res.append(sep);
 
-		res.append(StringFrom(int(data[i])));
+		res.append(StringFrom(int((unsigned char)data[i]))); // note: bytes above 127 are letters of hub codepage, char is signed on most systems
 	}
 
 	return res;
