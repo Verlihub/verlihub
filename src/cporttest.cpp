@@ -21,6 +21,8 @@
 #include "cporttest.h"
 #include "csocketapi.h"
 #include <string.h>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -82,8 +84,12 @@ void PortTestUDP(const string &addr, unsigned int port, const string &bind, cons
 		return;
 
 	if (BindSource(sock, bind)) {
-		for (int count = 0; count < 2; count++) // note: one can be lost
+		for (int count = 0; count < 3; count++) { // note: spread over a second, so a short loss on the way does not take all of them; client keeps tokens that came before answer of hub
+			if (count)
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 			sendto(sock, text.c_str(), (int)text.size(), 0, (struct sockaddr*)&dest, sizeof(dest));
+		}
 	}
 
 	SockClose(sock);
