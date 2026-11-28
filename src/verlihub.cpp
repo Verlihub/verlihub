@@ -36,6 +36,7 @@
 #include "cserverdc.h"
 #include "csocketapi.h"
 #include "ccmdline.h"
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -139,6 +140,30 @@ LONG WINAPI myCrashHandler(EXCEPTION_POINTERS *info) // note: crash in any threa
 }
 #endif
 
+void myTerminateHandler() // note: exception nobody catches, also one thrown through lua code; without it abort ends process with no stacktrace
+{
+	string what("unknown exception");
+
+	if (std::current_exception()) {
+		try {
+			throw;
+		} catch (const std::exception &ex) {
+			what = ex.what();
+		} catch (...) {
+		}
+	}
+
+	MAIN_LOG_ERROR << "Uncaught exception: " << what << ", doing stacktrace and quiting" << endl;
+	cServerDC *serv = (cServerDC*)cServerDC::sCurrentServer;
+
+	if (serv) { // note: this is a crash, same as signal handler, stack still shows where exception was thrown
+		serv->DoStackTrace();
+		serv->OnUnLoad(9); // try to unload as much as possible
+	}
+
+	exit(128 + SIGABRT); // note: same exit code as abort would give
+}
+
 int main(int argc, char *argv[])
 {
 	int result = 0;
@@ -238,6 +263,8 @@ int main(int argc, char *argv[])
 	#else
 		SetUnhandledExceptionFilter(myCrashHandler); // note: crash in any thread, not only main thread, also before server, plugins are loaded in its constructor
 	#endif
+
+	std::set_terminate(myTerminateHandler); // note: uncaught exception, before server for same reason
 
 	std::unique_ptr<cServerDC> server_ptr;
 
