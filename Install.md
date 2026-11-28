@@ -85,7 +85,7 @@ cd build
 cmake ..
 make
 make install (as super user)
-ldconfig (as super user, this is required only when you get: cannot open shared object file, no such file or directory)
+ldconfig (as super user, after every install: without it hub can fail with "cannot open shared object file" or keep using libraries of an older install, which can crash it)
 
 * Compile and install Verlihub on Windows:
 
