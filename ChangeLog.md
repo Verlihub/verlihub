@@ -36,6 +36,7 @@
 * Lua call VH:SQLWrite, see Wiki
 * Command !zlibinfo, ZLib compression and cache
 * Command !mmdbupdate, free MaxMind databases are downloaded without hub restart
+* Stack backtrace and crash report also for uncaught exceptions
 
 ## Updated
 
@@ -95,6 +96,7 @@
 
 ## Fixed
 
+* Lua calls VH:SQLQuery, VH:SQLFetch, VH:SQLFree, VH:RegBot and VH:UnRegBot failed in UnLoad of scripts on !replug and unload of Lua plugin
 * $Quit went to all for user that a plugin refused before its $MyINFO went out
 * $BadNick and $NickRule showed bytes above 127 as negative numbers
 * $SearchRule gives operators minimum search length 1, hub does not check length for them

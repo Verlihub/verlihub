@@ -2191,7 +2191,7 @@ int _RegBot(lua_State *L)
 		return 2;
 	}
 
-	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+	cpiLua *plug = cpiLua::me; // note: also while plugin unloads, then UnLoad of scripts runs after manager took it out of its list
 
 	if (!plug) {
 		luaerror(L, ERR_PLUG);
@@ -2437,7 +2437,7 @@ int _UnRegBot(lua_State *L)
 		return 2;
 	}
 
-	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+	cpiLua *plug = cpiLua::me; // note: also while plugin unloads, then UnLoad of scripts runs after manager took it out of its list
 
 	if (!plug) {
 		luaerror(L, ERR_PLUG);
@@ -2577,7 +2577,7 @@ int _SQLQuery(lua_State *L)
 		return 2;
 	}
 
-	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+	cpiLua *plug = cpiLua::me; // note: also while plugin unloads, then UnLoad of scripts runs after manager took it out of its list
 
 	if (!plug) {
 		luaerror(L, ERR_LUA);
@@ -2684,7 +2684,7 @@ int _SQLFetch(lua_State *L)
 		return 2;
 	}
 
-	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+	cpiLua *plug = cpiLua::me; // note: also while plugin unloads, then UnLoad of scripts runs after manager took it out of its list
 
 	if (!plug) {
 		luaerror(L, ERR_LUA);
@@ -2740,7 +2740,7 @@ int _SQLFree(lua_State *L)
 		return 2;
 	}
 
-	cpiLua *plug = (cpiLua*)serv->mPluginManager.GetPlugin(LUA_PI_IDENTIFIER);
+	cpiLua *plug = cpiLua::me; // note: also while plugin unloads, then UnLoad of scripts runs after manager took it out of its list
 
 	if (!plug) {
 		luaerror(L, ERR_LUA);

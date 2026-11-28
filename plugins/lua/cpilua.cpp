@@ -63,6 +63,9 @@ cpiLua::~cpiLua()
 	}
 
 	this->Empty();
+
+	if (me == this) // note: calls of scripts find no plugin from here on, not freed one
+		me = NULL;
 }
 
 void cpiLua::DelBots(cLuaInterpreter *li)
